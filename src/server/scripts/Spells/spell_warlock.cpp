@@ -372,7 +372,7 @@ enum LifeTap
     ICON_ID_MANA_FEED           = 1982,
 };
 
-class spell_warl_life_tap : public SpellScriptLoader
+/*class spell_warl_life_tap : public SpellScriptLoader
 {
     public:
         spell_warl_life_tap() : SpellScriptLoader("spell_warl_life_tap") { }
@@ -386,14 +386,14 @@ class spell_warl_life_tap : public SpellScriptLoader
                 return GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            bool Validate(SpellInfo const* /*spell*/)
+            bool Validate(SpellInfo const* /)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_LIFE_TAP_ENERGIZE) || !sSpellMgr->GetSpellInfo(SPELL_LIFE_TAP_ENERGIZE_2))
                     return false;
                 return true;
             }
 
-            void HandleDummy(SpellEffIndex /*effIndex*/)
+            void HandleDummy(SpellEffIndex )
             {
                 Player* caster = GetCaster()->ToPlayer();
                 if (Unit* target = GetHitUnit())
@@ -441,6 +441,72 @@ class spell_warl_life_tap : public SpellScriptLoader
         {
             return new spell_warl_life_tap_SpellScript();
         }
+}; */
+
+class spell_warl_life_tap : public SpellScriptLoader
+{
+public:
+    spell_warl_life_tap() : SpellScriptLoader("spell_warl_life_tap") { }
+
+    class spell_warl_life_tap_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_warl_life_tap_SpellScript);
+
+        SpellCastResult CheckCast()
+        {
+            if (Unit* caster = GetCaster())
+            {
+                if (caster->CountPctFromMaxHealth(GetSpellInfo()->Effects[EFFECT_2].CalcValue()) >= caster->GetHealth()) // You cant kill yourself with this
+                    return SPELL_FAILED_FIZZLE;
+
+                return SPELL_CAST_OK;
+            }
+            return SPELL_FAILED_DONT_REPORT;
+        }
+
+        void HandleDummy(SpellEffIndex /*EffIndex*/)
+        {
+            if (Unit* caster = GetCaster())
+            {
+                int32 damage = int32(caster->CountPctFromMaxHealth(GetSpellInfo()->Effects[EFFECT_2].CalcValue()));
+                int32 mana = 0;
+
+                uint32 multiplier = 1.2f;
+
+                // Should not appear in combat log
+                caster->ModifyHealth(-damage);
+
+                // Improved Life Tap mod
+                if (AuraEffect const* aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_WARLOCK, 208, 0))
+                    multiplier += int32(aurEff->GetAmount() / 100);
+
+                mana = int32(damage * multiplier);
+                caster->CastCustomSpell(caster, 31818, &mana, NULL, NULL, false);
+
+                // Mana Feed
+                int32 manaFeedVal = 0;
+                if (AuraEffect const* aurEff = caster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_WARLOCK, 1982, 0))
+                    manaFeedVal = aurEff->GetAmount();
+
+                if (manaFeedVal > 0)
+                {
+                    manaFeedVal = int32(mana * manaFeedVal / 100);
+                    caster->CastCustomSpell(caster, 32553, &manaFeedVal, NULL, NULL, true, NULL);
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnCheckCast += SpellCheckCastFn(spell_warl_life_tap_SpellScript::CheckCast);
+            OnEffectHitTarget += SpellEffectFn(spell_warl_life_tap_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+        }
+    };
+
+    SpellScript* GetSpellScript() const
+    {
+        return new spell_warl_life_tap_SpellScript();
+    }
 };
 
 class spell_warl_demonic_circle_summon : public SpellScriptLoader
