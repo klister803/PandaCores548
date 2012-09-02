@@ -4973,24 +4973,25 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                     if (GetId() == 61777)
                         target->CastSpell(target, GetAmount(), true);
                     break;
-                case SPELLFAMILY_ROGUE:
-                    //  Tricks of the trade
-                    switch (GetId())
-                    {
-                        case 59628: //Tricks of the trade buff on rogue (6sec duration)
-                            target->SetReducedThreatPercent(0,0);
-                            break;
-                        case 57934: //Tricks of the trade buff on rogue (30sec duration)
-                            if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE || !caster->GetMisdirectionTarget())
-                                target->SetReducedThreatPercent(0,0);
-                            else
-                                target->SetReducedThreatPercent(0,caster->GetMisdirectionTarget()->GetGUID());
-                            break;
-                    }
-                default:
-                    break;
-            }
-        }
+				case SPELLFAMILY_ROGUE:
+					//  Tricks of the trade
+					switch (GetId())
+					{
+					case 59628: //Tricks of the trade buff on rogue (6sec duration)
+						target->SetReducedThreatPercent(0,0);
+						break;
+					case 57934: //Tricks of the trade buff on rogue (30sec duration)
+						if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE || !caster->GetMisdirectionTarget())
+							target->SetReducedThreatPercent(0,0);
+						else
+							target->SetReducedThreatPercent(0,caster->GetMisdirectionTarget()->GetGUID());
+						break;
+					}
+
+				default:
+					break;
+			}
+		}
     }
 
     // AT APPLY & REMOVE
@@ -5135,26 +5136,129 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
         }
         case SPELLFAMILY_DRUID:
         {
-            //if (!(mode & AURA_EFFECT_HANDLE_REAL))
-                //break;
+            if (!(mode & AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK))
+                break;
+
+            switch (GetId())
+            {
+                case 52610:                                 // Savage Roar
+                {
+                    if (apply)
+                    {
+                        if (target->GetShapeshiftForm() == FORM_CAT)
+                            target->CastSpell(target, 62071, true, NULL, NULL, GetCasterGUID());
+                    }
+                    else
+                        target->RemoveAurasDueToSpell(62071);
+                    break;
+                }
+                case 61336:                                 // Survival Instincts
+                {
+                    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+                        break;
+
+                    if (apply)
+                    {
+                        if (!target->IsInFeralForm())
+                            break;
+
+                        target->CastSpell(target, 50322, true);
+                    }
+                    else
+                        target->RemoveAurasDueToSpell(50322);
+                    break;
+                }
+            }
+            // Predatory Strikes
+            if (target->GetTypeId() == TYPEID_PLAYER && GetSpellInfo()->SpellIconID == 1563)
+            {
+                target->ToPlayer()->UpdateAttackPowerAndDamage();
+            }
             break;
         }
         case SPELLFAMILY_SHAMAN:
         {
-            //if (!(mode & AURA_EFFECT_HANDLE_REAL))
-                //break;
+            if (!(mode & AURA_EFFECT_HANDLE_REAL))
+                break;
+            // Sentry Totem
+            if (GetId() == 6495 && caster && caster->GetTypeId() == TYPEID_PLAYER)
+            {
+                if (apply)
+                {
+                    if (uint64 guid = caster->m_SummonSlot[4])
+                    {
+                        if (Creature* totem = caster->GetMap()->GetCreature(guid))
+                            if (totem->isTotem())
+                                caster->ToPlayer()->CastSpell(totem, 6277, true);
+                    }
+                }
+                else
+                    caster->ToPlayer()->StopCastingBindSight();
+                return;
+            }
+            if (GetSpellInfo()->SpellIconID == 4777) // Lava Surge
+            {
+                if (apply)
+                {
+                    if (caster && caster->ToPlayer()->HasSpellCooldown(51505)) // Lava Burst
+                        caster->ToPlayer()->RemoveSpellCooldown(51505);
+                }
+            }
             break;
         }
         case SPELLFAMILY_PALADIN:
             // if (!(mode & AURA_EFFECT_HANDLE_REAL))
             //    break;
             break;
-        case SPELLFAMILY_DEATHKNIGHT:
+		case SPELLFAMILY_ROGUE:
         {
-            //if (!(mode & AURA_EFFECT_HANDLE_REAL))
-            //    break;
+            switch (GetId())
+            {
+                case 76577: // Smoke Bomb
+                {
+                    if (apply)
+                    {
+                        if (Aura* newAura = target->AddAura(88611, target))
+                        {
+                            newAura->SetMaxDuration(GetBase()->GetDuration());
+                            newAura->SetDuration(GetBase()->GetDuration());
+                        }
+                    }
+                    else
+                        target->RemoveAurasDueToSpell(88611);
+                    break;
+                }
+            }
             break;
         }
+        case SPELLFAMILY_DEATHKNIGHT:
+        {
+            if (!(mode & AURA_EFFECT_HANDLE_REAL))
+                break;
+            // Improved Frost Presence
+            if (m_spellInfo->SpellIconID == 2636)
+            {
+                if (apply)
+                {
+                    if (!target->HasAura(48266) && !target->HasAura(63611))
+                        target->CastSpell(target, 63611, true);
+                }
+                else
+                    target->RemoveAurasDueToSpell(63611);
+            break;
+        }
+
+		case SPELLFAMILY_WARLOCK:
+			{
+				switch(GetId())
+				{
+					// Demonic Pact
+				case 47236:
+					caster->CastSpell(caster, 53646, true);
+					break;
+				}
+				break;   
+			}
     }
 }
 
