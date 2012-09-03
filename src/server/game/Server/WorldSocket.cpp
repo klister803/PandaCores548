@@ -52,6 +52,7 @@
 #pragma pack(push, 1)
 #endif
 
+// TODO : Large Packet
 struct ServerPktHeader
 {
     /**
@@ -59,23 +60,20 @@ struct ServerPktHeader
      */
     ServerPktHeader(uint32 size, uint16 cmd) : size(size)
     {
-        uint8 headerIndex=0;
-        if (isLargePacket())
-        {
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "initializing large server to client packet. Size: %u, cmd: %u", size, cmd);
-            header[headerIndex++] = 0x80 | (0xFF & (size >> 16));
-        }
-        header[headerIndex++] = 0xFF &(size >> 8);
-        header[headerIndex++] = 0xFF & size;
+        uint32 totalLenght = size;
+        totalLenght <<=12;
+        totalLenght |= (cmd & 0xFFF);
 
-        header[headerIndex++] = 0xFF & cmd;
-        header[headerIndex++] = 0xFF & (cmd >> 8);
+        header[0] = ((uint8*)totalLenght)[0];
+        header[1] = ((uint8*)totalLenght)[1];
+        header[2] = ((uint8*)totalLenght)[2];
+        header[3] = ((uint8*)totalLenght)[3];
     }
 
     uint8 getHeaderLength()
     {
         // cmd = 2 bytes, size= 2||3bytes
-        return 2 + (isLargePacket() ? 3 : 2);
+        return 4;
     }
 
     bool isLargePacket() const
@@ -84,13 +82,13 @@ struct ServerPktHeader
     }
 
     const uint32 size;
-    uint8 header[5];
+    uint8 header[4];
 };
 
 struct ClientPktHeader
 {
     uint16 size;
-    uint32 cmd;
+    uint16 cmd;
 };
 
 #if defined(__GNUC__)
@@ -177,7 +175,7 @@ int WorldSocket::SendPacket(WorldPacket const& pct)
 
     sScriptMgr->OnPacketSend(this, *pkt);
 
-    ServerPktHeader header(pkt->size()+2, pkt->GetOpcode());
+    ServerPktHeader header(pkt->size(), pkt->GetOpcode());
     m_Crypt.EncryptSend ((uint8*)header.header, header.getHeaderLength());
 
     if (m_OutBuffer->space() >= pkt->size() + header.getHeaderLength() && msg_queue()->is_empty())
@@ -476,11 +474,14 @@ int WorldSocket::handle_input_header (void)
     m_Crypt.DecryptRecv ((uint8*)m_Header.rd_ptr(), sizeof(ClientPktHeader));
 
     ClientPktHeader& header = *((ClientPktHeader*)m_Header.rd_ptr());
+    header.size = header.size >> 4;
+    header.cmd = header.cmd & 0xFFF;
+
 
     EndianConvertReverse(header.size);
-    EndianConvert(header.cmd);
+    EndianConvertReverse(header.cmd);
 
-    if ((header.size < 4) || (header.size > 10240) || (header.cmd > 0xFFFF && (header.cmd >> 16) != 0x4C52))  // LR (from MSG_VERIFY_CONNECTIVITY)
+    if ((header.size < 2) || (header.size > 10240) || (header.cmd > 0xFFFF && (header.cmd >> 16) != 0x4C52))  // LR (from MSG_VERIFY_CONNECTIVITY)
     {
         Player* _player = m_Session ? m_Session->GetPlayer() : NULL;
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::handle_input_header(): client (account: %u, char [GUID: %u, name: %s]) sent malformed packet (size: %d, cmd: %d)",
@@ -765,6 +766,9 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
 int WorldSocket::HandleSendAuthSession()
 {
     WorldPacket packet(SMSG_AUTH_CHALLENGE, 37);
+
+    packet << m_Seed;
+
     BigNumber seed1;
     seed1.SetRand(16 * 8);
     packet.append(seed1.AsByteArray(16), 16);               // new encryption seeds
@@ -773,7 +777,6 @@ int WorldSocket::HandleSendAuthSession()
     seed2.SetRand(16 * 8);
     packet.append(seed2.AsByteArray(16), 16);               // new encryption seeds
 
-    packet << m_Seed;
     packet << uint8(1);
     return SendPacket(packet);
 }
@@ -792,34 +795,32 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     WorldPacket addonsData;
 
     recvPacket.read_skip<uint32>();
-    recvPacket.read_skip<uint32>();
-    recvPacket.read_skip<uint8>();
-    recvPacket >> digest[10];
-    recvPacket >> digest[18];
-    recvPacket >> digest[12];
-    recvPacket >> digest[5];
-    recvPacket.read_skip<uint64>();
-    recvPacket >> digest[15];
-    recvPacket >> digest[9];
-    recvPacket >> digest[19];
-    recvPacket >> digest[4];
-    recvPacket >> digest[7];
-    recvPacket >> digest[16];
-    recvPacket >> digest[3];
-    recvPacket >> clientBuild;
-    recvPacket >> digest[8];
-    recvPacket.read_skip<uint32>();
-    recvPacket.read_skip<uint8>();
-    recvPacket >> digest[17];
-    recvPacket >> digest[6];
-    recvPacket >> digest[0];
-    recvPacket >> digest[1];
-    recvPacket >> digest[11];
-    recvPacket >> clientSeed;
     recvPacket >> digest[2];
+    recvPacket >> digest[15];
+    recvPacket >> digest[12];
+    recvPacket >> digest[11];
+    recvPacket >> digest[10];
+    recvPacket >> digest[9];
+    recvPacket.read_skip<uint8>();
     recvPacket.read_skip<uint32>();
-    recvPacket >> digest[14];
+    recvPacket >> digest[16];
+    recvPacket >> digest[5];
+    recvPacket >> clientBuild;
+    recvPacket.read_skip<uint32>();
+    recvPacket >> digest[18];
+    recvPacket >> digest[0];
     recvPacket >> digest[13];
+    recvPacket >> digest[3];
+    recvPacket >> digest[14];
+    recvPacket.read_skip<uint8>();
+    recvPacket >> digest[8];
+    recvPacket >> digest[7];
+    recvPacket.read_skip<uint32>();
+    recvPacket >> digest[17];
+    recvPacket >> digest[19];
+    recvPacket >> clientSeed;
+    recvPacket >> digest[6];
+    recvPacket >> digest[1];
 
     recvPacket >> addonSize;
     addonsData.resize(addonSize);
