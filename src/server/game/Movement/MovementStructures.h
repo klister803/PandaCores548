@@ -1936,7 +1936,7 @@ MovementStatusElements MoveSplineDone[] =
 
 MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
 {
-    switch (opcode)
+    /*switch (opcode)
     {
         case MSG_MOVE_FALL_LAND:
             return MovementFallLandSequence;
@@ -1990,7 +1990,7 @@ MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
             return MoveSplineDone;
         default:
             break;
-    }
+    }*/
 
     return NULL;
 }

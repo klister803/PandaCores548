@@ -80,6 +80,9 @@ enum Races
     //RACE_ICE_TROLL          = 21,
     RACE_WORGEN             = 22,
     //RACE_GILNEAN            = 23
+    RACE_PANDAREN_NEUTRAL   = 24,
+    RACE_PANDAREN_ALLI      = 25,
+    RACE_PANDAREN_HORDE     = 26
 };
 
 // max+1 for player race
@@ -110,7 +113,7 @@ enum Classes
     CLASS_SHAMAN        = 7,
     CLASS_MAGE          = 8,
     CLASS_WARLOCK       = 9,
-    //CLASS_UNK           = 10,
+    CLASS_MONK          = 10,
     CLASS_DRUID         = 11
 };
 

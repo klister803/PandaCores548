@@ -5259,6 +5259,7 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
 				}
 				break;   
 			}
+        }
     }
 }
 

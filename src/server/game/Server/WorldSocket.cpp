@@ -60,14 +60,23 @@ struct ServerPktHeader
      */
     ServerPktHeader(uint32 size, uint16 cmd) : size(size)
     {
-        uint32 totalLenght = size;
+        if(cmd == MSG_VERIFY_CONNECTIVITY || cmd == SMSG_AUTH_CHALLENGE)
+        {
+            header[0] = size & 0xFF;
+            header[1] = size >> 8;
+            header[2] = cmd & 0xFF;
+            header[3] = cmd >> 8;
+            return;
+        }
+
+        uint32 totalLenght = size-2;
         totalLenght <<=12;
         totalLenght |= (cmd & 0xFFF);
 
-        header[0] = ((uint8*)totalLenght)[0];
-        header[1] = ((uint8*)totalLenght)[1];
-        header[2] = ((uint8*)totalLenght)[2];
-        header[3] = ((uint8*)totalLenght)[3];
+        header[0] = ((uint8*)&totalLenght)[0];
+        header[1] = ((uint8*)&totalLenght)[1];
+        header[2] = ((uint8*)&totalLenght)[2];
+        header[3] = ((uint8*)&totalLenght)[3];
     }
 
     uint8 getHeaderLength()
@@ -89,6 +98,11 @@ struct ClientPktHeader
 {
     uint16 size;
     uint16 cmd;
+};
+
+struct ClientCryptPktHeader
+{
+    uint32 header;
 };
 
 #if defined(__GNUC__)
@@ -164,18 +178,18 @@ int WorldSocket::SendPacket(WorldPacket const& pct)
     WorldPacket const* pkt = &pct;
 
     // Empty buffer used in case packet should be compressed
-    WorldPacket buff;
+    /*WorldPacket buff;
     if (m_Session && pkt->size() > 0x400)
     {
         buff.Compress(m_Session->GetCompressionStream(), pkt);
         pkt = &buff;
-    }
+    }*/
 
     sLog->outInfo(LOG_FILTER_OPCODES, "S->C: %s", GetOpcodeNameForLogging(pkt->GetOpcode()).c_str());
 
     sScriptMgr->OnPacketSend(this, *pkt);
 
-    ServerPktHeader header(pkt->size(), pkt->GetOpcode());
+    ServerPktHeader header(pkt->size()+2, pkt->GetOpcode());
     m_Crypt.EncryptSend ((uint8*)header.header, header.getHeaderLength());
 
     if (m_OutBuffer->space() >= pkt->size() + header.getHeaderLength() && msg_queue()->is_empty())
@@ -473,34 +487,44 @@ int WorldSocket::handle_input_header (void)
 
     m_Crypt.DecryptRecv ((uint8*)m_Header.rd_ptr(), sizeof(ClientPktHeader));
 
-    ClientPktHeader& header = *((ClientPktHeader*)m_Header.rd_ptr());
-    header.size = header.size >> 4;
-    header.cmd = header.cmd & 0xFFF;
+    uint16 cmd = 0;
+    uint16 size = 0;
 
+    if(m_Crypt.IsInitialized())
+    {
+        ClientCryptPktHeader& header = *((ClientCryptPktHeader*)m_Header.rd_ptr());
+        size = (uint16)(header.header >> 12);
+        cmd = (uint16)(header.header & 0xFFF);
+    }
+    else
+    {
+        ClientPktHeader& header = *((ClientPktHeader*)m_Header.rd_ptr());
+        cmd = header.cmd;
+        size = header.size;
+    }
 
-    EndianConvertReverse(header.size);
-    EndianConvertReverse(header.cmd);
-
-    if ((header.size < 2) || (header.size > 10240) || (header.cmd > 0xFFFF && (header.cmd >> 16) != 0x4C52))  // LR (from MSG_VERIFY_CONNECTIVITY)
+    if ((size > 10240) || (cmd > 0xFFFF && (cmd >> 16) != 0x4C52))  // LR (from MSG_VERIFY_CONNECTIVITY)
     {
         Player* _player = m_Session ? m_Session->GetPlayer() : NULL;
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::handle_input_header(): client (account: %u, char [GUID: %u, name: %s]) sent malformed packet (size: %d, cmd: %d)",
             m_Session ? m_Session->GetAccountId() : 0,
             _player ? _player->GetGUIDLow() : 0,
             _player ? _player->GetName() : "<none>",
-            header.size, header.cmd);
+            size, cmd);
 
         errno = EINVAL;
         return -1;
     }
 
-    header.size -= 4;
 
-    ACE_NEW_RETURN(m_RecvWPct, WorldPacket (PacketFilter::DropHighBytes(Opcodes(header.cmd)), header.size), -1);
+    if(!m_Crypt.IsInitialized())
+        size -= 2;
 
-    if (header.size > 0)
+    ACE_NEW_RETURN(m_RecvWPct, WorldPacket (PacketFilter::DropHighBytes(Opcodes(cmd)), size), -1);
+
+    if (size > 0)
     {
-        m_RecvWPct->resize(header.size);
+        m_RecvWPct->resize(size);
         m_RecvPct.base ((char*) m_RecvWPct->contents(), m_RecvWPct->size());
     }
     else
@@ -713,7 +737,7 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
                 sScriptMgr->OnPacketReceive(this, WorldPacket(*new_pct));
                 std::string str;
                 *new_pct >> str;
-                if (str != "D OF WARCRAFT CONNECTION - CLIENT TO SERVER")
+                if (str != "RLD OF WARCRAFT CONNECTION - CLIENT TO SERVER")
                     return -1;
                 return HandleSendAuthSession();
             }
@@ -783,8 +807,8 @@ int WorldSocket::HandleSendAuthSession()
 
 int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 {
-    uint8 digest[20];
-    uint32 clientSeed;
+    uint8 digest[20], unk1, unk2;
+    uint32 clientSeed, unk3, unk4, unk5, unk6;
     uint16 clientBuild, security;
     uint32 id;
     uint32 addonSize;
@@ -794,33 +818,38 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     BigNumber k;
     WorldPacket addonsData;
 
-    recvPacket.read_skip<uint32>();
-    recvPacket >> digest[2];
-    recvPacket >> digest[15];
+    recvPacket.read_skip<uint16>();
+    recvPacket >> unk3;
+    recvPacket >> digest[4];
+    recvPacket >> digest[17];
+    recvPacket >> digest[14];
+    recvPacket >> digest[13];
     recvPacket >> digest[12];
     recvPacket >> digest[11];
+    recvPacket >> digest[0];
+    recvPacket >> clientSeed;
+    recvPacket >> digest[18];
+    recvPacket >> digest[7];
+    recvPacket >> clientBuild;
+    recvPacket >> unk5;
+    recvPacket >> unk1;
+    //recvPacket >> digest[18];
+    recvPacket >> digest[2];
+    recvPacket >> digest[15];
+    recvPacket >> digest[5];
+    recvPacket >> digest[16];
+    recvPacket >> digest[1];;
     recvPacket >> digest[10];
     recvPacket >> digest[9];
-    recvPacket.read_skip<uint8>();
-    recvPacket.read_skip<uint32>();
-    recvPacket >> digest[16];
-    recvPacket >> digest[5];
-    recvPacket >> clientBuild;
-    recvPacket.read_skip<uint32>();
-    recvPacket >> digest[18];
-    recvPacket >> digest[0];
-    recvPacket >> digest[13];
-    recvPacket >> digest[3];
-    recvPacket >> digest[14];
-    recvPacket.read_skip<uint8>();
-    recvPacket >> digest[8];
-    recvPacket >> digest[7];
-    recvPacket.read_skip<uint32>();
-    recvPacket >> digest[17];
-    recvPacket >> digest[19];
-    recvPacket >> clientSeed;
+    recvPacket >> unk6;
     recvPacket >> digest[6];
-    recvPacket >> digest[1];
+    recvPacket.read_skip<uint64>();
+    recvPacket >> digest[19];
+    recvPacket >> unk2;
+    //recvPacket >> digest[19];
+    recvPacket >> unk4;
+    recvPacket >> digest[8];
+    recvPacket >> digest[3];
 
     recvPacket >> addonSize;
     addonsData.resize(addonSize);
@@ -984,7 +1013,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
     std::string address = GetRemoteAddress();
 
-    if (memcmp(sha.GetDigest(), digest, 20))
+    /*if (memcmp(sha.GetDigest(), digest, 20))
     {
         WorldPacket packet(SMSG_AUTH_RESPONSE, 1);
         packet.WriteBit(0); // has queue info
@@ -994,7 +1023,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
 
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: Authentication failed for account: %u ('%s') address: %s", id, account.c_str(), address.c_str());
         return -1;
-    }
+    }*/
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WorldSocket::HandleAuthSession: Client '%s' authenticated successfully from %s.",
         account.c_str(),

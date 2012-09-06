@@ -70,12 +70,12 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket& recvData)
 
     switch (recvData.GetOpcode())
     {
-        case CMSG_REQUEST_VEHICLE_PREV_SEAT:
+        /*case CMSG_REQUEST_VEHICLE_PREV_SEAT:
             GetPlayer()->ChangeSeat(-1, false);
             break;
         case CMSG_REQUEST_VEHICLE_NEXT_SEAT:
             GetPlayer()->ChangeSeat(-1, true);
-            break;
+            break;*/
         /*case CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE:
         {
             uint64 guid;        // current vehicle guid
@@ -104,7 +104,7 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket& recvData)
             }
             break;
         }*/
-        case CMSG_REQUEST_VEHICLE_SWITCH_SEAT:
+        /*case CMSG_REQUEST_VEHICLE_SWITCH_SEAT:
         {
             uint64 guid;        // current vehicle guid
             recvData.readPackGUID(guid);
@@ -119,7 +119,7 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket& recvData)
                     if (vehicle->HasEmptySeat(seatId))
                         vehUnit->HandleSpellClick(GetPlayer(), seatId);
             break;
-        }
+        }*/
         default:
             break;
     }
