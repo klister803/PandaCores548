@@ -416,7 +416,7 @@ enum Opcodes
     CMSG_PET_SPELL_AUTOCAST                           = 0,
     CMSG_PET_STOP_ATTACK                              = 0,
     CMSG_PING                                         = 0x4EB,
-    CMSG_PLAYED_TIME                                  = 0,
+    CMSG_PLAYED_TIME                                  = 0x9B1,
     CMSG_PLAYER_DIFFICULTY_CHANGE                     = 0,
     CMSG_PLAYER_LOGIN                                 = 0x203,
     CMSG_PLAYER_LOGOUT                                = 0,
