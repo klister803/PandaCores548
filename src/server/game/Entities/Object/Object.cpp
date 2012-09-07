@@ -428,7 +428,8 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     }
 	// If (HasUnknown2 )
 	// readSomeBits, TODO check via IDA debug
-
+	//We know have to realign the bits so as to put bytes.
+	data->FlushBits();
 	for (uint32 i = 0; i < bitCounter2; i++)
 	{
 		//unk32
