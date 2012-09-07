@@ -961,7 +961,8 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_REGENERATE_POWER);
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);               // fix cast time showed in spell tooltip on client
     SetFloatValue(UNIT_MOD_CAST_HASTE, 1.0f);
-    SetFloatValue(PLAYER_FIELD_MOD_HASTE, 1.0f);
+    SetFloatValue(UNIT_MOD_HASTE, 1.0f);
+    SetFloatValue(UNIT_MOD_HASTE_REGEN, 1.0f);
     SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, 1.0f);
     SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);            // default for players in 3.0.3
 
@@ -2587,7 +2588,7 @@ void Player::Regenerate(Powers power)
 
     // Powers now benefit from haste.
     float rangedHaste = GetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE);
-    float meleeHaste = GetFloatValue(PLAYER_FIELD_MOD_HASTE);
+    float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
     float spellHaste = GetFloatValue(UNIT_MOD_CAST_SPEED);
 
     switch (power)
@@ -3264,7 +3265,8 @@ void Player::InitStatsForLevel(bool reapplyMods)
     // set default cast time multiplier
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
     SetFloatValue(UNIT_MOD_CAST_HASTE, 1.0f);
-    SetFloatValue(PLAYER_FIELD_MOD_HASTE, 1.0f);
+    SetFloatValue(UNIT_MOD_HASTE, 1.0f);
+    SetFloatValue(UNIT_MOD_HASTE_REGEN, 1.0f);
     SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, 1.0f);
 
     // reset size before reapply auras
@@ -3386,7 +3388,9 @@ void Player::InitStatsForLevel(bool reapplyMods)
     RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_FFA_PVP | UNIT_BYTE2_FLAG_SANCTUARY);
 
     // restore if need some important flags
-    SetUInt32Value(PLAYER_FIELD_BYTES2, 0);                 // flags empty by default
+    SetUInt32Value(PLAYER_FIELD_OVERRIDE_SPELLS_ID, 0);                 // flags empty by default
+    SetUInt32Value(PLAYER_FIELD_AURA_VISION, 0);                        // flags empty by default
+
 
     if (reapplyMods)                                        // reapply stats values only on .reset stats (level) command
         _ApplyAllStatBonuses();
@@ -15488,7 +15492,7 @@ bool Player::SatisfyQuestPrevChain(Quest const* qInfo, bool msg)
 
 bool Player::SatisfyQuestDay(Quest const* qInfo, bool msg)
 {
-    if (!qInfo->IsDaily() && !qInfo->IsDFQuest())
+    /*if (!qInfo->IsDaily() && !qInfo->IsDFQuest())
         return true;
 
     if (qInfo->IsDFQuest())
@@ -15515,7 +15519,7 @@ bool Player::SatisfyQuestDay(Quest const* qInfo, bool msg)
         if (msg)
             SendCanTakeQuestResponse(INVALIDREASON_DAILY_QUESTS_REMAINING);
         return false;
-    }
+    }*/
 
     return true;
 }
@@ -17983,7 +17987,7 @@ void Player::_LoadQuestStatusRewarded(PreparedQueryResult result)
 
 void Player::_LoadDailyQuestStatus(PreparedQueryResult result)
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+    /*for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
         SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx, 0);
 
     m_DFQuests.clear();
@@ -18030,7 +18034,7 @@ void Player::_LoadDailyQuestStatus(PreparedQueryResult result)
         while (result->NextRow());
     }
 
-    m_DailyQuestChanged = false;
+    m_DailyQuestChanged = false;*/
 }
 
 void Player::_LoadWeeklyQuestStatus(PreparedQueryResult result)
@@ -19285,7 +19289,7 @@ void Player::_SaveQuestStatus(SQLTransaction& trans)
 
 void Player::_SaveDailyQuestStatus(SQLTransaction& trans)
 {
-    if (!m_DailyQuestChanged)
+    /*if (!m_DailyQuestChanged)
         return;
 
     m_DailyQuestChanged = false;
@@ -19318,7 +19322,7 @@ void Player::_SaveDailyQuestStatus(SQLTransaction& trans)
             stmt->setUInt64(2, uint64(m_lastDailyQuestTime));
             trans->Append(stmt);
         }
-    }
+    }*/
 }
 
 void Player::_SaveWeeklyQuestStatus(SQLTransaction& trans)
@@ -22606,7 +22610,7 @@ void Player::SendAurasForTarget(Unit* target)
 
 void Player::SetDailyQuestStatus(uint32 quest_id)
 {
-    if (Quest const* qQuest = sObjectMgr->GetQuestTemplate(quest_id))
+   /* if (Quest const* qQuest = sObjectMgr->GetQuestTemplate(quest_id))
     {
         if (!qQuest->IsDFQuest())
         {
@@ -22626,7 +22630,7 @@ void Player::SetDailyQuestStatus(uint32 quest_id)
             m_lastDailyQuestTime = time(NULL);
             m_DailyQuestChanged = true;
         }
-    }
+    }*/
 }
 
 void Player::SetWeeklyQuestStatus(uint32 quest_id)
@@ -22647,8 +22651,8 @@ void Player::SetSeasonalQuestStatus(uint32 quest_id)
 
 void Player::ResetDailyQuestStatus()
 {
-    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
-        SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx, 0);
+/*    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+        SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx, 0);*/
 
     m_DFQuests.clear(); // Dungeon Finder Quests.
 
