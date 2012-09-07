@@ -33,7 +33,7 @@ enum Opcodes
     NULL_OPCODE                                       = 0,
     COMPRESSED_OPCODE_MASK                            = 0x8000,
 
-    CMSG_ACCEPT_LEVEL_GRANT                           = 0,
+    CMSG_ACCEPT_LEVEL_GRANT                           = 0x902,
     CMSG_ACCEPT_TRADE                                 = 0,
     CMSG_ACTIVATETAXI                                 = 0,
     CMSG_ACTIVATETAXIEXPRESS                          = 0,

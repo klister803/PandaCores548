@@ -59,7 +59,7 @@ void InitOpcodes()
 {
     memset(opcodeTable, 0, sizeof(opcodeTable));
 
-    //DEFINE_OPCODE_HANDLER(CMSG_ACCEPT_LEVEL_GRANT,                      STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAcceptGrantLevel          );
+    DEFINE_OPCODE_HANDLER(CMSG_ACCEPT_LEVEL_GRANT,                      STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAcceptGrantLevel          );
     //DEFINE_OPCODE_HANDLER(CMSG_ACCEPT_TRADE,                            STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleAcceptTradeOpcode         );
     //DEFINE_OPCODE_HANDLER(CMSG_ACTIVATETAXI,                            STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleActivateTaxiOpcode        );
     //DEFINE_OPCODE_HANDLER(CMSG_ACTIVATETAXIEXPRESS,                     STATUS_LOGGEDIN,  PROCESS_THREADSAFE,   &WorldSession::HandleActivateTaxiExpressOpcode );
