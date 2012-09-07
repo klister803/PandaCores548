@@ -282,7 +282,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
     recvData >> gender;
 
     recvData >> hairColor;
-    recvData >> unk1; 
+    recvData >> outfitId; 
 
     recvData >> race_;
     recvData >> class_;       
