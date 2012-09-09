@@ -2361,11 +2361,11 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
             if (!GetSession()->PlayerLogout())
             {
                 WorldPacket data(SMSG_NEW_WORLD, 4 + 4 + 4 + 4 + 4);
-                data << float(m_teleport_dest.GetPositionX());
-                data << float(m_teleport_dest.GetOrientation());
                 data << float(m_teleport_dest.GetPositionZ());
-                data << uint32(mapid);
                 data << float(m_teleport_dest.GetPositionY());
+                data << float(m_teleport_dest.GetPositionX());
+                data << uint32(mapid);
+                data << float(m_teleport_dest.GetOrientation());
 
                 GetSession()->SendPacket(&data);
                 SendSavedInstances();
@@ -19676,8 +19676,9 @@ void Player::SendDungeonDifficulty(bool IsInGroup)
     uint8 val = 0x00000001;
     WorldPacket data(MSG_SET_DUNGEON_DIFFICULTY, 12);
     data << (uint32)GetDungeonDifficulty();
-    data << uint32(val);
-    data << uint32(IsInGroup);
+    //Seems there is just the GetDungeonDifficulty now ...
+    //data << uint32(val);
+    //data << uint32(IsInGroup);
     GetSession()->SendPacket(&data);
 }
 

@@ -674,7 +674,7 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
             }
             *data << uint32(messageLength);
             *data << message;
-            *data << uint8(0);
+            *data << uint16(0);
 
             if (type == CHAT_MSG_RAID_BOSS_WHISPER || type == CHAT_MSG_RAID_BOSS_EMOTE)
             {
@@ -710,9 +710,9 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
     *data << uint32(messageLength);
     *data << message;
     if (session != 0 && type != CHAT_MSG_WHISPER_INFORM && type != CHAT_MSG_DND && type != CHAT_MSG_AFK)
-        *data << uint8(session->GetPlayer()->GetChatTag());
+        *data << uint16(session->GetPlayer()->GetChatTag());
     else
-        *data << uint8(0);
+        *data << uint16(0);
 }
 
 Player* ChatHandler::getSelectedPlayer()
