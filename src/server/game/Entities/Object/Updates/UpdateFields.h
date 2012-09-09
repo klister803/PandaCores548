@@ -590,6 +590,6 @@ enum SceneObjectFields
     SCENE_END                                        = OBJECT_END + 0x4
 };
 
-#define PLAYER_END_NOT_SELF PLAYER_FIELD_INV_SLOT_HEAD
+#define PLAYER_END_NOT_SELF PLAYER_FAKE_INEBRIATION
 
 #endif // _UPDATEFIELDS_H

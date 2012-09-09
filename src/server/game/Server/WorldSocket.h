@@ -164,6 +164,8 @@ class WorldSocket : public WorldHandler
         /// Called by CMSG_VERIFY_CONNECTIVITY_RESPONSE
         int HandleSendAuthSession();
 
+        void SendAuthResponse(uint8 code, bool queued, uint32 queuePos);
+
     private:
         /// Time in which the last ping was received
         ACE_Time_Value m_LastPingTime;
