@@ -7346,7 +7346,7 @@ void Player::SendCurrencies() const
 {
     ByteBuffer currencyData;
     WorldPacket packet(SMSG_INIT_CURRENCY, 4 + m_currencies.size()*(5*4 + 1));
-    packet.WriteBits(m_currencies.size(), 23);
+    packet.WriteBits(m_currencies.size(), 22);
 
     for (PlayerCurrenciesMap::const_iterator itr = m_currencies.begin(); itr != m_currencies.end(); ++itr)
     {
@@ -7359,20 +7359,21 @@ void Player::SendCurrencies() const
         uint32 weekCap = _GetCurrencyWeekCap(entry) / precision;
 
         packet.WriteBit(weekCount);
-        packet.WriteBits(0, 4); // some flags
         packet.WriteBit(weekCap);
         packet.WriteBit(0);     // season total earned
+        packet.WriteBits(0, 5); // some flags
 
-        currencyData << uint32(itr->second.totalCount / precision);
         if (weekCap)
             currencyData << uint32(weekCap);
+        if (weekCount)
+            currencyData << uint32(weekCount);
 
         //if (seasonTotal)
         //    currencyData << uint32(seasonTotal);
 
+        currencyData << uint32(itr->second.totalCount / precision);
+        
         currencyData << uint32(entry->ID);
-        if (weekCount)
-            currencyData << uint32(weekCount);
     }
 
     packet.FlushBits();
