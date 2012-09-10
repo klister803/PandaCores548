@@ -871,6 +871,29 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
             }
         }
     }
+
+    uint8 dynamicFieldsCount = 0;
+   *data << uint8(dynamicFieldsCount);
+   // TODO : DynamicFields
+   /*for(int i = dynamicFieldsCount; i < dynamicFieldsCount; i++)
+   {
+       *data << uint32(0);
+   }
+
+   for(int i = 0; i < dynamicFieldsCount*32; i++)
+   {
+       if ( (1 << (i & 0x1F)) & *(dynamicFieldsCountData + (i >> 5)) )
+       {
+           uint8 byte = 0;
+           *data << uint8(byte);
+           if(((byte & 0x7F) & 0x80) != 0)
+           {
+                *data << uint16(0);
+           }
+           
+       }
+   }*/
+
 }
 
 void Object::ClearUpdateMask(bool remove)
