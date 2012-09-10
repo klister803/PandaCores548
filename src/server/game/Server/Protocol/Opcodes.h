@@ -1262,7 +1262,7 @@ enum Opcodes
     SMSG_SET_FACTION_STANDING                         = 0,
     SMSG_SET_FACTION_VISIBLE                          = 0,
     SMSG_SET_FLAT_SPELL_MODIFIER                      = 0,
-    SMSG_SET_FORCED_REACTIONS                         = 0,
+    SMSG_SET_FORCED_REACTIONS                         = 0xDE0,
     SMSG_SET_PCT_SPELL_MODIFIER                       = 0,
     SMSG_SET_PHASE_SHIFT                              = 0x0A93,
     SMSG_SET_PLAYER_DECLINED_NAMES_RESULT             = 0,
