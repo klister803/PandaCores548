@@ -208,7 +208,7 @@ struct ActionButton
     }
 };
 
-#define  MAX_ACTION_BUTTONS 144                             //checked in 3.2.0
+#define  MAX_ACTION_BUTTONS 132                             //checked in 5.0.5
 
 typedef std::map<uint8, ActionButton> ActionButtonList;
 
@@ -1682,6 +1682,7 @@ class Player : public Unit, public GridObject<Player>
         void PossessSpellInitialize();
         void VehicleSpellInitialize();
         void SendRemoveControlBar();
+        void SendKnownSpells();
         bool HasSpell(uint32 spell) const;
         bool HasActiveSpell(uint32 spell) const;            // show in spellbook
         TrainerSpellState GetTrainerSpellState(TrainerSpell const* trainer_spell) const;

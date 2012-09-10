@@ -3409,6 +3409,37 @@ void Player::InitStatsForLevel(bool reapplyMods)
         pet->SynchronizeLevelWithOwner();
 }
 
+void Player::SendKnownSpells()
+{
+    ByteBuffer bitBuffer;
+    ByteBuffer dataBuffer;
+    uint16 spellCount = 0;
+
+    WorldPacket data(SMSG_SEND_KNOWN_SPELLS);
+    
+    for (PlayerSpellMap::const_iterator itr = m_spells.begin(); itr != m_spells.end(); ++itr)
+    {
+        if (itr->second->state == PLAYERSPELL_REMOVED)
+            continue;
+
+        if (!itr->second->active || itr->second->disabled)
+            continue;
+
+        dataBuffer << uint32(itr->first);
+
+        ++spellCount;
+    }                          // spell count placeholder
+    bitBuffer.WriteBits(spellCount, 24);
+    bitBuffer.WriteBit(1);
+    bitBuffer.FlushBits();
+    data.append(bitBuffer);
+    data.append(dataBuffer);
+
+    GetSession()->SendPacket(&data);
+
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CHARACTER: Sent Send Known Spells");
+}
+
 void Player::SendInitialSpells()
 {
     time_t curTime = time(NULL);
@@ -22226,12 +22257,14 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_SET_FLAT_SPELL_MODIFIER
     // SMSG_UPDATE_AURA_DURATION
 
-    SendTalentsInfoData(false);
+    //Rewrite Talents
+    //SendTalentsInfoData(false);
 
-    SendInitialSpells();
+    SendKnownSpells();
+    //SendInitialSpells();
 
-    data.Initialize(SMSG_SEND_UNLEARN_SPELLS, 4);
-    data << uint32(0);                                      // count, for (count) uint32;
+    data.Initialize(SMSG_SEND_UNLEARN_SPELLS);
+    data.WriteBits(0, 24);                         // count, read uint32 spells id
     GetSession()->SendPacket(&data);
 
     SendInitialActionButtons();
