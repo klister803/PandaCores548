@@ -100,9 +100,10 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recvData)
     if (ci)
     {
 
-        std::string Name, SubName;
+        std::string Name, SubName, Unk505;
         Name = ci->Name;
         SubName = ci->SubName;
+        Unk505 = "";
 
         int loc_idx = GetSessionDbLocaleIndex();
         if (loc_idx >= 0)
@@ -122,6 +123,7 @@ void WorldSession::HandleCreatureQueryOpcode(WorldPacket & recvData)
         for (int i = 0; i < 7; i++)
             data << uint8(0); // name2, ..., name8
 
+        data << Unk505;
         data << SubName;
         data << ci->IconName;                               // "Directions" for guard, string for Icons 2.3.0
         data << uint32(ci->type_flags);                     // flags
