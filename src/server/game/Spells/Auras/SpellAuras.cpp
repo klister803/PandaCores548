@@ -38,7 +38,7 @@
 
 AuraApplication::AuraApplication(Unit* target, Unit* caster, Aura* aura, uint8 effMask):
 _target(target), _base(aura), _removeMode(AURA_REMOVE_NONE), _slot(MAX_AURAS),
-_flags(AFLAG_NONE), _effectsToApply(effMask), _needClientUpdate(false)
+_flags(AFLAG_NONE), _effectsToApply(effMask), _needClientUpdate(false), _effectMask(NULL)
 {
     ASSERT(GetTarget() && GetBase());
 
@@ -162,14 +162,14 @@ void AuraApplication::_HandleEffect(uint8 effIndex, bool apply)
 
     if (apply)
     {
-        ASSERT(!(_flags & (1<<effIndex)));
-        _flags |= 1<<effIndex;
+        ASSERT(!(_effectMask & (1<<effIndex)));
+        _effectMask |= 1<<effIndex;
         aurEff->HandleEffect(this, AURA_EFFECT_HANDLE_REAL, true);
     }
     else
     {
-        ASSERT(_flags & (1<<effIndex));
-        _flags &= ~(1<<effIndex);
+        ASSERT(_effectMask & (1<<effIndex));
+        _effectMask &= ~(1<<effIndex);
         aurEff->HandleEffect(this, AURA_EFFECT_HANDLE_REAL, false);
 
         // Remove all triggered by aura spells vs unlimited duration
@@ -195,8 +195,9 @@ void AuraApplication::BuildUpdatePacket(ByteBuffer& data, bool remove) const
     uint32 flags = _flags;
     if (aura->GetMaxDuration() > 0 && !(aura->GetSpellInfo()->AttributesEx5 & SPELL_ATTR5_HIDE_DURATION))
         flags |= AFLAG_DURATION;
-    data << uint16(flags);
-    data << uint8(aura->GetCasterLevel());
+    data << uint8(flags);
+    data << uint32(GetEffectMask());
+    data << uint16(aura->GetCasterLevel());
     // send stack amount for aura which could be stacked (never 0 - causes incorrect display) or charges
     // stack amount has priority over charges (checked on retail with spell 50262)
     data << uint8(aura->GetSpellInfo()->StackAmount ? aura->GetStackAmount() : aura->GetCharges());
@@ -213,7 +214,7 @@ void AuraApplication::BuildUpdatePacket(ByteBuffer& data, bool remove) const
     if (flags & AFLAG_ANY_EFFECT_AMOUNT_SENT)
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             if (AuraEffect const* eff = aura->GetEffect(i)) // NULL if effect flag not set
-                data << int32(eff->GetAmount());
+                data << float(eff->GetAmount());
 }
 
 void AuraApplication::ClientUpdate(bool remove)

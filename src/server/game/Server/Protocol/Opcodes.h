@@ -714,7 +714,7 @@ enum Opcodes
     SMSG_AURACASTLOG                                  = 0,
     SMSG_AURA_POINTS_DEPLETED                         = 0x0BF7,
     SMSG_AURA_UPDATE                                  = 0x08AB,
-    SMSG_AURA_UPDATE_ALL                              = 0x08AB,
+    SMSG_AURA_UPDATE_ALL                              = 0x0DDA,
     SMSG_AUTH_CHALLENGE                               = 0x523,
     SMSG_AUTH_RESPONSE                                = 0xE20,
     SMSG_AVAILABLE_VOICE_CHANNEL                      = 0x0941,
