@@ -460,6 +460,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
     uint8 gender = GENDER_NONE;
     uint8 race = RACE_NONE;
     uint8 playerClass = 0;
+    uint8 level = 1;
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     while (!feof(fin))
@@ -534,6 +535,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
                 race = uint8(atol(getnth(line, 4).c_str()));
                 playerClass = uint8(atol(getnth(line, 5).c_str()));
                 gender = uint8(atol(getnth(line, 6).c_str()));
+                level = uint8(atol(getnth(line, 7).c_str()));
                 if (name == "")
                 {
                     // check if the original name already exists
@@ -677,7 +679,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
     CharacterDatabase.CommitTransaction(trans);
 
     // in case of name conflict player has to rename at login anyway
-    sWorld->AddCharacterNameData(guid, name, gender, race, playerClass);
+    sWorld->AddCharacterNameData(guid, name, gender, race, playerClass, level);
 
     sObjectMgr->_hiItemGuid += items.size();
     sObjectMgr->_mailId     += mails.size();
