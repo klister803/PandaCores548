@@ -29,7 +29,7 @@ bin/
 *.sln
 *.dep
 *.rc
-dep/mysqllite/config.h
+/win/dep/mysqllite/config.h
 my_config.h
 mysql_version.h
 revision.h
