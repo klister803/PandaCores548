@@ -1936,9 +1936,9 @@ MovementStatusElements MoveSplineDone[] =
 
 MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
 {
-    /*switch (opcode)
+    switch (opcode)
     {
-        case MSG_MOVE_FALL_LAND:
+        /*case MSG_MOVE_FALL_LAND:
             return MovementFallLandSequence;
         case MSG_MOVE_HEARTBEAT:
             return MovementHeartBeatSequence;
@@ -1969,10 +1969,10 @@ MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
         case MSG_MOVE_START_TURN_LEFT:
             return MovementStartTurnLeftSequence;
         case MSG_MOVE_START_TURN_RIGHT:
-            return MovementStartTurnRightSequence;
+            return MovementStartTurnRightSequence;*/
         case MSG_MOVE_STOP:
             return MovementStopSequence;
-        case MSG_MOVE_STOP_ASCEND:
+        /*case MSG_MOVE_STOP_ASCEND:
             return MovementStopAscendSequence;
         case MSG_MOVE_STOP_PITCH:
             return MovementStopPitchSequence;
@@ -1987,10 +1987,10 @@ MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
         case CMSG_MOVE_CHNG_TRANSPORT:
             return MoveChngTransport;
         case CMSG_MOVE_SPLINE_DONE:
-            return MoveSplineDone;
+            return MoveSplineDone;*/
         default:
             break;
-    }*/
+    }
 
     return NULL;
 }

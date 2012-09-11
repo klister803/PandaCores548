@@ -61,7 +61,8 @@ void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
 void WorldSession::HandleGuildInviteOpcode(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_INVITE");
-
+    uint32 unk = 0;
+    recvPacket >> unk;
     uint32 nameLength = recvPacket.ReadBits(7);
     std::string invitedName = recvPacket.ReadString(nameLength);
 

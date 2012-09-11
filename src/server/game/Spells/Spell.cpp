@@ -167,10 +167,10 @@ void SpellCastTargets::Write(ByteBuffer& data)
 
     if (m_targetMask & (TARGET_FLAG_ITEM | TARGET_FLAG_TRADE_ITEM))
     {
-        if (m_itemTarget)
-            data.append(m_itemTarget->GetPackGUID());
+        if (m_itemTarget)// 5.0.5 GetWoWGUID
+            data.appendPackGUID(m_itemTarget->GetGUID());
         else
-            data << uint8(0);
+            data << uint64(0);
     }
 
     if (m_targetMask & TARGET_FLAG_SOURCE_LOCATION)

@@ -474,11 +474,11 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             data->WriteByteSeq(transGuid[7]);
             data->WriteByteSeq(transGuid[3]);
             data->WriteByteSeq(transGuid[6]);
-            *data << float(self->GetTransOffsetZ());
+            *data << float(self->GetTransOffsetO());
             *data << uint32(self->GetTransTime());
             data->WriteByteSeq(transGuid[2]);
             data->WriteByteSeq(transGuid[1]);
-            *data << float(self->GetTransOffsetO());
+            *data << float(self->GetTransOffsetZ());
             data->WriteByteSeq(transGuid[5]);
         }
 
@@ -548,30 +548,30 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         *data << int8(self->GetTransSeat());
         //if (hasTransportTime2)
         //    *data << uint32(0);
-        *data << float(self->GetTransOffsetY());
-        data->WriteByteSeq(transGuid[4]);
         *data << float(self->GetTransOffsetX());
+        data->WriteByteSeq(transGuid[4]);
+        *data << float(self->GetTransOffsetY());
     }
 
     if (flags & UPDATEFLAG_STATIONARY_POSITION)
     {
         WorldObject const* self = static_cast<WorldObject const*>(this);
         *data << float(self->GetPositionY());
-        *data << float(self->GetPositionX());
         if (Unit const* unit = ToUnit())
             *data << float(unit->GetPositionZMinusOffset());
         else
             *data << float(self->GetPositionZ());
+        *data << float(self->GetPositionX());
         *data << float(self->GetOrientation());
     }
 
     if (flags & UPDATEFLAG_HAS_TARGET)
     {
         ObjectGuid victimGuid = ToUnit()->getVictim()->GetGUID();   // checked in BuildCreateUpdateBlockForPlayer
+        data->WriteByteSeq(victimGuid[3]);
         data->WriteByteSeq(victimGuid[6]);
         data->WriteByteSeq(victimGuid[4]);
         data->WriteByteSeq(victimGuid[1]);
-        data->WriteByteSeq(victimGuid[5]);
         data->WriteByteSeq(victimGuid[5]);
         data->WriteByteSeq(victimGuid[7]);
         data->WriteByteSeq(victimGuid[0]);
