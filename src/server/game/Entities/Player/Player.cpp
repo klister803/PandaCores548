@@ -3761,7 +3761,9 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                 if (next_active_spell_id)
                 {
                     // update spell ranks in spellbook and action bar
-                    WorldPacket data(SMSG_SUPERCEDED_SPELL, 4 + 4);
+                    WorldPacket data(SMSG_SUPERCEDED_SPELL);
+                    data.WriteBits(1, 24);
+                    data.WriteBits(1, 24);
                     data << uint32(spellId);
                     data << uint32(next_active_spell_id);
                     GetSession()->SendPacket(&data);
@@ -3846,6 +3848,10 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         // replace spells in action bars and spellbook to bigger rank if only one spell rank must be accessible
         if (newspell->active && !newspell->disabled && !spellInfo->IsStackableWithRanks() && spellInfo->IsRanked() != 0)
         {
+            WorldPacket data(SMSG_SUPERCEDED_SPELL);
+            uint32 bitCount;
+            ByteBuffer dataBuffer1;
+            ByteBuffer dataBuffer2;
             for (PlayerSpellMap::iterator itr2 = m_spells.begin(); itr2 != m_spells.end(); ++itr2)
             {
                 if (itr2->second->state == PLAYERSPELL_REMOVED)
@@ -3863,10 +3869,9 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                         {
                             if (IsInWorld())                 // not send spell (re-/over-)learn packets at loading
                             {
-                                WorldPacket data(SMSG_SUPERCEDED_SPELL, 4 + 4);
-                                data << uint32(itr2->first);
-                                data << uint32(spellId);
-                                GetSession()->SendPacket(&data);
+                                bitCount++;
+                                dataBuffer1 << uint32(itr2->first);
+                                dataBuffer2 << uint32(spellId);
                             }
 
                             // mark old spell as disable (SMSG_SUPERCEDED_SPELL replace it in client by new)
@@ -3879,10 +3884,9 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                         {
                             if (IsInWorld())                 // not send spell (re-/over-)learn packets at loading
                             {
-                                WorldPacket data(SMSG_SUPERCEDED_SPELL, 4 + 4);
-                                data << uint32(spellId);
-                                data << uint32(itr2->first);
-                                GetSession()->SendPacket(&data);
+                                bitCount++;
+                                dataBuffer1 << uint32(spellId);
+                                dataBuffer2 << uint32(itr2->first);
                             }
 
                             // mark new spell as disable (not learned yet for client and will not learned)
@@ -3893,6 +3897,11 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
                     }
                 }
             }
+            data.WriteBits(bitCount, 24);
+            data.WriteBits(bitCount, 24);
+            data.append(dataBuffer1);
+            data.append(dataBuffer2);
+            GetSession()->SendPacket(&data);
         }
 
         m_spells[spellId] = newspell;
@@ -4269,7 +4278,9 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
                     if (addSpell(prev_id, true, false, prev_itr->second->dependent, prev_itr->second->disabled))
                     {
                         // downgrade spell ranks in spellbook and action bar
-                        WorldPacket data(SMSG_SUPERCEDED_SPELL, 4 + 4);
+                        WorldPacket data(SMSG_SUPERCEDED_SPELL);
+                        data.WriteBits(1, 24);
+                        data.WriteBits(1, 24);
                         data << uint32(spell_id);
                         data << uint32(prev_id);
                         GetSession()->SendPacket(&data);
@@ -22291,6 +22302,20 @@ void Player::SendInitialPacketsBeforeAddToMap()
     SetMover(this);
 }
 
+void Player::SendCooldownAtLogin()
+{
+    time_t curTime = time(NULL);
+    for (auto itr = GetSpellCooldownMap().begin(); itr != GetSpellCooldownMap().end(); ++itr)
+    {
+        WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4+4);
+        data << uint64(GetGUID());
+        data << uint8(1);
+        data << uint32(itr->first);
+        data << uint32(uint32(itr->second.end - curTime)*IN_MILLISECONDS);
+        GetSession()->SendPacket(&data);
+    }
+}
+
 void Player::SendInitialPacketsAfterAddToMap()
 {
     UpdateVisibilityForPlayer();
@@ -22328,6 +22353,7 @@ void Player::SendInitialPacketsAfterAddToMap()
     if (HasAuraType(SPELL_AURA_MOD_ROOT))
         SendMoveRoot(2);
 
+    SendCooldownAtLogin();
     SendAurasForTarget(this);
     SendEnchantmentDurations();                             // must be after add to map
     SendItemDurations();                                    // must be after add to map
