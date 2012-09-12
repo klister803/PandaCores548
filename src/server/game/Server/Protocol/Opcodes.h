@@ -318,8 +318,8 @@ enum Opcodes
     CMSG_LF_GUILD_SET_GUILD_POST                      = 0,
     CMSG_LIST_INVENTORY                               = 0,
     CMSG_LOAD_SCREEN                                  = 0x060,  // 5.0.5 16048
-    CMSG_LOGOUT_CANCEL                                = 0,
-    CMSG_LOGOUT_REQUEST                               = 0,
+    CMSG_LOGOUT_CANCEL                                = 0x9E7,  // 5.0.5 16048
+    CMSG_LOGOUT_REQUEST                               = 0xCE0,  // 5.0.5 16048
     CMSG_LOG_DISCONNECT                               = 0x48F,  // 5.0.5 16048
     CMSG_LOOT                                         = 0,
     CMSG_LOOT_CURRENCY                                = 0,
@@ -1036,9 +1036,9 @@ enum Opcodes
     SMSG_LOAD_CUF_PROFILES                            = 0,
     SMSG_LOGIN_SETTIMESPEED                           = 0xC33,  // 5.0.5 16048
     SMSG_LOGIN_VERIFY_WORLD                           = 0xD33,  // 5.0.5 16048
-    SMSG_LOGOUT_CANCEL_ACK                            = 0,
-    SMSG_LOGOUT_COMPLETE                              = 0,
-    SMSG_LOGOUT_RESPONSE                              = 0,
+    SMSG_LOGOUT_CANCEL_ACK                            = 0x803,  // 5.0.5 16048
+    SMSG_LOGOUT_COMPLETE                              = 0x8DA,  // 5.0.5 16048
+    SMSG_LOGOUT_RESPONSE                              = 0xD86,  // 5.0.5 16048
     SMSG_LOG_XPGAIN                                   = 0,
     SMSG_LOOT_ALL_PASSED                              = 0,
     SMSG_LOOT_CLEAR_MONEY                             = 0,
@@ -1356,7 +1356,7 @@ enum Opcodes
     SMSG_TRIGGER_CINEMATIC                            = 0xC18,  // 5.0.5 16048
     SMSG_TRIGGER_MOVIE                                = 0xD51,  // 5.0.5 16048
     SMSG_TURN_IN_PETITION_RESULTS                     = 0,
-    SMSG_TUTORIAL_FLAGS                               = 0x956,  // 5.0.5 16048
+    SMSG_TUTORIAL_FLAGS                               = 0x8AE,  // 5.0.5 16048
     SMSG_UNIT_HEALTH_FREQUENT                         = 0,
     SMSG_UNIT_SPELLCAST_START                         = 0,
     SMSG_UPDATE_ACCOUNT_DATA                          = 0,
