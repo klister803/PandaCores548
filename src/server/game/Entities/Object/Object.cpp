@@ -313,7 +313,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     data->WriteBits(bitCounter2, 21);				//BitCounter2
     data->WriteBit(0);								//HasUnknown
     data->WriteBit(0);								//HasUnknown3
-    data->WriteBit(GetTypeId() == TYPEID_PLAYER ? 1 : 0);								//HasUnknown4
+    data->WriteBit(flags & UPDATEFLAG_SELF);		//isSelf						
     data->WriteBit(flags & UPDATEFLAG_LIVING);		//isAlive
     data->WriteBit(0);								//Bit1
     data->WriteBit(0);								//HasUnknown2
@@ -321,7 +321,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     data->WriteBit(flags & UPDATEFLAG_ROTATION);	//HasRotation
     data->WriteBit(flags & UPDATEFLAG_ANIMKITS);	//HasAnimKits
     data->WriteBit(0);								//Bit3
-    data->WriteBit(flags & UPDATEFLAG_SELF);		//isSelf
+    data->WriteBit(0);		                        //HasUnknown4
 
     if (bitCounter2)
     {

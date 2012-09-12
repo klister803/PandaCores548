@@ -685,6 +685,12 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
 
         switch (element)
         {
+            case MSEBitCounter1:
+                data.ReadBits(24);
+                break;
+            case MSEFlushBits:
+                data.FlushBits();
+                break;
             case MSEHasMovementFlags:
                 hasMovementFlags = !data.ReadBit();
                 break;
@@ -960,6 +966,12 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi)
 
         switch (element)
         {
+            case MSEBitCounter1:
+                data.WriteBits(0, 24);
+                break;
+            case MSEFlushBits:
+                data.FlushBits();
+                break;
             case MSEHasMovementFlags:
                 data.WriteBit(!hasMovementFlags);
                 break;
