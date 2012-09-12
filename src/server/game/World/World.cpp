@@ -2154,7 +2154,7 @@ namespace Trinity
                     *data << uint64(0);
                     *data << uint32(lineLength);
                     *data << line;
-                    *data << uint8(0);
+                    *data << uint16(0);
 
                     data_list.push_back(data);
                 }

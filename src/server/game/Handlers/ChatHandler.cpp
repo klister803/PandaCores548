@@ -68,7 +68,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
     uint32 type = 0;
     uint32 lang;
 
-    /*switch(recvData.GetOpcode())
+    switch(recvData.GetOpcode())
     {
         case CMSG_MESSAGECHAT_SAY:
             type = CHAT_MSG_SAY;
@@ -113,7 +113,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             sLog->outError(LOG_FILTER_NETWORKIO, "HandleMessagechatOpcode : Unknown chat opcode (%u)", recvData.GetOpcode());
             recvData.hexlike();
             return;
-    }*/
+    }
 
     if (type >= MAX_CHAT_MSG_TYPE)
     {
@@ -514,7 +514,7 @@ void WorldSession::HandleAddonMessagechatOpcode(WorldPacket& recvData)
     Player* sender = GetPlayer();
     ChatMsg type;
 
-    /*switch (recvData.GetOpcode())
+    switch (recvData.GetOpcode())
     {
         case CMSG_MESSAGECHAT_ADDON_BATTLEGROUND:
             type = CHAT_MSG_BATTLEGROUND;
@@ -538,7 +538,7 @@ void WorldSession::HandleAddonMessagechatOpcode(WorldPacket& recvData)
             sLog->outError(LOG_FILTER_NETWORKIO, "HandleAddonMessagechatOpcode: Unknown addon chat opcode (%u)", recvData.GetOpcode());
             recvData.hexlike();
             return;
-    }*/
+    }
 
     std::string message;
     std::string prefix;
