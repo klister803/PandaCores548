@@ -779,6 +779,7 @@ class World
         uint32 GetCleaningFlags() const { return m_CleaningFlags; }
         void   SetCleaningFlags(uint32 flags) { m_CleaningFlags = flags; }
         void   ResetEventSeasonalQuests(uint16 event_id);
+        std::string GetRealmName() { return m_realmName; }
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
@@ -818,6 +819,7 @@ class World
         uint32 m_MaxPlayerCount;
 
         std::string m_newCharString;
+        std::string m_realmName;
 
         float rate_values[MAX_RATES];
         uint32 m_int_configs[INT_CONFIG_VALUE_COUNT];
