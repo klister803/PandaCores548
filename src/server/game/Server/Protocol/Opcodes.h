@@ -385,7 +385,7 @@ enum Opcodes
     CMSG_MOVE_TIME_SKIPPED                            = 0x0A52, // 5.0.5 16048
     CMSG_MOVE_TOGGLE_COLLISION_ACK                    = 0,
     CMSG_MOVE_WATER_WALK_ACK                          = 0,
-    CMSG_NAME_QUERY                                   = 0,
+    CMSG_NAME_QUERY                                   = 0x884,  // 5.0.5 16048
     CMSG_NEW_SPELL_SLOT                               = 0,
     CMSG_NEXT_CINEMATIC_CAMERA                        = 0,
     CMSG_NPC_TEXT_QUERY                               = 0,
@@ -409,7 +409,7 @@ enum Opcodes
     CMSG_PET_CAST_SPELL                               = 0,
     CMSG_PET_LEARN_TALENT                             = 0,
     CMSG_PET_NAME_CACHE                               = 0,
-    CMSG_PET_NAME_QUERY                               = 0,
+    CMSG_PET_NAME_QUERY                               = 0x881,
     CMSG_PET_RENAME                                   = 0,
     CMSG_PET_SET_ACTION                               = 0,
     CMSG_PET_SPELL_AUTOCAST                           = 0,
@@ -451,6 +451,7 @@ enum Opcodes
     CMSG_RANDOMIZE_CHAR_NAME                          = 0,
     CMSG_READY_FOR_ACCOUNT_DATA_TIMES                 = 0x9A2,  // 5.0.5 16048
     CMSG_READ_ITEM                                    = 0,
+    CMSG_REALM_NAME_QUERY                             = 0x81B,  // 5.0.5 16048
     CMSG_REALM_SPLIT                                  = 0x820,  // 5.0.5 16048
     CMSG_RECLAIM_CORPSE                               = 0,
     CMSG_REDIRECTION_AUTH_PROOF                       = 0,
@@ -1223,6 +1224,7 @@ enum Opcodes
     SMSG_RATED_BG_STATS                               = 0x0B21, // 5.0.5 16048
     SMSG_READ_ITEM_FAILED                             = 0x086D, // 5.0.5 16048
     SMSG_READ_ITEM_OK                                 = 0,
+    SMSG_REALM_QUERY_RESPONSE                         = 0xC26,
     SMSG_REALM_SPLIT                                  = 0xCCD,  // 5.0.5 16048
     SMSG_REAL_GROUP_UPDATE                            = 0,
     SMSG_RECEIVED_MAIL                                = 0x08D7, // 5.0.5 16048
