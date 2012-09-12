@@ -123,7 +123,7 @@ enum Opcodes
     CMSG_CANCEL_QUEUED_SPELL                          = 0,
     CMSG_CANCEL_TEMP_ENCHANTMENT                      = 0,
     CMSG_CANCEL_TRADE                                 = 0,
-    CMSG_CAST_SPELL                                   = 0,
+    CMSG_CAST_SPELL                                   = 0x911,
     CMSG_CHANGEPLAYER_DIFFICULTY                      = 0,
     CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE           = 0,
     CMSG_CHANNEL_ANNOUNCEMENTS                        = 0,
@@ -173,7 +173,7 @@ enum Opcodes
     CMSG_COMPLETE_CINEMATIC                           = 0,
     CMSG_COMPLETE_MOVIE                               = 0,
     CMSG_CONNECT_TO_FAILED                            = 0,
-    CMSG_CONTACT_LIST                                 = 0,
+    CMSG_CONTACT_LIST                                 = 0xC80,
     CMSG_CORPSE_MAP_POSITION_QUERY                    = 0,
     CMSG_CREATURE_QUERY                               = 0xCA0,  // 5.0.5 16048
     CMSG_DANCE_QUERY                                  = 0,
@@ -259,7 +259,7 @@ enum Opcodes
     CMSG_GUILD_EVENT_LOG_QUERY                        = 0,
     CMSG_GUILD_INFO                                   = 0,
     CMSG_GUILD_INFO_TEXT                              = 0,
-    CMSG_GUILD_INVITE                                 = 0,
+    CMSG_GUILD_INVITE                                 = 0x306,
     CMSG_GUILD_LEADER                                 = 0,
     CMSG_GUILD_LEAVE                                  = 0,
     CMSG_GUILD_MEMBER_SEND_SOR_REQUEST                = 0,
@@ -566,7 +566,7 @@ enum Opcodes
     CMSG_UNACCEPT_TRADE                               = 0,
     CMSG_UNLEARN_SKILL                                = 0,
     CMSG_UNLEARN_SPECIALIZATION                       = 0,
-    CMSG_UNREGISTER_ALL_ADDON_PREFIXES                = 0,
+    CMSG_UNREGISTER_ALL_ADDON_PREFIXES                = 0x71B,
     CMSG_UPDATE_ACCOUNT_DATA                          = 0,
     CMSG_UPDATE_MISSILE_TRAJECTORY                    = 0,
     CMSG_UPDATE_PROJECTILE_POSITION                   = 0,
@@ -581,9 +581,9 @@ enum Opcodes
     CMSG_WARDEN_DATA                                  = 0,
     CMSG_WARGAME_ACCEPT                               = 0,
     CMSG_WARGAME_START                                = 0,
-    CMSG_WHO                                          = 0,
+    CMSG_WHO                                          = 0xD69,
     CMSG_WHOIS                                        = 0,
-    CMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0,
+    CMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0xDD0,
     CMSG_WORLD_TELEPORT                               = 0,
     CMSG_WRAP_ITEM                                    = 0,
     CMSG_ZONEUPDATE                                   = 0,
@@ -632,7 +632,7 @@ enum Opcodes
     MSG_MOVE_START_SWIM                               = 0,
     MSG_MOVE_START_TURN_LEFT                          = 0,
     MSG_MOVE_START_TURN_RIGHT                         = 0,
-    MSG_MOVE_STOP                                     = 0,
+    MSG_MOVE_STOP                                     = 0x455,
     MSG_MOVE_STOP_ASCEND                              = 0,
     MSG_MOVE_STOP_PITCH                               = 0,
     MSG_MOVE_STOP_STRAFE                              = 0,
@@ -972,8 +972,8 @@ enum Opcodes
     SMSG_HOTFIX_NOTIFY                                = 0,
     SMSG_INITIALIZE_FACTIONS                          = 0x824,  // 5.0.5 16048
     SMSG_INITIAL_SPELLS                               = 0,
-    SMSG_INIT_CURRENCY                                = 0xAE5,  // 5.0.5 16048
-    SMSG_INIT_WORLD_STATES                            = 0,
+    SMSG_INIT_CURRENCY                                = 0xAE5,
+    SMSG_INIT_WORLD_STATES                            = 0x919,
     SMSG_INSPECT                                      = 0,
     SMSG_INSPECT_HONOR_STATS                          = 0,
     SMSG_INSPECT_RATED_BG_STATS                       = 0x0B42, // 5.0.5 16048
@@ -1119,8 +1119,8 @@ enum Opcodes
     SMSG_MOVE_UPDATE_TURN_RATE                        = 0,
     SMSG_MOVE_UPDATE_WALK_SPEED                       = 0x0B28, // 5.0.5 16048
     SMSG_MOVE_WATER_WALK                              = 0,
-    SMSG_MULTIPLE_PACKETS                             = 0x0826, // 5.0.5 16048
-    SMSG_NAME_QUERY_RESPONSE                          = 0,
+    SMSG_MULTIPLE_PACKETS                             = 0x0826,
+    SMSG_NAME_QUERY_RESPONSE                          = 0xCF9,
     SMSG_NEW_TAXI_PATH                                = 0,
     SMSG_NEW_WORLD                                    = 0xF21,  // 5.0.5 16048
     SMSG_NEW_WORLD_ABORT                              = 0,
@@ -1286,8 +1286,8 @@ enum Opcodes
     SMSG_SPELL_DELAYED                                = 0,
     SMSG_SPELL_FAILED_OTHER                           = 0,
     SMSG_SPELL_FAILURE                                = 0,
-    SMSG_SPELL_GO                                     = 0,
-    SMSG_SPELL_START                                  = 0,
+    SMSG_SPELL_GO                                     = 0,//0xD42,
+    SMSG_SPELL_START                                  = 0,//0x8FC,
     SMSG_SPELL_UPDATE_CHAIN_TARGETS                   = 0,
     SMSG_SPIRIT_HEALER_CONFIRM                        = 0x0C7F, // 5.0.5 16048
     SMSG_SPLINE_MOVE_COLLISION_DISABLE                = 0,
@@ -1391,15 +1391,15 @@ enum Opcodes
     SMSG_WARDEN_DATA                                  = 0,
     SMSG_WARGAME_CHECK_ENTRY                          = 0x0BE6, // 5.0.5 16048
     SMSG_WARGAME_REQUEST_SENT                         = 0,
-    SMSG_WEATHER                                      = 0,
+    SMSG_WEATHER                                      = 0x814,
     SMSG_WEEKLY_LAST_RESET                            = 0x0B2D, // 5.0.5 16048
     SMSG_WEEKLY_RESET_CURRENCY                        = 0,
     SMSG_WEEKLY_SPELL_USAGE                           = 0x0B6D, // 5.0.5 16048
     SMSG_WEEKLY_SPELL_USAGE_UPDATE                    = 0x0B6D, // 5.0.5 16048
-    SMSG_WHO                                          = 0,
+    SMSG_WHO                                          = 0x933,
     SMSG_WHOIS                                        = 0x0943, // 5.0.5 16048
     SMSG_WORLD_SERVER_INFO                            = 0x0A6D, // 5.0.5 16048
-    SMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0,
+    SMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0xD83,
     SMSG_XP_GAIN_ABORTED                              = 0x0B76, // 5.0.5 16048
     SMSG_ZONE_UNDER_ATTACK                            = 0,
 };
