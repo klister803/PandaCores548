@@ -482,7 +482,7 @@ enum Opcodes
     CMSG_RESET_FACTION_CHEAT                          = 0,
     CMSG_RESET_INSTANCES                              = 0xC71,  // 5.0.5 16048
     CMSG_RESURRECT_RESPONSE                           = 0,
-    CMSG_RETURN_TO_GRAVEYARD                          = 0x729,
+    CMSG_RETURN_TO_GRAVEYARD                          = 0x6D2,
     CMSG_ROLE_POLL_BEGIN                              = 0,
     CMSG_SAVE_CUF_PROFILES                            = 0,
     CMSG_SAVE_PLAYER                                  = 0,
@@ -517,7 +517,7 @@ enum Opcodes
     CMSG_SET_PRIMARY_TALENT_TREE                      = 0,
     CMSG_SET_RELATIVE_POSITION                        = 0,
     CMSG_SET_SAVED_INSTANCE_EXTEND                    = 0,
-    CMSG_SET_SELECTION                                = 0,
+    CMSG_SET_SELECTION                                = 0x2B1,
     CMSG_SET_SKILL_CHEAT                              = 0,
     CMSG_SET_TAXI_BENCHMARK_MODE                      = 0,
     CMSG_SET_TITLE                                    = 0,
@@ -552,7 +552,7 @@ enum Opcodes
     CMSG_TELEPORT_TO_UNIT                             = 0,
     CMSG_TEXT_EMOTE                                   = 0,
     CMSG_TIME_ADJUSTMENT_RESPONSE                     = 0,
-    CMSG_TIME_SYNC_RESP                               = 0,
+    CMSG_TIME_SYNC_RESP                               = 0x729,
     CMSG_TIME_SYNC_RESP_FAILED                        = 0,
     CMSG_TOGGLE_PVP                                   = 0,
     CMSG_TOTEM_DESTROYED                              = 0,
@@ -640,7 +640,7 @@ enum Opcodes
     MSG_MOVE_STOP_SWIM                                = 0,
     MSG_MOVE_STOP_TURN                                = 0,
     MSG_MOVE_TELEPORT                                 = 0x0A95, // 5.0.5 16048
-    MSG_MOVE_TELEPORT_ACK                             = 0x0A95, // 5.0.5 16048
+    MSG_MOVE_TELEPORT_ACK                             = 0x69D, // 5.0.5 16048
     MSG_MOVE_TELEPORT_CHEAT                           = 0x0A95, // 5.0.5 16048
     MSG_MOVE_TIME_SKIPPED                             = 0x0A52, // 5.0.5 16048
     MSG_MOVE_TOGGLE_COLLISION_CHEAT                   = 0,
@@ -774,7 +774,7 @@ enum Opcodes
     SMSG_CALENDAR_UPDATE_INVITE_LIST                  = 0,
     SMSG_CAMERA_SHAKE                                 = 0,
     SMSG_CANCEL_AUTO_REPEAT                           = 0,
-    SMSG_CANCEL_COMBAT                                = 0,
+    SMSG_CANCEL_COMBAT                                = 0x9D5,
     SMSG_CAST_FAILED                                  = 0x91C,
     SMSG_CHANNEL_LIST                                 = 0x0CC3, // 5.0.5 16048
     SMSG_CHANNEL_MEMBER_COUNT                         = 0x08D4, // 5.0.5 16048
@@ -1182,7 +1182,7 @@ enum Opcodes
     SMSG_PLAY_SPELL_VISUAL_KIT                        = 0x0AE4, // 5.0.5 16048
     SMSG_PLAY_TIME_WARNING                            = 0x0817, // 5.0.5 16048
     SMSG_PONG                                         = 0x462,  // 5.0.5 16048
-    SMSG_POWER_UPDATE                                 = 0,
+    SMSG_POWER_UPDATE                                 = 0x94A,
     SMSG_PRE_RESURRECT                                = 0,
     SMSG_PROCRESIST                                   = 0,
     SMSG_PROPOSE_LEVEL_GRANT                          = 0,
