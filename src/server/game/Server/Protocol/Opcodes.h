@@ -775,7 +775,7 @@ enum Opcodes
     SMSG_CAMERA_SHAKE                                 = 0,
     SMSG_CANCEL_AUTO_REPEAT                           = 0,
     SMSG_CANCEL_COMBAT                                = 0,
-    SMSG_CAST_FAILED                                  = 0,
+    SMSG_CAST_FAILED                                  = 0x91C,
     SMSG_CHANNEL_LIST                                 = 0x0CC3, // 5.0.5 16048
     SMSG_CHANNEL_MEMBER_COUNT                         = 0x08D4, // 5.0.5 16048
     SMSG_CHANNEL_NOTIFY                               = 0,
