@@ -625,7 +625,7 @@ enum Opcodes
     MSG_MOVE_START_ASCEND                             = 0,
     MSG_MOVE_START_BACKWARD                           = 0,
     MSG_MOVE_START_DESCEND                            = 0,
-    MSG_MOVE_START_FORWARD                            = 0,
+    MSG_MOVE_START_FORWARD                            = 0x3F8,
     MSG_MOVE_START_PITCH_DOWN                         = 0,
     MSG_MOVE_START_PITCH_UP                           = 0,
     MSG_MOVE_START_STRAFE_LEFT                        = 0,
@@ -775,7 +775,7 @@ enum Opcodes
     SMSG_CAMERA_SHAKE                                 = 0,
     SMSG_CANCEL_AUTO_REPEAT                           = 0,
     SMSG_CANCEL_COMBAT                                = 0,
-    SMSG_CAST_FAILED                                  = 0,
+    SMSG_CAST_FAILED                                  = 0x91C,
     SMSG_CHANNEL_LIST                                 = 0x0CC3, // 5.0.5 16048
     SMSG_CHANNEL_MEMBER_COUNT                         = 0x08D4, // 5.0.5 16048
     SMSG_CHANNEL_NOTIFY                               = 0,
@@ -1288,8 +1288,8 @@ enum Opcodes
     SMSG_SPELL_DELAYED                                = 0,
     SMSG_SPELL_FAILED_OTHER                           = 0,
     SMSG_SPELL_FAILURE                                = 0,
-    SMSG_SPELL_GO                                     = 0,//0xD42,
-    SMSG_SPELL_START                                  = 0,//0x8FC,
+    SMSG_SPELL_GO                                     = 0xD42,
+    SMSG_SPELL_START                                  = 0x8FC,
     SMSG_SPELL_UPDATE_CHAIN_TARGETS                   = 0,
     SMSG_SPIRIT_HEALER_CONFIRM                        = 0x0C7F, // 5.0.5 16048
     SMSG_SPLINE_MOVE_COLLISION_DISABLE                = 0,
