@@ -503,6 +503,7 @@ void WorldSession::HandleReturnToGraveyard(WorldPacket& /*recvPacket*/)
 {
     if (GetPlayer()->isAlive() || !GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
+    //TODO: unk32, unk32
     GetPlayer()->RepopAtGraveyard();
 }
 
