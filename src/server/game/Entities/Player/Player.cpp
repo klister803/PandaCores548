@@ -19991,9 +19991,12 @@ inline void Player::BuildPlayerChat(WorldPacket* data, uint8 msgtype, const std:
         *data << addonPrefix;
     else
         *data << uint64(GetGUID());
+
+    if(msgtype == 2 || msgtype == 51 || msgtype == 3 || msgtype == 39 || msgtype == 40)
+        *data << uint64(GetGUID());
     *data << uint32(text.length() + 1);
     *data << text;
-    *data << uint8(GetChatTag());
+    *data << uint16(GetChatTag());
 }
 
 void Player::Say(const std::string& text, const uint32 language)
