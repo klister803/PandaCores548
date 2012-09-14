@@ -4744,6 +4744,9 @@ void Unit::SendAttackStateUpdate(CalcDamageInfo* damageInfo)
         data << uint32(0);
     }
 
+    if (damageInfo->HitInfo & 0x3000)
+        data << float(0);
+
     SendMessageToSet(&data, true);
 }
 
@@ -16780,7 +16783,7 @@ void Unit::SendThreatListUpdate()
         uint32 count = getThreatManager().getThreatList().size();
 
         sLog->outDebug(LOG_FILTER_UNITS, "WORLD: Send SMSG_THREAT_UPDATE Message");
-        WorldPacket data(SMSG_THREAT_UPDATE, 8 + count * 8);
+        WorldPacket data(SMSG_THREAT_UPDATE);
         data.append(GetPackGUID());
         data << uint32(count);
         std::list<HostileReference*>& tlist = getThreatManager().getThreatList();
@@ -16800,7 +16803,7 @@ void Unit::SendChangeCurrentVictimOpcode(HostileReference* pHostileReference)
         uint32 count = getThreatManager().getThreatList().size();
 
         sLog->outDebug(LOG_FILTER_UNITS, "WORLD: Send SMSG_HIGHEST_THREAT_UPDATE Message");
-        WorldPacket data(SMSG_HIGHEST_THREAT_UPDATE, 8 + 8 + count * 8);
+        WorldPacket data(SMSG_HIGHEST_THREAT_UPDATE);
         data.append(GetPackGUID());
         data.appendPackGUID(pHostileReference->getUnitGuid());
         data << uint32(count);

@@ -284,16 +284,12 @@ void WorldSession::SendItemDb2Reply(uint32 entry)
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
     if (!proto)
     {
-        data << uint32(-1);         // entry
-        data << uint32(DB2_REPLY_ITEM);
-        data << uint32(time(NULL)); // hotfix date
         data << uint32(0);          // size of next block
+        data << uint32(time(NULL)); // hotfix date
+        data << uint32(DB2_REPLY_ITEM);
+        data << uint32(-1);         // entry
         return;
     }
-
-    data << uint32(entry);
-    data << uint32(DB2_REPLY_ITEM);
-    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_ITEM));
 
     ByteBuffer buff;
     buff << uint32(entry);
@@ -307,6 +303,10 @@ void WorldSession::SendItemDb2Reply(uint32 entry)
 
     data << uint32(buff.size());
     data.append(buff);
+    
+    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_ITEM));
+    data << uint32(DB2_REPLY_ITEM);
+    data << uint32(entry);
 
     SendPacket(&data);
 }
@@ -317,16 +317,14 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
     if (!proto)
     {
-        data << uint32(-1);         // entry
-        data << uint32(DB2_REPLY_SPARSE);
-        data << uint32(time(NULL)); // hotfix date
         data << uint32(0);          // size of next block
+        data << uint32(time(NULL)); // hotfix date
+        data << uint32(DB2_REPLY_SPARSE);
+        data << uint32(-1);         // entry
         return;
     }
 
-    data << uint32(entry);
-    data << uint32(DB2_REPLY_SPARSE);
-    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_SPARSE));
+   
 
     ByteBuffer buff;
     buff << uint32(entry);
@@ -439,6 +437,10 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
 
     data << uint32(buff.size());
     data.append(buff);
+    
+    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_SPARSE));
+    data << uint32(DB2_REPLY_SPARSE);
+    data << uint32(entry);
 
     SendPacket(&data);
 }

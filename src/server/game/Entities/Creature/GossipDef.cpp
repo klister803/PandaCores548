@@ -126,7 +126,9 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, uint64 objectGUID) const
     WorldPacket data(SMSG_GOSSIP_MESSAGE, 100);         // guess size
     data << uint64(objectGUID);
     data << uint32(_gossipMenu.GetMenuId());            // new 2.4.0
+    data << uint32(0); //unk
     data << uint32(titleTextId);
+    
     data << uint32(_gossipMenu.GetMenuItemCount());     // max count 0x10
 
     for (GossipMenuItemContainer::const_iterator itr = _gossipMenu.GetMenuItems().begin(); itr != _gossipMenu.GetMenuItems().end(); ++itr)
@@ -139,7 +141,6 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, uint64 objectGUID) const
         data << item.Message;                           // text for gossip item
         data << item.BoxMessage;                        // accept text (related to money) pop up box, 2.0.3
     }
-
     data << uint32(_questMenu.GetMenuItemCount());      // max count 0x20
 
     for (uint32 iI = 0; iI < _questMenu.GetMenuItemCount(); ++iI)
@@ -147,12 +148,13 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, uint64 objectGUID) const
         QuestMenuItem const& item = _questMenu.GetItem(iI);
         uint32 questID = item.QuestId;
         Quest const* quest = sObjectMgr->GetQuestTemplate(questID);
-
+        
         data << uint32(questID);
+        data << uint32(0); // unk
         data << uint32(item.QuestIcon);
         data << int32(quest->GetQuestLevel());
-        data << uint32(quest->GetFlags());              // 3.3.3 quest flags
         data << uint8(0);                               // 3.3.3 changes icon: blue question or yellow exclamation
+        data << uint32(quest->GetFlags());              // 3.3.3 quest flags
         std::string title = quest->GetTitle();
 
         int locale = _session->GetSessionDbLocaleIndex();
@@ -271,6 +273,7 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title
             data << uint32(qmi.QuestIcon);
             data << int32(quest->GetQuestLevel());
             data << uint32(quest->GetFlags());             // 3.3.3 quest flags
+            data << uint32(0); //unk
             data << uint8(0);                               // 3.3.3 changes icon: blue question or yellow exclamation
             data << title;
         }

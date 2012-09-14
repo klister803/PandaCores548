@@ -154,7 +154,7 @@ enum CharterTypes
     ARENA_TEAM_CHARTER_5v5_TYPE                   = 5,
 };
 
-#define DB2_REPLY_SPARSE 2442913102
+#define DB2_REPLY_SPARSE 35137211
 #define DB2_REPLY_ITEM   1344507586
 
 //class to deal with packet processing
