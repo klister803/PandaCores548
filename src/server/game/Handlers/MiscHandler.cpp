@@ -1060,7 +1060,7 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SET_ACTION_BUTTON");
     uint8 button;
     uint32 packetData;
-    recvData >> button >> packetData;
+    recvData >> packetData >> button;
 
     uint32 action = ACTION_BUTTON_ACTION(packetData);
     uint8  type   = ACTION_BUTTON_TYPE(packetData);

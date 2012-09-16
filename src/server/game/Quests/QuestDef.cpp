@@ -277,11 +277,8 @@ void Quest::BuildExtraQuestInfo(WorldPacket& data, Player* player) const
     data << uint32(GetRewOrReqMoney());
     data << uint32(XPValue(player) * sWorld->getRate(RATE_XP_QUEST));
 
-    data << uint32(GetCharTitleId());
     data << uint32(0);                                      // unk
-    data << float(0.0f);                                    // unk
     data << uint32(GetBonusTalents());
-    data << uint32(0);                                      // unk
     data << uint32(GetRewardReputationMask());
 
     /* Pre cata struct, some of these unks might be the missing values in cata:

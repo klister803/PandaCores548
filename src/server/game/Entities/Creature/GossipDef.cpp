@@ -286,7 +286,8 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title
 
 void PlayerMenu::SendQuestGiverStatus(uint32 questStatus, uint64 npcGUID) const
 {
-    WorldPacket data(SMSG_QUESTGIVER_STATUS, 8 + 4);
+    WorldPacket data(SMSG_QUESTGIVER_STATUS_MULTIPLE);
+    data << uint32(1);
     data << uint64(npcGUID);
     data << uint32(questStatus);
 
@@ -325,6 +326,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
     data << uint64(npcGUID);
     data << uint64(0);                                      // either 0 or a npc guid (quest giver)
     data << uint32(quest->GetQuestId());
+    data << uint32(0);
     data << questTitle;
     data << questDetails;
     data << questObjectives;
@@ -337,9 +339,10 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
     data << uint8(activateAccept ? 1 : 0);                  // auto finish
     data << uint32(quest->GetFlags());                      // 3.3.3 questFlags
     data << uint32(quest->GetSuggestedPlayers());
+    data << uint32(0);
     data << uint8(0);                                       // IsFinished? value is sent back to server in quest accept packet
     data << uint8(0);                                       // 4.x FIXME: Starts at AreaTrigger
-    data << uint32(quest->GetRequiredSpell());              // 4.x
+    data << uint32(0);
 
     quest->BuildExtraQuestInfo(data, _session->GetPlayer());
 
@@ -395,18 +398,13 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     data << uint32(quest->GetQuestId());                    // quest id
     data << uint32(quest->GetQuestMethod());                // Accepted values: 0, 1 or 2. 0 == IsAutoComplete() (skip objectives/details)
     data << uint32(quest->GetQuestLevel());                 // may be -1, static data, in other cases must be used dynamic level: Player::GetQuestLevel (0 is not known, but assuming this is no longer valid for quest intended for client)
+    data << uint32(quest->GetSuggestedPlayers());           // suggested players count
     data << uint32(quest->GetMinLevel());                   // min level
     data << uint32(quest->GetZoneOrSort());                 // zone or sort to display in quest log
 
     data << uint32(quest->GetType());                       // quest type
-    data << uint32(quest->GetSuggestedPlayers());           // suggested players count
 
-    data << uint32(quest->GetRepObjectiveFaction());        // shown in quest log as part of quest objective
-    data << uint32(quest->GetRepObjectiveValue());          // shown in quest log as part of quest objective
-
-    data << uint32(quest->GetRepObjectiveFaction2());       // shown in quest log as part of quest objective OPPOSITE faction
-    data << uint32(quest->GetRepObjectiveValue2());         // shown in quest log as part of quest objective OPPOSITE faction
-
+    data << uint32(quest->GetExclusiveGroup());
     data << uint32(quest->GetNextQuestInChain());           // client will request this quest from NPC, if not 0
     data << uint32(quest->GetXPId());                       // used for calculating rewarded experience
 
@@ -422,10 +420,10 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     // rewarded honor points
     data << Trinity::Honor::hk_honor_at_level(_session->GetPlayer()->getLevel(), quest->GetRewHonorMultiplier());
     data << float(0);                                       // new reward honor (multipled by ~62 at client side)
+
     data << uint32(quest->GetSrcItemId());                  // source item id
     data << uint32(quest->GetFlags() & 0xFFFF);             // quest flags
     data << uint32(quest->GetMinimapTargetMark());          // minimap target mark (skull, etc. missing enum)
-    data << uint32(quest->GetCharTitleId());                // CharTitleId, new 2.4.0, player gets this title (id from CharTitles)
     data << uint32(quest->GetPlayersSlain());               // players slain
     data << uint32(quest->GetBonusTalents());               // bonus talents
     data << uint32(quest->GetRewArenaPoints());             // bonus arena points FIXME: arena points were removed, right?
@@ -450,10 +448,9 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
             data << uint32(quest->RewardItemIdCount[i]);
         }
         for (uint32 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
-        {
             data << uint32(quest->RewardChoiceItemId[i]);
+        for (uint32 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
             data << uint32(quest->RewardChoiceItemCount[i]);
-        }
     }
 
     for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)        // reward factions ids
@@ -465,6 +462,12 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)           // unknown usage
         data << int32(quest->RewardFactionValueIdOverride[i]);
 
+    for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
+    {
+        data << uint32(quest->RewardCurrencyId[i]);
+        data << uint32(quest->RewardCurrencyCount[i]);
+    }
+
     data << quest->GetPointMapId();
     data << quest->GetPointX();
     data << quest->GetPointY();
@@ -475,48 +478,103 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
     data << questDetails;
     data << questEndText;
     data << questCompletedText;
-
-    for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
-    {
-        if (quest->RequiredNpcOrGo[i] < 0)
-            data << uint32((quest->RequiredNpcOrGo[i] * (-1)) | 0x80000000);    // client expects gameobject template id in form (id|0x80000000)
-        else
-            data << uint32(quest->RequiredNpcOrGo[i]);
-
-        data << uint32(quest->RequiredNpcOrGoCount[i]);
-        data << uint32(quest->RequiredSourceItemId[i]);
-        data << uint32(quest->RequiredSourceItemCount[i]);
-    }
-
-    for (uint32 i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
-    {
-        data << uint32(quest->RequiredItemId[i]);
-        data << uint32(quest->RequiredItemCount[i]);
-    }
-
-    data << uint32(quest->GetRequiredSpell()); // Is it required to be cast, learned or what?
-
-    for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
-        data << questObjectiveText[i];
-
-    for (uint32 i = 0; i < QUEST_REWARD_CURRENCY_COUNT; ++i)
-    {
-        data << uint32(quest->RewardCurrencyId[i]);
-        data << uint32(quest->RewardCurrencyCount[i]);
-    }
-
-    for (uint32 i = 0; i < QUEST_REQUIRED_CURRENCY_COUNT; ++i)
-    {
-        data << uint32(quest->RequiredCurrencyId[i]);
-        data << uint32(quest->RequiredCurrencyCount[i]);
-    }
-
     data << questGiverTextWindow;
     data << questGiverTargetName;
     data << questTurnTextWindow;
     data << questTurnTargetName;
     data << uint32(quest->GetSoundAccept());
     data << uint32(quest->GetSoundTurnIn());
+    for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+    {
+        data << uint32(quest->RequiredSourceItemId[i]);
+        data << uint32(quest->RequiredSourceItemCount[i]);
+    }
+    ByteBuffer dataBuff;
+    uint8 count = 0;
+    for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+    {
+        if (quest->RequiredNpcOrGo[i]!= 0)
+        {
+            dataBuff << uint32(0); //unk
+            if (quest->RequiredNpcOrGo[i] < 0)
+            {
+                dataBuff << uint32(2);
+                dataBuff << uint32((quest->RequiredNpcOrGo[i] * (-1)));
+                dataBuff << uint32(quest->RequiredNpcOrGoCount[i]);
+                dataBuff << uint32(0);
+                dataBuff << questObjectiveText[i];
+                dataBuff << uint8(0);
+                dataBuff << uint8(0);
+            }
+            else
+            {
+                dataBuff << uint32(0);
+                dataBuff << uint32(quest->RequiredNpcOrGo[i]);
+                dataBuff << uint32(quest->RequiredNpcOrGoCount[i]);
+                dataBuff << uint32(0);
+                dataBuff << questObjectiveText[i];
+                dataBuff << uint8(0);
+                dataBuff << uint8(0);
+            }
+            ++count;
+        }
+    }
+    for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+    {
+        if(quest->RequiredItemId[i] != 0)
+        {
+            dataBuff << uint32(0); //unk
+            dataBuff << uint32(1);
+            dataBuff << uint32(quest->RequiredItemId[i]);
+            dataBuff << uint32(quest->RequiredItemCount[i]);
+            dataBuff << uint32(0);
+            dataBuff << questObjectiveText[i];
+            dataBuff << uint8(0);
+            dataBuff << uint8(0);
+            ++count;
+        }
+    }
+    for (uint32 i = 0; i < QUEST_OBJECTIVES_COUNT; ++i)
+    {
+        if(quest->RequiredCurrencyId[i] != 0)
+        {
+            dataBuff << uint32(0); //unk
+            dataBuff << uint32(4);
+            dataBuff << uint32(quest->RequiredItemId[i]);
+            dataBuff << uint32(quest->RequiredItemCount[i]);
+            dataBuff << uint32(0);
+            dataBuff << questObjectiveText[i];
+            dataBuff << uint8(255);
+            dataBuff << uint8(0);
+            ++count;
+        }
+    }
+    if(quest->GetRepObjectiveFaction() != 0)
+    {
+        dataBuff << uint32(0); //unk
+        dataBuff << uint32(6);
+        dataBuff << uint32(quest->GetRepObjectiveFaction());
+        dataBuff << uint32(quest->GetRepObjectiveValue());
+        dataBuff << uint32(0);
+        dataBuff << "";
+        dataBuff << uint8(255);
+        dataBuff << uint8(0);
+        ++count;
+    }
+    if(quest->GetRepObjectiveFaction2() != 0)
+    {
+        dataBuff << uint32(0); //unk
+        dataBuff << uint32(6);
+        dataBuff << uint32(quest->GetRepObjectiveFaction2());
+        dataBuff << uint32(quest->GetRepObjectiveValue2());
+        dataBuff << uint32(0);
+        dataBuff << "";
+        dataBuff << uint8(255);
+        dataBuff << uint8(0);
+        ++count;
+    }
+    data << uint8(count);
+    data.append(dataBuff);
 
     _session->SendPacket(&data);
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUEST_QUERY_RESPONSE questid=%u", quest->GetQuestId());

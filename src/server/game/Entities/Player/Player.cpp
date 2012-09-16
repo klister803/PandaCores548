@@ -14132,7 +14132,7 @@ void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, 
 
                                                             // last check 2.0.10
     WorldPacket data(SMSG_ITEM_PUSH_RESULT, (8+4+4+4+1+4+4+4+4+4));
-    data << uint64(GetGUID());                              // player GUID
+    /*data << uint64(GetGUID());                              // player GUID
     data << uint32(received);                               // 0=looted, 1=from npc
     data << uint32(created);                                // 0=received, 1=created
     data << uint32(1);                                      // bool print error to chat
@@ -14148,7 +14148,7 @@ void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, 
     if (broadcast && GetGroup())
         GetGroup()->BroadcastPacket(&data, true);
     else
-        GetSession()->SendPacket(&data);
+        GetSession()->SendPacket(&data);*/
 }
 
 /*********************************************************/
@@ -16476,10 +16476,10 @@ void Player::SendQuestUpdateAddPlayer(Quest const* quest, uint16 old_count, uint
 {
     ASSERT(old_count + add_count < 65536 && "player count store in 16 bits");
 
-    WorldPacket data(SMSG_QUESTUPDATE_ADD_PVP_KILL, (3*4));
+    WorldPacket data(SMSG_QUESTUPDATE_ADD_PVP_KILL, (2*4) + 1);
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUESTUPDATE_ADD_PVP_KILL");
     data << uint32(quest->GetQuestId());
-    data << uint32(old_count + add_count);
+    data << uint8(old_count + add_count);
     data << uint32(quest->GetPlayersSlain());
     GetSession()->SendPacket(&data);
 
