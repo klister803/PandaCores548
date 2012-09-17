@@ -199,8 +199,8 @@ enum Opcodes
     CMSG_FORCE_MOVE_ROOT_ACK                          = 0,
     CMSG_FORCE_MOVE_UNROOT_ACK                        = 0,
     CMSG_GAMEOBJECT_QUERY                             = 0xCF8,  // 5.0.5 16048
-    CMSG_GAMEOBJ_REPORT_USE                           = 0,
-    CMSG_GAMEOBJ_USE                                  = 0,
+    CMSG_GAMEOBJ_REPORT_USE                           = 0x838,
+    CMSG_GAMEOBJ_USE                                  = 0xC92,
     CMSG_GAMESPEED_SET                                = 0,
     CMSG_GAMETIME_SET                                 = 0,
     CMSG_GETDEATHBINDZONE                             = 0,
@@ -885,7 +885,7 @@ enum Opcodes
     SMSG_FRIEND_STATUS                                = 0x0DD4, // 5.0.5 16048
     SMSG_GAMEOBJECT_CUSTOM_ANIM                       = 0,
     SMSG_GAMEOBJECT_DESPAWN_ANIM                      = 0,
-    SMSG_GAMEOBJECT_PAGETEXT                          = 0,
+    SMSG_GAMEOBJECT_PAGETEXT                          = 0x87D,
     SMSG_GAMEOBJECT_QUERY_RESPONSE                    = 0x0D21, // 5.0.5 16048
     SMSG_GAMEOBJECT_RESET_STATE                       = 0,
     SMSG_GAMESPEED_SET                                = 0x0D8F, // 5.0.5 16048
@@ -987,7 +987,7 @@ enum Opcodes
     SMSG_INSTANCE_RESET_FAILED                        = 0,
     SMSG_INSTANCE_SAVE_CREATED                        = 0,
     SMSG_INVALIDATE_DANCE                             = 0x0D7E, // 5.0.5 16048
-    SMSG_INVALIDATE_PLAYER                            = 0,
+    SMSG_INVALIDATE_PLAYER                            = 0x8CA,
     SMSG_INVALID_PROMOTION_CODE                       = 0,
     SMSG_INVENTORY_CHANGE_FAILURE                     = 0,
     SMSG_ITEM_ADD_PASSIVE                             = 0,
@@ -1070,8 +1070,8 @@ enum Opcodes
     SMSG_MISSILE_CANCEL                               = 0,
     SMSG_MODIFY_COOLDOWN                              = 0,
     SMSG_MONEY_NOTIFY                                 = 0x0B33, // 5.0.5 16048
-    SMSG_MONSTER_MOVE                                 = 0,
-    SMSG_MONSTER_MOVE_TRANSPORT                       = 0,
+    SMSG_MONSTER_MOVE                                 = 0x942,
+    SMSG_MONSTER_MOVE_TRANSPORT                       = 0xC35,
     SMSG_MOTD                                         = 0x952,  // 5.0.5 16048
     SMSG_MOUNTRESULT                                  = 0,
     SMSG_MOUNTSPECIAL_ANIM                            = 0,
@@ -1139,8 +1139,8 @@ enum Opcodes
     SMSG_PAGE_TEXT_QUERY_RESPONSE                     = 0x0CE2, // 5.0.5 16048
     SMSG_PARTYKILLLOG                                 = 0x84A,
     SMSG_PARTY_COMMAND_RESULT                         = 0xC2D,
-    SMSG_PARTY_MEMBER_STATS                           = 0,
-    SMSG_PARTY_MEMBER_STATS_FULL                      = 0,
+    SMSG_PARTY_MEMBER_STATS                           = 0,//0xCBA,
+    SMSG_PARTY_MEMBER_STATS_FULL                      = 0,//0x912,
     SMSG_PAUSE_MIRROR_TIMER                           = 0,
     SMSG_PERIODICAURALOG                              = 0,
     SMSG_PETGODMODE                                   = 0,
