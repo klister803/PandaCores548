@@ -284,16 +284,12 @@ void WorldSession::SendItemDb2Reply(uint32 entry)
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
     if (!proto)
     {
-        data << uint32(-1);         // entry
-        data << uint32(DB2_REPLY_ITEM);
-        data << uint32(time(NULL)); // hotfix date
         data << uint32(0);          // size of next block
+        data << uint32(time(NULL)); // hotfix date
+        data << uint32(DB2_REPLY_ITEM);
+        data << uint32(-1);         // entry
         return;
     }
-
-    data << uint32(entry);
-    data << uint32(DB2_REPLY_ITEM);
-    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_ITEM));
 
     ByteBuffer buff;
     buff << uint32(entry);
@@ -307,6 +303,10 @@ void WorldSession::SendItemDb2Reply(uint32 entry)
 
     data << uint32(buff.size());
     data.append(buff);
+    
+    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_ITEM));
+    data << uint32(DB2_REPLY_ITEM);
+    data << uint32(entry);
 
     SendPacket(&data);
 }
@@ -317,16 +317,14 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
     ItemTemplate const* proto = sObjectMgr->GetItemTemplate(entry);
     if (!proto)
     {
-        data << uint32(-1);         // entry
-        data << uint32(DB2_REPLY_SPARSE);
-        data << uint32(time(NULL)); // hotfix date
         data << uint32(0);          // size of next block
+        data << uint32(time(NULL)); // hotfix date
+        data << uint32(DB2_REPLY_SPARSE);
+        data << uint32(-1);         // entry
         return;
     }
 
-    data << uint32(entry);
-    data << uint32(DB2_REPLY_SPARSE);
-    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_SPARSE));
+   
 
     ByteBuffer buff;
     buff << uint32(entry);
@@ -439,6 +437,10 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
 
     data << uint32(buff.size());
     data.append(buff);
+    
+    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_SPARSE));
+    data << uint32(DB2_REPLY_SPARSE);
+    data << uint32(entry);
 
     SendPacket(&data);
 }
@@ -780,9 +782,14 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             int32 price = vendorItem->IsGoldRequired(itemTemplate) ? uint32(floor(itemTemplate->BuyPrice * discountMod)) : 0;
             uint32 leftInStock = !vendorItem->maxcount ? 0xFFFFFFFF : vendor->GetVendorItemCurrentCount(vendorItem);
 
-            itemsData << uint32(count++ + 1);        // client expects counting to start at 1
             itemsData << uint32(itemTemplate->MaxDurability);
-
+            // if (!unk "enabler") data << uint32(something);
+            itemsData << uint32(price);
+            itemsData << uint32(vendorItem->Type);     // 1 is items, 2 is currency
+            itemsData << uint32(itemTemplate->BuyCount);
+            itemsData << uint32(vendorItem->item);
+            itemsData << uint32(count++ + 1);        // client expects counting to start at 1
+            itemsData << int32(leftInStock);
             if (vendorItem->ExtendedCost != 0)
             {
                 enablers.push_back(0);
@@ -791,14 +798,8 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             else
                 enablers.push_back(1);
             enablers.push_back(1);                 // unk bit
-
-            itemsData << uint32(vendorItem->item);
-            itemsData << uint32(vendorItem->Type);     // 1 is items, 2 is currency
-            itemsData << uint32(price);
+            enablers.push_back(1);                 // unk bit
             itemsData << uint32(itemTemplate->DisplayInfoID);
-            // if (!unk "enabler") data << uint32(something);
-            itemsData << int32(leftInStock);
-            itemsData << uint32(itemTemplate->BuyCount);
         }
         else if (vendorItem->Type == ITEM_VENDOR_TYPE_CURRENCY)
         {
@@ -810,9 +811,14 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
 
             uint32 precision = (currencyTemplate->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? 100 : 1;
 
-            itemsData << uint32(count++ + 1);        // client expects counting to start at 1
             itemsData << uint32(0);                  // max durability
-
+            // if (!unk "enabler") data << uint32(something);
+            itemsData << uint32(0);                   // price, only seen currency types that have Extended cost
+            itemsData << uint32(vendorItem->Type);    // 1 is items, 2 is currency
+            itemsData << uint32(vendorItem->maxcount * precision);
+            itemsData << uint32(vendorItem->item);
+            itemsData << uint32(count++ + 1);        // client expects counting to start at 1
+            itemsData << int32(-1);
             if (vendorItem->ExtendedCost != 0)
             {
                 enablers.push_back(0);
@@ -821,14 +827,8 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             else
                 enablers.push_back(1);
             enablers.push_back(1);                    // unk bit
-
-            itemsData << uint32(vendorItem->item);
-            itemsData << uint32(vendorItem->Type);    // 1 is items, 2 is currency
-            itemsData << uint32(0);                   // price, only seen currency types that have Extended cost
+            enablers.push_back(1);                    // unk bit
             itemsData << uint32(0);                   // displayId
-            // if (!unk "enabler") data << uint32(something);
-            itemsData << int32(-1);
-            itemsData << uint32(vendorItem->maxcount * precision);
         }
         // else error
     }
@@ -837,36 +837,35 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
 
     WorldPacket data(SMSG_LIST_INVENTORY, 12 + itemsData.size());
 
+    data.WriteBit(guidBytes[5]);
+    data.WriteBit(guidBytes[4]);
+    data.WriteBit(guidBytes[2]);
     data.WriteBit(guidBytes[1]);
+    data.WriteBit(guidBytes[6]);
+    data.WriteBit(guidBytes[7]);
+    data.WriteBit(guidBytes[3]);
     data.WriteBit(guidBytes[0]);
 
     data.WriteBits(count, 21); // item count
 
-    data.WriteBit(guidBytes[3]);
-    data.WriteBit(guidBytes[6]);
-    data.WriteBit(guidBytes[5]);
-    data.WriteBit(guidBytes[2]);
-    data.WriteBit(guidBytes[7]);
 
     for (std::vector<bool>::const_iterator itr = enablers.begin(); itr != enablers.end(); ++itr)
         data.WriteBit(*itr);
 
-    data.WriteBit(guidBytes[4]);
 
     data.FlushBits();
     data.append(itemsData);
 
-    data.WriteByteSeq(guidBytes[5]);
-    data.WriteByteSeq(guidBytes[4]);
     data.WriteByteSeq(guidBytes[1]);
+    data.WriteByteSeq(guidBytes[2]);
     data.WriteByteSeq(guidBytes[0]);
     data.WriteByteSeq(guidBytes[6]);
+    data.WriteByteSeq(guidBytes[4]);
+    data.WriteByteSeq(guidBytes[7]);
+    data.WriteByteSeq(guidBytes[5]);
+    data.WriteByteSeq(guidBytes[2]);
 
     data << uint8(count == 0); // unk byte, item count 0: 1, item count != 0: 0 or some "random" value below 300
-
-    data.WriteByteSeq(guidBytes[2]);
-    data.WriteByteSeq(guidBytes[3]);
-    data.WriteByteSeq(guidBytes[7]);
 
     SendPacket(&data);
 }

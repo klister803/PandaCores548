@@ -2180,6 +2180,7 @@ class Player : public Unit, public GridObject<Player>
         void SendBGWeekendWorldStates();
 
         void SendAurasForTarget(Unit* target);
+        void SendCooldownAtLogin();
 
         PlayerMenu* PlayerTalkClass;
         std::vector<ItemSetEffect*> ItemSetEff;
