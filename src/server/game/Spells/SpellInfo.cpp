@@ -320,7 +320,9 @@ SpellImplicitTargetInfo::StaticData  SpellImplicitTargetInfo::_data[TOTAL_SPELL_
 SpellEffectInfo::SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* spellInfo, uint8 effIndex)
 {
     SpellEffectEntry const* _effect = spellEntry->GetSpellEffect(effIndex);
+    SpellEffectScalingEntry const* _effectScaling = GetSpellEffectScalingEntry(_effect ? _effect->Id : 0);
     SpellScalingEntry const* scaling = spellInfo->GetSpellScaling();
+
 
     _spellInfo = spellInfo;
     _effIndex = effIndex;
@@ -345,9 +347,9 @@ SpellEffectInfo::SpellEffectInfo(SpellEntry const* spellEntry, SpellInfo const* 
     TriggerSpell = _effect ? _effect->EffectTriggerSpell : 0;
     SpellClassMask = _effect ? _effect->EffectSpellClassMask : flag96(0);
     ImplicitTargetConditions = NULL;
-    ScalingMultiplier = scaling ? scaling->Multiplier[effIndex] : 0.0f;
-    DeltaScalingMultiplier = scaling ? scaling->RandomMultiplier[effIndex] : 0.0f;
-    ComboScalingMultiplier = scaling ? scaling->OtherMultiplier[effIndex] : 0.0f;
+    ScalingMultiplier = _effectScaling ? _effectScaling->Multiplier : 0.0f;
+    DeltaScalingMultiplier = _effectScaling ? _effectScaling->RandomMultiplier : 0.0f;
+    ComboScalingMultiplier = _effectScaling ? _effectScaling->OtherMultiplier: 0.0f;
 }
 
 bool SpellEffectInfo::IsEffect() const
@@ -757,32 +759,12 @@ SpellEffectInfo::StaticData  SpellEffectInfo::_data[TOTAL_SPELL_EFFECTS] =
 SpellInfo::SpellInfo(SpellEntry const* spellEntry)
 {
     Id = spellEntry->Id;
-    Attributes = spellEntry->Attributes;
-    AttributesEx = spellEntry->AttributesEx;
-    AttributesEx2 = spellEntry->AttributesEx2;
-    AttributesEx3 = spellEntry->AttributesEx3;
-    AttributesEx4 = spellEntry->AttributesEx4;
-    AttributesEx5 = spellEntry->AttributesEx5;
-    AttributesEx6 = spellEntry->AttributesEx6;
-    AttributesEx7 = spellEntry->AttributesEx7;
-    AttributesEx8 = spellEntry->AttributesEx8;
-    AttributesEx9 = spellEntry->AttributesEx9;
-    AttributesEx10 = spellEntry->AttributesEx10;
     AttributesCu = 0;
-    CastTimeEntry = spellEntry->CastingTimeIndex ? sSpellCastTimesStore.LookupEntry(spellEntry->CastingTimeIndex) : NULL;
-    DurationEntry = spellEntry->DurationIndex ? sSpellDurationStore.LookupEntry(spellEntry->DurationIndex) : NULL;
-    PowerType = spellEntry->powerType;
-    RangeEntry = spellEntry->rangeIndex ? sSpellRangeStore.LookupEntry(spellEntry->rangeIndex) : NULL;
-    Speed = spellEntry->speed;
-    for (uint8 i = 0; i < 2; ++i)
-        SpellVisual[i] = spellEntry->SpellVisual[i];
-    SpellIconID = spellEntry->SpellIconID;
-    ActiveIconID = spellEntry->activeIconID;
+
     SpellName = spellEntry->SpellName;
     Rank = spellEntry->Rank;
-    SchoolMask = spellEntry->SchoolMask;
     RuneCostID = spellEntry->runeCostID;
-    SpellDifficultyId = spellEntry->SpellDifficultyId;
+    SpellDifficultyId = 0;
     SpellScalingId = spellEntry->SpellScalingId;
     SpellAuraOptionsId = spellEntry->SpellAuraOptionsId;
     SpellAuraRestrictionsId = spellEntry->SpellAuraRestrictionsId;
@@ -793,7 +775,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     SpellEquippedItemsId = spellEntry->SpellEquippedItemsId;
     SpellInterruptsId = spellEntry->SpellInterruptsId;
     SpellLevelsId = spellEntry->SpellLevelsId;
-    SpellPowerId = spellEntry->SpellPowerId;
+   // SpellPowerId = spellEntry->SpellPowerId;
     SpellReagentsId = spellEntry->SpellReagentsId;
     SpellShapeshiftId = spellEntry->SpellShapeshiftId;
     SpellTargetRestrictionsId = spellEntry->SpellTargetRestrictionsId;
@@ -877,9 +859,40 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     // SpellPowerEntry
     SpellPowerEntry const* _power = GetSpellPower();
     ManaCost = _power ? _power->manaCost : 0;
-    ManaCostPerlevel = _power ? _power->manaCostPerlevel : 0;
     ManaCostPercentage = _power ? _power->ManaCostPercentage : 0;
     ManaPerSecond = _power ? _power->manaPerSecond : 0;
+    PowerType = _power ? _power->powerType : POWER_MANA;
+
+    // SpellMiscEntry
+    SpellMiscEntry const* _misc = GetSpellMisc();
+    Attributes = _misc ? _misc->Attributes : 0;
+    AttributesEx = _misc ? _misc->AttributesEx : 0;
+    AttributesEx2 = _misc ? _misc->AttributesEx2 : 0;
+    AttributesEx3 = _misc ? _misc->AttributesEx3 : 0;
+    AttributesEx4 = _misc ? _misc->AttributesEx4 : 0;
+    AttributesEx5 = _misc ? _misc->AttributesEx5 : 0;
+    AttributesEx6 = _misc ? _misc->AttributesEx6 : 0;
+    AttributesEx7 = _misc ? _misc->AttributesEx7 : 0;
+    AttributesEx8 = _misc ? _misc->AttributesEx8 : 0;
+    AttributesEx9 = _misc ? _misc->AttributesEx9 : 0;
+    AttributesEx10 = _misc ? _misc->AttributesEx10 : 0;
+    AttributesEx11 = _misc ? _misc->AttributesEx11 : 0;
+
+    uint32 castingTimeIndex = _misc ? _misc->CastingTimeIndex : 0;
+    uint32 durationIndex = _misc ? _misc->DurationIndex : 0;
+    uint32 rangeIndex = _misc ? _misc->rangeIndex : 0;
+
+    CastTimeEntry = sSpellCastTimesStore.LookupEntry(castingTimeIndex);
+    DurationEntry = sSpellDurationStore.LookupEntry(durationIndex);
+    //PowerType = spellEntry->powerType; WTF
+    RangeEntry = sSpellRangeStore.LookupEntry(rangeIndex);
+    Speed = _misc ? _misc->speed : 1.00f;
+    for (uint8 i = 0; i < 2; ++i)
+        SpellVisual[i] = _misc ? _misc->SpellVisual[i] : 0;
+    SpellIconID = _misc ? _misc->SpellIconID : 0;
+    ActiveIconID = _misc ? _misc->activeIconID : 0;
+    SchoolMask = _misc ? _misc->SchoolMask : 0;
+
 
     // SpellReagentsEntry
     SpellReagentsEntry const* _reagents = GetSpellReagents();
@@ -1354,7 +1367,7 @@ SpellCastResult SpellInfo::CheckShapeshift(uint32 form) const
 {
     // talents that learn spells can have stance requirements that need ignore
     // (this requirement only for client-side stance show in talent description)
-    if (GetTalentSpellCost(Id) > 0 &&
+    if (/*GetTalentSpellCost(Id) > 0 &&*/
         (Effects[0].Effect == SPELL_EFFECT_LEARN_SPELL || Effects[1].Effect == SPELL_EFFECT_LEARN_SPELL || Effects[2].Effect == SPELL_EFFECT_LEARN_SPELL))
         return SPELL_CAST_OK;
 
@@ -2638,7 +2651,20 @@ SpellLevelsEntry const* SpellInfo::GetSpellLevels() const
 
 SpellPowerEntry const* SpellInfo::GetSpellPower() const
 {
-    return SpellPowerId ? sSpellPowerStore.LookupEntry(SpellPowerId) : NULL;
+    for(uint32 i = 0; i < sSpellPowerStore.GetNumRows(); i++)
+    {
+        if(SpellPowerEntry const* powerEntry = sSpellPowerStore.LookupEntry(i))
+        {
+            if(powerEntry->SpellId == Id)
+                return powerEntry;
+        }
+    }
+    return NULL;
+}
+
+SpellMiscEntry const* SpellInfo::GetSpellMisc() const
+{
+    return SpellMiscId ? sSpellMiscStore.LookupEntry(SpellMiscId) : NULL;
 }
 
 SpellReagentsEntry const* SpellInfo::GetSpellReagents() const

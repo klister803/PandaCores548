@@ -25,7 +25,7 @@
 #include "World.h"
 #include "Group.h"
 
-MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, DUNGEON_DIFFICULTY_NORMAL)
+MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, REGULAR_DIFFICULTY)
 {
     // initialize instanced maps list
     m_InstancedMaps.clear();

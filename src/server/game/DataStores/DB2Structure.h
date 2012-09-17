@@ -128,6 +128,7 @@ struct ItemSparseEntry
     float      StatScalingFactor;                            // 128
     int32      CurrencySubstitutionId;                       // 129
     int32      CurrencySubstitutionCount;                    // 130
+    int32      unk505;                                       // 131
 };
 
 #define MAX_ITEM_EXT_COST_ITEMS         5

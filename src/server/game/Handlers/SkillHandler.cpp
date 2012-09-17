@@ -37,7 +37,7 @@ void WorldSession::HandleLearnTalentOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleLearnPreviewTalents(WorldPacket& recvPacket)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LEARN_PREVIEW_TALENTS");
+    /*sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LEARN_PREVIEW_TALENTS");
 
     int32 tabPage;
     uint32 talentsCount;
@@ -71,12 +71,12 @@ void WorldSession::HandleLearnPreviewTalents(WorldPacket& recvPacket)
         }
     }
 
-    _player->SendTalentsInfoData(false);
+    _player->SendTalentsInfoData(false);*/
 }
 
 void WorldSession::HandleTalentWipeConfirmOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "MSG_TALENT_WIPE_CONFIRM");
+    /*sLog->outDebug(LOG_FILTER_NETWORKIO, "MSG_TALENT_WIPE_CONFIRM");
     uint64 guid;
     recvData >> guid;
 
@@ -101,7 +101,7 @@ void WorldSession::HandleTalentWipeConfirmOpcode(WorldPacket& recvData)
     }
 
     _player->SendTalentsInfoData(false);
-    unit->CastSpell(_player, 14867, true);                  //spell: "Untalent Visual Effect"
+    unit->CastSpell(_player, 14867, true);                  //spell: "Untalent Visual Effect"*/
 }
 
 void WorldSession::HandleUnlearnSkillOpcode(WorldPacket& recvData)

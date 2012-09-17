@@ -3944,12 +3944,12 @@ void ObjectMgr::LoadQuests()
                 qinfo->RewardSpell = 0;                        // no spell reward will display for this quest
             }
 
-            else if (GetTalentSpellCost(qinfo->RewardSpell))
+            /*else if (GetTalentSpellCost(qinfo->RewardSpell))
             {
                 sLog->outError(LOG_FILTER_SQL, "Quest %u has `RewardSpell` = %u but spell %u is talent, quest will not have a spell reward.",
                     qinfo->GetQuestId(), qinfo->RewardSpell, qinfo->RewardSpell);
                 qinfo->RewardSpell = 0;                        // no spell reward will display for this quest
-            }
+            }*/
         }
 
         if (qinfo->RewardSpellCast > 0)
@@ -3970,12 +3970,12 @@ void ObjectMgr::LoadQuests()
                 qinfo->RewardSpellCast = 0;                    // no spell will be casted on player
             }
 
-            else if (GetTalentSpellCost(qinfo->RewardSpellCast))
+            /*else if (GetTalentSpellCost(qinfo->RewardSpellCast))
             {
                 sLog->outError(LOG_FILTER_SQL, "Quest %u has `RewardSpell` = %u but spell %u is talent, quest will not have a spell reward.",
                     qinfo->GetQuestId(), qinfo->RewardSpellCast, qinfo->RewardSpellCast);
                 qinfo->RewardSpellCast = 0;                    // no spell will be casted on player
-            }
+            }*/
         }
 
         if (qinfo->RewardMailTemplateId)
@@ -7821,11 +7821,11 @@ void ObjectMgr::AddSpellToTrainer(uint32 entry, uint32 spell, uint32 spellCost, 
         return;
     }
 
-    if (GetTalentSpellCost(spell))
+/*    if (GetTalentSpellCost(spell))
     {
         sLog->outError(LOG_FILTER_SQL, "Table `npc_trainer` contains an entry (Entry: %u) for a non-existing spell (Spell: %u) which is a talent, ignoring", entry, spell);
         return;
-    }
+    }*/
 
     TrainerSpellData& data = _cacheTrainerSpellStore[entry];
 

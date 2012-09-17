@@ -109,7 +109,7 @@ Map* MapManager::CreateBaseMap(uint32 id)
         }
         else
         {
-            map = new Map(id, i_gridCleanUpDelay, 0, REGULAR_DIFFICULTY);
+            map = new Map(id, i_gridCleanUpDelay, 0, NONE_DIFFICULTY);
             map->LoadRespawnTimes();
         }
         i_maps[id] = map;

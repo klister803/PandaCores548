@@ -1388,7 +1388,7 @@ bool Pet::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpel
         newspell.active = active;
 
     // talent: unlearn all other talent ranks (high and low)
-    if (TalentSpellPos const* talentPos = GetTalentSpellPos(spellId))
+/*    if (TalentSpellPos const* talentPos = GetTalentSpellPos(spellId))
     {
         if (TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentPos->talent_id))
         {
@@ -1406,7 +1406,7 @@ bool Pet::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpel
             }
         }
     }
-    else if (spellInfo->IsRanked())
+    else*/ if (spellInfo->IsRanked())
     {
         for (PetSpellMap::const_iterator itr2 = m_spells.begin(); itr2 != m_spells.end(); ++itr2)
         {
@@ -1448,7 +1448,7 @@ bool Pet::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpel
     if (newspell.active == ACT_ENABLED)
         ToggleAutocast(spellInfo, true);
 
-    uint32 talentCost = GetTalentSpellCost(spellId);
+/*    uint32 talentCost = GetTalentSpellCost(spellId);
     if (talentCost)
     {
         int32 free_points = GetMaxTalentPointsForLevel(getLevel());
@@ -1456,7 +1456,7 @@ bool Pet::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpel
         // update free talent points
         free_points-=m_usedTalentCount;
         SetFreeTalentPoints(free_points > 0 ? free_points : 0);
-    }
+    }*/
     return true;
 }
 
@@ -1546,7 +1546,7 @@ bool Pet::removeSpell(uint32 spell_id, bool learn_prev, bool clear_ab)
 
     RemoveAurasDueToSpell(spell_id);
 
-    uint32 talentCost = GetTalentSpellCost(spell_id);
+    /*uint32 talentCost = GetTalentSpellCost(spell_id);
     if (talentCost > 0)
     {
         if (m_usedTalentCount > talentCost)
@@ -1556,7 +1556,7 @@ bool Pet::removeSpell(uint32 spell_id, bool learn_prev, bool clear_ab)
         // update free talent points
         int32 free_points = GetMaxTalentPointsForLevel(getLevel()) - m_usedTalentCount;
         SetFreeTalentPoints(free_points > 0 ? free_points : 0);
-    }
+    }*/
 
     if (learn_prev)
     {
@@ -1610,7 +1610,7 @@ void Pet::InitPetCreateSpells()
 
 bool Pet::resetTalents()
 {
-    Unit* owner = GetOwner();
+    /*Unit* owner = GetOwner();
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return false;
 
@@ -1681,13 +1681,13 @@ bool Pet::resetTalents()
     SetFreeTalentPoints(talentPointsForLevel);
 
     if (!m_loading)
-        player->PetSpellInitialize();
+        player->PetSpellInitialize();*/
     return true;
 }
 
 void Pet::resetTalentsForAllPetsOf(Player* owner, Pet* online_pet /*= NULL*/)
 {
-    // not need after this call
+    /*// not need after this call
     if (owner->ToPlayer()->HasAtLoginFlag(AT_LOGIN_RESET_PET_TALENTS))
         owner->ToPlayer()->RemoveAtLoginFlag(AT_LOGIN_RESET_PET_TALENTS, true);
 
@@ -1760,12 +1760,12 @@ void Pet::resetTalentsForAllPetsOf(Player* owner, Pet* online_pet /*= NULL*/)
 
     ss << ')';
 
-    CharacterDatabase.Execute(ss.str().c_str());
+    CharacterDatabase.Execute(ss.str().c_str());*/
 }
 
 void Pet::InitTalentForLevel()
 {
-    uint8 level = getLevel();
+    /*uint8 level = getLevel();
     uint32 talentPointsForLevel = GetMaxTalentPointsForLevel(level);
     // Reset talents in case low level (on level down) or wrong points for level (hunter can unlearn TP increase talent)
     if (talentPointsForLevel == 0 || m_usedTalentCount > talentPointsForLevel)
@@ -1778,16 +1778,18 @@ void Pet::InitTalentForLevel()
         return;
 
     if (!m_loading)
-        owner->ToPlayer()->SendTalentsInfoData(true);
+        owner->ToPlayer()->SendTalentsInfoData(true);*/
 }
 
 uint8 Pet::GetMaxTalentPointsForLevel(uint8 level)
 {
+    return 0;
+    /*
     uint8 points = (level >= 20) ? ((level - 16) / 4) : 0;
     // Mod points from owner SPELL_AURA_MOD_PET_TALENT_POINTS
     if (Unit* owner = GetOwner())
         points+=owner->GetTotalAuraModifier(SPELL_AURA_MOD_PET_TALENT_POINTS);
-    return points;
+    return points;*/
 }
 
 void Pet::ToggleAutocast(SpellInfo const* spellInfo, bool apply)

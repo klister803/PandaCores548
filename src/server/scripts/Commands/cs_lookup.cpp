@@ -800,7 +800,7 @@ public:
 
                 SpellInfo const* learnSpellInfo = sSpellMgr->GetSpellInfo(spellInfo->Effects[0].TriggerSpell);
 
-                uint32 talentCost = GetTalentSpellCost(id);
+                uint32 talentCost =0;// GetTalentSpellCost(id);
 
                 bool talent = (talentCost > 0);
                 bool passive = spellInfo->IsPassive();

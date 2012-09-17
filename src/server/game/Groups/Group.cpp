@@ -58,7 +58,7 @@ Loot* Roll::getLoot()
 }
 
 Group::Group() : m_leaderGuid(0), m_leaderName(""), m_groupType(GROUPTYPE_NORMAL),
-m_dungeonDifficulty(DUNGEON_DIFFICULTY_NORMAL), m_raidDifficulty(RAID_DIFFICULTY_10MAN_NORMAL),
+m_dungeonDifficulty(REGULAR_DIFFICULTY), m_raidDifficulty(MAN10_DIFFICULTY),
 m_bgGroup(NULL), m_bfGroup(NULL), m_lootMethod(FREE_FOR_ALL), m_lootThreshold(ITEM_QUALITY_UNCOMMON), m_looterGuid(0),
 m_subGroupsCounts(NULL), m_guid(0), m_counter(0), m_maxEnchantingLevel(0), m_dbStoreId(0)
 {
@@ -113,8 +113,8 @@ bool Group::Create(Player* leader)
     m_lootThreshold = ITEM_QUALITY_UNCOMMON;
     m_looterGuid = leaderGuid;
 
-    m_dungeonDifficulty = DUNGEON_DIFFICULTY_NORMAL;
-    m_raidDifficulty = RAID_DIFFICULTY_10MAN_NORMAL;
+    m_dungeonDifficulty = REGULAR_DIFFICULTY;
+    m_raidDifficulty = MAN10_DIFFICULTY;
 
     if (!isBGGroup() && !isBFGroup())
     {
@@ -183,13 +183,13 @@ void Group::LoadGroupFromDB(Field* fields)
 
     uint32 diff = fields[13].GetUInt8();
     if (diff >= MAX_DUNGEON_DIFFICULTY)
-        m_dungeonDifficulty = DUNGEON_DIFFICULTY_NORMAL;
+        m_dungeonDifficulty = REGULAR_DIFFICULTY;
     else
         m_dungeonDifficulty = Difficulty(diff);
 
     uint32 r_diff = fields[14].GetUInt8();
     if (r_diff >= MAX_RAID_DIFFICULTY)
-       m_raidDifficulty = RAID_DIFFICULTY_10MAN_NORMAL;
+       m_raidDifficulty = MAN10_DIFFICULTY;
     else
        m_raidDifficulty = Difficulty(r_diff);
 
@@ -2119,7 +2119,7 @@ void Group::ResetInstances(uint8 method, bool isRaid, Player* SendMsgTo)
         if (method == INSTANCE_RESET_ALL)
         {
             // the "reset all instances" method can only reset normal maps
-            if (entry->map_type == MAP_RAID || diff == DUNGEON_DIFFICULTY_HEROIC)
+            if (entry->map_type == MAP_RAID || diff == HEROIC_DIFFICULTY)
             {
                 ++itr;
                 continue;

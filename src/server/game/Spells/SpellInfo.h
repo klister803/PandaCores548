@@ -310,6 +310,7 @@ public:
     uint32 AttributesEx8;
     uint32 AttributesEx9;
     uint32 AttributesEx10;
+    uint32 AttributesEx11;
     uint32 AttributesCu;
     uint32 Stances;
     uint32 StancesNot;
@@ -342,9 +343,8 @@ public:
     SpellDurationEntry const* DurationEntry;
     uint32 PowerType;
     uint32 ManaCost;
-    uint32 ManaCostPerlevel;
     uint32 ManaPerSecond;
-    uint32 ManaCostPercentage;
+    float ManaCostPercentage;
     uint32 RuneCostID;
     SpellRangeEntry const* RangeEntry;
     float  Speed;
@@ -385,6 +385,7 @@ public:
     uint32 SpellShapeshiftId;
     uint32 SpellTargetRestrictionsId;
     uint32 SpellTotemsId;
+    uint32 SpellMiscId;
     // SpellScalingEntry
     int32  CastTimeMin;
     int32  CastTimeMax;
@@ -408,6 +409,7 @@ public:
     SpellInterruptsEntry const* GetSpellInterrupts() const;
     SpellLevelsEntry const* GetSpellLevels() const;
     SpellPowerEntry const* GetSpellPower() const;
+    SpellMiscEntry const* GetSpellMisc() const;
     SpellReagentsEntry const* GetSpellReagents() const;
     SpellScalingEntry const* GetSpellScaling() const;
     SpellShapeshiftEntry const* GetSpellShapeshift() const;

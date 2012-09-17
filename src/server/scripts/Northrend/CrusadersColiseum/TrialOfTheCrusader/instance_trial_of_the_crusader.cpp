@@ -198,19 +198,19 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                 switch (go->GetEntry())
                 {
                     case GO_CRUSADERS_CACHE_10:
-                        if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_NORMAL)
+                        if (instance->GetSpawnMode() == MAN10_DIFFICULTY)
                             CrusadersCacheGUID = go->GetGUID();
                         break;
                     case GO_CRUSADERS_CACHE_25:
-                        if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_NORMAL)
+                        if (instance->GetSpawnMode() == MAN25_DIFFICULTY)
                             CrusadersCacheGUID = go->GetGUID();
                         break;
                     case GO_CRUSADERS_CACHE_10_H:
-                        if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_HEROIC)
+                        if (instance->GetSpawnMode() == MAN10_HEROIC_DIFFICULTY)
                             CrusadersCacheGUID = go->GetGUID();
                         break;
                     case GO_CRUSADERS_CACHE_25_H:
-                        if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_HEROIC)
+                        if (instance->GetSpawnMode() == MAN25_HEROIC_DIFFICULTY)
                             CrusadersCacheGUID = go->GetGUID();
                         break;
                     case GO_ARGENT_COLISEUM_FLOOR:
@@ -304,7 +304,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                                 break;
                             case SPECIAL:
                                 uint32 tributeChest = 0;
-                                if (instance->GetSpawnMode() == RAID_DIFFICULTY_10MAN_HEROIC)
+                                if (instance->GetSpawnMode() == MAN10_HEROIC_DIFFICULTY)
                                 {
                                     if (TrialCounter >= 50)
                                         tributeChest = GO_TRIBUTE_CHEST_10H_99;
@@ -317,7 +317,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                                             else
                                                 tributeChest = GO_TRIBUTE_CHEST_10H_25;
                                 }
-                                else if (instance->GetSpawnMode() == RAID_DIFFICULTY_25MAN_HEROIC)
+                                else if (instance->GetSpawnMode() == MAN25_HEROIC_DIFFICULTY)
                                 {
                                     if (TrialCounter >= 50)
                                         tributeChest = GO_TRIBUTE_CHEST_25H_99;

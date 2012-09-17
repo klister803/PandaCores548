@@ -74,7 +74,7 @@ public:
 
             hasTaunted = false;
 
-            if (GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL)
+            if (GetDifficulty() == MAN25_DIFFICULTY)
             {
                 Position pos;
 
@@ -116,7 +116,7 @@ public:
             events.ScheduleEvent(EVENT_LOCUST, 90000);
             events.ScheduleEvent(EVENT_BERSERK, 600000);
 
-            if (GetDifficulty() == RAID_DIFFICULTY_10MAN_NORMAL)
+            if (GetDifficulty() == MAN10_DIFFICULTY)
                 events.ScheduleEvent(EVENT_SPAWN_GUARDIAN_NORMAL, urand(15000, 20000));
         }
 
