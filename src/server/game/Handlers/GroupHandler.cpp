@@ -1054,18 +1054,21 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
     data << uint8(0);                                       // only for SMSG_PARTY_MEMBER_STATS_FULL, probably arena/bg related
     data.append(player->GetPackGUID());
 
-    uint32 mask1 = 0x00040BFF;                              // common mask, real flags used 0x000040BFF
+    uint32 mask1 = 0x00817BFF;                              // common mask, real flags used 0x000040BFF (505:0x00817BFF)
     if (pet)
         mask1 = 0x7FFFFFFF;                                 // for hunters and other classes with pets
 
     Powers powerType = player->getPowerType();
     data << (uint32) mask1;                                 // group update mask
+    for (int i = 0; i < 2; i++)
+        data << uint8(0); //unk
     data << (uint16) MEMBER_STATUS_ONLINE;                  // member's online status
     data << (uint32) player->GetHealth();                   // GROUP_UPDATE_FLAG_CUR_HP
     data << (uint32) player->GetMaxHealth();                // GROUP_UPDATE_FLAG_MAX_HP
     data << (uint8)  powerType;                             // GROUP_UPDATE_FLAG_POWER_TYPE
     data << (uint16) player->GetPower(powerType);           // GROUP_UPDATE_FLAG_CUR_POWER
     data << (uint16) player->GetMaxPower(powerType);        // GROUP_UPDATE_FLAG_MAX_POWER
+    data << uint16(0);
     data << (uint16) player->getLevel();                    // GROUP_UPDATE_FLAG_LEVEL
     data << (uint16) player->GetZoneId();                   // GROUP_UPDATE_FLAG_ZONE
     data << (uint16) player->GetPositionX();                // GROUP_UPDATE_FLAG_POSITION
@@ -1081,6 +1084,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
             auramask |= (uint64(1) << i);
             data << (uint32) aurApp->GetBase()->GetId();
             data << (uint8)  1;
+            data << (uint32)0;
         }
     }
     data.put<uint64>(maskPos, auramask);                     // GROUP_UPDATE_FLAG_AURAS
@@ -1096,6 +1100,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
         data << (uint8)  petpowertype;                      // GROUP_UPDATE_FLAG_PET_POWER_TYPE
         data << (uint16) pet->GetPower(petpowertype);       // GROUP_UPDATE_FLAG_PET_CUR_POWER
         data << (uint16) pet->GetMaxPower(petpowertype);    // GROUP_UPDATE_FLAG_PET_MAX_POWER
+        data << (uint16) 0;
 
         uint64 petauramask = 0;
         size_t petMaskPos = data.wpos();
@@ -1107,6 +1112,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
                 petauramask |= (uint64(1) << i);
                 data << (uint32) auraApp->GetBase()->GetId();
                 data << (uint8)  1;
+                data << (uint32)0;
             }
         }
         data.put<uint64>(petMaskPos, petauramask);           // GROUP_UPDATE_FLAG_PET_AURAS
