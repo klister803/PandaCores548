@@ -133,11 +133,11 @@ void LoadDisables()
                         break;
                     case MAP_INSTANCE:
                     case MAP_RAID:
-                        if (flags & DUNGEON_STATUSFLAG_HEROIC && !GetMapDifficultyData(entry, DUNGEON_DIFFICULTY_HEROIC))
+                        if (flags & DUNGEON_STATUSFLAG_HEROIC && !GetMapDifficultyData(entry, HEROIC_DIFFICULTY))
                             isFlagInvalid = true;
-                        else if (flags & RAID_STATUSFLAG_10MAN_HEROIC && !GetMapDifficultyData(entry, RAID_DIFFICULTY_10MAN_HEROIC))
+                        else if (flags & RAID_STATUSFLAG_10MAN_HEROIC && !GetMapDifficultyData(entry, MAN10_HEROIC_DIFFICULTY))
                             isFlagInvalid = true;
-                        else if (flags & RAID_STATUSFLAG_25MAN_HEROIC && !GetMapDifficultyData(entry, RAID_DIFFICULTY_25MAN_HEROIC))
+                        else if (flags & RAID_STATUSFLAG_25MAN_HEROIC && !GetMapDifficultyData(entry, MAN25_HEROIC_DIFFICULTY))
                             isFlagInvalid = true;
                         break;
                     case MAP_BATTLEGROUND:
@@ -324,13 +324,13 @@ bool IsDisabledFor(DisableType type, uint32 entry, Unit const* unit, uint8 flags
                     GetDownscaledMapDifficultyData(entry, targetDifficulty);
                     switch (targetDifficulty)
                     {
-                        case DUNGEON_DIFFICULTY_NORMAL:
+                        case REGULAR_DIFFICULTY:
                             return disabledModes & DUNGEON_STATUSFLAG_NORMAL;
-                        case DUNGEON_DIFFICULTY_HEROIC:
+                        case HEROIC_DIFFICULTY:
                             return disabledModes & DUNGEON_STATUSFLAG_HEROIC;
-                        case RAID_DIFFICULTY_10MAN_HEROIC:
+                        case MAN10_HEROIC_DIFFICULTY:
                             return disabledModes & RAID_STATUSFLAG_10MAN_HEROIC;
-                        case RAID_DIFFICULTY_25MAN_HEROIC:
+                        case MAN25_HEROIC_DIFFICULTY:
                             return disabledModes & RAID_STATUSFLAG_25MAN_HEROIC;
                     }
                 }

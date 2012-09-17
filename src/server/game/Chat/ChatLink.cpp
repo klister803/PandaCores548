@@ -433,6 +433,8 @@ bool TradeChatLink::Initialize(std::istringstream& iss)
 // |cff4e96f7|Htalent:2232:-1|h[Taste for Blood]|h|r
 bool TalentChatLink::Initialize(std::istringstream& iss)
 {
+    return false;
+    /*
     if (_color != CHAT_LINK_COLOR_TALENT)
         return false;
     // Read talent entry
@@ -464,7 +466,7 @@ bool TalentChatLink::Initialize(std::istringstream& iss)
         sLog->outDebug(LOG_FILTER_CHATSYS, "ChatHandler::isValidChatMessage('%s'): sequence finished unexpectedly while reading talent rank", iss.str().c_str());
         return false;
     }
-    return true;
+    return true;*/
 }
 
 // |color|Henchant:recipe_spell_id|h[prof_name: recipe_name]|h|r

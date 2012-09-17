@@ -950,7 +950,7 @@ uint32 ChatHandler::extractSpellIdFromLink(char* text)
     {
         case SPELL_LINK_SPELL:
             return id;
-        case SPELL_LINK_TALENT:
+        /*case SPELL_LINK_TALENT:
         {
             // talent
             TalentEntry const* talentEntry = sTalentStore.LookupEntry(id);
@@ -965,7 +965,7 @@ uint32 ChatHandler::extractSpellIdFromLink(char* text)
                 rank = 0;
 
             return talentEntry->RankID[rank];
-        }
+        }*/
         case SPELL_LINK_ENCHANT:
         case SPELL_LINK_TRADE:
             return id;

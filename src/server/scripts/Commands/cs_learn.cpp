@@ -114,8 +114,8 @@ public:
             targetPlayer->learnSpell(spell, false);
 
         uint32 firstSpell = sSpellMgr->GetFirstSpellInChain(spell);
-        if (GetTalentSpellCost(firstSpell))
-            targetPlayer->SendTalentsInfoData(false);
+        /*if (GetTalentSpellCost(firstSpell))
+            targetPlayer->SendTalentsInfoData(false);*/
 
         return true;
     }
@@ -176,8 +176,8 @@ public:
 
             // skip spells with first rank learned as talent (and all talents then also)
             uint32 firstRank = sSpellMgr->GetFirstSpellInChain(spellInfo->Id);
-            if (GetTalentSpellCost(firstRank) > 0)
-                continue;
+            /*if (GetTalentSpellCost(firstRank) > 0)
+                continue;*/
 
             // skip broken spells
             if (!SpellMgr::IsSpellValid(spellInfo, handler->GetSession()->GetPlayer(), false))
@@ -192,7 +192,8 @@ public:
 
     static bool HandleLearnAllMyTalentsCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        return true;
+        /*Player* player = handler->GetSession()->GetPlayer();
         uint32 classMask = player->getClassMask();
 
         for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
@@ -234,12 +235,13 @@ public:
         player->SetFreeTalentPoints(0);
 
         handler->SendSysMessage(LANG_COMMAND_LEARN_CLASS_TALENTS);
-        return true;
+        return true;*/
     }
 
     static bool HandleLearnAllMyPetTalentsCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        return true;
+        /*Player* player = handler->GetSession()->GetPlayer();
 
         Pet* pet = player->GetPet();
         if (!pet)
@@ -312,7 +314,7 @@ public:
         pet->SetFreeTalentPoints(0);
 
         handler->SendSysMessage(LANG_COMMAND_LEARN_PET_TALENTS);
-        return true;
+        return true;*/
     }
 
     static bool HandleLearnAllLangCommand(ChatHandler* handler, char const* /*args*/)
@@ -478,8 +480,8 @@ public:
         else
             handler->SendSysMessage(LANG_FORGET_SPELL);
 
-        if (GetTalentSpellCost(spellId))
-            target->SendTalentsInfoData(false);
+        /*if (GetTalentSpellCost(spellId))
+            target->SendTalentsInfoData(false);*/
 
         return true;
     }

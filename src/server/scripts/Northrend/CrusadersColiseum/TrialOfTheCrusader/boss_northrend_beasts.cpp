@@ -141,8 +141,8 @@ public:
             m_uiStaggeringStompTimer = 15*IN_MILLISECONDS;
             m_uiSummonTimer = urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS);
 
-            if (GetDifficulty() == RAID_DIFFICULTY_25MAN_NORMAL ||
-                GetDifficulty() == RAID_DIFFICULTY_25MAN_HEROIC)
+            if (GetDifficulty() == MAN25_DIFFICULTY ||
+                GetDifficulty() == MAN25_HEROIC_DIFFICULTY)
                 m_uiSummonCount = 5;
             else
                 m_uiSummonCount = 4;
