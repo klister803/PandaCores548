@@ -281,8 +281,24 @@ void WorldSession::HandleNpcTextQueryOpcode(WorldPacket & recvData)
 
     WorldPacket data(SMSG_NPC_TEXT_UPDATE, 100);          // guess size
     data << textID;
+    data << uint32(0x3F800000); // unk flags 5.0.5
+    data << uint32(0x00); // unk 5.0.5
+    data << uint32(0x00); // unk 5.0.5
+    data << uint32(0x00); // unk 5.0.5
+    data << uint32(0x00); // unk 5.0.5
+    data << uint32(0x00); // unk 5.0.5
+    data << uint32(0x00); // unk 5.0.5
+    data << uint32(0x00); // unk 5.0.5
+    data << textID;
+    data << uint32(0x00); // unk 5.0.5
+    data << uint32(0x00); // unk 5.0.5
+    data << uint32(0x00); // unk 5.0.5
+    data << uint32(0x00); // unk 5.0.5
+    data << uint32(0x00); // unk 5.0.5
+    data << uint32(0x00); // unk 5.0.5
+    data << uint32(0x00); // unk 5.0.5
 
-    if (!pGossip)
+    /*if (!pGossip)
     {
         for (uint32 i = 0; i < MAX_GOSSIP_TEXT_OPTIONS; ++i)
         {
@@ -342,11 +358,45 @@ void WorldSession::HandleNpcTextQueryOpcode(WorldPacket & recvData)
                 data << pGossip->Options[i].Emotes[j]._Emote;
             }
         }
-    }
+    }*/
 
     SendPacket(&data);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_NPC_TEXT_UPDATE");
+}
+
+void WorldSession::SendBroadcastTextDb2Reply(uint32 entry)
+{
+    ByteBuffer buff;
+    WorldPacket data(SMSG_DB_REPLY);
+
+    GossipText const* pGossip = sObjectMgr->GetGossipText(entry);
+
+    std::string text = "Greetings $N";
+    buff << uint32(0); // unk
+    buff << uint32(entry);
+    buff << uint16(pGossip ? pGossip->Options[0].Text_0.length() : text.length());
+    buff << std::string( pGossip ? pGossip->Options[0].Text_0 : text);
+    buff << uint16(pGossip ? pGossip->Options[0].Text_1.length() : text.length());
+    buff << std::string(pGossip ? pGossip->Options[0].Text_1 : text);
+    buff << uint32(0);
+    buff << uint32(0);
+    buff << uint32(0);
+    buff << uint32(0);
+    buff << uint32(0);
+    buff << uint32(0);
+    buff << uint32(0); // sound Id
+    buff << uint32(pGossip ? pGossip->Options[0].Emotes[0]._Delay : 0); // Delay
+    buff << uint32(pGossip ? pGossip->Options[0].Emotes[0]._Emote : 0); // Emote
+
+    data << uint32(buff.size());
+    data.append(buff);
+
+    data << uint32(sObjectMgr->GetHotfixDate(entry, DB2_REPLY_BROADCAST_TEXT));
+    data << uint32(DB2_REPLY_BROADCAST_TEXT);
+    data << uint32(entry);
+
+    SendPacket(&data);
 }
 
 /// Only _static_ data is sent in this packet !!!

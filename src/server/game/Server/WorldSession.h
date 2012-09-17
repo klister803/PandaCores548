@@ -154,8 +154,14 @@ enum CharterTypes
     ARENA_TEAM_CHARTER_5v5_TYPE                   = 5,
 };
 
-#define DB2_REPLY_SPARSE 35137211
-#define DB2_REPLY_ITEM   1344507586
+enum DB2Types
+{
+    DB2_REPLY_SPARSE                          = 2442913102,           // hash of item-sparse.db2
+    DB2_REPLY_ITEM                            = 1344507586,           // hash of item.db2
+    DB2_REPLY_SCENE_SCRIPT                    = 3568395212,           // hash of ScreneScript.db2
+    DB2_REPLY_BATTLE_PET_EFFECT_PROPERTIES    = 1672791226,           // hash of BattlePetEffectProperties.db2
+    DB2_REPLY_BROADCAST_TEXT                  = 0035137211,           // hash of BroadcastText.db2
+};
 
 //class to deal with packet processing
 //allows to determine if next packet is safe to be processed
@@ -672,6 +678,7 @@ class WorldSession
         void HandleAutoEquipItemOpcode(WorldPacket& recvPacket);
         void SendItemDb2Reply(uint32 entry);
         void SendItemSparseDb2Reply(uint32 entry);
+        void SendBroadcastTextDb2Reply(uint32 entry);
         void HandleSellItemOpcode(WorldPacket& recvPacket);
         void HandleBuyItemInSlotOpcode(WorldPacket& recvPacket);
         void HandleBuyItemOpcode(WorldPacket& recvPacket);

@@ -324,8 +324,6 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
         return;
     }
 
-   
-
     ByteBuffer buff;
     buff << uint32(entry);
     buff << uint32(proto->Quality);
@@ -434,6 +432,7 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
     buff << float(proto->StatScalingFactor);    // StatScalingFactor
     buff << uint32(proto->CurrencySubstitutionId);
     buff << uint32(proto->CurrencySubstitutionCount);
+    buff << uint32(0); // unk 5.0.5
 
     data << uint32(buff.size());
     data.append(buff);
