@@ -1615,8 +1615,8 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
     data << uint8(0);
     data << uint32(0);
 
-    data << uint8(0); //unk /not group type
-    data << uint32(1);                        
+    data << uint8(0);
+    data << uint32(m_counter++);                        
     data.WriteByteSeq(guid[7]);
     for (member_citerator citr = m_memberSlots.begin(); citr != m_memberSlots.end(); ++citr)
     {
@@ -1646,10 +1646,10 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
     data.WriteByteSeq(guid[2]);
     data.WriteByteSeq(leaderGuid[6]);
     data.WriteByteSeq(leaderGuid[4]);
-    data << uint8(1); //unk
+    data << uint8(GetMembersCount() <= 1 ? 0 : 1); //unk
     data.WriteByteSeq(guid[4]);
     data.WriteByteSeq(guid[6]);
-    data << uint32(0); // 3.3, value increases every time this packet gets sent
+    data << uint32(GetMembersCount() <= 1 ? 32 : 0); // 3.3, value increases every time this packet gets sent
     data.WriteByteSeq(leaderGuid[1]);
     data.WriteByteSeq(leaderGuid[0]);
     data.WriteByteSeq(guid[3]);
@@ -1662,7 +1662,7 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
     }
     data.WriteByteSeq(guid[2]);
     data.WriteByteSeq(leaderGuid[5]);
-    data << uint8(32);
+    data << uint8(0);
     data.WriteByteSeq(leaderGuid[5]);
     data.WriteByteSeq(guid[0]);
     data.WriteByteSeq(leaderGuid[3]);
