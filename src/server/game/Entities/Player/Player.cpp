@@ -17816,8 +17816,10 @@ Item* Player::_LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, F
     {
         sLog->outError(LOG_FILTER_PLAYER, "Player::_LoadInventory: player (GUID: %u, name: '%s') has unknown item (entry: %u) in inventory. Deleting item.",
             GetGUIDLow(), GetName(), itemEntry);
-        Item::DeleteFromInventoryDB(trans, itemGuid);
-        Item::DeleteFromDB(trans, itemGuid);
+		/* Delete de cette foutue fonction, jamais tu ne delete des items !
+		Item::DeleteFromInventoryDB(trans, itemGuid);
+		Item::DeleteFromDB(trans, itemGuid);
+		*/
     }
     return item;
 }
