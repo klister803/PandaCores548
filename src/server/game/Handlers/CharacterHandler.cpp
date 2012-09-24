@@ -276,7 +276,7 @@ void WorldSession::HandleCharCreateOpcode(WorldPacket & recvData)
 {
     std::string name;
     uint32 name_length = 0;
-    uint8 race_, class_, unk1;
+    uint8 race_, class_;
     // extract other data required for player creating
     uint8 gender, skin, face, hairStyle, hairColor, facialHair, outfitId;
     outfitId = 0;
@@ -1074,6 +1074,14 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
 
     if (pCurrChar->isGameMaster())
         SendNotification(LANG_GM_ON);
+
+    // Send CUF profiles (new raid UI 4.2)
+    // 5.0.5 16048 packet dump
+    uint8 cufProfilesRawData[] = {0x00, 0x00, 0x10, 0x48, 0x0C, 0xBA, 0x80, 0x00, 0x00, 0x00, 0x24, 0x00, 0x00, 0x00, 0x00, 0x50, 0x72, 0x69, 0x6E, 0x63, 0x69, 0x70, 0x61, 0x6C, 0x00, 0x00, 0x00, 0x00, 0x00, 0x48, 0x00};
+    data.Initialize(SMSG_LOAD_CUF_PROFILES);
+    for(int i = 0; i < 31; i++)
+        data << cufProfilesRawData[i];
+    SendPacket(&data);
 
     std::string IP_str = GetRemoteAddress();
     sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s) Login Character:[%s] (GUID: %u) Level: %d",

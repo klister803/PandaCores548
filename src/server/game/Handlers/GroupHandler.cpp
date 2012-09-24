@@ -686,13 +686,13 @@ void WorldSession::HandleGroupRaidConvertOpcode(WorldPacket& recvData)
 
     // New 4.x: it is now possible to convert a raid to a group if member count is 5 or less
 
-    bool toRaid;
-    recvData >> toRaid;
+    bool unk;
+    recvData >> unk;
 
-    if (toRaid)
-        group->ConvertToRaid();
-    else
+    if(group->isRaidGroup())
         group->ConvertToGroup();
+    else
+        group->ConvertToRaid();
 }
 
 void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket& recvData)

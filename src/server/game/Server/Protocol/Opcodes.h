@@ -227,10 +227,10 @@ enum Opcodes
     CMSG_GROUP_DISBAND                                = 0x009,
     CMSG_GROUP_INVITE                                 = 0x507,
     CMSG_GROUP_INVITE_RESPONSE                        = 0x542,
-    CMSG_GROUP_RAID_CONVERT                           = 0,
+    CMSG_GROUP_RAID_CONVERT                           = 0x34F,
     CMSG_GROUP_REQUEST_JOIN_UPDATES                   = 0x744,
     CMSG_GROUP_SET_LEADER                             = 0,
-    CMSG_GROUP_SET_ROLES                              = 0,
+    CMSG_GROUP_SET_ROLES                              = 0x302,
     CMSG_GROUP_SWAP_SUB_GROUP                         = 0,
     CMSG_GROUP_UNINVITE                               = 0,
     CMSG_GROUP_UNINVITE_GUID                          = 0,
@@ -914,7 +914,7 @@ enum Opcodes
     SMSG_GROUP_DESTROYED                              = 0xD3A,
     SMSG_GROUP_INVITE                                 = 0xF68,
     SMSG_GROUP_JOINED_BATTLEGROUND                    = 0,
-    SMSG_GROUP_LIST                                   = 0xB3E,
+    SMSG_PARTY_UPDATE                                 = 0xB3E,
     SMSG_GROUP_SET_LEADER                             = 0,//0xA1A,
     SMSG_GROUP_SET_ROLE                               = 0x0A7B, // 5.0.5 16048
     SMSG_GROUP_UNINVITE                               = 0,
@@ -1035,7 +1035,7 @@ enum Opcodes
     SMSG_LF_GUILD_POST_UPDATED                        = 0,
     SMSG_LF_GUILD_RECRUIT_LIST_UPDATED                = 0x0B1D, // 5.0.5 16048
     SMSG_LIST_INVENTORY                               = 0xFDE,
-    SMSG_LOAD_CUF_PROFILES                            = 0,
+    SMSG_LOAD_CUF_PROFILES                            = 0xFC9,  // 5.0.5 16048
     SMSG_LOGIN_SETTIMESPEED                           = 0xC33,  // 5.0.5 16048
     SMSG_LOGIN_VERIFY_WORLD                           = 0xD33,  // 5.0.5 16048
     SMSG_LOGOUT_CANCEL_ACK                            = 0x803,  // 5.0.5 16048
