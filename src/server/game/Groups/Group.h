@@ -313,6 +313,9 @@ class Group
         // FG: evil hacks
         void BroadcastGroupUpdate(void);
 
+        void SetReadyCheckCount(uint8 count) { m_readyCheckCount = count; }
+        uint8 GetReadyCheckCount() { return m_readyCheckCount; }
+
     protected:
         bool _setMembersGroup(uint64 guid, uint8 group);
         void _homebindIfInstance(Player* player);
@@ -345,5 +348,7 @@ class Group
         uint32              m_counter;                      // used only in SMSG_PARTY_UPDATE
         uint32              m_maxEnchantingLevel;
         uint32              m_dbStoreId;                    // Represents the ID used in database (Can be reused by other groups if group was disbanded)
+        uint8               m_readyCheckCount;
+        bool                m_readyCheck;
 };
 #endif

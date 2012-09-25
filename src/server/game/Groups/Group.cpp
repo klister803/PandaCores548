@@ -60,7 +60,7 @@ Loot* Roll::getLoot()
 Group::Group() : m_leaderGuid(0), m_leaderName(""), m_groupType(GROUPTYPE_NORMAL),
     m_dungeonDifficulty(REGULAR_DIFFICULTY), m_raidDifficulty(MAN10_DIFFICULTY),
     m_bgGroup(NULL), m_bfGroup(NULL), m_lootMethod(FREE_FOR_ALL), m_lootThreshold(ITEM_QUALITY_UNCOMMON), m_looterGuid(0),
-    m_subGroupsCounts(NULL), m_guid(0), m_counter(0), m_maxEnchantingLevel(0), m_dbStoreId(0)
+    m_subGroupsCounts(NULL), m_guid(0), m_counter(0), m_maxEnchantingLevel(0), m_dbStoreId(0), m_readyCheckCount(0), m_readyCheck(false)
 {
     for (uint8 i = 0; i < TARGETICONCOUNT; ++i)
         m_targetIcons[i] = 0;
@@ -1750,10 +1750,50 @@ void Group::OfflineReadyCheck()
         Player* player = ObjectAccessor::FindPlayer(citr->guid);
         if (!player || !player->GetSession())
         {
-            WorldPacket data(MSG_RAID_READY_CHECK_CONFIRM, 9);
-            data << uint64(citr->guid);
-            data << uint8(0);
+            bool ready = false;
+            ObjectGuid plGUID = citr->guid;
+            ObjectGuid grpGUID = GetGUID();
+
+            WorldPacket data(SMSG_RAID_READY_CHECK_RESPONSE);
+            data.WriteBit(grpGUID[1]);
+            data.WriteBit(grpGUID[5]);
+            data.WriteBit(plGUID[2]);
+            data.WriteBit(plGUID[6]);
+            data.WriteBit(plGUID[7]);
+            data.WriteBit(plGUID[3]);
+            data.WriteBit(ready);
+            data.WriteBit(plGUID[4]);
+            data.WriteBit(plGUID[5]);
+            data.WriteBit(plGUID[1]);
+            data.WriteBit(grpGUID[6]);
+            data.WriteBit(grpGUID[4]);
+            data.WriteBit(grpGUID[3]);
+            data.WriteBit(grpGUID[0]);
+            data.WriteBit(grpGUID[2]);
+            data.WriteBit(grpGUID[7]);
+            data.WriteBit(plGUID[0]);
+            data.FlushBits();
+
+            data.WriteByteSeq(grpGUID[3]);
+            data.WriteByteSeq(plGUID[4]);
+            data.WriteByteSeq(plGUID[6]);
+            data.WriteByteSeq(grpGUID[1]);
+            data.WriteByteSeq(plGUID[5]);
+            data.WriteByteSeq(grpGUID[7]);
+            data.WriteByteSeq(grpGUID[4]);
+            data.WriteByteSeq(plGUID[1]);
+            data.WriteByteSeq(plGUID[0]);
+            data.WriteByteSeq(grpGUID[6]);
+            data.WriteByteSeq(grpGUID[5]);
+            data.WriteByteSeq(plGUID[7]);
+            data.WriteByteSeq(plGUID[2]);
+            data.WriteByteSeq(grpGUID[0]);
+            data.WriteByteSeq(grpGUID[2]);
+            data.WriteByteSeq(plGUID[3]);
+
             BroadcastReadyCheck(&data);
+
+            m_readyCheckCount++;
         }
     }
 }
