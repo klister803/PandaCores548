@@ -577,6 +577,8 @@ int main(int argc, char ** argv)
     if (mkdir(szWorkDirWmo
 #ifdef __linux__
                     , 0711
+#elif defined(__APPLE__)
+					, 0711
 #endif
                     ))
             success = (errno == EEXIST);

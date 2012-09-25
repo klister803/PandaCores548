@@ -1,6 +1,7 @@
 #ifndef ADT_H
 #define ADT_H
 
+#include <stdio.h>
 #include "loadlib.h"
 
 #define TILESIZE (533.33333f)
