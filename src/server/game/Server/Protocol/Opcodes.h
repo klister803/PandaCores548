@@ -449,6 +449,8 @@ enum Opcodes
     CMSG_QUEST_NPC_QUERY                              = 0x6FD,	// 5.0.5 16048
     CMSG_QUEST_POI_QUERY                              = 0x8B1,	// 5.0.5 16048
     CMSG_QUEST_QUERY                                  = 0x87F,	// 5.0.5 16048
+    CMSG_RAID_LEADER_READY_CHECK                      = 0x709,  // 5.0.5 16048
+    CMSG_RAID_CONFIRM_READY_CHECK                     = 0x112,  // 5.0.5 16048
     CMSG_RANDOMIZE_CHAR_NAME                          = 0,
     CMSG_READY_FOR_ACCOUNT_DATA_TIMES                 = 0x9A2,  // 5.0.5 16048
     CMSG_READ_ITEM                                    = 0,
@@ -662,9 +664,6 @@ enum Opcodes
     MSG_QUERY_GUILD_BANK_TEXT                         = 0,
     MSG_QUERY_NEXT_MAIL_TIME                          = 0x97C,	// 5.0.5 16048
     MSG_QUEST_PUSH_RESULT                             = 0x939,	// 5.0.5 16048
-    MSG_RAID_READY_CHECK                              = 0,
-    MSG_RAID_READY_CHECK_CONFIRM                      = 0,
-    MSG_RAID_READY_CHECK_FINISHED                     = 0,
     MSG_RAID_TARGET_UPDATE                            = 0xF13,	// 5.0.5 16048
     MSG_RANDOM_ROLL                                   = 0,
     MSG_SAVE_GUILD_EMBLEM                             = 0x0C3D, // 5.0.5 16048
@@ -1221,6 +1220,9 @@ enum Opcodes
     SMSG_RAID_INSTANCE_INFO                           = 0,
     SMSG_RAID_INSTANCE_MESSAGE                        = 0,
     SMSG_RAID_MARKERS_CHANGED                         = 0x0BAA, // 5.0.5 16048
+    SMSG_RAID_READY_CHECK_COMPLETED                   = 0xA13,  // 5.0.5 16048
+    SMSG_RAID_READY_CHECK_RESPONSE                    = 0xBDE,  // 5.0.5 16048
+    SMSG_RAID_READY_CHECK_STARTED                     = 0xF28,  // 5.0.5 16048 
     SMSG_RAID_READY_CHECK_THROTTLED_ERROR             = 0,
     SMSG_RAID_SUMMON_FAILED                           = 0x0A4E, // 5.0.5 16048
     SMSG_RANDOMIZE_CHAR_NAME                          = 0x0A9B, // 5.0.5 16048

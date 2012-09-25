@@ -798,51 +798,152 @@ void WorldSession::HandlePartyAssignmentOpcode(WorldPacket& recvData)
     group->SendUpdate();
 }
 
-void WorldSession::HandleRaidReadyCheckOpcode(WorldPacket& recvData)
+void WorldSession::HandleRaidLeaderReadyCheck(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received MSG_RAID_READY_CHECK");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_RAID_LEADER_READY_CHECK");
+
+    recvData.read_skip<uint8>(); // unk, 0x00
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)
         return;
 
-    if (recvData.empty())                                   // request
-    {
-        /** error handling **/
-        if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
-            return;
-        /********************/
+    if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
+        return;
 
-        // everything's fine, do it
-        WorldPacket data(MSG_RAID_READY_CHECK, 8);
-        data << GetPlayer()->GetGUID();
-        group->BroadcastPacket(&data, false, -1);
+    ObjectGuid groupGUID = group->GetGUID();
+    ObjectGuid leaderGUID = GetPlayer()->GetGUID();
 
-        group->OfflineReadyCheck();
-    }
-    else                                                    // answer
-    {
-        uint8 state;
-        recvData >> state;
+    group->SetReadyCheckCount(1);
 
-        // everything's fine, do it
-        WorldPacket data(MSG_RAID_READY_CHECK_CONFIRM, 9);
-        data << uint64(GetPlayer()->GetGUID());
-        data << uint8(state);
-        group->BroadcastReadyCheck(&data);
-    }
+    WorldPacket data(SMSG_RAID_READY_CHECK_STARTED);
+    data << uint32(0x88B8); // unk 5.0.5
+    data << uint8(0x00);    // unk 5.0.5
+
+    data.WriteBit(leaderGUID[3]);
+    data.WriteBit(leaderGUID[5]);
+    data.WriteBit(leaderGUID[2]);
+    data.WriteBit(leaderGUID[7]);
+    data.WriteBit(groupGUID[0]);
+    data.WriteBit(groupGUID[6]);
+    data.WriteBit(groupGUID[5]);
+    data.WriteBit(leaderGUID[6]);
+
+    data.WriteBit(groupGUID[4]);
+    data.WriteBit(groupGUID[1]);
+    data.WriteBit(leaderGUID[2]);
+    data.WriteBit(groupGUID[3]);
+    data.WriteBit(leaderGUID[0]);
+    data.WriteBit(leaderGUID[1]);
+    data.WriteBit(leaderGUID[4]);
+    data.WriteBit(groupGUID[7]);
+
+    data.WriteByteSeq(groupGUID[5]);
+    data.WriteByteSeq(leaderGUID[7]);
+    data.WriteByteSeq(leaderGUID[6]);
+    data.WriteByteSeq(groupGUID[3]);
+    data.WriteByteSeq(groupGUID[1]);
+    data.WriteByteSeq(leaderGUID[2]);
+    data.WriteByteSeq(groupGUID[7]);
+    data.WriteByteSeq(groupGUID[2]);
+    data.WriteByteSeq(leaderGUID[1]);
+    data.WriteByteSeq(groupGUID[4]);
+    data.WriteByteSeq(leaderGUID[5]);
+    data.WriteByteSeq(groupGUID[0]);
+    data.WriteByteSeq(leaderGUID[4]);
+    data.WriteByteSeq(leaderGUID[0]);
+    data.WriteByteSeq(groupGUID[6]);
+    data.WriteByteSeq(leaderGUID[3]);
+
+    group->BroadcastPacket(&data, false, -1);
+
+    group->OfflineReadyCheck();
 }
 
-void WorldSession::HandleRaidReadyCheckFinishedOpcode(WorldPacket& /*recvData*/)
+void WorldSession::HandleRaidConfirmReadyCheck(WorldPacket& recvData)
 {
-    //Group* group = GetPlayer()->GetGroup();
-    //if (!group)
-    //    return;
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_RAID_CONFIRM_READY_CHECK");
 
-    //if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
-    //    return;
+    Group* group = GetPlayer()->GetGroup();
+    if (!group)
+        return;
 
-    // Is any reaction need?
+    recvData.read_skip<uint8>(); // unk, 0x00
+    recvData.ReadBit();
+    recvData.ReadBit();
+
+    bool ready = recvData.ReadBit();
+    ObjectGuid plGUID = GetPlayer()->GetGUID();
+    ObjectGuid grpGUID = group->GetGUID();
+
+    group->SetReadyCheckCount(group->GetReadyCheckCount() +1 );
+
+    WorldPacket data(SMSG_RAID_READY_CHECK_RESPONSE);
+    data.WriteBit(grpGUID[1]);
+    data.WriteBit(grpGUID[5]);
+    data.WriteBit(plGUID[2]);
+    data.WriteBit(plGUID[6]);
+    data.WriteBit(plGUID[7]);
+    data.WriteBit(plGUID[3]);
+    data.WriteBit(ready);
+    data.WriteBit(plGUID[4]);
+    data.WriteBit(plGUID[5]);
+    data.WriteBit(plGUID[1]);
+    data.WriteBit(grpGUID[6]);
+    data.WriteBit(grpGUID[4]);
+    data.WriteBit(grpGUID[3]);
+    data.WriteBit(grpGUID[0]);
+    data.WriteBit(grpGUID[2]);
+    data.WriteBit(grpGUID[7]);
+    data.WriteBit(plGUID[0]);
+    data.FlushBits();
+
+    data.WriteByteSeq(grpGUID[3]);
+    data.WriteByteSeq(plGUID[4]);
+    data.WriteByteSeq(plGUID[6]);
+    data.WriteByteSeq(grpGUID[1]);
+    data.WriteByteSeq(plGUID[5]);
+    data.WriteByteSeq(grpGUID[7]);
+    data.WriteByteSeq(grpGUID[4]);
+    data.WriteByteSeq(plGUID[1]);
+    data.WriteByteSeq(plGUID[0]);
+    data.WriteByteSeq(grpGUID[6]);
+    data.WriteByteSeq(grpGUID[5]);
+    data.WriteByteSeq(plGUID[7]);
+    data.WriteByteSeq(plGUID[2]);
+    data.WriteByteSeq(grpGUID[0]);
+    data.WriteByteSeq(grpGUID[2]);
+    data.WriteByteSeq(plGUID[3]);
+
+    group->BroadcastPacket(&data, true);
+
+    // Send SMSG_RAID_READY_CHECK_COMPLETED
+    if(group->GetReadyCheckCount() >= group->GetMembersCount())
+    {
+        ObjectGuid grpGUID = group->GetGUID();
+
+        data.Initialize(SMSG_RAID_READY_CHECK_COMPLETED);
+        data.WriteBit(grpGUID[2]);
+        data.WriteBit(grpGUID[7]);
+        data.WriteBit(grpGUID[6]);
+        data.WriteBit(grpGUID[4]);
+        data.WriteBit(grpGUID[0]);
+        data.WriteBit(grpGUID[1]);
+        data.WriteBit(grpGUID[3]);
+        data.WriteBit(grpGUID[5]);
+
+        data.WriteByteSeq(grpGUID[3]);
+        data.WriteByteSeq(grpGUID[1]);
+        data << uint8(1);
+        data.WriteByteSeq(grpGUID[2]);
+        data.WriteByteSeq(grpGUID[6]);
+        data.WriteByteSeq(grpGUID[5]);
+        data.WriteByteSeq(grpGUID[7]);
+        data.WriteByteSeq(grpGUID[4]);
+        data.WriteByteSeq(grpGUID[0]);
+        group->BroadcastPacket(&data, true);
+
+    }
 }
 
 void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacket* data)
