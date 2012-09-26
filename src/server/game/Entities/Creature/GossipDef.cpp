@@ -540,8 +540,8 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
         {
             dataBuff << uint32(0); //unk
             dataBuff << uint32(4);
-            dataBuff << uint32(quest->RequiredItemId[i]);
-            dataBuff << uint32(quest->RequiredItemCount[i]);
+            dataBuff << uint32(quest->RequiredCurrencyId[i]);
+            dataBuff << uint32(quest->RequiredCurrencyCount[i]);
             dataBuff << uint32(0);
             dataBuff << questObjectiveText[i];
             dataBuff << uint8(255);
