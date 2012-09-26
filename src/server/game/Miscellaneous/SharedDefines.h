@@ -3144,6 +3144,10 @@ enum SkillType
 	SKILL_LANG_PANDAREN_H		   = 907, // 5.0.5
 	SKILL_NEW_ROGUE				   = 921, // New in MoP 5.0.5
 	SKILL_NEW_SHAMAN			   = 924, // New in MoP 5.0.5
+	SKILL_NEW_PET_IMP			   = 927, // New in MoP 5.0.5
+	SKILL_NEW_PET_VOIDWALKER	   = 928, // New in MoP 5.0.5
+	SKILL_NEW_PET_OBSERVER		   = 930, // New in MoP 5.0.5
+	SKILL_NEW_PET_WRATHGUARD	   = 931, //
 	SKILL_ALL					   = 934, // 5.0.5 Tous - Spécialisations","Les sorts gérant une combinaison de spécialisation se trouvent ici.
 	SKILL_NEW_RUNEFORGING		   = 960, // New in MoP 5.0.5
 	SKILL_WAY_OF_GRILL			   = 975, // New in MoP 5.0.5 (cooking)
