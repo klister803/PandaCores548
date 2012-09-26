@@ -181,7 +181,11 @@ LanguageDesc lang_description[LANGUAGES_COUNT] =
     { LANG_GNOMISH_BINARY,  0, 0                       },
     { LANG_GOBLIN_BINARY,   0, 0                       },
     { LANG_WORGEN,      69270, SKILL_LANG_WORGEN       },
-    { LANG_GOBLIN,      69269, SKILL_LANG_GOBLIN       }
+    { LANG_GOBLIN,      69269, SKILL_LANG_GOBLIN       },
+	{ LANG_PANDAREN_N,  108127,  SKILL_LANG_PANDAREN_N },
+	{ LANG_PANDAREN_H,  108130,  SKILL_LANG_PANDAREN_A },
+	{ LANG_PANDAREN_A,  108131,  SKILL_LANG_PANDAREN_H }
+
 };
 
 LanguageDesc const* GetLanguageDescByID(uint32 lang)
