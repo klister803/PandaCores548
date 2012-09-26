@@ -1,20 +1,20 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
+*
+* This program is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the
+* Free Software Foundation; either version 2 of the License, or (at your
+* option) any later version.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #ifndef TRINITY_SHAREDDEFINES_H
 #define TRINITY_SHAREDDEFINES_H
@@ -90,9 +90,9 @@ enum Races
 
 #define RACEMASK_ALL_PLAYABLE \
     ((1<<(RACE_HUMAN-1))   |(1<<(RACE_ORC-1))          |(1<<(RACE_DWARF-1))   | \
-     (1<<(RACE_NIGHTELF-1))|(1<<(RACE_UNDEAD_PLAYER-1))|(1<<(RACE_TAUREN-1))  | \
-     (1<<(RACE_GNOME-1))   |(1<<(RACE_TROLL-1))        |(1<<(RACE_BLOODELF-1))| \
-     (1<<(RACE_DRAENEI-1)) |(1<<(RACE_GOBLIN-1))       |(1<<(RACE_WORGEN-1)))
+    (1<<(RACE_NIGHTELF-1))|(1<<(RACE_UNDEAD_PLAYER-1))|(1<<(RACE_TAUREN-1))  | \
+    (1<<(RACE_GNOME-1))   |(1<<(RACE_TROLL-1))        |(1<<(RACE_BLOODELF-1))| \
+    (1<<(RACE_DRAENEI-1)) |(1<<(RACE_GOBLIN-1))       |(1<<(RACE_WORGEN-1)))
 
 #define RACEMASK_ALLIANCE \
     ((1<<(RACE_HUMAN-1)) | (1<<(RACE_DWARF-1)) | (1<<(RACE_NIGHTELF-1)) | \
@@ -224,8 +224,8 @@ enum SpellSchoolMask
 
     // 124, not include normal and holy damage
     SPELL_SCHOOL_MASK_SPELL   = (SPELL_SCHOOL_MASK_FIRE   |
-                                  SPELL_SCHOOL_MASK_NATURE | SPELL_SCHOOL_MASK_FROST  |
-                                  SPELL_SCHOOL_MASK_SHADOW | SPELL_SCHOOL_MASK_ARCANE),
+    SPELL_SCHOOL_MASK_NATURE | SPELL_SCHOOL_MASK_FROST  |
+    SPELL_SCHOOL_MASK_SHADOW | SPELL_SCHOOL_MASK_ARCANE),
     // 126
     SPELL_SCHOOL_MASK_MAGIC   = (SPELL_SCHOOL_MASK_HOLY | SPELL_SCHOOL_MASK_SPELL),
 
@@ -758,10 +758,10 @@ enum Language
     LANG_GOBLIN_BINARY  = 38,
     LANG_WORGEN         = 39,
     LANG_GOBLIN         = 40,
-	LANG_PANDAREN_N     = 42,  //Pandaren neutral
-	LANG_PANDAREN_A     = 43,  //Pandaren Alliance
-	LANG_PANDAREN_H     = 44,  //Pandaren Horde
-	LANG_RIKKITUN       = 168,
+    LANG_PANDAREN_N     = 42,  //Pandaren neutral
+    LANG_PANDAREN_A     = 43,  //Pandaren Alliance
+    LANG_PANDAREN_H     = 44,  //Pandaren Horde
+    LANG_RIKKITUN       = 168,
     LANG_ADDON          = 0xFFFFFFFF                        // used by addons, in 2.4.0 not exist, replaced by messagetype?
 };
 
@@ -1962,6 +1962,7 @@ enum TextEmotes
     TEXT_EMOTE_OBJECT               = 450,
     TEXT_EMOTE_SWEAT                = 451,
     TEXT_EMOTE_YW                   = 453,
+    TEXT_EMOTE_READ                 = 456,
 };
 
 // Emotes.dbc
@@ -1997,18 +1998,18 @@ enum Emote
     EMOTE_STATE_POINT               = 29,
     EMOTE_STATE_NONE                = 30,
     EMOTE_ONESHOT_WOUND             = 33,
-    EMOTE_ONESHOT_WOUNDCRITICAL     = 34,
-    EMOTE_ONESHOT_ATTACKUNARMED     = 35,
+    EMOTE_ONESHOT_WOUND_CRITICAL    = 34,
+    EMOTE_ONESHOT_ATTACK_UNARMED    = 35,
     EMOTE_ONESHOT_ATTACK1H          = 36,
     EMOTE_ONESHOT_ATTACK2HTIGHT     = 37,
     EMOTE_ONESHOT_ATTACK2HLOOSE     = 38,
     EMOTE_ONESHOT_PARRYUNARMED      = 39,
-    EMOTE_ONESHOT_PARRYSHIELD       = 43,
+    EMOTE_ONESHOT_PARRY_SHIELD      = 43,
     EMOTE_ONESHOT_READYUNARMED      = 44,
     EMOTE_ONESHOT_READY1H           = 45,
     EMOTE_ONESHOT_READYBOW          = 48,
     EMOTE_ONESHOT_SPELLPRECAST      = 50,
-    EMOTE_ONESHOT_SPELLCAST         = 51,
+    EMOTE_ONESHOT_SPELL_CAST         = 51,
     EMOTE_ONESHOT_BATTLEROAR        = 53,
     EMOTE_ONESHOT_SPECIALATTACK1H   = 54,
     EMOTE_ONESHOT_KICK              = 60,
@@ -2017,14 +2018,14 @@ enum Emote
     EMOTE_STATE_DEAD                = 65,
     EMOTE_ONESHOT_SALUTE            = 66,
     EMOTE_STATE_KNEEL               = 68,
-    EMOTE_STATE_USESTANDING         = 69,
+    EMOTE_STATE_USE_STANDING         = 69,
     EMOTE_ONESHOT_WAVE_NOSHEATHE    = 70,
     EMOTE_ONESHOT_CHEER_NOSHEATHE   = 71,
     EMOTE_ONESHOT_EAT_NOSHEATHE     = 92,
     EMOTE_STATE_STUN_NOSHEATHE      = 93,
     EMOTE_ONESHOT_DANCE             = 94,
     EMOTE_ONESHOT_SALUTE_NOSHEATH   = 113,
-    EMOTE_STATE_USESTANDING_NOSHEATHE = 133,
+    EMOTE_STATE_USE_STANDING_NO_SHEATHE = 133,
     EMOTE_ONESHOT_LAUGH_NOSHEATHE   = 153,
     EMOTE_STATE_WORK                = 173,
     EMOTE_STATE_SPELLPRECAST        = 193,
@@ -2064,22 +2065,22 @@ enum Emote
     EMOTE_ONESHOT_CREATURE_SPECIAL  = 393,
     EMOTE_ONESHOT_JUMPLANDRUN       = 394,
     EMOTE_ONESHOT_JUMPEND           = 395,
-    EMOTE_ONESHOT_TALK_NOSHEATHE    = 396,
-    EMOTE_ONESHOT_POINT_NOSHEATHE   = 397,
+    EMOTE_ONESHOT_TALK_NO_SHEATHE    = 396,
+    EMOTE_ONESHOT_POINT_NO_SHEATHE   = 397,
     EMOTE_STATE_CANNIBALIZE         = 398,
     EMOTE_ONESHOT_JUMPSTART         = 399,
     EMOTE_STATE_DANCESPECIAL        = 400,
     EMOTE_ONESHOT_DANCESPECIAL      = 401,
-    EMOTE_ONESHOT_CUSTOMSPELL01     = 402,
-    EMOTE_ONESHOT_CUSTOMSPELL02     = 403,
-    EMOTE_ONESHOT_CUSTOMSPELL03     = 404,
-    EMOTE_ONESHOT_CUSTOMSPELL04     = 405,
-    EMOTE_ONESHOT_CUSTOMSPELL05     = 406,
-    EMOTE_ONESHOT_CUSTOMSPELL06     = 407,
-    EMOTE_ONESHOT_CUSTOMSPELL07     = 408,
-    EMOTE_ONESHOT_CUSTOMSPELL08     = 409,
-    EMOTE_ONESHOT_CUSTOMSPELL09     = 410,
-    EMOTE_ONESHOT_CUSTOMSPELL10     = 411,
+    EMOTE_ONESHOT_CUSTOM_SPELL_01    = 402,
+    EMOTE_ONESHOT_CUSTOM_SPELL_02    = 403,
+    EMOTE_ONESHOT_CUSTOM_SPELL_03    = 404,
+    EMOTE_ONESHOT_CUSTOM_SPELL_04    = 405,
+    EMOTE_ONESHOT_CUSTOM_SPELL_05    = 406,
+    EMOTE_ONESHOT_CUSTOM_SPELL_06    = 407,
+    EMOTE_ONESHOT_CUSTOM_SPELL_07    = 408,
+    EMOTE_ONESHOT_CUSTOM_SPELL_08    = 409,
+    EMOTE_ONESHOT_CUSTOM_SPELL_09    = 410,
+    EMOTE_ONESHOT_CUSTOM_SPELL_10    = 411,
     EMOTE_STATE_EXCLAIM             = 412,
     EMOTE_STATE_DANCE_CUSTOM        = 413,
     EMOTE_STATE_SIT_CHAIR_MED       = 415,
@@ -2106,7 +2107,7 @@ enum Emote
     EMOTE_ONESHOT_ATTACKRIFLE       = 436,
     EMOTE_STATE_SWIM_IDLE           = 437,
     EMOTE_STATE_ATTACK_UNARMED      = 438,
-    EMOTE_ONESHOT_SPELLCAST         = 439,
+    EMOTE_ONESHOT_SPELLCAST_NEW     = 439,
     EMOTE_ONESHOT_DODGE             = 440,
     EMOTE_ONESHOT_PARRY1H           = 441,
     EMOTE_ONESHOT_PARRY2H           = 442,
@@ -2130,7 +2131,7 @@ enum Emote
     EMOTE_ONESHOT_FLY_DRAGONSPIT    = 460,
     EMOTE_STATE_SIT_CHAIR_LOW       = 461,
     EMOTE_ONE_SHOT_STUN             = 462,
-    EMOTE_ONESHOT_SPELLCAST_OMNI    = 463,
+    EMOTE_ONESHOT_SPELL_CAST_OMNI   = 463,
     EMOTE_STATE_READYTHROWN         = 465,
     EMOTE_ONESHOT_WORK_CHOPWOOD     = 466,
     EMOTE_ONESHOT_WORK_MINING       = 467,
@@ -2138,7 +2139,6 @@ enum Emote
     EMOTE_STATE_SPELL_CHANNEL_DIRECTED = 469,
     EMOTE_STAND_STATE_NONE          = 470,
     EMOTE_STATE_READYJOUST          = 471,
-    EMOTE_STATE_STRANGULATE         = 472,
     EMOTE_STATE_STRANGULATE         = 473,
     EMOTE_STATE_READYSPELLOMNI      = 474,
     EMOTE_STATE_HOLD_JOUST          = 475,
@@ -2688,7 +2688,277 @@ enum Anim
     ANIM_CARRY2H                           = 502,
     ANIM_CARRIED2H                         = 503,
     ANIM_FLY_CARRY2H                       = 504,
-    ANIM_FLY_CARRIED2H                     = 505
+    ANIM_FLY_CARRIED2H                     = 505,
+    ANIM_EMOTESNIFF                        = 506,
+    ANIM_EMOTEFLYSNIFF                     = 507,
+    ANIM_ATTACKFIST1H                      = 508,
+    ANIM_FLYATTACKFIST1H                   = 509,
+    ANIM_ATTACKFIST1HOFF                   = 510,
+    ANIM_FLYATTACKFIST1HOFF                = 511,
+    ANIM_PARRYFIST1H                       = 512,
+    ANIM_FLYPARRYFIST1H                    = 513,
+    ANIM_READYFIST1H                       = 514,
+    ANIM_FLYREADYFIST1H                    = 515,
+    ANIM_SPECIALFIST1H                     = 516,
+    ANIM_FLYSPECIALFIST1H                  = 517,
+    ANIM_EMOTEREADSTART                    = 518,
+    ANIM_FLYEMOTEREADSTART                 = 519,
+    ANIM_EMOTEREADLOOP                     = 520,
+    ANIM_FLYEMOTEREADLOOP                  = 521,
+    ANIM_EMOTEREADEND                      = 522,
+    ANIM_FLYEMOTEREADEND                   = 523,
+    ANIM_SWIMRUN                           = 524,
+    ANIM_FLYSWIMRUN                        = 525,
+    ANIM_SWIMWALK                          = 526,
+    ANIM_FLYSWIMWALK                       = 527,
+    ANIM_SWIMWALKBACKWARDS                 = 528,
+    ANIM_FLYSWIMWALKBACKWARDS              = 529,
+    ANIM_SWIMSPRINT                        = 530,
+    ANIM_FLYSWIMSPRINT                     = 531,
+    ANIM_MOUNTSWIMIDLE                     = 532,
+    ANIM_FLYMOUNTSWIMIDLE                  = 533,
+    ANIM_MOUNTSWIMBACKWARDS                = 534,
+    ANIM_FLYMOUNTSWIMBACKWARDS             = 535,
+    ANIM_MOUNTSWIMLEFT                     = 536,
+    ANIM_FLYMOUNTSWIMLEFT                  = 537,
+    ANIM_MOUNTSWIMRIGHT                    = 538,
+    ANIM_FLYMOUNTSWIMRIGHT                 = 539,
+    ANIM_MOUNTSWIMRUN                      = 540,
+    ANIM_FLYMOUNTSWIMRUN                   = 541,
+    ANIM_MOUNTSWIMSPRINT                   = 542,
+    ANIM_FLYMOUNTSWIMSPRINT                = 543,
+    ANIM_MOUNTSWIMWALK                     = 544,
+    ANIM_FLYMOUNTSWIMWALK                  = 545,
+    ANIM_MOUNTSWIMWALKBACKWARDS            = 546,
+    ANIM_FLYMOUNTSWIMWALKBACKWARDS         = 547,
+    ANIM_MOUNTFLIGHTIDLE                   = 548,
+    ANIM_FLYMOUNTFLIGHTIDLE                = 549,
+    ANIM_MOUNTFLIGHTBACKWARDS              = 550,
+    ANIM_FLYMOUNTFLIGHTBACKWARDS           = 551,
+    ANIM_MOUNTFLIGHTLEFT                   = 552,
+    ANIM_FLYMOUNTFLIGHTLEFT                = 553,
+    ANIM_MOUNTFLIGHTRIGHT                  = 554,
+    ANIM_FLYMOUNTFLIGHTRIGHT               = 555,
+    ANIM_MOUNTFLIGHTRUN                    = 556,
+    ANIM_FLYMOUNTFLIGHTRUN                 = 557,
+    ANIM_MOUNTFLIGHTSPRINT                 = 558,
+    ANIM_FLYMOUNTFLIGHTSPRINT              = 559,
+    ANIM_MOUNTFLIGHTWALK                   = 560,
+    ANIM_FLYMOUNTFLIGHTWALK                = 561,
+    ANIM_MOUNTFLIGHTWALKBACKWARDS          = 562,
+    ANIM_FLYMOUNTFLIGHTWALKBACKWARDS       = 563,
+    ANIM_MOUNTFLIGHTSTART                  = 564,
+    ANIM_FLYMOUNTFLIGHTSTART               = 565,
+    ANIM_MOUNTSWIMSTART                    = 566,
+    ANIM_FLYMOUNTSWIMSTART                 = 567,
+    ANIM_MOUNTSWIMLAND                     = 568,
+    ANIM_FLYMOUNTSWIMLAND                  = 569,
+    ANIM_MOUNTSWIMLANDRUN                  = 570,
+    ANIM_FLYMOUNTSWIMLANDRUN               = 571,
+    ANIM_MOUNTFLIGHTLAND                   = 572,
+    ANIM_FLYMOUNTFLIGHTLAND                = 573,
+    ANIM_MOUNTFLIGHTLANDRUN                = 574,
+    ANIM_FLYMOUNTFLIGHTLANDRUN             = 575,
+    ANIM_READYBLOWDART                     = 576,
+    ANIM_FLYREADYBLOWDART                  = 577,
+    ANIM_LOADBLOWDART                      = 578,
+    ANIM_FLYLOADBLOWDART                   = 579,
+    ANIM_HOLDBLOWDART                      = 580,
+    ANIM_FLYHOLDBLOWDART                   = 581,
+    ANIM_ATTACKBLOWDART                    = 582,
+    ANIM_FLYATTACKBLOWDART                 = 583,
+    ANIM_CARRIAGEMOUNT                     = 584,
+    ANIM_FLYCARRIAGEMOUNT                  = 585,
+    ANIM_CARRIAGEPASSENGERMOUNT            = 586,
+    ANIM_FLYCARRIAGEPASSENGERMOUNT         = 587,
+    ANIM_CARRIAGEMOUNTATTACK               = 588,
+    ANIM_FLYCARRIAGEMOUNTATTACK            = 589,
+    ANIM_BARTENDERSTAND                    = 590,
+    ANIM_FLYBARTENDERSTAND                 = 591,
+    ANIM_BARTENDERWALK                     = 592,
+    ANIM_FLYBARTENDERWALK                  = 593,
+    ANIM_BARTENDERRUN                      = 594,
+    ANIM_FLYBARTENDERRUN                   = 595,
+    ANIM_BARTENDERSHUFFLELEFT              = 596,
+    ANIM_FLYBARTENDERSHUFFLELEFT           = 597,
+    ANIM_BARTENDERSHUFFLERIGHT             = 598,
+    ANIM_FLYBARTENDERSHUFFLERIGHT          = 599,
+    ANIM_BARTENDEREMOTETALK                = 600,
+    ANIM_FLYBARTENDEREMOTETALK             = 601,
+    ANIM_BARTENDEREMOTEPOINT               = 602,
+    ANIM_FLYBARTENDEREMOTEPOINT            = 603,
+    ANIM_BARMAIDSTAND                      = 604,
+    ANIM_FLYBARMAIDSTAND                   = 605,
+    ANIM_BARMAIDWALK                       = 606,
+    ANIM_FLYBARMAIDWALK                    = 607,
+    ANIM_BARMAIDRUN                        = 608,
+    ANIM_FLYBARMAIDRUN                     = 609,
+    ANIM_BARMAIDSHUFFLELEFT                = 610,
+    ANIM_FLYBARMAIDSHUFFLELEFT             = 611,
+    ANIM_BARMAIDSHUFFLERIGHT               = 612,
+    ANIM_FLYBARMAIDSHUFFLERIGHT            = 613,
+    ANIM_BARMAIDEMOTETALK                  = 614,
+    ANIM_FLYBARMAIDEMOTETALK               = 615,
+    ANIM_BARMAIDEMOTEPOINT                 = 616,
+    ANIM_FLYBARMAIDEMOTEPOINT              = 617,
+    ANIM_MOUNTSELFIDLE                     = 618,
+    ANIM_FLYMOUNTSELFIDLE                  = 619,
+    ANIM_MOUNTSELFWALK                     = 620,
+    ANIM_FLYMOUNTSELFWALK                  = 621,
+    ANIM_MOUNTSELFRUN                      = 622,
+    ANIM_FLYMOUNTSELFRUN                   = 623,
+    ANIM_MOUNTSELFSPRINT                   = 624,
+    ANIM_FLYMOUNTSELFSPRINT                = 625,
+    ANIM_MOUNTSELFRUNLEFT                  = 626,
+    ANIM_FLYMOUNTSELFRUNLEFT               = 627,
+    ANIM_MOUNTSELFRUNRIGHT                 = 628,
+    ANIM_FLYMOUNTSELFRUNRIGHT              = 629,
+    ANIM_MOUNTSELFSHUFFLELEFT              = 630,
+    ANIM_FLYMOUNTSELFSHUFFLELEFT           = 631,
+    ANIM_MOUNTSELFSHUFFLERIGHT             = 632,
+    ANIM_FLYMOUNTSELFSHUFFLERIGHT          = 633,
+    ANIM_MOUNTSELFWALKBACKWARDS            = 634,
+    ANIM_FLYMOUNTSELFWALKBACKWARDS         = 635,
+    ANIM_MOUNTSELFSPECIAL                  = 636,
+    ANIM_FLYMOUNTSELFSPECIAL               = 637,
+    ANIM_MOUNTSELFJUMP                     = 638,
+    ANIM_FLYMOUNTSELFJUMP                  = 639,
+    ANIM_MOUNTSELFJUMPSTART                = 640,
+    ANIM_FLYMOUNTSELFJUMPSTART             = 641,
+    ANIM_MOUNTSELFJUMPEND                  = 642,
+    ANIM_FLYMOUNTSELFJUMPEND               = 643,
+    ANIM_MOUNTSELFJUMPLANDRUN              = 644,
+    ANIM_FLYMOUNTSELFJUMPLANDRUN           = 645,
+    ANIM_MOUNTSELFSTART                    = 646,
+    ANIM_FLYMOUNTSELFSTART                 = 647,
+    ANIM_MOUNTSELFFALL                     = 648,
+    ANIM_FLYMOUNTSELFFALL                  = 649,
+    ANIM_STORMSTRIKE                       = 650,
+    ANIM_FLYSTORMSTRIKE                    = 651,
+    ANIM_READYJOUSTNOSHEATHE               = 652,
+    ANIM_FLYREADYJOUSTNOSHEATHE            = 653,
+    ANIM_SLAM                              = 654,
+    ANIM_FLYSLAM                           = 655,
+    ANIM_DEATHSTRIKE                       = 656,
+    ANIM_FLYDEATHSTRIKE                    = 657,
+    ANIM_SWIMATTACKUNARMED                 = 658,
+    ANIM_FLYSWIMATTACKUNARMED              = 659,
+    ANIM_SPINNINGKICK                      = 660,
+    ANIM_FLYSPINNINGKICK                   = 661,
+    ANIM_ROUNDHOUSEKICK                    = 662,
+    ANIM_FLYROUNDHOUSEKICK                 = 663,
+    ANIM_ROLLSTART                         = 664,
+    ANIM_FLYROLLSTART                      = 665,
+    ANIM_ROLL                              = 666,
+    ANIM_FLYROLL                           = 667,
+    ANIM_ROLLEND                           = 668,
+    ANIM_FLYROLLEND                        = 669,
+    ANIM_PALMSTRIKE                        = 670,
+    ANIM_FLYPALMSTRIKE                     = 671,
+    ANIM_MONKOFFENSEATTACKUNARMED          = 672,
+    ANIM_FLYMONKOFFENSEATTACKUNARMED       = 673,
+    ANIM_MONKOFFENSEATTACKUNARMEDOFF       = 674,
+    ANIM_FLYMONKOFFENSEATTACKUNARMEDOFF    = 675,
+    ANIM_MONKOFFENSEPARRYUNARMED           = 676,
+    ANIM_FLYMONKOFFENSEPARRYUNARMED        = 677,
+    ANIM_MONKOFFENSEREADYUNARMED           = 678,
+    ANIM_FLYMONKOFFENSEREADYUNARMED        = 679,
+    ANIM_MONKOFFENSESPECIALUNARMED         = 680,
+    ANIM_FLYMONKOFFENSESPECIALUNARMED      = 681,
+    ANIM_MONKDEFENSEATTACKUNARMED          = 682,
+    ANIM_FLYMONKDEFENSEATTACKUNARMED       = 683,
+    ANIM_MONKDEFENSEATTACKUNARMEDOFF       = 684,
+    ANIM_FLYMONKDEFENSEATTACKUNARMEDOF     = 685,
+    ANIM_MONKDEFENSEPARRYUNARMED           = 686,
+    ANIM_FLYMONKDEFENSEPARRYUNARMED        = 687,
+    ANIM_MONKDEFENSEREADYUNARMED           = 688,
+    ANIM_FLYMONKDEFENSEREADYUNARMED        = 689,
+    ANIM_MONKDEFENSESPECIALUNARMED         = 690,
+    ANIM_FLYMONKDEFENSESPECIALUNARMED      = 691,
+    ANIM_MONKHEALATTACKUNARMED             = 692,
+    ANIM_FLYMONKHEALATTACKUNARMED          = 693,
+    ANIM_MONKHEALATTACKUNARMEDOFF          = 694,
+    ANIM_FLYMONKHEALATTACKUNARMEDOFF       = 695,
+    ANIM_MONKHEALPARRYUNARMED              = 696,
+    ANIM_FLYMONKHEALPARRYUNARMED           = 697,
+    ANIM_MONKHEALREADYUNARMED              = 698,
+    ANIM_FLYMONKHEALREADYUNARMED           = 699,
+    ANIM_MONKHEALSPECIALUNARMED            = 700,
+    ANIM_FLYMONKHEALSPECIALUNARMED         = 701,
+    ANIM_FLYINGKICK                        = 702,
+    ANIM_FLYFLYINGKICK                     = 703,
+    ANIM_FLYINGKICKSTART                   = 704,
+    ANIM_FLYFLYINGKICKSTART                = 705,
+    ANIM_FLYINGKICKEND                     = 706,
+    ANIM_FLYFLYINGKICKEND                  = 707,
+    ANIM_CRANESTART                        = 708,
+    ANIM_FLYCRANESTART                     = 709,
+    ANIM_CRANELOOP                         = 710,
+    ANIM_FLYCRANELOOP                      = 711,
+    ANIM_CRANEEND                          = 712,
+    ANIM_FLYCRANEEND                       = 713,
+    ANIM_DESPAWNED                         = 714,
+    ANIM_FLYDESPAWNED                      = 715,
+    ANIM_THOUSANDFISTS                     = 716,
+    ANIM_FLYTHOUSANDFISTS                  = 717,
+    ANIM_MONKHEALREADYSPELLDIRECTED        = 718,
+    ANIM_FLYMONKHEALREADYSPELLDIRECTED     = 719,
+    ANIM_MONKHEALREADYSPELLOMNI            = 720,
+    ANIM_FLYMONKHEALREADYSPELLOMNI         = 721,
+    ANIM_MONKHEALSPELLCASTDIRECTED         = 722,
+    ANIM_FLYMONKHEALSPELLCASTDIRECTED      = 723,
+    ANIM_MONKHEALSPELLCASTOMNI             = 724,
+    ANIM_FLYMONKHEALSPELLCASTOMNI          = 725,
+    ANIM_MONKHEALCHANNELCASTDIRECTED       = 726,
+    ANIM_FLYMONKHEALCHANNELCASTDIRECTE     = 727,
+    ANIM_MONKHEALCHANNELCASTOMNI           = 728,
+    ANIM_FLYMONKHEALCHANNELCASTOMNI        = 729,
+    ANIM_TORPEDO                           = 730,
+    ANIM_FLYTORPEDO                        = 731,
+    ANIM_MEDITATE                          = 732,
+    ANIM_FLYMEDITATE                       = 733,
+    ANIM_BREATHOFFIRE                      = 734,
+    ANIM_FLYBREATHOFFIRE                   = 735,
+    ANIM_RISINGSUNKICK                     = 736,
+    ANIM_FLYRISINGSUNKICK                  = 737,
+    ANIM_GROUNDKICK                        = 738,
+    ANIM_FLYGROUNDKICK                     = 739,
+    ANIM_KICKBACK                          = 740,
+    ANIM_FLYKICKBACK                       = 741,
+    ANIM_PETBATTLESTAND                    = 742,
+    ANIM_FLYPETBATTLESTAND                 = 743,
+    ANIM_PETBATTLEDEATH                    = 744,
+    ANIM_FLYPETBATTLEDEATH                 = 745,
+    ANIM_PETBATTLERUN                      = 746,
+    ANIM_FLYPETBATTLERUN                   = 747,
+    ANIM_PETBATTLEWOUND                    = 748,
+    ANIM_FLYPETBATTLEWOUND                 = 749,
+    ANIM_PETBATTLEATTACK                   = 750,
+    ANIM_FLYPETBATTLEATTACK                = 751,
+    ANIM_PETBATTLEREADYSPELL               = 752,
+    ANIM_FLYPETBATTLEREADYSPELL            = 753,
+    ANIM_PETBATTLESPELLCAST                = 754,
+    ANIM_FLYPETBATTLESPELLCAST             = 755,
+    ANIM_PETBATTLECUSTOM0                  = 756,
+    ANIM_FLYPETBATTLECUSTOM0               = 757,
+    ANIM_PETBATTLECUSTOM1                  = 758,
+    ANIM_FLYPETBATTLECUSTOM1               = 759,
+    ANIM_PETBATTLECUSTOM2                  = 760,
+    ANIM_FLYPETBATTLECUSTOM2               = 761,
+    ANIM_PETBATTLECUSTOM3                  = 762,
+    ANIM_FLYPETBATTLECUSTOM3               = 763,
+    ANIM_PETBATTLEVICTORY                  = 764,
+    ANIM_FLYPETBATTLEVICTORY               = 765,
+    ANIM_PETBATTLELOSS                     = 766,
+    ANIM_FLYPETBATTLELOSS                  = 767,
+    ANIM_PETBATTLESTUN                     = 768,
+    ANIM_FLYPETBATTLESTUN                  = 769,
+    ANIM_PETBATTLEDEAD                     = 770,
+    ANIM_FLYPETBATTLEDEAD                  = 771,
+    ANIM_PETBATTLEFREEZE                   = 772,
+    ANIM_FLYPETBATTLEFREEZE                = 773,
+    ANIM_MONKOFFENSEATTACKWEAPON           = 774,
+    ANIM_FLYMONKOFFENSEATTACKWEAPON        = 775,
 };
 
 enum LockKeyType
@@ -2720,12 +2990,14 @@ enum LockType
     LOCKTYPE_SLOW_CLOSE            = 18,
     LOCKTYPE_FISHING               = 19,
     LOCKTYPE_INSCRIPTION           = 20,
-    LOCKTYPE_OPEN_FROM_VEHICLE     = 21
+    LOCKTYPE_OPEN_FROM_VEHICLE     = 21,
+    LOCKTYPE_ARCHEOLOGY_INSPECT    = 22,
+    LOCKTYPE_QUICK_OPEN_JCJ        = 23
 };
 
 enum TrainerType                                            // this is important type for npcs!
 {
-    TRAINER_TYPE_CLASS             = 0,
+    TRAINER_TYPE_CLASS             = 0,                     // TODO: Not in MoP
     TRAINER_TYPE_MOUNTS            = 1,                     // on blizz it's 2
     TRAINER_TYPE_TRADESKILLS       = 2,
     TRAINER_TYPE_PETS              = 3
@@ -2748,7 +3020,8 @@ enum CreatureType
     CREATURE_TYPE_NOT_SPECIFIED    = 10,
     CREATURE_TYPE_TOTEM            = 11,
     CREATURE_TYPE_NON_COMBAT_PET   = 12,
-    CREATURE_TYPE_GAS_CLOUD        = 13
+    CREATURE_TYPE_GAS_CLOUD        = 13,
+    CREATURE_TYPE_WILD_PET         = 14     // New on MoP 5.0.5
 };
 
 uint32 const CREATURE_TYPEMASK_DEMON_OR_UNDEAD = (1 << (CREATURE_TYPE_DEMON-1)) | (1 << (CREATURE_TYPE_UNDEAD-1));
@@ -2809,7 +3082,21 @@ enum CreatureFamily
     CREATURE_FAMILY_BEETLE_OLD          = 57,
     CREATURE_FAMILY_SILITHID_2          = 59,
     CREATURE_FAMILY_WASP_2              = 66,
-    CREATURE_FAMILY_HYDRA               = 68,
+    CREATURE_FAMILY_HYDRA               = 68,       // New on MoP 5.0.5
+    CREATURE_FAMILY_FEL_IMP             = 100,      // New on MoP 5.0.5
+    CREATURE_FAMILY_VOID_WALKER         = 101,      // New on MoP 5.0.5
+    CREATURE_FAMILY_SHIVARRA            = 102,      // New on MoP 5.0.5
+    CREATURE_FAMILY_OBSERVER            = 103,      // New on MoP 5.0.5
+    CREATURE_FAMILY_WRATH_GUARD         = 104,      // New on MoP 5.0.5
+    CREATURE_FAMILY_INFERNAL            = 108,      // New on MoP 5.0.5
+    CREATURE_FAMILY_ELEMENTAL_FIRE_TOTEM = 116,     // New on MoP 5.0.5
+    CREATURE_FAMILY_ELEMENTAL_EARTH_TOTEM =117,     // New on MoP 5.0.5
+    CREATURE_FAMILY_MONK_CRANEKICK      = 125,      // New on MoP 5.0.5
+    CREATURE_FAMILY_ELEMENTAL_MOTE      = 126,      // New on MoP 5.0.5
+    CREATURE_FAMILY_BOAR_NEW            = 127,      // New on MoP 5.0.5
+    CREATURE_FAMILY_CAT_NEW             = 128,      // New on MoP 5.0.5
+    CREATURE_FAMILY_MOUNTAINRAM         = 129,      // New on MoP 5.0.5
+    CREATURE_FAMILY_CROCOLISK_NEW       = 130       // New on MoP 5.0.5
 };
 
 enum CreatureTypeFlags
@@ -2921,7 +3208,9 @@ enum QuestTypes
     QUEST_TYPE_ESCORT              = 84,
     QUEST_TYPE_HEROIC              = 85,
     QUEST_TYPE_RAID_10             = 88,
-    QUEST_TYPE_RAID_25             = 89
+    QUEST_TYPE_RAID_25             = 89,
+    QUEST_TYPE_SCENARIO            = 98, // New on MoP 5.0.5
+    QUEST_TYPE_ACCOUNT             = 102 // New on MoP 5.0.5
 };
 
 // values based at QuestSort.dbc
@@ -2973,22 +3262,27 @@ enum QuestSort
     QUEST_SORT_FIRELANDS_INVASION  = 379,
     QUEST_SORT_ZANDALARI           = 380,
     QUEST_SORT_ELEMENTAL_BONDS     = 381,
+    QUEST_SORT_BREWMASTER_PANDAREN = 391, // New on MoP 5.0.5
+    QUEST_SORT_SCENARIO            = 392, // New on MoP 5.0.5
+    QUEST_SORT_BATTLE_PET          = 394, // New on MoP 5.0.5
+    QUEST_SORT_MONK                = 395, // New on MoP 5.0.5
 };
 
 inline uint8 ClassByQuestSort(int32 QuestSort)
 {
     switch (QuestSort)
     {
-        case QUEST_SORT_WARLOCK:        return CLASS_WARLOCK;
-        case QUEST_SORT_WARRIOR:        return CLASS_WARRIOR;
-        case QUEST_SORT_SHAMAN:         return CLASS_SHAMAN;
-        case QUEST_SORT_PALADIN:        return CLASS_PALADIN;
-        case QUEST_SORT_MAGE:           return CLASS_MAGE;
-        case QUEST_SORT_ROGUE:          return CLASS_ROGUE;
-        case QUEST_SORT_HUNTER:         return CLASS_HUNTER;
-        case QUEST_SORT_PRIEST:         return CLASS_PRIEST;
-        case QUEST_SORT_DRUID:          return CLASS_DRUID;
-        case QUEST_SORT_DEATH_KNIGHT:   return CLASS_DEATH_KNIGHT;
+    case QUEST_SORT_WARLOCK:        return CLASS_WARLOCK;
+    case QUEST_SORT_WARRIOR:        return CLASS_WARRIOR;
+    case QUEST_SORT_SHAMAN:         return CLASS_SHAMAN;
+    case QUEST_SORT_PALADIN:        return CLASS_PALADIN;
+    case QUEST_SORT_MAGE:           return CLASS_MAGE;
+    case QUEST_SORT_ROGUE:          return CLASS_ROGUE;
+    case QUEST_SORT_HUNTER:         return CLASS_HUNTER;
+    case QUEST_SORT_PRIEST:         return CLASS_PRIEST;
+    case QUEST_SORT_DRUID:          return CLASS_DRUID;
+    case QUEST_SORT_DEATH_KNIGHT:   return CLASS_DEATH_KNIGHT;
+    case QUEST_SORT_MONK:           return CLASS_MONK;      // New on MoP 5.0.5
     }
     return 0;
 }
@@ -3171,31 +3465,31 @@ enum SkillType
     SKILL_PET_BEETLE               = 818,
     SKILL_ALL_GUILD_PERKS          = 821,
     SKILL_PET_HYDRA                = 824,
-	SKILL_GENERAL_MONK			   = 829, //GENERAL? 5.0.5
-	SKILL_NEW_WARRIOR			   = 840, // New on MoP 5.0.5
-	SKILL_NEW_WARLOCK			   = 849, // New in MoP 5.0.5
-	SKILL_RACIAL_PANDAREN		   = 899, // 5.0.5
-	SKILL_NEW_MAGE				   = 904, // New in MoP 5.0.5
-	SKILL_LANG_PANDAREN_N		   = 905, // 5.0.5
-	SKILL_LANG_PANDAREN_A		   = 906, // 5.0.5
-	SKILL_LANG_PANDAREN_H		   = 907, // 5.0.5
-	SKILL_NEW_ROGUE				   = 921, // New in MoP 5.0.5
-	SKILL_NEW_SHAMAN			   = 924, // New in MoP 5.0.5
-	SKILL_NEW_PET_IMP			   = 927, // New in MoP 5.0.5
-	SKILL_NEW_PET_VOIDWALKER	   = 928, // New in MoP 5.0.5
-	SKILL_NEW_PET_OBSERVER		   = 930, // New in MoP 5.0.5
-	SKILL_NEW_PET_WRATHGUARD	   = 931, // New in MoP 5.0.5
-	SKILL_ALL					   = 934, // 5.0.5 Tous - Spécialisations","Les sorts gérant une combinaison de spécialisation se trouvent ici.
-	SKILL_NEW_RUNEFORGING		   = 960, // New in MoP 5.0.5
-	SKILL_WAY_OF_GRILL			   = 975, // New in MoP 5.0.5 (cooking)
-	SKILL_WAY_OF_WOK			   = 976, // New in MoP 5.0.5 (cooking)
-	SKILL_WAY_OF_POT			   = 977, // New in MoP 5.0.5 (cooking)
-	SKILL_WAY_OF_STEAMER		   = 978, // New in MoP 5.0.5 (cooking)
-	SKILL_WAY_OF_OVEN			   = 979, // New in MoP 5.0.5 (cooking)
-	SKILL_WAY_OF_BREW			   = 980, // New in MoP 5.0.5 (cooking)
-	SKILL_APPRENTICE_COOKING	   = 981, // New in MoP 5.0.5 (cooking)
-	SKILL_JOURNEYMAN_COOKBOOK	   = 982, // New in MoP 5.0.5 (cooking)
-	SKILL_NO_PLAYER				   = 999, // Last on DBC
+    SKILL_GENERAL_MONK			   = 829, //GENERAL? 5.0.5
+    SKILL_NEW_WARRIOR			   = 840, // New on MoP 5.0.5
+    SKILL_NEW_WARLOCK			   = 849, // New in MoP 5.0.5
+    SKILL_RACIAL_PANDAREN		   = 899, // 5.0.5
+    SKILL_NEW_MAGE				   = 904, // New in MoP 5.0.5
+    SKILL_LANG_PANDAREN_N		   = 905, // 5.0.5
+    SKILL_LANG_PANDAREN_A		   = 906, // 5.0.5
+    SKILL_LANG_PANDAREN_H		   = 907, // 5.0.5
+    SKILL_NEW_ROGUE				   = 921, // New in MoP 5.0.5
+    SKILL_NEW_SHAMAN			   = 924, // New in MoP 5.0.5
+    SKILL_NEW_PET_IMP			   = 927, // New in MoP 5.0.5
+    SKILL_NEW_PET_VOIDWALKER	   = 928, // New in MoP 5.0.5
+    SKILL_NEW_PET_OBSERVER		   = 930, // New in MoP 5.0.5
+    SKILL_NEW_PET_WRATHGUARD	   = 931, // New in MoP 5.0.5
+    SKILL_ALL					   = 934, // 5.0.5 Tous - Spécialisations","Les sorts gérant une combinaison de spécialisation se trouvent ici.
+    SKILL_NEW_RUNEFORGING		   = 960, // New in MoP 5.0.5
+    SKILL_WAY_OF_GRILL			   = 975, // New in MoP 5.0.5 (cooking)
+    SKILL_WAY_OF_WOK			   = 976, // New in MoP 5.0.5 (cooking)
+    SKILL_WAY_OF_POT			   = 977, // New in MoP 5.0.5 (cooking)
+    SKILL_WAY_OF_STEAMER		   = 978, // New in MoP 5.0.5 (cooking)
+    SKILL_WAY_OF_OVEN			   = 979, // New in MoP 5.0.5 (cooking)
+    SKILL_WAY_OF_BREW			   = 980, // New in MoP 5.0.5 (cooking)
+    SKILL_APPRENTICE_COOKING	   = 981, // New in MoP 5.0.5 (cooking)
+    SKILL_JOURNEYMAN_COOKBOOK	   = 982, // New in MoP 5.0.5 (cooking)
+    SKILL_NO_PLAYER				   = 999, // Last on DBC
 };
 
 #define MAX_SKILL_TYPE               825
@@ -3204,12 +3498,12 @@ inline SkillType SkillByLockType(LockType locktype)
 {
     switch (locktype)
     {
-        case LOCKTYPE_PICKLOCK:    return SKILL_LOCKPICKING;
-        case LOCKTYPE_HERBALISM:   return SKILL_HERBALISM;
-        case LOCKTYPE_MINING:      return SKILL_MINING;
-        case LOCKTYPE_FISHING:     return SKILL_FISHING;
-        case LOCKTYPE_INSCRIPTION: return SKILL_INSCRIPTION;
-        default: break;
+    case LOCKTYPE_PICKLOCK:    return SKILL_LOCKPICKING;
+    case LOCKTYPE_HERBALISM:   return SKILL_HERBALISM;
+    case LOCKTYPE_MINING:      return SKILL_MINING;
+    case LOCKTYPE_FISHING:     return SKILL_FISHING;
+    case LOCKTYPE_INSCRIPTION: return SKILL_INSCRIPTION;
+    default: break;
     }
     return SKILL_NONE;
 }
@@ -3218,18 +3512,18 @@ inline uint32 SkillByQuestSort(int32 QuestSort)
 {
     switch (QuestSort)
     {
-        case QUEST_SORT_HERBALISM:      return SKILL_HERBALISM;
-        case QUEST_SORT_FISHING:        return SKILL_FISHING;
-        case QUEST_SORT_BLACKSMITHING:  return SKILL_BLACKSMITHING;
-        case QUEST_SORT_ALCHEMY:        return SKILL_ALCHEMY;
-        case QUEST_SORT_LEATHERWORKING: return SKILL_LEATHERWORKING;
-        case QUEST_SORT_ENGINEERING:    return SKILL_ENGINEERING;
-        case QUEST_SORT_TAILORING:      return SKILL_TAILORING;
-        case QUEST_SORT_COOKING:        return SKILL_COOKING;
-        case QUEST_SORT_FIRST_AID:      return SKILL_FIRST_AID;
-        case QUEST_SORT_JEWELCRAFTING:  return SKILL_JEWELCRAFTING;
-        case QUEST_SORT_INSCRIPTION:    return SKILL_INSCRIPTION;
-        case QUEST_SORT_ARCHAEOLOGY:    return SKILL_ARCHAEOLOGY;
+    case QUEST_SORT_HERBALISM:      return SKILL_HERBALISM;
+    case QUEST_SORT_FISHING:        return SKILL_FISHING;
+    case QUEST_SORT_BLACKSMITHING:  return SKILL_BLACKSMITHING;
+    case QUEST_SORT_ALCHEMY:        return SKILL_ALCHEMY;
+    case QUEST_SORT_LEATHERWORKING: return SKILL_LEATHERWORKING;
+    case QUEST_SORT_ENGINEERING:    return SKILL_ENGINEERING;
+    case QUEST_SORT_TAILORING:      return SKILL_TAILORING;
+    case QUEST_SORT_COOKING:        return SKILL_COOKING;
+    case QUEST_SORT_FIRST_AID:      return SKILL_FIRST_AID;
+    case QUEST_SORT_JEWELCRAFTING:  return SKILL_JEWELCRAFTING;
+    case QUEST_SORT_INSCRIPTION:    return SKILL_INSCRIPTION;
+    case QUEST_SORT_ARCHAEOLOGY:    return SKILL_ARCHAEOLOGY;
     }
     return 0;
 }
@@ -3456,7 +3750,7 @@ enum SummonCategory
     SUMMON_CATEGORY_PUPPET      = 3,
     SUMMON_CATEGORY_VEHICLE     = 4,
     SUMMON_CATEGORY_UNK         = 5, // as of patch 3.3.5a only Bone Spike in Icecrown Citadel
-                                     // uses this category
+    // uses this category
 };
 
 enum SummonType
@@ -3727,7 +4021,7 @@ enum TradeStatus
     TRADE_STATUS_BUSY_2 = 24, //$s is busy
     TRADE_STATUS_TRADE_COMPLETE = 25,
     TRADE_STATUS_CURRENCY = 26,
-    
+
     // = 27,
     // 28 - nonexistent
     TRADE_STATUS_ONLY_CONJURED = 29,
