@@ -780,6 +780,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     SpellShapeshiftId = spellEntry->SpellShapeshiftId;
     SpellTargetRestrictionsId = spellEntry->SpellTargetRestrictionsId;
     SpellTotemsId = spellEntry->SpellTotemsId;
+    SpellMiscId = spellEntry->SpellMiscId;
 
     // SpellDifficultyEntry
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -861,7 +862,7 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry)
     ManaCost = _power ? _power->manaCost : 0;
     ManaCostPercentage = _power ? _power->ManaCostPercentage : 0;
     ManaPerSecond = _power ? _power->manaPerSecond : 0;
-    PowerType = _power ? _power->powerType : POWER_MANA;
+    PowerType = _power ? _power->powerType : POWER_MANA; 
 
     // SpellMiscEntry
     SpellMiscEntry const* _misc = GetSpellMisc();
