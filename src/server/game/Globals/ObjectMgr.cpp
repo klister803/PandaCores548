@@ -181,7 +181,11 @@ LanguageDesc lang_description[LANGUAGES_COUNT] =
     { LANG_GNOMISH_BINARY,  0, 0                       },
     { LANG_GOBLIN_BINARY,   0, 0                       },
     { LANG_WORGEN,      69270, SKILL_LANG_WORGEN       },
-    { LANG_GOBLIN,      69269, SKILL_LANG_GOBLIN       }
+    { LANG_GOBLIN,      69269, SKILL_LANG_GOBLIN       },
+	{ LANG_PANDAREN_N,  108127,  SKILL_LANG_PANDAREN_N },
+	{ LANG_PANDAREN_H,  108130,  SKILL_LANG_PANDAREN_A },
+	{ LANG_PANDAREN_A,  108131,  SKILL_LANG_PANDAREN_H }
+
 };
 
 LanguageDesc const* GetLanguageDescByID(uint32 lang)
@@ -389,7 +393,7 @@ void ObjectMgr::LoadCreatureTemplates()
         return;
     }
 
-    _creatureTemplateStore.rehash(result->GetRowCount());
+    //_creatureTemplateStore.rehash(result->GetRowCount());
     uint32 count = 0;
     do
     {
@@ -1119,7 +1123,7 @@ void ObjectMgr::LoadCreatureModelInfo()
         return;
     }
 
-    _creatureModelStore.rehash(result->GetRowCount());
+    //_creatureModelStore.rehash(result->GetRowCount());
     uint32 count = 0;
 
     do
@@ -1416,7 +1420,7 @@ void ObjectMgr::LoadCreatures()
                 if (GetMapDifficultyData(i, Difficulty(k)))
                     spawnMasks[i] |= (1 << k);
 
-    _creatureDataStore.rehash(result->GetRowCount());
+    //_creatureDataStore.rehash(result->GetRowCount());
     uint32 count = 0;
     do
     {
@@ -1725,7 +1729,7 @@ void ObjectMgr::LoadGameobjects()
                 if (GetMapDifficultyData(i, Difficulty(k)))
                     spawnMasks[i] |= (1 << k);
 
-    _gameObjectDataStore.rehash(result->GetRowCount());
+    //_gameObjectDataStore.rehash(result->GetRowCount());
     do
     {
         Field* fields = result->Fetch();
@@ -5048,7 +5052,7 @@ void ObjectMgr::LoadGossipText()
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u npc texts", count);
         return;
     }
-    _gossipTextStore.rehash(result->GetRowCount());
+    //_gossipTextStore.rehash(result->GetRowCount());
 
     int cic;
 
@@ -6239,7 +6243,7 @@ void ObjectMgr::LoadGameObjectTemplate()
         return;
     }
 
-    _gameObjectTemplateStore.rehash(result->GetRowCount());
+    //_gameObjectTemplateStore.rehash(result->GetRowCount());
     uint32 count = 0;
     do
     {

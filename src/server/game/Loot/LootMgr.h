@@ -360,8 +360,10 @@ struct LootView
     Loot &loot;
     Player* viewer;
     PermissionTypes permission;
-    LootView(Loot &_loot, Player* _viewer, PermissionTypes _permission = ALL_PERMISSION)
-        : loot(_loot), viewer(_viewer), permission(_permission) {}
+    uint8 _loot_type;
+    ObjectGuid _guid;
+    LootView(Loot &_loot, Player* _viewer, uint8 loot_type, uint64 guid, PermissionTypes _permission = ALL_PERMISSION)
+        : loot(_loot), viewer(_viewer), _loot_type(loot_type), _guid(ObjectGuid(guid)), permission(_permission) {}
 };
 
 extern LootStore LootTemplates_Creature;

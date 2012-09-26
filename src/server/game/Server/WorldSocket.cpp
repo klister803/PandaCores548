@@ -826,7 +826,7 @@ void WorldSocket::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
     }
     packet.FlushBits();
 
-    packet << uint8(0);
+    packet << uint8(4);
     packet << uint8(4); // Expansion
 
     for(uint32 i = 0; i < realmClassCount; i++)
@@ -921,7 +921,7 @@ void WorldSocket::SendAuthResponse(uint8 code, bool queued, uint32 queuePos)
         packet << uint8(0);                                // expansion
     }*/
 
-    packet << uint8(0);                                    // BillingPlanFlags
+    packet << uint8(4);                                    // BillingPlanFlags
     packet << uint8(code);   
 
     SendPacket(packet);

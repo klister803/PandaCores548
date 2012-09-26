@@ -673,6 +673,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_regenTimer = 0;
     m_regenTimerCount = 0;
     m_holyPowerRegenTimerCount = 0;
+    m_chiPowerRegenTimerCount = 0;
     m_focusRegenTimerCount = 0;
     m_weaponChangeTimer = 0;
 
@@ -2560,6 +2561,9 @@ void Player::RegenerateAll()
     if (getClass() == CLASS_PALADIN)
         m_holyPowerRegenTimerCount += m_regenTimer;
 
+    if (getClass() == CLASS_MONK)
+        m_chiPowerRegenTimerCount += m_regenTimer;
+
     if (getClass() == CLASS_HUNTER)
         m_focusRegenTimerCount += m_regenTimer;
 
@@ -2613,6 +2617,12 @@ void Player::RegenerateAll()
     {
         Regenerate(POWER_HOLY_POWER);
         m_holyPowerRegenTimerCount -= 10000;
+    }
+
+    if (m_chiPowerRegenTimerCount >= 10000 && getClass() == CLASS_MONK)
+    {
+        Regenerate(POWER_CHI);
+        m_chiPowerRegenTimerCount -= 10000;
     }
 
     m_regenTimer = 0;
@@ -2683,6 +2693,12 @@ void Player::Regenerate(Powers power)
         case POWER_RUNES:
         case POWER_HEALTH:
             break;
+        case POWER_CHI:                                          // Regenerate chi
+        {
+            if (!isInCombat())
+                addvalue += -1.0f;      // remove 1 each 10 sec
+        }
+        break;
         default:
             break;
     }
@@ -8880,8 +8896,26 @@ void Player::RemovedInsignia(Player* looterPlr)
 
 void Player::SendLootRelease(uint64 guid)
 {
-    WorldPacket data(SMSG_LOOT_RELEASE_RESPONSE, (8+1));
-    data << uint64(guid) << uint8(1);
+    WorldPacket data(SMSG_LOOT_RELEASE_RESPONSE);
+    ObjectGuid guidd(guid);
+    data.WriteBit(guidd[6]);
+    data.WriteBit(guidd[0]);
+    data.WriteBit(guidd[3]);
+    data.WriteBit(guidd[1]);
+    data.WriteBit(guidd[4]);
+    data.WriteBit(guidd[7]);
+    data.WriteBit(guidd[2]);
+    data.WriteBit(guidd[5]);
+
+    data.WriteByteSeq(guidd[6]);
+    data.WriteByteSeq(guidd[0]);
+    data.WriteByteSeq(guidd[2]);
+    data.WriteByteSeq(guidd[7]);
+    data.WriteByteSeq(guidd[4]);
+    data.WriteByteSeq(guidd[1]);
+    data.WriteByteSeq(guidd[5]);
+    data.WriteByteSeq(guidd[3]);
+
     SendDirectMessage(&data);
 }
 
@@ -9183,10 +9217,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
     // need know merged fishing/corpse loot type for achievements
     loot->loot_type = loot_type;
 
-    WorldPacket data(SMSG_LOOT_RESPONSE, 8 + 1 + 50 + 1 + 1);           // we guess size
-    data << uint64(guid);
-    data << uint8(loot_type);
-    data << LootView(*loot, this, permission);
+    WorldPacket data(SMSG_LOOT_RESPONSE);           // we guess size
+    data << LootView(*loot, this, loot_type, guid, permission);
 
     SendDirectMessage(&data);
 
@@ -9206,7 +9238,15 @@ void Player::SendNotifyLootMoneyRemoved()
 
 void Player::SendNotifyLootItemRemoved(uint8 lootSlot)
 {
-    WorldPacket data(SMSG_LOOT_REMOVED, 1);
+    WorldPacket data(SMSG_LOOT_REMOVED);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
     data << uint8(lootSlot);
     GetSession()->SendPacket(&data);
 }

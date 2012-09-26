@@ -25,6 +25,9 @@
 #include "Player.h"
 #include "SocialMgr.h"
 #include "ScriptMgr.h"
+#include "GameObject.h"
+#include "ObjectAccessor.h"
+#include "ObjectMgr.h"
 
 void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
 {
@@ -60,9 +63,9 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
     // caster or target already have requested duel
     if (caster->duel || target->duel || !target->GetSocial() || target->GetSocial()->HasIgnore(caster->GetGUIDLow()))
         return;
-
+    caster->CastSpell(unitTarget, 7266, false);
     // Players can only fight a duel in zones with this flag
-    AreaTableEntry const* casterAreaEntry = GetAreaEntryByAreaID(caster->GetAreaId());
+    /*AreaTableEntry const* casterAreaEntry = GetAreaEntryByAreaID(caster->GetAreaId());
     if (casterAreaEntry && !(casterAreaEntry->flags & AREA_FLAG_ALLOW_DUELS))
     {
         //SendCastResult(SPELL_FAILED_NO_DUELING);            // Dueling isn't allowed here
@@ -128,7 +131,7 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
     caster->SetUInt64Value(PLAYER_DUEL_ARBITER, pGameObj->GetGUID());
     target->SetUInt64Value(PLAYER_DUEL_ARBITER, pGameObj->GetGUID());
 
-    sScriptMgr->OnPlayerDuelRequest(target, caster);
+    sScriptMgr->OnPlayerDuelRequest(target, caster);*/
 }
 
 void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)

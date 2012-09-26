@@ -28,4 +28,4 @@ add_custom_target(uninstall
 )
 message(STATUS "OSX: Created uninstall target")
 
-include(${CMAKE_SOURCE_DIR}/cmake/compiler/xcode/settings.cmake)
+include(${CMAKE_SOURCE_DIR}/cmake/compiler/gcc/settings.cmake)

@@ -101,10 +101,10 @@ void LoadDB2Stores(const std::string& dataPath)
     }
 
     // Check loaded DB2 files proper version
-    if (!sItemStore.LookupEntry(83086)             ||       // last item added in 4.3.4 (15595)
-        !sItemExtendedCostStore.LookupEntry(3872)  )        // last item extended cost added in 4.3.4 (15595)
+    if (!sItemStore.LookupEntry(91016)             ||       // last item added in 5.0.5 (16057)
+        !sItemExtendedCostStore.LookupEntry(3872)  )        // last item extended cost added in 5.0.5 (16057) wtf fix me, 4110 normally
     {
-        sLog->outError(LOG_FILTER_GENERAL, "Please extract correct db2 files from client 4.3.4 15595.");
+        sLog->outError(LOG_FILTER_GENERAL, "Please extract correct db2 files from client 5.0.5 16057.");
         exit(1);
     }
 
