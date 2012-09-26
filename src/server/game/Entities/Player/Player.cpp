@@ -8880,8 +8880,26 @@ void Player::RemovedInsignia(Player* looterPlr)
 
 void Player::SendLootRelease(uint64 guid)
 {
-    WorldPacket data(SMSG_LOOT_RELEASE_RESPONSE, (8+1));
-    data << uint64(guid) << uint8(1);
+    WorldPacket data(SMSG_LOOT_RELEASE_RESPONSE);
+    ObjectGuid guidd(guid);
+    data.WriteBit(guidd[6]);
+    data.WriteBit(guidd[0]);
+    data.WriteBit(guidd[3]);
+    data.WriteBit(guidd[1]);
+    data.WriteBit(guidd[4]);
+    data.WriteBit(guidd[7]);
+    data.WriteBit(guidd[2]);
+    data.WriteBit(guidd[5]);
+
+    data.WriteByteSeq(guidd[6]);
+    data.WriteByteSeq(guidd[0]);
+    data.WriteByteSeq(guidd[2]);
+    data.WriteByteSeq(guidd[7]);
+    data.WriteByteSeq(guidd[4]);
+    data.WriteByteSeq(guidd[1]);
+    data.WriteByteSeq(guidd[5]);
+    data.WriteByteSeq(guidd[3]);
+
     SendDirectMessage(&data);
 }
 
@@ -9183,10 +9201,8 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
     // need know merged fishing/corpse loot type for achievements
     loot->loot_type = loot_type;
 
-    WorldPacket data(SMSG_LOOT_RESPONSE, 8 + 1 + 50 + 1 + 1);           // we guess size
-    data << uint64(guid);
-    data << uint8(loot_type);
-    data << LootView(*loot, this, permission);
+    WorldPacket data(SMSG_LOOT_RESPONSE);           // we guess size
+    data << LootView(*loot, this, loot_type, guid, permission);
 
     SendDirectMessage(&data);
 
@@ -9206,7 +9222,15 @@ void Player::SendNotifyLootMoneyRemoved()
 
 void Player::SendNotifyLootItemRemoved(uint8 lootSlot)
 {
-    WorldPacket data(SMSG_LOOT_REMOVED, 1);
+    WorldPacket data(SMSG_LOOT_REMOVED);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
     data << uint8(lootSlot);
     GetSession()->SendPacket(&data);
 }

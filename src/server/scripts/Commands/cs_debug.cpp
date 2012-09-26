@@ -90,6 +90,7 @@ public:
             { "areatriggers",   SEC_ADMINISTRATOR,  false, &HandleDebugAreaTriggersCommand,    "", NULL },
             { "los",            SEC_MODERATOR,      false, &HandleDebugLoSCommand,             "", NULL },
             { "moveflags",      SEC_ADMINISTRATOR,  false, &HandleDebugMoveflagsCommand,       "", NULL },
+            { "tradestatus",    SEC_ADMINISTRATOR,  false, &HandleSendTradeStatus,             "", NULL },
             { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -99,6 +100,23 @@ public:
             { NULL,             SEC_PLAYER,         false, NULL,                  "",              NULL }
         };
         return commandTable;
+    }
+
+    static bool HandleSendTradeStatus(ChatHandler* handler, char const* args)
+    {
+        // USAGE: .debug play cinematic #cinematicid
+        // #cinematicid - ID decimal number from CinemaicSequences.dbc (1st column)
+        if (!*args)
+        {
+            handler->SendSysMessage(LANG_BAD_VALUE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        uint32 id = atoi((char*)args);
+
+        handler->GetSession()->SendTradeStatus(TradeStatus(id));
+        return true;
     }
 
     static bool HandleDebugPlayCinematicCommand(ChatHandler* handler, char const* args)

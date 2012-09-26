@@ -786,13 +786,13 @@ ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li)
     b << uint32(sObjectMgr->GetItemTemplate(li.itemid)->DisplayInfoID);
     b << uint32(li.randomSuffix);
     b << uint32(li.randomPropertyId);
-    //b << uint8(0);                                        // slot type - will send after this function call
+
     return b;
 }
 
 ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
 {
-    if (lv.permission == NONE_PERMISSION)
+    if (lv.permission == NONE_PERMISSION)//TODO
     {
         b << uint32(0);                                     // gold
         b << uint8(0);                                      // item count
@@ -801,16 +801,11 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
     }
 
     Loot &l = lv.loot;
+    ByteBuffer dataBuffer;
+    std::vector<uint8> bits;
 
     uint8 itemsShown = 0;
     uint8 currenciesShown = 0;
-
-    b << uint32(l.gold);                                    //gold
-
-    size_t count_pos = b.wpos();                            // pos of item count byte
-    b << uint8(0);                                          // item count placeholder
-    size_t currency_count_pos = b.wpos();                   // pos of currency count byte
-    b << uint8(0);                                          // currency count placeholder
 
     switch (lv.permission)
     {
@@ -836,9 +831,17 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                     else
                         // item shall not be displayed.
                         continue;
-
-                    b << uint8(i) << l.items[i];
-                    b << uint8(slot_type);
+                    bits.push_back(!i);
+                    bits.push_back(!slot_type);
+                    dataBuffer << uint32(l.items[i].count);
+                    if (slot_type)
+                        dataBuffer << uint8(slot_type);
+                    if(i)
+                        dataBuffer << uint8(i);
+                    dataBuffer << uint32(l.items[i].randomSuffix);
+                    dataBuffer << uint32(l.items[i].itemid);
+                    dataBuffer << uint32(sObjectMgr->GetItemTemplate(l.items[i].itemid)->DisplayInfoID);
+                    dataBuffer << uint32(l.items[i].randomPropertyId);
                     ++itemsShown;
                 }
             }
@@ -854,8 +857,15 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
                         // item shall not be displayed.
                         continue;
 
-                    b << uint8(i) << l.items[i];
-                    b << uint8(LOOT_SLOT_TYPE_ALLOW_LOOT);
+                    bits.push_back(!i);
+                    bits.push_back(!LOOT_SLOT_TYPE_ALLOW_LOOT);
+                    dataBuffer << uint32(l.items[i].count);
+                    if(i)
+                        dataBuffer << uint8(i);
+                    dataBuffer << uint32(l.items[i].randomSuffix);
+                    dataBuffer << uint32(l.items[i].itemid);
+                    dataBuffer << uint32(sObjectMgr->GetItemTemplate(l.items[i].itemid)->DisplayInfoID);
+                    dataBuffer << uint32(l.items[i].randomPropertyId);
                     ++itemsShown;
                 }
             }
@@ -882,8 +892,17 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             {
                 if (!l.items[i].is_looted && !l.items[i].freeforall && l.items[i].conditions.empty() && l.items[i].AllowedForPlayer(lv.viewer))
                 {
-                    b << uint8(i) << l.items[i];
-                    b << uint8(slot_type);
+                    bits.push_back(!i);
+                    bits.push_back(!slot_type);
+                    dataBuffer << uint32(l.items[i].count);
+                    if (slot_type)
+                        dataBuffer << uint8(slot_type);
+                    if(i)
+                        dataBuffer << uint8(i);
+                    dataBuffer << uint32(l.items[i].randomSuffix);
+                    dataBuffer << uint32(l.items[i].itemid);
+                    dataBuffer << uint32(sObjectMgr->GetItemTemplate(l.items[i].itemid)->DisplayInfoID);
+                    dataBuffer << uint32(l.items[i].randomPropertyId);
                     ++itemsShown;
                 }
             }
@@ -904,29 +923,40 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             LootItem &item = l.quest_items[qi->index];
             if (!qi->is_looted && !item.is_looted)
             {
-                b << uint8(l.items.size() + (qi - q_list->begin()));
-                b << item;
+                uint8 slottype = 0;
                 if (item.follow_loot_rules)
                 {
                     switch (lv.permission)
                     {
                         case MASTER_PERMISSION:
-                            b << uint8(LOOT_SLOT_TYPE_MASTER);
+                            slottype = uint8(LOOT_SLOT_TYPE_MASTER);
                             break;
                         case GROUP_PERMISSION:
                         case ROUND_ROBIN_PERMISSION:
                             if (!item.is_blocked)
-                                b << uint8(LOOT_SLOT_TYPE_ALLOW_LOOT);
+                                slottype = uint8(LOOT_SLOT_TYPE_ALLOW_LOOT);
                             else
-                                b << uint8(LOOT_SLOT_TYPE_ROLL_ONGOING);
+                                slottype = uint8(LOOT_SLOT_TYPE_ROLL_ONGOING);
                             break;
                         default:
-                            b << uint8(slotType);
+                            slottype = uint8(slotType);
                             break;
                     }
                 }
                 else
-                    b << uint8(slotType);
+                   slottype = uint8(slotType);
+
+                bits.push_back(!(l.items.size() + (qi - q_list->begin())));
+                bits.push_back(!slottype);
+                dataBuffer << uint32(item.count);
+                if (slottype)
+                    dataBuffer << uint8(slottype);
+                if(l.items.size() + (qi - q_list->begin()))
+                    dataBuffer << uint8(l.items.size() + (qi - q_list->begin()));
+                dataBuffer << uint32(item.randomSuffix);
+                dataBuffer << uint32(item.itemid);
+                dataBuffer << uint32(sObjectMgr->GetItemTemplate(item.itemid)->DisplayInfoID);
+                dataBuffer << uint32(item.randomPropertyId);
                 ++itemsShown;
             }
         }
@@ -942,9 +972,17 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             LootItem &item = l.items[fi->index];
             if (!fi->is_looted && !item.is_looted)
             {
-                b << uint8(fi->index);
-                b << item;
-                b << uint8(slotType);
+                bits.push_back(!fi->index);
+                bits.push_back(!slotType);
+                dataBuffer << uint32(item.count);
+                if (slotType)
+                    dataBuffer << uint8(slotType);
+                if(fi->index)
+                    dataBuffer << uint8(fi->index);
+                dataBuffer << uint32(item.randomSuffix);
+                dataBuffer << uint32(item.itemid);
+                dataBuffer << uint32(sObjectMgr->GetItemTemplate(item.itemid)->DisplayInfoID);
+                dataBuffer << uint32(item.randomPropertyId);
                 ++itemsShown;
             }
         }
@@ -960,37 +998,95 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
             LootItem &item = l.items[ci->index];
             if (!ci->is_looted && !item.is_looted)
             {
-                b << uint8(ci->index);
-                b << item;
+                uint8 slottype = 0;
+
                 if (item.follow_loot_rules)
                 {
                     switch (lv.permission)
                     {
                     case MASTER_PERMISSION:
-                        b << uint8(LOOT_SLOT_TYPE_MASTER);
+                        slottype = uint8(LOOT_SLOT_TYPE_MASTER);
                         break;
                     case GROUP_PERMISSION:
                     case ROUND_ROBIN_PERMISSION:
                         if (!item.is_blocked)
-                            b << uint8(LOOT_SLOT_TYPE_ALLOW_LOOT);
+                            slottype = uint8(LOOT_SLOT_TYPE_ALLOW_LOOT);
                         else
-                            b << uint8(LOOT_SLOT_TYPE_ROLL_ONGOING);
+                            slottype = uint8(LOOT_SLOT_TYPE_ROLL_ONGOING);
                         break;
                     default:
-                        b << uint8(slotType);
+                        slottype = uint8(slotType);
                         break;
                     }
                 }
                 else
-                    b << uint8(slotType);
+                    slottype = uint8(slotType);
+                bits.push_back(!ci->index);
+                bits.push_back(!slottype);
+                dataBuffer << uint32(item.count);
+                if (slottype)
+                    dataBuffer << uint8(slottype);
+                if(ci->index)
+                    dataBuffer << uint8(ci->index);
+                dataBuffer << uint32(item.randomSuffix);
+                dataBuffer << uint32(item.itemid);
+                dataBuffer << uint32(sObjectMgr->GetItemTemplate(item.itemid)->DisplayInfoID);
+                dataBuffer << uint32(item.randomPropertyId);
                 ++itemsShown;
             }
         }
     }
+    
+    b.WriteBit(1); //unk
+    b.WriteBit(1); //unk
+    b.WriteBit(lv._guid[4]);
 
-    //update number of items and currencies shown
-    b.put<uint8>(count_pos, itemsShown);
-    b.put<uint8>(currency_count_pos, currenciesShown);
+    b.WriteBits(itemsShown, 21);
+
+    b.WriteBit(lv._guid[0]);
+    
+    for (int i = 0; i < bits.size(); ++i)
+        b.WriteBit(bits[i]);
+
+    b.WriteBits(currenciesShown, 22);
+
+    b.WriteBit(0); //unk
+    b.WriteBit(0); //unk
+    b.WriteBit(!lv._loot_type);
+    b.WriteBit(0); //unk
+    
+    b.WriteBit(lv._guid[5]);
+    b.WriteBit(lv._guid[7]);
+    b.WriteBit(lv._guid[6]);
+    b.WriteBit(lv._guid[3]);
+    b.WriteBit(lv._guid[1]);
+
+    b.WriteBit(l.gold);
+    
+    b.WriteBit(lv._guid[2]);
+
+    b.FlushBits();
+
+    b.WriteByteSeq(lv._guid[4]);
+
+    b.append(dataBuffer);
+
+    b << uint8(255);
+    b.WriteByteSeq(lv._guid[7]);
+    b << uint8(0);
+    b.WriteByteSeq(lv._guid[1]);
+    b.WriteByteSeq(lv._guid[6]);
+    b.WriteByteSeq(lv._guid[2]);
+
+    if (lv._loot_type)
+        b << uint8(lv._loot_type);
+
+    b.WriteByteSeq(lv._guid[3]);
+    b.WriteByteSeq(lv._guid[0]);
+    b.WriteByteSeq(lv._guid[5]);
+
+    if (l.gold)
+        b << uint32(l.gold);
 
     return b;
 }

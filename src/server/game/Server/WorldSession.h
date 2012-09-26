@@ -160,7 +160,7 @@ enum DB2Types
     DB2_REPLY_ITEM                            = 1344507586,           // hash of item.db2
     DB2_REPLY_SCENE_SCRIPT                    = 3568395212,           // hash of ScreneScript.db2
     DB2_REPLY_BATTLE_PET_EFFECT_PROPERTIES    = 1672791226,           // hash of BattlePetEffectProperties.db2
-    DB2_REPLY_BROADCAST_TEXT                  = 0035137211,           // hash of BroadcastText.db2
+    DB2_REPLY_BROADCAST_TEXT                  = 35137211,             // hash of BroadcastText.db2
 };
 
 //class to deal with packet processing
@@ -592,6 +592,7 @@ class WorldSession
         void HandleGuildMOTDOpcode(WorldPacket& recvPacket);
         void HandleGuildSetNoteOpcode(WorldPacket& recvPacket);
         void HandleGuildQueryRanksOpcode(WorldPacket& recvPacket);
+        void HandleSwapRanks(WorldPacket& recvPacket);
         void HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket);
         void HandleGuildAddRankOpcode(WorldPacket& recvPacket);
         void HandleGuildDelRankOpcode(WorldPacket& recvPacket);
