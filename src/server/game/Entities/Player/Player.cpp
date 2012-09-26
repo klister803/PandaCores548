@@ -2757,10 +2757,10 @@ void Player::Regenerate(Powers power)
         else
             m_powerFraction[power] = addvalue - integerValue;
     }
-    if (m_regenTimerCount >= 2000)
+    //if (m_regenTimerCount >= 2000)
         SetPower(power, curValue);
-    else
-        UpdateUInt32Value(UNIT_FIELD_POWER1 + power, curValue);
+    /*else
+        UpdateUInt32Value(UNIT_FIELD_POWER1 + power, curValue);*/
 }
 
 void Player::RegenerateHealth()
@@ -3465,6 +3465,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
         SetPower(POWER_RAGE, GetMaxPower(POWER_RAGE));
     SetPower(POWER_FOCUS, GetMaxPower(POWER_FOCUS));
     SetPower(POWER_RUNIC_POWER, 0);
+    SetPower(POWER_CHI, 0);
 
     // update level to hunter/summon pet
     if (Pet* pet = GetPet())
