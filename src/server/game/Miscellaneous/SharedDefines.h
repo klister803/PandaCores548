@@ -765,7 +765,7 @@ enum Language
     LANG_ADDON          = 0xFFFFFFFF                        // used by addons, in 2.4.0 not exist, replaced by messagetype?
 };
 
-#define LANGUAGES_COUNT   21
+#define LANGUAGES_COUNT   24
 
 enum TeamId
 {
@@ -783,6 +783,7 @@ enum Team
     //TEAM_HORDE_FORCES        = 892,
     //TEAM_SANCTUARY           = 936,
     //TEAM_OUTLAND             = 980,
+    TEAM_PANDAREN_N          = 1249,                      // Pandaren is neutral on start
     TEAM_OTHER               = 0,                         // if ReputationListId > 0 && Flags != FACTION_FLAG_TEAM_HEADER
 };
 
@@ -3147,7 +3148,7 @@ enum SkillType
 	SKILL_NEW_PET_IMP			   = 927, // New in MoP 5.0.5
 	SKILL_NEW_PET_VOIDWALKER	   = 928, // New in MoP 5.0.5
 	SKILL_NEW_PET_OBSERVER		   = 930, // New in MoP 5.0.5
-	SKILL_NEW_PET_WRATHGUARD	   = 931, //
+	SKILL_NEW_PET_WRATHGUARD	   = 931, // New in MoP 5.0.5
 	SKILL_ALL					   = 934, // 5.0.5 Tous - Spécialisations","Les sorts gérant une combinaison de spécialisation se trouvent ici.
 	SKILL_NEW_RUNEFORGING		   = 960, // New in MoP 5.0.5
 	SKILL_WAY_OF_GRILL			   = 975, // New in MoP 5.0.5 (cooking)
