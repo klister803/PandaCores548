@@ -336,7 +336,7 @@ void PlayerMenu::SendQuestGiverQuestDetails(Quest const* quest, uint64 npcGUID, 
     data << questTurnTargetName;                            // 4.x
     data << uint32(quest->GetQuestGiverPortrait());         // 4.x
     data << uint32(quest->GetQuestTurnInPortrait());        // 4.x
-    data << uint8(activateAccept ? 1 : 0);                  // auto finish
+    data << uint8(1);//activateAccept ? 1 : 0);                  // auto finish
     data << uint32(quest->GetFlags());                      // 3.3.3 questFlags
     data << uint32(quest->GetSuggestedPlayers());
     data << uint32(0);
@@ -540,8 +540,8 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
         {
             dataBuff << uint32(0); //unk
             dataBuff << uint32(4);
-            dataBuff << uint32(quest->RequiredItemId[i]);
-            dataBuff << uint32(quest->RequiredItemCount[i]);
+            dataBuff << uint32(quest->RequiredCurrencyId[i]);
+            dataBuff << uint32(quest->RequiredCurrencyCount[i]);
             dataBuff << uint32(0);
             dataBuff << questObjectiveText[i];
             dataBuff << uint8(255);
@@ -606,6 +606,7 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGUID, b
     WorldPacket data(SMSG_QUESTGIVER_OFFER_REWARD, 50);     // guess size
     data << uint64(npcGUID);
     data << uint32(quest->GetQuestId());
+    data << uint32(0);
     data << questTitle;
     data << questOfferRewardText;
 
@@ -619,6 +620,7 @@ void PlayerMenu::SendQuestGiverOfferReward(Quest const* quest, uint64 npcGUID, b
     data << uint8(enableNext ? 1 : 0);                      // Auto Finish
     data << uint32(quest->GetFlags());                      // 3.3.3 questFlags
     data << uint32(quest->GetSuggestedPlayers());           // SuggestedGroupNum
+    data << uint32(0);
 
     uint32 emoteCount = 0;
     for (uint8 i = 0; i < QUEST_EMOTE_COUNT; ++i)
@@ -686,7 +688,7 @@ void PlayerMenu::SendQuestGiverRequestItems(Quest const* quest, uint64 npcGUID, 
 
     // Required Money
     data << uint32(quest->GetRewOrReqMoney() < 0 ? -quest->GetRewOrReqMoney() : 0);
-
+    data << uint32(0);
     data << uint32(quest->GetReqItemsCount());
     for (int i = 0; i < QUEST_ITEM_OBJECTIVES_COUNT; ++i)
     {

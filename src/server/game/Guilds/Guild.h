@@ -459,6 +459,7 @@ private:
         void SaveToDB(SQLTransaction& trans) const;
 
         uint32 GetId() const { return m_rankId; }
+        void SetId(uint32 id) { m_rankId = id; }
 
         std::string GetName() const { return m_name; }
         void SetName(const std::string& name);
@@ -649,10 +650,12 @@ public:
     void HandleAcceptMember(WorldSession* session);
     void HandleLeaveMember(WorldSession* session);
     void HandleRemoveMember(WorldSession* session, uint64 guid);
-    void HandleUpdateMemberRank(WorldSession* session, uint64 targetGuid, bool demote);
+    void HandleUpdateMemberRank(WorldSession* session, uint64 targetGuid, uint32 rank);
     void HandleSetMemberRank(WorldSession* session, uint64 targetGuid, uint64 setterGuid, uint32 rank);
     void HandleAddNewRank(WorldSession* session, const std::string& name);
     void HandleRemoveRank(WorldSession* session, uint32 rankId);
+    void HandleChangeNameRank(WorldSession* session, uint32 id, std::string const& name);
+    void HandleSwapRanks(WorldSession* session, uint32 id, bool up);
     void HandleMemberDepositMoney(WorldSession* session, uint32 amount);
     bool HandleMemberWithdrawMoney(WorldSession* session, uint32 amount, bool repair = false);
     void HandleMemberLogout(WorldSession* session);

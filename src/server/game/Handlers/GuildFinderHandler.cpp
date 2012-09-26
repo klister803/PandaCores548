@@ -359,9 +359,9 @@ void WorldSession::HandleGuildFinderPostRequest(WorldPacket& /*recvPacket*/)
         data.WriteBit(settings.IsListed());
         data.WriteBits(settings.GetComment().size(), 11);
         data << uint32(settings.GetLevel());
-        data.WriteString(settings.GetComment());
         data << uint32(0); // Unk Int32
         data << uint32(settings.GetAvailability());
+        data.WriteString(settings.GetComment());
         data << uint32(settings.GetClassRoles());
         data << uint32(settings.GetInterests());
     }

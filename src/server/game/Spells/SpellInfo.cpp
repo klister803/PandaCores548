@@ -2292,7 +2292,7 @@ SpellInfo const* SpellInfo::GetAuraRankForLevel(uint8 level) const
 
 bool SpellInfo::IsRankOf(SpellInfo const* spellInfo) const
 {
-    return GetFirstRankSpell() == spellInfo->GetFirstRankSpell();
+    return spellInfo && GetFirstRankSpell() == spellInfo->GetFirstRankSpell();
 }
 
 bool SpellInfo::IsDifferentRankOf(SpellInfo const* spellInfo) const

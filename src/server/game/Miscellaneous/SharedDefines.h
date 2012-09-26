@@ -759,10 +759,14 @@ enum Language
     LANG_GOBLIN_BINARY  = 38,
     LANG_WORGEN         = 39,
     LANG_GOBLIN         = 40,
+	LANG_PANDAREN_N     = 42,  //Pandaren neutral
+	LANG_PANDAREN_A     = 43,  //Pandaren Alliance
+	LANG_PANDAREN_H     = 44,  //Pandaren Horde
+	LANG_RIKKITUN       = 168,
     LANG_ADDON          = 0xFFFFFFFF                        // used by addons, in 2.4.0 not exist, replaced by messagetype?
 };
 
-#define LANGUAGES_COUNT   21
+#define LANGUAGES_COUNT   24
 
 enum TeamId
 {
@@ -780,6 +784,7 @@ enum Team
     //TEAM_HORDE_FORCES        = 892,
     //TEAM_SANCTUARY           = 936,
     //TEAM_OUTLAND             = 980,
+    TEAM_PANDAREN_N          = 1249,                      // Pandaren is neutral on start
     TEAM_OTHER               = 0,                         // if ReputationListId > 0 && Flags != FACTION_FLAG_TEAM_HEADER
 };
 
@@ -3131,6 +3136,31 @@ enum SkillType
     SKILL_PET_BEETLE               = 818,
     SKILL_ALL_GUILD_PERKS          = 821,
     SKILL_PET_HYDRA                = 824,
+	SKILL_GENERAL_MONK			   = 829, //GENERAL? 5.0.5
+	SKILL_NEW_WARRIOR			   = 840, // New on MoP 5.0.5
+	SKILL_NEW_WARLOCK			   = 849, // New in MoP 5.0.5
+	SKILL_RACIAL_PANDAREN		   = 899, // 5.0.5
+	SKILL_NEW_MAGE				   = 904, // New in MoP 5.0.5
+	SKILL_LANG_PANDAREN_N		   = 905, // 5.0.5
+	SKILL_LANG_PANDAREN_A		   = 906, // 5.0.5
+	SKILL_LANG_PANDAREN_H		   = 907, // 5.0.5
+	SKILL_NEW_ROGUE				   = 921, // New in MoP 5.0.5
+	SKILL_NEW_SHAMAN			   = 924, // New in MoP 5.0.5
+	SKILL_NEW_PET_IMP			   = 927, // New in MoP 5.0.5
+	SKILL_NEW_PET_VOIDWALKER	   = 928, // New in MoP 5.0.5
+	SKILL_NEW_PET_OBSERVER		   = 930, // New in MoP 5.0.5
+	SKILL_NEW_PET_WRATHGUARD	   = 931, // New in MoP 5.0.5
+	SKILL_ALL					   = 934, // 5.0.5 Tous - Spécialisations","Les sorts gérant une combinaison de spécialisation se trouvent ici.
+	SKILL_NEW_RUNEFORGING		   = 960, // New in MoP 5.0.5
+	SKILL_WAY_OF_GRILL			   = 975, // New in MoP 5.0.5 (cooking)
+	SKILL_WAY_OF_WOK			   = 976, // New in MoP 5.0.5 (cooking)
+	SKILL_WAY_OF_POT			   = 977, // New in MoP 5.0.5 (cooking)
+	SKILL_WAY_OF_STEAMER		   = 978, // New in MoP 5.0.5 (cooking)
+	SKILL_WAY_OF_OVEN			   = 979, // New in MoP 5.0.5 (cooking)
+	SKILL_WAY_OF_BREW			   = 980, // New in MoP 5.0.5 (cooking)
+	SKILL_APPRENTICE_COOKING	   = 981, // New in MoP 5.0.5 (cooking)
+	SKILL_JOURNEYMAN_COOKBOOK	   = 982, // New in MoP 5.0.5 (cooking)
+	SKILL_NO_PLAYER				   = 999, // Last on DBC
 };
 
 #define MAX_SKILL_TYPE               825
@@ -3634,37 +3664,39 @@ enum SpellFamilyNames
 
 enum TradeStatus
 {
-    TRADE_STATUS_OPEN_WINDOW = 0,
-    // 1 - Related to EVENT_PLAYER_MONEY
-    TRADE_STATUS_NOT_ELIGIBLE = 2,           // Related to trading soulbound loot items
-    TRADE_STATUS_YOU_LOGOUT = 3,
-    TRADE_STATUS_IGNORE_YOU = 4,
-    TRADE_STATUS_TARGET_DEAD = 5,
-    TRADE_STATUS_TRADE_ACCEPT = 6,
-    TRADE_STATUS_TARGET_LOGOUT = 7,
-    // 8 - nonexistent
-    TRADE_STATUS_TRADE_COMPLETE = 9,
-    TRADE_STATUS_TRIAL_ACCOUNT = 10,         // Trial accounts can not perform that action
-    // 11 - nonexistent
-    TRADE_STATUS_BEGIN_TRADE = 12,
+    TRADE_STATUS_NO_TARGET = 0,          //unk
+    // 1 - unk
+    TRADE_STATUS_NOT_ELIGIBLE = 2,
+    TRADE_STATUS_WRONG_FACTION = 3,
+    TRADE_STATUS_TARGET_DEAD = 4,
+    TRADE_STATUS_TRIAL_ACCOUNT = 5,
+    // 6 - unk
+    // 7 - unk
+    //TRADE_STATUS_CURRENCY_NOT_TRADABLE = 7,
+    TRADE_STATUS_YOU_STUNNED = 8,
+    // 9 - trade finished
+    TRADE_STATUS_YOU_LOGOUT = 10,
+    TRADE_STATUS_TRADE_CANCELED = 11, //UNACCEPT
+    TRADE_STATUS_TARGET_TO_FAR = 12,
     TRADE_STATUS_YOU_DEAD = 13,
-    // 14 - nonexistent
-    // 15 - nonexistent
-    TRADE_STATUS_TARGET_TO_FAR = 16,
-    TRADE_STATUS_NO_TARGET = 17,
-    TRADE_STATUS_BUSY_2 = 18,
-    TRADE_STATUS_CURRENCY_NOT_TRADABLE = 19, // new 4.x
-    TRADE_STATUS_WRONG_FACTION = 20,
+    TRADE_STATUS_TARGET_STUNNED = 14,
+    // 15 - trade completed, $S is busy
+    // 16 - nonexistent
+    TRADE_STATUS_OPEN_WINDOW = 17,
+    TRADE_STATUS_BEGIN_TRADE = 18,
+    TRADE_STATUS_IGNORE_YOU = 19, // new 4.x trade finished $S ignored you
+    TRADE_STATUS_TARGET_LOGOUT = 20,
     TRADE_STATUS_BUSY = 21,
-    // 22 - equivalent to 335 unk status 9
-    TRADE_STATUS_TRADE_CANCELED = 23,
-    TRADE_STATUS_CURRENCY = 24,              // new 4.x
-    TRADE_STATUS_BACK_TO_TRADE = 25,
-    TRADE_STATUS_ONLY_CONJURED = 26,         // You can only trade conjured items... (cross realm BG related).
-    TRADE_STATUS_YOU_STUNNED = 27,
+    TRADE_STATUS_TRADE_ACCEPT = 22,// 22 - equivalent to 335 unk status 9
+    TRADE_STATUS_BACK_TO_TRADE = 23, //Transaction canceled
+    TRADE_STATUS_BUSY_2 = 24, //$s is busy
+    TRADE_STATUS_TRADE_COMPLETE = 25,
+    TRADE_STATUS_CURRENCY = 26,
+    
+    // = 27,
     // 28 - nonexistent
-    TRADE_STATUS_TARGET_STUNNED = 29,
-    // 30 - nonexistent
+    TRADE_STATUS_ONLY_CONJURED = 29,
+    // 30 - you have no target
     TRADE_STATUS_CLOSE_WINDOW = 31,
 };
 

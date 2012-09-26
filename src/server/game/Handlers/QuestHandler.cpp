@@ -283,15 +283,11 @@ void WorldSession::HandleQuestQueryOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
 {
-    uint32 questId, reward;
+    uint32 questId, reward = 0;
+    uint32 slot = 0;
     uint64 guid;
-    recvData >> guid >> questId >> reward;
-
-    if (reward >= QUEST_REWARD_CHOICES_COUNT)
-    {
-        sLog->outError(LOG_FILTER_NETWORKIO, "Error in CMSG_QUESTGIVER_CHOOSE_REWARD: player %s (guid %d) tried to get invalid reward (%u) (probably packet hacking)", _player->GetName(), _player->GetGUIDLow(), reward);
-        return;
-    }
+    recvData >> guid >> questId >> slot;
+   
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_QUESTGIVER_CHOOSE_REWARD npc = %u, quest = %u, reward = %u", uint32(GUID_LOPART(guid)), questId, reward);
 
@@ -305,6 +301,15 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
 
     if (Quest const* quest = sObjectMgr->GetQuestTemplate(questId))
     {
+        //TODO: Doing something less dirty
+        for (int i = 0; i < QUEST_REWARD_CHOICES_COUNT; i++)
+            if (quest->RewardChoiceItemId[i] == slot)
+                reward = i;
+        if (reward >= QUEST_REWARD_CHOICES_COUNT)
+        {
+            sLog->outError(LOG_FILTER_NETWORKIO, "Error in CMSG_QUESTGIVER_CHOOSE_REWARD: player %s (guid %d) tried to get invalid reward (%u) (probably packet hacking)", _player->GetName(), _player->GetGUIDLow(), reward);
+            return;
+        }
         if ((!_player->CanSeeStartQuest(quest) &&  _player->GetQuestStatus(questId) == QUEST_STATUS_NONE) ||
             (_player->GetQuestStatus(questId) != QUEST_STATUS_COMPLETE && !quest->IsAutoComplete()))
         {

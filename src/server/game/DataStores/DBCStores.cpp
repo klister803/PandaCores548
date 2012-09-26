@@ -741,11 +741,11 @@ void LoadDBCStores(const std::string& dataPath)
     }
 
     // Check loaded DBC files proper version
-    if (!sAreaStore.LookupEntry(4713)          ||     // last area (areaflag) added in 4.3.4 (15595)
-        !sCharTitlesStore.LookupEntry(287)     ||     // last char title added in 4.3.4 (15595)
-        !sGemPropertiesStore.LookupEntry(2250) ||     // last gem property added in 4.3.4 (15595)
-        !sMapStore.LookupEntry(980)            ||     // last map added in 4.3.4 (15595)
-        !sSpellStore.LookupEntry(121820)       )      // last spell added in 4.3.4 (15595)
+    if (!sAreaStore.LookupEntry(6561)          ||     // last area (areaflag) added in 5.0.5 (16057)
+        !sCharTitlesStore.LookupEntry(321)     ||     // last char title added in 5.0.5 (16057)
+        !sGemPropertiesStore.LookupEntry(2402) ||     // last gem property added in 5.0.5 (16057)
+        !sMapStore.LookupEntry(1076)            ||     // last map added in 5.0.5 (16057)
+        !sSpellStore.LookupEntry(133376)       )      // last spell added in 5.0.5 (16057)
     {
         sLog->outError(LOG_FILTER_GENERAL, "You have _outdated_ DBC files. Please extract correct versions from current using client.");
         exit(1);

@@ -613,6 +613,11 @@ class ByteBuffer
             sLog->outTrace(LOG_FILTER_NETWORKIO, "%s", o.str().c_str());
         }
 
+        size_t GetBitPos() const
+        {
+            return _bitpos;
+        }
+
     protected:
         size_t _rpos, _wpos, _bitpos;
         uint8 _curbitval;
