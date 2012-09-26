@@ -86,7 +86,7 @@ enum Races
 };
 
 // max+1 for player race
-#define MAX_RACES         23
+#define MAX_RACES         27
 
 #define RACEMASK_ALL_PLAYABLE \
     ((1<<(RACE_HUMAN-1))   |(1<<(RACE_ORC-1))          |(1<<(RACE_DWARF-1))   | \
@@ -189,7 +189,8 @@ enum Powers
     POWER_ECLIPSE                       = 8,
     POWER_HOLY_POWER                    = 9,
     POWER_ALTERNATE_POWER               = 10,           // Used in some quests
-    MAX_POWERS                          = 11,
+    POWER_CHI                           = 12,
+    MAX_POWERS                          = 13,
     POWER_ALL                           = 127,          // default for class?
     POWER_HEALTH                        = 0xFFFFFFFE    // (-2 as signed value)
 };
