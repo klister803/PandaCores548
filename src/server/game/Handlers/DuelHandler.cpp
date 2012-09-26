@@ -25,6 +25,9 @@
 #include "Player.h"
 #include "SocialMgr.h"
 #include "ScriptMgr.h"
+#include "GameObject.h"
+#include "ObjectAccessor.h"
+#include "ObjectMgr.h"
 
 void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
 {

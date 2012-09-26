@@ -389,7 +389,7 @@ void ObjectMgr::LoadCreatureTemplates()
         return;
     }
 
-    _creatureTemplateStore.rehash(result->GetRowCount());
+    //_creatureTemplateStore.rehash(result->GetRowCount());
     uint32 count = 0;
     do
     {
@@ -1119,7 +1119,7 @@ void ObjectMgr::LoadCreatureModelInfo()
         return;
     }
 
-    _creatureModelStore.rehash(result->GetRowCount());
+    //_creatureModelStore.rehash(result->GetRowCount());
     uint32 count = 0;
 
     do
@@ -1416,7 +1416,7 @@ void ObjectMgr::LoadCreatures()
                 if (GetMapDifficultyData(i, Difficulty(k)))
                     spawnMasks[i] |= (1 << k);
 
-    _creatureDataStore.rehash(result->GetRowCount());
+    //_creatureDataStore.rehash(result->GetRowCount());
     uint32 count = 0;
     do
     {
@@ -1725,7 +1725,7 @@ void ObjectMgr::LoadGameobjects()
                 if (GetMapDifficultyData(i, Difficulty(k)))
                     spawnMasks[i] |= (1 << k);
 
-    _gameObjectDataStore.rehash(result->GetRowCount());
+    //_gameObjectDataStore.rehash(result->GetRowCount());
     do
     {
         Field* fields = result->Fetch();
@@ -5048,7 +5048,7 @@ void ObjectMgr::LoadGossipText()
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u npc texts", count);
         return;
     }
-    _gossipTextStore.rehash(result->GetRowCount());
+    //_gossipTextStore.rehash(result->GetRowCount());
 
     int cic;
 
@@ -6239,7 +6239,7 @@ void ObjectMgr::LoadGameObjectTemplate()
         return;
     }
 
-    _gameObjectTemplateStore.rehash(result->GetRowCount());
+    //_gameObjectTemplateStore.rehash(result->GetRowCount());
     uint32 count = 0;
     do
     {
@@ -7273,6 +7273,11 @@ uint8 ObjectMgr::CheckPlayerName(const std::string& name, bool create)
     uint32 strictMask = sWorld->getIntConfig(CONFIG_STRICT_PLAYER_NAMES);
     if (!isValidString(wname, strictMask, false, create))
         return CHAR_NAME_MIXED_LANGUAGES;
+
+	wstrToLower(wname);
+	for (size_t i = 2; i < wname.size(); ++i)
+		if (wname[i] == wname[i-1] && wname[i] == wname[i-2])
+			return CHAR_NAME_THREE_CONSECUTIVE;
 
     return CHAR_NAME_SUCCESS;
 }
