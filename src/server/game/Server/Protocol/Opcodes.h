@@ -233,7 +233,7 @@ enum Opcodes
     CMSG_GROUP_SET_ROLES                              = 0x302,
     CMSG_GROUP_SWAP_SUB_GROUP                         = 0,
     CMSG_GROUP_UNINVITE                               = 0,
-    CMSG_GROUP_UNINVITE_GUID                          = 0,
+    CMSG_GROUP_UNINVITE_GUID                          = 0x069,
     CMSG_GUILD_ACCEPT                                 = 0,
     CMSG_GUILD_ACHIEVEMENT_MEMBERS                    = 0,
     CMSG_GUILD_ACHIEVEMENT_PROGRESS_QUERY             = 0,
@@ -325,7 +325,7 @@ enum Opcodes
     CMSG_LOOT                                         = 0x236,	// 5.0.5 16048
     CMSG_LOOT_CURRENCY                                = 0,
     CMSG_LOOT_MASTER_GIVE                             = 0,
-    CMSG_LOOT_METHOD                                  = 0,
+    CMSG_LOOT_METHOD                                  = 0x7F6,  // 5.0.5 16048
     CMSG_LOOT_MONEY                                   = 0,
     CMSG_LOOT_RELEASE                                 = 0,
     CMSG_LOOT_ROLL                                    = 0,
@@ -395,7 +395,7 @@ enum Opcodes
     CMSG_OFFER_PETITION                               = 0,
     CMSG_OPENING_CINEMATIC                            = 0,
     CMSG_OPEN_ITEM                                    = 0,
-    CMSG_OPT_OUT_OF_LOOT                              = 0,
+    CMSG_OPT_OUT_OF_LOOT                              = 0xD12,
     CMSG_PAGE_TEXT_QUERY                              = 0,
     CMSG_PARTY_SILENCE                                = 0,
     CMSG_PARTY_UNSILENCE                              = 0,
@@ -557,7 +557,7 @@ enum Opcodes
     CMSG_TIME_ADJUSTMENT_RESPONSE                     = 0,
     CMSG_TIME_SYNC_RESP                               = 0x729,	// 5.0.5 16048
     CMSG_TIME_SYNC_RESP_FAILED                        = 0,
-    CMSG_TOGGLE_PVP                                   = 0,
+    CMSG_TOGGLE_PVP                                   = 0x9D2,
     CMSG_TOTEM_DESTROYED                              = 0,
     CMSG_TRAINER_BUY_SPELL                            = 0,
     CMSG_TRAINER_LIST                                 = 0,
@@ -917,7 +917,7 @@ enum Opcodes
     SMSG_PARTY_UPDATE                                 = 0xB3E,	// 5.0.5 16048
     SMSG_GROUP_SET_LEADER                             = 0,//0xA1A,
     SMSG_GROUP_SET_ROLE                               = 0x0A7B, // 5.0.5 16048
-    SMSG_GROUP_UNINVITE                               = 0,
+    SMSG_GROUP_UNINVITE                               = 0x8A8, // 5.0.5 16048
     SMSG_GUILD_ACHIEVEMENT_DATA                       = 0,
     SMSG_GUILD_ACHIEVEMENT_DELETED                    = 0x0B46, // 5.0.5 16048
     SMSG_GUILD_ACHIEVEMENT_EARNED                     = 0x0A8E, // 5.0.5 16048

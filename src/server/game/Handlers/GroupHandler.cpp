@@ -402,10 +402,38 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_UNINVITE_GUID");
 
-    uint64 guid;
-    std::string reason;
-    recvData >> guid;
-    recvData >> reason;
+     ObjectGuid guid;
+     std::string unkstring;
+
+    recvData.read_skip<uint8>(); // unk 0x00
+
+    uint8 stringSize = recvData.ReadBits(8);
+
+    recvData.ReadBit();
+
+    guid[4] = recvData.ReadBit();
+    guid[7] = recvData.ReadBit();
+    guid[5] = recvData.ReadBit();
+    guid[6] = recvData.ReadBit();
+    guid[1] = recvData.ReadBit();
+    guid[2] = recvData.ReadBit();
+    guid[3] = recvData.ReadBit();
+
+    guid[0] = recvData.ReadBit();
+
+    recvData.FlushBits();
+
+    recvData.ReadByteSeq(guid[4]);
+    recvData.ReadByteSeq(guid[5]);
+    recvData.ReadByteSeq(guid[0]);
+    recvData.ReadByteSeq(guid[7]);
+    recvData.ReadByteSeq(guid[2]);
+
+    unkstring = recvData.ReadString(stringSize);
+
+    recvData.ReadByteSeq(guid[6]);
+    recvData.ReadByteSeq(guid[3]);
+    recvData.ReadByteSeq(guid[1]);
 
     //can't uninvite yourself
     if (guid == GetPlayer()->GetGUID())
@@ -433,7 +461,7 @@ void WorldSession::HandleGroupUninviteGuidOpcode(WorldPacket& recvData)
 
     if (grp->IsMember(guid))
     {
-        Player::RemoveFromGroup(grp, guid, GROUP_REMOVEMETHOD_KICK, GetPlayer()->GetGUID(), reason.c_str());
+        Player::RemoveFromGroup(grp, guid, GROUP_REMOVEMETHOD_KICK, GetPlayer()->GetGUID(), unkstring.c_str());
         return;
     }
 
@@ -538,10 +566,32 @@ void WorldSession::HandleLootMethodOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_LOOT_METHOD");
 
-    uint32 lootMethod;
-    uint64 lootMaster;
+    uint8 lootMethod;
+    ObjectGuid lootMaster;
     uint32 lootThreshold;
-    recvData >> lootMethod >> lootMaster >> lootThreshold;
+
+    recvData.read_skip<uint8>();
+
+    recvData >> lootMethod;
+    recvData >> lootThreshold;
+
+    lootMaster[6] = recvData.ReadBit();
+    lootMaster[2] = recvData.ReadBit();
+    lootMaster[7] = recvData.ReadBit();
+    lootMaster[4] = recvData.ReadBit();
+    lootMaster[3] = recvData.ReadBit();
+    lootMaster[1] = recvData.ReadBit();
+    lootMaster[0] = recvData.ReadBit();
+    lootMaster[5] = recvData.ReadBit();
+
+    recvData.ReadByteSeq(lootMaster[3]);
+    recvData.ReadByteSeq(lootMaster[2]);
+    recvData.ReadByteSeq(lootMaster[0]);
+    recvData.ReadByteSeq(lootMaster[7]);
+    recvData.ReadByteSeq(lootMaster[5]);
+    recvData.ReadByteSeq(lootMaster[1]);
+    recvData.ReadByteSeq(lootMaster[6]);
+    recvData.ReadByteSeq(lootMaster[4]);
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)

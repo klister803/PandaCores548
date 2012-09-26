@@ -761,9 +761,42 @@ void Group::Disband(bool hideDestroy /* = false */)
         }
         else
         {
-            data.Initialize(SMSG_PARTY_UPDATE, 1+1+1+1+8+4+4+8);
-            data << uint8(0x10) << uint8(0) << uint8(0) << uint8(0);
-            data << uint64(m_guid) << uint32(m_counter) << uint32(0) << uint64(0);
+            ObjectGuid guid = GetGUID();
+            data.Initialize(SMSG_PARTY_UPDATE);
+            data.WriteBit(0);
+            data.WriteBit(guid[2]);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.WriteBit(guid[0]);
+            data.WriteBit(0);
+            data.WriteBit(guid[5]);
+            data.WriteBit(guid[3]);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.WriteBit(guid[4]);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.WriteBit(guid[7]);
+            data.WriteBit(guid[1]);
+            data.WriteBits(0 , 22);
+            data.WriteBit(guid[6]);
+            data.FlushBits();
+            data << uint8(0); // unk
+            data << uint32(m_counter++);                        
+            data.WriteByteSeq(guid[7]);
+            data.WriteByteSeq(guid[2]);
+            data << uint8(1); //unk, always 1
+            data.WriteByteSeq(guid[4]);
+            data.WriteByteSeq(guid[6]);
+            data << uint32(0); // unk, sometime 32 in sniff (flags ?)
+            data.WriteByteSeq(guid[3]);
+            data.WriteByteSeq(guid[1]);
+            data.WriteByteSeq(guid[5]);
+            data << uint8(m_groupType);  // group type (flags in 3.3)
+            data.WriteByteSeq(guid[0]);
             player->GetSession()->SendPacket(&data);
         }
 
@@ -1547,9 +1580,9 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
     data.WriteBit(leaderGuid[6]);
     data.WriteBit(leaderGuid[3]);
     data.WriteBit(guid[4]);
-    data.WriteBit(m_looterGuid);
+    data.WriteBit(true);
 
-    if (m_looterGuid)
+    if (true)
     {
         data.WriteBit(looterGuid[7]);
         data.WriteBit(looterGuid[0]);
@@ -1600,7 +1633,7 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
     data.WriteBit(guid[6]);
     data.FlushBits();
 
-    if (m_looterGuid)
+    if (true)
     {
         data.WriteByteSeq(looterGuid[7]);
         data.WriteByteSeq(looterGuid[5]);
