@@ -457,13 +457,13 @@ enum Opcodes
     CMSG_READ_ITEM                                    = 0,
     CMSG_REALM_NAME_QUERY                             = 0x81B,  // 5.0.5 16048
     CMSG_REALM_SPLIT                                  = 0x820,  // 5.0.5 16048
-    CMSG_RECLAIM_CORPSE                               = 0,
+    CMSG_RECLAIM_CORPSE                               = 0xCF4,
     CMSG_REDIRECTION_AUTH_PROOF                       = 0,
     CMSG_REFORGE_ITEM                                 = 0,
     CMSG_REORDER_CHARACTERS                           = 0x541,
     CMSG_REPAIR_ITEM                                  = 0x89D,	// 5.0.5 16048
     CMSG_REPLACE_ACCOUNT_DATA                         = 0,
-    CMSG_REPOP_REQUEST                                = 0,
+    CMSG_REPOP_REQUEST                                = 0x0D4,
     CMSG_REPORT_PVP_AFK                               = 0,
     CMSG_REQUEST_ACCOUNT_DATA                         = 0x9BD,	// 5.0.5 16048
     CMSG_REQUEST_CATEGORY_COOLDOWNS                   = 0x49D,	// 5.0.5 16048
