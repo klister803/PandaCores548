@@ -428,7 +428,7 @@ enum AuraType
     SPELL_AURA_368                                          = 368,
     SPELL_AURA_369                                          = 369,
     SPELL_AURA_370                                          = 370,
-    TOTAL_AURAS                                             = 371   // 4.3.4
+    TOTAL_AURAS                                             = 418   // 5.0.5
 };
 
 enum AuraObjectType

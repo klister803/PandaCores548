@@ -64,7 +64,6 @@ void WorldSession::HandleSplitItemOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleSwapInvItemOpcode(WorldPacket & recvData)
 {
-    //sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_SWAP_INV_ITEM");
     uint8 srcslot, dstslot;
 
     recvData >> dstslot >> srcslot;
@@ -447,7 +446,7 @@ void WorldSession::SendItemSparseDb2Reply(uint32 entry)
 void WorldSession::HandleReadItem(WorldPacket& recvData)
 {
     uint8 bag, slot;
-    recvData >> bag >> slot;
+    recvData >> slot >> bag;
 
     Item* pItem = _player->GetItemByPos(bag, slot);
 
