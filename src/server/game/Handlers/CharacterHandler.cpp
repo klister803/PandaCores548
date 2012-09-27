@@ -2141,10 +2141,10 @@ void WorldSession::HandleReorderCharacters(WorldPacket& recvData)
         recvData.ReadByteSeq(guids[i][7]);
         recvData.ReadByteSeq(guids[i][1]);
         recvData.ReadByteSeq(guids[i][4]);
-        recvData.ReadByteSeq(guids[i][2]);
 
         recvData >> position;
 
+        recvData.ReadByteSeq(guids[i][2]);
         recvData.ReadByteSeq(guids[i][6]);
         recvData.ReadByteSeq(guids[i][3]);
         recvData.ReadByteSeq(guids[i][5]);
