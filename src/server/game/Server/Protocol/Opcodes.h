@@ -532,7 +532,7 @@ enum Opcodes
     CMSG_SET_WATCHED_FACTION                          = 0xD66,
     CMSG_SHOWING_CLOAK                                = 0x9AD,
     CMSG_SHOWING_HELM                                 = 0xD7C,
-    CMSG_SOCKET_GEMS                                  = 0,
+    CMSG_SOCKET_GEMS                                  = 0x84D,
     CMSG_SPELLCLICK                                   = 0xDCD,
     CMSG_SPIRIT_HEALER_ACTIVATE                       = 0x9FA,
     CMSG_SPLIT_ITEM                                   = 0xDAD,
@@ -564,12 +564,12 @@ enum Opcodes
     CMSG_TRAINER_LIST                                 = 0x904,
     CMSG_TRANSMOGRIFY_ITEMS                           = 0x47D,
     CMSG_TRIGGER_CINEMATIC_CHEAT                      = 0,
-    CMSG_TURN_IN_PETITION                             = 0,
-    CMSG_TUTORIAL_CLEAR                               = 0,
+    CMSG_TURN_IN_PETITION                             = 0xDA6,
+    CMSG_TUTORIAL_CLEAR                               = 0xCD4,
     CMSG_TUTORIAL_FLAG                                = 0x924,	// 5.0.5 16048
-    CMSG_TUTORIAL_RESET                               = 0,
+    CMSG_TUTORIAL_RESET                               = 0x92A,
     CMSG_UNACCEPT_TRADE                               = 0x390,
-    CMSG_UNLEARN_SKILL                                = 0,
+    CMSG_UNLEARN_SKILL                                = 0x8F4,
     CMSG_UNLEARN_SPECIALIZATION                       = 0,
     CMSG_UNREGISTER_ALL_ADDON_PREFIXES                = 0x71B,	// 5.0.5 16048
     CMSG_UPDATE_ACCOUNT_DATA                          = 0x984,	// 5.0.5 16048
@@ -1367,7 +1367,7 @@ enum Opcodes
     SMSG_TRANSFER_PENDING                             = 0,
     SMSG_TRIGGER_CINEMATIC                            = 0xC18,  // 5.0.5 16048
     SMSG_TRIGGER_MOVIE                                = 0xD51,  // 5.0.5 16048
-    SMSG_TURN_IN_PETITION_RESULTS                     = 0,
+    SMSG_TURN_IN_PETITION_RESULTS                     = 0xD7B,
     SMSG_TUTORIAL_FLAGS                               = 0x8AE,  // 5.0.5 16048
     SMSG_UNIT_HEALTH_FREQUENT                         = 0,
     SMSG_UNIT_SPELLCAST_START                         = 0xC12,	// 5.0.5 16048
