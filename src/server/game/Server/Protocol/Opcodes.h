@@ -460,7 +460,7 @@ enum Opcodes
     CMSG_RECLAIM_CORPSE                               = 0,
     CMSG_REDIRECTION_AUTH_PROOF                       = 0,
     CMSG_REFORGE_ITEM                                 = 0,
-    CMSG_REORDER_CHARACTERS                           = 0,
+    CMSG_REORDER_CHARACTERS                           = 0x541,
     CMSG_REPAIR_ITEM                                  = 0x89D,	// 5.0.5 16048
     CMSG_REPLACE_ACCOUNT_DATA                         = 0,
     CMSG_REPOP_REQUEST                                = 0,
