@@ -525,7 +525,7 @@ enum Opcodes
     CMSG_SET_SKILL_CHEAT                              = 0,
     CMSG_SET_TAXI_BENCHMARK_MODE                      = 0xCFA,
     CMSG_SET_TITLE                                    = 0x995,
-    CMSG_SET_TRADE_CURRENCY                           = 0,
+    CMSG_SET_TRADE_CURRENCY                           = 0x534,
     CMSG_SET_TRADE_GOLD                               = 0x410,
     CMSG_SET_TRADE_ITEM                               = 0x696,
     CMSG_SET_VEHICLE_REC_ID_ACK                       = 0,
@@ -538,16 +538,16 @@ enum Opcodes
     CMSG_SPLIT_ITEM                                   = 0xDAD,
     CMSG_STANDSTATECHANGE                             = 0xD96,	// 5.0.5 16048
     CMSG_START_QUEST                                  = 0,
-    CMSG_STOP_DANCE                                   = 0,
+    CMSG_STOP_DANCE                                   = 0xCF6,
     CMSG_STORE_LOOT_IN_SLOT                           = 0,
-    CMSG_SUBMIT_BUG                                   = 0,
+    CMSG_SUBMIT_BUG                                   = 0x001,
     CMSG_SUBMIT_COMPLAIN                              = 0,
     CMSG_SUGGESTION_SUBMIT                            = 0,
     CMSG_SUMMON_RESPONSE                              = 0xCFE,
     CMSG_SUSPEND_TOKEN                                = 0,
     CMSG_SWAP_INV_ITEM                                = 0x810,	// 5.0.5 16048
     CMSG_SWAP_ITEM                                    = 0x89C,	// 5.0.5 16048
-    CMSG_SYNC_DANCE                                   = 0,
+    CMSG_SYNC_DANCE                                   = 0x870,
     CMSG_TAXICLEARALLNODES                            = 0,
     CMSG_TAXIENABLEALLNODES                           = 0,
     CMSG_TAXINODE_STATUS_QUERY                        = 0x8DC,
@@ -587,7 +587,7 @@ enum Opcodes
     CMSG_WARGAME_ACCEPT                               = 0,
     CMSG_WARGAME_START                                = 0,
     CMSG_WHO                                          = 0xD69,	// 5.0.5 16048
-    CMSG_WHOIS                                        = 0,
+    CMSG_WHOIS                                        = 0x2456,
     CMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0xDD0,	// 5.0.5 16048
     CMSG_WORLD_TELEPORT                               = 0,
     CMSG_WRAP_ITEM                                    = 0,
@@ -596,7 +596,7 @@ enum Opcodes
     MSG_BATTLEGROUND_PLAYER_POSITIONS                 = 0,
     MSG_CHANNEL_START                                 = 0,
     MSG_CHANNEL_UPDATE                                = 0,
-    MSG_CORPSE_QUERY                                  = 0,
+    MSG_CORPSE_QUERY                                  = 0x524,
     MSG_GM_BIND_OTHER                                 = 0,
     MSG_GM_SHOWLABEL                                  = 0,
     MSG_GM_SUMMON                                     = 0,
