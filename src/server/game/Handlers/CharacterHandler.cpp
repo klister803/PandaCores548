@@ -2135,6 +2135,8 @@ void WorldSession::HandleReorderCharacters(WorldPacket& recvData)
         guids[i][0] = recvData.ReadBit();
     }
 
+    recvData.FlushBits();
+
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
     for (uint8 i = 0; i < charactersCount; ++i)
     {
