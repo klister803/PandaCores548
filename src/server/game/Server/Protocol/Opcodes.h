@@ -116,7 +116,7 @@ enum Opcodes
     CMSG_CALENDAR_UPDATE_EVENT                        = 0,
     CMSG_CANCEL_AURA                                  = 0x895,	// 5.0.5 16048
     CMSG_CANCEL_AUTO_REPEAT_SPELL                     = 0,
-    CMSG_CANCEL_CAST                                  = 0,
+    CMSG_CANCEL_CAST                                  = 0xC66,
     CMSG_CANCEL_CHANNELLING                           = 0,
     CMSG_CANCEL_GROWTH_AURA                           = 0,
     CMSG_CANCEL_MOUNT_AURA                            = 0,
@@ -430,7 +430,7 @@ enum Opcodes
     CMSG_QUERY_GUILD_MEMBER_RECIPES                   = 0,
     CMSG_QUERY_GUILD_RECIPES                          = 0,
     CMSG_QUERY_GUILD_REWARDS                          = 0,
-    CMSG_QUERY_GUILD_XP                               = 0,
+    CMSG_QUERY_GUILD_XP                               = 0x310,
     CMSG_QUERY_INSPECT_ACHIEVEMENTS                   = 0xC3A,
     CMSG_QUERY_QUESTS_COMPLETED                       = 0,
     CMSG_QUERY_TIME                                   = 0xCDA,
