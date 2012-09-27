@@ -393,29 +393,29 @@ void WorldSession::HandleMailDelete(WorldPacket & recvData)
 
 void WorldSession::HandleMailReturnToSender(WorldPacket & recvData)
 {
-    ObjectGuid mailbox;
+    ObjectGuid owner;
     uint32 mailId;
     recvData >> mailId;
-    mailbox[2] = recvData.ReadBit();
-    mailbox[6] = recvData.ReadBit();
-    mailbox[5] = recvData.ReadBit();
-    mailbox[0] = recvData.ReadBit();
-    mailbox[7] = recvData.ReadBit();
-    mailbox[3] = recvData.ReadBit();
-    mailbox[4] = recvData.ReadBit();
-    mailbox[1] = recvData.ReadBit();
+    owner[2] = recvData.ReadBit();
+    owner[6] = recvData.ReadBit();
+    owner[5] = recvData.ReadBit();
+    owner[0] = recvData.ReadBit();
+    owner[7] = recvData.ReadBit();
+    owner[3] = recvData.ReadBit();
+    owner[4] = recvData.ReadBit();
+    owner[1] = recvData.ReadBit();
 
-    recvData.ReadByteSeq(mailbox[3]);
-    recvData.ReadByteSeq(mailbox[1]);
-    recvData.ReadByteSeq(mailbox[5]);
-    recvData.ReadByteSeq(mailbox[0]);
-    recvData.ReadByteSeq(mailbox[4]);
-    recvData.ReadByteSeq(mailbox[2]);
-    recvData.ReadByteSeq(mailbox[7]);
-    recvData.ReadByteSeq(mailbox[6]);
+    recvData.ReadByteSeq(owner[3]);
+    recvData.ReadByteSeq(owner[1]);
+    recvData.ReadByteSeq(owner[5]);
+    recvData.ReadByteSeq(owner[0]);
+    recvData.ReadByteSeq(owner[4]);
+    recvData.ReadByteSeq(owner[2]);
+    recvData.ReadByteSeq(owner[7]);
+    recvData.ReadByteSeq(owner[6]);
 
-    if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
-        return;
+    //if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
+    //    return;
 
     Player* player = _player;
     Mail* m = player->GetMail(mailId);

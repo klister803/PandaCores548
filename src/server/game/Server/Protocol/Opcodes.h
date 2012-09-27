@@ -192,9 +192,9 @@ enum Opcodes
     CMSG_EMOTE                                        = 0xC6C,	// 5.0.5 16048
     CMSG_ENABLETAXI                                   = 0,
     CMSG_ENABLE_NAGLE                                 = 0x3EA,  // 5.0.5 16048
-    CMSG_EQUIPMENT_SET_DELETE                         = 0,
-    CMSG_EQUIPMENT_SET_SAVE                           = 0,
-    CMSG_EQUIPMENT_SET_USE                            = 0,
+    CMSG_EQUIPMENT_SET_DELETE                         = 0x9F2,
+    CMSG_EQUIPMENT_SET_SAVE                           = 0xC87,
+    CMSG_EQUIPMENT_SET_USE                            = 0xD95,
     CMSG_FAR_SIGHT                                    = 0,
     CMSG_FORCE_MOVE_ROOT_ACK                          = 0,
     CMSG_FORCE_MOVE_UNROOT_ACK                        = 0,
@@ -310,7 +310,7 @@ enum Opcodes
     CMSG_LFG_SET_ROLES                                = 0,
     CMSG_LFG_TELEPORT                                 = 0,
     CMSG_LF_GUILD_ADD_RECRUIT                         = 0,
-    CMSG_LF_GUILD_BROWSE                              = 0,
+    CMSG_LF_GUILD_BROWSE                              = 0x61,
     CMSG_LF_GUILD_DECLINE_RECRUIT                     = 0,
     CMSG_LF_GUILD_GET_APPLICATIONS                    = 0,
     CMSG_LF_GUILD_GET_RECRUITS                        = 0,
@@ -475,7 +475,7 @@ enum Opcodes
     CMSG_REQUEST_PET_INFO                             = 0,
     CMSG_REQUEST_PVP_OPTIONS_ENABLED                  = 0x74D,	// 5.0.5 16048
     CMSG_REQUEST_PVP_REWARDS                          = 0,
-    CMSG_REQUEST_RAID_INFO                            = 0,
+    CMSG_REQUEST_RAID_INFO                            = 0xC2E,
     CMSG_REQUEST_RATED_BG_INFO                        = 0,
     CMSG_REQUEST_RATED_BG_STATS                       = 0,
     CMSG_REQUEST_RESEARCH_HISTORY                     = 0,

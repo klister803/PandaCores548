@@ -1614,6 +1614,8 @@ void WorldSession::HandleEquipmentSetUse(WorldPacket& recvData)
 
     for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
     {
+        if (i == 17)
+            continue;
         uint64 itemGuid;
         recvData.readPackGUID(itemGuid);
 
