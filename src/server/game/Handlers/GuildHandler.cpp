@@ -640,7 +640,7 @@ void WorldSession::HandleGuildBankLogQuery(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (MSG_GUILD_BANK_LOG_QUERY)");
 
-    uint8 tabId;
+    uint32 tabId;
     recvData >> tabId;
 
     if (Guild* guild = _GetPlayerGuild(this))

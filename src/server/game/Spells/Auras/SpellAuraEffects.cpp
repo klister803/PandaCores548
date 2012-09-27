@@ -426,6 +426,52 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleUnused,                                    //368 unused (4.3.4)
     &AuraEffect::HandleNULL,                                      //369 SPELL_AURA_369
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
 };
 
 AuraEffect::AuraEffect(Aura* base, uint8 effIndex, int32 *baseAmount, Unit* caster):

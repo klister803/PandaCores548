@@ -169,7 +169,7 @@ enum EnchantmentSlot
     //TODO: 7,
     REFORGE_ENCHANTMENT_SLOT        = 8,
     TRANSMOGRIFY_ENCHANTMENT_SLOT   = 9,
-    MAX_INSPECTED_ENCHANTMENT_SLOT  = 10,
+    MAX_INSPECTED_ENCHANTMENT_SLOT  = 8,
 
     PROP_ENCHANTMENT_SLOT_0         = 8,                   // used with RandomSuffix
     PROP_ENCHANTMENT_SLOT_1         = 9,                   // used with RandomSuffix
