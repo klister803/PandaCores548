@@ -679,21 +679,21 @@ void WorldSession::HandleGuildQueryXPOpcode(WorldPacket& recvData)
     ObjectGuid guildGuid;
 
     guildGuid[2] = recvData.ReadBit();
+    guildGuid[5] = recvData.ReadBit();
+    guildGuid[3] = recvData.ReadBit();
+    guildGuid[7] = recvData.ReadBit();
+    guildGuid[4] = recvData.ReadBit();
     guildGuid[1] = recvData.ReadBit();
     guildGuid[0] = recvData.ReadBit();
-    guildGuid[5] = recvData.ReadBit();
-    guildGuid[4] = recvData.ReadBit();
-    guildGuid[7] = recvData.ReadBit();
     guildGuid[6] = recvData.ReadBit();
-    guildGuid[3] = recvData.ReadBit();
 
     recvData.ReadByteSeq(guildGuid[7]);
-    recvData.ReadByteSeq(guildGuid[2]);
     recvData.ReadByteSeq(guildGuid[3]);
-    recvData.ReadByteSeq(guildGuid[6]);
+    recvData.ReadByteSeq(guildGuid[2]);
     recvData.ReadByteSeq(guildGuid[1]);
-    recvData.ReadByteSeq(guildGuid[5]);
     recvData.ReadByteSeq(guildGuid[0]);
+    recvData.ReadByteSeq(guildGuid[5]);
+    recvData.ReadByteSeq(guildGuid[6]);
     recvData.ReadByteSeq(guildGuid[4]);
 
     //if (Guild* guild = sGuildMgr->GetGuildByGuid(guildGuid))
