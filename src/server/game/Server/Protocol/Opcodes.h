@@ -629,7 +629,7 @@ enum Opcodes
     MSG_MOVE_START_ASCEND                             = 0,
     MSG_MOVE_START_BACKWARD                           = 0,
     MSG_MOVE_START_DESCEND                            = 0,
-    CMSG_PLAYER_MOVE                                  = 0x3F8,	// 5.0.5 16048 CUSTOM OPCODE, client patch
+    MSG_MOVE_START_FORWARD                            = 0x3F8,	// 5.0.5 16048
     MSG_MOVE_START_PITCH_DOWN                         = 0,
     MSG_MOVE_START_PITCH_UP                           = 0,
     MSG_MOVE_START_STRAFE_LEFT                        = 0,
