@@ -276,7 +276,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     /* extract packet */
     MovementInfo movementInfo;
     ReadMovementInfo(recvPacket, &movementInfo);
-
+    sLog->outError(LOG_FILTER_NETWORKIO, "HandleMovementOpcodes: Flags : 0x%X, Flags2 0x%X", movementInfo.flags, movementInfo.flags2);
     // prevent tampered movement data
     if (movementInfo.guid != mover->GetGUID())
     {

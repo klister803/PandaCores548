@@ -12931,6 +12931,8 @@ int32 Unit::GetCreatePowers(Powers power) const
             return 0;
         case POWER_HEALTH:
             return 0;
+        case POWER_CHI:
+            return 4;
         default:
             break;
     }

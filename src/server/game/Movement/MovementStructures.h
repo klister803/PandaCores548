@@ -647,7 +647,7 @@ MovementStatusElements MovementStartForwardSequence[] =
     MSEHasGuidByte0,//guid0
 
     MSEZeroBit,       //isAlive_unk2
-    MSEOneBit,       //nisAlive_unk3
+    MSEHasTimestamp,       //nisAlive_unk3
     MSEZeroBit,     //_AH & 0x44
     MSEHasGuidByte7,        //guid7
     MSEHasTransportTime2,         //transport_unk1
@@ -2007,56 +2007,10 @@ MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
 {
     switch (opcode)
     {
-        /*case MSG_MOVE_FALL_LAND:
-            return MovementFallLandSequence;
-        case MSG_MOVE_HEARTBEAT:
-            return MovementHeartBeatSequence;
-        case MSG_MOVE_JUMP:
-            return MovementJumpSequence;
-        case MSG_MOVE_SET_FACING:
-            return MovementSetFacingSequence;
-        case MSG_MOVE_SET_PITCH:
-            return MovementSetPitchSequence;
-        case MSG_MOVE_START_ASCEND:
-            return MovementStartAscendSequence;
-        case MSG_MOVE_START_BACKWARD:
-            return MovementStartBackwardSequence;
-        case MSG_MOVE_START_DESCEND:
-            return MovementStartDescendSequence;*/
-        case MSG_MOVE_START_FORWARD:
+        case CMSG_PLAYER_MOVE:
             return MovementStartForwardSequence;
-        /*case MSG_MOVE_START_PITCH_DOWN:
-            return MovementStartPitchDownSequence;
-        case MSG_MOVE_START_PITCH_UP:
-            return MovementStartPitchUpSequence;
-        case MSG_MOVE_START_STRAFE_LEFT:
-            return MovementStartStrafeLeftSequence;
-        case MSG_MOVE_START_STRAFE_RIGHT:
-            return MovementStartStrafeRightSequence;
-        case MSG_MOVE_START_SWIM:
-            return MovementStartSwimSequence;
-        case MSG_MOVE_START_TURN_LEFT:
-            return MovementStartTurnLeftSequence;
-        case MSG_MOVE_START_TURN_RIGHT:
-            return MovementStartTurnRightSequence;*/
-        case MSG_MOVE_STOP:
-            return MovementStopSequence;
-        /*case MSG_MOVE_STOP_ASCEND:
-            return MovementStopAscendSequence;
-        case MSG_MOVE_STOP_PITCH:
-            return MovementStopPitchSequence;
-        case MSG_MOVE_STOP_STRAFE:
-            return MovementStopStrafeSequence;
-        case MSG_MOVE_STOP_SWIM:
-            return MovementStopSwimSequence;
-        case MSG_MOVE_STOP_TURN:
-            return MovementStopTurnSequence;*/
         case SMSG_PLAYER_MOVE:
             return PlayerMoveSequence;
-        /*case CMSG_MOVE_CHNG_TRANSPORT:
-            return MoveChngTransport;
-        case CMSG_MOVE_SPLINE_DONE:
-            return MoveSplineDone;*/
         default:
             break;
     }

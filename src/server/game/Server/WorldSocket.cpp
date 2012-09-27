@@ -729,6 +729,14 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
             sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", opcodeName.c_str());
             sScriptMgr->OnPacketReceive(this, WorldPacket(*new_pct));
             return 0;
+        case CMSG_REORDER_CHARACTERS:
+            sScriptMgr->OnPacketReceive(this, WorldPacket(*new_pct));
+
+            if (m_Session)
+                if (OpcodeHandler* opHandle = opcodeTable[CMSG_REORDER_CHARACTERS])
+                    (m_Session->*opHandle->handler)(*new_pct);
+
+            return 0;
             // not an opcode, client sends string "WORLD OF WARCRAFT CONNECTION - CLIENT TO SERVER" without opcode
             // first 4 bytes become the opcode (2 dropped)
         case MSG_VERIFY_CONNECTIVITY:
