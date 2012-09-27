@@ -46,7 +46,7 @@ enum Opcodes
     CMSG_AREA_SPIRIT_HEALER_QUERY                     = 0x953,
     CMSG_AREA_SPIRIT_HEALER_QUEUE                     = 0xCB7,
     CMSG_ARENA_TEAM_ACCEPT                            = 0xC69,
-    CMSG_ARENA_TEAM_CREATE                            = 0,
+    CMSG_ARENA_TEAM_CREATE                            = 0x34A,
     CMSG_ARENA_TEAM_DECLINE                           = 0x8CB,
     CMSG_ARENA_TEAM_DISBAND                           = 0x97A,
     CMSG_ARENA_TEAM_INVITE                            = 0xC61,

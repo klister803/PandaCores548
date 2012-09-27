@@ -113,6 +113,7 @@ struct ArenaTeamStats
 };
 
 #define MAX_ARENA_SLOT 3                                    // 0..2 slots
+#define MAX_ARENA_TYPE 6                                    // type : 2, 3 or 5
 
 class ArenaTeam
 {
@@ -129,6 +130,7 @@ class ArenaTeam
         uint32 GetType() const            { return Type; }
         uint8  GetSlot() const            { return GetSlotByType(GetType()); }
         static uint8 GetSlotByType(uint32 type);
+        static uint32 GetTypeBySlot(uint8 slot);
         uint64 GetCaptain() const  { return CaptainGuid; }
         std::string GetName() const       { return TeamName; }
         const ArenaTeamStats& GetStats() const { return Stats; }
