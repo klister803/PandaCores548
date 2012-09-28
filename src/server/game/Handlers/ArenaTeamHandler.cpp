@@ -195,10 +195,11 @@ void WorldSession::HandleArenaTeamCreateOpcode(WorldPacket & recvData)
     uint32 iconcolor;
     uint32 border;
     uint32 bordercolor;
+    uint8  strLeng;
     std::string name;
 
-    recvData >> slot >> background >> icon >> iconcolor >> border >> bordercolor;
-    recvData >> name;
+    recvData >> slot >> icon >> iconcolor >> border >> bordercolor >> background;
+    recvData >> strLeng >> name;
 
     // Check for valid arena bracket (2v2, 3v3, 5v5)
     if (slot >= MAX_ARENA_SLOT)
@@ -409,8 +410,8 @@ void WorldSession::SendArenaTeamCommandResult(uint32 teamAction, const std::stri
     data.FlushBits();
 
     data.WriteString(player);
-    data << uint32(teamAction);
     data << uint32(errorId);
+    data << uint32(teamAction);
     data.WriteString(team);
     SendPacket(&data);
 }
