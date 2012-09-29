@@ -1308,9 +1308,9 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
     recvData >> time;                                      // time in m.sec.
     recvData >> mapid;
     recvData >> PositionX;
+    recvData >> Orientation;     
     recvData >> PositionY;
-    recvData >> PositionZ;
-    recvData >> Orientation;                               // o (3.141593 = 180 degrees)
+    recvData >> PositionZ;                          // o (3.141593 = 180 degrees)
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_WORLD_TELEPORT");
 
