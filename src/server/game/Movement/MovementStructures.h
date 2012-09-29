@@ -624,6 +624,7 @@ MovementStatusElements MovementStartForwardSequence[] =
     MSEPositionX,
     MSEPositionY,
     MSEPositionZ,
+    
 
     MSEHasGuidByte1, //guid1
     MSEZeroBit,      //_AH & 0x44
@@ -634,9 +635,6 @@ MovementStatusElements MovementStartForwardSequence[] =
     MSEZeroBit,      //_AH & 0x44
     MSEHasGuidByte5,    //guid5
 
-    //BitCounter1
-    MSEBitCounter1,
-
     MSEHasGuidByte2,    //guid2
     MSEHasMovementFlags2,//MoveFlags2
     MSEHasFallData,     //IsInterpolated
@@ -644,6 +642,8 @@ MovementStatusElements MovementStartForwardSequence[] =
     MSEZeroBit,       //isAlive32
     MSEHasTransportData,    //isTransport
     MSEHasGuidByte4,//guid4
+    //BitCounter1
+    MSEBitCounter1,
     MSEHasGuidByte0,//guid0
 
     MSEZeroBit,       //isAlive_unk2

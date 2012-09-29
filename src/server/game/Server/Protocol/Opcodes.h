@@ -422,7 +422,7 @@ enum Opcodes
     CMSG_PLAYER_LOGIN                                 = 0x203,  // 5.0.5 16048
     CMSG_PLAYER_LOGOUT                                = 0,
     CMSG_PLAYER_VEHICLE_ENTER                         = 0,
-    CMSG_PLAY_DANCE                                   = 0,
+    CMSG_PLAY_DANCE                                   = 0x878,
     CMSG_PUSHQUESTTOPARTY                             = 0,
     CMSG_PVP_LOG_DATA                                 = 0,
     CMSG_QUERY_BATTLEFIELD_STATE                      = 0,
