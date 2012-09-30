@@ -212,9 +212,21 @@ void AuraApplication::BuildUpdatePacket(ByteBuffer& data, bool remove) const
     }
 
     if (flags & AFLAG_ANY_EFFECT_AMOUNT_SENT)
+    {
+        size_t pos = data.wpos();
+        uint8 count = 0;
+
+        data << uint8(0);
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
             if (AuraEffect const* eff = aura->GetEffect(i)) // NULL if effect flag not set
+            {
                 data << float(eff->GetAmount());
+                count++;
+            }
+        }
+        data.put(pos, count);
+    }
 }
 
 void AuraApplication::ClientUpdate(bool remove)

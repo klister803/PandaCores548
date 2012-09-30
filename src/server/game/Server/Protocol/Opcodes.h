@@ -149,7 +149,7 @@ enum Opcodes
     CMSG_CHANNEL_VOICE_OFF                            = 0x5C8,  // 5.0.5 16048
     CMSG_CHANNEL_VOICE_ON                             = 0x0E8,  // 5.0.5 16048
     CMSG_CHAR_CREATE                                  = 0x332,  // 5.0.5 16048
-    CMSG_CHAR_CUSTOMIZE                               = 0,
+    CMSG_CHAR_CUSTOMIZE                               = 0xC99,  // 5.0.5 16048
     CMSG_CHAR_DELETE                                  = 0x944,  // 5.0.5 16048
     CMSG_CHAR_ENUM                                    = 0x576,  // 5.0.5 16048
     CMSG_CHAR_FACTION_CHANGE                          = 0,
@@ -190,7 +190,7 @@ enum Opcodes
     CMSG_DUNGEON_FINDER_GET_SYSTEM_INFO               = 0x44A,  // 5.0.5 16048
     CMSG_EJECT_PASSENGER                              = 0,
     CMSG_EMOTE                                        = 0xC6C,	// 5.0.5 16048
-    CMSG_ENABLETAXI                                   = 0,
+    CMSG_ENABLETAXI                                   = 0x8F8,  // 5.0.5 16048
     CMSG_ENABLE_NAGLE                                 = 0x3EA,  // 5.0.5 16048
     //CMSG_EQUIPMENT_SET_DELETE                         = 0x9F2,
     CMSG_EQUIPMENT_SET_SAVE                           = 0xC87,  // 5.0.5 16048
@@ -629,7 +629,7 @@ enum Opcodes
     MSG_MOVE_START_ASCEND                             = 0,
     MSG_MOVE_START_BACKWARD                           = 0,
     MSG_MOVE_START_DESCEND                            = 0,
-    MSG_MOVE_START_FORWARD                            = 0x3F8,	// 5.0.5 16048
+    CMSG_PLAYER_MOVE                                  = 0x3F8,	// 5.0.5 16048 CUSTOM OPCODE, client patch
     MSG_MOVE_START_PITCH_DOWN                         = 0,
     MSG_MOVE_START_PITCH_UP                           = 0,
     MSG_MOVE_START_STRAFE_LEFT                        = 0,
@@ -719,7 +719,7 @@ enum Opcodes
     SMSG_AUTH_CHALLENGE                               = 0x523,  // 5.0.5 16048
     SMSG_AUTH_RESPONSE                                = 0xE20,  // 5.0.5 16048
     SMSG_AVAILABLE_VOICE_CHANNEL                      = 0x0941, // 5.0.5 16048
-    SMSG_AVERAGE_ITEM_LEVEL_INFORM                    = 0xEF9,
+    SMSG_AVERAGE_ITEM_LEVEL_INFORM                    = 0xEF9,  // 5.0.5 16048
     SMSG_BARBER_SHOP_RESULT                           = 0x0835, // 5.0.5 16048
     SMSG_BATTLEFIELD_LIST                             = 0,//0xFE5, //TODO: Need Sniff
     SMSG_BATTLEFIELD_MGR_EJECTED                      = 0x0A89, // 5.0.5 16048
@@ -793,10 +793,10 @@ enum Opcodes
     SMSG_CHAT_PLAYER_NOT_FOUND                        = 0x08F2, // 5.0.5 16048
     SMSG_CHAT_RESTRICTED                              = 0x0D3C, // 5.0.5 16048
     SMSG_CHAT_SERVER_DISCONNECTED                     = 0,
-    SMSG_CHAT_SERVER_RECONNECTED                      = 0x0CC8, // 5.0.5 16048
+    SMSG_CHAT_SERVER_RECONNECTED                      = 0xCC8,  // 5.0.5 16048
     SMSG_CHAT_WRONG_FACTION                           = 0x86E,
     SMSG_CHECK_FOR_BOTS                               = 0,
-    SMSG_CLEAR_BOSS_EMOTES                            = 0x0B87, // 5.0.5 16048
+    SMSG_CLEAR_BOSS_EMOTES                            = 0xB87,  // 5.0.5 16048
     SMSG_CLEAR_COOLDOWN                               = 0,
     SMSG_CLEAR_COOLDOWNS                              = 0,
     SMSG_CLEAR_FAR_SIGHT_IMMEDIATE                    = 0,

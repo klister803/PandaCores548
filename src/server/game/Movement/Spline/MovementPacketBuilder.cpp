@@ -115,6 +115,24 @@ namespace Movement
                 data.appendPackXYZ(offset.x, offset.y, offset.z);
             }
         }
+
+        // Unknow 5.0.5 MoP
+        uint16 unkCount = 0;
+        data << uint16(unkCount); // unk 5.0.5 count
+        if(unkCount)
+        {
+            data << float(0);
+            data << uint16(0);
+            data << uint16(0);
+            data << float(0);
+            data << uint16(0);
+
+            for(int i = 0; i < unkCount; i++)
+            {
+                data << uint16(0);
+                data << uint16(0);
+            }
+        }
     }
 
     void WriteCatmullRomPath(const Spline<int32>& spline, ByteBuffer& data)
