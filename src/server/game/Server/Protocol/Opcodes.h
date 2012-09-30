@@ -149,7 +149,7 @@ enum Opcodes
     CMSG_CHANNEL_VOICE_OFF                            = 0x5C8,  // 5.0.5 16048
     CMSG_CHANNEL_VOICE_ON                             = 0x0E8,  // 5.0.5 16048
     CMSG_CHAR_CREATE                                  = 0x332,  // 5.0.5 16048
-    CMSG_CHAR_CUSTOMIZE                               = 0,
+    CMSG_CHAR_CUSTOMIZE                               = 0xC99,  // 5.0.5 16048
     CMSG_CHAR_DELETE                                  = 0x944,  // 5.0.5 16048
     CMSG_CHAR_ENUM                                    = 0x576,  // 5.0.5 16048
     CMSG_CHAR_FACTION_CHANGE                          = 0,
@@ -190,7 +190,7 @@ enum Opcodes
     CMSG_DUNGEON_FINDER_GET_SYSTEM_INFO               = 0x44A,  // 5.0.5 16048
     CMSG_EJECT_PASSENGER                              = 0,
     CMSG_EMOTE                                        = 0xC6C,	// 5.0.5 16048
-    CMSG_ENABLETAXI                                   = 0,
+    CMSG_ENABLETAXI                                   = 0x8F8,  // 5.0.5 16048
     CMSG_ENABLE_NAGLE                                 = 0x3EA,  // 5.0.5 16048
     //CMSG_EQUIPMENT_SET_DELETE                         = 0x9F2,
     CMSG_EQUIPMENT_SET_SAVE                           = 0xC87,  // 5.0.5 16048
