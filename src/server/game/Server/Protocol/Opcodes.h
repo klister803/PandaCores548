@@ -719,7 +719,7 @@ enum Opcodes
     SMSG_AUTH_CHALLENGE                               = 0x523,  // 5.0.5 16048
     SMSG_AUTH_RESPONSE                                = 0xE20,  // 5.0.5 16048
     SMSG_AVAILABLE_VOICE_CHANNEL                      = 0x0941, // 5.0.5 16048
-    SMSG_AVERAGE_ITEM_LEVEL_INFORM                    = 0xEF9,
+    SMSG_AVERAGE_ITEM_LEVEL_INFORM                    = 0xEF9,  // 5.0.5 16048
     SMSG_BARBER_SHOP_RESULT                           = 0x0835, // 5.0.5 16048
     SMSG_BATTLEFIELD_LIST                             = 0,//0xFE5, //TODO: Need Sniff
     SMSG_BATTLEFIELD_MGR_EJECTED                      = 0x0A89, // 5.0.5 16048
@@ -793,10 +793,10 @@ enum Opcodes
     SMSG_CHAT_PLAYER_NOT_FOUND                        = 0x08F2, // 5.0.5 16048
     SMSG_CHAT_RESTRICTED                              = 0x0D3C, // 5.0.5 16048
     SMSG_CHAT_SERVER_DISCONNECTED                     = 0,
-    SMSG_CHAT_SERVER_RECONNECTED                      = 0x0CC8, // 5.0.5 16048
+    SMSG_CHAT_SERVER_RECONNECTED                      = 0xCC8,  // 5.0.5 16048
     SMSG_CHAT_WRONG_FACTION                           = 0x86E,
     SMSG_CHECK_FOR_BOTS                               = 0,
-    SMSG_CLEAR_BOSS_EMOTES                            = 0x0B87, // 5.0.5 16048
+    SMSG_CLEAR_BOSS_EMOTES                            = 0xB87,  // 5.0.5 16048
     SMSG_CLEAR_COOLDOWN                               = 0,
     SMSG_CLEAR_COOLDOWNS                              = 0,
     SMSG_CLEAR_FAR_SIGHT_IMMEDIATE                    = 0,
