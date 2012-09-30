@@ -775,45 +775,20 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     if (_player->GetGUIDLow() != ownerguidlo)
         return;
 
-    // Petition type (guild/arena) specific checks
-    if (type == GUILD_CHARTER_TYPE)
+    // Check if player is already in a guild
+    if (_player->GetGuildId())
     {
-        // Check if player is already in a guild
-        if (_player->GetGuildId())
-        {
-            data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 4);
-            data << (uint32)PETITION_TURN_ALREADY_IN_GUILD;
-            _player->GetSession()->SendPacket(&data);
-            return;
-        }
-
-        // Check if guild name is already taken
-        if (sGuildMgr->GetGuildByName(name))
-        {
-            Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_EXISTS_S, name);
-            return;
-        }
+        data.Initialize(SMSG_TURN_IN_PETITION_RESULTS, 4);
+        data << (uint32)PETITION_TURN_ALREADY_IN_GUILD;
+        _player->GetSession()->SendPacket(&data);
+        return;
     }
-    else
+
+    // Check if guild name is already taken
+    if (sGuildMgr->GetGuildByName(name))
     {
-        // Check for valid arena bracket (2v2, 3v3, 5v5)
-        uint8 slot = ArenaTeam::GetSlotByType(type);
-        if (slot >= MAX_ARENA_SLOT)
-            return;
-
-        // Check if player is already in an arena team
-        if (_player->GetArenaTeamId(slot))
-        {
-            SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ALREADY_IN_ARENA_TEAM);
-            return;
-        }
-
-        // Check if arena team name is already taken
-        if (sArenaTeamMgr->GetArenaTeamByName(name))
-        {
-            SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ARENA_TEAM_NAME_EXISTS_S);
-            return;
-        }
+        Guild::SendCommandResult(this, GUILD_CREATE_S, ERR_GUILD_NAME_EXISTS_S, name);
+        return;
     }
 
     // Get petition signatures from db
@@ -829,10 +804,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
         signatures = 0;
 
     uint32 requiredSignatures;
-    if (type == GUILD_CHARTER_TYPE)
-        requiredSignatures = sWorld->getIntConfig(CONFIG_MIN_PETITION_SIGNS);
-    else
-        requiredSignatures = type-1;
+    requiredSignatures = sWorld->getIntConfig(CONFIG_MIN_PETITION_SIGNS);
 
     // Notify player if signatures are missing
     if (signatures < requiredSignatures)
@@ -848,56 +820,24 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     // Delete charter item
     _player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
 
-    if (type == GUILD_CHARTER_TYPE)
+    // Create guild
+    Guild* guild = new Guild;
+
+    if (!guild->Create(_player, name))
     {
-        // Create guild
-        Guild* guild = new Guild;
-
-        if (!guild->Create(_player, name))
-        {
-            delete guild;
-            return;
-        }
-
-        // Register guild and add guild master
-        sGuildMgr->AddGuild(guild);
-
-        // Add members from signatures
-        for (uint8 i = 0; i < signatures; ++i)
-        {
-            Field* fields = result->Fetch();
-            guild->AddMember(MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER));
-            result->NextRow();
-        }
+        delete guild;
+        return;
     }
-    else
+
+    // Register guild and add guild master
+    sGuildMgr->AddGuild(guild);
+
+    // Add members from signatures
+    for (uint8 i = 0; i < signatures; ++i)
     {
-        // Receive the rest of the packet in arena team creation case
-        uint32 background, icon, iconcolor, border, bordercolor;
-        recvData >> background >> icon >> iconcolor >> border >> bordercolor;
-
-        // Create arena team
-        ArenaTeam* arenaTeam = new ArenaTeam();
-
-        if (!arenaTeam->Create(_player->GetGUID(), type, name, background, icon, iconcolor, border, bordercolor))
-        {
-            delete arenaTeam;
-            return;
-        }
-
-        // Register arena team
-        sArenaTeamMgr->AddArenaTeam(arenaTeam);
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "PetitonsHandler: Arena team (guid: %u) added to ObjectMgr", arenaTeam->GetId());
-
-        // Add members
-        for (uint8 i = 0; i < signatures; ++i)
-        {
-            Field* fields = result->Fetch();
-            uint32 memberGUID = fields[0].GetUInt32();
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "PetitionsHandler: Adding arena team (guid: %u) member %u", arenaTeam->GetId(), memberGUID);
-            arenaTeam->AddMember(MAKE_NEW_GUID(memberGUID, 0, HIGHGUID_PLAYER));
-            result->NextRow();
-        }
+        Field* fields = result->Fetch();
+        guild->AddMember(MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER));
+        result->NextRow();
     }
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();

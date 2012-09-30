@@ -1480,6 +1480,7 @@ void Guild::HandleBuyBankTab(WorldSession* session, uint8 tabId)
     _SetRankBankTabRightsAndSlots(player->GetRank(), tabId, GuildBankRightsAndSlots(GUILD_BANK_RIGHT_FULL, uint32(GUILD_WITHDRAW_SLOT_UNLIMITED)));
     HandleRoster();                                         // Broadcast for tab rights update
     SendBankList(session, tabId, false, true);
+    HandleGuildRanks(session);
 }
 
 void Guild::HandleInviteMember(WorldSession* session, const std::string& name)
@@ -1995,8 +1996,8 @@ void Guild::SendBankLog(WorldSession* session, uint8 tabId) const
     if (tabId < _GetPurchasedTabsSize() || tabId == GUILD_BANK_MAX_TABS)
     {
         const LogHolder* pLog = m_bankEventLog[tabId];
-        WorldPacket data(MSG_GUILD_BANK_LOG_QUERY, pLog->GetSize() * (4 * 4 + 1) + 1 + 1);
-        data << uint8(tabId);
+        WorldPacket data(SMSG_GUILD_BANK_LOG_QUERY_RESULTS, pLog->GetSize() * (4 * 4 + 1) + 1 + 1);
+        data << uint32(tabId);
         pLog->WritePacket(data);
         session->SendPacket(&data);
         sLog->outDebug(LOG_FILTER_GUILD, "WORLD: Sent (MSG_GUILD_BANK_LOG_QUERY)");
@@ -2079,9 +2080,9 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
     if (!tabData.empty())
         data.append(tabData);
 
-    data << uint32(tabId);
-    data << uint64(m_bankMoney);
     data << uint32(_GetMemberRemainingSlots(session->GetPlayer()->GetGUID(), 0));
+    data << uint64(m_bankMoney);
+    data << uint32(tabId);
 
     session->SendPacket(&data);
 
@@ -3042,7 +3043,6 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
     {
         ByteBuffer tabData;
         WorldPacket data(SMSG_GUILD_BANK_LIST, 1200);
-        data.WriteBit(0);
         data.WriteBits(slots.size(), 20);                                           // Item count
         data.WriteBits(0, 22);                                                      // Tab count
 
@@ -3068,27 +3068,25 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
             data.WriteBits(enchantCount, 23);                                       // enchantment count
 
             tabData << uint32(0);
-            tabData << uint32(0);
-            tabData << uint32(0);
-            tabData << uint32(tabItem ? tabItem->GetCount() : 0);                   // ITEM_FIELD_STACK_COUNT
-            tabData << uint32(*itr);
-            tabData << uint32(0);
             tabData << uint32(tabItem ? tabItem->GetEntry() : 0);
-            tabData << uint32(tabItem ? tabItem->GetItemRandomPropertyId() : 0);
             tabData << uint32(tabItem ? abs(tabItem->GetSpellCharges()) : 0);       // Spell charges
+            tabData << uint32(0);
+            tabData << uint32(0);
+            tabData << uint32(0);
             tabData << uint32(tabItem ? tabItem->GetItemSuffixFactor() : 0);        // SuffixFactor
+            tabData << uint32(*itr);
+            tabData << uint32(tabItem ? tabItem->GetCount() : 0);                   // ITEM_FIELD_STACK_COUNT
+            tabData << uint32(tabItem ? tabItem->GetItemRandomPropertyId() : 0);
         }
+        data.WriteBit(0);
 
         data.FlushBits();
 
-        data << uint64(m_bankMoney);
         if (!tabData.empty())
             data.append(tabData);
 
-        data << uint32(tabId);
-
         size_t rempos = data.wpos();
-        data << uint32(0);                                      // Item withdraw amount, will be filled later
+        data << uint32(-1);                                      // Item withdraw amount, will be filled later
 
         for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
             if (_MemberHasTabRights(itr->second->GetGUID(), tabId, GUILD_BANK_RIGHT_VIEW_TAB))
@@ -3097,6 +3095,8 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
                     data.put<uint32>(rempos, uint32(_GetMemberRemainingSlots(player->GetGUID(), tabId)));
                     player->GetSession()->SendPacket(&data);
                 }
+        data << uint64(m_bankMoney);
+        data << uint32(tabId);
 
         sLog->outDebug(LOG_FILTER_GUILD, "WORLD: Sent (SMSG_GUILD_BANK_LIST)");
     }

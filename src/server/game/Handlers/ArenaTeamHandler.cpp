@@ -185,6 +185,61 @@ void WorldSession::HandleArenaTeamAcceptOpcode(WorldPacket & /*recvData*/)
     arenaTeam->BroadcastEvent(ERR_ARENA_TEAM_JOIN_SS, _player->GetGUID(), 2, _player->GetName(), arenaTeam->GetName(), "");
 }
 
+void WorldSession::HandleArenaTeamCreateOpcode(WorldPacket & recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_ARENA_TEAM_CREATE");                // empty opcode
+    
+    uint32 slot;
+    uint32 background;
+    uint32 icon;
+    uint32 iconcolor;
+    uint32 border;
+    uint32 bordercolor;
+    uint8  strLeng;
+    std::string name;
+
+    recvData >> slot >> icon >> iconcolor >> border >> bordercolor >> background;
+    recvData >> strLeng >> name;
+
+    // Check for valid arena bracket (2v2, 3v3, 5v5)
+    if (slot >= MAX_ARENA_SLOT)
+        return;
+
+    uint32 type = ArenaTeam::GetTypeBySlot(slot);
+    if (type >= MAX_ARENA_TYPE)
+        return;
+
+    // Check if player is already in an arena team
+    if (_player->GetArenaTeamId(slot))
+    {
+        SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ALREADY_IN_ARENA_TEAM);
+        return;
+    }
+
+    // Check if arena team name is already taken
+    if (sArenaTeamMgr->GetArenaTeamByName(name))
+    {
+        SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, name, "", ERR_ARENA_TEAM_NAME_EXISTS_S);
+        return;
+    }
+
+    // Create arena team
+    ArenaTeam* arenaTeam = new ArenaTeam();
+
+    if (!arenaTeam->Create(_player->GetGUID(), type, name, background, icon, iconcolor, border, bordercolor))
+    {
+        delete arenaTeam;
+        return;
+    }
+
+    // Register arena team
+    sArenaTeamMgr->AddArenaTeam(arenaTeam);
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "ArenaTeamHandler: Arena team (guid: %u) added to ObjectMgr", arenaTeam->GetId());
+
+    // Broadcast event
+    arenaTeam->BroadcastEvent(ERR_ARENA_TEAM_JOIN_SS, _player->GetGUID(), 2, _player->GetName(), arenaTeam->GetName(), "");
+}
+
 void WorldSession::HandleArenaTeamDeclineOpcode(WorldPacket & /*recvData*/)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_ARENA_TEAM_DECLINE");               // empty opcode
@@ -355,8 +410,8 @@ void WorldSession::SendArenaTeamCommandResult(uint32 teamAction, const std::stri
     data.FlushBits();
 
     data.WriteString(player);
-    data << uint32(teamAction);
     data << uint32(errorId);
+    data << uint32(teamAction);
     data.WriteString(team);
     SendPacket(&data);
 }

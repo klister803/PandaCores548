@@ -870,6 +870,7 @@ class WorldSession
         void HandleArenaTeamRosterOpcode(WorldPacket& recvData);
         void HandleArenaTeamInviteOpcode(WorldPacket& recvData);
         void HandleArenaTeamAcceptOpcode(WorldPacket& recvData);
+        void HandleArenaTeamCreateOpcode(WorldPacket& recvData);
         void HandleArenaTeamDeclineOpcode(WorldPacket& recvData);
         void HandleArenaTeamLeaveOpcode(WorldPacket& recvData);
         void HandleArenaTeamRemoveOpcode(WorldPacket& recvData);

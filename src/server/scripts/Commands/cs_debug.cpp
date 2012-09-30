@@ -91,6 +91,7 @@ public:
             { "los",            SEC_MODERATOR,      false, &HandleDebugLoSCommand,             "", NULL },
             { "moveflags",      SEC_ADMINISTRATOR,  false, &HandleDebugMoveflagsCommand,       "", NULL },
             { "tradestatus",    SEC_ADMINISTRATOR,  false, &HandleSendTradeStatus,             "", NULL },
+            { "mailstatus",     SEC_ADMINISTRATOR,  false, &HandleSendMailStatus,              "", NULL },
             { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -116,6 +117,24 @@ public:
         uint32 id = atoi((char*)args);
 
         handler->GetSession()->SendTradeStatus(TradeStatus(id));
+        return true;
+    }
+
+    static bool HandleSendMailStatus(ChatHandler* handler, char const* args)
+    {
+        // USAGE: .debug play cinematic #cinematicid
+        // #cinematicid - ID decimal number from CinemaicSequences.dbc (1st column)
+        if (!*args)
+        {
+            handler->SendSysMessage(LANG_BAD_VALUE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        uint32 id = atoi((char*)args);
+        uint32 id2 = atoi((char*)args);
+
+        handler->GetSession()->GetPlayer()->SendMailResult(0, MailResponseType(id), MailResponseResult(id2));
         return true;
     }
 
