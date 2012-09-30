@@ -1308,9 +1308,9 @@ void WorldSession::HandleWorldTeleportOpcode(WorldPacket& recvData)
     recvData >> time;                                      // time in m.sec.
     recvData >> mapid;
     recvData >> PositionX;
+    recvData >> Orientation;     
     recvData >> PositionY;
-    recvData >> PositionZ;
-    recvData >> Orientation;                               // o (3.141593 = 180 degrees)
+    recvData >> PositionZ;                          // o (3.141593 = 180 degrees)
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_WORLD_TELEPORT");
 
@@ -1971,23 +1971,23 @@ void WorldSession::HandleUpdateMissileTrajectory(WorldPacket& recvPacket)
  void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
  {
      ObjectGuid guid;
-     guid[6] = recvPacket.ReadBit();
-     guid[7] = recvPacket.ReadBit();
-     guid[4] = recvPacket.ReadBit();
-     guid[0] = recvPacket.ReadBit();
-     guid[1] = recvPacket.ReadBit();
      guid[5] = recvPacket.ReadBit();
+     guid[0] = recvPacket.ReadBit();
      guid[3] = recvPacket.ReadBit();
+     guid[1] = recvPacket.ReadBit();
+     guid[7] = recvPacket.ReadBit();
+     guid[6] = recvPacket.ReadBit();
      guid[2] = recvPacket.ReadBit();
+     guid[4] = recvPacket.ReadBit();
 
-     recvPacket.ReadByteSeq(guid[6]);
-     recvPacket.ReadByteSeq(guid[7]);
      recvPacket.ReadByteSeq(guid[2]);
      recvPacket.ReadByteSeq(guid[3]);
+     recvPacket.ReadByteSeq(guid[5]);
+     recvPacket.ReadByteSeq(guid[7]);
+     recvPacket.ReadByteSeq(guid[6]);
+     recvPacket.ReadByteSeq(guid[0]);
      recvPacket.ReadByteSeq(guid[1]);
      recvPacket.ReadByteSeq(guid[4]);
-     recvPacket.ReadByteSeq(guid[0]);
-     recvPacket.ReadByteSeq(guid[5]);
 
      WorldObject* obj = ObjectAccessor::GetWorldObject(*GetPlayer(), guid);
      sLog->outError(LOG_FILTER_NETWORKIO, "Object update failed for object "UI64FMTD" (%s) for player %s (%u)", uint64(guid), obj ? obj->GetName() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());
