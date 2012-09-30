@@ -642,6 +642,9 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
     bool hasFallDirection = false;
     bool hasSplineElevation = false;
     bool hasSpline = false;
+    bool hasAlive32 = false;
+
+    uint32 bitcounterLoop = 0;
 
     MovementStatusElements* sequence = GetMovementStatusElementsSequence(data.GetOpcode());
     if (sequence == NULL)
@@ -690,7 +693,11 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
         switch (element)
         {
             case MSEBitCounter1:
-                data.ReadBits(24);
+                bitcounterLoop = data.ReadBits(24);
+                break;
+            case MSEBitCounterLoop1:
+                for(int i = 0; i < bitcounterLoop; i++)
+                    data.read_skip<uint32>();
                 break;
             case MSEFlushBits:
                 data.FlushBits();
@@ -723,10 +730,14 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
                 break;
             case MSEHasFallData:
                 hasFallData = data.ReadBit();
+                mi->hasFallData = hasFallData;
                 break;
             case MSEHasFallDirection:
                 if (hasFallData)
+                {
                     hasFallDirection = data.ReadBit();
+                    mi->hasFallDirection = hasFallDirection;
+                }
                 break;
             case MSEHasSplineElevation:
                 hasSplineElevation = !data.ReadBit();
@@ -740,7 +751,7 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
                 break;
             case MSEMovementFlags2:
                 if (hasMovementFlags2)
-                    mi->flags2 = data.ReadBits(12);
+                    mi->flags2 = data.ReadBits(13);
                 break;
             case MSETimestamp:
                 if (hasTimestamp)
@@ -823,6 +834,13 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
             case MSEOneBit:
                 data.ReadBit();
                 break;
+            case MSEHasAlive32:
+                hasAlive32 = !data.ReadBit();
+                break;
+            case MSEAlive32:
+                if(hasAlive32)
+                    data >> mi->Alive32;
+                break;
             default:
                 ASSERT(false && "Incorrect sequence element detected at ReadMovementInfo");
                 break;
@@ -858,8 +876,8 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
 
     /*! This must be a packet spoofing attempt. MOVEMENTFLAG_ROOT sent from the client is not valid
         in conjunction with any of the moving movement flags such as MOVEMENTFLAG_FORWARD.
-        It will freeze clients that receive this player's movement info.
-    */
+        It will freeze clients that receive this player's movement info.*/
+    
     REMOVE_VIOLATING_FLAGS(mi->HasMovementFlag(MOVEMENTFLAG_ROOT),
         MOVEMENTFLAG_ROOT);
 
@@ -919,8 +937,8 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi)
     bool hasTransportTime2 = mi->HasExtraMovementFlag(MOVEMENTFLAG2_INTERPOLATED_MOVEMENT);
     bool hasTransportTime3 = false;
     bool hasPitch = mi->HasMovementFlag(MovementFlags(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)) || mi->HasExtraMovementFlag(MOVEMENTFLAG2_ALWAYS_ALLOW_PITCHING);
-    bool hasFallData = mi->HasExtraMovementFlag(MOVEMENTFLAG2_INTERPOLATED_TURNING);
-    bool hasFallDirection = mi->HasMovementFlag(MOVEMENTFLAG_FALLING);
+    bool hasFallData = mi->hasFallData;//mi->HasExtraMovementFlag(MOVEMENTFLAG2_INTERPOLATED_TURNING);
+    bool hasFallDirection = mi->hasFallDirection;//mi->HasMovementFlag(MOVEMENTFLAG_FALLING);
     bool hasSplineElevation = mi->HasMovementFlag(MOVEMENTFLAG_SPLINE_ELEVATION);
     bool hasSpline = false;
 
@@ -1021,7 +1039,7 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi)
                 break;
             case MSEMovementFlags2:
                 if (hasMovementFlags2)
-                    data.WriteBits(mi->flags2, 12);
+                    data.WriteBits(mi->flags2, 13);
                 break;
             case MSETimestamp:
                 if (hasTimestamp)
@@ -1105,6 +1123,13 @@ void WorldSession::WriteMovementInfo(WorldPacket &data, MovementInfo* mi)
                 break;
             case MSEOneBit:
                 data.WriteBit(1);
+                break;
+            case MSEHasAlive32:
+                data.WriteBit(!mi->Alive32);
+                break;
+            case MSEAlive32:
+                if(mi->Alive32)
+                    data << mi->Alive32;
                 break;
             default:
                 ASSERT(false && "Incorrect sequence element detected at ReadMovementInfo");

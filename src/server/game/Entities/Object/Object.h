@@ -572,6 +572,10 @@ struct MovementInfo
     float j_zspeed, j_cosAngle, j_sinAngle, j_xyspeed;
     // spline
     float splineElevation;
+    // BitClientData
+    bool hasFallData;
+    bool hasFallDirection;
+    uint32 Alive32;
 
     MovementInfo()
     {
@@ -585,6 +589,9 @@ struct MovementInfo
         t_guid = 0;
         t_pos.Relocate(0, 0, 0, 0);
         t_seat = -1;
+        hasFallData = false;
+        hasFallDirection = false;
+        Alive32 = 0;
     }
 
     uint32 GetMovementFlags() const { return flags; }
