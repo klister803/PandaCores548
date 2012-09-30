@@ -4144,6 +4144,7 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
     {
         WorldPacket data(SMSG_LEARNED_SPELL, 8);
         data.WriteBits(1, 24); //count of spell_id to send.
+        data.WriteBit(1);
         data << uint32(spell_id);
         //data << uint32(0);
         GetSession()->SendPacket(&data);
