@@ -392,7 +392,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         data->WriteBit(0);													//IsAlive_unk1
         data->WriteBit(guid[5]);
         if (movementFlagsExtra)
-            data->WriteBits(movementFlagsExtra, 12);
+            data->WriteBits(movementFlagsExtra, 13);
         data->WriteBit(guid[2]);
         data->WriteBit(guid[6]);
         data->WriteBit(!movementFlags);
