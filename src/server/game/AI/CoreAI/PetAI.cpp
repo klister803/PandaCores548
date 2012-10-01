@@ -418,6 +418,10 @@ void PetAI::HandleReturnMovement()
             }
         }
     }
+    else if (me->GetCharmInfo()->HasCommandState(COMMAND_MOVETO))
+    {
+        //TODO: Do we have to write something ?
+    }
     else // COMMAND_FOLLOW
     {
         if (!me->GetCharmInfo()->IsFollowing() && !me->GetCharmInfo()->IsReturning())
