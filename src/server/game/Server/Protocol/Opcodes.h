@@ -195,7 +195,7 @@ enum Opcodes
     //CMSG_EQUIPMENT_SET_DELETE                         = 0x9F2,
     CMSG_EQUIPMENT_SET_SAVE                           = 0xC87,  // 5.0.5 16048
     CMSG_EQUIPMENT_SET_USE                            = 0xD95,  // 5.0.5 16048
-    CMSG_FAR_SIGHT                                    = 0,
+    CMSG_FAR_SIGHT                                    = 0x991,  // 5.0.5 16048
     CMSG_FORCE_MOVE_ROOT_ACK                          = 0,
     CMSG_FORCE_MOVE_UNROOT_ACK                        = 0,
     CMSG_GAMEOBJECT_QUERY                             = 0xCF8,  // 5.0.5 16048
@@ -205,7 +205,7 @@ enum Opcodes
     CMSG_GAMETIME_SET                                 = 0,
     CMSG_GETDEATHBINDZONE                             = 0,
     CMSG_GET_MAIL_LIST                                = 0xCC4,  // 5.0.5 16048
-    CMSG_GET_MIRRORIMAGE_DATA                         = 0,
+    CMSG_GET_MIRRORIMAGE_DATA                         = 0xD87,  // 5.0.5 16048
     CMSG_GHOST                                        = 0,
     CMSG_GMRESPONSE_RESOLVE                           = 0xC23,
     CMSG_GMSURVEY_SUBMIT                              = 0x96B,
@@ -231,7 +231,7 @@ enum Opcodes
     CMSG_GROUP_REQUEST_JOIN_UPDATES                   = 0x744,  // 5.0.5 16048
     CMSG_GROUP_SET_LEADER                             = 0x1F7,  // 5.0.5 16048
     CMSG_GROUP_SET_ROLES                              = 0x302,  // 5.0.5 16048
-    CMSG_GROUP_SWAP_SUB_GROUP                         = 0,
+    CMSG_GROUP_SWAP_SUB_GROUP                         = 0x369,  // 5.0.5 16048
     CMSG_GROUP_UNINVITE                               = 0,
     CMSG_GROUP_UNINVITE_GUID                          = 0x069,  // 5.0.5 16048
     CMSG_GUILD_ACCEPT                                 = 0x70B,  // 5.0.5 16048
