@@ -803,10 +803,49 @@ void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket& recvData)
 void WorldSession::HandleGroupSwapSubGroupOpcode(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_SWAP_SUB_GROUP");
-    std::string unk1;
-    std::string unk2;
-
+    uint8 unk1;
+    ObjectGuid guid1;
+    ObjectGuid guid2;
+    uint8 unk2;
+    
     recvData >> unk1;
+
+    guid1[4] = recvData.ReadBit();
+    guid1[6] = recvData.ReadBit();
+    guid1[5] = recvData.ReadBit();
+    guid1[0] = recvData.ReadBit();
+    guid2[3] = recvData.ReadBit();
+    guid2[4] = recvData.ReadBit();
+    guid1[7] = recvData.ReadBit();
+    guid1[2] = recvData.ReadBit();
+    
+    guid2[7] = recvData.ReadBit();
+    guid2[1] = recvData.ReadBit();
+    guid2[5] = recvData.ReadBit();
+    guid2[6] = recvData.ReadBit();
+    guid2[0] = recvData.ReadBit();
+    guid1[3] = recvData.ReadBit();
+    guid2[2] = recvData.ReadBit();
+    guid1[1] = recvData.ReadBit();
+    
+    recvData.ReadByteSeq(guid2[0]);
+    recvData.ReadByteSeq(guid1[5]);
+    recvData.ReadByteSeq(guid1[0]);
+    recvData.ReadByteSeq(guid2[7]);
+    recvData.ReadByteSeq(guid1[6]);
+    recvData.ReadByteSeq(guid2[1]);
+    recvData.ReadByteSeq(guid2[5]);
+    recvData.ReadByteSeq(guid1[7]);
+    
+    recvData.ReadByteSeq(guid1[4]);
+    recvData.ReadByteSeq(guid1[3]);
+    recvData.ReadByteSeq(guid2[3]);
+    recvData.ReadByteSeq(guid1[1]);
+    recvData.ReadByteSeq(guid1[4]);
+    recvData.ReadByteSeq(guid2[6]);
+    recvData.ReadByteSeq(guid2[2]);
+    recvData.ReadByteSeq(guid2[2]);
+    
     recvData >> unk2;
 }
 
