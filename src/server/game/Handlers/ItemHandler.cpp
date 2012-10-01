@@ -1046,11 +1046,13 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::SendEnchantmentLog(uint64 Target, uint64 Caster, uint32 ItemID, uint32 SpellID)
 {
-    WorldPacket data(SMSG_ENCHANTMENTLOG, (8+8+4+4+1));     // last check 4.3.4
+    WorldPacket data(SMSG_ENCHANTMENTLOG, (8+8+8+4+4+4+1));     // last check 4.3.4
     data.appendPackGUID(Target);
     data.appendPackGUID(Caster);
+    data.appendPackGUID(0);
     data << uint32(ItemID);
     data << uint32(SpellID);
+    data << uint32(0); // TODO:Check this packet.
     SendPacket(&data);
 }
 

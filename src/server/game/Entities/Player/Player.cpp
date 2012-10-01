@@ -5894,12 +5894,12 @@ float Player::GetMeleeCritFromAgility()
     if (level > GT_MAX_LEVEL)
         level = GT_MAX_LEVEL;
 
-    GtChanceToMeleeCritBaseEntry const* critBase  = sGtChanceToMeleeCritBaseStore.LookupEntry(pclass-1);
+    GtChanceToMeleeCritBaseEntry const* critBase  = sGtChanceToMeleeCritBaseStore.LookupEntry((pclass-1)*GT_MAX_LEVEL + level-1);
     GtChanceToMeleeCritEntry     const* critRatio = sGtChanceToMeleeCritStore.LookupEntry((pclass-1)*GT_MAX_LEVEL + level-1);
     if (critBase == NULL || critRatio == NULL)
         return 0.0f;
 
-    float crit = critBase->base + GetStat(STAT_AGILITY)*critRatio->ratio;
+    float crit = ((GetStat(STAT_AGILITY) - 1) / (critRatio->ratio * 100) + critBase->base);
     return crit*100.0f;
 }
 
@@ -20147,6 +20147,7 @@ void Player::PetSpellInitialize()
     WorldPacket data(SMSG_PET_SPELLS, 8+2+4+4+4*MAX_UNIT_ACTION_BAR_INDEX+1+1);
     data << uint64(pet->GetGUID());
     data << uint16(pet->GetCreatureTemplate()->family);         // creature family (required for pet talents)
+    data << uint16(0); // unknown
     data << uint32(pet->GetDuration());
     data << uint8(pet->GetReactState());
     data << uint8(charmInfo->GetCommandState());
@@ -20212,6 +20213,8 @@ void Player::PetSpellInitialize()
         }
     }
 
+    data << uint8(0); //unknown
+
     GetSession()->SendPacket(&data);
 }
 
@@ -20232,6 +20235,7 @@ void Player::PossessSpellInitialize()
     WorldPacket data(SMSG_PET_SPELLS, 8+2+4+4+4*MAX_UNIT_ACTION_BAR_INDEX+1+1);
     data << uint64(charm->GetGUID());
     data << uint16(0);
+    data << uint16(0);
     data << uint32(0);
     data << uint32(0);
 
@@ -20239,6 +20243,7 @@ void Player::PossessSpellInitialize()
 
     data << uint8(0);                                       // spells count
     data << uint8(0);                                       // cooldowns count
+    data << uint8(0);
 
     GetSession()->SendPacket(&data);
 }
@@ -20254,6 +20259,7 @@ void Player::VehicleSpellInitialize()
     WorldPacket data(SMSG_PET_SPELLS, 8 + 2 + 4 + 4 + 4 * 10 + 1 + 1 + cooldownCount * (4 + 2 + 4 + 4));
     data << uint64(vehicle->GetGUID());                     // Guid
     data << uint16(0);                                      // Pet Family (0 for all vehicles)
+    data << uint16(0);
     data << uint32(vehicle->isSummon() ? vehicle->ToTempSummon()->GetTimer() : 0); // Duration
     // The following three segments are read by the client as one uint32
     data << uint8(vehicle->GetReactState());                // React State
@@ -20324,6 +20330,7 @@ void Player::VehicleSpellInitialize()
             data << uint32(0);
         }
     }
+    data << uint8(0);
 
     GetSession()->SendPacket(&data);
 }
@@ -20356,6 +20363,7 @@ void Player::CharmSpellInitialize()
     WorldPacket data(SMSG_PET_SPELLS, 8+2+4+4+4*MAX_UNIT_ACTION_BAR_INDEX+1+4*addlist+1);
     data << uint64(charm->GetGUID());
     data << uint16(0);
+    data << uint16(0);
     data << uint32(0);
 
     if (charm->GetTypeId() != TYPEID_PLAYER)
@@ -20378,6 +20386,7 @@ void Player::CharmSpellInitialize()
     }
 
     data << uint8(0);                                       // cooldowns count
+    data << uint8(0);
 
     GetSession()->SendPacket(&data);
 }
