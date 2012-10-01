@@ -429,24 +429,24 @@ void AchievementMgr<Guild>::RemoveCriteriaProgress(const AchievementCriteriaEntr
     ObjectGuid guid = GetOwner()->GetGUID();
 
     WorldPacket data(SMSG_GUILD_CRITERIA_DELETED, 4 + 8);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[5]);
     data.WriteBit(guid[7]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[1]);
     data.WriteBit(guid[3]);
-    data.WriteBit(guid[2]);
     data.WriteBit(guid[4]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[0]);
 
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[7]);
-    data << uint32(entry->ID);
     data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[4]);
     data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[3]);
+    data << uint32(entry->ID);
+    data.WriteByteSeq(guid[0]);
 
     SendPacket(&data);
 
@@ -2506,11 +2506,23 @@ template<>
 void AchievementMgr<Guild>::SendAllAchievementData(Player* receiver) const
 {
     WorldPacket data(SMSG_GUILD_ACHIEVEMENT_DATA, m_completedAchievements.size() * (4 + 4) + 4);
-    data.WriteBits(m_completedAchievements.size(), 23);
+    data.WriteBits(m_completedAchievements.size(), 22);
     for (CompletedAchievementMap::const_iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
     {
-        data << uint32(secsToTimeBitFields(itr->second.date));
+        data.WriteBit(0);
+        data.WriteBit(0);
+        data.WriteBit(0);
+        data.WriteBit(0);
+        data.WriteBit(0);
+        data.WriteBit(0);
+        data.WriteBit(0);
+        data.WriteBit(0);
+    }
+    for (CompletedAchievementMap::const_iterator itr = m_completedAchievements.begin(); itr != m_completedAchievements.end(); ++itr)
+    {
+        data << uint32(0); //0 or time ?
         data << uint32(itr->first);
+        data << uint32(secsToTimeBitFields(itr->second.date));
     }
 
     receiver->GetSession()->SendPacket(&data);

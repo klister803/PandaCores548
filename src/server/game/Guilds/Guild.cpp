@@ -3134,43 +3134,43 @@ void Guild::SendGuildRanksUpdate(uint64 setterGuid, uint64 targetGuid, uint32 ra
     ASSERT(member);
 
     WorldPacket data(SMSG_GUILD_RANKS_UPDATE, 100);
-    data.WriteBit(setGuid[7]);
-    data.WriteBit(setGuid[2]);
-    data.WriteBit(tarGuid[2]);
-    data.WriteBit(setGuid[1]);
-    data.WriteBit(tarGuid[1]);
-    data.WriteBit(tarGuid[7]);
-    data.WriteBit(tarGuid[0]);
-    data.WriteBit(tarGuid[5]);
-    data.WriteBit(tarGuid[4]);
-    data.WriteBit(rank < member->GetRankId()); // 1 == higher, 0 = lower?
-    data.WriteBit(setGuid[5]);
-    data.WriteBit(setGuid[0]);
-    data.WriteBit(tarGuid[6]);
-    data.WriteBit(setGuid[3]);
     data.WriteBit(setGuid[6]);
+    data.WriteBit(tarGuid[0]);
     data.WriteBit(tarGuid[3]);
-    data.WriteBit(setGuid[4]);
+    data.WriteBit(tarGuid[5]);
+    data.WriteBit(setGuid[0]);
+    data.WriteBit(tarGuid[4]);
+    data.WriteBit(setGuid[5]);
+    data.WriteBit(tarGuid[7]);
+    data.WriteBit(tarGuid[2]);
+    data.WriteBit(setGuid[3]);
+    data.WriteBit(tarGuid[1]);
+    data.WriteBit(tarGuid[6]);
+    data.WriteBit(setGuid[7]);
+    data.WriteBit(setGuid[1]);
+    data.WriteBit(setGuid[2]);
+    data.WriteBit(rank < member->GetRankId()); // 1 == higher, 0 = lower?
 
     data.FlushBits();
-
-    data << uint32(rank);
-    data.WriteByteSeq(setGuid[3]);
-    data.WriteByteSeq(tarGuid[7]);
-    data.WriteByteSeq(setGuid[6]);
-    data.WriteByteSeq(setGuid[2]);
-    data.WriteByteSeq(tarGuid[5]);
-    data.WriteByteSeq(tarGuid[0]);
-    data.WriteByteSeq(setGuid[7]);
-    data.WriteByteSeq(setGuid[5]);
-    data.WriteByteSeq(tarGuid[2]);
-    data.WriteByteSeq(tarGuid[1]);
-    data.WriteByteSeq(setGuid[0]);
+    
     data.WriteByteSeq(setGuid[4]);
+    data.WriteByteSeq(tarGuid[2]);
     data.WriteByteSeq(setGuid[1]);
-    data.WriteByteSeq(tarGuid[3]);
-    data.WriteByteSeq(tarGuid[6]);
+    data.WriteByteSeq(setGuid[3]);
+    data.WriteByteSeq(setGuid[2]);
+    data << uint32(rank);
+    data.WriteByteSeq(setGuid[5]);
+    data.WriteByteSeq(setGuid[7]);
+    data.WriteByteSeq(setGuid[0]);
+    data.WriteByteSeq(tarGuid[1]);
+    data.WriteByteSeq(tarGuid[5]);
     data.WriteByteSeq(tarGuid[4]);
+    data.WriteByteSeq(tarGuid[3]);
+    data.WriteByteSeq(tarGuid[7]);
+    data.WriteByteSeq(tarGuid[0]);
+    data.WriteByteSeq(setGuid[6]);
+    data.WriteByteSeq(tarGuid[6]);
+
     BroadcastPacket(&data);
 
     member->ChangeRank(rank);
