@@ -532,9 +532,9 @@ enum ItemDynamicFields
 
 enum EContainerFields
 {
-    CONTAINER_FIELD_NUM_SLOTS                        = ITEM_END + 0x0,
-    CONTAINER_FIELD_SLOT_1                           = ITEM_END + 0x1,
-    CONTAINER_END                                    = ITEM_END + 0x49
+    CONTAINER_FIELD_SLOT_1                           = ITEM_END + 0x0,
+    CONTAINER_FIELD_NUM_SLOTS                        = ITEM_END + 0x48,
+    CONTAINER_END                                    = ITEM_END + 0x49,
 };
 
 enum EGameObjectFields
