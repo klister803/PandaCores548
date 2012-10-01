@@ -42,7 +42,7 @@ enum Opcodes
     CMSG_ADD_IGNORE                                   = 0xD48,	// 5.0.5 16048
     CMSG_ADD_VOICE_IGNORE                             = 0x8BF,  // 5.0.5 16048
     CMSG_ALTER_APPEARANCE                             = 0xD72,  // 5.0.5 16048
-    CMSG_AREATRIGGER                                  = 0x626,  // 5.0.5 16048
+    CMSG_AREATRIGGER                                  = 0x272,  // 5.0.5 16048
     CMSG_AREA_SPIRIT_HEALER_QUERY                     = 0x953,  // 5.0.5 16048
     CMSG_AREA_SPIRIT_HEALER_QUEUE                     = 0xCB7,  // 5.0.5 16048
     CMSG_ARENA_TEAM_ACCEPT                            = 0xC69,  // 5.0.5 16048
@@ -515,7 +515,7 @@ enum Opcodes
     CMSG_SET_FACTION_INACTIVE                         = 0xCB0,  // 5.0.5 16048
     CMSG_SET_GUILD_BANK_TEXT                          = 0,
     CMSG_SET_LFG_COMMENT                              = 0,
-    CMSG_SET_PET_SLOT                                 = 0,
+    CMSG_SET_PET_SLOT                                 = 0x131,
     CMSG_SET_PLAYER_DECLINED_NAMES                    = 0xDA3,  // 5.0.5 16048
     CMSG_SET_PREFERED_CEMETERY                        = 0,
     CMSG_SET_PRIMARY_TALENT_TREE                      = 0,
@@ -902,8 +902,8 @@ enum Opcodes
     SMSG_GMTICKET_GETTICKET                           = 0x8D0,
     SMSG_GMTICKET_SYSTEMSTATUS                        = 0xD1F,	// 5.0.5 16048
     SMSG_GMTICKET_UPDATETEXT                          = 0xCFB,
-    SMSG_GM_MESSAGECHAT                               = 0,
-    SMSG_GM_PLAYER_INFO                               = 0,
+    SMSG_GM_MESSAGECHAT                               = 0x90F,
+    SMSG_GM_PLAYER_INFO                               = 0xD99,
     SMSG_GM_TICKET_STATUS_UPDATE                      = 0,
     SMSG_GODMODE                                      = 0,
     SMSG_GOSSIP_COMPLETE                              = 0x0CB6, // 5.0.5 16048
@@ -1384,8 +1384,8 @@ enum Opcodes
     SMSG_UPDATE_OBJECT                                = 0x8F7,  // 5.0.5 16048
     SMSG_UPDATE_SERVER_PLAYER_POSITION                = 0,
     SMSG_UPDATE_WORLD_STATE                           = 0x847,	// 5.0.5 16048
-    SMSG_USERLIST_ADD                                 = 0,
-    SMSG_USERLIST_REMOVE                              = 0,
+    SMSG_USERLIST_ADD                                 = 0x95A,
+    SMSG_USERLIST_REMOVE                              = 0xD6E,
     SMSG_USERLIST_UPDATE                              = 0x95A,  // 5.0.5 16048
     SMSG_VOICESESSION_FULL                            = 0,
     SMSG_VOICE_CHAT_STATUS                            = 0x9EE,  // 5.0.5 16048
