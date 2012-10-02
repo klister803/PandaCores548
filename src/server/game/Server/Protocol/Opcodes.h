@@ -579,9 +579,9 @@ enum Opcodes
     CMSG_USE_ITEM                                     = 0x9FD,  // 5.0.5 16048
     CMSG_VIOLENCE_LEVEL                               = 0x4B9,  // 5.0.5 16048
     CMSG_VOICE_SESSION_ENABLE                         = 0x937,  // 5.0.5 16048
-    CMSG_VOID_STORAGE_QUERY                           = 0x112,  // 5.0.5 16048
+    CMSG_VOID_STORAGE_QUERY                           = 0x378,  // 5.0.5 16048
     CMSG_VOID_STORAGE_TRANSFER                        = 0,
-    CMSG_VOID_STORAGE_UNLOCK                          = 0,
+    CMSG_VOID_STORAGE_UNLOCK                          = 0x079,  // 5.0.5 16048
     CMSG_VOID_SWAP_ITEM                               = 0,
     CMSG_WARDEN_DATA                                  = 0,
     CMSG_WARGAME_ACCEPT                               = 0,
