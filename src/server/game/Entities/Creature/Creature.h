@@ -383,7 +383,7 @@ struct TrainerSpell
     uint32 reqSkill;
     uint32 reqSkillValue;
     uint32 reqLevel;
-    uint32 learnedSpell[3];
+    uint32 learnedSpell[32];
 
     // helpers
     bool IsCastable() const { return learnedSpell[0] != spell; }

@@ -534,9 +534,6 @@ void LoadDBCStores(const std::string& dataPath)
     {
         if(SpellEffectEntry const *spellEffect = sSpellEffectStore.LookupEntry(i))
         {
-            if(spellEffect->EffectIndex > 2)
-                continue;
-
             sSpellEffectMap[spellEffect->EffectSpellId].effects[spellEffect->EffectIndex] = spellEffect;
         }
     }

@@ -1212,8 +1212,8 @@ void Pet::_LoadAuras(uint32 timediff)
             if (!caster_guid)
                 caster_guid = GetGUID();
             uint32 spellid = fields[1].GetUInt32();
-            uint8 effmask = fields[2].GetUInt8();
-            uint8 recalculatemask = fields[3].GetUInt8();
+            uint32 effmask = fields[2].GetUInt32();
+            uint32 recalculatemask = fields[3].GetUInt32();
             uint8 stackcount = fields[4].GetUInt8();
             damage[0] = fields[5].GetInt32();
             damage[1] = fields[6].GetInt32();
@@ -1282,8 +1282,8 @@ void Pet::_SaveAuras(SQLTransaction& trans)
 
         int32 damage[MAX_SPELL_EFFECTS];
         int32 baseDamage[MAX_SPELL_EFFECTS];
-        uint8 effMask = 0;
-        uint8 recalculateMask = 0;
+        uint32 effMask = 0;
+        uint32 recalculateMask = 0;
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
             if (aura->GetEffect(i))
