@@ -534,7 +534,7 @@ void LoadDBCStores(const std::string& dataPath)
     {
         if(SpellEffectEntry const *spellEffect = sSpellEffectStore.LookupEntry(i))
         {
-            sSpellEffectMap[spellEffect->EffectSpellId].effects[spellEffect->EffectIndex] = spellEffect;
+            sSpellEffectMap[spellEffect->EffectSpellId].effects[spellEffect->EffectDifficulty][spellEffect->EffectIndex] = spellEffect;
         }
     }
 
@@ -778,13 +778,16 @@ char const* GetPetName(uint32 petfamily, uint32 /*dbclang*/)
     return pet_family->Name ? pet_family->Name : NULL;
 }
 
-SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect)
+SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect, uint32 difficulty)
 {
     SpellEffectMap::const_iterator itr = sSpellEffectMap.find(spellId);
     if(itr == sSpellEffectMap.end())
         return NULL;
 
-    return itr->second.effects[effect];
+    if(itr->second.effects[difficulty][effect])
+        return itr->second.effects[difficulty][effect];
+
+    return itr->second.effects[NONE_DIFFICULTY][effect];
 }
 
 SpellEffectScalingEntry const* GetSpellEffectScalingEntry(uint32 effectId)

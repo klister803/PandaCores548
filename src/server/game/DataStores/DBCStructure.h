@@ -1690,7 +1690,7 @@ struct SoundEntriesEntry
 struct SpellEffectEntry
 {
     uint32    Id;                                           // 0         m_ID
-    //uint32 unk 5.0.5
+    uint32    EffectDifficulty;                             // 1         m_effectDifficulty
     uint32    Effect;                                       // 1         m_effect
     float     EffectValueMultiplier;                        // 2         m_effectAmplitude
     uint32    EffectApplyAuraName;                          // 3         m_effectAura
@@ -1820,7 +1820,7 @@ struct SpellEntry
     uint32 SpellMiscId;                                     // 24       SpellMisc.dbc
 
     // struct access functions
-    SpellEffectEntry const* GetSpellEffect(uint32 eff) const;
+    SpellEffectEntry const* GetSpellEffect(uint32 eff, uint32 difficulty) const;
 };
 
 // SpellCategories.dbc
@@ -2410,40 +2410,15 @@ struct SpellEffect
 {
     SpellEffect()
     {
-        effects[0] = NULL;
-        effects[1] = NULL;
-        effects[2] = NULL;
-        effects[3] = NULL;
-        effects[4] = NULL;
-        effects[5] = NULL;
-        effects[6] = NULL;
-        effects[7] = NULL;
-        effects[8] = NULL;
-        effects[9] = NULL;
-        effects[10] = NULL;
-        effects[11] = NULL;
-        effects[12] = NULL;
-        effects[13] = NULL;
-        effects[14] = NULL;
-        effects[15] = NULL;
-        effects[16] = NULL;
-        effects[17] = NULL;
-        effects[18] = NULL;
-        effects[19] = NULL;
-        effects[20] = NULL;
-        effects[21] = NULL;
-        effects[22] = NULL;
-        effects[23] = NULL;
-        effects[24] = NULL;
-        effects[25] = NULL;
-        effects[26] = NULL;
-        effects[27] = NULL;
-        effects[28] = NULL;
-        effects[29] = NULL;
-        effects[30] = NULL;
-        effects[31] = NULL;
+        for(int i = 0; i < MAX_DIFFICULTY; i++)
+        {
+            for(int y = 0; y < MAX_SPELL_EFFECTS; y++)
+            {
+                effects[i][y] = 0;
+            }
+        }
     }
-    SpellEffectEntry const* effects[32];
+    SpellEffectEntry const* effects[MAX_DIFFICULTY][32];
 };
 
 typedef std::map<uint32, SpellEffect> SpellEffectMap;
