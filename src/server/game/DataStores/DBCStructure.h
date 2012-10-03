@@ -1898,8 +1898,8 @@ struct SpellClassOptionsEntry
     //uint32    Id;                                         // 0        m_ID
     //uint32    modalNextSpell;                             // 1       m_modalNextSpell not used
     flag96    SpellFamilyFlags;                             // 2-4
-    uint32    SpellFamilyName;                              // 5       m_spellClassSet
-    //char*   Description;                                  // 6 4.0.0
+    //char*   Description;                                  // 5
+    uint32    SpellFamilyName;                              // 6       m_spellClassSet
 };
 
 // SpellInterrupts.dbc
