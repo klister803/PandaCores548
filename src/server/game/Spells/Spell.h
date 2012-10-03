@@ -526,8 +526,8 @@ class Spell
         bool m_referencedFromCurrentSpell;                  // mark as references to prevent deleted and access by dead pointers
         bool m_executedCurrently;                           // mark as executed to prevent deleted and access by dead pointers
         bool m_needComboPoints;
-        uint8 m_applyMultiplierMask;
-        float m_damageMultipliers[3];
+        uint32 m_applyMultiplierMask;
+        float m_damageMultipliers[32];
 
         // Current targets, to be used in SpellEffects (MUST BE USED ONLY IN SPELL EFFECTS)
         Unit* unitTarget;
@@ -568,7 +568,7 @@ class Spell
             uint64 timeDelay;
             SpellMissInfo missCondition:8;
             SpellMissInfo reflectResult:8;
-            uint8  effectMask:8;
+            uint32  effectMask:32;
             bool   processed:1;
             bool   alive:1;
             bool   crit:1;
@@ -576,13 +576,13 @@ class Spell
             int32  damage;
         };
         std::list<TargetInfo> m_UniqueTargetInfo;
-        uint8 m_channelTargetEffectMask;                        // Mask req. alive targets
+        uint32 m_channelTargetEffectMask;                        // Mask req. alive targets
 
         struct GOTargetInfo
         {
             uint64 targetGUID;
             uint64 timeDelay;
-            uint8  effectMask:8;
+            uint32  effectMask:32;
             bool   processed:1;
         };
         std::list<GOTargetInfo> m_UniqueGOTargetInfo;
@@ -590,7 +590,7 @@ class Spell
         struct ItemTargetInfo
         {
             Item  *item;
-            uint8 effectMask;
+            uint32 effectMask;
         };
         std::list<ItemTargetInfo> m_UniqueItemInfo;
 
@@ -603,7 +603,7 @@ class Spell
 
         void DoAllEffectOnTarget(TargetInfo* target);
         SpellMissInfo DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleAura);
-        void DoTriggersOnSpellHit(Unit* unit, uint8 effMask);
+        void DoTriggersOnSpellHit(Unit* unit, uint32 effMask);
         void DoAllEffectOnTarget(GOTargetInfo* target);
         void DoAllEffectOnTarget(ItemTargetInfo* target);
         bool UpdateChanneledTargetList();
@@ -642,7 +642,7 @@ class Spell
             int32 chance;
         };
 
-        bool CanExecuteTriggersOnHit(uint8 effMask, SpellInfo const* triggeredByAura = NULL) const;
+        bool CanExecuteTriggersOnHit(uint32 effMask, SpellInfo const* triggeredByAura = NULL) const;
         void PrepareTriggersExecutedOnHit();
         typedef std::list<HitTriggerSpell> HitTriggerSpellList;
         HitTriggerSpellList m_hitTriggerSpells;
@@ -665,7 +665,7 @@ class Spell
         SpellInfo const* m_triggeredByAuraSpell;
 
         bool m_skipCheck;
-        uint8 m_auraScaleMask;
+        uint32 m_auraScaleMask;
 
         ByteBuffer * m_effectExecuteData[MAX_SPELL_EFFECTS];
 

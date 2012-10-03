@@ -1,0 +1,1 @@
+UPDATE player_xp_for_level SET xp_for_next_level = 18980000 WHERE lvl = 87;

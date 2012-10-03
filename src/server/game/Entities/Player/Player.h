@@ -512,7 +512,7 @@ enum QuestSlotOffsets
     QUEST_TIME_OFFSET   = 4
 };
 
-#define MAX_QUEST_OFFSET 4
+#define MAX_QUEST_OFFSET 15
 
 enum QuestSlotStateMask
 {
@@ -763,35 +763,36 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADGROUP                = 1,
     PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES       = 2,
     PLAYER_LOGIN_QUERY_LOADAURAS                = 3,
-    PLAYER_LOGIN_QUERY_LOADSPELLS               = 4,
-    PLAYER_LOGIN_QUERY_LOADQUESTSTATUS          = 5,
-    PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS     = 6,
-    PLAYER_LOGIN_QUERY_LOADREPUTATION           = 7,
-    PLAYER_LOGIN_QUERY_LOADINVENTORY            = 8,
-    PLAYER_LOGIN_QUERY_LOADACTIONS              = 9,
-    PLAYER_LOGIN_QUERY_LOADMAILCOUNT            = 10,
-    PLAYER_LOGIN_QUERY_LOADMAILDATE             = 11,
-    PLAYER_LOGIN_QUERY_LOADSOCIALLIST           = 12,
-    PLAYER_LOGIN_QUERY_LOADHOMEBIND             = 13,
-    PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS       = 14,
-    PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES        = 15,
-    PLAYER_LOGIN_QUERY_LOADGUILD                = 16,
-    PLAYER_LOGIN_QUERY_LOADARENAINFO            = 17,
-    PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS         = 18,
-    PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS     = 19,
-    PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS        = 20,
-    PLAYER_LOGIN_QUERY_LOADBGDATA               = 21,
-    PLAYER_LOGIN_QUERY_LOADGLYPHS               = 22,
-    PLAYER_LOGIN_QUERY_LOADTALENTS              = 23,
-    PLAYER_LOGIN_QUERY_LOADACCOUNTDATA          = 24,
-    PLAYER_LOGIN_QUERY_LOADSKILLS               = 25,
-    PLAYER_LOGIN_QUERY_LOADWEEKLYQUESTSTATUS    = 26,
-    PLAYER_LOGIN_QUERY_LOADRANDOMBG             = 27,
-    PLAYER_LOGIN_QUERY_LOADBANNED               = 28,
-    PLAYER_LOGIN_QUERY_LOADQUESTSTATUSREW       = 29,
-    PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES    = 30,
-    PLAYER_LOGIN_QUERY_LOADSEASONALQUESTSTATUS  = 31,
-    PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE          = 32,
+    PLAYER_LOGIN_QUERY_LOADAURAS_EFFECTS        = 4,
+    PLAYER_LOGIN_QUERY_LOADSPELLS               = 5,
+    PLAYER_LOGIN_QUERY_LOADQUESTSTATUS          = 6,
+    PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS     = 7,
+    PLAYER_LOGIN_QUERY_LOADREPUTATION           = 8,
+    PLAYER_LOGIN_QUERY_LOADINVENTORY            = 9,
+    PLAYER_LOGIN_QUERY_LOADACTIONS              = 10,
+    PLAYER_LOGIN_QUERY_LOADMAILCOUNT            = 11,
+    PLAYER_LOGIN_QUERY_LOADMAILDATE             = 12,
+    PLAYER_LOGIN_QUERY_LOADSOCIALLIST           = 13,
+    PLAYER_LOGIN_QUERY_LOADHOMEBIND             = 14,
+    PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS       = 15,
+    PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES        = 16,
+    PLAYER_LOGIN_QUERY_LOADGUILD                = 17,
+    PLAYER_LOGIN_QUERY_LOADARENAINFO            = 18,
+    PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS         = 19,
+    PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS     = 20,
+    PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS        = 21,
+    PLAYER_LOGIN_QUERY_LOADBGDATA               = 22,
+    PLAYER_LOGIN_QUERY_LOADGLYPHS               = 23,
+    PLAYER_LOGIN_QUERY_LOADTALENTS              = 24,
+    PLAYER_LOGIN_QUERY_LOADACCOUNTDATA          = 25,
+    PLAYER_LOGIN_QUERY_LOADSKILLS               = 26,
+    PLAYER_LOGIN_QUERY_LOADWEEKLYQUESTSTATUS    = 27,
+    PLAYER_LOGIN_QUERY_LOADRANDOMBG             = 28,
+    PLAYER_LOGIN_QUERY_LOADBANNED               = 29,
+    PLAYER_LOGIN_QUERY_LOADQUESTSTATUSREW       = 30,
+    PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES    = 31,
+    PLAYER_LOGIN_QUERY_LOADSEASONALQUESTSTATUS  = 32,
+    PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE          = 33,
     MAX_PLAYER_LOGIN_QUERY,
 };
 
@@ -873,6 +874,15 @@ enum PlayerRestState
     REST_STATE_RESTED                                = 0x01,
     REST_STATE_NOT_RAF_LINKED                        = 0x02,
     REST_STATE_RAF_LINKED                            = 0x06
+};
+
+struct auraEffectData
+{
+    auraEffectData(uint8 slot, uint8 effect, uint32 amount, uint32 baseamount) : _slot(slot), _effect(effect), _amount(amount), _baseamount(amount)  {}
+    uint8 _slot;
+    uint8 _effect;
+    uint32 _amount;
+    uint32 _baseamount;
 };
 
 class PlayerTaxi
@@ -2656,7 +2666,7 @@ class Player : public Unit, public GridObject<Player>
         /*********************************************************/
 
         void _LoadActions(PreparedQueryResult result);
-        void _LoadAuras(PreparedQueryResult result, uint32 timediff);
+        void _LoadAuras(PreparedQueryResult result, PreparedQueryResult resultEffect, uint32 timediff);
         void _LoadGlyphAuras();
         void _LoadBoundInstances(PreparedQueryResult result);
         void _LoadInventory(PreparedQueryResult result, uint32 timeDiff);

@@ -1199,31 +1199,45 @@ void Pet::_LoadAuras(uint32 timediff)
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_AURA);
     stmt->setUInt32(0, m_charmInfo->GetPetNumber());
     PreparedQueryResult result = CharacterDatabase.Query(stmt);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PET_AURA_EFFECT);
+    stmt->setUInt32(0, m_charmInfo->GetPetNumber());
+    PreparedQueryResult resultEffect = CharacterDatabase.Query(stmt);
+
+    std::list<auraEffectData> auraEffectList;
+    if(resultEffect)
+    {
+        do
+        {
+            Field* fields = resultEffect->Fetch();
+            uint8 slot = fields[0].GetUInt8();
+            uint8 effect = fields[1].GetUInt8();
+            uint32 amount = fields[2].GetUInt32();
+            uint32 baseamount = fields[3].GetUInt32();
+
+            auraEffectList.push_back(auraEffectData(slot, effect, amount, baseamount));
+        }
+        while (resultEffect->NextRow());
+    }
 
     if (result)
     {
         do
         {
-            int32 damage[3];
-            int32 baseDamage[3];
+            int32 damage[32];
+            int32 baseDamage[32];
             Field* fields = result->Fetch();
-            uint64 caster_guid = fields[0].GetUInt64();
+            uint8 slot = fields[0].GetUInt8();
+            uint64 caster_guid = fields[1].GetUInt64();
             // NULL guid stored - pet is the caster of the spell - see Pet::_SaveAuras
             if (!caster_guid)
                 caster_guid = GetGUID();
-            uint32 spellid = fields[1].GetUInt32();
-            uint8 effmask = fields[2].GetUInt8();
-            uint8 recalculatemask = fields[3].GetUInt8();
-            uint8 stackcount = fields[4].GetUInt8();
-            damage[0] = fields[5].GetInt32();
-            damage[1] = fields[6].GetInt32();
-            damage[2] = fields[7].GetInt32();
-            baseDamage[0] = fields[8].GetInt32();
-            baseDamage[1] = fields[9].GetInt32();
-            baseDamage[2] = fields[10].GetInt32();
-            int32 maxduration = fields[11].GetInt32();
-            int32 remaintime = fields[12].GetInt32();
-            uint8 remaincharges = fields[13].GetUInt8();
+            uint32 spellid = fields[2].GetUInt32();
+            uint32 effmask = fields[3].GetUInt32();
+            uint32 recalculatemask = fields[4].GetUInt32();
+            uint8 stackcount = fields[5].GetUInt8();
+            int32 maxduration = fields[6].GetInt32();
+            int32 remaintime = fields[7].GetInt32();
+            uint8 remaincharges = fields[8].GetUInt8();
 
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
             if (!spellInfo)
@@ -1250,6 +1264,15 @@ void Pet::_LoadAuras(uint32 timediff)
             else
                 remaincharges = 0;
 
+            for(std::list<auraEffectData>::iterator itr = auraEffectList.begin(); itr != auraEffectList.end(); ++itr)
+            {
+                if(itr->_slot == slot)
+                {
+                    damage[itr->_effect] = itr->_amount;
+                    baseDamage[itr->_effect] = itr->_baseamount;
+                }
+            }
+
             if (Aura* aura = Aura::TryCreate(spellInfo, effmask, this, NULL, &baseDamage[0], NULL, caster_guid))
             {
                 if (!aura->CanBeSaved())
@@ -1272,6 +1295,10 @@ void Pet::_SaveAuras(SQLTransaction& trans)
     stmt->setUInt32(0, m_charmInfo->GetPetNumber());
     trans->Append(stmt);
 
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_PET_AURAS_EFFECTS);
+    stmt->setUInt32(0, m_charmInfo->GetPetNumber());
+    trans->Append(stmt);
+
     for (AuraMap::const_iterator itr = m_ownedAuras.begin(); itr != m_ownedAuras.end(); ++itr)
     {
         // check if the aura has to be saved
@@ -1279,15 +1306,30 @@ void Pet::_SaveAuras(SQLTransaction& trans)
             continue;
 
         Aura* aura = itr->second;
+        AuraApplication * foundAura = GetAuraApplication(aura->GetId(), aura->GetCasterGUID(), aura->GetCastItemGUID());
+
+        if(!foundAura)
+            continue;
 
         int32 damage[MAX_SPELL_EFFECTS];
         int32 baseDamage[MAX_SPELL_EFFECTS];
-        uint8 effMask = 0;
-        uint8 recalculateMask = 0;
+        uint32 effMask = 0;
+        uint32 recalculateMask = 0;
+        uint8 index = 0;
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
             if (aura->GetEffect(i))
             {
+                index = 0;
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PET_AURA_EFFECT);
+                stmt->setUInt32(index++, m_charmInfo->GetPetNumber());
+                stmt->setUInt8(index++, foundAura->GetSlot());
+                stmt->setUInt8(index++, i);
+                stmt->setInt32(index++, aura->GetEffect(i)->GetBaseAmount());
+                stmt->setInt32(index++, aura->GetEffect(i)->GetAmount());
+
+                trans->Append(stmt);
+
                 baseDamage[i] = aura->GetEffect(i)->GetBaseAmount();
                 damage[i] = aura->GetEffect(i)->GetAmount();
                 effMask |= (1<<i);
@@ -1304,21 +1346,16 @@ void Pet::_SaveAuras(SQLTransaction& trans)
         // don't save guid of caster in case we are caster of the spell - guid for pet is generated every pet load, so it won't match saved guid anyways
         uint64 casterGUID = (itr->second->GetCasterGUID() == GetGUID()) ? 0 : itr->second->GetCasterGUID();
 
-        uint8 index = 0;
+       
 
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PET_AURA);
         stmt->setUInt32(index++, m_charmInfo->GetPetNumber());
+        stmt->setUInt8(index++, foundAura->GetSlot());
         stmt->setUInt64(index++, casterGUID);
         stmt->setUInt32(index++, itr->second->GetId());
         stmt->setUInt8(index++, effMask);
         stmt->setUInt8(index++, recalculateMask);
         stmt->setUInt8(index++, itr->second->GetStackAmount());
-        stmt->setInt32(index++, damage[0]);
-        stmt->setInt32(index++, damage[1]);
-        stmt->setInt32(index++, damage[2]);
-        stmt->setInt32(index++, baseDamage[0]);
-        stmt->setInt32(index++, baseDamage[1]);
-        stmt->setInt32(index++, baseDamage[2]);
         stmt->setInt32(index++, itr->second->GetMaxDuration());
         stmt->setInt32(index++, itr->second->GetDuration());
         stmt->setUInt8(index++, itr->second->GetCharges());

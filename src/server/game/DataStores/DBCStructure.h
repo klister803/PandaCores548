@@ -1721,15 +1721,15 @@ struct SpellEffectEntry
 
 struct SpellEffectScalingEntry
 {
-    uint32    Id;                                           // 0
+    //uint32    Id;                                           // 0
     float     Multiplier;                                   // 1
     float     RandomMultiplier;                             // 2
     float     OtherMultiplier;                              // 3
     uint32    SpellEffectId;                                // 4
 };
 
-#define MAX_SPELL_EFFECTS 3
-#define MAX_EFFECT_MASK 7
+#define MAX_SPELL_EFFECTS 32
+#define MAX_EFFECT_MASK 4294967295
 #define MAX_SPELL_REAGENTS 8
 
 // SpellAuraOptions.dbc
@@ -1898,8 +1898,8 @@ struct SpellClassOptionsEntry
     //uint32    Id;                                         // 0        m_ID
     //uint32    modalNextSpell;                             // 1       m_modalNextSpell not used
     flag96    SpellFamilyFlags;                             // 2-4
-    uint32    SpellFamilyName;                              // 5       m_spellClassSet
-    //char*   Description;                                  // 6 4.0.0
+    //char*   Description;                                  // 5
+    uint32    SpellFamilyName;                              // 6       m_spellClassSet
 };
 
 // SpellInterrupts.dbc
@@ -1954,7 +1954,7 @@ struct SpellMiscEntry
 // SpellPower.dbc
 struct SpellPowerEntry
 {
-    uint32    Id;                                           // 0        m_ID
+    //uint32    Id;                                           // 0        m_ID
     uint32    SpellId;                                      // 1
     //uint32    unk505                                      // 2
     uint32    powerType;                                    // 3
@@ -2418,8 +2418,32 @@ struct SpellEffect
         effects[5] = NULL;
         effects[6] = NULL;
         effects[7] = NULL;
+        effects[8] = NULL;
+        effects[9] = NULL;
+        effects[10] = NULL;
+        effects[11] = NULL;
+        effects[12] = NULL;
+        effects[13] = NULL;
+        effects[14] = NULL;
+        effects[15] = NULL;
+        effects[16] = NULL;
+        effects[17] = NULL;
+        effects[18] = NULL;
+        effects[19] = NULL;
+        effects[20] = NULL;
+        effects[21] = NULL;
+        effects[22] = NULL;
+        effects[23] = NULL;
+        effects[24] = NULL;
+        effects[25] = NULL;
+        effects[26] = NULL;
+        effects[27] = NULL;
+        effects[28] = NULL;
+        effects[29] = NULL;
+        effects[30] = NULL;
+        effects[31] = NULL;
     }
-    SpellEffectEntry const* effects[8];
+    SpellEffectEntry const* effects[32];
 };
 
 typedef std::map<uint32, SpellEffect> SpellEffectMap;
