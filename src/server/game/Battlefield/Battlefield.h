@@ -239,6 +239,7 @@ class Battlefield : public ZoneScript
 
         uint32 GetTypeId() { return m_TypeId; }
         uint32 GetZoneId() { return m_ZoneId; }
+        uint64 GetGUID()   { return m_Guid;   }
 
         void TeamApplyBuff(TeamId team, uint32 spellId, uint32 spellId2 = 0);
 
@@ -362,6 +363,7 @@ class Battlefield : public ZoneScript
         bool m_IsEnabled;
         bool m_isActive;
         TeamId m_DefenderTeam;
+        uint64 m_Guid;
 
         // Map of the objectives belonging to this OutdoorPvP
         BfCapturePointMap m_capturePoints;
