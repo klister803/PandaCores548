@@ -5968,12 +5968,12 @@ float Player::GetSpellCritFromIntellect()
     if (level > GT_MAX_LEVEL)
         level = GT_MAX_LEVEL;
 
-    GtChanceToSpellCritBaseEntry const* critBase = sGtChanceToSpellCritBaseStore.LookupEntry(pclass - 1);
+    GtChanceToSpellCritBaseEntry const* critBase = sGtChanceToSpellCritBaseStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
     GtChanceToSpellCritEntry const* critRatio = sGtChanceToSpellCritStore.LookupEntry((pclass - 1) * GT_MAX_LEVEL + level - 1);
     if (critBase == NULL || critRatio == NULL)
         return 0.0f;
 
-    float crit = critBase->base + GetStat(STAT_INTELLECT) * critRatio->ratio;
+    float crit = ((GetStat(STAT_INTELLECT) - 1) / (critRatio->ratio * 100) + critBase->base);
     return crit * 100.0f;
 }
 
@@ -7433,12 +7433,12 @@ void Player::SendCurrencies() const
         uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? 100 : 1;
         uint32 weekCount = itr->second.weekCount / precision;
         uint32 weekCap = _GetCurrencyWeekCap(entry) / precision;
-
-        packet.WriteBit(weekCount);
+        
         packet.WriteBit(weekCap);
+        packet.WriteBit(weekCount);
         packet.WriteBit(0);     // season total earned
         packet.WriteBits(0, 5); // some flags
-
+        
         if (weekCap)
             currencyData << uint32(weekCap);
         if (weekCount)
@@ -7538,15 +7538,16 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/)
                 UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CURRENCY, id, count);
 
             WorldPacket packet(SMSG_UPDATE_CURRENCY, 12);
-
+            
+            packet << uint32(id);
+            packet << uint32(newTotalCount / precision);
+            
             packet.WriteBit(weekCap != 0);
+            packet.WriteBit(0);//printLog); // print in log
             packet.WriteBit(0); // hasSeasonCount
-            packet.WriteBit(printLog); // print in log
 
             // if hasSeasonCount packet << uint32(seasontotalearned); TODO: save this in character DB and use it
 
-            packet << uint32(newTotalCount / precision);
-            packet << uint32(id);
             if (weekCap)
                 packet << uint32(newWeekCount / precision);
 
@@ -7590,8 +7591,8 @@ uint32 Player::_GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const
    if (cap != currency->WeekCap && IsInWorld() && !GetSession()->PlayerLoading())
    {
        WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
-       packet << uint32(cap / ((currency->Flags & 0x8) ? 100 : 1));
        packet << uint32(currency->ID);
+       packet << uint32(cap / ((currency->Flags & 0x8) ? 100 : 1));
        GetSession()->SendPacket(&packet);
    }
 

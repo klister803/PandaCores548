@@ -543,6 +543,20 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         return;
                 break;
             }
+            case SPELLFAMILY_MONK:
+            {
+                if (m_spellInfo->Id == 100780)
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                        float mwb = m_caster->GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE);
+                        float MWB = m_caster->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
+                        float MWS = m_caster->GetAttackTime(BASE_ATTACK);
+                        float mws = MWS;
+                        damage += irand(int32((1.5f * 0.898882f * (mwb / (MWS / 1000.0f)) + 1 * (mwb / 2.0f / (mws / 1000.0f)) + (ap / 14.0f) - 1.0f)), int32((1.5f * 0.898882f * (MWB / (MWS / 1000.0f)) + 1 * (MWB / 2.0f / (mws / 1000.0f)) + (ap / 14.0f) + 1)));
+                    }
+                break;
+            }
         }
 
         if (m_originalCaster && damage > 0 && apply_direct_bonus)
