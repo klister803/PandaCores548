@@ -2652,15 +2652,7 @@ SpellLevelsEntry const* SpellInfo::GetSpellLevels() const
 
 SpellPowerEntry const* SpellInfo::GetSpellPower() const
 {
-    for(uint32 i = 0; i < sSpellPowerStore.GetNumRows(); i++)
-    {
-        if(SpellPowerEntry const* powerEntry = sSpellPowerStore.LookupEntry(i))
-        {
-            if(powerEntry->SpellId == Id)
-                return powerEntry;
-        }
-    }
-    return NULL;
+    return sSpellPowerStore.LookupEntry(Id);
 }
 
 SpellMiscEntry const* SpellInfo::GetSpellMisc() const
