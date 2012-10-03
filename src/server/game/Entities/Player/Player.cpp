@@ -5021,6 +5021,10 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
 
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_AURA_EFFECT);
+            stmt->setUInt32(0, guid);
+            trans->Append(stmt);
+
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_GIFT);
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
@@ -17162,7 +17166,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     _LoadSpells(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSPELLS));
 
     _LoadGlyphs(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADGLYPHS));
-    _LoadAuras(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADAURAS), time_diff);
+    _LoadAuras(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADAURAS), holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADAURAS_EFFECTS), time_diff);
     _LoadGlyphAuras();
     // add ghost flag (must be after aura load: PLAYER_FLAGS_GHOST set in aura)
     if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
@@ -17398,9 +17402,25 @@ void Player::_LoadActions(PreparedQueryResult result)
     }
 }
 
-void Player::_LoadAuras(PreparedQueryResult result, uint32 timediff)
+void Player::_LoadAuras(PreparedQueryResult result, PreparedQueryResult resultEffect, uint32 timediff)
 {
     sLog->outDebug(LOG_FILTER_PLAYER_LOADING, "Loading auras for player %u", GetGUIDLow());
+
+    std::list<auraEffectData> auraEffectList;
+    if(resultEffect)
+    {
+        do
+        {
+            Field* fields = resultEffect->Fetch();
+            uint8 slot = fields[0].GetUInt8();
+            uint8 effect = fields[1].GetUInt8();
+            uint32 baseamount = fields[2].GetUInt32();
+            uint32 amount = fields[3].GetUInt32();
+
+            auraEffectList.push_back(auraEffectData(slot, effect, amount, baseamount));
+        }
+        while (resultEffect->NextRow());
+    }
 
     /*                                                           0       1        2         3                 4         5      6       7         8              9            10
     QueryResult* result = CharacterDatabase.PQuery("SELECT caster_guid, spell, effect_mask, recalculate_mask, stackcount, amount0, amount1, amount2, base_amount0, base_amount1, base_amount2,
@@ -17413,22 +17433,17 @@ void Player::_LoadAuras(PreparedQueryResult result, uint32 timediff)
         do
         {
             Field* fields = result->Fetch();
-            int32 damage[3];
-            int32 baseDamage[3];
+            int32 damage[32];
+            int32 baseDamage[32];
             uint64 caster_guid = fields[0].GetUInt64();
-            uint32 spellid = fields[1].GetUInt32();
-            uint32 effmask = fields[2].GetUInt32();
-            uint32 recalculatemask = fields[3].GetUInt32();
-            uint8 stackcount = fields[4].GetUInt8();
-            damage[0] = fields[5].GetInt32();
-            damage[1] = fields[6].GetInt32();
-            damage[2] = fields[7].GetInt32();
-            baseDamage[0] = fields[8].GetInt32();
-            baseDamage[1] = fields[9].GetInt32();
-            baseDamage[2] = fields[10].GetInt32();
-            int32 maxduration = fields[11].GetInt32();
-            int32 remaintime = fields[12].GetInt32();
-            uint8 remaincharges = fields[13].GetUInt8();
+            uint8 slot = fields[1].GetUInt8();
+            uint32 spellid = fields[2].GetUInt32();
+            uint32 effmask = fields[3].GetUInt32();
+            uint32 recalculatemask = fields[4].GetUInt32();
+            uint8 stackcount = fields[5].GetUInt8();
+            int32 maxduration = fields[6].GetInt32();
+            int32 remaintime = fields[7].GetInt32();
+            uint8 remaincharges = fields[8].GetUInt8();
 
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellid);
             if (!spellInfo)
@@ -17456,6 +17471,15 @@ void Player::_LoadAuras(PreparedQueryResult result, uint32 timediff)
             }
             else
                 remaincharges = 0;
+
+            for(std::list<auraEffectData>::iterator itr = auraEffectList.begin(); itr != auraEffectList.end(); ++itr)
+            {
+                if(itr->_slot == slot)
+                {
+                    damage[itr->_effect] = itr->_amount;
+                    baseDamage[itr->_effect] = itr->_baseamount;
+                }
+            }
 
             if (Aura* aura = Aura::TryCreate(spellInfo, effmask, this, NULL, &baseDamage[0], NULL, caster_guid))
             {
@@ -19030,7 +19054,13 @@ void Player::_SaveAuras(SQLTransaction& trans)
             continue;
 
         Aura* aura = itr->second;
+        AuraApplication * foundAura = GetAuraApplication(aura->GetId(), aura->GetCasterGUID(), aura->GetCastItemGUID());
 
+        if(!foundAura)
+            continue;
+
+
+        uint8 index = 0;
         int32 damage[MAX_SPELL_EFFECTS];
         int32 baseDamage[MAX_SPELL_EFFECTS];
         uint32 effMask = 0;
@@ -19039,6 +19069,16 @@ void Player::_SaveAuras(SQLTransaction& trans)
         {
             if (AuraEffect const* effect = aura->GetEffect(i))
             {
+                index = 0;
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_AURA_EFFECT);
+                stmt->setUInt32(index++, GetGUIDLow());
+                stmt->setUInt8(index++, foundAura->GetSlot());
+                stmt->setUInt8(index++, i);
+                stmt->setInt32(index++, effect->GetBaseAmount());
+                stmt->setInt32(index++, effect->GetAmount());
+
+                trans->Append(stmt);
+
                 baseDamage[i] = effect->GetBaseAmount();
                 damage[i] = effect->GetAmount();
                 effMask |= 1 << i;
@@ -19052,21 +19092,16 @@ void Player::_SaveAuras(SQLTransaction& trans)
             }
         }
 
-        uint8 index = 0;
+        index = 0;
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_AURA);
         stmt->setUInt32(index++, GetGUIDLow());
+        stmt->setUInt8(index++, foundAura->GetSlot());
         stmt->setUInt64(index++, itr->second->GetCasterGUID());
         stmt->setUInt64(index++, itr->second->GetCastItemGUID());
         stmt->setUInt32(index++, itr->second->GetId());
         stmt->setUInt8(index++, effMask);
         stmt->setUInt8(index++, recalculateMask);
         stmt->setUInt8(index++, itr->second->GetStackAmount());
-        stmt->setInt32(index++, damage[0]);
-        stmt->setInt32(index++, damage[1]);
-        stmt->setInt32(index++, damage[2]);
-        stmt->setInt32(index++, baseDamage[0]);
-        stmt->setInt32(index++, baseDamage[1]);
-        stmt->setInt32(index++, baseDamage[2]);
         stmt->setInt32(index++, itr->second->GetMaxDuration());
         stmt->setInt32(index++, itr->second->GetDuration());
         stmt->setUInt8(index, itr->second->GetCharges());
