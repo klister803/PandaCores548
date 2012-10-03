@@ -22361,7 +22361,7 @@ void Player::SendInitialPacketsBeforeAddToMap()
 void Player::SendCooldownAtLogin()
 {
     time_t curTime = time(NULL);
-    for (auto itr = GetSpellCooldownMap().begin(); itr != GetSpellCooldownMap().end(); ++itr)
+    for (SpellCooldowns::iterator itr = GetSpellCooldownMap().begin(); itr != GetSpellCooldownMap().end(); ++itr)
     {
         WorldPacket data(SMSG_SPELL_COOLDOWN, 8+1+4+4);
         data << uint64(GetGUID());
