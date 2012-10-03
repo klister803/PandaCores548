@@ -7539,7 +7539,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/)
 
             WorldPacket packet(SMSG_UPDATE_CURRENCY, 12);
             
-            /*packet << uint32(id);
+            packet << uint32(id);
             packet << uint32(newTotalCount / precision);
             
             packet.WriteBit(weekCap != 0);
@@ -7549,19 +7549,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/)
             // if hasSeasonCount packet << uint32(seasontotalearned); TODO: save this in character DB and use it
 
             if (weekCap)
-                packet << uint32(newWeekCount / precision);*/
-
-            packet << uint32(392);
-            packet << uint32(2208);
-            
-            packet.WriteBit(1);
-            packet.WriteBit(0);//printLog); // print in log
-            packet.WriteBit(0); // hasSeasonCount
-            packet.FlushBits();
-
-            // if hasSeasonCount packet << uint32(seasontotalearned); TODO: save this in character DB and use it
-
-            packet << uint32(851);
+                packet << uint32(newWeekCount / precision);
 
             GetSession()->SendPacket(&packet);
         }
@@ -7603,8 +7591,8 @@ uint32 Player::_GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const
    if (cap != currency->WeekCap && IsInWorld() && !GetSession()->PlayerLoading())
    {
        WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
-       packet << uint32(cap / ((currency->Flags & 0x8) ? 100 : 1));
        packet << uint32(currency->ID);
+       packet << uint32(cap / ((currency->Flags & 0x8) ? 100 : 1));
        GetSession()->SendPacket(&packet);
    }
 
