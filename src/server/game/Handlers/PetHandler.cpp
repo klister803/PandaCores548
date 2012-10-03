@@ -713,7 +713,7 @@ void WorldSession::HandlePetSpellAutocastOpcode(WorldPacket& recvPacket)
     sLog->outInfo(LOG_FILTER_NETWORKIO, "CMSG_PET_SPELL_AUTOCAST");
     uint64 guid;
     uint32 spellid;
-    uint8  state;                                           //1 for on, 0 for off
+    uint32  state;                                           //1 for on, 0 for off
     recvPacket >> guid >> spellid >> state;
 
     if (!_player->GetGuardianPet() && !_player->GetCharm())
