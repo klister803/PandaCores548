@@ -789,15 +789,7 @@ SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect)
 
 SpellEffectScalingEntry const* GetSpellEffectScalingEntry(uint32 effectId)
 {
-    for(uint32 i = 0; i < sSpellEffectScalingStore.GetNumRows(); i++)
-    {
-        if(SpellEffectScalingEntry const* effectScaling = sSpellEffectScalingStore.LookupEntry(i))
-        {
-            if(effectScaling->SpellEffectId == effectId)
-                return effectScaling;
-        }
-    }
-    return NULL;
+    return sSpellEffectScalingStore.LookupEntry(effectId);
 }
 
 SpellReagentsEntry const* GetSpellReagentEntry(uint32 spellId, uint8 reagent)
