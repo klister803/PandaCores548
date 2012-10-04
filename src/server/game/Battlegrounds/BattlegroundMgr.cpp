@@ -314,7 +314,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
         {
             data->Initialize(SMSG_BATTLEFIELD_STATUS_QUEUED);
 
-            *data << uint32(bg->GetStatus());
+            *data << uint32(STATUS_WAIT_QUEUE);
             *data << uint32(0);
             *data << uint32(193870); // Time left before join, this magic value is 3min
             *data << uint32(0);
@@ -331,7 +331,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             data->WriteBit(guidBytes1[0]);
             data->WriteBit(guidBytes1[4]);
             data->WriteBit(guidBytes2[7]);
-            data->WriteBit(1);
+            data->WriteBit(0);
             data->WriteBit(guidBytes2[3]);
             data->WriteBit(guidBytes2[0]);
             data->WriteBit(guidBytes2[5]);
@@ -581,26 +581,24 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
 {
     uint8 isRated = (bg->isRated() ? 1 : 0);               // type (normal=0/rated=1) -- ATM arena or bg, RBG NYI
     uint8 isArena = (bg->isArena() ? 1 : 0);               // Arena names
+    uint8 counta2 = 0;
+    uint8 counth2 = 0;
 
     data->Initialize(SMSG_PVP_LOG_DATA, (1+1+4+40*bg->GetPlayerScoresSize()));
-    data->WriteBit(isArena);
+    
+    
+    size_t a2_pos = data->wpos();
+    *data << uint8(0);
+    
+    size_t h2_pos = data->wpos();
+    *data << uint8(0);
+    
     data->WriteBit(isRated);
+    data->WriteBit(isArena);
 
-    if (isArena)
-    {
-        for (int8 i = 1; i >= 0; --i)
-        {
-            if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
-                data->WriteBits(at->GetName().length(), 8);
-            else
-                data->WriteBits(0, 8);
-        }
-    }
-
-    size_t count_pos = data->wpos();
-
+    size_t count_pos = data->bitwpos();
     data->WriteBits(0, 21);     // Placeholder
-
+    
     int32 count = 0;
     ByteBuffer buff;
 
@@ -615,46 +613,17 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         }
         ObjectGuid guid = itr2->first;
         Player* player = ObjectAccessor::FindPlayer(itr2->first);
-        data->WriteBit(0); // Unk 1
-        data->WriteBit(0); // Unk 2
-        data->WriteBit(guid[2]);
-        data->WriteBit(!isArena); // Unk 3 -- Prolly if (bg)
-        data->WriteBit(0); // Unk 4
-        data->WriteBit(0); // Unk 5
-        data->WriteBit(0); // Unk 6
-        data->WriteBit(guid[3]);
-        data->WriteBit(guid[0]);
-        data->WriteBit(guid[5]);
-        data->WriteBit(guid[1]);
-        data->WriteBit(guid[6]);
-        data->WriteBit(player->GetTeam() == ALLIANCE);
-        data->WriteBit(guid[7]);
-
-        buff << uint32(itr2->second->HealingDone);             // healing done
-        buff << uint32(itr2->second->DamageDone);              // damage done
-
+        
         if (!isArena) // Unk 3 prolly is (bg)
         {
             buff << uint32(itr2->second->BonusHonor);
-            buff << uint32(itr2->second->Deaths);
             buff << uint32(itr2->second->HonorableKills);
+            buff << uint32(itr2->second->Deaths);
         }
-
-        buff.WriteByteSeq(guid[4]);
-        buff << uint32(itr2->second->KillingBlows);
-
         // if (unk 5) << uint32() unk
-
-        buff.WriteByteSeq(guid[5]);
-
-        // if (unk 6) << uint32() unk
-        // if (unk 2) << uint32() unk
-
-        buff.WriteByteSeq(guid[1]);
-        buff.WriteByteSeq(guid[6]);
-
-        buff << int32(player->GetPrimaryTalentTree(player->GetActiveSpec()));
-
+        buff.WriteByteSeq(guid[0]);
+        buff << uint32(itr2->second->HealingDone);             // healing done
+        buff.WriteByteSeq(guid[7]);
         switch (bg->GetTypeID(true))                             // Custom values
         {
             case BATTLEGROUND_RB:
@@ -761,23 +730,61 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
                 data->WriteBits(0, 24);
                 break;
         }
+        data->WriteBit(0); // Unk 1
         data->WriteBit(guid[4]);
-
-        buff.WriteByteSeq(guid[0]);
-        buff.WriteByteSeq(guid[3]);
-
-        // if (unk 4) << uint32() unk
-
-        buff.WriteByteSeq(guid[7]);
+        data->WriteBit(!isArena); // Unk 3 -- Prolly if (bg)
+        data->WriteBit(0); // Unk 2
+        data->WriteBit(0); // Unk 4
+        data->WriteBit(guid[6]);
+        data->WriteBit(guid[3]);
+        data->WriteBit(guid[7]);
+        data->WriteBit(0); // Unk 5
+        data->WriteBit(guid[1]);
+        data->WriteBit(0); // Unk 6
+        data->WriteBit(guid[0]);
+        data->WriteBit(player->GetTeam() == ALLIANCE);
+        if (player->GetTeam() == ALLIANCE)
+            ++counta2;
+        else
+            ++counth2;
+        data->WriteBit(guid[2]);
+        data->WriteBit(guid[5]);
+        
+        buff.WriteByteSeq(guid[6]);
+        buff << uint32(itr2->second->KillingBlows);
+        // if (unk 6) << uint32() unk
+        buff << uint32(itr2->second->DamageDone);              // damage done
         buff.WriteByteSeq(guid[2]);
-
+        buff.WriteByteSeq(guid[1]);
+        // if (unk 2) << uint32() unk
+        // if (unk 4) << uint32() unk
+        buff.WriteByteSeq(guid[4]);
+        buff << int32(player->GetPrimaryTalentTree(player->GetActiveSpec()));
+        buff.WriteByteSeq(guid[3]);
+        buff.WriteByteSeq(guid[5]);
         ++count;
+    }
+    
+    if (isArena)
+    {
+        for (int8 i = 1; i >= 0; --i)
+        {
+            if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
+                data->WriteBits(at->GetName().length(), 8);
+            else
+                data->WriteBits(0, 8);
+        }
     }
 
     data->WriteBit(bg->GetStatus() == STATUS_WAIT_LEAVE);    // If Ended
-    data->FlushBits();
-    //data->put<int32>(count_pos, count, 21);              // Number of Players
 
+    data->FlushBits();
+
+    data->put<uint8>(a2_pos, counta2);
+    data->put<uint8>(h2_pos, counth2);
+    data->PutBits<int32>(count_pos, count, 21);              // Number of Players
+    
+    data->append(buff);
     if (isRated)                                             // arena TODO : Fix Order on Rated Implementation
     {
         // it seems this must be according to BG_WINNER_A/H and _NOT_ BG_TEAM_A/H
@@ -795,20 +802,13 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
             sLog->outDebug(LOG_FILTER_BATTLEGROUND, "rating change: %d", rating_change);
         }
     }
-
-    data->append(buff);
+    if (bg->GetStatus() == STATUS_WAIT_LEAVE)
+        *data << uint8(bg->GetWinner());                    // who win
 
     if (isArena)
         for (int8 i = 1; i >= 0; --i)
             if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
                 data->WriteString(at->GetName());
-
-    *data << uint8(0); // unk
-
-    if (bg->GetStatus() == STATUS_WAIT_LEAVE)
-        *data << uint8(bg->GetWinner());                    // who win
-
-    *data << uint8(0); // unk
 }
 
 void BattlegroundMgr::BuildGroupJoinedBattlegroundPacket(WorldPacket* data, Battleground* bg, Player* pPlayer, GroupJoinBattlegroundResult result)
