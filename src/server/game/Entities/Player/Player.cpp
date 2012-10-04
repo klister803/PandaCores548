@@ -2372,14 +2372,14 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                 
                 if (m_transport)
                 {
-                    data.WriteBit(1);   // has transport
                     data.WriteBit(0);       // unknown
-                    data << GetMapId() << m_transport->GetEntry();
+                    data.WriteBit(1);   // has transport
+                    data  << m_transport->GetEntry() << GetMapId();
                 }
                 else
-                {
-                    data.WriteBit(0);   // has transport
+                {         
                     data.WriteBit(0);       // unknown
+                    data.WriteBit(0);   // has transport
                 }
                 data << uint32(mapid);
                 GetSession()->SendPacket(&data);
