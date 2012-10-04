@@ -85,7 +85,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
 
     CalendarEventIdList const& events = sCalendarMgr->GetPlayerEvents(guid);
     data << uint32(events.size());
-    for (CalendarEventIdList::const_iterator it = events.begin(); it != events.end(); ++it)
+    /*for (CalendarEventIdList::const_iterator it = events.begin(); it != events.end(); ++it)
     {
         if (CalendarEvent* calendarEvent = sCalendarMgr->GetEvent(*it))
         {
@@ -108,7 +108,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
             data << uint32(0);
             data.appendPackGUID(0);
         }
-    }
+    }*/
 
     data << uint32(cur_time);                              // server time
     data << uint32(secsToTimeBitFields(cur_time));         // server time
@@ -117,7 +117,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
     size_t p_counter = data.wpos();
     data << uint32(counter);                               // instance save count
 
-    for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
+    /*for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
         for (Player::BoundInstancesMap::const_iterator itr = _player->m_boundInstances[i].begin(); itr != _player->m_boundInstances[i].end(); ++itr)
             if (itr->second.perm)
             {
@@ -127,7 +127,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
                 data << uint32(save->GetResetTime() - cur_time);
                 data << uint64(save->GetInstanceId());     // instance save id as unique instance copy id
                 ++counter;
-            }
+            }*/
 
     data.put<uint32>(p_counter, counter);
 
@@ -139,7 +139,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
 
     std::set<uint32> sentMaps;
 
-    ResetTimeByMapDifficultyMap const& resets = sInstanceSaveMgr->GetResetTimeMap();
+    /*ResetTimeByMapDifficultyMap const& resets = sInstanceSaveMgr->GetResetTimeMap();
     for (ResetTimeByMapDifficultyMap::const_iterator itr = resets.begin(); itr != resets.end(); ++itr)
     {
         uint32 mapId = PAIR32_LOPART(itr->first);
@@ -157,7 +157,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
         data << uint32(itr->second - cur_time);
         data << uint32(mapEntry->unk_time);
         ++counter;
-    }
+    }*/
     data.put<uint32>(p_counter, counter);
 
     // TODO: Fix this, how we do know how many and what holidays to send?
@@ -616,8 +616,8 @@ void WorldSession::SendCalendarEvent(CalendarEvent const& calendarEvent, Calenda
     data << uint32(calendarEvent.GetFlags());
     data << uint32(calendarEvent.GetTime());
     data << uint32(calendarEvent.GetTimeZoneTime());
-    data << uint32(calendarEvent.GetGuildId());
-
+    //data << uint32(calendarEvent.GetGuildId());
+    data << uint64(0);
     CalendarInviteIdList const& invites = calendarEvent.GetInviteIdList();
     data << uint32(invites.size());
     for (CalendarInviteIdList::const_iterator it = invites.begin(); it != invites.end(); ++it)
