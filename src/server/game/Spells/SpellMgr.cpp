@@ -2616,7 +2616,7 @@ void SpellMgr::LoadSpellInfoStore()
 {
     uint32 oldMSTime = getMSTime();
 
-    std::map<uint32, std::set<uint32>> spellDifficultyList;
+    std::map<uint32, std::set<uint32> > spellDifficultyList;
 
     for (uint32 i = 0; i < sSpellEffectStore.GetNumRows(); ++i)
         if(SpellEffectEntry const* spellEffect = sSpellEffectStore.LookupEntry(i))
