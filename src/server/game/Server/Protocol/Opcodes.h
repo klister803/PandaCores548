@@ -458,7 +458,7 @@ enum Opcodes
     CMSG_REALM_SPLIT                                  = 0x820,  // 5.0.5 16048
     CMSG_RECLAIM_CORPSE                               = 0xCF4,  // 5.0.5 16048
     CMSG_REDIRECTION_AUTH_PROOF                       = 0,
-    CMSG_REFORGE_ITEM                                 = 0,
+    CMSG_REFORGE_ITEM                                 = 0x51C,  // 5.0.5 16048
     CMSG_REORDER_CHARACTERS                           = 0x541,  // 5.0.5 16048
     CMSG_REPAIR_ITEM                                  = 0x89D,	// 5.0.5 16048
     CMSG_REPLACE_ACCOUNT_DATA                         = 0,
