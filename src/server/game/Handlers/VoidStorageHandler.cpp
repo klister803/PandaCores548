@@ -560,69 +560,53 @@ void WorldSession::HandleVoidSwapItem(WorldPacket& recvData)
     }
 
     WorldPacket data(SMSG_VOID_ITEM_SWAP_RESPONSE, 1 + (usedSrcSlot + usedDestSlot) * (1 + 7 + 4));
-
+    
     data.WriteBit(!usedDestSlot);
     data.WriteBit(!usedSrcSlot);
+    data.WriteBit(!usedSrcSlot);
+    data.WriteBit(!usedDestSlot);
+    data.WriteBit(itemIdDest[5]);
+    data.WriteBit(itemIdDest[0]);
+    data.WriteBit(itemIdDest[2]);
+    data.WriteBit(itemIdDest[7]);
 
-    if (usedSrcSlot)
-    {
-        data.WriteBit(itemId[5]);
-        data.WriteBit(itemId[2]);
-        data.WriteBit(itemId[1]);
-        data.WriteBit(itemId[4]);
-        data.WriteBit(itemId[0]);
-        data.WriteBit(itemId[6]);
-        data.WriteBit(itemId[7]);
-        data.WriteBit(itemId[3]);
-    }
+    data.WriteBit(itemIdDest[1]);
+    data.WriteBit(itemIdDest[6]);
+    data.WriteBit(itemIdDest[3]);
+    data.WriteBit(itemIdDest[4]);
+    data.WriteBit(itemId[0]);
+    data.WriteBit(itemId[3]);
+    data.WriteBit(itemId[4]);
+    data.WriteBit(itemId[6]);
+    
+    data.WriteBit(itemId[5]);
+    data.WriteBit(itemId[1]);
+    data.WriteBit(itemId[7]);
+    data.WriteBit(itemId[2]);
+    //data.FlushBits();
 
-    data.WriteBit(!usedDestSlot); // unk
+    data.WriteByteSeq(itemId[5]);
+    data.WriteByteSeq(itemId[6]);
+    data.WriteByteSeq(itemId[2]);
+    data.WriteByteSeq(itemId[4]);
+    data.WriteByteSeq(itemId[1]);
+    data.WriteByteSeq(itemId[7]);
+    data.WriteByteSeq(itemId[0]);
+    data.WriteByteSeq(itemId[3]);
 
-    if (usedDestSlot)
-    {
-        data.WriteBit(itemIdDest[7]);
-        data.WriteBit(itemIdDest[3]);
-        data.WriteBit(itemIdDest[4]);
-        data.WriteBit(itemIdDest[0]);
-        data.WriteBit(itemIdDest[5]);
-        data.WriteBit(itemIdDest[1]);
-        data.WriteBit(itemIdDest[2]);
-        data.WriteBit(itemIdDest[6]);
-    }
-
-    data.WriteBit(!usedSrcSlot); // unk
-
-    data.FlushBits();
-
-    if (usedDestSlot)
-    {
-        data.WriteByteSeq(itemIdDest[4]);
-        data.WriteByteSeq(itemIdDest[6]);
-        data.WriteByteSeq(itemIdDest[5]);
-        data.WriteByteSeq(itemIdDest[2]);
-        data.WriteByteSeq(itemIdDest[3]);
-        data.WriteByteSeq(itemIdDest[1]);
-        data.WriteByteSeq(itemIdDest[7]);
-        data.WriteByteSeq(itemIdDest[0]);
-    }
-
-    if (usedSrcSlot)
-    {
-        data.WriteByteSeq(itemId[6]);
-        data.WriteByteSeq(itemId[3]);
-        data.WriteByteSeq(itemId[5]);
-        data.WriteByteSeq(itemId[0]);
-        data.WriteByteSeq(itemId[1]);
-        data.WriteByteSeq(itemId[2]);
-        data.WriteByteSeq(itemId[4]);
-        data.WriteByteSeq(itemId[7]);
-    }
-
-    if (usedDestSlot)
-        data << uint32(oldSlot);
-
+    data.WriteByteSeq(itemIdDest[3]);
+    data.WriteByteSeq(itemIdDest[0]);
+    data.WriteByteSeq(itemIdDest[7]);
+    data.WriteByteSeq(itemIdDest[5]);
+    data.WriteByteSeq(itemIdDest[6]);
+    data.WriteByteSeq(itemIdDest[4]);
+    data.WriteByteSeq(itemIdDest[1]);
+    data.WriteByteSeq(itemIdDest[2]);
+    
     if (usedSrcSlot)
         data << uint32(newSlot);
+    if (usedDestSlot)
+        data << uint32(oldSlot);
 
     SendPacket(&data);
 }
