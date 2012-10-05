@@ -66,16 +66,16 @@ enum Opcodes
     CMSG_AUCTION_SELL_ITEM                            = 0xCC6,  // 5.0.5 16048
     CMSG_AUTH_SESSION                                 = 0x08A,  // 5.0.5 16048
     CMSG_AUTOBANK_ITEM                                = 0xCC0,  // 5.0.5 16048
-    CMSG_AUTOEQUIP_GROUND_ITEM                        = 0,
+    CMSG_AUTOEQUIP_GROUND_ITEM                        = 0x000,  // Not found in 4.3.4
     CMSG_AUTOEQUIP_ITEM                               = 0x888,	// 5.0.5 16048
     CMSG_AUTOEQUIP_ITEM_SLOT                          = 0xDC3,  // 5.0.5 16048
     CMSG_AUTOSTORE_BAG_ITEM                           = 0xD34,  // 5.0.5 16048
     CMSG_AUTOSTORE_BANK_ITEM                          = 0x8B8,  // 5.0.5 16048
-    CMSG_AUTOSTORE_GROUND_ITEM                        = 0,
+    CMSG_AUTOSTORE_GROUND_ITEM                        = 0x000,  // Not found in 4.3.4
     CMSG_AUTOSTORE_LOOT_ITEM                          = 0x3D8,  // 5.0.5 16048
     CMSG_AUTO_DECLINE_GUILD_INVITES                   = 0x851,  // 5.0.5 16048
     CMSG_BANKER_ACTIVATE                              = 0xDA9,  // 5.0.5 16048
-    CMSG_BATTLEFIELD_JOIN                             = 0,
+    CMSG_BATTLEFIELD_JOIN                             = 0x000,  // Not found in 4.3.4
     CMSG_BATTLEFIELD_LEAVE                            = 0x076,	// 5.0.5 16048
     CMSG_BATTLEFIELD_LIST                             = 0x058,  // 5.0.5 16048
     CMSG_BATTLEFIELD_MGR_ENTRY_INVITE_RESPONSE        = 0,
@@ -99,7 +99,7 @@ enum Opcodes
     CMSG_BUY_ITEM                                     = 0xD1E,	// 5.0.5 16048
     CMSG_CALENDAR_ADD_EVENT                           = 0xDB7,  // 5.0.5 16048
     CMSG_CALENDAR_ARENA_TEAM                          = 0x8C9,  // 5.0.5 16048
-    CMSG_CALENDAR_COMPLAIN                            = 0,
+    CMSG_CALENDAR_COMPLAIN                            = 0x986,  // 5.0.5 16048
     CMSG_CALENDAR_CONTEXT_EVENT_SIGNUP                = 0x000,  // Not found in 4.3.4
     CMSG_CALENDAR_COPY_EVENT                          = 0x8DD,  // 5.0.5 16048
     CMSG_CALENDAR_EVENT_INVITE                        = 0x9BB,  // 5.0.5 16048
@@ -430,7 +430,7 @@ enum Opcodes
     CMSG_QUERY_GUILD_REWARDS                          = 0,
     CMSG_QUERY_GUILD_XP                               = 0x310,  // 5.0.5 16048
     CMSG_QUERY_INSPECT_ACHIEVEMENTS                   = 0xC3A,  // 5.0.5 16048
-    CMSG_QUERY_QUESTS_COMPLETED                       = 0,
+    CMSG_QUERY_QUESTS_COMPLETED                       = 0x000,  // Deprecated
     CMSG_QUERY_TIME                                   = 0xCDA,  // 5.0.5 16048
     CMSG_QUESTGIVER_ACCEPT_QUEST                      = 0xDA0,  // 5.0.5 16048
     CMSG_QUESTGIVER_CANCEL                            = 0,
@@ -483,7 +483,7 @@ enum Opcodes
     CMSG_REQUEST_VEHICLE_SWITCH_SEAT                  = 0,
     CMSG_RESET_FACTION_CHEAT                          = 0,
     CMSG_RESET_INSTANCES                              = 0xC71,  // 5.0.5 16048
-    CMSG_RESURRECT_RESPONSE                           = 0,
+    CMSG_RESURRECT_RESPONSE                           = 0x9FB,  // 5.0.5 16048
     CMSG_RETURN_TO_GRAVEYARD                          = 0x6D2,	// 5.0.5 16048
     CMSG_ROLE_POLL_BEGIN                              = 0,
     CMSG_SAVE_CUF_PROFILES                            = 0,
@@ -588,7 +588,7 @@ enum Opcodes
     CMSG_WHOIS                                        = 0x2456, // 5.0.5 16048
     CMSG_WORLD_STATE_UI_TIMER_UPDATE                  = 0xDD0,	// 5.0.5 16048
     CMSG_WORLD_TELEPORT                               = 0x40F,  // 5.0.5 16048
-    CMSG_WRAP_ITEM                                    = 0,
+    CMSG_WRAP_ITEM                                    = 0x959,  // 5.0.5 16048
     CMSG_ZONEUPDATE                                   = 0xD3B,	// 5.0.5 16048
     MSG_AUCTION_HELLO                                 = 0x8DF,  // 5.0.5 16048
     MSG_BATTLEGROUND_PLAYER_POSITIONS                 = 0,
