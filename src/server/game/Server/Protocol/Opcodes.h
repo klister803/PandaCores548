@@ -100,7 +100,7 @@ enum Opcodes
     CMSG_CALENDAR_ADD_EVENT                           = 0xDB7,  // 5.0.5 16048
     CMSG_CALENDAR_ARENA_TEAM                          = 0x8C9,  // 5.0.5 16048
     CMSG_CALENDAR_COMPLAIN                            = 0x986,  // 5.0.5 16048
-    CMSG_CALENDAR_CONTEXT_EVENT_SIGNUP                = 0,
+    CMSG_CALENDAR_CONTEXT_EVENT_SIGNUP                = 0x000,  // Not found in 4.3.4
     CMSG_CALENDAR_COPY_EVENT                          = 0x8DD,  // 5.0.5 16048
     CMSG_CALENDAR_EVENT_INVITE                        = 0x9BB,  // 5.0.5 16048
     CMSG_CALENDAR_EVENT_MODERATOR_STATUS              = 0xC96,  // 5.0.5 16048
@@ -117,7 +117,7 @@ enum Opcodes
     CMSG_CANCEL_AURA                                  = 0x895,	// 5.0.5 16048
     CMSG_CANCEL_AUTO_REPEAT_SPELL                     = 0x903,  // 5.0.5 16048
     CMSG_CANCEL_CAST                                  = 0xC66,  // 5.0.5 16048
-    CMSG_CANCEL_CHANNELLING                           = 0, //deprecated ?
+    CMSG_CANCEL_CHANNELLING                           = 0,      //deprecated ?
     CMSG_CANCEL_GROWTH_AURA                           = 0,
     CMSG_CANCEL_MOUNT_AURA                            = 0,
     CMSG_CANCEL_QUEUED_SPELL                          = 0,
@@ -195,17 +195,17 @@ enum Opcodes
     CMSG_EQUIPMENT_SET_SAVE                           = 0xC87,  // 5.0.5 16048
     CMSG_EQUIPMENT_SET_USE                            = 0xD95,  // 5.0.5 16048
     CMSG_FAR_SIGHT                                    = 0x991,  // 5.0.5 16048
-    CMSG_FORCE_MOVE_ROOT_ACK                          = 0, //deprecated
-    CMSG_FORCE_MOVE_UNROOT_ACK                        = 0, //deprecated
+    CMSG_FORCE_MOVE_ROOT_ACK                          = 0,      //deprecated
+    CMSG_FORCE_MOVE_UNROOT_ACK                        = 0,      //deprecated
     CMSG_GAMEOBJECT_QUERY                             = 0xCF8,  // 5.0.5 16048
     CMSG_GAMEOBJ_REPORT_USE                           = 0x838,	// 5.0.5 16048
     CMSG_GAMEOBJ_USE                                  = 0xC92,	// 5.0.5 16048
-    CMSG_GAMESPEED_SET                                = 0,
-    CMSG_GAMETIME_SET                                 = 0,
-    CMSG_GETDEATHBINDZONE                             = 0,
+    CMSG_GAMESPEED_SET                                = 0x000,  // Not found in 4.3.4
+    CMSG_GAMETIME_SET                                 = 0x000,  // Not found in 4.3.4
+    CMSG_GETDEATHBINDZONE                             = 0x000,  // Not found in 4.3.4
     CMSG_GET_MAIL_LIST                                = 0xCC4,  // 5.0.5 16048
     CMSG_GET_MIRRORIMAGE_DATA                         = 0xD87,  // 5.0.5 16048
-    CMSG_GHOST                                        = 0,
+    CMSG_GHOST                                        = 0x000,  // Not found in 4.3.4
     CMSG_GMRESPONSE_RESOLVE                           = 0xC23,  // 5.0.5 16048
     CMSG_GMSURVEY_SUBMIT                              = 0x96B,  // 5.0.5 16048
     CMSG_GMTICKET_CREATE                              = 0x8FE,  // 5.0.5 16048
@@ -213,10 +213,10 @@ enum Opcodes
     CMSG_GMTICKET_GETTICKET                           = 0xC85,  // 5.0.5 16048
     CMSG_GMTICKET_SYSTEMSTATUS                        = 0x925,	// 5.0.5 16048
     CMSG_GMTICKET_UPDATETEXT                          = 0xD14,  // 5.0.5 16048
-    CMSG_GM_INVIS                                     = 0,
-    CMSG_GM_NUKE                                      = 0,
+    CMSG_GM_INVIS                                     = 0x000,  // Not found in 4.3.4
+    CMSG_GM_NUKE                                      = 0x000,  // Not found in 4.3.4
     CMSG_GM_REPORT_LAG                                = 0xD47,  // 5.0.5 16048
-    CMSG_GM_SET_SECURITY_GROUP                        = 0,
+    CMSG_GM_SET_SECURITY_GROUP                        = 0x000,  // Not found in 4.3.4
     CMSG_GOSSIP_HELLO                                 = 0xD7F,  // 5.0.5 16048
     CMSG_GOSSIP_SELECT_OPTION                         = 0xC78,  // 5.0.5 16048
     CMSG_GRANT_LEVEL                                  = 0,
@@ -816,7 +816,7 @@ enum Opcodes
     SMSG_CRITERIA_UPDATE                              = 0x90D,	// 5.0.5 16048
     SMSG_CROSSED_INEBRIATION_THRESHOLD                = 0xCAA,  // 5.0.5 16048
     SMSG_CURRENCY_LOOT_REMOVED                        = 0xE01,  // 5.0.5 16048
-    SMSG_CURRENCY_LOOT_RESTORED                       = 0, //deprecated
+    SMSG_CURRENCY_LOOT_RESTORED                       = 0,      //deprecated
     SMSG_CUSTOM_LOAD_SCREEN                           = 0xA5B,  // 5.0.5 16048
     SMSG_DAMAGE_CALC_LOG                              = 0xD9C,  // 5.0.5 16048
     SMSG_DAMAGE_DONE_OBSOLETE                         = 0,
@@ -900,7 +900,7 @@ enum Opcodes
     SMSG_GROUP_INVITE                                 = 0xF68,	// 5.0.5 16048
     SMSG_GROUP_JOINED_BATTLEGROUND                    = 0,
     SMSG_PARTY_UPDATE                                 = 0xB3E,	// 5.0.5 16048
-    SMSG_GROUP_SET_LEADER                             = 0,      //0xA1A,
+    SMSG_GROUP_SET_LEADER                             = 0,      // 0xA1A Not sure !
     SMSG_GROUP_SET_ROLE                               = 0xA7B,  // 5.0.5 16048
     SMSG_GROUP_UNINVITE                               = 0x8A8,  // 5.0.5 16048
     SMSG_GUILD_ACHIEVEMENT_DATA                       = 0xF23,  // 5.0.5 16048
@@ -1041,7 +1041,7 @@ enum Opcodes
     SMSG_LOOT_ROLL                                    = 0,
     SMSG_LOOT_ROLL_WON                                = 0,
     SMSG_LOOT_SLOT_CHANGED                            = 0,
-    SMSG_LOOT_START_ROLL                              = 0,      //0xEF4,
+    SMSG_LOOT_START_ROLL                              = 0,      // 0xEF4 Not sure !
     SMSG_MAIL_LIST_RESULT                             = 0x95E,  // 5.0.5 16048
     SMSG_MAP_OBJ_EVENTS                               = 0xBF6,  // 5.0.5 16048
     SMSG_MEETINGSTONE_COMPLETE                        = 0x8E0,  // 5.0.5 16048
@@ -1271,7 +1271,7 @@ enum Opcodes
     SMSG_SPELLNONMELEEDAMAGELOG                       = 0x9F4,	// 5.0.5 16048
     SMSG_SPELLORDAMAGE_IMMUNE                         = 0X977,	// 5.0.5 16048
     SMSG_SPELLSTEALLOG                                = 0xDAC,	// 5.0.5 16048
-    SMSG_SPELL_CATEGORY_COOLDOWN                      = 0,      //unused
+    SMSG_SPELL_CATEGORY_COOLDOWN                      = 0,      // Unused
     SMSG_SPELL_COOLDOWN                               = 0xD75,	// 5.0.5 16048
     SMSG_SPELL_DELAYED                                = 0xC17,	// 5.0.5 16048
     SMSG_SPELL_FAILED_OTHER                           = 0xC0E,	// 5.0.5 16048
@@ -1407,9 +1407,9 @@ enum SessionStatus
 
 enum PacketProcessing
 {
-    PROCESS_INPLACE = 0,                                    //process packet whenever we receive it - mostly for non-handled or non-implemented packets
-    PROCESS_THREADUNSAFE,                                   //packet is not thread-safe - process it in World::UpdateSessions()
-    PROCESS_THREADSAFE                                      //packet is thread-safe - process it in Map::Update()
+    PROCESS_INPLACE = 0,                                    // process packet whenever we receive it - mostly for non-handled or non-implemented packets
+    PROCESS_THREADUNSAFE,                                   // packet is not thread-safe - process it in World::UpdateSessions()
+    PROCESS_THREADSAFE                                      // packet is thread-safe - process it in Map::Update()
 };
 
 class WorldPacket;
@@ -1432,7 +1432,7 @@ struct OpcodeHandler
 extern OpcodeHandler* opcodeTable[NUM_OPCODE_HANDLERS];
 void InitOpcodes();
 
-/// Lookup opcode name for human understandable logging
+// Lookup opcode name for human understandable logging
 inline std::string GetOpcodeNameForLogging(Opcodes id)
 {
     uint32 opcode = uint32(id);
