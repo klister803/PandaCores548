@@ -39,6 +39,8 @@
 #include "BattlegroundRB.h"
 #include "BattlegroundTP.h"
 #include "BattlegroundBFG.h"
+#include "BattlegroundVOP.h"
+#include "BattlegroundSSM.h"
 #include "Chat.h"
 #include "Map.h"
 #include "MapInstanced.h"
@@ -125,23 +127,27 @@ void BattlegroundMgr::Update(uint32 diff)
     // update scheduled queues
     if (!m_QueueUpdateScheduler.empty())
     {
-        std::vector<uint64> scheduled;
+        std::vector<QueueSchedulerItem*> scheduled;
         {
             //copy vector and clear the other
-            scheduled = std::vector<uint64>(m_QueueUpdateScheduler);
+            scheduled = std::vector<QueueSchedulerItem*>(m_QueueUpdateScheduler);
             m_QueueUpdateScheduler.clear();
             //release lock
         }
 
         for (uint8 i = 0; i < scheduled.size(); i++)
         {
-            uint32 arenaMMRating = scheduled[i] >> 32;
-            uint8 arenaType = scheduled[i] >> 24 & 255;
-            BattlegroundQueueTypeId bgQueueTypeId = BattlegroundQueueTypeId(scheduled[i] >> 16 & 255);
-            BattlegroundTypeId bgTypeId = BattlegroundTypeId((scheduled[i] >> 8) & 255);
-            BattlegroundBracketId bracket_id = BattlegroundBracketId(scheduled[i] & 255);
+            uint32 arenaMMRating = scheduled[i]->_arenaMMRating;
+            uint8 arenaType = scheduled[i]->_arenaType;
+            BattlegroundQueueTypeId bgQueueTypeId = scheduled[i]->_bgQueueTypeId;
+            BattlegroundTypeId bgTypeId = scheduled[i]->_bgTypeId;
+            BattlegroundBracketId bracket_id = scheduled[i]->_bracket_id;
             m_BattlegroundQueues[bgQueueTypeId].BattlegroundQueueUpdate(diff, bgTypeId, bracket_id, arenaType, arenaMMRating > 0, arenaMMRating);
         }
+           
+        /*for (std::vector<QueueSchedulerItem*>::iterator itr = scheduled.begin();
+            itr != scheduled.end(); ++itr)
+            delete *itr;*/
     }
 
     // if rating difference counts, maybe force-update queues
@@ -1036,6 +1042,12 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         case BATTLEGROUND_RB:
             bg = new BattlegroundRB(*(BattlegroundRB*)bg_template);
             break;
+        case BATTLEGROUND_VOP:
+            bg = new BattlegroundVOP(*(BattlegroundVOP*)bg_template);
+            break;
+        case BATTLEGROUND_SSM:
+            bg = new BattlegroundSSM(*(BattlegroundSSM*)bg_template);
+            break;
         default:
             //error, but it is handled few lines above
             return 0;
@@ -1439,6 +1451,14 @@ BattlegroundQueueTypeId BattlegroundMgr::BGQueueTypeId(BattlegroundTypeId bgType
             return BATTLEGROUND_QUEUE_BFG;
         case BATTLEGROUND_RB:
             return BATTLEGROUND_QUEUE_RB;
+        case BATTLEGROUND_VOP:
+            return BATTLEGROUND_QUEUE_VOP;
+        case BATTLEGROUND_CTF3:
+            return BATTLEGROUND_QUEUE_CTF3;
+        case BATTLEGROUND_SSM:
+            return BATTLEGROUND_QUEUE_SSM;
+        case BATTLEGROUND_TV:
+            return BATTLEGROUND_QUEUE_TV;
         case BATTLEGROUND_AA:
         case BATTLEGROUND_NA:
         case BATTLEGROUND_RL:
@@ -1483,6 +1503,14 @@ BattlegroundTypeId BattlegroundMgr::BGTemplateId(BattlegroundQueueTypeId bgQueue
             return BATTLEGROUND_BFG;
         case BATTLEGROUND_QUEUE_RB:
             return BATTLEGROUND_RB;
+        case BATTLEGROUND_QUEUE_VOP:
+            return BATTLEGROUND_VOP;
+        case BATTLEGROUND_QUEUE_CTF3:
+            return BATTLEGROUND_CTF3;
+        case BATTLEGROUND_QUEUE_SSM:
+            return BATTLEGROUND_SSM;
+        case BATTLEGROUND_QUEUE_TV:
+            return BATTLEGROUND_TV;
         case BATTLEGROUND_QUEUE_2v2:
         case BATTLEGROUND_QUEUE_3v3:
         case BATTLEGROUND_QUEUE_5v5:
@@ -1540,11 +1568,15 @@ void BattlegroundMgr::ScheduleQueueUpdate(uint32 arenaMatchmakerRating, uint8 ar
 {
     //This method must be atomic, TODO add mutex
     //we will use only 1 number created of bgTypeId and bracket_id
-    uint64 schedule_id = ((uint64)arenaMatchmakerRating << 32) | (arenaType << 24) | (bgQueueTypeId << 16) | (bgTypeId << 8) | bracket_id;
+    QueueSchedulerItem* schedule_id = new QueueSchedulerItem(arenaMatchmakerRating, arenaType, bgQueueTypeId, bgTypeId, bracket_id);
     bool found = false;
     for (uint8 i = 0; i < m_QueueUpdateScheduler.size(); i++)
     {
-        if (m_QueueUpdateScheduler[i] == schedule_id)
+        if (m_QueueUpdateScheduler[i]->_arenaMMRating == arenaMatchmakerRating
+            && m_QueueUpdateScheduler[i]->_arenaType == arenaType
+            && m_QueueUpdateScheduler[i]->_bgQueueTypeId == bgQueueTypeId
+            && m_QueueUpdateScheduler[i]->_bgTypeId == bgTypeId
+            && m_QueueUpdateScheduler[i]->_bracket_id == bracket_id)
         {
             found = true;
             break;
