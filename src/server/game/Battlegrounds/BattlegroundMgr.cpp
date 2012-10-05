@@ -323,7 +323,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             *data << uint32(STATUS_WAIT_QUEUE);
             *data << uint32(0);
             *data << uint32(193870); // Time left before join, this magic value is 3min
-            *data << uint32(0);
+            *data << uint32(bg->GetClientInstanceID());
             *data << uint32(0);
             *data << uint8(0);
             *data << uint8(bg->GetMinLevel()); //BG Min level
@@ -416,7 +416,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             *data << uint32(Time1);                     // Time until closed
             *data << uint32(bg->GetMapId());
             *data << uint8(0);
-            *data << uint32(0);
+            *data << uint32(bg->GetClientInstanceID());
             data->WriteByteSeq(guidBytes2[2]);
             *data << uint32(bg->GetTypeID());
             data->WriteByteSeq(guidBytes1[4]);
