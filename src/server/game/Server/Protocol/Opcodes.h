@@ -91,7 +91,7 @@ enum Opcodes
     CMSG_BATTLEMASTER_JOIN_RATED                      = 0x1F0,  // 5.0.5 16048
     CMSG_BEGIN_TRADE                                  = 0x618,  // 5.0.5 16048
     CMSG_BINDER_ACTIVATE                              = 0x90A,  // 5.0.5 16048
-    CMSG_BOT_DETECTED2                                = 0,
+    CMSG_BOT_DETECTED2                                = 0x000,  // Not Usefull
     CMSG_BUG                                          = 0xC6A,  // 5.0.5 16048
     CMSG_BUSY_TRADE                                   = 0x319,  // 5.0.5 16048
     CMSG_BUYBACK_ITEM                                 = 0xC3B,  // 5.0.5 16048
