@@ -3912,7 +3912,7 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         if (newspell->active && !newspell->disabled && !spellInfo->IsStackableWithRanks() && spellInfo->IsRanked() != 0)
         {
             WorldPacket data(SMSG_SUPERCEDED_SPELL);
-            uint32 bitCount;
+            uint32 bitCount = 0;
             ByteBuffer dataBuffer1;
             ByteBuffer dataBuffer2;
             for (PlayerSpellMap::iterator itr2 = m_spells.begin(); itr2 != m_spells.end(); ++itr2)
@@ -26001,11 +26001,11 @@ void Player::SendMovementSetCanFly(bool apply)
     {
         data.Initialize(SMSG_MOVE_SET_CAN_FLY, 1 + 8 + 4);
         data.WriteBit(guid[0]);
+        data.WriteBit(guid[7]);
         data.WriteBit(guid[6]);
         data.WriteBit(guid[5]);
         data.WriteBit(guid[1]);
         data.WriteBit(guid[3]);
-        data.WriteBit(guid[7]);
         data.WriteBit(guid[4]);
         data.WriteBit(guid[2]);
 

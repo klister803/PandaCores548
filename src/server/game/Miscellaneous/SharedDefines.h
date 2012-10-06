@@ -3937,9 +3937,13 @@ enum BattlegroundTypeId
     // 441 = "Icecrown Citadel"
     // 443 = "The Ruby Sanctum"
     // 656 = "Rated Eye of the Storm"
+    BATTLEGROUND_VOP                = 699, // Valley of Power
+    BATTLEGROUND_CTF3               = 706,
+    BATTLEGROUND_SSM                = 708, // Silver shard Mine
+    BATTLEGROUND_TV                 = 719, // Tol'viron Arena
 };
 
-#define MAX_BATTLEGROUND_TYPE_ID 121
+#define MAX_BATTLEGROUND_TYPE_ID 720
 
 enum MailResponseType
 {

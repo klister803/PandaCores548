@@ -54,6 +54,28 @@ struct CreateBattlegroundData
     uint32 scriptId;
 };
 
+struct QueueSchedulerItem
+{
+    QueueSchedulerItem(uint32 arenaMMRating,
+        uint8 arenaType,
+        BattlegroundQueueTypeId bgQueueTypeId,
+        BattlegroundTypeId bgTypeId,
+        BattlegroundBracketId bracketid)
+        : _arenaMMRating (arenaMMRating),
+        _arenaType (arenaType),
+        _bgQueueTypeId (bgQueueTypeId),
+        _bgTypeId (bgTypeId),
+        _bracket_id (bracketid)
+    {
+    }
+
+    const uint32 _arenaMMRating;
+    const uint8 _arenaType;
+    const BattlegroundQueueTypeId _bgQueueTypeId;
+    const BattlegroundTypeId _bgTypeId;
+    const BattlegroundBracketId _bracket_id;
+};
+
 class BattlegroundMgr
 {
     friend class ACE_Singleton<BattlegroundMgr, ACE_Null_Mutex>;
@@ -139,7 +161,7 @@ class BattlegroundMgr
         BattlegroundSet m_Battlegrounds[MAX_BATTLEGROUND_TYPE_ID];
         BattlegroundSelectionWeightMap m_ArenaSelectionWeights;
         BattlegroundSelectionWeightMap m_BGSelectionWeights;
-        std::vector<uint64> m_QueueUpdateScheduler;
+        std::vector<QueueSchedulerItem*> m_QueueUpdateScheduler;
         std::set<uint32> m_ClientBattlegroundIds[MAX_BATTLEGROUND_TYPE_ID][MAX_BATTLEGROUND_BRACKETS]; //the instanceids just visible for the client
         uint32 m_NextRatedArenaUpdate;
         time_t m_NextAutoDistributionTime;
