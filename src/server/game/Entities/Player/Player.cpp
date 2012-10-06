@@ -26001,11 +26001,11 @@ void Player::SendMovementSetCanFly(bool apply)
     {
         data.Initialize(SMSG_MOVE_SET_CAN_FLY, 1 + 8 + 4);
         data.WriteBit(guid[0]);
+        data.WriteBit(guid[7]);
         data.WriteBit(guid[6]);
         data.WriteBit(guid[5]);
         data.WriteBit(guid[1]);
         data.WriteBit(guid[3]);
-        data.WriteBit(guid[7]);
         data.WriteBit(guid[4]);
         data.WriteBit(guid[2]);
 
