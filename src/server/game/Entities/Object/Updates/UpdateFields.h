@@ -984,7 +984,7 @@ enum EPlayerFields
     PLAYER_TAXI_MOUNT_ANIM_KIT_ID                    = UNIT_END + 0x323,
     PLAYER_PARTY_TYPE                                = UNIT_END + 0x324,
     PLAYER_FIELD_INV_SLOT_HEAD                       = UNIT_END + 0x325,
-    PLAYER_FIELD_VENDORBUYBACK_SLOT_1                = UNIT_END + 0x37B,
+    PLAYER_FIELD_VENDORBUYBACK_SLOT_1                = UNIT_END + 0x3B9,
     PLAYER_FARSIGHT                                  = UNIT_END + 0x3D1,
     PLAYER__FIELD_KNOWN_TITLES                       = UNIT_END + 0x3D3,
     PLAYER__FIELD_KNOWN_TITLES1                      = UNIT_END + 0x3D5,

@@ -26001,11 +26001,11 @@ void Player::SendMovementSetCanFly(bool apply)
     {
         data.Initialize(SMSG_MOVE_SET_CAN_FLY, 1 + 8 + 4);
         data.WriteBit(guid[0]);
+        data.WriteBit(guid[7]);
         data.WriteBit(guid[6]);
         data.WriteBit(guid[5]);
         data.WriteBit(guid[1]);
         data.WriteBit(guid[3]);
-        data.WriteBit(guid[7]);
         data.WriteBit(guid[4]);
         data.WriteBit(guid[2]);
 
@@ -26265,7 +26265,7 @@ void Player::SendMovementSetCollisionHeight(float height)
     data.WriteBit(guid[1]);
     data.WriteBit(guid[7]);
     data.WriteBit(guid[3]);
-    data.WriteBits(0, 2);
+    data.WriteBits(0, 5);
     data.WriteBit(guid[6]);
     data.WriteBit(guid[0]);
     data.WriteBit(guid[5]);
@@ -26283,4 +26283,37 @@ void Player::SendMovementSetCollisionHeight(float height)
     data.WriteByteSeq(guid[3]);
 
     SendDirectMessage(&data);
+}
+
+void Player::SetMover(Unit* target)
+{
+    m_mover->m_movedPlayer = NULL;
+    m_mover = target;
+    m_mover->m_movedPlayer = this;
+
+    if(m_mover)
+    {
+        WorldPacket data(SMSG_MOVE_SET_ACTIVE_MOVER);
+        ObjectGuid guid = m_mover->GetGUID();
+
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guid[6]);
+
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[5]);
+
+        GetSession()->SendPacket(&data);
+    }
 }

@@ -2357,12 +2357,7 @@ class Player : public Unit, public GridObject<Player>
 
         void SetClientControl(Unit* target, uint8 allowMove);
 
-        void SetMover(Unit* target)
-        {
-            m_mover->m_movedPlayer = NULL;
-            m_mover = target;
-            m_mover->m_movedPlayer = this;
-        }
+        void SetMover(Unit* target);
 
         bool SetHover(bool enable);
 
