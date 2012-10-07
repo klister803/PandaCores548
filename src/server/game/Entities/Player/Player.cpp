@@ -26265,7 +26265,7 @@ void Player::SendMovementSetCollisionHeight(float height)
     data.WriteBit(guid[1]);
     data.WriteBit(guid[7]);
     data.WriteBit(guid[3]);
-    data.WriteBits(0, 2);
+    data.WriteBits(0, 5);
     data.WriteBit(guid[6]);
     data.WriteBit(guid[0]);
     data.WriteBit(guid[5]);

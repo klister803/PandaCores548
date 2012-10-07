@@ -129,7 +129,7 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, uint64 objectGUID) const
     data << uint32(0); //unk
     data << uint32(titleTextId);
     
-    data << uint32(_gossipMenu.GetMenuItemCount());     // max count 0x10
+    data << uint32(_gossipMenu.GetMenuItemCount());     // max count 0x20
 
     for (GossipMenuItemContainer::const_iterator itr = _gossipMenu.GetMenuItems().begin(); itr != _gossipMenu.GetMenuItems().end(); ++itr)
     {
