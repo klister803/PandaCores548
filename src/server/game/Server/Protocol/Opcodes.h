@@ -298,7 +298,7 @@ enum Opcodes
     CMSG_LEAVE_CHANNEL                                = 0x7DA,  // 5.0.5 16048
     CMSG_LFG_GET_PLAYER_INFO                          = 0,
     CMSG_LFG_GET_STATUS                               = 0x04D,	// 5.0.5 16048
-    CMSG_LFG_JOIN                                     = 0,
+    CMSG_LFG_JOIN                                     = 0x3D2,
     CMSG_LFG_LEAVE                                    = 0,
     CMSG_LFG_LFR_JOIN                                 = 0,
     CMSG_LFG_LFR_LEAVE                                = 0,
@@ -992,7 +992,7 @@ enum Opcodes
     SMSG_LEVELUP_INFO                                 = 0x85A,  // 5.0.5 16048
     SMSG_LFG_BOOT_PROPOSAL_UPDATE                     = 0,
     SMSG_LFG_DISABLED                                 = 0,
-    SMSG_LFG_JOIN_RESULT                              = 0xA77,  // 5.0.5 16048
+    SMSG_LFG_JOIN_RESULT                              = 0xEA1,  // 5.0.5 16048
     SMSG_LFG_OFFER_CONTINUE                           = 0,
     SMSG_LFG_OPEN_FROM_GOSSIP                         = 0,
     SMSG_LFG_PARTY_INFO                               = 0,
@@ -1008,7 +1008,7 @@ enum Opcodes
     SMSG_LFG_UPDATE_PARTY                             = 0,
     SMSG_LFG_UPDATE_PLAYER                            = 0,
     SMSG_LFG_UPDATE_SEARCH                            = 0,
-    SMSG_LFG_UPDATE_STATUS                            = 0,
+    SMSG_LFG_UPDATE_STATUS                            = 0xEEB,
     SMSG_LFG_UPDATE_STATUS_NONE                       = 0,
     SMSG_LF_GUILD_APPLICANT_LIST_UPDATED              = 0xE67,
     SMSG_LF_GUILD_APPLICATIONS_LIST_CHANGED           = 0xA1F,  // 5.0.5 16048

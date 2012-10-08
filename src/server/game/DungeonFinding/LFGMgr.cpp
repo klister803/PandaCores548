@@ -1851,6 +1851,46 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
         player->GetSession()->SendLfgTeleportError(uint8(error));
 }
 
+void LFGMgr::SendUpdateStatus(Player* player, std::string& comment)
+{
+    ObjectGuid guid = player->GetGUID();
+    WorldPacket data(SMSG_LFG_UPDATE_STATUS);
+    data.WriteBit(0);       //unk bit
+    data.WriteBits(comment.size(), 9);   //unk NameLen
+    data.WriteBit(guid[0]);       //unk guid0
+    data.WriteBit(guid[6]);       //unk guid6
+    data.WriteBit(guid[7]);       //unk guid7
+    data.WriteBit(0);       //unk bit
+    data.WriteBits(0, 24);  //unk count
+    data.WriteBit(guid[5]);       //unk guid5
+    data.WriteBit(guid[2]);       //unk guid2
+    data.WriteBit(0);       //unk
+    data.WriteBit(0);       //unk bit
+    data.WriteBit(0);       //unk bit
+    data.WriteBit(guid[4]);       //unk guid4
+    data.WriteBit(guid[3]);       //unk guid3
+    data.WriteBit(guid[1]);       //unk guid1
+
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[5]);
+    data << uint8(0);       //unk byte
+    data.WriteString(comment);
+    for (int i = 0; i < 0; ++i)
+        data << uint32(0);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[2]);
+    data << uint32(0);      //unk32
+    data.WriteByteSeq(guid[4]);
+    data << uint32(0);      //unk32
+    data << uint8(0);       //unk byte
+    data.WriteByteSeq(guid[7]);
+    data << uint32(0);      //unk32
+    for (int i = 0; i < 3; ++i)
+        data << uint8(0);   //unk8
+    player->GetSession()->SendPacket(&data);
+}
+
 /**
    Give completion reward to player
 
