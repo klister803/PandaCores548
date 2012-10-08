@@ -255,6 +255,14 @@ Item::Item()
     m_refundRecipient = 0;
     m_paidMoney = 0;
     m_paidExtendedCost = 0;
+
+    m_dynamicTab.resize(ITEM_DYNAMIC_END);
+    m_dynamicChange.resize(ITEM_DYNAMIC_END);
+    for(int i = 0; i < ITEM_DYNAMIC_END; i++)
+    {
+        m_dynamicTab[i] = new uint32[32];
+        m_dynamicChange[i] = new bool[32];
+    }
 }
 
 bool Item::Create(uint32 guidlow, uint32 itemid, Player const* owner)
@@ -443,6 +451,13 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
 
     std::string enchants = fields[6].GetString();
     _LoadIntoDataField(enchants.c_str(), ITEM_FIELD_ENCHANTMENT_1_1, MAX_ENCHANTMENT_SLOT * MAX_ENCHANTMENT_OFFSET);
+
+    if(uint32 reforgeEntry = GetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1 + REFORGE_ENCHANTMENT_SLOT *MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_ID_OFFSET))
+    {
+        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, reforgeEntry);
+        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1);
+    }
+
     SetInt32Value(ITEM_FIELD_RANDOM_PROPERTIES_ID, fields[7].GetInt16());
     // recalculate suffix factor
     if (GetItemRandomPropertyId() < 0)
@@ -897,6 +912,12 @@ void Item::SetEnchantment(EnchantmentSlot slot, uint32 id, uint32 duration, uint
     SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1 + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_DURATION_OFFSET, duration);
     SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1 + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_CHARGES_OFFSET, charges);
     SetState(ITEM_CHANGED, GetOwner());
+
+    if(slot == REFORGE_ENCHANTMENT_SLOT)
+    {
+        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, id);
+        SetFlag(ITEM_FIELD_MODIFIERS_MASK, 1);
+    }
 }
 
 void Item::SetEnchantmentDuration(EnchantmentSlot slot, uint32 duration, Player* owner)
@@ -926,6 +947,12 @@ void Item::ClearEnchantment(EnchantmentSlot slot)
     for (uint8 x = 0; x < MAX_ITEM_ENCHANTMENT_EFFECTS; ++x)
         SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1 + slot*MAX_ENCHANTMENT_OFFSET + x, 0);
     SetState(ITEM_CHANGED, GetOwner());
+
+    if(slot == REFORGE_ENCHANTMENT_SLOT)
+    {
+        RemoveFlag(ITEM_FIELD_MODIFIERS_MASK, 1);
+        SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, 0);
+    }
 }
 
 bool Item::GemsFitSockets() const

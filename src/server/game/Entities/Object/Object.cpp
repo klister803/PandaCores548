@@ -121,6 +121,12 @@ Object::~Object()
     delete [] m_uint32Values;
     delete [] _changedFields;
 
+    for(size_t i = 0; i < m_dynamicTab.size(); ++i)
+    {
+        delete [] m_dynamicTab[i];
+        delete [] m_dynamicChange[i];
+    }
+
 }
 
 void Object::_InitValues()
@@ -130,6 +136,12 @@ void Object::_InitValues()
 
     _changedFields = new bool[m_valuesCount];
     memset(_changedFields, 0, m_valuesCount*sizeof(bool));
+
+    for(size_t i = 0; i < m_dynamicTab.size(); ++i)
+    {
+        memset(m_dynamicTab[i], 0, 32*sizeof(uint32));
+        memset(m_dynamicChange[i], 0, 32*sizeof(bool));
+    }
 
     m_objectUpdated = false;
 }
@@ -872,27 +884,46 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
         }
     }
 
-    uint8 dynamicFieldsCount = 0;
-   *data << uint8(dynamicFieldsCount);
-   // TODO : DynamicFields
-   /*for(int i = dynamicFieldsCount; i < dynamicFieldsCount; i++)
-   {
-       *data << uint32(0);
-   }
+    // Dynamic Fields (5.0.5 MoP new fields)
+    uint32 dynamicTabMask = 0;
+    std::vector<uint32> dynamicFieldsMask;
+    dynamicFieldsMask.resize(m_dynamicTab.size());
 
-   for(int i = 0; i < dynamicFieldsCount*32; i++)
-   {
-       if ( (1 << (i & 0x1F)) & *(dynamicFieldsCountData + (i >> 5)) )
-       {
-           uint8 byte = 0;
-           *data << uint8(byte);
-           if(((byte & 0x7F) & 0x80) != 0)
-           {
-                *data << uint16(0);
-           }
-           
-       }
-   }*/
+    for(size_t i = 0; i < m_dynamicTab.size(); i++)
+        dynamicFieldsMask[i] = 0;
+
+    for(size_t i = 0; i < m_dynamicChange.size(); i++)
+    {
+        for(int index = 0; index < 32; index++)
+        {
+            if(m_dynamicChange[i][index])
+            {
+                dynamicTabMask |= 1 << i;
+                dynamicFieldsMask[i] |= 1 << index;
+            }
+        }
+    }
+
+    *data << uint8(bool(dynamicTabMask));
+    if(dynamicTabMask)
+    {
+        *data << uint32(dynamicTabMask);
+
+        for(size_t i = 0; i < m_dynamicTab.size(); i++)
+        {
+            if(dynamicTabMask & (1 << i))
+            {
+                *data << uint8(1);
+                *data << uint32(dynamicFieldsMask[i]);
+
+                for(int index = 0; index < 32; index++)
+                {
+                    if(dynamicFieldsMask[i] & (1 << index))
+                        *data << uint32(m_dynamicTab[i][index]);
+                }
+            }
+        }
+    }
 
 }
 
@@ -902,6 +933,9 @@ void Object::ClearUpdateMask(bool remove)
 
     if (m_objectUpdated)
     {
+        for(size_t i = 0; i < m_dynamicTab.size(); i++)
+            memset(m_dynamicChange[i], 0, 32*sizeof(bool));
+
         if (remove)
             sObjectAccessor->RemoveUpdateObject(this);
         m_objectUpdated = false;
@@ -1336,6 +1370,22 @@ void Object::RemoveByteFlag(uint16 index, uint8 offset, uint8 oldFlag)
         m_uint32Values[index] &= ~uint32(uint32(oldFlag) << (offset * 8));
         _changedFields[index] = true;
 
+        if (m_inWorld && !m_objectUpdated)
+        {
+            sObjectAccessor->AddUpdateObject(this);
+            m_objectUpdated = true;
+        }
+    }
+}
+
+void Object::SetDynamicUInt32Value(uint32 tab, uint16 index, uint32 value)
+{
+    ASSERT(tab < m_dynamicTab.size() || index < 32);
+
+    if (m_dynamicTab[tab][index] != value)
+    {
+        m_dynamicTab[tab][index] = value;
+        m_dynamicChange[tab][index] = true;
         if (m_inWorld && !m_objectUpdated)
         {
             sObjectAccessor->AddUpdateObject(this);
