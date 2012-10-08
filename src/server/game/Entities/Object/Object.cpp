@@ -373,7 +373,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             movementFlags &= MOVEMENTFLAG_MASK_CREATURE_ALLOWED;
 
         data->WriteBit(guid[3]);
-        data->WriteBit(self->IsSplineEnabled());
+        data->WriteBit(false); // self->IsSplineEnabled()
         data->WriteBits(0, 24); //unk
         data->WriteBit(guid[4]);
         data->WriteBit(!((movementFlags & (MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_FLYING)) ||
@@ -415,7 +415,7 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
         data->WriteBit(G3D::fuzzyEq(self->GetOrientation(), 0.0f));          // Has Orientation bit
         data->WriteBit(0);													//IsAlive_unk4
         data->WriteBit(0);													//IsAlive_unk3
-        if (self->IsSplineEnabled())
+        if (false && self->IsSplineEnabled())
             Movement::PacketBuilder::WriteCreateBits(*self->movespline, *data); //TODO: CHANGE THE STRUCT IN WRITECREATEBITS // Useless, spline feature are not implanted in TrinityCore
         data->WriteBit(guid[1]);
         data->WriteBit(!(movementFlags & MOVEMENTFLAG_SPLINE_ELEVATION));
@@ -486,11 +486,11 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
             data->WriteByteSeq(transGuid[7]);
             data->WriteByteSeq(transGuid[3]);
             data->WriteByteSeq(transGuid[6]);
-            *data << float(self->GetTransOffsetO());
+            *data << float(self->GetTransOffsetZ());
             *data << uint32(self->GetTransTime());
             data->WriteByteSeq(transGuid[2]);
             data->WriteByteSeq(transGuid[1]);
-            *data << float(self->GetTransOffsetZ());
+            *data << float(self->GetTransOffsetO());
             data->WriteByteSeq(transGuid[5]);
         }
 
