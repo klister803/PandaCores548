@@ -961,12 +961,13 @@ void Group::SendLooter(Creature* creature, Player* groupLooter)
 
     WorldPacket data(SMSG_LOOT_LIST, (8+8));
     data << uint64(creature->GetGUID());
-    data << uint8(0); // unk1
+    //data << uint8(0); // unk1
 
     if (groupLooter)
         data.append(groupLooter->GetPackGUID());
     else
-        data << uint8(0);
+        data << uint64(0);
+    data << uint64(0);
 
     BroadcastPacket(&data, false);
 }

@@ -860,10 +860,29 @@ void WorldSession::HandleGroupAssistantLeaderOpcode(WorldPacket & recvData)
     if (!group->IsLeader(GetPlayer()->GetGUID()))
         return;
 
-    uint64 guid;
+    ObjectGuid guid;
     bool apply;
-    recvData >> guid;
-    recvData >> apply;
+    uint8 unk = 0;
+    recvData >> unk;
+    guid[7] = recvData.ReadBit();
+    apply = recvData.ReadBit();
+    guid[1] = recvData.ReadBit();
+    guid[3] = recvData.ReadBit();
+    guid[0] = recvData.ReadBit();
+    guid[6] = recvData.ReadBit();
+    guid[2] = recvData.ReadBit();
+    guid[4] = recvData.ReadBit();
+    guid[5] = recvData.ReadBit();
+    recvData.FlushBits();
+
+    recvData.ReadByteSeq(guid[7]);
+    recvData.ReadByteSeq(guid[2]);
+    recvData.ReadByteSeq(guid[4]);
+    recvData.ReadByteSeq(guid[0]);
+    recvData.ReadByteSeq(guid[5]);
+    recvData.ReadByteSeq(guid[3]);
+    recvData.ReadByteSeq(guid[6]);
+    recvData.ReadByteSeq(guid[1]);
 
     group->SetGroupMemberFlag(guid, apply, MEMBER_FLAG_ASSISTANT);
 
