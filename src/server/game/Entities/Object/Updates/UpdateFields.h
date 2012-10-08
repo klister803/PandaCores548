@@ -1068,15 +1068,15 @@ enum EPlayerFields
 
 enum EPlayerDynamicFields
 {
-    PLAYER_DYNAMIC_RESEARCH_SITES                    = UNIT_END + 0x0,
-    PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED            = UNIT_END + 0x2,
-    PLAYER_DYNAMIC_END                               = UNIT_END + 0x4
+    PLAYER_DYNAMIC_RESEARCH_SITES                    = 0x0,
+    PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED            = 0x2,
+    PLAYER_DYNAMIC_END                               = 0x4
 };
 
 enum ItemDynamicFields
 {
-    ITEM_DYNAMIC_MODIFIERS                           = OBJECT_END + 0x0,
-    ITEM_DYNAMIC_END                                 = OBJECT_END + 0x4
+    ITEM_DYNAMIC_MODIFIERS                           = 0x0,
+    ITEM_DYNAMIC_END                                 = 0x4
 };
 
 enum EContainerFields
