@@ -589,7 +589,7 @@ enum Opcodes
     CMSG_WRAP_ITEM                                    = 0x959,  // 5.0.5 16048
     CMSG_ZONEUPDATE                                   = 0xD3B,	// 5.0.5 16048
     CMSG_PLAYER_MOVE                                  = 0x3F8,	// 5.0.5 16048 CUSTOM OPCODE, client patch
-    CMSG_CORPSE_QUERY                                  = 0x20C,  // 5.0.5 16048
+    CMSG_CORPSE_QUERY                                 = 0x20C,  // 5.0.5 16048
     MSG_AUCTION_HELLO                                 = 0x8DF,  // 5.0.5 16048
     MSG_BATTLEGROUND_PLAYER_POSITIONS                 = 0,
     MSG_CHANNEL_START                                 = 0,
