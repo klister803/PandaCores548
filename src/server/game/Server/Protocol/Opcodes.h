@@ -1140,7 +1140,7 @@ enum Opcodes
     SMSG_PLAY_SPELL_VISUAL                            = 0xAE4,  // 5.0.5 16048
     SMSG_PLAY_SPELL_VISUAL_KIT                        = 0xAE4,  // 5.0.5 16048
     SMSG_PLAY_TIME_WARNING                            = 0x817,  // 5.0.5 16048
-    SMSG_PONG                                         = 0x662,  // 5.0.5 16048
+    SMSG_PONG                                         = 0x462,  // 5.0.5 16048
     SMSG_POWER_UPDATE                                 = 0x94A,	// 5.0.5 16048
     SMSG_PRE_RESURRECT                                = 0x88A,  // 5.0.5 16048
     SMSG_PROCRESIST                                   = 0X80F,  // 5.0.5 16048
@@ -1296,7 +1296,7 @@ enum Opcodes
     SMSG_SUMMON_REQUEST                               = 0x82D,  // 5.0.5 16048
     SMSG_SUPERCEDED_SPELL                             = 0xA6B,  // 5.0.5 16048
     SMSG_SUPPRESS_NPC_GREETINGS                       = 0xA2A,  // 5.0.5 16048
-    SMSG_SUSPEND_COMMS                                = 0x462,
+    SMSG_SUSPEND_COMMS                                = 0x662,
     SMSG_SUSPEND_TOKEN_RESPONSE                       = 0xB4F,  // 5.0.5 16048
     SMSG_TALENTS_ERROR                                = 0,
     SMSG_TALENTS_INFO                                 = 0,
