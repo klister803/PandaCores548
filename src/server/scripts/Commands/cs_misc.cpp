@@ -2169,7 +2169,7 @@ public:
 
     static bool HandleFlushArenaPointsCommand(ChatHandler* /*handler*/, char const* /*args*/)
     {
-        sArenaTeamMgr->DistributeArenaPoints();
+        //sArenaTeamMgr->DistributeArenaPoints();
         return true;
     }
 

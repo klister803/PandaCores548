@@ -767,20 +767,3 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recvData)
     }
     sBattlegroundMgr->ScheduleQueueUpdate(matchmakerRating, arenatype, bgQueueTypeId, bgTypeId, bracketEntry->GetBracketId());
 }
-
-void WorldSession::HandleReportPvPAFK(WorldPacket & recvData)
-{
-    uint64 playerGuid;
-    recvData >> playerGuid;
-    Player* reportedPlayer = ObjectAccessor::FindPlayer(playerGuid);
-
-    if (!reportedPlayer)
-    {
-        sLog->outDebug(LOG_FILTER_BATTLEGROUND, "WorldSession::HandleReportPvPAFK: player not found");
-        return;
-    }
-
-    sLog->outDebug(LOG_FILTER_BATTLEGROUND, "WorldSession::HandleReportPvPAFK: %s reported %s", _player->GetName(), reportedPlayer->GetName());
-
-    reportedPlayer->ReportedAfkBy(_player);
-}
