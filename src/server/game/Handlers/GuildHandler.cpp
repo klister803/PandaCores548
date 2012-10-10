@@ -194,42 +194,26 @@ void WorldSession::HandleGuildAssignRankOpcode(WorldPacket& recvPacket)
     uint32 rankId;
     recvPacket >> rankId;
 
-    targetGuid[1] = recvPacket.ReadBit();
-    targetGuid[7] = recvPacket.ReadBit();
-    setterGuid[4] = recvPacket.ReadBit();
-    setterGuid[2] = recvPacket.ReadBit();
-    targetGuid[4] = recvPacket.ReadBit();
-    targetGuid[5] = recvPacket.ReadBit();
-    targetGuid[6] = recvPacket.ReadBit();
-    setterGuid[1] = recvPacket.ReadBit();
-    setterGuid[7] = recvPacket.ReadBit();
-    targetGuid[2] = recvPacket.ReadBit();
     targetGuid[3] = recvPacket.ReadBit();
+    targetGuid[5] = recvPacket.ReadBit();
+    targetGuid[7] = recvPacket.ReadBit();
+    targetGuid[4] = recvPacket.ReadBit();
+    targetGuid[6] = recvPacket.ReadBit();
     targetGuid[0] = recvPacket.ReadBit();
-    setterGuid[6] = recvPacket.ReadBit();
-    setterGuid[3] = recvPacket.ReadBit();
-    setterGuid[0] = recvPacket.ReadBit();
-    setterGuid[5] = recvPacket.ReadBit();
+    targetGuid[1] = recvPacket.ReadBit();
+    targetGuid[2] = recvPacket.ReadBit();
 
-    recvPacket.ReadByteSeq(targetGuid[0]);
-    recvPacket.ReadByteSeq(setterGuid[1]);
-    recvPacket.ReadByteSeq(setterGuid[3]);
-    recvPacket.ReadByteSeq(setterGuid[5]);
-    recvPacket.ReadByteSeq(targetGuid[7]);
-    recvPacket.ReadByteSeq(targetGuid[3]);
-    recvPacket.ReadByteSeq(setterGuid[0]);
-    recvPacket.ReadByteSeq(targetGuid[1]);
-    recvPacket.ReadByteSeq(setterGuid[6]);
     recvPacket.ReadByteSeq(targetGuid[2]);
-    recvPacket.ReadByteSeq(targetGuid[5]);
-    recvPacket.ReadByteSeq(targetGuid[4]);
-    recvPacket.ReadByteSeq(setterGuid[2]);
-    recvPacket.ReadByteSeq(setterGuid[4]);
     recvPacket.ReadByteSeq(targetGuid[6]);
-    recvPacket.ReadByteSeq(setterGuid[7]);
+    recvPacket.ReadByteSeq(targetGuid[7]);
+    recvPacket.ReadByteSeq(targetGuid[4]);
+    recvPacket.ReadByteSeq(targetGuid[0]);
+    recvPacket.ReadByteSeq(targetGuid[3]);
+    recvPacket.ReadByteSeq(targetGuid[5]);
+    recvPacket.ReadByteSeq(targetGuid[1]);
 
     if (Guild* guild = _GetPlayerGuild(this, true))
-        guild->HandleSetMemberRank(this, targetGuid, setterGuid, rankId);
+        guild->HandleSetMemberRank(this, targetGuid, GetPlayer()->GetGUID(), rankId);
 }
 
 void WorldSession::HandleGuildLeaveOpcode(WorldPacket& /*recvPacket*/)

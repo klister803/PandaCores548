@@ -350,6 +350,17 @@ class Object
 
         uint16 GetValuesCount() const { return m_valuesCount; }
 
+        // Dynamic Field function
+
+        uint32 GetDynamicUInt32Value(uint32 tab, uint16 index) const
+        {
+            ASSERT(tab < m_dynamicTab.size() || index < 32);
+            return m_dynamicTab[tab][index];
+        }
+
+        void SetDynamicUInt32Value(uint32 tab, uint16 index, uint32 value);
+
+
         virtual bool hasQuest(uint32 /* quest_id */) const { return false; }
         virtual bool hasInvolvedQuest(uint32 /* quest_id */) const { return false; }
         virtual void BuildUpdate(UpdateDataMapType&) {}
@@ -415,6 +426,9 @@ class Object
         uint16 _fieldNotifyFlags;
 
         bool m_objectUpdated;
+
+        std::vector<uint32*> m_dynamicTab;
+        std::vector<bool*> m_dynamicChange;
 
     private:
         bool m_inWorld;

@@ -651,6 +651,14 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_valuesCount = PLAYER_END;
 
+    m_dynamicTab.resize(PLAYER_DYNAMIC_END);
+    m_dynamicChange.resize(PLAYER_DYNAMIC_END);
+    for(int i = 0; i < PLAYER_DYNAMIC_END; i++)
+    {
+        m_dynamicTab[i] = new uint32[32];
+        m_dynamicChange[i] = new bool[32];
+    }
+
     m_session = session;
 
     m_divider = 0;
@@ -19048,6 +19056,9 @@ void Player::_SaveAuras(SQLTransaction& trans)
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_AURA);
     stmt->setUInt32(0, GetGUIDLow());
     trans->Append(stmt);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_AURA_EFFECT);
+    stmt->setUInt32(0, GetGUIDLow());
+    trans->Append(stmt);
 
     for (AuraMap::const_iterator itr = m_ownedAuras.begin(); itr != m_ownedAuras.end(); ++itr)
     {
@@ -26265,7 +26276,7 @@ void Player::SendMovementSetCollisionHeight(float height)
     data.WriteBit(guid[1]);
     data.WriteBit(guid[7]);
     data.WriteBit(guid[3]);
-    data.WriteBits(0, 2);
+    data.WriteBits(0, 5);
     data.WriteBit(guid[6]);
     data.WriteBit(guid[0]);
     data.WriteBit(guid[5]);
@@ -26283,4 +26294,37 @@ void Player::SendMovementSetCollisionHeight(float height)
     data.WriteByteSeq(guid[3]);
 
     SendDirectMessage(&data);
+}
+
+void Player::SetMover(Unit* target)
+{
+    m_mover->m_movedPlayer = NULL;
+    m_mover = target;
+    m_mover->m_movedPlayer = this;
+
+    if(m_mover)
+    {
+        WorldPacket data(SMSG_MOVE_SET_ACTIVE_MOVER);
+        ObjectGuid guid = m_mover->GetGUID();
+
+        data.WriteBit(guid[7]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guid[6]);
+
+        data.WriteByteSeq(guid[0]);
+        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(guid[7]);
+        data.WriteByteSeq(guid[1]);
+        data.WriteByteSeq(guid[3]);
+        data.WriteByteSeq(guid[4]);
+        data.WriteByteSeq(guid[5]);
+
+        GetSession()->SendPacket(&data);
+    }
 }

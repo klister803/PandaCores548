@@ -984,7 +984,7 @@ enum EPlayerFields
     PLAYER_TAXI_MOUNT_ANIM_KIT_ID                    = UNIT_END + 0x323,
     PLAYER_PARTY_TYPE                                = UNIT_END + 0x324,
     PLAYER_FIELD_INV_SLOT_HEAD                       = UNIT_END + 0x325,
-    PLAYER_FIELD_VENDORBUYBACK_SLOT_1                = UNIT_END + 0x37B,
+    PLAYER_FIELD_VENDORBUYBACK_SLOT_1                = UNIT_END + 0x3B9,
     PLAYER_FARSIGHT                                  = UNIT_END + 0x3D1,
     PLAYER__FIELD_KNOWN_TITLES                       = UNIT_END + 0x3D3,
     PLAYER__FIELD_KNOWN_TITLES1                      = UNIT_END + 0x3D5,
@@ -1068,15 +1068,15 @@ enum EPlayerFields
 
 enum EPlayerDynamicFields
 {
-    PLAYER_DYNAMIC_RESEARCH_SITES                    = UNIT_END + 0x0,
-    PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED            = UNIT_END + 0x2,
-    PLAYER_DYNAMIC_END                               = UNIT_END + 0x4
+    PLAYER_DYNAMIC_RESEARCH_SITES                    = 0x0,
+    PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED            = 0x2,
+    PLAYER_DYNAMIC_END                               = 0x4
 };
 
 enum ItemDynamicFields
 {
-    ITEM_DYNAMIC_MODIFIERS                           = OBJECT_END + 0x0,
-    ITEM_DYNAMIC_END                                 = OBJECT_END + 0x4
+    ITEM_DYNAMIC_MODIFIERS                           = 0x0,
+    ITEM_DYNAMIC_END                                 = 0x4
 };
 
 enum EContainerFields

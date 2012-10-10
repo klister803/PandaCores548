@@ -961,12 +961,13 @@ void Group::SendLooter(Creature* creature, Player* groupLooter)
 
     WorldPacket data(SMSG_LOOT_LIST, (8+8));
     data << uint64(creature->GetGUID());
-    data << uint8(0); // unk1
+    //data << uint8(0); // unk1
 
     if (groupLooter)
         data.append(groupLooter->GetPackGUID());
     else
-        data << uint8(0);
+        data << uint64(0);
+    data << uint64(0);
 
     BroadcastPacket(&data, false);
 }
@@ -1270,11 +1271,15 @@ void Group::NeedBeforeGreed(Loot* loot, WorldObject* lootedObject)
 void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Group::MasterLoot (SMSG_LOOT_MASTER_LIST)");
-
     uint32 real_count = 0;
-
+    ByteBuffer dataBuffer;
     WorldPacket data(SMSG_LOOT_MASTER_LIST, GetMembersCount()*8);
-    data << (uint8)GetMembersCount();
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    uint32 pos = data.bitwpos();
+    data.WriteBits(0, 18);//18? Not sure
 
     for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {
@@ -1284,12 +1289,33 @@ void Group::MasterLoot(Loot* /*loot*/, WorldObject* pLootedObject)
 
         if (looter->IsWithinDistInMap(pLootedObject, sWorld->getFloatConfig(CONFIG_GROUP_XP_DISTANCE), false))
         {
-            data << uint64(looter->GetGUID());
+            ObjectGuid guid = looter->GetGUID();
+            data.WriteBit(guid[1]);
+            data.WriteBit(guid[0]);
+            data.WriteBit(guid[7]);
+            data.WriteBit(guid[2]);
+            data.WriteBit(guid[6]);
+            data.WriteBit(guid[5]);
+            data.WriteBit(guid[4]);
+            data.WriteBit(guid[3]);
+
+            dataBuffer.WriteByteSeq(guid[1]);
+            dataBuffer.WriteByteSeq(guid[4]);
+            dataBuffer.WriteByteSeq(guid[7]);
+            dataBuffer.WriteByteSeq(guid[6]);
+            dataBuffer.WriteByteSeq(guid[5]);
+            dataBuffer.WriteByteSeq(guid[2]);
+            dataBuffer.WriteByteSeq(guid[0]);
+            dataBuffer.WriteByteSeq(guid[3]);
             ++real_count;
         }
     }
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
 
-    data.put<uint8>(0, real_count);
+    data.PutBits<uint32>(pos, real_count, 18);
 
     for (GroupReference* itr = GetFirstMember(); itr != NULL; itr = itr->next())
     {

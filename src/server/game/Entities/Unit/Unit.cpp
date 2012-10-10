@@ -14697,8 +14697,8 @@ void Unit::Kill(Unit* victim, bool durabilityLoss)
             {
                 WorldPacket data2(SMSG_LOOT_LIST, 8 + 1 + 1);
                 data2 << uint64(creature->GetGUID());
-                data2 << uint8(0); // unk1
-                data2 << uint8(0); // no group looter
+                data << uint64(0);
+                data << uint64(0);
                 player->SendMessageToSet(&data2, true);
             }
         }
