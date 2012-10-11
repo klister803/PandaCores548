@@ -78,12 +78,12 @@ enum Opcodes
     CMSG_BATTLEFIELD_JOIN                             = 0x000,  // Not found in 4.3.4
     CMSG_BATTLEFIELD_LEAVE                            = 0x076,	// 5.0.5 16048
     CMSG_BATTLEFIELD_LIST                             = 0x058,  // 5.0.5 16048
-    CMSG_BATTLEFIELD_MGR_ENTRY_INVITE_RESPONSE        = 0,
-    CMSG_BATTLEFIELD_MGR_EXIT_REQUEST                 = 0,
-    CMSG_BATTLEFIELD_MGR_QUEUE_INVITE_RESPONSE        = 0,
-    CMSG_BATTLEFIELD_MGR_QUEUE_REQUEST                = 0,
+    CMSG_BATTLEFIELD_MGR_ENTRY_INVITE_RESPONSE        = 0x745,  // 5.0.5 16048
+    CMSG_BATTLEFIELD_MGR_EXIT_REQUEST                 = 0x7B2,  // 5.0.5 16048
+    CMSG_BATTLEFIELD_MGR_QUEUE_INVITE_RESPONSE        = 0x793,  // 5.0.5 16048
+    CMSG_BATTLEFIELD_MGR_QUEUE_REQUEST                = 0x529,  // 5.0.5 16048
     CMSG_BATTLEFIELD_PORT                             = 0x056,  // 5.0.5 16048
-    CMSG_BATTLEFIELD_REQUEST_SCORE_DATA               = 0,
+    CMSG_BATTLEFIELD_REQUEST_SCORE_DATA               = 0x220,  // 5.0.5 16048
     CMSG_BATTLEFIELD_STATUS                           = 0x04C,  // 5.0.5 16048
     CMSG_BATTLEGROUND_PLAYER_POSITIONS                = 0,
     CMSG_BATTLEMASTER_JOIN                            = 0x5F8,  // 5.0.5 16048
