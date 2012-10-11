@@ -125,7 +125,7 @@ enum Opcodes
     CMSG_CANCEL_TRADE                                 = 0x321,  // 5.0.5 16048
     CMSG_CAST_SPELL                                   = 0x911,  // 5.0.5 16048
     CMSG_CHANGEPLAYER_DIFFICULTY                      = 0x20D,  // 5.0.5 16048
-    CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE           = 0,
+    CMSG_CHANGE_SEATS_ON_CONTROLLED_VEHICLE           = 0x676,  // 5.0.5 16048
     CMSG_CHANNEL_ANNOUNCEMENTS                        = 0x389,  // 5.0.5 16048
     CMSG_CHANNEL_BAN                                  = 0x7E9,  // 5.0.5 16048
     CMSG_CHANNEL_DISPLAY_LIST                         = 0x2E4,  // 5.0.5 16048
@@ -183,12 +183,12 @@ enum Opcodes
     CMSG_DEL_IGNORE                                   = 0x863,	// 5.0.5 16048
     CMSG_DEL_VOICE_IGNORE                             = 0xDC5,  // 5.0.5 16048
     CMSG_DESTROY_ITEM                                 = 0xC8E,  // 5.0.5 16048
-    CMSG_DISMISS_CONTROLLED_VEHICLE                   = 0,
+    CMSG_DISMISS_CONTROLLED_VEHICLE                   = 0x67C,  // 5.0.5 16048
     CMSG_DISMISS_CRITTER                              = 0x87C,  // 5.0.5 16048
     CMSG_DUEL_ACCEPTED                                = 0xD40,  // 5.0.5 16048
     CMSG_DUEL_CANCELLED                               = 0xC85,  // 5.0.5 16048
     CMSG_DUNGEON_FINDER_GET_SYSTEM_INFO               = 0x44A,  // 5.0.5 16048
-    CMSG_EJECT_PASSENGER                              = 0,
+    CMSG_EJECT_PASSENGER                              = 0x71D,  // 5.0.5 16048
     CMSG_EMOTE                                        = 0xC6C,	// 5.0.5 16048
     CMSG_ENABLETAXI                                   = 0x8F8,  // 5.0.5 16048
     CMSG_ENABLE_NAGLE                                 = 0x3EA,  // 5.0.5 16048
@@ -380,7 +380,7 @@ enum Opcodes
     CMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY_ACK = 0,
     CMSG_MOVE_SET_COLLISION_HEIGHT_ACK                = 0,
     CMSG_MOVE_SET_RELATIVE_POSITION                   = 0,
-    CMSG_MOVE_SET_VEHICLE_REC_ID_ACK                  = 0,
+    CMSG_MOVE_SET_VEHICLE_REC_ID_ACK                  = 0,      // not found in 4.3.4
     CMSG_MOVE_SPLINE_DONE                             = 0,
     CMSG_MOVE_TIME_SKIPPED                            = 0x351,  // 5.0.5 16048
     CMSG_MOVE_TOGGLE_COLLISION_ACK                    = 0,
@@ -418,7 +418,7 @@ enum Opcodes
     CMSG_PLAYER_DIFFICULTY_CHANGE                     = 0,
     CMSG_PLAYER_LOGIN                                 = 0x203,  // 5.0.5 16048
     CMSG_PLAYER_LOGOUT                                = 0,
-    CMSG_PLAYER_VEHICLE_ENTER                         = 0,
+    CMSG_PLAYER_VEHICLE_ENTER                         = 0x6B0,  // 5.0.5 16048
     CMSG_PLAY_DANCE                                   = 0x878,  // 5.0.5 16048
     CMSG_PUSHQUESTTOPARTY                             = 0,
     CMSG_PVP_LOG_DATA                                 = 0x220,  // 5.0.5 16048
@@ -475,10 +475,10 @@ enum Opcodes
     CMSG_REQUEST_RATED_BG_INFO                        = 0x7B2,  // 5.0.5 16048
     CMSG_REQUEST_RATED_BG_STATS                       = 0x60D,  // 5.0.5 16048
     CMSG_REQUEST_RESEARCH_HISTORY                     = 0,
-    CMSG_REQUEST_VEHICLE_EXIT                         = 0,
-    CMSG_REQUEST_VEHICLE_NEXT_SEAT                    = 0,
-    CMSG_REQUEST_VEHICLE_PREV_SEAT                    = 0,
-    CMSG_REQUEST_VEHICLE_SWITCH_SEAT                  = 0,
+    CMSG_REQUEST_VEHICLE_EXIT                         = 0x759,  // 5.0.5 16048
+    CMSG_REQUEST_VEHICLE_NEXT_SEAT                    = 0x674,  // 5.0.5 16048
+    CMSG_REQUEST_VEHICLE_PREV_SEAT                    = 0x55C,  // 5.0.5 16048
+    CMSG_REQUEST_VEHICLE_SWITCH_SEAT                  = 0x255,  // 5.0.5 16048
     CMSG_RESET_FACTION_CHEAT                          = 0,
     CMSG_RESET_INSTANCES                              = 0xC71,  // 5.0.5 16048
     CMSG_RESURRECT_RESPONSE                           = 0x9FB,  // 5.0.5 16048
