@@ -1503,6 +1503,8 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_TRANSMOGRIFY_ITEMS");
     Player* player = GetPlayer();
 
+    ObjectGuid npcGuid;
+    npcGuid[6] = recvData.ReadBit();
     // Read data
     uint32 count = recvData.ReadBits(22);
 
@@ -1517,8 +1519,6 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
     std::vector<uint32> newEntries(count, 0);
     std::vector<uint32> slots(count, 0);
 
-    ObjectGuid npcGuid;
-    npcGuid[6] = recvData.ReadBit();
 
     for (uint8 i = 0; i < count; ++i)
     {

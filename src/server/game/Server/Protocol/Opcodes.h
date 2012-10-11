@@ -152,9 +152,9 @@ enum Opcodes
     CMSG_CHAR_CUSTOMIZE                               = 0xC99,  // 5.0.5 16048
     CMSG_CHAR_DELETE                                  = 0x944,  // 5.0.5 16048
     CMSG_CHAR_ENUM                                    = 0x576,  // 5.0.5 16048
-    CMSG_CHAR_FACTION_CHANGE                          = 0,
-    CMSG_CHAR_RACE_CHANGE                             = 0,
-    CMSG_CHAR_RENAME                                  = 0,
+    CMSG_CHAR_FACTION_CHANGE                          = 0x9B9,
+    CMSG_CHAR_RACE_CHANGE                             = 0x96C,
+    CMSG_CHAR_RENAME                                  = 0xCD2,
     CMSG_CHAT_FILTERED                                = 0x69B,  // 5.0.5 16048
     CMSG_CHAT_IGNORED                                 = 0x0C8,  // 5.0.5 16048
     CMSG_CLEAR_CHANNEL_WATCH                          = 0xC71,  // 5.0.5 16048
@@ -360,7 +360,7 @@ enum Opcodes
     CMSG_MOVE_NOT_ACTIVE_MOVER                        = 0,
     CMSG_MOVE_SET_RELATIVE_POSITION                   = 0x000,
     CMSG_MOVE_SET_VEHICLE_REC_ID_ACK                  = 0x000,
-    CMSG_MOVE_SPLINE_DONE                             = 0,
+    CMSG_MOVE_SPLINE_DONE                             = 0x651,
     CMSG_MOVE_TIME_SKIPPED                            = 0x351,  // 5.0.5 16048
     CMSG_MOVE_TOGGLE_COLLISION_ACK                    = 0x000,
     CMSG_NAME_QUERY                                   = 0x884,  // 5.0.5 16048
@@ -437,7 +437,7 @@ enum Opcodes
     CMSG_REFORGE_ITEM                                 = 0x51C,  // 5.0.5 16048
     CMSG_REORDER_CHARACTERS                           = 0x541,  // 5.0.5 16048
     CMSG_REPAIR_ITEM                                  = 0x89D,	// 5.0.5 16048
-    CMSG_REPLACE_ACCOUNT_DATA                         = 0,
+    CMSG_REPLACE_ACCOUNT_DATA                         = 0x000,
     CMSG_REPOP_REQUEST                                = 0x0D4,  // 5.0.5 16048
     CMSG_REPORT_PVP_AFK                               = 0x9FB,  // 5.0.5 16048
     CMSG_REQUEST_ACCOUNT_DATA                         = 0x9BD,	// 5.0.5 16048
@@ -452,7 +452,7 @@ enum Opcodes
     CMSG_REQUEST_RAID_INFO                            = 0xC2E,  // 5.0.5 16048
     CMSG_REQUEST_RATED_BG_INFO                        = 0x7B2,  // 5.0.5 16048
     CMSG_REQUEST_RATED_BG_STATS                       = 0x60D,  // 5.0.5 16048
-    CMSG_REQUEST_RESEARCH_HISTORY                     = 0,
+    CMSG_REQUEST_RESEARCH_HISTORY                     = 0x574,
     CMSG_REQUEST_VEHICLE_EXIT                         = 0,
     CMSG_REQUEST_VEHICLE_NEXT_SEAT                    = 0,
     CMSG_REQUEST_VEHICLE_PREV_SEAT                    = 0,
