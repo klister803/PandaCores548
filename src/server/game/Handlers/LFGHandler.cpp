@@ -25,13 +25,12 @@
 #include "GroupMgr.h"
 #include "InstanceScript.h"
 
-void BuildPlayerLockDungeonBlock(WorldPacket& data, const LfgLockMap& lock)
-{
-    data << uint32(lock.size());                           // Size of lock dungeons
+void BuildPlayerLockDungeonBlock(ByteBuffer& data, const LfgLockMap& lock)
+{  
     for (LfgLockMap::const_iterator it = lock.begin(); it != lock.end(); ++it)
     {
-        data << uint32(it->first);                         // Dungeon entry (id + type)
         data << uint32(it->second);                        // Lock status
+        data << uint32(it->first);                         // Dungeon entry (id + type)
         data << uint32(0);                                 // Unknown 4.2.2
         data << uint32(0);                                 // Unknown 4.2.2
     }
@@ -39,12 +38,33 @@ void BuildPlayerLockDungeonBlock(WorldPacket& data, const LfgLockMap& lock)
 
 void BuildPartyLockDungeonBlock(WorldPacket& data, const LfgLockPartyMap& lockMap)
 {
-    data << uint8(lockMap.size());
+    ByteBuffer dataBuffer;
+    data.WriteBits(lockMap.size(), 24);
+    data.WriteBit(0);
     for (LfgLockPartyMap::const_iterator it = lockMap.begin(); it != lockMap.end(); ++it)
     {
-        data << uint64(it->first);                         // Player guid
-        BuildPlayerLockDungeonBlock(data, it->second);
+        ObjectGuid guid = it->first;                         // Player guid
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[4]);
+        data.WriteBit(guid[5]);
+        data.WriteBit(guid[2]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[7]);
+        data.WriteBits(it->second.size(), 22); // Size of lock dungeons
+        data.WriteBit(guid[1]);
+        dataBuffer.WriteByteSeq(guid[2]);
+        dataBuffer.WriteByteSeq(guid[3]);
+        dataBuffer.WriteByteSeq(guid[7]);
+        dataBuffer.WriteByteSeq(guid[5]);
+        BuildPlayerLockDungeonBlock(dataBuffer, it->second);
+        dataBuffer.WriteByteSeq(guid[6]);
+        dataBuffer.WriteByteSeq(guid[4]);
+        dataBuffer.WriteByteSeq(guid[0]);
+        dataBuffer.WriteByteSeq(guid[1]);
     }
+    data.FlushBits();
+    data.append(dataBuffer);
 }
 
 void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
@@ -57,13 +77,18 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
         return;
     }
 
-    uint8 numDungeons;
+    uint32 numDungeons;
     uint32 dungeon;
     uint32 roles;
-
+    uint8 length = 0;
+    uint8 unk8 = 0;
+    for (int i = 0; i < 3; i++)
+        recvData.read_skip<uint32>();
+    recvData >> unk8;
     recvData >> roles;
-    recvData.read_skip<uint16>();                        // uint8 (always 0) - uint8 (always 0)
-    recvData >> numDungeons;
+    length = recvData.ReadBits(10);
+    numDungeons = recvData.ReadBits(24);
+    recvData.FlushBits();
     if (!numDungeons)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LFG_JOIN [" UI64FMTD "] no dungeons selected", GetPlayer()->GetGUID());
@@ -72,16 +97,13 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
     }
 
     LfgDungeonSet newDungeons;
-    for (int8 i = 0; i < numDungeons; ++i)
+    for (uint32 i = 0; i < numDungeons; ++i)
     {
         recvData >> dungeon;
         newDungeons.insert((dungeon & 0x00FFFFFF));       // remove the type from the dungeon entry
     }
+    std::string comment = recvData.ReadString(length);
 
-    recvData.read_skip<uint32>();                        // for 0..uint8 (always 3) { uint8 (always 0) }
-
-    std::string comment;
-    recvData >> comment;
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LFG_JOIN [" UI64FMTD "] roles: %u, Dungeons: %u, Comment: %s", GetPlayer()->GetGUID(), roles, uint8(newDungeons.size()), comment.c_str());
     sLFGMgr->Join(GetPlayer(), uint8(roles), newDungeons, comment);
 }
@@ -451,9 +473,19 @@ void WorldSession::SendLfgJoinResult(const LfgJoinResultData& joinData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_JOIN_RESULT [" UI64FMTD "] checkResult: %u checkValue: %u", GetPlayer()->GetGUID(), joinData.result, joinData.state);
     WorldPacket data(SMSG_LFG_JOIN_RESULT, 4 + 4 + size);
     data << uint32(joinData.result);                       // Check Result
+    data << uint8(0);
+    data << uint8(0);
     data << uint32(joinData.state);                        // Check Value
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
+    data.WriteBit(0);
     if (!joinData.lockmap.empty())
         BuildPartyLockDungeonBlock(data, joinData.lockmap);
+
     SendPacket(&data);
 }
 
