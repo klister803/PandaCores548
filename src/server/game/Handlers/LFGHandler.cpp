@@ -324,8 +324,8 @@ void WorldSession::SendLfgUpdatePlayer(const LfgUpdateData& updateData)
         default:
             break;
     }
-
-    uint64 guid = GetPlayer()->GetGUID();
+    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData.comment, time(NULL), updateData.dungeons, queued, extrainfo);
+    /*uint64 guid = GetPlayer()->GetGUID();
     uint8 size = uint8(updateData.dungeons.size());
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_UPDATE_PLAYER [" UI64FMTD "] updatetype: %u", guid, updateData.updateType);
@@ -344,7 +344,7 @@ void WorldSession::SendLfgUpdatePlayer(const LfgUpdateData& updateData)
                 data << uint32(*it);
         data << updateData.comment;
     }
-    SendPacket(&data);
+    SendPacket(&data);*/
 }
 
 void WorldSession::SendLfgUpdateParty(const LfgUpdateData& updateData)
@@ -492,18 +492,47 @@ void WorldSession::SendLfgJoinResult(const LfgJoinResultData& joinData)
 void WorldSession::SendLfgQueueStatus(uint32 dungeon, int32 waitTime, int32 avgWaitTime, int32 waitTimeTanks, int32 waitTimeHealer, int32 waitTimeDps, uint32 queuedTime, uint8 tanks, uint8 healers, uint8 dps)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_QUEUE_STATUS [" UI64FMTD "] dungeon: %u - waitTime: %d - avgWaitTime: %d - waitTimeTanks: %d - waitTimeHealer: %d - waitTimeDps: %d - queuedTime: %u - tanks: %u - healers: %u - dps: %u", GetPlayer()->GetGUID(), dungeon, waitTime, avgWaitTime, waitTimeTanks, waitTimeHealer, waitTimeDps, queuedTime, tanks, healers, dps);
-
+    ObjectGuid guid = GetPlayer()->GetGUID();
     WorldPacket data(SMSG_LFG_QUEUE_STATUS, 4 + 4 + 4 + 4 + 4 +4 + 1 + 1 + 1 + 4);
     data << uint32(dungeon);                               // Dungeon
-    data << int32(avgWaitTime);                            // Average Wait time
-    data << int32(waitTime);                               // Wait Time
+
     data << int32(waitTimeTanks);                          // Wait Tanks
-    data << int32(waitTimeHealer);                         // Wait Healers
-    data << int32(waitTimeDps);                            // Wait Dps
     data << uint8(tanks);                                  // Tanks needed
+    
+    data << int32(waitTimeHealer);                         // Wait Healers
     data << uint8(healers);                                // Healers needed
+    
+    data << int32(waitTimeDps);                            // Wait Dps
     data << uint8(dps);                                    // Dps needed
-    data << uint32(queuedTime);                            // Player wait time in queue
+
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[1]);
+
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[6]);
+    /*data << int32(avgWaitTime);                            // Average Wait time
+    data << int32(waitTime);                               // Wait Time
+    data << uint32(queuedTime);                            // Player wait time in queue*/
     SendPacket(&data);
 }
 

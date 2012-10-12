@@ -978,7 +978,7 @@ enum Opcodes
     SMSG_LFG_PLAYER_INFO                              = 0,
     SMSG_LFG_PLAYER_REWARD                            = 0,
     SMSG_LFG_PROPOSAL_UPDATE                          = 0xAEE,  // 5.0.5 16048
-    SMSG_LFG_QUEUE_STATUS                             = 0,
+    SMSG_LFG_QUEUE_STATUS                             = 0xE36,
     SMSG_LFG_ROLE_CHECK_UPDATE                        = 0,
     SMSG_LFG_ROLE_CHOSEN                              = 0,
     SMSG_LFG_SLOT_INVALID                             = 0xA40,  // 5.0.5 16048
