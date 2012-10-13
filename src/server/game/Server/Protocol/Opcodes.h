@@ -297,9 +297,7 @@ enum Opcodes
     CMSG_LFG_GET_PLAYER_INFO                          = 0,
     CMSG_LFG_GET_STATUS                               = 0x04D,	// 5.0.5 16048
     CMSG_LFG_JOIN                                     = 0x3D2,  // 5.0.5 16048
-    CMSG_LFG_LEAVE                                    = 0,
-    CMSG_LFG_LFR_JOIN                                 = 0,
-    CMSG_LFG_LFR_LEAVE                                = 0,
+    CMSG_LFG_LEAVE                                    = 0x601,
     CMSG_LFG_PARTY_LOCK_INFO_REQUEST                  = 0,
     CMSG_LFG_PROPOSAL_RESULT                          = 0,
     CMSG_LFG_SET_BOOT_VOTE                            = 0,

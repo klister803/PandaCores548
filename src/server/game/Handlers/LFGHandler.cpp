@@ -100,7 +100,7 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
     for (uint32 i = 0; i < numDungeons; ++i)
     {
         recvData >> dungeon;
-        newDungeons.insert((dungeon & 0x00FFFFFF));       // remove the type from the dungeon entry
+        newDungeons.insert(dungeon);//(dungeon & 0x00FFFFFF));       // remove the type from the dungeon entry
     }
     std::string comment = recvData.ReadString(length);
 
@@ -324,7 +324,7 @@ void WorldSession::SendLfgUpdatePlayer(const LfgUpdateData& updateData)
         default:
             break;
     }
-    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData.comment, time(NULL), updateData.dungeons, queued, extrainfo);
+    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData.comment, time(NULL), updateData.dungeons, false, false);
     /*uint64 guid = GetPlayer()->GetGUID();
     uint8 size = uint8(updateData.dungeons.size());
 
@@ -472,10 +472,10 @@ void WorldSession::SendLfgJoinResult(const LfgJoinResultData& joinData)
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_JOIN_RESULT [" UI64FMTD "] checkResult: %u checkValue: %u", GetPlayer()->GetGUID(), joinData.result, joinData.state);
     WorldPacket data(SMSG_LFG_JOIN_RESULT, 4 + 4 + size);
-    data << uint32(joinData.result);                       // Check Result
-    data << uint8(0);
-    data << uint8(0);
     data << uint32(joinData.state);                        // Check Value
+    data << uint8(0);
+    data << uint8(0);
+    data << uint32(joinData.result);                       // Check Result
     data.WriteBit(0);
     data.WriteBit(0);
     data.WriteBit(0);
@@ -493,6 +493,9 @@ void WorldSession::SendLfgQueueStatus(uint32 dungeon, int32 waitTime, int32 avgW
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_QUEUE_STATUS [" UI64FMTD "] dungeon: %u - waitTime: %d - avgWaitTime: %d - waitTimeTanks: %d - waitTimeHealer: %d - waitTimeDps: %d - queuedTime: %u - tanks: %u - healers: %u - dps: %u", GetPlayer()->GetGUID(), dungeon, waitTime, avgWaitTime, waitTimeTanks, waitTimeHealer, waitTimeDps, queuedTime, tanks, healers, dps);
     ObjectGuid guid = GetPlayer()->GetGUID();
+    LfgQueueInfo* info = sLFGMgr->GetQueueInfoMap()[guid];
+    if (!info)
+        return;
     WorldPacket data(SMSG_LFG_QUEUE_STATUS, 4 + 4 + 4 + 4 + 4 +4 + 1 + 1 + 1 + 4);
     data << uint32(dungeon);                               // Dungeon
 
@@ -505,13 +508,13 @@ void WorldSession::SendLfgQueueStatus(uint32 dungeon, int32 waitTime, int32 avgW
     data << int32(waitTimeDps);                            // Wait Dps
     data << uint8(dps);                                    // Dps needed
 
-    data << uint32(0);
-    data << uint32(0);
-    data << uint32(0);
+    data << uint32(GetPlayer()->GetTeam()); //Queueid
+    data << int32(info->joinTime); //Time
+    data << int32(waitTime); //-1
 
-    data << uint32(0);
-    data << uint32(0);
-    data << uint32(0);
+    data << int32(avgWaitTime); //-1
+    data << uint32(3); //4
+    data << uint32(3); //3
 
     data.WriteBit(guid[4]);
     data.WriteBit(guid[5]);
