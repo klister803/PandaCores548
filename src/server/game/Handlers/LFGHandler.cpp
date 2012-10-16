@@ -739,31 +739,80 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal* p
         }
     }
 
-    data << uint32(dungeonId);                             // Dungeon
+    ObjectGuid playerGUID = guid;
+    ObjectGuid InstanceSaveGUID = MAKE_NEW_GUID(proposalId, 0, HIGHGUID_INSTANCE_SAVE);
+
     data << uint8(pProp->state);                           // Result state
-    data << uint32(proposalId);                            // Internal Proposal ID
+    data << uint32(0x00);                                  // unk id (26228 for random Instances 462)
     data << uint32(completedEncounters);                   // Bosses killed
-    data << uint8(isSameDungeon);                          // Silent (show client window)
-    data << uint8(pProp->players.size());                  // Group size
+    data << uint32(getMSTime());                           // Date
+    data << uint32(0x03);                                  // unk id or flags ? always 3
+    data << uint32(0x00);                                  // unk id (35947 for random Instances 462)
+    data << uint32(dungeonId);                             // Dungeon
+
+    data.WriteBit(playerGUID[2]);
+    data.WriteBit(playerGUID[0]);
+    data.WriteBit(InstanceSaveGUID[0]);
+    data.WriteBit(InstanceSaveGUID[6]);
+    data.WriteBit(playerGUID[5]);
+    data.WriteBit(playerGUID[6]);
+    data.WriteBit(InstanceSaveGUID[2]);
+    data.WriteBit(InstanceSaveGUID[1]);
+    data.WriteBit(playerGUID[7]);
+    data.WriteBit(InstanceSaveGUID[7]);
+    data.WriteBit(InstanceSaveGUID[5]);
+    data.WriteBit(playerGUID[1]);
+    data.WriteBit(InstanceSaveGUID[3]);
+
+    data.WriteBits(pProp->players.size(), 23);
+
+    data.WriteBit(playerGUID[3]);
+    data.WriteBit(isSameDungeon);
 
     for (itPlayer = pProp->players.begin(); itPlayer != pProp->players.end(); ++itPlayer)
     {
-        ppPlayer = itPlayer->second;
-        data << uint32(ppPlayer->role);                    // Role
-        data << uint8(itPlayer->first == guid);            // Self player
+        data.WriteBit(itPlayer->first == guid);            // Self player
+        data.WriteBit(ppPlayer->accept == LFG_ANSWER_AGREE); // Accepted
+
         if (!ppPlayer->groupLowGuid)                       // Player not it a group
         {
-            data << uint8(0);                              // Not in dungeon
-            data << uint8(0);                              // Not same group
+            data.WriteBit(0);                              // Not in dungeon
+            data.WriteBit(0);                              // Not same group
         }
         else
         {
-            data << uint8(ppPlayer->groupLowGuid == dLowGuid);  // In dungeon (silent)
-            data << uint8(ppPlayer->groupLowGuid == pLowGroupGuid); // Same Group than player
+            data.WriteBit(ppPlayer->groupLowGuid == dLowGuid);  // In dungeon (silent)
+            data.WriteBit(ppPlayer->groupLowGuid == pLowGroupGuid); // Same Group than player
         }
-        data << uint8(ppPlayer->accept != LFG_ANSWER_PENDING); // Answered
-        data << uint8(ppPlayer->accept == LFG_ANSWER_AGREE); // Accepted
+
+        data.WriteBit(ppPlayer->accept != LFG_ANSWER_PENDING); // Answered
     }
+
+    data.WriteBit(InstanceSaveGUID[4]);
+    data.WriteBit(playerGUID[6]);
+
+    data.WriteByteSeq(InstanceSaveGUID[1]);
+    data.WriteByteSeq(playerGUID[1]);
+    data.WriteByteSeq(InstanceSaveGUID[0]);
+    data.WriteByteSeq(playerGUID[7]);
+    data.WriteByteSeq(InstanceSaveGUID[7]);
+    data.WriteByteSeq(playerGUID[5]);
+    data.WriteByteSeq(InstanceSaveGUID[3]);
+
+
+    for (itPlayer = pProp->players.begin(); itPlayer != pProp->players.end(); ++itPlayer)
+        data << uint32(ppPlayer->role);                    // Role
+
+    data.WriteByteSeq(playerGUID[2]);
+    data.WriteByteSeq(InstanceSaveGUID[4]);
+    data.WriteByteSeq(playerGUID[3]);
+    data.WriteByteSeq(InstanceSaveGUID[6]);
+    data.WriteByteSeq(InstanceSaveGUID[5]);
+    data.WriteByteSeq(playerGUID[6]);
+    data.WriteByteSeq(playerGUID[0]);
+    data.WriteByteSeq(InstanceSaveGUID[2]);
+    data.WriteByteSeq(playerGUID[4]);
+
     SendPacket(&data);
 }
 
