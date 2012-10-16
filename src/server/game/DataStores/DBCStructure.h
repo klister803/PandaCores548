@@ -1366,7 +1366,7 @@ struct ItemSetEntry
     uint32    required_skill_id;                            // 35       m_requiredSkill
     uint32    required_skill_value;                         // 36       m_requiredSkillRank
 };
-
+//nxiiiiiiixixxixixxixxxx
 struct LFGDungeonEntry
 {
     uint32  ID;                                             // 0
@@ -1379,12 +1379,13 @@ struct LFGDungeonEntry
     int32  map;                                             // 7
     uint32  difficulty;                                     // 8
     //uint32  unk;                                          // 9
-    //uint32  unk505;                                       // 10
-    //uint32  unk5052;                                      // 11
     uint32  type;                                           // 12
-    //uint32  unk2;                                         // 13
+    //uint32  unk505;                                       // 10
     //char*   unk3;                                         // 14
     uint32  expansion;                                      // 15
+    //uint32  unk2;                                         // 13
+    uint32 flags;
+    //char* unk
     //uint32  unk4;                                         // 16
     uint32  grouptype;                                      // 17
     //char*   desc;                                         // 18 Description

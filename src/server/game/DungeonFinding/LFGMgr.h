@@ -306,7 +306,8 @@ class LFGMgr
         void SetRoles(uint64 guid, uint8 roles);
         void SetSelectedDungeons(uint64 guid, const LfgDungeonSet& dungeons);
 
-        void SendUpdateStatus(Player*, std::string&);
+        void SendUpdateStatus(Player*, const std::string&, uint32, const LfgDungeonSet& selectedDungeons, bool join, bool quit);
+        LfgQueueInfoMap GetQueueInfoMap() const { return m_QueueInfoMap; }
 
     private:
 

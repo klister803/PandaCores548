@@ -340,7 +340,9 @@ void LFGMgr::Update(uint32 diff)
 
             for (LfgRolesMap::const_iterator itPlayer = queue->roles.begin(); itPlayer != queue->roles.end(); ++itPlayer)
                 if (Player* player = ObjectAccessor::FindPlayer(itPlayer->first))
+                {
                     player->GetSession()->SendLfgQueueStatus(dungeonId, waitTime, m_WaitTimeAvg, m_WaitTimeTank, m_WaitTimeHealer, m_WaitTimeDps, queuedTime, queue->tanks, queue->healers, queue->dps);
+                }
         }
     }
     else
@@ -565,7 +567,7 @@ void LFGMgr::Join(Player* player, uint8 roles, const LfgDungeonSet& selectedDung
         bool isDungeon = false;
         for (LfgDungeonSet::const_iterator it = dungeons.begin(); it != dungeons.end() && joinData.result == LFG_JOIN_OK; ++it)
         {
-            switch (GetDungeonType(*it))
+            switch (GetDungeonType(*it & 0x00FFFFFF))
             {
                 case LFG_TYPE_RANDOM:
                     if (dungeons.size() > 1)               // Only allow 1 random dungeon
@@ -675,7 +677,8 @@ void LFGMgr::Join(Player* player, uint8 roles, const LfgDungeonSet& selectedDung
 
         // Send update to player
         player->GetSession()->SendLfgJoinResult(joinData);
-        player->GetSession()->SendLfgUpdatePlayer(LfgUpdateData(LFG_UPDATETYPE_JOIN_PROPOSAL, dungeons, comment));
+        SendUpdateStatus(player, comment, pqInfo->joinTime, dungeons, true, false);
+        //player->GetSession()->SendLfgUpdatePlayer(LfgUpdateData(LFG_UPDATETYPE_JOIN_PROPOSAL, dungeons, comment));
         SetState(gguid, LFG_STATE_QUEUED);
         SetRoles(guid, roles);
         if (!isContinue)
@@ -712,8 +715,9 @@ void LFGMgr::Leave(Player* player, Group* grp /* = NULL*/)
     {
         case LFG_STATE_QUEUED:
             {
-                RemoveFromQueue(guid);
                 LfgUpdateData updateData = LfgUpdateData(LFG_UPDATETYPE_REMOVED_FROM_QUEUE);
+                SendUpdateStatus(player, updateData.comment, time(NULL), updateData.dungeons, false, true);
+                RemoveFromQueue(guid);
                 if (grp)
                 {
                     RestoreState(guid);
@@ -727,7 +731,7 @@ void LFGMgr::Leave(Player* player, Group* grp /* = NULL*/)
                 }
                 else
                 {
-                    player->GetSession()->SendLfgUpdatePlayer(updateData);
+                    //player->GetSession()->SendLfgUpdatePlayer(updateData);
                     ClearState(guid);
                 }
             }
@@ -1851,22 +1855,25 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
         player->GetSession()->SendLfgTeleportError(uint8(error));
 }
 
-void LFGMgr::SendUpdateStatus(Player* player, std::string& comment)
+void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, uint32 joinDate, const LfgDungeonSet& selectedDungeons, bool pause, bool quit)
 {
     ObjectGuid guid = player->GetGUID();
+    LfgQueueInfo* info = m_QueueInfoMap[guid];
+    if (!info)
+        return;
     WorldPacket data(SMSG_LFG_UPDATE_STATUS);
-    data.WriteBit(0);       //unk bit
+    data.WriteBit(1);       //unk bit, lfg join ? always 1
     data.WriteBits(comment.size(), 9);   //unk NameLen
     data.WriteBit(guid[0]);       //unk guid0
     data.WriteBit(guid[6]);       //unk guid6
     data.WriteBit(guid[7]);       //unk guid7
-    data.WriteBit(0);       //unk bit
-    data.WriteBits(0, 24);  //unk count
+    data.WriteBit(!quit);       //display or not the lfr button, lfg join ?, 0 for last one
+    data.WriteBits(selectedDungeons.size(), 24);  //unk count
     data.WriteBit(guid[5]);       //unk guid5
     data.WriteBit(guid[2]);       //unk guid2
-    data.WriteBit(0);       //unk
-    data.WriteBit(0);       //unk bit
-    data.WriteBit(0);       //unk bit
+    data.WriteBit(0);       //unk, always 0 ?             
+    data.WriteBit(0);       //unk bit, lfg join ?   --1 on first packet, then 0
+    data.WriteBit(1);       //!Pause               --0 on first packet, 1 on second, 0 for last one
     data.WriteBit(guid[4]);       //unk guid4
     data.WriteBit(guid[3]);       //unk guid3
     data.WriteBit(guid[1]);       //unk guid1
@@ -1874,20 +1881,24 @@ void LFGMgr::SendUpdateStatus(Player* player, std::string& comment)
     data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(guid[6]);
     data.WriteByteSeq(guid[5]);
-    data << uint8(0);       //unk byte
+    data << uint8(13);       //unk byte, 24, 13, doesn't depend on the player
     data.WriteString(comment);
-    for (int i = 0; i < 0; ++i)
-        data << uint32(0);
+    
+    for (auto i = selectedDungeons.begin(); i != selectedDungeons.end(); ++i)
+        data << uint32(*i); //Dungeon entries
+
     data.WriteByteSeq(guid[0]);
     data.WriteByteSeq(guid[2]);
-    data << uint32(0);      //unk32
+    data << uint32(3);      //unk32
     data.WriteByteSeq(guid[4]);
-    data << uint32(0);      //unk32
-    data << uint8(0);       //unk byte
+    data << uint32(info->joinTime);
+    data.WriteByteSeq(guid[1]);
+    data << uint32(player->GetTeam());      //queueId
+    data << uint8(1);       //unk byte, 0 most of the time
     data.WriteByteSeq(guid[7]);
-    data << uint32(0);      //unk32
+    data << uint32(8);      //unk32; 8 most of the time
     for (int i = 0; i < 3; ++i)
-        data << uint8(0);   //unk8
+        data << uint8(0);   //unk8 always 0 ?
     player->GetSession()->SendPacket(&data);
 }
 
