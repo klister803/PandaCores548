@@ -124,7 +124,10 @@ void WorldSession::HandleLfgProposalResultOpcode(WorldPacket& recvData)
     uint32 lfgGroupID;                                     // Internal lfgGroupID
     bool accept;                                           // Accept to join?
     recvData >> lfgGroupID;
-    recvData >> accept;
+    accept = recvData.ReadBit();
+
+    // Osef du GUID
+    recvData.rfinish();
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LFG_PROPOSAL_RESULT [" UI64FMTD "] proposal: %u accept: %u", GetPlayer()->GetGUID(), lfgGroupID, accept ? 1 : 0);
     sLFGMgr->UpdateProposal(lfgGroupID, GetPlayer()->GetGUID(), accept);
@@ -132,8 +135,11 @@ void WorldSession::HandleLfgProposalResultOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleLfgSetRolesOpcode(WorldPacket& recvData)
 {
-    uint8 roles;
+    uint32 roles;
+    uint8 unk;
     recvData >> roles;                                    // Player Group Roles
+    recvData >> unk;
+
     uint64 guid = GetPlayer()->GetGUID();
     Group* grp = GetPlayer()->GetGroup();
     if (!grp)
@@ -740,14 +746,14 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal* p
     }
 
     ObjectGuid playerGUID = guid;
-    ObjectGuid InstanceSaveGUID = MAKE_NEW_GUID(proposalId, 0, HIGHGUID_INSTANCE_SAVE);
+    ObjectGuid InstanceSaveGUID = MAKE_NEW_GUID(dungeonId, 0, HIGHGUID_INSTANCE_SAVE);
 
     data << uint8(pProp->state);                           // Result state
-    data << uint32(0x00);                                  // unk id (26228 for random Instances 462)
+    data << uint32(GetPlayer()->GetTeam());                // Queue Id
     data << uint32(completedEncounters);                   // Bosses killed
     data << uint32(getMSTime());                           // Date
     data << uint32(0x03);                                  // unk id or flags ? always 3
-    data << uint32(0x00);                                  // unk id (35947 for random Instances 462)
+    data << uint32(proposalId);                            // Proposal Id
     data << uint32(dungeonId);                             // Dungeon
 
     data.WriteBit(playerGUID[2]);
