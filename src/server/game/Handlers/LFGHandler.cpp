@@ -778,20 +778,20 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal* p
     for (itPlayer = pProp->players.begin(); itPlayer != pProp->players.end(); ++itPlayer)
     {
         data.WriteBit(itPlayer->first == guid);            // Self player
-        data.WriteBit(ppPlayer->accept == LFG_ANSWER_AGREE); // Accepted
+        data.WriteBit(itPlayer->second->accept == LFG_ANSWER_AGREE); // Accepted
 
-        if (!ppPlayer->groupLowGuid)                       // Player not it a group
+        if (!itPlayer->second->groupLowGuid)                       // Player not it a group
         {
             data.WriteBit(0);                              // Not in dungeon
             data.WriteBit(0);                              // Not same group
         }
         else
         {
-            data.WriteBit(ppPlayer->groupLowGuid == dLowGuid);  // In dungeon (silent)
-            data.WriteBit(ppPlayer->groupLowGuid == pLowGroupGuid); // Same Group than player
+            data.WriteBit(itPlayer->second->groupLowGuid == dLowGuid);  // In dungeon (silent)
+            data.WriteBit(itPlayer->second->groupLowGuid == pLowGroupGuid); // Same Group than player
         }
 
-        data.WriteBit(ppPlayer->accept != LFG_ANSWER_PENDING); // Answered
+        data.WriteBit(itPlayer->second->accept!= LFG_ANSWER_PENDING); // Answered
     }
 
     data.WriteBit(InstanceSaveGUID[4]);
@@ -807,7 +807,7 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal* p
 
 
     for (itPlayer = pProp->players.begin(); itPlayer != pProp->players.end(); ++itPlayer)
-        data << uint32(ppPlayer->role);                    // Role
+        data << uint32(itPlayer->second->role);                    // Role
 
     data.WriteByteSeq(playerGUID[2]);
     data.WriteByteSeq(InstanceSaveGUID[4]);
