@@ -644,13 +644,14 @@ void LFGMgr::Join(Player* player, uint8 roles, const LfgDungeonSet& selectedDung
 
         SetState(gguid, LFG_STATE_ROLECHECK);
         // Send update to player
+        uint32 joinTime = time(NULL);
         LfgUpdateData updateData = LfgUpdateData(LFG_UPDATETYPE_JOIN_PROPOSAL, dungeons, comment);
         for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
         {
             if (Player* plrg = itr->getSource())
             {
                 uint64 pguid = plrg->GetGUID();
-                plrg->GetSession()->SendLfgUpdateParty(updateData);
+                plrg->GetSession()->SendLfgUpdateParty(updateData, joinTime);
                 SetState(pguid, LFG_STATE_ROLECHECK);
                 if (!isContinue)
                     SetSelectedDungeons(pguid, dungeons);
@@ -1420,7 +1421,7 @@ void LFGMgr::UpdateProposal(uint32 proposalId, uint64 guid, bool accept)
         }
 
         // Set the dungeon difficulty
-        LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(pProposal->dungeonId);
+        LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(pProposal->dungeonId & 0xFFFF);
         ASSERT(dungeon);
 
         // Create a new group (if needed)
@@ -1859,7 +1860,7 @@ void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, uint32
 {
     ObjectGuid guid = player->GetGUID();
     LfgQueueInfo* info = m_QueueInfoMap[guid];
-    if (!info)
+    if (joinDate == 0 && !info)
         return;
     WorldPacket data(SMSG_LFG_UPDATE_STATUS);
     data.WriteBit(1);       //unk bit, lfg join ? always 1
@@ -1891,7 +1892,10 @@ void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, uint32
     data.WriteByteSeq(guid[2]);
     data << uint32(3);      //unk32
     data.WriteByteSeq(guid[4]);
-    data << uint32(info->joinTime);
+    if (joinDate != 0)
+        data << uint32(joinDate);
+    else
+        data << uint32(info->joinTime);
     data.WriteByteSeq(guid[1]);
     data << uint32(player->GetTeam());      //queueId
     data << uint8(1);       //unk byte, 0 most of the time
