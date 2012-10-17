@@ -124,6 +124,29 @@ void WorldSession::HandleLfgProposalResultOpcode(WorldPacket& recvData)
     uint32 lfgGroupID;                                     // Internal lfgGroupID
     bool accept;                                           // Accept to join?
     recvData >> lfgGroupID;
+    recvData.read_skip<uint32>();
+    recvData.read_skip<uint32>();
+    recvData.read_skip<uint32>();
+    ObjectGuid unk;
+    unk[5] = recvData.ReadBit();
+    unk[1] = recvData.ReadBit();
+    unk[0] = recvData.ReadBit();
+    unk[2] = recvData.ReadBit();
+    unk[4] = recvData.ReadBit();
+    unk[6] = recvData.ReadBit();
+    unk[3] = recvData.ReadBit();
+    unk[7] = recvData.ReadBit();
+
+    recvData.ReadByteSeq(unk[4]);
+    recvData.ReadByteSeq(unk[1]);
+    recvData.ReadByteSeq(unk[2]);
+    recvData.ReadByteSeq(unk[5]);
+    recvData.ReadByteSeq(unk[0]);
+    recvData.ReadByteSeq(unk[7]);
+    recvData.ReadByteSeq(unk[3]);
+    recvData.ReadByteSeq(unk[6]);
+
+    recvData.ReadBits(3);
     accept = recvData.ReadBit();
 
     // Osef du GUID
@@ -353,7 +376,7 @@ void WorldSession::SendLfgUpdatePlayer(const LfgUpdateData& updateData)
     SendPacket(&data);*/
 }
 
-void WorldSession::SendLfgUpdateParty(const LfgUpdateData& updateData)
+void WorldSession::SendLfgUpdateParty(const LfgUpdateData& updateData, uint32 joinTime)
 {
     bool join = false;
     bool extrainfo = false;
@@ -383,9 +406,9 @@ void WorldSession::SendLfgUpdateParty(const LfgUpdateData& updateData)
 
     uint64 guid = GetPlayer()->GetGUID();
     uint8 size = uint8(updateData.dungeons.size());
-
+    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData.comment, joinTime, updateData.dungeons, false, false);
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_UPDATE_PARTY [" UI64FMTD "] updatetype: %u", guid, updateData.updateType);
-    WorldPacket data(SMSG_LFG_UPDATE_PARTY, 1 + 1 + (extrainfo ? 1 : 0) * (1 + 1 + 1 + 1 + 1 + size * 4 + updateData.comment.length()));
+    /*WorldPacket data(SMSG_LFG_UPDATE_PARTY, 1 + 1 + (extrainfo ? 1 : 0) * (1 + 1 + 1 + 1 + 1 + size * 4 + updateData.comment.length()));
     data << uint8(updateData.updateType);                 // Lfg Update type
     data << uint8(extrainfo);                             // Extra info
     if (extrainfo)
@@ -403,7 +426,7 @@ void WorldSession::SendLfgUpdateParty(const LfgUpdateData& updateData)
                 data << uint32(*it);
         data << updateData.comment;
     }
-    SendPacket(&data);
+    SendPacket(&data);*/
 }
 
 void WorldSession::SendLfgRoleChosen(uint64 guid, uint8 roles)
@@ -574,6 +597,8 @@ void WorldSession::SendLfgQueueStatus(uint32 dungeon, int32 waitTime, int32 avgW
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_QUEUE_STATUS [" UI64FMTD "] dungeon: %u - waitTime: %d - avgWaitTime: %d - waitTimeTanks: %d - waitTimeHealer: %d - waitTimeDps: %d - queuedTime: %u - tanks: %u - healers: %u - dps: %u", GetPlayer()->GetGUID(), dungeon, waitTime, avgWaitTime, waitTimeTanks, waitTimeHealer, waitTimeDps, queuedTime, tanks, healers, dps);
     ObjectGuid guid = GetPlayer()->GetGUID();
+    if (GetPlayer()->GetGroup())
+        guid = GetPlayer()->GetGroup()->GetGUID();
     LfgQueueInfo* info = sLFGMgr->GetQueueInfoMap()[guid];
     if (!info)
         return;

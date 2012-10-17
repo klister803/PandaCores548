@@ -856,7 +856,7 @@ class WorldSession
         void HandleLfrLeaveOpcode(WorldPacket& recvData);
 
         void SendLfgUpdatePlayer(const LfgUpdateData& updateData);
-        void SendLfgUpdateParty(const LfgUpdateData& updateData);
+        void SendLfgUpdateParty(const LfgUpdateData& updateData, uint32 joinTime = 0);
         void SendLfgRoleChosen(uint64 guid, uint8 roles);
         void SendLfgRoleCheckUpdate(const LfgRoleCheck* pRoleCheck);
         void SendLfgUpdateSearch(bool update);

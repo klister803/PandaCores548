@@ -511,10 +511,10 @@ enum Opcodes
     CMSG_STOP_DANCE                                   = 0xCF6,  // 5.0.5 16048
     CMSG_STORE_LOOT_IN_SLOT                           = 0x000,  // 5.0.5 16048
     CMSG_SUBMIT_BUG                                   = 0x3D3,  // 5.0.5 16048
-    CMSG_SUBMIT_COMPLAIN                              = 0,
+    CMSG_SUBMIT_COMPLAIN                              = 0x000,  // 5.0.5 16048 Deprecated ?
     CMSG_SUGGESTION_SUBMIT                            = 0x001,  // 5.0.5 16048
     CMSG_SUMMON_RESPONSE                              = 0xCFE,  // 5.0.5 16048
-    CMSG_SUSPEND_TOKEN                                = 0,
+    CMSG_SUSPEND_TOKEN                                = 0x000,  // 5.0.5 16048 Unused
     CMSG_SWAP_INV_ITEM                                = 0x810,	// 5.0.5 16048
     CMSG_SWAP_ITEM                                    = 0x89C,	// 5.0.5 16048
     CMSG_SYNC_DANCE                                   = 0x870,  // 5.0.5 16048
@@ -569,7 +569,7 @@ enum Opcodes
     MSG_CHANNEL_START                                 = 0x831,  // 5.0.5 16048
     MSG_CHANNEL_UPDATE                                = 0x8ED,  // 5.0.5 16048
     MSG_GM_BIND_OTHER                                 = 0x000,  // 5.0.5 16048
-    MSG_QUERY_GUILD_BANK_TEXT                         = 0,
+    MSG_QUERY_GUILD_BANK_TEXT                         = 0x000,  // 5.0.5 16048 Splited in CMSG and SMSG
     MSG_GM_SHOWLABEL                                  = 0x000,  // 5.0.5 16048
     MSG_GM_SUMMON                                     = 0x000,  // 5.0.5 16048
     MSG_GUILD_BANK_LOG_QUERY                          = 0x000,  // 5.0.5 16048 deprecated, now it's splited in CMSG and SMSG
