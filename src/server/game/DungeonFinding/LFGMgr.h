@@ -307,7 +307,15 @@ class LFGMgr
         void SetSelectedDungeons(uint64 guid, const LfgDungeonSet& dungeons);
 
         void SendUpdateStatus(Player*, const std::string&, uint32, const LfgDungeonSet& selectedDungeons, bool join, bool quit);
-        LfgQueueInfoMap GetQueueInfoMap() const { return m_QueueInfoMap; }
+
+        LfgQueueInfo* GetLfgQueueInfo(uint64 guid) const
+        {
+            LfgQueueInfoMap::const_iterator itr = m_QueueInfoMap.find(guid);
+            if(itr != m_QueueInfoMap.end())
+                return itr->second;
+
+            return NULL;
+        }
 
     private:
 
