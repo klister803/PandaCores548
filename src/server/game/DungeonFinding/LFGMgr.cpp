@@ -520,7 +520,10 @@ void LFGMgr::Join(Player* player, uint8 roles, const LfgDungeonSet& selectedDung
             return;
         }
         else // Remove from queue and rejoin
+        {
+            SendUpdateStatus(player, GetComment(player->GetGUID()), playerDungeons, false, true);
             RemoveFromQueue(gguid);
+        }
     }
 
     // Check player or group member restrictions
@@ -677,7 +680,7 @@ void LFGMgr::Join(Player* player, uint8 roles, const LfgDungeonSet& selectedDung
 
         // Send update to player
         player->GetSession()->SendLfgJoinResult(joinData);
-        SendUpdateStatus(player, comment, pqInfo->joinTime, dungeons, true, false);
+        SendUpdateStatus(player, comment, dungeons, true, false);
         //player->GetSession()->SendLfgUpdatePlayer(LfgUpdateData(LFG_UPDATETYPE_JOIN_PROPOSAL, dungeons, comment));
         SetState(gguid, LFG_STATE_QUEUED);
         SetRoles(guid, roles);
@@ -716,8 +719,7 @@ void LFGMgr::Leave(Player* player, Group* grp /* = NULL*/)
         case LFG_STATE_QUEUED:
             {
                 LfgUpdateData updateData = LfgUpdateData(LFG_UPDATETYPE_REMOVED_FROM_QUEUE);
-                SendUpdateStatus(player, updateData.comment, time(NULL), updateData.dungeons, false, true);
-                RemoveFromQueue(guid);
+                SendUpdateStatus(player, updateData.comment, updateData.dungeons, false, true);
                 if (grp)
                 {
                     RestoreState(guid);
@@ -734,6 +736,7 @@ void LFGMgr::Leave(Player* player, Group* grp /* = NULL*/)
                     //player->GetSession()->SendLfgUpdatePlayer(updateData);
                     ClearState(guid);
                 }
+                RemoveFromQueue(guid);
             }
             break;
         case LFG_STATE_ROLECHECK:
@@ -866,6 +869,8 @@ bool LFGMgr::CheckCompatibility(LfgGuidList check, LfgProposal*& pProposal)
         if (itQueue == m_QueueInfoMap.end() || GetState(guid) != LFG_STATE_QUEUED)
         {
             sLog->outError(LOG_FILTER_LFG, "LFGMgr::CheckCompatibility: [" UI64FMTD "] is not queued but listed as queued!", (*it));
+            if(Player* plr = ObjectAccessor::FindPlayer(guid))
+                SendUpdateStatus(plr, GetComment(guid), itQueue->second->dungeons, false, true);
             RemoveFromQueue(guid);
             return false;
         }
@@ -1137,6 +1142,7 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
                 continue;
             case LFG_ROLECHECK_FINISHED:
                 SetState(pguid, LFG_STATE_QUEUED);
+                plrg->GetSession()->SendLfgUpdateParty(LfgUpdateData(LFG_UPDATETYPE_REMOVED_FROM_QUEUE, dungeons, GetComment(pguid)));
                 plrg->GetSession()->SendLfgUpdateParty(LfgUpdateData(LFG_UPDATETYPE_ADDED_TO_QUEUE, dungeons, GetComment(pguid)));
                 break;
             default:
@@ -1865,12 +1871,14 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
         player->GetSession()->SendLfgTeleportError(uint8(error));
 }
 
-void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, uint32 joinDate, const LfgDungeonSet& selectedDungeons, bool pause, bool quit)
+void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, const LfgDungeonSet& selectedDungeons, bool pause, bool quit)
 {
     LfgQueueInfo* info = NULL;
     ObjectGuid guid = player->GetGUID();
 
-    LfgQueueInfoMap::iterator itr = m_QueueInfoMap.find(player->GetGroup() ? player->GetGroup()->GetGUID() : guid);
+    LfgQueueInfoMap::iterator itr = m_QueueInfoMap.find(guid);
+    if(itr == m_QueueInfoMap.end() && player->GetGroup())
+        itr = m_QueueInfoMap.find(player->GetGroup()->GetGUID());
 
     info = itr != m_QueueInfoMap.end() ? itr->second : NULL;
     if (!info)
