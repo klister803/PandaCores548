@@ -184,7 +184,7 @@ enum Opcodes
     CMSG_DISMISS_CRITTER                              = 0x87C,  // 5.0.5 16048
     CMSG_DUEL_ACCEPTED                                = 0xD40,  // 5.0.5 16048
     CMSG_DUEL_CANCELLED                               = 0xC85,  // 5.0.5 16048
-    CMSG_DUNGEON_FINDER_GET_SYSTEM_INFO               = 0x44A,  // 5.0.5 16048
+    CMSG_LFD_PLAYER_LOCK_INFO_REQUEST                 = 0x44A,  // 5.0.5 16048
     CMSG_EJECT_PASSENGER                              = 0x71D,  // 5.0.5 16048
     CMSG_EMOTE                                        = 0xC6C,	// 5.0.5 16048
     CMSG_ENABLETAXI                                   = 0x8F8,  // 5.0.5 16048
@@ -971,7 +971,7 @@ enum Opcodes
     SMSG_LFG_OFFER_CONTINUE                           = 0x90B,  // 5.0.5 16048
     SMSG_LFG_OPEN_FROM_GOSSIP                         = 0x000,  // 5.0.5 16048
     SMSG_LFG_PARTY_INFO                               = 0, //deprecated ?
-    SMSG_LFG_PLAYER_INFO                              = 0, //deprecated ?
+    SMSG_LFG_PLAYER_INFO                              = 0x8FF, // 5.0.5 16048
     SMSG_LFG_PLAYER_REWARD                            = 0x8C2,
     SMSG_LFG_PROPOSAL_UPDATE                          = 0xAEE,  // 5.0.5 16048
     SMSG_LFG_QUEUE_STATUS                             = 0xE36,  // 5.0.5 16048

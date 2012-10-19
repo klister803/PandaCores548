@@ -253,7 +253,16 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
             data << uint32(qRew->XPValue(GetPlayer()));
             data << uint32(reward->reward[done].variableMoney);
             data << uint32(reward->reward[done].variableXP);
-            data << uint8(qRew->GetRewItemsCount());
+            // Unk 4.2.2 Part
+            for(int i = 0; i < 9; i++)
+                data << uint32(0);
+            data << uint8(0);
+            for(int i = 0; i < 3; i++)
+                data << uint32(0);
+            data << uint32(0);
+            data << uint32(0);
+            // Unk 4.2.2 Part End
+            data << uint8(qRew->GetRewItemsCount() + qRew->GetRewCurrencyCount());
             if (qRew->GetRewItemsCount())
             {
                 ItemTemplate const* iProto = NULL;
@@ -267,6 +276,23 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
                     data << uint32(qRew->RewardItemId[i]);
                     data << uint32(iProto ? iProto->DisplayInfoID : 0);
                     data << uint32(qRew->RewardItemIdCount[i]);
+                    data << uint8(0); // Is Currency
+                }
+            }
+            if (qRew->GetRewCurrencyCount())
+            {
+                CurrencyTypesEntry const* iCurrencyType = NULL;
+                for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
+                {
+                    if (!qRew->RewardCurrencyId[i])
+                        continue;
+
+                    iCurrencyType = sCurrencyTypesStore.LookupEntry(qRew->RewardCurrencyId[i]);
+
+                    data << uint32(qRew->RewardCurrencyId[i]);
+                    data << uint32(0); // unk for Currency, maybe some display id ?
+                    data << uint32(qRew->RewardCurrencyCount[i]);
+                    data << uint8(1); // Is Currency
                 }
             }
         }
@@ -277,6 +303,15 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
             data << uint32(0);
             data << uint32(0);
             data << uint32(0);
+            // Unk 4.2.2 Part
+            for(int i = 0; i < 9; i++)
+                data << uint32(0);
+            data << uint8(0);
+            for(int i = 0; i < 3; i++)
+                data << uint32(0);
+            data << uint32(0);
+            data << uint32(0);
+            // Unk 4.2.2 Part End
             data << uint8(0);
         }
     }
