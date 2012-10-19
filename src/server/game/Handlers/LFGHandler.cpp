@@ -30,8 +30,8 @@ void BuildPlayerLockDungeonBlock(ByteBuffer& data, const LfgLockMap& lock)
     data << uint32(lock.size());
     for (LfgLockMap::const_iterator it = lock.begin(); it != lock.end(); ++it)
     {
-        data << uint32(it->second);                        // Lock status
         data << uint32(it->first);                         // Dungeon entry (id + type)
+        data << uint32(it->second);                        // Lock status
         data << uint32(0);                                 // Unknown 4.2.2
         data << uint32(0);                                 // Unknown 4.2.2
     }
