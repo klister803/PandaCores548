@@ -395,7 +395,7 @@ void WorldSession::SendLfgUpdatePlayer(const LfgUpdateData& updateData)
         default:
             break;
     }
-    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData.comment, time(NULL), updateData.dungeons, false, quit);
+    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData.comment, updateData.dungeons, false, quit);
     /*uint64 guid = GetPlayer()->GetGUID();
     uint8 size = uint8(updateData.dungeons.size());
 
@@ -424,6 +424,7 @@ void WorldSession::SendLfgUpdateParty(const LfgUpdateData& updateData, uint32 jo
     bool extrainfo = false;
     bool queued = false;
     bool quit = false;
+    bool pause = false;
 
 
     switch (updateData.updateType)
@@ -447,8 +448,11 @@ void WorldSession::SendLfgUpdateParty(const LfgUpdateData& updateData, uint32 jo
             break;
         case LFG_UPDATETYPE_GROUP_DISBAND:
         case LFG_UPDATETYPE_GROUP_FOUND:
+            quit = true;
+            break;
         case LFG_UPDATETYPE_REMOVED_FROM_QUEUE:
             quit = true;
+            pause = true;
             break;
         default:
             break;
@@ -456,7 +460,7 @@ void WorldSession::SendLfgUpdateParty(const LfgUpdateData& updateData, uint32 jo
 
     uint64 guid = GetPlayer()->GetGUID();
     uint8 size = uint8(updateData.dungeons.size());
-    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData.comment, joinTime, updateData.dungeons, false, quit);
+    sLFGMgr->SendUpdateStatus(GetPlayer(), updateData.comment, updateData.dungeons, pause, quit);
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_LFG_UPDATE_PARTY [" UI64FMTD "] updatetype: %u", guid, updateData.updateType);
     /*WorldPacket data(SMSG_LFG_UPDATE_PARTY, 1 + 1 + (extrainfo ? 1 : 0) * (1 + 1 + 1 + 1 + 1 + size * 4 + updateData.comment.length()));
     data << uint8(updateData.updateType);                 // Lfg Update type
