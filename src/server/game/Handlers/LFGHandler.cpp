@@ -27,6 +27,7 @@
 
 void BuildPlayerLockDungeonBlock(ByteBuffer& data, const LfgLockMap& lock)
 {  
+    data << uint32(lock.size());
     for (LfgLockMap::const_iterator it = lock.begin(); it != lock.end(); ++it)
     {
         data << uint32(it->second);                        // Lock status
