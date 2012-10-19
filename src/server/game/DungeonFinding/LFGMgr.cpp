@@ -644,14 +644,13 @@ void LFGMgr::Join(Player* player, uint8 roles, const LfgDungeonSet& selectedDung
 
         SetState(gguid, LFG_STATE_ROLECHECK);
         // Send update to player
-        uint32 joinTime = time(NULL);
         LfgUpdateData updateData = LfgUpdateData(LFG_UPDATETYPE_JOIN_PROPOSAL, dungeons, comment);
         for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
         {
             if (Player* plrg = itr->getSource())
             {
                 uint64 pguid = plrg->GetGUID();
-                plrg->GetSession()->SendLfgUpdateParty(updateData, joinTime);
+                //plrg->GetSession()->SendLfgUpdateParty(updateData, joinTime);
                 SetState(pguid, LFG_STATE_ROLECHECK);
                 if (!isContinue)
                     SetSelectedDungeons(pguid, dungeons);
@@ -1175,6 +1174,13 @@ void LFGMgr::UpdateRoleCheck(uint64 gguid, uint64 guid /* = 0 */, uint8 roles /*
             LfgGuidList& currentQueue = m_currentQueue[team];
             currentQueue.push_front(gguid);
         }
+        for (LfgRolesMap::const_iterator it = check_roles.begin(); it != check_roles.end(); ++it)
+        {
+            Player* plrg = ObjectAccessor::FindPlayer(it->first);
+            if (!plrg)
+                continue;
+            plrg->GetSession()->SendLfgUpdateParty(LfgUpdateData(LFG_UPDATETYPE_ADDED_TO_QUEUE, dungeons, GetComment(plrg->GetGUID())));
+        }
         AddToQueue(gguid, team);
     }
 
@@ -1398,6 +1404,9 @@ void LFGMgr::UpdateProposal(uint32 proposalId, uint64 guid, bool accept)
     else
     {
         bool sendUpdate = pProposal->state != LFG_PROPOSAL_SUCCESS;
+        for (LfgPlayerList::const_iterator it = players.begin(); it != players.end(); ++it)
+            (*it)->GetSession()->SendLfgUpdateProposal(proposalId, pProposal);
+
         pProposal->state = LFG_PROPOSAL_SUCCESS;
         time_t joinTime = time_t(time(NULL));
         std::map<uint64, int32> waitTimesMap;
@@ -1858,10 +1867,15 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
 
 void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, uint32 joinDate, const LfgDungeonSet& selectedDungeons, bool pause, bool quit)
 {
+    LfgQueueInfo* info = NULL;
     ObjectGuid guid = player->GetGUID();
-    LfgQueueInfo* info = m_QueueInfoMap[guid];
-    if (joinDate == 0 && !info)
+
+    LfgQueueInfoMap::iterator itr = m_QueueInfoMap.find(player->GetGroup() ? player->GetGroup()->GetGUID() : guid);
+
+    info = itr != m_QueueInfoMap.end() ? itr->second : NULL;
+    if (!info)
         return;
+
     WorldPacket data(SMSG_LFG_UPDATE_STATUS);
     data.WriteBit(1);       //unk bit, lfg join ? always 1
     data.WriteBits(comment.size(), 9);   //unk NameLen
@@ -1892,10 +1906,7 @@ void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, uint32
     data.WriteByteSeq(guid[2]);
     data << uint32(3);      //unk32
     data.WriteByteSeq(guid[4]);
-    if (joinDate != 0)
-        data << uint32(joinDate);
-    else
-        data << uint32(info->joinTime);
+    data << uint32(info->joinTime);
     data.WriteByteSeq(guid[1]);
     data << uint32(player->GetTeam());      //queueId
     data << uint8(1);       //unk byte, 0 most of the time
