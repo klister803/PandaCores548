@@ -266,25 +266,37 @@ bool Creature::InitEntry(uint32 Entry, uint32 /*team*/, const CreatureData* data
     }
 
     // get difficulty 1 mode entry
+    // Si l'entry heroic du mode de joueur est introuvable, on utilise l'entry du mode normal correpondant au nombre de joueurs du mode
     CreatureTemplate const* cinfo = normalInfo;
-    for (uint8 diff = uint8(GetMap()->GetSpawnMode()); diff > 0;)
+    uint8 diff = uint8(GetMap()->GetSpawnMode());
+    if(diff)
     {
-        // we already have valid Map pointer for current creature!
         if (normalInfo->DifficultyEntry[diff - 1])
         {
             cinfo = sObjectMgr->GetCreatureTemplate(normalInfo->DifficultyEntry[diff - 1]);
-            if (cinfo)
-                break;                                      // template found
 
             // check and reported at startup, so just ignore (restore normalInfo)
-            cinfo = normalInfo;
+            if(!cinfo)
+                cinfo = normalInfo;
         }
 
-        // for instances heroic to normal, other cases attempt to retrieve previous difficulty
-        if (diff >= MAN10_HEROIC_DIFFICULTY && GetMap()->IsRaid())
-            diff -= 2;                                      // to normal raid difficulty cases
-        else
-            --diff;
+        if(cinfo == normalInfo && (diff == MAN25_HEROIC_DIFFICULTY || diff == RAID_TOOL_DIFFICULTY) && normalInfo->DifficultyEntry[MAN25_DIFFICULTY - 1])
+        {
+            cinfo = sObjectMgr->GetCreatureTemplate(normalInfo->DifficultyEntry[MAN25_DIFFICULTY - 1]);
+
+            // check and reported at startup, so just ignore (restore normalInfo)
+            if(!cinfo)
+                cinfo = normalInfo;
+        }
+
+        if(cinfo == normalInfo &&  diff == MAN10_HEROIC_DIFFICULTY && normalInfo->DifficultyEntry[MAN10_DIFFICULTY - 1])
+        {
+            cinfo = sObjectMgr->GetCreatureTemplate(normalInfo->DifficultyEntry[MAN10_DIFFICULTY - 1]);
+
+            // check and reported at startup, so just ignore (restore normalInfo)
+            if(!cinfo)
+                cinfo = normalInfo;
+        }
     }
 
     SetEntry(Entry);                                        // normal entry always

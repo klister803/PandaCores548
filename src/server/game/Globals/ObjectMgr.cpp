@@ -599,11 +599,11 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
                 continue;
             }
 
-            if (_difficultyEntries[diff2].find(cInfo->DifficultyEntry[diff]) != _difficultyEntries[diff2].end())
+            /*if (_difficultyEntries[diff2].find(cInfo->DifficultyEntry[diff]) != _difficultyEntries[diff2].end())
             {
                 sLog->outError(LOG_FILTER_SQL, "Creature (Entry: %u) already listed as `difficulty_entry_%u` for another entry.", cInfo->DifficultyEntry[diff], diff2 + 1);
                 continue;
-            }
+            }*/
 
             if (_hasDifficultyEntries[diff2].find(cInfo->DifficultyEntry[diff]) != _hasDifficultyEntries[diff2].end())
             {
