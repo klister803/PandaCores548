@@ -2129,56 +2129,7 @@ void Player::SendTeleportPacket(Position &oldPos)
     data << float(GetPositionY());
     data << uint32(0);  // counter
     data << float(GetPositionZMinusOffset());
-    /*data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(0);       // unknown
-    data.WriteBit(uint64(transGuid));
-    data.WriteBit(guid[1]);
-    if (transGuid)
-    {
-        data.WriteBit(transGuid[1]);
-        data.WriteBit(transGuid[3]);
-        data.WriteBit(transGuid[2]);
-        data.WriteBit(transGuid[5]);
-        data.WriteBit(transGuid[0]);
-        data.WriteBit(transGuid[7]);
-        data.WriteBit(transGuid[6]);
-        data.WriteBit(transGuid[4]);
-    }
 
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[5]);
-    data.FlushBits();
-
-    if (transGuid)
-    {
-        data.WriteByteSeq(transGuid[6]);
-        data.WriteByteSeq(transGuid[5]);
-        data.WriteByteSeq(transGuid[1]);
-        data.WriteByteSeq(transGuid[7]);
-        data.WriteByteSeq(transGuid[0]);
-        data.WriteByteSeq(transGuid[2]);
-        data.WriteByteSeq(transGuid[4]);
-        data.WriteByteSeq(transGuid[3]);
-    }
-
-    data << uint32(0);  // counter
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[5]);
-    data << float(GetPositionX());
-    data.WriteByteSeq(guid[4]);
-    data << float(GetOrientation());
-    data.WriteByteSeq(guid[7]);
-    data << float(GetPositionZMinusOffset());
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[6]);
-    data << float(GetPositionY());
-    */
     Relocate(&oldPos);
     SendDirectMessage(&data);
 }

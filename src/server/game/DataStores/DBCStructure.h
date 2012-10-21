@@ -1464,7 +1464,7 @@ struct MapEntry
     //uint32  timeOfDayOverride;                            // 14       m_timeOfDayOverride
     uint32  addon;                                          // 15       m_expansionID
     uint32 unk_time;                                        // 16       m_raidOffset
-    //uint32 maxPlayers;                                    // 17       m_maxPlayers
+    uint32 maxPlayers;                                      // 17       m_maxPlayers
     int32 rootPhaseMap;                                     // 18 new 4.0.0, mapid, related to phasing
 
     // Helpers

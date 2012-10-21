@@ -385,8 +385,8 @@ enum Difficulty
 
 #define RAID_DIFFICULTY_MASK_25MAN 1    // since 25man difficulties are 1 and 3, we can check them like that
 
-#define MAX_DUNGEON_DIFFICULTY     HEROIC_DIFFICULTY
-#define MAX_RAID_DIFFICULTY        MAN25_HEROIC_DIFFICULTY
+#define MAX_DUNGEON_DIFFICULTY     HEROIC_DIFFICULTY+1
+#define MAX_RAID_DIFFICULTY        MAN25_HEROIC_DIFFICULTY+1
 #define MAX_DIFFICULTY             MAN40_DIFFICULTY+1
 
 enum SpawnMask
