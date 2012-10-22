@@ -70,14 +70,6 @@ void BuildPartyLockDungeonBlock(WorldPacket& data, const LfgLockPartyMap& lockMa
 
 void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
 {
-    if (!sWorld->getBoolConfig(CONFIG_DUNGEON_FINDER_ENABLE) ||
-        (GetPlayer()->GetGroup() && GetPlayer()->GetGroup()->GetLeaderGUID() != GetPlayer()->GetGUID() &&
-        (GetPlayer()->GetGroup()->GetMembersCount() == MAXGROUPSIZE || !GetPlayer()->GetGroup()->isLFGGroup())))
-    {
-        recvData.rfinish();
-        return;
-    }
-
     uint32 numDungeons;
     uint32 dungeon;
     uint32 roles;
@@ -101,9 +93,27 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
     for (uint32 i = 0; i < numDungeons; ++i)
     {
         recvData >> dungeon;
-        newDungeons.insert(dungeon);//(dungeon & 0x00FFFFFF));       // remove the type from the dungeon entry
+        newDungeons.insert(dungeon);       // remove the type from the dungeon entry
     }
     std::string comment = recvData.ReadString(length);
+
+    const LFGDungeonEntry* entry = sLFGDungeonStore.LookupEntry(*newDungeons.begin() & 0xFFFFFF);
+    uint8 type = LFG_TYPE_DUNGEON;
+    uint8 maxGroupSize = 5;
+    if (entry != NULL)
+        type = entry->difficulty == RAID_TOOL_DIFFICULTY ? LFG_TYPE_RAID : entry->isScenario() ? LFG_TYPE_SCENARIO : LFG_TYPE_DUNGEON;
+    if (type == LFG_TYPE_RAID)
+        maxGroupSize = 25;
+    if (type == LFG_TYPE_SCENARIO)
+        maxGroupSize = 3;
+
+    if (!sWorld->getBoolConfig(CONFIG_DUNGEON_FINDER_ENABLE) ||
+        (GetPlayer()->GetGroup() && GetPlayer()->GetGroup()->GetLeaderGUID() != GetPlayer()->GetGUID() &&
+        (GetPlayer()->GetGroup()->GetMembersCount() == maxGroupSize || !GetPlayer()->GetGroup()->isLFGGroup())))
+    {
+        recvData.rfinish();
+        return;
+    }
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LFG_JOIN [" UI64FMTD "] roles: %u, Dungeons: %u, Comment: %s", GetPlayer()->GetGUID(), roles, uint8(newDungeons.size()), comment.c_str());
     sLFGMgr->Join(GetPlayer(), uint8(roles), newDungeons, comment);

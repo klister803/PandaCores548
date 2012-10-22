@@ -903,9 +903,9 @@ LfgProposal* LFGMgr::FindNewGroups(LfgGuidList& check, LfgGuidList& all, LfgType
 {
     sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::FindNewGroup: (%s) - all(%s)", ConcatenateGuids(check).c_str(), ConcatenateGuids(all).c_str());
 
-    uint8 maxGroupSize = MAXGROUPSIZE;
+    uint8 maxGroupSize = 5;
     if (type == LFG_TYPE_RAID)
-        maxGroupSize = 6;
+        maxGroupSize = 25;
     if (type == LFG_TYPE_SCENARIO)
         maxGroupSize = 3;
 
@@ -936,9 +936,9 @@ bool LFGMgr::CheckCompatibility(LfgGuidList check, LfgProposal*& pProposal, LfgT
     if (pProposal)                                         // Do not check anything if we already have a proposal
         return false;
 
-    uint8 maxGroupSize = MAXGROUPSIZE;
+    uint8 maxGroupSize = 5;
     if (type == LFG_TYPE_RAID)
-        maxGroupSize = 6;
+        maxGroupSize = 25;
     if (type == LFG_TYPE_SCENARIO)
         maxGroupSize = 3;
 
