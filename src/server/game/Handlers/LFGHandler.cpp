@@ -27,11 +27,10 @@
 
 void BuildPlayerLockDungeonBlock(ByteBuffer& data, const LfgLockMap& lock)
 {  
-    data << uint32(lock.size());
     for (LfgLockMap::const_iterator it = lock.begin(); it != lock.end(); ++it)
     {
-        data << uint32(it->first);                         // Dungeon entry (id + type)
         data << uint32(it->second);                        // Lock status
+        data << uint32(it->first);                         // Dungeon entry (id + type)
         data << uint32(0);                                 // Unknown 4.2.2
         data << uint32(0);                                 // Unknown 4.2.2
     }
@@ -254,16 +253,7 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
             data << uint32(qRew->XPValue(GetPlayer()));
             data << uint32(reward->reward[done].variableMoney);
             data << uint32(reward->reward[done].variableXP);
-            // Unk 4.2.2 Part
-            for(int i = 0; i < 9; i++)
-                data << uint32(0);
-            data << uint8(0);
-            for(int i = 0; i < 3; i++)
-                data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-            // Unk 4.2.2 Part End
-            data << uint8(qRew->GetRewItemsCount() + qRew->GetRewCurrencyCount());
+            data << uint8(qRew->GetRewItemsCount());
             if (qRew->GetRewItemsCount())
             {
                 ItemTemplate const* iProto = NULL;
@@ -277,23 +267,6 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
                     data << uint32(qRew->RewardItemId[i]);
                     data << uint32(iProto ? iProto->DisplayInfoID : 0);
                     data << uint32(qRew->RewardItemIdCount[i]);
-                    data << uint8(0); // Is Currency
-                }
-            }
-            if (qRew->GetRewCurrencyCount())
-            {
-                CurrencyTypesEntry const* iCurrencyType = NULL;
-                for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
-                {
-                    if (!qRew->RewardCurrencyId[i])
-                        continue;
-
-                    iCurrencyType = sCurrencyTypesStore.LookupEntry(qRew->RewardCurrencyId[i]);
-
-                    data << uint32(qRew->RewardCurrencyId[i]);
-                    data << uint32(0); // unk for Currency, maybe some display id ?
-                    data << uint32(qRew->RewardCurrencyCount[i]);
-                    data << uint8(1); // Is Currency
                 }
             }
         }
@@ -304,15 +277,6 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
             data << uint32(0);
             data << uint32(0);
             data << uint32(0);
-            // Unk 4.2.2 Part
-            for(int i = 0; i < 9; i++)
-                data << uint32(0);
-            data << uint8(0);
-            for(int i = 0; i < 3; i++)
-                data << uint32(0);
-            data << uint32(0);
-            data << uint32(0);
-            // Unk 4.2.2 Part End
             data << uint8(0);
         }
     }
@@ -495,7 +459,7 @@ void WorldSession::SendLfgRoleChosen(uint64 guid, uint8 roles)
     SendPacket(&data);
 }
 
-void WorldSession::SendLfgRoleCheckUpdate(const LfgRoleCheck* pRoleCheck)
+void WorldSession::SendLfgRoleCheckUpdate(const LfgRoleCheck* pRoleCheck, bool updateAll)
 {
     ASSERT(pRoleCheck);
     LfgDungeonSet dungeons;
@@ -510,7 +474,8 @@ void WorldSession::SendLfgRoleCheckUpdate(const LfgRoleCheck* pRoleCheck)
 
     data.WriteBits(dungeons.size(), 24);
     data.WriteBit(pRoleCheck->state == LFG_ROLECHECK_INITIALITING);
-    data.WriteBits(pRoleCheck->roles.size(), 23);
+    //data.WriteBits(pRoleCheck->roles.size(), 23);
+    data.WriteBits(updateAll ?pRoleCheck->roles.size() : 1, 23);
     if (!pRoleCheck->roles.empty())
     {
         // Player info MUST be sent 1st :S
@@ -540,11 +505,11 @@ void WorldSession::SendLfgRoleCheckUpdate(const LfgRoleCheck* pRoleCheck)
         dataBuffer.WriteByteSeq(guid[4]);
 
 
-        for (LfgRolesMap::const_iterator it = pRoleCheck->roles.begin(); it != pRoleCheck->roles.end(); ++it)
+        for (LfgRolesMap::const_reverse_iterator it = pRoleCheck->roles.rbegin(); it != pRoleCheck->roles.rend(); ++it)
         {
-            if (it->first == GetPlayer()->GetGUID())
+            if (it->first == GetPlayer()->GetGUID() || !updateAll)
                 continue;
-
+        
             guid = it->first;
             roles = it->second;
             player = ObjectAccessor::FindPlayer(guid);
