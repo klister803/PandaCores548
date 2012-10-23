@@ -418,7 +418,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             *data << uint8(bg->GetMaxLevel());          // Max Level
             *data << uint32(bg->GetStatus());           // Status
             *data << uint8(bg->GetMinLevel());          // Min Level
-            *data << uint32(bg->GetStartTime());        // Time since started
+            //*data << uint32(bg->GetStartTime());        // Time since started
             *data << uint32(bg->GetClientInstanceID()); // Client Instance ID
             *data << uint8(bg->GetPlayersCountByTeam(bg->GetPlayerTeam(pPlayer->GetGUID())));   // Teamsize
             
