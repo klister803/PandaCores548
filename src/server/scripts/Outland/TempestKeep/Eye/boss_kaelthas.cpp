@@ -972,11 +972,11 @@ class boss_kaelthas : public CreatureScript
                                                 WorldPacket data(SMSG_MOVE_UNSET_CAN_FLY, 12);
                                                 ObjectGuid guid = unit->GetGUID();
                                                 data.WriteBit(guid[5]);
+                                                data.WriteBit(guid[7]);
                                                 data.WriteBit(guid[2]);
                                                 data.WriteBit(guid[3]);
                                                 data.WriteBit(guid[6]);
                                                 data.WriteBit(guid[0]);
-                                                data.WriteBit(guid[7]);
                                                 data.WriteBit(guid[4]);
                                                 data.WriteBit(guid[1]);
 

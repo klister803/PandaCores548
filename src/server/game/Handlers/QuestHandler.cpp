@@ -251,18 +251,13 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode(WorldPacket& recvData)
         // not sure here what should happen to quests with QUEST_FLAGS_AUTOCOMPLETE
         // if this breaks them, add && object->GetTypeId() == TYPEID_ITEM to this check
         // item-started quests never have that flag
-        if (!_player->CanTakeQuest(quest, true))
+        if (!quest->IsAutoAccept() && !_player->CanTakeQuest(quest, true))
             return;
 
-        if (quest->IsAutoAccept() && _player->CanAddQuest(quest, true))
-        {
-            _player->AddQuest(quest, object);
-            if (_player->CanCompleteQuest(questId))
-                _player->CompleteQuest(questId);
-        }
-
-        if (quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE))
+        if (quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE) || (quest->IsAutoAccept() && _player->GetQuestStatus(questId) != QUEST_STATUS_COMPLETE))
             _player->PlayerTalkClass->SendQuestGiverRequestItems(quest, object->GetGUID(), _player->CanCompleteQuest(quest->GetQuestId()), true);
+        else if(quest->IsAutoAccept() && _player->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
+            _player->PlayerTalkClass->SendQuestGiverOfferReward(quest, object->GetGUID(), true);
         else
             _player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, object->GetGUID(), true);
     }
@@ -519,6 +514,13 @@ void WorldSession::HandleQuestgiverCompleteQuest(WorldPacket& recvData)
         {
             if (quest->IsRepeatable())
                 _player->PlayerTalkClass->SendQuestGiverRequestItems(quest, playerGuid, _player->CanCompleteRepeatableQuest(quest), false);
+            else if (quest->IsAutoAccept() && _player->CanAddQuest(quest, true) && _player->CanTakeQuest(quest, true))
+            {
+                _player->AddQuest(quest, object);
+                if (_player->CanCompleteQuest(questId))
+                    _player->CompleteQuest(questId);
+                 _player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, playerGuid, true);
+            }
             else
                 _player->PlayerTalkClass->SendQuestGiverRequestItems(quest, playerGuid, _player->CanRewardQuest(quest, false), false);
         }
