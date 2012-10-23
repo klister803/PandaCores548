@@ -254,8 +254,10 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode(WorldPacket& recvData)
         if (!quest->IsAutoAccept() && !_player->CanTakeQuest(quest, true))
             return;
 
-        if (quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE) || quest->IsAutoAccept())
+        if (quest->HasFlag(QUEST_FLAGS_AUTOCOMPLETE) || (quest->IsAutoAccept() && _player->GetQuestStatus(questId) != QUEST_STATUS_COMPLETE))
             _player->PlayerTalkClass->SendQuestGiverRequestItems(quest, object->GetGUID(), _player->CanCompleteQuest(quest->GetQuestId()), true);
+        else if(quest->IsAutoAccept() && _player->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
+            _player->PlayerTalkClass->SendQuestGiverOfferReward(quest, object->GetGUID(), true);
         else
             _player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, object->GetGUID(), true);
     }
