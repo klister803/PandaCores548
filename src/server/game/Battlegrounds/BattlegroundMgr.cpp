@@ -190,10 +190,10 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             data->Initialize(SMSG_BATTLEFIELD_STATUS);
             data->WriteBit(guidBytes1[2]);
             data->WriteBit(guidBytes1[7]);
+            data->WriteBit(guidBytes1[0]);
             data->WriteBit(guidBytes1[6]);
             data->WriteBit(guidBytes1[1]);
             data->WriteBit(guidBytes1[5]);
-            data->WriteBit(guidBytes1[0]);
             data->WriteBit(guidBytes1[3]);
             data->WriteBit(guidBytes1[4]);
 
