@@ -70,14 +70,6 @@ void BuildPartyLockDungeonBlock(WorldPacket& data, const LfgLockPartyMap& lockMa
 
 void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
 {
-    if (!sWorld->getBoolConfig(CONFIG_DUNGEON_FINDER_ENABLE) ||
-        (GetPlayer()->GetGroup() && GetPlayer()->GetGroup()->GetLeaderGUID() != GetPlayer()->GetGUID() &&
-        (GetPlayer()->GetGroup()->GetMembersCount() == MAXGROUPSIZE || !GetPlayer()->GetGroup()->isLFGGroup())))
-    {
-        recvData.rfinish();
-        return;
-    }
-
     uint32 numDungeons;
     uint32 dungeon;
     uint32 roles;
@@ -101,9 +93,27 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
     for (uint32 i = 0; i < numDungeons; ++i)
     {
         recvData >> dungeon;
-        newDungeons.insert(dungeon);//(dungeon & 0x00FFFFFF));       // remove the type from the dungeon entry
+        newDungeons.insert(dungeon);       // remove the type from the dungeon entry
     }
     std::string comment = recvData.ReadString(length);
+
+    const LFGDungeonEntry* entry = sLFGDungeonStore.LookupEntry(*newDungeons.begin() & 0xFFFFFF);
+    uint8 type = LFG_TYPE_DUNGEON;
+    uint8 maxGroupSize = 5;
+    if (entry != NULL)
+        type = entry->difficulty == RAID_TOOL_DIFFICULTY ? LFG_TYPE_RAID : entry->isScenario() ? LFG_TYPE_SCENARIO : LFG_TYPE_DUNGEON;
+    if (type == LFG_TYPE_RAID)
+        maxGroupSize = 25;
+    if (type == LFG_TYPE_SCENARIO)
+        maxGroupSize = 3;
+
+    if (!sWorld->getBoolConfig(CONFIG_DUNGEON_FINDER_ENABLE) ||
+        (GetPlayer()->GetGroup() && GetPlayer()->GetGroup()->GetLeaderGUID() != GetPlayer()->GetGUID() &&
+        (GetPlayer()->GetGroup()->GetMembersCount() == maxGroupSize || !GetPlayer()->GetGroup()->isLFGGroup())))
+    {
+        recvData.rfinish();
+        return;
+    }
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LFG_JOIN [" UI64FMTD "] roles: %u, Dungeons: %u, Comment: %s", GetPlayer()->GetGUID(), roles, uint8(newDungeons.size()), comment.c_str());
     sLFGMgr->Join(GetPlayer(), uint8(roles), newDungeons, comment);
@@ -283,6 +293,7 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
             if (qRew->GetRewCurrencyCount())
             {
                 CurrencyTypesEntry const* iCurrencyType = NULL;
+
                 for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
                 {
                     if (!qRew->RewardCurrencyId[i])
@@ -495,7 +506,7 @@ void WorldSession::SendLfgRoleChosen(uint64 guid, uint8 roles)
     SendPacket(&data);
 }
 
-void WorldSession::SendLfgRoleCheckUpdate(const LfgRoleCheck* pRoleCheck)
+void WorldSession::SendLfgRoleCheckUpdate(const LfgRoleCheck* pRoleCheck, bool updateAll)
 {
     ASSERT(pRoleCheck);
     LfgDungeonSet dungeons;
@@ -510,7 +521,8 @@ void WorldSession::SendLfgRoleCheckUpdate(const LfgRoleCheck* pRoleCheck)
 
     data.WriteBits(dungeons.size(), 24);
     data.WriteBit(pRoleCheck->state == LFG_ROLECHECK_INITIALITING);
-    data.WriteBits(pRoleCheck->roles.size(), 23);
+    //data.WriteBits(pRoleCheck->roles.size(), 23);
+    data.WriteBits(updateAll ?pRoleCheck->roles.size() : 1, 23);
     if (!pRoleCheck->roles.empty())
     {
         // Player info MUST be sent 1st :S
@@ -540,11 +552,11 @@ void WorldSession::SendLfgRoleCheckUpdate(const LfgRoleCheck* pRoleCheck)
         dataBuffer.WriteByteSeq(guid[4]);
 
 
-        for (LfgRolesMap::const_iterator it = pRoleCheck->roles.begin(); it != pRoleCheck->roles.end(); ++it)
+        for (LfgRolesMap::const_reverse_iterator it = pRoleCheck->roles.rbegin(); it != pRoleCheck->roles.rend(); ++it)
         {
-            if (it->first == GetPlayer()->GetGUID())
+            if (it->first == GetPlayer()->GetGUID() || !updateAll)
                 continue;
-
+        
             guid = it->first;
             roles = it->second;
             player = ObjectAccessor::FindPlayer(guid);

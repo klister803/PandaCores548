@@ -1991,5 +1991,8 @@ void WorldSession::HandleUpdateMissileTrajectory(WorldPacket& recvPacket)
      recvPacket.ReadByteSeq(guid[4]);
 
      WorldObject* obj = ObjectAccessor::GetWorldObject(*GetPlayer(), guid);
+     if(obj)
+         obj->SendUpdateToPlayer(GetPlayer());
+
      sLog->outError(LOG_FILTER_NETWORKIO, "Object update failed for object "UI64FMTD" (%s) for player %s (%u)", uint64(guid), obj ? obj->GetName() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());
  }
