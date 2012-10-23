@@ -690,7 +690,7 @@ enum Opcodes
     SMSG_BATTLEFIELD_PLAYER_POSITIONS                 = 0,
     SMSG_BATTLEFIELD_PORT_DENIED                      = 0,
     SMSG_BATTLEFIELD_RATED_INFO                       = 0xA84,  // 5.0.5 16048
-    SMSG_BATTLEFIELD_STATUS                           = 0,
+    SMSG_BATTLEFIELD_STATUS                           = 0xF39,  // 5.0.5 16048
     SMSG_BATTLEFIELD_STATUS_QUEUED                    = 0xB88,  // 5.0.5 16048
     SMSG_BATTLEFIELD_STATUS_NEEDCONFIRMATION          = 0xAE3,  // 5.0.5 16048
     SMSG_BATTLEFIELD_STATUS_ACTIVE                    = 0xA33,  // 5.0.5 16048
