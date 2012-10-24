@@ -450,8 +450,8 @@ void WorldSession::HandleForceSpeedChangeAck(WorldPacket &recvData)
 
     // client ACK send one packet for mounted/run case and need skip all except last from its
     // in other cases anti-cheat check can be fail in false case
-    UnitMoveType move_type;
-    UnitMoveType force_move_type;
+    UnitMoveType move_type       = MOVE_WALK;
+    UnitMoveType force_move_type = MOVE_WALK;
 
     static char const* move_type_name[MAX_MOVE_TYPE] = {  "Walk", "Run", "RunBack", "Swim", "SwimBack", "TurnRate", "Flight", "FlightBack", "PitchRate" };
 

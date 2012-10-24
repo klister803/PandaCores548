@@ -365,7 +365,7 @@ void WorldSession::HandleMailMarkAsRead(WorldPacket & recvData)
 //called when client deletes mail
 void WorldSession::HandleMailDelete(WorldPacket & recvData)
 {
-    uint64 mailbox;
+    //uint64 mailbox;
     uint32 mailId;
     //recvData >> mailbox;
     recvData.read_skip<uint32>();   

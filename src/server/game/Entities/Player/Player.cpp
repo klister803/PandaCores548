@@ -5056,7 +5056,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
 
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_ACHIEVEMENT_PROGRESS);
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_ACHIEVEMENTS);
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
 
@@ -16706,7 +16706,10 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);
 
     // load achievements before anything else to prevent multiple gains for the same achievement/criteria on every loading (as loading does call UpdateAchievementCriteria)
-    m_achievementMgr.LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS), holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS));
+    m_achievementMgr.LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS),
+                                NULL,//holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS),
+                                holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTACHIEVEMENTS),
+                                holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTCRITERIAPROGRESS));
 
     uint64 money = fields[8].GetUInt64();
     if (money > MAX_MONEY_AMOUNT)
