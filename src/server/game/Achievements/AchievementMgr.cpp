@@ -2476,14 +2476,16 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/) const
         if (!isVisible(*itr))
             continue;
 
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[2]);
+        ObjectGuid firstAccountGuid = (*itr).second.first_guid;
+
+        data.WriteBit(firstAccountGuid[4]);
+        data.WriteBit(firstAccountGuid[7]);
+        data.WriteBit(firstAccountGuid[3]);
+        data.WriteBit(firstAccountGuid[1]);
+        data.WriteBit(firstAccountGuid[5]);
+        data.WriteBit(firstAccountGuid[0]);
+        data.WriteBit(firstAccountGuid[6]);
+        data.WriteBit(firstAccountGuid[2]);
     }
     data.WriteBits(numCriteria, 21);
     for (CriteriaProgressMap::const_iterator itr = m_criteriaProgress.begin(); itr != m_criteriaProgress.end(); ++itr)
@@ -2539,17 +2541,19 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/) const
         if (!isVisible(*itr))
             continue;
 
-        data.WriteByteSeq(guid[5]);
+        ObjectGuid firstAccountGuid = (*itr).second.first_guid;
+
+        data.WriteByteSeq(firstAccountGuid[5]);
         data << uint32(4961);//unk timer from 5.0.5 16048
         data << uint32(secsToTimeBitFields(itr->second.date));
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[6]);
+        data.WriteByteSeq(firstAccountGuid[7]);
+        data.WriteByteSeq(firstAccountGuid[3]);
+        data.WriteByteSeq(firstAccountGuid[1]);
+        data.WriteByteSeq(firstAccountGuid[0]);
+        data.WriteByteSeq(firstAccountGuid[4]);
+        data.WriteByteSeq(firstAccountGuid[6]);
         data << uint32(itr->first); 
-        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(firstAccountGuid[2]);
     }
     SendPacket(&data);
 }
