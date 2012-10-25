@@ -216,7 +216,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
         {
             data->Initialize(SMSG_BATTLEFIELD_STATUS_QUEUED);
 
-            *data << uint32(bg->isArena() ? bg->GetMaxPlayers() : 1);
+            *data << uint32(bg->isArena() ? bg->GetMaxPlayersPerTeam() : 1);
             *data << uint32(GetMSTimeDiffToNow(Time2));
             *data << uint32(Time1);                     // Estimated Wait Time
             *data << uint32(QueueSlot);
@@ -316,7 +316,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             *data << uint8(0);
             *data << uint32(QueueSlot);
             data->WriteByteSeq(guidBytes2[2]);
-            *data << uint32(bg->isArena() ? bg->GetMaxPlayers() : 1);
+            *data << uint32(bg->isArena() ? bg->GetMaxPlayersPerTeam() : 1);
             data->WriteByteSeq(guidBytes1[4]);
             break;
         }
@@ -329,7 +329,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             *data << uint32(Time2);                     // Time
             *data << uint32(bg->GetMapId());            // Map Id
             *data << uint8(bg->GetMinLevel());          // Min Level
-            *data << uint32(bg->isArena() ? bg->GetMaxPlayers() : 1);
+            *data << uint32(bg->isArena() ? bg->GetMaxPlayersPerTeam() : 1);
             *data << uint8(0);                          // unk
             *data << uint32(Time1);                     // Time until closed
             *data << uint32(QueueSlot);                 // Queue slot
@@ -644,7 +644,12 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         data->WriteBit(guid[1]);
         data->WriteBit(0); // Unk 6
         data->WriteBit(guid[0]);
-        data->WriteBit(player->GetTeam() == ALLIANCE);
+
+        if (isArena)
+            data->WriteBit(bg->GetPlayerTeam(guid) == ALLIANCE);
+        else
+            data->WriteBit(player->GetTeam() == ALLIANCE);
+
         if (player->GetTeam() == ALLIANCE)
             ++counta2;
         else
@@ -669,7 +674,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
     
     if (isArena)
     {
-        for (int8 i = 1; i >= 0; --i)
+        for (int8 i = BG_TEAMS_COUNT - 1; i >= 0; --i)
         {
             if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
                 data->WriteBits(at->GetName().length(), 8);
@@ -690,7 +695,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
     if (isRated)                                             // arena TODO : Fix Order on Rated Implementation
     {
         // it seems this must be according to BG_WINNER_A/H and _NOT_ BG_TEAM_A/H
-        for (int8 i = 1; i >= 0; --i)
+        for (int8 i = BG_TEAMS_COUNT - 1; i >= 0; --i)
         {
             int32 rating_change = bg->GetArenaTeamRatingChangeByIndex(i);
 
@@ -708,7 +713,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         *data << uint8(bg->GetWinner());                    // who win
 
     if (isArena)
-        for (int8 i = 1; i >= 0; --i)
+        for (int8 i = 0; i < BG_TEAMS_COUNT; ++i)
             if (ArenaTeam* at = sArenaTeamMgr->GetArenaTeamById(bg->GetArenaTeamIdByIndex(i)))
                 data->WriteString(at->GetName());
 }
