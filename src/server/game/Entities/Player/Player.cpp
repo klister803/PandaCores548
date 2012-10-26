@@ -12110,6 +12110,30 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_ITEM, pItem->GetEntry());
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM, pItem->GetEntry(), slot);
 
+    // Custom MoP script
+    // Way of the Monk - 120277
+    if (getClass() == CLASS_MONK && HasAura(120277))
+    {
+        RemoveAurasDueToSpell(120275);
+        RemoveAurasDueToSpell(108977);
+
+        uint32 trigger = 0;
+        if (IsTwoHandUsed())
+        {
+            trigger = 120275;
+        }
+        else
+        {
+            Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+            Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+            if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON && offItem && offItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
+                trigger = 108977;
+        }
+
+        if (trigger)
+            CastSpell(this, trigger, true);
+    }
+
     return pItem;
 }
 
