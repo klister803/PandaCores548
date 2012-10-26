@@ -206,18 +206,18 @@ void WorldSession::SendTrainerList(uint64 guid, const std::string& strTitle)
                 data << uint32(prevSpellId);
                 ++maxReq;
             }
-            if (maxReq == 2)
+            if (maxReq == 1)
                 break;
             SpellsRequiringSpellMapBounds spellsRequired = sSpellMgr->GetSpellsRequiredForSpellBounds(tSpell->learnedSpell[i]);
-            for (SpellsRequiringSpellMap::const_iterator itr2 = spellsRequired.first; itr2 != spellsRequired.second && maxReq < 3; ++itr2)
+            for (SpellsRequiringSpellMap::const_iterator itr2 = spellsRequired.first; itr2 != spellsRequired.second && maxReq < 2; ++itr2)
             {
                 data << uint32(itr2->second);
                 ++maxReq;
             }
-            if (maxReq == 2)
+            if (maxReq == 1)
                 break;
         }
-        while (maxReq < 2)
+        while (maxReq < 1)
         {
             data << uint32(0);
             ++maxReq;
@@ -569,7 +569,8 @@ void WorldSession::SendStablePetCallback(PreparedQueryResult result, uint64 guid
         do
         {
             Field* fields = result->Fetch();
-
+            
+            data << uint32(0);                              // 4.x unknown, some kind of order?
             data << uint32(fields[1].GetUInt32());          // petnumber
             data << uint32(fields[2].GetUInt32());          // creature entry
             data << uint32(fields[3].GetUInt16());          // level

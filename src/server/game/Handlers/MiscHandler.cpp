@@ -1263,7 +1263,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
     Player* player = ObjectAccessor::FindPlayer(guid);
     if (!player)
     {
-        sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_INSPECT: No player found from GUID: " UI64FMTD, guid);
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_INSPECT: No player found from GUID: " UI64FMTD, uint64(guid));
         return;
     }
 
@@ -1619,12 +1619,14 @@ void WorldSession::HandleSetDungeonDifficultyOpcode(WorldPacket & recvData)
             //_player->SendDungeonDifficulty(true);
             group->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, false, _player);
             group->SetDungeonDifficulty(Difficulty(mode));
+            _player->SendDungeonDifficulty(true);
         }
     }
     else
     {
         _player->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, false);
         _player->SetDungeonDifficulty(Difficulty(mode));
+        _player->SendDungeonDifficulty(false);
     }
 }
 
@@ -1676,12 +1678,14 @@ void WorldSession::HandleSetRaidDifficultyOpcode(WorldPacket & recvData)
             //_player->SendDungeonDifficulty(true);
             group->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, true, _player);
             group->SetRaidDifficulty(Difficulty(mode));
+            _player->SendRaidDifficulty(true);
         }
     }
     else
     {
         _player->ResetInstances(INSTANCE_RESET_CHANGE_DIFFICULTY, true);
         _player->SetRaidDifficulty(Difficulty(mode));
+        _player->SendRaidDifficulty(false);
     }
 }
 
@@ -1987,5 +1991,8 @@ void WorldSession::HandleUpdateMissileTrajectory(WorldPacket& recvPacket)
      recvPacket.ReadByteSeq(guid[4]);
 
      WorldObject* obj = ObjectAccessor::GetWorldObject(*GetPlayer(), guid);
+     if(obj)
+         obj->SendUpdateToPlayer(GetPlayer());
+
      sLog->outError(LOG_FILTER_NETWORKIO, "Object update failed for object "UI64FMTD" (%s) for player %s (%u)", uint64(guid), obj ? obj->GetName() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());
  }

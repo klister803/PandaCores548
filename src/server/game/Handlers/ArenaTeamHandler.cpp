@@ -177,7 +177,7 @@ void WorldSession::HandleArenaTeamAcceptOpcode(WorldPacket & /*recvData*/)
     // Add player to team
     if (!arenaTeam->AddMember(_player->GetGUID()))
     {
-        SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, "", "", ERR_ARENA_TEAM_INTERNAL);
+        SendArenaTeamCommandResult(ERR_ARENA_TEAM_CREATE_S, "", "", ERR_ARENA_TEAM_CREATED);
         return;
     }
 
@@ -262,7 +262,7 @@ void WorldSession::HandleArenaTeamLeaveOpcode(WorldPacket & recvData)
     // Disallow leave team while in arena
     if (_player->InArena())
     {
-        SendArenaTeamCommandResult(ERR_ARENA_TEAM_QUIT_S, "", "", ERR_ARENA_TEAM_INTERNAL);
+        SendArenaTeamCommandResult(ERR_ARENA_TEAM_QUIT_S, "", "", ERR_ARENA_TEAM_CREATED);
         return;
     }
 

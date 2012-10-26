@@ -211,6 +211,8 @@ struct CompletedAchievementData
 {
     time_t date;
     std::set<uint64> guids;
+    uint64 first_guid;
+    bool completedByThisCharacter;
     bool changed;
 };
 
@@ -229,8 +231,8 @@ class AchievementMgr
         ~AchievementMgr();
 
         void Reset();
-        static void DeleteFromDB(uint32 lowguid);
-        void LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult);
+        static void DeleteFromDB(uint32 lowguid, uint32 accountId = 0);
+        void LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult = NULL, PreparedQueryResult criteriaAccountResult = NULL);
         void SaveToDB(SQLTransaction& trans);
         void ResetAchievementCriteria(AchievementCriteriaTypes type, uint32 miscvalue1 = 0, uint32 miscvalue2 = 0, bool evenIfCriteriaComplete = false);
         void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, Unit* unit = NULL, Player* referencePlayer = NULL);
@@ -238,7 +240,7 @@ class AchievementMgr
         void CheckAllAchievementCriteria(Player* referencePlayer);
         void SendAllAchievementData(Player* receiver) const;
         void SendAchievementInfo(Player* receiver, uint32 achievementId = 0) const;
-        bool HasAchieved(uint32 achievementId) const;
+        bool HasAchieved(uint32 achievementId);
         T* GetOwner() const { return _owner; }
 
         void UpdateTimedAchievements(uint32 timeDiff);

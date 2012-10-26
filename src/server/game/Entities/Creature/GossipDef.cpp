@@ -448,9 +448,10 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
             data << uint32(quest->RewardItemIdCount[i]);
         }
         for (uint32 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
+        {
             data << uint32(quest->RewardChoiceItemId[i]);
-        for (uint32 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)
             data << uint32(quest->RewardChoiceItemCount[i]);
+        }
     }
 
     for (uint32 i = 0; i < QUEST_REPUTATIONS_COUNT; ++i)        // reward factions ids

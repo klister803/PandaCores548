@@ -50,7 +50,8 @@ enum LfgType
     LFG_TYPE_QUEST                               = 3,
     LFG_TYPE_ZONE                                = 4,
     LFG_TYPE_HEROIC                              = 5,
-    LFG_TYPE_RANDOM                              = 6
+    LFG_TYPE_RANDOM                              = 6,
+    LFG_TYPE_SCENARIO                            = 7
 };
 
 /// Proposal states
@@ -199,6 +200,7 @@ struct LfgQueueInfo
     uint8 dps;                                             ///< Dps needed
     LfgDungeonSet dungeons;                                ///< Selected Player/Group Dungeon/s
     LfgRolesMap roles;                                     ///< Selected Player Role/s
+    uint8 type;
 };
 
 /// Stores player data related to proposal to join
@@ -306,8 +308,16 @@ class LFGMgr
         void SetRoles(uint64 guid, uint8 roles);
         void SetSelectedDungeons(uint64 guid, const LfgDungeonSet& dungeons);
 
-        void SendUpdateStatus(Player*, const std::string&, uint32, const LfgDungeonSet& selectedDungeons, bool join, bool quit);
-        LfgQueueInfoMap GetQueueInfoMap() const { return m_QueueInfoMap; }
+        void SendUpdateStatus(Player*, const std::string&, const LfgDungeonSet& selectedDungeons, bool join, bool quit);
+
+        LfgQueueInfo* GetLfgQueueInfo(uint64 guid) const
+        {
+            LfgQueueInfoMap::const_iterator itr = m_QueueInfoMap.find(guid);
+            if(itr != m_QueueInfoMap.end())
+                return itr->second;
+
+            return NULL;
+        }
 
     private:
 
@@ -326,9 +336,9 @@ class LFGMgr
         void RemoveProposal(LfgProposalMap::iterator itProposal, LfgUpdateType type);
 
         // Group Matching
-        LfgProposal* FindNewGroups(LfgGuidList& check, LfgGuidList& all);
-        bool CheckGroupRoles(LfgRolesMap &groles, bool removeLeaderFlag = true);
-        bool CheckCompatibility(LfgGuidList check, LfgProposal*& pProposal);
+        LfgProposal* FindNewGroups(LfgGuidList& check, LfgGuidList& all, LfgType type);
+        bool CheckGroupRoles(LfgRolesMap &groles, LfgType type, bool removeLeaderFlag = true);
+        bool CheckCompatibility(LfgGuidList check, LfgProposal*& pProposal, LfgType type);
         void GetCompatibleDungeons(LfgDungeonSet& dungeons, const PlayerSet& players, LfgLockPartyMap& lockMap);
         void SetCompatibles(std::string concatenatedGuids, bool compatibles);
         LfgAnswer GetCompatibles(std::string concatenatedGuids);

@@ -1366,7 +1366,7 @@ struct ItemSetEntry
     uint32    required_skill_id;                            // 35       m_requiredSkill
     uint32    required_skill_value;                         // 36       m_requiredSkillRank
 };
-//nxiiiiiiixixxixixxixxxx
+
 struct LFGDungeonEntry
 {
     uint32  ID;                                             // 0
@@ -1379,18 +1379,23 @@ struct LFGDungeonEntry
     int32  map;                                             // 7
     uint32  difficulty;                                     // 8
     //uint32  unk;                                          // 9
-    uint32  type;                                           // 12
-    //uint32  unk505;                                       // 10
-    //char*   unk3;                                         // 14
-    uint32  expansion;                                      // 15
-    //uint32  unk2;                                         // 13
-    uint32 flags;
-    //char* unk
-    //uint32  unk4;                                         // 16
-    uint32  grouptype;                                      // 17
-    //char*   desc;                                         // 18 Description
+    uint32  type;                                           // 10
+    //uint32  unk505;                                       // 11
+    //char*   unk3;                                         // 12
+    uint32  expansion;                                      // 13
+    //uint32  unk2;                                         // 14
+    uint32 flags;                                           // 15
+    //char* unk                                             // 16
+    uint32 grouptype;                                       // 17
+    uint32 tankNeeded;                                      // 18
+    uint32 healerNeeded;                                    // 19
+    uint32 dpsNeeded;                                       // 20
+    //uint32 unk_505;                                       // 21
+    //uint32 unk_505_2;                                     // 22
     // Helpers
     uint32 Entry() const { return ID + (type << 24); }
+    // 1 = LFG_TYPE_DUNGEON
+    bool isScenario() const { return type == 1 && tankNeeded == 0 && healerNeeded == 0 && dpsNeeded == 3; }
 };
 
 
@@ -1461,7 +1466,7 @@ struct MapEntry
     //uint32  timeOfDayOverride;                            // 14       m_timeOfDayOverride
     uint32  addon;                                          // 15       m_expansionID
     uint32 unk_time;                                        // 16       m_raidOffset
-    //uint32 maxPlayers;                                    // 17       m_maxPlayers
+    uint32 maxPlayers;                                      // 17       m_maxPlayers
     int32 rootPhaseMap;                                     // 18 new 4.0.0, mapid, related to phasing
 
     // Helpers

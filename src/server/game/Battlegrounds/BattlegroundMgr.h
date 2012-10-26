@@ -90,7 +90,7 @@ class BattlegroundMgr
         void BuildPlayerJoinedBattlegroundPacket(WorldPacket* data, uint64 guid);
         void BuildPlayerLeftBattlegroundPacket(WorldPacket* data, uint64 guid);
         void BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid guid, Player* player, BattlegroundTypeId bgTypeId);
-        void BuildGroupJoinedBattlegroundPacket(WorldPacket* data, Battleground* bg, Player* player, GroupJoinBattlegroundResult result);
+        void BuildStatusFailedPacket(WorldPacket* data, Battleground* bg, Player* player, uint8 QueueSlot, GroupJoinBattlegroundResult result);
         void BuildUpdateWorldStatePacket(WorldPacket* data, uint32 field, uint32 value);
         void BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg);
         void BuildBattlegroundStatusPacket(WorldPacket* data, Battleground* bg, Player * pPlayer, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint8 uiFrame = 1);
@@ -118,6 +118,7 @@ class BattlegroundMgr
 
         /* Battleground queues */
         //these queues are instantiated when creating BattlegroundMrg
+        BattlegroundQueue& GetBattlegroundQueue(BattlegroundQueueTypeId bgQueueTypeId) { return m_BattlegroundQueues[bgQueueTypeId]; }
         BattlegroundQueue m_BattlegroundQueues[MAX_BATTLEGROUND_QUEUE_TYPES]; // public, because we need to access them in BG handler code
 
         BGFreeSlotQueueType BGFreeSlotQueue[MAX_BATTLEGROUND_TYPE_ID];

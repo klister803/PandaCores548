@@ -759,40 +759,42 @@ enum PlayedTimeIndex
 // used at player loading query list preparing, and later result selection
 enum PlayerLoginQueryIndex
 {
-    PLAYER_LOGIN_QUERY_LOADFROM                 = 0,
-    PLAYER_LOGIN_QUERY_LOADGROUP                = 1,
-    PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES       = 2,
-    PLAYER_LOGIN_QUERY_LOADAURAS                = 3,
-    PLAYER_LOGIN_QUERY_LOADAURAS_EFFECTS        = 4,
-    PLAYER_LOGIN_QUERY_LOADSPELLS               = 5,
-    PLAYER_LOGIN_QUERY_LOADQUESTSTATUS          = 6,
-    PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS     = 7,
-    PLAYER_LOGIN_QUERY_LOADREPUTATION           = 8,
-    PLAYER_LOGIN_QUERY_LOADINVENTORY            = 9,
-    PLAYER_LOGIN_QUERY_LOADACTIONS              = 10,
-    PLAYER_LOGIN_QUERY_LOADMAILCOUNT            = 11,
-    PLAYER_LOGIN_QUERY_LOADMAILDATE             = 12,
-    PLAYER_LOGIN_QUERY_LOADSOCIALLIST           = 13,
-    PLAYER_LOGIN_QUERY_LOADHOMEBIND             = 14,
-    PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS       = 15,
-    PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES        = 16,
-    PLAYER_LOGIN_QUERY_LOADGUILD                = 17,
-    PLAYER_LOGIN_QUERY_LOADARENAINFO            = 18,
-    PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS         = 19,
-    PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS     = 20,
-    PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS        = 21,
-    PLAYER_LOGIN_QUERY_LOADBGDATA               = 22,
-    PLAYER_LOGIN_QUERY_LOADGLYPHS               = 23,
-    PLAYER_LOGIN_QUERY_LOADTALENTS              = 24,
-    PLAYER_LOGIN_QUERY_LOADACCOUNTDATA          = 25,
-    PLAYER_LOGIN_QUERY_LOADSKILLS               = 26,
-    PLAYER_LOGIN_QUERY_LOADWEEKLYQUESTSTATUS    = 27,
-    PLAYER_LOGIN_QUERY_LOADRANDOMBG             = 28,
-    PLAYER_LOGIN_QUERY_LOADBANNED               = 29,
-    PLAYER_LOGIN_QUERY_LOADQUESTSTATUSREW       = 30,
-    PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES    = 31,
-    PLAYER_LOGIN_QUERY_LOADSEASONALQUESTSTATUS  = 32,
-    PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE          = 33,
+    PLAYER_LOGIN_QUERY_LOADFROM                     = 0,
+    PLAYER_LOGIN_QUERY_LOADGROUP                    = 1,
+    PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES           = 2,
+    PLAYER_LOGIN_QUERY_LOADAURAS                    = 3,
+    PLAYER_LOGIN_QUERY_LOADAURAS_EFFECTS            = 4,
+    PLAYER_LOGIN_QUERY_LOADSPELLS                   = 5,
+    PLAYER_LOGIN_QUERY_LOADQUESTSTATUS              = 6,
+    PLAYER_LOGIN_QUERY_LOADDAILYQUESTSTATUS         = 7,
+    PLAYER_LOGIN_QUERY_LOADREPUTATION               = 8,
+    PLAYER_LOGIN_QUERY_LOADINVENTORY                = 9,
+    PLAYER_LOGIN_QUERY_LOADACTIONS                  = 10,
+    PLAYER_LOGIN_QUERY_LOADMAILCOUNT                = 11,
+    PLAYER_LOGIN_QUERY_LOADMAILDATE                 = 12,
+    PLAYER_LOGIN_QUERY_LOADSOCIALLIST               = 13,
+    PLAYER_LOGIN_QUERY_LOADHOMEBIND                 = 14,
+    PLAYER_LOGIN_QUERY_LOADSPELLCOOLDOWNS           = 15,
+    PLAYER_LOGIN_QUERY_LOADDECLINEDNAMES            = 16,
+    PLAYER_LOGIN_QUERY_LOADGUILD                    = 17,
+    PLAYER_LOGIN_QUERY_LOADARENAINFO                = 18,
+    PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS             = 19,
+    PLAYER_LOGIN_QUERY_LOADACCOUNTACHIEVEMENTS      = 20,
+    //PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS         = 21,
+    PLAYER_LOGIN_QUERY_LOADACCOUNTCRITERIAPROGRESS  = 22,
+    PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS            = 23,
+    PLAYER_LOGIN_QUERY_LOADBGDATA                   = 24,
+    PLAYER_LOGIN_QUERY_LOADGLYPHS                   = 25,
+    PLAYER_LOGIN_QUERY_LOADTALENTS                  = 26,
+    PLAYER_LOGIN_QUERY_LOADACCOUNTDATA              = 27,
+    PLAYER_LOGIN_QUERY_LOADSKILLS                   = 28,
+    PLAYER_LOGIN_QUERY_LOADWEEKLYQUESTSTATUS        = 29,
+    PLAYER_LOGIN_QUERY_LOADRANDOMBG                 = 30,
+    PLAYER_LOGIN_QUERY_LOADBANNED                   = 31,
+    PLAYER_LOGIN_QUERY_LOADQUESTSTATUSREW           = 32,
+    PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES        = 33,
+    PLAYER_LOGIN_QUERY_LOADSEASONALQUESTSTATUS      = 34,
+    PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE              = 35,
     MAX_PLAYER_LOGIN_QUERY,
 };
 
@@ -944,11 +946,13 @@ class Player;
 struct BGData
 {
     BGData() : bgInstanceID(0), bgTypeID(BATTLEGROUND_TYPE_NONE), bgAfkReportedCount(0), bgAfkReportedTimer(0),
-        bgTeam(0), mountSpell(0) { ClearTaxiPath(); }
+        bgTeam(0), mountSpell(0) { bgQueuesJoinedTime.clear(); ClearTaxiPath(); }
 
     uint32 bgInstanceID;                    ///< This variable is set to bg->m_InstanceID,
                                             ///  when player is teleported to BG - (it is battleground's GUID)
     BattlegroundTypeId bgTypeID;
+
+    std::map<uint32, uint32> bgQueuesJoinedTime;
 
     std::set<uint32>   bgAfkReporter;
     uint8              bgAfkReportedCount;
@@ -2208,6 +2212,22 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetBattlegroundId()  const                { return m_bgData.bgInstanceID; }
         BattlegroundTypeId GetBattlegroundTypeId() const { return m_bgData.bgTypeID; }
         Battleground* GetBattleground() const;
+
+        uint32 GetBattlegroundQueueJoinTime(uint32 bgTypeId) const
+        {
+            auto itr = m_bgData.bgQueuesJoinedTime.find(bgTypeId);
+            return itr != m_bgData.bgQueuesJoinedTime.end() ? itr->second : time(NULL);
+        }
+
+        void AddBattlegroundQueueJoinTime(uint32 bgTypeId, uint32 joinTime)
+        {
+            m_bgData.bgQueuesJoinedTime[bgTypeId] = joinTime;
+        }
+
+        void RemoveBattlegroundQueueJoinTime(uint32 bgTypeId)
+        {
+            m_bgData.bgQueuesJoinedTime.erase(m_bgData.bgQueuesJoinedTime.find(bgTypeId)->second);
+        }
 
         bool InBattlegroundQueue() const
         {

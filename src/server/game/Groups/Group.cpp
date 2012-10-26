@@ -534,7 +534,7 @@ bool Group::RemoveMember(uint64 guid, const RemoveMethod &method /*= GROUP_REMOV
     // remove member and change leader (if need) only if strong more 2 members _before_ member remove (BG/BF allow 1 member group)
     if (GetMembersCount() > ((isBGGroup() || isLFGGroup() || isBFGroup()) ? 1u : 2u))
     {
-        Player* player = ObjectAccessor::FindPlayer(guid);
+        Player* player = ObjectAccessor::GetObjectInOrOutOfWorld(guid, (Player*)NULL);
         if (player)
         {
             // Battleground group handling
@@ -561,10 +561,43 @@ bool Group::RemoveMember(uint64 guid, const RemoveMethod &method /*= GROUP_REMOV
             }
 
             // Do we really need to send this opcode?
-            /*data.Initialize(SMSG_PARTY_UPDATE, 1+1+1+1+8+4+4+8);
-            data << uint8(0x10) << uint8(0) << uint8(0) << uint8(0);
-            data << uint64(m_guid) << uint32(m_counter) << uint32(0) << uint64(0);
-            player->GetSession()->SendPacket(&data);*/
+            ObjectGuid guid = GetGUID();
+            data.Initialize(SMSG_PARTY_UPDATE);
+            data.WriteBit(0);
+            data.WriteBit(guid[2]);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.WriteBit(guid[0]);
+            data.WriteBit(0);
+            data.WriteBit(guid[5]);
+            data.WriteBit(guid[3]);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.WriteBit(guid[4]);
+            data.WriteBit(0);
+            data.WriteBit(0);
+            data.WriteBit(guid[7]);
+            data.WriteBit(guid[1]);
+            data.WriteBits(0 , 22);
+            data.WriteBit(guid[6]);
+            data.FlushBits();
+            data << uint8(0); // unk
+            data << uint32(m_counter++);                        
+            data.WriteByteSeq(guid[7]);
+            data.WriteByteSeq(guid[2]);
+            data << uint8(1); //unk, always 1
+            data.WriteByteSeq(guid[4]);
+            data.WriteByteSeq(guid[6]);
+            data << uint32(0); // unk, sometime 32 in sniff (flags ?)
+            data.WriteByteSeq(guid[3]);
+            data.WriteByteSeq(guid[1]);
+            data.WriteByteSeq(guid[5]);
+            data << uint8(m_groupType);  // group type (flags in 3.3)
+            data.WriteByteSeq(guid[0]);
+            player->GetSession()->SendPacket(&data);
 
             _homebindIfInstance(player);
         }
@@ -1751,7 +1784,7 @@ void Group::UpdatePlayerOutOfRange(Player* player)
     if (!player || !player->IsInWorld())
         return;
 
-    WorldPacket data;
+    /*WorldPacket data;
     player->GetSession()->BuildPartyMemberStatsChangedPacket(player, &data);
 
     Player* member;
@@ -1760,7 +1793,7 @@ void Group::UpdatePlayerOutOfRange(Player* player)
         member = itr->getSource();
         if (member && !member->IsWithinDist(player, member->GetSightRange(), false))
             member->GetSession()->SendPacket(&data);
-    }
+    }*/
 }
 
 void Group::BroadcastAddonMessagePacket(WorldPacket* packet, const std::string& prefix, bool ignorePlayersInBGRaid, int group, uint64 ignore)
@@ -2032,7 +2065,7 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
 
     BattlemasterListEntry const* bgEntry = sBattlemasterListStore.LookupEntry(bgOrTemplate->GetTypeID());
     if (!bgEntry)
-        return ERR_GROUP_JOIN_BATTLEGROUND_FAIL;            // shouldn't happen
+        return ERR_BATTLEGROUND_JOIN_FAILED;            // shouldn't happen
 
     // check for min / max count
     uint32 memberscount = GetMembersCount();
@@ -2097,7 +2130,7 @@ GroupJoinBattlegroundResult Group::CanJoinBattlegroundQueue(Battleground const* 
     if (bgOrTemplate->isArena() && memberscount != MinPlayerCount)
         return ERR_ARENA_TEAM_PARTY_SIZE;
 
-    return GroupJoinBattlegroundResult(bgOrTemplate->GetTypeID());
+    return ERR_BATTLEGROUND_NONE;
 }
 
 //===================================================

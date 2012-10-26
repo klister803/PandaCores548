@@ -2129,56 +2129,7 @@ void Player::SendTeleportPacket(Position &oldPos)
     data << float(GetPositionY());
     data << uint32(0);  // counter
     data << float(GetPositionZMinusOffset());
-    /*data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(0);       // unknown
-    data.WriteBit(uint64(transGuid));
-    data.WriteBit(guid[1]);
-    if (transGuid)
-    {
-        data.WriteBit(transGuid[1]);
-        data.WriteBit(transGuid[3]);
-        data.WriteBit(transGuid[2]);
-        data.WriteBit(transGuid[5]);
-        data.WriteBit(transGuid[0]);
-        data.WriteBit(transGuid[7]);
-        data.WriteBit(transGuid[6]);
-        data.WriteBit(transGuid[4]);
-    }
 
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[5]);
-    data.FlushBits();
-
-    if (transGuid)
-    {
-        data.WriteByteSeq(transGuid[6]);
-        data.WriteByteSeq(transGuid[5]);
-        data.WriteByteSeq(transGuid[1]);
-        data.WriteByteSeq(transGuid[7]);
-        data.WriteByteSeq(transGuid[0]);
-        data.WriteByteSeq(transGuid[2]);
-        data.WriteByteSeq(transGuid[4]);
-        data.WriteByteSeq(transGuid[3]);
-    }
-
-    data << uint32(0);  // counter
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[5]);
-    data << float(GetPositionX());
-    data.WriteByteSeq(guid[4]);
-    data << float(GetOrientation());
-    data.WriteByteSeq(guid[7]);
-    data << float(GetPositionZMinusOffset());
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[6]);
-    data << float(GetPositionY());
-    */
     Relocate(&oldPos);
     SendDirectMessage(&data);
 }
@@ -5105,7 +5056,7 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
 
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_ACHIEVEMENT_PROGRESS);
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_ACHIEVEMENTS);
             stmt->setUInt32(0, guid);
             trans->Append(stmt);
 
@@ -16741,7 +16692,10 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetFloatValue(UNIT_FIELD_HOVERHEIGHT, 1.0f);
 
     // load achievements before anything else to prevent multiple gains for the same achievement/criteria on every loading (as loading does call UpdateAchievementCriteria)
-    m_achievementMgr.LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS), holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS));
+    m_achievementMgr.LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS),
+                                NULL,//holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS),
+                                holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTACHIEVEMENTS),
+                                holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTCRITERIAPROGRESS));
 
     uint64 money = fields[8].GetUInt64();
     if (money > MAX_MONEY_AMOUNT)
@@ -26020,11 +25974,11 @@ void Player::SendMovementSetCanFly(bool apply)
     {
         data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 1 + 8 + 4);
         data.WriteBit(guid[5]);
+        data.WriteBit(guid[7]);
         data.WriteBit(guid[2]);
         data.WriteBit(guid[3]);
         data.WriteBit(guid[6]);
         data.WriteBit(guid[0]);
-        data.WriteBit(guid[7]);
         data.WriteBit(guid[4]);
         data.WriteBit(guid[1]);
 
