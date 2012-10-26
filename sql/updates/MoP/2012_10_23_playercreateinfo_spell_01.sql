@@ -36,7 +36,7 @@ INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES (
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '1', '107072', 'Epicurean');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '1', '107073', 'Gourmand');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '1', '107074', 'Inner Peace');
-INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '1', '131701', 'Language (Pandaren)');
+INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '1', '108127', 'Language (Pandaren)');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '1', '76290', 'Weapon Skills');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '1', '7266', 'Duel');
 
@@ -53,7 +53,7 @@ INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES (
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '3', '107072', 'Epicurean');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '3', '107073', 'Gourmand');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '3', '107074', 'Inner Peace');
-INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '3', '131701', 'Language (Pandaren)');
+INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '3', '108127', 'Language (Pandaren)');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '3', '76249', 'Weapon Skills');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '3', '7266', 'Duel');
 
@@ -71,7 +71,7 @@ INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES (
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '4', '107072', 'Epicurean');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '4', '107073', 'Gourmand');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '4', '107074', 'Inner Peace');
-INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '4', '131701', 'Language (Pandaren)');
+INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '4', '108127', 'Language (Pandaren)');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '4', '76297', 'Weapon Skills');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '4', '7266', 'Duel');
 
@@ -87,7 +87,7 @@ INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES (
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '5', '107072', 'Epicurean');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '5', '107073', 'Gourmand');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '5', '107074', 'Inner Peace');
-INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '5', '131701', 'Language (Pandaren)');
+INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '5', '108127', 'Language (Pandaren)');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '5', '76301', 'Weapon Skills');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '5', '7266', 'Duel');
 
@@ -102,7 +102,7 @@ INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES (
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '7', '107072', 'Epicurean');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '7', '107073', 'Gourmand');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '7', '107074', 'Inner Peace');
-INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '7', '131701', 'Language (Pandaren)');
+INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '7', '108127', 'Language (Pandaren)');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '7', '76296', 'Weapon Skills');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '7', '7266', 'Duel');
 
@@ -117,7 +117,7 @@ INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES (
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '8', '107072', 'Epicurean');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '8', '107073', 'Gourmand');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '8', '107074', 'Inner Peace');
-INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '8', '131701', 'Language (Pandaren)');
+INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '8', '108127', 'Language (Pandaren)');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '8', '76298', 'Weapon Skills');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '8', '7266', 'Duel');
 
@@ -129,13 +129,14 @@ INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES (
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '116812', 'Parry');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '120277', 'Way of the Monk');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '106904', 'Armor Skills');
+INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '110500', 'Symbiose');
 -- Racial
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '107079', 'Quaking Palm');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '107076', 'Bouncy');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '107072', 'Epicurean');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '107073', 'Gourmand');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '107074', 'Inner Peace');
-INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '131701', 'Language (Pandaren)');
+INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '108127', 'Language (Pandaren)');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '106902', 'Weapon Skills');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '10', '7266', 'Duel');
 
