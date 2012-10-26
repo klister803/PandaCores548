@@ -23,7 +23,7 @@ INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES (
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '1', '131701', 'Language (Pandaren)');
 
 */
-
+DELETE FROM `playercreateinfo_spell` WHERE race = 24;
 /* Warrior */
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '1', '2457', 'Battle Stance');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('24', '1', '78', 'Heroic Strike');
