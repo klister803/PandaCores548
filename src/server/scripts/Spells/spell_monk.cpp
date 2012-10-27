@@ -27,8 +27,95 @@
 
 enum MonkSpells
 {
+    SPELL_MONK_TIGER_PALM               = 100787,
+    SPELL_MONK_TIGER_POWER              = 125359,
+    SPELL_MONK_LEGACY_OF_THE_EMPEROR    = 117667
+};
+
+// Legacy of the Emperor - 115921
+class spell_monk_legacy_of_the_emperor : public SpellScriptLoader
+{
+    public:
+        spell_monk_legacy_of_the_emperor() : SpellScriptLoader("spell_monk_legacy_of_the_emperor") { }
+
+        class spell_monk_legacy_of_the_emperor_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_legacy_of_the_emperor_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+                if (caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    caster->CastSpell(caster, SPELL_MONK_LEGACY_OF_THE_EMPEROR, true);
+
+                    std::list<Unit*> memberList;
+                    Player* plr = caster->ToPlayer();
+                    plr->GetPartyMembers(memberList);
+
+                    for (auto itr : memberList)
+                        caster->CastSpell((itr), SPELL_MONK_LEGACY_OF_THE_EMPEROR, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_monk_legacy_of_the_emperor_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_legacy_of_the_emperor_SpellScript();
+        }
+};
+
+// Tiger Palm - 100787
+class spell_monk_tiger_palm : public SpellScriptLoader
+{
+    public:
+        spell_monk_tiger_palm() : SpellScriptLoader("spell_monk_tiger_palm") { }
+
+        class spell_monk_tiger_palm_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_tiger_palm_SpellScript);
+
+            void SchoolDmg(SpellEffIndex /*effIndex*/)
+            {
+                /*Unit* caster = GetCaster();
+                if (caster)
+                {
+                    Unit* target = GetHitUnit();
+                    int32 bp = 0;
+
+                    float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                    float mwb = caster->GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE);
+                    float MWB = caster->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
+                    float MWS = caster->GetAttackTime(BASE_ATTACK);
+                    float min = 0;
+                    float max = 0;
+
+                    min = (3.0f * 1.0f * 1.0f * (0.898882f) * (mwb / MWS) + 1.0f * (mwb / 2.0f / MWS) + (ap / 14.0f) - 1.0f);
+                    max = (3.0f * 1.0f * 1.0f * (0.898882f) * (MWB / (MWS + 1.0f * (MWB / 2.0f / MWS) + (ap / 14.0f) + 1.0f)));
+                    bp = irand(int32(min), int32(max));
+
+                    caster->CastCustomSpell(target, SPELL_MONK_TIGER_PALM, &bp, NULL, NULL, true);
+                }*/
+            }
+
+            void Register()
+            {
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_tiger_palm_SpellScript();
+        }
 };
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_tiger_palm();
+    new spell_monk_legacy_of_the_emperor();
 }
