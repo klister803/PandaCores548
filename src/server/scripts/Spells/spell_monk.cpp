@@ -30,8 +30,7 @@ enum MonkSpells
     SPELL_MONK_TIGER_PALM               = 100787,
     SPELL_MONK_TIGER_POWER              = 125359,
     SPELL_MONK_LEGACY_OF_THE_EMPEROR    = 117667,
-    SPELL_MONK_FORTIFYING_BREW          = 120954,
-    SPELL_MONK_PARALYSIS                = 115078
+    SPELL_MONK_FORTIFYING_BREW          = 120954
 };
 
 // Paralysis - 115078
