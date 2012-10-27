@@ -207,3 +207,8 @@ INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES (
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('10', '10', '129597', 'Arcane Torrent');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('10', '10', '813', 'Language Thalassian');
 INSERT INTO `playercreateinfo_spell` (`race`, `class`, `Spell`, `Note`) VALUES ('10', '10', '669', 'Language Orcish');
+
+/*
+Delete old spell
+*/
+DELETE FROM `playercreateinfo_spell` WHERE Note = 'Defensive State (DND)';
