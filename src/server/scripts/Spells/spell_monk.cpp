@@ -30,7 +30,51 @@ enum MonkSpells
     SPELL_MONK_TIGER_PALM               = 100787,
     SPELL_MONK_TIGER_POWER              = 125359,
     SPELL_MONK_LEGACY_OF_THE_EMPEROR    = 117667,
-    SPELL_MONK_FORTIFYING_BREW          = 120954
+    SPELL_MONK_FORTIFYING_BREW          = 120954,
+    SPELL_MONK_PROVOKE                  = 118635
+};
+
+// Provoke - 115546
+class spell_monk_provoke : public SpellScriptLoader
+{
+    public:
+        spell_monk_provoke() : SpellScriptLoader("spell_monk_provoke") { }
+
+        class spell_monk_provoke_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_provoke_SpellScript);
+
+            SpellCastResult CheckCast()
+            {
+                Unit* target = GetExplTargetUnit();
+                if (!target)
+                    return SPELL_FAILED_NO_VALID_TARGETS;
+                else if (target->GetTypeId() == TYPEID_PLAYER)
+                    return SPELL_FAILED_BAD_TARGETS;
+                else if (!target->IsWithinLOSInMap(GetCaster()))
+                    return SPELL_FAILED_LINE_OF_SIGHT;
+                return SPELL_CAST_OK;
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (caster->getClass() == CLASS_MONK && caster->GetTypeId() == TYPEID_PLAYER)
+                        if (Unit* target = GetHitUnit())
+                            caster->CastSpell(target, SPELL_MONK_PROVOKE, true);
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_monk_provoke_SpellScript::CheckCast);
+                OnEffectHitTarget += SpellEffectFn(spell_monk_provoke_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_provoke_SpellScript();
+        }
 };
 
 // Paralysis - 115078
@@ -246,4 +290,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_fortifying_brew();
     new spell_monk_touch_of_death();
     new spell_monk_paralysis();
+    new spell_monk_provoke();
 }
