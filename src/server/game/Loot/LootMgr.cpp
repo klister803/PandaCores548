@@ -1037,8 +1037,12 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
         }
     }
     
+    bool hasUnk1 = false;
+    bool hasUnk2 = true;
+    bool hasUnk3 = true;
+
     b.WriteBit(1); //unk
-    b.WriteBit(1); //unk
+    b.WriteBit(!hasUnk1); //unk
     b.WriteBit(lv._guid[4]);
 
     b.WriteBits(itemsShown, 21);
@@ -1051,9 +1055,9 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
     b.WriteBits(currenciesShown, 22);
 
     b.WriteBit(0); //unk
-    b.WriteBit(0); //unk
+    b.WriteBit(!hasUnk2); //unk
     b.WriteBit(!lv._loot_type);
-    b.WriteBit(0); //unk
+    b.WriteBit(!hasUnk3); //unk
     
     b.WriteBit(lv._guid[5]);
     b.WriteBit(lv._guid[7]);
@@ -1061,7 +1065,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
     b.WriteBit(lv._guid[3]);
     b.WriteBit(lv._guid[1]);
 
-    b.WriteBit(l.gold);
+    b.WriteBit(!l.gold);
     
     b.WriteBit(lv._guid[2]);
 
@@ -1071,11 +1075,22 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
 
     b.append(dataBuffer);
 
-    b << uint8(255);
+    /*for (int i = 0; i < currenciesShown; ++i)
+    {
+        packet.ReadByte("Unk Byte", i); // only seen zero so far
+        packet.ReadInt32("Currency Id", i);
+        packet.ReadInt32("Count", i); // unconfirmed
+    }*/
+
+    if(hasUnk3)
+        b << uint8(255);
     b.WriteByteSeq(lv._guid[7]);
-    b << uint8(0);
+    if(hasUnk2)
+        b << uint8(0);
     b.WriteByteSeq(lv._guid[1]);
     b.WriteByteSeq(lv._guid[6]);
+    if(hasUnk1)
+        b << uint8(0);
     b.WriteByteSeq(lv._guid[2]);
 
     if (lv._loot_type)
