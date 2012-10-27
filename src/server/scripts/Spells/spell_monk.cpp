@@ -30,7 +30,47 @@ enum MonkSpells
     SPELL_MONK_TIGER_PALM               = 100787,
     SPELL_MONK_TIGER_POWER              = 125359,
     SPELL_MONK_LEGACY_OF_THE_EMPEROR    = 117667,
-    SPELL_MONK_FORTIFYING_BREW          = 120954
+    SPELL_MONK_FORTIFYING_BREW          = 120954,
+    SPELL_MONK_PARALYSIS                = 115078
+};
+
+// Paralysis - 115078
+class spell_monk_paralysis : public SpellScriptLoader
+{
+    public:
+        spell_monk_paralysis() : SpellScriptLoader("spell_monk_paralysis") { }
+
+        class spell_monk_paralysis_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_paralysis_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->isInBack(caster))
+                        {
+                            AuraApplication* aura = target->GetAuraApplication(115078);
+                            int32 duration = aura->GetBase()->GetDuration();
+                            duration *= 2;
+                            aura->GetBase()->SetDuration(duration, false);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_paralysis_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_paralysis_SpellScript();
+        }
 };
 
 // Touch of Death - 115080
@@ -206,4 +246,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_legacy_of_the_emperor();
     new spell_monk_fortifying_brew();
     new spell_monk_touch_of_death();
+    new spell_monk_paralysis();
 }
