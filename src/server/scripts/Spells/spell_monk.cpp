@@ -29,7 +29,46 @@ enum MonkSpells
 {
     SPELL_MONK_TIGER_PALM               = 100787,
     SPELL_MONK_TIGER_POWER              = 125359,
-    SPELL_MONK_LEGACY_OF_THE_EMPEROR    = 117667
+    SPELL_MONK_LEGACY_OF_THE_EMPEROR    = 117667,
+    SPELL_MONK_FORTIFYING_BREW          = 120954
+};
+
+// Fortifying brew - 115203
+class spell_monk_fortifying_brew : public SpellScriptLoader
+{
+    public:
+        spell_monk_fortifying_brew() : SpellScriptLoader("spell_monk_fortifying_brew")
+        {
+            // Fortifying Brew - 120954
+            SpellInfo* spellInfo = (SpellInfo*)sSpellMgr->GetSpellInfo(SPELL_MONK_FORTIFYING_BREW);
+            if (spellInfo)
+            {
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
+                spellInfo->Effects[0].BasePoints = 20;
+            }
+        }
+
+        class spell_monk_fortifying_brew_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_fortifying_brew_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                Unit* caster = GetCaster();
+                if (caster && caster->GetTypeId() == TYPEID_PLAYER)
+                    caster->CastSpell(caster, SPELL_MONK_FORTIFYING_BREW, true);
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_monk_fortifying_brew_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_fortifying_brew_SpellScript();
+        }
 };
 
 // Legacy of the Emperor - 115921
@@ -45,7 +84,7 @@ class spell_monk_legacy_of_the_emperor : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 Unit* caster = GetCaster();
-                if (caster->GetTypeId() == TYPEID_PLAYER)
+                if (caster && caster->GetTypeId() == TYPEID_PLAYER)
                 {
                     caster->CastSpell(caster, SPELL_MONK_LEGACY_OF_THE_EMPEROR, true);
 
@@ -118,4 +157,5 @@ void AddSC_monk_spell_scripts()
 {
     new spell_monk_tiger_palm();
     new spell_monk_legacy_of_the_emperor();
+    new spell_monk_fortifying_brew();
 }
