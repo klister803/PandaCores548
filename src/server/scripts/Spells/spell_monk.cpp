@@ -30,7 +30,66 @@ enum MonkSpells
     SPELL_MONK_TIGER_PALM               = 100787,
     SPELL_MONK_TIGER_POWER              = 125359,
     SPELL_MONK_LEGACY_OF_THE_EMPEROR    = 117667,
-    SPELL_MONK_FORTIFYING_BREW          = 120954
+    SPELL_MONK_FORTIFYING_BREW          = 120954,
+    SPELL_MONK_TOUCH_OF_DEATH           = 115080
+};
+
+// Touch of Death - 115080
+class spell_monk_touch_of_death : public SpellScriptLoader
+{
+    public:
+        spell_monk_touch_of_death() : SpellScriptLoader("spell_monk_touch_of_death") { }
+
+        class spell_monk_touch_of_death_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_touch_of_death_SpellScript);
+
+            SpellCastResult CheckCast()
+            {
+                if (GetCaster()->HasAura(124490))
+                {
+                    if (GetCaster()->getVictim()->GetTypeId() == TYPEID_UNIT && GetCaster()->getVictim()->ToCreature()->IsDungeonBoss())
+                        return SPELL_FAILED_BAD_TARGETS;
+                    else if (GetCaster()->getVictim()->GetTypeId() == TYPEID_UNIT && (GetCaster()->getVictim()->GetHealth() > GetCaster()->GetHealth()))
+                        return SPELL_FAILED_BAD_TARGETS;
+                    else if (GetCaster()->getVictim()->GetTypeId() == TYPEID_PLAYER && (GetCaster()->getVictim()->GetHealthPct() > 10.0f))
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
+                else
+                {
+                    if (GetCaster()->getVictim()->GetTypeId() == TYPEID_UNIT && GetCaster()->getVictim()->ToCreature()->IsDungeonBoss())
+                        return SPELL_FAILED_BAD_TARGETS;
+                    else if (GetCaster()->getVictim()->GetTypeId() == TYPEID_UNIT && (GetCaster()->getVictim()->GetHealth() > GetCaster()->GetHealth()))
+                        return SPELL_FAILED_BAD_TARGETS;
+                }
+                return SPELL_CAST_OK;
+            }
+
+            void SchoolDmg(SpellEffIndex /*effIndex*/)
+            {
+                /*Unit* caster = GetCaster();
+                if (caster)
+                {
+                    Unit* victim = caster->getVictim();
+                    if (victim)
+                    {
+                        int32 health = victim->GetHealth();
+                        caster->CastCustomSpell(caster, SPELL_MONK_TOUCH_OF_DEATH, &health, NULL, NULL, true);
+                    }
+                }*/
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_monk_touch_of_death_SpellScript::CheckCast);
+                OnEffectHitTarget += SpellEffectFn(spell_monk_touch_of_death_SpellScript::SchoolDmg, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_touch_of_death_SpellScript();
+        }
 };
 
 // Fortifying brew - 115203
@@ -158,4 +217,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_tiger_palm();
     new spell_monk_legacy_of_the_emperor();
     new spell_monk_fortifying_brew();
+    new spell_monk_touch_of_death();
 }
