@@ -495,8 +495,8 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
     size_t h2_pos = data->wpos();
     *data << uint8(0);
     
-    data->WriteBit(isRated);
-    data->WriteBit(isArena);
+    data->WriteBit(isRated); // +20
+    data->WriteBit(isArena); // +48
 
     size_t count_pos = data->bitwpos();
     data->WriteBits(0, 21);     // Placeholder
@@ -698,9 +698,19 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
             uint32 pointsGained = rating_change > 0 ? rating_change : 0;
             uint32 MatchmakerRating = bg->GetArenaMatchmakerRatingByIndex(i);
 
-            *data << uint32(pointsLost);                    // Rating Lost
-            *data << uint32(pointsGained);                  // Rating gained
-            *data << uint32(MatchmakerRating);              // Matchmaking Value
+            if(i == 1)
+            {
+                *data << uint32(pointsLost);                    // Rating Lost
+                *data << uint32(MatchmakerRating);              // Matchmaking Value
+                *data << uint32(pointsGained);                  // Rating gained
+            }
+            else
+            {
+                *data << uint32(pointsLost);                    // Rating Lost
+                *data << uint32(pointsGained);                  // Rating gained
+                *data << uint32(MatchmakerRating);              // Matchmaking Value
+            }
+
             sLog->outDebug(LOG_FILTER_BATTLEGROUND, "rating change: %d", rating_change);
         }
     }
