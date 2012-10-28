@@ -545,17 +545,42 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             }
             case SPELLFAMILY_MONK:
             {
-                if (m_spellInfo->Id == 100780)
-                    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                switch (m_spellInfo->Id)
+                {
+                    // Custom MoP script
+                    // Jab - 100780
+                    case 100780:
                     {
-                        float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
-                        float mwb = m_caster->GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE);
-                        float MWB = m_caster->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
-                        float MWS = m_caster->GetAttackTime(BASE_ATTACK);
-                        float mws = MWS;
-                        damage += irand(int32((1.5f * 0.898882f * (mwb / (MWS / 1000.0f)) + 1 * (mwb / 2.0f / (mws / 1000.0f)) + (ap / 14.0f) - 1.0f)), int32((1.5f * 0.898882f * (MWB / (MWS / 1000.0f)) + 1 * (MWB / 2.0f / (mws / 1000.0f)) + (ap / 14.0f) + 1)));
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                        {
+                            float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
+                            float mwb = m_caster->GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE);
+                            float MWB = m_caster->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
+                            float MWS = m_caster->GetAttackTime(BASE_ATTACK);
+                            float mws = MWS;
+                            damage += irand(int32((1.5f * 0.898882f * (mwb / (MWS / 1000.0f)) + 1 * (mwb / 2.0f / (mws / 1000.0f)) + (ap / 14.0f) - 1.0f)), int32((1.5f * 0.898882f * (MWB / (MWS / 1000.0f)) + 1 * (MWB / 2.0f / (mws / 1000.0f)) + (ap / 14.0f) + 1)));
+                        }
+                        break;
                     }
-                break;
+                    // Custom MoP script
+                    // Touch of Death - 115080
+                    case 115080:
+                    {
+                        Unit* caster = GetCaster();
+                        if (caster)
+                        {
+                            Unit* victim = caster->getVictim();
+                            if (victim)
+                            {
+                                int32 health = victim->GetHealth();
+                                damage += health;
+                            }
+                        }
+                        break;
+                    }
+                    default:
+                        break;
+                }
             }
         }
 
