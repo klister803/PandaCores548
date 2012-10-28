@@ -526,9 +526,6 @@ inline void Battleground::_ProcessJoin(uint32 diff)
                     player->RemoveAurasDueToSpell(SPELL_ARENA_PREPARATION);
                     player->ResetAllPowers();
 
-                    // Set arena faction client-side to display arena unit frame
-                    player->SetByteValue(PLAYER_BYTES_3, 3, player->GetBGTeam() == HORDE ? 0 : 1);
-
                     // remove auras with duration lower than 30s
                     Unit::AuraApplicationMap & auraMap = player->GetAppliedAuras();
                     for (Unit::AuraApplicationMap::iterator iter = auraMap.begin(); iter != auraMap.end();)
@@ -1227,6 +1224,10 @@ void Battleground::AddPlayer(Player* player)
             player->CastSpell(player, SPELL_ARENA_PREPARATION, true);
             player->ResetAllPowers();
         }
+
+        // Set arena faction client-side to display arena unit frame
+        player->SetByteValue(PLAYER_BYTES_3, 3, player->GetBGTeam() == HORDE ? 0 : 1);
+
         WorldPacket teammate;
         teammate.Initialize(SMSG_ARENA_OPPONENT_UPDATE, 8);
         teammate << uint64(player->GetGUID());

@@ -632,15 +632,16 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
                 data->WriteBits(0, 24);
                 break;
         }
+
         data->WriteBit(0); // Unk 1
         data->WriteBit(guid[4]);
         data->WriteBit(!isArena); // Unk 3 -- Prolly if (bg)
         data->WriteBit(0); // Unk 2
-        data->WriteBit(0); // Unk 4
+        data->WriteBit(0); // Unk 4 // damage done ??
         data->WriteBit(guid[6]);
         data->WriteBit(guid[3]);
         data->WriteBit(guid[7]);
-        data->WriteBit(0); // Unk 5
+        data->WriteBit(isArena); // Unk 5
         data->WriteBit(guid[1]);
         data->WriteBit(0); // Unk 6
         data->WriteBit(guid[0]);
@@ -663,8 +664,11 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         buff << uint32(itr2->second->DamageDone);              // damage done
         buff.WriteByteSeq(guid[2]);
         buff.WriteByteSeq(guid[1]);
+        //buff << uint32(40);
         // if (unk 2) << uint32() unk
         // if (unk 4) << uint32() unk
+        if(isArena)
+            buff << int32(bg->GetArenaTeamRatingChangeByIndex(bg->GetPlayerTeam(guid) == HORDE));
         buff.WriteByteSeq(guid[4]);
         buff << int32(player->GetPrimaryTalentTree(player->GetActiveSpec()));
         buff.WriteByteSeq(guid[3]);
