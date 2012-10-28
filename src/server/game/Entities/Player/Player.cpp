@@ -5868,21 +5868,6 @@ float Player::GetMeleeCritFromAgility()
 
 void Player::GetDodgeFromAgility(float &diminishing, float &nondiminishing)
 {
-    // Table for base dodge values
-    const float dodge_base[MAX_CLASSES] =
-    {
-         0.037580f, // Warrior
-         0.036520f, // Paladin
-        -0.054500f, // Hunter
-        -0.005900f, // Rogue
-         0.031830f, // Priest
-         0.036640f, // DK
-         0.016750f, // Shaman
-         0.034575f, // Mage
-         0.020350f, // Warlock
-         0.0f,      // ??
-         0.049510f  // Druid
-    };
     // Crit/agility to dodge/agility coefficient multipliers; 3.2.0 increased required agility by 15%
     const float crit_to_dodge[MAX_CLASSES] =
     {
@@ -5895,7 +5880,7 @@ void Player::GetDodgeFromAgility(float &diminishing, float &nondiminishing)
          1.60f/1.15f,    // Shaman
          1.00f/1.15f,    // Mage
          0.97f/1.15f,    // Warlock (?)
-         0.0f,           // ??
+         2.00f/1.15f,    // Monk
          2.00f/1.15f     // Druid
     };
 
@@ -5907,16 +5892,17 @@ void Player::GetDodgeFromAgility(float &diminishing, float &nondiminishing)
 
     // Dodge per agility is proportional to crit per agility, which is available from DBC files
     GtChanceToMeleeCritEntry  const* dodgeRatio = sGtChanceToMeleeCritStore.LookupEntry((pclass-1)*GT_MAX_LEVEL + level-1);
+    GtChanceToMeleeCritBaseEntry const* critBase  = sGtChanceToMeleeCritBaseStore.LookupEntry((pclass-1)*GT_MAX_LEVEL + level-1);
     if (dodgeRatio == NULL || pclass > MAX_CLASSES)
         return;
 
     // TODO: research if talents/effects that increase total agility by x% should increase non-diminishing part
     float base_agility = GetCreateStat(STAT_AGILITY) * m_auraModifiersGroup[UNIT_MOD_STAT_START + STAT_AGILITY][BASE_PCT];
-    float bonus_agility = GetStat(STAT_AGILITY) - base_agility;
+    float bonus_agility = GetTotalStatValue(STAT_AGILITY) - base_agility;
 
     // calculate diminishing (green in char screen) and non-diminishing (white) contribution
-    diminishing = 100.0f * bonus_agility * dodgeRatio->ratio * crit_to_dodge[pclass-1];
-    nondiminishing = 100.0f * (dodge_base[pclass-1] + base_agility * dodgeRatio->ratio * crit_to_dodge[pclass-1]);
+    diminishing = 100.0f * (bonus_agility / (100.0f * dodgeRatio->ratio) * crit_to_dodge[pclass-1]);
+    nondiminishing = (((base_agility - 1) / (dodgeRatio->ratio * 100)) * crit_to_dodge[pclass-1] + critBase->base) * 100.0f;
 }
 
 float Player::GetSpellCritFromIntellect()
@@ -7017,6 +7003,7 @@ uint32 Player::TeamForRace(uint8 race)
         {
             case 1: return HORDE;
             case 7: return ALLIANCE;
+            case 42: return PANDAREN_NEUTRAL;
         }
         sLog->outError(LOG_FILTER_PLAYER, "Race (%u) has wrong teamid (%u) in DBC: wrong DBC files?", uint32(race), rEntry->TeamID);
     }
@@ -12122,6 +12109,30 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
     // only for full equip instead adding to stack
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_ITEM, pItem->GetEntry());
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM, pItem->GetEntry(), slot);
+
+    // Custom MoP script
+    // Way of the Monk - 120277
+    if (getClass() == CLASS_MONK && HasAura(120277))
+    {
+        RemoveAurasDueToSpell(120275);
+        RemoveAurasDueToSpell(108977);
+
+        uint32 trigger = 0;
+        if (IsTwoHandUsed())
+        {
+            trigger = 120275;
+        }
+        else
+        {
+            Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+            Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+            if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON && offItem && offItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
+                trigger = 108977;
+        }
+
+        if (trigger)
+            CastSpell(this, trigger, true);
+    }
 
     return pItem;
 }
