@@ -675,28 +675,28 @@ public:
         switch (go->GetEntry())
         {
             case MATRIX_PUNCHOGRAPH_3005_A:
-                if (player->HasItemCount(ITEM_WHITE_PUNCH_CARD, 1))
+                if (player->HasItemCount(ITEM_WHITE_PUNCH_CARD))
                 {
                     player->DestroyItemCount(ITEM_WHITE_PUNCH_CARD, 1, true);
                     player->CastSpell(player, SPELL_YELLOW_PUNCH_CARD, true);
                 }
                 break;
             case MATRIX_PUNCHOGRAPH_3005_B:
-                if (player->HasItemCount(ITEM_YELLOW_PUNCH_CARD, 1))
+                if (player->HasItemCount(ITEM_YELLOW_PUNCH_CARD))
                 {
                     player->DestroyItemCount(ITEM_YELLOW_PUNCH_CARD, 1, true);
                     player->CastSpell(player, SPELL_BLUE_PUNCH_CARD, true);
                 }
                 break;
             case MATRIX_PUNCHOGRAPH_3005_C:
-                if (player->HasItemCount(ITEM_BLUE_PUNCH_CARD, 1))
+                if (player->HasItemCount(ITEM_BLUE_PUNCH_CARD))
                 {
                     player->DestroyItemCount(ITEM_BLUE_PUNCH_CARD, 1, true);
                     player->CastSpell(player, SPELL_RED_PUNCH_CARD, true);
                 }
                 break;
             case MATRIX_PUNCHOGRAPH_3005_D:
-                if (player->HasItemCount(ITEM_RED_PUNCH_CARD, 1))
+                if (player->HasItemCount(ITEM_RED_PUNCH_CARD))
                 {
                     player->DestroyItemCount(ITEM_RED_PUNCH_CARD, 1, true);
                     player->CastSpell(player, SPELL_PRISMATIC_PUNCH_CARD, true);
@@ -882,7 +882,7 @@ public:
 
     bool OnGossipHello(Player* player, GameObject* /*go*/)
     {
-        if (player->HasItemCount(ITEM_CUERGOS_KEY, 1))
+        if (player->HasItemCount(ITEM_CUERGOS_KEY))
             return false;
 
         player->CastSpell(player, SPELL_SUMMON_PIRATES_TREASURE_AND_TRIGGER_MOB, true);
@@ -908,7 +908,7 @@ public:
 
     bool OnGossipHello(Player* player, GameObject* go)
     {
-        if (!player->HasItemCount(ITEM_TELEPORTER_POWER_PACK, 1))
+        if (!player->HasItemCount(ITEM_TELEPORTER_POWER_PACK))
             return false;
 
         go->SummonCreature(NPC_IMAGE_WIND_TRADER, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), go->GetAngle(player), TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 60000);
