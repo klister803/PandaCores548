@@ -2963,7 +2963,7 @@ void World::LoadCharacterNameData()
     QueryResult result = CharacterDatabase.Query("SELECT guid, name, race, gender, class, level FROM characters WHERE deleteDate IS NULL");
     if (!result)
     {
-        sLog->outError(LOG_FILTER_SQL, "No character name data loaded, empty query");
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "No character name data loaded, empty query");
         return;
     }
 
