@@ -569,11 +569,8 @@ enum Opcodes
     MSG_CHANNEL_START                                 = 0x831,  // 5.0.5 16048
     MSG_CHANNEL_UPDATE                                = 0x8ED,  // 5.0.5 16048
     MSG_GM_BIND_OTHER                                 = 0x000,  // 5.0.5 16048
-    MSG_QUERY_GUILD_BANK_TEXT                         = 0x000,  // 5.0.5 16048 Splited in CMSG and SMSG
     MSG_GM_SHOWLABEL                                  = 0x000,  // 5.0.5 16048
     MSG_GM_SUMMON                                     = 0x000,  // 5.0.5 16048
-    MSG_GUILD_BANK_LOG_QUERY                          = 0x000,  // 5.0.5 16048 deprecated, now it's splited in CMSG and SMSG
-    MSG_GUILD_EVENT_LOG_QUERY                         = 0x000,  // 5.0.5 16048 deprecated, now it's splited in CMSG and SMSG
     MSG_INSPECT_ARENA_TEAMS                           = 0xC75,  // 5.0.5 16048
     MSG_LIST_STABLED_PETS                             = 0xD91,  // 5.0.5 16048
     MSG_MINIMAP_PING                                  = 0x808,  // 5.0.5 16048
@@ -881,9 +878,9 @@ enum Opcodes
     SMSG_GUILD_ACHIEVEMENT_EARNED                     = 0xA8E,  // 5.0.5 16048
     SMSG_GUILD_ACHIEVEMENT_MEMBERS                    = 0xA62,  // 5.0.5 16048
     SMSG_GUILD_BANK_LIST                              = 0xF2C,  // 5.0.5 16048
-    SMSG_GUILD_BANK_LOG_QUERY_RESULTS                 = 0xF7F,  // 5.0.5 16048
+    SMSG_GUILD_BANK_LOG_QUERY_RESULT                  = 0xF7F,  // 5.0.5 16048
     SMSG_GUILD_BANK_MONEY_WITHDRAWN                   = 0xE78,  // 5.0.5 16048
-    SMSG_GUILD_BANK_QUERY_TEXT_RESULTS                = 0xF1C,  // 5.0.5 16048
+    SMSG_GUILD_BANK_QUERY_TEXT_RESULT                 = 0xF1C,  // 5.0.5 16048
     SMSG_GUILD_CANCEL                                 = 0x000,  // 5.0.5 16048
     SMSG_GUILD_CHALLENGE_COMPLETED                    = 0xA96,  // 5.0.5 16048
     SMSG_GUILD_CHALLENGE_UPDATED                      = 0xEDC,  // 5.0.5 16048
@@ -894,7 +891,7 @@ enum Opcodes
     SMSG_GUILD_CRITERIA_DELETED                       = 0xF6B,  // 5.0.5 16048
     SMSG_GUILD_DECLINE                                = 0x94F,  // 5.0.5 16048
     SMSG_GUILD_EVENT                                  = 0x8E4,  // 5.0.5 16048
-    SMSG_GUILD_EVENT_LOG_QUERY                        = 0xEB6,  // 5.0.5 16048
+    SMSG_GUILD_EVENT_LOG_QUERY_RESULT                 = 0xEB6,  // 5.0.5 16048
     SMSG_GUILD_FLAGGED_FOR_RENAME                     = 0xACD,  // 5.0.5 16048
     SMSG_GUILD_INVITE                                 = 0xF69,  // 5.0.5 16048
     SMSG_GUILD_INVITE_CANCEL                          = 0,
