@@ -184,16 +184,16 @@ enum GuildBankRights
 
 enum GuildBankEventLogTypes
 {
-GUILD_BANK_LOG_DEPOSIT_ITEM         = 1,
-GUILD_BANK_LOG_WITHDRAW_ITEM        = 2,
-GUILD_BANK_LOG_MOVE_ITEM            = 3,
-GUILD_BANK_LOG_DEPOSIT_MONEY        = 4,
-GUILD_BANK_LOG_WITHDRAW_MONEY       = 5,
-GUILD_BANK_LOG_REPAIR_MONEY         = 6,
-GUILD_BANK_LOG_MOVE_ITEM2           = 7,
-GUILD_BANK_LOG_UNK1                 = 8,
-GUILD_BANK_LOG_BUY_SLOT             = 9,
-GUILD_BANK_LOG_CASH_FLOW_DEPOSIT    = 10,
+    GUILD_BANK_LOG_DEPOSIT_ITEM         = 1,
+    GUILD_BANK_LOG_WITHDRAW_ITEM        = 2,
+    GUILD_BANK_LOG_MOVE_ITEM            = 3,
+    GUILD_BANK_LOG_DEPOSIT_MONEY        = 4,
+    GUILD_BANK_LOG_WITHDRAW_MONEY       = 5,
+    GUILD_BANK_LOG_REPAIR_MONEY         = 6,
+    GUILD_BANK_LOG_MOVE_ITEM2           = 7,
+    GUILD_BANK_LOG_UNK1                 = 8,
+    GUILD_BANK_LOG_BUY_SLOT             = 9,
+    GUILD_BANK_LOG_CASH_FLOW_DEPOSIT    = 10,
 };
 
 enum GuildEventLogTypes
@@ -225,7 +225,7 @@ enum GuildMemberFlags
     GUILDMEMBER_STATUS_MOBILE    = 0x0008, // remote chat from mobile app
 };
 
-#define GUILD_REPUTATION_WEEKLY_CAP 4375
+#define GUILD_EXPERIENCE_UNCAPPED_LEVEL 20  ///> Hardcoded in client, starting from this level, guild daily experience 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Emblem info
@@ -678,6 +678,7 @@ public:
     void SendMoneyInfo(WorldSession* session) const;
     void SendLoginInfo(WorldSession* session) const;
     void SendGuildReputationWeeklyCap(WorldSession* session) const;
+    void SendGuildXP(WorldSession* session) const;
 
     // Load from DB
     bool LoadFromDB(Field* fields);
@@ -723,7 +724,12 @@ public:
     AchievementMgr<Guild>& GetAchievementMgr() { return m_achievementMgr; }
     AchievementMgr<Guild> const& GetAchievementMgr() const { return m_achievementMgr; }
 
-    uint32 GetLevel() const { return m_level; }
+     // Guild leveling
+    uint32 GetLevel() const { return _level; }
+    void GiveXP(uint32 xp, Player* source);
+    uint64 GetExperience() const { return _experience; }
+    uint64 GetTodayExperience() const { return _todayExperience; }
+    void ResetDailyExperience();
 
     EmblemInfo const& GetEmblemInfo() const { return m_emblemInfo; }
 
@@ -749,7 +755,9 @@ protected:
 
     AchievementMgr<Guild> m_achievementMgr;
 
-    uint32 m_level;
+    uint32 _level;
+    uint64 _experience;
+    uint64 _todayExperience;
 
 private:
     inline uint32 _GetRanksSize() const { return uint32(m_ranks.size()); }
