@@ -1925,6 +1925,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
         case FORM_GHOSTWOLF:                                // 0x10
 
         case FORM_WISE_SERPENT:                             // 0x14
+            PowerType = POWER_MANA;
+            break;
         case FORM_ZOMBIE:                                   // 0x15
         case FORM_METAMORPHOSIS:                            // 0x16
         case FORM_STURDY_OX:                                // 0x17
