@@ -1160,7 +1160,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
         {
             if (auramask & (uint64(1) << i))
             {
-                AuraApplication const* aurApp = player->GetVisibleAura(i);
+                AuraApplication const* aurApp = pet->GetVisibleAura(i);
                 if (!aurApp)
                 {
                     *data << uint32(0);
