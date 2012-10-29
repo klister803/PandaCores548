@@ -9178,24 +9178,59 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_LOOTING);
 }
 
-void Player::SendNotifyLootMoneyRemoved()
+void Player::SendNotifyLootMoneyRemoved(uint64 gold)
 {
-    WorldPacket data(SMSG_LOOT_CLEAR_MONEY, 0);
+    WorldPacket data(SMSG_LOOT_CLEAR_MONEY);
+    data << uint64(gold);
+    GetSession()->SendPacket(&data);
+
+    data.Initialize(SMSG_COIN_REMOVED);
+    ObjectGuid guid = GetLootGUID();
+
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[7]);
+
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[3]);
+    
     GetSession()->SendPacket(&data);
 }
 
 void Player::SendNotifyLootItemRemoved(uint8 lootSlot)
 {
     WorldPacket data(SMSG_LOOT_REMOVED);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
+    ObjectGuid guid = GetLootGUID();
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[5]);
+
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[2]);
     data << uint8(lootSlot);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[1]);
+
     GetSession()->SendPacket(&data);
 }
 
@@ -14103,7 +14138,47 @@ void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, 
         return;
 
                                                             // last check 2.0.10
-    WorldPacket data(SMSG_ITEM_PUSH_RESULT, (8+4+4+4+1+4+4+4+4+4));
+    WorldPacket data(SMSG_ITEM_PUSH_RESULT);
+    ObjectGuid guid = GetGUID();
+
+    data << uint8(item->GetBagSlot());                      // bagslot
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(GetItemCount(item->GetEntry()));         // count of items in inventory
+    data << uint32(count);                                  // count of items
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(item->GetEntry());                       // item id
+
+    data.WriteBit(1);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(1);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(0); //Sometimes 1
+
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[6]);
+
+    if (broadcast && GetGroup())
+        GetGroup()->BroadcastPacket(&data, true);
+    else
+        GetSession()->SendPacket(&data);
+
     /*data << uint64(GetGUID());                              // player GUID
     data << uint32(received);                               // 0=looted, 1=from npc
     data << uint32(created);                                // 0=received, 1=created

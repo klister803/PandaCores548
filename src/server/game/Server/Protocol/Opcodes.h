@@ -319,7 +319,7 @@ enum Opcodes
     CMSG_LOOT_CURRENCY                                = 0,
     CMSG_LOOT_MASTER_GIVE                             = 0,
     CMSG_LOOT_METHOD                                  = 0x7F6,  // 5.0.5 16048
-    CMSG_LOOT_MONEY                                   = 0,
+    CMSG_LOOT_MONEY                                   = 0x2D7,  // 5.0.5 16048
     CMSG_LOOT_RELEASE                                 = 0x0B2,  // 5.0.5 16048
     CMSG_LOOT_ROLL                                    = 0,
     CMSG_MAIL_CREATE_TEXT_ITEM                        = 0x834,  // 5.0.5 16048
@@ -1002,7 +1002,7 @@ enum Opcodes
     SMSG_LOGOUT_RESPONSE                              = 0xD86,  // 5.0.5 16048
     SMSG_LOG_XPGAIN                                   = 0x98A,	// 5.0.5 16048
     SMSG_LOOT_ALL_PASSED                              = 0, //0xE49
-    SMSG_LOOT_CLEAR_MONEY                             = 0,
+    SMSG_LOOT_CLEAR_MONEY                             = 0xB33,
     SMSG_LOOT_CONTENTS                                = 0xBFC,  // 5.0.5 16048
     SMSG_LOOT_ITEM_NOTIFY                             = 0,
     SMSG_LOOT_LIST                                    = 0xC37,
@@ -1015,6 +1015,7 @@ enum Opcodes
     SMSG_LOOT_ROLL_WON                                = 0, //0xF32
     SMSG_LOOT_SLOT_CHANGED                            = 0,
     SMSG_LOOT_START_ROLL                              = 0, //0xEF4
+    SMSG_COIN_REMOVED                                 = 0xBB1,  // 5.0.5 16048
     SMSG_MAIL_LIST_RESULT                             = 0x95E,  // 5.0.5 16048
     SMSG_MAP_OBJ_EVENTS                               = 0xBF6,  // 5.0.5 16048
     SMSG_MEETINGSTONE_COMPLETE                        = 0x8E0,  // 5.0.5 16048

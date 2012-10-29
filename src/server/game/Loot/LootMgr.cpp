@@ -591,7 +591,7 @@ void Loot::NotifyItemRemoved(uint8 lootIndex)
     }
 }
 
-void Loot::NotifyMoneyRemoved()
+void Loot::NotifyMoneyRemoved(uint64 gold)
 {
     // notify all players that are looting this that the money was removed
     std::set<uint64>::iterator i_next;
@@ -600,7 +600,7 @@ void Loot::NotifyMoneyRemoved()
         i_next = i;
         ++i_next;
         if (Player* player = ObjectAccessor::FindPlayer(*i))
-            player->SendNotifyLootMoneyRemoved();
+            player->SendNotifyLootMoneyRemoved(gold);
         else
             PlayersLooting.erase(i);
     }
