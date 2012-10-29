@@ -201,7 +201,7 @@ public:
         {
             player->CLOSE_GOSSIP_MENU();
             //Makes player cast trigger spell for 49207 on self
-            player->CastSpell(creature, SPELL_CHARACTER_SCRIPT, true);
+            player->CastSpell(player, SPELL_CHARACTER_SCRIPT, true);
         }
 
         return true;
