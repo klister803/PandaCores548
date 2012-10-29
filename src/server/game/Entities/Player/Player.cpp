@@ -988,7 +988,7 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
 
     SetUInt64Value(OBJECT_FIELD_DATA, 0);
     SetUInt32Value(PLAYER_GUILDRANK, 0);
-    SetUInt32Value(PLAYER_GUILDLEVEL, 0);
+    SetGuildLevel(0);
     SetUInt32Value(PLAYER_GUILD_TIMESTAMP, 0);
 
     for (int i = 0; i < KNOWN_TITLES_SIZE; ++i)
@@ -7541,11 +7541,22 @@ uint32 Player::_GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const
    {
        WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
        packet << uint32(currency->ID);
-       packet << uint32(cap / ((currency->Flags & 0x8) ? 100 : 1));
+       packet << uint32(cap / ((currency->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? 100 : 1));
        GetSession()->SendPacket(&packet);
    }
 
    return cap;
+}
+
+void Player::SetInGuild(uint32 guildId)
+{
+    if (guildId)
+        SetUInt64Value(OBJECT_FIELD_DATA, MAKE_NEW_GUID(guildId, 0, HIGHGUID_GUILD));
+    else
+        SetUInt64Value(OBJECT_FIELD_DATA, 0);
+
+    ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_GUILD_LEVEL_ENABLED, guildId != 0 && sWorld->getBoolConfig(CONFIG_GUILD_LEVELING_ENABLED));
+    SetUInt16Value(OBJECT_FIELD_TYPE, 1, guildId != 0);
 }
 
 uint32 Player::GetGuildIdFromDB(uint64 guid)
@@ -15142,7 +15153,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     bool rewarded = (m_RewardedQuests.find(quest_id) != m_RewardedQuests.end());
 
     // Not give XP in case already completed once repeatable quest
-    uint32 XP = rewarded ? 0 : uint32(quest->XPValue(this)*sWorld->getRate(RATE_XP_QUEST));
+    uint32 XP = rewarded ? 0 : uint32(quest->XPValue(this) * sWorld->getRate(RATE_XP_QUEST));
 
     // handle SPELL_AURA_MOD_XP_QUEST_PCT auras
     Unit::AuraEffectList const& ModXPPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_XP_QUEST_PCT);
@@ -15154,6 +15165,9 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
         GiveXP(XP, NULL);
     else
         moneyRew = int32(quest->GetRewMoneyMaxLevel() * sWorld->getRate(RATE_DROP_MONEY));
+
+    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+        guild->GiveXP(uint32(quest->XPValue(this) * sWorld->getRate(RATE_XP_QUEST) * sWorld->getRate(RATE_XP_GUILD_MODIFIER)), this);
 
     // Give player extra money if GetRewOrReqMoney > 0 and get ReqMoney if negative
     if (quest->GetRewOrReqMoney())
