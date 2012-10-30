@@ -237,7 +237,7 @@ class AchievementMgr
         void CheckAllAchievementCriteria(Player* referencePlayer);
         void SendAllAchievementData(Player* receiver) const;
         void SendAchievementInfo(Player* receiver, uint32 achievementId = 0) const;
-        bool HasAchieved(uint32 achievementId);
+        bool HasAchieved(uint32 achievementId) const;
         T* GetOwner() const { return _owner; }
 
         void UpdateTimedAchievements(uint32 timeDiff);
@@ -266,6 +266,7 @@ class AchievementMgr
         CompletedAchievementMap m_completedAchievements;
         typedef std::map<uint32, uint32> TimedAchievementMap;
         TimedAchievementMap m_timedAchievements;      // Criteria id/time left in MS
+        uint32 _achievementPoints;
 };
 
 class AchievementGlobalMgr
