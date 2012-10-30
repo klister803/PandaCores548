@@ -35,6 +35,7 @@
 Battlefield::Battlefield()
 {
     m_Guid = MAKE_NEW_GUID(m_TypeId, 0, HIGHGUID_TYPE_BATTLEGROUND);
+    m_Guid |= 0x20000; // BATTLEFIELD_TYPE_WORLD_PVP 5.0.5
     m_Timer = 0;
     m_IsEnabled = true;
     m_isActive = false;
@@ -258,7 +259,7 @@ void Battlefield::InvitePlayerToWar(Player* player)
         m_PlayersInQueue[player->GetTeamId()].erase(player->GetGUID());
         return;
     }
-
+    -
     // If the player does not match minimal level requirements for the battlefield, kick him
     if (player->getLevel() < m_MinLevel)
     {

@@ -47,11 +47,11 @@ void WorldSession::SendBfInvitePlayerToWar(uint64 guid, uint32 zoneId, uint32 pT
 
     data.WriteByteSeq(guidBytes[0]);
     data.WriteByteSeq(guidBytes[7]);
-    data << uint32(zoneId);         // Zone Id // May swap with invite time
+    data << uint32(time(NULL) + pTime); // Invite lasts until
     data.WriteByteSeq(guidBytes[6]);
     data.WriteByteSeq(guidBytes[5]);
     data.WriteByteSeq(guidBytes[3]);
-    data << uint32(time(NULL) + pTime); // Invite lasts until
+    data << uint32(zoneId);         // Zone Id
     data.WriteByteSeq(guidBytes[1]);
     data.WriteByteSeq(guidBytes[4]);   
     data.WriteByteSeq(guidBytes[2]);
