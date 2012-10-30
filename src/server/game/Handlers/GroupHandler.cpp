@@ -706,7 +706,7 @@ void WorldSession::HandleLootRoll(WorldPacket& recvData)
     uint8 itemSlot;
     uint8  rollType;
 
-    recvData >> itemSlot;
+    recvData >> itemSlot; //always 0
     recvData >> rollType;              // 0: pass, 1: need, 2: greed
 
     guid[4] = recvData.ReadBit();

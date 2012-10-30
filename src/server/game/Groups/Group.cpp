@@ -887,11 +887,11 @@ void Group::SendLootStartRoll(uint32 countDown, uint32 mapid, const Roll &r)
     data.WriteBit(guid[5]);
     data.WriteBit(guid[1]);
 
-    data << uint32(r.itemRandomSuffix);                     // randomSuffix
+    data << uint32(0);                     // randomSuffix
     data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(guid[4]);
     data.WriteByteSeq(guid[6]);
-    data << uint32(countDown);                              // the countdown time to choose "need" or "greed"
+    data << uint32(r.itemRandomPropId);                              // the countdown time to choose "need" or "greed"
     data.WriteByteSeq(guid[5]);
     data << uint32(countDown);                              // the countdown time to choose "need" or "greed"
     data << uint8(r.rollVoteMask);                          // roll type mask
@@ -900,7 +900,7 @@ void Group::SendLootStartRoll(uint32 countDown, uint32 mapid, const Roll &r)
     data.WriteByteSeq(guid[2]);
     data.WriteByteSeq(guid[0]);
     data << uint32(r.itemCount);                            // items in stack
-    data << uint32(r.itemRandomPropId);                     // item random property ID
+    data << uint32(r.itemRandomSuffix);                     // item random property ID
     data << uint32(mapid);                                  // 3.3.3 mapid
     data << uint8(r.totalPlayersRolling);                   // maybe the number of players rolling for it???
     data << uint32(r.itemid);                               // the itemEntryId for the item that shall be rolled for
@@ -945,11 +945,11 @@ void Group::SendLootStartRollToPlayer(uint32 countDown, uint32 mapId, Player* p,
     data.WriteBit(guid[5]);
     data.WriteBit(guid[1]);
 
-    data << uint32(r.itemRandomSuffix);                     // randomSuffix
+    data << uint32(0);                     // randomSuffix
     data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(guid[4]);
     data.WriteByteSeq(guid[6]);
-    data << uint32(countDown);                              // the countdown time to choose "need" or "greed"
+    data << uint32(r.itemRandomPropId);
     data.WriteByteSeq(guid[5]);
     data << uint32(countDown);                              // the countdown time to choose "need" or "greed"
     data << uint8(r.rollVoteMask);                          // roll type mask
@@ -958,7 +958,7 @@ void Group::SendLootStartRollToPlayer(uint32 countDown, uint32 mapId, Player* p,
     data.WriteByteSeq(guid[2]);
     data.WriteByteSeq(guid[0]);
     data << uint32(r.itemCount);                            // items in stack
-    data << uint32(r.itemRandomPropId);                     // item random property ID
+    data << uint32(r.itemRandomSuffix);                     // item random property ID
     data << uint32(mapId);                                  // 3.3.3 mapid
     data << uint8(r.totalPlayersRolling);                   // maybe the number of players rolling for it???
     data << uint32(r.itemid);                               // the itemEntryId for the item that shall be rolled for
@@ -992,7 +992,7 @@ void Group::SendLootRoll(uint64 sourceGuid, uint64 targetGuid, uint8 rollNumber,
     data.WriteBit(1);
     data.WriteBit(guid[5]);
     
-    data << uint32(roll.itemRandomPropId);                  // Item random property ID
+    data << uint32(roll.itemRandomSuffix);                  // Item random property ID
     data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(target[1]);
     data.WriteByteSeq(guid[2]);
@@ -1000,11 +1000,11 @@ void Group::SendLootRoll(uint64 sourceGuid, uint64 targetGuid, uint8 rollNumber,
     data << uint32(roll.itemid);                            // the itemEntryId for the item that shall be rolled for
     
     data.WriteByteSeq(guid[0]);
-    data << uint8(rollType);                                // 0: "Need for: [item name]" 0: "You have selected need for [item name] 1: need roll 2: greed roll
+    data << uint8(3);//rollType);                                // 0: "Need for: [item name]" 0: "You have selected need for [item name] 1: need roll 2: greed roll
     data.WriteByteSeq(target[6]);
     data.WriteByteSeq(target[2]);
     
-    data << uint32(roll.itemSlot);                          // slot
+    data << uint32(1);//roll.itemSlot);                          // slot
     data.WriteByteSeq(target[5]);
     data.WriteByteSeq(guid[7]);
     data.WriteByteSeq(guid[4]);
@@ -1012,10 +1012,10 @@ void Group::SendLootRoll(uint64 sourceGuid, uint64 targetGuid, uint8 rollNumber,
     data.WriteByteSeq(target[7]);
     data.WriteByteSeq(guid[5]);
     data.WriteByteSeq(target[4]);
-    data << uint32(0);
+    data << uint32(roll.itemRandomPropId);
     data.WriteByteSeq(guid[1]);
-    data << uint32(roll.itemRandomSuffix);                  // randomSuffix
-    data << uint32(rollNumber);                             // 0: "Need for: [item name]" > 127: "you passed on: [item name]"      Roll number
+    data << uint32(0);                  // randomSuffix
+    data << uint32(4294967288);//rollNumber);                             // 0: "Need for: [item name]" > 127: "you passed on: [item name]"      Roll number
     data.WriteByteSeq(target[0]);
     data.WriteByteSeq(target[3]);
     /*data << uint64(sourceGuid);                             // guid of the item rolled
