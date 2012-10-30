@@ -184,15 +184,16 @@ enum GuildBankRights
 
 enum GuildBankEventLogTypes
 {
-    GUILD_BANK_LOG_DEPOSIT_ITEM     = 1,
-    GUILD_BANK_LOG_WITHDRAW_ITEM    = 2,
-    GUILD_BANK_LOG_MOVE_ITEM        = 3,
-    GUILD_BANK_LOG_DEPOSIT_MONEY    = 4,
-    GUILD_BANK_LOG_WITHDRAW_MONEY   = 5,
-    GUILD_BANK_LOG_REPAIR_MONEY     = 6,
-    GUILD_BANK_LOG_MOVE_ITEM2       = 7,
-    GUILD_BANK_LOG_UNK1             = 8,
-    GUILD_BANK_LOG_BUY_SLOT         = 9,
+    GUILD_BANK_LOG_DEPOSIT_ITEM         = 1,
+    GUILD_BANK_LOG_WITHDRAW_ITEM        = 2,
+    GUILD_BANK_LOG_MOVE_ITEM            = 3,
+    GUILD_BANK_LOG_DEPOSIT_MONEY        = 4,
+    GUILD_BANK_LOG_WITHDRAW_MONEY       = 5,
+    GUILD_BANK_LOG_REPAIR_MONEY         = 6,
+    GUILD_BANK_LOG_MOVE_ITEM2           = 7,
+    GUILD_BANK_LOG_UNK1                 = 8,
+    GUILD_BANK_LOG_BUY_SLOT             = 9,
+    GUILD_BANK_LOG_CASH_FLOW_DEPOSIT    = 10,
 };
 
 enum GuildEventLogTypes
@@ -224,7 +225,7 @@ enum GuildMemberFlags
     GUILDMEMBER_STATUS_MOBILE    = 0x0008, // remote chat from mobile app
 };
 
-#define GUILD_REPUTATION_WEEKLY_CAP 4375
+#define GUILD_EXPERIENCE_UNCAPPED_LEVEL 20  ///> Hardcoded in client, starting from this level, guild daily experience 
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // Emblem info
@@ -357,7 +358,7 @@ private:
         uint32 GetGUID() const { return m_guid; }
 
         virtual void SaveToDB(SQLTransaction& trans) const = 0;
-        virtual void WritePacket(WorldPacket& data) const = 0;
+        virtual void WritePacket(WorldPacket& data, ByteBuffer& content) const = 0;
 
     protected:
         uint32 m_guildId;
@@ -378,7 +379,7 @@ private:
         ~EventLogEntry() { }
 
         void SaveToDB(SQLTransaction& trans) const;
-        void WritePacket(WorldPacket& data) const;
+        void WritePacket(WorldPacket& data, ByteBuffer& content) const;
 
     private:
         GuildEventLogTypes m_eventType;
@@ -396,7 +397,13 @@ private:
             return
                 eventType == GUILD_BANK_LOG_DEPOSIT_MONEY ||
                 eventType == GUILD_BANK_LOG_WITHDRAW_MONEY ||
-                eventType == GUILD_BANK_LOG_REPAIR_MONEY;
+                eventType == GUILD_BANK_LOG_REPAIR_MONEY ||
+                eventType == GUILD_BANK_LOG_CASH_FLOW_DEPOSIT;
+        }
+
+        bool IsMoneyEvent() const
+        {
+            return IsMoneyEvent(m_eventType);
         }
 
         BankEventLogEntry(uint32 guildId, uint32 guid, GuildBankEventLogTypes eventType, uint8 tabId, uint32 playerGuid, uint32 itemOrMoney, uint16 itemStackCount, uint8 destTabId) :
@@ -410,7 +417,7 @@ private:
         ~BankEventLogEntry() { }
 
         void SaveToDB(SQLTransaction& trans) const;
-        void WritePacket(WorldPacket& data) const;
+        void WritePacket(WorldPacket& data, ByteBuffer& content) const;
 
     private:
         GuildBankEventLogTypes m_eventType;
@@ -503,16 +510,16 @@ private:
         bool LoadItemFromDB(Field* fields);
         void Delete(SQLTransaction& trans, bool removeItemsFromDB = false);
 
-        void SetInfo(const std::string& name, const std::string& icon);
-        void SetText(const std::string& text);
-        void SendText(const Guild* guild, WorldSession* session) const;
+        void SetInfo(std::string const& name, std::string const& icon);
+        void SetText(std::string const& text);
+        void SendText(Guild const* guild, WorldSession* session) const;
 
         std::string const& GetName() const { return m_name; }
         std::string const& GetIcon() const { return m_icon; }
         std::string const& GetText() const { return m_text; }
 
         inline Item* GetItem(uint8 slotId) const { return slotId < GUILD_BANK_MAX_SLOTS ?  m_items[slotId] : NULL; }
-        bool SetItem(SQLTransaction& trans, uint8 slotId, Item* pItem);
+        bool SetItem(SQLTransaction& trans, uint8 slotId, Item* item);
 
     private:
         uint32 m_guildId;
@@ -671,6 +678,7 @@ public:
     void SendMoneyInfo(WorldSession* session) const;
     void SendLoginInfo(WorldSession* session) const;
     void SendGuildReputationWeeklyCap(WorldSession* session) const;
+    void SendGuildXP(WorldSession* session) const;
 
     // Load from DB
     bool LoadFromDB(Field* fields);
@@ -716,7 +724,12 @@ public:
     AchievementMgr<Guild>& GetAchievementMgr() { return m_achievementMgr; }
     AchievementMgr<Guild> const& GetAchievementMgr() const { return m_achievementMgr; }
 
-    uint32 GetLevel() const { return m_level; }
+     // Guild leveling
+    uint32 GetLevel() const { return _level; }
+    void GiveXP(uint32 xp, Player* source);
+    uint64 GetExperience() const { return _experience; }
+    uint64 GetTodayExperience() const { return _todayExperience; }
+    void ResetDailyExperience();
 
     EmblemInfo const& GetEmblemInfo() const { return m_emblemInfo; }
 
@@ -742,7 +755,9 @@ protected:
 
     AchievementMgr<Guild> m_achievementMgr;
 
-    uint32 m_level;
+    uint32 _level;
+    uint64 _experience;
+    uint64 _todayExperience;
 
 private:
     inline uint32 _GetRanksSize() const { return uint32(m_ranks.size()); }
