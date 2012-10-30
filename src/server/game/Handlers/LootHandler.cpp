@@ -183,7 +183,6 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
 
     if (loot)
     {
-        loot->NotifyMoneyRemoved();
         if (shareMoney && player->GetGroup())      //item, pickpocket and players can be looted only single player
         {
             Group* group = player->GetGroup();
@@ -200,15 +199,16 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
             }
 
             uint32 goldPerPlayer = uint32((loot->gold) / (playersNear.size()));
-
+            
+            loot->NotifyMoneyRemoved(goldPerPlayer);
             for (std::vector<Player*>::const_iterator i = playersNear.begin(); i != playersNear.end(); ++i)
             {
                 (*i)->ModifyMoney(goldPerPlayer);
                 (*i)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, goldPerPlayer);
 
                 WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
+                data.WriteBit(playersNear.size() > 1 ? 0 : 1);     // Controls the text displayed in chat. 0 is "Your share is..." and 1 is "You loot..."
                 data << uint32(goldPerPlayer);
-                data << uint8(playersNear.size() > 1 ? 0 : 1);     // Controls the text displayed in chat. 0 is "Your share is..." and 1 is "You loot..."
                 (*i)->GetSession()->SendPacket(&data);
             }
         }
@@ -216,10 +216,11 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
         {
             player->ModifyMoney(loot->gold);
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, loot->gold);
-
+            
+            loot->NotifyMoneyRemoved(loot->gold);
             WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
+            data.WriteBit(1);   // "You loot..."
             data << uint32(loot->gold);
-            data << uint8(1);   // "You loot..."
             SendPacket(&data);
         }
 

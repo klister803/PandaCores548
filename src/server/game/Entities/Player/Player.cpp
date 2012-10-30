@@ -988,7 +988,7 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
 
     SetUInt64Value(OBJECT_FIELD_DATA, 0);
     SetUInt32Value(PLAYER_GUILDRANK, 0);
-    SetUInt32Value(PLAYER_GUILDLEVEL, 0);
+    SetGuildLevel(0);
     SetUInt32Value(PLAYER_GUILD_TIMESTAMP, 0);
 
     for (int i = 0; i < KNOWN_TITLES_SIZE; ++i)
@@ -7415,13 +7415,16 @@ bool Player::HasCurrency(uint32 id, uint32 count) const
     return itr != m_currencies.end() && itr->second.totalCount >= count;
 }
 
-void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/)
+void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/)
 {
     if (!count)
         return;
 
     CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(id);
     ASSERT(currency);
+
+    if (!ignoreMultipliers)
+        count *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_CURRENCY_GAIN, id);
 
     int32 precision = currency->Flags & CURRENCY_FLAG_HIGH_PRECISION ? 100 : 1;
     uint32 oldTotalCount = 0;
@@ -7538,11 +7541,22 @@ uint32 Player::_GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const
    {
        WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
        packet << uint32(currency->ID);
-       packet << uint32(cap / ((currency->Flags & 0x8) ? 100 : 1));
+       packet << uint32(cap / ((currency->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? 100 : 1));
        GetSession()->SendPacket(&packet);
    }
 
    return cap;
+}
+
+void Player::SetInGuild(uint32 guildId)
+{
+    if (guildId)
+        SetUInt64Value(OBJECT_FIELD_DATA, MAKE_NEW_GUID(guildId, 0, HIGHGUID_GUILD));
+    else
+        SetUInt64Value(OBJECT_FIELD_DATA, 0);
+
+    ApplyModFlag(PLAYER_FLAGS, PLAYER_FLAGS_GUILD_LEVEL_ENABLED, guildId != 0 && sWorld->getBoolConfig(CONFIG_GUILD_LEVELING_ENABLED));
+    SetUInt16Value(OBJECT_FIELD_TYPE, 1, guildId != 0);
 }
 
 uint32 Player::GetGuildIdFromDB(uint64 guid)
@@ -9175,24 +9189,59 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
         SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_LOOTING);
 }
 
-void Player::SendNotifyLootMoneyRemoved()
+void Player::SendNotifyLootMoneyRemoved(uint64 gold)
 {
-    WorldPacket data(SMSG_LOOT_CLEAR_MONEY, 0);
+    WorldPacket data(SMSG_LOOT_CLEAR_MONEY);
+    data << uint64(gold);
+    GetSession()->SendPacket(&data);
+
+    data.Initialize(SMSG_COIN_REMOVED);
+    ObjectGuid guid = GetLootGUID();
+
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[7]);
+
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[3]);
+    
     GetSession()->SendPacket(&data);
 }
 
 void Player::SendNotifyLootItemRemoved(uint8 lootSlot)
 {
     WorldPacket data(SMSG_LOOT_REMOVED);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
-    data.WriteBit(0);
+    ObjectGuid guid = GetLootGUID();
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[5]);
+
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[2]);
     data << uint8(lootSlot);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[6]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[1]);
+
     GetSession()->SendPacket(&data);
 }
 
@@ -14100,7 +14149,47 @@ void Player::SendNewItem(Item* item, uint32 count, bool received, bool created, 
         return;
 
                                                             // last check 2.0.10
-    WorldPacket data(SMSG_ITEM_PUSH_RESULT, (8+4+4+4+1+4+4+4+4+4));
+    WorldPacket data(SMSG_ITEM_PUSH_RESULT);
+    ObjectGuid guid = GetGUID();
+
+    data << uint8(item->GetBagSlot());                      // bagslot
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(GetItemCount(item->GetEntry()));         // count of items in inventory
+    data << uint32(count);                                  // count of items
+    data << uint32(0);
+    data << uint32(0);
+    data << uint32(item->GetEntry());                       // item id
+
+    data.WriteBit(1);
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(1);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(0); //Sometimes 1
+
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[6]);
+
+    if (broadcast && GetGroup())
+        GetGroup()->BroadcastPacket(&data, true);
+    else
+        GetSession()->SendPacket(&data);
+
     /*data << uint64(GetGUID());                              // player GUID
     data << uint32(received);                               // 0=looted, 1=from npc
     data << uint32(created);                                // 0=received, 1=created
@@ -15064,7 +15153,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     bool rewarded = (m_RewardedQuests.find(quest_id) != m_RewardedQuests.end());
 
     // Not give XP in case already completed once repeatable quest
-    uint32 XP = rewarded ? 0 : uint32(quest->XPValue(this)*sWorld->getRate(RATE_XP_QUEST));
+    uint32 XP = rewarded ? 0 : uint32(quest->XPValue(this) * sWorld->getRate(RATE_XP_QUEST));
 
     // handle SPELL_AURA_MOD_XP_QUEST_PCT auras
     Unit::AuraEffectList const& ModXPPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_XP_QUEST_PCT);
@@ -15076,6 +15165,9 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
         GiveXP(XP, NULL);
     else
         moneyRew = int32(quest->GetRewMoneyMaxLevel() * sWorld->getRate(RATE_DROP_MONEY));
+
+    if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+        guild->GiveXP(uint32(quest->XPValue(this) * sWorld->getRate(RATE_XP_QUEST) * sWorld->getRate(RATE_XP_GUILD_MODIFIER)), this);
 
     // Give player extra money if GetRewOrReqMoney > 0 and get ReqMoney if negative
     if (quest->GetRewOrReqMoney())
@@ -18516,11 +18608,11 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
         uint32 missingItem = 0;
         if (ar->item)
         {
-            if (!HasItemCount(ar->item, 1) &&
-                (!ar->item2 || !HasItemCount(ar->item2, 1)))
+            if (!HasItemCount(ar->item) &&
+                (!ar->item2 || !HasItemCount(ar->item2)))
                 missingItem = ar->item;
         }
-        else if (ar->item2 && !HasItemCount(ar->item2, 1))
+        else if (ar->item2 && !HasItemCount(ar->item2))
             missingItem = ar->item2;
 
         if (DisableMgr::IsDisabledFor(DISABLE_TYPE_MAP, target_map, this))
@@ -21050,6 +21142,12 @@ void Player::InitDataForForm(bool reapplyMods)
                 setPowerType(POWER_RAGE);
             break;
         }
+        case FORM_WISE_SERPENT:
+        {
+            if (getPowerType() != POWER_MANA)
+                setPowerType(POWER_MANA);
+            break;
+        }
         default:                                            // 0, for example
         {
             ChrClassesEntry const* cEntry = sChrClassesStore.LookupEntry(getClass());
@@ -21120,7 +21218,7 @@ inline bool Player::_StoreOrEquipNewItem(uint32 vendorslot, uint32 item, uint8 c
         for (int i = 0; i < MAX_ITEM_EXT_COST_CURRENCIES; ++i)
         {
             if (iece->RequiredCurrency[i])
-                ModifyCurrency(iece->RequiredCurrency[i], -int32(iece->RequiredCurrencyCount[i]));
+                ModifyCurrency(iece->RequiredCurrency[i], -int32(iece->RequiredCurrencyCount[i]), true, true);
         }
     }
 
@@ -21254,7 +21352,7 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
         return false;
     }
 
-    ModifyCurrency(currency, crItem->maxcount);
+    ModifyCurrency(currency, crItem->maxcount, true, true);
 
     return true;
 }
@@ -23190,7 +23288,7 @@ uint32 Player::GetResurrectionSpellId()
     }
 
     // Reincarnation (passive spell)  // prio: 1                  // Glyph of Renewed Life
-    if (prio < 1 && HasSpell(20608) && !HasSpellCooldown(21169) && (HasAura(58059) || HasItemCount(17030, 1)))
+    if (prio < 1 && HasSpell(20608) && !HasSpellCooldown(21169) && (HasAura(58059) || HasItemCount(17030)))
         spell_id = 21169;
 
     return spell_id;

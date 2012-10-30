@@ -408,7 +408,7 @@ void WorldSession::HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket)
 
 void WorldSession::HandleGuildEventLogQueryOpcode(WorldPacket& /* recvPacket */)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (MSG_GUILD_EVENT_LOG_QUERY)");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received (CMSG_GUILD_EVENT_LOG_QUERY)");
 
     if (Guild* guild = _GetPlayerGuild(this))
         guild->SendEventLog(this);
@@ -633,7 +633,7 @@ void WorldSession::HandleGuildBankLogQuery(WorldPacket & recvData)
 
 void WorldSession::HandleQueryGuildBankTabText(WorldPacket &recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received MSG_QUERY_GUILD_BANK_TEXT");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_BANK_QUERY_TEXT");
 
     uint8 tabId;
     recvData >> tabId;
@@ -646,42 +646,43 @@ void WorldSession::HandleSetGuildBankTabText(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_SET_GUILD_BANK_TEXT");
 
-    uint8 tabId;
+    uint32 tabId;
     recvData >> tabId;
 
-    std::string text;
-    recvData >> text;
+    uint32 textLen = recvData.ReadBits(14);
+    std::string text = recvData.ReadString(textLen);
 
     if (Guild* guild = _GetPlayerGuild(this))
         guild->SetBankTabText(tabId, text);
 }
 
-void WorldSession::HandleGuildQueryXPOpcode(WorldPacket& recvData)
+void WorldSession::HandleGuildQueryXPOpcode(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_QUERY_GUILD_XP");
 
     ObjectGuid guildGuid;
 
-    guildGuid[2] = recvData.ReadBit();
-    guildGuid[5] = recvData.ReadBit();
-    guildGuid[3] = recvData.ReadBit();
-    guildGuid[7] = recvData.ReadBit();
-    guildGuid[4] = recvData.ReadBit();
-    guildGuid[1] = recvData.ReadBit();
-    guildGuid[0] = recvData.ReadBit();
-    guildGuid[6] = recvData.ReadBit();
+    guildGuid[2] = recvPacket.ReadBit();
+    guildGuid[1] = recvPacket.ReadBit();
+    guildGuid[0] = recvPacket.ReadBit();
+    guildGuid[5] = recvPacket.ReadBit();
+    guildGuid[4] = recvPacket.ReadBit();
+    guildGuid[7] = recvPacket.ReadBit();
+    guildGuid[6] = recvPacket.ReadBit();
+    guildGuid[3] = recvPacket.ReadBit();
 
-    recvData.ReadByteSeq(guildGuid[7]);
-    recvData.ReadByteSeq(guildGuid[3]);
-    recvData.ReadByteSeq(guildGuid[2]);
-    recvData.ReadByteSeq(guildGuid[1]);
-    recvData.ReadByteSeq(guildGuid[0]);
-    recvData.ReadByteSeq(guildGuid[5]);
-    recvData.ReadByteSeq(guildGuid[6]);
-    recvData.ReadByteSeq(guildGuid[4]);
+    recvPacket.ReadByteSeq(guildGuid[7]);
+    recvPacket.ReadByteSeq(guildGuid[2]);
+    recvPacket.ReadByteSeq(guildGuid[3]);
+    recvPacket.ReadByteSeq(guildGuid[6]);
+    recvPacket.ReadByteSeq(guildGuid[1]);
+    recvPacket.ReadByteSeq(guildGuid[5]);
+    recvPacket.ReadByteSeq(guildGuid[0]);
+    recvPacket.ReadByteSeq(guildGuid[4]);
 
-    //if (Guild* guild = sGuildMgr->GetGuildByGuid(guildGuid))
-        // guild->Send SMSG_GUILD_XP
+    if (Guild* guild = sGuildMgr->GetGuildByGuid(guildGuid))
+        if (guild->IsMember(_player->GetGUID()))
+            guild->SendGuildXP(this);
 }
 
 void WorldSession::HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket)
@@ -751,4 +752,36 @@ void WorldSession::HandleGuildRequestPartyState(WorldPacket& recvData)
 
     if (Guild* guild = sGuildMgr->GetGuildByGuid(guildGuid))
         guild->HandleGuildPartyRequest(this);
+}
+
+void WorldSession::HandleGuildRequestMaxDailyXP(WorldPacket& recvPacket)
+{
+    ObjectGuid guid;
+    guid[0] = recvPacket.ReadBit();
+    guid[3] = recvPacket.ReadBit();
+    guid[5] = recvPacket.ReadBit();
+    guid[1] = recvPacket.ReadBit();
+    guid[4] = recvPacket.ReadBit();
+    guid[6] = recvPacket.ReadBit();
+    guid[7] = recvPacket.ReadBit();
+    guid[2] = recvPacket.ReadBit();
+
+    recvPacket.ReadByteSeq(guid[7]);
+    recvPacket.ReadByteSeq(guid[4]);
+    recvPacket.ReadByteSeq(guid[3]);
+    recvPacket.ReadByteSeq(guid[5]);
+    recvPacket.ReadByteSeq(guid[1]);
+    recvPacket.ReadByteSeq(guid[2]);
+    recvPacket.ReadByteSeq(guid[6]);
+    recvPacket.ReadByteSeq(guid[0]);
+
+    if (Guild* guild = sGuildMgr->GetGuildByGuid(guid))
+    {
+        if (guild->IsMember(_player->GetGUID()))
+        {
+            WorldPacket data(SMSG_GUILD_MAX_DAILY_XP, 8);
+            data << uint64(sWorld->getIntConfig(CONFIG_GUILD_DAILY_XP_CAP));
+            SendPacket(&data);
+        }
+    }
 }

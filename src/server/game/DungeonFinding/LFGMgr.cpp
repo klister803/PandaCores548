@@ -540,10 +540,10 @@ void LFGMgr::InitializeLockedDungeons(Player* player)
             else
                 if (ar->item)
                 {
-                    if (!player->HasItemCount(ar->item, 1) && (!ar->item2 || !player->HasItemCount(ar->item2, 1)))
+                    if (!player->HasItemCount(ar->item) && (!ar->item2 || !player->HasItemCount(ar->item2)))
                         locktype = LFG_LOCKSTATUS_MISSING_ITEM;
                 }
-                else if (ar->item2 && !player->HasItemCount(ar->item2, 1))
+                else if (ar->item2 && !player->HasItemCount(ar->item2))
                     locktype = LFG_LOCKSTATUS_MISSING_ITEM;
         }
         /* TODO VoA closed if WG is not under team control (LFG_LOCKSTATUS_RAID_LOCKED)

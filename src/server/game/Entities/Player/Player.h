@@ -112,6 +112,40 @@ struct PlayerTalent
     uint8 spec             : 8;
 };
 
+enum TalentTree // talent tabs
+{
+    TALENT_TREE_WARRIOR_ARMS         = 746,
+    TALENT_TREE_WARRIOR_FURY         = 815,
+    TALENT_TREE_WARRIOR_PROTECTION   = 845,
+    TALENT_TREE_PALADIN_HOLY         = 831,
+    TALENT_TREE_PALADIN_PROTECTION   = 839,
+    TALENT_TREE_PALADIN_RETRIBUTION  = 855,
+    TALENT_TREE_HUNTER_BEAST_MASTERY = 811,
+    TALENT_TREE_HUNTER_MARKSMANSHIP  = 807,
+    TALENT_TREE_HUNTER_SURVIVAL      = 809,
+    TALENT_TREE_ROGUE_ASSASSINATION  = 182,
+    TALENT_TREE_ROGUE_COMBAT         = 181,
+    TALENT_TREE_ROGUE_SUBTLETY       = 183,
+    TALENT_TREE_PRIEST_DISCIPLINE    = 760,
+    TALENT_TREE_PRIEST_HOLY          = 813,
+    TALENT_TREE_PRIEST_SHADOW        = 795,
+    TALENT_TREE_DEATH_KNIGHT_BLOOD   = 398,
+    TALENT_TREE_DEATH_KNIGHT_FROST   = 399,
+    TALENT_TREE_DEATH_KNIGHT_UNHOLY  = 400,
+    TALENT_TREE_SHAMAN_ELEMENTAL     = 261,
+    TALENT_TREE_SHAMAN_ENHANCEMENT   = 263,
+    TALENT_TREE_SHAMAN_RESTORATION   = 262,
+    TALENT_TREE_MAGE_ARCANE          = 799,
+    TALENT_TREE_MAGE_FIRE            = 851,
+    TALENT_TREE_MAGE_FROST           = 823,
+    TALENT_TREE_WARLOCK_AFFLICTION   = 871,
+    TALENT_TREE_WARLOCK_DEMONOLOGY   = 867,
+    TALENT_TREE_WARLOCK_DESTRUCTION  = 865,
+    TALENT_TREE_DRUID_BALANCE        = 752,
+    TALENT_TREE_DRUID_FERAL_COMBAT   = 750,
+    TALENT_TREE_DRUID_RESTORATION    = 748
+};
+
 // Spell modifier (used for modify other spells)
 struct SpellModifier
 {
@@ -363,38 +397,38 @@ enum DrunkenState
 
 enum PlayerFlags
 {
-    PLAYER_FLAGS_GROUP_LEADER      = 0x00000001,
-    PLAYER_FLAGS_AFK               = 0x00000002,
-    PLAYER_FLAGS_DND               = 0x00000004,
-    PLAYER_FLAGS_GM                = 0x00000008,
-    PLAYER_FLAGS_GHOST             = 0x00000010,
-    PLAYER_FLAGS_RESTING           = 0x00000020,
-    PLAYER_FLAGS_UNK6              = 0x00000040,
-    PLAYER_FLAGS_UNK7              = 0x00000080,               // pre-3.0.3 PLAYER_FLAGS_FFA_PVP flag for FFA PVP state
-    PLAYER_FLAGS_CONTESTED_PVP     = 0x00000100,               // Player has been involved in a PvP combat and will be attacked by contested guards
-    PLAYER_FLAGS_IN_PVP            = 0x00000200,
-    PLAYER_FLAGS_HIDE_HELM         = 0x00000400,
-    PLAYER_FLAGS_HIDE_CLOAK        = 0x00000800,
-    PLAYER_FLAGS_PLAYED_LONG_TIME  = 0x00001000,               // played long time
-    PLAYER_FLAGS_PLAYED_TOO_LONG   = 0x00002000,               // played too long time
-    PLAYER_FLAGS_IS_OUT_OF_BOUNDS  = 0x00004000,
-    PLAYER_FLAGS_DEVELOPER         = 0x00008000,               // <Dev> prefix for something?
-    PLAYER_FLAGS_UNK16             = 0x00010000,               // pre-3.0.3 PLAYER_FLAGS_SANCTUARY flag for player entered sanctuary
-    PLAYER_FLAGS_TAXI_BENCHMARK    = 0x00020000,               // taxi benchmark mode (on/off) (2.0.1)
-    PLAYER_FLAGS_PVP_TIMER         = 0x00040000,               // 3.0.2, pvp timer active (after you disable pvp manually)
-    PLAYER_FLAGS_UNK19             = 0x00080000,
-    PLAYER_FLAGS_UNK20             = 0x00100000,
-    PLAYER_FLAGS_UNK21             = 0x00200000,
-    PLAYER_FLAGS_COMMENTATOR2      = 0x00400000,
-    PLAYER_ALLOW_ONLY_ABILITY      = 0x00800000,                // used by bladestorm and killing spree, allowed only spells with SPELL_ATTR0_REQ_AMMO, SPELL_EFFECT_ATTACK, checked only for active player
-    PLAYER_FLAGS_UNK24             = 0x01000000,                // disabled all melee ability on tab include autoattack
-    PLAYER_FLAGS_NO_XP_GAIN        = 0x02000000,
-    PLAYER_FLAGS_UNK26             = 0x04000000,
-    PLAYER_FLAGS_UNK27             = 0x08000000,
-    PLAYER_FLAGS_UNK28             = 0x10000000,
-    PLAYER_FLAGS_VOID_UNLOCKED     = 0x20000000,                // void storage
-    PLAYER_FLAGS_UNK30             = 0x40000000,
-    PLAYER_FLAGS_UNK31             = 0x80000000,
+    PLAYER_FLAGS_GROUP_LEADER           = 0x00000001,
+    PLAYER_FLAGS_AFK                    = 0x00000002,
+    PLAYER_FLAGS_DND                    = 0x00000004,
+    PLAYER_FLAGS_GM                     = 0x00000008,
+    PLAYER_FLAGS_GHOST                  = 0x00000010,
+    PLAYER_FLAGS_RESTING                = 0x00000020,
+    PLAYER_FLAGS_UNK6                   = 0x00000040,
+    PLAYER_FLAGS_UNK7                   = 0x00000080,       // pre-3.0.3 PLAYER_FLAGS_FFA_PVP flag for FFA PVP state
+    PLAYER_FLAGS_CONTESTED_PVP          = 0x00000100,       // Player has been involved in a PvP combat and will be attacked by contested guards
+    PLAYER_FLAGS_IN_PVP                 = 0x00000200,
+    PLAYER_FLAGS_HIDE_HELM              = 0x00000400,
+    PLAYER_FLAGS_HIDE_CLOAK             = 0x00000800,
+    PLAYER_FLAGS_PLAYED_LONG_TIME       = 0x00001000,       // played long time
+    PLAYER_FLAGS_PLAYED_TOO_LONG        = 0x00002000,       // played too long time
+    PLAYER_FLAGS_IS_OUT_OF_BOUNDS       = 0x00004000,
+    PLAYER_FLAGS_DEVELOPER              = 0x00008000,       // <Dev> prefix for something?
+    PLAYER_FLAGS_UNK16                  = 0x00010000,       // pre-3.0.3 PLAYER_FLAGS_SANCTUARY flag for player entered sanctuary
+    PLAYER_FLAGS_TAXI_BENCHMARK         = 0x00020000,       // taxi benchmark mode (on/off) (2.0.1)
+    PLAYER_FLAGS_PVP_TIMER              = 0x00040000,       // 3.0.2, pvp timer active (after you disable pvp manually)
+    PLAYER_FLAGS_UNK19                  = 0x00080000,
+    PLAYER_FLAGS_UNK20                  = 0x00100000,
+    PLAYER_FLAGS_UNK21                  = 0x00200000,
+    PLAYER_FLAGS_COMMENTATOR2           = 0x00400000,
+    PLAYER_ALLOW_ONLY_ABILITY           = 0x00800000,       // used by bladestorm and killing spree, allowed only spells with SPELL_ATTR0_REQ_AMMO, SPELL_EFFECT_ATTACK, checked only for active player
+    PLAYER_FLAGS_UNK24                  = 0x01000000,       // disabled all melee ability on tab include autoattack
+    PLAYER_FLAGS_NO_XP_GAIN             = 0x02000000,
+    PLAYER_FLAGS_UNK26                  = 0x04000000,
+    PLAYER_FLAGS_UNK27                  = 0x08000000,       // player has auto decline guild invite active?
+    PLAYER_FLAGS_GUILD_LEVEL_ENABLED    = 0x10000000,       // Lua_GetGuildLevelEnabled() - enables guild leveling related UI
+    PLAYER_FLAGS_VOID_UNLOCKED          = 0x20000000,       // void storage
+    PLAYER_FLAGS_UNK30                  = 0x40000000,
+    PLAYER_FLAGS_UNK31                  = 0x80000000,   
 };
 
 // used for PLAYER__FIELD_KNOWN_TITLES field (uint64), (1<<bit_index) without (-1)
@@ -1289,7 +1323,7 @@ class Player : public Unit, public GridObject<Player>
         bool IsValidPos(uint8 bag, uint8 slot, bool explicit_pos);
         uint8 GetBankBagSlotCount() const { return GetByteValue(PLAYER_BYTES_2, 2); }
         void SetBankBagSlotCount(uint8 count) { SetByteValue(PLAYER_BYTES_2, 2, count); }
-        bool HasItemCount(uint32 item, uint32 count, bool inBankAlso = false) const;
+        bool HasItemCount(uint32 item, uint32 count = 1, bool inBankAlso = false) const;
         bool HasItemFitToSpellRequirements(SpellInfo const* spellInfo, Item const* ignoreItem = NULL);
         bool CanNoReagentCast(SpellInfo const* spellInfo) const;
         bool HasItemOrGemWithIdEquipped(uint32 item, uint32 count, uint8 except_slot = NULL_SLOT) const;
@@ -1343,7 +1377,18 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetCurrency(uint32 id) const;
         bool HasCurrency(uint32 id, uint32 count) const;
         void SetCurrency(uint32 id, uint32 count, bool printLog = true);
-        void ModifyCurrency(uint32 id, int32 count, bool printLog = true);
+
+        /**
+        * @name ModifyCurrency
+        * @brief Change specific currency and send result to client
+
+        * @param id currency entry from CurrencyTypes.dbc
+        * @param count integer value for adding/removing curent currency
+        * @param printLog used on SMSG_UPDATE_CURRENCY
+        * @param ignore gain multipliers
+        */
+
+        void ModifyCurrency(uint32 id, int32 count, bool printLog = true, bool ignoreMultipliers = false);
 
         void ApplyEquipCooldown(Item* pItem);
         void QuickEquipItem(uint16 pos, Item* pItem);
@@ -1887,16 +1932,7 @@ class Player : public Unit, public GridObject<Player>
         void RemoveFromGroup(RemoveMethod method = GROUP_REMOVEMETHOD_DEFAULT) { RemoveFromGroup(GetGroup(), GetGUID(), method); }
         void SendUpdateToOutOfRangeGroupMembers();
 
-        void SetInGuild(uint32 guildId)
-        {
-            if (guildId)
-                SetUInt64Value(OBJECT_FIELD_DATA, MAKE_NEW_GUID(guildId, 0, HIGHGUID_GUILD));
-            else
-                SetUInt64Value(OBJECT_FIELD_DATA, 0);
-
-            SetUInt16Value(OBJECT_FIELD_TYPE, 1, guildId != 0);
-        }
-
+        void SetInGuild(uint32 guildId);
         void SetRank(uint8 rankId) { SetUInt32Value(PLAYER_GUILDRANK, rankId); }
         uint32 GetRank() { return GetUInt32Value(PLAYER_GUILDRANK); }
         void SetGuildLevel(uint32 level) { SetUInt32Value(PLAYER_GUILDLEVEL, level); }
@@ -2201,7 +2237,7 @@ class Player : public Unit, public GridObject<Player>
         void SendLoot(uint64 guid, LootType loot_type);
         void SendLootRelease(uint64 guid);
         void SendNotifyLootItemRemoved(uint8 lootSlot);
-        void SendNotifyLootMoneyRemoved();
+        void SendNotifyLootMoneyRemoved(uint64 gold);
 
         /*********************************************************/
         /***               BATTLEGROUND SYSTEM                 ***/
