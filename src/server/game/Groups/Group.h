@@ -147,6 +147,7 @@ class Roll : public LootValidatorRef
         int32  itemRandomPropId;
         uint32 itemRandomSuffix;
         uint8 itemCount;
+        uint64 lootedGUID;
         typedef std::map<uint64, RollVote> PlayerVote;
         PlayerVote playerVote;                              //vote position correspond with player position (in group)
         uint8 totalPlayersRolling;
@@ -298,9 +299,9 @@ class Group
         void GroupLoot(Loot* loot, WorldObject* pLootedObject);
         void NeedBeforeGreed(Loot* loot, WorldObject* pLootedObject);
         void MasterLoot(Loot* loot, WorldObject* pLootedObject);
-        Rolls::iterator GetRoll(uint64 Guid);
+        Rolls::iterator GetRoll(uint8 slot);
         void CountTheRoll(Rolls::iterator roll);
-        void CountRollVote(uint64 playerGUID, uint64 Guid, uint8 Choise);
+        void CountRollVote(uint64 playerGUID, uint8 slot, uint8 Choise);
         void EndRoll(Loot* loot);
 
         // related to disenchant rolls

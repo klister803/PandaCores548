@@ -998,10 +998,9 @@ enum Opcodes
     SMSG_LOGOUT_COMPLETE                              = 0x8DA,  // 5.0.5 16048
     SMSG_LOGOUT_RESPONSE                              = 0xD86,  // 5.0.5 16048
     SMSG_LOG_XPGAIN                                   = 0x98A,	// 5.0.5 16048
-    SMSG_LOOT_ALL_PASSED                              = 0, //0xE49
+    SMSG_LOOT_ALL_PASSED                              = 0xE49,  // 5.0.5 16048
     SMSG_LOOT_CLEAR_MONEY                             = 0xB33,  // 5.0.5 16048
     SMSG_LOOT_CONTENTS                                = 0xBFC,  // 5.0.5 16048
-    SMSG_LOOT_ITEM_NOTIFY                             = 0,
     SMSG_LOOT_LIST                                    = 0xC37,  // 5.0.5 16048
     SMSG_LOOT_MASTER_LIST                             = 0xA5A,  // 5.0.5 16048
     SMSG_LOOT_MONEY_NOTIFY                            = 0xF18,  // 5.0.5 16048
@@ -1009,8 +1008,7 @@ enum Opcodes
     SMSG_LOOT_REMOVED                                 = 0xE6A,  // 5.0.5 16048
     SMSG_LOOT_RESPONSE                                = 0xA75,  // 5.0.5 16048
     SMSG_LOOT_ROLL                                    = 0xB59,  // 5.0.5 16048
-    SMSG_LOOT_ROLL_WON                                = 0, //0xF32
-    SMSG_LOOT_SLOT_CHANGED                            = 0,
+    SMSG_LOOT_ROLL_WON                                = 0xF32,  // 5.0.5 16048
     SMSG_LOOT_START_ROLL                              = 0xEF4,  // 5.0.5 16048
     SMSG_COIN_REMOVED                                 = 0xBB1,  // 5.0.5 16048
     SMSG_MAIL_LIST_RESULT                             = 0x95E,  // 5.0.5 16048
