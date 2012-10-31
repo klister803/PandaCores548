@@ -29,8 +29,8 @@
 
 enum BattlefieldTypes
 {
-    BATTLEFIELD_WG,                                         // Wintergrasp
-    BATTLEFIELD_TB,                                         // Tol Barad (cataclysm)
+    BATTLEFIELD_WG = 1,                                         // Wintergrasp
+    BATTLEFIELD_TB = 2,                                         // Tol Barad (cataclysm)
 };
 
 enum BattlefieldIDs
@@ -356,6 +356,8 @@ class Battlefield : public ZoneScript
         void InvitePlayerToWar(Player* player);
 
         void InitStalker(uint32 entry, float x, float y, float z, float o);
+
+        void SetGuid(uint64 guid) { m_Guid = guid; };
 
     protected:
         uint64 StalkerGuid;

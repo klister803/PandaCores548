@@ -842,7 +842,9 @@ class WorldSession
         void SendBfLeaveMessage(uint64 guid, BFLeaveReason reason = BF_LEAVE_REASON_EXITED);
         void HandleBfQueueInviteResponse(WorldPacket &recv_data);
         void HandleBfEntryInviteResponse(WorldPacket &recv_data);
+        void HandleBfExitQueueRequest(WorldPacket &recv_data);
         void HandleBfExitRequest(WorldPacket &recv_data);
+        void HandleBfQueueRequest(WorldPacket &recv_data);
 
         // Looking for Dungeon/Raid
         void HandleLfgSetCommentOpcode(WorldPacket& recvData);
