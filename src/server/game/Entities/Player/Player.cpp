@@ -9140,6 +9140,7 @@ void Player::SendLoot(uint64 guid, LootType loot_type)
                         {
                             case MASTER_LOOT:
                                 permission = MASTER_PERMISSION;
+                                group->MasterLoot(loot, creature);
                                 break;
                             case FREE_FOR_ALL:
                                 permission = ALL_PERMISSION;
