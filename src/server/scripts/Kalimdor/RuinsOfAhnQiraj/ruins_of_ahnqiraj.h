@@ -20,13 +20,13 @@
 
 enum Encounters
 {
-    BOSS_KURINNAXX          = 0,
-    BOSS_RAJAXX             = 1,
-    BOSS_MOAM               = 2,
-    BOSS_BURU               = 3,
-    BOSS_AYAMISS            = 4,
-    BOSS_OSSIRIAN           = 5,
-    MAX_ENCOUNTER,
+    BOSS_KURINNAXX              = 0,
+    BOSS_RAJAXX                 = 1,
+    BOSS_MOAM                   = 2,
+    BOSS_BURU                   = 3,
+    BOSS_AYAMISS                = 4,
+    BOSS_OSSIRIAN               = 5,
+    MAX_ENCOUNTER
 };
 
 enum Creatures
@@ -39,7 +39,7 @@ enum Creatures
     NPC_OSSIRIAN                = 15339,
     NPC_HIVEZARA_HORNET         = 15934,
     NPC_HIVEZARA_SWARMER        = 15546,
-    NPC_HIVEZARA_LARVA          = 15555,
+    NPC_HIVEZARA_LARVA          = 15555
 };
 
 #endif

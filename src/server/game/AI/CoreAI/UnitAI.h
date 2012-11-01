@@ -35,7 +35,7 @@ enum GeneralScriptTexts
     EMOTE_GENERIC_FRENZY        = -1000002,
     EMOTE_GENERIC_ENRAGED       = -1000003,
     EMOTE_GENERIC_BERSERK       = -1000004,
-    EMOTE_GENERIC_BERSERK_RAID  = -1000005, // RaidBossEmote version of the previous one
+    EMOTE_GENERIC_BERSERK_RAID  = -1000005 // RaidBossEmote version of the previous one
 };
 
 //Selection method used by SelectTarget

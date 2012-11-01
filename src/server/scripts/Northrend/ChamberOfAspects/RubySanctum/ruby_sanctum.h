@@ -46,14 +46,14 @@ enum DataTypes
     DATA_BURNING_TREE_2                     = 11,
     DATA_BURNING_TREE_3                     = 12,
     DATA_BURNING_TREE_4                     = 13,
-    DATA_FLAME_RING                         = 14,
+    DATA_FLAME_RING                         = 14
 };
 
 enum SharedActions
 {
     ACTION_INTRO_BALTHARUS                  = -3975101,
     ACTION_BALTHARUS_DEATH                  = -3975102,
-    ACTION_INTRO_HALION                     = -4014601,
+    ACTION_INTRO_HALION                     = -4014601
 };
 
 enum CreaturesIds
@@ -90,7 +90,7 @@ enum CreaturesIds
     NPC_COMBUSTION                          = 40001,
 
     // Xerestrasza
-    NPC_XERESTRASZA                         = 40429,
+    NPC_XERESTRASZA                         = 40429
 };
 
 enum GameObjectsIds
@@ -104,14 +104,14 @@ enum GameObjectsIds
     GO_BURNING_TREE_1                       = 203034,
     GO_BURNING_TREE_2                       = 203035,
     GO_BURNING_TREE_3                       = 203036,
-    GO_BURNING_TREE_4                       = 203037,
+    GO_BURNING_TREE_4                       = 203037
 };
 
 enum WorldStatesRS
 {
-    WORLDSTATE_CORPOREALITY_MATERIAL = 5049,
-    WORLDSTATE_CORPOREALITY_TWILIGHT = 5050,
-    WORLDSTATE_CORPOREALITY_TOGGLE   = 5051,
+    WORLDSTATE_CORPOREALITY_MATERIAL        = 5049,
+    WORLDSTATE_CORPOREALITY_TWILIGHT        = 5050,
+    WORLDSTATE_CORPOREALITY_TOGGLE          = 5051
 };
 
 template<class AI>
