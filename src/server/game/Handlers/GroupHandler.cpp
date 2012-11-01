@@ -556,7 +556,80 @@ void WorldSession::HandleGroupSetLeaderOpcode(WorldPacket& recvData)
     group->ChangeLeader(guid);
     group->SendUpdate();
 }
+/* TODO: FIXME FOR 5.0.5 */
+void WorldSession::HandleGroupSetRolesOpcode(WorldPacket& recvData)
+{
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_SET_ROLES");
 
+    uint32 newRole;
+    ObjectGuid guid1; // Assigner GUID
+    ObjectGuid guid2; // Target GUID
+
+    guid1 = GetPlayer()->GetGUID();
+
+    recvData >> newRole;
+
+    guid2[2] = recvData.ReadBit();
+    guid2[6] = recvData.ReadBit();
+    guid2[3] = recvData.ReadBit();
+    guid2[7] = recvData.ReadBit();
+    guid2[5] = recvData.ReadBit();
+    guid2[1] = recvData.ReadBit();
+    guid2[0] = recvData.ReadBit();
+    guid2[4] = recvData.ReadBit();
+
+    recvData.ReadByteSeq(guid2[6]);
+    recvData.ReadByteSeq(guid2[4]);
+    recvData.ReadByteSeq(guid2[1]);
+    recvData.ReadByteSeq(guid2[3]);
+    recvData.ReadByteSeq(guid2[0]);
+    recvData.ReadByteSeq(guid2[5]);
+    recvData.ReadByteSeq(guid2[2]);
+    recvData.ReadByteSeq(guid2[7]);
+
+    WorldPacket data(SMSG_GROUP_SET_ROLE, 24);
+
+    data.WriteBit(guid1[1]);
+    data.WriteBit(guid2[0]);
+    data.WriteBit(guid2[2]);
+    data.WriteBit(guid2[4]);
+    data.WriteBit(guid2[7]);
+    data.WriteBit(guid2[3]);
+    data.WriteBit(guid1[7]);
+    data.WriteBit(guid2[5]);
+    data.WriteBit(guid1[5]);
+    data.WriteBit(guid1[4]);
+    data.WriteBit(guid1[3]);
+    data.WriteBit(guid2[6]);
+    data.WriteBit(guid1[2]);
+    data.WriteBit(guid1[6]);
+    data.WriteBit(guid2[1]);
+    data.WriteBit(guid1[0]);
+
+    data.WriteByteSeq(guid1[7]);
+    data.WriteByteSeq(guid2[3]);
+    data.WriteByteSeq(guid1[6]);
+    data.WriteByteSeq(guid2[4]);
+    data.WriteByteSeq(guid2[0]);
+    data << uint32(newRole); // New Role
+    data.WriteByteSeq(guid2[6]);
+    data.WriteByteSeq(guid2[2]);
+    data.WriteByteSeq(guid1[0]);
+    data.WriteByteSeq(guid1[4]);
+    data.WriteByteSeq(guid2[1]);
+    data.WriteByteSeq(guid1[3]);
+    data.WriteByteSeq(guid1[5]);
+    data.WriteByteSeq(guid1[2]);
+    data.WriteByteSeq(guid2[5]);
+    data.WriteByteSeq(guid2[7]);
+    data.WriteByteSeq(guid1[1]);
+    data << uint32(0); // Old Role
+
+    if (GetPlayer()->GetGroup())
+        GetPlayer()->GetGroup()->BroadcastPacket(&data, false);
+    else
+        SendPacket(&data);
+}
 void WorldSession::HandleGroupDisbandOpcode(WorldPacket& /*recvData*/)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_DISBAND");
@@ -629,18 +702,36 @@ void WorldSession::HandleLootMethodOpcode(WorldPacket & recvData)
 
 void WorldSession::HandleLootRoll(WorldPacket& recvData)
 {
-    uint64 guid;
-    uint32 itemSlot;
+    ObjectGuid guid;
+    uint8 itemSlot;
     uint8  rollType;
-    recvData >> guid;                  // guid of the item rolled
-    recvData >> itemSlot;
+
+    recvData >> itemSlot; //always 0
     recvData >> rollType;              // 0: pass, 1: need, 2: greed
+
+    guid[4] = recvData.ReadBit();
+    guid[5] = recvData.ReadBit();
+    guid[3] = recvData.ReadBit();
+    guid[2] = recvData.ReadBit();
+    guid[6] = recvData.ReadBit();
+    guid[1] = recvData.ReadBit();
+    guid[0] = recvData.ReadBit();
+    guid[7] = recvData.ReadBit();
+
+    recvData.ReadByteSeq(guid[5]);
+    recvData.ReadByteSeq(guid[6]);
+    recvData.ReadByteSeq(guid[1]);
+    recvData.ReadByteSeq(guid[3]);
+    recvData.ReadByteSeq(guid[2]);
+    recvData.ReadByteSeq(guid[4]);
+    recvData.ReadByteSeq(guid[7]);
+    recvData.ReadByteSeq(guid[0]);
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)
         return;
 
-    group->CountRollVote(GetPlayer()->GetGUID(), guid, rollType);
+    group->CountRollVote(GetPlayer()->GetGUID(), itemSlot, rollType);
 
     switch (rollType)
     {

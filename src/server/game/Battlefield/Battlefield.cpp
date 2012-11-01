@@ -34,7 +34,6 @@
 
 Battlefield::Battlefield()
 {
-    m_Guid = MAKE_NEW_GUID(m_TypeId, 0, HIGHGUID_TYPE_BATTLEGROUND);
     m_Timer = 0;
     m_IsEnabled = true;
     m_isActive = false;
@@ -372,7 +371,7 @@ void Battlefield::PlayerAcceptInviteToQueue(Player* player)
     player->GetSession()->SendBfQueueInviteResponse(m_Guid, m_ZoneId);
 }
 
-// Called in WorldSession::HandleBfExitRequest
+// Called in WorldSession::HandleBfExitQueueRequest
 void Battlefield::AskToLeaveQueue(Player* player)
 {
     // Remove player from queue

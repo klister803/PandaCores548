@@ -540,6 +540,11 @@ enum WintergraspGameObject
     GO_WINTERGRASP_SHADOWSIGHT_TOWER             = 190356,
     GO_WINTERGRASP_WINTER_S_EDGE_TOWER           = 190357,
     GO_WINTERGRASP_FLAMEWATCH_TOWER              = 190358,
+
+    GO_WINTERGRASP_FORTRESS_GATE                 = 190375,
+    GO_WINTERGRASP_VAULT_GATE                    = 191810,
+
+    GO_WINTERGRASP_KEEP_COLLISION_WALL           = 194323
 };
 
 struct WintergraspObjectPositionData

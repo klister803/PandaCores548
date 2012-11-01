@@ -553,6 +553,7 @@ class WorldSession
         void HandleGroupUninviteOpcode(WorldPacket& recvPacket);
         void HandleGroupUninviteGuidOpcode(WorldPacket& recvPacket);
         void HandleGroupSetLeaderOpcode(WorldPacket& recvPacket);
+        void HandleGroupSetRolesOpcode(WorldPacket& recvData);
         void HandleGroupDisbandOpcode(WorldPacket& recvPacket);
         void HandleOptOutOfLootOpcode(WorldPacket& recvData);
         void HandleLootMethodOpcode(WorldPacket& recvPacket);
@@ -841,7 +842,9 @@ class WorldSession
         void SendBfLeaveMessage(uint64 guid, BFLeaveReason reason = BF_LEAVE_REASON_EXITED);
         void HandleBfQueueInviteResponse(WorldPacket &recv_data);
         void HandleBfEntryInviteResponse(WorldPacket &recv_data);
+        void HandleBfExitQueueRequest(WorldPacket &recv_data);
         void HandleBfExitRequest(WorldPacket &recv_data);
+        void HandleBfQueueRequest(WorldPacket &recv_data);
 
         // Looking for Dungeon/Raid
         void HandleLfgSetCommentOpcode(WorldPacket& recvData);
