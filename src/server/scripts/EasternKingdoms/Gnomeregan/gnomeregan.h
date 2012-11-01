@@ -20,8 +20,8 @@
 
 enum eGameObjects
 {
-    GO_CAVE_IN_LEFT     = 146085,
-    GO_CAVE_IN_RIGHT    = 146086
+    GO_CAVE_IN_LEFT                 = 146085,
+    GO_CAVE_IN_RIGHT                = 146086
 };
 
 enum eCreatures
@@ -34,7 +34,7 @@ enum eCreatures
 
 enum eData
 {
-    TYPE_EVENT = 1
+    TYPE_EVENT                      = 1
 };
 
 enum eData64
