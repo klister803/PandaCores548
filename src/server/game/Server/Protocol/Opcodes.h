@@ -76,10 +76,10 @@ enum Opcodes
     CMSG_AUTO_DECLINE_GUILD_INVITES                   = 0x851,  // 5.0.5 16048
     CMSG_BANKER_ACTIVATE                              = 0xDA9,  // 5.0.5 16048
     CMSG_BATTLEFIELD_JOIN                             = 0x000,  // Not found in 4.3.4
-    CMSG_BATTLEFIELD_LEAVE                            = 0x076,	// 5.0.5 16048
+    CMSG_BATTLEFIELD_LEAVE                            = 0xCC7,	// 5.0.5 16048
     CMSG_BATTLEFIELD_LIST                             = 0x058,  // 5.0.5 16048
     CMSG_BATTLEFIELD_MGR_ENTRY_INVITE_RESPONSE        = 0x745,  // 5.0.5 16048
-    CMSG_BATTLEFIELD_MGR_EXIT_REQUEST                 = 0x7B2,  // 5.0.5 16048
+    CMSG_BATTLEFIELD_MGR_EXIT_REQUEST                 = 0x7D2,  // 5.0.5 16048
     CMSG_BATTLEFIELD_MGR_QUEUE_INVITE_RESPONSE        = 0x793,  // 5.0.5 16048
     CMSG_BATTLEFIELD_MGR_QUEUE_REQUEST                = 0x529,  // 5.0.5 16048
     CMSG_BATTLEFIELD_PORT                             = 0x056,  // 5.0.5 16048
@@ -680,7 +680,7 @@ enum Opcodes
     SMSG_BATTLEFIELD_MGR_EJECT_PENDING                = 0xB36,  // 5.0.5 16048
     SMSG_BATTLEFIELD_MGR_ENTERED                      = 0xA0A,  // 5.0.5 16048
     SMSG_BATTLEFIELD_MGR_ENTRY_INVITE                 = 0xB44,  // 5.0.5 16048
-    SMSG_BATTLEFIELD_MGR_EXIT_REQUEST                 = 0,
+    SMSG_BATTLEFIELD_MGR_EXIT_REQUEST                 = 0xE33,  // 5.0.5 16048
     SMSG_BATTLEFIELD_MGR_QUEUE_INVITE                 = 0xE6D,  // 5.0.5 16048
     SMSG_BATTLEFIELD_MGR_QUEUE_REQUEST_RESPONSE       = 0xE15,  // 5.0.5 16048
     SMSG_BATTLEFIELD_MGR_STATE_CHANGE                 = 0,
