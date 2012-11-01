@@ -384,29 +384,7 @@ void WorldSession::HandleBfExitQueueRequest(WorldPacket & recvData)
 
     sLog->outError(LOG_FILTER_GENERAL, "HandleBfExitQueueRequest: GUID:"UI64FMTD" ", (uint64)guid);
 
-    WorldPacket pkt(SMSG_BATTLEFIELD_MGR_EJECT_PENDING);
-
-    recvData.WriteBit(guid[5]);
-    recvData.WriteBit(guid[1]);
-    recvData.WriteBit(guid[4]);
-    recvData.WriteBit(guid[3]);
-    recvData.WriteBit(guid[2]);
-    recvData.WriteBit(guid[6]);
-    recvData.WriteBit(true); // removed
-    recvData.WriteBit(guid[7]);
-    recvData.WriteBit(guid[0]);
-    recvData.FlushBits();
-
-    recvData.WriteByteSeq(guid[6]);
-    recvData.WriteByteSeq(guid[1]);
-    recvData.WriteByteSeq(guid[7]);
-    recvData.WriteByteSeq(guid[3]);
-    recvData.WriteByteSeq(guid[5]);
-    recvData.WriteByteSeq(guid[4]);
-    recvData.WriteByteSeq(guid[0]);
-    recvData.WriteByteSeq(guid[2]);
-
-    SendPacket(&pkt);
+    SendBfLeaveMessage(guid);
 
     if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldByGUID(guid))
         bf->AskToLeaveQueue(_player);
