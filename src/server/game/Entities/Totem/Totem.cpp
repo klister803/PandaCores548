@@ -131,7 +131,7 @@ void Totem::UnSummon(uint32 msTime)
             {
                 Player* target = itr->getSource();
                 if (target && group->SameSubGroup(owner, target))
-                    target->RemoveAurasDueToSpell(GetSpell());
+                    target->RemoveAurasDueToSpell(GetSpell(), GetGUID());
             }
         }
     }
