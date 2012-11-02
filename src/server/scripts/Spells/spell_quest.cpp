@@ -1278,7 +1278,7 @@ public:
 
 // http://www.wowhead.com/quest=12372 Defending Wyrmrest Temple
 // 49370 - Wyrmrest Defender: Destabilize Azure Dragonshrine Effect
-enum eQuest12372Data
+enum Quest12372Data
 {
     NPC_WYRMREST_TEMPLE_CREDIT = 27698,
 };
