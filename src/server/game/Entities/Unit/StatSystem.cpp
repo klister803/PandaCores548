@@ -681,7 +681,7 @@ void Player::UpdateAllSpellCritChances()
 
 void Player::UpdateExpertise(WeaponAttackType attack)
 {
-    int32 expertise = int32(GetRatingBonusValue(CR_EXPERTISE));
+    float expertise = GetRatingBonusValue(CR_EXPERTISE);
 
     Item* weapon = GetWeaponForAttack(attack, true);
 
@@ -697,13 +697,13 @@ void Player::UpdateExpertise(WeaponAttackType attack)
     }
 
     if (expertise < 0)
-        expertise = 0;
+        expertise = 0.0f;
 
     switch (attack)
     {
-        case BASE_ATTACK: SetUInt32Value(PLAYER_EXPERTISE, expertise);          break;
-        case OFF_ATTACK:  SetUInt32Value(PLAYER_OFFHAND_EXPERTISE, expertise);  break;
-        case RANGED_ATTACK: SetUInt32Value(PLAYER_RANGED_EXPERTISE, expertise); break;
+        case BASE_ATTACK: SetFloatValue(PLAYER_EXPERTISE, expertise);          break;
+        case OFF_ATTACK:  SetFloatValue(PLAYER_OFFHAND_EXPERTISE, expertise);  break;
+        case RANGED_ATTACK: SetFloatValue(PLAYER_RANGED_EXPERTISE, expertise); break;
         default: break;
     }
 }
