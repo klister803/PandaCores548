@@ -35,7 +35,7 @@ enum DataTypes
     DATA_HAZZARAH           = 5,
     DATA_RENATAKI           = 6,
     DATA_WUSHOOLAY          = 7,
-    DATA_GRILEK             = 8,
+    DATA_GRILEK             = 8
 };
 
 enum CreatureIds
@@ -50,7 +50,7 @@ enum CreatureIds
     NPC_HAZZARAH            = 52271,
     NPC_RENATAKI            = 52269,
     NPC_WUSHOOLAY           = 52286,
-    NPC_GRILEK              = 52258,
+    NPC_GRILEK              = 52258
 };
 
 template<class AI>

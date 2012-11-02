@@ -27,7 +27,7 @@ enum Data
     DATA_FELMYST_EVENT,
     DATA_EREDAR_TWINS_EVENT,
     DATA_MURU_EVENT,
-    DATA_KILJAEDEN_EVENT,
+    DATA_KILJAEDEN_EVENT
 };
 
 enum Data64
@@ -55,7 +55,7 @@ enum Data64
     DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_4,
 
     /*** Misc ***/
-    DATA_PLAYER_GUID,
+    DATA_PLAYER_GUID
 };
 
 enum Creatures
@@ -77,20 +77,20 @@ enum Creatures
     MOB_SHADOW_IMAGE                              = 25214,
     MOB_LADY_SACROLASH                            = 25165,
 
-    CREATURE_ANVEENA                              = 26046, // Embodiment of the Sunwell
-    CREATURE_KALECGOS                             = 25319, // Helps the raid throughout the fight
-    CREATURE_PROPHET                              = 26246, // Outro
-    CREATURE_KILJAEDEN                            = 25315, // Give it to 'em KJ!
-    CREATURE_HAND_OF_THE_DECEIVER                 = 25588, // Adds found before KJ emerges
-    CREATURE_FELFIRE_PORTAL                       = 25603, // Portal spawned be Hand of the Deceivers
-    CREATURE_VOLATILE_FELFIRE_FIEND               = 25598, // Fiends spawned by the above portal
-    CREATURE_ARMAGEDDON_TARGET                    = 25735, // This mob casts meteor on itself.. I think
-    CREATURE_SHIELD_ORB                           = 25502, // Shield orbs circle the room raining shadow bolts on raid
-    CREATURE_THE_CORE_OF_ENTROPIUS                = 26262, // Used in the ending cinematic?
-    CREATURE_POWER_OF_THE_BLUE_DRAGONFLIGHT       = 25653, // NPC that players possess when using the Orb of the Blue Dragonflight
-    CREATURE_SPIKE_TARGET1                        = 30598, // Should summon these under Shadow Spike Channel on targets place
+    CREATURE_ANVEENA                              = 26046,      // Embodiment of the Sunwell
+    CREATURE_KALECGOS                             = 25319,      // Helps the raid throughout the fight
+    CREATURE_PROPHET                              = 26246,      // Outro
+    CREATURE_KILJAEDEN                            = 25315,      // Give it to 'em KJ!
+    CREATURE_HAND_OF_THE_DECEIVER                 = 25588,      // Adds found before KJ emerges
+    CREATURE_FELFIRE_PORTAL                       = 25603,      // Portal spawned be Hand of the Deceivers
+    CREATURE_VOLATILE_FELFIRE_FIEND               = 25598,      // Fiends spawned by the above portal
+    CREATURE_ARMAGEDDON_TARGET                    = 25735,      // This mob casts meteor on itself.. I think
+    CREATURE_SHIELD_ORB                           = 25502,      // Shield orbs circle the room raining shadow bolts on raid
+    CREATURE_THE_CORE_OF_ENTROPIUS                = 26262,      // Used in the ending cinematic?
+    CREATURE_POWER_OF_THE_BLUE_DRAGONFLIGHT       = 25653,      // NPC that players possess when using the Orb of the Blue Dragonflight
+    CREATURE_SPIKE_TARGET1                        = 30598,      // Should summon these under Shadow Spike Channel on targets place
     CREATURE_SPIKE_TARGET2                        = 30614,
-    CREATURE_SINISTER_REFLECTION                  = 25708, // Sinister Relection spawnd on Phase swichtes
+    CREATURE_SINISTER_REFLECTION                  = 25708,      // Sinister Relection spawnd on Phase swichtes
 
     CREATURE_DARKNESS                             = 25879,
     CREATURE_DARK_FIENDS                          = 25744,
@@ -98,12 +98,12 @@ enum Creatures
     CREATURE_FURY_MAGE                            = 25799,
     CREATURE_VOID_SENTINEL                        = 25772,
     CREATURE_VOID_SPAWN                           = 25824,
-    CREATURE_BLACK_HOLE                           = 25855,
+    CREATURE_BLACK_HOLE                           = 25855
 };
 
 enum GameObjects
 {
-    GAMEOBJECT_ORB_OF_THE_BLUE_DRAGONFLIGHT       = 188415,
+    GAMEOBJECT_ORB_OF_THE_BLUE_DRAGONFLIGHT       = 188415
 };
 
 #endif
