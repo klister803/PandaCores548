@@ -159,7 +159,6 @@ const char SummonPropertiesfmt[] = "niiiii";
 const char TaxiNodesEntryfmt[]="nifffsiixxx";
 const char TaxiPathEntryfmt[]="niii";
 const char TaxiPathNodeEntryfmt[]="diiifffiiii";
-const char TeamContributionPointsfmt[]="df";
 const char TotemCategoryEntryfmt[]="nxii";
 const char VehicleEntryfmt[]="nixffffiiiiiiiifffffffffffffffssssfifiixx";
 const char VehicleSeatEntryfmt[]="niiffffffffffiiiiiifffffffiiifffiiiiiiiffiiiiixxxxxxxxxxxxxxxxxxxx";
