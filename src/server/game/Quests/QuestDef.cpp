@@ -342,11 +342,10 @@ uint32 Quest::CalculateHonorGain(uint8 level) const
     /*if (GetRewHonorAddition() > 0 || GetRewHonorMultiplier() > 0.0f)
     {
         // values stored from 0.. for 1...
-        TeamContributionPointsEntry const* tc = sTeamContributionPointsStore.LookupEntry(level);
+        TeamContributionPointsEntry const* tc = sTeamContributionPointsStore.LookupEntry(level-1);
         if (!tc)
             return 0;
-
-        honor = uint32(tc->value * GetRewHonorMultiplier() * 0.1f);
+        honor = uint32(tc->value * GetRewHonorMultiplier() * 0.1000000014901161);
         honor += GetRewHonorAddition();
     }*/
 
