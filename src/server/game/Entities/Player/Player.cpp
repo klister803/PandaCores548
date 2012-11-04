@@ -1078,6 +1078,7 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     InitTaxiNodesForLevel();
     InitGlyphsForLevel();
     InitTalentForLevel();
+    InitSpellForLevel();
     InitPrimaryProfessions();                               // to max set before any spell added
 
     // apply original stats mods before spell loading or item equipment that call before equip _RemoveStatsMods()
@@ -3181,6 +3182,7 @@ void Player::GiveLevel(uint8 level)
     SetCreateMana(basemana);
 
     InitTalentForLevel();
+    InitSpellForLevel();
     InitTaxiNodesForLevel();
     InitGlyphsForLevel();
 
@@ -3265,6 +3267,34 @@ void Player::InitTalentForLevel()
 
     if (!GetSession()->PlayerLoading())
         SendTalentsInfoData(false);                         // update at client
+}
+
+
+void Player::InitSpellForLevel()
+{
+    bool update = false;
+    auto spellList = sSpellMgr->GetSpellClassList(getClass());
+    uint8 level = getLevel();
+
+    for (auto spellId : spellList)
+    {
+        SpellInfo const* spell = sSpellMgr->GetSpellInfo(spellId);
+        if (!spell)
+            continue;
+
+        if (HasSpell(spellId))
+            continue;
+
+        // TODO : Check Specialization of player
+        if (spell->SpecializationEntry)
+            continue;
+
+        if (!IsSpellFitByClassAndRace(spellId))
+            continue;
+
+        if (spell->SpellLevel <= level)
+            learnSpell(spellId, false);
+    }
 }
 
 void Player::InitStatsForLevel(bool reapplyMods)
@@ -4103,9 +4133,8 @@ void Player::learnSpell(uint32 spell_id, bool dependent)
     {
         WorldPacket data(SMSG_LEARNED_SPELL, 8);
         data.WriteBits(1, 24); //count of spell_id to send.
-        data.WriteBit(1);
+        data << uint8(0); // 0 : auto push spell to action bar , 1 : don't auto push spell to action bar
         data << uint32(spell_id);
-        //data << uint32(0);
         GetSession()->SendPacket(&data);
     }
 
@@ -6835,6 +6864,16 @@ ActionButton const* Player::GetActionButton(uint8 button)
         return NULL;
 
     return &buttonItr->second;
+}
+
+int8 Player::GetFreeActionButton()
+{
+    // 12 is max button of first action bar
+    for (uint8 i = 0; i < 12; i++)
+        if (!GetActionButton(i))
+            return i;
+
+    return -1;
 }
 
 bool Player::UpdatePosition(float x, float y, float z, float orientation, bool teleport)
@@ -17249,6 +17288,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // after spell and quest load
     InitTalentForLevel();
+    InitSpellForLevel();
     learnDefaultSpells();
 
     // must be before inventory (some items required reputation check)
