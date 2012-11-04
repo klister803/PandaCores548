@@ -6055,11 +6055,11 @@ void Player::UpdateRating(CombatRating cr)
 
     if (cr == CR_HASTE_MELEE || cr == CR_HASTE_RANGED || cr == CR_HASTE_SPELL)
     {
-        float haste = 1 - ((amount * GetRatingMultiplier(cr)) / 100);
+        float haste = 1 / (1 + (amount * GetRatingMultiplier(cr)) / 100);
         // Update haste percentage for client
-        /*SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, haste);
+        SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, haste);
         SetFloatValue(UNIT_MOD_CAST_HASTE, haste);
-        SetFloatValue(UNIT_MOD_HASTE, haste);*/
+        SetFloatValue(UNIT_MOD_HASTE, haste);
     }
 
     bool affectStats = CanModifyStats();
