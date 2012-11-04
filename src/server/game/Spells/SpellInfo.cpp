@@ -920,6 +920,20 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry, uint32 difficulty)
     for (uint8 i = 0; i < 2; ++i)
         Totem[i] = _totem ? _totem->Totem[i] : 0;
 
+    // SpecializationSpellsEntry
+    SpecializationSpellEntry const* specializationInfo = NULL;
+    for (uint32 i = 0; i < sSpecializationSpellStore.GetNumRows(); i++)
+    {
+        specializationInfo = sSpecializationSpellStore.LookupEntry(i);
+        if (specializationInfo && specializationInfo->LearnSpell == Id)
+            break;
+
+        specializationInfo = NULL;
+    }
+
+    SpecializationEntry = specializationInfo ? specializationInfo->SpecializationEntry : 0;
+    OverrideSpellEntry = specializationInfo ? specializationInfo->OverrideSpell : 0;
+
     ExplicitTargetMask = _GetExplicitTargetMask();
     ChainEntry = NULL;
 }
