@@ -1784,6 +1784,7 @@ class Player : public Unit, public GridObject<Player>
         bool ResetTalents(bool no_cost = false);
         uint32 GetNextResetTalentsCost() const;
         void InitTalentForLevel();
+        void InitSpellForLevel();
         void BuildPlayerTalentsInfoData(WorldPacket* data);
         void BuildPetTalentsInfoData(WorldPacket* data);
         void SendTalentsInfoData(bool pet);
@@ -1890,6 +1891,8 @@ class Player : public Unit, public GridObject<Player>
         void SendInitialActionButtons() const { SendActionButtons(0); }
         void SendActionButtons(uint32 state) const;
         bool IsActionButtonDataValid(uint8 button, uint32 action, uint8 type);
+
+        int8 GetFreeActionButton();
 
         PvPInfo pvpInfo;
         void UpdatePvPState(bool onlyFFA = false);

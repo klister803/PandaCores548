@@ -1692,6 +1692,15 @@ struct SoundEntriesEntry
     //unk                                                   // 34       5.0.5
 };
 
+// SpecializationSpells.dbc
+struct SpecializationSpellEntry
+{
+    uint32  Id;                      // 0
+    uint32  SpecializationEntry;     // 1
+    uint32  LearnSpell;              // 2
+    uint32  OverrideSpell;           // 3
+};
+
 // SpellEffect.dbc
 struct SpellEffectEntry
 {

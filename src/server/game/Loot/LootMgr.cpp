@@ -1049,7 +1049,7 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
 
     b.WriteBit(lv._guid[0]);
     
-    for (int i = 0; i < bits.size(); ++i)
+    for (size_t i = 0; i < bits.size(); ++i)
         b.WriteBit(bits[i]);
 
     b.WriteBits(currenciesShown, 22);
