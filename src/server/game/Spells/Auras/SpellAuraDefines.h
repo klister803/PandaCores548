@@ -428,7 +428,8 @@ enum AuraType
     SPELL_AURA_368                                          = 368,  // Not used in 4.3.4
     SPELL_AURA_ENABLE_POWER_BAR_TIMER                       = 369,
     SPELL_AURA_SET_FAIR_FAR_CLIP                            = 370,  // Overrides client's View Distance setting to max("Fair", current_setting)
-    TOTAL_AURAS                                             = 418   // 5.0.5
+    SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT               = 404,  // NYI  - Sets attack power equal to % of spellpower, discarding all other bonuses (from gear and buffs)
+    TOTAL_AURAS                                             = 419   // 5.0.5
 };
 
 enum AuraObjectType

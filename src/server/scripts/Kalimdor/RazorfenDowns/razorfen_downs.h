@@ -31,7 +31,7 @@ enum eData64
 
 enum eGameObject
 {
-    GO_GONG                                        = 148917
+    GO_GONG                                     = 148917
 };
 
 enum eCreature

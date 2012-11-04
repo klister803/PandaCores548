@@ -56,7 +56,7 @@ enum AchievementFaction
 {
     ACHIEVEMENT_FACTION_HORDE           = 0,
     ACHIEVEMENT_FACTION_ALLIANCE        = 1,
-    ACHIEVEMENT_FACTION_ANY             = -1,
+    ACHIEVEMENT_FACTION_ANY             = -1
 };
 
 enum AchievementFlags
@@ -77,7 +77,7 @@ enum AchievementFlags
     ACHIEVEMENT_FLAG_SHOW_IN_GUILD_HEADER  = 0x00002000,    // Shows in guild news header
     ACHIEVEMENT_FLAG_GUILD                 = 0x00004000,    //
     ACHIEVEMENT_FLAG_SHOW_GUILD_MEMBERS    = 0x00008000,    //
-    ACHIEVEMENT_FLAG_SHOW_CRITERIA_MEMBERS = 0x00010000,    //
+    ACHIEVEMENT_FLAG_SHOW_CRITERIA_MEMBERS = 0x00010000     //
 
 };
 
@@ -95,7 +95,7 @@ enum AchievementCriteriaCondition
     ACHIEVEMENT_CRITERIA_CONDITION_NO_LOSE         = 4,    // only used in "Win 10 arenas without losing"
     ACHIEVEMENT_CRITERIA_CONDITION_NO_SPELL_HIT    = 9,    // requires the player not to be hit by specific spell
     ACHIEVEMENT_CRITERIA_CONDITION_NOT_IN_GROUP    = 10,   // requires the player not to be in group
-    ACHIEVEMENT_CRITERIA_CONDITION_UNK3            = 13,   // unk
+    ACHIEVEMENT_CRITERIA_CONDITION_UNK3            = 13    // unk
 };
 
 enum AchievementCriteriaAdditionalCondition
@@ -142,7 +142,7 @@ enum AchievementCriteriaAdditionalCondition
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_GUILD_REPUTATION            = 62, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_RATED_BATTLEGROUND          = 63, // NYI
     ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RARITY              = 65,
-    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RACE                = 66,
+    ACHIEVEMENT_CRITERIA_ADDITIONAL_CONDITION_PROJECT_RACE                = 66
 };
 
 enum AchievementCriteriaFlags
@@ -152,7 +152,7 @@ enum AchievementCriteriaFlags
     ACHIEVEMENT_CRITERIA_FLAG_UNK3              = 0x00000004,         // BG related??
     ACHIEVEMENT_CRITERIA_FLAG_UNK4              = 0x00000008,         //
     ACHIEVEMENT_CRITERIA_FLAG_UNK5              = 0x00000010,         // not used
-    ACHIEVEMENT_CRITERIA_FLAG_MONEY_COUNTER     = 0x00000020,         // Displays counter as money
+    ACHIEVEMENT_CRITERIA_FLAG_MONEY_COUNTER     = 0x00000020          // Displays counter as money
 };
 
 enum AchievementCriteriaTimedTypes
@@ -299,7 +299,7 @@ enum AchievementCriteriaTypes
     ACHIEVEMENT_CRITERIA_TYPE_UNK149                        = 149,
     ACHIEVEMENT_CRITERIA_TYPE_UNK150                        = 150,
     // 0..144 => 145 criteria types total
-    ACHIEVEMENT_CRITERIA_TYPE_TOTAL                         = 151,
+    ACHIEVEMENT_CRITERIA_TYPE_TOTAL                         = 151
 };
 
 enum AreaFlags
@@ -333,24 +333,24 @@ enum AreaFlags
     AREA_FLAG_OUTSIDE          = 0x04000000,                // used for determinating spell related inside/outside questions in Map::IsOutdoors
     AREA_FLAG_WINTERGRASP_2    = 0x08000000,                // Can Hearth And Resurrect From Area
     AREA_FLAG_NO_FLY_ZONE      = 0x20000000,                // Marks zones where you cannot fly
-    AREA_FLAG_UNK9             = 0x40000000,
+    AREA_FLAG_UNK9             = 0x40000000
 };
 
 enum Difficulty
 {
-    NONE_DIFFICULTY              = 0, // entry
-    REGULAR_DIFFICULTY           = 1, // entry 
-    HEROIC_DIFFICULTY            = 2, // difficulty_entry_2
-    MAN10_DIFFICULTY             = 3, // entry
-    MAN25_DIFFICULTY             = 4, // difficulty_entry_4
-    MAN10_HEROIC_DIFFICULTY      = 5, // difficulty_entry_5
-    MAN25_HEROIC_DIFFICULTY      = 6, // difficulty_entry_6
-    RAID_TOOL_DIFFICULTY         = 7, // difficulty_entry_7
-    CHALLENGE_MODE_DIFFICULTY    = 8, // difficulty_entry_8
-    MAN40_DIFFICULTY             = 9, // difficulty_entry_9
+    NONE_DIFFICULTY              = 0,                       // entry
+    REGULAR_DIFFICULTY           = 1,                       // entry 
+    HEROIC_DIFFICULTY            = 2,                       // difficulty_entry_2
+    MAN10_DIFFICULTY             = 3,                       // entry
+    MAN25_DIFFICULTY             = 4,                       // difficulty_entry_4
+    MAN10_HEROIC_DIFFICULTY      = 5,                       // difficulty_entry_5
+    MAN25_HEROIC_DIFFICULTY      = 6,                       // difficulty_entry_6
+    RAID_TOOL_DIFFICULTY         = 7,                       // difficulty_entry_7
+    CHALLENGE_MODE_DIFFICULTY    = 8,                       // difficulty_entry_8
+    MAN40_DIFFICULTY             = 9                        // difficulty_entry_9
 };
 
-#define RAID_DIFFICULTY_MASK_25MAN 1    // since 25man difficulties are 1 and 3, we can check them like that
+#define RAID_DIFFICULTY_MASK_25MAN 1                        // since 25man difficulties are 1 and 3, we can check them like that
 
 #define MAX_DUNGEON_DIFFICULTY     HEROIC_DIFFICULTY+1
 #define MAX_RAID_DIFFICULTY        MAN25_HEROIC_DIFFICULTY+1
@@ -358,7 +358,7 @@ enum Difficulty
 
 enum SpawnMask
 {
-    SPAWNMASK_CONTINENT         = (1 << NONE_DIFFICULTY), // any maps without spawn modes
+    SPAWNMASK_CONTINENT         = (1 << NONE_DIFFICULTY),   // any maps without spawn modes
 
     SPAWNMASK_DUNGEON_NORMAL    = (1 << REGULAR_DIFFICULTY),
     SPAWNMASK_DUNGEON_HEROIC    = (1 << HEROIC_DIFFICULTY),
@@ -376,14 +376,14 @@ enum SpawnMask
 
     SPAWNMASK_RAID_RAID_TOOL    = (1 << RAID_TOOL_DIFFICULTY),
 
-    SPAWNMASK_RAID_ALL          = (SPAWNMASK_RAID_NORMAL_ALL | SPAWNMASK_RAID_HEROIC_ALL | SPAWNMASK_RAID_RAID_TOOL),
+    SPAWNMASK_RAID_ALL          = (SPAWNMASK_RAID_NORMAL_ALL | SPAWNMASK_RAID_HEROIC_ALL | SPAWNMASK_RAID_RAID_TOOL)
 };
 
 enum FactionTemplateFlags
 {
     FACTION_TEMPLATE_FLAG_PVP               = 0x00000800,   // flagged for PvP
     FACTION_TEMPLATE_FLAG_CONTESTED_GUARD   = 0x00001000,   // faction will attack players that were involved in PvP combats
-    FACTION_TEMPLATE_FLAG_HOSTILE_BY_DEFAULT= 0x00002000,
+    FACTION_TEMPLATE_FLAG_HOSTILE_BY_DEFAULT= 0x00002000
 };
 
 enum FactionMasks
@@ -426,13 +426,13 @@ enum ItemEnchantmentType
 enum ItemLimitCategoryMode
 {
     ITEM_LIMIT_CATEGORY_MODE_HAVE       = 0,                      // limit applied to amount items in inventory/bank
-    ITEM_LIMIT_CATEGORY_MODE_EQUIP      = 1,                      // limit applied to amount equipped items (including used gems)
+    ITEM_LIMIT_CATEGORY_MODE_EQUIP      = 1                       // limit applied to amount equipped items (including used gems)
 };
 
 enum MountFlags
 {
     MOUNT_FLAG_CAN_PITCH                = 0x4,                    // client checks MOVEMENTFLAG2_FULL_SPEED_PITCHING
-    MOUNT_FLAG_CAN_SWIM                 = 0x8,                    // client checks MOVEMENTFLAG_SWIMMING
+    MOUNT_FLAG_CAN_SWIM                 = 0x8                     // client checks MOVEMENTFLAG_SWIMMING
 };
 
 enum TotemCategoryType
@@ -472,7 +472,7 @@ enum SummonPropType
     SUMMON_PROP_TYPE_DRAKE_VEH       = 10,                  // summon drake (vehicle), 3 spells
     SUMMON_PROP_TYPE_LIGHTWELL       = 11,                  // summon lightwell, 6 spells in 3.0.3
     SUMMON_PROP_TYPE_JEEVES          = 12,                  // summon Jeeves, 1 spell in 3.3.5a
-    SUMMON_PROP_TYPE_LASHTAIL        = 13,                  // Lashtail Hatchling, 1 spell in 4.2.2
+    SUMMON_PROP_TYPE_LASHTAIL        = 13                   // Lashtail Hatchling, 1 spell in 4.2.2
 };
 
 // SummonProperties.dbc, col 5
@@ -499,7 +499,7 @@ enum SummonPropFlags
     SUMMON_PROP_FLAG_UNK18           = 0x00020000,
     SUMMON_PROP_FLAG_UNK19           = 0x00040000,
     SUMMON_PROP_FLAG_UNK20           = 0x00080000,
-    SUMMON_PROP_FLAG_UNK21           = 0x00100000,          // Totems
+    SUMMON_PROP_FLAG_UNK21           = 0x00100000           // Totems
 };
 
 enum VehicleSeatFlags
@@ -524,7 +524,7 @@ enum VehicleSeatFlags
     VEHICLE_SEAT_FLAG_HAS_START_WARITING_FOR_VEH_TRANSITION_ANIM_EXIT = 0x10000000,
     VEHICLE_SEAT_FLAG_CAN_CAST                   = 0x20000000,           // Lua_UnitHasVehicleUI
     VEHICLE_SEAT_FLAG_UNK2                       = 0x40000000,           // checked in conjunction with 0x800 in CastSpell2
-    VEHICLE_SEAT_FLAG_ALLOWS_INTERACTION         = 0x80000000,
+    VEHICLE_SEAT_FLAG_ALLOWS_INTERACTION         = 0x80000000
 };
 
 enum VehicleSeatFlagsB
@@ -537,7 +537,7 @@ enum VehicleSeatFlagsB
     VEHICLE_SEAT_FLAG_B_USABLE_FORCED_3          = 0x00000100,
     VEHICLE_SEAT_FLAG_B_USABLE_FORCED_4          = 0x02000000,
     VEHICLE_SEAT_FLAG_B_CAN_SWITCH               = 0x04000000,
-    VEHICLE_SEAT_FLAG_B_VEHICLE_PLAYERFRAME_UI   = 0x80000000,           // Lua_UnitHasVehiclePlayerFrameUI - actually checked for flagsb &~ 0x80000000
+    VEHICLE_SEAT_FLAG_B_VEHICLE_PLAYERFRAME_UI   = 0x80000000            // Lua_UnitHasVehiclePlayerFrameUI - actually checked for flagsb &~ 0x80000000
 };
 
 // CurrencyTypes.dbc

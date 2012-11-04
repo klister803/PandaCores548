@@ -99,7 +99,7 @@ enum VHWorldStates
 {
     WORLD_STATE_VH              = 3816,
     WORLD_STATE_VH_PRISON_STATE = 3815,
-    WORLD_STATE_VH_WAVE_COUNT   = 3810,
+    WORLD_STATE_VH_WAVE_COUNT   = 3810
 };
 
 #endif

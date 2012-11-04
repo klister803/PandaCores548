@@ -43,7 +43,7 @@ enum Bosses
     NPC_EREGOS                  = 27656,
 
     NPC_AZURE_RING_GUARDIAN     = 28236,
-    NPC_CENTRIFUGE_CONSTRUCT    = 27641,
+    NPC_CENTRIFUGE_CONSTRUCT    = 27641
 };
 
 enum GameObjects
