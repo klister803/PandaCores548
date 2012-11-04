@@ -526,8 +526,6 @@ void Player::UpdateCritPercentage(WeaponAttackType attType)
     }
 
     float value = GetTotalPercentageModValue(modGroup) + GetRatingBonusValue(cr);
-    // Modify crit from weapon skill and maximized defense skill of same level victim difference
-    value += (int32(GetWeaponSkillValue(attType)) - int32(GetMaxSkillValueForLevel())) * 0.04f;
     value = value < 0.0f ? 0.0f : value;
     SetStatFloatValue(index, value);
 }
