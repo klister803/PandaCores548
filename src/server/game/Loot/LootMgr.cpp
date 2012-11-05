@@ -1083,10 +1083,10 @@ ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv)
     }*/
 
     if(hasUnk3)
-        b << uint8(255);
+        b << uint8(2); // 2
     b.WriteByteSeq(lv._guid[7]);
     if(hasUnk2)
-        b << uint8(0);
+        b << uint8(2);// unk 5
     b.WriteByteSeq(lv._guid[1]);
     b.WriteByteSeq(lv._guid[6]);
     if(hasUnk1)

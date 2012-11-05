@@ -317,11 +317,12 @@ enum Opcodes
     CMSG_LOG_DISCONNECT                               = 0x48F,  // 5.0.5 16048
     CMSG_LOOT                                         = 0x236,	// 5.0.5 16048
     CMSG_LOOT_CURRENCY                                = 0,
-    CMSG_LOOT_MASTER_GIVE                             = 0,
+    CMSG_LOOT_MASTER_GIVE                             = 0x239,  // 5.0.5 16048
     CMSG_LOOT_METHOD                                  = 0x7F6,  // 5.0.5 16048
     CMSG_LOOT_MONEY                                   = 0x2D7,  // 5.0.5 16048
     CMSG_LOOT_RELEASE                                 = 0x0B2,  // 5.0.5 16048
-    CMSG_LOOT_ROLL                                    = 0x77C,
+    CMSG_LOOT_ROLL                                    = 0x77C,  // 5.0.5 16048
+    CMSG_LOOT_MASTER_ASK_FOR_ROLL                     = 0x1F9,  // 5.0.5 16048
     CMSG_MAIL_CREATE_TEXT_ITEM                        = 0x834,  // 5.0.5 16048
     CMSG_MAIL_DELETE                                  = 0x195,  // 5.0.5 16048
     CMSG_MAIL_MARK_AS_READ                            = 0x99F,  // 5.0.5 16048
