@@ -9,6 +9,7 @@
 #include "direct.h"
 #else
 #include <sys/stat.h>
+#include <unistd.h>
 #define ERROR_PATH_NOT_FOUND ERROR_FILE_NOT_FOUND
 #endif
 
@@ -74,22 +75,20 @@ float CONF_float_to_int16_limit = 2048.0f;   // Max accuracy = val/65536
 float CONF_flat_height_delta_limit = 0.005f; // If max - min less this value - surface is flat
 float CONF_flat_liquid_delta_limit = 0.001f; // If max - min less this value - liquid surface is flat
 
-uint32 CONF_TargetBuild = 16057;              // 5.0.5 16057
+uint32 CONF_TargetBuild = 15595;              // 4.3.4.15595
 
 // List MPQ for extract maps from
 char const* CONF_mpq_list[]=
 {
     "world.MPQ",
-    //"art.MPQ",
-    //"world2.MPQ",
+    "art.MPQ",
+    "world2.MPQ",
     "expansion1.MPQ",
     "expansion2.MPQ",
     "expansion3.MPQ",
-	"expension4.MPQ",
-	"misc.MPQ",  //LiquiType.dbc
 };
 
-uint32 const Builds[] = {13164, 13205, 13287, 13329, 13596, 13623, 13914, 14007, 14333, 14480, 14545, 15005, 15050, 15211, 15354, 15595, 16016, 16048, 16057, 0};
+uint32 const Builds[] = {13164, 13205, 13287, 13329, 13596, 13623, 13914, 14007, 14333, 14480, 14545, 15005, 15050, 15211, 15354, 15595, 0};
 #define LAST_DBC_IN_DATA_BUILD 13623    // after this build mpqs with dbc are back to locale folder
 
 char* const Locales[] = {"enGB", "enUS", "deDE", "esES", "frFR", "koKR", "zhCN", "zhTW", "enCN", "enTW", "esMX", "ruRU"};
@@ -959,7 +958,7 @@ void ExtractMapsFromMpq(uint32 build)
     printf("Convert map files\n");
     for (uint32 z = 0; z < map_count; ++z)
     {
-        printf("Extract %s (%d/%d)                  \n", map_ids[z].name, z+1, map_count);
+        printf("Extract %s (%d/%u)                  \n", map_ids[z].name, z+1, map_count);
         // Loadup map grid data
         sprintf(mpq_map_name, "World\\Maps\\%s\\%s.wdt", map_ids[z].name, map_ids[z].name);
         WDT_file wdt;
@@ -1134,8 +1133,6 @@ bool LoadLocaleMPQFile(int locale)
             continue;
         }
     }
-		_stprintf(buff, _T("%s/Data/misc.MPQ"), input_path);
-		SFileOpenPatchArchive(LocaleMpq, buff, "", 0);
 
     return true;
 }
