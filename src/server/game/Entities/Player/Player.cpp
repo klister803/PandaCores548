@@ -3273,8 +3273,10 @@ void Player::InitTalentForLevel()
 void Player::InitSpellForLevel()
 {
     bool update = false;
+
     auto spellList = sSpellMgr->GetSpellClassList(getClass());
     uint8 level = getLevel();
+    uint32 specializationId = GetSpecializationId(GetActiveSpec());
 
     for (auto spellId : spellList)
     {
@@ -3285,8 +3287,7 @@ void Player::InitSpellForLevel()
         if (HasSpell(spellId))
             continue;
 
-        // TODO : Check Specialization of player
-        if (spell->SpecializationEntry)
+        if (spell->SpecializationEntry && spell->SpecializationEntry != specializationId)
             continue;
 
         if (!IsSpellFitByClassAndRace(spellId))
@@ -3294,6 +3295,16 @@ void Player::InitSpellForLevel()
 
         if (spell->SpellLevel <= level)
             learnSpell(spellId, false);
+    }
+}
+
+void Player::RemoveSpecializationSpells()
+{
+    for(auto itr : GetSpellMap())
+    {
+        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr.first);
+        if(spell && spell->SpecializationEntry)
+            removeSpell(itr.first);
     }
 }
 
@@ -4367,6 +4378,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
     if (!prev_activate)
     {
         WorldPacket data(SMSG_REMOVED_SPELL, 4);
+        data.WriteBits(1, 24);
         data << uint32(spell_id);
         GetSession()->SendPacket(&data);
     }
@@ -4660,6 +4672,14 @@ bool Player::ResetTalents(bool no_cost)
     */
 
     return true;
+}
+
+void Player::SetSpecializationId(uint8 spec, uint32 id)
+{
+    _talentMgr->SpecInfo[spec].SpecializationId = id;
+
+    if (spec == GetActiveSpec())
+        SetUInt32Value(PLAYER_CURRENT_SPEC_ID, id);
 }
 
 Mail* Player::GetMail(uint32 id)
@@ -16848,8 +16868,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetUInt32Value(UNIT_FIELD_LEVEL, fields[6].GetUInt8());
     SetUInt32Value(PLAYER_XP, fields[7].GetUInt32());
 
-    _LoadIntoDataField(fields[57].GetCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
-    _LoadIntoDataField(fields[59].GetCString(), PLAYER__FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE*2);
+    _LoadIntoDataField(fields[59].GetCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
+    _LoadIntoDataField(fields[61].GetCString(), PLAYER__FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE*2);
 
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
@@ -16874,7 +16894,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[46].GetUInt32());
 
     // set which actionbars the client has active - DO NOT REMOVE EVER AGAIN (can be changed though, if it does change fieldwise)
-    SetByteValue(PLAYER_FIELD_BYTES, 2, fields[60].GetUInt8());
+    SetByteValue(PLAYER_FIELD_BYTES, 2, fields[62].GetUInt8());
 
     InitDisplayIds();
 
@@ -17268,6 +17288,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetSpecsCount(fields[55].GetUInt8());
     SetActiveSpec(fields[56].GetUInt8());
 
+    SetSpecializationId(0, fields[57].GetUInt32());
+    SetSpecializationId(1, fields[58].GetUInt32());
+
     // sanity check
     if (GetSpecsCount() > MAX_TALENT_SPECS || GetActiveSpec() > MAX_TALENT_SPEC || GetSpecsCount() < MIN_TALENT_SPECS)
     {
@@ -17427,7 +17450,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     }
 
     // RaF stuff.
-    m_grantableLevels = fields[61].GetUInt8();
+    m_grantableLevels = fields[63].GetUInt8();
     if (GetSession()->IsARecruiter() || (GetSession()->GetRecruiterId() != 0))
         SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_REFER_A_FRIEND);
 
@@ -19018,6 +19041,9 @@ void Player::SaveToDB(bool create /*=false*/)
 
         stmt->setUInt8(index++, GetSpecsCount());
         stmt->setUInt8(index++, GetActiveSpec());
+
+        stmt->setUInt32(index++, GetSpecializationId(0));
+        stmt->setUInt32(index++, GetSpecializationId(1));
 
         ss.str("");
         for (uint32 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
@@ -22483,11 +22509,9 @@ void Player::SendInitialPacketsBeforeAddToMap()
     // SMSG_SET_FLAT_SPELL_MODIFIER
     // SMSG_UPDATE_AURA_DURATION
 
-    //Rewrite Talents
-    //SendTalentsInfoData(false);
+    SendTalentsInfoData(false);
 
     SendKnownSpells();
-    //SendInitialSpells();
 
     data.Initialize(SMSG_SEND_UNLEARN_SPELLS);
     data.WriteBits(0, 24);                         // count, read uint32 spells id
@@ -24959,9 +24983,8 @@ bool Player::canSeeSpellClickOn(Creature const* c) const
 
 void Player::BuildPlayerTalentsInfoData(WorldPacket* data)
 {
- /*   *data << uint32(GetFreeTalentPoints());                 // unspentTalentPoints
-    *data << uint8(GetSpecsCount());                        // talent group count (0, 1 or 2)
-    *data << uint8(GetActiveSpec());                        // talent group index (0 or 1)
+    *data << uint8(GetSpecsCount());
+    *data << uint8(GetActiveSpec());
 
     if (GetSpecsCount())
     {
@@ -24971,141 +24994,31 @@ void Player::BuildPlayerTalentsInfoData(WorldPacket* data)
         // loop through all specs (only 1 for now)
         for (uint8 specIdx = 0; specIdx < GetSpecsCount(); ++specIdx)
         {
-            *data << uint32(GetPrimaryTalentTree(specIdx));
-            uint8 talentIdCount = 0;
-            size_t pos = data->wpos();
-            *data << uint8(talentIdCount);                  // [PH], talentIdCount
+            *data << uint32(GetSpecializationId(specIdx));
 
-            // find class talent tabs (all players have 3 talent tabs)
-            uint32 const* talentTabIds = GetTalentTabPages(getClass());
+            *data << uint8(0); // talent count
+            /*for (int i = 0; i < 0; i++)
+                *data << uint16(0); // Talent Id*/
 
-            for (uint8 i = 0; i < MAX_TALENT_TABS; ++i)
-            {
-                uint32 talentTabId = talentTabIds[i];
-
-                for (uint32 talentId = 0; talentId < sTalentStore.GetNumRows(); ++talentId)
-                {
-                    TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentId);
-                    if (!talentInfo)
-                        continue;
-
-                    // skip another tab talents
-                    if (talentInfo->TalentTab != talentTabId)
-                        continue;
-
-                    // find max talent rank (0~4)
-                    int8 curtalent_maxrank = -1;
-                    for (int8 rank = MAX_TALENT_RANK-1; rank >= 0; --rank)
-                    {
-                        if (talentInfo->RankID[rank] && HasTalent(talentInfo->RankID[rank], specIdx))
-                        {
-                            curtalent_maxrank = rank;
-                            break;
-                        }
-                    }
-
-                    // not learned talent
-                    if (curtalent_maxrank < 0)
-                        continue;
-
-                    *data << uint32(talentInfo->TalentID);  // Talent.dbc
-                    *data << uint8(curtalent_maxrank);      // talentMaxRank (0-4)
-
-                    ++talentIdCount;
-                }
-            }
-
-            data->put<uint8>(pos, talentIdCount);           // put real count
-
-            *data << uint8(MAX_GLYPH_SLOT_INDEX);           // glyphs count
-
+            *data << uint8(MAX_GLYPH_SLOT_INDEX);
             for (uint8 i = 0; i < MAX_GLYPH_SLOT_INDEX; ++i)
                 *data << uint16(GetGlyph(specIdx, i));               // GlyphProperties.dbc
         }
-    }*/
-}
-
-void Player::BuildPetTalentsInfoData(WorldPacket* data)
-{/*
-    uint32 unspentTalentPoints = 0;
-    size_t pointsPos = data->wpos();
-    *data << uint32(unspentTalentPoints);                   // [PH], unspentTalentPoints
-
-    uint8 talentIdCount = 0;
-    size_t countPos = data->wpos();
-    *data << uint8(talentIdCount);                          // [PH], talentIdCount
-
-    Pet* pet = GetPet();
-    if (!pet)
-        return;
-
-    unspentTalentPoints = pet->GetFreeTalentPoints();
-
-    data->put<uint32>(pointsPos, unspentTalentPoints);      // put real points
-
-    CreatureTemplate const* ci = pet->GetCreatureTemplate();
-    if (!ci)
-        return;
-
-    CreatureFamilyEntry const* pet_family = sCreatureFamilyStore.LookupEntry(ci->family);
-    if (!pet_family || pet_family->petTalentType < 0)
-        return;
-
-    for (uint32 talentTabId = 1; talentTabId < sTalentTabStore.GetNumRows(); ++talentTabId)
-    {
-        TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentTabId);
-        if (!talentTabInfo)
-            continue;
-
-        if (!((1 << pet_family->petTalentType) & talentTabInfo->petTalentMask))
-            continue;
-
-        for (uint32 talentId = 0; talentId < sTalentStore.GetNumRows(); ++talentId)
-        {
-            TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentId);
-            if (!talentInfo)
-                continue;
-
-            // skip another tab talents
-            if (talentInfo->TalentTab != talentTabId)
-                continue;
-
-            // find max talent rank (0~4)
-            int8 curtalent_maxrank = -1;
-            for (int8 rank = MAX_TALENT_RANK-1; rank >= 0; --rank)
-            {
-                if (talentInfo->RankID[rank] && pet->HasSpell(talentInfo->RankID[rank]))
-                {
-                    curtalent_maxrank = rank;
-                    break;
-                }
-            }
-
-            // not learned talent
-            if (curtalent_maxrank < 0)
-                continue;
-
-            *data << uint32(talentInfo->TalentID);          // Talent.dbc
-            *data << uint8(curtalent_maxrank);              // talentMaxRank (0-4)
-
-            ++talentIdCount;
-        }
-
-        data->put<uint8>(countPos, talentIdCount);          // put real count
-
-        break;
-    }*/
+    }
 }
 
 void Player::SendTalentsInfoData(bool pet)
 {
-    /*WorldPacket data(SMSG_TALENTS_INFO, 50);
-    data << uint8(pet ? 1 : 0);
     if (pet)
-        BuildPetTalentsInfoData(&data);
-    else
-        BuildPlayerTalentsInfoData(&data);
-    GetSession()->SendPacket(&data);*/
+    {
+        WorldPacket data(SMSG_SET_PET_SPECIALIZATION);
+        data << uint16(0); // SpecializationId
+        return;
+    }
+
+    WorldPacket data(SMSG_UPDATE_TALENT_DATA);
+    BuildPlayerTalentsInfoData(&data);
+    GetSession()->SendPacket(&data);
 }
 
 void Player::BuildEnchantmentsInfoData(WorldPacket* data)

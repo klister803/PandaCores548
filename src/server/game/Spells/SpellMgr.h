@@ -596,6 +596,7 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
 bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
 
 typedef std::vector<std::list<uint32>> SpellClassList;
+typedef std::map<uint32, std::list<uint32>> SpellOverrideInfo;
 
 class SpellMgr
 {
@@ -691,6 +692,7 @@ class SpellMgr
         SpellInfo const* GetSpellInfo(uint32 spellId, Difficulty difficulty = NONE_DIFFICULTY) const;
         uint32 GetSpellInfoStoreSize() const { return mSpellInfoMap[NONE_DIFFICULTY].size(); }
         std::list<uint32> GetSpellClassList(uint8 ClassID) const { return mSpellClassInfo[ClassID]; }
+        std::list<uint32> const* GetSpellOverrideInfo(uint32 spellId) { return mSpellOverrideInfo.find(spellId) == mSpellOverrideInfo.end() ? NULL : &mSpellOverrideInfo[spellId]; }
 
     // Modifiers
     public:
@@ -752,6 +754,7 @@ class SpellMgr
         PetDefaultSpellsMap        mPetDefaultSpellsMap;           // only spells not listed in related mPetLevelupSpellMap entry
         SpellInfoMap               mSpellInfoMap[MAX_DIFFICULTY];
         SpellClassList             mSpellClassInfo;
+        SpellOverrideInfo          mSpellOverrideInfo;
 };
 
 #define sSpellMgr ACE_Singleton<SpellMgr, ACE_Null_Mutex>::instance()

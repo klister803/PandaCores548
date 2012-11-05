@@ -2646,7 +2646,11 @@ void SpellMgr::LoadSpellClassInfo()
             if (!spellEntry)
                 continue;
 
-            if (spellEntry->SpellFamilyName != classEntry->spellfamily)
+            // Some doesn't have SpellClassInfo
+            /*if (spellEntry->SpellFamilyName != classEntry->spellfamily)
+                continue;*/
+
+            if (((1 << (ClassID-1)) & skillLine->classmask) == 0)
                 continue;
 
             if (spellEntry->SpellLevel == 0)
@@ -2662,7 +2666,30 @@ void SpellMgr::LoadSpellClassInfo()
 
             mSpellClassInfo[ClassID].push_back(spellEntry->Id);
         }
+
+        for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
+        {
+            SpellInfo const* spell = sSpellMgr->GetSpellInfo(i);
+            if (!spell)
+                continue;
+
+            if (spell->SpellFamilyName == classEntry->spellfamily && spell->SpecializationEntry)
+            {
+                mSpellClassInfo[ClassID].push_back(i);
+
+                if (spell->OverrideSpellEntry)
+                {
+                    auto itr = mSpellOverrideInfo.find(spell->OverrideSpellEntry);
+                    if(itr == mSpellOverrideInfo.end())
+                        mSpellOverrideInfo[spell->OverrideSpellEntry] = std::list<uint32>();
+                }
+                
+                mSpellOverrideInfo[spell->OverrideSpellEntry].push_back(spell->SpecializationEntry);
+            }
+        }
     }
+
+
 }
 
 struct spellDifficultyLoadInfo
