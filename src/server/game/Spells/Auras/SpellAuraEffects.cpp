@@ -421,7 +421,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //363 SPELL_AURA_MOD_NEXT_SPELL
     &AuraEffect::HandleUnused,                                    //364 unused (4.3.4)
     &AuraEffect::HandleNULL,                                      //365 SPELL_AURA_365
-    &AuraEffect::HandleNULL,                                      //366 SPELL_AURA_366
+    &AuraEffect::HandleNULL,                                      //366 SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT
     &AuraEffect::HandleNULL,                                      //367 SPELL_AURA_367
     &AuraEffect::HandleUnused,                                    //368 unused (4.3.4)
     &AuraEffect::HandleNULL,                                      //369 SPELL_SPELL_AURA_ENABLE_POWER_BAR_TIMER
@@ -459,7 +459,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleOverrideAttackPowerBySpellPower,           //404 SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
@@ -1923,7 +1923,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
         case FORM_CREATUREBEAR:                             // 0x0E
         case FORM_CREATURECAT:                              // 0x0F
         case FORM_GHOSTWOLF:                                // 0x10
-
+            break;
         case FORM_WISE_SERPENT:                             // 0x14
             PowerType = POWER_MANA;
             break;
@@ -2966,13 +2966,13 @@ void AuraEffect::HandleForceMoveForward(AuraApplication const* aurApp, uint8 mod
     Unit* target = aurApp->GetTarget();
 
     if (apply)
-        target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FORCE_MOVE);
+        target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FORCE_MOVEMENT);
     else
     {
         // do not remove unit flag if there are more than this auraEffect of that kind on unit on unit
         if (target->HasAuraType(GetAuraType()))
             return;
-        target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FORCE_MOVE);
+        target->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FORCE_MOVEMENT);
     }
 }
 
@@ -4069,6 +4069,7 @@ void AuraEffect::HandleAuraModExpertise(AuraApplication const* aurApp, uint8 mod
 
     target->ToPlayer()->UpdateExpertise(BASE_ATTACK);
     target->ToPlayer()->UpdateExpertise(OFF_ATTACK);
+    target->ToPlayer()->UpdateExpertise(RANGED_ATTACK);
 }
 
 /********************************/
@@ -4561,6 +4562,19 @@ void AuraEffect::HandleAuraModAttackPowerOfArmor(AuraApplication const* aurApp, 
     if (target->GetTypeId() == TYPEID_PLAYER)
         target->ToPlayer()->UpdateAttackPowerAndDamage(false);
 }
+
+void AuraEffect::HandleOverrideAttackPowerBySpellPower(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+
+    int32 spellPower = target->ToPlayer()->GetBaseSpellPowerBonus(); // SpellPower from Weapon
+    spellPower += std::max(0, int32(target->ToPlayer()->GetStat(STAT_INTELLECT)) - 10); // SpellPower from intellect
+    target->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_VALUE, float(GetAmount() / 100 * spellPower), apply);
+}
+
 /********************************/
 /***        DAMAGE BONUS      ***/
 /********************************/

@@ -161,6 +161,7 @@ bool Player::UpdateAllStats()
     UpdateManaRegen();
     UpdateExpertise(BASE_ATTACK);
     UpdateExpertise(OFF_ATTACK);
+    UpdateExpertise(RANGED_ATTACK);
     for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
         UpdateResistances(i);
 
@@ -268,21 +269,25 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
     UnitMods unitMod = ranged ? UNIT_MOD_ATTACK_POWER_RANGED : UNIT_MOD_ATTACK_POWER;
 
     uint16 index = UNIT_FIELD_ATTACK_POWER;
+    uint16 index_mod_pos = UNIT_FIELD_ATTACK_POWER_MOD_POS;
+    uint16 index_mod_neg = UNIT_FIELD_ATTACK_POWER_MOD_NEG;
+    uint16 index_mult = UNIT_FIELD_ATTACK_POWER_MULTIPLIER;
 
     if (ranged)
     {
         index = UNIT_FIELD_RANGED_ATTACK_POWER;
+        index_mod_pos = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS;
+        index_mod_neg = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_NEG;
+        index_mult = UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER;
 
         switch (getClass())
         {
             case CLASS_HUNTER:
-                val2 = level * 2.0f + GetStat(STAT_AGILITY) * 2.0f - 20.0f;
+                val2 = (level * 2.0f) + ((GetStat(STAT_AGILITY) * 2.0f) - 20.0f);
                 break;
             case CLASS_ROGUE:
-                val2 = level + GetStat(STAT_AGILITY) - 10.0f;
-                break;
             case CLASS_WARRIOR:
-                val2 = level + GetStat(STAT_AGILITY) - 10.0f;
+                val2 = level + (GetStat(STAT_AGILITY) - 10.0f);
                 break;
         }
     }
@@ -301,19 +306,59 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
 
     SetModifierValue(unitMod, BASE_VALUE, val2);
 
-    float base_attPower  = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
+    float base_attPower = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
     float attPowerMod = GetModifierValue(unitMod, TOTAL_VALUE);
+    float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
     //add dynamic flat mods
-    if (!ranged)
+    if (!ranged && HasAuraType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR))
     {
         AuraEffectList const& mAPbyArmor = GetAuraEffectsByType(SPELL_AURA_MOD_ATTACK_POWER_OF_ARMOR);
         for (AuraEffectList::const_iterator iter = mAPbyArmor.begin(); iter != mAPbyArmor.end(); ++iter)
+        {
             // always: ((*i)->GetModifier()->m_miscvalue == 1 == SPELL_SCHOOL_MASK_NORMAL)
-            attPowerMod += int32(GetArmor() / (*iter)->GetAmount());
+            int32 temp = int32(GetArmor() / (*iter)->GetAmount());
+            if (temp > 0)
+                attPowerMod += temp;
+            else
+                attPowerMod -= temp;
+        }
     }
 
-    SetInt32Value(index, (uint32)base_attPower);            //UNIT_FIELD_(RANGED)_ATTACK_POWER field
+    if (!HasAuraType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT) || GetTypeId() != TYPEID_PLAYER)
+    {
+        SetFloatValue(PLAYER_FIELD_OVERRIDE_AP_BY_SPELL_POWER_PCT, 0.00f);
+        SetInt32Value(index, (uint32)base_attPower);        //UNIT_FIELD_(RANGED)_ATTACK_POWER field
+
+        if (attPowerMod > 0)
+            SetInt32Value(index+1, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
+        else if (attPowerMod < 0)
+            SetInt32Value(index+2, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
+        else
+        {
+            SetInt32Value(index+1, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
+            SetInt32Value(index+2, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
+        }
+
+        SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
+    }
+    else
+    {
+        int32 ApBySpellPct = 0;
+        int32 spellPower = ToPlayer()->GetBaseSpellPowerBonus(); // SpellPower from Weapon
+        spellPower += std::max(0, int32(ToPlayer()->GetStat(STAT_INTELLECT)) - 10); // SpellPower from intellect
+
+        AuraEffectList const& APbySpell = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT);
+        for (AuraEffectList::const_iterator iter = APbySpell.begin(); iter != APbySpell.end(); ++iter)
+            ApBySpellPct += (*iter)->GetAmount();
+
+        SetModifierValue(unitMod, BASE_VALUE, (((ApBySpellPct / 100) * spellPower) - 1));
+        SetFloatValue(PLAYER_FIELD_OVERRIDE_AP_BY_SPELL_POWER_PCT, ApBySpellPct);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
+        SetInt32Value(index, (((ApBySpellPct / 100) * spellPower) - 1));
+
+        if (attPowerMultiplier < 0)
+            SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
+    }
 
     Pet* pet = GetPet();                                //update pet's AP
     //automatically update weapon damage after attack power modification
@@ -481,8 +526,6 @@ void Player::UpdateCritPercentage(WeaponAttackType attType)
     }
 
     float value = GetTotalPercentageModValue(modGroup) + GetRatingBonusValue(cr);
-    // Modify crit from weapon skill and maximized defense skill of same level victim difference
-    value += (int32(GetWeaponSkillValue(attType)) - int32(GetMaxSkillValueForLevel())) * 0.04f;
     value = value < 0.0f ? 0.0f : value;
     SetStatFloatValue(index, value);
 }
@@ -637,10 +680,7 @@ void Player::UpdateAllSpellCritChances()
 
 void Player::UpdateExpertise(WeaponAttackType attack)
 {
-    if (attack == RANGED_ATTACK)
-        return;
-
-    int32 expertise = int32(GetRatingBonusValue(CR_EXPERTISE));
+    float expertise = GetRatingBonusValue(CR_EXPERTISE);
 
     Item* weapon = GetWeaponForAttack(attack, true);
 
@@ -656,12 +696,13 @@ void Player::UpdateExpertise(WeaponAttackType attack)
     }
 
     if (expertise < 0)
-        expertise = 0;
+        expertise = 0.0f;
 
     switch (attack)
     {
-        case BASE_ATTACK: SetUInt32Value(PLAYER_EXPERTISE, expertise);         break;
-        case OFF_ATTACK:  SetUInt32Value(PLAYER_OFFHAND_EXPERTISE, expertise); break;
+        case BASE_ATTACK: SetFloatValue(PLAYER_EXPERTISE, expertise);          break;
+        case OFF_ATTACK:  SetFloatValue(PLAYER_OFFHAND_EXPERTISE, expertise);  break;
+        case RANGED_ATTACK: SetFloatValue(PLAYER_RANGED_EXPERTISE, expertise); break;
         default: break;
     }
 }

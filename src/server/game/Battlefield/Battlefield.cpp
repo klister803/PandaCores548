@@ -295,8 +295,14 @@ void Battlefield::KickAfkPlayers()
 void Battlefield::KickPlayerFromBattlefield(uint64 guid)
 {
     if (Player* player = sObjectAccessor->FindPlayer(guid))
+    {
         if (player->GetZoneId() == GetZoneId())
             player->TeleportTo(KickPosition);
+
+        m_InvitedPlayers[player->GetTeamId()].erase(player->GetGUID());
+        m_PlayersInWar[player->GetTeamId()].erase(player->GetGUID());
+
+    }
 }
 
 void Battlefield::StartBattle()

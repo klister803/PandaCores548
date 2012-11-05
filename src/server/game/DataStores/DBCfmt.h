@@ -42,6 +42,7 @@ const char ChatChannelsEntryfmt[]="nixsx";
 const char ChrClassesEntryfmt[]="nixsxxxixiiixxxxxx";
 const char ChrRacesEntryfmt[]="nxixiixixxxxixsxxxxxixxxxxxxxxxxxxxx";
 const char ChrClassesXPowerTypesfmt[]="nii";
+const char ChrSpecializationsfmt[]="nsiixixxxxxssx";
 
 const char CinematicSequencesEntryfmt[]="nxxxxxxxxx";
 const char CreatureDisplayInfofmt[]="nixxfxxxxxxxxxxxxxx";
@@ -121,6 +122,7 @@ const char ScalingStatValuesfmt[]="iniiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii
 const char SkillLinefmt[]="nisxixix";
 const char SkillLineAbilityfmt[]="niiiiiiiiixxx";
 const char SoundEntriesfmt[]="nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+const char SpecializationSpellsfmt[]="niiix";
 const char SpellCastTimefmt[]="nixx";
 const char SpellCategoriesEntryfmt[]="dxxiiiiiix";
 const char SpellDifficultyfmt[]="niiii";

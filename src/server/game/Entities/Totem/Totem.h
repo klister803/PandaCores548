@@ -28,7 +28,10 @@ enum TotemType
     TOTEM_STATUE     = 2 // copied straight from MaNGOS, may need more implementation to work
 };
 
-#define SENTRY_TOTEM_ENTRY  3968
+// Some Totems cast spells that are not in creature DB
+#define SENTRY_TOTEM_SPELLID  6495
+
+#define SENTRY_TOTEM_ENTRY    3968
 
 class Totem : public Minion
 {

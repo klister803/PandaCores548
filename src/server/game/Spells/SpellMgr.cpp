@@ -2627,6 +2627,71 @@ void SpellMgr::LoadSpellAreas()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u spell area requirements in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+void SpellMgr::LoadSpellClassInfo()
+{
+    mSpellClassInfo.resize(MAX_CLASSES);
+    for (int ClassID = 0; ClassID < MAX_CLASSES; ClassID++)
+    {
+        ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(ClassID);
+        if(!classEntry)
+            continue;
+
+        for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
+        {
+            SkillLineAbilityEntry const* skillLine = sSkillLineAbilityStore.LookupEntry(i);
+            if (!skillLine)
+                continue;
+
+            SpellInfo const* spellEntry = sSpellMgr->GetSpellInfo(skillLine->spellId);
+            if (!spellEntry)
+                continue;
+
+            // Some doesn't have SpellClassInfo
+            /*if (spellEntry->SpellFamilyName != classEntry->spellfamily)
+                continue;*/
+
+            if (((1 << (ClassID-1)) & skillLine->classmask) == 0)
+                continue;
+
+            if (spellEntry->SpellLevel == 0)
+                continue;
+
+            // See CGSpellBook::InitFutureSpells in client
+            if (spellEntry->Attributes & SPELL_ATTR0_TRADESPELL || spellEntry->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE
+                || spellEntry->AttributesEx8 & SPELL_ATTR8_UNK13 || spellEntry->AttributesEx4 & SPELL_ATTR4_UNK15)
+                continue;
+
+            // TODO : Check Talent Spell (note : i guess sSkillLineAbilityStore don't containt any talents spells)
+            // TODO : Check SpellIsCallCompanion
+
+            mSpellClassInfo[ClassID].push_back(spellEntry->Id);
+        }
+
+        for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
+        {
+            SpellInfo const* spell = sSpellMgr->GetSpellInfo(i);
+            if (!spell)
+                continue;
+
+            if (spell->SpellFamilyName == classEntry->spellfamily && spell->SpecializationEntry)
+            {
+                mSpellClassInfo[ClassID].push_back(i);
+
+                if (spell->OverrideSpellEntry)
+                {
+                    auto itr = mSpellOverrideInfo.find(spell->OverrideSpellEntry);
+                    if(itr == mSpellOverrideInfo.end())
+                        mSpellOverrideInfo[spell->OverrideSpellEntry] = std::list<uint32>();
+                }
+                
+                mSpellOverrideInfo[spell->OverrideSpellEntry].push_back(spell->SpecializationEntry);
+            }
+        }
+    }
+
+
+}
+
 struct spellDifficultyLoadInfo
 {
     uint32 id;

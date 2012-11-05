@@ -281,8 +281,8 @@ void Quest::BuildExtraQuestInfo(WorldPacket& data, Player* player) const
 
     /* Pre cata struct, some of these unks might be the missing values in cata:
     // rewarded honor points. Multiply with 10 to satisfy client
-    data << 10 * Trinity::Honor::hk_honor_at_level(_session->GetPlayer()->getLevel(), quest->GetRewHonorMultiplier());
-    data << float(0);                                       // unk, honor multiplier?
+    data << uint32(10 * quest->CalculateHonorGain(_session->GetPlayer()->GetQuestLevel(quest)));
+    data << float(0.0f);                                    // unk, honor multiplier?
     data << uint32(0x08);                                   // unused by client?
     data << uint32(quest->GetRewSpell());                   // reward spell, this spell will display (icon) (casted if RewSpellCast == 0)
     data << int32(quest->GetRewSpellCast());                // casted spell
@@ -342,10 +342,10 @@ uint32 Quest::CalculateHonorGain(uint8 level) const
     /*if (GetRewHonorAddition() > 0 || GetRewHonorMultiplier() > 0.0f)
     {
         // values stored from 0.. for 1...
-        TeamContributionPointsEntry const* tc = sTeamContributionPointsStore.LookupEntry(level-1);
+        TeamContributionPointsEntry const* tc = sTeamContributionPointsStore.LookupEntry(level);
         if (!tc)
             return 0;
-        honor = uint32(tc->value * GetRewHonorMultiplier() * 0.1000000014901161);
+        honor = uint32(tc->value * GetRewHonorMultiplier() * 0.1f);
         honor += GetRewHonorAddition();
     }*/
 
