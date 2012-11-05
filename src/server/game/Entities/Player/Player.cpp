@@ -856,6 +856,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     SetPendingBind(0, 0);
 
+    _activeCheats = CHEAT_NONE;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 }
 
