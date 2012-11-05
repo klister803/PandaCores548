@@ -262,6 +262,7 @@ class Group
         void ChangeMembersGroup(Player* player, uint8 group);
         void SetTargetIcon(uint8 id, uint64 whoGuid, uint64 targetGuid);
         void SetGroupMemberFlag(uint64 guid, bool apply, GroupMemberFlags flag);
+        void setGroupMemberRole(uint64 guid, uint32 role);
         void RemoveUniqueGroupMemberFlag(GroupMemberFlags flag);
 
         Difficulty GetDifficulty(bool isRaid) const;

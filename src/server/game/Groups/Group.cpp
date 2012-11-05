@@ -2823,6 +2823,25 @@ void Group::SetBattlefieldGroup(Battlefield *bg)
     m_bfGroup = bg;
 }
 
+void Group::setGroupMemberRole(uint64 guid, uint32 role)
+{
+    for (auto member = m_memberSlots.begin(); member != m_memberSlots.end(); ++member)
+    {
+        if (member->guid == guid)
+        {
+            member->roles = role;
+            break;
+        }
+    }
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GROUP_MEMBER_ROLE);
+    if (stmt != nullptr)
+    {
+        stmt->setUInt8(0, role);
+        stmt->setUInt32(1, GUID_LOPART(guid));
+        CharacterDatabase.Execute(stmt);
+    }
+}
+
 void Group::SetGroupMemberFlag(uint64 guid, bool apply, GroupMemberFlags flag)
 {
     // Assistants, main assistants and main tanks are only available in raid groups

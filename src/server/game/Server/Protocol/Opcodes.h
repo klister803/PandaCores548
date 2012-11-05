@@ -478,7 +478,7 @@ enum Opcodes
     CMSG_SET_CHANNEL_WATCH                            = 0xD2A,  // 5.0.5 16048
     CMSG_SET_CONTACT_NOTES                            = 0x921,  // 5.0.5 16048
     CMSG_SET_CURRENCY_FLAGS                           = 0x39C,  // 5.0.5 16048
-    CMSG_SET_EVERYONE_IS_ASSISTANT                    = 0x0F1,  // 5.0.5 16048
+    CMSG_SET_EVERYONE_IS_ASSISTANT                    = 0x5D3,  // 5.0.5 16048
     CMSG_SET_FACTION_ATWAR                            = 0x866,  // 5.0.5 16048
     CMSG_SET_FACTION_CHEAT                            = 0x000,  // 5.0.5 16048
     CMSG_SET_FACTION_INACTIVE                         = 0xCB0,  // 5.0.5 16048
