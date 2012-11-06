@@ -3029,6 +3029,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].BasePoints = int32(15 / 1.85f);
                 break;
             case 77222:  // Mastery : Elemental Overload
+            case 77223:  // Mastery : Enhanced Elements
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
+                break;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[0].BasePoints = 8;
                 break;

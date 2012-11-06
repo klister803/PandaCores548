@@ -543,6 +543,22 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         return;
                 break;
             }
+            case SPELLFAMILY_SHAMAN:
+            {
+                // Custom MoP script
+                // 77223 - Mastery : Enhanced Elements
+                if (m_spellInfo->SchoolMask == SPELL_SCHOOL_MASK_FIRE || m_spellInfo->SchoolMask == SPELL_SCHOOL_MASK_FROST || m_spellInfo->SchoolMask == SPELL_SCHOOL_MASK_NATURE)
+                {
+                    if (m_caster->HasAura(77223))
+                    {
+                        float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY);
+                        Mastery *= 2;
+
+                        damage *= 1 + (Mastery / 100);
+                    }
+                }
+                break;
+            }
             case SPELLFAMILY_MONK:
             {
                 switch (m_spellInfo->Id)
@@ -581,6 +597,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     default:
                         break;
                 }
+                break;
             }
         }
 
