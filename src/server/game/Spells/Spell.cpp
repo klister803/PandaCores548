@@ -3872,6 +3872,8 @@ void Spell::SendSpellStart()
     data << uint32(castFlags);                              // cast flags
     data << uint32(m_casttime);
 
+    data << uint32(0);                                     // Something with spell missile trajectory
+
     m_targets.Write(data);
 
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)

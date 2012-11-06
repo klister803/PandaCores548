@@ -158,6 +158,7 @@ const char SpellShapeshiftEntryfmt[]="nixixx";
 const char SpellShapeshiftFormfmt[]="nxxiixiiixxiiiiiiiixx";
 const char StableSlotPricesfmt[] = "ni";
 const char SummonPropertiesfmt[] = "niiiii";
+const char TalentEntryfmt[]="nxixixxxiis";
 const char TaxiNodesEntryfmt[]="nifffsiixxx";
 const char TaxiPathEntryfmt[]="niii";
 const char TaxiPathNodeEntryfmt[]="diiifffiiii";

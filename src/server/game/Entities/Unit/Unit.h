@@ -125,7 +125,7 @@ enum SpellModOp
     SPELLMOD_SPELL_COST_REFUND_ON_FAIL = 30
 };
 
-#define MAX_SPELLMOD 32
+#define MAX_SPELLMOD 36
 
 enum SpellValueMod
 {

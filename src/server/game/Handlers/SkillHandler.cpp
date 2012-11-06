@@ -62,6 +62,27 @@ void WorldSession::HandleSetSpecialization(WorldPacket& recvData)
     }
 }
 
+void WorldSession::HandleLearnTalents(WorldPacket& recvData)
+{
+    uint32 count = recvData.ReadBits(25);
+    recvData.FlushBits();
+
+    // Cheat - Hack check
+    if (count > 6)
+        return;
+
+    if (count > _player->GetFreeTalentPoints())
+        return;
+
+    for (int i = 0; i < count; i++)
+    {
+        uint16 talentId = recvData.read<uint16>();
+        _player->LearnTalent(talentId);
+    }
+
+    _player->SendTalentsInfoData(false);
+}
+
 void WorldSession::HandleTalentWipeConfirmOpcode(WorldPacket& recvData)
 {
     /*sLog->outDebug(LOG_FILTER_NETWORKIO, "MSG_TALENT_WIPE_CONFIRM");

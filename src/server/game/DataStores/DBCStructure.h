@@ -2154,6 +2154,22 @@ struct SummonPropertiesEntry
     uint32  Flags;                                          // 5
 };
 
+struct TalentEntry
+{
+    uint32  Id;             // 0
+    //uint32  unk;          // 1
+    uint32  rank;           // 2
+    //uint32  unk;          // 3
+    uint32  spellId;        // 4
+    //uint32  unk;          // 5
+    //uint32  unk;          // 6
+    //uint32  unk;          // 7
+    uint32  classId;        // 8
+    uint32  spellOverride;  // 9
+    char*   description;    // 10
+
+};
+
 struct TaxiNodesEntry
 {
     uint32    ID;                                           // 0        m_ID

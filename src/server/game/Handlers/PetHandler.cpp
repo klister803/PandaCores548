@@ -863,37 +863,3 @@ void WorldSession::SendPetNameInvalid(uint32 error, const std::string& name, Dec
         data << uint8(0);
     SendPacket(&data);
 }
-
-void WorldSession::HandlePetLearnTalent(WorldPacket& recvData)
-{
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_PET_LEARN_TALENT");
-
-    uint64 guid;
-    uint32 talentId, requestedRank;
-    recvData >> guid >> talentId >> requestedRank;
-
-    _player->LearnPetTalent(guid, talentId, requestedRank);
-    _player->SendTalentsInfoData(true);
-}
-
-void WorldSession::HandleLearnPreviewTalentsPet(WorldPacket & recvData)
-{
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LEARN_PREVIEW_TALENTS_PET");
-
-    uint64 guid;
-    recvData >> guid;
-
-    uint32 talentsCount;
-    recvData >> talentsCount;
-
-    uint32 talentId, talentRank;
-
-    for (uint32 i = 0; i < talentsCount; ++i)
-    {
-        recvData >> talentId >> talentRank;
-
-        _player->LearnPetTalent(guid, talentId, talentRank);
-    }
-
-    _player->SendTalentsInfoData(true);
-}

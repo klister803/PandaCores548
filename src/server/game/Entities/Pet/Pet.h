@@ -195,16 +195,6 @@ class Pet : public Guardian
 
         void InitPetCreateSpells();
 
-        bool resetTalents();
-        static void resetTalentsForAllPetsOf(Player* owner, Pet* online_pet = NULL);
-        void InitTalentForLevel();
-
-        uint8 GetMaxTalentPointsForLevel(uint8 level);
-        uint8 GetFreeTalentPoints() { return GetByteValue(UNIT_FIELD_BYTES_1, 1); }
-        void SetFreeTalentPoints(uint8 points) { SetByteValue(UNIT_FIELD_BYTES_1, 1, points); }
-
-        uint32  m_usedTalentCount;
-
         uint64 GetAuraUpdateMaskForRaid() const { return m_auraRaidUpdateMask; }
         void SetAuraUpdateMaskForRaid(uint8 slot) { m_auraRaidUpdateMask |= (uint64(1) << slot); }
         void ResetAuraUpdateMaskForRaid() { m_auraRaidUpdateMask = 0; }
