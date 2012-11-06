@@ -159,7 +159,7 @@ m_movedPlayer(NULL), m_lastSanctuaryTime(0), IsAIEnabled(false), NeedChangeAI(fa
 m_ControlledByPlayer(false), movespline(new Movement::MoveSpline()), i_AI(NULL),
 i_disabledAI(NULL), m_procDeep(0), m_removedAurasCount(0), i_motionMaster(this),
 m_ThreatManager(this), m_vehicle(NULL), m_vehicleKit(NULL), m_unitTypeMask(UNIT_MASK_NONE),
-m_HostileRefManager(this)
+m_HostileRefManager(this), m_TempSpeed(0.0f), m_AutoRepeatFirstCast(false)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -543,6 +543,10 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
     if (IsAIEnabled)
         GetAI()->DamageDealt(victim, damage, damagetype);
+
+    if (victim->GetTypeId() == TYPEID_PLAYER)
+        if (victim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
+            return 0;
 
     // Signal to pets that their owner was attacked
     if (victim->GetTypeId() == TYPEID_PLAYER)
@@ -11021,19 +11025,19 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
     if (GetReactionTo(target) == REP_NEUTRAL &&
         target->GetReactionTo(this) == REP_NEUTRAL)
     {
-        if  (
-            !(target->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER) &&
-            !(target->GetTypeId() == TYPEID_UNIT && GetTypeId() == TYPEID_UNIT)
-            )
+        if  (!(target->GetTypeId() == TYPEID_PLAYER && GetTypeId() == TYPEID_PLAYER) &&
+            !(target->GetTypeId() == TYPEID_UNIT && GetTypeId() == TYPEID_UNIT))
         {
             Player const* player = target->GetTypeId() == TYPEID_PLAYER ? target->ToPlayer() : ToPlayer();
             Unit const* creature = target->GetTypeId() == TYPEID_UNIT ? target : this;
-
-            if (FactionTemplateEntry const* factionTemplate = creature->getFactionTemplateEntry())
-                if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplate->faction))
-                    if (FactionState const* repState = player->GetReputationMgr().GetState(factionEntry))
-                        if (!(repState->Flags & FACTION_FLAG_AT_WAR))
-                            return false;
+            
+            {
+                if (FactionTemplateEntry const* factionTemplate = creature->getFactionTemplateEntry())
+                    if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(factionTemplate->faction))
+                        if (FactionState const* repState = player->GetReputationMgr().GetState(factionEntry))
+                            if (!(repState->Flags & FACTION_FLAG_AT_WAR))
+                                return false;
+            }
         }
     }
 
@@ -13055,7 +13059,8 @@ void Unit::DeleteCharmInfo()
 
 CharmInfo::CharmInfo(Unit* unit)
 : m_unit(unit), m_CommandState(COMMAND_FOLLOW), m_petnumber(0), m_barInit(false),
-  m_isCommandAttack(false), m_isAtStay(false), m_isFollowing(false), m_isReturning(false)
+  m_isCommandAttack(false), m_isAtStay(false), m_isFollowing(false), m_isReturning(false),
+  m_stayX(0.0f), m_stayY(0.0f), m_stayZ(0.0f)
 {
     for (uint8 i = 0; i < MAX_SPELL_CHARM; ++i)
         m_charmspells[i].SetActionAndType(0, ACT_DISABLED);
@@ -15640,14 +15645,14 @@ void Unit::SetAuraStack(uint32 spellId, Unit* target, uint32 stack)
         aura->SetStackAmount(stack);
 }
 
-void Unit::SendPlaySpellVisual(uint32 id)
+void Unit::SendPlaySpellVisualKit(uint32 id, uint32 unkParam)
 {
     ObjectGuid guid = GetGUID();
 
-    WorldPacket data(SMSG_PLAY_SPELL_VISUAL, 4 * 3 + 8);
+    WorldPacket data(SMSG_PLAY_SPELL_VISUAL_KIT, 4 + 4+ 4 + 8);
     data << uint32(0);
     data << uint32(id); // SpellVisualKit.dbc index
-    data << uint32(0);
+    data << uint32(unkParam);
     data.WriteBit(guid[4]);
     data.WriteBit(guid[7]);
     data.WriteBit(guid[5]);
@@ -15665,14 +15670,6 @@ void Unit::SendPlaySpellVisual(uint32 id)
     data.WriteByteSeq(guid[2]);
     data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(guid[5]);
-    SendMessageToSet(&data, false);
-}
-
-void Unit::SendPlaySpellImpact(uint64 guid, uint32 id)
-{
-    WorldPacket data(SMSG_PLAY_SPELL_IMPACT, 8 + 4);
-    data << uint64(guid); // target
-    data << uint32(id); // SpellVisualKit.dbc index
     SendMessageToSet(&data, false);
 }
 

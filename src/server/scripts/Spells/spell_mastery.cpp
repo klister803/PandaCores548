@@ -30,7 +30,66 @@ enum MasterySpells
     MASTERY_SPELL_LIGHTNING_BOLT        = 45284,
     MASTERY_SPELL_CHAIN_LIGHTNING       = 45297,
     MASTERY_SPELL_LAVA_BURST            = 77451,
-    MASTERY_SPELL_HAND_OF_LIGHT         = 96172
+    MASTERY_SPELL_HAND_OF_LIGHT         = 96172,
+    MASTERY_SPELL_IGNITE                = 12654
+};
+
+// Called by 133 - Fireball, 44614 - Frostfire Bolt, 108853 - Inferno Blast, 2948 - Scorch and 11366 - Pyroblast
+// 12846 - Mastery : Ignite
+class spell_mastery_ignite : public SpellScriptLoader
+{
+    public:
+        spell_mastery_ignite() : SpellScriptLoader("spell_mastery_ignite") { }
+
+        class spell_mastery_ignite_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mastery_ignite_SpellScript);
+
+            bool Validate(SpellInfo const* /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(133) ||
+                    !sSpellMgr->GetSpellInfo(44614) ||
+                    !sSpellMgr->GetSpellInfo(108853) ||
+                    !sSpellMgr->GetSpellInfo(2948) ||
+                    !sSpellMgr->GetSpellInfo(11366))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (caster->HasAura(12846))
+                        {
+                            uint32 procSpellId = GetSpellInfo()->Id ? GetSpellInfo()->Id : 0;
+                            if (procSpellId != MASTERY_SPELL_IGNITE)
+                            {
+                                float value = caster->GetFloatValue(PLAYER_MASTERY);
+                                value *= 1.5f;
+
+                                int32 bp = int32(GetHitDamage() * value / 100 / 2);
+                                bp += target->GetRemainingPeriodicAmount(caster->GetGUID(), MASTERY_SPELL_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+
+                                caster->CastCustomSpell(target, MASTERY_SPELL_IGNITE, &bp, NULL, NULL, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mastery_ignite_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mastery_ignite_SpellScript();
+        }
 };
 
 // Called by 35395 - Crusader Strike, 53595 - Hammer of the Righteous, 24275 - Hammer of Wrath, 85256 - Templar's Verdict and 53385 - Divine Storm
@@ -67,7 +126,7 @@ class spell_mastery_hand_of_light : public SpellScriptLoader
                             if (procSpellId != MASTERY_SPELL_HAND_OF_LIGHT)
                             {
                                 float value = caster->GetFloatValue(PLAYER_MASTERY);
-                                value *= 2;
+                                value *= 1.85f;
 
                                 int32 bp = int32(GetHitDamage() * value / 100);
 
@@ -175,6 +234,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
 
 void AddSC_mastery_spell_scripts()
 {
+    new spell_mastery_ignite();
     new spell_mastery_hand_of_light();
     new spell_mastery_elemental_overload();
 }

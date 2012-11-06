@@ -856,6 +856,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     SetPendingBind(0, 0);
 
+    _activeCheats = CHEAT_NONE;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 }
 
@@ -2736,9 +2738,6 @@ void Player::RegenerateHealth()
 
     float HealthIncreaseRate = sWorld->getRate(RATE_HEALTH);
 
-    if (getLevel() < 15)
-        HealthIncreaseRate = sWorld->getRate(RATE_HEALTH) * (2.066f - (getLevel() * 0.066f));
-
     float addvalue = 0.0f;
 
     // polymorphed case
@@ -2750,6 +2749,11 @@ void Player::RegenerateHealth()
         addvalue = HealthIncreaseRate;
         if (!isInCombat())
         {
+            if (getLevel() < 15)
+                addvalue = (0.20f*((float)GetMaxHealth())/getLevel()*HealthIncreaseRate);
+            else 
+                addvalue = 0.015f*((float)GetMaxHealth())*HealthIncreaseRate;
+
             AuraEffectList const& mModHealthRegenPct = GetAuraEffectsByType(SPELL_AURA_MOD_HEALTH_REGEN_PERCENT);
             for (AuraEffectList::const_iterator i = mModHealthRegenPct.begin(); i != mModHealthRegenPct.end(); ++i)
                 AddPctN(addvalue, (*i)->GetAmount());
@@ -7436,14 +7440,115 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
     return true;
 }
 
+void Player::_LoadCurrency(PreparedQueryResult result)
+{
+    if (!result)
+        return;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint16 currencyID = fields[0].GetUInt16();
+
+        CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(currencyID);
+        if (!currencyID)
+            continue;
+
+        PlayerCurrency cur;
+        cur.state = PLAYERCURRENCY_UNCHANGED;
+        cur.weekCount = fields[1].GetUInt32();
+        cur.totalCount = fields[2].GetUInt32();
+
+        _currencyStorage.insert(PlayerCurrenciesMap::value_type(currencyID, cur));
+
+    } while (result->NextRow());
+}
+
+void Player::_SaveCurrency(SQLTransaction& trans)
+{
+    PreparedStatement* stmt = NULL;
+    for (PlayerCurrenciesMap::iterator itr = _currencyStorage.begin(); itr != _currencyStorage.end(); ++itr)
+    {
+        CurrencyTypesEntry const* entry = sCurrencyTypesStore.LookupEntry(itr->first);
+        if (!entry) // should never happen
+            continue;
+
+        switch(itr->second.state)
+        {
+        case PLAYERCURRENCY_NEW:
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_PLAYER_CURRENCY);
+            stmt->setUInt32(0, GetGUIDLow());
+            stmt->setUInt16(1, itr->first);
+            stmt->setUInt32(2, itr->second.weekCount);
+            stmt->setUInt32(3, itr->second.totalCount);
+            trans->Append(stmt);
+            break;
+        case PLAYERCURRENCY_CHANGED:
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_PLAYER_CURRENCY);
+            stmt->setUInt32(0, itr->second.weekCount);
+            stmt->setUInt32(1, itr->second.totalCount);
+            stmt->setUInt32(2, GetGUIDLow());
+            stmt->setUInt16(3, itr->first);
+            trans->Append(stmt);
+            break;
+        default:
+            break;
+        }
+
+        itr->second.state = PLAYERCURRENCY_UNCHANGED;
+    }
+}
+
+void Player::SendNewCurrency(uint32 id) const
+{
+    PlayerCurrenciesMap::const_iterator itr = _currencyStorage.find(id);
+    if (itr == _currencyStorage.end())
+        return;
+
+    ByteBuffer currencyData;
+    WorldPacket packet(SMSG_INIT_CURRENCY, 4 + _currencyStorage.size()*(5*4 + 1));
+    packet.WriteBits(_currencyStorage.size(), 23);
+
+    for (PlayerCurrenciesMap::const_iterator itr = _currencyStorage.begin(); itr != _currencyStorage.end(); ++itr)
+    {
+        CurrencyTypesEntry const* entry = sCurrencyTypesStore.LookupEntry(id);
+        if (!entry) // should never happen
+            continue;
+
+        uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? 100 : 1;
+        uint32 weekCount = itr->second.weekCount / precision;
+        uint32 weekCap = _GetCurrencyWeekCap(entry) / precision;
+
+        packet.WriteBit(weekCount);
+        packet.WriteBits(0, 4); // some flags
+        packet.WriteBit(weekCap);
+        packet.WriteBit(0); // season total earned
+
+        currencyData << uint32(itr->second.totalCount / precision);
+        if (weekCap)
+            currencyData << uint32(weekCap);
+
+        //if (seasonTotal)
+        //currencyData << uint32(seasonTotal);
+
+        currencyData << uint32(entry->ID);
+        if (weekCount)
+            currencyData << uint32(weekCount);
+    }
+
+    packet.FlushBits();
+    packet.append(currencyData);
+    GetSession()->SendPacket(&packet);
+}
 
 void Player::SendCurrencies() const
 {
     ByteBuffer currencyData;
-    WorldPacket packet(SMSG_INIT_CURRENCY, 4 + m_currencies.size()*(5*4 + 1));
-    packet.WriteBits(m_currencies.size(), 22);
+    WorldPacket packet(SMSG_INIT_CURRENCY, 4 + _currencyStorage.size()*(5*4 + 1));
+    packet.WriteBits(_currencyStorage.size(), 22);
 
-    for (PlayerCurrenciesMap::const_iterator itr = m_currencies.begin(); itr != m_currencies.end(); ++itr)
+    for (PlayerCurrenciesMap::const_iterator itr = _currencyStorage.begin(); itr != _currencyStorage.end(); ++itr)
     {
         CurrencyTypesEntry const* entry = sCurrencyTypesStore.LookupEntry(itr->first);
         if (!entry) // should never happen
@@ -7478,14 +7583,14 @@ void Player::SendCurrencies() const
 
 uint32 Player::GetCurrency(uint32 id) const
 {
-    PlayerCurrenciesMap::const_iterator itr = m_currencies.find(id);
-    return itr != m_currencies.end() ? itr->second.totalCount : 0;
+    PlayerCurrenciesMap::const_iterator itr = _currencyStorage.find(id);
+    return itr != _currencyStorage.end() ? itr->second.totalCount : 0;
 }
 
 bool Player::HasCurrency(uint32 id, uint32 count) const
 {
-    PlayerCurrenciesMap::const_iterator itr = m_currencies.find(id);
-    return itr != m_currencies.end() && itr->second.totalCount >= count;
+    PlayerCurrenciesMap::const_iterator itr = _currencyStorage.find(id);
+    return itr != _currencyStorage.end() && itr->second.totalCount >= count;
 }
 
 void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/)
@@ -7502,21 +7607,25 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     int32 precision = currency->Flags & CURRENCY_FLAG_HIGH_PRECISION ? 100 : 1;
     uint32 oldTotalCount = 0;
     uint32 oldWeekCount = 0;
-    PlayerCurrenciesMap::iterator itr = m_currencies.find(id);
-    if (itr == m_currencies.end())
+    PlayerCurrenciesMap::iterator itr = _currencyStorage.find(id);
+    if (itr == _currencyStorage.end())
     {
         PlayerCurrency cur;
         cur.state = PLAYERCURRENCY_NEW;
         cur.totalCount = 0;
         cur.weekCount = 0;
-        m_currencies[id] = cur;
-        itr = m_currencies.find(id);
+        _currencyStorage[id] = cur;
+        itr = _currencyStorage.find(id);
     }
     else
     {
         oldTotalCount = itr->second.totalCount;
         oldWeekCount = itr->second.weekCount;
     }
+    // count can't be more then weekCap.
+    uint32 weekCap = _GetCurrencyWeekCap(currency);
+    if (count > int32(weekCap))
+        count = weekCap;
 
     int32 newTotalCount = int32(oldTotalCount) + count;
     if (newTotalCount < 0)
@@ -7526,24 +7635,23 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (newWeekCount < 0)
         newWeekCount = 0;
 
-    if (currency->TotalCap && int32(currency->TotalCap) < newTotalCount)
-    {
-        int32 delta = newTotalCount - int32(currency->TotalCap);
-        newTotalCount = int32(currency->TotalCap);
-        newWeekCount -= delta;
-    }
+    ASSERT(weekCap >= oldWeekCount);
 
     // TODO: fix conquest points
-    uint32 weekCap = _GetCurrencyWeekCap(currency);
-    if (weekCap && int32(weekCap) < newTotalCount)
+    // if we get more then weekCap just set to limit
+    if (weekCap && int32(weekCap) < newWeekCount)
     {
-        int32 delta = newWeekCount - int32(weekCap);
         newWeekCount = int32(weekCap);
-        newTotalCount -= delta;
+        // weekCap - oldWeekCount alwayt >= 0 as we set limit before!
+        newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
     }
 
-    // if we change total, we must change week
-    ASSERT(((newTotalCount-oldTotalCount) != 0) == ((newWeekCount-oldWeekCount) != 0));
+    // if we get more then totalCap set to maximum;
+    if (currency->TotalCap && int32(currency->TotalCap) < newTotalCount)
+    {
+        newTotalCount = int32(currency->TotalCap);
+        newWeekCount = weekCap;
+    }
 
     if (uint32(newTotalCount) != oldTotalCount)
     {
@@ -7558,6 +7666,13 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         {
             if (count > 0)
                 UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CURRENCY, id, count);
+
+             // on new case just set init.
+            if(itr->second.state == PLAYERCURRENCY_NEW)
+            {
+                SendNewCurrency(id);
+                return;
+            }
 
             WorldPacket packet(SMSG_UPDATE_CURRENCY, 12);
             
@@ -12617,6 +12732,70 @@ void Player::DestroyItemCount(uint32 item, uint32 count, bool update, bool unequ
             }
         }
     }
+
+    // in bank
+    for (uint8 i = BANK_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; i++)
+    {
+        if (Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+        {
+            if (pItem->GetEntry() == item && !pItem->IsInTrade())
+            {
+                if (pItem->GetCount() + remcount <= count)
+                {
+                    remcount += pItem->GetCount();
+                    DestroyItem(INVENTORY_SLOT_BAG_0, i, update);
+                    if (remcount >= count)
+                        return;
+                }
+                else
+                {
+                    ItemRemovedQuestCheck(pItem->GetEntry(), count - remcount);
+                    pItem->SetCount(pItem->GetCount() - count + remcount);
+                    if (IsInWorld() && update)
+                        pItem->SendUpdateToPlayer(this);
+                    pItem->SetState(ITEM_CHANGED, this);
+                    return;
+                }
+            }
+        }
+    }
+
+    // in bank bags
+    for (uint8 i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
+    {
+        if (Bag* pBag = GetBagByPos(i))
+        {
+            for (uint32 j = 0; j < pBag->GetBagSize(); j++)
+            {
+                if (Item* pItem = pBag->GetItemByPos(j))
+                {
+
+                
+                    if (pItem->GetEntry() == item && !pItem->IsInTrade())
+                    {
+                        // all items in bags can be unequipped
+                        if (pItem->GetCount() + remcount <= count)
+                        {
+                            remcount += pItem->GetCount();
+                            DestroyItem(i, j, update);
+
+                            if (remcount >= count)
+                                return;
+                        }
+                        else
+                        {
+                            ItemRemovedQuestCheck(pItem->GetEntry(), count - remcount);
+                            pItem->SetCount(pItem->GetCount() - count + remcount);
+                            if (IsInWorld() && update)
+                                pItem->SendUpdateToPlayer(this);
+                            pItem->SetState(ITEM_CHANGED, this);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Player::DestroyZoneLimitedItem(bool update, uint32 new_zone)
@@ -15837,6 +16016,7 @@ bool Player::TakeQuestSourceItem(uint32 questId, bool msg)
                 return false;
             }
 
+            bool destroyItem = true;
             for (uint8 n = 0; n < QUEST_ITEM_OBJECTIVES_COUNT; ++n)
                 if (item->StartQuest == questId && srcItemId == quest->RequiredItemId[n])
                     destroyItem = false;
@@ -16815,10 +16995,10 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //"position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, "
     // 25                 26          27       28       29       30       31         32           33            34        35    36      37                 38         39
     //"resettalents_time, talentTree, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, instance_mode_mask, "
-    // 40              41                42          43          44              45           46              47
-    //"conquestPoints, totalHonorPoints, totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, "
-    // 48      49      50      51      52      53      54           55         56          57             58
-    //"health, power1, power2, power3, power4, power5, instance_id, speccount, activespec, exploredZones, equipmentCache, "
+    //    40           41          42              43           44            45
+    //"totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, "
+    // 46      47      48      49      50      51      52           53         54          55             56                  57              58
+    //"health, power1, power2, power3, power4, power5, instance_id, speccount, activespec, specialization1, specialization2, exploredZones, equipmentCache, "
     // 59           60          61
     //"knownTitles, actionBars, grantableLevels FROM characters WHERE guid = '%u'", guid);
     PreparedQueryResult result = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADFROM);
@@ -16885,8 +17065,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetUInt32Value(UNIT_FIELD_LEVEL, fields[6].GetUInt8());
     SetUInt32Value(PLAYER_XP, fields[7].GetUInt32());
 
-    _LoadIntoDataField(fields[59].GetCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
-    _LoadIntoDataField(fields[61].GetCString(), PLAYER__FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE*2);
+    _LoadIntoDataField(fields[57].GetCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
+    _LoadIntoDataField(fields[59].GetCString(), PLAYER__FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE*2);
 
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
@@ -16906,12 +17086,13 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetUInt32Value(PLAYER_BYTES, fields[9].GetUInt32());
     SetUInt32Value(PLAYER_BYTES_2, fields[10].GetUInt32());
     SetByteValue(PLAYER_BYTES_3, 0, fields[5].GetUInt8());
-    SetByteValue(PLAYER_BYTES_3, 1, fields[47].GetUInt8());
+    SetByteValue(PLAYER_BYTES_3, 1, fields[45].GetUInt8());
     SetUInt32Value(PLAYER_FLAGS, fields[11].GetUInt32());
-    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[46].GetUInt32());
+    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[44].GetUInt32());
 
     // set which actionbars the client has active - DO NOT REMOVE EVER AGAIN (can be changed though, if it does change fieldwise)
-    SetByteValue(PLAYER_FIELD_BYTES, 2, fields[62].GetUInt8());
+
+    SetByteValue(PLAYER_FIELD_BYTES, 2, fields[60].GetUInt8());
 
     InitDisplayIds();
 
@@ -16944,7 +17125,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     Relocate(fields[12].GetFloat(), fields[13].GetFloat(), fields[14].GetFloat(), fields[16].GetFloat());
 
     uint32 mapId = fields[15].GetUInt16();
-    uint32 instanceId = fields[54].GetUInt32();
+    uint32 instanceId = fields[52].GetUInt32();
 
     uint32 dungeonDiff = fields[39].GetUInt8() & 0x0F;
     if (dungeonDiff >= MAX_DUNGEON_DIFFICULTY)
@@ -16979,11 +17160,10 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
             SetArenaTeamInfoField(arena_slot, ArenaTeamInfoType(j), 0);
     }
 
-    SetCurrency(CURRENCY_TYPE_CONQUEST_POINTS, fields[40].GetUInt32());
-    SetCurrency(CURRENCY_TYPE_HONOR_POINTS, fields[41].GetUInt32());
-    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[42].GetUInt32());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[43].GetUInt16());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[44].GetUInt16());
+    _LoadCurrency(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCURRENCY));
+    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[40].GetUInt32());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[41].GetUInt16());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[42].GetUInt16());
 
     _LoadBoundInstances(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
     _LoadInstanceTimeRestrictions(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES));
@@ -17302,11 +17482,11 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //mails are loaded only when needed ;-) - when player in game click on mailbox.
     //_LoadMail();
 
-    SetSpecsCount(fields[55].GetUInt8());
-    SetActiveSpec(fields[56].GetUInt8());
+    SetSpecsCount(fields[53].GetUInt8());
+    SetActiveSpec(fields[54].GetUInt8());
 
-    SetSpecializationId(0, fields[57].GetUInt32());
-    SetSpecializationId(1, fields[58].GetUInt32());
+    SetSpecializationId(0, fields[55].GetUInt32());
+    SetSpecializationId(1, fields[56].GetUInt32());
 
     // sanity check
     if (GetSpecsCount() > MAX_TALENT_SPECS || GetActiveSpec() > MAX_TALENT_SPEC || GetSpecsCount() < MIN_TALENT_SPECS)
@@ -17358,7 +17538,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER__FIELD_KNOWN_TITLES
     // note: PLAYER__FIELD_KNOWN_TITLES updated at quest status loaded
-    uint32 curTitle = fields[45].GetUInt32();
+    uint32 curTitle = fields[43].GetUInt32();
     if (curTitle && !HasTitle(curTitle))
         curTitle = 0;
 
@@ -17381,14 +17561,14 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     UpdateAllStats();
 
     // restore remembered power/health values (but not more max values)
-    uint32 savedHealth = fields[48].GetUInt32();
+    uint32 savedHealth = fields[46].GetUInt32();
     SetHealth(savedHealth > GetMaxHealth() ? GetMaxHealth() : savedHealth);
     uint32 loadedPowers = 0;
     for (uint32 i = 0; i < MAX_POWERS; ++i)
     {
         if (GetPowerIndexByClass(Powers(i), getClass()) != MAX_POWERS)
         {
-            uint32 savedPower = fields[49+loadedPowers].GetUInt32();
+            uint32 savedPower = fields[47+loadedPowers].GetUInt32();
             uint32 maxPower = GetUInt32Value(UNIT_FIELD_MAXPOWER1 + loadedPowers);
             SetPower(Powers(i), (savedPower > maxPower) ? maxPower : savedPower);
             if (++loadedPowers >= MAX_STORED_POWERS)
@@ -17467,7 +17647,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     }
 
     // RaF stuff.
-    m_grantableLevels = fields[63].GetUInt8();
+    m_grantableLevels = fields[61].GetUInt8();
+
     if (GetSession()->IsARecruiter() || (GetSession()->GetRecruiterId() != 0))
         SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_REFER_A_FRIEND);
 
@@ -17875,7 +18056,6 @@ void Player::_LoadVoidStorage(PreparedQueryResult result)
 
 Item* Player::_LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, Field* fields)
 {
-    PreparedStatement* stmt = NULL;
     Item* item = NULL;
     uint32 itemGuid  = fields[13].GetUInt32();
     uint32 itemEntry = fields[14].GetUInt32();
@@ -17885,6 +18065,8 @@ Item* Player::_LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, F
         item = NewItemOrBag(proto);
         if (item->LoadFromDB(itemGuid, GetGUID(), fields, itemEntry))
         {
+            PreparedStatement* stmt = NULL;
+
             // Do not allow to have item limited to another map/zone in alive state
             if (isAlive() && item->IsLimitedToAnotherMapOrZone(GetMapId(), zoneId))
             {
@@ -18908,8 +19090,6 @@ void Player::SaveToDB(bool create /*=false*/)
         ss << m_taxi.SaveTaxiDestinationsToString();
 
         stmt->setString(index++, ss.str());
-        stmt->setUInt32(index++, GetCurrency(CURRENCY_TYPE_CONQUEST_POINTS));
-        stmt->setUInt32(index++, GetCurrency(CURRENCY_TYPE_HONOR_POINTS));
         stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 0));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 1));
@@ -19030,8 +19210,6 @@ void Player::SaveToDB(bool create /*=false*/)
         ss << m_taxi.SaveTaxiDestinationsToString();
 
         stmt->setString(index++, ss.str());
-        stmt->setUInt32(index++, GetCurrency(CURRENCY_TYPE_CONQUEST_POINTS));
-        stmt->setUInt32(index++, GetCurrency(CURRENCY_TYPE_HONOR_POINTS));
         stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 0));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 1));
@@ -19123,6 +19301,7 @@ void Player::SaveToDB(bool create /*=false*/)
     GetSession()->SaveTutorialsData(trans);                 // changed only while character in game
     _SaveGlyphs(trans);
     _SaveInstanceTimeRestrictions(trans);
+    _SaveCurrency(trans);
 
     // check if stats should only be saved on logout
     // save stats can be out of transaction
@@ -19140,6 +19319,7 @@ void Player::SaveToDB(bool create /*=false*/)
 void Player::SaveInventoryAndGoldToDB(SQLTransaction& trans)
 {
     _SaveInventory(trans);
+    _SaveCurrency(trans);
     SaveGoldToDB(trans);
 }
 
@@ -21581,6 +21761,9 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
 
         // reputation discount
         price = uint32(floor(price * GetReputationPriceDiscount(creature)));
+
+        if (int32 priceMod = GetTotalAuraModifier(SPELL_AURA_MOD_VENDOR_ITEMS_PRICES))
+            price -= CalculatePctN(price, priceMod);
 
         if (!HasEnoughMoney(uint64(price)))
         {

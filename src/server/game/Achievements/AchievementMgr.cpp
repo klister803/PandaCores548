@@ -204,6 +204,9 @@ bool AchievementCriteriaData::IsValid(AchievementCriteriaEntry const* criteria)
                 return false;
             }
             return true;
+        /*Todo:
+        case ACHIEVEMENT_CRITERIA_DATA_TYPE_MAP_DIFFICULTY:
+        */
         case ACHIEVEMENT_CRITERIA_DATA_TYPE_MAP_PLAYER_COUNT:
             if (map_players.maxcount <= 0)
             {

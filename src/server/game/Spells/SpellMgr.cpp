@@ -305,7 +305,7 @@ int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const
         break;
     }
 
-    return 10 * IN_MILLISECONDS;
+    return 8 * IN_MILLISECONDS;
 }
 
 bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group)
@@ -2867,6 +2867,10 @@ void SpellMgr::LoadSpellCustomAttr()
 
             switch (spellInfo->Id)
             {
+            case 60256:
+                //Crashes client on pressing ESC (Maybe because of ReqSpellFocus and GameObject)
+                spellInfo->AttributesEx4 &= ~SPELL_ATTR4_TRIGGERED;
+                break;
             case 1776: // Gouge
             case 1777:
             case 8629:
@@ -3019,6 +3023,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 72293: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
+                break;
+            case 12846:  // Mastery : Ignite
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 76672:  // Mastery : Hand of Light
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;

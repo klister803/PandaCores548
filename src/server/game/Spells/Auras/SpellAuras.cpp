@@ -1342,9 +1342,15 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                         if (caster->GetTypeId() == TYPEID_PLAYER)
                         {
                             if (caster->ToPlayer()->HasSpellCooldown(aura->GetId()))
-                                break;
-                            // and add if needed
-                            caster->ToPlayer()->AddSpellCooldown(aura->GetId(), 0, uint32(time(NULL) + 12));
+                            {
+                                 // This additional check is needed to add a minimal delay before cooldown in effect
+                                 // to allow all bubbles broken by a single damage source proc mana return
+                                 if (caster->ToPlayer()->GetSpellCooldownDelay(aura->GetId()) <= 11)
+                                     break;
+                            }
+                            else    //and if needed
+                                caster->ToPlayer()->AddSpellCooldown(aura->GetId(), 0, uint32(time(NULL) + 12));
+
                         }
                         // effect on caster
                         if (AuraEffect const* aurEff = aura->GetEffect(0))
@@ -1808,6 +1814,7 @@ void Aura::LoadScripts()
         {
             std::list<AuraScript*>::iterator bitr = itr;
             ++itr;
+            delete (*bitr);
             m_loadedScripts.erase(bitr);
             continue;
         }
