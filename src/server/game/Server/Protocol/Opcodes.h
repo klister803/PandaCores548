@@ -1128,7 +1128,7 @@ enum Opcodes
     SMSG_PLAY_MUSIC                                   = 0x8EF,  // 5.0.5 16048
     SMSG_PLAY_OBJECT_SOUND                            = 0xCED,  // 5.0.5 16048
     SMSG_PLAY_SOUND                                   = 0x873,  // 5.0.5 16048
-	SMSG_PLAY_ONE_SHOT_ANIM_KIT						  = 0x000,  // 5.0.5 16048
+    SMSG_PLAY_ONE_SHOT_ANIM_KIT                       = 0x000,  // 5.0.5 16048
     //SMSG_PLAY_SPELL_IMPACT                            = 0x000,  // 5.0.5 16048 removed in commit c041875
     SMSG_PLAY_SPELL_VISUAL                            = 0xAE4,  // 5.0.5 16048
     SMSG_PLAY_SPELL_VISUAL_KIT                        = 0xAE4,  // 5.0.5 16048
@@ -1309,7 +1309,7 @@ enum Opcodes
     SMSG_TRADE_STATUS_EXTENDED                        = 0xAFB,  // 5.0.5 16048
     //SMSG_TRAINER_BUY_SUCCEEDED                        = 0xD31,  // 5.0.5 16048 removed in commit c041875
     SMSG_TRAINER_LIST                                 = 0xC65,  // 5.0.5 16048
-    SMSG_TRAINER_SERVICE                              = 0,      // 0x6A05 in 4.3.4 FIND ME I AM WALDO !
+    SMSG_TRAINER_SERVICE                              = 0xD31,  // 0x6A05 not sure.
     SMSG_TRANSFER_ABORTED                             = 0x889,  // 5.0.5 16048
     SMSG_TRANSFER_PENDING                             = 0xF79,  // 5.0.5 16048
     SMSG_TRIGGER_CINEMATIC                            = 0xC18,  // 5.0.5 16048
