@@ -1469,6 +1469,26 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             unitTarget->RemoveAura(48920);
 
         m_damage -= addhealth;
+
+        // Custom MoP Script
+        // 77226 - Mastery : Deep Healing
+        if (m_caster && m_caster->getClass() == CLASS_SHAMAN)
+        {
+            if (m_caster->HasAura(77226))
+            {
+                if (addhealth)
+                {
+                    float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY);
+                    float healthpct = unitTarget->GetHealthPct();
+                    Mastery *= 3;
+
+                    int32 bonus = 0;
+                    bonus = CalculatePctN((1 + (100.0f - healthpct)), Mastery);
+
+                    addhealth *= (bonus / 100);
+                }
+            }
+        }
     }
 }
 
