@@ -3020,21 +3020,139 @@ void SpellMgr::LoadSpellCustomAttr()
             case 72293: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
+            case 77513:  // Mastery : Blood Shield
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 25;
+                break;
+            case 77515:  // Mastery : Dreadblade
+                spellInfo->Effects[0].BasePoints = 20;
+                break;
+            case 77514:  // Mastery : Frozen Heart
+                spellInfo->Effects[0].BasePoints = 16;
+                break;
+            case 77495:  // Mastery : Harmony
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 10;
+                break;
+            case 77494:  // Mastery : Nature's Guardian
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 10;
+                break;
+            case 77493:  // Mastery : Razor Claws
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 25;
+                break;
+            case 77492:  // Mastery : Total Eclipse
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 15;
+                break;
+            case 76658:  // Mastery : Essence of the Viper
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 4;
+                break;
+            case 76657:  // Mastery : Master of Beasts
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 8;
+                break;
+            case 76659:  // Mastery : Wild Quiver
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 8;
+                break;
+            case 76613:  // Mastery : Frostburn
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 8;
+                break;
             case 12846:  // Mastery : Ignite
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[1].BasePoints = 8;
+                break;
+            case 76547:  // Mastery : Mana Adept
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 8;
+                break;
+            case 115636: // Mastery : Combo Breaker
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = int32(11 / 2);
+                break;
+            case 117906: // Mastery : Elusive Brawler
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 2;
+                break;
+            case 117907: // Mastery : Gift of the Serpent
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 5;
+                break;
+            case 76671:  // Mastery : Divine Bulwark
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 4;
                 break;
             case 76672:  // Mastery : Hand of Light
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[1].BasePoints = int32(15 / 1.85f);
                 break;
+            case 76669:  // Mastery : Illuminated Healing
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 6;
+                break;
+            case 77485:  // Mastery : Echo of Light
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 5;
+                break;
+            case 77486:  // Mastery : Shadowy Recall
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 7;
+                break;
+            case 77484:  // Mastery : Shield Discipline
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 10;
+                break;
+            case 76808:  // Mastery : Executioner
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 12;
+                break;
+            case 76806:  // Mastery : Off-Hand
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 8;
+                break;
+            case 76803:  // Mastery : Potent Poisons
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 14;
+                break;
+            case 77226:  // Mastery : Deep Healing
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
+                break;
             case 77222:  // Mastery : Elemental Overload
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
+                break;
             case 77223:  // Mastery : Enhanced Elements
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[1].BasePoints = 8;
                 break;
+            case 77220:  // Mastery : Emberstorm
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[0].BasePoints = 8;
+                break;
+            case 77219:  // Mastery : Master Demonologist
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 8;
+                break;
+            case 77215:  // Mastery : Potent Afflictions
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 25;
+                break;
+            case 76857:  // Mastery : Critical Block
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 2;
+                break;
+            case 76838:  // Mastery : Strikes of Opportunity
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 9;
+                break;
+            case 76856:  // Mastery : Unshackled Fury
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = int32(11 / 2);
                 break;
             default:
                 break;
