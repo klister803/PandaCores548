@@ -1297,6 +1297,9 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading SpellInfo store...");
     sSpellMgr->LoadSpellInfoStore();
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading TalentSpellInfo store....");
+    sSpellMgr->LoadTalentSpellInfo();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading SkillLineAbilityMultiMap Data...");
     sSpellMgr->LoadSkillLineAbilityMap();
 

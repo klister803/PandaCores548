@@ -856,6 +856,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     SetPendingBind(0, 0);
 
+    _activeCheats = CHEAT_NONE;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 }
 
@@ -2736,9 +2738,6 @@ void Player::RegenerateHealth()
 
     float HealthIncreaseRate = sWorld->getRate(RATE_HEALTH);
 
-    if (getLevel() < 15)
-        HealthIncreaseRate = sWorld->getRate(RATE_HEALTH) * (2.066f - (getLevel() * 0.066f));
-
     float addvalue = 0.0f;
 
     // polymorphed case
@@ -2750,6 +2749,11 @@ void Player::RegenerateHealth()
         addvalue = HealthIncreaseRate;
         if (!isInCombat())
         {
+            if (getLevel() < 15)
+                addvalue = (0.20f*((float)GetMaxHealth())/getLevel()*HealthIncreaseRate);
+            else 
+                addvalue = 0.015f*((float)GetMaxHealth())*HealthIncreaseRate;
+
             AuraEffectList const& mModHealthRegenPct = GetAuraEffectsByType(SPELL_AURA_MOD_HEALTH_REGEN_PERCENT);
             for (AuraEffectList::const_iterator i = mModHealthRegenPct.begin(); i != mModHealthRegenPct.end(); ++i)
                 AddPctN(addvalue, (*i)->GetAmount());
@@ -3233,7 +3237,7 @@ void Player::InitTalentForLevel()
 {
     uint8 level = getLevel();
     // talents base at level diff (talents = level - 9 but some can be used already)
-    if (level < 10)
+    if (level < 15)
     {
         // Remove all talent points
         if (GetUsedTalentCount() > 0)                           // Free any used talents
@@ -3290,9 +3294,6 @@ void Player::InitSpellForLevel()
         if (spell->SpecializationEntry && spell->SpecializationEntry != specializationId)
             continue;
 
-        if (!IsSpellFitByClassAndRace(spellId))
-            continue;
-
         if (spell->SpellLevel <= level)
             learnSpell(spellId, false);
     }
@@ -3300,12 +3301,17 @@ void Player::InitSpellForLevel()
 
 void Player::RemoveSpecializationSpells()
 {
-    for(auto itr : GetSpellMap())
+    std::list<uint32> spellToRemove;
+
+    for (auto itr : GetSpellMap())
     {
         SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr.first);
-        if(spell && spell->SpecializationEntry)
-            removeSpell(itr.first);
+        if (spell && spell->SpecializationEntry)
+            spellToRemove.push_back(itr.first);
     }
+
+    for (auto itr : spellToRemove)
+        removeSpell(itr);
 }
 
 void Player::InitStatsForLevel(bool reapplyMods)
@@ -3644,8 +3650,7 @@ void Player::AddNewMailDeliverTime(time_t deliver_time)
 
 bool Player::AddTalent(uint32 spellId, uint8 spec, bool learning)
 {
-    return false;
-    /*SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
     {
         // do character spell book cleanup (all characters)
@@ -3687,22 +3692,8 @@ bool Player::AddTalent(uint32 spellId, uint8 spec, bool learning)
     PlayerTalentMap::iterator itr = GetTalentMap(spec)->find(spellId);
     if (itr != GetTalentMap(spec)->end())
         itr->second->state = PLAYERSPELL_UNCHANGED;
-    else if (TalentSpellPos const* talentPos = GetTalentSpellPos(spellId))
+    else 
     {
-        if (TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentPos->talent_id))
-        {
-            for (uint8 rank = 0; rank < MAX_TALENT_RANK; ++rank)
-            {
-                // skip learning spell and no rank spell case
-                uint32 rankSpellId = talentInfo->RankID[rank];
-                if (!rankSpellId || rankSpellId == spellId)
-                    continue;
-
-                itr = GetTalentMap(spec)->find(rankSpellId);
-                if (itr != GetTalentMap(spec)->end())
-                    itr->second->state = PLAYERSPELL_REMOVED;
-            }
-        }
 
         PlayerSpellState state = learning ? PLAYERSPELL_NEW : PLAYERSPELL_UNCHANGED;
         PlayerTalent* newtalent = new PlayerTalent();
@@ -3713,7 +3704,7 @@ bool Player::AddTalent(uint32 spellId, uint8 spec, bool learning)
         (*GetTalentMap(spec))[spellId] = newtalent;
         return true;
     }
-    return false;*/
+    return false;
 }
 
 bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent, bool disabled, bool loading /*= false*/)
@@ -3877,24 +3868,8 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
 
     if (!disabled_case) // skip new spell adding if spell already known (disabled spells case)
     {
-        // talent: unlearn all other talent ranks (high and low)
-        /*if (TalentSpellPos const* talentPos = GetTalentSpellPos(spellId))
-        {
-            if (TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentPos->talent_id))
-            {
-                for (uint8 rank = 0; rank < MAX_TALENT_RANK; ++rank)
-                {
-                    // skip learning spell and no rank spell case
-                    uint32 rankSpellId = talentInfo->RankID[rank];
-                    if (!rankSpellId || rankSpellId == spellId)
-                        continue;
-
-                    removeSpell(rankSpellId, false, false);
-                }
-            }
-        }
         // non talent spell: learn low ranks (recursive call)
-        else*/ if (uint32 prev_spell = sSpellMgr->GetPrevSpellInChain(spellId))
+        if (uint32 prev_spell = sSpellMgr->GetPrevSpellInChain(spellId))
         {
             if (!IsInWorld() || disabled)                    // at spells loading, no output, but allow save
                 addSpell(prev_spell, active, true, true, disabled);
@@ -3974,11 +3949,9 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
             return false;
     }
 
-    uint32 talentCost = 0;//GetTalentSpellCost(spellId);
-
     // cast talents with SPELL_EFFECT_LEARN_SPELL (other dependent spells will learned later as not auto-learned)
     // note: all spells with SPELL_EFFECT_LEARN_SPELL isn't passive
-    if (!loading && talentCost > 0 && spellInfo->HasEffect(SPELL_EFFECT_LEARN_SPELL))
+    if (!loading && sSpellMgr->IsTalent(spellInfo->Id) && spellInfo->HasEffect(SPELL_EFFECT_LEARN_SPELL))
     {
         // ignore stance requirement for talent learn spell (stance set for spell only for client spell description show)
         CastSpell(this, spellId, true);
@@ -3996,7 +3969,11 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
     }
 
     // update used talent points count
-    SetUsedTalentCount(GetUsedTalentCount() + talentCost);
+    if (sSpellMgr->IsTalent(spellInfo->Id))
+    {
+        SetUsedTalentCount(GetUsedTalentCount() + 1);
+        SetFreeTalentPoints(GetFreeTalentPoints() -1);
+    }
 
     // update free primary prof.points (if any, can be none in case GM .learn prof. learning)
     if (uint32 freeProfs = GetFreePrimaryProfessionPoints())
@@ -4223,14 +4200,21 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
         if (PetAura const* petSpell = sSpellMgr->GetPetAura(spell_id, i))
             RemovePetAura(petSpell);
 
+    uint32 talentCosts = sSpellMgr->IsTalent(spell_id) ? 1 : 0;
+
     // free talent points
-    uint32 talentCosts = /*GetTalentSpellCost(spell_id)*/0;
     if (talentCosts > 0 && giveTalentPoints)
     {
         if (talentCosts < GetUsedTalentCount())
+        {
             SetUsedTalentCount(GetUsedTalentCount() - talentCosts);
+            SetFreeTalentPoints(GetFreeTalentPoints() + 1);
+        }
         else
+        {
             SetUsedTalentCount(0);
+            SetFreeTalentPoints(CalculateTalentsPoints());
+        }
     }
 
     // update free primary prof.points (if not overflow setting, can be in case GM use before .learn prof. learning)
@@ -4315,15 +4299,7 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
 
     if (uint32 prev_id = sSpellMgr->GetPrevSpellInChain(spell_id))
     {
-        // if talent then lesser rank also talent and need learn
-        if (talentCosts)
-        {
-            // I cannot see why mangos has these lines.
-            //if (learn_low_rank)
-            //    learnSpell(prev_id, false);
-        }
-        // if ranked non-stackable spell: need activate lesser rank and update dendence state
-        else if (cur_active && !spellInfo->IsStackableWithRanks() && spellInfo->IsRanked())
+        if (cur_active && !spellInfo->IsStackableWithRanks() && spellInfo->IsRanked())
         {
             // need manually update dependence state (learn spell ignore like attempts)
             PlayerSpellMap::iterator prev_itr = m_spells.find(prev_id);
@@ -7436,14 +7412,115 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
     return true;
 }
 
+void Player::_LoadCurrency(PreparedQueryResult result)
+{
+    if (!result)
+        return;
+
+    do
+    {
+        Field* fields = result->Fetch();
+
+        uint16 currencyID = fields[0].GetUInt16();
+
+        CurrencyTypesEntry const* currency = sCurrencyTypesStore.LookupEntry(currencyID);
+        if (!currencyID)
+            continue;
+
+        PlayerCurrency cur;
+        cur.state = PLAYERCURRENCY_UNCHANGED;
+        cur.weekCount = fields[1].GetUInt32();
+        cur.totalCount = fields[2].GetUInt32();
+
+        _currencyStorage.insert(PlayerCurrenciesMap::value_type(currencyID, cur));
+
+    } while (result->NextRow());
+}
+
+void Player::_SaveCurrency(SQLTransaction& trans)
+{
+    PreparedStatement* stmt = NULL;
+    for (PlayerCurrenciesMap::iterator itr = _currencyStorage.begin(); itr != _currencyStorage.end(); ++itr)
+    {
+        CurrencyTypesEntry const* entry = sCurrencyTypesStore.LookupEntry(itr->first);
+        if (!entry) // should never happen
+            continue;
+
+        switch(itr->second.state)
+        {
+        case PLAYERCURRENCY_NEW:
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_REP_PLAYER_CURRENCY);
+            stmt->setUInt32(0, GetGUIDLow());
+            stmt->setUInt16(1, itr->first);
+            stmt->setUInt32(2, itr->second.weekCount);
+            stmt->setUInt32(3, itr->second.totalCount);
+            trans->Append(stmt);
+            break;
+        case PLAYERCURRENCY_CHANGED:
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_PLAYER_CURRENCY);
+            stmt->setUInt32(0, itr->second.weekCount);
+            stmt->setUInt32(1, itr->second.totalCount);
+            stmt->setUInt32(2, GetGUIDLow());
+            stmt->setUInt16(3, itr->first);
+            trans->Append(stmt);
+            break;
+        default:
+            break;
+        }
+
+        itr->second.state = PLAYERCURRENCY_UNCHANGED;
+    }
+}
+
+void Player::SendNewCurrency(uint32 id) const
+{
+    PlayerCurrenciesMap::const_iterator itr = _currencyStorage.find(id);
+    if (itr == _currencyStorage.end())
+        return;
+
+    ByteBuffer currencyData;
+    WorldPacket packet(SMSG_INIT_CURRENCY, 4 + _currencyStorage.size()*(5*4 + 1));
+    packet.WriteBits(_currencyStorage.size(), 23);
+
+    for (PlayerCurrenciesMap::const_iterator itr = _currencyStorage.begin(); itr != _currencyStorage.end(); ++itr)
+    {
+        CurrencyTypesEntry const* entry = sCurrencyTypesStore.LookupEntry(id);
+        if (!entry) // should never happen
+            continue;
+
+        uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? 100 : 1;
+        uint32 weekCount = itr->second.weekCount / precision;
+        uint32 weekCap = _GetCurrencyWeekCap(entry) / precision;
+
+        packet.WriteBit(weekCount);
+        packet.WriteBits(0, 4); // some flags
+        packet.WriteBit(weekCap);
+        packet.WriteBit(0); // season total earned
+
+        currencyData << uint32(itr->second.totalCount / precision);
+        if (weekCap)
+            currencyData << uint32(weekCap);
+
+        //if (seasonTotal)
+        //currencyData << uint32(seasonTotal);
+
+        currencyData << uint32(entry->ID);
+        if (weekCount)
+            currencyData << uint32(weekCount);
+    }
+
+    packet.FlushBits();
+    packet.append(currencyData);
+    GetSession()->SendPacket(&packet);
+}
 
 void Player::SendCurrencies() const
 {
     ByteBuffer currencyData;
-    WorldPacket packet(SMSG_INIT_CURRENCY, 4 + m_currencies.size()*(5*4 + 1));
-    packet.WriteBits(m_currencies.size(), 22);
+    WorldPacket packet(SMSG_INIT_CURRENCY, 4 + _currencyStorage.size()*(5*4 + 1));
+    packet.WriteBits(_currencyStorage.size(), 22);
 
-    for (PlayerCurrenciesMap::const_iterator itr = m_currencies.begin(); itr != m_currencies.end(); ++itr)
+    for (PlayerCurrenciesMap::const_iterator itr = _currencyStorage.begin(); itr != _currencyStorage.end(); ++itr)
     {
         CurrencyTypesEntry const* entry = sCurrencyTypesStore.LookupEntry(itr->first);
         if (!entry) // should never happen
@@ -7478,14 +7555,14 @@ void Player::SendCurrencies() const
 
 uint32 Player::GetCurrency(uint32 id) const
 {
-    PlayerCurrenciesMap::const_iterator itr = m_currencies.find(id);
-    return itr != m_currencies.end() ? itr->second.totalCount : 0;
+    PlayerCurrenciesMap::const_iterator itr = _currencyStorage.find(id);
+    return itr != _currencyStorage.end() ? itr->second.totalCount : 0;
 }
 
 bool Player::HasCurrency(uint32 id, uint32 count) const
 {
-    PlayerCurrenciesMap::const_iterator itr = m_currencies.find(id);
-    return itr != m_currencies.end() && itr->second.totalCount >= count;
+    PlayerCurrenciesMap::const_iterator itr = _currencyStorage.find(id);
+    return itr != _currencyStorage.end() && itr->second.totalCount >= count;
 }
 
 void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bool ignoreMultipliers/* = false*/)
@@ -7502,21 +7579,25 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     int32 precision = currency->Flags & CURRENCY_FLAG_HIGH_PRECISION ? 100 : 1;
     uint32 oldTotalCount = 0;
     uint32 oldWeekCount = 0;
-    PlayerCurrenciesMap::iterator itr = m_currencies.find(id);
-    if (itr == m_currencies.end())
+    PlayerCurrenciesMap::iterator itr = _currencyStorage.find(id);
+    if (itr == _currencyStorage.end())
     {
         PlayerCurrency cur;
         cur.state = PLAYERCURRENCY_NEW;
         cur.totalCount = 0;
         cur.weekCount = 0;
-        m_currencies[id] = cur;
-        itr = m_currencies.find(id);
+        _currencyStorage[id] = cur;
+        itr = _currencyStorage.find(id);
     }
     else
     {
         oldTotalCount = itr->second.totalCount;
         oldWeekCount = itr->second.weekCount;
     }
+    // count can't be more then weekCap.
+    uint32 weekCap = _GetCurrencyWeekCap(currency);
+    if (count > int32(weekCap))
+        count = weekCap;
 
     int32 newTotalCount = int32(oldTotalCount) + count;
     if (newTotalCount < 0)
@@ -7526,24 +7607,23 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (newWeekCount < 0)
         newWeekCount = 0;
 
-    if (currency->TotalCap && int32(currency->TotalCap) < newTotalCount)
-    {
-        int32 delta = newTotalCount - int32(currency->TotalCap);
-        newTotalCount = int32(currency->TotalCap);
-        newWeekCount -= delta;
-    }
+    ASSERT(weekCap >= oldWeekCount);
 
     // TODO: fix conquest points
-    uint32 weekCap = _GetCurrencyWeekCap(currency);
-    if (weekCap && int32(weekCap) < newTotalCount)
+    // if we get more then weekCap just set to limit
+    if (weekCap && int32(weekCap) < newWeekCount)
     {
-        int32 delta = newWeekCount - int32(weekCap);
         newWeekCount = int32(weekCap);
-        newTotalCount -= delta;
+        // weekCap - oldWeekCount alwayt >= 0 as we set limit before!
+        newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
     }
 
-    // if we change total, we must change week
-    ASSERT(((newTotalCount-oldTotalCount) != 0) == ((newWeekCount-oldWeekCount) != 0));
+    // if we get more then totalCap set to maximum;
+    if (currency->TotalCap && int32(currency->TotalCap) < newTotalCount)
+    {
+        newTotalCount = int32(currency->TotalCap);
+        newWeekCount = weekCap;
+    }
 
     if (uint32(newTotalCount) != oldTotalCount)
     {
@@ -7558,6 +7638,13 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
         {
             if (count > 0)
                 UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_CURRENCY, id, count);
+
+             // on new case just set init.
+            if(itr->second.state == PLAYERCURRENCY_NEW)
+            {
+                SendNewCurrency(id);
+                return;
+            }
 
             WorldPacket packet(SMSG_UPDATE_CURRENCY, 12);
             
@@ -9995,25 +10082,6 @@ void Player::SendTalentWipeConfirm(uint64 guid)
     uint32 cost = sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : GetNextResetTalentsCost();
     data << cost;
     GetSession()->SendPacket(&data);
-}
-
-void Player::ResetPetTalents()
-{
-    // This needs another gossip option + NPC text as a confirmation.
-    // The confirmation gossip listid has the text: "Yes, please do."
-    Pet* pet = GetPet();
-
-    if (!pet || pet->getPetType() != HUNTER_PET || pet->m_usedTalentCount == 0)
-        return;
-
-    CharmInfo* charmInfo = pet->GetCharmInfo();
-    if (!charmInfo)
-    {
-        sLog->outError(LOG_FILTER_PLAYER, "Object (GUID: %u TypeId: %u) is considered pet-like but doesn't have a charminfo!", pet->GetGUIDLow(), pet->GetTypeId());
-        return;
-    }
-    pet->resetTalents();
-    SendTalentsInfoData(true);
 }
 
 /*********************************************************/
@@ -12617,6 +12685,70 @@ void Player::DestroyItemCount(uint32 item, uint32 count, bool update, bool unequ
             }
         }
     }
+
+    // in bank
+    for (uint8 i = BANK_SLOT_ITEM_START; i < BANK_SLOT_ITEM_END; i++)
+    {
+        if (Item* pItem = GetItemByPos(INVENTORY_SLOT_BAG_0, i))
+        {
+            if (pItem->GetEntry() == item && !pItem->IsInTrade())
+            {
+                if (pItem->GetCount() + remcount <= count)
+                {
+                    remcount += pItem->GetCount();
+                    DestroyItem(INVENTORY_SLOT_BAG_0, i, update);
+                    if (remcount >= count)
+                        return;
+                }
+                else
+                {
+                    ItemRemovedQuestCheck(pItem->GetEntry(), count - remcount);
+                    pItem->SetCount(pItem->GetCount() - count + remcount);
+                    if (IsInWorld() && update)
+                        pItem->SendUpdateToPlayer(this);
+                    pItem->SetState(ITEM_CHANGED, this);
+                    return;
+                }
+            }
+        }
+    }
+
+    // in bank bags
+    for (uint8 i = BANK_SLOT_BAG_START; i < BANK_SLOT_BAG_END; i++)
+    {
+        if (Bag* pBag = GetBagByPos(i))
+        {
+            for (uint32 j = 0; j < pBag->GetBagSize(); j++)
+            {
+                if (Item* pItem = pBag->GetItemByPos(j))
+                {
+
+                
+                    if (pItem->GetEntry() == item && !pItem->IsInTrade())
+                    {
+                        // all items in bags can be unequipped
+                        if (pItem->GetCount() + remcount <= count)
+                        {
+                            remcount += pItem->GetCount();
+                            DestroyItem(i, j, update);
+
+                            if (remcount >= count)
+                                return;
+                        }
+                        else
+                        {
+                            ItemRemovedQuestCheck(pItem->GetEntry(), count - remcount);
+                            pItem->SetCount(pItem->GetCount() - count + remcount);
+                            if (IsInWorld() && update)
+                                pItem->SendUpdateToPlayer(this);
+                            pItem->SetState(ITEM_CHANGED, this);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void Player::DestroyZoneLimitedItem(bool update, uint32 new_zone)
@@ -14365,10 +14497,6 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                     if (!creature->isCanTrainingAndResetTalentsOf(this))
                         canTalk = false;
                     break;
-                case GOSSIP_OPTION_UNLEARNPETTALENTS:
-                    if (!GetPet() || GetPet()->getPetType() != HUNTER_PET || GetPet()->m_spells.size() <= 1 || creature->GetCreatureTemplate()->trainer_type != TRAINER_TYPE_PETS || creature->GetCreatureTemplate()->trainer_class != CLASS_HUNTER)
-                        canTalk = false;
-                    break;
                 case GOSSIP_OPTION_TAXIVENDOR:
                     if (GetSession()->SendLearnNewTaxiNode(creature))
                         return;
@@ -14560,10 +14688,6 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
         case GOSSIP_OPTION_UNLEARNTALENTS:
             PlayerTalkClass->SendCloseGossip();
             SendTalentWipeConfirm(guid);
-            break;
-        case GOSSIP_OPTION_UNLEARNPETTALENTS:
-            PlayerTalkClass->SendCloseGossip();
-            ResetPetTalents();
             break;
         case GOSSIP_OPTION_TAXIVENDOR:
             GetSession()->SendTaxiMenu(source->ToCreature());
@@ -15837,6 +15961,7 @@ bool Player::TakeQuestSourceItem(uint32 questId, bool msg)
                 return false;
             }
 
+            bool destroyItem = true;
             for (uint8 n = 0; n < QUEST_ITEM_OBJECTIVES_COUNT; ++n)
                 if (item->StartQuest == questId && srcItemId == quest->RequiredItemId[n])
                     destroyItem = false;
@@ -16815,10 +16940,10 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //"position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, "
     // 25                 26          27       28       29       30       31         32           33            34        35    36      37                 38         39
     //"resettalents_time, talentTree, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, instance_mode_mask, "
-    // 40              41                42          43          44              45           46              47
-    //"conquestPoints, totalHonorPoints, totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, "
-    // 48      49      50      51      52      53      54           55         56          57             58
-    //"health, power1, power2, power3, power4, power5, instance_id, speccount, activespec, exploredZones, equipmentCache, "
+    //    40           41          42              43           44            45
+    //"totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, "
+    // 46      47      48      49      50      51      52           53         54          55             56                  57              58
+    //"health, power1, power2, power3, power4, power5, instance_id, speccount, activespec, specialization1, specialization2, exploredZones, equipmentCache, "
     // 59           60          61
     //"knownTitles, actionBars, grantableLevels FROM characters WHERE guid = '%u'", guid);
     PreparedQueryResult result = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADFROM);
@@ -16885,8 +17010,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetUInt32Value(UNIT_FIELD_LEVEL, fields[6].GetUInt8());
     SetUInt32Value(PLAYER_XP, fields[7].GetUInt32());
 
-    _LoadIntoDataField(fields[59].GetCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
-    _LoadIntoDataField(fields[61].GetCString(), PLAYER__FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE*2);
+    _LoadIntoDataField(fields[57].GetCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
+    _LoadIntoDataField(fields[59].GetCString(), PLAYER__FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE*2);
 
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
@@ -16906,12 +17031,13 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetUInt32Value(PLAYER_BYTES, fields[9].GetUInt32());
     SetUInt32Value(PLAYER_BYTES_2, fields[10].GetUInt32());
     SetByteValue(PLAYER_BYTES_3, 0, fields[5].GetUInt8());
-    SetByteValue(PLAYER_BYTES_3, 1, fields[47].GetUInt8());
+    SetByteValue(PLAYER_BYTES_3, 1, fields[45].GetUInt8());
     SetUInt32Value(PLAYER_FLAGS, fields[11].GetUInt32());
-    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[46].GetUInt32());
+    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[44].GetUInt32());
 
     // set which actionbars the client has active - DO NOT REMOVE EVER AGAIN (can be changed though, if it does change fieldwise)
-    SetByteValue(PLAYER_FIELD_BYTES, 2, fields[62].GetUInt8());
+
+    SetByteValue(PLAYER_FIELD_BYTES, 2, fields[60].GetUInt8());
 
     InitDisplayIds();
 
@@ -16944,7 +17070,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     Relocate(fields[12].GetFloat(), fields[13].GetFloat(), fields[14].GetFloat(), fields[16].GetFloat());
 
     uint32 mapId = fields[15].GetUInt16();
-    uint32 instanceId = fields[54].GetUInt32();
+    uint32 instanceId = fields[52].GetUInt32();
 
     uint32 dungeonDiff = fields[39].GetUInt8() & 0x0F;
     if (dungeonDiff >= MAX_DUNGEON_DIFFICULTY)
@@ -16979,11 +17105,10 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
             SetArenaTeamInfoField(arena_slot, ArenaTeamInfoType(j), 0);
     }
 
-    SetCurrency(CURRENCY_TYPE_CONQUEST_POINTS, fields[40].GetUInt32());
-    SetCurrency(CURRENCY_TYPE_HONOR_POINTS, fields[41].GetUInt32());
-    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[42].GetUInt32());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[43].GetUInt16());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[44].GetUInt16());
+    _LoadCurrency(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCURRENCY));
+    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[40].GetUInt32());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[41].GetUInt16());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[42].GetUInt16());
 
     _LoadBoundInstances(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
     _LoadInstanceTimeRestrictions(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES));
@@ -17302,11 +17427,13 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //mails are loaded only when needed ;-) - when player in game click on mailbox.
     //_LoadMail();
 
-    SetSpecsCount(fields[55].GetUInt8());
-    SetActiveSpec(fields[56].GetUInt8());
+    SetSpecsCount(fields[53].GetUInt8());
+    SetActiveSpec(fields[54].GetUInt8());
 
-    SetSpecializationId(0, fields[57].GetUInt32());
-    SetSpecializationId(1, fields[58].GetUInt32());
+    SetSpecializationId(0, fields[55].GetUInt32());
+    SetSpecializationId(1, fields[56].GetUInt32());
+
+    SetFreeTalentPoints(CalculateTalentsPoints());
 
     // sanity check
     if (GetSpecsCount() > MAX_TALENT_SPECS || GetActiveSpec() > MAX_TALENT_SPEC || GetSpecsCount() < MIN_TALENT_SPECS)
@@ -17358,7 +17485,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER__FIELD_KNOWN_TITLES
     // note: PLAYER__FIELD_KNOWN_TITLES updated at quest status loaded
-    uint32 curTitle = fields[45].GetUInt32();
+    uint32 curTitle = fields[43].GetUInt32();
     if (curTitle && !HasTitle(curTitle))
         curTitle = 0;
 
@@ -17381,14 +17508,14 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     UpdateAllStats();
 
     // restore remembered power/health values (but not more max values)
-    uint32 savedHealth = fields[48].GetUInt32();
+    uint32 savedHealth = fields[46].GetUInt32();
     SetHealth(savedHealth > GetMaxHealth() ? GetMaxHealth() : savedHealth);
     uint32 loadedPowers = 0;
     for (uint32 i = 0; i < MAX_POWERS; ++i)
     {
         if (GetPowerIndexByClass(Powers(i), getClass()) != MAX_POWERS)
         {
-            uint32 savedPower = fields[49+loadedPowers].GetUInt32();
+            uint32 savedPower = fields[47+loadedPowers].GetUInt32();
             uint32 maxPower = GetUInt32Value(UNIT_FIELD_MAXPOWER1 + loadedPowers);
             SetPower(Powers(i), (savedPower > maxPower) ? maxPower : savedPower);
             if (++loadedPowers >= MAX_STORED_POWERS)
@@ -17467,7 +17594,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     }
 
     // RaF stuff.
-    m_grantableLevels = fields[63].GetUInt8();
+    m_grantableLevels = fields[61].GetUInt8();
+
     if (GetSession()->IsARecruiter() || (GetSession()->GetRecruiterId() != 0))
         SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_REFER_A_FRIEND);
 
@@ -17875,7 +18003,6 @@ void Player::_LoadVoidStorage(PreparedQueryResult result)
 
 Item* Player::_LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, Field* fields)
 {
-    PreparedStatement* stmt = NULL;
     Item* item = NULL;
     uint32 itemGuid  = fields[13].GetUInt32();
     uint32 itemEntry = fields[14].GetUInt32();
@@ -17885,6 +18012,8 @@ Item* Player::_LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, F
         item = NewItemOrBag(proto);
         if (item->LoadFromDB(itemGuid, GetGUID(), fields, itemEntry))
         {
+            PreparedStatement* stmt = NULL;
+
             // Do not allow to have item limited to another map/zone in alive state
             if (isAlive() && item->IsLimitedToAnotherMapOrZone(GetMapId(), zoneId))
             {
@@ -18908,8 +19037,6 @@ void Player::SaveToDB(bool create /*=false*/)
         ss << m_taxi.SaveTaxiDestinationsToString();
 
         stmt->setString(index++, ss.str());
-        stmt->setUInt32(index++, GetCurrency(CURRENCY_TYPE_CONQUEST_POINTS));
-        stmt->setUInt32(index++, GetCurrency(CURRENCY_TYPE_HONOR_POINTS));
         stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 0));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 1));
@@ -19030,8 +19157,6 @@ void Player::SaveToDB(bool create /*=false*/)
         ss << m_taxi.SaveTaxiDestinationsToString();
 
         stmt->setString(index++, ss.str());
-        stmt->setUInt32(index++, GetCurrency(CURRENCY_TYPE_CONQUEST_POINTS));
-        stmt->setUInt32(index++, GetCurrency(CURRENCY_TYPE_HONOR_POINTS));
         stmt->setUInt32(index++, GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 0));
         stmt->setUInt16(index++, GetUInt16Value(PLAYER_FIELD_KILLS, 1));
@@ -19123,6 +19248,7 @@ void Player::SaveToDB(bool create /*=false*/)
     GetSession()->SaveTutorialsData(trans);                 // changed only while character in game
     _SaveGlyphs(trans);
     _SaveInstanceTimeRestrictions(trans);
+    _SaveCurrency(trans);
 
     // check if stats should only be saved on logout
     // save stats can be out of transaction
@@ -19140,6 +19266,7 @@ void Player::SaveToDB(bool create /*=false*/)
 void Player::SaveInventoryAndGoldToDB(SQLTransaction& trans)
 {
     _SaveInventory(trans);
+    _SaveCurrency(trans);
     SaveGoldToDB(trans);
 }
 
@@ -21581,6 +21708,9 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
 
         // reputation discount
         price = uint32(floor(price * GetReputationPriceDiscount(creature)));
+
+        if (int32 priceMod = GetTotalAuraModifier(SPELL_AURA_MOD_VENDOR_ITEMS_PRICES))
+            price -= CalculatePctN(price, priceMod);
 
         if (!HasEnoughMoney(uint64(price)))
         {
@@ -24368,7 +24498,8 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
 
 uint32 Player::CalculateTalentsPoints() const
 {
-    return 0;
+    // Un talent par tranche de 15 levels
+    return getLevel() / 15;
 }
 
 bool Player::IsKnowHowFlyIn(uint32 mapid, uint32 zone) const
@@ -24664,14 +24795,12 @@ void Player::CompletedAchievement(AchievementEntry const* entry)
     GetAchievementMgr().CompletedAchievement(entry, this);
 }
 
-bool Player::LearnTalent(uint32 talentId, uint32 talentRank)
+bool Player::LearnTalent(uint32 talentId)
 {
-    /*uint32 CurTalentPoints = GetFreeTalentPoints();
+    uint32 CurTalentPoints = GetFreeTalentPoints();
+    static const uint8 rankByFreePoints[6] = {6, 5, 4, 3, 2, 1 };
 
     if (CurTalentPoints == 0)
-        return false;
-
-    if (talentRank >= MAX_TALENT_RANK)
         return false;
 
     TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentId);
@@ -24679,93 +24808,17 @@ bool Player::LearnTalent(uint32 talentId, uint32 talentRank)
     if (!talentInfo)
         return false;
 
-    TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
-
-    if (!talentTabInfo)
+    // Seulement un talent par ligne
+    if(talentInfo->rank > rankByFreePoints[CurTalentPoints])
         return false;
 
-    // prevent learn talent for different class (cheating)
-    if ((getClassMask() & talentTabInfo->ClassMask) == 0)
+    if (talentInfo->classId != getClass())
         return false;
 
-    // find current max talent rank (0~5)
-    uint8 curtalent_maxrank = 0; // 0 = not learned any rank
-    for (int8 rank = MAX_TALENT_RANK-1; rank >= 0; --rank)
-    {
-        if (talentInfo->RankID[rank] && HasSpell(talentInfo->RankID[rank]))
-        {
-            curtalent_maxrank = (rank + 1);
-            break;
-        }
-    }
-
-    // we already have same or higher talent rank learned
-    if (curtalent_maxrank >= (talentRank + 1))
-        return false;
-
-    // check if we have enough talent points
-    if (CurTalentPoints < (talentRank - curtalent_maxrank + 1))
-        return false;
-
-    // Check if it requires another talent
-    if (talentInfo->DependsOn > 0)
-    {
-        if (TalentEntry const* depTalentInfo = sTalentStore.LookupEntry(talentInfo->DependsOn))
-        {
-            bool hasEnoughRank = false;
-            for (uint8 rank = talentInfo->DependsOnRank; rank < MAX_TALENT_RANK; rank++)
-            {
-                if (depTalentInfo->RankID[rank] != 0)
-                    if (HasSpell(depTalentInfo->RankID[rank]))
-                        hasEnoughRank = true;
-            }
-            if (!hasEnoughRank)
-                return false;
-        }
-    }
-
-    // Find out how many points we have in this field
-    uint32 spentPoints = 0;
-    uint32 primaryTreeTalents = 0;
-    uint32 tTab = talentInfo->TalentTab;
-    bool isMainTree = GetPrimaryTalentTree(GetActiveSpec()) == tTab || !GetPrimaryTalentTree(GetActiveSpec());
-
-    if (talentInfo->Row > 0 || !isMainTree)
-    {
-        for (uint32 i = 0; i < sTalentStore.GetNumRows(); i++)              // Loop through all talents.
-        {
-            if (TalentEntry const* tmpTalent = sTalentStore.LookupEntry(i)) // Someday, someone needs to revamp the way talents are tracked
-            {
-                for (uint8 rank = 0; rank < MAX_TALENT_RANK; rank++)
-                {
-                    if (tmpTalent->RankID[rank] != 0)
-                    {
-                        if (HasSpell(tmpTalent->RankID[rank]))
-                        {
-                            if (tmpTalent->TalentTab == tTab)
-                                spentPoints += (rank + 1);
-                            if (tmpTalent->TalentTab == GetPrimaryTalentTree(GetActiveSpec()))
-                                primaryTreeTalents += (rank + 1);
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // not have required min points spent in talent tree
-    if (spentPoints < (talentInfo->Row * MAX_TALENT_RANK))
-        return false;
-
-    // player has not spent 31 talents in main tree before attempting to learn other tree's talents
-    if (!isMainTree && primaryTreeTalents < REQ_PRIMARY_TREE_TALENTS)
-        return false;
-
-    // spell not set in talent.dbc
-    uint32 spellid = talentInfo->RankID[talentRank];
+    uint32 spellid = talentInfo->spellId;
     if (spellid == 0)
     {
-        sLog->outError(LOG_FILTER_PLAYER, "Talent.dbc have for talent: %u Rank: %u spell id = 0", talentId, talentRank);
+        sLog->outError(LOG_FILTER_PLAYER, "Talent.dbc have for talent: %uspell id = 0", talentId);
         return false;
     }
 
@@ -24777,156 +24830,8 @@ bool Player::LearnTalent(uint32 talentId, uint32 talentRank)
     learnSpell(spellid, false);
     AddTalent(spellid, GetActiveSpec(), true);
 
-    sLog->outInfo(LOG_FILTER_GENERAL, "TalentID: %u Rank: %u Spell: %u Spec: %u\n", talentId, talentRank, spellid, GetActiveSpec());
-
-    // set talent tree for player
-    if (!GetPrimaryTalentTree(GetActiveSpec()))
-    {
-        SetPrimaryTalentTree(GetActiveSpec(), talentInfo->TalentTab);
-        std::vector<uint32> const* specSpells = GetTalentTreePrimarySpells(talentInfo->TalentTab);
-        if (specSpells)
-            for (size_t i = 0; i < specSpells->size(); ++i)
-                learnSpell(specSpells->at(i), false);
-    }
-
-    // update free talent points
-    SetFreeTalentPoints(CurTalentPoints - (talentRank - curtalent_maxrank + 1));*/
+    sLog->outInfo(LOG_FILTER_GENERAL, "TalentID: %u Spell: %u Spec: %u\n", talentId, spellid, GetActiveSpec());
     return true;
-}
-
-void Player::LearnPetTalent(uint64 petGuid, uint32 talentId, uint32 talentRank)
-{
-    /*Pet* pet = GetPet();
-
-    if (!pet)
-        return;
-
-    if (petGuid != pet->GetGUID())
-        return;
-
-    uint32 CurTalentPoints = pet->GetFreeTalentPoints();
-
-    if (CurTalentPoints == 0)
-        return;
-
-    if (talentRank >= MAX_PET_TALENT_RANK)
-        return;
-
-    TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentId);
-
-    if (!talentInfo)
-        return;
-
-    TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
-
-    if (!talentTabInfo)
-        return;
-
-    CreatureTemplate const* ci = pet->GetCreatureTemplate();
-
-    if (!ci)
-        return;
-
-    CreatureFamilyEntry const* pet_family = sCreatureFamilyStore.LookupEntry(ci->family);
-
-    if (!pet_family)
-        return;
-
-    if (pet_family->petTalentType < 0)                       // not hunter pet
-        return;
-
-    // prevent learn talent for different family (cheating)
-    if (!((1 << pet_family->petTalentType) & talentTabInfo->petTalentMask))
-        return;
-
-    // find current max talent rank (0~5)
-    uint8 curtalent_maxrank = 0; // 0 = not learned any rank
-    for (int8 rank = MAX_TALENT_RANK-1; rank >= 0; --rank)
-    {
-        if (talentInfo->RankID[rank] && pet->HasSpell(talentInfo->RankID[rank]))
-        {
-            curtalent_maxrank = (rank + 1);
-            break;
-        }
-    }
-
-    // we already have same or higher talent rank learned
-    if (curtalent_maxrank >= (talentRank + 1))
-        return;
-
-    // check if we have enough talent points
-    if (CurTalentPoints < (talentRank - curtalent_maxrank + 1))
-        return;
-
-    // Check if it requires another talent
-    if (talentInfo->DependsOn > 0)
-    {
-        if (TalentEntry const* depTalentInfo = sTalentStore.LookupEntry(talentInfo->DependsOn))
-        {
-            bool hasEnoughRank = false;
-            for (uint8 rank = talentInfo->DependsOnRank; rank < MAX_TALENT_RANK; rank++)
-            {
-                if (depTalentInfo->RankID[rank] != 0)
-                    if (pet->HasSpell(depTalentInfo->RankID[rank]))
-                        hasEnoughRank = true;
-            }
-            if (!hasEnoughRank)
-                return;
-        }
-    }
-
-    // Find out how many points we have in this field
-    uint32 spentPoints = 0;
-
-    uint32 tTab = talentInfo->TalentTab;
-    if (talentInfo->Row > 0)
-    {
-        uint32 numRows = sTalentStore.GetNumRows();
-        for (uint32 i = 0; i < numRows; ++i)          // Loop through all talents.
-        {
-            // Someday, someone needs to revamp
-            const TalentEntry* tmpTalent = sTalentStore.LookupEntry(i);
-            if (tmpTalent)                                  // the way talents are tracked
-            {
-                if (tmpTalent->TalentTab == tTab)
-                {
-                    for (uint8 rank = 0; rank < MAX_TALENT_RANK; rank++)
-                    {
-                        if (tmpTalent->RankID[rank] != 0)
-                        {
-                            if (pet->HasSpell(tmpTalent->RankID[rank]))
-                            {
-                                spentPoints += (rank + 1);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // not have required min points spent in talent tree
-    if (spentPoints < (talentInfo->Row * MAX_PET_TALENT_RANK))
-        return;
-
-    // spell not set in talent.dbc
-    uint32 spellid = talentInfo->RankID[talentRank];
-    if (spellid == 0)
-    {
-        sLog->outError(LOG_FILTER_PLAYER, "Talent.dbc have for talent: %u Rank: %u spell id = 0", talentId, talentRank);
-        return;
-    }
-
-    // already known
-    if (pet->HasSpell(spellid))
-        return;
-
-    // learn! (other talent ranks will unlearned at learning)
-    pet->learnSpell(spellid);
-    sLog->outInfo(LOG_FILTER_PLAYER, "PetTalentID: %u Rank: %u Spell: %u\n", talentId, talentRank, spellid);
-
-    // update free talent points
-    pet->SetFreeTalentPoints(CurTalentPoints - (talentRank - curtalent_maxrank + 1));*/
 }
 
 void Player::AddKnownCurrency(uint32 itemId)
@@ -25013,9 +24918,21 @@ void Player::BuildPlayerTalentsInfoData(WorldPacket* data)
         {
             *data << uint32(GetSpecializationId(specIdx));
 
+            uint32 pos = data->wpos();
             *data << uint8(0); // talent count
-            /*for (int i = 0; i < 0; i++)
-                *data << uint16(0); // Talent Id*/
+
+            uint8 count = 0;
+            for (auto itr : *GetTalentMap(specIdx))
+            {
+                SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr.first);
+                if (spell && spell->talentId)
+                {
+                    *data << uint16(spell->talentId);
+                    count++;
+                }
+            }
+
+            data->put(pos, count);
 
             *data << uint8(MAX_GLYPH_SLOT_INDEX);
             for (uint8 i = 0; i < MAX_GLYPH_SLOT_INDEX; ++i)
@@ -25032,6 +24949,9 @@ void Player::SendTalentsInfoData(bool pet)
         data << uint16(0); // SpecializationId
         return;
     }
+
+    // Update free talents points client-side
+    SetUInt32Value(PLAYER_MAX_TALENT_TIERS, CalculateTalentsPoints());
 
     WorldPacket data(SMSG_UPDATE_TALENT_DATA);
     BuildPlayerTalentsInfoData(&data);
@@ -25421,7 +25341,7 @@ void Player::UpdateSpecCount(uint8 count)
 
 void Player::ActivateSpec(uint8 spec)
 {
-    /*if (GetActiveSpec() == spec)
+    if (GetActiveSpec() == spec)
         return;
 
     if (spec > GetSpecsCount())
@@ -25442,9 +25362,9 @@ void Player::ActivateSpec(uint8 spec)
     ClearAllReactives();
     UnsummonAllTotems();
     RemoveAllControlled();
-    /*RemoveAllAurasOnDeath();
+    RemoveAllAurasOnDeath();
     if (GetPet())
-        GetPet()->RemoveAllAurasOnDeath();*
+        GetPet()->RemoveAllAurasOnDeath();
 
     //RemoveAllAuras(GetGUID(), NULL, false, true); // removes too many auras
     //ExitVehicle(); // should be impossible to switch specs from inside a vehicle..
@@ -25452,49 +25372,17 @@ void Player::ActivateSpec(uint8 spec)
     // Let client clear his current Actions
     SendActionButtons(2);
     // m_actionButtons.clear() is called in the next _LoadActionButtons
-    for (uint32 talentId = 0; talentId < sTalentStore.GetNumRows(); ++talentId)
+
+    for (auto itr : *GetTalentMap(GetActiveSpec()))
     {
-        TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentId);
-
-        if (!talentInfo)
-            continue;
-
-        TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
-
-        if (!talentTabInfo)
-            continue;
-
-        // unlearn only talents for character class
-        // some spell learned by one class as normal spells or know at creation but another class learn it as talent,
-        // to prevent unexpected lost normal learned spell skip another class talents
-        if ((getClassMask() & talentTabInfo->ClassMask) == 0)
-            continue;
-
-        for (int8 rank = MAX_TALENT_RANK-1; rank >= 0; --rank)
-        {
-            // skip non-existant talent ranks
-            if (talentInfo->RankID[rank] == 0)
-                continue;
-            removeSpell(talentInfo->RankID[rank], true); // removes the talent, and all dependant, learned, and chained spells..
-            if (const SpellInfo* _spellEntry = sSpellMgr->GetSpellInfo(talentInfo->RankID[rank]))
-                for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)                  // search through the SpellInfo for valid trigger spells
-                    if (_spellEntry->Effects[i].TriggerSpell > 0 && _spellEntry->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
-                        removeSpell(_spellEntry->Effects[i].TriggerSpell, true); // and remove any spells that the talent teaches
-            // if this talent rank can be found in the PlayerTalentMap, mark the talent as removed so it gets deleted
-            //PlayerTalentMap::iterator plrTalent = m_talents[m_activeSpec]->find(talentInfo->RankID[rank]);
-            //if (plrTalent != m_talents[m_activeSpec]->end())
-            //    plrTalent->second->state = PLAYERSPELL_REMOVED;
-        }
+        removeSpell(itr.first, true); // removes the talent, and all dependant, learned, and chained spells..
+        if (const SpellInfo* _spellEntry = sSpellMgr->GetSpellInfo(itr.first))
+            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)                  // search through the SpellInfo for valid trigger spells
+                if (_spellEntry->Effects[i].TriggerSpell > 0 && _spellEntry->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
+                    removeSpell(_spellEntry->Effects[i].TriggerSpell, true); // and remove any spells that the talent teaches
     }
 
-    // Remove spec specific spells
-    for (uint32 i = 0; i < MAX_TALENT_TABS; ++i)
-    {
-        std::vector<uint32> const* specSpells = GetTalentTreePrimarySpells(GetTalentTabPages(getClass())[i]);
-        if (specSpells)
-            for (size_t i = 0; i < specSpells->size(); ++i)
-                removeSpell(specSpells->at(i), true);
-    }
+    RemoveSpecializationSpells();
 
     // set glyphs
     for (uint8 slot = 0; slot < MAX_GLYPH_SLOT_INDEX; ++slot)
@@ -25504,43 +25392,13 @@ void Player::ActivateSpec(uint8 spec)
                 RemoveAurasDueToSpell(old_gp->SpellId);
 
     SetActiveSpec(spec);
-    uint32 spentTalents = 0;
 
-    for (uint32 talentId = 0; talentId < sTalentStore.GetNumRows(); ++talentId)
+    uint32 usedTalentPoint = 0;
+    for (auto itr : *GetTalentMap(GetActiveSpec()))
     {
-        TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentId);
-
-        if (!talentInfo)
-            continue;
-
-        TalentTabEntry const* talentTabInfo = sTalentTabStore.LookupEntry(talentInfo->TalentTab);
-
-        if (!talentTabInfo)
-            continue;
-
-        // learn only talents for character class
-        if ((getClassMask() & talentTabInfo->ClassMask) == 0)
-            continue;
-
-        // learn highest talent rank that exists in newly activated spec
-        for (int8 rank = MAX_TALENT_RANK-1; rank >= 0; --rank)
-        {
-            // skip non-existant talent ranks
-            if (talentInfo->RankID[rank] == 0)
-                continue;
-            // if the talent can be found in the newly activated PlayerTalentMap
-            if (HasTalent(talentInfo->RankID[rank], GetActiveSpec()))
-            {
-                learnSpell(talentInfo->RankID[rank], false); // add the talent to the PlayerSpellMap
-                spentTalents += (rank + 1);                  // increment the spentTalents count
-            }
-        }
+        learnSpell(itr.first, false);
+        usedTalentPoint++;
     }
-
-    std::vector<uint32> const* specSpells = GetTalentTreePrimarySpells(GetPrimaryTalentTree(GetActiveSpec()));
-    if (specSpells)
-        for (size_t i = 0; i < specSpells->size(); ++i)
-            learnSpell(specSpells->at(i), false);
 
     // set glyphs
     for (uint8 slot = 0; slot < MAX_GLYPH_SLOT_INDEX; ++slot)
@@ -25555,8 +25413,9 @@ void Player::ActivateSpec(uint8 spec)
         SetGlyph(slot, glyph);
     }
 
-    SetUsedTalentCount(spentTalents);
+    SetUsedTalentCount(usedTalentPoint);
     InitTalentForLevel();
+    InitSpellForLevel();
 
     {
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_ACTIONS_SPEC);
@@ -25573,9 +25432,6 @@ void Player::ActivateSpec(uint8 spec)
         SetPower(POWER_MANA, 0); // Mana must be 0 even if it isn't the active power type.
 
     SetPower(pw, 0);
-
-    if (!sTalentTabStore.LookupEntry(GetPrimaryTalentTree(GetActiveSpec())))
-        ResetTalents(true);*/
 }
 
 void Player::ResetTimeSync()

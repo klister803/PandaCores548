@@ -281,6 +281,7 @@ enum Opcodes
     CMSG_IGNORE_TRADE                                 = 0,      // 5.0.5 16048 Deprecated ?
     CMSG_INITIATE_TRADE                               = 0x6F1,  // 5.0.5 16048
     CMSG_INSPECT                                      = 0x254,  // 5.0.5 16048
+    CMSG_INSPECT_HONOR_STATS                          = 0,      // 0x791E in 4.3.4 FIND ME, I AM WALDO !
     CMSG_INSTANCE_LOCK_WARNING_RESPONSE               = 0x816,  // 5.0.5 16048
     CMSG_ITEM_REFUND                                  = 0x120,  // 5.0.5 16048
     CMSG_ITEM_REFUND_INFO                             = 0x355,  // 5.0.5 16048
@@ -288,6 +289,7 @@ enum Opcodes
     CMSG_JOIN_CHANNEL                                 = 0x4EC,  // 5.0.5 16048
     CMSG_KEEP_ALIVE                                   = 0x910,  // 5.0.5 16048
     CMSG_LEARN_PET_SPECIALIZATION_GROUP               = 0x338,  // 5.0.5 16048
+    CMSG_LEARN_TALENTS                                = 0x31C,  // 5.0.5 16048
     CMSG_LEAVE_BATTLEFIELD                            = 0x22C,  // 5.0.5 16048
     CMSG_LEAVE_CHANNEL                                = 0x7DA,  // 5.0.5 16048
     CMSG_LFG_GET_PLAYER_INFO                          = 0x000,  // Unused 434
@@ -380,7 +382,6 @@ enum Opcodes
     CMSG_PET_ACTION                                   = 0xC0F,  // 5.0.5 16048
     CMSG_PET_CANCEL_AURA                              = 0xC4F,	// 5.0.5 16048
     CMSG_PET_CAST_SPELL                               = 0xCDB,	// 5.0.5 16048
-    CMSG_PET_LEARN_TALENT                             = 0,
     CMSG_PET_NAME_QUERY                               = 0x881,	// 5.0.5 16048
     CMSG_PET_RENAME                                   = 0x846,  // 5.0.5 16048
     CMSG_PET_SET_ACTION                               = 0xD07,  // 5.0.5 16048
@@ -1127,8 +1128,8 @@ enum Opcodes
     SMSG_PLAY_MUSIC                                   = 0x8EF,  // 5.0.5 16048
     SMSG_PLAY_OBJECT_SOUND                            = 0xCED,  // 5.0.5 16048
     SMSG_PLAY_SOUND                                   = 0x873,  // 5.0.5 16048
-	SMSG_PLAY_ONE_SHOT_ANIM_KIT						  = 0x000,  // 5.0.5 16048
-    SMSG_PLAY_SPELL_IMPACT                            = 0x000,  // 5.0.5 16048
+    SMSG_PLAY_ONE_SHOT_ANIM_KIT                       = 0x000,  // 5.0.5 16048
+    //SMSG_PLAY_SPELL_IMPACT                            = 0x000,  // 5.0.5 16048 removed in commit c041875
     SMSG_PLAY_SPELL_VISUAL                            = 0xAE4,  // 5.0.5 16048
     SMSG_PLAY_SPELL_VISUAL_KIT                        = 0xAE4,  // 5.0.5 16048
     SMSG_PLAY_TIME_WARNING                            = 0x817,  // 5.0.5 16048
@@ -1305,8 +1306,9 @@ enum Opcodes
     SMSG_TOTEM_CREATED                                = 0x918,  // 5.0.5 16048
     SMSG_TRADE_STATUS                                 = 0xF85,  // 5.0.5 16048
     SMSG_TRADE_STATUS_EXTENDED                        = 0xAFB,  // 5.0.5 16048
-    SMSG_TRAINER_BUY_SUCCEEDED                        = 0xD31,  // 5.0.5 16048
+    //SMSG_TRAINER_BUY_SUCCEEDED                        = 0xD31,  // 5.0.5 16048 removed in commit c041875
     SMSG_TRAINER_LIST                                 = 0xC65,  // 5.0.5 16048
+    SMSG_TRAINER_SERVICE                              = 0xD31,  // 0x6A05 not sure.
     SMSG_TRANSFER_ABORTED                             = 0x889,  // 5.0.5 16048
     SMSG_TRANSFER_PENDING                             = 0xF79,  // 5.0.5 16048
     SMSG_TRIGGER_CINEMATIC                            = 0xC18,  // 5.0.5 16048

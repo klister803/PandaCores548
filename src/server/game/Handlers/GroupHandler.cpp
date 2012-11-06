@@ -173,7 +173,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
             data.WriteBit(invitedGuid[4]);
 
             data.WriteBit(0);
-            data.WriteBits(strlen(player->GetName()), 7); // Invited name length
+            data.WriteBits(strlen(GetPlayer()->GetName()), 7); // Inviter name length
 
             data.WriteBit(0); // Inverse already in group
 
@@ -214,7 +214,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
 
             // data.append(realm name);
 
-            data.WriteString(GetPlayer()->GetName()); // invited name
+            data.WriteString(GetPlayer()->GetName()); // inviter name
 
             data.WriteByteSeq(invitedGuid[2]);
 
@@ -274,7 +274,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
     data.WriteBit(invitedGuid[4]);
 
     data.WriteBit(0);
-    data.WriteBits(strlen(GetPlayer()->GetName()), 7); // Invited name length
+    data.WriteBits(strlen(GetPlayer()->GetName()), 7); // Inviter name length
 
     data.WriteBit(1); // Inverse already in group
 

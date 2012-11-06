@@ -441,7 +441,7 @@ class PetAura
         typedef UNORDERED_MAP<uint32, uint32> PetAuraMap;
 
     public:
-        PetAura()
+        PetAura() : removeOnChangePet(false), damage(0)
         {
             auras.clear();
         }
@@ -597,6 +597,7 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
 
 typedef std::vector<std::list<uint32>> SpellClassList;
 typedef std::map<uint32, std::list<uint32>> SpellOverrideInfo;
+typedef std::set<uint32> TalentSpellSet;
 
 class SpellMgr
 {
@@ -694,6 +695,8 @@ class SpellMgr
         std::list<uint32> GetSpellClassList(uint8 ClassID) const { return mSpellClassInfo[ClassID]; }
         std::list<uint32> const* GetSpellOverrideInfo(uint32 spellId) { return mSpellOverrideInfo.find(spellId) == mSpellOverrideInfo.end() ? NULL : &mSpellOverrideInfo[spellId]; }
 
+        bool IsTalent(uint32 spellId) { return mTalentSpellInfo.find(spellId) != mTalentSpellInfo.end() ?  true :  false; }
+
     // Modifiers
     public:
 
@@ -723,6 +726,7 @@ class SpellMgr
         void UnloadSpellInfoImplicitTargetConditionLists();
         void LoadSpellCustomAttr();
         void LoadDbcDataCorrections();
+        void LoadTalentSpellInfo();
 
     private:
         SpellDifficultySearcherMap mSpellDifficultySearcherMap;
@@ -755,6 +759,7 @@ class SpellMgr
         SpellInfoMap               mSpellInfoMap[MAX_DIFFICULTY];
         SpellClassList             mSpellClassInfo;
         SpellOverrideInfo          mSpellOverrideInfo;
+        TalentSpellSet             mTalentSpellInfo;
 };
 
 #define sSpellMgr ACE_Singleton<SpellMgr, ACE_Null_Mutex>::instance()

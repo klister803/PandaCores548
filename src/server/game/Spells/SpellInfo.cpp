@@ -369,7 +369,7 @@ bool SpellEffectInfo::IsAura() const
 
 bool SpellEffectInfo::IsAura(AuraType aura) const
 {
-    return IsAura() && AuraType(ApplyAuraName) == aura;
+    return IsAura() && AuraType(ApplyAuraName) == uint32(aura);
 }
 
 bool SpellEffectInfo::IsTargetingArea() const
@@ -933,6 +933,8 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry, uint32 difficulty)
 
     SpecializationEntry = specializationInfo ? specializationInfo->SpecializationEntry : 0;
     OverrideSpellEntry = specializationInfo ? specializationInfo->OverrideSpell : 0;
+
+    talentId = 0;
 
     ExplicitTargetMask = _GetExplicitTargetMask();
     ChainEntry = NULL;

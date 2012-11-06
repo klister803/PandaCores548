@@ -1977,10 +1977,10 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (obj->IsAlwaysVisibleFor(this) || CanAlwaysSee(obj))
         return true;
 
-    bool corpseCheck = false;
     bool corpseVisibility = false;
     if (distanceCheck)
     {
+        bool corpseCheck = false;
         if (Player const* thisPlayer = ToPlayer())
         {
             if (thisPlayer->isDead() && thisPlayer->GetHealth() > 0 && // Cheap way to check for ghost state
@@ -2655,7 +2655,6 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     {
         case SUMMON_PET:
             pet->InitPetCreateSpells();
-            pet->InitTalentForLevel();
             pet->SavePetToDB(PET_SAVE_AS_CURRENT);
             PetSpellInitialize();
             break;

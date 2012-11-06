@@ -202,6 +202,7 @@ extern DBCStorage <SpellTargetRestrictionsEntry> sSpellTargetRestrictionsStore;
 extern DBCStorage <SpellTotemsEntry>             sSpellTotemsStore;
 //extern DBCStorage <StableSlotPricesEntry>        sStableSlotPricesStore;
 extern DBCStorage <SummonPropertiesEntry>        sSummonPropertiesStore;
+extern DBCStorage <TalentEntry>                  sTalentStore;
 extern DBCStorage <TaxiNodesEntry>               sTaxiNodesStore;
 extern DBCStorage <TaxiPathEntry>                sTaxiPathStore;
 extern TaxiMask                                  sTaxiNodesMask;
