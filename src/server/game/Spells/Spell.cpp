@@ -6913,6 +6913,7 @@ void Spell::LoadScripts()
         {
             std::list<SpellScript*>::iterator bitr = itr;
             ++itr;
+            delete (*bitr);
             m_loadedScripts.erase(bitr);
             continue;
         }
