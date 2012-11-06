@@ -1646,7 +1646,6 @@ class Player : public Unit, public GridObject<Player>
 
         void SetBindPoint(uint64 guid);
         void SendTalentWipeConfirm(uint64 guid);
-        void ResetPetTalents();
         void CalcRage(uint32 damage, bool attacker);
         void RegenerateAll();
         void Regenerate(Powers power);
@@ -1792,8 +1791,7 @@ class Player : public Unit, public GridObject<Player>
         void RemoveSpecializationSpells();
         void BuildPlayerTalentsInfoData(WorldPacket* data);
         void SendTalentsInfoData(bool pet);
-        bool LearnTalent(uint32 talentId, uint32 talentRank);
-        void LearnPetTalent(uint64 petGuid, uint32 talentId, uint32 talentRank);
+        bool LearnTalent(uint32 talentId);
         bool AddTalent(uint32 spellId, uint8 spec, bool learning);
         bool HasTalent(uint32 spell_id, uint8 spec) const;
         uint32 CalculateTalentsPoints() const;

@@ -2627,6 +2627,8 @@ void SpellMgr::LoadSpellAreas()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u spell area requirements in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
+static const uint32 SkillClass[MAX_CLASSES] = {0, 840, 800, 795, 921, 804, 796, 924, 904, 849, 829, 798};
+
 void SpellMgr::LoadSpellClassInfo()
 {
     mSpellClassInfo.resize(MAX_CLASSES);
@@ -2635,6 +2637,18 @@ void SpellMgr::LoadSpellClassInfo()
         ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(ClassID);
         if(!classEntry)
             continue;
+
+        // Plate Mail skill
+        if(ClassID == CLASS_PALADIN || ClassID == CLASS_WARRIOR)
+            mSpellClassInfo[ClassID].push_back(750);
+
+        // Mail skill
+        if(ClassID == CLASS_SHAMAN || ClassID == CLASS_HUNTER)
+            mSpellClassInfo[ClassID].push_back(8737);
+
+        // Dual Wield
+        if(ClassID == CLASS_WARRIOR || ClassID == CLASS_HUNTER || ClassID == CLASS_ROGUE || ClassID == CLASS_DEATH_KNIGHT || ClassID == CLASS_MONK)
+            mSpellClassInfo[ClassID].push_back(674);
 
         for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
         {
@@ -2646,14 +2660,10 @@ void SpellMgr::LoadSpellClassInfo()
             if (!spellEntry)
                 continue;
 
-            // Some doesn't have SpellClassInfo
-            /*if (spellEntry->SpellFamilyName != classEntry->spellfamily)
-                continue;*/
-
-            if (((1 << (ClassID-1)) & skillLine->classmask) == 0)
+            if (spellEntry->SpellLevel == 0)
                 continue;
 
-            if (spellEntry->SpellLevel == 0)
+            if (skillLine->skillId !=  SkillClass[ClassID] || skillLine->learnOnGetSkill != ABILITY_LEARNED_ON_GET_RACE_OR_CLASS_SKILL)
                 continue;
 
             // See CGSpellBook::InitFutureSpells in client
@@ -2661,8 +2671,8 @@ void SpellMgr::LoadSpellClassInfo()
                 || spellEntry->AttributesEx8 & SPELL_ATTR8_UNK13 || spellEntry->AttributesEx4 & SPELL_ATTR4_UNK15)
                 continue;
 
-            // TODO : Check Talent Spell (note : i guess sSkillLineAbilityStore don't containt any talents spells)
-            // TODO : Check SpellIsCallCompanion
+            if (sSpellMgr->IsTalent(spellEntry->Id))
+                continue;
 
             mSpellClassInfo[ClassID].push_back(spellEntry->Id);
         }
@@ -2680,7 +2690,7 @@ void SpellMgr::LoadSpellClassInfo()
                 if (spell->OverrideSpellEntry)
                 {
                     auto itr = mSpellOverrideInfo.find(spell->OverrideSpellEntry);
-                    if(itr == mSpellOverrideInfo.end())
+                    if (itr == mSpellOverrideInfo.end())
                         mSpellOverrideInfo[spell->OverrideSpellEntry] = std::list<uint32>();
                 }
                 
@@ -2721,6 +2731,17 @@ void SpellMgr::LoadSpellInfoStore()
             for(std::set<uint32>::iterator itr = difficultyInfo.begin(); itr != difficultyInfo.end(); itr++)
                 mSpellInfoMap[(*itr)][i] = new SpellInfo(spellEntry, (*itr));
         }
+    }
+
+    for (uint32 i = 0; i < sTalentStore.GetNumRows(); i++)
+    {
+        TalentEntry const* talentInfo = sTalentStore.LookupEntry(i);
+        if (!talentInfo)
+            continue;
+
+        SpellInfo * spellEntry = mSpellInfoMap[NONE_DIFFICULTY][talentInfo->spellId];
+        if(spellEntry)
+            spellEntry->talentId = talentInfo->Id;
     }
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded spell info store in %u ms", GetMSTimeDiffToNow(oldMSTime));
@@ -3045,6 +3066,18 @@ void SpellMgr::LoadSpellCustomAttr()
     CreatureAI::FillAISpellInfo();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded spell custom attributes in %u ms", GetMSTimeDiffToNow(oldMSTime));
+}
+
+void SpellMgr::LoadTalentSpellInfo()
+{
+    for (uint32 i = 0; i < sTalentStore.GetNumRows(); i++)
+    {
+        TalentEntry const* talent = sTalentStore.LookupEntry(i);
+        if (!talent)
+            continue;
+
+        mTalentSpellInfo.insert(talent->spellId);
+    }
 }
 
 void SpellMgr::LoadDbcDataCorrections()

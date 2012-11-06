@@ -934,6 +934,8 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry, uint32 difficulty)
     SpecializationEntry = specializationInfo ? specializationInfo->SpecializationEntry : 0;
     OverrideSpellEntry = specializationInfo ? specializationInfo->OverrideSpell : 0;
 
+    talentId = 0;
+
     ExplicitTargetMask = _GetExplicitTargetMask();
     ChainEntry = NULL;
 }

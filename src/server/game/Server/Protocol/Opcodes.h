@@ -288,6 +288,7 @@ enum Opcodes
     CMSG_JOIN_CHANNEL                                 = 0x4EC,  // 5.0.5 16048
     CMSG_KEEP_ALIVE                                   = 0x910,  // 5.0.5 16048
     CMSG_LEARN_PET_SPECIALIZATION_GROUP               = 0x338,  // 5.0.5 16048
+    CMSG_LEARN_TALENTS                                = 0x31C,  // 5.0.5 16048
     CMSG_LEAVE_BATTLEFIELD                            = 0x22C,  // 5.0.5 16048
     CMSG_LEAVE_CHANNEL                                = 0x7DA,  // 5.0.5 16048
     CMSG_LFG_GET_PLAYER_INFO                          = 0x000,  // Unused 434
@@ -379,7 +380,6 @@ enum Opcodes
     CMSG_PET_ACTION                                   = 0xC0F,  // 5.0.5 16048
     CMSG_PET_CANCEL_AURA                              = 0xC4F,	// 5.0.5 16048
     CMSG_PET_CAST_SPELL                               = 0xCDB,	// 5.0.5 16048
-    CMSG_PET_LEARN_TALENT                             = 0,
     CMSG_PET_NAME_QUERY                               = 0x881,	// 5.0.5 16048
     CMSG_PET_RENAME                                   = 0x846,  // 5.0.5 16048
     CMSG_PET_SET_ACTION                               = 0xD07,  // 5.0.5 16048
