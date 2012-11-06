@@ -220,10 +220,8 @@ void AuraApplication::BuildUpdatePacket(ByteBuffer& data, bool remove) const
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
             if (AuraEffect const* eff = aura->GetEffect(i)) // NULL if effect flag not set
-            {
                 data << float(eff->GetAmount());
-                count++;
-            }
+            count++;
         }
         data.put(pos, count);
     }

@@ -68,7 +68,7 @@ class AuraApplication
 
         uint8 GetSlot() const { return _slot; }
         uint8 GetFlags() const { return _flags; }
-        uint8 GetEffectMask() const { return _effectMask; }
+        uint32 GetEffectMask() const { return _effectMask; }
         bool HasEffect(uint8 effect) const { ASSERT(effect < MAX_SPELL_EFFECTS);  return _effectMask & (1<<effect); }
         bool IsPositive() const { return _flags & AFLAG_POSITIVE; }
         bool IsSelfcasted() const { return _flags & AFLAG_CASTER; }
