@@ -1085,6 +1085,9 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
             case ACTION_BUTTON_SPELL:
                 sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added Spell %u into button %u", action, button);
                 break;
+            case ACTION_BUTTON_SUB_BUTTON:
+                sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added sub buttons %u into button %u", action, button);
+                break;
             case ACTION_BUTTON_ITEM:
                 sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added Item %u into button %u", action, button);
                 break;
