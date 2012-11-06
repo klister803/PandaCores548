@@ -3865,8 +3865,17 @@ void Spell::SendSpellStart()
     m_targets.Write(data);
 
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)
-        data << uint32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
+    {
+        data << uint32(1);//m_caster->GetPower((Powers)m_spellInfo->PowerType));
 
+        data << int32(0);
+        data << uint32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
+        /*
+        for int i = 0; i< ? ;++i
+            data << uint32
+            data << uint32
+        */
+    }
     if (castFlags & CAST_FLAG_RUNE_LIST)                   // rune cooldowns list
     {
         //TODO: There is a crash caused by a spell with CAST_FLAG_RUNE_LIST casted by a creature
@@ -3970,8 +3979,20 @@ void Spell::SendSpellGo()
     m_targets.Write(data);
 
     if (castFlags & CAST_FLAG_POWER_LEFT_SELF)
-        data << uint32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
+    {
+        data << uint32(1);//m_caster->GetPower((Powers)m_spellInfo->PowerType));
 
+        data << int32(0); //unk
+        data << uint32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
+        //TODO: send the good values :/
+        //data << uint32(0);//m_caster->GetPower((Powers)m_spellInfo->PowerType));
+
+       /* for (int i = 0; i < m_caster->GetPower((Powers)m_spellInfo->PowerType); ++i)
+        {
+            data << uint32(0);
+            data << uint32(0);
+        }*/
+    }
     if (castFlags & CAST_FLAG_RUNE_LIST)                   // rune cooldowns list
     {
         //TODO: There is a crash caused by a spell with CAST_FLAG_RUNE_LIST casted by a creature
