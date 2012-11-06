@@ -215,6 +215,10 @@ bool LoginQueryHolder::Initialize()
     stmt->setUInt32(0, m_accountId);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES, stmt);
 
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_PLAYER_CURRENCY);
+    stmt->setUInt32(0, lowGuid);
+    res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADCURRENCY, stmt);
+
     return res;
 }
 
@@ -747,11 +751,8 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
     {
         std::string dump;
         if (PlayerDumpWriter().GetDump(GUID_LOPART(guid), dump))
-        {
-            std::ostringstream ss;
-            ss << GetAccountId() << '_' << name.c_str();
-            sLog->outCharDump(ss.str().c_str(), dump.c_str(), GetAccountId(), GUID_LOPART(guid), name.c_str());
-        }
+
+            sLog->outCharDump(dump.c_str(), GetAccountId(), GUID_LOPART(guid), name.c_str());
     }
 
     sGuildFinderMgr->RemoveAllMembershipRequestsFromPlayer(guid);

@@ -394,7 +394,7 @@ enum AuraType
     SPELL_AURA_334                                          = 334,  // NYI
     SPELL_AURA_335                                          = 335,
     SPELL_AURA_MOD_FLYING_RESTRICTIONS                      = 336,  // NYI
-    SPELL_AURA_MOD_VENDOR_ITEMS_PRICES                      = 337,  // NYI
+    SPELL_AURA_MOD_VENDOR_ITEMS_PRICES                      = 337,
     SPELL_AURA_MOD_DURABILITY_LOSS                          = 338,
     SPELL_AURA_INCREASE_SKILL_GAIN_CHANCE                   = 339,  // NYI
     SPELL_AURA_MOD_RESURRECTED_HEALTH_BY_GUILD_MEMBER       = 340,  // Increases health gained when resurrected by a guild member by X
@@ -428,7 +428,7 @@ enum AuraType
     SPELL_AURA_368                                          = 368,  // Not used in 4.3.4
     SPELL_AURA_ENABLE_POWER_BAR_TIMER                       = 369,
     SPELL_AURA_SET_FAIR_FAR_CLIP                            = 370,  // Overrides client's View Distance setting to max("Fair", current_setting)
-    SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT               = 404,  // NYI  - Sets attack power equal to % of spellpower, discarding all other bonuses (from gear and buffs)
+    SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT               = 404,  // Sets attack power equal to % of spellpower, discarding all other bonuses (from gear and buffs)
     TOTAL_AURAS                                             = 419   // 5.0.5
 };
 

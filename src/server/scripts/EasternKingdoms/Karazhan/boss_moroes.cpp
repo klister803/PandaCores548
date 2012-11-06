@@ -204,9 +204,9 @@ public:
                 Creature* Temp = NULL;
                 if (AddGUID[i])
                 {
-                    Temp = Creature::GetCreature((*me), AddGUID[i]);
-                    if (Temp && Temp->isAlive())
-                        Temp->DisappearAndDie();
+                    Creature* temp = Creature::GetCreature((*me), AddGUID[i]);
+                    if (temp && temp->isAlive())
+                        temp->DisappearAndDie();
                 }
             }
         }
@@ -215,15 +215,15 @@ public:
         {
             for (uint8 i = 0; i < 4; ++i)
             {
-                Creature* Temp = NULL;
                 if (AddGUID[i])
                 {
-                    Temp = Creature::GetCreature((*me), AddGUID[i]);
-                    if (Temp && Temp->isAlive())
+                    Creature* temp = Creature::GetCreature((*me), AddGUID[i]);
+                    if (temp && temp->isAlive())
                     {
-                        Temp->AI()->AttackStart(me->getVictim());
-                        DoZoneInCombat(Temp);
-                    } else
+                        temp->AI()->AttackStart(me->getVictim());
+                        DoZoneInCombat(temp);
+                    }
+                    else
                         EnterEvadeMode();
                 }
             }
@@ -250,17 +250,17 @@ public:
             {
                 for (uint8 i = 0; i < 4; ++i)
                 {
-                    Creature* Temp = NULL;
                     if (AddGUID[i])
                     {
-                        Temp = Unit::GetCreature((*me), AddGUID[i]);
-                        if (Temp && Temp->isAlive())
-                            if (!Temp->getVictim())
-                                Temp->AI()->AttackStart(me->getVictim());
+                        Creature* temp = Unit::GetCreature((*me), AddGUID[i]);
+                        if (temp && temp->isAlive())
+                            if (!temp->getVictim())
+                                temp->AI()->AttackStart(me->getVictim());
                     }
                 }
                 CheckAdds_Timer = 5000;
-            } else CheckAdds_Timer -= diff;
+            }
+            else CheckAdds_Timer -= diff;
 
             if (!Enrage)
             {
@@ -289,8 +289,9 @@ public:
                             DoCast(*i, SPELL_BLIND);
                             break;
                         }
-                    Blind_Timer = 40000;
-                } else Blind_Timer -= diff;
+                        Blind_Timer = 40000;
+                }
+                else Blind_Timer -= diff;
             }
 
             if (InVanish)
@@ -303,7 +304,8 @@ public:
                         target->CastSpell(target, SPELL_GARROTE, true);
 
                     InVanish = false;
-                } else Wait_Timer -= diff;
+                }
+                else Wait_Timer -= diff;
             }
 
             if (!InVanish)

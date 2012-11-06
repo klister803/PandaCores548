@@ -281,6 +281,7 @@ enum Opcodes
     CMSG_IGNORE_TRADE                                 = 0,      // 5.0.5 16048 Deprecated ?
     CMSG_INITIATE_TRADE                               = 0x6F1,  // 5.0.5 16048
     CMSG_INSPECT                                      = 0x254,  // 5.0.5 16048
+    CMSG_INSPECT_HONOR_STATS                          = 0,      // 0x791E in 4.3.4 FIND ME, I AM WALDO !
     CMSG_INSTANCE_LOCK_WARNING_RESPONSE               = 0x816,  // 5.0.5 16048
     CMSG_ITEM_REFUND                                  = 0x120,  // 5.0.5 16048
     CMSG_ITEM_REFUND_INFO                             = 0x355,  // 5.0.5 16048
@@ -316,11 +317,12 @@ enum Opcodes
     CMSG_LOG_DISCONNECT                               = 0x48F,  // 5.0.5 16048
     CMSG_LOOT                                         = 0x236,	// 5.0.5 16048
     CMSG_LOOT_CURRENCY                                = 0,
-    CMSG_LOOT_MASTER_GIVE                             = 0,
+    CMSG_LOOT_MASTER_GIVE                             = 0x239,  // 5.0.5 16048
     CMSG_LOOT_METHOD                                  = 0x7F6,  // 5.0.5 16048
     CMSG_LOOT_MONEY                                   = 0x2D7,  // 5.0.5 16048
     CMSG_LOOT_RELEASE                                 = 0x0B2,  // 5.0.5 16048
-    CMSG_LOOT_ROLL                                    = 0x77C,
+    CMSG_LOOT_ROLL                                    = 0x77C,  // 5.0.5 16048
+    CMSG_LOOT_MASTER_ASK_FOR_ROLL                     = 0x1F9,  // 5.0.5 16048
     CMSG_MAIL_CREATE_TEXT_ITEM                        = 0x834,  // 5.0.5 16048
     CMSG_MAIL_DELETE                                  = 0x195,  // 5.0.5 16048
     CMSG_MAIL_MARK_AS_READ                            = 0x99F,  // 5.0.5 16048
@@ -453,7 +455,7 @@ enum Opcodes
     CMSG_REQUEST_VEHICLE_SWITCH_SEAT                  = 0x255,  // 5.0.5 16048
     CMSG_RESET_FACTION_CHEAT                          = 0x4AB,  // 5.0.5 16048
     CMSG_RESET_INSTANCES                              = 0xC71,  // 5.0.5 16048
-    CMSG_RESURRECT_RESPONSE                           = 0x9FB,  // 5.0.5 16048
+    CMSG_RESURRECT_RESPONSE                           = 0xC53,  // 5.0.5 16048
     CMSG_RETURN_TO_GRAVEYARD                          = 0x6D2,	// 5.0.5 16048
     CMSG_ROLE_POLL_BEGIN                              = 0x104,  // 5.0.5 16048
     CMSG_SAVE_CUF_PROFILES                            = 0x633,  // 5.0.5 16048
@@ -477,7 +479,7 @@ enum Opcodes
     CMSG_SET_CHANNEL_WATCH                            = 0xD2A,  // 5.0.5 16048
     CMSG_SET_CONTACT_NOTES                            = 0x921,  // 5.0.5 16048
     CMSG_SET_CURRENCY_FLAGS                           = 0x39C,  // 5.0.5 16048
-    CMSG_SET_EVERYONE_IS_ASSISTANT                    = 0x0F1,  // 5.0.5 16048
+    CMSG_SET_EVERYONE_IS_ASSISTANT                    = 0x5D3,  // 5.0.5 16048
     CMSG_SET_FACTION_ATWAR                            = 0x866,  // 5.0.5 16048
     CMSG_SET_FACTION_CHEAT                            = 0x000,  // 5.0.5 16048
     CMSG_SET_FACTION_INACTIVE                         = 0xCB0,  // 5.0.5 16048
@@ -1126,8 +1128,8 @@ enum Opcodes
     SMSG_PLAY_MUSIC                                   = 0x8EF,  // 5.0.5 16048
     SMSG_PLAY_OBJECT_SOUND                            = 0xCED,  // 5.0.5 16048
     SMSG_PLAY_SOUND                                   = 0x873,  // 5.0.5 16048
-	SMSG_PLAY_ONE_SHOT_ANIM_KIT						  = 0x000,  // 5.0.5 16048
-    SMSG_PLAY_SPELL_IMPACT                            = 0x000,  // 5.0.5 16048
+    SMSG_PLAY_ONE_SHOT_ANIM_KIT                       = 0x000,  // 5.0.5 16048
+    //SMSG_PLAY_SPELL_IMPACT                            = 0x000,  // 5.0.5 16048 removed in commit c041875
     SMSG_PLAY_SPELL_VISUAL                            = 0xAE4,  // 5.0.5 16048
     SMSG_PLAY_SPELL_VISUAL_KIT                        = 0xAE4,  // 5.0.5 16048
     SMSG_PLAY_TIME_WARNING                            = 0x817,  // 5.0.5 16048
@@ -1304,8 +1306,9 @@ enum Opcodes
     SMSG_TOTEM_CREATED                                = 0x918,  // 5.0.5 16048
     SMSG_TRADE_STATUS                                 = 0xF85,  // 5.0.5 16048
     SMSG_TRADE_STATUS_EXTENDED                        = 0xAFB,  // 5.0.5 16048
-    SMSG_TRAINER_BUY_SUCCEEDED                        = 0xD31,  // 5.0.5 16048
+    //SMSG_TRAINER_BUY_SUCCEEDED                        = 0xD31,  // 5.0.5 16048 removed in commit c041875
     SMSG_TRAINER_LIST                                 = 0xC65,  // 5.0.5 16048
+    SMSG_TRAINER_SERVICE                              = 0xD31,  // 0x6A05 not sure.
     SMSG_TRANSFER_ABORTED                             = 0x889,  // 5.0.5 16048
     SMSG_TRANSFER_PENDING                             = 0xF79,  // 5.0.5 16048
     SMSG_TRIGGER_CINEMATIC                            = 0xC18,  // 5.0.5 16048

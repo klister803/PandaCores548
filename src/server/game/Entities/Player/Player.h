@@ -149,7 +149,7 @@ enum TalentTree // talent tabs
 // Spell modifier (used for modify other spells)
 struct SpellModifier
 {
-    SpellModifier(Aura* _ownerAura = NULL) : charges(0), ownerAura(_ownerAura) {}
+    SpellModifier(Aura* _ownerAura = NULL) : op(SPELLMOD_DAMAGE), type(SPELLMOD_FLAT), charges(0), value(0), mask(), spellId(0), ownerAura(_ownerAura) {}
     SpellModOp   op   : 8;
     SpellModType type : 8;
     int16 charges     : 16;
@@ -164,7 +164,7 @@ enum PlayerCurrencyState
    PLAYERCURRENCY_UNCHANGED = 0,
    PLAYERCURRENCY_CHANGED   = 1,
    PLAYERCURRENCY_NEW       = 2,
-   PLAYERCURRENCY_REMOVED   = 3
+   PLAYERCURRENCY_REMOVED   = 3     //not removed just set count == 0
 };
 
 struct PlayerCurrency
@@ -211,6 +211,7 @@ enum ActionButtonType
     ACTION_BUTTON_SPELL     = 0x00,
     ACTION_BUTTON_C         = 0x01,                         // click?
     ACTION_BUTTON_EQSET     = 0x20,
+    ACTION_BUTTON_SUB_BUTTON= 0x30,
     ACTION_BUTTON_MACRO     = 0x40,
     ACTION_BUTTON_CMACRO    = ACTION_BUTTON_C | ACTION_BUTTON_MACRO,
     ACTION_BUTTON_ITEM      = 0x80
@@ -829,6 +830,7 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES        = 33,
     PLAYER_LOGIN_QUERY_LOADSEASONALQUESTSTATUS      = 34,
     PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE              = 35,
+    PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 36,
     MAX_PLAYER_LOGIN_QUERY,
 };
 
@@ -910,6 +912,16 @@ enum PlayerRestState
     REST_STATE_RESTED                                = 0x01,
     REST_STATE_NOT_RAF_LINKED                        = 0x02,
     REST_STATE_RAF_LINKED                            = 0x06
+};
+
+enum PlayerCommandStates
+{
+    CHEAT_NONE = 0x00,
+    CHEAT_GOD = 0x01,
+    CHEAT_CASTTIME = 0x02,
+    CHEAT_COOLDOWN = 0x04,
+    CHEAT_POWER = 0x08,
+    CHEAT_WATERWALK = 0x10
 };
 
 struct auraEffectData
@@ -1246,6 +1258,12 @@ class Player : public Unit, public GridObject<Player>
 
         void InitStatsForLevel(bool reapplyMods = false);
 
+
+        // .cheat command related
+        bool GetCommandStatus(uint32 command) const { return _activeCheats & command; }
+        void SetCommandStatusOn(uint32 command) { _activeCheats |= command; }
+        void SetCommandStatusOff(uint32 command) { _activeCheats &= ~command; }
+
         // Played Time Stuff
         time_t m_logintime;
         time_t m_Last_tick;
@@ -1375,9 +1393,15 @@ class Player : public Unit, public GridObject<Player>
         void AddRefundReference(uint32 it);
         void DeleteRefundReference(uint32 it);
 
+        /// send initialization of new currency for client
+        void SendNewCurrency(uint32 id) const;
+        /// send full data about all currencies to client
         void SendCurrencies() const;
+        /// return count of currency witch has plr
         uint32 GetCurrency(uint32 id) const;
+        /// return presence related currency
         bool HasCurrency(uint32 id, uint32 count) const;
+        /// @todo: not understand why it subtract from total count and for what it used. It should be remove and replaced by ModifyCurrency
         void SetCurrency(uint32 id, uint32 count, bool printLog = true);
 
         /**
@@ -1385,7 +1409,7 @@ class Player : public Unit, public GridObject<Player>
         * @brief Change specific currency and send result to client
 
         * @param id currency entry from CurrencyTypes.dbc
-        * @param count integer value for adding/removing curent currency
+        * @param count integer value for adding/removing current currency
         * @param printLog used on SMSG_UPDATE_CURRENCY
         * @param ignore gain multipliers
         */
@@ -2025,6 +2049,7 @@ class Player : public Unit, public GridObject<Player>
         void UpdateMeleeHitChances();
         void UpdateRangedHitChances();
         void UpdateSpellHitChances();
+        void UpdateMasteryPercentage();
 
         void UpdateAllSpellCritChances();
         void UpdateSpellCritChance(uint32 school);
@@ -2187,6 +2212,7 @@ class Player : public Unit, public GridObject<Player>
         void SetCanParry(bool value);
         bool CanBlock() const { return m_canBlock; }
         void SetCanBlock(bool value);
+        bool CanMastery() const { return HasAuraType(SPELL_AURA_MASTERY); }
         bool CanTitanGrip() const { return m_canTitanGrip; }
         void SetCanTitanGrip(bool value) { m_canTitanGrip = value; }
         bool CanTameExoticPets() const { return isGameMaster() || HasAuraType(SPELL_AURA_ALLOW_TAME_PET_TYPE); }
@@ -2748,6 +2774,7 @@ class Player : public Unit, public GridObject<Player>
         void _LoadGlyphs(PreparedQueryResult result);
         void _LoadTalents(PreparedQueryResult result);
         void _LoadInstanceTimeRestrictions(PreparedQueryResult result);
+        void _LoadCurrency(PreparedQueryResult result);
 
         /*********************************************************/
         /***                   SAVE SYSTEM                     ***/
@@ -2770,6 +2797,7 @@ class Player : public Unit, public GridObject<Player>
         void _SaveTalents(SQLTransaction& trans);
         void _SaveStats(SQLTransaction& trans);
         void _SaveInstanceTimeRestrictions(SQLTransaction& trans);
+        void _SaveCurrency(SQLTransaction& trans);
 
         /*********************************************************/
         /***              ENVIRONMENTAL SYSTEM                 ***/
@@ -2801,7 +2829,7 @@ class Player : public Unit, public GridObject<Player>
         Item* m_items[PLAYER_SLOTS_COUNT];
         uint32 m_currentBuybackSlot;
 
-        PlayerCurrenciesMap m_currencies;
+        PlayerCurrenciesMap _currencyStorage;
         uint32 _GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const;
 
         VoidStorageItem* _voidStorageItems[VOID_STORAGE_MAX_SLOT];
@@ -3004,6 +3032,8 @@ class Player : public Unit, public GridObject<Player>
         InstanceTimeMap _instanceResetTimes;
         uint32 _pendingBindId;
         uint32 _pendingBindTimer;
+
+        uint32 _activeCheats;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

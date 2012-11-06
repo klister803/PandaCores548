@@ -262,6 +262,7 @@ class Group
         void ChangeMembersGroup(Player* player, uint8 group);
         void SetTargetIcon(uint8 id, uint64 whoGuid, uint64 targetGuid);
         void SetGroupMemberFlag(uint64 guid, bool apply, GroupMemberFlags flag);
+        void setGroupMemberRole(uint64 guid, uint32 role);
         void RemoveUniqueGroupMemberFlag(GroupMemberFlags flag);
 
         Difficulty GetDifficulty(bool isRaid) const;
@@ -302,6 +303,7 @@ class Group
         Rolls::iterator GetRoll(uint8 slot);
         void CountTheRoll(Rolls::iterator roll);
         void CountRollVote(uint64 playerGUID, uint8 slot, uint8 Choise);
+        void DoRollForAllMembers(ObjectGuid guid, uint8 slot, uint32 mapid, Loot*, LootItem&, Player*);
         void EndRoll(Loot* loot);
 
         // related to disenchant rolls
