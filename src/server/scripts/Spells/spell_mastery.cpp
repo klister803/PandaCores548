@@ -27,8 +27,95 @@
 
 enum MasterySpells
 {
+    MASTERY_SPELL_LIGHTNING_BOLT        = 45284,
+    MASTERY_SPELL_CHAIN_LIGHTNING       = 45297,
+    MASTERY_SPELL_LAVA_BURST            = 77451
+};
+
+// Called by 403 - Lightning Bolt, 421 - Chain Lightning and 51505 - Lava Burst
+// 77222 - Mastery : Elemental Overload
+class spell_mastery_elemental_overload : public SpellScriptLoader
+{
+    public:
+        spell_mastery_elemental_overload() : SpellScriptLoader("spell_mastery_elemental_overload") { }
+
+        class spell_mastery_elemental_overload_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mastery_elemental_overload_SpellScript);
+
+            bool Validate(SpellInfo const* /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(403) || !sSpellMgr->GetSpellInfo(421) || !sSpellMgr->GetSpellInfo(51505))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                SpellInfo const* procSpell = GetSpellInfo();
+
+                if (procSpell)
+                {
+                    if (Unit* caster = GetCaster())
+                    {
+                        if (Unit* unitTarget = GetHitUnit())
+                        {
+                            if (caster->HasAura(77222))
+                            {
+                                // Every Lightning Bolt, Chain Lightning and Lava Burst spells have duplicate vs 75% damage and no cost
+                                switch (procSpell->Id)
+                                {
+                                    case 51505:
+                                    {
+                                        float value = caster->GetFloatValue(PLAYER_MASTERY);
+                                        value *= 2;
+
+                                        if (roll_chance_f(value))
+                                            caster->CastSpell(unitTarget, MASTERY_SPELL_LAVA_BURST, true);
+
+                                        break;
+                                    }
+                                    case 403:
+                                    {
+                                        float value = caster->GetFloatValue(PLAYER_MASTERY);
+                                        value *= 2;
+
+                                        if (roll_chance_f(value))
+                                            caster->CastSpell(unitTarget, MASTERY_SPELL_LIGHTNING_BOLT, true);
+
+                                        break;
+                                    }
+                                    case 421:
+                                    {
+                                        float value = caster->GetFloatValue(PLAYER_MASTERY);
+                                        value *= 2;
+
+                                        if (roll_chance_f(value))
+                                            caster->CastSpell(unitTarget, MASTERY_SPELL_CHAIN_LIGHTNING, true);
+
+                                        break;
+                                    }
+                                    default: break;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mastery_elemental_overload_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mastery_elemental_overload_SpellScript();
+        }
 };
 
 void AddSC_mastery_spell_scripts()
 {
+    new spell_mastery_elemental_overload();
 }

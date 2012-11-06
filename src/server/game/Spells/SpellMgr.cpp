@@ -3020,6 +3020,10 @@ void SpellMgr::LoadSpellCustomAttr()
             case 72293: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
+            case 77222:  // Mastery : Elemental Overload
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 8;
+                break;
             default:
                 break;
             }
