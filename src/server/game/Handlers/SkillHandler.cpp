@@ -26,52 +26,40 @@
 #include "ObjectAccessor.h"
 #include "UpdateMask.h"
 
-void WorldSession::HandleLearnTalentOpcode(WorldPacket & recvData)
+void WorldSession::HandleSetSpecialization(WorldPacket& recvData)
 {
-    uint32 talentId, requestedRank;
-    recvData >> talentId >> requestedRank;
+    uint32 tab = recvData.read<uint32>();
+    uint8 classId = _player->getClass();
 
-    if (_player->LearnTalent(talentId, requestedRank))
-        _player->SendTalentsInfoData(false);
-}
+    // Avoid cheat - hack
+    if(_player->GetSpecializationId(_player->GetActiveSpec()))
+        return;
 
-void WorldSession::HandleLearnPreviewTalents(WorldPacket& recvPacket)
-{
-    /*sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LEARN_PREVIEW_TALENTS");
+    uint32 specializationId = 0;
+    uint32 specializationSpell = 0;
 
-    int32 tabPage;
-    uint32 talentsCount;
-    recvPacket >> tabPage;    // talent tree
-
-    // prevent cheating (selecting new tree with points already in another)
-    if (tabPage >= 0)   // -1 if player already has specialization
+    for (uint32 i = 0; i < sChrSpecializationsStore.GetNumRows(); i++)
     {
-        if (TalentTabEntry const* talentTabEntry = sTalentTabStore.LookupEntry(_player->GetPrimaryTalentTree(_player->GetActiveSpec())))
+        ChrSpecializationsEntry const* specialization = sChrSpecializationsStore.LookupEntry(i);
+        if (!specialization)
+            continue;
+
+        if (specialization->classId == classId && specialization->tabId == tab)
         {
-            if (talentTabEntry->tabpage != uint32(tabPage))
-            {
-                recvPacket.rfinish();
-                return;
-            }
-        }
-    }
-
-    recvPacket >> talentsCount;
-
-    uint32 talentId, talentRank;
-
-    for (uint32 i = 0; i < talentsCount; ++i)
-    {
-        recvPacket >> talentId >> talentRank;
-
-        if (!_player->LearnTalent(talentId, talentRank))
-        {
-            recvPacket.rfinish();
+            specializationId = specialization->entry;
+            specializationSpell = specialization->specializationSpell;
             break;
         }
     }
 
-    _player->SendTalentsInfoData(false);*/
+    if (specializationId)
+    {
+        _player->SetSpecializationId(_player->GetActiveSpec(), specializationId);
+        _player->SendTalentsInfoData(false);
+        if (specializationSpell)
+            _player->learnSpell(specializationSpell, false);
+        _player->InitSpellForLevel();
+    }
 }
 
 void WorldSession::HandleTalentWipeConfirmOpcode(WorldPacket& recvData)

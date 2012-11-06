@@ -161,6 +161,7 @@ bool Player::UpdateAllStats()
     UpdateManaRegen();
     UpdateExpertise(BASE_ATTACK);
     UpdateExpertise(OFF_ATTACK);
+    UpdateExpertise(RANGED_ATTACK);
     for (int i = SPELL_SCHOOL_NORMAL; i < MAX_SPELL_SCHOOL; ++i)
         UpdateResistances(i);
 
@@ -525,8 +526,6 @@ void Player::UpdateCritPercentage(WeaponAttackType attType)
     }
 
     float value = GetTotalPercentageModValue(modGroup) + GetRatingBonusValue(cr);
-    // Modify crit from weapon skill and maximized defense skill of same level victim difference
-    value += (int32(GetWeaponSkillValue(attType)) - int32(GetMaxSkillValueForLevel())) * 0.04f;
     value = value < 0.0f ? 0.0f : value;
     SetStatFloatValue(index, value);
 }
@@ -653,6 +652,21 @@ void Player::UpdateSpellCritChance(uint32 school)
 
     // Store crit value
     SetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + school, crit);
+}
+
+void Player::UpdateMasteryPercentage()
+{
+    // No mastery
+    float value = 0.0f;
+    if (CanMastery())
+    {
+        // Mastery from SPELL_AURA_MASTERY aura
+        value += GetTotalAuraModifier(SPELL_AURA_MASTERY);
+        // Mastery from rating
+        value += GetRatingBonusValue(CR_MASTERY);
+        value = value < 0.0f ? 0.0f : value;
+    }
+    SetFloatValue(PLAYER_MASTERY, value);
 }
 
 void Player::UpdateMeleeHitChances()

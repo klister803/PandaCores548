@@ -573,10 +573,10 @@ enum CombatRating
     CR_EXPERTISE                = 23,
     CM_ARMOR_PENETRATION        = 24,
     CR_MASTERY                  = 25,
-    CR_PVP_POWER                = 26
+    CR_PVP_POWER                = 26,
 };
 
-#define MAX_COMBAT_RATING         25
+#define MAX_COMBAT_RATING         27
 
 enum DamageEffectType
 {

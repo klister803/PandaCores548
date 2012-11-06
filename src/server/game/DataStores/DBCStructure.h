@@ -763,6 +763,24 @@ struct ChrPowerTypesEntry
    uint32 power;                                               // 2
 };
 
+struct ChrSpecializationsEntry
+{
+    uint32 entry;                   // 0
+    char*  iconName;                // 1
+    uint32 classId;                 // 2
+    uint32 specializationSpell;     // 3
+    //uint32 unk                    // 4, empty
+    uint32 tabId;                   // 5
+    //uint32 unk                    // 6
+    //uint32 unk                    // 7
+    //uint32 unk                    // 8
+    //uint32 unk                    // 9
+    //uint32 unk                    // 10
+    char* specializationName;       // 11
+    char* description;              // 12
+    //uint32 unk                    // 13
+};
+
 /* not used
 struct CinematicCameraEntry
 {
@@ -1690,6 +1708,15 @@ struct SoundEntriesEntry
     //unk                                                   // 32       4.0.0
     //unk                                                   // 33       4.0.0
     //unk                                                   // 34       5.0.5
+};
+
+// SpecializationSpells.dbc
+struct SpecializationSpellEntry
+{
+    uint32  Id;                      // 0
+    uint32  SpecializationEntry;     // 1
+    uint32  LearnSpell;              // 2
+    uint32  OverrideSpell;           // 3
 };
 
 // SpellEffect.dbc

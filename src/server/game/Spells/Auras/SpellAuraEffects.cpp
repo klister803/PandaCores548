@@ -1923,7 +1923,7 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
         case FORM_CREATUREBEAR:                             // 0x0E
         case FORM_CREATURECAT:                              // 0x0F
         case FORM_GHOSTWOLF:                                // 0x10
-
+            break;
         case FORM_WISE_SERPENT:                             // 0x14
             PowerType = POWER_MANA;
             break;

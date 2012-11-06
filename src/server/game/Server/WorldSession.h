@@ -558,6 +558,7 @@ class WorldSession
         void HandleOptOutOfLootOpcode(WorldPacket& recvData);
         void HandleLootMethodOpcode(WorldPacket& recvPacket);
         void HandleLootRoll(WorldPacket& recvData);
+        void HandleLootMasterAskForRoll(WorldPacket& recvData);
         void HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData);
         void HandleRaidConfirmReadyCheck(WorldPacket& recvData);
         void HandleRaidLeaderReadyCheck(WorldPacket& recvData);
@@ -566,6 +567,7 @@ class WorldSession
         void HandleGroupChangeSubGroupOpcode(WorldPacket& recvData);
         void HandleGroupSwapSubGroupOpcode(WorldPacket& recvData);
         void HandleGroupAssistantLeaderOpcode(WorldPacket& recvData);
+        void HandleGroupEveryoneIsAssistantOpcode(WorldPacket& recvData);
         void HandlePartyAssignmentOpcode(WorldPacket& recvData);
 
         void HandlePetitionBuyOpcode(WorldPacket& recvData);
@@ -708,10 +710,9 @@ class WorldSession
         void HandleCancelGrowthAuraOpcode(WorldPacket& recvPacket);
         void HandleCancelAutoRepeatSpellOpcode(WorldPacket& recvPacket);
 
-        void HandleLearnTalentOpcode(WorldPacket& recvPacket);
-        void HandleLearnPreviewTalents(WorldPacket& recvPacket);
         void HandleTalentWipeConfirmOpcode(WorldPacket& recvPacket);
         void HandleUnlearnSkillOpcode(WorldPacket& recvPacket);
+        void HandleSetSpecialization(WorldPacket& recvPacket);
 
         void HandleQuestgiverStatusQueryOpcode(WorldPacket& recvPacket);
         void HandleQuestgiverStatusMultipleQuery(WorldPacket& recvPacket);

@@ -665,7 +665,7 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
                 bitcounterLoop = data.ReadBits(24);
                 break;
             case MSEBitCounterLoop1:
-                for(int i = 0; i < bitcounterLoop; i++)
+                for(uint32 i = 0; i < bitcounterLoop; i++)
                     data.read_skip<uint32>();
                 break;
             case MSEFlushBits:

@@ -211,6 +211,7 @@ enum ActionButtonType
     ACTION_BUTTON_SPELL     = 0x00,
     ACTION_BUTTON_C         = 0x01,                         // click?
     ACTION_BUTTON_EQSET     = 0x20,
+    ACTION_BUTTON_SUB_BUTTON= 0x30,
     ACTION_BUTTON_MACRO     = 0x40,
     ACTION_BUTTON_CMACRO    = ACTION_BUTTON_C | ACTION_BUTTON_MACRO,
     ACTION_BUTTON_ITEM      = 0x80
@@ -1135,6 +1136,7 @@ struct PlayerTalentInfo
             SpecInfo[i].Talents = new PlayerTalentMap();
             memset(SpecInfo[i].Glyphs, 0, MAX_GLYPH_SLOT_INDEX * sizeof(uint32));
             SpecInfo[i].TalentTree = 0;
+            SpecInfo[i].SpecializationId = 0;
         }
     }
 
@@ -1153,6 +1155,7 @@ struct PlayerTalentInfo
         PlayerTalentMap* Talents;
         uint32 Glyphs[MAX_GLYPH_SLOT_INDEX];
         uint32 TalentTree;
+        uint32 SpecializationId;
     } SpecInfo[MAX_TALENT_SPECS];
 
     uint32 FreeTalentPoints;
@@ -1803,12 +1806,15 @@ class Player : public Unit, public GridObject<Player>
         void SetActiveSpec(uint8 spec){ _talentMgr->ActiveSpec = spec; }
         uint8 GetSpecsCount() const { return _talentMgr->SpecsCount; }
         void SetSpecsCount(uint8 count) { _talentMgr->SpecsCount = count; }
+        void SetSpecializationId(uint8 spec, uint32 id);
+        uint32 GetSpecializationId(uint8 spec) { return _talentMgr->SpecInfo[spec].SpecializationId; }
 
         bool ResetTalents(bool no_cost = false);
         uint32 GetNextResetTalentsCost() const;
         void InitTalentForLevel();
+        void InitSpellForLevel();
+        void RemoveSpecializationSpells();
         void BuildPlayerTalentsInfoData(WorldPacket* data);
-        void BuildPetTalentsInfoData(WorldPacket* data);
         void SendTalentsInfoData(bool pet);
         bool LearnTalent(uint32 talentId, uint32 talentRank);
         void LearnPetTalent(uint64 petGuid, uint32 talentId, uint32 talentRank);
@@ -1913,6 +1919,8 @@ class Player : public Unit, public GridObject<Player>
         void SendInitialActionButtons() const { SendActionButtons(0); }
         void SendActionButtons(uint32 state) const;
         bool IsActionButtonDataValid(uint8 button, uint32 action, uint8 type);
+
+        int8 GetFreeActionButton();
 
         PvPInfo pvpInfo;
         void UpdatePvPState(bool onlyFFA = false);
@@ -2043,6 +2051,7 @@ class Player : public Unit, public GridObject<Player>
         void UpdateMeleeHitChances();
         void UpdateRangedHitChances();
         void UpdateSpellHitChances();
+        void UpdateMasteryPercentage();
 
         void UpdateAllSpellCritChances();
         void UpdateSpellCritChance(uint32 school);
@@ -2205,6 +2214,7 @@ class Player : public Unit, public GridObject<Player>
         void SetCanParry(bool value);
         bool CanBlock() const { return m_canBlock; }
         void SetCanBlock(bool value);
+        bool CanMastery() const { return HasAuraType(SPELL_AURA_MASTERY); }
         bool CanTitanGrip() const { return m_canTitanGrip; }
         void SetCanTitanGrip(bool value) { m_canTitanGrip = value; }
         bool CanTameExoticPets() const { return isGameMaster() || HasAuraType(SPELL_AURA_ALLOW_TAME_PET_TYPE); }

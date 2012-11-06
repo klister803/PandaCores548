@@ -288,9 +288,7 @@ enum Opcodes
     CMSG_ITEM_TEXT_QUERY                              = 0x9DA,  // 5.0.5 16048
     CMSG_JOIN_CHANNEL                                 = 0x4EC,  // 5.0.5 16048
     CMSG_KEEP_ALIVE                                   = 0x910,  // 5.0.5 16048
-    CMSG_LEARN_PREVIEW_TALENTS                        = 0,
-    CMSG_LEARN_PREVIEW_TALENTS_PET                    = 0,
-    CMSG_LEARN_TALENT                                 = 0,
+    CMSG_LEARN_PET_SPECIALIZATION_GROUP               = 0x338,  // 5.0.5 16048
     CMSG_LEAVE_BATTLEFIELD                            = 0x22C,  // 5.0.5 16048
     CMSG_LEAVE_CHANNEL                                = 0x7DA,  // 5.0.5 16048
     CMSG_LFG_GET_PLAYER_INFO                          = 0x000,  // Unused 434
@@ -318,11 +316,12 @@ enum Opcodes
     CMSG_LOG_DISCONNECT                               = 0x48F,  // 5.0.5 16048
     CMSG_LOOT                                         = 0x236,	// 5.0.5 16048
     CMSG_LOOT_CURRENCY                                = 0,
-    CMSG_LOOT_MASTER_GIVE                             = 0,
+    CMSG_LOOT_MASTER_GIVE                             = 0x239,  // 5.0.5 16048
     CMSG_LOOT_METHOD                                  = 0x7F6,  // 5.0.5 16048
     CMSG_LOOT_MONEY                                   = 0x2D7,  // 5.0.5 16048
     CMSG_LOOT_RELEASE                                 = 0x0B2,  // 5.0.5 16048
-    CMSG_LOOT_ROLL                                    = 0x77C,
+    CMSG_LOOT_ROLL                                    = 0x77C,  // 5.0.5 16048
+    CMSG_LOOT_MASTER_ASK_FOR_ROLL                     = 0x1F9,  // 5.0.5 16048
     CMSG_MAIL_CREATE_TEXT_ITEM                        = 0x834,  // 5.0.5 16048
     CMSG_MAIL_DELETE                                  = 0x195,  // 5.0.5 16048
     CMSG_MAIL_MARK_AS_READ                            = 0x99F,  // 5.0.5 16048
@@ -456,7 +455,7 @@ enum Opcodes
     CMSG_REQUEST_VEHICLE_SWITCH_SEAT                  = 0x255,  // 5.0.5 16048
     CMSG_RESET_FACTION_CHEAT                          = 0x4AB,  // 5.0.5 16048
     CMSG_RESET_INSTANCES                              = 0xC71,  // 5.0.5 16048
-    CMSG_RESURRECT_RESPONSE                           = 0x9FB,  // 5.0.5 16048
+    CMSG_RESURRECT_RESPONSE                           = 0xC53,  // 5.0.5 16048
     CMSG_RETURN_TO_GRAVEYARD                          = 0x6D2,	// 5.0.5 16048
     CMSG_ROLE_POLL_BEGIN                              = 0x104,  // 5.0.5 16048
     CMSG_SAVE_CUF_PROFILES                            = 0x633,  // 5.0.5 16048
@@ -480,7 +479,7 @@ enum Opcodes
     CMSG_SET_CHANNEL_WATCH                            = 0xD2A,  // 5.0.5 16048
     CMSG_SET_CONTACT_NOTES                            = 0x921,  // 5.0.5 16048
     CMSG_SET_CURRENCY_FLAGS                           = 0x39C,  // 5.0.5 16048
-    CMSG_SET_EVERYONE_IS_ASSISTANT                    = 0x0F1,  // 5.0.5 16048
+    CMSG_SET_EVERYONE_IS_ASSISTANT                    = 0x5D3,  // 5.0.5 16048
     CMSG_SET_FACTION_ATWAR                            = 0x866,  // 5.0.5 16048
     CMSG_SET_FACTION_CHEAT                            = 0x000,  // 5.0.5 16048
     CMSG_SET_FACTION_INACTIVE                         = 0xCB0,  // 5.0.5 16048
@@ -494,6 +493,7 @@ enum Opcodes
     CMSG_SET_SAVED_INSTANCE_EXTEND                    = 0x81D,  // 5.0.5 16048
     CMSG_SET_SELECTION                                = 0x2B1,	// 5.0.5 16048
     CMSG_SET_SKILL_CHEAT                              = 0x000,  // 5.0.5 16048
+    CMSG_SET_SPECIALIZATION                           = 0x5D8,  // 5.0.5 16048
     CMSG_SET_TAXI_BENCHMARK_MODE                      = 0xCFA,  // 5.0.5 16048
     CMSG_SET_TITLE                                    = 0x995,  // 5.0.5 16048
     CMSG_SET_TRADE_CURRENCY                           = 0x534,  // 5.0.5 16048
@@ -1220,6 +1220,7 @@ enum Opcodes
 	SMSG_SET_MELEE_ANIM_KIT							  = 0x000,  // 5.0.5 16048
 	SMSG_SET_MOVEMENT_ANIM_KIT                        = 0x000,  // 5.0.5 16048
     SMSG_SET_PCT_SPELL_MODIFIER                       = 0x802,	// 5.0.5 16048
+    SMSG_SET_PET_SPECIALIZATION                       = 0xE17,  // 5.0.5 16048 uint16 (specId)
     SMSG_SET_PHASE_SHIFT                              = 0xA93,  // 5.0.5 16048
     SMSG_SET_PLAYER_DECLINED_NAMES_RESULT             = 0x000,  // 5.0.5 16048 Only in RUS Client version
     SMSG_SET_PLAY_HOVER_ANIM                          = 0xE84,  // 5.0.5 16048
@@ -1291,8 +1292,6 @@ enum Opcodes
     SMSG_SUPPRESS_NPC_GREETINGS                       = 0xA2A,  // 5.0.5 16048
     SMSG_SUSPEND_COMMS                                = 0x662,  // 5.0.5 16048
     SMSG_SUSPEND_TOKEN_RESPONSE                       = 0xB4F,  // 5.0.5 16048
-    SMSG_TALENTS_ERROR                                = 0,
-    SMSG_TALENTS_INFO                                 = 0,
     SMSG_TALENTS_INVOLUNTARILY_RESET                  = 0x9E1,  // 5.0.5 16048
     SMSG_TAXINODE_STATUS                              = 0xDC4,	// 5.0.5 16048
     SMSG_TEST_DROP_RATE_RESULT                        = 0x000,  // 5.0.5 16048 Unused
@@ -1330,6 +1329,7 @@ enum Opcodes
     SMSG_UPDATE_LAST_INSTANCE                         = 0xDDC,  // 5.0.5 16048
     SMSG_UPDATE_OBJECT                                = 0x8F7,  // 5.0.5 16048
     SMSG_UPDATE_SERVER_PLAYER_POSITION                = 0,
+    SMSG_UPDATE_TALENT_DATA                           = 0xCEC,  // 5.0.5 16048
     SMSG_UPDATE_WORLD_STATE                           = 0x847,	// 5.0.5 16048
     SMSG_USERLIST_ADD                                 = 0x95A,  // 5.0.5 16048
     SMSG_USERLIST_REMOVE                              = 0xD6E,  // 5.0.5 16048

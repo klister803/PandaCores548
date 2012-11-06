@@ -12839,7 +12839,7 @@ void Unit::SetPower(Powers power, int32 val)
         WorldPacket data(SMSG_POWER_UPDATE, 8 + 4 + 1 + 4);
         data.append(GetPackGUID());
         data << uint32(1); //power count
-        data << uint8(powerIndex);
+        data << uint8(power);
         data << int32(val);
         SendMessageToSet(&data, GetTypeId() == TYPEID_PLAYER ? true : false);
     }
