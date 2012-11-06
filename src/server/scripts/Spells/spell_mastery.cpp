@@ -29,7 +29,62 @@ enum MasterySpells
 {
     MASTERY_SPELL_LIGHTNING_BOLT        = 45284,
     MASTERY_SPELL_CHAIN_LIGHTNING       = 45297,
-    MASTERY_SPELL_LAVA_BURST            = 77451
+    MASTERY_SPELL_LAVA_BURST            = 77451,
+    MASTERY_SPELL_HAND_OF_LIGHT         = 96172
+};
+
+// Called by 35395 - Crusader Strike, 53595 - Hammer of the Righteous, 24275 - Hammer of Wrath, 85256 - Templar's Verdict and 53385 - Divine Storm
+// 76672 - Mastery : Hand of Light
+class spell_mastery_hand_of_light : public SpellScriptLoader
+{
+    public:
+        spell_mastery_hand_of_light() : SpellScriptLoader("spell_mastery_hand_of_light") { }
+
+        class spell_mastery_hand_of_light_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mastery_hand_of_light_SpellScript);
+
+            bool Validate(SpellInfo const* /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(35395) ||
+                    !sSpellMgr->GetSpellInfo(53595) ||
+                    !sSpellMgr->GetSpellInfo(51505) ||
+                    !sSpellMgr->GetSpellInfo(85256) ||
+                    !sSpellMgr->GetSpellInfo(53385))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        uint32 procSpellId = GetSpellInfo()->Id ? GetSpellInfo()->Id : 0;
+                        if (procSpellId != MASTERY_SPELL_HAND_OF_LIGHT)
+                        {
+                            float value = caster->GetFloatValue(PLAYER_MASTERY);
+                            value *= 2;
+
+                            int32 bp = int32(GetHitDamage() * value / 100);
+
+                            caster->CastCustomSpell(target, MASTERY_SPELL_HAND_OF_LIGHT, &bp, NULL, NULL, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mastery_hand_of_light_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mastery_hand_of_light_SpellScript();
+        }
 };
 
 // Called by 403 - Lightning Bolt, 421 - Chain Lightning and 51505 - Lava Burst
@@ -117,5 +172,6 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
 
 void AddSC_mastery_spell_scripts()
 {
+    new spell_mastery_hand_of_light();
     new spell_mastery_elemental_overload();
 }
