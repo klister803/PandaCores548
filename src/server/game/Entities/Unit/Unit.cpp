@@ -9296,12 +9296,24 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // 76613 - Mastery : Frostburn
     if (spellProto && victim)
     {
-        if (HasAura(76613))
+        if (isPet())
         {
-            if (victim->HasAuraState(AURA_STATE_FROZEN))
+            Unit* owner = GetOwner();
+            if (owner->HasAura(76613))
             {
-                float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
                 DoneTotalMod += Mastery;
+            }
+        }
+        else
+        {
+            if (HasAura(76613))
+            {
+                if (victim->HasAuraState(AURA_STATE_FROZEN))
+                {
+                    float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                    DoneTotalMod += Mastery;
+                }
             }
         }
     }
@@ -10443,6 +10455,21 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Done total percent damage auras
     float DoneTotalMod = 1.0f;
+
+    // Custom MoP Script
+    // 76613 - Mastery : Frostburn for Water elemental Melee damage
+    if (victim && pdamage != 0)
+    {
+        if (isPet())
+        {
+            Unit* owner = this->GetOwner();
+            if (owner->HasAura(76613))
+            {
+                float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                DoneTotalMod += Mastery;
+            }
+        }
+    }
 
     // Some spells don't benefit from pct done mods
     if (spellProto)
