@@ -531,7 +531,7 @@ void WorldSession::HandlePetSetAction(WorldPacket & recvData)
         // in the normal case, command and reaction buttons can only be moved, not removed
         // at moving count == 2, at removing count == 1
         // ignore attempt to remove command|reaction buttons (not possible at normal case)
-        if (act_state == ACT_COMMAND || act_state == ACT_REACTION)
+        if ((act_state == ACT_COMMAND && UNIT_ACTION_BUTTON_ACTION(data[i]) != COMMAND_MOVETO) || act_state == ACT_REACTION)
         {
             if (count == 1)
                 return;
@@ -544,7 +544,7 @@ void WorldSession::HandlePetSetAction(WorldPacket & recvData)
     if (move_command)
     {
         uint8 act_state_0 = UNIT_ACTION_BUTTON_TYPE(data[0]);
-        if (act_state_0 == ACT_COMMAND || act_state_0 == ACT_REACTION)
+        if ((act_state_0 == ACT_COMMAND && UNIT_ACTION_BUTTON_ACTION(data[0]) != COMMAND_MOVETO) || act_state_0 == ACT_REACTION)
         {
             uint32 spell_id_0 = UNIT_ACTION_BUTTON_ACTION(data[0]);
             UnitActionBarEntry const* actionEntry_1 = charmInfo->GetActionBarEntry(position[1]);
@@ -554,7 +554,7 @@ void WorldSession::HandlePetSetAction(WorldPacket & recvData)
         }
 
         uint8 act_state_1 = UNIT_ACTION_BUTTON_TYPE(data[1]);
-        if (act_state_1 == ACT_COMMAND || act_state_1 == ACT_REACTION)
+        if ((act_state_1 == ACT_COMMAND && UNIT_ACTION_BUTTON_ACTION(data[1]) != COMMAND_MOVETO) || act_state_1 == ACT_REACTION)
         {
             uint32 spell_id_1 = UNIT_ACTION_BUTTON_ACTION(data[1]);
             UnitActionBarEntry const* actionEntry_0 = charmInfo->GetActionBarEntry(position[0]);
