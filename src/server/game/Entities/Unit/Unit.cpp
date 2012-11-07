@@ -9283,24 +9283,38 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     {
         if (HasAura(76547))
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100;
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
             float manapct = float(GetPower(POWER_MANA)) / float(GetMaxPower(POWER_MANA)) * 100.0f;
             float bonus = 0;
             bonus = CalculatePctF((1 + (100.0f - manapct)), Mastery);
 
-            DoneTotalMod *= 1 + bonus;
+            DoneTotalMod += bonus;
         }
     }
 
-    // Custom MoP script
+    // Custom MoP Script
+    // 76613 - Mastery : Frostburn
+    if (spellProto && victim)
+    {
+        if (HasAura(76613))
+        {
+            if (victim->HasAuraState(AURA_STATE_FROZEN))
+            {
+                float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                DoneTotalMod += Mastery;
+            }
+        }
+    }
+
+    // Custom MoP Script
     // 77223 - Mastery : Enhanced Elements
     if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FIRE || spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST || spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE)
     {
         if (HasAura(77223))
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2 / 100;
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
 
-            DoneTotalMod *= 1 + Mastery;
+            DoneTotalMod += Mastery;
         }
     }
 
