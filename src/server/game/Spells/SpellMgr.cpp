@@ -3117,7 +3117,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 76669:  // Mastery : Illuminated Healing
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 6;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 77485:  // Mastery : Echo of Light
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;

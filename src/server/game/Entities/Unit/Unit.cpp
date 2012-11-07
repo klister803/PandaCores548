@@ -9013,6 +9013,23 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
     if (GetTypeId() == TYPEID_UNIT && ToCreature()->isTotem())
         unit = GetOwner();
 
+    // Custom MoP Script
+    // 76669 - Mastery : Illuminated Healing
+    if (unit && victim && addhealth != 0)
+    {
+        if (unit->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (unit->HasAura(76669))
+            {
+                float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
+
+                int32 bp = CalculatePctF(addhealth, Mastery) * 100;
+
+                unit->CastCustomSpell(victim, 86273, &bp, NULL, NULL, true);
+            }
+        }
+    }
+
     if (Player* player = unit->ToPlayer())
     {
         if (Battleground* bg = player->GetBattleground())
