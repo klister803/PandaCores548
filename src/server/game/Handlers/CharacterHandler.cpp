@@ -1029,9 +1029,70 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     }
 
     pCurrChar->ContinueTaxiFlight();
+    //if player is hunter, then add a pet at the beginning
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_FIRST) && pCurrChar->getClass() == CLASS_HUNTER)
+    {
+        uint32 spell_id = 883;
+        uint32 creature_id = 0;
+        switch (pCurrChar->getRace())
+        {
+        case RACE_HUMAN:
+            creature_id = 299;
+            break;
+        case RACE_ORC:
+            creature_id = 42719;
+            break;
+        case RACE_DWARF:
+            creature_id = 42713;
+            break;
+        case RACE_NIGHTELF:
+            creature_id = 42718;
+            break;
+        case RACE_UNDEAD_PLAYER:
+            creature_id = 51107;
+            break;
+        case RACE_TAUREN:
+            creature_id = 42720;
+            break;
+        case RACE_TROLL:
+            creature_id = 42721;
+            break;
+        case RACE_GOBLIN:
+            creature_id = 42715;
+            break;
+        case RACE_BLOODELF:
+            creature_id = 42710;
+            break;
+        case RACE_DRAENEI:
+            creature_id = 42712;
+            break;
+        case RACE_WORGEN:
+            creature_id = 42712;
+            break;
+        case RACE_PANDAREN_NEUTRAL:
+            creature_id = 57239;
+            break;
+        default:
+            break;
+        }
+        float x, y, z;
+        pCurrChar->GetClosePoint(x, y, z, pCurrChar->GetObjectSize());
+        Pet* pet = pCurrChar->SummonPet(creature_id, x, y, z, pCurrChar->GetOrientation(), SUMMON_PET, 0);
+        if (!pet)
+            return;
 
-    // Load pet if any (if player not alive and in taxi flight or another then pet will remember as temporary unsummoned)
-    pCurrChar->LoadPet();
+        pet->SetReactState(REACT_DEFENSIVE);
+
+        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, spell_id);
+
+        // generate new name for summon pet
+        std::string new_name=sObjectMgr->GeneratePetName(creature_id);
+        if (!new_name.empty())
+            pet->SetName(new_name);
+    }
+    else
+        // Load pet if any (if player not alive and in taxi flight or another then pet will remember as temporary unsummoned)
+        pCurrChar->LoadPet();
 
     // Set FFA PvP for non GM in non-rest mode
     if (sWorld->IsFFAPvPRealm() && !pCurrChar->isGameMaster() && !pCurrChar->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING))
