@@ -1820,6 +1820,8 @@ class Player : public Unit, public GridObject<Player>
         bool HasTalent(uint32 spell_id, uint8 spec) const;
         uint32 CalculateTalentsPoints() const;
 
+        void ResetSpec();
+
         // Dual Spec
         void UpdateSpecCount(uint8 count);
         void ActivateSpec(uint8 spec);
