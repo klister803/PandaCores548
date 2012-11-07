@@ -3108,8 +3108,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = 5;
                 break;
             case 76671:  // Mastery : Divine Bulwark
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 4;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 76672:  // Mastery : Hand of Light
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
@@ -3117,7 +3117,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 76669:  // Mastery : Illuminated Healing
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 6;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 77485:  // Mastery : Echo of Light
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;

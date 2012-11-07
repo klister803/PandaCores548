@@ -9021,6 +9021,23 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
     if (GetTypeId() == TYPEID_UNIT && ToCreature()->isTotem())
         unit = GetOwner();
 
+    // Custom MoP Script
+    // 76669 - Mastery : Illuminated Healing
+    if (unit && victim && addhealth != 0)
+    {
+        if (unit->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (unit->HasAura(76669))
+            {
+                float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
+
+                int32 bp = CalculatePctF(addhealth, Mastery) * 100;
+
+                unit->CastCustomSpell(victim, 86273, &bp, NULL, NULL, true);
+            }
+        }
+    }
+
     if (Player* player = unit->ToPlayer())
     {
         if (Battleground* bg = player->GetBattleground())
@@ -9288,6 +9305,59 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     float DoneTotalMod = 1.0f;
     float ApCoeffMod = 1.0f;
     int32 DoneTotal = 0;
+
+    // Custom MoP Script
+    // 76547 - Mastery : Mana Adept
+    if (spellProto)
+    {
+        if (HasAura(76547))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            float manapct = float(GetPower(POWER_MANA)) / float(GetMaxPower(POWER_MANA)) * 100.0f;
+            float bonus = 0;
+            bonus = CalculatePctF((1 + (100.0f - manapct)), Mastery);
+
+            DoneTotalMod += bonus;
+        }
+    }
+
+    // Custom MoP Script
+    // 76613 - Mastery : Frostburn
+    if (spellProto && victim)
+    {
+        if (isPet())
+        {
+            Unit* owner = GetOwner();
+            if (owner->HasAura(76613))
+            {
+                float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                DoneTotalMod += Mastery;
+            }
+        }
+        else
+        {
+            if (HasAura(76613))
+            {
+                if (victim->HasAuraState(AURA_STATE_FROZEN))
+                {
+                    float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                    DoneTotalMod += Mastery;
+                }
+            }
+        }
+    }
+
+    // Custom MoP Script
+    // 77223 - Mastery : Enhanced Elements
+    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FIRE || spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST || spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE)
+    {
+        if (HasAura(77223))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+
+            DoneTotalMod += Mastery;
+        }
+    }
 
     // Pet damage?
     if (GetTypeId() == TYPEID_UNIT && !ToCreature()->isPet())
@@ -10407,6 +10477,21 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Done total percent damage auras
     float DoneTotalMod = 1.0f;
+
+    // Custom MoP Script
+    // 76613 - Mastery : Frostburn for Water elemental Melee damage
+    if (victim && pdamage != 0)
+    {
+        if (isPet())
+        {
+            Unit* owner = this->GetOwner();
+            if (owner->HasAura(76613))
+            {
+                float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                DoneTotalMod += Mastery;
+            }
+        }
+    }
 
     // Some spells don't benefit from pct done mods
     if (spellProto)

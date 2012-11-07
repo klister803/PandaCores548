@@ -546,22 +546,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         return;
                 break;
             }
-            case SPELLFAMILY_SHAMAN:
-            {
-                // Custom MoP script
-                // 77223 - Mastery : Enhanced Elements
-                if (m_spellInfo->SchoolMask == SPELL_SCHOOL_MASK_FIRE || m_spellInfo->SchoolMask == SPELL_SCHOOL_MASK_FROST || m_spellInfo->SchoolMask == SPELL_SCHOOL_MASK_NATURE)
-                {
-                    if (m_caster->HasAura(77223))
-                    {
-                        float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY);
-                        Mastery *= 2;
-
-                        damage *= 1 + (Mastery / 100);
-                    }
-                }
-                break;
-            }
             case SPELLFAMILY_MONK:
             {
                 switch (m_spellInfo->Id)
@@ -1471,8 +1455,6 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
         if (unitTarget->HasAura(48920) && (unitTarget->GetHealth() + addhealth >= unitTarget->GetMaxHealth()))
             unitTarget->RemoveAura(48920);
 
-        m_damage -= addhealth;
-
         // Custom MoP Script
         // 77226 - Mastery : Deep Healing
         if (m_caster && m_caster->getClass() == CLASS_SHAMAN)
@@ -1481,17 +1463,18 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             {
                 if (addhealth)
                 {
-                    float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY);
+                    float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
                     float healthpct = unitTarget->GetHealthPct();
-                    Mastery *= 3;
 
-                    int32 bonus = 0;
-                    bonus = CalculatePctN((1 + (100.0f - healthpct)), Mastery);
+                    float bonus = 0;
+                    bonus = CalculatePctF((1 + (100.0f - healthpct)), Mastery);
 
-                    addhealth *= (bonus / 100);
+                    addhealth *= 1 + bonus;
                 }
             }
         }
+
+        m_damage -= addhealth;
     }
 }
 
