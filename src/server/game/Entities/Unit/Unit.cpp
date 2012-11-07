@@ -9277,6 +9277,21 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     float ApCoeffMod = 1.0f;
     int32 DoneTotal = 0;
 
+    // Custom MoP Script
+    // 76547 - Mastery : Mana Adept
+    if (spellProto)
+    {
+        if (HasAura(76547))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100;
+            float manapct = float(GetPower(POWER_MANA)) / float(GetMaxPower(POWER_MANA)) * 100.0f;
+            float bonus = 0;
+            bonus = CalculatePctF((1 + (100.0f - manapct)), Mastery);
+
+            DoneTotalMod *= 1 + bonus;
+        }
+    }
+
     // Pet damage?
     if (GetTypeId() == TYPEID_UNIT && !ToCreature()->isPet())
         DoneTotalMod *= ToCreature()->GetSpellDamageMod(ToCreature()->GetCreatureTemplate()->rank);
