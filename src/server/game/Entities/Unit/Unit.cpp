@@ -9292,6 +9292,18 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         }
     }
 
+    // Custom MoP script
+    // 77223 - Mastery : Enhanced Elements
+    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FIRE || spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST || spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE)
+    {
+        if (HasAura(77223))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2 / 100;
+
+            DoneTotalMod *= 1 + Mastery;
+        }
+    }
+
     // Pet damage?
     if (GetTypeId() == TYPEID_UNIT && !ToCreature()->isPet())
         DoneTotalMod *= ToCreature()->GetSpellDamageMod(ToCreature()->GetCreatureTemplate()->rank);
