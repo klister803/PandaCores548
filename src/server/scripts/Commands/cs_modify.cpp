@@ -456,7 +456,6 @@ public:
                 // check online security
                 if (handler->HasLowerSecurity(owner->ToPlayer(), 0))
                     return false;
-                ((Pet*)target)->SetFreeTalentPoints(tp);
                 owner->ToPlayer()->SendTalentsInfoData(true);
                 return true;
             }

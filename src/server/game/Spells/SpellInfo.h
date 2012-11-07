@@ -401,6 +401,9 @@ public:
     uint32 SpecializationEntry;
     uint32 OverrideSpellEntry;
 
+    // TalentInfo
+    uint32 talentId;
+
     // struct access functions
     SpellTargetRestrictionsEntry const* GetSpellTargetRestrictions() const;
     SpellAuraOptionsEntry const* GetSpellAuraOptions() const;
