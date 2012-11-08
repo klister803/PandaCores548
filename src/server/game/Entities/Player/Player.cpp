@@ -845,7 +845,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_ChampioningFaction = 0;
 
-    for (uint8 i = 0; i < MAX_POWERS; ++i)
+    for (uint8 i = 0; i < MAX_POWERS_PER_CLASS; ++i)
         m_powerFraction[i] = 0;
 
     isDebugAreaTriggers = false;
@@ -2605,6 +2605,12 @@ void Player::Regenerate(Powers power)
     if (HasAuraTypeWithValue(SPELL_AURA_PREVENT_REGENERATE_POWER, power))
         return;
 
+    // Skip regeneration for power type we cannot have
+    uint32 powerIndex = GetPowerIndexByClass(power, getClass());
+    if (powerIndex == MAX_POWERS)
+        return;
+
+
     float addvalue = 0.0f;
 
     // Powers now benefit from haste.
@@ -2616,10 +2622,9 @@ void Player::Regenerate(Powers power)
     {
         case POWER_MANA:
         {
-            bool recentCast = IsUnderLastManaUseEffect();
             float ManaIncreaseRate = sWorld->getRate(RATE_POWER_MANA);
 
-            if (recentCast) // Trinity Updates Mana in intervals of 2s, which is correct
+            if (isInCombat()) // Trinity Updates Mana in intervals of 2s, which is correct
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * m_regenTimer) + CalculatePctF(0.001f, spellHaste));
             else
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * m_regenTimer) + CalculatePctF(0.001f, spellHaste));
@@ -2694,7 +2699,7 @@ void Player::Regenerate(Powers power)
     else
         return;
 
-    addvalue += m_powerFraction[power];
+    addvalue += m_powerFraction[powerIndex];
     uint32 integerValue = uint32(fabs(addvalue));
 
     if (addvalue < 0.0f)
@@ -2702,12 +2707,12 @@ void Player::Regenerate(Powers power)
         if (curValue > integerValue)
         {
             curValue -= integerValue;
-            m_powerFraction[power] = addvalue + integerValue;
+            m_powerFraction[powerIndex] = addvalue + integerValue;
         }
         else
         {
             curValue = 0;
-            m_powerFraction[power] = 0;
+            m_powerFraction[powerIndex] = 0;
         }
     }
     else
@@ -2717,15 +2722,15 @@ void Player::Regenerate(Powers power)
         if (curValue > maxValue)
         {
             curValue = maxValue;
-            m_powerFraction[power] = 0;
+            m_powerFraction[powerIndex] = 0;
         }
         else
-            m_powerFraction[power] = addvalue - integerValue;
+            m_powerFraction[powerIndex] = addvalue - integerValue;
     }
     //if (m_regenTimerCount >= 2000)
         SetPower(power, curValue);
     /*else
-        UpdateUInt32Value(UNIT_FIELD_POWER1 + power, curValue);*/
+        UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);*/
 }
 
 void Player::RegenerateHealth()
@@ -3152,10 +3157,10 @@ void Player::GiveLevel(uint8 level)
     sObjectMgr->GetPlayerClassLevelInfo(getClass(), level, basehp, basemana);
 
     // send levelup info to client
-    WorldPacket data(SMSG_LEVELUP_INFO, (4+4+MAX_STORED_POWERS*4+MAX_STATS*4));
+    WorldPacket data(SMSG_LEVELUP_INFO, (4+4+MAX_POWERS_PER_CLASS*4+MAX_STATS*4));
     data << uint32(level);
     data << uint32(int32(basehp) - int32(GetCreateHealth()));
-    // for (int i = 0; i < MAX_STORED_POWERS; ++i)          // Powers loop (0-10)
+    // for (int i = 0; i < MAX_POWERS_PER_CLASS; ++i)          // Powers loop (0-10)
     data << uint32(int32(basemana)   - int32(GetCreateMana()));
     data << uint32(0);
     data << uint32(0);
@@ -17496,12 +17501,12 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
             uint32 savedPower = fields[47+loadedPowers].GetUInt32();
             uint32 maxPower = GetUInt32Value(UNIT_FIELD_MAXPOWER1 + loadedPowers);
             SetPower(Powers(i), (savedPower > maxPower) ? maxPower : savedPower);
-            if (++loadedPowers >= MAX_STORED_POWERS)
+            if (++loadedPowers >= MAX_POWERS_PER_CLASS)
                 break;
         }
     }
 
-    for (; loadedPowers < MAX_STORED_POWERS; ++loadedPowers)
+    for (; loadedPowers < MAX_POWERS_PER_CLASS; ++loadedPowers)
         SetUInt32Value(UNIT_FIELD_POWER1 + loadedPowers, 0);
 
     SetPower(POWER_ECLIPSE, 0);
@@ -19029,12 +19034,12 @@ void Player::SaveToDB(bool create /*=false*/)
             if (GetPowerIndexByClass(Powers(i), getClass()) != MAX_POWERS)
             {
                 stmt->setUInt32(index++, GetUInt32Value(UNIT_FIELD_POWER1 + storedPowers));
-                if (++storedPowers >= MAX_STORED_POWERS)
+                if (++storedPowers >= MAX_POWERS_PER_CLASS)
                     break;
             }
         }
 
-        for (; storedPowers < MAX_STORED_POWERS; ++storedPowers)
+        for (; storedPowers < MAX_POWERS_PER_CLASS; ++storedPowers)
             stmt->setUInt32(index++, 0);
 
         stmt->setUInt32(index++, GetSession()->GetLatency());
@@ -19149,12 +19154,12 @@ void Player::SaveToDB(bool create /*=false*/)
             if (GetPowerIndexByClass(Powers(i), getClass()) != MAX_POWERS)
             {
                 stmt->setUInt32(index++, GetUInt32Value(UNIT_FIELD_POWER1 + storedPowers));
-                if (++storedPowers >= MAX_STORED_POWERS)
+                if (++storedPowers >= MAX_POWERS_PER_CLASS)
                     break;
             }
         }
 
-        for (; storedPowers < MAX_STORED_POWERS; ++storedPowers)
+        for (; storedPowers < MAX_POWERS_PER_CLASS; ++storedPowers)
             stmt->setUInt32(index++, 0);
 
         stmt->setUInt32(index++, GetSession()->GetLatency());
@@ -19877,7 +19882,7 @@ void Player::_SaveStats(SQLTransaction& trans)
     stmt->setUInt32(index++, GetGUIDLow());
     stmt->setUInt32(index++, GetMaxHealth());
 
-    for (uint8 i = 0; i < MAX_STORED_POWERS; ++i)
+    for (uint8 i = 0; i < MAX_POWERS_PER_CLASS; ++i)
         stmt->setUInt32(index++, GetMaxPower(Powers(i)));
 
     for (uint8 i = 0; i < MAX_STATS; ++i)

@@ -425,7 +425,7 @@ enum PlayerFlags
     PLAYER_FLAGS_UNK24                  = 0x01000000,       // disabled all melee ability on tab include autoattack
     PLAYER_FLAGS_NO_XP_GAIN             = 0x02000000,
     PLAYER_FLAGS_UNK26                  = 0x04000000,
-    PLAYER_FLAGS_UNK27                  = 0x08000000,       // player has auto decline guild invite active?
+    PLAYER_FLAGS_AUTO_DECLINE_GUILD     = 0x08000000,       // Automatically declines guild invites
     PLAYER_FLAGS_GUILD_LEVEL_ENABLED    = 0x10000000,       // Lua_GetGuildLevelEnabled() - enables guild leveling related UI
     PLAYER_FLAGS_VOID_UNLOCKED          = 0x20000000,       // void storage
     PLAYER_FLAGS_UNK30                  = 0x40000000,
@@ -2709,7 +2709,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_holyPowerRegenTimerCount;
         uint32 m_chiPowerRegenTimerCount;
         uint32 m_focusRegenTimerCount;
-        float m_powerFraction[MAX_POWERS];
+        float m_powerFraction[MAX_POWERS_PER_CLASS];
         uint32 m_contestedPvPTimer;
 
         /*********************************************************/

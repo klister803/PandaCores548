@@ -917,7 +917,7 @@ void Spell::SelectImplicitChannelTargets(SpellEffIndex effIndex, SpellImplicitTa
     {
         case TARGET_UNIT_CHANNEL_TARGET:
         {
-            WorldObject* target = ObjectAccessor::GetUnit(*m_caster, channeledSpell->m_targets.GetUnitTargetGUID());
+            WorldObject* target = ObjectAccessor::GetUnit(*m_caster, m_originalCaster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT));
             CallScriptObjectTargetSelectHandlers(target, effIndex);
             // unit target may be no longer avalible - teleported out of map for example
             if (target && target->ToUnit())
@@ -929,7 +929,7 @@ void Spell::SelectImplicitChannelTargets(SpellEffIndex effIndex, SpellImplicitTa
         case TARGET_DEST_CHANNEL_TARGET:
             if (channeledSpell->m_targets.HasDst())
                 m_targets.SetDst(channeledSpell->m_targets);
-            else if (WorldObject* target = ObjectAccessor::GetWorldObject(*m_caster, channeledSpell->m_targets.GetObjectTargetGUID()))
+            else if (WorldObject* target = ObjectAccessor::GetWorldObject(*m_caster, m_originalCaster->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT)))
             {
                 CallScriptObjectTargetSelectHandlers(target, effIndex);
                 if (target)
@@ -2504,7 +2504,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         }
     }
 
-    if (missInfo != SPELL_MISS_EVADE && m_caster && !m_caster->IsFriendlyTo(unit) && (!m_spellInfo->IsPositive() || m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))
+    if (missInfo != SPELL_MISS_EVADE && !m_caster->IsFriendlyTo(unit) && (!m_spellInfo->IsPositive() || m_spellInfo->HasEffect(SPELL_EFFECT_DISPEL)))
     {
         m_caster->CombatStart(unit, !(m_spellInfo->AttributesEx3 & SPELL_ATTR3_NO_INITIAL_AGGRO));
 
@@ -4430,10 +4430,6 @@ void Spell::TakePower()
         m_caster->ModifyPower(powerType, -m_powerCost);
     else
         m_caster->ModifyPower(powerType, -irand(0, m_powerCost/4));
-
-    // Set the five second timer
-    if (powerType == POWER_MANA && m_powerCost > 0)
-        m_caster->SetLastManaUse(getMSTime());
 }
 
 void Spell::TakeAmmo()
