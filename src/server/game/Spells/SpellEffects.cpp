@@ -655,6 +655,10 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 else
                     bp = (20 * m_caster->GetDamageTakenInPastSecs(5) / 100);
 
+                // Item - Death Knight T14 Blood 4P bonus
+                if (m_caster->HasAura(123080))
+                    bp *= 1.1f;
+
                 // Glyph of Dark Succor
                 if (AuraEffect const* aurEff = m_caster->GetAuraEffect(96279, 0))
                     if (bp < int32(m_caster->CountPctFromMaxHealth(aurEff->GetAmount())))
