@@ -237,31 +237,31 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
                                 {
                                     case 51505:
                                     {
-                                        float value = caster->GetFloatValue(PLAYER_MASTERY);
-                                        value *= 2;
+                                        float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
+                                        int32 bp = int32(GetHitDamage() * 0.75f);
 
-                                        if (roll_chance_f(value))
-                                            caster->CastSpell(unitTarget, MASTERY_SPELL_LAVA_BURST, true);
+                                        if (roll_chance_f(Mastery))
+                                            caster->CastCustomSpell(unitTarget, MASTERY_SPELL_LAVA_BURST, &bp, NULL, NULL, true);
 
                                         break;
                                     }
                                     case 403:
                                     {
-                                        float value = caster->GetFloatValue(PLAYER_MASTERY);
-                                        value *= 2;
+                                        float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
+                                        int32 bp = int32(GetHitDamage() * 0.75f);
 
-                                        if (roll_chance_f(value))
-                                            caster->CastSpell(unitTarget, MASTERY_SPELL_LIGHTNING_BOLT, true);
+                                        if (roll_chance_f(Mastery))
+                                            caster->CastCustomSpell(unitTarget, MASTERY_SPELL_LIGHTNING_BOLT, &bp, NULL, NULL, true);
 
                                         break;
                                     }
                                     case 421:
                                     {
-                                        float value = caster->GetFloatValue(PLAYER_MASTERY);
-                                        value *= 2;
+                                        float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
+                                        int32 bp = int32(GetHitDamage() * 0.75f);
 
-                                        if (roll_chance_f(value))
-                                            caster->CastSpell(unitTarget, MASTERY_SPELL_CHAIN_LIGHTNING, true);
+                                        if (roll_chance_f(Mastery))
+                                            caster->CastCustomSpell(unitTarget, MASTERY_SPELL_CHAIN_LIGHTNING, &bp, NULL, NULL, true);
 
                                         break;
                                     }
