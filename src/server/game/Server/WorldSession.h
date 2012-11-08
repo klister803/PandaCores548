@@ -603,6 +603,7 @@ class WorldSession
         void HandleSaveGuildEmblemOpcode(WorldPacket& recvPacket);
         void HandleGuildRequestPartyState(WorldPacket& recvPacket);
         void HandleGuildRequestMaxDailyXP(WorldPacket& recvPacket);
+        void HandleAutoDeclineGuildInvites(WorldPacket& recvPakcet);
 
         void HandleGuildFinderAddRecruit(WorldPacket& recvPacket);
         void HandleGuildFinderBrowse(WorldPacket& recvPacket);

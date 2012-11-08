@@ -230,7 +230,6 @@ m_HostileRefManager(this), m_TempSpeed(0.0f), m_AutoRepeatFirstCast(false)
     m_baseSpellCritChance = 5;
 
     m_CombatTimer = 0;
-    m_lastManaUse = 0;
 
     for (uint8 i = 0; i < MAX_SPELL_SCHOOL; ++i)
         m_threatModifier[i] = 1.0f;
@@ -379,10 +378,7 @@ void Unit::MonsterMoveWithSpeed(float x, float y, float z, float speed)
     init.Launch();
 }
 
-enum MovementIntervals
-{
-    POSITION_UPDATE_DELAY = 400,
-};
+uint32 const positionUpdateDelay = 400;
 
 void Unit::UpdateSplineMovement(uint32 t_diff)
 {
@@ -402,7 +398,7 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
 
 void Unit::UpdateSplinePosition()
 {
-    m_movesplineTimer.Reset(POSITION_UPDATE_DELAY);
+    m_movesplineTimer.Reset(positionUpdateDelay);
     Movement::Location loc = movespline->ComputePosition();
     if (GetTransGUID())
     {
@@ -546,16 +542,15 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         GetAI()->DamageDealt(victim, damage, damagetype);
 
     if (victim->GetTypeId() == TYPEID_PLAYER)
+    {
         if (victim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
             return 0;
-
+        
     // Signal to pets that their owner was attacked
-    if (victim->GetTypeId() == TYPEID_PLAYER)
-    {
-        Pet* pet = victim->ToPlayer()->GetPet();
+    Pet* pet = victim->ToPlayer()->GetPet();
 
-        if (pet && pet->isAlive())
-            pet->AI()->OwnerDamagedBy(this);
+    if (pet && pet->isAlive())
+        pet->AI()->OwnerDamagedBy(this);
     }
 
     if (damagetype != NODAMAGE)
@@ -4148,11 +4143,16 @@ uint32 Unit::GetDoTsByCaster(uint64 casterGUID) const
 
 int32 Unit::GetTotalAuraModifier(AuraType auratype) const
 {
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
     int32 modifier = 0;
 
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
-        modifier += (*i)->GetAmount();
+         if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*i)->GetSpellInfo(), (*i)->GetAmount(), SameEffectSpellGroup))
+             modifier += (*i)->GetAmount();
+
+    for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
+        modifier += itr->second;
 
     return modifier;
 }
@@ -4196,14 +4196,19 @@ int32 Unit::GetMaxNegativeAuraModifier(AuraType auratype) const
 
 int32 Unit::GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const
 {
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
     int32 modifier = 0;
 
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
-    {
-        if ((*i)->GetMiscValue()& misc_mask)
-            modifier += (*i)->GetAmount();
-    }
+         if ((*i)->GetMiscValue() & misc_mask)
+             if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*i)->GetSpellInfo(), (*i)->GetAmount(), SameEffectSpellGroup))
+                 modifier += (*i)->GetAmount();
+
+    for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
+        modifier += itr->second;
+
     return modifier;
 }
 
@@ -12395,13 +12400,13 @@ int32 Unit::ModSpellDuration(SpellInfo const* spellProto, Unit const* target, in
                 }
                 break;
             case SPELLFAMILY_PALADIN:
-                if (spellProto->SpellFamilyFlags[0] & 0x00000002)
+                if (spellProto->SpellFamilyFlags[0] & 0x00000002 && spellProto->SpellIconID == 298)
                 {
                     // Glyph of Blessing of Might
                     if (AuraEffect* aurEff = GetAuraEffect(57958, 0))
                         duration += aurEff->GetAmount() * MINUTE * IN_MILLISECONDS;
                 }
-                else if (spellProto->SpellFamilyFlags[0] & 0x00010000)
+                else if (spellProto->SpellFamilyFlags[0] & 0x00010000 && spellProto->SpellIconID == 306)
                 {
                     // Glyph of Blessing of Wisdom
                     if (AuraEffect* aurEff = GetAuraEffect(57979, 0))
@@ -14397,11 +14402,6 @@ float Unit::GetAPMultiplier(WeaponAttackType attType, bool normalized)
     }
 }
 
-bool Unit::IsUnderLastManaUseEffect() const
-{
-    return  getMSTimeDiff(m_lastManaUse, getMSTime()) < 5000;
-}
-
 void Unit::SetContestedPvP(Player* attackedPlayer)
 {
     Player* player = GetCharmerOrOwnerPlayerOrPlayerItself();
@@ -15473,7 +15473,8 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 
     if (Creature* creature = ToCreature())
     {
-        creature->AI()->OnCharmed(false);
+        if (creature->AI())
+            creature->AI()->OnCharmed(false);
 
         if (type != CHARM_TYPE_VEHICLE) // Vehicles' AI is never modified
         {
@@ -16628,10 +16629,11 @@ void Unit::_ExitVehicle(Position const* exitPosition)
         return;
 
     m_vehicle->RemovePassenger(this);
+    Player* player = ToPlayer();
 
-    // If player is on mouted duel and exits the mount should immediatly lose the duel
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->duel && ToPlayer()->duel->isMounted)
-        ToPlayer()->DuelComplete(DUEL_FLED);
+    // If player is on mounted duel and exits the mount should immediately lose the duel
+    if (player && player->duel && player->duel->isMounted)
+        player->DuelComplete(DUEL_FLED);
 
     // This should be done before dismiss, because there may be some aura removal
     Vehicle* vehicle = m_vehicle;
@@ -16682,7 +16684,7 @@ void Unit::_ExitVehicle(Position const* exitPosition)
 
     //GetMotionMaster()->MoveFall();            // Enable this once passenger positions are calculater properly (see above)
 
-    if (Player* player = ToPlayer())
+    if (player)
         player->ResummonPetTemporaryUnSummonedIfAny();
 
     if (vehicle->GetBase()->HasUnitTypeMask(UNIT_MASK_MINION))
