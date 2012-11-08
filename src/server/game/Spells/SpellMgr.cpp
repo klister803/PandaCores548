@@ -3047,7 +3047,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 77513:  // Mastery : Blood Shield
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 25;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 77515:  // Mastery : Dreadblade
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
