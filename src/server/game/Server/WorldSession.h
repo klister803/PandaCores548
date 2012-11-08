@@ -586,6 +586,7 @@ class WorldSession
         void HandleGuildDeclineOpcode(WorldPacket& recvPacket);
         void HandleGuildEventLogQueryOpcode(WorldPacket& recvPacket);
         void HandleGuildRosterOpcode(WorldPacket& recvPacket);
+        void HandleGuildRewardsQueryOpcode(WorldPacket& recvPacket);
         void HandleGuildPromoteOpcode(WorldPacket& recvPacket);
         void HandleGuildDemoteOpcode(WorldPacket& recvPacket);
         void HandleGuildAssignRankOpcode(WorldPacket& recvPacket);
@@ -593,8 +594,10 @@ class WorldSession
         void HandleGuildDisbandOpcode(WorldPacket& recvPacket);
         void HandleGuildLeaderOpcode(WorldPacket& recvPacket);
         void HandleGuildMOTDOpcode(WorldPacket& recvPacket);
+        void HandleGuildNewsUpdateStickyOpcode(WorldPacket& recvPacket);
         void HandleGuildSetNoteOpcode(WorldPacket& recvPacket);
         void HandleGuildQueryRanksOpcode(WorldPacket& recvPacket);
+        void HandleGuildQueryNewsOpcode(WorldPacket& recvPacket);
         void HandleSwapRanks(WorldPacket& recvPacket);
         void HandleGuildSetRankPermissionsOpcode(WorldPacket& recvPacket);
         void HandleGuildAddRankOpcode(WorldPacket& recvPacket);
