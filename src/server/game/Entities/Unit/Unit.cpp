@@ -378,10 +378,7 @@ void Unit::MonsterMoveWithSpeed(float x, float y, float z, float speed)
     init.Launch();
 }
 
-enum MovementIntervals
-{
-    POSITION_UPDATE_DELAY = 400,
-};
+uint32 const positionUpdateDelay = 400;
 
 void Unit::UpdateSplineMovement(uint32 t_diff)
 {
@@ -401,7 +398,7 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
 
 void Unit::UpdateSplinePosition()
 {
-    m_movesplineTimer.Reset(POSITION_UPDATE_DELAY);
+    m_movesplineTimer.Reset(positionUpdateDelay);
     Movement::Location loc = movespline->ComputePosition();
     if (GetTransGUID())
     {
@@ -545,16 +542,15 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         GetAI()->DamageDealt(victim, damage, damagetype);
 
     if (victim->GetTypeId() == TYPEID_PLAYER)
+    {
         if (victim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
             return 0;
-
+        
     // Signal to pets that their owner was attacked
-    if (victim->GetTypeId() == TYPEID_PLAYER)
-    {
-        Pet* pet = victim->ToPlayer()->GetPet();
+    Pet* pet = victim->ToPlayer()->GetPet();
 
-        if (pet && pet->isAlive())
-            pet->AI()->OwnerDamagedBy(this);
+    if (pet && pet->isAlive())
+        pet->AI()->OwnerDamagedBy(this);
     }
 
     if (damagetype != NODAMAGE)
@@ -15467,7 +15463,8 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 
     if (Creature* creature = ToCreature())
     {
-        creature->AI()->OnCharmed(false);
+        if (creature->AI())
+            creature->AI()->OnCharmed(false);
 
         if (type != CHARM_TYPE_VEHICLE) // Vehicles' AI is never modified
         {
@@ -16622,10 +16619,11 @@ void Unit::_ExitVehicle(Position const* exitPosition)
         return;
 
     m_vehicle->RemovePassenger(this);
+    Player* player = ToPlayer();
 
-    // If player is on mouted duel and exits the mount should immediatly lose the duel
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->duel && ToPlayer()->duel->isMounted)
-        ToPlayer()->DuelComplete(DUEL_FLED);
+    // If player is on mounted duel and exits the mount should immediately lose the duel
+    if (player && player->duel && player->duel->isMounted)
+        player->DuelComplete(DUEL_FLED);
 
     // This should be done before dismiss, because there may be some aura removal
     Vehicle* vehicle = m_vehicle;
@@ -16676,7 +16674,7 @@ void Unit::_ExitVehicle(Position const* exitPosition)
 
     //GetMotionMaster()->MoveFall();            // Enable this once passenger positions are calculater properly (see above)
 
-    if (Player* player = ToPlayer())
+    if (player)
         player->ResummonPetTemporaryUnSummonedIfAny();
 
     if (vehicle->GetBase()->HasUnitTypeMask(UNIT_MASK_MINION))
