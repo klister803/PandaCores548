@@ -342,6 +342,7 @@ class UnitAI;
 class Totem;
 class Transport;
 class Vehicle;
+class TransportBase;
 
 typedef std::list<Unit*> UnitList;
 typedef std::list< std::pair<Aura*, uint8> > DispelChargesList;
@@ -1084,7 +1085,7 @@ enum CommandStates
     COMMAND_FOLLOW  = 1,
     COMMAND_ATTACK  = 2,
     COMMAND_ABANDON = 3,
-    COMMAND_MOVETO = 4,
+    COMMAND_MOVE_TO  = 4
 };
 
 #define UNIT_ACTION_BUTTON_ACTION(X) (uint32(X) & 0x00FFFFFF)
@@ -2209,6 +2210,8 @@ class Unit : public WorldObject
         uint32 GetTransTime()   const { return m_movementInfo.t_time; }
         int8 GetTransSeat()     const { return m_movementInfo.t_seat; }
         uint64 GetTransGUID()   const;
+        // Returns the transport this unit is on directly (if on vehicle and transport, return vehicle)
+        TransportBase* GetDirectTransport() const;
 
         bool m_ControlledByPlayer;
 

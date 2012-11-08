@@ -154,12 +154,27 @@ _hitMask(hitMask), _spell(spell), _damageInfo(damageInfo), _healInfo(healInfo)
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
-Unit::Unit(bool isWorldObject): WorldObject(isWorldObject),
-m_movedPlayer(NULL), m_lastSanctuaryTime(0), IsAIEnabled(false), NeedChangeAI(false),
-m_ControlledByPlayer(false), movespline(new Movement::MoveSpline()), i_AI(NULL),
-i_disabledAI(NULL), m_procDeep(0), m_removedAurasCount(0), i_motionMaster(this),
-m_ThreatManager(this), m_vehicle(NULL), m_vehicleKit(NULL), m_unitTypeMask(UNIT_MASK_NONE),
-m_HostileRefManager(this), m_TempSpeed(0.0f), m_AutoRepeatFirstCast(false)
+Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
+    , m_movedPlayer(NULL)
+    , m_lastSanctuaryTime(0)
+    , m_TempSpeed(0.0f)
+    , IsAIEnabled(false)
+    , NeedChangeAI(false)
+    , m_ControlledByPlayer(false)
+    , movespline(new Movement::MoveSpline())
+    , i_AI(NULL)
+    , i_disabledAI(NULL)
+    , m_AutoRepeatFirstCast(false)
+    , m_procDeep(0)
+    , m_removedAurasCount(0)
+    , i_motionMaster(this)
+    , m_ThreatManager(this)
+    , m_vehicle(NULL)
+    , m_vehicleKit(NULL)
+    , m_unitTypeMask(UNIT_MASK_NONE)
+    , m_HostileRefManager(this)
+
+
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -408,14 +423,8 @@ void Unit::UpdateSplinePosition()
         pos.m_positionZ = loc.z;
         pos.SetOrientation(loc.orientation);
         if (Unit* vehicle = GetVehicleBase())
-        {
-            loc.x += vehicle->GetPositionX();
-            loc.y += vehicle->GetPositionY();
-            loc.z += vehicle->GetPositionZMinusOffset();
-            loc.orientation = vehicle->GetOrientation();
-        }
-        else if (Transport* trans = GetTransport())
-            trans->CalculatePassengerPosition(loc.x, loc.y, loc.z, loc.orientation);
+        if (TransportBase* transport = GetDirectTransport())
+            transport->CalculatePassengerPosition(loc.x, loc.y, loc.z, loc.orientation);
     }
 
     UpdatePosition(loc.x, loc.y, loc.z, loc.orientation);
@@ -15686,6 +15695,13 @@ uint64 Unit::GetTransGUID() const
     return 0;
 }
 
+TransportBase* Unit::GetDirectTransport() const
+{
+    if (Vehicle* veh = GetVehicle())
+        return veh;
+    return GetTransport();
+}
+
 bool Unit::IsInPartyWith(Unit const* unit) const
 {
     if (this == unit)
@@ -15814,26 +15830,28 @@ void Unit::SendPlaySpellVisualKit(uint32 id, uint32 unkParam)
     ObjectGuid guid = GetGUID();
 
     WorldPacket data(SMSG_PLAY_SPELL_VISUAL_KIT, 4 + 4+ 4 + 8);
-    data << uint32(0);
-    data << uint32(id); // SpellVisualKit.dbc index
-    data << uint32(unkParam);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[7]);
+    //I am not sure for the uint32 values, we may have to swap them.
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[1]);
     data.WriteBit(guid[5]);
     data.WriteBit(guid[3]);
-    data.WriteBit(guid[1]);
+    data.WriteBit(guid[7]);
     data.WriteBit(guid[2]);
-    data.WriteBit(guid[0]);
+    data.WriteBit(guid[4]);
     data.WriteBit(guid[6]);
     data.FlushBits();
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[6]);
+
+    data << uint32(0);
     data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[1]);
+    data << uint32(unkParam);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[6]);
     data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(guid[5]);
+    data << uint32(id); // SpellVisualKit.dbc index
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[3]);
     SendMessageToSet(&data, false);
 }
 
@@ -16920,7 +16938,7 @@ void Unit::UpdateOrientation(float orientation)
 {
     SetOrientation(orientation);
     if (IsVehicle())
-        GetVehicleKit()->RelocatePassengers(GetPositionX(), GetPositionY(), GetPositionZ(), orientation);
+        GetVehicleKit()->RelocatePassengers();
 }
 
 //! Only server-side height update, does not broadcast to client
@@ -16928,7 +16946,7 @@ void Unit::UpdateHeight(float newZ)
 {
     Relocate(GetPositionX(), GetPositionY(), newZ);
     if (IsVehicle())
-        GetVehicleKit()->RelocatePassengers(GetPositionX(), GetPositionY(), newZ, GetOrientation());
+        GetVehicleKit()->RelocatePassengers();
 }
 
 void Unit::SendThreatListUpdate()

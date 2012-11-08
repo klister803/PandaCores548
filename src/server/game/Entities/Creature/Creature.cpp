@@ -2475,7 +2475,7 @@ void Creature::SetPosition(float x, float y, float z, float o)
 
     GetMap()->CreatureRelocation(ToCreature(), x, y, z, o);
     if (IsVehicle())
-        GetVehicleKit()->RelocatePassengers(x, y, z, o);
+        GetVehicleKit();
 }
 
 bool Creature::IsDungeonBoss() const

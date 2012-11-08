@@ -2077,7 +2077,7 @@ UnitAura::UnitAura(SpellInfo const* spellproto, uint32 effMask, WorldObject* own
     LoadScripts();
     _InitEffects(effMask, caster, baseAmount);
     GetUnitOwner()->_AddAura(this, caster);
-};
+}
 
 void UnitAura::_ApplyForTarget(Unit* target, Unit* caster, AuraApplication * aurApp)
 {
