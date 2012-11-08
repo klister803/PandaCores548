@@ -10495,6 +10495,24 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     }
 
     // Custom MoP Script
+    // 76838 - Mastery : Strikes of Opportunity
+    if (victim && pdamage != 0 && (attType == BASE_ATTACK || attType == OFF_ATTACK))
+    {
+        if (HasAura(76838))
+        {
+            if (!(this->ToPlayer()->HasSpellCooldown(76858)))
+            {
+                float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.2f;
+                if (roll_chance_f(Mastery))
+                {
+                    this->CastSpell(victim, 76858, true);
+                    this->ToPlayer()->AddSpellCooldown(76858, 0, time(NULL) + 1);
+                }
+            }
+        }
+    }
+
+    // Custom MoP Script
     // 76613 - Mastery : Frostburn for Water elemental Melee damage
     if (victim && pdamage != 0)
     {

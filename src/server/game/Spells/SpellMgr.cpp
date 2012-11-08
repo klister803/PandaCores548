@@ -3173,7 +3173,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 76838:  // Mastery : Strikes of Opportunity
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 9;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 76856:  // Mastery : Unshackled Fury
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
