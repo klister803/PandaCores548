@@ -3169,7 +3169,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 76857:  // Mastery : Critical Block
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 2;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 76838:  // Mastery : Strikes of Opportunity
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;

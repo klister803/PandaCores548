@@ -492,10 +492,17 @@ void Player::UpdateBlockPercentage()
         value = 5.0f;
         // Increase from SPELL_AURA_MOD_BLOCK_PERCENT aura
         value += GetTotalAuraModifier(SPELL_AURA_MOD_BLOCK_PERCENT);
+
         // Custom MoP Script
         // 76671 - Mastery : Divine Bulwark - Block Percentage
         if (HasAura(76671))
             value += GetFloatValue(PLAYER_MASTERY);
+
+        // Custom MoP Script
+        // 76857 - Mastery : Critical Block - Block Percentage
+        if (HasAura(76857))
+            value += GetFloatValue(PLAYER_MASTERY) / 2.0f;
+
         // Increase from rating
         value += GetRatingBonusValue(CR_BLOCK);
         value = value < 0.0f ? 0.0f : value;
@@ -673,7 +680,8 @@ void Player::UpdateMasteryPercentage()
     SetFloatValue(PLAYER_MASTERY, value);
     // Custom MoP Script
     // 76671 - Mastery : Divine Bulwark - Update Block Percentage
-    if (HasAura(76671))
+    // 76857 - Mastery : Critical Block - Update Block Percentage
+    if (HasAura(76671) || HasAura(76857))
         UpdateBlockPercentage();
 }
 
