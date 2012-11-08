@@ -1201,6 +1201,12 @@ void AuraEffect::UpdatePeriodic(Unit* caster)
     GetBase()->CallScriptEffectUpdatePeriodicHandlers(this);
 }
 
+bool AuraEffect::IsPeriodicTickCrit(Unit* target, Unit const* caster) const
+{
+    ASSERT(caster);
+    return caster->isSpellCrit(target, m_spellInfo, m_spellInfo->GetSchoolMask());
+}
+
 bool AuraEffect::IsAffectingSpell(SpellInfo const* spell) const
 {
     if (!spell)
