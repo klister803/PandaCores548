@@ -172,6 +172,7 @@ enum Opcodes
     CMSG_COMPLETE_MOVIE                               = 0x845,  // 5.0.5 16048
     CMSG_CONNECT_TO_FAILED                            = 0x50E,  // 5.0.5 16048
     CMSG_CONTACT_LIST                                 = 0xC80,	// 5.0.5 16048
+    CMSG_CORPSE_MAP_POSITION_QUERY                    = 0,      // FIND ME I GIVE YOU BACON ! (0x6205 in 4.3.4)
     CMSG_CREATURE_QUERY                               = 0xCA0,  // 5.0.5 16048
     CMSG_DANCE_QUERY                                  = 0x8F3,  // 5.0.5 16048
     CMSG_DECLINE_CHANNEL_INVITE                       = 0x9CC,  // 5.0.5 16048
