@@ -9338,6 +9338,17 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     }
 
     // Custom MoP Script
+    // 77515 - Mastery : Dreadblade
+    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_SHADOW)
+    {
+        if (HasAura(77515))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.5f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
     // 76613 - Mastery : Frostburn
     if (spellProto && victim)
     {
@@ -10512,6 +10523,17 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         if (HasAura(77514))
         {
             float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 77515 - Mastery : Dreadblade
+    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_SHADOW)
+    {
+        if (HasAura(77515))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.5f / 100.0f;
             DoneTotalMod += Mastery;
         }
     }

@@ -3050,8 +3050,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = 25;
                 break;
             case 77515:  // Mastery : Dreadblade
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 20;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 77514:  // Mastery : Frozen Heart
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
