@@ -2709,7 +2709,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_holyPowerRegenTimerCount;
         uint32 m_chiPowerRegenTimerCount;
         uint32 m_focusRegenTimerCount;
-        float m_powerFraction[MAX_POWERS];
+        float m_powerFraction[MAX_POWERS_PER_CLASS];
         uint32 m_contestedPvPTimer;
 
         /*********************************************************/
