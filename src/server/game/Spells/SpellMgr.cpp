@@ -3177,7 +3177,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 76856:  // Mastery : Unshackled Fury
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[1].BasePoints = 11;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             default:
                 break;

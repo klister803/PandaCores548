@@ -10484,6 +10484,17 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     float DoneTotalMod = 1.0f;
 
     // Custom MoP Script
+    // 76856 - Mastery : Unshackled Fury
+    if (victim && pdamage != 0)
+    {
+        if (HasAura(76856) && HasAuraState(AURA_STATE_ENRAGE))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.4f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
     // 76613 - Mastery : Frostburn for Water elemental Melee damage
     if (victim && pdamage != 0)
     {
