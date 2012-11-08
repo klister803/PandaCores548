@@ -30,7 +30,7 @@ enum AccountOpResult
     AOR_NAME_ALREDY_EXIST,
     AOR_NAME_NOT_EXIST,
     AOR_DB_INTERNAL_ERROR
-};
+}
 
 #define MAX_ACCOUNT_STR 16
 
@@ -55,6 +55,6 @@ namespace AccountMgr
     bool IsGMAccount(uint32 gmlevel);
     bool IsAdminAccount(uint32 gmlevel);
     bool IsConsoleAccount(uint32 gmlevel);
-};
+}
 
 #endif
