@@ -802,6 +802,42 @@ enum MeleeHitOutcome
     MELEE_HIT_GLANCING, MELEE_HIT_CRIT, MELEE_HIT_CRUSHING, MELEE_HIT_NORMAL
 };
 
+struct HealDone
+{
+    HealDone(uint32 heal, uint32 time)
+    : s_heal(heal), s_timestamp(time) {}
+
+    uint32 s_heal;
+    uint32 s_timestamp;
+};
+
+struct HealTaken
+{
+    HealTaken(uint32 heal, uint32 time)
+    : s_heal(heal), s_timestamp(time) {}
+
+    uint32 s_heal;
+    uint32 s_timestamp;
+};
+
+struct DamageDone
+{
+    DamageDone(uint32 dmg, uint32 time)
+    : s_damage(dmg), s_timestamp(time) {}
+
+    uint32 s_damage;
+    uint32 s_timestamp;
+};
+
+struct DamageTaken
+{
+    DamageTaken(uint32 dmg, uint32 time)
+    : s_damage(dmg), s_timestamp(time) {}
+
+    uint32 s_damage;
+    uint32 s_timestamp;
+};
+
 class DispelInfo
 {
 private:
@@ -2241,6 +2277,11 @@ class Unit : public WorldObject
                 SetUInt64Value(UNIT_FIELD_TARGET, 0);
         }
 
+        uint32 GetHealingDoneInPastSecs(uint32 secs);
+        uint32 GetHealingTakenInPastSecs(uint32 secs);
+        uint32 GetDamageDoneInPastSecs(uint32 secs);
+        uint32 GetDamageTakenInPastSecs(uint32 secs);
+
         // Movement info
         Movement::MoveSpline * movespline;
 
@@ -2288,6 +2329,15 @@ class Unit : public WorldObject
         AuraApplicationList m_interruptableAuras;             // auras which have interrupt mask applied on unit
         AuraStateAurasMap m_auraStateAuras;        // Used for improve performance of aura state checks on aura apply/remove
         uint32 m_interruptMask;
+
+        typedef std::list<HealDone*> HealDoneList;
+        typedef std::list<HealTaken*> HealTakenList;
+        typedef std::list<DamageDone*> DmgDoneList;
+        typedef std::list<DamageTaken*> DmgTakenList;
+        HealDoneList m_healDone;
+        HealTakenList m_healTaken;
+        DmgDoneList m_dmgDone;
+        DmgTakenList m_dmgTaken;
 
         float m_auraModifiersGroup[UNIT_MOD_END][MODIFIER_TYPE_END];
         float m_weaponDamage[MAX_ATTACK][2];

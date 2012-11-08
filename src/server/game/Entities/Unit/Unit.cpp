@@ -17326,3 +17326,55 @@ bool Unit::IsSplineEnabled() const
 {
     return movespline->Initialized();
 }
+/* In the next functions, we keep 1 minute of last damage */
+uint32 Unit::GetHealingDoneInPastSecs(uint32 secs)
+{
+    uint32 heal = 0;
+
+    for (HealDoneList::iterator itr = m_healDone.begin(); itr != m_healDone.end(); itr++)
+    {
+        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
+            heal += (*itr)->s_heal;
+    }
+
+    return heal;
+};
+
+uint32 Unit::GetHealingTakenInPastSecs(uint32 secs)
+{
+    uint32 heal = 0;
+
+    for (HealTakenList::iterator itr = m_healTaken.begin(); itr != m_healTaken.end(); itr++)
+    {
+        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
+            heal += (*itr)->s_heal;
+    }
+
+    return heal;
+};
+
+uint32 Unit::GetDamageDoneInPastSecs(uint32 secs)
+{
+    uint32 damage = 0;
+
+    for (DmgDoneList::iterator itr = m_dmgDone.begin(); itr != m_dmgDone.end(); itr++)
+    {
+        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
+            damage += (*itr)->s_damage;
+    }
+
+    return damage;
+};
+
+uint32 Unit::GetDamageTakenInPastSecs(uint32 secs)
+{
+    uint32 damage = 0;
+
+    for (DmgTakenList::iterator itr = m_dmgTaken.begin(); itr != m_dmgTaken.end(); itr++)
+    {
+        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
+            damage += (*itr)->s_damage;
+    }
+
+    return damage;
+}
