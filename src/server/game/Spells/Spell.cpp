@@ -4259,6 +4259,11 @@ void Spell::SendChannelStart(uint32 duration)
 {
     uint64 channelTarget = m_targets.GetObjectTargetGUID();
 
+    if (!channelTarget && !m_spellInfo->NeedsExplicitUnitTarget())
+        if (m_UniqueTargetInfo.size() + m_UniqueGOTargetInfo.size() == 1)   // this is for TARGET_SELECT_CATEGORY_NEARBY
+            if (!m_UniqueTargetInfo.empty())
+                channelTarget = !m_UniqueTargetInfo.empty() ? m_UniqueTargetInfo.front().targetGUID : m_UniqueGOTargetInfo.front().targetGUID;
+
     WorldPacket data(MSG_CHANNEL_START, (8+4+4));
     data.append(m_caster->GetPackGUID());
     data << uint32(m_spellInfo->Id);
@@ -4791,6 +4796,10 @@ SpellCastResult Spell::CheckCast(bool strict)
     // not for triggered spells (needed by execute)
     if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CASTER_AURASTATE))
     {
+        // Custom MoP Script
+        // 76856 - Mastery : Unshackled Fury - Hack Fix fake check cast
+        if (m_spellInfo->Id == 76856)
+            return SPELL_CAST_OK;
         if (m_spellInfo->CasterAuraState && !m_caster->HasAuraState(AuraStateType(m_spellInfo->CasterAuraState), m_spellInfo, m_caster))
             return SPELL_FAILED_CASTER_AURASTATE;
         if (m_spellInfo->CasterAuraStateNot && m_caster->HasAuraState(AuraStateType(m_spellInfo->CasterAuraStateNot), m_spellInfo, m_caster))
