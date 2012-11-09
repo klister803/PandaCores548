@@ -192,6 +192,14 @@ void Player::UpdateArmor()
     value *= GetModifierValue(unitMod, BASE_PCT);           // armor percent from items
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 
+    // Custom MoP Script
+    // 77494 - Mastery : Nature's Guardian
+    if (HasAura(77494))
+    {
+        float Mastery = 1.0f + GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
+        value *= Mastery;
+    }
+
     //add dynamic flat mods
     AuraEffectList const& mResbyIntellect = GetAuraEffectsByType(SPELL_AURA_MOD_RESISTANCE_OF_STAT_PERCENT);
     for (AuraEffectList::const_iterator i = mResbyIntellect.begin(); i != mResbyIntellect.end(); ++i)
@@ -683,6 +691,9 @@ void Player::UpdateMasteryPercentage()
     // 76857 - Mastery : Critical Block - Update Block Percentage
     if (HasAura(76671) || HasAura(76857))
         UpdateBlockPercentage();
+    // 77494 - Mastery : Nature's Guardian - Update Armor
+    if (HasAura(77494))
+        UpdateArmor();
 }
 
 void Player::UpdateMeleeHitChances()

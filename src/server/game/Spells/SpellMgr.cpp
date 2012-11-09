@@ -3062,8 +3062,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 77494:  // Mastery : Nature's Guardian
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 10;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 77493:  // Mastery : Razor Claws
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
