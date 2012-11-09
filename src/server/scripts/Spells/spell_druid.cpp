@@ -616,33 +616,6 @@ class spell_dru_survival_instincts : public SpellScriptLoader
         }
 };
 
-class spell_dru_insect_swarm : public SpellScriptLoader
-{
-    public:
-        spell_dru_insect_swarm() : SpellScriptLoader("spell_dru_insect_swarm") { }
-
-        class spell_dru_insect_swarm_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dru_insect_swarm_AuraScript);
-
-            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                if (Unit* caster = GetCaster())
-                    if (AuraEffect const* relicAurEff = caster->GetAuraEffect(SPELL_DRUID_ITEM_T8_BALANCE_RELIC, EFFECT_0))
-                        amount += relicAurEff->GetAmount() / aurEff->GetTotalTicks();
-            }
-
-            void Register()
-            {
-                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dru_insect_swarm_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dru_insect_swarm_AuraScript();
-        }
-};
 
 enum EclipseSpells
 {
@@ -781,6 +754,5 @@ void AddSC_druid_spell_scripts()
     new spell_dru_predatory_strikes();
     new spell_dru_savage_roar();
     new spell_dru_survival_instincts();
-    new spell_dru_insect_swarm();
     new spell_dru_eclipse_energize();
 }
