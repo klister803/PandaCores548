@@ -60,6 +60,44 @@ enum SpellEffIndex
     EFFECT_31,
 };
 
+enum SpecIndex
+{
+    SPEC_MAGE_ARCANE            = 62,
+    SPEC_MAGE_FIRE              = 63,
+    SPEC_MAGE_FROST             = 64,
+    SPEC_PALADIN_HOLY           = 65,
+    SPEC_PALADIN_PROTECTION     = 66,
+    SPEC_PALADIN_RETRIBUTION    = 70,
+    SPEC_WARRIOR_ARMS           = 71,
+    SPEC_WARRIOR_FURY           = 72,
+    SPEC_WARRIOR_PROTECTION     = 73,
+    SPEC_DROOD_BALANCE          = 102,
+    SPEC_DROOD_CAT              = 103,
+    SPEC_DROOD_BEAR             = 104,
+    SPEC_DROOD_RESTORATION      = 105,
+    SPEC_DK_BLOOD               = 250,
+    SPEC_DK_FROST               = 251,
+    SPEC_DK_UNHOLY              = 252,
+    SPEC_HUNTER_BEASTMASTER     = 253,
+    SPEC_HUNTER_MARKSMAN        = 254,
+    SPEC_HUNTER_SURVIVAL        = 255,
+    SPEC_PRIEST_DISCIPLINE      = 256,
+    SPEC_PRIEST_HOLY            = 257,
+    SPEC_PRIEST_SHADOW          = 258,
+    SPEC_ROGUE_ASSASSINATION    = 259,
+    SPEC_ROGUE_COMBAT           = 260,
+    SPEC_ROGUE_SUBTLETY         = 261,
+    SPEC_SHAMAN_ELEMENTAL       = 262,
+    SPEC_SHAMAN_ENHANCEMENT     = 263,
+    SPEC_SHAMAN_RESTORATION     = 264,
+    SPEC_WARLOCK_AFFLICTION     = 265,
+    SPEC_WARLOCK_DEMONOLOGY     = 266,
+    SPEC_WARLOCK_DESTRUCTION    = 267,
+    SPEC_MONK_BREWMASTER        = 268,
+    SPEC_MONK_BATTLEDANCER      = 269,
+    SPEC_MONK_MISTWEAVER        = 270
+};
+
 // used in script definitions
 #define EFFECT_FIRST_FOUND 254
 #define EFFECT_ALL 255
