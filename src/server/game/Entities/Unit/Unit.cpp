@@ -9410,6 +9410,19 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         }
     }
 
+    // Custom MoP Script
+    // 77492 - Mastery : Total Eclipse
+    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE && HasAura(77492) && HasAura(48517)) // Solar Eclipse
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    else if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_ARCANE && HasAura(77492) && HasAura(48518)) // Lunar Eclipse
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
     // Pet damage?
     if (GetTypeId() == TYPEID_UNIT && !ToCreature()->isPet())
         DoneTotalMod *= ToCreature()->GetSpellDamageMod(ToCreature()->GetCreatureTemplate()->rank);
