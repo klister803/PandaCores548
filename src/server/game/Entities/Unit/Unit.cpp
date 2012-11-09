@@ -17355,6 +17355,45 @@ bool Unit::IsSplineEnabled() const
 {
     return movespline->Initialized();
 }
+
+void Unit::SetEclipsePower(int32 power)
+{
+    if (power > 100)
+        power = 100;
+
+    if (power < -100)
+        power = -100;
+
+    if (power > 0)
+        if (HasAura(48518))
+            RemoveAurasDueToSpell(48518); // Eclipse (Lunar)
+
+    if (power == 0)
+    {
+        if (HasAura(48517))
+            RemoveAurasDueToSpell(48517); // Eclipse (Solar)
+        if (HasAura(48518))
+            RemoveAurasDueToSpell(48518); // Eclipse (Lunar)
+    }
+
+    if (power < 0)
+    {
+        if (HasAura(48517))
+            RemoveAurasDueToSpell(48517); // Eclipse (Solar)
+        if (HasAura(94338))
+            RemoveAurasDueToSpell(94338); // Eclipse (Solar) (Aura 332?)
+    }
+
+    _eclipsePower = power;
+
+    WorldPacket data(SMSG_POWER_UPDATE);
+    data.append(GetPackGUID());
+    data << int32(1);
+    data << int8(POWER_ECLIPSE);
+    data << int32(_eclipsePower);
+    SendMessageToSet(&data, GetTypeId() == TYPEID_PLAYER ? true : false);
+}
+
 /* In the next functions, we keep 1 minute of last damage */
 uint32 Unit::GetHealingDoneInPastSecs(uint32 secs)
 {

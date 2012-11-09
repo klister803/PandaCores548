@@ -2280,6 +2280,9 @@ class Unit : public WorldObject
                 SetUInt64Value(UNIT_FIELD_TARGET, 0);
         }
 
+        int32 GetEclipsePower() { return _eclipsePower; };
+        void SetEclipsePower(int32 power);
+
         uint32 GetHealingDoneInPastSecs(uint32 secs);
         uint32 GetHealingTakenInPastSecs(uint32 secs);
         uint32 GetDamageDoneInPastSecs(uint32 secs);
@@ -2424,6 +2427,8 @@ class Unit : public WorldObject
         Spell const* _focusSpell;
         bool _targetLocked; // locks the target during spell cast for proper facing
         bool _isWalkingBeforeCharm; // Are we walking before we were charmed? 
+
+        int32 _eclipsePower;
 };
 
 namespace Trinity
