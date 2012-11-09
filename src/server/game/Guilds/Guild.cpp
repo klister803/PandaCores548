@@ -3409,57 +3409,59 @@ void Guild::GuildNewsLog::BuildNewsData(uint32 id, GuildNewsEntry& guildNew, Wor
     data.Initialize(SMSG_GUILD_NEWS_UPDATE, (21 + _newsLog.size() * (26 + 8)) / 8 + (8 + 6 * 4) * _newsLog.size());
     data.WriteBits(1, 21);
 
-    data.WriteBits(0, 26); // Other Guids NYI
     ObjectGuid guid = guildNew.PlayerGuid;
 
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[5]);
     data.WriteBit(guid[4]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[1]);
     data.WriteBit(guid[2]);
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[5]);
+    
+    data.WriteBits(0, 26); // Other Guids NYI
+
+    data.WriteBit(guid[6]);
+    data.WriteBit(guid[7]);
 
     data.FlushBits();
-
-    data.WriteByteSeq(guid[5]);
-
-    data << uint32(guildNew.Flags); // 1 sticky
-    data << uint32(guildNew.Data);
-    data << uint32(0);              // always 0
-
+    
     data.WriteByteSeq(guid[7]);
+    data << uint32(guildNew.EventType);
+    data << uint32(guildNew.Flags); // 1 sticky
+    data << uint32(id);
     data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[1]);
+    data << uint32(0);              // always 0
     data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[1]);
-
-    data << uint32(id);
-    data << uint32(guildNew.EventType);
+    data.WriteByteSeq(guid[5]);
+    data << uint32(guildNew.Data);
+    data.WriteByteSeq(guid[2]);
     data << uint32(secsToTimeBitFields(guildNew.Date));
+    data.WriteByteSeq(guid[4]);
+
 }
 
 void Guild::GuildNewsLog::BuildNewsData(WorldPacket& data)
 {
     data.Initialize(SMSG_GUILD_NEWS_UPDATE, 7 + 32);
-    data.WriteBits(1, 21); // size, we are only sending 1 news here
+    data.WriteBits(_newsLog.size(), 21); // size, we are only sending 1 news here
 
     for (GuildNewsLogMap::const_iterator it = _newsLog.begin(); it != _newsLog.end(); it++)
     {
-        data.WriteBits(0, 26); // Not yet implemented used for guild achievements
         ObjectGuid guid = it->second.PlayerGuid;
 
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[5]);
         data.WriteBit(guid[4]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[1]);
         data.WriteBit(guid[2]);
+        data.WriteBit(guid[0]);
+        data.WriteBit(guid[1]);
+        data.WriteBit(guid[3]);
+        data.WriteBit(guid[5]);
+
+        data.WriteBits(0, 26); // Not yet implemented used for guild achievements
+
+        data.WriteBit(guid[6]);
+        data.WriteBit(guid[7]);
     }
 
     data.FlushBits();
@@ -3467,22 +3469,20 @@ void Guild::GuildNewsLog::BuildNewsData(WorldPacket& data)
     for (GuildNewsLogMap::const_iterator it = _newsLog.begin(); it != _newsLog.end(); it++)
     {
         ObjectGuid guid = it->second.PlayerGuid;
-        data.WriteByteSeq(guid[5]);
-
-        data << uint32(it->second.Flags); // 1 sticky
-        data << uint32(it->second.Data);
-        data << uint32(0);
-
+        
         data.WriteByteSeq(guid[7]);
+        data << uint32(it->second.EventType);
+        data << uint32(it->second.Flags); // 1 sticky
+        data << uint32(it->first);
         data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[2]);
+        data.WriteByteSeq(guid[1]);
+        data << uint32(0);              // always 0
         data.WriteByteSeq(guid[3]);
         data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[1]);
-
-        data << uint32(it->first);
-        data << uint32(it->second.EventType);
+        data.WriteByteSeq(guid[5]);
+        data << uint32(it->second.Data);
+        data.WriteByteSeq(guid[2]);
         data << uint32(secsToTimeBitFields(it->second.Date));
+        data.WriteByteSeq(guid[4]);
     }
 }
