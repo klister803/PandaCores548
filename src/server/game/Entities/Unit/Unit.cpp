@@ -9321,6 +9321,17 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     int32 DoneTotal = 0;
 
     // Custom MoP Script
+    // 77493 - Mastery : Razor Claws
+    if (spellProto && damagetype == DOT)
+    {
+        if (HasAura(77493))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.13f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
     // 76547 - Mastery : Mana Adept
     if (spellProto)
     {

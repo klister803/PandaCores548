@@ -3066,8 +3066,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 77493:  // Mastery : Razor Claws
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 25;
+                spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[2].BasePoints = 8;
                 break;
             case 77492:  // Mastery : Total Eclipse
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
