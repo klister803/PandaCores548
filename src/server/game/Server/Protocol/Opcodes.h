@@ -170,6 +170,7 @@ enum Opcodes
     CMSG_COMPLAIN                                     = 0xD56,  // 5.0.5 16048
     CMSG_COMPLETE_CINEMATIC                           = 0x928,  // 5.0.5 16048
     CMSG_COMPLETE_MOVIE                               = 0x845,  // 5.0.5 16048
+    CMSG_CONFIRM_RESPEC_WIPE                          = 0x1F4,  // 5.0.5 16048
     CMSG_CONNECT_TO_FAILED                            = 0x50E,  // 5.0.5 16048
     CMSG_CONTACT_LIST                                 = 0xC80,	// 5.0.5 16048
     CMSG_CREATURE_QUERY                               = 0xCA0,  // 5.0.5 16048
@@ -1196,6 +1197,7 @@ enum Opcodes
     SMSG_RESET_COMPRESSION_CONTEXT                    = 0x627,  // 5.0.5 16048
     SMSG_RESET_FAILED_NOTIFY                          = 0xD3E,  // 5.0.5 16048
     SMSG_RESISTLOG                                    = 0x000,  // 5.0.5 16048
+    SMSG_RESPEC_WIPE_CONFIRM                          = 0xE83,  // 5.0.5 16048
     SMSG_RESPOND_INSPECT_ACHIEVEMENTS                 = 0xE4C,  // 5.0.5 16048
     SMSG_RESURRECT_REQUEST                            = 0x966,  // 5.0.5 16048
     SMSG_RESYNC_RUNES                                 = 0xC05,  // 5.0.5 16048
