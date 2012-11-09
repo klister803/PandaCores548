@@ -803,18 +803,20 @@ void WorldSession::HandleGuildRewardsQueryOpcode(WorldPacket& recvPacket)
         std::vector<GuildReward> const& rewards = sGuildMgr->GetGuildRewards();
 
         WorldPacket data(SMSG_GUILD_REWARDS_LIST, (3 + rewards.size() * (4 + 4 + 4 + 8 + 4 + 4)));
+        ByteBuffer dataBuffer;
         data.WriteBits(rewards.size(), 21);
         data.FlushBits();
 
         for (uint32 i = 0; i < rewards.size(); i++)
         {
-            data << uint32(rewards[i].Standing);
-            data << int32(rewards[i].Racemask);
-            data << uint32(rewards[i].Entry);
-            data << uint64(rewards[i].Price);
-            data << uint32(0); // Unused
-            data << uint32(rewards[i].AchievementId);
+            data.WriteBits(0, 24);
+            dataBuffer << uint32(rewards[i].Standing);
+            dataBuffer << uint32(rewards[i].Entry);
+            dataBuffer << uint32(rewards[i].AchievementId);
+            dataBuffer << uint64(rewards[i].Price);
+            dataBuffer << int32(rewards[i].Racemask);
         }
+        data.append(dataBuffer);
         data << uint32(time(NULL));
         SendPacket(&data);
     }
@@ -840,23 +842,23 @@ void WorldSession::HandleGuildNewsUpdateStickyOpcode(WorldPacket& recvPacket)
 
     recvPacket >> newsId;
 
-    guid[2] = recvPacket.ReadBit();
-    guid[4] = recvPacket.ReadBit();
-    guid[3] = recvPacket.ReadBit();
-    guid[0] = recvPacket.ReadBit();
-    sticky = recvPacket.ReadBit();
     guid[6] = recvPacket.ReadBit();
     guid[7] = recvPacket.ReadBit();
     guid[1] = recvPacket.ReadBit();
+    sticky = recvPacket.ReadBit();
+    guid[2] = recvPacket.ReadBit();
     guid[5] = recvPacket.ReadBit();
+    guid[0] = recvPacket.ReadBit();
+    guid[3] = recvPacket.ReadBit();
+    guid[4] = recvPacket.ReadBit();
 
-    recvPacket.ReadByteSeq(guid[6]);
-    recvPacket.ReadByteSeq(guid[2]);
-    recvPacket.ReadByteSeq(guid[1]);
     recvPacket.ReadByteSeq(guid[0]);
-    recvPacket.ReadByteSeq(guid[5]);
-    recvPacket.ReadByteSeq(guid[3]);
     recvPacket.ReadByteSeq(guid[7]);
+    recvPacket.ReadByteSeq(guid[2]);
+    recvPacket.ReadByteSeq(guid[3]);
+    recvPacket.ReadByteSeq(guid[6]);
+    recvPacket.ReadByteSeq(guid[5]);
+    recvPacket.ReadByteSeq(guid[1]);
     recvPacket.ReadByteSeq(guid[4]);
 
     if (Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
