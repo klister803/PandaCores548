@@ -418,7 +418,7 @@ void PetAI::HandleReturnMovement()
             }
         }
     }
-    else if (me->GetCharmInfo()->HasCommandState(COMMAND_MOVETO))
+    else if (me->GetCharmInfo()->HasCommandState(COMMAND_MOVE_TO))
     {
         //TODO: Do we have to write something ?
     }

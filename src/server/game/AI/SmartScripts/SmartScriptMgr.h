@@ -1059,40 +1059,40 @@ struct SmartTarget
 
 enum eSmartAI
 {
-    SMART_EVENT_PARAM_COUNT = 4,
-    SMART_ACTION_PARAM_COUNT = 6,
-    SMART_SUMMON_COUNTER = 0xFFFFFF,
-    SMART_ESCORT_LAST_OOC_POINT = 0xFFFFFF,
-    SMART_RANDOM_POINT = 0xFFFFFE,
-    SMART_ESCORT_TARGETS = 0xFFFFFF
+    SMART_EVENT_PARAM_COUNT         = 4,
+    SMART_ACTION_PARAM_COUNT        = 6,
+    SMART_SUMMON_COUNTER            = 0xFFFFFF,
+    SMART_ESCORT_LAST_OOC_POINT     = 0xFFFFFF,
+    SMART_RANDOM_POINT              = 0xFFFFFE,
+    SMART_ESCORT_TARGETS            = 0xFFFFFF
 };
 
 enum SmartScriptType
 {
-    SMART_SCRIPT_TYPE_CREATURE = 0, //done
-    SMART_SCRIPT_TYPE_GAMEOBJECT = 1, //done
-    SMART_SCRIPT_TYPE_AREATRIGGER = 2, //done
-    SMART_SCRIPT_TYPE_EVENT = 3, //
-    SMART_SCRIPT_TYPE_GOSSIP = 4, //
-    SMART_SCRIPT_TYPE_QUEST = 5, //
-    SMART_SCRIPT_TYPE_SPELL = 6, //
-    SMART_SCRIPT_TYPE_TRANSPORT = 7, //
-    SMART_SCRIPT_TYPE_INSTANCE = 8, //
-    SMART_SCRIPT_TYPE_TIMED_ACTIONLIST = 9, //
-    SMART_SCRIPT_TYPE_MAX = 10
+    SMART_SCRIPT_TYPE_CREATURE          = 0, //done
+    SMART_SCRIPT_TYPE_GAMEOBJECT        = 1, //done
+    SMART_SCRIPT_TYPE_AREATRIGGER       = 2, //done
+    SMART_SCRIPT_TYPE_EVENT             = 3, //
+    SMART_SCRIPT_TYPE_GOSSIP            = 4, //
+    SMART_SCRIPT_TYPE_QUEST             = 5, //
+    SMART_SCRIPT_TYPE_SPELL             = 6, //
+    SMART_SCRIPT_TYPE_TRANSPORT         = 7, //
+    SMART_SCRIPT_TYPE_INSTANCE          = 8, //
+    SMART_SCRIPT_TYPE_TIMED_ACTIONLIST  = 9, //
+    SMART_SCRIPT_TYPE_MAX               = 10
 };
 
 enum SmartAITypeMaskId
 {
-    SMART_SCRIPT_TYPE_MASK_CREATURE = 1,
-    SMART_SCRIPT_TYPE_MASK_GAMEOBJECT = 2,
-    SMART_SCRIPT_TYPE_MASK_AREATRIGGER = 4,
-    SMART_SCRIPT_TYPE_MASK_EVENT = 8,
-    SMART_SCRIPT_TYPE_MASK_GOSSIP = 16,
-    SMART_SCRIPT_TYPE_MASK_QUEST = 32,
-    SMART_SCRIPT_TYPE_MASK_SPELL = 64,
-    SMART_SCRIPT_TYPE_MASK_TRANSPORT = 128,
-    SMART_SCRIPT_TYPE_MASK_INSTANCE = 256,
+    SMART_SCRIPT_TYPE_MASK_CREATURE         = 1,
+    SMART_SCRIPT_TYPE_MASK_GAMEOBJECT       = 2,
+    SMART_SCRIPT_TYPE_MASK_AREATRIGGER      = 4,
+    SMART_SCRIPT_TYPE_MASK_EVENT            = 8,
+    SMART_SCRIPT_TYPE_MASK_GOSSIP           = 16,
+    SMART_SCRIPT_TYPE_MASK_QUEST            = 32,
+    SMART_SCRIPT_TYPE_MASK_SPELL            = 64,
+    SMART_SCRIPT_TYPE_MASK_TRANSPORT        = 128,
+    SMART_SCRIPT_TYPE_MASK_INSTANCE         = 256,
     SMART_SCRIPT_TYPE_MASK_TIMED_ACTIONLIST = 512,
 };
 
@@ -1217,8 +1217,9 @@ enum SmartCastFlags
 // one line in DB is one event
 struct SmartScriptHolder
 {
-    SmartScriptHolder() : timer(0), active(false), runOnce(false), link(0), entryOrGuid(0),
-        event_id(0), enableTimed(false), source_type(SMART_SCRIPT_TYPE_CREATURE) {}
+    SmartScriptHolder() : entryOrGuid(0), source_type(SMART_SCRIPT_TYPE_CREATURE)
+        , event_id(0), link(0), timer(0), active(false), runOnce(false)
+        , enableTimed(false) {}
 
     int32 entryOrGuid;
     SmartScriptType source_type;

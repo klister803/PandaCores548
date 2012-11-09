@@ -154,12 +154,27 @@ _hitMask(hitMask), _spell(spell), _damageInfo(damageInfo), _healInfo(healInfo)
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
-Unit::Unit(bool isWorldObject): WorldObject(isWorldObject),
-m_movedPlayer(NULL), m_lastSanctuaryTime(0), IsAIEnabled(false), NeedChangeAI(false),
-m_ControlledByPlayer(false), movespline(new Movement::MoveSpline()), i_AI(NULL),
-i_disabledAI(NULL), m_procDeep(0), m_removedAurasCount(0), i_motionMaster(this),
-m_ThreatManager(this), m_vehicle(NULL), m_vehicleKit(NULL), m_unitTypeMask(UNIT_MASK_NONE),
-m_HostileRefManager(this), m_TempSpeed(0.0f), m_AutoRepeatFirstCast(false)
+Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
+    , m_movedPlayer(NULL)
+    , m_lastSanctuaryTime(0)
+    , m_TempSpeed(0.0f)
+    , IsAIEnabled(false)
+    , NeedChangeAI(false)
+    , m_ControlledByPlayer(false)
+    , movespline(new Movement::MoveSpline())
+    , i_AI(NULL)
+    , i_disabledAI(NULL)
+    , m_AutoRepeatFirstCast(false)
+    , m_procDeep(0)
+    , m_removedAurasCount(0)
+    , i_motionMaster(this)
+    , m_ThreatManager(this)
+    , m_vehicle(NULL)
+    , m_vehicleKit(NULL)
+    , m_unitTypeMask(UNIT_MASK_NONE)
+    , m_HostileRefManager(this)
+
+
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -408,14 +423,8 @@ void Unit::UpdateSplinePosition()
         pos.m_positionZ = loc.z;
         pos.SetOrientation(loc.orientation);
         if (Unit* vehicle = GetVehicleBase())
-        {
-            loc.x += vehicle->GetPositionX();
-            loc.y += vehicle->GetPositionY();
-            loc.z += vehicle->GetPositionZMinusOffset();
-            loc.orientation = vehicle->GetOrientation();
-        }
-        else if (Transport* trans = GetTransport())
-            trans->CalculatePassengerPosition(loc.x, loc.y, loc.z, loc.orientation);
+        if (TransportBase* transport = GetDirectTransport())
+            transport->CalculatePassengerPosition(loc.x, loc.y, loc.z, loc.orientation);
     }
 
     UpdatePosition(loc.x, loc.y, loc.z, loc.orientation);
@@ -9327,6 +9336,28 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     }
 
     // Custom MoP Script
+    // 77514 - Mastery : Frozen Heart
+    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST)
+    {
+        if (HasAura(77514))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 77515 - Mastery : Dreadblade
+    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_SHADOW)
+    {
+        if (HasAura(77515))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.5f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
     // 76613 - Mastery : Frostburn
     if (spellProto && victim)
     {
@@ -10482,6 +10513,57 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Done total percent damage auras
     float DoneTotalMod = 1.0f;
+
+    // Custom MoP Script
+    // 76856 - Mastery : Unshackled Fury
+    if (victim && pdamage != 0)
+    {
+        if (HasAura(76856) && HasAuraState(AURA_STATE_ENRAGE))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.4f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 77514 - Mastery : Frozen Heart
+    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST)
+    {
+        if (HasAura(77514))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 77515 - Mastery : Dreadblade
+    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_SHADOW)
+    {
+        if (HasAura(77515))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.5f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 76838 - Mastery : Strikes of Opportunity
+    if (victim && pdamage != 0 && (attType == BASE_ATTACK || attType == OFF_ATTACK))
+    {
+        if (HasAura(76838))
+        {
+            if (!(this->ToPlayer()->HasSpellCooldown(76858)))
+            {
+                float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.2f;
+                if (roll_chance_f(Mastery))
+                {
+                    this->CastSpell(victim, 76858, true);
+                    this->ToPlayer()->AddSpellCooldown(76858, 0, time(NULL) + 1);
+                }
+            }
+        }
+    }
 
     // Custom MoP Script
     // 76613 - Mastery : Frostburn for Water elemental Melee damage
@@ -15613,6 +15695,13 @@ uint64 Unit::GetTransGUID() const
     return 0;
 }
 
+TransportBase* Unit::GetDirectTransport() const
+{
+    if (Vehicle* veh = GetVehicle())
+        return veh;
+    return GetTransport();
+}
+
 bool Unit::IsInPartyWith(Unit const* unit) const
 {
     if (this == unit)
@@ -16849,7 +16938,7 @@ void Unit::UpdateOrientation(float orientation)
 {
     SetOrientation(orientation);
     if (IsVehicle())
-        GetVehicleKit()->RelocatePassengers(GetPositionX(), GetPositionY(), GetPositionZ(), orientation);
+        GetVehicleKit()->RelocatePassengers();
 }
 
 //! Only server-side height update, does not broadcast to client
@@ -16857,7 +16946,7 @@ void Unit::UpdateHeight(float newZ)
 {
     Relocate(GetPositionX(), GetPositionY(), newZ);
     if (IsVehicle())
-        GetVehicleKit()->RelocatePassengers(GetPositionX(), GetPositionY(), newZ, GetOrientation());
+        GetVehicleKit()->RelocatePassengers();
 }
 
 void Unit::SendThreatListUpdate()
@@ -17254,4 +17343,56 @@ void Unit::SendMovementCanFlyChange()
 bool Unit::IsSplineEnabled() const
 {
     return movespline->Initialized();
+}
+/* In the next functions, we keep 1 minute of last damage */
+uint32 Unit::GetHealingDoneInPastSecs(uint32 secs)
+{
+    uint32 heal = 0;
+
+    for (HealDoneList::iterator itr = m_healDone.begin(); itr != m_healDone.end(); itr++)
+    {
+        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
+            heal += (*itr)->s_heal;
+    }
+
+    return heal;
+};
+
+uint32 Unit::GetHealingTakenInPastSecs(uint32 secs)
+{
+    uint32 heal = 0;
+
+    for (HealTakenList::iterator itr = m_healTaken.begin(); itr != m_healTaken.end(); itr++)
+    {
+        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
+            heal += (*itr)->s_heal;
+    }
+
+    return heal;
+};
+
+uint32 Unit::GetDamageDoneInPastSecs(uint32 secs)
+{
+    uint32 damage = 0;
+
+    for (DmgDoneList::iterator itr = m_dmgDone.begin(); itr != m_dmgDone.end(); itr++)
+    {
+        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
+            damage += (*itr)->s_damage;
+    }
+
+    return damage;
+};
+
+uint32 Unit::GetDamageTakenInPastSecs(uint32 secs)
+{
+    uint32 damage = 0;
+
+    for (DmgTakenList::iterator itr = m_dmgTaken.begin(); itr != m_dmgTaken.end(); itr++)
+    {
+        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
+            damage += (*itr)->s_damage;
+    }
+
+    return damage;
 }

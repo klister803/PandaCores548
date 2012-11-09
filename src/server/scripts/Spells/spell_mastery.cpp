@@ -31,7 +31,60 @@ enum MasterySpells
     MASTERY_SPELL_CHAIN_LIGHTNING       = 45297,
     MASTERY_SPELL_LAVA_BURST            = 77451,
     MASTERY_SPELL_HAND_OF_LIGHT         = 96172,
-    MASTERY_SPELL_IGNITE                = 12654
+    MASTERY_SPELL_IGNITE                = 12654,
+    MASTERY_SPELL_BLOOD_SHIELD          = 77535
+};
+
+// Called by 45470 - Death Strike (Heal)
+// 77513 - Mastery : Blood Shield
+class spell_mastery_blood_shield : public SpellScriptLoader
+{
+    public:
+        spell_mastery_blood_shield() : SpellScriptLoader("spell_mastery_blood_shield") { }
+
+        class spell_mastery_blood_shield_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mastery_blood_shield_SpellScript);
+
+            bool Validate(SpellInfo const* /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(45470))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (caster->HasAura(77513))
+                        {
+                            // Check the Mastery aura while in Blood presence
+                            if (caster->HasAura(77513) && caster->HasAura(48263))
+                            {
+                                float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 6.25f / 100.0f;
+
+                                int32 bp = int32(GetHitHeal() * Mastery);
+
+                                caster->CastCustomSpell(target, MASTERY_SPELL_BLOOD_SHIELD, &bp, NULL, NULL, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mastery_blood_shield_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mastery_blood_shield_SpellScript();
+        }
 };
 
 // Called by 133 - Fireball, 44614 - Frostfire Bolt, 108853 - Inferno Blast, 2948 - Scorch and 11366 - Pyroblast
@@ -184,31 +237,31 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
                                 {
                                     case 51505:
                                     {
-                                        float value = caster->GetFloatValue(PLAYER_MASTERY);
-                                        value *= 2;
+                                        float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
+                                        int32 bp = int32(GetHitDamage() * 0.75f);
 
-                                        if (roll_chance_f(value))
-                                            caster->CastSpell(unitTarget, MASTERY_SPELL_LAVA_BURST, true);
+                                        if (roll_chance_f(Mastery))
+                                            caster->CastCustomSpell(unitTarget, MASTERY_SPELL_LAVA_BURST, &bp, NULL, NULL, true);
 
                                         break;
                                     }
                                     case 403:
                                     {
-                                        float value = caster->GetFloatValue(PLAYER_MASTERY);
-                                        value *= 2;
+                                        float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
+                                        int32 bp = int32(GetHitDamage() * 0.75f);
 
-                                        if (roll_chance_f(value))
-                                            caster->CastSpell(unitTarget, MASTERY_SPELL_LIGHTNING_BOLT, true);
+                                        if (roll_chance_f(Mastery))
+                                            caster->CastCustomSpell(unitTarget, MASTERY_SPELL_LIGHTNING_BOLT, &bp, NULL, NULL, true);
 
                                         break;
                                     }
                                     case 421:
                                     {
-                                        float value = caster->GetFloatValue(PLAYER_MASTERY);
-                                        value *= 2;
+                                        float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
+                                        int32 bp = int32(GetHitDamage() * 0.75f);
 
-                                        if (roll_chance_f(value))
-                                            caster->CastSpell(unitTarget, MASTERY_SPELL_CHAIN_LIGHTNING, true);
+                                        if (roll_chance_f(Mastery))
+                                            caster->CastCustomSpell(unitTarget, MASTERY_SPELL_CHAIN_LIGHTNING, &bp, NULL, NULL, true);
 
                                         break;
                                     }
@@ -234,6 +287,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
 
 void AddSC_mastery_spell_scripts()
 {
+    new spell_mastery_blood_shield();
     new spell_mastery_ignite();
     new spell_mastery_hand_of_light();
     new spell_mastery_elemental_overload();

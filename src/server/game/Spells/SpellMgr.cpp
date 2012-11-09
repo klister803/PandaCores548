@@ -3047,13 +3047,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 77513:  // Mastery : Blood Shield
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 25;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 77515:  // Mastery : Dreadblade
-                spellInfo->Effects[0].BasePoints = 20;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 77514:  // Mastery : Frozen Heart
-                spellInfo->Effects[0].BasePoints = 16;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 77495:  // Mastery : Harmony
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
@@ -3169,15 +3171,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 76857:  // Mastery : Critical Block
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 2;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 76838:  // Mastery : Strikes of Opportunity
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 9;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 76856:  // Mastery : Unshackled Fury
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[1].BasePoints = 11;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             default:
                 break;
