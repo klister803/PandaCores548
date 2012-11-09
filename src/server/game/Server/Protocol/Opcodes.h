@@ -936,7 +936,7 @@ enum Opcodes
     SMSG_INSPECT_HONOR_STATS                          = 0,
     SMSG_INSPECT_RATED_BG_STATS                       = 0xB42,  // 5.0.5 16048
     SMSG_INSPECT_RESULTS_UPDATE                       = 0,
-    SMSG_INSPECT_TALENT                               = 0,
+    SMSG_INSPECT_TALENT                               = 0xE3D,
     SMSG_INSTANCE_DIFFICULTY                          = 0x000,  // 5.0.5 16048
     SMSG_INSTANCE_LOCK_WARNING_QUERY                  = 0xDAA,  // 5.0.5 16048
     SMSG_INSTANCE_RESET                               = 0xD58,  // 5.0.5 16048
