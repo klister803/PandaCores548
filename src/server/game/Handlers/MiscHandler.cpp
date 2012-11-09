@@ -1,20 +1,20 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
- * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
- *
- * This program is free software; you can redistribute it and/or modify it
- * under the terms of the GNU General Public License as published by the
- * Free Software Foundation; either version 2 of the License, or (at your
- * option) any later version.
- *
- * This program is distributed in the hope that it will be useful, but WITHOUT
- * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
- * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
- * more details.
- *
- * You should have received a copy of the GNU General Public License along
- * with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+* Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+* Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
+*
+* This program is free software; you can redistribute it and/or modify it
+* under the terms of the GNU General Public License as published by the
+* Free Software Foundation; either version 2 of the License, or (at your
+* option) any later version.
+*
+* This program is distributed in the hope that it will be useful, but WITHOUT
+* ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+* FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+* more details.
+*
+* You should have received a copy of the GNU General Public License along
+* with this program. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 #include "Common.h"
 #include "Language.h"
@@ -932,27 +932,27 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
             return;
         }
 
-    if (OutdoorPvP* pvp = player->GetOutdoorPvP())
-        if (pvp->HandleAreaTrigger(_player, triggerId))
+        if (OutdoorPvP* pvp = player->GetOutdoorPvP())
+            if (pvp->HandleAreaTrigger(_player, triggerId))
+                return;
+
+        AreaTrigger const* at = sObjectMgr->GetAreaTrigger(triggerId);
+        if (!at)
             return;
 
-    AreaTrigger const* at = sObjectMgr->GetAreaTrigger(triggerId);
-    if (!at)
-        return;
+        bool teleported = false;
+        if (player->GetMapId() != at->target_mapId)
+        {
+            if (!sMapMgr->CanPlayerEnter(at->target_mapId, player, false))
+                return;
 
-    bool teleported = false;
-    if (player->GetMapId() != at->target_mapId)
-    {
-        if (!sMapMgr->CanPlayerEnter(at->target_mapId, player, false))
-            return;
+            if (Group* group = player->GetGroup())
+                if (group->isLFGGroup() && player->GetMap()->IsDungeon())
+                    teleported = player->TeleportToBGEntryPoint();
+        }
 
-        if (Group* group = player->GetGroup())
-            if (group->isLFGGroup() && player->GetMap()->IsDungeon())
-                teleported = player->TeleportToBGEntryPoint();
-    }
-
-    if (!teleported)
-        player->TeleportTo(at->target_mapId, at->target_X, at->target_Y, at->target_Z, at->target_Orientation, TELE_TO_NOT_LEAVE_TRANSPORT);
+        if (!teleported)
+            player->TeleportTo(at->target_mapId, at->target_X, at->target_Y, at->target_Z, at->target_Orientation, TELE_TO_NOT_LEAVE_TRANSPORT);
 }
 
 void WorldSession::HandleUpdateAccountData(WorldPacket& recvData)
@@ -1075,25 +1075,25 @@ void WorldSession::HandleSetActionButtonOpcode(WorldPacket& recvData)
     {
         switch (type)
         {
-            case ACTION_BUTTON_MACRO:
-            case ACTION_BUTTON_CMACRO:
-                sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added Macro %u into button %u", action, button);
-                break;
-            case ACTION_BUTTON_EQSET:
-                sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added EquipmentSet %u into button %u", action, button);
-                break;
-            case ACTION_BUTTON_SPELL:
-                sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added Spell %u into button %u", action, button);
-                break;
-            case ACTION_BUTTON_SUB_BUTTON:
-                sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added sub buttons %u into button %u", action, button);
-                break;
-            case ACTION_BUTTON_ITEM:
-                sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added Item %u into button %u", action, button);
-                break;
-            default:
-                sLog->outError(LOG_FILTER_NETWORKIO, "MISC: Unknown action button type %u for action %u into button %u for player %s (GUID: %u)", type, action, button, _player->GetName(), _player->GetGUIDLow());
-                return;
+        case ACTION_BUTTON_MACRO:
+        case ACTION_BUTTON_CMACRO:
+            sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added Macro %u into button %u", action, button);
+            break;
+        case ACTION_BUTTON_EQSET:
+            sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added EquipmentSet %u into button %u", action, button);
+            break;
+        case ACTION_BUTTON_SPELL:
+            sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added Spell %u into button %u", action, button);
+            break;
+        case ACTION_BUTTON_SUB_BUTTON:
+            sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added sub buttons %u into button %u", action, button);
+            break;
+        case ACTION_BUTTON_ITEM:
+            sLog->outInfo(LOG_FILTER_NETWORKIO, "MISC: Added Item %u into button %u", action, button);
+            break;
+        default:
+            sLog->outError(LOG_FILTER_NETWORKIO, "MISC: Unknown action button type %u for action %u into button %u for player %s (GUID: %u)", type, action, button, _player->GetName(), _player->GetGUIDLow());
+            return;
         }
         GetPlayer()->addActionButton(button, action, type);
     }
@@ -1138,17 +1138,17 @@ void WorldSession::HandleMoveTimeSkippedOpcode(WorldPacket& recvData)
     //TODO!
 
     /*
-        uint64 guid;
-        uint32 time_skipped;
-        recvData >> guid;
-        recvData >> time_skipped;
-        sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_MOVE_TIME_SKIPPED");
+    uint64 guid;
+    uint32 time_skipped;
+    recvData >> guid;
+    recvData >> time_skipped;
+    sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_MOVE_TIME_SKIPPED");
 
-        /// TODO
-        must be need use in Trinity
-        We substract server Lags to move time (AntiLags)
-        for exmaple
-        GetPlayer()->ModifyLastMoveTime(-int32(time_skipped));
+    /// TODO
+    must be need use in Trinity
+    We substract server Lags to move time (AntiLags)
+    for exmaple
+    GetPlayer()->ModifyLastMoveTime(-int32(time_skipped));
     */
 }
 
@@ -1164,15 +1164,15 @@ void WorldSession::HandleMoveUnRootAck(WorldPacket& recvData)
 {
     // no used
     recvData.rfinish();                       // prevent warnings spam
-/*
+    /*
     uint64 guid;
     recvData >> guid;
 
     // now can skip not our packet
     if (_player->GetGUID() != guid)
     {
-        recvData.rfinish();                   // prevent warnings spam
-        return;
+    recvData.rfinish();                   // prevent warnings spam
+    return;
     }
 
     sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_FORCE_MOVE_UNROOT_ACK");
@@ -1183,22 +1183,22 @@ void WorldSession::HandleMoveUnRootAck(WorldPacket& recvData)
     movementInfo.guid = guid;
     ReadMovementInfo(recvData, &movementInfo);
     recvData.read_skip<float>();                           // unk2
-*/
+    */
 }
 
 void WorldSession::HandleMoveRootAck(WorldPacket& recvData)
 {
     // no used
     recvData.rfinish();                       // prevent warnings spam
-/*
+    /*
     uint64 guid;
     recvData >> guid;
 
     // now can skip not our packet
     if (_player->GetGUID() != guid)
     {
-        recvData.rfinish();                   // prevent warnings spam
-        return;
+    recvData.rfinish();                   // prevent warnings spam
+    return;
     }
 
     sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_FORCE_MOVE_ROOT_ACK");
@@ -1207,7 +1207,7 @@ void WorldSession::HandleMoveRootAck(WorldPacket& recvData)
 
     MovementInfo movementInfo;
     ReadMovementInfo(recvData, &movementInfo);
-*/
+    */
 }
 
 void WorldSession::HandleSetActionBarToggles(WorldPacket& recvData)
@@ -1453,18 +1453,18 @@ void WorldSession::HandleComplainOpcode(WorldPacket& recvData)
     recvData >> spammer_guid;                              // player guid
     switch (spam_type)
     {
-        case 0:
-            recvData >> unk1;                              // const 0
-            recvData >> unk2;                              // probably mail id
-            recvData >> unk3;                              // const 0
-            break;
-        case 1:
-            recvData >> unk1;                              // probably language
-            recvData >> unk2;                              // message type?
-            recvData >> unk3;                              // probably channel id
-            recvData >> unk4;                              // unk random value
-            recvData >> description;                       // spam description string (messagetype, channel name, player name, message)
-            break;
+    case 0:
+        recvData >> unk1;                              // const 0
+        recvData >> unk2;                              // probably mail id
+        recvData >> unk3;                              // const 0
+        break;
+    case 1:
+        recvData >> unk1;                              // probably language
+        recvData >> unk2;                              // message type?
+        recvData >> unk3;                              // probably channel id
+        recvData >> unk4;                              // time
+        recvData >> description;                       // spam description string (messagetype, channel name, player name, message)
+        break;
     }
 
     // NOTE: all chat messages from this spammer automatically ignored by spam reporter until logout in case chat spam.
@@ -1512,7 +1512,7 @@ void WorldSession::HandleRealmQueryNameOpcode(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_REALM_QUERY_NAME");
 
     uint32 realmId = recvData.read<uint32>();
-    
+
     if(realmId != realmID)
         return; // Cheater ?
 
@@ -1534,20 +1534,20 @@ void WorldSession::HandleFarSightOpcode(WorldPacket& recvData)
 
     switch (apply)
     {
-        case 0:
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "Player %u set vision to self", _player->GetGUIDLow());
-            _player->SetSeer(_player);
-            break;
-        case 1:
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "Added FarSight " UI64FMTD " to player %u", _player->GetUInt64Value(PLAYER_FARSIGHT), _player->GetGUIDLow());
-            if (WorldObject* target = _player->GetViewpoint())
-                _player->SetSeer(target);
-            else
-                sLog->outError(LOG_FILTER_NETWORKIO, "Player %s requests non-existing seer " UI64FMTD, _player->GetName(), _player->GetUInt64Value(PLAYER_FARSIGHT));
-            break;
-        default:
-            sLog->outDebug(LOG_FILTER_NETWORKIO, "Unhandled mode in CMSG_FAR_SIGHT: %u", apply);
-            return;
+    case 0:
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "Player %u set vision to self", _player->GetGUIDLow());
+        _player->SetSeer(_player);
+        break;
+    case 1:
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "Added FarSight " UI64FMTD " to player %u", _player->GetUInt64Value(PLAYER_FARSIGHT), _player->GetGUIDLow());
+        if (WorldObject* target = _player->GetViewpoint())
+            _player->SetSeer(target);
+        else
+            sLog->outError(LOG_FILTER_NETWORKIO, "Player %s requests non-existing seer " UI64FMTD, _player->GetName(), _player->GetUInt64Value(PLAYER_FARSIGHT));
+        break;
+    default:
+        sLog->outDebug(LOG_FILTER_NETWORKIO, "Unhandled mode in CMSG_FAR_SIGHT: %u", apply);
+        return;
     }
 
     GetPlayer()->UpdateVisibilityForPlayer();
@@ -1563,7 +1563,7 @@ void WorldSession::HandleSetTitleOpcode(WorldPacket& recvData)
     // -1 at none
     if (title > 0 && title < MAX_TITLE_INDEX)
     {
-       if (!GetPlayer()->HasTitle(title))
+        if (!GetPlayer()->HasTitle(title))
             return;
     }
     else
@@ -1747,8 +1747,8 @@ void WorldSession::HandleCancelMountAuraOpcode(WorldPacket& /*recvData*/)
 void WorldSession::HandleRequestPetInfoOpcode(WorldPacket& /*recvData */)
 {
     /*
-        sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_REQUEST_PET_INFO");
-        recvData.hexlike();
+    sLog->outDebug(LOG_FILTER_PACKETIO, "WORLD: CMSG_REQUEST_PET_INFO");
+    recvData.hexlike();
     */
 }
 
@@ -1858,7 +1858,7 @@ void WorldSession::HandleHearthAndResurrect(WorldPacket& /*recvData*/)
     if (_player->isInFlight())
         return;
 
-    if(Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(_player->GetZoneId()))
+    if(/*Battlefield* bf =*/ sBattlefieldMgr->GetBattlefieldToZoneId(_player->GetZoneId()))
     {
         // bf->PlayerAskToLeave(_player); FIXME
         return;
@@ -1928,24 +1928,24 @@ void WorldSession::HandleRequestHotfix(WorldPacket& recvPacket)
 
         switch (type)
         {
-            case DB2_REPLY_ITEM:
-                SendItemDb2Reply(entry);
-                break;
-            case DB2_REPLY_SPARSE:
-                SendItemSparseDb2Reply(entry);
-                break;
+        case DB2_REPLY_ITEM:
+            SendItemDb2Reply(entry);
+            break;
+        case DB2_REPLY_SPARSE:
+            SendItemSparseDb2Reply(entry);
+            break;
             // TODO
-            case DB2_REPLY_BATTLE_PET_EFFECT_PROPERTIES:
-            case DB2_REPLY_SCENE_SCRIPT:
-                break;
-            case DB2_REPLY_BROADCAST_TEXT:
-                printf("DB2_REPLY_BROADCAST_TEXT : %u\n", entry);
-                SendBroadcastTextDb2Reply(entry);
-                break;
-            default:
-                sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_REQUEST_HOTFIX: Received unknown hotfix type: %u", type);
-                recvPacket.rfinish();
-                break;
+        case DB2_REPLY_BATTLE_PET_EFFECT_PROPERTIES:
+        case DB2_REPLY_SCENE_SCRIPT:
+            break;
+        case DB2_REPLY_BROADCAST_TEXT:
+            printf("DB2_REPLY_BROADCAST_TEXT : %u\n", entry);
+            SendBroadcastTextDb2Reply(entry);
+            break;
+        default:
+            sLog->outError(LOG_FILTER_NETWORKIO, "CMSG_REQUEST_HOTFIX: Received unknown hotfix type: %u", type);
+            recvPacket.rfinish();
+            break;
         }
     }
 
@@ -1995,38 +1995,38 @@ void WorldSession::HandleUpdateMissileTrajectory(WorldPacket& recvPacket)
         HandleMovementOpcodes(recvPacket);
     }
 }
- void WorldSession::HandleViolenceLevel(WorldPacket& recvPacket)
- {
-     uint8 violenceLevel;
-     recvPacket >> violenceLevel;
+void WorldSession::HandleViolenceLevel(WorldPacket& recvPacket)
+{
+    uint8 violenceLevel;
+    recvPacket >> violenceLevel;
 
-     // do something?
- }
+    // do something?
+}
 
- void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
- {
-     ObjectGuid guid;
-     guid[5] = recvPacket.ReadBit();
-     guid[0] = recvPacket.ReadBit();
-     guid[3] = recvPacket.ReadBit();
-     guid[1] = recvPacket.ReadBit();
-     guid[7] = recvPacket.ReadBit();
-     guid[6] = recvPacket.ReadBit();
-     guid[2] = recvPacket.ReadBit();
-     guid[4] = recvPacket.ReadBit();
+void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
+{
+    ObjectGuid guid;
+    guid[5] = recvPacket.ReadBit();
+    guid[0] = recvPacket.ReadBit();
+    guid[3] = recvPacket.ReadBit();
+    guid[1] = recvPacket.ReadBit();
+    guid[7] = recvPacket.ReadBit();
+    guid[6] = recvPacket.ReadBit();
+    guid[2] = recvPacket.ReadBit();
+    guid[4] = recvPacket.ReadBit();
 
-     recvPacket.ReadByteSeq(guid[2]);
-     recvPacket.ReadByteSeq(guid[3]);
-     recvPacket.ReadByteSeq(guid[5]);
-     recvPacket.ReadByteSeq(guid[7]);
-     recvPacket.ReadByteSeq(guid[6]);
-     recvPacket.ReadByteSeq(guid[0]);
-     recvPacket.ReadByteSeq(guid[1]);
-     recvPacket.ReadByteSeq(guid[4]);
+    recvPacket.ReadByteSeq(guid[2]);
+    recvPacket.ReadByteSeq(guid[3]);
+    recvPacket.ReadByteSeq(guid[5]);
+    recvPacket.ReadByteSeq(guid[7]);
+    recvPacket.ReadByteSeq(guid[6]);
+    recvPacket.ReadByteSeq(guid[0]);
+    recvPacket.ReadByteSeq(guid[1]);
+    recvPacket.ReadByteSeq(guid[4]);
 
-     WorldObject* obj = ObjectAccessor::GetWorldObject(*GetPlayer(), guid);
-     if(obj)
-         obj->SendUpdateToPlayer(GetPlayer());
+    WorldObject* obj = ObjectAccessor::GetWorldObject(*GetPlayer(), guid);
+    if(obj)
+        obj->SendUpdateToPlayer(GetPlayer());
 
-     sLog->outError(LOG_FILTER_NETWORKIO, "Object update failed for object "UI64FMTD" (%s) for player %s (%u)", uint64(guid), obj ? obj->GetName() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());
- }
+    sLog->outError(LOG_FILTER_NETWORKIO, "Object update failed for object "UI64FMTD" (%s) for player %s (%u)", uint64(guid), obj ? obj->GetName() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());
+}

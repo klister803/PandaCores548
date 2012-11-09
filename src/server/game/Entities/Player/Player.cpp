@@ -845,7 +845,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_ChampioningFaction = 0;
 
-    for (uint8 i = 0; i < MAX_POWERS; ++i)
+    for (uint8 i = 0; i < MAX_POWERS_PER_CLASS; ++i)
         m_powerFraction[i] = 0;
 
     isDebugAreaTriggers = false;
@@ -2605,6 +2605,12 @@ void Player::Regenerate(Powers power)
     if (HasAuraTypeWithValue(SPELL_AURA_PREVENT_REGENERATE_POWER, power))
         return;
 
+    // Skip regeneration for power type we cannot have
+    uint32 powerIndex = GetPowerIndexByClass(power, getClass());
+    if (powerIndex == MAX_POWERS)
+        return;
+
+
     float addvalue = 0.0f;
 
     // Powers now benefit from haste.
@@ -2616,10 +2622,9 @@ void Player::Regenerate(Powers power)
     {
         case POWER_MANA:
         {
-            bool recentCast = IsUnderLastManaUseEffect();
             float ManaIncreaseRate = sWorld->getRate(RATE_POWER_MANA);
 
-            if (recentCast) // Trinity Updates Mana in intervals of 2s, which is correct
+            if (isInCombat()) // Trinity Updates Mana in intervals of 2s, which is correct
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * m_regenTimer) + CalculatePctF(0.001f, spellHaste));
             else
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * m_regenTimer) + CalculatePctF(0.001f, spellHaste));
@@ -2694,7 +2699,7 @@ void Player::Regenerate(Powers power)
     else
         return;
 
-    addvalue += m_powerFraction[power];
+    addvalue += m_powerFraction[powerIndex];
     uint32 integerValue = uint32(fabs(addvalue));
 
     if (addvalue < 0.0f)
@@ -2702,12 +2707,12 @@ void Player::Regenerate(Powers power)
         if (curValue > integerValue)
         {
             curValue -= integerValue;
-            m_powerFraction[power] = addvalue + integerValue;
+            m_powerFraction[powerIndex] = addvalue + integerValue;
         }
         else
         {
             curValue = 0;
-            m_powerFraction[power] = 0;
+            m_powerFraction[powerIndex] = 0;
         }
     }
     else
@@ -2717,15 +2722,15 @@ void Player::Regenerate(Powers power)
         if (curValue > maxValue)
         {
             curValue = maxValue;
-            m_powerFraction[power] = 0;
+            m_powerFraction[powerIndex] = 0;
         }
         else
-            m_powerFraction[power] = addvalue - integerValue;
+            m_powerFraction[powerIndex] = addvalue - integerValue;
     }
     //if (m_regenTimerCount >= 2000)
         SetPower(power, curValue);
     /*else
-        UpdateUInt32Value(UNIT_FIELD_POWER1 + power, curValue);*/
+        UpdateUInt32Value(UNIT_FIELD_POWER1 + powerIndex, curValue);*/
 }
 
 void Player::RegenerateHealth()
@@ -3152,10 +3157,10 @@ void Player::GiveLevel(uint8 level)
     sObjectMgr->GetPlayerClassLevelInfo(getClass(), level, basehp, basemana);
 
     // send levelup info to client
-    WorldPacket data(SMSG_LEVELUP_INFO, (4+4+MAX_STORED_POWERS*4+MAX_STATS*4));
+    WorldPacket data(SMSG_LEVELUP_INFO, (4+4+MAX_POWERS_PER_CLASS*4+MAX_STATS*4));
     data << uint32(level);
     data << uint32(int32(basehp) - int32(GetCreateHealth()));
-    // for (int i = 0; i < MAX_STORED_POWERS; ++i)          // Powers loop (0-10)
+    // for (int i = 0; i < MAX_POWERS_PER_CLASS; ++i)          // Powers loop (0-10)
     data << uint32(int32(basemana)   - int32(GetCreateMana()));
     data << uint32(0);
     data << uint32(0);
@@ -4064,6 +4069,11 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LEARN_SPELL, spellId);
     }
 
+    // Custom MoP Script
+    // 76856 - Mastery : Unshackled Fury - Hack Fix Pig
+    if (spellInfo->Id == 76856)
+        CastSpell(this, spellInfo->Id, true);
+
     // return true (for send learn packet) only if spell active (in case ranked spells) and not replace old spell
     return active && !disabled && !superceded_old;
 }
@@ -4510,6 +4520,39 @@ void Player::_SaveSpellCooldowns(SQLTransaction& trans)
         trans->Append(ss.str().c_str());
 }
 
+uint32 Player::GetNextResetSpecializationCost() const
+{
+    // The first time reset costs 1 gold
+    if (GetSpecializationResetCost() < 1*GOLD)
+        return 1*GOLD;
+    // then 5 gold
+    else if (GetSpecializationResetCost() < 5*GOLD)
+        return 5*GOLD;
+    // After that it increases in increments of 5 gold
+    else if (GetSpecializationResetCost() < 10*GOLD)
+        return 10*GOLD;
+    else
+    {
+        uint64 months = (sWorld->GetGameTime() - GetSpecializationResetTime())/MONTH;
+        if (months > 0)
+        {
+            // This cost will be reduced by a rate of 5 gold per month
+            int32 new_cost = int32(GetSpecializationResetCost() - 5*GOLD*months);
+            // to a minimum of 10 gold.
+            return (new_cost < 10*GOLD ? 10*GOLD : new_cost);
+        }
+        else
+        {
+            // After that it increases in increments of 5 gold
+            int32 new_cost = GetSpecializationResetCost() + 5*GOLD;
+            // until it hits a cap of 50 gold.
+            if (new_cost > 50*GOLD)
+                new_cost = 50*GOLD;
+            return new_cost;
+        }
+    }
+}
+
 uint32 Player::GetNextResetTalentsCost() const
 {
     // The first time reset costs 1 gold
@@ -4577,19 +4620,19 @@ bool Player::ResetTalents(bool no_cost)
 
     for (auto itr : *GetTalentMap(GetActiveSpec()))
     {
-            const SpellInfo* _spellEntry = sSpellMgr->GetSpellInfo(itr.first);
-            if (!_spellEntry)
-                continue;
+        const SpellInfo* _spellEntry = sSpellMgr->GetSpellInfo(itr.first);
+        if (!_spellEntry)
+            continue;
 
-            removeSpell(itr.first, true);
-            // search for spells that the talent teaches and unlearn them
-            for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                if (_spellEntry->Effects[i].TriggerSpell > 0 && _spellEntry->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
-                    removeSpell(_spellEntry->Effects[i].TriggerSpell, true);
-            // if this talent rank can be found in the PlayerTalentMap, mark the talent as removed so it gets deleted
-            PlayerTalentMap::iterator plrTalent = GetTalentMap(GetActiveSpec())->find(itr.first);
-            if (plrTalent != GetTalentMap(GetActiveSpec())->end())
-                plrTalent->second->state = PLAYERSPELL_REMOVED;
+        removeSpell(itr.first, true);
+        // search for spells that the talent teaches and unlearn them
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            if (_spellEntry->Effects[i].TriggerSpell > 0 && _spellEntry->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
+                removeSpell(_spellEntry->Effects[i].TriggerSpell, true);
+        // if this talent rank can be found in the PlayerTalentMap, mark the talent as removed so it gets deleted
+        PlayerTalentMap::iterator plrTalent = GetTalentMap(GetActiveSpec())->find(itr.first);
+        if (plrTalent != GetTalentMap(GetActiveSpec())->end())
+            plrTalent->second->state = PLAYERSPELL_REMOVED;
     }
 
     SetFreeTalentPoints(talentPointsForLevel);
@@ -4609,23 +4652,46 @@ bool Player::ResetTalents(bool no_cost)
         SetTalentResetCost(cost);
         SetTalentResetTime(time(NULL));
     }
-    
+
     if (Pet* pet = GetPet())
     {
         if (pet->getPetType() == HUNTER_PET && !pet->GetCreatureTemplate()->isTameable(CanTameExoticPets()))
             RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
     }
-    
+
 
     return true;
 }
 
 void Player::ResetSpec()
 {
+    uint32 cost = 0;
+
+    if (!sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST))
+    {
+        cost = GetNextResetSpecializationCost();
+
+        if (!HasEnoughMoney(uint64(cost)))
+        {
+            SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, 0, 0, 0);
+            return;
+        }
+    }
+
+    if (GetSpecializationId(GetActiveSpec()) == 0)
+        return;
+
     RemoveSpecializationSpells();
     SetSpecializationId(GetActiveSpec(), 0);
     InitSpellForLevel();
     SendTalentsInfoData(false);
+
+    ModifyMoney(-(int64)cost);
+    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_GOLD_SPENT_FOR_TALENTS, cost);
+    UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_NUMBER_OF_TALENT_RESETS, 1);
+
+    SetSpecializationResetCost(cost);
+    SetSpecializationResetTime(time(NULL));
 }
 
 void Player::SetSpecializationId(uint8 spec, uint32 id)
@@ -10053,12 +10119,42 @@ void Player::SetBindPoint(uint64 guid)
     GetSession()->SendPacket(&data);
 }
 
-void Player::SendTalentWipeConfirm(uint64 guid)
+void Player::SendTalentWipeConfirm(uint64 guid, bool specialization)
 {
-    WorldPacket data(MSG_TALENT_WIPE_CONFIRM, (8+4));
-    data << uint64(guid);
-    uint32 cost = sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : GetNextResetTalentsCost();
-    data << cost;
+    ObjectGuid Guid = guid;
+    uint32 cost = 0;
+
+    if(!specialization)
+        cost = sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : GetNextResetTalentsCost();
+    else
+        cost = sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : GetNextResetSpecializationCost();
+
+    WorldPacket data(SMSG_RESPEC_WIPE_CONFIRM);
+    data.WriteBit(Guid[6]);
+    data.WriteBit(Guid[3]);
+    data.WriteBit(Guid[5]);
+    data.WriteBit(Guid[2]);
+    data.WriteBit(Guid[0]);
+    data.WriteBit(Guid[7]);
+    data.WriteBit(Guid[1]);
+    data.WriteBit(Guid[4]);
+    data.FlushBits();
+
+    data.WriteByteSeq(Guid[3]);
+    data.WriteByteSeq(Guid[5]);
+    data.WriteByteSeq(Guid[1]);
+
+    data << uint8(specialization); // 0 : talent 1 : specialization
+
+    data.WriteByteSeq(Guid[0]);
+    data.WriteByteSeq(Guid[2]);
+    data.WriteByteSeq(Guid[4]);
+    data.WriteByteSeq(Guid[7]);
+
+    data << uint32(cost);
+
+    data.WriteByteSeq(Guid[6]);
+
     GetSession()->SendPacket(&data);
 }
 
@@ -11536,7 +11632,10 @@ InventoryResult Player::CanEquipItem(uint8 slot, uint16 &dest, Item* pItem, bool
 
             if (eslot == EQUIPMENT_SLOT_OFFHAND)
             {
-                if (type == INVTYPE_WEAPON || type == INVTYPE_WEAPONOFFHAND)
+                // Do not allow polearm to be equipped in the offhand (rare case for the only 1h polearm 41750)
+                if (type == INVTYPE_WEAPON && pProto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM)
+                    return EQUIP_ERR_2HSKILLNOTFOUND;
+                else if (type == INVTYPE_WEAPON || type == INVTYPE_WEAPONOFFHAND)
                 {
                     if (!CanDualWield())
                         return EQUIP_ERR_2HSKILLNOTFOUND;
@@ -14475,6 +14574,10 @@ void Player::PrepareGossipMenu(WorldObject* source, uint32 menuId /*= 0*/, bool 
                     if (!creature->isCanTrainingAndResetTalentsOf(this))
                         canTalk = false;
                     break;
+                case GOSSIP_OPTION_UNLEARNSPECIALIZATION:
+                    if (!creature->isCanTrainingAndResetTalentsOf(this))
+                        canTalk = false;
+                    break;
                 case GOSSIP_OPTION_TAXIVENDOR:
                     if (GetSession()->SendLearnNewTaxiNode(creature))
                         return;
@@ -14665,7 +14768,11 @@ void Player::OnGossipSelect(WorldObject* source, uint32 gossipListId, uint32 men
             break;
         case GOSSIP_OPTION_UNLEARNTALENTS:
             PlayerTalkClass->SendCloseGossip();
-            SendTalentWipeConfirm(guid);
+            SendTalentWipeConfirm(guid, false);
+            break;
+         case GOSSIP_OPTION_UNLEARNSPECIALIZATION:
+            PlayerTalkClass->SendCloseGossip();
+            SendTalentWipeConfirm(guid, true);
             break;
         case GOSSIP_OPTION_TAXIVENDOR:
             GetSession()->SendTaxiMenu(source->ToCreature());
@@ -16922,8 +17029,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //"totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, "
     // 46      47      48      49      50      51      52           53         54          55             56                  57              58
     //"health, power1, power2, power3, power4, power5, instance_id, speccount, activespec, specialization1, specialization2, exploredZones, equipmentCache, "
-    // 59           60          61
-    //"knownTitles, actionBars, grantableLevels FROM characters WHERE guid = '%u'", guid);
+    // 59           60          61               62                         63
+    //"knownTitles, actionBars, grantableLevels, resetspecialization_cost, resetspecialization_time  FROM characters WHERE guid = '%u'", guid);
     PreparedQueryResult result = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
     if (!result)
@@ -17327,6 +17434,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetTalentResetCost(fields[24].GetUInt32());
     SetTalentResetTime(time_t(fields[25].GetUInt32()));
 
+    SetSpecializationResetCost(fields[62].GetUInt32());
+    SetSpecializationResetTime(time_t(fields[63].GetUInt32()));
+
     m_taxi.LoadTaxiMask(fields[17].GetCString());            // must be before InitTaxiNodesForLevel
 
     uint32 extraflags = fields[32].GetUInt16();
@@ -17496,12 +17606,12 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
             uint32 savedPower = fields[47+loadedPowers].GetUInt32();
             uint32 maxPower = GetUInt32Value(UNIT_FIELD_MAXPOWER1 + loadedPowers);
             SetPower(Powers(i), (savedPower > maxPower) ? maxPower : savedPower);
-            if (++loadedPowers >= MAX_STORED_POWERS)
+            if (++loadedPowers >= MAX_POWERS_PER_CLASS)
                 break;
         }
     }
 
-    for (; loadedPowers < MAX_STORED_POWERS; ++loadedPowers)
+    for (; loadedPowers < MAX_POWERS_PER_CLASS; ++loadedPowers)
         SetUInt32Value(UNIT_FIELD_POWER1 + loadedPowers, 0);
 
     SetPower(POWER_ECLIPSE, 0);
@@ -19029,12 +19139,12 @@ void Player::SaveToDB(bool create /*=false*/)
             if (GetPowerIndexByClass(Powers(i), getClass()) != MAX_POWERS)
             {
                 stmt->setUInt32(index++, GetUInt32Value(UNIT_FIELD_POWER1 + storedPowers));
-                if (++storedPowers >= MAX_STORED_POWERS)
+                if (++storedPowers >= MAX_POWERS_PER_CLASS)
                     break;
             }
         }
 
-        for (; storedPowers < MAX_STORED_POWERS; ++storedPowers)
+        for (; storedPowers < MAX_POWERS_PER_CLASS; ++storedPowers)
             stmt->setUInt32(index++, 0);
 
         stmt->setUInt32(index++, GetSession()->GetLatency());
@@ -19149,12 +19259,12 @@ void Player::SaveToDB(bool create /*=false*/)
             if (GetPowerIndexByClass(Powers(i), getClass()) != MAX_POWERS)
             {
                 stmt->setUInt32(index++, GetUInt32Value(UNIT_FIELD_POWER1 + storedPowers));
-                if (++storedPowers >= MAX_STORED_POWERS)
+                if (++storedPowers >= MAX_POWERS_PER_CLASS)
                     break;
             }
         }
 
-        for (; storedPowers < MAX_STORED_POWERS; ++storedPowers)
+        for (; storedPowers < MAX_POWERS_PER_CLASS; ++storedPowers)
             stmt->setUInt32(index++, 0);
 
         stmt->setUInt32(index++, GetSession()->GetLatency());
@@ -19196,6 +19306,10 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt32(index++, m_grantableLevels);
 
         stmt->setUInt8(index++, IsInWorld() ? 1 : 0);
+
+        stmt->setUInt32(index++, GetSpecializationResetCost());
+        stmt->setUInt32(index++, GetSpecializationResetTime());
+
         // Index
         stmt->setUInt32(index++, GetGUIDLow());
     }
@@ -19877,7 +19991,7 @@ void Player::_SaveStats(SQLTransaction& trans)
     stmt->setUInt32(index++, GetGUIDLow());
     stmt->setUInt32(index++, GetMaxHealth());
 
-    for (uint8 i = 0; i < MAX_STORED_POWERS; ++i)
+    for (uint8 i = 0; i < MAX_POWERS_PER_CLASS; ++i)
         stmt->setUInt32(index++, GetMaxPower(Powers(i)));
 
     for (uint8 i = 0; i < MAX_STATS; ++i)
@@ -21718,7 +21832,14 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
         return false;
     }
 
-    return crItem->maxcount != 0;
+    if (crItem->maxcount != 0) // bought
+    { 
+        if (pProto->Quality > ITEM_QUALITY_EPIC || (pProto->Quality == ITEM_QUALITY_EPIC && pProto->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
+            if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+                guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_PURCHASED, time(NULL), GetGUID(), 0, item);
+        return true;
+    }
+    return false;
 }
 
 uint32 Player::GetMaxPersonalArenaRatingRequirement(uint32 minarenaslot) const
@@ -24464,6 +24585,11 @@ void Player::StoreLootItem(uint8 lootSlot, Loot* loot)
             item->is_looted = true;
 
         --loot->unlootedCount;
+
+        if (const ItemTemplate* proto = sObjectMgr->GetItemTemplate(item->itemid))
+            if (proto->Quality > ITEM_QUALITY_EPIC || (proto->Quality == ITEM_QUALITY_EPIC && proto->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
+                if (Guild* guild = sGuildMgr->GetGuildById(GetGuildId()))
+                    guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_LOOTED, time(NULL), GetGUID(), 0, item->itemid);
 
         SendNewItem(newitem, uint32(item->count), false, false, true);
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_ITEM, item->itemid, item->count);

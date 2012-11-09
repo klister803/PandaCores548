@@ -63,6 +63,8 @@
 #include "GameObjectAI.h"
 #include "AccountMgr.h"
 #include "InstanceScript.h"
+#include "Guild.h"
+#include "GuildMgr.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
@@ -648,6 +650,26 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             }
             break;
         case SPELLFAMILY_DEATHKNIGHT:
+            if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE)
+            {
+                if ((m_caster->CountPctFromMaxHealth(7)) > (20 * m_caster->GetDamageTakenInPastSecs(5) / 100))
+                    bp = m_caster->CountPctFromMaxHealth(7);
+                else
+                    bp = (20 * m_caster->GetDamageTakenInPastSecs(5) / 100);
+
+                // Item - Death Knight T14 Blood 4P bonus
+                if (m_caster->HasAura(123080))
+                    bp *= 1.1f;
+
+                // Glyph of Dark Succor
+                if (AuraEffect const* aurEff = m_caster->GetAuraEffect(96279, 0))
+                    if (bp < int32(m_caster->CountPctFromMaxHealth(aurEff->GetAmount())))
+                        if (m_caster->HasAura(48265) || m_caster->HasAura(48266)) // Only in frost/unholy presence
+                            bp = m_caster->CountPctFromMaxHealth(aurEff->GetAmount());
+
+                m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
+                return;
+            }
             switch (m_spellInfo->Id)
             {
                 case 46584: // Raise Dead
@@ -1626,6 +1648,10 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
         // create the new item and store it
         Item* pItem = player->StoreNewItem(dest, newitemid, true, Item::GenerateItemRandomPropertyId(newitemid));
 
+        if (pProto->Quality > ITEM_QUALITY_EPIC || (pProto->Quality == ITEM_QUALITY_EPIC && pProto->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
+            if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
+                guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_CRAFTED, time(NULL), player->GetGUID(), 0, pProto->ItemId);
+
         // was it successful? return error if not
         if (!pItem)
         {
@@ -1638,10 +1664,9 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
             pItem->SetUInt32Value(ITEM_FIELD_CREATOR, player->GetGUIDLow());
 
         // send info to the client
-        if (pItem)
-            player->SendNewItem(pItem, num_to_add, true, bgType == 0);
+        player->SendNewItem(pItem, num_to_add, true, bgType == 0);
 
-        // we succeeded in creating at least one item, so a levelup is possible
+        // we succeeded in creating at least one item, so a level up is possible
         if (bgType == 0)
             player->UpdateCraftSkill(m_spellInfo->Id);
     }
@@ -1987,7 +2012,8 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
                     bg->EventPlayerClickedOnFlag(player, gameObjTarget);
                 return;
             }
-        }else if (m_spellInfo->Id == 1842 && gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_TRAP && gameObjTarget->GetOwner())
+        }
+        else if (m_spellInfo->Id == 1842 && gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_TRAP && gameObjTarget->GetOwner())
         {
             gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
             return;
@@ -2024,7 +2050,7 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
 
     if (gameObjTarget)
         SendLoot(guid, LOOT_SKINNING);
-    else
+    else if (itemTarget)
         itemTarget->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNLOCKED);
 
     // not allow use skill grow at item base open
@@ -2570,7 +2596,7 @@ void Spell::EffectUntrainTalents(SpellEffIndex /*effIndex*/)
         return;
 
     if (uint64 guid = m_caster->GetGUID()) // the trainer is the caster
-        unitTarget->ToPlayer()->SendTalentWipeConfirm(guid);
+        unitTarget->ToPlayer()->SendTalentWipeConfirm(guid, false);
 }
 
 void Spell::EffectTeleUnitsFaceCaster(SpellEffIndex effIndex)

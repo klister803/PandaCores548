@@ -45,7 +45,7 @@ enum SelectAggroTarget
     SELECT_TARGET_TOPAGGRO,                                 //Selects targes from top aggro to bottom
     SELECT_TARGET_BOTTOMAGGRO,                              //Selects targets from bottom aggro to top
     SELECT_TARGET_NEAREST,
-    SELECT_TARGET_FARTHEST,
+    SELECT_TARGET_FARTHEST
 };
 
 // default predicate function to select target based on distance, player and/or aura criteria
@@ -151,7 +151,7 @@ class UnitAI
         virtual uint64 GetGUID(int32 /*id*/ = 0) { return 0; }
 
         Unit* SelectTarget(SelectAggroTarget targetType, uint32 position = 0, float dist = 0.0f, bool playerOnly = false, int32 aura = 0);
-        // Select the targets satifying the predicate.
+        // Select the targets satisfying the predicate.
         // predicate shall extend std::unary_function<Unit*, bool>
         template <class PREDICATE> Unit* SelectTarget(SelectAggroTarget targetType, uint32 position, PREDICATE const& predicate)
         {

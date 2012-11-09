@@ -1132,7 +1132,7 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
     case 68719: // Oil Refinery - Isle of Conquest.
     case 68720: // Quarry - Isle of Conquest.
         {
-            if (player->GetBattlegroundTypeId() != BATTLEGROUND_IC || !player->GetBattleground())
+            if (!player || player->GetBattlegroundTypeId() != BATTLEGROUND_IC || !player->GetBattleground())
                 return false;
 
             uint8 nodeType = spellId == 68719 ? NODE_TYPE_REFINERY : NODE_TYPE_QUARRY;
@@ -3047,13 +3047,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 77513:  // Mastery : Blood Shield
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 25;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 77515:  // Mastery : Dreadblade
-                spellInfo->Effects[0].BasePoints = 20;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 77514:  // Mastery : Frozen Heart
-                spellInfo->Effects[0].BasePoints = 16;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 77495:  // Mastery : Harmony
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
@@ -3169,15 +3171,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 76857:  // Mastery : Critical Block
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 2;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 76838:  // Mastery : Strikes of Opportunity
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 9;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 76856:  // Mastery : Unshackled Fury
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = int32(11 / 2);
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             default:
                 break;
