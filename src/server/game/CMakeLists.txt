@@ -8,6 +8,12 @@
 # WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
 # implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+# if(CMAKE_COMPILER_IS_GNUCXX)
+#    add_definitions(-std=gnu++0x)
+#    SET(CMAKE_CXX_FLAGS "-std=c++0x")
+     ADD_DEFINITIONS("-std=c++0x") 
+# endif()
+
 if( USE_COREPCH )
   include_directories(${CMAKE_CURRENT_BINARY_DIR})
 endif()

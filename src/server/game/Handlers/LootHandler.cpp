@@ -492,7 +492,7 @@ void WorldSession::HandleLootMasterAskForRoll(WorldPacket& recvData)
     ObjectGuid guid = 0;
     uint8 slot = 0;
 
-    recvData >> uint8(slot);
+    recvData >> slot;
 
     guid[4] = recvData.ReadBit();
     guid[3] = recvData.ReadBit();
@@ -595,7 +595,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
         recvData.ReadByteSeq(guids[i][5]);
         recvData.ReadByteSeq(guids[i][4]);
         recvData.ReadByteSeq(guids[i][2]);
-        recvData >> uint8(types[i]);
+        recvData >> types[i];
     }
 
     recvData.ReadByteSeq(target_playerguid[7]);

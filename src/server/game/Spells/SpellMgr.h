@@ -595,8 +595,8 @@ DiminishingLevels GetDiminishingReturnsMaxLevel(DiminishingGroup group);
 int32 GetDiminishingReturnsLimitDuration(DiminishingGroup group, SpellInfo const* spellproto);
 bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
 
-typedef std::vector<std::list<uint32>> SpellClassList;
-typedef std::map<uint32, std::list<uint32>> SpellOverrideInfo;
+typedef std::vector<std::list<uint32> > SpellClassList;
+typedef std::map<uint32, std::list<uint32> > SpellOverrideInfo;
 typedef std::set<uint32> TalentSpellSet;
 
 class SpellMgr
