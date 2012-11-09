@@ -271,6 +271,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _targetLocked = false;
     _lastLiquid = NULL;
     _isWalkingBeforeCharm = false;
+
+    SetEclipsePower(0); // Not sure of 0
 }
 
 ////////////////////////////////////////////////////////////
@@ -13099,11 +13101,11 @@ int32 Unit::GetCreatePowers(Powers power) const
         case POWER_RUNES:
             return 0;
         case POWER_SOUL_SHARDS:
-            return 3;
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK ? 3 : 0);
         case POWER_ECLIPSE:
-            return 0;
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_DRUID ? 100 : 0); // Should be -100 to 100 this needs the power to be int32 instead of uint32
         case POWER_HOLY_POWER:
-            return 0;
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_PALADIN ? 3 : 0);
         case POWER_HEALTH:
             return 0;
         case POWER_CHI:
