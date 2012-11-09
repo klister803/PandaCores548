@@ -4553,6 +4553,39 @@ uint32 Player::GetNextResetSpecializationCost() const
     }
 }
 
+uint32 Player::GetNextResetTalentsCost() const
+{
+    // The first time reset costs 1 gold
+    if (GetTalentResetCost() < 1*GOLD)
+        return 1*GOLD;
+    // then 5 gold
+    else if (GetTalentResetCost() < 5*GOLD)
+        return 5*GOLD;
+    // After that it increases in increments of 5 gold
+    else if (GetTalentResetCost() < 10*GOLD)
+        return 10*GOLD;
+    else
+    {
+        uint64 months = (sWorld->GetGameTime() - GetTalentResetTime())/MONTH;
+        if (months > 0)
+        {
+            // This cost will be reduced by a rate of 5 gold per month
+            int32 new_cost = int32(GetTalentResetCost() - 5*GOLD*months);
+            // to a minimum of 10 gold.
+            return (new_cost < 10*GOLD ? 10*GOLD : new_cost);
+        }
+        else
+        {
+            // After that it increases in increments of 5 gold
+            int32 new_cost = GetTalentResetCost() + 5*GOLD;
+            // until it hits a cap of 50 gold.
+            if (new_cost > 50*GOLD)
+                new_cost = 50*GOLD;
+            return new_cost;
+        }
+    }
+}
+
 bool Player::ResetTalents(bool no_cost)
 {
     sScriptMgr->OnPlayerTalentsReset(this, no_cost);
@@ -4636,7 +4669,7 @@ void Player::ResetSpec()
 
     if (!sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST))
     {
-        cost = GetNextSpecializationTalentsCost();
+        cost = GetNextResetSpecializationCost();
 
         if (!HasEnoughMoney(uint64(cost)))
         {
