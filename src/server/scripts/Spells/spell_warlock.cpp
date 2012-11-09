@@ -41,8 +41,13 @@ enum WarlockSpells
     WARLOCK_HAUNT_HEAL                      = 48210,
     WARLOCK_UNSTABLE_AFFLICTION_DISPEL      = 31117,
     WARLOCK_CURSE_OF_DOOM_EFFECT            = 18662,
+    WARLOCK_IMPROVED_HEALTH_FUNNEL_R1       = 18703,
+    WARLOCK_IMPROVED_HEALTH_FUNNEL_R2       = 18704,
+    WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R1  = 60955,
+    WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2  = 60956
 };
 
+// Updated 4.3.4
 class spell_warl_banish : public SpellScriptLoader
 {
 public:
@@ -60,11 +65,14 @@ public:
 
         void HandleBanish()
         {
+            // Casting Banish on a banished target will cancel the effect
+            // Check if the target already has Banish, if so, do nothing.
+
             if (Unit* target = GetHitUnit())
             {
                 if (target->GetAuraEffect(SPELL_AURA_SCHOOL_IMMUNITY, SPELLFAMILY_WARLOCK, 0, 0x08000000, 0))
                 {
-                    //No need to remove old aura since its removed due to not stack by current Banish aura
+                    // No need to remove old aura since its removed due to not stack by current Banish aura
                     PreventHitDefaultEffect(EFFECT_0);
                     PreventHitDefaultEffect(EFFECT_1);
                     PreventHitDefaultEffect(EFFECT_2);
@@ -94,6 +102,7 @@ public:
     }
 };
 
+// Updated 4.3.4
 // 47193 Demonic Empowerment
 class spell_warl_demonic_empowerment : public SpellScriptLoader
 {
@@ -157,7 +166,7 @@ class spell_warl_demonic_empowerment : public SpellScriptLoader
         }
 };
 
-// 6201 Create Healthstone (and ranks)
+// 6201 Create Healthstone
 class spell_warl_create_healthstone : public SpellScriptLoader
 {
     public:
@@ -264,34 +273,6 @@ class spell_warl_everlasting_affliction : public SpellScriptLoader
         {
             return new spell_warl_everlasting_affliction_SpellScript();
         }
-};
-
-// 18541 Ritual of Doom Effect
-class spell_warl_ritual_of_doom_effect : public SpellScriptLoader
-{
-public:
-    spell_warl_ritual_of_doom_effect() : SpellScriptLoader("spell_warl_ritual_of_doom_effect") { }
-
-    class spell_warl_ritual_of_doom_effect_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_warl_ritual_of_doom_effect_SpellScript);
-
-        void HandleDummy(SpellEffIndex /*effIndex*/)
-        {
-            Unit* caster = GetCaster();
-            caster->CastSpell(caster, GetEffectValue(), true);
-        }
-
-        void Register()
-        {
-            OnEffectHit += SpellEffectFn(spell_warl_ritual_of_doom_effect_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_warl_ritual_of_doom_effect_SpellScript();
-    }
 };
 
 class spell_warl_seed_of_corruption : public SpellScriptLoader
@@ -737,13 +718,57 @@ class spell_warl_curse_of_doom : public SpellScriptLoader
         }
 };
 
+class spell_warl_health_funnel : public SpellScriptLoader
+{
+public:
+    spell_warl_health_funnel() : SpellScriptLoader("spell_warl_health_funnel") { }
+
+    class spell_warl_health_funnel_AuraScript : public AuraScript
+    {
+        PrepareAuraScript(spell_warl_health_funnel_AuraScript)
+
+            void ApplyEffect(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Unit* caster = GetCaster();
+            if (!caster)
+                return;
+
+            Unit* target = GetTarget();
+            if (caster->HasAura(WARLOCK_IMPROVED_HEALTH_FUNNEL_R2))
+                target->CastSpell(target, WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2, true);
+            else if (caster->HasAura(WARLOCK_IMPROVED_HEALTH_FUNNEL_R1))
+                target->CastSpell(target, WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R1, true);
+        }
+
+        void RemoveEffect(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        {
+            Unit* target = GetTarget();
+            target->RemoveAurasDueToSpell(WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R1);
+            target->RemoveAurasDueToSpell(WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2);
+
+        }
+
+        void Register()
+        {
+            OnEffectRemove += AuraEffectRemoveFn(spell_warl_health_funnel_AuraScript::RemoveEffect, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
+            OnEffectApply += AuraEffectApplyFn(spell_warl_health_funnel_AuraScript::ApplyEffect, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
+        }
+    };
+
+    AuraScript* GetAuraScript() const
+    {
+        return new spell_warl_health_funnel_AuraScript();
+    }
+};
+
+
+
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_banish();
     new spell_warl_demonic_empowerment();
     new spell_warl_create_healthstone();
     new spell_warl_everlasting_affliction();
-    new spell_warl_ritual_of_doom_effect();
     new spell_warl_seed_of_corruption();
     new spell_warl_soulshatter();
     new spell_warl_life_tap();
@@ -752,4 +777,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_haunt();
     new spell_warl_unstable_affliction();
     new spell_warl_curse_of_doom();
+    new spell_warl_health_funnel();
 }

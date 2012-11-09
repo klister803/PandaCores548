@@ -115,7 +115,7 @@ bool LoginQueryHolder::Initialize()
     stmt->setUInt32(0, lowGuid);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADINVENTORY, stmt);
 
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_VOID_STORAGE);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_VOID_STORAGE);
     stmt->setUInt32(0, lowGuid);
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE, stmt);
 
@@ -1029,9 +1029,70 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     }
 
     pCurrChar->ContinueTaxiFlight();
+    //if player is hunter, then add a pet at the beginning
+    if (pCurrChar->HasAtLoginFlag(AT_LOGIN_FIRST) && pCurrChar->getClass() == CLASS_HUNTER)
+    {
+        uint32 spell_id = 883;
+        uint32 creature_id = 0;
+        switch (pCurrChar->getRace())
+        {
+        case RACE_HUMAN:
+            creature_id = 299;
+            break;
+        case RACE_ORC:
+            creature_id = 42719;
+            break;
+        case RACE_DWARF:
+            creature_id = 42713;
+            break;
+        case RACE_NIGHTELF:
+            creature_id = 42718;
+            break;
+        case RACE_UNDEAD_PLAYER:
+            creature_id = 51107;
+            break;
+        case RACE_TAUREN:
+            creature_id = 42720;
+            break;
+        case RACE_TROLL:
+            creature_id = 42721;
+            break;
+        case RACE_GOBLIN:
+            creature_id = 42715;
+            break;
+        case RACE_BLOODELF:
+            creature_id = 42710;
+            break;
+        case RACE_DRAENEI:
+            creature_id = 42712;
+            break;
+        case RACE_WORGEN:
+            creature_id = 42712;
+            break;
+        case RACE_PANDAREN_NEUTRAL:
+            creature_id = 57239;
+            break;
+        default:
+            break;
+        }
+        float x, y, z;
+        pCurrChar->GetClosePoint(x, y, z, pCurrChar->GetObjectSize());
+        Pet* pet = pCurrChar->SummonPet(creature_id, x, y, z, pCurrChar->GetOrientation(), SUMMON_PET, 0);
+        if (!pet)
+            return;
 
-    // Load pet if any (if player not alive and in taxi flight or another then pet will remember as temporary unsummoned)
-    pCurrChar->LoadPet();
+        pet->SetReactState(REACT_DEFENSIVE);
+
+        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, spell_id);
+
+        // generate new name for summon pet
+        std::string new_name=sObjectMgr->GeneratePetName(creature_id);
+        if (!new_name.empty())
+            pet->SetName(new_name);
+    }
+    else
+        // Load pet if any (if player not alive and in taxi flight or another then pet will remember as temporary unsummoned)
+        pCurrChar->LoadPet();
 
     // Set FFA PvP for non GM in non-rest mode
     if (sWorld->IsFFAPvPRealm() && !pCurrChar->isGameMaster() && !pCurrChar->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_RESTING))
@@ -1383,6 +1444,23 @@ void WorldSession::HandleAlterAppearance(WorldPacket& recvData)
 
     if (bs_skinColor && (bs_skinColor->type != 3 || bs_skinColor->race != _player->getRace() || bs_skinColor->gender != _player->getGender()))
         return;
+
+    GameObject* go = _player->FindNearestGameObjectOfType(GAMEOBJECT_TYPE_BARBER_CHAIR, 5.0f);
+    if (!go)
+    {
+        WorldPacket data(SMSG_BARBER_SHOP_RESULT, 4);
+        data << uint32(2);
+        SendPacket(&data);
+        return;
+    }
+
+    if (_player->getStandState() != UNIT_STAND_STATE_SIT_LOW_CHAIR + go->GetGOInfo()->barberChair.chairheight)
+    {
+        WorldPacket data(SMSG_BARBER_SHOP_RESULT, 4);
+        data << uint32(2);
+        SendPacket(&data);
+        return;
+    }
 
     uint32 cost = _player->GetBarberShopCost(bs_hair->hair_id, Color, bs_facialHair->hair_id, bs_skinColor);
 

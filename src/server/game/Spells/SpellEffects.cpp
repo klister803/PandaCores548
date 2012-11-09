@@ -63,6 +63,8 @@
 #include "GameObjectAI.h"
 #include "AccountMgr.h"
 #include "InstanceScript.h"
+#include "Guild.h"
+#include "GuildMgr.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
@@ -546,22 +548,6 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         return;
                 break;
             }
-            case SPELLFAMILY_SHAMAN:
-            {
-                // Custom MoP script
-                // 77223 - Mastery : Enhanced Elements
-                if (m_spellInfo->SchoolMask == SPELL_SCHOOL_MASK_FIRE || m_spellInfo->SchoolMask == SPELL_SCHOOL_MASK_FROST || m_spellInfo->SchoolMask == SPELL_SCHOOL_MASK_NATURE)
-                {
-                    if (m_caster->HasAura(77223))
-                    {
-                        float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY);
-                        Mastery *= 2;
-
-                        damage *= 1 + (Mastery / 100);
-                    }
-                }
-                break;
-            }
             case SPELLFAMILY_MONK:
             {
                 switch (m_spellInfo->Id)
@@ -664,6 +650,26 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             }
             break;
         case SPELLFAMILY_DEATHKNIGHT:
+            if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE)
+            {
+                if ((m_caster->CountPctFromMaxHealth(7)) > (20 * m_caster->GetDamageTakenInPastSecs(5) / 100))
+                    bp = m_caster->CountPctFromMaxHealth(7);
+                else
+                    bp = (20 * m_caster->GetDamageTakenInPastSecs(5) / 100);
+
+                // Item - Death Knight T14 Blood 4P bonus
+                if (m_caster->HasAura(123080))
+                    bp *= 1.1f;
+
+                // Glyph of Dark Succor
+                if (AuraEffect const* aurEff = m_caster->GetAuraEffect(96279, 0))
+                    if (bp < int32(m_caster->CountPctFromMaxHealth(aurEff->GetAmount())))
+                        if (m_caster->HasAura(48265) || m_caster->HasAura(48266)) // Only in frost/unholy presence
+                            bp = m_caster->CountPctFromMaxHealth(aurEff->GetAmount());
+
+                m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
+                return;
+            }
             switch (m_spellInfo->Id)
             {
                 case 46584: // Raise Dead
@@ -1471,8 +1477,6 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
         if (unitTarget->HasAura(48920) && (unitTarget->GetHealth() + addhealth >= unitTarget->GetMaxHealth()))
             unitTarget->RemoveAura(48920);
 
-        m_damage -= addhealth;
-
         // Custom MoP Script
         // 77226 - Mastery : Deep Healing
         if (m_caster && m_caster->getClass() == CLASS_SHAMAN)
@@ -1481,17 +1485,18 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             {
                 if (addhealth)
                 {
-                    float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY);
+                    float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
                     float healthpct = unitTarget->GetHealthPct();
-                    Mastery *= 3;
 
-                    int32 bonus = 0;
-                    bonus = CalculatePctN((1 + (100.0f - healthpct)), Mastery);
+                    float bonus = 0;
+                    bonus = CalculatePctF((1 + (100.0f - healthpct)), Mastery);
 
-                    addhealth *= (bonus / 100);
+                    addhealth *= 1 + bonus;
                 }
             }
         }
+
+        m_damage -= addhealth;
     }
 }
 
@@ -1643,6 +1648,10 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
         // create the new item and store it
         Item* pItem = player->StoreNewItem(dest, newitemid, true, Item::GenerateItemRandomPropertyId(newitemid));
 
+        if (pProto->Quality > ITEM_QUALITY_EPIC || (pProto->Quality == ITEM_QUALITY_EPIC && pProto->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
+            if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
+                guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_CRAFTED, time(NULL), player->GetGUID(), 0, pProto->ItemId);
+
         // was it successful? return error if not
         if (!pItem)
         {
@@ -1655,10 +1664,9 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
             pItem->SetUInt32Value(ITEM_FIELD_CREATOR, player->GetGUIDLow());
 
         // send info to the client
-        if (pItem)
-            player->SendNewItem(pItem, num_to_add, true, bgType == 0);
+        player->SendNewItem(pItem, num_to_add, true, bgType == 0);
 
-        // we succeeded in creating at least one item, so a levelup is possible
+        // we succeeded in creating at least one item, so a level up is possible
         if (bgType == 0)
             player->UpdateCraftSkill(m_spellInfo->Id);
     }
@@ -2004,7 +2012,8 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
                     bg->EventPlayerClickedOnFlag(player, gameObjTarget);
                 return;
             }
-        }else if (m_spellInfo->Id == 1842 && gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_TRAP && gameObjTarget->GetOwner())
+        }
+        else if (m_spellInfo->Id == 1842 && gameObjTarget->GetGOInfo()->type == GAMEOBJECT_TYPE_TRAP && gameObjTarget->GetOwner())
         {
             gameObjTarget->SetLootState(GO_JUST_DEACTIVATED);
             return;
@@ -2041,7 +2050,7 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
 
     if (gameObjTarget)
         SendLoot(guid, LOOT_SKINNING);
-    else
+    else if (itemTarget)
         itemTarget->SetFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNLOCKED);
 
     // not allow use skill grow at item base open

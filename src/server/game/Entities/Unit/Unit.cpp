@@ -154,12 +154,27 @@ _hitMask(hitMask), _spell(spell), _damageInfo(damageInfo), _healInfo(healInfo)
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
-Unit::Unit(bool isWorldObject): WorldObject(isWorldObject),
-m_movedPlayer(NULL), m_lastSanctuaryTime(0), IsAIEnabled(false), NeedChangeAI(false),
-m_ControlledByPlayer(false), movespline(new Movement::MoveSpline()), i_AI(NULL),
-i_disabledAI(NULL), m_procDeep(0), m_removedAurasCount(0), i_motionMaster(this),
-m_ThreatManager(this), m_vehicle(NULL), m_vehicleKit(NULL), m_unitTypeMask(UNIT_MASK_NONE),
-m_HostileRefManager(this), m_TempSpeed(0.0f), m_AutoRepeatFirstCast(false)
+Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
+    , m_movedPlayer(NULL)
+    , m_lastSanctuaryTime(0)
+    , m_TempSpeed(0.0f)
+    , IsAIEnabled(false)
+    , NeedChangeAI(false)
+    , m_ControlledByPlayer(false)
+    , movespline(new Movement::MoveSpline())
+    , i_AI(NULL)
+    , i_disabledAI(NULL)
+    , m_AutoRepeatFirstCast(false)
+    , m_procDeep(0)
+    , m_removedAurasCount(0)
+    , i_motionMaster(this)
+    , m_ThreatManager(this)
+    , m_vehicle(NULL)
+    , m_vehicleKit(NULL)
+    , m_unitTypeMask(UNIT_MASK_NONE)
+    , m_HostileRefManager(this)
+
+
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -230,7 +245,6 @@ m_HostileRefManager(this), m_TempSpeed(0.0f), m_AutoRepeatFirstCast(false)
     m_baseSpellCritChance = 5;
 
     m_CombatTimer = 0;
-    m_lastManaUse = 0;
 
     for (uint8 i = 0; i < MAX_SPELL_SCHOOL; ++i)
         m_threatModifier[i] = 1.0f;
@@ -379,10 +393,7 @@ void Unit::MonsterMoveWithSpeed(float x, float y, float z, float speed)
     init.Launch();
 }
 
-enum MovementIntervals
-{
-    POSITION_UPDATE_DELAY = 400,
-};
+uint32 const positionUpdateDelay = 400;
 
 void Unit::UpdateSplineMovement(uint32 t_diff)
 {
@@ -402,7 +413,7 @@ void Unit::UpdateSplineMovement(uint32 t_diff)
 
 void Unit::UpdateSplinePosition()
 {
-    m_movesplineTimer.Reset(POSITION_UPDATE_DELAY);
+    m_movesplineTimer.Reset(positionUpdateDelay);
     Movement::Location loc = movespline->ComputePosition();
     if (GetTransGUID())
     {
@@ -412,14 +423,8 @@ void Unit::UpdateSplinePosition()
         pos.m_positionZ = loc.z;
         pos.SetOrientation(loc.orientation);
         if (Unit* vehicle = GetVehicleBase())
-        {
-            loc.x += vehicle->GetPositionX();
-            loc.y += vehicle->GetPositionY();
-            loc.z += vehicle->GetPositionZMinusOffset();
-            loc.orientation = vehicle->GetOrientation();
-        }
-        else if (Transport* trans = GetTransport())
-            trans->CalculatePassengerPosition(loc.x, loc.y, loc.z, loc.orientation);
+        if (TransportBase* transport = GetDirectTransport())
+            transport->CalculatePassengerPosition(loc.x, loc.y, loc.z, loc.orientation);
     }
 
     UpdatePosition(loc.x, loc.y, loc.z, loc.orientation);
@@ -546,16 +551,15 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         GetAI()->DamageDealt(victim, damage, damagetype);
 
     if (victim->GetTypeId() == TYPEID_PLAYER)
+    {
         if (victim->ToPlayer()->GetCommandStatus(CHEAT_GOD))
             return 0;
-
+        
     // Signal to pets that their owner was attacked
-    if (victim->GetTypeId() == TYPEID_PLAYER)
-    {
-        Pet* pet = victim->ToPlayer()->GetPet();
+    Pet* pet = victim->ToPlayer()->GetPet();
 
-        if (pet && pet->isAlive())
-            pet->AI()->OwnerDamagedBy(this);
+    if (pet && pet->isAlive())
+        pet->AI()->OwnerDamagedBy(this);
     }
 
     if (damagetype != NODAMAGE)
@@ -4148,11 +4152,16 @@ uint32 Unit::GetDoTsByCaster(uint64 casterGUID) const
 
 int32 Unit::GetTotalAuraModifier(AuraType auratype) const
 {
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
     int32 modifier = 0;
 
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
-        modifier += (*i)->GetAmount();
+         if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*i)->GetSpellInfo(), (*i)->GetAmount(), SameEffectSpellGroup))
+             modifier += (*i)->GetAmount();
+
+    for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
+        modifier += itr->second;
 
     return modifier;
 }
@@ -4196,14 +4205,19 @@ int32 Unit::GetMaxNegativeAuraModifier(AuraType auratype) const
 
 int32 Unit::GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const
 {
+    std::map<SpellGroup, int32> SameEffectSpellGroup;
     int32 modifier = 0;
 
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
+
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
-    {
-        if ((*i)->GetMiscValue()& misc_mask)
-            modifier += (*i)->GetAmount();
-    }
+         if ((*i)->GetMiscValue() & misc_mask)
+             if (!sSpellMgr->AddSameEffectStackRuleSpellGroups((*i)->GetSpellInfo(), (*i)->GetAmount(), SameEffectSpellGroup))
+                 modifier += (*i)->GetAmount();
+
+    for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
+        modifier += itr->second;
+
     return modifier;
 }
 
@@ -9021,6 +9035,23 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
     if (GetTypeId() == TYPEID_UNIT && ToCreature()->isTotem())
         unit = GetOwner();
 
+    // Custom MoP Script
+    // 76669 - Mastery : Illuminated Healing
+    if (unit && victim && addhealth != 0)
+    {
+        if (unit->GetTypeId() == TYPEID_PLAYER)
+        {
+            if (unit->HasAura(76669))
+            {
+                float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
+
+                int32 bp = CalculatePctF(addhealth, Mastery) * 100;
+
+                unit->CastCustomSpell(victim, 86273, &bp, NULL, NULL, true);
+            }
+        }
+    }
+
     if (Player* player = unit->ToPlayer())
     {
         if (Battleground* bg = player->GetBattleground())
@@ -9288,6 +9319,81 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     float DoneTotalMod = 1.0f;
     float ApCoeffMod = 1.0f;
     int32 DoneTotal = 0;
+
+    // Custom MoP Script
+    // 76547 - Mastery : Mana Adept
+    if (spellProto)
+    {
+        if (HasAura(76547))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            float manapct = float(GetPower(POWER_MANA)) / float(GetMaxPower(POWER_MANA)) * 100.0f;
+            float bonus = 0;
+            bonus = CalculatePctF((1 + (100.0f - manapct)), Mastery);
+
+            DoneTotalMod += bonus;
+        }
+    }
+
+    // Custom MoP Script
+    // 77514 - Mastery : Frozen Heart
+    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST)
+    {
+        if (HasAura(77514))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 77515 - Mastery : Dreadblade
+    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_SHADOW)
+    {
+        if (HasAura(77515))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.5f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 76613 - Mastery : Frostburn
+    if (spellProto && victim)
+    {
+        if (isPet())
+        {
+            Unit* owner = GetOwner();
+            if (owner->HasAura(76613))
+            {
+                float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                DoneTotalMod += Mastery;
+            }
+        }
+        else
+        {
+            if (HasAura(76613))
+            {
+                if (victim->HasAuraState(AURA_STATE_FROZEN))
+                {
+                    float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                    DoneTotalMod += Mastery;
+                }
+            }
+        }
+    }
+
+    // Custom MoP Script
+    // 77223 - Mastery : Enhanced Elements
+    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FIRE || spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST || spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE)
+    {
+        if (HasAura(77223))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+
+            DoneTotalMod += Mastery;
+        }
+    }
 
     // Pet damage?
     if (GetTypeId() == TYPEID_UNIT && !ToCreature()->isPet())
@@ -10407,6 +10513,72 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Done total percent damage auras
     float DoneTotalMod = 1.0f;
+
+    // Custom MoP Script
+    // 76856 - Mastery : Unshackled Fury
+    if (victim && pdamage != 0)
+    {
+        if (HasAura(76856) && HasAuraState(AURA_STATE_ENRAGE))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.4f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 77514 - Mastery : Frozen Heart
+    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST)
+    {
+        if (HasAura(77514))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 77515 - Mastery : Dreadblade
+    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_SHADOW)
+    {
+        if (HasAura(77515))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.5f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 76838 - Mastery : Strikes of Opportunity
+    if (victim && pdamage != 0 && (attType == BASE_ATTACK || attType == OFF_ATTACK))
+    {
+        if (HasAura(76838))
+        {
+            if (!(this->ToPlayer()->HasSpellCooldown(76858)))
+            {
+                float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.2f;
+                if (roll_chance_f(Mastery))
+                {
+                    this->CastSpell(victim, 76858, true);
+                    this->ToPlayer()->AddSpellCooldown(76858, 0, time(NULL) + 1);
+                }
+            }
+        }
+    }
+
+    // Custom MoP Script
+    // 76613 - Mastery : Frostburn for Water elemental Melee damage
+    if (victim && pdamage != 0)
+    {
+        if (isPet())
+        {
+            Unit* owner = this->GetOwner();
+            if (owner->HasAura(76613))
+            {
+                float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                DoneTotalMod += Mastery;
+            }
+        }
+    }
 
     // Some spells don't benefit from pct done mods
     if (spellProto)
@@ -12310,13 +12482,13 @@ int32 Unit::ModSpellDuration(SpellInfo const* spellProto, Unit const* target, in
                 }
                 break;
             case SPELLFAMILY_PALADIN:
-                if (spellProto->SpellFamilyFlags[0] & 0x00000002)
+                if (spellProto->SpellFamilyFlags[0] & 0x00000002 && spellProto->SpellIconID == 298)
                 {
                     // Glyph of Blessing of Might
                     if (AuraEffect* aurEff = GetAuraEffect(57958, 0))
                         duration += aurEff->GetAmount() * MINUTE * IN_MILLISECONDS;
                 }
-                else if (spellProto->SpellFamilyFlags[0] & 0x00010000)
+                else if (spellProto->SpellFamilyFlags[0] & 0x00010000 && spellProto->SpellIconID == 306)
                 {
                     // Glyph of Blessing of Wisdom
                     if (AuraEffect* aurEff = GetAuraEffect(57979, 0))
@@ -14312,11 +14484,6 @@ float Unit::GetAPMultiplier(WeaponAttackType attType, bool normalized)
     }
 }
 
-bool Unit::IsUnderLastManaUseEffect() const
-{
-    return  getMSTimeDiff(m_lastManaUse, getMSTime()) < 5000;
-}
-
 void Unit::SetContestedPvP(Player* attackedPlayer)
 {
     Player* player = GetCharmerOrOwnerPlayerOrPlayerItself();
@@ -15388,7 +15555,8 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 
     if (Creature* creature = ToCreature())
     {
-        creature->AI()->OnCharmed(false);
+        if (creature->AI())
+            creature->AI()->OnCharmed(false);
 
         if (type != CHARM_TYPE_VEHICLE) // Vehicles' AI is never modified
         {
@@ -15527,6 +15695,13 @@ uint64 Unit::GetTransGUID() const
     return 0;
 }
 
+TransportBase* Unit::GetDirectTransport() const
+{
+    if (Vehicle* veh = GetVehicle())
+        return veh;
+    return GetTransport();
+}
+
 bool Unit::IsInPartyWith(Unit const* unit) const
 {
     if (this == unit)
@@ -15655,26 +15830,28 @@ void Unit::SendPlaySpellVisualKit(uint32 id, uint32 unkParam)
     ObjectGuid guid = GetGUID();
 
     WorldPacket data(SMSG_PLAY_SPELL_VISUAL_KIT, 4 + 4+ 4 + 8);
-    data << uint32(0);
-    data << uint32(id); // SpellVisualKit.dbc index
-    data << uint32(unkParam);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[7]);
+    //I am not sure for the uint32 values, we may have to swap them.
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[1]);
     data.WriteBit(guid[5]);
     data.WriteBit(guid[3]);
-    data.WriteBit(guid[1]);
+    data.WriteBit(guid[7]);
     data.WriteBit(guid[2]);
-    data.WriteBit(guid[0]);
+    data.WriteBit(guid[4]);
     data.WriteBit(guid[6]);
     data.FlushBits();
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[6]);
+
+    data << uint32(0);
     data.WriteByteSeq(guid[7]);
+    data.WriteByteSeq(guid[1]);
+    data << uint32(unkParam);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[6]);
     data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(guid[5]);
+    data << uint32(id); // SpellVisualKit.dbc index
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[3]);
     SendMessageToSet(&data, false);
 }
 
@@ -16543,10 +16720,11 @@ void Unit::_ExitVehicle(Position const* exitPosition)
         return;
 
     m_vehicle->RemovePassenger(this);
+    Player* player = ToPlayer();
 
-    // If player is on mouted duel and exits the mount should immediatly lose the duel
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->duel && ToPlayer()->duel->isMounted)
-        ToPlayer()->DuelComplete(DUEL_FLED);
+    // If player is on mounted duel and exits the mount should immediately lose the duel
+    if (player && player->duel && player->duel->isMounted)
+        player->DuelComplete(DUEL_FLED);
 
     // This should be done before dismiss, because there may be some aura removal
     Vehicle* vehicle = m_vehicle;
@@ -16597,7 +16775,7 @@ void Unit::_ExitVehicle(Position const* exitPosition)
 
     //GetMotionMaster()->MoveFall();            // Enable this once passenger positions are calculater properly (see above)
 
-    if (Player* player = ToPlayer())
+    if (player)
         player->ResummonPetTemporaryUnSummonedIfAny();
 
     if (vehicle->GetBase()->HasUnitTypeMask(UNIT_MASK_MINION))
@@ -16760,7 +16938,7 @@ void Unit::UpdateOrientation(float orientation)
 {
     SetOrientation(orientation);
     if (IsVehicle())
-        GetVehicleKit()->RelocatePassengers(GetPositionX(), GetPositionY(), GetPositionZ(), orientation);
+        GetVehicleKit()->RelocatePassengers();
 }
 
 //! Only server-side height update, does not broadcast to client
@@ -16768,7 +16946,7 @@ void Unit::UpdateHeight(float newZ)
 {
     Relocate(GetPositionX(), GetPositionY(), newZ);
     if (IsVehicle())
-        GetVehicleKit()->RelocatePassengers(GetPositionX(), GetPositionY(), newZ, GetOrientation());
+        GetVehicleKit()->RelocatePassengers();
 }
 
 void Unit::SendThreatListUpdate()
@@ -17165,4 +17343,56 @@ void Unit::SendMovementCanFlyChange()
 bool Unit::IsSplineEnabled() const
 {
     return movespline->Initialized();
+}
+/* In the next functions, we keep 1 minute of last damage */
+uint32 Unit::GetHealingDoneInPastSecs(uint32 secs)
+{
+    uint32 heal = 0;
+
+    for (HealDoneList::iterator itr = m_healDone.begin(); itr != m_healDone.end(); itr++)
+    {
+        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
+            heal += (*itr)->s_heal;
+    }
+
+    return heal;
+};
+
+uint32 Unit::GetHealingTakenInPastSecs(uint32 secs)
+{
+    uint32 heal = 0;
+
+    for (HealTakenList::iterator itr = m_healTaken.begin(); itr != m_healTaken.end(); itr++)
+    {
+        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
+            heal += (*itr)->s_heal;
+    }
+
+    return heal;
+};
+
+uint32 Unit::GetDamageDoneInPastSecs(uint32 secs)
+{
+    uint32 damage = 0;
+
+    for (DmgDoneList::iterator itr = m_dmgDone.begin(); itr != m_dmgDone.end(); itr++)
+    {
+        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
+            damage += (*itr)->s_damage;
+    }
+
+    return damage;
+};
+
+uint32 Unit::GetDamageTakenInPastSecs(uint32 secs)
+{
+    uint32 damage = 0;
+
+    for (DmgTakenList::iterator itr = m_dmgTaken.begin(); itr != m_dmgTaken.end(); itr++)
+    {
+        if ((getMSTime() - (*itr)->s_timestamp) <= (secs * IN_MILLISECONDS))
+            damage += (*itr)->s_damage;
+    }
+
+    return damage;
 }

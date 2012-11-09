@@ -50,7 +50,9 @@ enum ContentLevels
     CONTENT_1_60    = 0,
     CONTENT_61_70   = 1,
     CONTENT_71_80   = 2,
-    CONTENT_81_85   = 3
+    CONTENT_81_85   = 3,
+    //CONTENT_86_90   = 4,
+    MAX_CONTENT
 };
 
 ContentLevels GetContentLevelsForMapAndZone(uint32 mapid, uint32 zoneId);

@@ -32,7 +32,7 @@
 #include "Group.h"
 #include "SpellInfo.h"
 
-void WorldSession::HandleDismissCritter(WorldPacket &recvData)
+void WorldSession::HandleDismissCritter(WorldPacket& recvData)
 {
     uint64 guid;
     recvData >> guid;
@@ -157,18 +157,6 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint16 spellid
         case ACT_COMMAND:                                   //0x07
             switch (spellid)
             {
-                case COMMAND_MOVETO:
-                    pet->AttackStop();
-                    pet->InterruptNonMeleeSpells(false);
-                    pet->GetMotionMaster()->Clear(false);
-                    pet->GetMotionMaster()->MovePoint(0, x, y, z);
-                    charmInfo->SetCommandState(COMMAND_MOVETO);
-
-                    charmInfo->SetIsCommandAttack(false);
-                    charmInfo->SetIsAtStay(false);
-                    charmInfo->SetIsReturning(false);
-                    charmInfo->SetIsFollowing(false);
-                    break;
                 case COMMAND_STAY:                          //flat=1792  //STAY
                     pet->StopMoving();
                     pet->GetMotionMaster()->Clear(false);
@@ -279,6 +267,18 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint16 spellid
                         }
                     }
                     break;
+                case COMMAND_MOVE_TO:
+                    pet->StopMoving();
+                    pet->GetMotionMaster()->Clear(false);
+                    pet->GetMotionMaster()->MovePoint(0, x, y, z);
+                    charmInfo->SetCommandState(COMMAND_MOVE_TO);
+                    charmInfo->SetIsCommandAttack(false);
+                    charmInfo->SetIsAtStay(true);
+                    charmInfo->SetIsFollowing(false);
+                    charmInfo->SetIsReturning(false);
+                    charmInfo->SaveStayPosition();
+                    break;
+
                 default:
                     sLog->outError(LOG_FILTER_NETWORKIO, "WORLD: unknown PET flag Action %i and spellid %i.", uint32(flag), spellid);
             }
@@ -531,7 +531,7 @@ void WorldSession::HandlePetSetAction(WorldPacket & recvData)
         // in the normal case, command and reaction buttons can only be moved, not removed
         // at moving count == 2, at removing count == 1
         // ignore attempt to remove command|reaction buttons (not possible at normal case)
-        if (act_state == ACT_COMMAND || act_state == ACT_REACTION)
+        if ((act_state == ACT_COMMAND && UNIT_ACTION_BUTTON_ACTION(data[i]) != COMMAND_MOVE_TO) || act_state == ACT_REACTION)
         {
             if (count == 1)
                 return;
@@ -544,7 +544,7 @@ void WorldSession::HandlePetSetAction(WorldPacket & recvData)
     if (move_command)
     {
         uint8 act_state_0 = UNIT_ACTION_BUTTON_TYPE(data[0]);
-        if (act_state_0 == ACT_COMMAND || act_state_0 == ACT_REACTION)
+        if ((act_state_0 == ACT_COMMAND && UNIT_ACTION_BUTTON_ACTION(data[0]) != COMMAND_MOVE_TO) || act_state_0 == ACT_REACTION)
         {
             uint32 spell_id_0 = UNIT_ACTION_BUTTON_ACTION(data[0]);
             UnitActionBarEntry const* actionEntry_1 = charmInfo->GetActionBarEntry(position[1]);
@@ -554,7 +554,7 @@ void WorldSession::HandlePetSetAction(WorldPacket & recvData)
         }
 
         uint8 act_state_1 = UNIT_ACTION_BUTTON_TYPE(data[1]);
-        if (act_state_1 == ACT_COMMAND || act_state_1 == ACT_REACTION)
+        if ((act_state_1 == ACT_COMMAND && UNIT_ACTION_BUTTON_ACTION(data[1]) != COMMAND_MOVE_TO) || act_state_1 == ACT_REACTION)
         {
             uint32 spell_id_1 = UNIT_ACTION_BUTTON_ACTION(data[1]);
             UnitActionBarEntry const* actionEntry_0 = charmInfo->GetActionBarEntry(position[0]);
