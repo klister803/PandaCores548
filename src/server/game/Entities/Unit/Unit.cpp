@@ -9325,6 +9325,15 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     int32 DoneTotal = 0;
 
     // Custom MoP Script
+    // 77215 - Mastery : Potent Afflictions
+    // Increase periodic damage of Corruption, Agony and Unstable Affliction
+    if (spellProto && (spellProto->Id == 172 || spellProto->Id == 131737 || spellProto->Id == 131736) && damagetype == DOT && HasAura(77215))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.1f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
     // 77219 - Mastery : Master Demonologist
     // Bonus damage while using Metamorphosis
     if (HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
