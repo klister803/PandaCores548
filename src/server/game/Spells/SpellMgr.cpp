@@ -3098,8 +3098,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 115636: // Mastery : Combo Breaker
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = int32(11 / 2);
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 117906: // Mastery : Elusive Brawler
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
