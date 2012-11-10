@@ -249,7 +249,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectUnused,                                   //178 SPELL_EFFECT_178 unused
     &Spell::EffectNULL,                                     //179 SPELL_EFFECT_179
     &Spell::EffectUnused,                                   //180 SPELL_EFFECT_180 unused
-    &Spell::EffectUnused,                                   //181 SPELL_EFFECT_181 unused
+    &Spell::EffectUnlearnTalent,                            //181 SPELL_EFFECT_UNLEARN_TALENT
     &Spell::EffectNULL,                                     //182 SPELL_EFFECT_182
 };
 
@@ -4512,6 +4512,19 @@ void Spell::EffectApplyGlyph(SpellEffIndex effIndex)
             player->SendTalentsInfoData(false);
         }
     }
+    else
+    {
+        // remove old glyph
+        if (uint32 oldglyph = player->GetGlyph(player->GetActiveSpec(), m_glyphIndex))
+        {
+            if (GlyphPropertiesEntry const* old_gp = sGlyphPropertiesStore.LookupEntry(oldglyph))
+            {
+                player->RemoveAurasDueToSpell(old_gp->SpellId);
+                player->SetGlyph(m_glyphIndex, 0);
+                player->SendTalentsInfoData(false);
+            }
+        }
+    }
 }
 
 void Spell::EffectEnchantHeldItem(SpellEffIndex effIndex)
@@ -6175,4 +6188,44 @@ void Spell::EffectSummonRaFFriend(SpellEffIndex effIndex)
         return;
 
     m_caster->CastSpell(unitTarget, m_spellInfo->Effects[effIndex].TriggerSpell, true);
+}
+
+void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
+        return;
+
+    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    Player* plr = m_caster->ToPlayer();
+
+    for (auto itr : *plr->GetTalentMap(plr->GetActiveSpec()))
+    {
+        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr.first);
+        if (!spell)
+            continue;
+
+        TalentEntry const* talent = sTalentStore.LookupEntry(spell->talentId);
+        if (!talent)
+            continue;
+
+        if (spell->talentId != m_glyphIndex)
+            continue;
+
+        plr->removeSpell(itr.first, true);
+        // search for spells that the talent teaches and unlearn them
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            if (spell->Effects[i].TriggerSpell > 0 && spell->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
+                plr->removeSpell(spell->Effects[i].TriggerSpell, true);
+
+        itr.second->state = PLAYERSPELL_REMOVED;
+
+        plr->SetUsedTalentCount(plr->GetUsedTalentCount()-1);
+        plr->SetFreeTalentPoints(plr->GetFreeTalentPoints()+1);
+        break;
+    }
+
+    plr->SaveToDB();
+    plr->SendTalentsInfoData(false);
 }

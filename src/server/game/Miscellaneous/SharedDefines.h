@@ -1038,7 +1038,7 @@ enum SpellEffects
     SPELL_EFFECT_178                                = 178, // Unused (4.3.4)
     SPELL_EFFECT_179                                = 179,
     SPELL_EFFECT_180                                = 180, // Unused (4.3.4)
-    SPELL_EFFECT_181                                = 181, // Unused (4.3.4)
+    SPELL_EFFECT_UNLEARN_TALENT                     = 181,
     SPELL_EFFECT_182                                = 182,
     TOTAL_SPELL_EFFECTS                             = 183,
 };

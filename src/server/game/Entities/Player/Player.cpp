@@ -24899,10 +24899,10 @@ void Player::CompletedAchievement(AchievementEntry const* entry)
     GetAchievementMgr().CompletedAchievement(entry, this);
 }
 
+// TODO : Check cheat-hack issue with packet-editing
 bool Player::LearnTalent(uint32 talentId)
 {
     uint32 CurTalentPoints = GetFreeTalentPoints();
-    static const uint8 rankByFreePoints[6] = {6, 5, 4, 3, 2, 1 };
 
     if (CurTalentPoints == 0)
         return false;
@@ -24910,10 +24910,6 @@ bool Player::LearnTalent(uint32 talentId)
     TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentId);
 
     if (!talentInfo)
-        return false;
-
-    // Seulement un talent par ligne
-    if(talentInfo->rank > rankByFreePoints[CurTalentPoints])
         return false;
 
     if (talentInfo->classId != getClass())
