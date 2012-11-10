@@ -1790,7 +1790,7 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_GENERAL, "Loading realm name...");
 
-    m_realmName = "Pandashan";
+    m_realmName = "Mist of Pandaria servers";
     QueryResult realmResult = LoginDatabase.PQuery("SELECT name FROM realmlist WHERE id = %u", realmID);
     if(realmResult)
         m_realmName = (*realmResult)[0].GetString();
