@@ -9325,6 +9325,18 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     int32 DoneTotal = 0;
 
     // Custom MoP Script
+    // 76657 - Mastery : Master of Beasts
+    if (isPet())
+    {
+        Unit* owner = GetOwner();
+        if (owner->HasAura(76657))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
     // 76808 - Mastery : Executioner
     if (spellProto && (spellProto->Id == 1943 || spellProto->Id == 2098 || spellProto->Id == 121411) && HasAura(76808))
     {
@@ -10623,6 +10635,18 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         if (owner->HasAura(77219))
         {
             float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 76657 - Mastery : Master of Beasts
+    if (isPet())
+    {
+        Unit* owner = GetOwner();
+        if (owner->HasAura(76657))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
             DoneTotalMod += Mastery;
         }
     }
