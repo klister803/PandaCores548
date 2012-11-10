@@ -9325,6 +9325,31 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     int32 DoneTotal = 0;
 
     // Custom MoP Script
+    // 77219 - Mastery : Master Demonologist
+    // Bonus damage while using Metamorphosis
+    if (HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    // Bonus damage in caster form
+    else if (!HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    // Bonus damage for demon servants
+    else if (isPet())
+    {
+        Unit* owner = GetOwner();
+        if (owner->HasAura(77219))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
     // 77493 - Mastery : Razor Claws
     if (spellProto && damagetype == DOT)
     {
@@ -10541,6 +10566,31 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Done total percent damage auras
     float DoneTotalMod = 1.0f;
+
+    // Custom MoP Script
+    // 77219 - Mastery : Master Demonologist
+    // Bonus damage while using Metamorphosis
+    if (HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    // Bonus damage in caster form
+    else if (!HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    // Bonus damage for demon servants
+    else if (isPet())
+    {
+        Unit* owner = GetOwner();
+        if (owner->HasAura(77219))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
 
     // Custom MoP Script
     // 76856 - Mastery : Unshackled Fury
