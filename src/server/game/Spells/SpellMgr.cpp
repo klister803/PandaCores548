@@ -3142,8 +3142,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 76803:  // Mastery : Potent Poisons
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 14;
+                spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[2].BasePoints = 8;
                 break;
             case 77226:  // Mastery : Deep Healing
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;

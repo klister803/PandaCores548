@@ -9334,6 +9334,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     }
 
     // Custom MoP Script
+    // 76803 - Mastery : Potent Poisons
+    if (spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680) && pdamage != 0 && HasAura(76803))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.5f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
     // 77219 - Mastery : Master Demonologist
     // Bonus damage while using Metamorphosis
     if (HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
