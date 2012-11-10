@@ -3127,7 +3127,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 77486:  // Mastery : Shadowy Recall
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 7;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 77484:  // Mastery : Shield Discipline
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;

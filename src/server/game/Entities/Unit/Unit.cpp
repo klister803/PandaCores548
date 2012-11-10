@@ -9732,6 +9732,16 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod);
     }
 
+    // Custom MoP Script
+    // 77486 - Mastery : Shadowy Recall
+    if (spellProto && damagetype == DOT && HasAura(77486))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.8f;
+
+        if (roll_chance_f(Mastery))
+            DoneTotalMod *= 2.0f;
+    }
+
     float tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
     // apply spellmod to Done damage (flat and pct)
     if (Player* modOwner = GetSpellModOwner())
