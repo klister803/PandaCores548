@@ -831,7 +831,8 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADSEASONALQUESTSTATUS      = 34,
     PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE              = 35,
     PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 36,
-    MAX_PLAYER_LOGIN_QUERY,
+    //PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES          = 34, //id on TC.
+    MAX_PLAYER_LOGIN_QUERY
 };
 
 enum PlayerDelayedOperations
@@ -2014,13 +2015,9 @@ class Player : public Unit, public GridObject<Player>
         bool UpdateGatherSkill(uint32 SkillId, uint32 SkillValue, uint32 RedLevel, uint32 Multiplicator = 1);
         bool UpdateFishingSkill();
 
-        uint32 GetBaseDefenseSkillValue() const { return GetBaseSkillValue(SKILL_DEFENSE); }
-        uint32 GetBaseWeaponSkillValue(WeaponAttackType attType) const;
-
         uint32 GetSpellByProto(ItemTemplate* proto);
 
         float GetHealthBonusFromStamina();
-        float GetManaBonusFromIntellect();
 
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
@@ -2038,7 +2035,6 @@ class Player : public Unit, public GridObject<Player>
 
         void CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bool addTotalPct, float& min_damage, float& max_damage);
 
-        void UpdateDefenseBonusesMod();
         inline void RecalculateRating(CombatRating cr) { ApplyRatingMod(cr, 0, true);}
         float GetMeleeCritFromAgility();
         void GetDodgeFromAgility(float &diminishing, float &nondiminishing);
@@ -2141,10 +2137,6 @@ class Player : public Unit, public GridObject<Player>
         void CleanupChannels();
         void UpdateLocalChannels(uint32 newZone);
         void LeaveLFGChannel();
-
-        void UpdateDefense();
-        void UpdateWeaponSkill (WeaponAttackType attType);
-        void UpdateCombatSkills(Unit* victim, WeaponAttackType attType, bool defence);
 
         void SetSkill(uint16 id, uint16 step, uint16 currVal, uint16 maxVal);
         uint16 GetMaxSkillValue(uint32 skill) const;        // max + perm. bonus + temp bonus

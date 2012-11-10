@@ -75,16 +75,16 @@ bool Player::UpdateStats(Stats stat)
             UpdateAllCritPercentages();
             UpdateDodgePercentage();
             break;
-        case STAT_STAMINA:   UpdateMaxHealth(); break;
+        case STAT_STAMINA:
+            UpdateMaxHealth();
+            break;
         case STAT_INTELLECT:
             UpdateMaxPower(POWER_MANA);
             UpdateAllSpellCritChances();
             UpdateArmor();                                  //SPELL_AURA_MOD_RESISTANCE_OF_INTELLECT_PERCENT, only armor currently
             break;
-
         case STAT_SPIRIT:
             break;
-
         default:
             break;
     }
@@ -156,7 +156,9 @@ bool Player::UpdateAllStats()
     UpdateAllRatings();
     UpdateAllCritPercentages();
     UpdateAllSpellCritChances();
-    UpdateDefenseBonusesMod();
+    UpdateBlockPercentage();
+    UpdateParryPercentage();
+    UpdateDodgePercentage();
     UpdateSpellDamageAndHealingBonus();
     UpdateManaRegen();
     UpdateExpertise(BASE_ATTACK);
@@ -192,6 +194,14 @@ void Player::UpdateArmor()
     value *= GetModifierValue(unitMod, BASE_PCT);           // armor percent from items
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 
+    // Custom MoP Script
+    // 77494 - Mastery : Nature's Guardian
+    if (HasAura(77494))
+    {
+        float Mastery = 1.0f + GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
+        value *= Mastery;
+    }
+
     //add dynamic flat mods
     AuraEffectList const& mResbyIntellect = GetAuraEffectsByType(SPELL_AURA_MOD_RESISTANCE_OF_STAT_PERCENT);
     for (AuraEffectList::const_iterator i = mResbyIntellect.begin(); i != mResbyIntellect.end(); ++i)
@@ -223,17 +233,6 @@ float Player::GetHealthBonusFromStamina()
     return baseStam + moreStam * hpBase->ratio;
 }
 
-float Player::GetManaBonusFromIntellect()
-{
-    // Taken from PaperDollFrame.lua - 4.3.4.15595
-    float intellect = GetStat(STAT_INTELLECT);
-
-    float baseInt = std::min(20.0f, intellect);
-    float moreInt = intellect - baseInt;
-
-    return baseInt + (moreInt * 15.0f);
-}
-
 void Player::UpdateMaxHealth()
 {
     UnitMods unitMod = UNIT_MOD_HEALTH;
@@ -250,11 +249,9 @@ void Player::UpdateMaxPower(Powers power)
 {
     UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + power);
 
-    float bonusPower = (power == POWER_MANA && GetCreatePowers(power) > 0) ? GetManaBonusFromIntellect() : 0;
-
     float value = GetModifierValue(unitMod, BASE_VALUE) + GetCreatePowers(power);
     value *= GetModifierValue(unitMod, BASE_PCT);
-    value += GetModifierValue(unitMod, TOTAL_VALUE) +  bonusPower;
+    value += GetModifierValue(unitMod, TOTAL_VALUE);
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
     SetMaxPower(power, uint32(value));
@@ -475,13 +472,6 @@ void Player::UpdateDamagePhysical(WeaponAttackType attType)
     }
 }
 
-void Player::UpdateDefenseBonusesMod()
-{
-    UpdateBlockPercentage();
-    UpdateParryPercentage();
-    UpdateDodgePercentage();
-}
-
 void Player::UpdateBlockPercentage()
 {
     // No block
@@ -537,6 +527,8 @@ void Player::UpdateCritPercentage(WeaponAttackType attType)
     }
 
     float value = GetTotalPercentageModValue(modGroup) + GetRatingBonusValue(cr);
+    // Modify crit from weapon skill and maximized defense skill of same level victim difference
+    value += (int32(GetMaxSkillValueForLevel()) - int32(GetMaxSkillValueForLevel())) * 0.04f;
     value = value < 0.0f ? 0.0f : value;
     SetStatFloatValue(index, value);
 }
@@ -594,9 +586,6 @@ void Player::UpdateParryPercentage()
         float nondiminishing  = 5.0f;
         // Parry from rating
         float diminishing = GetRatingBonusValue(CR_PARRY);
-        // Modify value from defense skill (only bonus from defense rating diminishes)
-        nondiminishing += (GetSkillValue(SKILL_DEFENSE) - GetMaxSkillValueForLevel()) * 0.04f;
-        diminishing += (int32(GetRatingBonusValue(CR_DEFENSE_SKILL))) * 0.04f;
         // Parry from SPELL_AURA_MOD_PARRY_PERCENT aura
         nondiminishing += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
         // apply diminishing formula to diminishing parry chance
@@ -619,15 +608,12 @@ void Player::UpdateDodgePercentage()
         145.560408f,    // Shaman
         150.375940f,    // Mage
         150.375940f,    // Warlock
-        0.0f,           // ??
+        0.0f,           // Monk  @todo: find me !
         116.890707f     // Druid
     };
 
     float diminishing = 0.0f, nondiminishing = 0.0f;
     GetDodgeFromAgility(diminishing, nondiminishing);
-    // Modify value from defense skill (only bonus from defense rating diminishes)
-    //nondiminishing += (GetSkillValue(SKILL_DEFENSE) - GetMaxSkillValueForLevel()) * 0.04f;
-    //diminishing += (int32(GetRatingBonusValue(CR_DEFENSE_SKILL))) * 0.04f;
     // Dodge from SPELL_AURA_MOD_DODGE_PERCENT aura
     nondiminishing += GetTotalAuraModifier(SPELL_AURA_MOD_DODGE_PERCENT);
     // Dodge from rating
@@ -683,6 +669,9 @@ void Player::UpdateMasteryPercentage()
     // 76857 - Mastery : Critical Block - Update Block Percentage
     if (HasAura(76671) || HasAura(76857))
         UpdateBlockPercentage();
+    // 77494 - Mastery : Nature's Guardian - Update Armor
+    if (HasAura(77494))
+        UpdateArmor();
 }
 
 void Player::UpdateMeleeHitChances()

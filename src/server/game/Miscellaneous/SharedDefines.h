@@ -60,6 +60,44 @@ enum SpellEffIndex
     EFFECT_31,
 };
 
+enum SpecIndex
+{
+    SPEC_MAGE_ARCANE            = 62,
+    SPEC_MAGE_FIRE              = 63,
+    SPEC_MAGE_FROST             = 64,
+    SPEC_PALADIN_HOLY           = 65,
+    SPEC_PALADIN_PROTECTION     = 66,
+    SPEC_PALADIN_RETRIBUTION    = 70,
+    SPEC_WARRIOR_ARMS           = 71,
+    SPEC_WARRIOR_FURY           = 72,
+    SPEC_WARRIOR_PROTECTION     = 73,
+    SPEC_DROOD_BALANCE          = 102,
+    SPEC_DROOD_CAT              = 103,
+    SPEC_DROOD_BEAR             = 104,
+    SPEC_DROOD_RESTORATION      = 105,
+    SPEC_DK_BLOOD               = 250,
+    SPEC_DK_FROST               = 251,
+    SPEC_DK_UNHOLY              = 252,
+    SPEC_HUNTER_BEASTMASTER     = 253,
+    SPEC_HUNTER_MARKSMAN        = 254,
+    SPEC_HUNTER_SURVIVAL        = 255,
+    SPEC_PRIEST_DISCIPLINE      = 256,
+    SPEC_PRIEST_HOLY            = 257,
+    SPEC_PRIEST_SHADOW          = 258,
+    SPEC_ROGUE_ASSASSINATION    = 259,
+    SPEC_ROGUE_COMBAT           = 260,
+    SPEC_ROGUE_SUBTLETY         = 261,
+    SPEC_SHAMAN_ELEMENTAL       = 262,
+    SPEC_SHAMAN_ENHANCEMENT     = 263,
+    SPEC_SHAMAN_RESTORATION     = 264,
+    SPEC_WARLOCK_AFFLICTION     = 265,
+    SPEC_WARLOCK_DEMONOLOGY     = 266,
+    SPEC_WARLOCK_DESTRUCTION    = 267,
+    SPEC_MONK_BREWMASTER        = 268,
+    SPEC_MONK_BATTLEDANCER      = 269,
+    SPEC_MONK_MISTWEAVER        = 270
+};
+
 // used in script definitions
 #define EFFECT_FIRST_FOUND 254
 #define EFFECT_ALL 255
@@ -1337,7 +1375,7 @@ enum SpellCustomErrors
     SPELL_CUSTOM_ERROR_CANNOT_SUPERVISE_MORE_CULTISTS   = 118, // You cannot supervise more than 5 Arrested Cultists at a time.
     SPELL_CUSTOM_ERROR_REQUIRES_LEVEL_85                = 119, // You must reach level 85 to use this portal.
     SPELL_CUSTOM_ERROR_MUST_BE_BELOW_35_HEALTH          = 120, // Your target must be below 35% health.
-    SPELL_CUSTOM_ERROR_MUST_SELECT_TALENT_SPECIAL       = 121, // You must select a talent specialization first.
+    SPELL_CUSTOM_ERROR_MUST_SELECT_TALENT_SPECIAL       = 121  // You must select a talent specialization first.
 };
 
 enum StealthType
@@ -1408,7 +1446,7 @@ enum AuraStateType
     //AURA_STATE_UNKNOWN20                  = 20,           //  c  | only (45317 Suicide)
     //AURA_STATE_UNKNOWN21                  = 21,           //     | not used
     AURA_STATE_UNKNOWN22                    = 22,           // C  t| varius spells (63884, 50240)
-    AURA_STATE_HEALTH_ABOVE_75_PERCENT      = 23,           // C   |
+    AURA_STATE_HEALTH_ABOVE_75_PERCENT      = 23            // C   |
 };
 
 #define PER_CASTER_AURA_STATE_MASK (\
@@ -1449,7 +1487,7 @@ enum Mechanics
     MECHANIC_IMMUNE_SHIELD    = 29,                         // Divine (Blessing) Shield/Protection and Ice Block
     MECHANIC_SAPPED           = 30,
     MECHANIC_ENRAGED          = 31,
-    MECHANIC_WOUNDED          = 32,
+    MECHANIC_WOUNDED          = 32
 };
 
 // Used for spell 42292 Immune Movement Impairment and Loss of Control (0x49967ca6)
@@ -1719,7 +1757,7 @@ enum GameObjectFlags
     GO_FLAG_NODESPAWN       = 0x00000020,                   // never despawn, typically for doors, they just change state
     GO_FLAG_TRIGGERED       = 0x00000040,                   // typically, summoned objects. Triggered by spell or other events
     GO_FLAG_DAMAGED         = 0x00000200,
-    GO_FLAG_DESTROYED       = 0x00000400,
+    GO_FLAG_DESTROYED       = 0x00000400
 };
 
 enum GameObjectDynamicLowFlags
@@ -1727,7 +1765,7 @@ enum GameObjectDynamicLowFlags
     GO_DYNFLAG_LO_ACTIVATE          = 0x01,                 // enables interaction with GO
     GO_DYNFLAG_LO_ANIMATE           = 0x02,                 // possibly more distinct animation of GO
     GO_DYNFLAG_LO_NO_INTERACT       = 0x04,                 // appears to disable interaction (not fully verified)
-    GO_DYNFLAG_LO_SPARKLE           = 0x08,                 // makes GO sparkle
+    GO_DYNFLAG_LO_SPARKLE           = 0x08                   // makes GO sparkle
 };
 
 enum GameObjectDestructibleState
@@ -1993,222 +2031,222 @@ enum TextEmotes
     TEXT_EMOTE_OBJECT               = 450,
     TEXT_EMOTE_SWEAT                = 451,
     TEXT_EMOTE_YW                   = 453,
-    TEXT_EMOTE_READ                 = 456,
+    TEXT_EMOTE_READ                 = 456
 };
 
 // Emotes.dbc
 enum Emote
 {
-    EMOTE_ONESHOT_NONE              = 0,
-    EMOTE_ONESHOT_TALK              = 1,
-    EMOTE_ONESHOT_BOW               = 2,
-    EMOTE_ONESHOT_WAVE              = 3,
-    EMOTE_ONESHOT_CHEER             = 4,
-    EMOTE_ONESHOT_EXCLAMATION       = 5,
-    EMOTE_ONESHOT_QUESTION          = 6,
-    EMOTE_ONESHOT_EAT               = 7,
-    EMOTE_STATE_DANCE               = 10,
-    EMOTE_ONESHOT_LAUGH             = 11,
-    EMOTE_STATE_SLEEP               = 12,
-    EMOTE_STATE_SIT                 = 13,
-    EMOTE_ONESHOT_RUDE              = 14,
-    EMOTE_ONESHOT_ROAR              = 15,
-    EMOTE_ONESHOT_KNEEL             = 16,
-    EMOTE_ONESHOT_KISS              = 17,
-    EMOTE_ONESHOT_CRY               = 18,
-    EMOTE_ONESHOT_CHICKEN           = 19,
-    EMOTE_ONESHOT_BEG               = 20,
-    EMOTE_ONESHOT_APPLAUD           = 21,
-    EMOTE_ONESHOT_SHOUT             = 22,
-    EMOTE_ONESHOT_FLEX              = 23,
-    EMOTE_ONESHOT_SHY               = 24,
-    EMOTE_ONESHOT_POINT             = 25,
-    EMOTE_STATE_STAND               = 26,
-    EMOTE_STATE_READYUNARMED        = 27,
-    EMOTE_STATE_WORK_SHEATHED       = 28,
-    EMOTE_STATE_POINT               = 29,
-    EMOTE_STATE_NONE                = 30,
-    EMOTE_ONESHOT_WOUND             = 33,
-    EMOTE_ONESHOT_WOUND_CRITICAL    = 34,
-    EMOTE_ONESHOT_ATTACK_UNARMED    = 35,
-    EMOTE_ONESHOT_ATTACK1H          = 36,
-    EMOTE_ONESHOT_ATTACK2HTIGHT     = 37,
-    EMOTE_ONESHOT_ATTACK2HLOOSE     = 38,
-    EMOTE_ONESHOT_PARRYUNARMED      = 39,
-    EMOTE_ONESHOT_PARRY_SHIELD      = 43,
-    EMOTE_ONESHOT_READYUNARMED      = 44,
-    EMOTE_ONESHOT_READY1H           = 45,
-    EMOTE_ONESHOT_READYBOW          = 48,
-    EMOTE_ONESHOT_SPELLPRECAST      = 50,
-    EMOTE_ONESHOT_SPELL_CAST         = 51,
-    EMOTE_ONESHOT_BATTLEROAR        = 53,
-    EMOTE_ONESHOT_SPECIALATTACK1H   = 54,
-    EMOTE_ONESHOT_KICK              = 60,
-    EMOTE_ONESHOT_ATTACKTHROWN      = 61,
-    EMOTE_STATE_STUN                = 64,
-    EMOTE_STATE_DEAD                = 65,
-    EMOTE_ONESHOT_SALUTE            = 66,
-    EMOTE_STATE_KNEEL               = 68,
-    EMOTE_STATE_USE_STANDING         = 69,
-    EMOTE_ONESHOT_WAVE_NOSHEATHE    = 70,
-    EMOTE_ONESHOT_CHEER_NOSHEATHE   = 71,
-    EMOTE_ONESHOT_EAT_NOSHEATHE     = 92,
-    EMOTE_STATE_STUN_NOSHEATHE      = 93,
-    EMOTE_ONESHOT_DANCE             = 94,
-    EMOTE_ONESHOT_SALUTE_NOSHEATH   = 113,
-    EMOTE_STATE_USE_STANDING_NO_SHEATHE = 133,
-    EMOTE_ONESHOT_LAUGH_NOSHEATHE   = 153,
-    EMOTE_STATE_WORK                = 173,
-    EMOTE_STATE_SPELLPRECAST        = 193,
-    EMOTE_ONESHOT_READYRIFLE        = 213,
-    EMOTE_STATE_READYRIFLE          = 214,
-    EMOTE_STATE_WORK_MINING         = 233,
-    EMOTE_STATE_WORK_CHOPWOOD       = 234,
-    EMOTE_STATE_APPLAUD             = 253,
-    EMOTE_ONESHOT_LIFTOFF           = 254,
-    EMOTE_ONESHOT_YES               = 273,
-    EMOTE_ONESHOT_NO                = 274,
-    EMOTE_ONESHOT_TRAIN             = 275,
-    EMOTE_ONESHOT_LAND              = 293,
-    EMOTE_STATE_AT_EASE             = 313,
-    EMOTE_STATE_READY1H             = 333,
-    EMOTE_STATE_SPELLKNEELSTART     = 353,
-    EMOTE_STAND_STATE_SUBMERGED     = 373,
-    EMOTE_ONESHOT_SUBMERGE          = 374,
-    EMOTE_STATE_READY2H             = 375,
-    EMOTE_STATE_READYBOW            = 376,
-    EMOTE_ONESHOT_MOUNTSPECIAL      = 377,
-    EMOTE_STATE_TALK                = 378,
-    EMOTE_STATE_FISHING             = 379,
-    EMOTE_ONESHOT_FISHING           = 380,
-    EMOTE_ONESHOT_LOOT              = 381,
-    EMOTE_STATE_WHIRLWIND           = 382,
-    EMOTE_STATE_DROWNED             = 383,
-    EMOTE_STATE_HOLD_BOW            = 384,
-    EMOTE_STATE_HOLD_RIFLE          = 385,
-    EMOTE_STATE_HOLD_THROWN         = 386,
-    EMOTE_ONESHOT_DROWN             = 387,
-    EMOTE_ONESHOT_STOMP             = 388,
-    EMOTE_ONESHOT_ATTACKOFF         = 389,
-    EMOTE_ONESHOT_ATTACKOFFPIERCE   = 390,
-    EMOTE_STATE_ROAR                = 391,
-    EMOTE_STATE_LAUGH               = 392,
-    EMOTE_ONESHOT_CREATURE_SPECIAL  = 393,
-    EMOTE_ONESHOT_JUMPLANDRUN       = 394,
-    EMOTE_ONESHOT_JUMPEND           = 395,
-    EMOTE_ONESHOT_TALK_NO_SHEATHE    = 396,
-    EMOTE_ONESHOT_POINT_NO_SHEATHE   = 397,
-    EMOTE_STATE_CANNIBALIZE         = 398,
-    EMOTE_ONESHOT_JUMPSTART         = 399,
-    EMOTE_STATE_DANCESPECIAL        = 400,
-    EMOTE_ONESHOT_DANCESPECIAL      = 401,
-    EMOTE_ONESHOT_CUSTOM_SPELL_01    = 402,
-    EMOTE_ONESHOT_CUSTOM_SPELL_02    = 403,
-    EMOTE_ONESHOT_CUSTOM_SPELL_03    = 404,
-    EMOTE_ONESHOT_CUSTOM_SPELL_04    = 405,
-    EMOTE_ONESHOT_CUSTOM_SPELL_05    = 406,
-    EMOTE_ONESHOT_CUSTOM_SPELL_06    = 407,
-    EMOTE_ONESHOT_CUSTOM_SPELL_07    = 408,
-    EMOTE_ONESHOT_CUSTOM_SPELL_08    = 409,
-    EMOTE_ONESHOT_CUSTOM_SPELL_09    = 410,
-    EMOTE_ONESHOT_CUSTOM_SPELL_10    = 411,
-    EMOTE_STATE_EXCLAIM             = 412,
-    EMOTE_STATE_DANCE_CUSTOM        = 413,
-    EMOTE_STATE_SIT_CHAIR_MED       = 415,
-    EMOTE_STATE_CUSTOM_SPELL_01     = 416,
-    EMOTE_STATE_CUSTOM_SPELL_02     = 417,
-    EMOTE_STATE_EAT                 = 418,
-    EMOTE_STATE_CUSTOM_SPELL_04     = 419,
-    EMOTE_STATE_CUSTOM_SPELL_03     = 420,
-    EMOTE_STATE_CUSTOM_SPELL_05     = 421,
-    EMOTE_STATE_SPELLEFFECT_HOLD    = 422,
-    EMOTE_STATE_EAT_NO_SHEATHE      = 423,
-    EMOTE_STATE_MOUNT               = 424,
-    EMOTE_STATE_READY2HL            = 425,
-    EMOTE_STATE_SIT_CHAIR_HIGH      = 426,
-    EMOTE_STATE_FALL                = 427,
-    EMOTE_STATE_LOOT                = 428,
-    EMOTE_STATE_SUBMERGED           = 429,
-    EMOTE_ONESHOT_COWER             = 430,
-    EMOTE_STATE_COWER               = 431,
-    EMOTE_ONESHOT_USESTANDING       = 432,
-    EMOTE_STATE_STEALTH_STAND       = 433,
-    EMOTE_ONESHOT_OMNICAST_GHOUL    = 434,
-    EMOTE_ONESHOT_ATTACKBOW         = 435,
-    EMOTE_ONESHOT_ATTACKRIFLE       = 436,
-    EMOTE_STATE_SWIM_IDLE           = 437,
-    EMOTE_STATE_ATTACK_UNARMED      = 438,
-    EMOTE_ONESHOT_SPELLCAST_NEW     = 439,
-    EMOTE_ONESHOT_DODGE             = 440,
-    EMOTE_ONESHOT_PARRY1H           = 441,
-    EMOTE_ONESHOT_PARRY2H           = 442,
-    EMOTE_ONESHOT_PARRY2HL          = 443,
-    EMOTE_STATE_FLYFALL             = 444,
-    EMOTE_ONESHOT_FLYDEATH          = 445,
-    EMOTE_STATE_FLY_FALL            = 446,
-    EMOTE_ONESHOT_FLY_SIT_GROUND_DOWN = 447,
-    EMOTE_ONESHOT_FLY_SIT_GROUND_UP = 448,
-    EMOTE_ONESHOT_EMERGE            = 449,
-    EMOTE_ONESHOT_DRAGONSPIT        = 450,
-    EMOTE_STATE_SPECIALUNARMED      = 451,
-    EMOTE_ONESHOT_FLYGRAB           = 452,
-    EMOTE_STATE_FLYGRABCLOSED       = 453,
-    EMOTE_ONESHOT_FLYGRABTHROWN     = 454,
-    EMOTE_STATE_FLY_SIT_GROUND      = 455,
-    EMOTE_STATE_WALKBACKWARDS       = 456,
-    EMOTE_ONESHOT_FLYTALK           = 457,
-    EMOTE_ONESHOT_FLYATTACK1H       = 458,
-    EMOTE_STATE_CUSTOMSPELL08       = 459,
-    EMOTE_ONESHOT_FLY_DRAGONSPIT    = 460,
-    EMOTE_STATE_SIT_CHAIR_LOW       = 461,
-    EMOTE_ONE_SHOT_STUN             = 462,
-    EMOTE_ONESHOT_SPELL_CAST_OMNI   = 463,
-    EMOTE_STATE_READYTHROWN         = 465,
-    EMOTE_ONESHOT_WORK_CHOPWOOD     = 466,
-    EMOTE_ONESHOT_WORK_MINING       = 467,
-    EMOTE_STATE_SPELL_CHANNEL_OMNI  = 468,
-    EMOTE_STATE_SPELL_CHANNEL_DIRECTED = 469,
-    EMOTE_STAND_STATE_NONE          = 470,
-    EMOTE_STATE_READYJOUST          = 471,
-    EMOTE_STATE_STRANGULATE         = 473,
-    EMOTE_STATE_READYSPELLOMNI      = 474,
-    EMOTE_STATE_HOLD_JOUST          = 475,
-    EMOTE_ONESHOT_CRY_JAINA         = 476,
-    EMOTE_ONESHOT_SPECIALUNARMED    = 477,
-    EMOTE_STATE_DANCE_NOSHEATHE     = 478,
-    EMOTE_ONESHOT_SNIFF             = 479,
-    EMOTE_ONESHOT_DRAGONSTOMP       = 480,
-    EMOTE_ONESHOT_KNOCKDOWN         = 482,
-    EMOTE_STATE_READ                = 483,
-    EMOTE_ONESHOT_FLYEMOTETALK      = 485,
-    EMOTE_STATE_READ_ALLOWMOVEMENT  = 492,
-    EMOTE_STATE_CUSTOM_SPELL_06     = 498,
-    EMOTE_STATE_CUSTOM_SPELL_07     = 499,
-    EMOTE_STATE_CUSTOM_SPELL_08     = 500,
-    EMOTE_STATE_CUSTOM_SPELL_09     = 501,
-    EMOTE_STATE_CUSTOM_SPELL_10     = 502,
-    EMOTE_STATE_READY1H_ALLOW_MOVEMENT = 505,
-    EMOTE_STATE_READY2H_ALLOW_MOVEMENT = 506,
-    EMOTE_ONESHOT_MONKOFFENSE_ATTACKUNARMED = 507,
-    EMOTE_ONESHOT_MONKOFFENSE_SPECIALUNARMED = 508,
-    EMOTE_ONESHOT_MONKOFFENSE_PARRYUNARMED = 509,
-    EMOTE_STATE_MONKOFFENSE_READYUNARMED = 510,
-    EMOTE_ONESHOT_PALMSTRIKE        = 511,
-    EMOTE_STATE_CRANE               = 512,
-    EMOTE_ONESHOT_OPEN              = 517,
-    EMOTE_STATE_READ_CHRISTMAS      = 518,
-    EMOTE_ONESHOT_FLYATTACK2HL      = 526,
-    EMOTE_ONESHOT_FLYATTACKTHROWN   = 527,
-    EMOTE_STATE_FLYREADYSPELLDIRECTED = 528,
-    EMOTE_STATE_FLY_READY_1H        = 531,
-    EMOTE_STATE_MEDITATE            = 533,
-    EMOTE_STATE_FLY_READY_2HL       = 534,
-    EMOTE_ONESHOT_TOGROUND          = 535,
-    EMOTE_ONESHOT_TOFLY             = 536,
-    EMOTE_STATE_ATTACKTHROWN        = 537,
-    EMOTE_STATE_SPELL_CHANNEL_DIRECTED_NOSOUND = 538,
-    EMOTE_ONESHOT_WORK              = 539,
-    EMOTE_STATE_READYUNARMED_NOSOUND = 540,
+    EMOTE_ONESHOT_NONE                          = 0,
+    EMOTE_ONESHOT_TALK                          = 1,
+    EMOTE_ONESHOT_BOW                           = 2,
+    EMOTE_ONESHOT_WAVE                          = 3,
+    EMOTE_ONESHOT_CHEER                         = 4,
+    EMOTE_ONESHOT_EXCLAMATION                   = 5,
+    EMOTE_ONESHOT_QUESTION                      = 6,
+    EMOTE_ONESHOT_EAT                           = 7,
+    EMOTE_STATE_DANCE                           = 10,
+    EMOTE_ONESHOT_LAUGH                         = 11,
+    EMOTE_STATE_SLEEP                           = 12,
+    EMOTE_STATE_SIT                             = 13,
+    EMOTE_ONESHOT_RUDE                          = 14,
+    EMOTE_ONESHOT_ROAR                          = 15,
+    EMOTE_ONESHOT_KNEEL                         = 16,
+    EMOTE_ONESHOT_KISS                          = 17,
+    EMOTE_ONESHOT_CRY                           = 18,
+    EMOTE_ONESHOT_CHICKEN                       = 19,
+    EMOTE_ONESHOT_BEG                           = 20,
+    EMOTE_ONESHOT_APPLAUD                       = 21,
+    EMOTE_ONESHOT_SHOUT                         = 22,
+    EMOTE_ONESHOT_FLEX                          = 23,
+    EMOTE_ONESHOT_SHY                           = 24,
+    EMOTE_ONESHOT_POINT                         = 25,
+    EMOTE_STATE_STAND                           = 26,
+    EMOTE_STATE_READYUNARMED                    = 27,
+    EMOTE_STATE_WORK_SHEATHED                   = 28,
+    EMOTE_STATE_POINT                           = 29,
+    EMOTE_STATE_NONE                            = 30,
+    EMOTE_ONESHOT_WOUND                         = 33,
+    EMOTE_ONESHOT_WOUND_CRITICAL                = 34,
+    EMOTE_ONESHOT_ATTACK_UNARMED                = 35,
+    EMOTE_ONESHOT_ATTACK1H                      = 36,
+    EMOTE_ONESHOT_ATTACK2HTIGHT                 = 37,
+    EMOTE_ONESHOT_ATTACK2HLOOSE                 = 38,
+    EMOTE_ONESHOT_PARRYUNARMED                  = 39,
+    EMOTE_ONESHOT_PARRY_SHIELD                  = 43,
+    EMOTE_ONESHOT_READYUNARMED                  = 44,
+    EMOTE_ONESHOT_READY1H                       = 45,
+    EMOTE_ONESHOT_READYBOW                      = 48,
+    EMOTE_ONESHOT_SPELLPRECAST                  = 50,
+    EMOTE_ONESHOT_SPELL_CAST                    = 51,
+    EMOTE_ONESHOT_BATTLEROAR                    = 53,
+    EMOTE_ONESHOT_SPECIALATTACK1H               = 54,
+    EMOTE_ONESHOT_KICK                          = 60,
+    EMOTE_ONESHOT_ATTACKTHROWN                  = 61,
+    EMOTE_STATE_STUN                            = 64,
+    EMOTE_STATE_DEAD                            = 65,
+    EMOTE_ONESHOT_SALUTE                        = 66,
+    EMOTE_STATE_KNEEL                           = 68,
+    EMOTE_STATE_USE_STANDING                    = 69,
+    EMOTE_ONESHOT_WAVE_NOSHEATHE                = 70,
+    EMOTE_ONESHOT_CHEER_NOSHEATHE               = 71,
+    EMOTE_ONESHOT_EAT_NOSHEATHE                 = 92,
+    EMOTE_STATE_STUN_NOSHEATHE                  = 93,
+    EMOTE_ONESHOT_DANCE                         = 94,
+    EMOTE_ONESHOT_SALUTE_NOSHEATH               = 113,
+    EMOTE_STATE_USE_STANDING_NO_SHEATHE         = 133,
+    EMOTE_ONESHOT_LAUGH_NOSHEATHE               = 153,
+    EMOTE_STATE_WORK                            = 173,
+    EMOTE_STATE_SPELLPRECAST                    = 193,
+    EMOTE_ONESHOT_READYRIFLE                    = 213,
+    EMOTE_STATE_READYRIFLE                      = 214,
+    EMOTE_STATE_WORK_MINING                     = 233,
+    EMOTE_STATE_WORK_CHOPWOOD                   = 234,
+    EMOTE_STATE_APPLAUD                         = 253,
+    EMOTE_ONESHOT_LIFTOFF                       = 254,
+    EMOTE_ONESHOT_YES                           = 273,
+    EMOTE_ONESHOT_NO                            = 274,
+    EMOTE_ONESHOT_TRAIN                         = 275,
+    EMOTE_ONESHOT_LAND                          = 293,
+    EMOTE_STATE_AT_EASE                         = 313,
+    EMOTE_STATE_READY1H                         = 333,
+    EMOTE_STATE_SPELLKNEELSTART                 = 353,
+    EMOTE_STAND_STATE_SUBMERGED                 = 373,
+    EMOTE_ONESHOT_SUBMERGE                      = 374,
+    EMOTE_STATE_READY2H                         = 375,
+    EMOTE_STATE_READYBOW                        = 376,
+    EMOTE_ONESHOT_MOUNTSPECIAL                  = 377,
+    EMOTE_STATE_TALK                            = 378,
+    EMOTE_STATE_FISHING                         = 379,
+    EMOTE_ONESHOT_FISHING                       = 380,
+    EMOTE_ONESHOT_LOOT                          = 381,
+    EMOTE_STATE_WHIRLWIND                       = 382,
+    EMOTE_STATE_DROWNED                         = 383,
+    EMOTE_STATE_HOLD_BOW                        = 384,
+    EMOTE_STATE_HOLD_RIFLE                      = 385,
+    EMOTE_STATE_HOLD_THROWN                     = 386,
+    EMOTE_ONESHOT_DROWN                         = 387,
+    EMOTE_ONESHOT_STOMP                         = 388,
+    EMOTE_ONESHOT_ATTACKOFF                     = 389,
+    EMOTE_ONESHOT_ATTACKOFFPIERCE               = 390,
+    EMOTE_STATE_ROAR                            = 391,
+    EMOTE_STATE_LAUGH                           = 392,
+    EMOTE_ONESHOT_CREATURE_SPECIAL              = 393,
+    EMOTE_ONESHOT_JUMPLANDRUN                   = 394,
+    EMOTE_ONESHOT_JUMPEND                       = 395,
+    EMOTE_ONESHOT_TALK_NO_SHEATHE               = 396,
+    EMOTE_ONESHOT_POINT_NO_SHEATHE              = 397,
+    EMOTE_STATE_CANNIBALIZE                     = 398,
+    EMOTE_ONESHOT_JUMPSTART                     = 399,
+    EMOTE_STATE_DANCESPECIAL                    = 400,
+    EMOTE_ONESHOT_DANCESPECIAL                  = 401,
+    EMOTE_ONESHOT_CUSTOM_SPELL_01               = 402,
+    EMOTE_ONESHOT_CUSTOM_SPELL_02               = 403,
+    EMOTE_ONESHOT_CUSTOM_SPELL_03               = 404,
+    EMOTE_ONESHOT_CUSTOM_SPELL_04               = 405,
+    EMOTE_ONESHOT_CUSTOM_SPELL_05               = 406,
+    EMOTE_ONESHOT_CUSTOM_SPELL_06               = 407,
+    EMOTE_ONESHOT_CUSTOM_SPELL_07               = 408,
+    EMOTE_ONESHOT_CUSTOM_SPELL_08               = 409,
+    EMOTE_ONESHOT_CUSTOM_SPELL_09               = 410,
+    EMOTE_ONESHOT_CUSTOM_SPELL_10               = 411,
+    EMOTE_STATE_EXCLAIM                         = 412,
+    EMOTE_STATE_DANCE_CUSTOM                    = 413,
+    EMOTE_STATE_SIT_CHAIR_MED                   = 415,
+    EMOTE_STATE_CUSTOM_SPELL_01                 = 416,
+    EMOTE_STATE_CUSTOM_SPELL_02                 = 417,
+    EMOTE_STATE_EAT                             = 418,
+    EMOTE_STATE_CUSTOM_SPELL_04                 = 419,
+    EMOTE_STATE_CUSTOM_SPELL_03                 = 420,
+    EMOTE_STATE_CUSTOM_SPELL_05                 = 421,
+    EMOTE_STATE_SPELLEFFECT_HOLD                = 422,
+    EMOTE_STATE_EAT_NO_SHEATHE                  = 423,
+    EMOTE_STATE_MOUNT                           = 424,
+    EMOTE_STATE_READY2HL                        = 425,
+    EMOTE_STATE_SIT_CHAIR_HIGH                  = 426,
+    EMOTE_STATE_FALL                            = 427,
+    EMOTE_STATE_LOOT                            = 428,
+    EMOTE_STATE_SUBMERGED                       = 429,
+    EMOTE_ONESHOT_COWER                         = 430,
+    EMOTE_STATE_COWER                           = 431,
+    EMOTE_ONESHOT_USESTANDING                   = 432,
+    EMOTE_STATE_STEALTH_STAND                   = 433,
+    EMOTE_ONESHOT_OMNICAST_GHOUL                = 434,
+    EMOTE_ONESHOT_ATTACKBOW                     = 435,
+    EMOTE_ONESHOT_ATTACKRIFLE                   = 436,
+    EMOTE_STATE_SWIM_IDLE                       = 437,
+    EMOTE_STATE_ATTACK_UNARMED                  = 438,
+    EMOTE_ONESHOT_SPELLCAST_NEW                 = 439,
+    EMOTE_ONESHOT_DODGE                         = 440,
+    EMOTE_ONESHOT_PARRY1H                       = 441,
+    EMOTE_ONESHOT_PARRY2H                       = 442,
+    EMOTE_ONESHOT_PARRY2HL                      = 443,
+    EMOTE_STATE_FLYFALL                         = 444,
+    EMOTE_ONESHOT_FLYDEATH                      = 445,
+    EMOTE_STATE_FLY_FALL                        = 446,
+    EMOTE_ONESHOT_FLY_SIT_GROUND_DOWN           = 447,
+    EMOTE_ONESHOT_FLY_SIT_GROUND_UP             = 448,
+    EMOTE_ONESHOT_EMERGE                        = 449,
+    EMOTE_ONESHOT_DRAGONSPIT                    = 450,
+    EMOTE_STATE_SPECIALUNARMED                  = 451,
+    EMOTE_ONESHOT_FLYGRAB                       = 452,
+    EMOTE_STATE_FLYGRABCLOSED                   = 453,
+    EMOTE_ONESHOT_FLYGRABTHROWN                 = 454,
+    EMOTE_STATE_FLY_SIT_GROUND                  = 455,
+    EMOTE_STATE_WALKBACKWARDS                   = 456,
+    EMOTE_ONESHOT_FLYTALK                       = 457,
+    EMOTE_ONESHOT_FLYATTACK1H                   = 458,
+    EMOTE_STATE_CUSTOMSPELL08                   = 459,
+    EMOTE_ONESHOT_FLY_DRAGONSPIT                = 460,
+    EMOTE_STATE_SIT_CHAIR_LOW                   = 461,
+    EMOTE_ONE_SHOT_STUN                         = 462,
+    EMOTE_ONESHOT_SPELL_CAST_OMNI               = 463,
+    EMOTE_STATE_READYTHROWN                     = 465,
+    EMOTE_ONESHOT_WORK_CHOPWOOD                 = 466,
+    EMOTE_ONESHOT_WORK_MINING                   = 467,
+    EMOTE_STATE_SPELL_CHANNEL_OMNI              = 468,
+    EMOTE_STATE_SPELL_CHANNEL_DIRECTED          = 469,
+    EMOTE_STAND_STATE_NONE                      = 470,
+    EMOTE_STATE_READYJOUST                      = 471,
+    EMOTE_STATE_STRANGULATE                     = 473,
+    EMOTE_STATE_READYSPELLOMNI                  = 474,
+    EMOTE_STATE_HOLD_JOUST                      = 475,
+    EMOTE_ONESHOT_CRY_JAINA                     = 476,
+    EMOTE_ONESHOT_SPECIALUNARMED                = 477,
+    EMOTE_STATE_DANCE_NOSHEATHE                 = 478,
+    EMOTE_ONESHOT_SNIFF                         = 479,
+    EMOTE_ONESHOT_DRAGONSTOMP                   = 480,
+    EMOTE_ONESHOT_KNOCKDOWN                     = 482,
+    EMOTE_STATE_READ                            = 483,
+    EMOTE_ONESHOT_FLYEMOTETALK                  = 485,
+    EMOTE_STATE_READ_ALLOWMOVEMENT              = 492,
+    EMOTE_STATE_CUSTOM_SPELL_06                 = 498,
+    EMOTE_STATE_CUSTOM_SPELL_07                 = 499,
+    EMOTE_STATE_CUSTOM_SPELL_08                 = 500,
+    EMOTE_STATE_CUSTOM_SPELL_09                 = 501,
+    EMOTE_STATE_CUSTOM_SPELL_10                 = 502,
+    EMOTE_STATE_READY1H_ALLOW_MOVEMENT          = 505,
+    EMOTE_STATE_READY2H_ALLOW_MOVEMENT          = 506,
+    EMOTE_ONESHOT_MONKOFFENSE_ATTACKUNARMED     = 507,
+    EMOTE_ONESHOT_MONKOFFENSE_SPECIALUNARMED    = 508,
+    EMOTE_ONESHOT_MONKOFFENSE_PARRYUNARMED      = 509,
+    EMOTE_STATE_MONKOFFENSE_READYUNARMED        = 510,
+    EMOTE_ONESHOT_PALMSTRIKE                    = 511,
+    EMOTE_STATE_CRANE                           = 512,
+    EMOTE_ONESHOT_OPEN                          = 517,
+    EMOTE_STATE_READ_CHRISTMAS                  = 518,
+    EMOTE_ONESHOT_FLYATTACK2HL                  = 526,
+    EMOTE_ONESHOT_FLYATTACKTHROWN               = 527,
+    EMOTE_STATE_FLYREADYSPELLDIRECTED           = 528,
+    EMOTE_STATE_FLY_READY_1H                    = 531,
+    EMOTE_STATE_MEDITATE                        = 533,
+    EMOTE_STATE_FLY_READY_2HL                   = 534,
+    EMOTE_ONESHOT_TOGROUND                      = 535,
+    EMOTE_ONESHOT_TOFLY                         = 536,
+    EMOTE_STATE_ATTACKTHROWN                    = 537,
+    EMOTE_STATE_SPELL_CHANNEL_DIRECTED_NOSOUND  = 538,
+    EMOTE_ONESHOT_WORK                          = 539,
+    EMOTE_STATE_READYUNARMED_NOSOUND            = 540
 };
 
 // AnimationData.dbc
@@ -2989,7 +3027,7 @@ enum Anim
     ANIM_PETBATTLEFREEZE                   = 772,
     ANIM_FLYPETBATTLEFREEZE                = 773,
     ANIM_MONKOFFENSEATTACKWEAPON           = 774,
-    ANIM_FLYMONKOFFENSEATTACKWEAPON        = 775,
+    ANIM_FLYMONKOFFENSEATTACKWEAPON        = 775
 };
 
 enum LockKeyType
@@ -3052,7 +3090,7 @@ enum CreatureType
     CREATURE_TYPE_TOTEM            = 11,
     CREATURE_TYPE_NON_COMBAT_PET   = 12,
     CREATURE_TYPE_GAS_CLOUD        = 13,
-    CREATURE_TYPE_WILD_PET         = 14     // New on MoP 5.0.5
+    CREATURE_TYPE_WILD_PET         = 14     // New on MoP 5.0.5, used for battle pet
 };
 
 uint32 const CREATURE_TYPEMASK_DEMON_OR_UNDEAD = (1 << (CREATURE_TYPE_DEMON-1)) | (1 << (CREATURE_TYPE_UNDEAD-1));
@@ -3163,7 +3201,7 @@ enum CreatureTypeFlags
     CREATURE_TYPEFLAGS_UNK28            = 0x10000000,
     CREATURE_TYPEFLAGS_UNK29            = 0x20000000,
     CREATURE_TYPEFLAGS_UNK30            = 0x40000000,
-    CREATURE_TYPEFLAGS_UNK31            = 0x80000000,
+    CREATURE_TYPEFLAGS_UNK31            = 0x80000000
 };
 
 enum CreatureTypeFlags2
@@ -3175,7 +3213,7 @@ enum CreatureTypeFlags2
     CREATURE_TYPEFLAGS_2_UNK5           = 0x00000010,
     CREATURE_TYPEFLAGS_2_UNK6           = 0x00000020,
     CREATURE_TYPEFLAGS_2_UNK7           = 0x00000040,
-    CREATURE_TYPEFLAGS_2_UNK8           = 0x00000080,
+    CREATURE_TYPEFLAGS_2_UNK8           = 0x00000080
 };
 
 enum CreatureEliteType
@@ -3223,7 +3261,7 @@ enum HolidayIds
     HOLIDAY_CALL_TO_ARMS_TP          = 436,
     HOLIDAY_RATED_BG_15_VS_15        = 442,
     HOLIDAY_RATED_BG_25_VS_25        = 443,
-    HOLIDAY_ANNIVERSARY_7_YEARS      = 467,
+    HOLIDAY_ANNIVERSARY_7_YEARS      = 467
 };
 
 // values based at QuestInfo.dbc
@@ -3296,7 +3334,7 @@ enum QuestSort
     QUEST_SORT_BREWMASTER_PANDAREN = 391, // New on MoP 5.0.5
     QUEST_SORT_SCENARIO            = 392, // New on MoP 5.0.5
     QUEST_SORT_BATTLE_PET          = 394, // New on MoP 5.0.5
-    QUEST_SORT_MONK                = 395, // New on MoP 5.0.5
+    QUEST_SORT_MONK                = 395  // New on MoP 5.0.5
 };
 
 inline uint8 ClassByQuestSort(int32 QuestSort)
@@ -3520,7 +3558,7 @@ enum SkillType
     SKILL_WAY_OF_BREW			   = 980, // New in MoP 5.0.5 (cooking)
     SKILL_APPRENTICE_COOKING	   = 981, // New in MoP 5.0.5 (cooking)
     SKILL_JOURNEYMAN_COOKBOOK	   = 982, // New in MoP 5.0.5 (cooking)
-    SKILL_NO_PLAYER				   = 999, // Last on DBC
+    SKILL_NO_PLAYER				   = 999  // Last on DBC
 };
 
 #define MAX_SKILL_TYPE               825
@@ -3607,7 +3645,7 @@ enum TotemCategory
     TC_RUNED_COBALT_ROD            = 189,
     TC_RUNED_TITANIUM_ROD          = 190,
     TC_RUNED_ELEMENTIUM_ROD        = 209,
-    TC_HIGH_POWERED_BOLT_GUN       = 210,
+    TC_HIGH_POWERED_BOLT_GUN       = 210
 };
 
 enum UnitDynFlags
@@ -3695,7 +3733,7 @@ enum ChatMsg
     CHAT_MSG_ACHIEVEMENT            = 0x30,
     CHAT_MSG_GUILD_ACHIEVEMENT      = 0x31,
     CHAT_MSG_ARENA_POINTS           = 0x32,
-    CHAT_MSG_PARTY_LEADER           = 0x33,
+    CHAT_MSG_PARTY_LEADER           = 0x33
 };
 
 #define MAX_CHAT_MSG_TYPE 0x34
@@ -3736,7 +3774,7 @@ enum AiReaction
     AI_REACTION_FRIENDLY = 1,                               // (NOT used in client packet handler)
     AI_REACTION_HOSTILE  = 2,                               // sent on every attack, triggers aggro sound (used in client packet handler)
     AI_REACTION_AFRAID   = 3,                               // seen for polymorph (when AI not in control of self?) (NOT used in client packet handler)
-    AI_REACTION_DESTROY  = 4,                               // used on object destroy (NOT used in client packet handler)
+    AI_REACTION_DESTROY  = 4                                // used on object destroy (NOT used in client packet handler)
 };
 
 // Diminishing Returns Types
@@ -3770,7 +3808,7 @@ enum DiminishingGroup
     DIMINISHING_SLEEP               = 17,
     DIMINISHING_TAUNT               = 18,
     DIMINISHING_LIMITONLY           = 19,
-    DIMINISHING_DRAGONS_BREATH      = 20,
+    DIMINISHING_DRAGONS_BREATH      = 20
 };
 
 enum SummonCategory
@@ -3780,7 +3818,7 @@ enum SummonCategory
     SUMMON_CATEGORY_PET         = 2,
     SUMMON_CATEGORY_PUPPET      = 3,
     SUMMON_CATEGORY_VEHICLE     = 4,
-    SUMMON_CATEGORY_UNK         = 5, // as of patch 3.3.5a only Bone Spike in Icecrown Citadel
+    SUMMON_CATEGORY_UNK         = 5  // as of patch 3.3.5a only Bone Spike in Icecrown Citadel
     // uses this category
 };
 
@@ -3799,12 +3837,12 @@ enum SummonType
     SUMMON_TYPE_VEHICLE2    = 10,
     SUMMON_TYPE_OBJECT      = 11,
     SUMMON_TYPE_UNK12       = 12,
-    SUMMON_TYPE_UNK13       = 13,
+    SUMMON_TYPE_UNK13       = 13
 };
 
 enum EventId
 {
-    EVENT_CHARGE            = 1003,
+    EVENT_CHARGE            = 1003
 };
 
 enum ResponseCodes
@@ -3923,7 +3961,7 @@ enum ResponseCodes
     CHAR_NAME_CONSECUTIVE_SPACES                           = 102,
     CHAR_NAME_RUSSIAN_CONSECUTIVE_SILENT_CHARACTERS        = 103,
     CHAR_NAME_RUSSIAN_SILENT_CHARACTER_AT_BEGINNING_OR_END = 104,
-    CHAR_NAME_DECLENSION_DOESNT_MATCH_BASE_NAME            = 105,
+    CHAR_NAME_DECLENSION_DOESNT_MATCH_BASE_NAME            = 105
 };
 
 /// Ban function modes
@@ -3970,7 +4008,7 @@ enum BattlegroundTypeId
     BATTLEGROUND_VOP                = 699, // Valley of Power
     BATTLEGROUND_CTF3               = 706,
     BATTLEGROUND_SSM                = 708, // Silver shard Mine
-    BATTLEGROUND_TV                 = 719, // Tol'viron Arena
+    BATTLEGROUND_TV                 = 719  // Tol'viron Arena
 };
 
 #define MAX_BATTLEGROUND_TYPE_ID 720
@@ -4000,7 +4038,7 @@ enum MailResponseResult
     MAIL_ERR_MAIL_AND_CHAT_SUSPENDED   = 17,
     MAIL_ERR_TOO_MANY_ATTACHMENTS      = 18,
     MAIL_ERR_MAIL_ATTACHMENT_INVALID   = 19,
-    MAIL_ERR_ITEM_HAS_EXPIRED          = 21,
+    MAIL_ERR_ITEM_HAS_EXPIRED          = 21
 };
 
 enum SpellFamilyNames
@@ -4024,7 +4062,7 @@ enum SpellFamilyNames
     // 16 - unused
     SPELLFAMILY_PET         = 17,
     SPELLFAMILY_UNK3        = 50,
-    SPELLFAMILY_MONK        = 53,
+    SPELLFAMILY_MONK        = 53
 };
 
 enum TradeStatus
@@ -4062,7 +4100,7 @@ enum TradeStatus
     // 28 - nonexistent
     TRADE_STATUS_ONLY_CONJURED = 29,
     // 30 - you have no target
-    TRADE_STATUS_CLOSE_WINDOW = 31,
+    TRADE_STATUS_CLOSE_WINDOW = 31
 };
 
 enum XPColorChar
@@ -4078,7 +4116,7 @@ enum RemoveMethod
 {
     GROUP_REMOVEMETHOD_DEFAULT = 0,
     GROUP_REMOVEMETHOD_KICK    = 1,
-    GROUP_REMOVEMETHOD_LEAVE   = 2,
+    GROUP_REMOVEMETHOD_LEAVE   = 2
 };
 
 enum ActivateTaxiReply
@@ -4105,7 +4143,7 @@ enum CalendarFlags
     CALENDAR_FLAG_ALL_ALLOWED     = 0x001,
     CALENDAR_FLAG_INVITES_LOCKED  = 0x010,
     CALENDAR_FLAG_WITHOUT_INVITES = 0x040,
-    CALENDAR_FLAG_GUILD_ONLY      = 0x400,
+    CALENDAR_FLAG_GUILD_ONLY      = 0x400
 };
 
 enum CalendarActionData
@@ -4119,21 +4157,21 @@ enum CalendarActionData
     CALENDAR_ACTION_MODIFY_EVENT_INVITE,
     CALENDAR_ACTION_MODIFY_MODERATOR_EVENT_INVITE,
     CALENDAR_ACTION_REMOVE_EVENT_INVITE,
-    CALENDAR_ACTION_SIGNUP_TO_EVENT,
+    CALENDAR_ACTION_SIGNUP_TO_EVENT
 };
 
 enum CalendarModerationRank
 {
     CALENDAR_RANK_PLAYER,
     CALENDAR_RANK_MODERATOR,
-    CALENDAR_RANK_OWNER,
+    CALENDAR_RANK_OWNER
 };
 
 enum CalendarSendEventType
 {
     CALENDAR_SENDTYPE_GET,
     CALENDAR_SENDTYPE_ADD,
-    CALENDAR_SENDTYPE_COPY,
+    CALENDAR_SENDTYPE_COPY
 };
 
 enum CalendarEventType
@@ -4142,7 +4180,7 @@ enum CalendarEventType
     CALENDAR_TYPE_DUNGEON,
     CALENDAR_TYPE_PVP,
     CALENDAR_TYPE_MEETING,
-    CALENDAR_TYPE_OTHER,
+    CALENDAR_TYPE_OTHER
 };
 
 enum CalendarInviteStatus
@@ -4156,7 +4194,7 @@ enum CalendarInviteStatus
     CALENDAR_STATUS_CONFIRMED,
     CALENDAR_STATUS_NO_OWNER,
     CALENDAR_STATUS_8,
-    CALENDAR_STATUS_9,
+    CALENDAR_STATUS_9
 };
 
 enum CalendarError
@@ -4216,7 +4254,7 @@ enum VoidTransferError
     VOID_TRANSFER_ERROR_NOT_ENOUGH_MONEY  = 6,
     VOID_TRANSFER_ERROR_INVENTORY_FULL    = 7,
     VOID_TRANSFER_ERROR_INTERNAL_ERROR_5  = 8,
-    VOID_TRANSFER_ERROR_TRANSFER_UNKNOWN  = 9,
+    VOID_TRANSFER_ERROR_TRANSFER_UNKNOWN  = 9
 };
 
 #endif

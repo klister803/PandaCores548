@@ -1478,6 +1478,28 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             unitTarget->RemoveAura(48920);
 
         // Custom MoP Script
+        // 77495 - Mastery : Harmony
+        if (m_caster && m_caster->getClass() == CLASS_DRUID)
+        {
+            if (m_caster->HasAura(77495))
+            {
+                if (addhealth)
+                {
+                    float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25 / 100.0f;
+
+                    if (!(m_spellInfo->HasAura(SPELL_AURA_PERIODIC_HEAL)))
+                    {
+                        addhealth *= (1 + Mastery);
+
+                        int32 bp = int32(100.0f * Mastery);
+
+                        m_caster->CastCustomSpell(m_caster, 100977, &bp, NULL, NULL, true);
+                    }
+                }
+            }
+        }
+
+        // Custom MoP Script
         // 77226 - Mastery : Deep Healing
         if (m_caster && m_caster->getClass() == CLASS_SHAMAN)
         {
@@ -1494,6 +1516,16 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
                     addhealth *= 1 + bonus;
                 }
             }
+        }
+
+        // Custom MoP Script
+        // 77485 - Mastery : Echo of Light
+        if (m_caster && m_caster->getClass() == CLASS_PRIEST && m_caster->HasAura(77485) && addhealth)
+        {
+            float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
+            int32 bp = (Mastery * addhealth) / 6;
+
+            m_caster->CastCustomSpell(unitTarget, 77489, &bp, NULL, NULL, true);
         }
 
         m_damage -= addhealth;

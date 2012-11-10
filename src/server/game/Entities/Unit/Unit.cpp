@@ -271,6 +271,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _targetLocked = false;
     _lastLiquid = NULL;
     _isWalkingBeforeCharm = false;
+
+    SetEclipsePower(0); // Not sure of 0
 }
 
 ////////////////////////////////////////////////////////////
@@ -1299,8 +1301,8 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
         if (victim->getLevel() < 30)
             Probability = 0.65f * victim->getLevel() + 0.5f;
 
-        uint32 VictimDefense=victim->GetDefenseSkillValue();
-        uint32 AttackerMeleeSkill=GetUnitMeleeSkill();
+        uint32 VictimDefense = victim->GetMaxSkillValueForLevel(this);
+        uint32 AttackerMeleeSkill = GetMaxSkillValueForLevel();
 
         Probability *= AttackerMeleeSkill/(float)VictimDefense;
 
@@ -1831,11 +1833,8 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
     int32 attackerMaxSkillValueForLevel = GetMaxSkillValueForLevel(victim);
     int32 victimMaxSkillValueForLevel = victim->GetMaxSkillValueForLevel(this);
 
-    int32 attackerWeaponSkill = GetWeaponSkillValue(attType, victim);
-    int32 victimDefenseSkill = victim->GetDefenseSkillValue(this);
-
     // bonus from skills is 0.04%
-    int32    skillBonus  = 4 * (attackerWeaponSkill - victimMaxSkillValueForLevel);
+    int32    skillBonus  = 4 * (attackerMaxSkillValueForLevel - victimMaxSkillValueForLevel);
     int32    sum = 0, tmp = 0;
     int32    roll = urand (0, 10000);
 
@@ -1944,13 +1943,11 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
         getLevel() < victim->getLevelForTarget(this))
     {
         // cap possible value (with bonuses > max skill)
-        int32 skill = attackerWeaponSkill;
+        int32 skill = victimMaxSkillValueForLevel ;
         int32 maxskill = attackerMaxSkillValueForLevel;
         skill = (skill > maxskill) ? maxskill : skill;
 
-        tmp = (10 + (victimDefenseSkill - skill)) * 100;
-        tmp = tmp > 4000 ? 4000 : tmp;
-        if (roll < (sum += tmp))
+        tmp = victimMaxSkillValueForLevel;
         {
             sLog->outDebug(LOG_FILTER_UNITS, "RollMeleeOutcomeAgainst: GLANCING <%d, %d)", sum-4000, sum);
             return MELEE_HIT_GLANCING;
@@ -1964,10 +1961,7 @@ MeleeHitOutcome Unit::RollMeleeOutcomeAgainst (const Unit* victim, WeaponAttackT
         !(GetTypeId() == TYPEID_UNIT && ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_CRUSH))
     {
         // when their weapon skill is 15 or more above victim's defense skill
-        tmp = victimDefenseSkill;
-        int32 tmpmax = victimMaxSkillValueForLevel;
-        // having defense above your maximum (from items, talents etc.) has no effect
-        tmp = tmp > tmpmax ? tmpmax : tmp;
+        tmp = victimMaxSkillValueForLevel;
         // tmp = mob's level * 5 - player's current defense skill
         tmp = attackerMaxSkillValueForLevel - tmp;
         if (tmp >= 15)
@@ -2412,21 +2406,6 @@ SpellMissInfo Unit::SpellHitResult(Unit* victim, SpellInfo const* spell, bool Ca
     return SPELL_MISS_NONE;
 }
 
-uint32 Unit::GetDefenseSkillValue(Unit const* target) const
-{
-    if (GetTypeId() == TYPEID_PLAYER)
-    {
-        // in PvP use full skill instead current skill value
-        uint32 value = (target && target->GetTypeId() == TYPEID_PLAYER)
-            ? ToPlayer()->GetMaxSkillValue(SKILL_DEFENSE)
-            : ToPlayer()->GetSkillValue(SKILL_DEFENSE);
-        value += uint32(ToPlayer()->GetRatingBonusValue(CR_DEFENSE_SKILL));
-        return value;
-    }
-    else
-        return GetUnitMeleeSkill(target);
-}
-
 float Unit::GetUnitDodgeChance() const
 {
     if (IsNonMeleeSpellCasted(false) || HasUnitState(UNIT_STATE_CONTROLLED))
@@ -2565,52 +2544,9 @@ float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victi
     else
         ApplyResilience(victim, &crit, NULL, false, CR_CRIT_TAKEN_RANGED);
 
-    // Apply crit chance from defence skill
-    crit += (int32(GetMaxSkillValueForLevel(victim)) - int32(victim->GetDefenseSkillValue(this))) * 0.04f;
-
     if (crit < 0.0f)
         crit = 0.0f;
     return crit;
-}
-
-uint32 Unit::GetWeaponSkillValue (WeaponAttackType attType, Unit const* target) const
-{
-    uint32 value = 0;
-    if (Player const* player = ToPlayer())
-    {
-        Item* item = player->GetWeaponForAttack(attType, true);
-
-        // feral or unarmed skill only for base attack
-        if (attType != BASE_ATTACK && !item)
-            return 0;
-
-        if (IsInFeralForm())
-            return GetMaxSkillValueForLevel();              // always maximized SKILL_FERAL_COMBAT in fact
-
-        // weapon skill or (unarmed for base attack and fist weapons)
-        uint32 skill;
-        if (item && item->GetSkill() != SKILL_FIST_WEAPONS)
-            skill = item->GetSkill();
-        else
-            skill = SKILL_UNARMED;
-
-        // in PvP use full skill instead current skill value
-        value = (target && target->IsControlledByPlayer())
-            ? player->GetMaxSkillValue(skill)
-            : player->GetSkillValue(skill);
-        // Modify value from ratings
-        value += uint32(player->GetRatingBonusValue(CR_WEAPON_SKILL));
-        switch (attType)
-        {
-            case BASE_ATTACK:   value += uint32(player->GetRatingBonusValue(CR_WEAPON_SKILL_MAINHAND)); break;
-            case OFF_ATTACK:    value += uint32(player->GetRatingBonusValue(CR_WEAPON_SKILL_OFFHAND));  break;
-            case RANGED_ATTACK: value += uint32(player->GetRatingBonusValue(CR_WEAPON_SKILL_RANGED));   break;
-            default: break;
-        }
-    }
-    else
-        value = GetUnitMeleeSkill(target);
-   return value;
 }
 
 void Unit::_DeleteRemovedAuras()
@@ -9312,6 +9248,11 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     if (spellProto->Id == 12721) // Deep Wounds
         return pdamage;
 
+    // small exception for Echo of Light, can't find any general rule
+    // should ignore ALL damage mods, they already calculated in trigger spell
+    if (spellProto->Id == 77489) // Echo of Light
+        return pdamage;
+
     // For totems get damage bonus from owner
     if (GetTypeId() == TYPEID_UNIT && ToCreature()->isTotem())
         if (Unit* owner = GetOwner())
@@ -9321,6 +9262,87 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     float DoneTotalMod = 1.0f;
     float ApCoeffMod = 1.0f;
     int32 DoneTotal = 0;
+
+    // Custom MoP Script
+    // 76658 - Mastery : Essence of the Viper
+    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
+    // 76657 - Mastery : Master of Beasts
+    if (isPet())
+    {
+        Unit* owner = GetOwner();
+        if (owner->HasAura(76657))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 76808 - Mastery : Executioner
+    if (spellProto && (spellProto->Id == 1943 || spellProto->Id == 2098 || spellProto->Id == 121411) && HasAura(76808))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
+    // 77215 - Mastery : Potent Afflictions
+    // Increase periodic damage of Corruption, Agony and Unstable Affliction
+    if (spellProto && (spellProto->Id == 172 || spellProto->Id == 131737 || spellProto->Id == 131736) && damagetype == DOT && HasAura(77215))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.1f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
+    // 76803 - Mastery : Potent Poisons
+    if (spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680) && pdamage != 0 && HasAura(76803))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.5f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
+    // 77219 - Mastery : Master Demonologist
+    // Bonus damage while using Metamorphosis
+    if (HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    // Bonus damage in caster form
+    else if (!HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    // Bonus damage for demon servants
+    else if (isPet())
+    {
+        Unit* owner = GetOwner();
+        if (owner->HasAura(77219))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 77493 - Mastery : Razor Claws
+    if (spellProto && damagetype == DOT)
+    {
+        if (HasAura(77493))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.13f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
 
     // Custom MoP Script
     // 76547 - Mastery : Mana Adept
@@ -9395,6 +9417,19 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
             DoneTotalMod += Mastery;
         }
+    }
+
+    // Custom MoP Script
+    // 77492 - Mastery : Total Eclipse
+    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE && HasAura(77492) && HasAura(48517)) // Solar Eclipse
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    else if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_ARCANE && HasAura(77492) && HasAura(48518)) // Lunar Eclipse
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f / 100.0f;
+        DoneTotalMod += Mastery;
     }
 
     // Pet damage?
@@ -9634,6 +9669,16 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             coeff /= 100.0f;
         }
         DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod);
+    }
+
+    // Custom MoP Script
+    // 77486 - Mastery : Shadowy Recall
+    if (spellProto && damagetype == DOT && HasAura(77486))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.8f;
+
+        if (roll_chance_f(Mastery))
+            DoneTotalMod *= 2.0f;
     }
 
     float tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
@@ -10517,6 +10562,61 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     float DoneTotalMod = 1.0f;
 
     // Custom MoP Script
+    // 76658 - Mastery : Essence of the Viper
+    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
+    // 76659 - Mastery : Wild Quiver
+    if (HasAura(76659) && !spellProto && attType == RANGED_ATTACK)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
+
+        if (roll_chance_f(Mastery))
+            CastSpell(victim, 76663, true);
+    }
+
+    // Custom MoP Script
+    // 77219 - Mastery : Master Demonologist
+    // Bonus damage while using Metamorphosis
+    if (HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    // Bonus damage in caster form
+    else if (!HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    // Bonus damage for demon servants
+    else if (isPet())
+    {
+        Unit* owner = GetOwner();
+        if (owner->HasAura(77219))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 76657 - Mastery : Master of Beasts
+    if (isPet())
+    {
+        Unit* owner = GetOwner();
+        if (owner->HasAura(76657))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
     // 76856 - Mastery : Unshackled Fury
     if (victim && pdamage != 0)
     {
@@ -10550,20 +10650,28 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     }
 
     // Custom MoP Script
+    // 76806 - Mastery : Main Gauche
+    if (victim && pdamage != 0 && attType == BASE_ATTACK && !spellProto)
+    {
+        if (HasAura(76806))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
+
+            if (roll_chance_f(Mastery))
+                this->CastSpell(victim, 86392, true);
+        }
+    }
+
+    // Custom MoP Script
     // 76838 - Mastery : Strikes of Opportunity
-    if (victim && pdamage != 0 && (attType == BASE_ATTACK || attType == OFF_ATTACK))
+    if (victim && pdamage != 0 && (attType == BASE_ATTACK || attType == OFF_ATTACK) && !spellProto)
     {
         if (HasAura(76838))
         {
-            if (!(this->ToPlayer()->HasSpellCooldown(76858)))
-            {
-                float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.2f;
-                if (roll_chance_f(Mastery))
-                {
-                    this->CastSpell(victim, 76858, true);
-                    this->ToPlayer()->AddSpellCooldown(76858, 0, time(NULL) + 1);
-                }
-            }
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.2f;
+
+            if (roll_chance_f(Mastery))
+                this->CastSpell(victim, 76858, true);
         }
     }
 
@@ -13088,11 +13196,11 @@ int32 Unit::GetCreatePowers(Powers power) const
         case POWER_RUNES:
             return 0;
         case POWER_SOUL_SHARDS:
-            return 3;
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK ? 3 : 0);
         case POWER_ECLIPSE:
-            return 0;
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_DRUID ? 100 : 0); // Should be -100 to 100 this needs the power to be int32 instead of uint32
         case POWER_HOLY_POWER:
-            return 0;
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_PALADIN ? 3 : 0);
         case POWER_HEALTH:
             return 0;
         case POWER_CHI:
@@ -13607,19 +13715,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     // For melee/ranged based attack need update skills and set some Aura states if victim present
     if (procFlag & MELEE_BASED_TRIGGER_MASK && target)
     {
-        // Update skills here for players
-        if (GetTypeId() == TYPEID_PLAYER)
-        {
-            // On melee based hit/miss/resist need update skill (for victim and attacker)
-            if (procExtra & (PROC_EX_NORMAL_HIT|PROC_EX_MISS|PROC_EX_RESIST))
-            {
-                if (target->GetTypeId() != TYPEID_PLAYER && target->GetCreatureType() != CREATURE_TYPE_CRITTER)
-                    ToPlayer()->UpdateCombatSkills(target, attType, isVictim);
-            }
-            // Update defence if player is victim and parry/dodge/block
-            else if (isVictim && procExtra & (PROC_EX_DODGE|PROC_EX_PARRY|PROC_EX_BLOCK))
-                ToPlayer()->UpdateCombatSkills(target, attType, true);
-        }
         // If exist crit/parry/dodge/block need update aura state (for victim and attacker)
         if (procExtra & (PROC_EX_CRITICAL_HIT|PROC_EX_PARRY|PROC_EX_DODGE|PROC_EX_BLOCK))
         {
@@ -17346,6 +17441,45 @@ bool Unit::IsSplineEnabled() const
 {
     return movespline->Initialized();
 }
+
+void Unit::SetEclipsePower(int32 power)
+{
+    if (power > 100)
+        power = 100;
+
+    if (power < -100)
+        power = -100;
+
+    if (power > 0)
+        if (HasAura(48518))
+            RemoveAurasDueToSpell(48518); // Eclipse (Lunar)
+
+    if (power == 0)
+    {
+        if (HasAura(48517))
+            RemoveAurasDueToSpell(48517); // Eclipse (Solar)
+        if (HasAura(48518))
+            RemoveAurasDueToSpell(48518); // Eclipse (Lunar)
+    }
+
+    if (power < 0)
+    {
+        if (HasAura(48517))
+            RemoveAurasDueToSpell(48517); // Eclipse (Solar)
+        if (HasAura(94338))
+            RemoveAurasDueToSpell(94338); // Eclipse (Solar) (Aura 332?)
+    }
+
+    _eclipsePower = power;
+
+    WorldPacket data(SMSG_POWER_UPDATE);
+    data.append(GetPackGUID());
+    data << int32(1);
+    data << int8(POWER_ECLIPSE);
+    data << int32(_eclipsePower);
+    SendMessageToSet(&data, GetTypeId() == TYPEID_PLAYER ? true : false);
+}
+
 /* In the next functions, we keep 1 minute of last damage */
 uint32 Unit::GetHealingDoneInPastSecs(uint32 secs)
 {

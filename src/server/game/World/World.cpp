@@ -920,11 +920,7 @@ void World::LoadConfigSettings(bool reload)
 
     m_int_configs[CONFIG_SKILL_GAIN_CRAFTING]  = ConfigMgr::GetIntDefault("SkillGain.Crafting", 1);
 
-    m_int_configs[CONFIG_SKILL_GAIN_DEFENSE]  = ConfigMgr::GetIntDefault("SkillGain.Defense", 1);
-
     m_int_configs[CONFIG_SKILL_GAIN_GATHERING]  = ConfigMgr::GetIntDefault("SkillGain.Gathering", 1);
-
-    m_int_configs[CONFIG_SKILL_GAIN_WEAPON]  = ConfigMgr::GetIntDefault("SkillGain.Weapon", 1);
 
     m_int_configs[CONFIG_MAX_OVERSPEED_PINGS] = ConfigMgr::GetIntDefault("MaxOverspeedPings", 2);
     if (m_int_configs[CONFIG_MAX_OVERSPEED_PINGS] != 0 && m_int_configs[CONFIG_MAX_OVERSPEED_PINGS] < 2)
@@ -937,8 +933,6 @@ void World::LoadConfigSettings(bool reload)
     m_bool_configs[CONFIG_WEATHER] = ConfigMgr::GetBoolDefault("ActivateWeather", true);
 
     m_int_configs[CONFIG_DISABLE_BREATHING] = ConfigMgr::GetIntDefault("DisableWaterBreath", SEC_CONSOLE);
-
-    m_bool_configs[CONFIG_ALWAYS_MAX_SKILL_FOR_LEVEL] = ConfigMgr::GetBoolDefault("AlwaysMaxSkillForLevel", false);
 
     if (reload)
     {
@@ -1790,7 +1784,7 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_GENERAL, "Loading realm name...");
 
-    m_realmName = "Pandashan";
+    m_realmName = "Mist of Pandaria servers";
     QueryResult realmResult = LoginDatabase.PQuery("SELECT name FROM realmlist WHERE id = %u", realmID);
     if(realmResult)
         m_realmName = (*realmResult)[0].GetString();

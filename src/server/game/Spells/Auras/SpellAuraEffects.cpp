@@ -392,7 +392,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //334 SPELL_AURA_334
     &AuraEffect::HandleNULL,                                      //335 SPELL_AURA_335
     &AuraEffect::HandleNULL,                                      //336 SPELL_AURA_MOD_FLYING_RESTRICTIONS
-    &AuraEffect::HandleNULL,                                      //337 SPELL_AURA_MOD_VENDOR_ITEMS_PRICES
+    &AuraEffect::HandleNoImmediateEffect,                         //337 SPELL_AURA_MOD_VENDOR_ITEMS_PRICES
     &AuraEffect::HandleNoImmediateEffect,                         //338 SPELL_AURA_MOD_DURABILITY_LOSS
     &AuraEffect::HandleNULL,                                      //339 SPELL_AURA_INCREASE_SKILL_GAIN_CHANCE
     &AuraEffect::HandleNULL,                                      //340 SPELL_AURA_SPELL_AURA_MOD_RESURRECTED_HEALTH_BY_GUILD_MEMBER
@@ -400,10 +400,10 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleModMeleeRangedSpeedPct,                    //342 SPELL_AURA_MOD_MELEE_RANGED_HASTE_2
     &AuraEffect::HandleNULL,                                      //343 SPELL_AURA_343
     &AuraEffect::HandleNULL,                                      //344 SPELL_AURA_MOD_AUTOATTACK_DAMAGE
-    &AuraEffect::HandleNULL,                                      //345 SPELL_AURA_BYPASS_ARMOR_FOR_CASTER
+    &AuraEffect::HandleNoImmediateEffect,                         //345 SPELL_AURA_BYPASS_ARMOR_FOR_CASTER
     &AuraEffect::HandleNULL,                                      //346 SPELL_AURA_ENABLE_ALT_POWER
     &AuraEffect::HandleNULL,                                      //347 SPELL_AURA_MOD_SPELL_COOLDOWN_BY_HASTE
-    &AuraEffect::HandleNULL,                                      //348 SPELL_AURA_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT implemented in WorldSession::HandleLootMoneyOpcode (TODO ?)
+    &AuraEffect::HandleNoImmediateEffect,                         //348 SPELL_AURA_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT implemented in WorldSession::HandleLootMoneyOpcode (TODO ?)
     &AuraEffect::HandleNoImmediateEffect,                         //349 SPELL_AURA_MOD_CURRENCY_GAIN implemented in Player::ModifyCurrency (TODO?)
     &AuraEffect::HandleNULL,                                      //350 SPELL_AURA_MOD_GATHERING_ITEMS_GAINED_PERCENT
     &AuraEffect::HandleNULL,                                      //351 SPELL_AURA_351
@@ -2127,6 +2127,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
                 target->ToPlayer()->RemoveTemporarySpell(shapeInfo->stanceSpell[i]);
         }
     }
+    // Update the Mastery percentage for Shapeshift
+    target->ToPlayer()->UpdateMasteryPercentage();
 }
 
 void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -2760,9 +2762,11 @@ void AuraEffect::HandleAuraModSkill(AuraApplication const* aurApp, uint8 mode, b
     uint32 prot = GetMiscValue();
     int32 points = GetAmount();
 
-    target->ModifySkillBonus(prot, (apply ? points : -points), GetAuraType() == SPELL_AURA_MOD_SKILL_TALENT);
+
     if (prot == SKILL_DEFENSE)
-        target->UpdateDefenseBonusesMod();
+        return;
+
+    target->ModifySkillBonus(prot, (apply ? points : -points), GetAuraType() == SPELL_AURA_MOD_SKILL_TALENT);
 }
 
 /****************************/
@@ -3798,7 +3802,9 @@ void AuraEffect::HandleAuraModBaseResistancePCT(AuraApplication const* aurApp, u
     {
         for (int8 x = SPELL_SCHOOL_NORMAL; x < MAX_SPELL_SCHOOL; x++)
         {
-            if (GetMiscValue() & int32(1<<x))
+            if (GetMiscValue() & int32(1<<x) && target->HasAura(16931) && aurApp->GetBase()->GetId() == 5487)
+                target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_PCT, float(330), apply);
+            else if (GetMiscValue() & int32(1<<x))
                 target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_PCT, float(GetAmount()), apply);
         }
     }
@@ -4434,8 +4440,18 @@ void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mod
     //! ToDo: Haste auras with the same handler _CAN'T_ stack together
     Unit* target = aurApp->GetTarget();
 
-    target->ApplyAttackTimePercentMod(BASE_ATTACK,   (float)GetAmount(), apply);
-    target->ApplyAttackTimePercentMod(OFF_ATTACK,    (float)GetAmount(), apply);
+    int32 value = GetAmount();
+
+    // Custom MoP Script
+    // 76808 - Mastery : Executioner - Increase effect of Slice and Dice
+    if (aurApp->GetTarget()->HasAura(76808) && aurApp->GetBase()->GetId() == 5171)
+    {
+        float Mastery = 1.0f + aurApp->GetTarget()->GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        value *= Mastery;
+    }
+
+    target->ApplyAttackTimePercentMod(BASE_ATTACK,   (float)value, apply);
+    target->ApplyAttackTimePercentMod(OFF_ATTACK,    (float)value, apply);
 }
 
 void AuraEffect::HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 mode, bool apply) const
