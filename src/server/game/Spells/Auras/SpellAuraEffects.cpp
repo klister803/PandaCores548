@@ -4438,8 +4438,18 @@ void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mod
     //! ToDo: Haste auras with the same handler _CAN'T_ stack together
     Unit* target = aurApp->GetTarget();
 
-    target->ApplyAttackTimePercentMod(BASE_ATTACK,   (float)GetAmount(), apply);
-    target->ApplyAttackTimePercentMod(OFF_ATTACK,    (float)GetAmount(), apply);
+    int32 value = GetAmount();
+
+    // Custom MoP Script
+    // 76808 - Mastery : Executioner - Increase effect of Slice and Dice
+    if (aurApp->GetTarget()->HasAura(76808) && aurApp->GetBase()->GetId() == 5171)
+    {
+        float Mastery = 1.0f + aurApp->GetTarget()->GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        value *= Mastery;
+    }
+
+    target->ApplyAttackTimePercentMod(BASE_ATTACK,   (float)value, apply);
+    target->ApplyAttackTimePercentMod(OFF_ATTACK,    (float)value, apply);
 }
 
 void AuraEffect::HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 mode, bool apply) const
