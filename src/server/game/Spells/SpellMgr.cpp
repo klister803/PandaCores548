@@ -3137,9 +3137,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[0].BasePoints = 12;
                 break;
-            case 76806:  // Mastery : Off-Hand
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 8;
+            case 76806:  // Mastery : Main Gauche
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 76803:  // Mastery : Potent Poisons
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;

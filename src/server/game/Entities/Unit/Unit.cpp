@@ -10635,6 +10635,24 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     }
 
     // Custom MoP Script
+    // 76806 - Mastery : Main Gauche
+    if (victim && pdamage != 0 && attType == BASE_ATTACK && !spellProto)
+    {
+        if (HasAura(76806))
+        {
+            if (!(this->ToPlayer()->HasSpellCooldown(86392)))
+            {
+                float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
+                if (roll_chance_f(Mastery))
+                {
+                    this->CastSpell(victim, 86392, true);
+                    this->ToPlayer()->AddSpellCooldown(86392, 0, time(NULL) + 1);
+                }
+            }
+        }
+    }
+
+    // Custom MoP Script
     // 76838 - Mastery : Strikes of Opportunity
     if (victim && pdamage != 0 && (attType == BASE_ATTACK || attType == OFF_ATTACK))
     {
