@@ -19152,6 +19152,9 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt8(index++, GetSpecsCount());
         stmt->setUInt8(index++, GetActiveSpec());
 
+        stmt->setUInt32(index++, 0);
+        stmt->setUInt32(index++, 0);
+
         ss.str("");
         for (uint32 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
             ss << GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + i) << ' ';
