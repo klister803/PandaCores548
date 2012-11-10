@@ -3134,8 +3134,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = 10;
                 break;
             case 76808:  // Mastery : Executioner
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 12;
+                spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[2].BasePoints = 8;
                 break;
             case 76806:  // Mastery : Main Gauche
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;

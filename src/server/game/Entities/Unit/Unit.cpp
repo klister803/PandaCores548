@@ -9325,6 +9325,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     int32 DoneTotal = 0;
 
     // Custom MoP Script
+    // 76808 - Mastery : Executioner
+    if (spellProto && (spellProto->Id == 1943 || spellProto->Id == 2098 || spellProto->Id == 121411) && HasAura(76808))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
     // 77215 - Mastery : Potent Afflictions
     // Increase periodic damage of Corruption, Agony and Unstable Affliction
     if (spellProto && (spellProto->Id == 172 || spellProto->Id == 131737 || spellProto->Id == 131736) && damagetype == DOT && HasAura(77215))
