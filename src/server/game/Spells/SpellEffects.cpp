@@ -1518,6 +1518,16 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             }
         }
 
+        // Custom MoP Script
+        // 77485 - Mastery : Echo of Light
+        if (m_caster && m_caster->getClass() == CLASS_PRIEST && m_caster->HasAura(77485) && addhealth)
+        {
+            float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
+            int32 bp = (Mastery * addhealth) / 6;
+
+            m_caster->CastCustomSpell(unitTarget, 77489, &bp, NULL, NULL, true);
+        }
+
         m_damage -= addhealth;
     }
 }
