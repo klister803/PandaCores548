@@ -10593,6 +10593,16 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     float DoneTotalMod = 1.0f;
 
     // Custom MoP Script
+    // 76659 - Mastery : Wild Quiver
+    if (HasAura(76659) && !spellProto && attType == RANGED_ATTACK)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
+
+        if (roll_chance_f(Mastery))
+            CastSpell(victim, 76663, true);
+    }
+
+    // Custom MoP Script
     // 77219 - Mastery : Master Demonologist
     // Bonus damage while using Metamorphosis
     if (HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)

@@ -3082,8 +3082,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 76659:  // Mastery : Wild Quiver
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 8;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 76613:  // Mastery : Frostburn
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
