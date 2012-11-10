@@ -337,6 +337,7 @@ class Spell
         void EffectRemoveAura(SpellEffIndex effIndex);
         void EffectCastButtons(SpellEffIndex effIndex);
         void EffectRechargeManaGem(SpellEffIndex effIndex);
+        void EffectUnlearnTalent(SpellEffIndex effIndex);
 
         typedef std::set<Aura*> UsedSpellMods;
 
