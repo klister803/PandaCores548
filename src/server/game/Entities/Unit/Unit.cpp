@@ -14881,7 +14881,7 @@ void Unit::SendDurabilityLoss(Player* receiver, uint32 percent)
 //Check for 5.0.5
 void Unit::PlayOneShotAnimKit(uint32 id)
 {
-    WorldPacket data(SMSG_PLAY_ONE_SHOT_ANIM_KIT, 8+1);
+    WorldPacket data(SMSG_PLAY_ONE_SHOT_ANIM_KIT, 7 + 2);
     data.appendPackGUID(GetGUID());
     data << uint16(id);
     SendMessageToSet(&data, true);
