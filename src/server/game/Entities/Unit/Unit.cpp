@@ -9325,6 +9325,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     int32 DoneTotal = 0;
 
     // Custom MoP Script
+    // 76658 - Mastery : Essence of the Viper
+    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
     // 76657 - Mastery : Master of Beasts
     if (isPet())
     {
@@ -10603,6 +10611,14 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Done total percent damage auras
     float DoneTotalMod = 1.0f;
+
+    // Custom MoP Script
+    // 76658 - Mastery : Essence of the Viper
+    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
 
     // Custom MoP Script
     // 76659 - Mastery : Wild Quiver

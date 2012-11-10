@@ -3074,8 +3074,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 76658:  // Mastery : Essence of the Viper
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 4;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 76657:  // Mastery : Master of Beasts
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
