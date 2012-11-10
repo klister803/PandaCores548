@@ -10666,15 +10666,10 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     {
         if (HasAura(76806))
         {
-            if (!(this->ToPlayer()->HasSpellCooldown(86392)))
-            {
-                float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
-                if (roll_chance_f(Mastery))
-                {
-                    this->CastSpell(victim, 86392, true);
-                    this->ToPlayer()->AddSpellCooldown(86392, 0, time(NULL) + 1);
-                }
-            }
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
+
+            if (roll_chance_f(Mastery))
+                this->CastSpell(victim, 86392, true);
         }
     }
 
@@ -10684,15 +10679,10 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     {
         if (HasAura(76838))
         {
-            if (!(this->ToPlayer()->HasSpellCooldown(76858)))
-            {
-                float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.2f;
-                if (roll_chance_f(Mastery))
-                {
-                    this->CastSpell(victim, 76858, true);
-                    this->ToPlayer()->AddSpellCooldown(76858, 0, time(NULL) + 1);
-                }
-            }
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.2f;
+
+            if (roll_chance_f(Mastery))
+                this->CastSpell(victim, 76858, true);
         }
     }
 
