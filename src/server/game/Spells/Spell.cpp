@@ -3866,11 +3866,9 @@ void Spell::SendSpellStart()
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);                            // pending spell cast?
     data << uint32(m_spellInfo->Id);                        // spellId
-    data << uint32(m_timer);                                // delay?
     data << uint32(castFlags);                              // cast flags
+    data << uint32(m_timer);                                // delay?
     data << uint32(m_casttime);
-
-    data << uint32(0);                                     // Something with spell missile trajectory
 
     m_targets.Write(data);
 
@@ -3878,7 +3876,7 @@ void Spell::SendSpellStart()
     {
         data << uint32(1);//m_caster->GetPower((Powers)m_spellInfo->PowerType));
 
-        data << int32(0);
+        data << int32((Powers)m_spellInfo->PowerType);
         data << uint32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
         /*
         for int i = 0; i< ? ;++i
@@ -3980,8 +3978,8 @@ void Spell::SendSpellGo()
     data.append(m_caster->GetPackGUID());
     data << uint8(m_cast_count);                            // pending spell cast?
     data << uint32(m_spellInfo->Id);                        // spellId
-    data << uint32(m_timer);
     data << uint32(castFlags);                              // cast flags
+    data << uint32(m_timer);
     data << uint32(getMSTime());                            // timestamp
 
     WriteSpellGoTargets(&data);
@@ -3992,10 +3990,8 @@ void Spell::SendSpellGo()
     {
         data << uint32(1);//m_caster->GetPower((Powers)m_spellInfo->PowerType));
 
-        data << int32(0); //unk
+        data << int32((Powers)m_spellInfo->PowerType); //Power
         data << uint32(m_caster->GetPower((Powers)m_spellInfo->PowerType));
-        //TODO: send the good values :/
-        //data << uint32(0);//m_caster->GetPower((Powers)m_spellInfo->PowerType));
 
        /* for (int i = 0; i < m_caster->GetPower((Powers)m_spellInfo->PowerType); ++i)
         {
