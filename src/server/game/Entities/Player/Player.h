@@ -831,7 +831,8 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADSEASONALQUESTSTATUS      = 34,
     PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE              = 35,
     PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 36,
-    MAX_PLAYER_LOGIN_QUERY,
+    //PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES          = 34, //id on TC.
+    MAX_PLAYER_LOGIN_QUERY
 };
 
 enum PlayerDelayedOperations
