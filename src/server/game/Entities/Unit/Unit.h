@@ -681,7 +681,7 @@ enum NPCFlags
     UNIT_NPC_FLAG_PLAYER_VEHICLE        = 0x02000000,       // players with mounts that have vehicle data should have it set
     UNIT_NPC_FLAG_REFORGER              = 0x08000000,       // reforging
     UNIT_NPC_FLAG_TRANSMOGRIFIER        = 0x10000000,       // transmogrification
-    UNIT_NPC_FLAG_VAULTKEEPER           = 0x20000000,       // void storage
+    UNIT_NPC_FLAG_VAULTKEEPER           = 0x20000000        // void storage
 };
 
 enum MovementFlags
@@ -2280,6 +2280,9 @@ class Unit : public WorldObject
                 SetUInt64Value(UNIT_FIELD_TARGET, 0);
         }
 
+        int32 GetEclipsePower() { return _eclipsePower; };
+        void SetEclipsePower(int32 power);
+
         uint32 GetHealingDoneInPastSecs(uint32 secs);
         uint32 GetHealingTakenInPastSecs(uint32 secs);
         uint32 GetDamageDoneInPastSecs(uint32 secs);
@@ -2424,6 +2427,8 @@ class Unit : public WorldObject
         Spell const* _focusSpell;
         bool _targetLocked; // locks the target during spell cast for proper facing
         bool _isWalkingBeforeCharm; // Are we walking before we were charmed? 
+
+        int32 _eclipsePower;
 };
 
 namespace Trinity

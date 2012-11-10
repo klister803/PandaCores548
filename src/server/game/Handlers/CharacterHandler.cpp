@@ -1136,6 +1136,10 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         data << cufProfilesRawData[i];
     SendPacket(&data);
 
+    // Hackfix Remove Talent spell - Remove Glyph spell
+    pCurrChar->learnSpell(111621, false); // Reset Glyph
+    pCurrChar->learnSpell(113873, false); // Reset Talent
+
     std::string IP_str = GetRemoteAddress();
     sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s) Login Character:[%s] (GUID: %u) Level: %d",
         GetAccountId(), IP_str.c_str(), pCurrChar->GetName(), pCurrChar->GetGUIDLow(), pCurrChar->getLevel());

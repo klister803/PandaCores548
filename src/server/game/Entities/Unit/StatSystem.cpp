@@ -192,6 +192,14 @@ void Player::UpdateArmor()
     value *= GetModifierValue(unitMod, BASE_PCT);           // armor percent from items
     value += GetModifierValue(unitMod, TOTAL_VALUE);
 
+    // Custom MoP Script
+    // 77494 - Mastery : Nature's Guardian
+    if (HasAura(77494))
+    {
+        float Mastery = 1.0f + GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
+        value *= Mastery;
+    }
+
     //add dynamic flat mods
     AuraEffectList const& mResbyIntellect = GetAuraEffectsByType(SPELL_AURA_MOD_RESISTANCE_OF_STAT_PERCENT);
     for (AuraEffectList::const_iterator i = mResbyIntellect.begin(); i != mResbyIntellect.end(); ++i)
@@ -223,17 +231,6 @@ float Player::GetHealthBonusFromStamina()
     return baseStam + moreStam * hpBase->ratio;
 }
 
-float Player::GetManaBonusFromIntellect()
-{
-    // Taken from PaperDollFrame.lua - 4.3.4.15595
-    float intellect = GetStat(STAT_INTELLECT);
-
-    float baseInt = std::min(20.0f, intellect);
-    float moreInt = intellect - baseInt;
-
-    return baseInt + (moreInt * 15.0f);
-}
-
 void Player::UpdateMaxHealth()
 {
     UnitMods unitMod = UNIT_MOD_HEALTH;
@@ -250,11 +247,9 @@ void Player::UpdateMaxPower(Powers power)
 {
     UnitMods unitMod = UnitMods(UNIT_MOD_POWER_START + power);
 
-    float bonusPower = (power == POWER_MANA && GetCreatePowers(power) > 0) ? GetManaBonusFromIntellect() : 0;
-
     float value = GetModifierValue(unitMod, BASE_VALUE) + GetCreatePowers(power);
     value *= GetModifierValue(unitMod, BASE_PCT);
-    value += GetModifierValue(unitMod, TOTAL_VALUE) +  bonusPower;
+    value += GetModifierValue(unitMod, TOTAL_VALUE);
     value *= GetModifierValue(unitMod, TOTAL_PCT);
 
     SetMaxPower(power, uint32(value));
@@ -683,6 +678,9 @@ void Player::UpdateMasteryPercentage()
     // 76857 - Mastery : Critical Block - Update Block Percentage
     if (HasAura(76671) || HasAura(76857))
         UpdateBlockPercentage();
+    // 77494 - Mastery : Nature's Guardian - Update Armor
+    if (HasAura(77494))
+        UpdateArmor();
 }
 
 void Player::UpdateMeleeHitChances()

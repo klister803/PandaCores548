@@ -271,6 +271,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _targetLocked = false;
     _lastLiquid = NULL;
     _isWalkingBeforeCharm = false;
+
+    SetEclipsePower(0); // Not sure of 0
 }
 
 ////////////////////////////////////////////////////////////
@@ -2680,8 +2682,10 @@ void Unit::_UpdateSpells(uint32 time)
 
 void Unit::_UpdateAutoRepeatSpell()
 {
-    // check "realtime" interrupts
-    if ((GetTypeId() == TYPEID_PLAYER && ToPlayer()->isMoving()) || IsNonMeleeSpellCasted(false, false, true, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id == 75))
+    // check "real time" interrupts
+    // don't cancel spells which are affected by a SPELL_AURA_CAST_WHILE_WALKING effect
+    if (((GetTypeId() == TYPEID_PLAYER && ToPlayer()->isMoving()) || IsNonMeleeSpellCasted(false, false, true, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id == 75)) && 
+        !HasAuraTypeWithAffectMask(SPELL_AURA_CAST_WHILE_WALKING, m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo))
     {
         // cancel wand shoot
         if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id != 75)
@@ -9310,6 +9314,11 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     if (spellProto->Id == 12721) // Deep Wounds
         return pdamage;
 
+    // small exception for Echo of Light, can't find any general rule
+    // should ignore ALL damage mods, they already calculated in trigger spell
+    if (spellProto->Id == 77489) // Echo of Light
+        return pdamage;
+
     // For totems get damage bonus from owner
     if (GetTypeId() == TYPEID_UNIT && ToCreature()->isTotem())
         if (Unit* owner = GetOwner())
@@ -9319,6 +9328,87 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     float DoneTotalMod = 1.0f;
     float ApCoeffMod = 1.0f;
     int32 DoneTotal = 0;
+
+    // Custom MoP Script
+    // 76658 - Mastery : Essence of the Viper
+    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
+    // 76657 - Mastery : Master of Beasts
+    if (isPet())
+    {
+        Unit* owner = GetOwner();
+        if (owner->HasAura(76657))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 76808 - Mastery : Executioner
+    if (spellProto && (spellProto->Id == 1943 || spellProto->Id == 2098 || spellProto->Id == 121411) && HasAura(76808))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
+    // 77215 - Mastery : Potent Afflictions
+    // Increase periodic damage of Corruption, Agony and Unstable Affliction
+    if (spellProto && (spellProto->Id == 172 || spellProto->Id == 131737 || spellProto->Id == 131736) && damagetype == DOT && HasAura(77215))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.1f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
+    // 76803 - Mastery : Potent Poisons
+    if (spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680) && pdamage != 0 && HasAura(76803))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.5f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
+    // 77219 - Mastery : Master Demonologist
+    // Bonus damage while using Metamorphosis
+    if (HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    // Bonus damage in caster form
+    else if (!HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    // Bonus damage for demon servants
+    else if (isPet())
+    {
+        Unit* owner = GetOwner();
+        if (owner->HasAura(77219))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 77493 - Mastery : Razor Claws
+    if (spellProto && damagetype == DOT)
+    {
+        if (HasAura(77493))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.13f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
 
     // Custom MoP Script
     // 76547 - Mastery : Mana Adept
@@ -9393,6 +9483,19 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
             DoneTotalMod += Mastery;
         }
+    }
+
+    // Custom MoP Script
+    // 77492 - Mastery : Total Eclipse
+    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE && HasAura(77492) && HasAura(48517)) // Solar Eclipse
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    else if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_ARCANE && HasAura(77492) && HasAura(48518)) // Lunar Eclipse
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f / 100.0f;
+        DoneTotalMod += Mastery;
     }
 
     // Pet damage?
@@ -9632,6 +9735,16 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             coeff /= 100.0f;
         }
         DoneTotal += int32(DoneAdvertisedBenefit * coeff * factorMod);
+    }
+
+    // Custom MoP Script
+    // 77486 - Mastery : Shadowy Recall
+    if (spellProto && damagetype == DOT && HasAura(77486))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.8f;
+
+        if (roll_chance_f(Mastery))
+            DoneTotalMod *= 2.0f;
     }
 
     float tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
@@ -10515,6 +10628,61 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     float DoneTotalMod = 1.0f;
 
     // Custom MoP Script
+    // 76658 - Mastery : Essence of the Viper
+    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
+    // Custom MoP Script
+    // 76659 - Mastery : Wild Quiver
+    if (HasAura(76659) && !spellProto && attType == RANGED_ATTACK)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
+
+        if (roll_chance_f(Mastery))
+            CastSpell(victim, 76663, true);
+    }
+
+    // Custom MoP Script
+    // 77219 - Mastery : Master Demonologist
+    // Bonus damage while using Metamorphosis
+    if (HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    // Bonus damage in caster form
+    else if (!HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+    // Bonus damage for demon servants
+    else if (isPet())
+    {
+        Unit* owner = GetOwner();
+        if (owner->HasAura(77219))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
+    // 76657 - Mastery : Master of Beasts
+    if (isPet())
+    {
+        Unit* owner = GetOwner();
+        if (owner->HasAura(76657))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            DoneTotalMod += Mastery;
+        }
+    }
+
+    // Custom MoP Script
     // 76856 - Mastery : Unshackled Fury
     if (victim && pdamage != 0)
     {
@@ -10548,20 +10716,28 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     }
 
     // Custom MoP Script
+    // 76806 - Mastery : Main Gauche
+    if (victim && pdamage != 0 && attType == BASE_ATTACK && !spellProto)
+    {
+        if (HasAura(76806))
+        {
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
+
+            if (roll_chance_f(Mastery))
+                this->CastSpell(victim, 86392, true);
+        }
+    }
+
+    // Custom MoP Script
     // 76838 - Mastery : Strikes of Opportunity
-    if (victim && pdamage != 0 && (attType == BASE_ATTACK || attType == OFF_ATTACK))
+    if (victim && pdamage != 0 && (attType == BASE_ATTACK || attType == OFF_ATTACK) && !spellProto)
     {
         if (HasAura(76838))
         {
-            if (!(this->ToPlayer()->HasSpellCooldown(76858)))
-            {
-                float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.2f;
-                if (roll_chance_f(Mastery))
-                {
-                    this->CastSpell(victim, 76858, true);
-                    this->ToPlayer()->AddSpellCooldown(76858, 0, time(NULL) + 1);
-                }
-            }
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.2f;
+
+            if (roll_chance_f(Mastery))
+                this->CastSpell(victim, 76858, true);
         }
     }
 
@@ -12482,13 +12658,13 @@ int32 Unit::ModSpellDuration(SpellInfo const* spellProto, Unit const* target, in
                 }
                 break;
             case SPELLFAMILY_PALADIN:
-                if (spellProto->SpellFamilyFlags[0] & 0x00000002 && spellProto->SpellIconID == 298)
+                if ((spellProto->SpellFamilyFlags[0] & 0x00000002) && spellProto->SpellIconID == 298)
                 {
                     // Glyph of Blessing of Might
                     if (AuraEffect* aurEff = GetAuraEffect(57958, 0))
                         duration += aurEff->GetAmount() * MINUTE * IN_MILLISECONDS;
                 }
-                else if (spellProto->SpellFamilyFlags[0] & 0x00010000 && spellProto->SpellIconID == 306)
+                else if ((spellProto->SpellFamilyFlags[0] & 0x00010000) && spellProto->SpellIconID == 306)
                 {
                     // Glyph of Blessing of Wisdom
                     if (AuraEffect* aurEff = GetAuraEffect(57979, 0))
@@ -13086,11 +13262,11 @@ int32 Unit::GetCreatePowers(Powers power) const
         case POWER_RUNES:
             return 0;
         case POWER_SOUL_SHARDS:
-            return 3;
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK ? 3 : 0);
         case POWER_ECLIPSE:
-            return 0;
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_DRUID ? 100 : 0); // Should be -100 to 100 this needs the power to be int32 instead of uint32
         case POWER_HOLY_POWER:
-            return 0;
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_PALADIN ? 3 : 0);
         case POWER_HEALTH:
             return 0;
         case POWER_CHI:
@@ -17344,6 +17520,45 @@ bool Unit::IsSplineEnabled() const
 {
     return movespline->Initialized();
 }
+
+void Unit::SetEclipsePower(int32 power)
+{
+    if (power > 100)
+        power = 100;
+
+    if (power < -100)
+        power = -100;
+
+    if (power > 0)
+        if (HasAura(48518))
+            RemoveAurasDueToSpell(48518); // Eclipse (Lunar)
+
+    if (power == 0)
+    {
+        if (HasAura(48517))
+            RemoveAurasDueToSpell(48517); // Eclipse (Solar)
+        if (HasAura(48518))
+            RemoveAurasDueToSpell(48518); // Eclipse (Lunar)
+    }
+
+    if (power < 0)
+    {
+        if (HasAura(48517))
+            RemoveAurasDueToSpell(48517); // Eclipse (Solar)
+        if (HasAura(94338))
+            RemoveAurasDueToSpell(94338); // Eclipse (Solar) (Aura 332?)
+    }
+
+    _eclipsePower = power;
+
+    WorldPacket data(SMSG_POWER_UPDATE);
+    data.append(GetPackGUID());
+    data << int32(1);
+    data << int8(POWER_ECLIPSE);
+    data << int32(_eclipsePower);
+    SendMessageToSet(&data, GetTypeId() == TYPEID_PLAYER ? true : false);
+}
+
 /* In the next functions, we keep 1 minute of last damage */
 uint32 Unit::GetHealingDoneInPastSecs(uint32 secs)
 {
