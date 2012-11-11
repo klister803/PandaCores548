@@ -2650,6 +2650,10 @@ void SpellMgr::LoadSpellClassInfo()
         if(ClassID == CLASS_WARRIOR || ClassID == CLASS_HUNTER || ClassID == CLASS_ROGUE || ClassID == CLASS_DEATH_KNIGHT || ClassID == CLASS_MONK)
             mSpellClassInfo[ClassID].push_back(674);
 
+        // Natural Insight druid
+        if(ClassID == CLASS_DRUID)
+            mSpellClassInfo[ClassID].push_back(112857);
+
         for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
         {
             SkillLineAbilityEntry const* skillLine = sSkillLineAbilityStore.LookupEntry(i);
@@ -2683,19 +2687,8 @@ void SpellMgr::LoadSpellClassInfo()
             if (!spell)
                 continue;
 
-            if (spell->SpellFamilyName == classEntry->spellfamily && spell->SpecializationEntry)
-            {
+            if (spell->SpellFamilyName == classEntry->spellfamily && !spell->SpecializationIdList.empty())
                 mSpellClassInfo[ClassID].push_back(i);
-
-                if (spell->OverrideSpellEntry)
-                {
-                    auto itr = mSpellOverrideInfo.find(spell->OverrideSpellEntry);
-                    if (itr == mSpellOverrideInfo.end())
-                        mSpellOverrideInfo[spell->OverrideSpellEntry] = std::list<uint32>();
-                }
-                
-                mSpellOverrideInfo[spell->OverrideSpellEntry].push_back(spell->SpecializationEntry);
-            }
         }
     }
 

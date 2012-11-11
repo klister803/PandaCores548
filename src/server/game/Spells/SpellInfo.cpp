@@ -926,13 +926,15 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry, uint32 difficulty)
     {
         specializationInfo = sSpecializationSpellStore.LookupEntry(i);
         if (specializationInfo && specializationInfo->LearnSpell == Id)
-            break;
-
-        specializationInfo = NULL;
+        {
+            SpecializationIdList.push_back(specializationInfo->SpecializationEntry);
+            OverrideSpellEntry = specializationInfo->OverrideSpell;
+            continue;
+        }
     }
 
-    SpecializationEntry = specializationInfo ? specializationInfo->SpecializationEntry : 0;
-    OverrideSpellEntry = specializationInfo ? specializationInfo->OverrideSpell : 0;
+    if(SpecializationIdList.empty())
+        OverrideSpellEntry = 0;
 
     talentId = 0;
 
