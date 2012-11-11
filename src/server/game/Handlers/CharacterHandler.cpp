@@ -1075,20 +1075,27 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         default:
             break;
         }
+
         float x, y, z;
         pCurrChar->GetClosePoint(x, y, z, pCurrChar->GetObjectSize());
-        Pet* pet = pCurrChar->SummonPet(creature_id, x, y, z, pCurrChar->GetOrientation(), SUMMON_PET, 0);
-        if (!pet)
-            return;
-
-        pet->SetReactState(REACT_DEFENSIVE);
-
-        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, spell_id);
-
-        // generate new name for summon pet
-        std::string new_name=sObjectMgr->GeneratePetName(creature_id);
-        if (!new_name.empty())
-            pet->SetName(new_name);
+        Creature* c = pCurrChar->SummonCreature(creature_id, x, y, z, pCurrChar->GetOrientation());
+        if (c)
+        {
+            Pet* pet = pCurrChar->CreateTamedPetFrom(c, spell_id);
+            if(pet)
+            {
+                c->DespawnOrUnsummon();
+                pet->GetMap()->AddToMap(pet->ToCreature());
+                pet->SetUInt32Value(UNIT_FIELD_LEVEL, 1);
+                pCurrChar->SetMinion(pet, true);
+                pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+                pCurrChar->PetSpellInitialize();
+                // generate new name for summon pet
+                std::string new_name=sObjectMgr->GeneratePetName(creature_id);
+                if (!new_name.empty())
+                    pet->SetName(new_name);
+            }
+        }
     }
     else
         // Load pet if any (if player not alive and in taxi flight or another then pet will remember as temporary unsummoned)
