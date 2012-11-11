@@ -399,7 +399,7 @@ public:
 
     // SpecializationSpellEntry
     std::list<uint32> SpecializationIdList;
-    uint32 OverrideSpellEntry;
+    std::list<uint32> OverrideSpellList;
 
     // TalentInfo
     uint32 talentId;
