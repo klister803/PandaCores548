@@ -25,7 +25,6 @@ EndScriptData */
 
 //Known Bugs:
 // - Need better implementation of Gossip and correct gossip text and option
-// - Misses Dalaran Teleport at the end.
 
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
@@ -121,10 +120,7 @@ class npc_announcer_toc10 : public CreatureScript
         {
             npc_announcer_toc10AI(Creature* creature) : ScriptedAI(creature)
             {
-                instance = creature->GetInstanceScript();
             }
-
-            InstanceScript* instance;
 
             void Reset()
             {
@@ -219,7 +215,7 @@ class npc_announcer_toc10 : public CreatureScript
                         return true;
 
                     if (GameObject* floor = GameObject::GetGameObject(*player, instanceScript->GetData64(GO_ARGENT_COLISEUM_FLOOR)))
-                        floor->SetDestructibleState(GO_DESTRUCTIBLE_DESTROYED);
+                        floor->SetDestructibleState(GO_DESTRUCTIBLE_DAMAGED);
 
                     creature->CastSpell(creature, 69016, false);
 
@@ -337,17 +333,16 @@ class boss_lich_king_toc : public CreatureScript
                             break;
                         case 5080:
                             if (GameObject* go = instance->instance->GetGameObject(instance->GetData64(GO_ARGENT_COLISEUM_FLOOR)))
-                                go->SetDestructibleState(GO_DESTRUCTIBLE_DESTROYED);
+                                go->SetDestructibleState(GO_DESTRUCTIBLE_DAMAGED);
                             me->CastSpell(me, 69016, false);
-                            if (instance)
-                            {
-                                instance->SetData(TYPE_LICH_KING, DONE);
-                                Creature* temp = Unit::GetCreature(*me, instance->GetData64(NPC_ANUBARAK));
-                                if (!temp || !temp->isAlive())
-                                    temp = me->SummonCreature(NPC_ANUBARAK, AnubarakLoc[0].GetPositionX(), AnubarakLoc[0].GetPositionY(), AnubarakLoc[0].GetPositionZ(), 3, TEMPSUMMON_CORPSE_TIMED_DESPAWN, DESPAWN_TIME);
+                            instance->SetData(TYPE_LICH_KING, DONE);
+                            Creature* temp = Unit::GetCreature(*me, instance->GetData64(NPC_ANUBARAK));
+                            if (!temp || !temp->isAlive())
+                                temp = me->SummonCreature(NPC_ANUBARAK, AnubarakLoc[0].GetPositionX(), AnubarakLoc[0].GetPositionY(), AnubarakLoc[0].GetPositionZ(), 3, TEMPSUMMON_CORPSE_TIMED_DESPAWN, DESPAWN_TIME);
 
-                                instance->SetData(TYPE_EVENT, 0);
-                            }
+
+
+                            instance->SetData(TYPE_EVENT, 0);
                             me->DespawnOrUnsummon();
                             m_uiUpdateTimer = 20000;
                             break;
@@ -797,7 +792,9 @@ class npc_tirion_toc : public CreatureScript
                             instance->SetData(TYPE_EVENT, 0);
                             break;
                         case 6000:
-                            me->NearTeleportTo(AnubarakLoc[0].GetPositionX(), AnubarakLoc[0].GetPositionY(), AnubarakLoc[0].GetPositionZ(), 4.0f);
+                            me->SummonCreature(NPC_TIRION_FORDRING, EndSpawnLoc[0].GetPositionX(), EndSpawnLoc[0].GetPositionY(), EndSpawnLoc[0].GetPositionZ());
+                            me->SummonCreature(NPC_ARGENT_MAGE, EndSpawnLoc[1].GetPositionX(), EndSpawnLoc[1].GetPositionY(), EndSpawnLoc[1].GetPositionZ());
+                            me->SummonGameObject(GO_PORTAL_TO_DALARAN, EndSpawnLoc[2].GetPositionX(), EndSpawnLoc[2].GetPositionY(), EndSpawnLoc[2].GetPositionZ(), 5, 0, 0, 0, 0, 0);
                             m_uiUpdateTimer = 20000;
                             instance->SetData(TYPE_EVENT, 6005);
                             break;

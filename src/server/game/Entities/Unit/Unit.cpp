@@ -268,7 +268,6 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE);
 
     _focusSpell = NULL;
-    _targetLocked = false;
     _lastLiquid = NULL;
     _isWalkingBeforeCharm = false;
 
@@ -428,6 +427,9 @@ void Unit::UpdateSplinePosition()
         if (TransportBase* transport = GetDirectTransport())
             transport->CalculatePassengerPosition(loc.x, loc.y, loc.z, loc.orientation);
     }
+
+    if (HasUnitState(UNIT_STATE_CANNOT_TURN))
+        loc.orientation = GetOrientation();
 
     UpdatePosition(loc.x, loc.y, loc.z, loc.orientation);
 }
@@ -10736,6 +10738,20 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     Unit* owner = GetOwner() ? GetOwner() : this;
     // AuraEffectList const& mOverrideClassScript = owner->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
 
+    // Custom MoP Script
+    // Stagger
+    /*if (victim && victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_MONK && victim->ToPlayer()->GetSpecializationId(victim->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
+    {
+        int32 bp = (int32((pdamage + DoneFlatBenefit) * DoneTotalMod)) - (int32((pdamage + DoneFlatBenefit) * 0.8));
+
+        bp += victim->GetRemainingPeriodicAmount(victim->GetGUID(), 124255, SPELL_AURA_PERIODIC_DAMAGE);
+        bp /= 10;
+
+        victim->CastCustomSpell(victim, 124255, &bp, NULL, NULL, true);
+
+        DoneTotalMod *= 0.8f;
+    }*/
+
     float tmpDamage = float(int32(pdamage) + DoneFlatBenefit) * DoneTotalMod;
 
     // apply spellmod to Done damage
@@ -12588,20 +12604,6 @@ int32 Unit::ModSpellDuration(SpellInfo const* spellProto, Unit const* target, in
                 {
                     // Glyph of Thorns
                     if (AuraEffect* aurEff = GetAuraEffect(57862, 0))
-                        duration += aurEff->GetAmount() * MINUTE * IN_MILLISECONDS;
-                }
-                break;
-            case SPELLFAMILY_PALADIN:
-                if ((spellProto->SpellFamilyFlags[0] & 0x00000002) && spellProto->SpellIconID == 298)
-                {
-                    // Glyph of Blessing of Might
-                    if (AuraEffect* aurEff = GetAuraEffect(57958, 0))
-                        duration += aurEff->GetAmount() * MINUTE * IN_MILLISECONDS;
-                }
-                else if ((spellProto->SpellFamilyFlags[0] & 0x00010000) && spellProto->SpellIconID == 306)
-                {
-                    // Glyph of Blessing of Wisdom
-                    if (AuraEffect* aurEff = GetAuraEffect(57979, 0))
                         duration += aurEff->GetAmount() * MINUTE * IN_MILLISECONDS;
                 }
                 break;
@@ -14890,6 +14892,15 @@ void Unit::SendDurabilityLoss(Player* receiver, uint32 percent)
     WorldPacket data(SMSG_DURABILITY_DAMAGE_DEATH, 4);
     data << uint32(percent);
     receiver->GetSession()->SendPacket(&data);
+}
+
+//Check for 5.0.5
+void Unit::PlayOneShotAnimKit(uint32 id)
+{
+    WorldPacket data(SMSG_PLAY_ONE_SHOT_ANIM_KIT, 7 + 2);
+    data.appendPackGUID(GetGUID());
+    data << uint16(id);
+    SendMessageToSet(&data, true);
 }
 
 void Unit::Kill(Unit* victim, bool durabilityLoss)
@@ -17382,6 +17393,30 @@ void Unit::SendMovementHover()
     SendMessageToSet(&data, false);
 }
 
+void Unit::FocusTarget(Spell const* focusSpell, uint64 target)
+{
+
+    // already focused
+    if (_focusSpell)
+        return;
+    _focusSpell = focusSpell;
+    SetUInt64Value(UNIT_FIELD_TARGET, target);
+    if (focusSpell->GetSpellInfo()->AttributesEx5 & SPELL_ATTR5_DONT_TURN_DURING_CAST)
+        AddUnitState(UNIT_STATE_ROTATING);
+}
+void Unit::ReleaseFocus(Spell const* focusSpell)
+{
+    // focused to something else
+    if (focusSpell != _focusSpell)
+        return;
+    _focusSpell = NULL;
+    if (Unit* victim = getVictim())
+        SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
+    else
+        SetUInt64Value(UNIT_FIELD_TARGET, 0);
+    if (focusSpell->GetSpellInfo()->AttributesEx5 & SPELL_ATTR5_DONT_TURN_DURING_CAST)
+        ClearUnitState(UNIT_STATE_ROTATING);
+}
 void Unit::SendMovementWaterWalking()
 {
     if (GetTypeId() == TYPEID_PLAYER)
