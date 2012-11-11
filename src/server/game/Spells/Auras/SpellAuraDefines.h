@@ -366,14 +366,14 @@ enum AuraType
     SPELL_AURA_306                                          = 306,
     SPELL_AURA_HEAL_ABSORB_TEST                             = 307,
     SPELL_AURA_MOD_CRIT_CHANCE_FOR_CASTER                   = 308,
-    SPELL_AURA_309                                          = 309,
+    SPELL_AURA_309                                          = 309,  // Not used in 4.3.4
     SPELL_AURA_MOD_CREATURE_AOE_DAMAGE_AVOIDANCE            = 310,
     SPELL_AURA_311                                          = 311,
     SPELL_AURA_ANIM_REPLACEMENT_SET                         = 312,
-    SPELL_AURA_313                                          = 313,
+    SPELL_AURA_313                                          = 313,  // Not used in 4.3.4 - related to mounts
     SPELL_AURA_PREVENT_RESURRECTION                         = 314,
     SPELL_AURA_UNDERWATER_WALKING                           = 315,
-    SPELL_AURA_316                                          = 316, // old SPELL_AURA_PERIODIC_HASTE. unused 4.3.4
+    SPELL_AURA_316                                          = 316,  // Not used in 4.3.4 (name from 3.3.5a)
     SPELL_AURA_MOD_SPELL_POWER_PCT                          = 317,
     SPELL_AURA_MASTERY                                      = 318,
     SPELL_AURA_MOD_MELEE_HASTE_3                            = 319,
@@ -403,7 +403,7 @@ enum AuraType
     SPELL_AURA_343                                          = 343,
     SPELL_AURA_MOD_AUTOATTACK_DAMAGE                        = 344,  // NYI
     SPELL_AURA_BYPASS_ARMOR_FOR_CASTER                      = 345,
-    SPELL_AURA_PROGRESS_BAR                                 = 346,  // NYI
+    SPELL_AURA_ENABLE_ALT_POWER                             = 346,  // NYI
     SPELL_AURA_MOD_SPELL_COOLDOWN_BY_HASTE                  = 347,  // NYI
     SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT    = 348,  // NYI
     SPELL_AURA_MOD_CURRENCY_GAIN                            = 349,
