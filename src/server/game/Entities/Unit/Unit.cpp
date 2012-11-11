@@ -10748,7 +10748,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         victim->CastCustomSpell(victim, 124255, &bp, NULL, NULL, true);
 
         DoneTotalMod *= 0.8f;
-    }/*
+    }*/
 
     float tmpDamage = float(int32(pdamage) + DoneFlatBenefit) * DoneTotalMod;
 
