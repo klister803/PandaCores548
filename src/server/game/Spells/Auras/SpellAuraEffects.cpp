@@ -769,17 +769,19 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             break;
 
         case SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE:
+        {
+            if (caster)
             {
-                if (caster)
+                // if Level <= 70 resist = player level
+                int32 resist = caster->getLevel();
+
+                if (resist > 70 && resist < 81)
+                    resist += (resist - 70) * 5;
+                else if (resist > 80)
+                    resist += ((resist-70) * 5 + (resist - 80) * 7);
+
+                switch (GetId())
                 {
-                    // if Level <= 70 resist = player level
-                    int32 resist = caster->getLevel();
-                    if (resist > 70 && resist < 81)
-                        resist += (resist - 70) * 5;
-                    else if (resist > 80)
-                        resist += ((resist-70) * 5 + (resist - 80) * 7);
-                    switch (GetId())
-                    {
                     case 20043: // Aspect of the Wild
                     case 8185:  // Elemental Resistance
                     case 19891: // Resistance Aura
@@ -795,11 +797,13 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                         amount = resist / 2;
                         break;
                     }
-                    break;
-                }
+                break;
+            }
+        }
         default:
             break;
-            }
+        
+    }
     if (DoneActualBenefit != 0.0f)
     {
         DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellInfo());
