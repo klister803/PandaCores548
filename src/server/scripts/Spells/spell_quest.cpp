@@ -26,6 +26,8 @@
 #include "SpellScript.h"
 #include "Vehicle.h"
 #include "GridNotifiers.h"
+#include "GridNotifiersImpl.h"
+#include "CellImpl.h"
 
 class spell_generic_quest_update_entry_SpellScript : public SpellScript
 {
