@@ -1106,7 +1106,7 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
                     m_targets.SetDst(1120.43f, -762.11f, 47.92f, 2.94f, 628);
             }
             break;
-        case 66551: // teleports inside (Isle of Conquest)
+        case 66551: // teleport inside (Isle of Conquest)
             if (Player* target = unitTarget->ToPlayer())
             {
                 if (target->GetTeamId() == TEAM_ALLIANCE)
@@ -1155,7 +1155,7 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
             }
             return;
         }
-        // Ultrasafe Transporter: Toshley's Station
+        // Ultra safe Transporter: Toshley's Station
         case 36941:
         {
             if (roll_chance_i(50))                        // 50% success
@@ -1481,7 +1481,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
 
         addhealth = unitTarget->SpellHealingBonusTaken(caster, m_spellInfo, addhealth, HEAL);
 
-        // Remove Grievious bite if fully healed
+        // Remove Grievous bite if fully healed
         if (unitTarget->HasAura(48920) && (unitTarget->GetHealth() + addhealth >= unitTarget->GetMaxHealth()))
             unitTarget->RemoveAura(48920);
 
