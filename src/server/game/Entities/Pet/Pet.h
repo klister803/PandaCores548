@@ -204,6 +204,12 @@ class Pet : public Guardian
         bool    m_removed;                                  // prevent overwrite pet state in DB at next Pet::Update if pet already removed(saved)
 
         Player* GetOwner() { return m_owner; }
+
+        uint32 GetSpecializationId() const { return m_specialization; }
+        void SetSpecializationId(uint32 id) { m_specialization = id; }
+        void LearnSpecializationSpell();
+        void UnlearnSpecializationSpell();
+
     protected:
         Player* m_owner;
         PetType m_petType;
@@ -211,6 +217,7 @@ class Pet : public Guardian
         uint64  m_auraRaidUpdateMask;
         bool    m_loading;
         uint32  m_regenTimer;
+        uint32  m_specialization;
 
         DeclinedName *m_declinedname;
 
