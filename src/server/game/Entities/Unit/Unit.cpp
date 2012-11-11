@@ -10802,6 +10802,20 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     Unit* owner = GetOwner() ? GetOwner() : this;
     // AuraEffectList const& mOverrideClassScript = owner->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
 
+    // Custom MoP Script
+    // Stagger
+    /*if (victim && victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_MONK && victim->ToPlayer()->GetSpecializationId(victim->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
+    {
+        int32 bp = (int32((pdamage + DoneFlatBenefit) * DoneTotalMod)) - (int32((pdamage + DoneFlatBenefit) * 0.8));
+
+        bp += victim->GetRemainingPeriodicAmount(victim->GetGUID(), 124255, SPELL_AURA_PERIODIC_DAMAGE);
+        bp /= 10;
+
+        victim->CastCustomSpell(victim, 124255, &bp, NULL, NULL, true);
+
+        DoneTotalMod *= 0.8f;
+    }/*
+
     float tmpDamage = float(int32(pdamage) + DoneFlatBenefit) * DoneTotalMod;
 
     // apply spellmod to Done damage
