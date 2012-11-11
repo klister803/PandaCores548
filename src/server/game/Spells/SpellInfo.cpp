@@ -925,14 +925,15 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry, uint32 difficulty)
     for (uint32 i = 0; i < sSpecializationSpellStore.GetNumRows(); i++)
     {
         specializationInfo = sSpecializationSpellStore.LookupEntry(i);
-        if (specializationInfo && specializationInfo->LearnSpell == Id)
-            break;
+        if(!specializationInfo)
+            continue;
 
-        specializationInfo = NULL;
+        if (specializationInfo->LearnSpell == Id)
+            SpecializationIdList.push_back(specializationInfo->SpecializationEntry);
+
+        if(specializationInfo->OverrideSpell == Id)
+            OverrideSpellList.push_back(specializationInfo->LearnSpell);
     }
-
-    SpecializationEntry = specializationInfo ? specializationInfo->SpecializationEntry : 0;
-    OverrideSpellEntry = specializationInfo ? specializationInfo->OverrideSpell : 0;
 
     talentId = 0;
 
@@ -1160,7 +1161,7 @@ bool SpellInfo::IsPassiveStackableWithRanks() const
 
 bool SpellInfo::IsMultiSlotAura() const
 {
-    return IsPassive() || Id == 40075 || Id == 44413; // No other way to make 40075 have more than 1 copy of aura
+    return IsPassive() || Id == 44413;
 }
 
 bool SpellInfo::IsDeathPersistent() const

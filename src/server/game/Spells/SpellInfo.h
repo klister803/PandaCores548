@@ -398,8 +398,8 @@ public:
     SpellChainNode const* ChainEntry;
 
     // SpecializationSpellEntry
-    uint32 SpecializationEntry;
-    uint32 OverrideSpellEntry;
+    std::list<uint32> SpecializationIdList;
+    std::list<uint32> OverrideSpellList;
 
     // TalentInfo
     uint32 talentId;

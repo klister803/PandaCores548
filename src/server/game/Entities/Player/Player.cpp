@@ -3296,8 +3296,17 @@ void Player::InitSpellForLevel()
         if (HasSpell(spellId))
             continue;
 
-        if (spell->SpecializationEntry && spell->SpecializationEntry != specializationId)
-            continue;
+        if (!spell->SpecializationIdList.empty())
+        {
+            bool find = false;
+
+            for(auto itr : spell->SpecializationIdList)
+                if(itr == specializationId)
+                    find = true;
+
+            if(!find)
+                continue;
+        }
 
         if (spell->SpellLevel <= level)
             learnSpell(spellId, false);
@@ -3311,7 +3320,7 @@ void Player::RemoveSpecializationSpells()
     for (auto itr : GetSpellMap())
     {
         SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr.first);
-        if (spell && spell->SpecializationEntry)
+        if (spell && !spell->SpecializationIdList.empty())
             spellToRemove.push_back(itr.first);
     }
 
@@ -4684,6 +4693,7 @@ void Player::ResetSpec()
     RemoveSpecializationSpells();
     SetSpecializationId(GetActiveSpec(), 0);
     InitSpellForLevel();
+    UpdateMasteryPercentage();
     SendTalentsInfoData(false);
 
     ModifyMoney(-(int64)cost);
@@ -19075,6 +19085,9 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt8(index++, GetSpecsCount());
         stmt->setUInt8(index++, GetActiveSpec());
 
+        stmt->setUInt32(index++, 0);
+        stmt->setUInt32(index++, 0);
+
         ss.str("");
         for (uint32 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
             ss << GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + i) << ' ';
@@ -24955,8 +24968,10 @@ void Player::SendTalentsInfoData(bool pet)
 {
     if (pet)
     {
+        Pet* pPet = GetPet();
         WorldPacket data(SMSG_SET_PET_SPECIALIZATION);
-        data << uint16(0); // SpecializationId
+        data << uint16(pPet ? pPet->GetSpecializationId() : 0);
+        GetSession()->SendPacket(&data);
         return;
     }
 

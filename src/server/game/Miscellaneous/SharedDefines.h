@@ -71,6 +71,9 @@ enum SpecIndex
     SPEC_WARRIOR_ARMS           = 71,
     SPEC_WARRIOR_FURY           = 72,
     SPEC_WARRIOR_PROTECTION     = 73,
+    SPEC_PET_FEROCITY           = 74,
+    SPEC_PET_TENACITY           = 81,
+    SPEC_PET_CUNNING            = 79,
     SPEC_DROOD_BALANCE          = 102,
     SPEC_DROOD_CAT              = 103,
     SPEC_DROOD_BEAR             = 104,
@@ -548,7 +551,7 @@ enum SpellAttr5
     SPELL_ATTR5_SPECIAL_ITEM_CLASS_CHECK         = 0x00010000, // 16 this allows spells with EquippedItemClass to affect spells from other items if the required item is equipped
     SPELL_ATTR5_USABLE_WHILE_FEARED              = 0x00020000, // 17 usable while feared
     SPELL_ATTR5_USABLE_WHILE_CONFUSED            = 0x00040000, // 18 usable while confused
-    SPELL_ATTR5_UNK19                            = 0x00080000, // 19
+    SPELL_ATTR5_DONT_TURN_DURING_CAST            = 0x00080000, // 19 Blocks caster's turning when casting (client does not automatically turn caster's model to face UNIT_FIELD_TARGET)
     SPELL_ATTR5_UNK20                            = 0x00100000, // 20
     SPELL_ATTR5_UNK21                            = 0x00200000, // 21
     SPELL_ATTR5_UNK22                            = 0x00400000, // 22

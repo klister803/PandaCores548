@@ -59,6 +59,7 @@ void WorldSession::HandleSetSpecialization(WorldPacket& recvData)
         if (specializationSpell)
             _player->learnSpell(specializationSpell, false);
         _player->InitSpellForLevel();
+        _player->UpdateMasteryPercentage();
     }
 }
 
