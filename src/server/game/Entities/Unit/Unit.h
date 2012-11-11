@@ -549,7 +549,7 @@ enum WeaponAttackType
 enum CombatRating
 {
     CR_WEAPON_SKILL             = 0,
-    CR_DEFENSE_SKILL            = 1,
+    CR_DEFENSE_SKILL            = 1,    // Removed in 4.0.1
     CR_DODGE                    = 2,
     CR_PARRY                    = 3,
     CR_BLOCK                    = 4,
@@ -1469,6 +1469,7 @@ class Unit : public WorldObject
         MountCapabilityEntry const* GetMountCapability(uint32 mountType) const;
 
         void SendDurabilityLoss(Player* receiver, uint32 percent);
+        void PlayOneShotAnimKit(uint32 id);
 
         uint16 GetMaxSkillValueForLevel(Unit const* target = NULL) const { return (target ? getLevelForTarget(target) : getLevel()) * 5; }
         void DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb);
@@ -1536,8 +1537,6 @@ class Unit : public WorldObject
         virtual uint32 GetBlockPercent() { return 30; }
 
         uint32 GetUnitMeleeSkill(Unit const* target = NULL) const { return (target ? getLevelForTarget(target) : getLevel()) * 5; }
-        uint32 GetDefenseSkillValue(Unit const* target = NULL) const;
-        uint32 GetWeaponSkillValue(WeaponAttackType attType, Unit const* target = NULL) const;
         float GetWeaponProcChance() const;
         float GetPPMProcChance(uint32 WeaponSpeed, float PPM,  const SpellInfo* spellProto) const;
 
