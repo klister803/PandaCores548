@@ -668,6 +668,7 @@ class Spell
         uint32 m_auraScaleMask;
 
         ByteBuffer * m_effectExecuteData[MAX_SPELL_EFFECTS];
+        SpellPowerEntry const* m_spellPowerData;
 
 #ifdef MAP_BASED_RAND_GEN
         int32 irand(int32 min, int32 max)       { return int32 (m_caster->GetMap()->mtRand.randInt(max - min)) + min; }

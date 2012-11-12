@@ -858,11 +858,17 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry, uint32 difficulty)
     SpellLevel = _levels ? _levels->spellLevel : 0;
 
     // SpellPowerEntry
-    SpellPowerEntry const* _power = GetSpellPower();
-    ManaCost = _power ? _power->manaCost : 0;
-    ManaCostPercentage = _power ? _power->ManaCostPercentage : 0;
-    ManaPerSecond = _power ? _power->manaPerSecond : 0;
-    PowerType = _power ? _power->powerType : POWER_MANA; 
+    ManaCost =  0;
+    ManaCostPercentage = 0;
+    ManaPerSecond = 0;
+    PowerType = POWER_MANA;
+
+    spellPower = new SpellPowerEntry();
+    spellPower->manaCost = 0;
+    spellPower->ManaCostPercentage = 0;
+    spellPower->manaPerSecond = 0;
+    spellPower->SpellId = Id;
+    spellPower->powerType = POWER_MANA;
 
     // SpellMiscEntry
     SpellMiscEntry const* _misc = GetSpellMisc();
@@ -2167,46 +2173,46 @@ uint32 SpellInfo::GetRecoveryTime() const
     return RecoveryTime > CategoryRecoveryTime ? RecoveryTime : CategoryRecoveryTime;
 }
 
-uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask) const
+uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, SpellPowerEntry const* spellPower) const
 {
     // Spell drain all exist power on cast (Only paladin lay of Hands)
     if (AttributesEx & SPELL_ATTR1_DRAIN_ALL_POWER)
     {
         // If power type - health drain all
-        if (PowerType == POWER_HEALTH)
+        if (spellPower->powerType == POWER_HEALTH)
             return caster->GetHealth();
         // Else drain all power
-        if (PowerType < MAX_POWERS)
-            return caster->GetPower(Powers(PowerType));
-        sLog->outError(LOG_FILTER_SPELLS_AURAS, "SpellInfo::CalcPowerCost: Unknown power type '%d' in spell %d", PowerType, Id);
+        if (spellPower->powerType < MAX_POWERS)
+            return caster->GetPower(Powers(spellPower->powerType));
+        sLog->outError(LOG_FILTER_SPELLS_AURAS, "SpellInfo::CalcPowerCost: Unknown power type '%d' in spell %d", spellPower->powerType, Id);
         return 0;
     }
 
     // Base powerCost
-    int32 powerCost = ManaCost;
+    int32 powerCost = spellPower->manaCost;
     // PCT cost from total amount
-    if (ManaCostPercentage)
+    if (spellPower->ManaCostPercentage)
     {
-        switch (PowerType)
+        switch (spellPower->powerType)
         {
             // health as power used
             case POWER_HEALTH:
-                powerCost += int32(CalculatePctU(caster->GetCreateHealth(), ManaCostPercentage));
+                powerCost += int32(CalculatePctU(caster->GetCreateHealth(), spellPower->ManaCostPercentage));
                 break;
             case POWER_MANA:
-                powerCost += int32(CalculatePctU(caster->GetCreateMana(), ManaCostPercentage));
+                powerCost += int32(CalculatePctU(caster->GetCreateMana(), spellPower->ManaCostPercentage));
                 break;
             case POWER_RAGE:
             case POWER_FOCUS:
             case POWER_ENERGY:
-                powerCost += int32(CalculatePctU(caster->GetMaxPower(Powers(PowerType)), ManaCostPercentage));
+                powerCost += int32(CalculatePctU(caster->GetMaxPower(Powers(spellPower->powerType)), spellPower->ManaCostPercentage));
                 break;
             case POWER_RUNES:
             case POWER_RUNIC_POWER:
                 sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "CalculateManaCost: Not implemented yet!");
                 break;
             default:
-                sLog->outError(LOG_FILTER_SPELLS_AURAS, "CalculateManaCost: Unknown power type '%d' in spell %d", PowerType, Id);
+                sLog->outError(LOG_FILTER_SPELLS_AURAS, "CalculateManaCost: Unknown power type '%d' in spell %d", spellPower->powerType, Id);
                 return 0;
         }
     }

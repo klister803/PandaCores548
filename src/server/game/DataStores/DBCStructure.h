@@ -1987,7 +1987,7 @@ struct SpellMiscEntry
 // SpellPower.dbc
 struct SpellPowerEntry
 {
-    //uint32    Id;                                           // 0        m_ID
+    uint32    Id;                                           // 0        m_ID
     uint32    SpellId;                                      // 1
     //uint32    unk505                                      // 2
     uint32    powerType;                                    // 3

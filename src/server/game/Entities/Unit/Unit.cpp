@@ -3445,7 +3445,7 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit*
                 if (aura->IsSingleTarget())
                     aura->UnregisterSingleTarget();
 
-                if (Aura* newAura = Aura::TryRefreshStackOrCreate(aura->GetSpellInfo(), effMask, stealer, NULL, &baseDamage[0], NULL, aura->GetCasterGUID()))
+                if (Aura* newAura = Aura::TryRefreshStackOrCreate(aura->GetSpellInfo(), effMask, stealer, NULL, aura->GetSpellInfo()->spellPower, &baseDamage[0], NULL, aura->GetCasterGUID()))
                 {
                     // created aura must not be single target aura,, so stealer won't loose it on recast
                     if (newAura->IsSingleTarget())
@@ -6261,7 +6261,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     if (!procSpell)
                         return false;
 
-                    basepoints0 = CalculatePctN(procSpell->CalcPowerCost(this, SpellSchoolMask(procSpell->SchoolMask)), triggerAmount);
+                    basepoints0 = CalculatePctN(procSpell->CalcPowerCost(this, SpellSchoolMask(procSpell->SchoolMask), procSpell->spellPower), triggerAmount);
 
                     if (basepoints0 <= 0)
                         return false;
@@ -13214,6 +13214,24 @@ int32 Unit::GetCreatePowers(Powers power) const
     return 0;
 }
 
+SpellPowerEntry const* Unit::GetSpellPowerEntryBySpell(SpellInfo const* spell) const
+{
+    auto list = sSpellMgr->GetSpellPowerList(spell->Id);
+
+    if (getClass() == CLASS_WARLOCK)
+    {
+        if (spell->Id == 686)
+        {
+            if(GetShapeshiftForm() == FORM_METAMORPHOSIS)
+                return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_DEMONIC_FURY);
+            else
+                return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_MANA);
+        }
+    }
+
+    return spell->spellPower;
+}
+
 void Unit::AddToWorld()
 {
     if (!IsInWorld())
@@ -15916,7 +15934,7 @@ Aura* Unit::AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target)
             effMask &= ~(1<<i);
     }
 
-    if (Aura* aura = Aura::TryRefreshStackOrCreate(spellInfo, effMask, target, this))
+    if (Aura* aura = Aura::TryRefreshStackOrCreate(spellInfo, effMask, target, this, spellInfo->spellPower))
     {
         aura->ApplyForTargets();
         return aura;
@@ -16703,7 +16721,7 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
             else    // This can happen during Player::_LoadAuras
             {
                 int32 bp0 = seatId;
-                Aura::TryRefreshStackOrCreate(spellEntry, MAX_EFFECT_MASK, this, clicker, &bp0, NULL, origCasterGUID);
+                Aura::TryRefreshStackOrCreate(spellEntry, MAX_EFFECT_MASK, this, clicker, spellEntry->spellPower, &bp0, NULL, origCasterGUID);
             }
         }
         else
@@ -16711,7 +16729,7 @@ bool Unit::HandleSpellClick(Unit* clicker, int8 seatId)
             if (IsInMap(caster))
                 caster->CastSpell(target, spellEntry, false, NULL, NULL, origCasterGUID);
             else
-                Aura::TryRefreshStackOrCreate(spellEntry, MAX_EFFECT_MASK, this, clicker, NULL, NULL, origCasterGUID);
+                Aura::TryRefreshStackOrCreate(spellEntry, MAX_EFFECT_MASK, this, clicker, spellEntry->spellPower, NULL, NULL, origCasterGUID);
         }
     }
 

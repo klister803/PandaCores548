@@ -1398,6 +1398,8 @@ class Unit : public WorldObject
         int32 GetMaxPower(Powers power) const;
         void SetPower(Powers power, int32 val);
         void SetMaxPower(Powers power, int32 val);
+        SpellPowerEntry const* GetSpellPowerEntryBySpell(SpellInfo const* spell) const;
+
         // returns the change in power
         int32 ModifyPower(Powers power, int32 val);
         int32 ModifyPowerPct(Powers power, float pct, bool apply = true);
