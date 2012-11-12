@@ -251,7 +251,7 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode(WorldPacket& recvData)
         // not sure here what should happen to quests with QUEST_FLAGS_AUTOCOMPLETE
         // if this breaks them, add && object->GetTypeId() == TYPEID_ITEM to this check
         // item-started quests never have that flag
-        if (!_player->CanTakeQuest(quest, true) && _player->GetQuestStatus(questId) == QUEST_STATUS_NONE)
+        if (_player->GetQuestStatus(questId) == QUEST_STATUS_NONE && !_player->CanTakeQuest(quest, true))
             return;
 
         if ( _player->GetQuestStatus(questId) == QUEST_STATUS_COMPLETE)
@@ -259,7 +259,15 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode(WorldPacket& recvData)
         else if (_player->GetQuestStatus(questId) == QUEST_STATUS_INCOMPLETE)
             _player->PlayerTalkClass->SendQuestGiverRequestItems(quest, object->GetGUID(), _player->CanCompleteQuest(quest->GetQuestId()), true);
         else
+        {
+            if (quest->IsAutoAccept())
+            {
+                _player->AddQuest(quest, object);
+                if (_player->CanCompleteQuest(questId))
+                    _player->CompleteQuest(questId);
+            }
             _player->PlayerTalkClass->SendQuestGiverQuestDetails(quest, object->GetGUID(), true);
+        }
     }
 }
 
