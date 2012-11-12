@@ -2181,7 +2181,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
         {
             const uint32 ktcount = KNOWN_TITLES_SIZE * 2;
             uint32 knownTitles[ktcount];
-            Tokens tokens(knownTitlesStr, ' ', ktcount);
+            Tokenizer tokens(knownTitlesStr, ' ', ktcount);
 
             if (tokens.size() != ktcount)
                 return;
