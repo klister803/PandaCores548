@@ -739,11 +739,11 @@ enum Opcodes
     SMSG_CHANNEL_NOTIFY                               = 0x91D,	// 5.0.5 16048
     SMSG_CHARACTER_LOGIN_FAILED                       = 0xC6D,  // 5.0.5 16048
     SMSG_CHAR_CREATE                                  = 0xC15,  // 5.0.5 16048
-    SMSG_CHAR_CUSTOMIZE                               = 0,      // 0x4F16 in 4.3.4 @todo : Find me and BACON !
+    SMSG_CHAR_CUSTOMIZE                               = 0xD27,  // 5.0.5 16048
     SMSG_CHAR_DELETE                                  = 0x936,  // 5.0.5 16048
     SMSG_CHAR_ENUM                                    = 0xE28,  // 5.0.5 16048
-    SMSG_CHAR_FACTION_CHANGE                          = 0,      // 0x4C06 in 4.3.4 @todo : Find me and BACON !
-    SMSG_CHAR_RENAME                                  = 0,      // 0x2024 in 4.3.4 @todo : Find me and BACON !
+    SMSG_CHAR_FACTION_CHANGE                          = 0x9E0,  // 5.0.5 16048
+    SMSG_CHAR_RENAME                                  = 0x945,  // 5.0.5 16048
     SMSG_CHAT_IGNORED_ACCOUNT_MUTED                   = 0xAC0,  // 5.0.5 16048
     SMSG_CHAT_NOT_IN_PARTY                            = 0xD98,  // 5.0.5 16048
     SMSG_CHAT_PLAYER_AMBIGUOUS                        = 0x989,  // 5.0.5 16048
@@ -960,7 +960,7 @@ enum Opcodes
     SMSG_ITEM_TEXT_QUERY_RESPONSE                     = 0xCB9,  // 5.0.5 16048
     SMSG_ITEM_TIME_UPDATE                             = 0x81A,  // 5.0.5 16048
     SMSG_JOINED_BATTLEGROUND_QUEUE                    = 0,      // Not found in 4.3.4
-    SMSG_KICK_REASON                                  = 0,      // Not found in 4.3.4
+    SMSG_KICK_REASON                                  = 0x923,  // 5.0.5 16048
     SMSG_LEARNED_DANCE_MOVES                          = 0x8C4,  // 5.0.5 16048
     SMSG_SEND_KNOWN_SPELLS                            = 0xEA3,  // 5.0.5 16048
     SMSG_LEARNED_SPELL                                = 0xBF8,	// 5.0.5 16048
@@ -1223,9 +1223,9 @@ enum Opcodes
 	SMSG_SET_MELEE_ANIM_KIT							  = 0,      // Not found in 4.3.4
 	SMSG_SET_MOVEMENT_ANIM_KIT                        = 0,      // Not found in 4.3.4
     SMSG_SET_PCT_SPELL_MODIFIER                       = 0x802,	// 5.0.5 16048
-    SMSG_SET_PET_SPECIALIZATION                       = 0xE17,  // 5.0.5 16048 uint16 (specId)
+    SMSG_SET_PET_SPECIALIZATION                       = 0xE17,  // 5.0.5 16048
     SMSG_SET_PHASE_SHIFT                              = 0xA93,  // 5.0.5 16048
-    SMSG_SET_PLAYER_DECLINED_NAMES_RESULT             = 0x000,  // 5.0.5 16048 Only in RUS Client version 0x2B25 in 4.3.4
+    SMSG_SET_PLAYER_DECLINED_NAMES_RESULT             = 0xD26,  // 5.0.5 16048
     SMSG_SET_PLAY_HOVER_ANIM                          = 0xE84,  // 5.0.5 16048
     SMSG_SET_PROFICIENCY                              = 0x823,  // 5.0.5 16048
     SMSG_SET_PROJECTILE_POSITION                      = 0x8BC,  // 5.0.5 16048
