@@ -144,12 +144,13 @@ enum RelationType
     RELATION_IN_RAID_OR_PARTY,
     RELATION_OWNED_BY,
     RELATION_PASSENGER_OF,
+    RELATION_CREATED_BY,
     RELATION_MAX
 };
 
 enum
 {
-    MAX_CONDITION_TARGETS = 3,
+    MAX_CONDITION_TARGETS = 3
 };
 
 struct ConditionSourceInfo

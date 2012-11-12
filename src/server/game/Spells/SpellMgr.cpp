@@ -3119,8 +3119,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 77484:  // Mastery : Shield Discipline
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 10;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 76808:  // Mastery : Executioner
                 spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MASTERY;
@@ -3147,8 +3147,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 77220:  // Mastery : Emberstorm
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 8;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 77219:  // Mastery : Master Demonologist
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
