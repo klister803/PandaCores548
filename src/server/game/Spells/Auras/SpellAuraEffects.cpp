@@ -5906,9 +5906,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                         caster->SetPower(POWER_DEMONIC_FURY, demonicFury);
                     }
                     else
-                    {
                         caster->RemoveAurasDueToSpell(103958);
-                    }
                 }
             }
         case SPELLFAMILY_DEATHKNIGHT:
