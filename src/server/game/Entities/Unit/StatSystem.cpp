@@ -207,7 +207,7 @@ void Player::UpdateArmor()
     for (AuraEffectList::const_iterator i = mResbyIntellect.begin(); i != mResbyIntellect.end(); ++i)
     {
         if ((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL)
-            value += CalculatePctN(GetStat(Stats((*i)->GetMiscValueB())), (*i)->GetAmount());
+            value += CalculatePct(GetStat(Stats((*i)->GetMiscValueB())), (*i)->GetAmount());
     }
 
     value *= GetModifierValue(unitMod, TOTAL_PCT);
@@ -276,17 +276,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         index_mod_pos = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS;
         index_mod_neg = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_NEG;
         index_mult = UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER;
-
-        switch (getClass())
-        {
-            case CLASS_HUNTER:
-                val2 = (level * 2.0f) + ((GetStat(STAT_AGILITY) * 2.0f) - 20.0f);
-                break;
-            case CLASS_ROGUE:
-            case CLASS_WARRIOR:
-                val2 = level + (GetStat(STAT_AGILITY) - 10.0f);
-                break;
-        }
+        val2 = (level + std::max(GetStat(STAT_AGILITY) - 10.0f, 0.0f)) * entry->RAPPerAgility;
     }
     else
     {
@@ -325,16 +315,16 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
     if (!HasAuraType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT) || GetTypeId() != TYPEID_PLAYER)
     {
         SetFloatValue(PLAYER_FIELD_OVERRIDE_AP_BY_SPELL_POWER_PCT, 0.00f);
-        SetInt32Value(index, (uint32)base_attPower);        //UNIT_FIELD_(RANGED)_ATTACK_POWER field
+        SetInt32Value(index, (uint32)base_attPower);            //UNIT_FIELD_(RANGED)_ATTACK_POWER field
 
         if (attPowerMod > 0)
-            SetInt32Value(index+1, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
+            SetInt32Value(index+1, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
         else if (attPowerMod < 0)
-            SetInt32Value(index+2, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
+            SetInt32Value(index+2, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
         else
         {
-            SetInt32Value(index+1, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
-            SetInt32Value(index+2, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
+            SetInt32Value(index+1, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
+            SetInt32Value(index+2, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
         }
 
         SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
@@ -557,7 +547,7 @@ const float m_diminishing_k[MAX_CLASSES] =
     0.9880f,  // Shaman
     0.9830f,  // Mage
     0.9830f,  // Warlock
-    0.0f,     // ??
+    0.0f,     // Monk  @todo: find me !
     0.9720f   // Druid
 };
 
@@ -574,7 +564,7 @@ void Player::UpdateParryPercentage()
         145.560408f,    // Shaman
         0.0f,           // Mage
         0.0f,           // Warlock
-        0.0f,           // ??
+        0.0f,           // Monk  @todo: find me !
         0.0f            // Druid
     };
 
@@ -755,7 +745,7 @@ void Player::UpdateManaRegen()
     // Set regen rate in cast state apply only on spirit based regen
     int32 modManaRegenInterrupt = GetTotalAuraModifier(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT);
     
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, base_regen + CalculatePctN(spirit_regen, modManaRegenInterrupt));
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, base_regen + CalculatePct(spirit_regen, modManaRegenInterrupt));
     SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, 0.001f + spirit_regen + base_regen);
 }
 
@@ -999,35 +989,26 @@ bool Guardian::UpdateStats(Stats stat)
         if (aurEff)
         {
             SpellInfo const* spellInfo = aurEff->GetSpellInfo();                                                 // Then get the SpellProto and add the dummy effect value
-            AddPctN(mod, spellInfo->Effects[EFFECT_1].CalcValue(owner));                                              // Ravenous Dead edits the original scale
+            AddPct(mod, spellInfo->Effects[EFFECT_1].CalcValue(owner));                                              // Ravenous Dead edits the original scale
         }
         // Glyph of the Ghoul
         aurEff = owner->GetAuraEffect(58686, 0);
         if (aurEff)
-            mod += CalculatePctN(1.0f, aurEff->GetAmount());                                                    // Glyph of the Ghoul adds a flat value to the scale mod
+            mod += CalculatePct(1.0f, aurEff->GetAmount());                                                    // Glyph of the Ghoul adds a flat value to the scale mod
         ownersBonus = float(owner->GetStat(stat)) * mod;
         value += ownersBonus;
     }
-    else if (stat == STAT_STAMINA)
+    else if (stat == STAT_STAMINA)      // Update for Cataclysm, check me for MoP
     {
-        if (owner->getClass() == CLASS_WARLOCK && isPet())
-        {
-            ownersBonus = CalculatePctN(owner->GetStat(STAT_STAMINA), 75);
-            value += ownersBonus;
-        }
-        else
-        {
-            mod = 0.45f;
-            ownersBonus = float(owner->GetStat(stat)) * mod;
-            value += ownersBonus;
-        }
+        ownersBonus = CalculatePct(owner->GetStat(STAT_STAMINA), 30);
+        value += ownersBonus;
     }
                                                             //warlock's and mage's pets gain 30% of owner's intellect
     else if (stat == STAT_INTELLECT)
     {
         if (owner->getClass() == CLASS_WARLOCK || owner->getClass() == CLASS_MAGE)
         {
-            ownersBonus = CalculatePctN(owner->GetStat(stat), 30);
+            ownersBonus = CalculatePct(owner->GetStat(stat), 30);
             value += ownersBonus;
         }
     }
@@ -1079,7 +1060,7 @@ void Guardian::UpdateResistances(uint32 school)
 
         // hunter and warlock pets gain 40% of owner's resistance
         if (isPet())
-            value += float(CalculatePctN(m_owner->GetResistance(SpellSchools(school)), 40));
+            value += float(CalculatePct(m_owner->GetResistance(SpellSchools(school)), 40));
 
         SetResistance(SpellSchools(school), int32(value));
     }
@@ -1093,9 +1074,11 @@ void Guardian::UpdateArmor()
     float bonus_armor = 0.0f;
     UnitMods unitMod = UNIT_MOD_ARMOR;
 
-    // hunter and warlock pets gain 35% of owner's armor value
-    if (isPet())
-        bonus_armor = float(CalculatePctN(m_owner->GetArmor(), 35));
+    // hunter pets gain 35% of owner's armor value, warlock pets gain 100% of owner's armor
+    if (isHunterPet())
+        bonus_armor = float(CalculatePct(m_owner->GetArmor(), 70));
+    else if (isPet())
+        bonus_armor = m_owner->GetArmor();
 
     value  = GetModifierValue(unitMod, BASE_VALUE);
     value *= GetModifierValue(unitMod, BASE_PCT);
@@ -1266,8 +1249,8 @@ void Guardian::UpdateDamagePhysical(WeaponAttackType attType)
         {
             case 61682:
             case 61683:
-                AddPctN(mindamage, -(*itr)->GetAmount());
-                AddPctN(maxdamage, -(*itr)->GetAmount());
+                AddPct(mindamage, -(*itr)->GetAmount());
+                AddPct(maxdamage, -(*itr)->GetAmount());
                 break;
             default:
                 break;

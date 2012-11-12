@@ -29,6 +29,10 @@ if( NOT CMAKE_BUILD_TYPE )
   set(CMAKE_BUILD_TYPE "Release")
 endif()
 
+if(CMAKE_COMPILER_IS_GNUCXX)
+  add_definitions(-std=gnu++0x)
+endif(CMAKE_COMPILER_IS_GNUCXX)
+
 include(CheckCXXSourceRuns)
 include(CheckIncludeFiles)
 

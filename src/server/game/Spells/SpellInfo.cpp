@@ -2197,15 +2197,15 @@ uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, 
         {
             // health as power used
             case POWER_HEALTH:
-                powerCost += int32(CalculatePctU(caster->GetCreateHealth(), spellPower->ManaCostPercentage));
+                powerCost += int32(CalculatePct(caster->GetCreateHealth(), spellPower->ManaCostPercentage));
                 break;
             case POWER_MANA:
-                powerCost += int32(CalculatePctU(caster->GetCreateMana(), spellPower->ManaCostPercentage));
+                powerCost += int32(CalculatePct(caster->GetCreateMana(), spellPower->ManaCostPercentage));
                 break;
             case POWER_RAGE:
             case POWER_FOCUS:
             case POWER_ENERGY:
-                powerCost += int32(CalculatePctU(caster->GetMaxPower(Powers(spellPower->powerType)), spellPower->ManaCostPercentage));
+                powerCost += int32(CalculatePct(caster->GetMaxPower(Powers(spellPower->powerType)), spellPower->ManaCostPercentage));
                 break;
             case POWER_RUNES:
             case POWER_RUNIC_POWER:

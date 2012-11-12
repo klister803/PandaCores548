@@ -208,7 +208,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
                 (*i)->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, goldPerPlayer);
 
                 if (Guild* guild = sGuildMgr->GetGuildById((*i)->GetGuildId()))
-                    if (uint32 guildGold = CalculatePctN(goldPerPlayer, (*i)->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT)))
+                    if (uint32 guildGold = CalculatePct(goldPerPlayer, (*i)->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT)))
                         guild->HandleMemberDepositMoney(this, guildGold, true);
 
                 WorldPacket data(SMSG_LOOT_MONEY_NOTIFY, 4 + 1);
@@ -223,7 +223,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
             player->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_LOOT_MONEY, loot->gold);
 
             if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
-                if (uint32 guildGold = CalculatePctN(loot->gold, player->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT)))
+                if (uint32 guildGold = CalculatePct(loot->gold, player->GetTotalAuraModifier(SPELL_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT)))
                     guild->HandleMemberDepositMoney(this, guildGold, true);
 
             loot->NotifyMoneyRemoved(loot->gold);
@@ -501,7 +501,7 @@ void WorldSession::HandleLootMasterAskForRoll(WorldPacket& recvData)
     ObjectGuid guid = 0;
     uint8 slot = 0;
 
-    recvData >> uint8(slot);
+    recvData >> slot;
 
     guid[4] = recvData.ReadBit();
     guid[3] = recvData.ReadBit();
@@ -604,7 +604,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
         recvData.ReadByteSeq(guids[i][5]);
         recvData.ReadByteSeq(guids[i][4]);
         recvData.ReadByteSeq(guids[i][2]);
-        recvData >> uint8(types[i]);
+        recvData >> types[i];
     }
 
     recvData.ReadByteSeq(target_playerguid[7]);

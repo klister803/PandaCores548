@@ -108,7 +108,7 @@ enum PaladinSpells
 //                    uint32 damageToReduce = (victim->GetHealth() < allowedHealth)
 //                        ? dmgInfo.GetDamage()
 //                        : allowedHealth - remainingHealth;
-//                    absorbAmount = CalculatePctN(damageToReduce, absorbPct);
+//                    absorbAmount = CalculatePct(damageToReduce, absorbPct);
 //                }
 //            }
 //

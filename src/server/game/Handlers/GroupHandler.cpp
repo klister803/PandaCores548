@@ -568,8 +568,8 @@ void WorldSession::HandleGroupSetRolesOpcode(WorldPacket& recvData)
 
     guid1 = GetPlayer()->GetGUID();
 
-    recvData >> uint8(unk);
-    recvData >> uint32(newRole);
+    recvData >> unk;
+    recvData >> newRole;
 
     guid2[5] = recvData.ReadBit();
     guid2[6] = recvData.ReadBit();

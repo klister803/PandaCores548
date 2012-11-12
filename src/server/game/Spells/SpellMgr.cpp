@@ -2706,7 +2706,7 @@ struct spellDifficultyLoadInfo
 
 void SpellMgr::LoadSpellInfoStore()
 {
-    Sleep(10000);
+    //Sleep(10000);
     uint32 oldMSTime = getMSTime();
 
     std::map<uint32, std::set<uint32> > spellDifficultyList;

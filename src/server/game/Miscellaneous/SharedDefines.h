@@ -1036,7 +1036,7 @@ enum SpellEffects
     SPELL_EFFECT_169                                = 169,
     SPELL_EFFECT_170                                = 170,
     SPELL_EFFECT_171                                = 171, // Summons gamebject
-    SPELL_EFFECT_172                                = 172, // Aoe ressurection
+    SPELL_EFFECT_172                                = 172, // Aoe resurrection
     SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB             = 173, // Guild tab unlocked (guild perk)
     SPELL_EFFECT_174                                = 174,
     SPELL_EFFECT_175                                = 175, // Unused (4.3.4)
