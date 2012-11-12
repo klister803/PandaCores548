@@ -536,27 +536,27 @@ struct AreaTableEntry
     uint32  ID;                                             // 0
     uint32  mapid;                                          // 1
     uint32  zone;                                           // 2 if 0 then it's zone, else it's zone id of this area
-    uint32  exploreFlag;                                    // 3, main index
-    uint32  flags;                                          // 4,
+    uint32  exploreFlag;                                    // 3 main index
+    uint32  flags;                                          // 4
     //uint32 unk505_1;                                      // 5
-    //uint32 unk5;                                          // 6,
-    //uint32 unk6;                                          // 7,
-    //uint32 unk7;                                          // 8,
-    //uint32 unk8;                                          // 9,
+    //uint32 unk5;                                          // 6
+    //uint32 unk6;                                          // 7
+    //uint32 unk7;                                          // 8
+    //uint32 unk8;                                          // 9
     //char*  unk505_2                                       // 10
-    //uint32 unk9;                                          // 11,
-    int32   area_level;                                     // 12,
-    char*   area_name;                                      // 13,
-    uint32  team;                                           // 14,
+    //uint32 unk9;                                          // 11
+    int32   area_level;                                     // 12
+    char*   area_name;                                      // 13
+    uint32  team;                                           // 14
     uint32  LiquidTypeOverride[4];                          // 15-18 liquid override by type
-    //float  unk13;                                         // 19,
-    //float  unk13;                                         // 20,
-    //uint32 unk19;                                         // 21, All zeros (4.2.2)
+    float   MaxDepth;                                       // 19 determine the maximum depth that a player an reach in an area before being teleported back up.
+    //float  unk13;                                         // 20
+    //uint32 unk19;                                         // 21 All zeros (4.2.2)
     //uint32 unk20;                                         // 22 4.0.0
     //uint32 unk21;                                         // 23 4.0.0
     //uint32 unk22;                                         // 24 4.0.0
     //uint32 unk23;                                         // 25 4.0.0
-    //uint32 unk24;                                         // 26 - worldStateId
+    //uint32 unk24;                                         // 26 worldStateId
     //uint32 unk25                                          // 27
 
     // helpers
