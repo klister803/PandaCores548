@@ -9328,9 +9328,9 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     else if (isPet())
     {
         Unit* owner = GetOwner();
-        if (owner->HasAura(77219))
+        if (owner->HasAura(77219) && owner->GetTypeId() == TYPEID_PLAYER)
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) / 100.0f;
             DoneTotalMod += Mastery;
         }
     }
@@ -10599,9 +10599,9 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     else if (isPet())
     {
         Unit* owner = GetOwner();
-        if (owner->HasAura(77219))
+        if (owner->HasAura(77219) && owner->GetTypeId() == TYPEID_PLAYER)
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) / 100.0f;
             DoneTotalMod += Mastery;
         }
     }
@@ -10684,7 +10684,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         if (isPet())
         {
             Unit* owner = this->GetOwner();
-            if (owner->HasAura(76613))
+            if (owner->HasAura(76613) && owner->GetTypeId() == TYPEID_PLAYER)
             {
                 float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
                 DoneTotalMod += Mastery;
