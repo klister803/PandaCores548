@@ -711,9 +711,9 @@ struct ChrClassesEntry
     uint32  spellfamily;                                    // 7        m_spellClassSet
     //uint32 flags2;                                        // 8        m_flags (0x08 HasRelicSlot)
     uint32  CinematicSequence;                              // 9        m_cinematicSequenceID
-    uint32 APPerStrenth;                                    // 11
-    uint32 APPerAgility;                                    // 12
-    //uint32                                                // 13
+    uint32 APPerStrenth;                                    // 11       Attack Power bonus per point of strength
+    uint32 APPerAgility;                                    // 12       Attack Power bonus per point of agility
+    uint32 RAPPerAgility;                                   // 13       Ranged Attack Power bonus per point of agility
     //uint32                                                // 14
     //uint32                                                // 15
     //uint32                                                // 16
@@ -724,7 +724,7 @@ struct ChrRacesEntry
 {
     uint32      RaceID;                                     // 0
                                                             // 1 unused
-    uint32      FactionID;                                  // 2 facton template id
+    uint32      FactionID;                                  // 2 faction template id
                                                             // 3 unused
     uint32      model_m;                                    // 4
     uint32      model_f;                                    // 5

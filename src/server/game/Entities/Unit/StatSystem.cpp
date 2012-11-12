@@ -276,17 +276,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         index_mod_pos = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS;
         index_mod_neg = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_NEG;
         index_mult = UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER;
-
-        switch (getClass())
-        {
-            case CLASS_HUNTER:
-                val2 = (level * 2.0f) + ((GetStat(STAT_AGILITY) * 2.0f) - 20.0f);
-                break;
-            case CLASS_ROGUE:
-            case CLASS_WARRIOR:
-                val2 = level + (GetStat(STAT_AGILITY) - 10.0f);
-                break;
-        }
+        val2 = (level + std::max(GetStat(STAT_AGILITY) - 10.0f, 0.0f)) * entry->RAPPerAgility;
     }
     else
     {
@@ -325,16 +315,16 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
     if (!HasAuraType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT) || GetTypeId() != TYPEID_PLAYER)
     {
         SetFloatValue(PLAYER_FIELD_OVERRIDE_AP_BY_SPELL_POWER_PCT, 0.00f);
-        SetInt32Value(index, (uint32)base_attPower);        //UNIT_FIELD_(RANGED)_ATTACK_POWER field
+        SetInt32Value(index, (uint32)base_attPower);            //UNIT_FIELD_(RANGED)_ATTACK_POWER field
 
         if (attPowerMod > 0)
-            SetInt32Value(index+1, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
+            SetInt32Value(index+1, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
         else if (attPowerMod < 0)
-            SetInt32Value(index+2, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
+            SetInt32Value(index+2, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
         else
         {
-            SetInt32Value(index+1, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
-            SetInt32Value(index+2, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
+            SetInt32Value(index+1, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
+            SetInt32Value(index+2, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
         }
 
         SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
@@ -557,7 +547,7 @@ const float m_diminishing_k[MAX_CLASSES] =
     0.9880f,  // Shaman
     0.9830f,  // Mage
     0.9830f,  // Warlock
-    0.0f,     // ??
+    0.0f,     // Monk  @todo: find me !
     0.9720f   // Druid
 };
 
@@ -574,7 +564,7 @@ void Player::UpdateParryPercentage()
         145.560408f,    // Shaman
         0.0f,           // Mage
         0.0f,           // Warlock
-        0.0f,           // ??
+        0.0f,           // Monk  @todo: find me !
         0.0f            // Druid
     };
 
