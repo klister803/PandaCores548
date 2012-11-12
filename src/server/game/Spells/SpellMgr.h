@@ -598,6 +598,7 @@ bool IsDiminishingReturnsGroupDurationLimited(DiminishingGroup group);
 typedef std::vector<std::list<uint32> > SpellClassList;
 typedef std::map<uint32, std::list<uint32> > SpellOverrideInfo;
 typedef std::set<uint32> TalentSpellSet;
+typedef std::vector<std::list<uint32>> SpellPowerVector;
 
 class SpellMgr
 {
@@ -681,6 +682,7 @@ class SpellMgr
 
         PetLevelupSpellSet const* GetPetLevelupSpellList(uint32 petFamily) const;
         PetDefaultSpellsEntry const* GetPetDefaultSpellsEntry(int32 id) const;
+        SpellPowerEntry const* GetSpellPowerEntryByIdAndPower(uint32 id, Powers power) const;
 
         // Spell area
         SpellAreaMapBounds GetSpellAreaMapBounds(uint32 spell_id) const;
@@ -693,6 +695,7 @@ class SpellMgr
         SpellInfo const* GetSpellInfo(uint32 spellId, Difficulty difficulty = NONE_DIFFICULTY) const;
         uint32 GetSpellInfoStoreSize() const { return mSpellInfoMap[NONE_DIFFICULTY].size(); }
         std::list<uint32> GetSpellClassList(uint8 ClassID) const { return mSpellClassInfo[ClassID]; }
+        std::list<uint32> GetSpellPowerList(uint32 spellId) const { return mSpellPowerInfo[spellId]; }
         std::list<uint32> const* GetSpellOverrideInfo(uint32 spellId) { return mSpellOverrideInfo.find(spellId) == mSpellOverrideInfo.end() ? NULL : &mSpellOverrideInfo[spellId]; }
 
         bool IsTalent(uint32 spellId) { return mTalentSpellInfo.find(spellId) != mTalentSpellInfo.end() ?  true :  false; }
@@ -727,6 +730,7 @@ class SpellMgr
         void LoadSpellCustomAttr();
         void LoadDbcDataCorrections();
         void LoadTalentSpellInfo();
+        void LoadSpellPowerInfo();
 
     private:
         SpellDifficultySearcherMap mSpellDifficultySearcherMap;
@@ -760,6 +764,7 @@ class SpellMgr
         SpellClassList             mSpellClassInfo;
         SpellOverrideInfo          mSpellOverrideInfo;
         TalentSpellSet             mTalentSpellInfo;
+        SpellPowerVector           mSpellPowerInfo;
 };
 
 #define sSpellMgr ACE_Singleton<SpellMgr, ACE_Null_Mutex>::instance()

@@ -249,7 +249,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectUnused,                                   //178 SPELL_EFFECT_178 unused
     &Spell::EffectNULL,                                     //179 SPELL_EFFECT_179
     &Spell::EffectUnused,                                   //180 SPELL_EFFECT_180 unused
-    &Spell::EffectUnused,                                   //181 SPELL_EFFECT_181 unused
+    &Spell::EffectUnlearnTalent,                            //181 SPELL_EFFECT_UNLEARN_TALENT
     &Spell::EffectNULL,                                     //182 SPELL_EFFECT_182
 };
 
@@ -1086,10 +1086,18 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
             if (unitTarget->getLevel() > uiMaxSafeLevel)
             {
                 unitTarget->AddAura(60444, unitTarget); //Apply Lost! Aura
+
+                // ALLIANCE from 60323 to 60330 - HORDE from 60328 to 60335
+
+                uint32 spellId = 60323;
+                if (m_caster->ToPlayer()->GetTeam() == HORDE)
+                    spellId += 5;
+                spellId += urand(0, 7);
+                m_caster->CastSpell(m_caster, spellId, true);
                 return;
             }
             break;
-        case 66550: // teleports outside (Isle of Conquest)
+        case 66550: // teleport outside (Isle of Conquest)
             if (Player* target = unitTarget->ToPlayer())
             {
                 if (target->GetTeamId() == TEAM_ALLIANCE)
@@ -1098,7 +1106,7 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
                     m_targets.SetDst(1120.43f, -762.11f, 47.92f, 2.94f, 628);
             }
             break;
-        case 66551: // teleports inside (Isle of Conquest)
+        case 66551: // teleport inside (Isle of Conquest)
             if (Player* target = unitTarget->ToPlayer())
             {
                 if (target->GetTeamId() == TEAM_ALLIANCE)
@@ -1147,7 +1155,7 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
             }
             return;
         }
-        // Ultrasafe Transporter: Toshley's Station
+        // Ultra safe Transporter: Toshley's Station
         case 36941:
         {
             if (roll_chance_i(50))                        // 50% success
@@ -1473,9 +1481,31 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
 
         addhealth = unitTarget->SpellHealingBonusTaken(caster, m_spellInfo, addhealth, HEAL);
 
-        // Remove Grievious bite if fully healed
+        // Remove Grievous bite if fully healed
         if (unitTarget->HasAura(48920) && (unitTarget->GetHealth() + addhealth >= unitTarget->GetMaxHealth()))
             unitTarget->RemoveAura(48920);
+
+        // Custom MoP Script
+        // 77495 - Mastery : Harmony
+        if (m_caster && m_caster->getClass() == CLASS_DRUID)
+        {
+            if (m_caster->HasAura(77495))
+            {
+                if (addhealth)
+                {
+                    float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25 / 100.0f;
+
+                    if (!(m_spellInfo->HasAura(SPELL_AURA_PERIODIC_HEAL)))
+                    {
+                        addhealth *= (1 + Mastery);
+
+                        int32 bp = int32(100.0f * Mastery);
+
+                        m_caster->CastCustomSpell(m_caster, 100977, &bp, NULL, NULL, true);
+                    }
+                }
+            }
+        }
 
         // Custom MoP Script
         // 77226 - Mastery : Deep Healing
@@ -1494,6 +1524,16 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
                     addhealth *= 1 + bonus;
                 }
             }
+        }
+
+        // Custom MoP Script
+        // 77485 - Mastery : Echo of Light
+        if (m_caster && m_caster->getClass() == CLASS_PRIEST && m_caster->HasAura(77485) && addhealth)
+        {
+            float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
+            int32 bp = (Mastery * addhealth) / 6;
+
+            m_caster->CastCustomSpell(unitTarget, 77489, &bp, NULL, NULL, true);
         }
 
         m_damage -= addhealth;
@@ -1760,7 +1800,7 @@ void Spell::EffectPersistentAA(SpellEffIndex effIndex)
             return;
         }
 
-        if (Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, &m_spellValue->EffectBasePoints[0]))
+        if (Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]))
         {
             m_spellAura = aura;
             m_spellAura->_RegisterForTargets();
@@ -4490,6 +4530,19 @@ void Spell::EffectApplyGlyph(SpellEffIndex effIndex)
             player->SendTalentsInfoData(false);
         }
     }
+    else
+    {
+        // remove old glyph
+        if (uint32 oldglyph = player->GetGlyph(player->GetActiveSpec(), m_glyphIndex))
+        {
+            if (GlyphPropertiesEntry const* old_gp = sGlyphPropertiesStore.LookupEntry(oldglyph))
+            {
+                player->RemoveAurasDueToSpell(old_gp->SpellId);
+                player->SetGlyph(m_glyphIndex, 0);
+                player->SendTalentsInfoData(false);
+            }
+        }
+    }
 }
 
 void Spell::EffectEnchantHeldItem(SpellEffIndex effIndex)
@@ -6047,7 +6100,7 @@ void Spell::EffectCastButtons(SpellEffIndex effIndex)
         if (!(spellInfo->AttributesEx7 & SPELL_ATTR7_SUMMON_PLAYER_TOTEM))
             continue;
 
-        int32 cost = spellInfo->CalcPowerCost(m_caster, spellInfo->GetSchoolMask());
+        int32 cost = spellInfo->CalcPowerCost(m_caster, spellInfo->GetSchoolMask(), m_spellPowerData);
         if (m_caster->GetPower(POWER_MANA) < cost)
             continue;
 
@@ -6153,4 +6206,44 @@ void Spell::EffectSummonRaFFriend(SpellEffIndex effIndex)
         return;
 
     m_caster->CastSpell(unitTarget, m_spellInfo->Effects[effIndex].TriggerSpell, true);
+}
+
+void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
+        return;
+
+    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    Player* plr = m_caster->ToPlayer();
+
+    for (auto itr : *plr->GetTalentMap(plr->GetActiveSpec()))
+    {
+        SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr.first);
+        if (!spell)
+            continue;
+
+        TalentEntry const* talent = sTalentStore.LookupEntry(spell->talentId);
+        if (!talent)
+            continue;
+
+        if (spell->talentId != m_glyphIndex)
+            continue;
+
+        plr->removeSpell(itr.first, true);
+        // search for spells that the talent teaches and unlearn them
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            if (spell->Effects[i].TriggerSpell > 0 && spell->Effects[i].Effect == SPELL_EFFECT_LEARN_SPELL)
+                plr->removeSpell(spell->Effects[i].TriggerSpell, true);
+
+        itr.second->state = PLAYERSPELL_REMOVED;
+
+        plr->SetUsedTalentCount(plr->GetUsedTalentCount()-1);
+        plr->SetFreeTalentPoints(plr->GetFreeTalentPoints()+1);
+        break;
+    }
+
+    plr->SaveToDB();
+    plr->SendTalentsInfoData(false);
 }

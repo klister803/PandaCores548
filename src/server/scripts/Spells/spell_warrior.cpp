@@ -324,7 +324,7 @@ class spell_warr_execute : public SpellScriptLoader
                 if (Unit* target = GetHitUnit())
                 {
                     SpellInfo const* spellInfo = GetSpellInfo();
-                    int32 rageUsed = std::min<int32>(300 - spellInfo->CalcPowerCost(caster, SpellSchoolMask(spellInfo->SchoolMask)), caster->GetPower(POWER_RAGE));
+                    int32 rageUsed = std::min<int32>(300 - spellInfo->CalcPowerCost(caster, SpellSchoolMask(spellInfo->SchoolMask), spellInfo->spellPower), caster->GetPower(POWER_RAGE));
                     int32 newRage = std::max<int32>(0, caster->GetPower(POWER_RAGE) - rageUsed);
 
                     // Sudden Death rage save

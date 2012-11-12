@@ -436,7 +436,7 @@ bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entr
         need_save = true;
     }
 
-    Tokens tokens(fields[4].GetString(), ' ', MAX_ITEM_PROTO_SPELLS);
+    Tokenizer tokens(fields[4].GetString(), ' ', MAX_ITEM_PROTO_SPELLS);
     if (tokens.size() == MAX_ITEM_PROTO_SPELLS)
         for (uint8 i = 0; i < MAX_ITEM_PROTO_SPELLS; ++i)
             SetSpellCharges(i, atoi(tokens[i]));
@@ -560,46 +560,6 @@ uint32 Item::GetSkill()
         default:
             return 0;
     }
-}
-
-uint32 Item::GetSpell()
-{
-    ItemTemplate const* proto = GetTemplate();
-
-    switch (proto->Class)
-    {
-        case ITEM_CLASS_WEAPON:
-            switch (proto->SubClass)
-            {
-                case ITEM_SUBCLASS_WEAPON_AXE:     return  196;
-                case ITEM_SUBCLASS_WEAPON_AXE2:    return  197;
-                case ITEM_SUBCLASS_WEAPON_BOW:     return  264;
-                case ITEM_SUBCLASS_WEAPON_GUN:     return  266;
-                case ITEM_SUBCLASS_WEAPON_MACE:    return  198;
-                case ITEM_SUBCLASS_WEAPON_MACE2:   return  199;
-                case ITEM_SUBCLASS_WEAPON_POLEARM: return  200;
-                case ITEM_SUBCLASS_WEAPON_SWORD:   return  201;
-                case ITEM_SUBCLASS_WEAPON_SWORD2:  return  202;
-                case ITEM_SUBCLASS_WEAPON_STAFF:   return  227;
-                case ITEM_SUBCLASS_WEAPON_DAGGER:  return 1180;
-                case ITEM_SUBCLASS_WEAPON_THROWN:  return 2567;
-                case ITEM_SUBCLASS_WEAPON_SPEAR:   return 3386;
-                case ITEM_SUBCLASS_WEAPON_CROSSBOW:return 5011;
-                case ITEM_SUBCLASS_WEAPON_WAND:    return 5009;
-                default: return 0;
-            }
-        case ITEM_CLASS_ARMOR:
-            switch (proto->SubClass)
-            {
-                case ITEM_SUBCLASS_ARMOR_CLOTH:    return 9078;
-                case ITEM_SUBCLASS_ARMOR_LEATHER:  return 9077;
-                case ITEM_SUBCLASS_ARMOR_MAIL:     return 8737;
-                case ITEM_SUBCLASS_ARMOR_PLATE:    return  750;
-                case ITEM_SUBCLASS_ARMOR_SHIELD:   return 9116;
-                default: return 0;
-            }
-    }
-    return 0;
 }
 
 int32 Item::GenerateItemRandomPropertyId(uint32 item_id)

@@ -265,6 +265,8 @@ enum UnitRename
 #define MAX_SPELL_POSSESS       8
 #define MAX_SPELL_CONTROL_BAR   10
 
+#define MAX_AGGRO_RESET_TIME 10 // in seconds
+
 enum Swing
 {
     NOSWING                    = 0,
@@ -549,7 +551,7 @@ enum WeaponAttackType
 enum CombatRating
 {
     CR_WEAPON_SKILL             = 0,
-    CR_DEFENSE_SKILL            = 1,
+    CR_DEFENSE_SKILL            = 1,    // Removed in 4.0.1
     CR_DODGE                    = 2,
     CR_PARRY                    = 3,
     CR_BLOCK                    = 4,
@@ -681,7 +683,7 @@ enum NPCFlags
     UNIT_NPC_FLAG_PLAYER_VEHICLE        = 0x02000000,       // players with mounts that have vehicle data should have it set
     UNIT_NPC_FLAG_REFORGER              = 0x08000000,       // reforging
     UNIT_NPC_FLAG_TRANSMOGRIFIER        = 0x10000000,       // transmogrification
-    UNIT_NPC_FLAG_VAULTKEEPER           = 0x20000000,       // void storage
+    UNIT_NPC_FLAG_VAULTKEEPER           = 0x20000000        // void storage
 };
 
 enum MovementFlags
@@ -1398,6 +1400,8 @@ class Unit : public WorldObject
         int32 GetMaxPower(Powers power) const;
         void SetPower(Powers power, int32 val);
         void SetMaxPower(Powers power, int32 val);
+        SpellPowerEntry const* GetSpellPowerEntryBySpell(SpellInfo const* spell) const;
+
         // returns the change in power
         int32 ModifyPower(Powers power, int32 val);
         int32 ModifyPowerPct(Powers power, float pct, bool apply = true);
@@ -1469,6 +1473,7 @@ class Unit : public WorldObject
         MountCapabilityEntry const* GetMountCapability(uint32 mountType) const;
 
         void SendDurabilityLoss(Player* receiver, uint32 percent);
+        void PlayOneShotAnimKit(uint32 id);
 
         uint16 GetMaxSkillValueForLevel(Unit const* target = NULL) const { return (target ? getLevelForTarget(target) : getLevel()) * 5; }
         void DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb);
@@ -1536,8 +1541,6 @@ class Unit : public WorldObject
         virtual uint32 GetBlockPercent() { return 30; }
 
         uint32 GetUnitMeleeSkill(Unit const* target = NULL) const { return (target ? getLevelForTarget(target) : getLevel()) * 5; }
-        uint32 GetDefenseSkillValue(Unit const* target = NULL) const;
-        uint32 GetWeaponSkillValue(WeaponAttackType attType, Unit const* target = NULL) const;
         float GetWeaponProcChance() const;
         float GetPPMProcChance(uint32 WeaponSpeed, float PPM,  const SpellInfo* spellProto) const;
 
@@ -2251,34 +2254,16 @@ class Unit : public WorldObject
 
         void SetTarget(uint64 guid)
         {
-            if (!_targetLocked)
+            if (!_focusSpell)
                 SetUInt64Value(UNIT_FIELD_TARGET, guid);
         }
 
-        void FocusTarget(Spell const* focusSpell, uint64 target)
-        {
-            // already focused
-            if (_focusSpell)
-                return;
+        // Handling caster facing during spell cast
+        void FocusTarget(Spell const* focusSpell, uint64 target);
+        void ReleaseFocus(Spell const* focusSpell);
 
-            _focusSpell = focusSpell;
-            _targetLocked = true;
-            SetUInt64Value(UNIT_FIELD_TARGET, target);
-        }
-
-        void ReleaseFocus(Spell const* focusSpell)
-        {
-            // focused to something else
-            if (focusSpell != _focusSpell)
-                return;
-
-            _focusSpell = NULL;
-            _targetLocked = false;
-            if (Unit* victim = getVictim())
-                SetUInt64Value(UNIT_FIELD_TARGET, victim->GetGUID());
-            else
-                SetUInt64Value(UNIT_FIELD_TARGET, 0);
-        }
+        int32 GetEclipsePower() { return _eclipsePower; };
+        void SetEclipsePower(int32 power);
 
         uint32 GetHealingDoneInPastSecs(uint32 secs);
         uint32 GetHealingTakenInPastSecs(uint32 secs);
@@ -2287,6 +2272,10 @@ class Unit : public WorldObject
 
         // Movement info
         Movement::MoveSpline * movespline;
+
+        // Part of Evade mechanics
+        time_t GetLastDamagedTime() const { return _lastDamagedTime; }
+        void SetLastDamagedTime(time_t val) { _lastDamagedTime = val; }
 
     protected:
         explicit Unit (bool isWorldObject);
@@ -2419,11 +2408,13 @@ class Unit : public WorldObject
         uint64 m_misdirectionTargetGUID;
 
         bool m_cleanupDone; // lock made to not add stuff after cleanup before delete
-        bool m_duringRemoveFromWorld; // lock made to not add stuff after begining removing from world
+        bool m_duringRemoveFromWorld; // lock made to not add stuff after beginning removing from world
 
-        Spell const* _focusSpell;
-        bool _targetLocked; // locks the target during spell cast for proper facing
-        bool _isWalkingBeforeCharm; // Are we walking before we were charmed? 
+        Spell const* _focusSpell;   ///> Locks the target during spell cast for proper facing       
+        bool _isWalkingBeforeCharm; // Are we walking before we were charmed?
+        time_t _lastDamagedTime; // Part of Evade mechanics
+
+        int32 _eclipsePower;
 };
 
 namespace Trinity

@@ -396,10 +396,11 @@ public:
     SpellEffectInfo Effects[MAX_SPELL_EFFECTS];
     uint32 ExplicitTargetMask;
     SpellChainNode const* ChainEntry;
+    SpellPowerEntry* spellPower;
 
     // SpecializationSpellEntry
-    uint32 SpecializationEntry;
-    uint32 OverrideSpellEntry;
+    std::list<uint32> SpecializationIdList;
+    std::list<uint32> OverrideSpellList;
 
     // TalentInfo
     uint32 talentId;
@@ -502,7 +503,7 @@ public:
     uint32 CalcCastTime(Unit* caster = NULL, Spell* spell = NULL) const;
     uint32 GetRecoveryTime() const;
 
-    uint32 CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask) const;
+    uint32 CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, SpellPowerEntry const* spellPower) const;
 
     bool IsRanked() const;
     uint8 GetRank() const;

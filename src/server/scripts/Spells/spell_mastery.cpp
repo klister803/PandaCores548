@@ -32,7 +32,61 @@ enum MasterySpells
     MASTERY_SPELL_LAVA_BURST            = 77451,
     MASTERY_SPELL_HAND_OF_LIGHT         = 96172,
     MASTERY_SPELL_IGNITE                = 12654,
-    MASTERY_SPELL_BLOOD_SHIELD          = 77535
+    MASTERY_SPELL_BLOOD_SHIELD          = 77535,
+    MASTERY_SPELL_COMBO_BREAKER_1       = 118864,
+    MASTERY_SPELL_COMBO_BREAKER_2       = 116768
+};
+
+// Called by 100780 - Jab
+// 115636 - Mastery : Combo Breaker
+class spell_mastery_combo_breaker : public SpellScriptLoader
+{
+    public:
+        spell_mastery_combo_breaker() : SpellScriptLoader("spell_mastery_combo_breaker") { }
+
+        class spell_mastery_combo_breaker_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mastery_combo_breaker_SpellScript);
+
+            bool Validate(SpellInfo const* /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(100780))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (caster->HasAura(115636))
+                        {
+                            float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 1.4f;
+
+                            if (roll_chance_f(Mastery))
+                            {
+                                if (roll_chance_i(50))
+                                    caster->CastSpell(caster, MASTERY_SPELL_COMBO_BREAKER_1, true);
+                                else
+                                    caster->CastSpell(caster, MASTERY_SPELL_COMBO_BREAKER_2, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mastery_combo_breaker_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mastery_combo_breaker_SpellScript();
+        }
 };
 
 // Called by 45470 - Death Strike (Heal)
@@ -287,6 +341,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
 
 void AddSC_mastery_spell_scripts()
 {
+    new spell_mastery_combo_breaker();
     new spell_mastery_blood_shield();
     new spell_mastery_ignite();
     new spell_mastery_hand_of_light();

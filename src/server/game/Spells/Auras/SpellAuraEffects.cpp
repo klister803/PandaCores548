@@ -38,6 +38,7 @@
 #include "Vehicle.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
+#include "WeatherMgr.h"
 
 class Aura;
 //
@@ -386,13 +387,13 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNoImmediateEffect,                         //328 SPELL_AURA_PROC_ON_POWER_AMOUNT implemented in Unit::HandleAuraProcOnPowerAmount
     &AuraEffect::HandleNULL,                                      //329 SPELL_AURA_MOD_RUNE_REGEN_SPEED
     &AuraEffect::HandleNoImmediateEffect,                         //330 SPELL_AURA_CAST_WHILE_WALKING
-    &AuraEffect::HandleNULL,                                      //331 SPELL_AURA_331
+    &AuraEffect::HandleAuraForceWeather,                          //331 SPELL_AURA_FORCE_WEATHER
     &AuraEffect::HandleNoImmediateEffect,                         //332 SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS implemented in WorldSession::HandleCastSpellOpcode
     &AuraEffect::HandleNoImmediateEffect,                         //333 SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2 implemented in WorldSession::HandleCastSpellOpcode
-    &AuraEffect::HandleNULL,                                      //334 SPELL_AURA_334
+    &AuraEffect::HandleNULL,                                      //334 SPELL_AURA_MOD_BLIND
     &AuraEffect::HandleNULL,                                      //335 SPELL_AURA_335
     &AuraEffect::HandleNULL,                                      //336 SPELL_AURA_MOD_FLYING_RESTRICTIONS
-    &AuraEffect::HandleNULL,                                      //337 SPELL_AURA_MOD_VENDOR_ITEMS_PRICES
+    &AuraEffect::HandleNoImmediateEffect,                         //337 SPELL_AURA_MOD_VENDOR_ITEMS_PRICES
     &AuraEffect::HandleNoImmediateEffect,                         //338 SPELL_AURA_MOD_DURABILITY_LOSS
     &AuraEffect::HandleNULL,                                      //339 SPELL_AURA_INCREASE_SKILL_GAIN_CHANCE
     &AuraEffect::HandleNULL,                                      //340 SPELL_AURA_SPELL_AURA_MOD_RESURRECTED_HEALTH_BY_GUILD_MEMBER
@@ -400,10 +401,10 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleModMeleeRangedSpeedPct,                    //342 SPELL_AURA_MOD_MELEE_RANGED_HASTE_2
     &AuraEffect::HandleNULL,                                      //343 SPELL_AURA_343
     &AuraEffect::HandleNULL,                                      //344 SPELL_AURA_MOD_AUTOATTACK_DAMAGE
-    &AuraEffect::HandleNULL,                                      //345 SPELL_AURA_BYPASS_ARMOR_FOR_CASTER
+    &AuraEffect::HandleNoImmediateEffect,                         //345 SPELL_AURA_BYPASS_ARMOR_FOR_CASTER
     &AuraEffect::HandleNULL,                                      //346 SPELL_AURA_ENABLE_ALT_POWER
     &AuraEffect::HandleNULL,                                      //347 SPELL_AURA_MOD_SPELL_COOLDOWN_BY_HASTE
-    &AuraEffect::HandleNULL,                                      //348 SPELL_AURA_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT implemented in WorldSession::HandleLootMoneyOpcode (TODO ?)
+    &AuraEffect::HandleNoImmediateEffect,                         //348 SPELL_AURA_AURA_DEPOSIT_BONUS_MONEY_IN_GUILD_BANK_ON_LOOT implemented in WorldSession::HandleLootMoneyOpcode (TODO ?)
     &AuraEffect::HandleNoImmediateEffect,                         //349 SPELL_AURA_MOD_CURRENCY_GAIN implemented in Player::ModifyCurrency (TODO?)
     &AuraEffect::HandleNULL,                                      //350 SPELL_AURA_MOD_GATHERING_ITEMS_GAINED_PERCENT
     &AuraEffect::HandleNULL,                                      //351 SPELL_AURA_351
@@ -767,8 +768,42 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 m_canBeRecalculated = false;
             }
             break;
+
+        case SPELL_AURA_MOD_RESISTANCE_EXCLUSIVE:
+        {
+            if (caster)
+            {
+                // if Level <= 70 resist = player level
+                int32 resist = caster->getLevel();
+
+                if (resist > 70 && resist < 81)
+                    resist += (resist - 70) * 5;
+                else if (resist > 80)
+                    resist += ((resist-70) * 5 + (resist - 80) * 7);
+
+                switch (GetId())
+                {
+                    case 20043: // Aspect of the Wild
+                    case 8185:  // Elemental Resistance
+                    case 19891: // Resistance Aura
+                    case 79106: // Shadow Protection
+                    case 79107: // Shadow Protection
+                        amount = resist;
+                        break;
+                    case 79060: // Mark of the Wild
+                    case 79061: // Mark of the Wild
+                    case 79062: // Blessing of Kings
+                    case 79063: // Blessing of Kings
+                    case 90363: // Embrace of the Shale Spider
+                        amount = resist / 2;
+                        break;
+                    }
+                break;
+            }
+        }
         default:
             break;
+        
     }
     if (DoneActualBenefit != 0.0f)
     {
@@ -2127,6 +2162,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
                 target->ToPlayer()->RemoveTemporarySpell(shapeInfo->stanceSpell[i]);
         }
     }
+    // Update the Mastery percentage for Shapeshift
+    target->ToPlayer()->UpdateMasteryPercentage();
 }
 
 void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -2270,6 +2307,10 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                     // Darkspear Pride
                     case 75532:
                         target->SetDisplayId(target->getGender() == GENDER_MALE ? 31737 : 31738);
+                        break;
+                    // Gnomeregan Pride
+                    case 75531:
+                        target->SetDisplayId(target->getGender() == GENDER_MALE ? 31654 : 31655);
                         break;
                     default:
                         break;
@@ -2518,7 +2559,7 @@ void AuraEffect::HandleAuraModDisarm(AuraApplication const* aurApp, uint8 mode, 
     case SPELL_AURA_MOD_DISARM_RANGED:
         field=UNIT_FIELD_FLAGS_2;
         flag=UNIT_FLAG2_DISARM_RANGED;
-        slot=EQUIPMENT_SLOT_RANGED;
+        slot=EQUIPMENT_SLOT_MAINHAND;
         attType=RANGED_ATTACK;
         break;
     default:
@@ -2760,9 +2801,11 @@ void AuraEffect::HandleAuraModSkill(AuraApplication const* aurApp, uint8 mode, b
     uint32 prot = GetMiscValue();
     int32 points = GetAmount();
 
-    target->ModifySkillBonus(prot, (apply ? points : -points), GetAuraType() == SPELL_AURA_MOD_SKILL_TALENT);
+
     if (prot == SKILL_DEFENSE)
-        target->UpdateDefenseBonusesMod();
+        return;
+
+    target->ModifySkillBonus(prot, (apply ? points : -points), GetAuraType() == SPELL_AURA_MOD_SKILL_TALENT);
 }
 
 /****************************/
@@ -3798,7 +3841,9 @@ void AuraEffect::HandleAuraModBaseResistancePCT(AuraApplication const* aurApp, u
     {
         for (int8 x = SPELL_SCHOOL_NORMAL; x < MAX_SPELL_SCHOOL; x++)
         {
-            if (GetMiscValue() & int32(1<<x))
+            if (GetMiscValue() & int32(1<<x) && target->HasAura(16931) && aurApp->GetBase()->GetId() == 5487)
+                target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_PCT, float(330), apply);
+            else if (GetMiscValue() & int32(1<<x))
                 target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), BASE_PCT, float(GetAmount()), apply);
         }
     }
@@ -4434,8 +4479,18 @@ void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mod
     //! ToDo: Haste auras with the same handler _CAN'T_ stack together
     Unit* target = aurApp->GetTarget();
 
-    target->ApplyAttackTimePercentMod(BASE_ATTACK,   (float)GetAmount(), apply);
-    target->ApplyAttackTimePercentMod(OFF_ATTACK,    (float)GetAmount(), apply);
+    int32 value = GetAmount();
+
+    // Custom MoP Script
+    // 76808 - Mastery : Executioner - Increase effect of Slice and Dice
+    if (aurApp->GetTarget()->HasAura(76808) && aurApp->GetBase()->GetId() == 5171)
+    {
+        float Mastery = 1.0f + aurApp->GetTarget()->GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        value *= Mastery;
+    }
+
+    target->ApplyAttackTimePercentMod(BASE_ATTACK,   (float)value, apply);
+    target->ApplyAttackTimePercentMod(OFF_ATTACK,    (float)value, apply);
 }
 
 void AuraEffect::HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5840,6 +5895,25 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                 break;
             }
             break;
+        case SPELLFAMILY_WARLOCK:
+            switch (GetId())
+            {
+                case 103958: // Metamorphosis
+                {
+                    if (caster->GetPower(POWER_DEMONIC_FURY) > 0)
+                    {
+                        // Power cost : 6 demonic fury per second
+                        uint32 demonicFury = caster->GetPower(POWER_DEMONIC_FURY) - 6;
+
+                        if (demonicFury < 0)
+                            demonicFury = 0;
+
+                        caster->SetPower(POWER_DEMONIC_FURY, demonicFury);
+                    }
+                    else
+                        caster->RemoveAurasDueToSpell(103958);
+                }
+            }
         case SPELLFAMILY_DEATHKNIGHT:
             switch (GetId())
             {
@@ -6556,7 +6630,7 @@ void AuraEffect::HandlePeriodicManaLeechAuraTick(Unit* target, Unit* caster) con
 
     // Special case: draining x% of mana (up to a maximum of 2*x% of the caster's maximum mana)
     // It's mana percent cost spells, m_amount is percent drain from target
-    if (m_spellInfo->ManaCostPercentage)
+    if (m_base->GetSpellPowerData()->ManaCostPercentage)
     {
         // max value
         int32 maxmana = CalculatePctF(caster->GetMaxPower(powerType), drainAmount * 2.0f);
@@ -6848,4 +6922,37 @@ void AuraEffect::HandleRaidProcFromChargeWithValueAuraProc(AuraApplication* aurA
 
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraEffect::HandleRaidProcFromChargeWithValueAuraProc: Triggering spell %u from aura %u proc", triggerSpellId, GetId());
     target->CastCustomSpell(target, triggerSpellId, &value, NULL, NULL, true, NULL, this, GetCasterGUID());
+}
+
+void AuraEffect::HandleAuraForceWeather(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Player* target = aurApp->GetTarget()->ToPlayer();
+
+    if (!target)
+        return;
+
+    if (apply)
+    {
+        WorldPacket data(SMSG_WEATHER, (4 + 4 + 1));
+
+        data << uint32(GetMiscValue()) << 1.0f << uint8(0);
+        target->GetSession()->SendPacket(&data);
+    }
+    else
+    {
+        // send weather for current zone
+        if (Weather* weather = WeatherMgr::FindWeather(target->GetZoneId()))
+            weather->SendWeatherUpdateToPlayer(target);
+        else
+        {
+            if (!WeatherMgr::AddWeather(target->GetZoneId()))
+            {
+                // send fine weather packet to remove old weather
+                WeatherMgr::SendFineWeatherUpdateToPlayer(target);
+            }
+        }
+    }
 }

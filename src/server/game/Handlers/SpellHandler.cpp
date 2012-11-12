@@ -359,6 +359,24 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         return;
     }
 
+    // Override spell Id, client send base spell and not the overrided id
+    if(!spellInfo->OverrideSpellList.empty())
+    {
+        for(auto itr : spellInfo->OverrideSpellList)
+        {
+            if(_player->HasSpell(itr))
+            {
+                SpellInfo const* overrideSpellInfo = sSpellMgr->GetSpellInfo(itr);
+                if(overrideSpellInfo)
+                {
+                    spellInfo = overrideSpellInfo;
+                    spellId = itr;
+                }
+                break;
+            }
+        }
+    }
+
     if (mover->GetTypeId() == TYPEID_PLAYER)
     {
         // not have spell in spellbook or spell passive and not casted by client

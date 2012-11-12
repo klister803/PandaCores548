@@ -35,7 +35,7 @@
 
 Pet::Pet(Player* owner, PetType type) : Guardian(NULL, owner, true),
 m_removed(false), m_owner(owner),
-m_petType(type), m_duration(0),
+m_petType(type), m_duration(0), m_specialization(0),
 m_auraRaidUpdateMask(0), m_loading(false), m_declinedname(NULL)
 {
     m_unitTypeMask |= UNIT_MASK_PET;
@@ -224,6 +224,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
             SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
                                                             // this enables popup window (pet abandon, cancel)
             setPowerType(POWER_FOCUS);
+            SetSpecializationId(fields[16].GetUInt32());
             break;
         default:
             if (!IsPetGhoul())
@@ -432,7 +433,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
 
         // save pet
         std::ostringstream ss;
-        ss  << "INSERT INTO character_pet (id, entry,  owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType) "
+        ss  << "INSERT INTO character_pet (id, entry,  owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization) "
             << "VALUES ("
             << m_charmInfo->GetPetNumber() << ','
             << GetEntry() << ','
@@ -456,7 +457,9 @@ void Pet::SavePetToDB(PetSaveMode mode)
         ss  << "', "
             << time(NULL) << ','
             << GetUInt32Value(UNIT_CREATED_BY_SPELL) << ','
-            << uint32(getPetType()) << ')';
+            << uint32(getPetType()) << ','
+            << GetSpecializationId()
+            << ')';
 
         trans->Append(ss.str().c_str());
         CharacterDatabase.CommitTransaction(trans);
@@ -1269,7 +1272,7 @@ void Pet::_LoadAuras(uint32 timediff)
                 }
             }
 
-            if (Aura* aura = Aura::TryCreate(spellInfo, effmask, this, NULL, &baseDamage[0], NULL, caster_guid))
+            if (Aura* aura = Aura::TryCreate(spellInfo, effmask, this, NULL, spellInfo->spellPower, &baseDamage[0], NULL, caster_guid))
             {
                 if (!aura->CanBeSaved())
                 {
@@ -1420,26 +1423,7 @@ bool Pet::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpel
     else
         newspell.active = active;
 
-    // talent: unlearn all other talent ranks (high and low)
-/*    if (TalentSpellPos const* talentPos = GetTalentSpellPos(spellId))
-    {
-        if (TalentEntry const* talentInfo = sTalentStore.LookupEntry(talentPos->talent_id))
-        {
-            for (uint8 i = 0; i < MAX_TALENT_RANK; ++i)
-            {
-                // skip learning spell and no rank spell case
-                uint32 rankSpellId = talentInfo->RankID[i];
-                if (!rankSpellId || rankSpellId == spellId)
-                    continue;
-
-                // skip unknown ranks
-                if (!HasSpell(rankSpellId))
-                    continue;
-                removeSpell(rankSpellId, false, false);
-            }
-        }
-    }
-    else*/ if (spellInfo->IsRanked())
+    if (spellInfo->IsRanked())
     {
         for (PetSpellMap::const_iterator itr2 = m_spells.begin(); itr2 != m_spells.end(); ++itr2)
         {
@@ -1493,6 +1477,7 @@ bool Pet::learnSpell(uint32 spell_id)
     if (!m_loading)
     {
         WorldPacket data(SMSG_PET_LEARNED_SPELL, 4);
+        data.WriteBits(1, 24);
         data << uint32(spell_id);
         m_owner->GetSession()->SendPacket(&data);
         m_owner->PetSpellInitialize();
@@ -1546,6 +1531,7 @@ bool Pet::unlearnSpell(uint32 spell_id, bool learn_prev, bool clear_ab)
         if (!m_loading)
         {
             WorldPacket data(SMSG_PET_REMOVED_SPELL, 4);
+            data.WriteBits(1, 24);
             data << uint32(spell_id);
             m_owner->GetSession()->SendPacket(&data);
         }
@@ -1820,5 +1806,35 @@ void Pet::SynchronizeLevelWithOwner()
             break;
         default:
             break;
+    }
+}
+
+void Pet::LearnSpecializationSpell()
+{
+    for (uint32 i = 0; i < sSpecializationSpellStore.GetNumRows(); i++)
+    {
+        SpecializationSpellEntry const* specializationEntry = sSpecializationSpellStore.LookupEntry(i);
+        if (!specializationEntry)
+            continue;
+
+        if (specializationEntry->SpecializationEntry != GetSpecializationId())
+            continue;
+
+        learnSpell(specializationEntry->LearnSpell);
+    }
+}
+
+void Pet::UnlearnSpecializationSpell()
+{
+    for (uint32 i = 0; i < sSpecializationSpellStore.GetNumRows(); i++)
+    {
+        SpecializationSpellEntry const* specializationEntry = sSpecializationSpellStore.LookupEntry(i);
+        if (!specializationEntry)
+            continue;
+
+        if (specializationEntry->SpecializationEntry != GetSpecializationId())
+            continue;
+
+        unlearnSpell(specializationEntry->LearnSpell, false);
     }
 }

@@ -739,8 +739,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
                 if (uint32 titleId = reward->titleId[Player::TeamForRace(GetOwner()->getRace()) == ALLIANCE ? 0 : 1])
                     if (CharTitlesEntry const* titleEntry = sCharTitlesStore.LookupEntry(titleId))
-                        if (!GetOwner()->HasTitle(titleEntry))
-                            GetOwner()->SetTitle(titleEntry);
+                        GetOwner()->SetTitle(titleEntry);
 
         } 
         while (achievementAccountResult->NextRow());
@@ -822,7 +821,7 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
 
             CompletedAchievementData& ca = m_completedAchievements[achievementid];
             ca.date = time_t(fields[1].GetUInt32());
-            Tokens guids(fields[2].GetString(), ' ');
+            Tokenizer guids(fields[2].GetString(), ' ');
             for (uint32 i = 0; i < guids.size(); ++i)
                 ca.guids.insert(MAKE_NEW_GUID(atol(guids[i]), 0, HIGHGUID_PLAYER));
 
