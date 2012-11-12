@@ -2681,14 +2681,17 @@ void SpellMgr::LoadSpellClassInfo()
             mSpellClassInfo[ClassID].push_back(spellEntry->Id);
         }
 
-        for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
+        for (uint32 i = 0; i < sSpecializationSpellStore.GetNumRows(); ++i)
         {
-            SpellInfo const* spell = sSpellMgr->GetSpellInfo(i);
-            if (!spell)
+            SpecializationSpellEntry const* specializationInfo = sSpecializationSpellStore.LookupEntry(i);
+            if (!specializationInfo)
                 continue;
 
-            if (spell->SpellFamilyName == classEntry->spellfamily && !spell->SpecializationIdList.empty())
-                mSpellClassInfo[ClassID].push_back(i);
+            ChrSpecializationsEntry const* chrSpec = sChrSpecializationsStore.LookupEntry(specializationInfo->SpecializationEntry);
+            if (!chrSpec)
+                continue;
+
+            mSpellClassInfo[chrSpec->classId].push_back(i);
         }
     }
 
