@@ -686,7 +686,7 @@ struct CharTitlesEntry
     //uint32      unk1;                                     // 1 flags?
     char* name;                                             // 2        m_name_lang
     //char*       name2;                                    // 3        m_name1_lang
-    uint32  bit_index;                                      // 4        m_mask_ID used in PLAYER_CHOSEN_TITLE and 1<<index in PLAYER__FIELD_KNOWN_TITLES
+    uint32  bit_index;                                      // 4        m_mask_ID used in PLAYER_CHOSEN_TITLE and 1<<index in PLAYER_FIELD_KNOWN_TITLES
     //uint32                                                // 5
 };
 
