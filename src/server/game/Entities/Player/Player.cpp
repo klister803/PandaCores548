@@ -2532,6 +2532,9 @@ void Player::RegenerateAll()
     if (getClass() == CLASS_HUNTER)
         m_focusRegenTimerCount += m_regenTimer;
 
+    if (getClass() == CLASS_WARLOCK)
+        m_demonicFuryPowerRegenTimerCount += m_regenTimer;
+
     Regenerate(POWER_ENERGY);
     Regenerate(POWER_MANA);
 
@@ -2590,6 +2593,12 @@ void Player::RegenerateAll()
         m_chiPowerRegenTimerCount -= 10000;
     }
 
+    if (m_demonicFuryPowerRegenTimerCount >= 10000 && getClass() == CLASS_WARLOCK)
+    {
+        Regenerate(POWER_DEMONIC_FURY);
+        m_demonicFuryPowerRegenTimerCount -= 10000;
+    }
+
     m_regenTimer = 0;
 }
 
@@ -2630,7 +2639,7 @@ void Player::Regenerate(Powers power)
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * m_regenTimer) + CalculatePctF(0.001f, spellHaste));
         }
         break;
-        case POWER_RAGE:                                                // Regenerate rage
+        case POWER_RAGE:                                                // Regenerate Rage
         {
             if (!isInCombat() && !HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
             {
@@ -2642,7 +2651,7 @@ void Player::Regenerate(Powers power)
         case POWER_FOCUS:
             addvalue += (6.0f + CalculatePctF(6.0f, rangedHaste)) * sWorld->getRate(RATE_POWER_FOCUS);
             break;
-        case POWER_ENERGY:                                              // Regenerate energy (rogue)
+        case POWER_ENERGY:                                              // Regenerate Energy
             addvalue += ((0.01f * m_regenTimer) + CalculatePctF(0.01f, meleeHaste)) * sWorld->getRate(RATE_POWER_ENERGY);
             break;
         case POWER_RUNIC_POWER:
@@ -2654,7 +2663,7 @@ void Player::Regenerate(Powers power)
             }
         }
         break;
-        case POWER_HOLY_POWER:                                          // Regenerate holy power
+        case POWER_HOLY_POWER:                                          // Regenerate Holy Power
         {
             if (!isInCombat())
                 addvalue += -1.0f;      // remove 1 each 10 sec
@@ -2663,10 +2672,17 @@ void Player::Regenerate(Powers power)
         case POWER_RUNES:
         case POWER_HEALTH:
             break;
-        case POWER_CHI:                                          // Regenerate chi
+        case POWER_CHI:                                          // Regenerate Chi
         {
             if (!isInCombat())
                 addvalue += -1.0f;      // remove 1 each 10 sec
+        }
+        case POWER_DEMONIC_FURY:                                // Regenerate Demonic Fury
+        {
+            if (!isInCombat() && GetPower(POWER_DEMONIC_FURY) >= 300 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
+                addvalue += -100.0f;    // remove 100 each 10 sec
+            else if (!isInCombat() && GetShapeshiftForm() != FORM_METAMORPHOSIS)
+                addvalue += (200.0f - GetPower(POWER_DEMONIC_FURY));      // min power demonic fury set at 200
         }
         break;
         default:
@@ -2801,6 +2817,21 @@ void Player::ResetAllPowers()
             break;
         case POWER_ECLIPSE:
             SetPower(POWER_ECLIPSE, 0);
+            break;
+        case POWER_DEMONIC_FURY:
+            SetPower(POWER_DEMONIC_FURY, 200);
+            break;
+        case POWER_BURNING_EMBERS:
+            SetPower(POWER_BURNING_EMBERS, 1);
+            break;
+        case POWER_SOUL_SHARDS:
+            SetPower(POWER_SOUL_SHARDS, 1);
+            break;
+        case POWER_SHADOW_ORB:
+            SetPower(POWER_SHADOW_ORB, 1);
+            break;
+        case POWER_CHI:
+            SetPower(POWER_CHI, 0);
             break;
         default:
             break;
@@ -3489,6 +3520,11 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetPower(POWER_FOCUS, GetMaxPower(POWER_FOCUS));
     SetPower(POWER_RUNIC_POWER, 0);
     SetPower(POWER_CHI, 0);
+    SetPower(POWER_SOUL_SHARDS, 1);
+    SetPower(POWER_DEMONIC_FURY, 200);
+    SetPower(POWER_BURNING_EMBERS, 1);
+    SetPower(POWER_SHADOW_ORB, 1);
+    SetPower(POWER_ECLIPSE, 0);
 
     // update level to hunter/summon pet
     if (Pet* pet = GetPet())
@@ -5328,6 +5364,11 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         SetPower(POWER_ENERGY, uint32(GetMaxPower(POWER_ENERGY)*restore_percent));
         SetPower(POWER_FOCUS, uint32(GetMaxPower(POWER_FOCUS)*restore_percent));
         SetPower(POWER_ECLIPSE, 0);
+        SetPower(POWER_DEMONIC_FURY, 200);
+        SetPower(POWER_BURNING_EMBERS, 0);
+        SetPower(POWER_SOUL_SHARDS, 0);
+        SetPower(POWER_CHI, 0);
+        SetPower(POWER_SHADOW_ORB, 0);
     }
 
     // trigger update zone for alive state zone updates
@@ -23696,6 +23737,11 @@ void Player::ResurectUsingRequestData()
     SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
     SetPower(POWER_FOCUS, GetMaxPower(POWER_FOCUS));
     SetPower(POWER_ECLIPSE, 0);
+    SetPower(POWER_BURNING_EMBERS, 0);
+    SetPower(POWER_SOUL_SHARDS, 0);
+    SetPower(POWER_DEMONIC_FURY, 200);
+    SetPower(POWER_SHADOW_ORB, 0);
+    SetPower(POWER_CHI, 0);
 
     SpawnCorpseBones();
 }
