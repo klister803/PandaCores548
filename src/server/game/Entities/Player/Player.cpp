@@ -1194,14 +1194,29 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
         uint32 quest = 0;
         switch(createInfo->Class)
         {
-            case CLASS_WARRIOR: quest = 30045; break;
-            case CLASS_SHAMAN: quest = 30044; break;
-            case CLASS_ROGUE: quest = 30043; break;
-            case CLASS_PRIEST: quest = 30042; break;
-            case CLASS_HUNTER: quest = 30041; break;
-            case CLASS_MAGE: quest = 30040; break;
-            case CLASS_MONK: quest = 30039; break;
-            default: break;
+            case CLASS_WARRIOR:
+                quest = 30045;
+                break;
+            case CLASS_SHAMAN:
+                quest = 30044;
+                break;
+            case CLASS_ROGUE:
+                quest = 30043;
+                break;
+            case CLASS_PRIEST:
+                quest = 30042;
+                break;
+            case CLASS_HUNTER:
+                quest = 30041;
+                break;
+            case CLASS_MAGE:
+                quest = 30040;
+                break;
+            case CLASS_MONK:
+                quest = 30039;
+                break;
+            default:
+                break;
         }
         if(quest)
         {
