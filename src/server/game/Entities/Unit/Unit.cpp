@@ -16687,8 +16687,8 @@ void Unit::JumpTo(float speedXY, float speedZ, bool forward)
         GetMotionMaster()->MoveJumpTo(angle, speedXY, speedZ);
     else
     {
-        float vcos = cos(angle+GetOrientation());
-        float vsin = sin(angle+GetOrientation());
+        float vcos = std::cos(angle+GetOrientation());
+        float vsin = std::sin(angle+GetOrientation());
         SendMoveKnockBack(ToPlayer(), speedXY, -speedZ, vcos, vsin);
     }
 }
