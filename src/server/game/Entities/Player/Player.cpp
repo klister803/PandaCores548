@@ -1189,10 +1189,10 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     // all item positions resolved
 
     //Pandaren's start quest
-    if(createInfo->Race == RACE_PANDAREN_NEUTRAL || createInfo->Race == RACE_PANDAREN_ALLI || createInfo->Race == RACE_PANDAREN_HORDE)
+    if (createInfo->Race == RACE_PANDAREN_NEUTRAL || createInfo->Race == RACE_PANDAREN_ALLI || createInfo->Race == RACE_PANDAREN_HORDE)
     {
         uint32 quest = 0;
-        switch(createInfo->Class)
+        switch (createInfo->Class)
         {
             case CLASS_WARRIOR:
                 quest = 30045;
@@ -1218,7 +1218,8 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
             default:
                 break;
         }
-        if(quest)
+
+        if (quest)
         {
             Quest const* questT = sObjectMgr->GetQuestTemplate(quest);
             this->AddQuest(questT, NULL);
