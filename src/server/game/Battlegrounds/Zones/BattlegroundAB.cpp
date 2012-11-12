@@ -236,6 +236,7 @@ void BattlegroundAB::HandleAreaTrigger(Player* Source, uint32 Trigger)
         case 3870:                                          // Black Smith
         case 4020:                                          // Unk1
         case 4021:                                          // Unk2
+        case 4674:                                          // Unk3
             //break;
         default:
             //sLog->outError(LOG_FILTER_BATTLEGROUND, "WARNING: Unhandled AreaTrigger in Battleground: %u", Trigger);
