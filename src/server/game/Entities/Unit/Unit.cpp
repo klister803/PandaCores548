@@ -13197,6 +13197,10 @@ int32 Unit::GetCreatePowers(Powers power) const
             return 1000;
         case POWER_RUNES:
             return 0;
+        case POWER_BURNING_EMBERS:
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK ? 3 : 0);
+        case POWER_DEMONIC_FURY:
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK ? 1000 : 0);
         case POWER_SOUL_SHARDS:
             return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK ? 3 : 0);
         case POWER_ECLIPSE:
