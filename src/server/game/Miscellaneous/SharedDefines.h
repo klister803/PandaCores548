@@ -261,10 +261,10 @@ enum Powers
     POWER_HOLY_POWER                    = 9,
     POWER_ALTERNATE_POWER               = 10,           // Used in some quests
     POWER_CHI                           = 12,
-    POWER_SHADOW_PRIEST                 = 13,
+    POWER_SHADOW_ORB                    = 13,
     POWER_BURNING_EMBERS                = 14,
     POWER_DEMONIC_FURY                  = 15,
-    POWER_MAGE                          = 16,
+    POWER_UNKNOWN                       = 16,
     MAX_POWERS                          = 17,
     POWER_ALL                           = 127,          // default for class?
     POWER_HEALTH                        = 0xFFFFFFFE    // (-2 as signed value)
