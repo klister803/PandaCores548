@@ -22,6 +22,7 @@
 #include "Define.h"
 #include "Common.h"
 
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <list>
