@@ -387,7 +387,7 @@ enum LifeTap
 
                     // Improved Life Tap mod
                     if (AuraEffect const* aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_WARLOCK, ICON_ID_IMPROVED_LIFE_TAP, 0))
-                        AddPctN(mana, aurEff->GetAmount());
+                        AddPct(mana, aurEff->GetAmount());
 
                     caster->CastCustomSpell(target, SPELL_LIFE_TAP_ENERGIZE, &mana, NULL, NULL, false);
 
@@ -398,7 +398,7 @@ enum LifeTap
 
                     if (manaFeedVal > 0)
                     {
-                        ApplyPctN(manaFeedVal, mana);
+                        ApplyPct(manaFeedVal, mana);
                         caster->CastCustomSpell(caster, SPELL_LIFE_TAP_ENERGIZE_2, &manaFeedVal, NULL, NULL, true, NULL);
                     }
                 }
@@ -587,7 +587,7 @@ class spell_warl_haunt : public SpellScriptLoader
             {
                 if (Aura* aura = GetHitAura())
                     if (AuraEffect* aurEff = aura->GetEffect(EFFECT_1))
-                        aurEff->SetAmount(CalculatePctN(aurEff->GetAmount(), GetHitDamage()));
+                        aurEff->SetAmount(CalculatePct(aurEff->GetAmount(), GetHitDamage()));
             }
 
             void Register()
