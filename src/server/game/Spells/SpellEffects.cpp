@@ -1086,10 +1086,18 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
             if (unitTarget->getLevel() > uiMaxSafeLevel)
             {
                 unitTarget->AddAura(60444, unitTarget); //Apply Lost! Aura
+
+                // ALLIANCE from 60323 to 60330 - HORDE from 60328 to 60335
+
+                uint32 spellId = 60323;
+                if (m_caster->ToPlayer()->GetTeam() == HORDE)
+                    spellId += 5;
+                spellId += urand(0, 7);
+                m_caster->CastSpell(m_caster, spellId, true);
                 return;
             }
             break;
-        case 66550: // teleports outside (Isle of Conquest)
+        case 66550: // teleport outside (Isle of Conquest)
             if (Player* target = unitTarget->ToPlayer())
             {
                 if (target->GetTeamId() == TEAM_ALLIANCE)
@@ -1098,7 +1106,7 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
                     m_targets.SetDst(1120.43f, -762.11f, 47.92f, 2.94f, 628);
             }
             break;
-        case 66551: // teleports inside (Isle of Conquest)
+        case 66551: // teleport inside (Isle of Conquest)
             if (Player* target = unitTarget->ToPlayer())
             {
                 if (target->GetTeamId() == TEAM_ALLIANCE)
@@ -1147,7 +1155,7 @@ void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
             }
             return;
         }
-        // Ultrasafe Transporter: Toshley's Station
+        // Ultra safe Transporter: Toshley's Station
         case 36941:
         {
             if (roll_chance_i(50))                        // 50% success
@@ -1473,7 +1481,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
 
         addhealth = unitTarget->SpellHealingBonusTaken(caster, m_spellInfo, addhealth, HEAL);
 
-        // Remove Grievious bite if fully healed
+        // Remove Grievous bite if fully healed
         if (unitTarget->HasAura(48920) && (unitTarget->GetHealth() + addhealth >= unitTarget->GetMaxHealth()))
             unitTarget->RemoveAura(48920);
 
@@ -1792,7 +1800,7 @@ void Spell::EffectPersistentAA(SpellEffIndex effIndex)
             return;
         }
 
-        if (Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, &m_spellValue->EffectBasePoints[0]))
+        if (Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]))
         {
             m_spellAura = aura;
             m_spellAura->_RegisterForTargets();
@@ -6092,7 +6100,7 @@ void Spell::EffectCastButtons(SpellEffIndex effIndex)
         if (!(spellInfo->AttributesEx7 & SPELL_ATTR7_SUMMON_PLAYER_TOTEM))
             continue;
 
-        int32 cost = spellInfo->CalcPowerCost(m_caster, spellInfo->GetSchoolMask());
+        int32 cost = spellInfo->CalcPowerCost(m_caster, spellInfo->GetSchoolMask(), m_spellPowerData);
         if (m_caster->GetPower(POWER_MANA) < cost)
             continue;
 

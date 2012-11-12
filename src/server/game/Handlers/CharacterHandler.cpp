@@ -1075,20 +1075,27 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         default:
             break;
         }
+
         float x, y, z;
         pCurrChar->GetClosePoint(x, y, z, pCurrChar->GetObjectSize());
-        Pet* pet = pCurrChar->SummonPet(creature_id, x, y, z, pCurrChar->GetOrientation(), SUMMON_PET, 0);
-        if (!pet)
-            return;
-
-        pet->SetReactState(REACT_DEFENSIVE);
-
-        pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, spell_id);
-
-        // generate new name for summon pet
-        std::string new_name=sObjectMgr->GeneratePetName(creature_id);
-        if (!new_name.empty())
-            pet->SetName(new_name);
+        Creature* c = pCurrChar->SummonCreature(creature_id, x, y, z, pCurrChar->GetOrientation());
+        if (c)
+        {
+            Pet* pet = pCurrChar->CreateTamedPetFrom(c, spell_id);
+            if(pet)
+            {
+                c->DespawnOrUnsummon();
+                pet->GetMap()->AddToMap(pet->ToCreature());
+                pet->SetUInt32Value(UNIT_FIELD_LEVEL, 1);
+                pCurrChar->SetMinion(pet, true);
+                pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+                pCurrChar->PetSpellInitialize();
+                // generate new name for summon pet
+                std::string new_name=sObjectMgr->GeneratePetName(creature_id);
+                if (!new_name.empty())
+                    pet->SetName(new_name);
+            }
+        }
     }
     else
         // Load pet if any (if player not alive and in taxi flight or another then pet will remember as temporary unsummoned)
@@ -1785,6 +1792,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     uint32 level = uint32(fields[1].GetUInt8());
     uint32 at_loginFlags = fields[2].GetUInt16();
     uint32 used_loginFlag = ((recvData.GetOpcode() == CMSG_CHAR_RACE_CHANGE) ? AT_LOGIN_CHANGE_RACE : AT_LOGIN_CHANGE_FACTION);
+    char const* knownTitlesStr = fields[3].GetCString();
 
     if (!sObjectMgr->GetPlayerInfo(race, playerClass))
     {
@@ -2162,6 +2170,70 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
             stmt->setUInt32(2, lowGuid);
             trans->Append(stmt);
         }
+        // Title conversion
+        if (knownTitlesStr)
+        {
+            const uint32 ktcount = KNOWN_TITLES_SIZE * 2;
+            uint32 knownTitles[ktcount];
+            Tokens tokens(knownTitlesStr, ' ', ktcount);
+
+            if (tokens.size() != ktcount)
+                return;
+
+            for (uint32 index = 0; index < ktcount; ++index)
+                knownTitles[index] = atol(tokens[index]);
+
+            for (std::map<uint32, uint32>::const_iterator it = sObjectMgr->FactionChange_Titles.begin(); it != sObjectMgr->FactionChange_Titles.end(); ++it)
+            {
+                uint32 title_alliance = it->first;
+                uint32 title_horde = it->second;
+
+                CharTitlesEntry const* atitleInfo = sCharTitlesStore.LookupEntry(title_alliance);
+                CharTitlesEntry const* htitleInfo = sCharTitlesStore.LookupEntry(title_horde);
+                // new team
+                if (team == BG_TEAM_ALLIANCE)
+                {
+                    uint32 bitIndex = htitleInfo->bit_index;
+                    uint32 index = bitIndex / 32;
+                    uint32 old_flag = 1 << (bitIndex % 32);
+                    uint32 new_flag = 1 << (atitleInfo->bit_index % 32);
+                    if (knownTitles[index] & old_flag)
+                    {
+                        knownTitles[index] &= ~old_flag;
+                        // use index of the new title
+                        knownTitles[atitleInfo->bit_index / 32] |= new_flag;
+                    }
+                }
+                else
+                {
+                    uint32 bitIndex = atitleInfo->bit_index;
+                    uint32 index = bitIndex / 32;
+                    uint32 old_flag = 1 << (bitIndex % 32);
+                    uint32 new_flag = 1 << (htitleInfo->bit_index % 32);
+                    if (knownTitles[index] & old_flag)
+                    {
+                        knownTitles[index] &= ~old_flag;
+                        // use index of the new title
+                        knownTitles[htitleInfo->bit_index / 32] |= new_flag;
+                    }
+                }
+
+                std::ostringstream ss;
+                for (uint32 index = 0; index < ktcount; ++index)
+                    ss << knownTitles[index] << ' ';
+
+                PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_TITLES_FACTION_CHANGE);
+                stmt->setString(0, ss.str().c_str());
+                stmt->setUInt32(1, lowGuid);
+                trans->Append(stmt);
+
+                // unset any currently chosen title
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_RES_CHAR_TITLES_FACTION_CHANGE);
+                stmt->setUInt32(0, lowGuid);
+                trans->Append(stmt);
+            }
+        }
+
     }
 
     CharacterDatabase.CommitTransaction(trans);

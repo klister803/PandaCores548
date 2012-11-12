@@ -261,6 +261,7 @@ class WorldSession
         void SendAreaTriggerMessage(const char* Text, ...) ATTR_PRINTF(2, 3);
         void SendSetPhaseShift(uint32 phaseShift);
         void SendQueryTimeResponse();
+        void HandleLearnPetSpecialization(WorldPacket& data);
 
         void SendAuthResponse(uint8 code, bool queued, uint32 queuePos = 0);
         void SendClientCacheVersion(uint32 version);

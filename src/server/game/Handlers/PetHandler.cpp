@@ -863,3 +863,44 @@ void WorldSession::SendPetNameInvalid(uint32 error, const std::string& name, Dec
         data << uint8(0);
     SendPacket(&data);
 }
+
+void WorldSession::HandleLearnPetSpecialization(WorldPacket & recvData)
+{
+    uint32 index = recvData.read<uint32>();
+    // GUID : useless =P
+    recvData.rfinish();
+
+    if(_player->isInCombat())
+        return;
+
+    uint32 specializationId = 0;
+
+    switch(index)
+    {
+        case 0:
+            specializationId = SPEC_PET_FEROCITY; // Férocité
+            break;
+        case 1:
+            specializationId = SPEC_PET_TENACITY; // Ténacité
+            break;
+        case 2:
+            specializationId = SPEC_PET_CUNNING; // Ruse
+            break;
+        default:
+            break;
+    }
+
+    if(!specializationId)
+        return;
+
+    Pet* pet = _player->GetPet();
+    if (!pet)
+        return;
+
+    if(pet->GetSpecializationId())
+        pet->UnlearnSpecializationSpell();
+
+    pet->SetSpecializationId(specializationId);
+    pet->LearnSpecializationSpell();
+    _player->SendTalentsInfoData(true);
+}

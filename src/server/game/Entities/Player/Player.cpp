@@ -994,7 +994,7 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     SetUInt32Value(PLAYER_GUILD_TIMESTAMP, 0);
 
     for (int i = 0; i < KNOWN_TITLES_SIZE; ++i)
-        SetUInt64Value(PLAYER__FIELD_KNOWN_TITLES + i, 0);  // 0=disabled
+        SetUInt64Value(PLAYER_FIELD_KNOWN_TITLES + i, 0);  // 0=disabled
     SetUInt32Value(PLAYER_CHOSEN_TITLE, 0);
 
     SetUInt32Value(PLAYER_FIELD_KILLS, 0);
@@ -2185,6 +2185,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     else
         sLog->outDebug(LOG_FILTER_MAPS, "Player %s is being teleported to map %u", GetName(), mapid);
 
+    if (m_vehicle)
+        ExitVehicle();
+
     // reset movement flags at teleport, because player will continue move with these flags after teleport
     SetUnitMovementFlags(0);
     DisableSpline();
@@ -2532,6 +2535,9 @@ void Player::RegenerateAll()
     if (getClass() == CLASS_HUNTER)
         m_focusRegenTimerCount += m_regenTimer;
 
+    if (getClass() == CLASS_WARLOCK)
+        m_demonicFuryPowerRegenTimerCount += m_regenTimer;
+
     Regenerate(POWER_ENERGY);
     Regenerate(POWER_MANA);
 
@@ -2590,6 +2596,12 @@ void Player::RegenerateAll()
         m_chiPowerRegenTimerCount -= 10000;
     }
 
+    if (m_demonicFuryPowerRegenTimerCount >= 10000 && getClass() == CLASS_WARLOCK)
+    {
+        Regenerate(POWER_DEMONIC_FURY);
+        m_demonicFuryPowerRegenTimerCount -= 10000;
+    }
+
     m_regenTimer = 0;
 }
 
@@ -2630,7 +2642,7 @@ void Player::Regenerate(Powers power)
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * m_regenTimer) + CalculatePctF(0.001f, spellHaste));
         }
         break;
-        case POWER_RAGE:                                                // Regenerate rage
+        case POWER_RAGE:                                                // Regenerate Rage
         {
             if (!isInCombat() && !HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
             {
@@ -2642,7 +2654,7 @@ void Player::Regenerate(Powers power)
         case POWER_FOCUS:
             addvalue += (6.0f + CalculatePctF(6.0f, rangedHaste)) * sWorld->getRate(RATE_POWER_FOCUS);
             break;
-        case POWER_ENERGY:                                              // Regenerate energy (rogue)
+        case POWER_ENERGY:                                              // Regenerate Energy
             addvalue += ((0.01f * m_regenTimer) + CalculatePctF(0.01f, meleeHaste)) * sWorld->getRate(RATE_POWER_ENERGY);
             break;
         case POWER_RUNIC_POWER:
@@ -2654,7 +2666,7 @@ void Player::Regenerate(Powers power)
             }
         }
         break;
-        case POWER_HOLY_POWER:                                          // Regenerate holy power
+        case POWER_HOLY_POWER:                                          // Regenerate Holy Power
         {
             if (!isInCombat())
                 addvalue += -1.0f;      // remove 1 each 10 sec
@@ -2663,10 +2675,17 @@ void Player::Regenerate(Powers power)
         case POWER_RUNES:
         case POWER_HEALTH:
             break;
-        case POWER_CHI:                                          // Regenerate chi
+        case POWER_CHI:                                          // Regenerate Chi
         {
             if (!isInCombat())
                 addvalue += -1.0f;      // remove 1 each 10 sec
+        }
+        case POWER_DEMONIC_FURY:                                // Regenerate Demonic Fury
+        {
+            if (!isInCombat() && GetPower(POWER_DEMONIC_FURY) >= 300 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
+                addvalue += -100.0f;    // remove 100 each 10 sec
+            else if (!isInCombat() && GetShapeshiftForm() != FORM_METAMORPHOSIS)
+                addvalue += (200.0f - GetPower(POWER_DEMONIC_FURY));      // min power demonic fury set at 200
         }
         break;
         default:
@@ -2801,6 +2820,21 @@ void Player::ResetAllPowers()
             break;
         case POWER_ECLIPSE:
             SetPower(POWER_ECLIPSE, 0);
+            break;
+        case POWER_DEMONIC_FURY:
+            SetPower(POWER_DEMONIC_FURY, 200);
+            break;
+        case POWER_BURNING_EMBERS:
+            SetPower(POWER_BURNING_EMBERS, 1);
+            break;
+        case POWER_SOUL_SHARDS:
+            SetPower(POWER_SOUL_SHARDS, 1);
+            break;
+        case POWER_SHADOW_ORB:
+            SetPower(POWER_SHADOW_ORB, 1);
+            break;
+        case POWER_CHI:
+            SetPower(POWER_CHI, 0);
             break;
         default:
             break;
@@ -3296,8 +3330,17 @@ void Player::InitSpellForLevel()
         if (HasSpell(spellId))
             continue;
 
-        if (spell->SpecializationEntry && spell->SpecializationEntry != specializationId)
-            continue;
+        if (!spell->SpecializationIdList.empty())
+        {
+            bool find = false;
+
+            for(auto itr : spell->SpecializationIdList)
+                if(itr == specializationId)
+                    find = true;
+
+            if(!find)
+                continue;
+        }
 
         if (spell->SpellLevel <= level)
             learnSpell(spellId, false);
@@ -3311,7 +3354,7 @@ void Player::RemoveSpecializationSpells()
     for (auto itr : GetSpellMap())
     {
         SpellInfo const* spell = sSpellMgr->GetSpellInfo(itr.first);
-        if (spell && spell->SpecializationEntry)
+        if (spell && !spell->SpecializationIdList.empty())
             spellToRemove.push_back(itr.first);
     }
 
@@ -3480,6 +3523,11 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetPower(POWER_FOCUS, GetMaxPower(POWER_FOCUS));
     SetPower(POWER_RUNIC_POWER, 0);
     SetPower(POWER_CHI, 0);
+    SetPower(POWER_SOUL_SHARDS, 1);
+    SetPower(POWER_DEMONIC_FURY, 200);
+    SetPower(POWER_BURNING_EMBERS, 1);
+    SetPower(POWER_SHADOW_ORB, 1);
+    SetPower(POWER_ECLIPSE, 0);
 
     // update level to hunter/summon pet
     if (Pet* pet = GetPet())
@@ -4684,6 +4732,7 @@ void Player::ResetSpec()
     RemoveSpecializationSpells();
     SetSpecializationId(GetActiveSpec(), 0);
     InitSpellForLevel();
+    UpdateMasteryPercentage();
     SendTalentsInfoData(false);
 
     ModifyMoney(-(int64)cost);
@@ -5318,6 +5367,11 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         SetPower(POWER_ENERGY, uint32(GetMaxPower(POWER_ENERGY)*restore_percent));
         SetPower(POWER_FOCUS, uint32(GetMaxPower(POWER_FOCUS)*restore_percent));
         SetPower(POWER_ECLIPSE, 0);
+        SetPower(POWER_DEMONIC_FURY, 200);
+        SetPower(POWER_BURNING_EMBERS, 0);
+        SetPower(POWER_SOUL_SHARDS, 0);
+        SetPower(POWER_CHI, 0);
+        SetPower(POWER_SHADOW_ORB, 0);
     }
 
     // trigger update zone for alive state zone updates
@@ -5671,7 +5725,7 @@ void Player::RepopAtGraveyard()
     AreaTableEntry const* zone = GetAreaEntryByAreaID(GetAreaId());
 
     // Such zones are considered unreachable as a ghost and the player must be automatically revived
-    if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < -500.0f)
+    if ((!isAlive() && zone && zone->flags & AREA_FLAG_NEED_FLY) || GetTransport() || GetPositionZ() < (zone ? zone->MaxDepth : -500.0f))
     {
         ResurrectPlayer(0.5f);
         SpawnCorpseBones();
@@ -5682,17 +5736,13 @@ void Player::RepopAtGraveyard()
     // Special handle for battleground maps
     if (Battleground* bg = GetBattleground())
         ClosestGrave = bg->GetClosestGraveYard(this);
+
     else
     {
-        if (sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
-            ClosestGrave = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId())->GetClosestGraveYard(this);
+        if (Battlefield* bf = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
+            ClosestGrave = bf->GetClosestGraveYard(this);
         else
-        {
-            if (sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId()))
-                ClosestGrave = sBattlefieldMgr->GetBattlefieldToZoneId(GetZoneId())->GetClosestGraveYard(this);
-            else
-                ClosestGrave = sObjectMgr->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam());
-        }
+            ClosestGrave = sObjectMgr->GetClosestGraveYard(GetPositionX(), GetPositionY(), GetPositionZ(), GetMapId(), GetTeam());
     }
 
     // stop countdown until repop
@@ -5713,7 +5763,7 @@ void Player::RepopAtGraveyard()
             GetSession()->SendPacket(&data);
         }
     }
-    else if (GetPositionZ() < -500.0f)
+    else if (GetPositionZ() < zone->MaxDepth)
         TeleportTo(m_homebindMapId, m_homebindX, m_homebindY, m_homebindZ, GetOrientation());
 }
 
@@ -5846,17 +5896,6 @@ void Player::LeaveLFGChannel()
             (*i)->Leave(GetGUID());
             break;
         }
-    }
-}
-
-void Player::UpdateDefense()
-{
-    uint32 defense_skill_gain = sWorld->getIntConfig(CONFIG_SKILL_GAIN_DEFENSE);
-
-    if (UpdateSkill(SKILL_DEFENSE, defense_skill_gain))
-    {
-        // update dependent from defense skill part
-        UpdateDefenseBonusesMod();
     }
 }
 
@@ -6106,9 +6145,8 @@ void Player::UpdateRating(CombatRating cr)
 
     switch (cr)
     {
-        case CR_WEAPON_SKILL:                               // Implemented in Unit::RollMeleeOutcomeAgainst
+        case CR_WEAPON_SKILL:
         case CR_DEFENSE_SKILL:
-            UpdateDefenseBonusesMod();
             break;
         case CR_DODGE:
             UpdateDodgePercentage();
@@ -6385,70 +6423,6 @@ bool Player::UpdateSkillPro(uint16 SkillId, int32 Chance, uint32 step)
     return false;
 }
 
-void Player::UpdateWeaponSkill(WeaponAttackType attType)
-{
-    // no skill gain in pvp
-    Unit* victim = getVictim();
-    if (victim && victim->GetTypeId() == TYPEID_PLAYER)
-        return;
-
-    if (IsInFeralForm())
-        return;                                             // always maximized SKILL_FERAL_COMBAT in fact
-
-    if (GetShapeshiftForm() == FORM_TREE)
-        return;                                             // use weapon but not skill up
-
-    if (victim && victim->GetTypeId() == TYPEID_UNIT && (victim->ToCreature()->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_SKILLGAIN))
-        return;
-
-    uint32 weapon_skill_gain = sWorld->getIntConfig(CONFIG_SKILL_GAIN_WEAPON);
-
-    Item* tmpitem = GetWeaponForAttack(attType, true);
-    if (!tmpitem && attType == BASE_ATTACK)
-        UpdateSkill(SKILL_UNARMED, weapon_skill_gain);
-    else if (tmpitem && tmpitem->GetTemplate()->SubClass != ITEM_SUBCLASS_WEAPON_FISHING_POLE)
-        UpdateSkill(tmpitem->GetSkill(), weapon_skill_gain);
-
-    UpdateAllCritPercentages();
-}
-
-void Player::UpdateCombatSkills(Unit* victim, WeaponAttackType attType, bool defence)
-{
-    uint8 plevel = getLevel();                              // if defense than victim == attacker
-    uint8 greylevel = Trinity::XP::GetGrayLevel(plevel);
-    uint8 moblevel = victim->getLevelForTarget(this);
-    if (moblevel < greylevel)
-        return;
-
-    if (moblevel > plevel + 5)
-        moblevel = plevel + 5;
-
-    uint8 lvldif = moblevel - greylevel;
-    if (lvldif < 3)
-        lvldif = 3;
-
-    uint32 skilldif = 5 * plevel - (defence ? GetBaseDefenseSkillValue() : GetBaseWeaponSkillValue(attType));
-    if (skilldif <= 0)
-        return;
-
-    float chance = float(3 * lvldif * skilldif) / plevel;
-    if (!defence)
-        if (getClass() == CLASS_WARRIOR || getClass() == CLASS_ROGUE)
-            chance += chance * 0.02f * GetStat(STAT_INTELLECT);
-
-    chance = chance < 1.0f ? 1.0f : chance;                 //minimum chance to increase skill is 1%
-
-    if (roll_chance_f(chance))
-    {
-        if (defence)
-            UpdateDefense();
-        else
-            UpdateWeaponSkill(attType);
-    }
-    else
-        return;
-}
-
 void Player::ModifySkillBonus(uint32 skillid, int32 val, bool talent)
 {
     SkillStatusMap::const_iterator itr = mSkillStatus.find(skillid);
@@ -6465,10 +6439,7 @@ void Player::ModifySkillBonus(uint32 skillid, int32 val, bool talent)
 
 void Player::UpdateSkillsForLevel()
 {
-    uint16 maxconfskill = sWorld->GetConfigMaxSkillValue();
     uint32 maxSkill = GetMaxSkillValueForLevel();
-
-    bool alwaysMaxSkill = sWorld->getBoolConfig(CONFIG_ALWAYS_MAX_SKILL_FOR_LEVEL);
 
     for (SkillStatusMap::iterator itr = mSkillStatus.begin(); itr != mSkillStatus.end(); ++itr)
     {
@@ -6492,22 +6463,10 @@ void Player::UpdateSkillsForLevel()
         /// update only level dependent max skill values
         if (max != 1)
         {
-            /// maximize skill always
-            if (alwaysMaxSkill)
-            {
-                SetUInt16Value(PLAYER_SKILL_RANK_0 + field, offset, maxSkill);
-                SetUInt16Value(PLAYER_SKILL_MAX_RANK_0 + field, offset, maxSkill);
-                if (itr->second.uState != SKILL_NEW)
-                    itr->second.uState = SKILL_CHANGED;
-            }
-
-            else if (max != maxconfskill)                    /// update max skill value if current max skill not maximized
-            {
-                SetUInt16Value(PLAYER_SKILL_RANK_0 + field, offset, val);
-                SetUInt16Value(PLAYER_SKILL_MAX_RANK_0 + field, offset, maxSkill);
-                if (itr->second.uState != SKILL_NEW)
-                    itr->second.uState = SKILL_CHANGED;
-            }
+            SetUInt16Value(PLAYER_SKILL_RANK_0 + field, offset, maxSkill);
+            SetUInt16Value(PLAYER_SKILL_MAX_RANK_0 + field, offset, maxSkill);
+            if (itr->second.uState != SKILL_NEW)
+                itr->second.uState = SKILL_CHANGED;
         }
     }
 }
@@ -6535,8 +6494,6 @@ void Player::UpdateSkillsToMaxSkillsForLevel()
             if (itr->second.uState != SKILL_NEW)
                 itr->second.uState = SKILL_CHANGED;
         }
-        if (pskill == SKILL_DEFENSE)
-            UpdateDefenseBonusesMod();
     }
 }
 
@@ -7914,7 +7871,7 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     if (!zone)
         return;
 
-    if (sWorld->getBoolConfig(CONFIG_WEATHER))
+    if (sWorld->getBoolConfig(CONFIG_WEATHER) && !HasAuraType(SPELL_AURA_FORCE_WEATHER))
     {
         if (Weather* weather = WeatherMgr::FindWeather(zone->ID))
             weather->SendWeatherUpdateToPlayer(this);
@@ -8421,7 +8378,7 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
 
     WeaponAttackType attType = BASE_ATTACK;
 
-    if (slot == EQUIPMENT_SLOT_RANGED && (
+    if (slot == EQUIPMENT_SLOT_MAINHAND && (
         proto->InventoryType == INVTYPE_RANGED || proto->InventoryType == INVTYPE_THROWN ||
         proto->InventoryType == INVTYPE_RANGEDRIGHT))
     {
@@ -8441,7 +8398,7 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingSt
     WeaponAttackType attType = BASE_ATTACK;
     float damage = 0.0f;
 
-    if (slot == EQUIPMENT_SLOT_RANGED && (
+    if (slot == EQUIPMENT_SLOT_MAINHAND && (
         proto->InventoryType == INVTYPE_RANGED || proto->InventoryType == INVTYPE_THROWN ||
         proto->InventoryType == INVTYPE_RANGEDRIGHT))
     {
@@ -8483,7 +8440,9 @@ void Player::_ApplyWeaponDamage(uint8 slot, ItemTemplate const* proto, ScalingSt
 
     if (proto->Delay && !IsInFeralForm())
     {
-        if (slot == EQUIPMENT_SLOT_RANGED)
+        if (slot == EQUIPMENT_SLOT_MAINHAND && (
+        proto->InventoryType == INVTYPE_RANGED || proto->InventoryType == INVTYPE_THROWN ||
+        proto->InventoryType == INVTYPE_RANGEDRIGHT))
             SetAttackTime(RANGED_ATTACK, apply ? proto->Delay: BASE_ATTACK_TIME);
         else if (slot == EQUIPMENT_SLOT_MAINHAND)
             SetAttackTime(BASE_ATTACK, apply ? proto->Delay: BASE_ATTACK_TIME);
@@ -8688,7 +8647,7 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
                         {
                             case BASE_ATTACK:   slot = EQUIPMENT_SLOT_MAINHAND; break;
                             case OFF_ATTACK:    slot = EQUIPMENT_SLOT_OFFHAND;  break;
-                            case RANGED_ATTACK: slot = EQUIPMENT_SLOT_RANGED;   break;
+                            case RANGED_ATTACK: slot = EQUIPMENT_SLOT_MAINHAND;   break;
                             default: slot = EQUIPMENT_SLOT_END; break;
                         }
                         if (slot != i)
@@ -10280,7 +10239,27 @@ uint8 Player::FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool swap) c
             slots[0] = EQUIPMENT_SLOT_OFFHAND;
             break;
         case INVTYPE_RANGED:
-            slots[0] = EQUIPMENT_SLOT_RANGED;
+            slots[0] = EQUIPMENT_SLOT_MAINHAND;
+            if (Item* mhWeapon = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+            {
+                if (ItemTemplate const* mhWeaponProto = mhWeapon->GetTemplate())
+                {
+                    if (mhWeaponProto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || mhWeaponProto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF)
+                    {
+                        const_cast<Player*>(this)->AutoUnequipOffhandIfNeed(true);
+                        break;
+                    }
+                }
+            }
+
+            if (GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+            {
+                if (proto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || proto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF)
+                {
+                    const_cast<Player*>(this)->AutoUnequipOffhandIfNeed(true);
+                    break;
+                }
+            }
             break;
         case INVTYPE_2HWEAPON:
             slots[0] = EQUIPMENT_SLOT_MAINHAND;
@@ -10320,10 +10299,51 @@ uint8 Player::FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool swap) c
             slots[0] = EQUIPMENT_SLOT_OFFHAND;
             break;
         case INVTYPE_THROWN:
-            slots[0] = EQUIPMENT_SLOT_RANGED;
+            slots[0] = EQUIPMENT_SLOT_MAINHAND;
+            slots[0] = EQUIPMENT_SLOT_MAINHAND;
+            if (Item* mhWeapon = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+            {
+                if (ItemTemplate const* mhWeaponProto = mhWeapon->GetTemplate())
+                {
+                    if (mhWeaponProto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || mhWeaponProto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF)
+                    {
+                        const_cast<Player*>(this)->AutoUnequipOffhandIfNeed(true);
+                        break;
+                    }
+                }
+            }
+
+            if (GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+            {
+                if (proto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || proto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF)
+                {
+                    const_cast<Player*>(this)->AutoUnequipOffhandIfNeed(true);
+                    break;
+                }
+            }
             break;
         case INVTYPE_RANGEDRIGHT:
-            slots[0] = EQUIPMENT_SLOT_RANGED;
+            slots[0] = EQUIPMENT_SLOT_MAINHAND;
+            if (Item* mhWeapon = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+            {
+                if (ItemTemplate const* mhWeaponProto = mhWeapon->GetTemplate())
+                {
+                    if (mhWeaponProto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || mhWeaponProto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF)
+                    {
+                        const_cast<Player*>(this)->AutoUnequipOffhandIfNeed(true);
+                        break;
+                    }
+                }
+            }
+
+            if (GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+            {
+                if (proto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || proto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF)
+                {
+                    const_cast<Player*>(this)->AutoUnequipOffhandIfNeed(true);
+                    break;
+                }
+            }
             break;
         case INVTYPE_BAG:
             slots[0] = INVENTORY_SLOT_BAG_START + 0;
@@ -10335,7 +10355,29 @@ uint8 Player::FindEquipSlot(ItemTemplate const* proto, uint32 slot, bool swap) c
         {
            if (playerClass == CLASS_PALADIN || playerClass == CLASS_DRUID ||
                playerClass == CLASS_SHAMAN || playerClass == CLASS_DEATH_KNIGHT)
-               slots[0] = EQUIPMENT_SLOT_RANGED;
+           {
+               slots[0] = EQUIPMENT_SLOT_MAINHAND;
+               if (Item* mhWeapon = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+               {
+                   if (ItemTemplate const* mhWeaponProto = mhWeapon->GetTemplate())
+                   {
+                       if (mhWeaponProto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || mhWeaponProto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF)
+                       {
+                           const_cast<Player*>(this)->AutoUnequipOffhandIfNeed(true);
+                           break;
+                       }
+                   }
+               }
+
+               if (GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+               {
+                   if (proto->SubClass == ITEM_SUBCLASS_WEAPON_POLEARM || proto->SubClass == ITEM_SUBCLASS_WEAPON_STAFF)
+                   {
+                       const_cast<Player*>(this)->AutoUnequipOffhandIfNeed(true);
+                       break;
+                   }
+               }
+           }
            break;
         }
         default:
@@ -10543,7 +10585,7 @@ Item* Player::GetWeaponForAttack(WeaponAttackType attackType, bool useable /*= f
     {
         case BASE_ATTACK:   slot = EQUIPMENT_SLOT_MAINHAND; break;
         case OFF_ATTACK:    slot = EQUIPMENT_SLOT_OFFHAND;  break;
-        case RANGED_ATTACK: slot = EQUIPMENT_SLOT_RANGED;   break;
+        case RANGED_ATTACK: slot = EQUIPMENT_SLOT_MAINHAND;   break;
         default: return NULL;
     }
 
@@ -10589,7 +10631,6 @@ uint8 Player::GetAttackBySlot(uint8 slot)
     {
         case EQUIPMENT_SLOT_MAINHAND: return BASE_ATTACK;
         case EQUIPMENT_SLOT_OFFHAND:  return OFF_ATTACK;
-        case EQUIPMENT_SLOT_RANGED:   return RANGED_ATTACK;
         default:                      return MAX_ATTACK;
     }
 }
@@ -14062,12 +14103,14 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                     // processed in Player::CastItemCombatSpell
                     break;
                 case ITEM_ENCHANTMENT_TYPE_DAMAGE:
-                    if (item->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
+                    if (item->GetSlot() == EQUIPMENT_SLOT_MAINHAND && (
+                        item->GetTemplate()->InventoryType == INVTYPE_RANGED || item->GetTemplate()->InventoryType == INVTYPE_THROWN ||
+                        item->GetTemplate()->InventoryType == INVTYPE_RANGEDRIGHT))
+                        HandleStatModifier(UNIT_MOD_DAMAGE_RANGED, TOTAL_VALUE, float(enchant_amount), apply);
+                    else if (item->GetSlot() == EQUIPMENT_SLOT_MAINHAND)
                         HandleStatModifier(UNIT_MOD_DAMAGE_MAINHAND, TOTAL_VALUE, float(enchant_amount), apply);
                     else if (item->GetSlot() == EQUIPMENT_SLOT_OFFHAND)
                         HandleStatModifier(UNIT_MOD_DAMAGE_OFFHAND, TOTAL_VALUE, float(enchant_amount), apply);
-                    else if (item->GetSlot() == EQUIPMENT_SLOT_RANGED)
-                        HandleStatModifier(UNIT_MOD_DAMAGE_RANGED, TOTAL_VALUE, float(enchant_amount), apply);
                     break;
                 case ITEM_ENCHANTMENT_TYPE_EQUIP_SPELL:
                     if (enchant_spell_id)
@@ -17096,7 +17139,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetUInt32Value(PLAYER_XP, fields[7].GetUInt32());
 
     _LoadIntoDataField(fields[57].GetCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
-    _LoadIntoDataField(fields[59].GetCString(), PLAYER__FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE*2);
+    _LoadIntoDataField(fields[59].GetCString(), PLAYER_FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE*2);
 
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
@@ -17571,8 +17614,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     m_social = sSocialMgr->LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSOCIALLIST), GetGUIDLow());
 
-    // check PLAYER_CHOSEN_TITLE compatibility with PLAYER__FIELD_KNOWN_TITLES
-    // note: PLAYER__FIELD_KNOWN_TITLES updated at quest status loaded
+    // check PLAYER_CHOSEN_TITLE compatibility with PLAYER_FIELD_KNOWN_TITLES
+    // note: PLAYER_FIELD_KNOWN_TITLES updated at quest status loaded
     uint32 curTitle = fields[43].GetUInt32();
     if (curTitle && !HasTitle(curTitle))
         curTitle = 0;
@@ -17851,7 +17894,7 @@ void Player::_LoadAuras(PreparedQueryResult result, PreparedQueryResult resultEf
                 }
             }
 
-            if (Aura* aura = Aura::TryCreate(spellInfo, effmask, this, NULL, &baseDamage[0], NULL, caster_guid))
+            if (Aura* aura = Aura::TryCreate(spellInfo, effmask, this, NULL, spellInfo->spellPower, &baseDamage[0], NULL, caster_guid))
             {
                 if (!aura->CanBeSaved())
                 {
@@ -19152,6 +19195,9 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setUInt8(index++, GetSpecsCount());
         stmt->setUInt8(index++, GetActiveSpec());
 
+        stmt->setUInt32(index++, 0);
+        stmt->setUInt32(index++, 0);
+
         ss.str("");
         for (uint32 i = 0; i < PLAYER_EXPLORED_ZONES_SIZE; ++i)
             ss << GetUInt32Value(PLAYER_EXPLORED_ZONES_1 + i) << ' ';
@@ -19175,7 +19221,7 @@ void Player::SaveToDB(bool create /*=false*/)
 
         ss.str("");
         for (uint32 i = 0; i < KNOWN_TITLES_SIZE*2; ++i)
-            ss << GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES + i) << ' ';
+            ss << GetUInt32Value(PLAYER_FIELD_KNOWN_TITLES + i) << ' ';
         stmt->setString(index++, ss.str());
 
         stmt->setUInt8(index++, GetByteValue(PLAYER_FIELD_BYTES, 2));
@@ -19299,7 +19345,7 @@ void Player::SaveToDB(bool create /*=false*/)
 
         ss.str("");
         for (uint32 i = 0; i < KNOWN_TITLES_SIZE*2; ++i)
-            ss << GetUInt32Value(PLAYER__FIELD_KNOWN_TITLES + i) << ' ';
+            ss << GetUInt32Value(PLAYER_FIELD_KNOWN_TITLES + i) << ' ';
 
         stmt->setString(index++, ss.str());
         stmt->setUInt8(index++, GetByteValue(PLAYER_FIELD_BYTES, 2));
@@ -22435,6 +22481,14 @@ inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, T* target, std::set
 }
 
 template<>
+inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, GameObject* target, std::set<Unit*>& /*v*/)
+{
+    // Don't update only GAMEOBJECT_TYPE_TRANSPORT (or all transports and destructible buildings?)
+    if ((target->GetGOInfo()->type != GAMEOBJECT_TYPE_TRANSPORT))
+        s64.insert(target->GetGUID());
+}
+
+template<>
 inline void UpdateVisibilityOf_helper(std::set<uint64>& s64, Creature* target, std::set<Unit*>& v)
 {
     s64.insert(target->GetGUID());
@@ -23733,19 +23787,6 @@ bool Player::IsAtRecruitAFriendDistance(WorldObject const* pOther) const
     return pOther->GetDistance(player) <= sWorld->getFloatConfig(CONFIG_MAX_RECRUIT_A_FRIEND_DISTANCE);
 }
 
-uint32 Player::GetBaseWeaponSkillValue (WeaponAttackType attType) const
-{
-    Item* item = GetWeaponForAttack(attType, true);
-
-    // unarmed only with base attack
-    if (attType != BASE_ATTACK && !item)
-        return 0;
-
-    // weapon skill or (unarmed for base attack and for fist weapons)
-    uint32  skill = (item && item->GetSkill() != SKILL_FIST_WEAPONS) ? item->GetSkill() : uint32(SKILL_UNARMED);
-    return GetBaseSkillValue(skill);
-}
-
 void Player::ResurectUsingRequestData()
 {
     /// Teleport before resurrecting by player, otherwise the player might get attacked from creatures near his corpse
@@ -23773,6 +23814,11 @@ void Player::ResurectUsingRequestData()
     SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
     SetPower(POWER_FOCUS, GetMaxPower(POWER_FOCUS));
     SetPower(POWER_ECLIPSE, 0);
+    SetPower(POWER_BURNING_EMBERS, 0);
+    SetPower(POWER_SOUL_SHARDS, 0);
+    SetPower(POWER_DEMONIC_FURY, 200);
+    SetPower(POWER_SHADOW_ORB, 0);
+    SetPower(POWER_CHI, 0);
 
     SpawnCorpseBones();
 }
@@ -24289,7 +24335,7 @@ bool Player::HasTitle(uint32 bitIndex)
 
     uint32 fieldIndexOffset = bitIndex / 32;
     uint32 flag = 1 << (bitIndex % 32);
-    return HasFlag(PLAYER__FIELD_KNOWN_TITLES + fieldIndexOffset, flag);
+    return HasFlag(PLAYER_FIELD_KNOWN_TITLES + fieldIndexOffset, flag);
 }
 
 void Player::SetTitle(CharTitlesEntry const* title, bool lost)
@@ -24299,17 +24345,17 @@ void Player::SetTitle(CharTitlesEntry const* title, bool lost)
 
     if (lost)
     {
-        if (!HasFlag(PLAYER__FIELD_KNOWN_TITLES + fieldIndexOffset, flag))
+        if (!HasFlag(PLAYER_FIELD_KNOWN_TITLES + fieldIndexOffset, flag))
             return;
 
-        RemoveFlag(PLAYER__FIELD_KNOWN_TITLES + fieldIndexOffset, flag);
+        RemoveFlag(PLAYER_FIELD_KNOWN_TITLES + fieldIndexOffset, flag);
     }
     else
     {
-        if (HasFlag(PLAYER__FIELD_KNOWN_TITLES + fieldIndexOffset, flag))
+        if (HasFlag(PLAYER_FIELD_KNOWN_TITLES + fieldIndexOffset, flag))
             return;
 
-        SetFlag(PLAYER__FIELD_KNOWN_TITLES + fieldIndexOffset, flag);
+        SetFlag(PLAYER_FIELD_KNOWN_TITLES + fieldIndexOffset, flag);
     }
 
     WorldPacket data(SMSG_TITLE_EARNED, 4 + 4);
@@ -25045,8 +25091,10 @@ void Player::SendTalentsInfoData(bool pet)
 {
     if (pet)
     {
+        Pet* pPet = GetPet();
         WorldPacket data(SMSG_SET_PET_SPECIALIZATION);
-        data << uint16(0); // SpecializationId
+        data << uint16(pPet ? pPet->GetSpecializationId() : 0);
+        GetSession()->SendPacket(&data);
         return;
     }
 

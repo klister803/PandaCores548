@@ -75,16 +75,16 @@ bool Player::UpdateStats(Stats stat)
             UpdateAllCritPercentages();
             UpdateDodgePercentage();
             break;
-        case STAT_STAMINA:   UpdateMaxHealth(); break;
+        case STAT_STAMINA:
+            UpdateMaxHealth();
+            break;
         case STAT_INTELLECT:
             UpdateMaxPower(POWER_MANA);
             UpdateAllSpellCritChances();
             UpdateArmor();                                  //SPELL_AURA_MOD_RESISTANCE_OF_INTELLECT_PERCENT, only armor currently
             break;
-
         case STAT_SPIRIT:
             break;
-
         default:
             break;
     }
@@ -156,7 +156,9 @@ bool Player::UpdateAllStats()
     UpdateAllRatings();
     UpdateAllCritPercentages();
     UpdateAllSpellCritChances();
-    UpdateDefenseBonusesMod();
+    UpdateBlockPercentage();
+    UpdateParryPercentage();
+    UpdateDodgePercentage();
     UpdateSpellDamageAndHealingBonus();
     UpdateManaRegen();
     UpdateExpertise(BASE_ATTACK);
@@ -274,17 +276,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         index_mod_pos = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_POS;
         index_mod_neg = UNIT_FIELD_RANGED_ATTACK_POWER_MOD_NEG;
         index_mult = UNIT_FIELD_RANGED_ATTACK_POWER_MULTIPLIER;
-
-        switch (getClass())
-        {
-            case CLASS_HUNTER:
-                val2 = (level * 2.0f) + ((GetStat(STAT_AGILITY) * 2.0f) - 20.0f);
-                break;
-            case CLASS_ROGUE:
-            case CLASS_WARRIOR:
-                val2 = level + (GetStat(STAT_AGILITY) - 10.0f);
-                break;
-        }
+        val2 = (level + std::max(GetStat(STAT_AGILITY) - 10.0f, 0.0f)) * entry->RAPPerAgility;
     }
     else
     {
@@ -323,16 +315,16 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
     if (!HasAuraType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT) || GetTypeId() != TYPEID_PLAYER)
     {
         SetFloatValue(PLAYER_FIELD_OVERRIDE_AP_BY_SPELL_POWER_PCT, 0.00f);
-        SetInt32Value(index, (uint32)base_attPower);        //UNIT_FIELD_(RANGED)_ATTACK_POWER field
+        SetInt32Value(index, (uint32)base_attPower);            //UNIT_FIELD_(RANGED)_ATTACK_POWER field
 
         if (attPowerMod > 0)
-            SetInt32Value(index+1, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
+            SetInt32Value(index+1, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
         else if (attPowerMod < 0)
-            SetInt32Value(index+2, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
+            SetInt32Value(index+2, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
         else
         {
-            SetInt32Value(index+1, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
-            SetInt32Value(index+2, (uint32)attPowerMod);    //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
+            SetInt32Value(index+1, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_POS field
+            SetInt32Value(index+2, (uint32)attPowerMod);        //UNIT_FIELD_(RANGED)_ATTACK_POWER_MOD_NEG field
         }
 
         SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
@@ -470,13 +462,6 @@ void Player::UpdateDamagePhysical(WeaponAttackType attType)
     }
 }
 
-void Player::UpdateDefenseBonusesMod()
-{
-    UpdateBlockPercentage();
-    UpdateParryPercentage();
-    UpdateDodgePercentage();
-}
-
 void Player::UpdateBlockPercentage()
 {
     // No block
@@ -532,6 +517,8 @@ void Player::UpdateCritPercentage(WeaponAttackType attType)
     }
 
     float value = GetTotalPercentageModValue(modGroup) + GetRatingBonusValue(cr);
+    // Modify crit from weapon skill and maximized defense skill of same level victim difference
+    value += (int32(GetMaxSkillValueForLevel()) - int32(GetMaxSkillValueForLevel())) * 0.04f;
     value = value < 0.0f ? 0.0f : value;
     SetStatFloatValue(index, value);
 }
@@ -560,7 +547,7 @@ const float m_diminishing_k[MAX_CLASSES] =
     0.9880f,  // Shaman
     0.9830f,  // Mage
     0.9830f,  // Warlock
-    0.0f,     // ??
+    0.0f,     // Monk  @todo: find me !
     0.9720f   // Druid
 };
 
@@ -577,7 +564,7 @@ void Player::UpdateParryPercentage()
         145.560408f,    // Shaman
         0.0f,           // Mage
         0.0f,           // Warlock
-        0.0f,           // ??
+        0.0f,           // Monk  @todo: find me !
         0.0f            // Druid
     };
 
@@ -589,9 +576,6 @@ void Player::UpdateParryPercentage()
         float nondiminishing  = 5.0f;
         // Parry from rating
         float diminishing = GetRatingBonusValue(CR_PARRY);
-        // Modify value from defense skill (only bonus from defense rating diminishes)
-        nondiminishing += (GetSkillValue(SKILL_DEFENSE) - GetMaxSkillValueForLevel()) * 0.04f;
-        diminishing += (int32(GetRatingBonusValue(CR_DEFENSE_SKILL))) * 0.04f;
         // Parry from SPELL_AURA_MOD_PARRY_PERCENT aura
         nondiminishing += GetTotalAuraModifier(SPELL_AURA_MOD_PARRY_PERCENT);
         // apply diminishing formula to diminishing parry chance
@@ -614,15 +598,12 @@ void Player::UpdateDodgePercentage()
         145.560408f,    // Shaman
         150.375940f,    // Mage
         150.375940f,    // Warlock
-        0.0f,           // ??
+        0.0f,           // Monk  @todo: find me !
         116.890707f     // Druid
     };
 
     float diminishing = 0.0f, nondiminishing = 0.0f;
     GetDodgeFromAgility(diminishing, nondiminishing);
-    // Modify value from defense skill (only bonus from defense rating diminishes)
-    //nondiminishing += (GetSkillValue(SKILL_DEFENSE) - GetMaxSkillValueForLevel()) * 0.04f;
-    //diminishing += (int32(GetRatingBonusValue(CR_DEFENSE_SKILL))) * 0.04f;
     // Dodge from SPELL_AURA_MOD_DODGE_PERCENT aura
     nondiminishing += GetTotalAuraModifier(SPELL_AURA_MOD_DODGE_PERCENT);
     // Dodge from rating
@@ -1017,19 +998,10 @@ bool Guardian::UpdateStats(Stats stat)
         ownersBonus = float(owner->GetStat(stat)) * mod;
         value += ownersBonus;
     }
-    else if (stat == STAT_STAMINA)
+    else if (stat == STAT_STAMINA)      // Update for Cataclysm, check me for MoP
     {
-        if (owner->getClass() == CLASS_WARLOCK && isPet())
-        {
-            ownersBonus = CalculatePctN(owner->GetStat(STAT_STAMINA), 75);
-            value += ownersBonus;
-        }
-        else
-        {
-            mod = 0.45f;
-            ownersBonus = float(owner->GetStat(stat)) * mod;
-            value += ownersBonus;
-        }
+        ownersBonus = CalculatePctN(owner->GetStat(STAT_STAMINA), 30);
+        value += ownersBonus;
     }
                                                             //warlock's and mage's pets gain 30% of owner's intellect
     else if (stat == STAT_INTELLECT)
@@ -1102,9 +1074,11 @@ void Guardian::UpdateArmor()
     float bonus_armor = 0.0f;
     UnitMods unitMod = UNIT_MOD_ARMOR;
 
-    // hunter and warlock pets gain 35% of owner's armor value
-    if (isPet())
-        bonus_armor = float(CalculatePctN(m_owner->GetArmor(), 35));
+    // hunter pets gain 35% of owner's armor value, warlock pets gain 100% of owner's armor
+    if (isHunterPet())
+        bonus_armor = float(CalculatePctN(m_owner->GetArmor(), 70));
+    else if (isPet())
+        bonus_armor = m_owner->GetArmor();
 
     value  = GetModifierValue(unitMod, BASE_VALUE);
     value *= GetModifierValue(unitMod, BASE_PCT);
