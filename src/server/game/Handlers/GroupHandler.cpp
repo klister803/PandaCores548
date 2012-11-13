@@ -1207,7 +1207,6 @@ void WorldSession::HandleRaidConfirmReadyCheck(WorldPacket& recvData)
 
 void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacket* data)
 {
-    return;
     uint32 mask = player->GetGroupUpdateFlag();
 
     if (mask == GROUP_UPDATE_FLAG_NONE)
@@ -1473,7 +1472,11 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
         return;
     }
 
-    Pet* pet = player->GetPet();
+    WorldPacket data;
+    player->GetSession()->BuildPartyMemberStatsChangedPacket(player, &data);
+    SendPacket(&data);
+
+    /*Pet* pet = player->GetPet();
 
     WorldPacket data(SMSG_PARTY_MEMBER_STATS_FULL, 4+2+2+2+1+2*6+8+1+8);
     data << uint8(0);                                       // only for SMSG_PARTY_MEMBER_STATS_FULL, probably arena/bg related
@@ -1588,7 +1591,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
     data << uint32(0); // count
     // for (count) *data << uint16(phaseId)
 
-    SendPacket(&data);
+    SendPacket(&data);*/
 }
 
 /*!*/void WorldSession::HandleRequestRaidInfoOpcode(WorldPacket & /*recvData*/)
