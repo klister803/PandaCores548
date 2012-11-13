@@ -1189,40 +1189,26 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     // all item positions resolved
 
     //Pandaren's start quest
-    if (createInfo->Race == RACE_PANDAREN_NEUTRAL || createInfo->Race == RACE_PANDAREN_ALLI || createInfo->Race == RACE_PANDAREN_HORDE)
+    if (createInfo->Race == RACE_PANDAREN_NEUTRAL)
     {
-        uint32 quest = 0;
+        Quest const* quest = NULL;
         switch (createInfo->Class)
         {
-            case CLASS_WARRIOR:
-                quest = 30045;
-                break;
-            case CLASS_SHAMAN:
-                quest = 30044;
-                break;
-            case CLASS_ROGUE:
-                quest = 30043;
-                break;
-            case CLASS_PRIEST:
-                quest = 30042;
-                break;
-            case CLASS_HUNTER:
-                quest = 30041;
-                break;
-            case CLASS_MAGE:
-                quest = 30040;
-                break;
-            case CLASS_MONK:
-                quest = 30039;
-                break;
-            default:
-                break;
+            case CLASS_WARRIOR: quest = sObjectMgr->GetQuestTemplate(30045); break;
+            case CLASS_SHAMAN: quest = sObjectMgr->GetQuestTemplate(30044); break;
+            case CLASS_ROGUE: quest = sObjectMgr->GetQuestTemplate(30043); break;
+            case CLASS_PRIEST: quest = sObjectMgr->GetQuestTemplate(30042); break;
+            case CLASS_HUNTER: quest = sObjectMgr->GetQuestTemplate(30041); break;
+            case CLASS_MAGE: quest = sObjectMgr->GetQuestTemplate(30040); break;
+            case CLASS_MONK: quest = sObjectMgr->GetQuestTemplate(30039); break;
+            default: break;
         }
 
         if (quest)
         {
-            Quest const* questT = sObjectMgr->GetQuestTemplate(quest);
-            this->AddQuest(questT, NULL);
+            this->AddQuest(quest, NULL);
+            if (CanCompleteQuest(quest->GetQuestId()))
+                CompleteQuest(quest->GetQuestId());
         }
     }
     return true;

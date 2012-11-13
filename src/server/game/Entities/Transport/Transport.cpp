@@ -233,6 +233,40 @@ bool Transport::Create(uint32 guidlow, uint32 entry, uint32 mapid, float x, floa
     return true;
 }
 
+void Transport::AddToWorld()
+{
+    ///- Register the transport for guid lookup
+    if (!IsInWorld())
+    {
+        //if (m_zoneScript)
+        //    m_zoneScript->OnGameObjectCreate(this); // TEMPORAIRE, OnTransportCreate(this); a creer
+
+        sObjectAccessor->AddObject(this);
+
+        if (m_model)
+            GetMap()->InsertGameObjectModel(*m_model);
+
+        WorldObject::AddToWorld();
+    }
+}
+
+void Transport::RemoveFromWorld()
+{
+    ///- Remove the gameobject from the accessor
+    if (IsInWorld())
+    {
+        //if (m_zoneScript)
+        //    m_zoneScript->OnGameObjectRemove(this); // TEMPORAIRE, OnTransportRemove(this); a creer
+
+        if (m_model)
+            if (GetMap()->ContainsGameObjectModel(*m_model))
+                GetMap()->RemoveGameObjectModel(*m_model);
+
+        WorldObject::RemoveFromWorld();
+        sObjectAccessor->RemoveObject(this);
+    }
+}
+
 struct keyFrame
 {
     explicit keyFrame(TaxiPathNodeEntry const& _node) : node(&_node),
@@ -623,6 +657,55 @@ void Transport::BuildStopMovePacket(Map const* targetMap)
     RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
     SetGoState(GO_STATE_READY);
     UpdateForMap(targetMap);
+}
+
+Creature * Transport::AddNPCPassengerCreature(uint32 tguid, uint32 entry, float x, float y, float z, float o, uint32 anim)
+{
+    Map* map = GetMap();
+    Creature * pCreature = new Creature;
+
+    if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, GetPhaseMask(), entry, 0, GetGOInfo()->faction, 0, 0, 0, 0))
+    {
+        delete pCreature;
+        return NULL;
+    }
+
+    pCreature->SetTransport(this);
+    pCreature->m_movementInfo.guid = GetGUID();
+    pCreature->m_movementInfo.t_pos.Relocate(x, y, z, o);
+
+    if (anim)
+        pCreature->SetUInt32Value(UNIT_NPC_EMOTESTATE, anim);
+
+    pCreature->Relocate(
+        GetPositionX() + (x * cos(GetOrientation()) + y * sin(GetOrientation() + float(M_PI))),
+        GetPositionY() + (y * cos(GetOrientation()) + x * sin(GetOrientation())),
+        z + GetPositionZ() ,
+        o + GetOrientation());
+
+    pCreature->SetHomePosition(pCreature->GetPositionX(), pCreature->GetPositionY(), pCreature->GetPositionZ(), pCreature->GetOrientation());
+
+    if(!pCreature->IsPositionValid())
+    {
+        sLog->outError(LOG_FILTER_TRANSPORTS, "Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)", pCreature->GetGUIDLow(), pCreature->GetEntry(), pCreature->GetPositionX(), pCreature->GetPositionY());
+        delete pCreature;
+        return NULL;
+    }
+
+    map->AddToMap(pCreature);
+    m_NPCPassengerSet.insert(pCreature);
+
+    if (tguid == 0)
+    {
+        ++currenttguid;
+        tguid = currenttguid;
+    }
+    else
+        currenttguid = std::max(tguid, currenttguid);
+
+    pCreature->SetGUIDTransport(tguid);
+    sScriptMgr->OnAddCreaturePassenger(this, pCreature);
+    return pCreature;
 }
 
 uint32 Transport::AddNPCPassenger(uint32 tguid, uint32 entry, float x, float y, float z, float o, uint32 anim)

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -45,6 +45,9 @@ enum Spells
     SPELL_GAS_SPORE             = 69278,
     SPELL_VILE_GAS              = 69240,
     SPELL_INOCULATED            = 69291,
+    SPELL_GAS_SPORE_DOT         = 69290,
+
+    SPELL_RESIDU                = 72144,
 
     // Stinky
     SPELL_MORTAL_WOUND          = 71127,
@@ -109,6 +112,11 @@ class boss_festergut : public CreatureScript
                 }
             }
 
+            void DamageTaken(Unit* attacker, uint32& damage)
+            {
+                CheckPlayerDamage(attacker, damage);
+            }
+
             void EnterCombat(Unit* who)
             {
                 if (!instance->CheckRequiredBosses(DATA_FESTERGUT, who->ToPlayer()))
@@ -133,6 +141,8 @@ class boss_festergut : public CreatureScript
                 Talk(SAY_DEATH);
                 if (Creature* professor = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_PROFESSOR_PUTRICIDE)))
                     professor->AI()->DoAction(ACTION_FESTERGUT_DEATH);
+
+                instance->DoCastSpellOnPlayers(SPELL_RESIDU);
 
                 RemoveBlight();
             }
@@ -291,10 +301,6 @@ class npc_stinky_icc : public CreatureScript
                 _events.Reset();
                 _events.ScheduleEvent(EVENT_DECIMATE, urand(20000, 25000));
                 _events.ScheduleEvent(EVENT_MORTAL_WOUND, urand(3000, 7000));
-            }
-
-            void EnterCombat(Unit* /*target*/)
-            {
                 DoCast(me, SPELL_PLAGUE_STENCH);
             }
 
@@ -328,7 +334,7 @@ class npc_stinky_icc : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(Unit* /*who*/)
             {
                 if (Creature* festergut = me->GetCreature(*me, _instance->GetData64(DATA_FESTERGUT)))
                     if (festergut->isAlive())
@@ -436,23 +442,77 @@ class spell_festergut_blighted_spores : public SpellScriptLoader
                 return true;
             }
 
-            void ExtraEffect(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
             {
-                GetTarget()->CastSpell(GetTarget(), SPELL_INOCULATED, true);
-                if (InstanceScript* instance = GetTarget()->GetInstanceScript())
-                    if (Creature* festergut = ObjectAccessor::GetCreature(*GetTarget(), instance->GetData64(DATA_FESTERGUT)))
-                        festergut->AI()->SetData(DATA_INOCULATED_STACK, GetStackAmount());
+                if (!GetCaster())
+                    return;
+
+                uint32 currStack = 0;
+                uint32 inoculatedId = sSpellMgr->GetSpellIdForDifficulty(SPELL_INOCULATED, GetCaster());
+                if (Aura const* inoculate = GetTarget()->GetAura(inoculatedId))
+                    currStack = inoculate->GetStackAmount();
+
+                GetTarget()->CastSpell(GetTarget(), inoculatedId, true);
+                ++currStack;
+
+                if(InstanceScript * instance = GetCaster()->GetInstanceScript())
+                    if (Creature* festergut = ObjectAccessor::GetCreature(*GetCaster(), instance->GetData64(DATA_FESTERGUT)))
+                        festergut->AI()->SetData(DATA_INOCULATED_STACK, currStack);
+
+                currStack = 0;
+                uint32 dotId = sSpellMgr->GetSpellIdForDifficulty(SPELL_GAS_SPORE_DOT, GetCaster());
+                if (Aura * dot = GetTarget()->GetAura(dotId))
+                {
+                    currStack = dot->GetStackAmount();
+                    dot->SetStackAmount(currStack + 1);
+                }
             }
 
             void Register()
             {
-                AfterEffectApply += AuraEffectApplyFn(spell_festergut_blighted_spores_AuraScript::ExtraEffect, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+                OnEffectRemove += AuraEffectRemoveFn(spell_festergut_blighted_spores_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
         AuraScript* GetAuraScript() const
         {
             return new spell_festergut_blighted_spores_AuraScript();
+        }
+};
+
+class spell_festergut_gaseous_blight : public SpellScriptLoader
+{
+    public:
+        spell_festergut_gaseous_blight() : SpellScriptLoader("spell_festergut_gaseous_blight") { }
+
+        class spell_festergut_gaseous_blight_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_festergut_gaseous_blight_SpellScript);
+
+            bool Validate(SpellInfo const* /*spell*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_ORANGE_BLIGHT_RESIDUE))
+                    return false;
+                return true;
+            }
+
+            void ExtraEffect()
+            {
+                if (GetHitUnit()->HasAura(SPELL_ORANGE_BLIGHT_RESIDUE))
+                    return;
+
+                GetHitUnit()->CastSpell(GetHitUnit(), SPELL_ORANGE_BLIGHT_RESIDUE, true);
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_festergut_gaseous_blight_SpellScript::ExtraEffect);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_festergut_gaseous_blight_SpellScript();
         }
 };
 
@@ -477,5 +537,6 @@ void AddSC_boss_festergut()
     new spell_festergut_pungent_blight();
     new spell_festergut_gastric_bloat();
     new spell_festergut_blighted_spores();
+    new spell_festergut_gaseous_blight();
     new achievement_flu_shot_shortage();
 }

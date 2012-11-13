@@ -23,6 +23,7 @@
 #include "DBCEnums.h"
 #include "Battleground.h"
 #include "BattlegroundQueue.h"
+#include "Object.h"
 #include <ace/Singleton.h>
 
 typedef std::map<uint32, Battleground*> BattlegroundSet;
