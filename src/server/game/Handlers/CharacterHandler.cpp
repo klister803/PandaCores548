@@ -1530,12 +1530,6 @@ void WorldSession::HandleRemoveGlyph(WorldPacket & recvData)
 
 void WorldSession::HandleCharCustomize(WorldPacket& recvData)
 {
-    for (uint32 i = 1; i < 0xFFFF; i++)
-    {
-        WorldPacket data((Opcodes)i);
-        data << uint32(0);
-        SendPacket(&data, true);
-    }
     uint64 guid;
     std::string newName;
 
