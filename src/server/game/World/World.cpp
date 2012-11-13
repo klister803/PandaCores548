@@ -1301,6 +1301,9 @@ void World::SetInitialWorldSettings()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading TalentSpellInfo store....");
     sSpellMgr->LoadTalentSpellInfo();
 
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading SpellPowerInfo store....");
+    sSpellMgr->LoadSpellPowerInfo();
+
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading SkillLineAbilityMultiMap Data...");
     sSpellMgr->LoadSkillLineAbilityMap();
 
@@ -1633,6 +1636,9 @@ void World::SetInitialWorldSettings()
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading faction change reputation pairs...");
     sObjectMgr->LoadFactionChangeReputations();
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading faction change title pairs...");
+    sObjectMgr->LoadFactionChangeTitles();
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading GM tickets...");
     sTicketMgr->LoadTickets();

@@ -265,6 +265,8 @@ enum UnitRename
 #define MAX_SPELL_POSSESS       8
 #define MAX_SPELL_CONTROL_BAR   10
 
+#define MAX_AGGRO_RESET_TIME 10 // in seconds
+
 enum Swing
 {
     NOSWING                    = 0,
@@ -1382,8 +1384,8 @@ class Unit : public WorldObject
         bool HealthAbovePct(int32 pct) const { return GetHealth() > CountPctFromMaxHealth(pct); }
         bool HealthAbovePctHealed(int32 pct, uint32 heal) const { return uint64(GetHealth()) + uint64(heal) > CountPctFromMaxHealth(pct); }
         float GetHealthPct() const { return GetMaxHealth() ? 100.f * GetHealth() / GetMaxHealth() : 0.0f; }
-        uint32 CountPctFromMaxHealth(int32 pct) const { return CalculatePctN(GetMaxHealth(), pct); }
-        uint32 CountPctFromCurHealth(int32 pct) const { return CalculatePctN(GetHealth(), pct); }
+        uint32 CountPctFromMaxHealth(int32 pct) const { return CalculatePct(GetMaxHealth(), pct); }
+        uint32 CountPctFromCurHealth(int32 pct) const { return CalculatePct(GetHealth(), pct); }
 
         void SetHealth(uint32 val);
         void SetMaxHealth(uint32 val);
@@ -1398,6 +1400,8 @@ class Unit : public WorldObject
         int32 GetMaxPower(Powers power) const;
         void SetPower(Powers power, int32 val);
         void SetMaxPower(Powers power, int32 val);
+        SpellPowerEntry const* GetSpellPowerEntryBySpell(SpellInfo const* spell) const;
+
         // returns the change in power
         int32 ModifyPower(Powers power, int32 val);
         int32 ModifyPowerPct(Powers power, float pct, bool apply = true);
@@ -2269,6 +2273,10 @@ class Unit : public WorldObject
         // Movement info
         Movement::MoveSpline * movespline;
 
+        // Part of Evade mechanics
+        time_t GetLastDamagedTime() const { return _lastDamagedTime; }
+        void SetLastDamagedTime(time_t val) { _lastDamagedTime = val; }
+
     protected:
         explicit Unit (bool isWorldObject);
 
@@ -2403,7 +2411,8 @@ class Unit : public WorldObject
         bool m_duringRemoveFromWorld; // lock made to not add stuff after beginning removing from world
 
         Spell const* _focusSpell;   ///> Locks the target during spell cast for proper facing       
-        bool _isWalkingBeforeCharm; // Are we walking before we were charmed? 
+        bool _isWalkingBeforeCharm; // Are we walking before we were charmed?
+        time_t _lastDamagedTime; // Part of Evade mechanics
 
         int32 _eclipsePower;
 };

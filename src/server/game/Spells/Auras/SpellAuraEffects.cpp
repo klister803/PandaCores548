@@ -38,6 +38,7 @@
 #include "Vehicle.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
+#include "WeatherMgr.h"
 
 class Aura;
 //
@@ -386,10 +387,10 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNoImmediateEffect,                         //328 SPELL_AURA_PROC_ON_POWER_AMOUNT implemented in Unit::HandleAuraProcOnPowerAmount
     &AuraEffect::HandleNULL,                                      //329 SPELL_AURA_MOD_RUNE_REGEN_SPEED
     &AuraEffect::HandleNoImmediateEffect,                         //330 SPELL_AURA_CAST_WHILE_WALKING
-    &AuraEffect::HandleNULL,                                      //331 SPELL_AURA_331
+    &AuraEffect::HandleAuraForceWeather,                          //331 SPELL_AURA_FORCE_WEATHER
     &AuraEffect::HandleNoImmediateEffect,                         //332 SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS implemented in WorldSession::HandleCastSpellOpcode
     &AuraEffect::HandleNoImmediateEffect,                         //333 SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS_2 implemented in WorldSession::HandleCastSpellOpcode
-    &AuraEffect::HandleNULL,                                      //334 SPELL_AURA_334
+    &AuraEffect::HandleNULL,                                      //334 SPELL_AURA_MOD_BLIND
     &AuraEffect::HandleNULL,                                      //335 SPELL_AURA_335
     &AuraEffect::HandleNULL,                                      //336 SPELL_AURA_MOD_FLYING_RESTRICTIONS
     &AuraEffect::HandleNoImmediateEffect,                         //337 SPELL_AURA_MOD_VENDOR_ITEMS_PRICES
@@ -574,7 +575,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                         // Glyph of Frost nova and similar auras
                         if ((*itr)->GetMiscValue() == 7801)
                         {
-                            AddPctN(amount, (*itr)->GetAmount());
+                            AddPct(amount, (*itr)->GetAmount());
                             break;
                         }
                     }
@@ -621,7 +622,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
 
                         // Twin Disciplines
                         if (AuraEffect const* pAurEff = caster->GetAuraEffect(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELLFAMILY_PRIEST, 2292, 0))
-                            AddPctN(amount, pAurEff->GetAmount());
+                            AddPct(amount, pAurEff->GetAmount());
 
                         // Reuse variable, not sure if this code below can be moved before Twin Disciplines
                         DoneActualBenefit = float(amount);
@@ -676,7 +677,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 else if (AuraEffect const* aurEff = caster->GetAuraEffect(60774, EFFECT_0))
                     amount += cp * aurEff->GetAmount();
 
-                amount += uint32(CalculatePctU(caster->GetTotalAttackPowerValue(BASE_ATTACK), cp));
+                amount += uint32(CalculatePct(caster->GetTotalAttackPowerValue(BASE_ATTACK), cp));
             }
             // Rend
             else if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARRIOR && GetSpellInfo()->SpellFamilyFlags[0] & 0x20)
@@ -702,16 +703,16 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
             switch (m_spellInfo->Id)
             {
             case 57669: // Replenishment (0.2% from max)
-                amount = CalculatePctN(GetBase()->GetUnitOwner()->GetMaxPower(POWER_MANA), amount);
+                amount = CalculatePct(GetBase()->GetUnitOwner()->GetMaxPower(POWER_MANA), amount);
                 break;
             case 61782: // Infinite Replenishment
                 amount = GetBase()->GetUnitOwner()->GetMaxPower(POWER_MANA) * 0.0025f;
                 break;
             case 29166: // Innervate
-                ApplyPctF(amount, float(GetBase()->GetUnitOwner()->GetCreatePowers(POWER_MANA)) / GetTotalTicks());
+                ApplyPct(amount, float(GetBase()->GetUnitOwner()->GetCreatePowers(POWER_MANA)) / GetTotalTicks());
                 break;
             case 48391: // Owlkin Frenzy
-                ApplyPctU(amount, GetBase()->GetUnitOwner()->GetCreatePowers(POWER_MANA));
+                ApplyPct(amount, GetBase()->GetUnitOwner()->GetCreatePowers(POWER_MANA));
                 break;
             default:
                 break;
@@ -726,7 +727,7 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 if (caster->GetTypeId() == TYPEID_PLAYER)
                 // Bonus from Glyph of Lightwell
                 if (AuraEffect* modHealing = caster->GetAuraEffect(55673, 0))
-                    AddPctN(amount, modHealing->GetAmount());
+                    AddPct(amount, modHealing->GetAmount());
             }
             break;
         case SPELL_AURA_MOD_THREAT:
@@ -2307,6 +2308,10 @@ void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, 
                     case 75532:
                         target->SetDisplayId(target->getGender() == GENDER_MALE ? 31737 : 31738);
                         break;
+                    // Gnomeregan Pride
+                    case 75531:
+                        target->SetDisplayId(target->getGender() == GENDER_MALE ? 31654 : 31655);
+                        break;
                     default:
                         break;
                 }
@@ -2554,7 +2559,7 @@ void AuraEffect::HandleAuraModDisarm(AuraApplication const* aurApp, uint8 mode, 
     case SPELL_AURA_MOD_DISARM_RANGED:
         field=UNIT_FIELD_FLAGS_2;
         flag=UNIT_FLAG2_DISARM_RANGED;
-        slot=EQUIPMENT_SLOT_RANGED;
+        slot=EQUIPMENT_SLOT_MAINHAND;
         attType=RANGED_ATTACK;
         break;
     default:
@@ -4765,7 +4770,7 @@ void AuraEffect::HandleModPowerCostPCT(AuraApplication const* aurApp, uint8 mode
 
     Unit* target = aurApp->GetTarget();
 
-    float amount = CalculatePctN(1.0f, GetAmount());
+    float amount = CalculatePct(1.0f, GetAmount());
     for (int i = 0; i < MAX_SPELL_SCHOOL; ++i)
         if (GetMiscValue() & (1 << i))
             target->ApplyModSignedFloatValue(UNIT_FIELD_POWER_COST_MULTIPLIER + i, amount, apply);
@@ -5890,6 +5895,25 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                 break;
             }
             break;
+        case SPELLFAMILY_WARLOCK:
+            switch (GetId())
+            {
+                case 103958: // Metamorphosis
+                {
+                    if (caster->GetPower(POWER_DEMONIC_FURY) > 0)
+                    {
+                        // Power cost : 6 demonic fury per second
+                        uint32 demonicFury = caster->GetPower(POWER_DEMONIC_FURY) - 6;
+
+                        if (demonicFury < 0)
+                            demonicFury = 0;
+
+                        caster->SetPower(POWER_DEMONIC_FURY, demonicFury);
+                    }
+                    else
+                        caster->RemoveAurasDueToSpell(103958);
+                }
+            }
         case SPELLFAMILY_DEATHKNIGHT:
             switch (GetId())
             {
@@ -6507,16 +6531,16 @@ void AuraEffect::HandlePeriodicHealAurasTick(Unit* target, Unit* caster) const
 
         // Tenacity increase healing % taken
         if (AuraEffect const* Tenacity = target->GetAuraEffect(58549, 0))
-            AddPctN(TakenTotalMod, Tenacity->GetAmount());
+            AddPct(TakenTotalMod, Tenacity->GetAmount());
 
         // Healing taken percent
         float minval = (float)target->GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
         if (minval)
-            AddPctF(TakenTotalMod, minval);
+            AddPct(TakenTotalMod, minval);
 
         float maxval = (float)target->GetMaxPositiveAuraModifier(SPELL_AURA_MOD_HEALING_PCT);
         if (maxval)
-            AddPctF(TakenTotalMod, maxval);
+            AddPct(TakenTotalMod, maxval);
 
         TakenTotalMod = std::max(TakenTotalMod, 0.0f);
 
@@ -6606,11 +6630,11 @@ void AuraEffect::HandlePeriodicManaLeechAuraTick(Unit* target, Unit* caster) con
 
     // Special case: draining x% of mana (up to a maximum of 2*x% of the caster's maximum mana)
     // It's mana percent cost spells, m_amount is percent drain from target
-    if (m_spellInfo->ManaCostPercentage)
+    if (m_base->GetSpellPowerData()->ManaCostPercentage)
     {
         // max value
-        int32 maxmana = CalculatePctF(caster->GetMaxPower(powerType), drainAmount * 2.0f);
-        ApplyPctU(drainAmount, target->GetMaxPower(powerType));
+        int32 maxmana = CalculatePct(caster->GetMaxPower(powerType), drainAmount * 2.0f);
+        ApplyPct(drainAmount, target->GetMaxPower(powerType));
         if (drainAmount > maxmana)
             drainAmount = maxmana;
     }
@@ -6647,7 +6671,7 @@ void AuraEffect::HandlePeriodicManaLeechAuraTick(Unit* target, Unit* caster) con
         // Mana Feed - Drain Mana
         if (manaFeedVal > 0)
         {
-            int32 feedAmount = CalculatePctN(gainedAmount, manaFeedVal);
+            int32 feedAmount = CalculatePct(gainedAmount, manaFeedVal);
             caster->CastCustomSpell(caster, 32554, &feedAmount, NULL, NULL, true, NULL, this);
         }
     }
@@ -6898,4 +6922,37 @@ void AuraEffect::HandleRaidProcFromChargeWithValueAuraProc(AuraApplication* aurA
 
     sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraEffect::HandleRaidProcFromChargeWithValueAuraProc: Triggering spell %u from aura %u proc", triggerSpellId, GetId());
     target->CastCustomSpell(target, triggerSpellId, &value, NULL, NULL, true, NULL, this, GetCasterGUID());
+}
+
+void AuraEffect::HandleAuraForceWeather(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Player* target = aurApp->GetTarget()->ToPlayer();
+
+    if (!target)
+        return;
+
+    if (apply)
+    {
+        WorldPacket data(SMSG_WEATHER, (4 + 4 + 1));
+
+        data << uint32(GetMiscValue()) << 1.0f << uint8(0);
+        target->GetSession()->SendPacket(&data);
+    }
+    else
+    {
+        // send weather for current zone
+        if (Weather* weather = WeatherMgr::FindWeather(target->GetZoneId()))
+            weather->SendWeatherUpdateToPlayer(target);
+        else
+        {
+            if (!WeatherMgr::AddWeather(target->GetZoneId()))
+            {
+                // send fine weather packet to remove old weather
+                WeatherMgr::SendFineWeatherUpdateToPlayer(target);
+            }
+        }
+    }
 }

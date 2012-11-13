@@ -154,8 +154,8 @@ class SpellCastTargets
         void SetSpeed(float speed) { m_speed = speed; }
 
         float GetDist2d() const { return m_src._position.GetExactDist2d(&m_dst._position); }
-        float GetSpeedXY() const { return m_speed * cos(m_elevation); }
-        float GetSpeedZ() const { return m_speed * sin(m_elevation); }
+        float GetSpeedXY() const { return m_speed * std::cos(m_elevation); }
+        float GetSpeedZ() const { return m_speed * std::sin(m_elevation); }
 
         void Update(Unit* caster);
         void OutDebug() const;
@@ -436,6 +436,7 @@ class Spell
         void SendChannelStart(uint32 duration);
         void SendResurrectRequest(Player* target);
 
+        void HandleHolyPower(Player* caster);
         void HandleEffects(Unit* pUnitTarget, Item* pItemTarget, GameObject* pGOTarget, uint32 i, SpellEffectHandleMode mode);
         void HandleThreatSpells();
 
@@ -668,6 +669,7 @@ class Spell
         uint32 m_auraScaleMask;
 
         ByteBuffer * m_effectExecuteData[MAX_SPELL_EFFECTS];
+        SpellPowerEntry const* m_spellPowerData;
 
 #ifdef MAP_BASED_RAND_GEN
         int32 irand(int32 min, int32 max)       { return int32 (m_caster->GetMap()->mtRand.randInt(max - min)) + min; }

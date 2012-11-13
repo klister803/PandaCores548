@@ -37,21 +37,55 @@ enum ShamanSpells
     SHAMAN_SPELL_EXHAUSTION                = 57723,
     HUNTER_SPELL_INSANITY                  = 95809,
     MAGE_SPELL_TEMPORAL_DISPLACEMENT       = 80354,
-
     SHAMAN_SPELL_STORM_EARTH_AND_FIRE      = 51483,
     EARTHBIND_TOTEM_SPELL_EARTHGRAB        = 64695,
-
     // For Earthen Power
     SHAMAN_TOTEM_SPELL_EARTHBIND_TOTEM     = 6474,
     SHAMAN_TOTEM_SPELL_EARTHEN_POWER       = 59566,
-
     SHAMAN_BIND_SIGHT                      = 6277,
-
     ICON_ID_SHAMAN_LAVA_FLOW               = 3087,
     SHAMAN_LAVA_FLOWS_R1                   = 51480,
-    SHAMAN_LAVA_FLOWS_TRIGGERED_R1         = 64694
+    SHAMAN_LAVA_FLOWS_TRIGGERED_R1         = 64694,
+    SHAMAN_SPELL_GRACE_OF_AIR              = 116956
 };
 
+// Legacy of the Emperor - 115921
+class spell_sha_grace_of_air : public SpellScriptLoader
+{
+    public:
+        spell_sha_grace_of_air() : SpellScriptLoader("spell_sha_grace_of_air") { }
+
+        class spell_sha_grace_of_air_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_grace_of_air_SpellScript);
+
+            void HandleOnHit()
+            {
+                Unit* caster = GetCaster();
+                if (caster && caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    /*caster->CastSpell(caster, SHAMAN_SPELL_GRACE_OF_AIR, true);
+
+                    std::list<Unit*> memberList;
+                    Player* plr = caster->ToPlayer();
+                    plr->GetPartyMembers(memberList);
+
+                    for (auto itr : memberList)
+                        caster->CastSpell((itr), SHAMAN_SPELL_GRACE_OF_AIR, true);*/
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_grace_of_air_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_grace_of_air_SpellScript();
+        }
+};
 
 // 1535 Fire Nova
 class spell_sha_fire_nova : public SpellScriptLoader
@@ -143,7 +177,7 @@ class spell_sha_mana_tide_totem : public SpellScriptLoader
                                 if (AuraEffect* dummy = owner->GetAuraEffect(SHAMAN_SPELL_GLYPH_OF_MANA_TIDE, 0))
                                     effValue += dummy->GetAmount();
                             // Regenerate 6% of Total Mana Every 3 secs
-                            int32 effBasePoints0 = int32(CalculatePctN(unitTarget->GetMaxPower(POWER_MANA), effValue));
+                            int32 effBasePoints0 = int32(CalculatePct(unitTarget->GetMaxPower(POWER_MANA), effValue));
                             caster->CastCustomSpell(unitTarget, SHAMAN_SPELL_MANA_TIDE_TOTEM, &effBasePoints0, NULL, NULL, true, NULL, NULL, GetOriginalCaster()->GetGUID());
                         }
                     }
@@ -464,11 +498,11 @@ class spell_sha_healing_stream_totem : public SpellScriptLoader
 
                             // Restorative Totems
                             if (AuraEffect* dummy = owner->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, ICON_ID_RESTORATIVE_TOTEMS, 1))
-                                AddPctN(damage, dummy->GetAmount());
+                                AddPct(damage, dummy->GetAmount());
 
                             // Glyph of Healing Stream Totem
                             if (AuraEffect const* aurEff = owner->GetAuraEffect(SPELL_GLYPH_OF_HEALING_STREAM_TOTEM, EFFECT_0))
-                                AddPctN(damage, aurEff->GetAmount());
+                                AddPct(damage, aurEff->GetAmount());
 
                             damage = int32(target->SpellHealingBonusTaken(owner, triggeringSpell, damage, HEAL));
                         }
@@ -555,7 +589,7 @@ class spell_sha_lava_lash : public SpellScriptLoader
                     {
                         // Damage is increased by 25% if your off-hand weapon is enchanted with Flametongue.
                         if (caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 0x200000, 0, 0))
-                            AddPctN(hitDamage, damage);
+                            AddPct(hitDamage, damage);
                         SetHitDamage(hitDamage);
                     }
                 }
@@ -714,6 +748,7 @@ class spell_sha_sentry_totem : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_grace_of_air();
     new spell_sha_fire_nova();
     new spell_sha_mana_tide_totem();
     new spell_sha_earthbind_totem();

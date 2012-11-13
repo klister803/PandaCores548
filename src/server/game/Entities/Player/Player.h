@@ -34,7 +34,7 @@
 #include "QuestDef.h"
 #include "ReputationMgr.h"
 #include "Unit.h"
-#include "Util.h"                                           // for Tokens typedef
+#include "Util.h"                                           // for Tokenizer typedef
 #include "WorldSession.h"
 
 // for template
@@ -941,7 +941,7 @@ class PlayerTaxi
         ~PlayerTaxi() {}
         // Nodes
         void InitTaxiNodesForLevel(uint32 race, uint32 chrClass, uint8 level);
-        void LoadTaxiMask(const char* data);
+        void LoadTaxiMask(std::string const& data);
 
         bool IsTaximaskNodeKnown(uint32 nodeidx) const
         {
@@ -1459,7 +1459,7 @@ class Player : public Unit, public GridObject<Player>
         bool IsTwoHandUsed() const
         {
             Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-            return mainItem && mainItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON && !CanTitanGrip();
+            return mainItem && (mainItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON && !CanTitanGrip()) || mainItem->GetTemplate()->InventoryType == INVTYPE_RANGED || mainItem->GetTemplate()->InventoryType == INVTYPE_THROWN || mainItem->GetTemplate()->InventoryType == INVTYPE_RANGEDRIGHT;
         }
         void SendNewItem(Item* item, uint32 count, bool received, bool created, bool broadcast = false);
         bool BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 item, uint8 count, uint8 bag, uint8 slot);
@@ -1641,8 +1641,8 @@ class Player : public Unit, public GridObject<Player>
         bool isBeingLoaded() const { return GetSession()->PlayerLoading();}
 
         void Initialize(uint32 guid);
-        static uint32 GetUInt32ValueFromArray(Tokens const& data, uint16 index);
-        static float  GetFloatValueFromArray(Tokens const& data, uint16 index);
+        static uint32 GetUInt32ValueFromArray(Tokenizer const& data, uint16 index);
+        static float  GetFloatValueFromArray(Tokenizer const& data, uint16 index);
         static uint32 GetZoneIdFromDB(uint64 guid);
         static uint32 GetLevelFromDB(uint64 guid);
         static bool   LoadPositionFromDB(uint32& mapid, float& x, float& y, float& z, float& o, bool& in_flight, uint64 guid);
@@ -1659,8 +1659,8 @@ class Player : public Unit, public GridObject<Player>
         void SaveInventoryAndGoldToDB(SQLTransaction& trans);                    // fast save function for item/money cheating preventing
         void SaveGoldToDB(SQLTransaction& trans);
 
-        static void SetUInt32ValueInArray(Tokens& data, uint16 index, uint32 value);
-        static void SetFloatValueInArray(Tokens& data, uint16 index, float value);
+        static void SetUInt32ValueInArray(Tokenizer& data, uint16 index, uint32 value);
+        static void SetFloatValueInArray(Tokenizer& data, uint16 index, float value);
         static void Customize(uint64 guid, uint8 gender, uint8 skin, uint8 face, uint8 hairStyle, uint8 hairColor, uint8 facialHair);
         static void SavePositionInDB(uint32 mapid, float x, float y, float z, float o, uint32 zone, uint64 guid);
 
@@ -2708,6 +2708,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_holyPowerRegenTimerCount;
         uint32 m_chiPowerRegenTimerCount;
         uint32 m_focusRegenTimerCount;
+        uint32 m_demonicFuryPowerRegenTimerCount;
         float m_powerFraction[MAX_POWERS_PER_CLASS];
         uint32 m_contestedPvPTimer;
 
@@ -3076,7 +3077,7 @@ template <class T> T Player::ApplySpellMod(uint32 spellId, SpellModOp op, T &bas
             if (mod->op == SPELLMOD_CASTING_TIME && basevalue >= T(10000) && mod->value <= -100)
                 continue;
 
-            totalmul += CalculatePctN(1.0f, mod->value);
+            totalmul += CalculatePct(1.0f, mod->value);
         }
 
         DropModCharge(mod, spell);
