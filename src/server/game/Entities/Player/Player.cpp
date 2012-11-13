@@ -24047,7 +24047,7 @@ PartyResult Player::CanUninviteFromGroup() const
     }
     else
     {
-        if (!grp->IsLeader(GetGUID()) && !grp->IsAssistant(GetGUID()))
+        if (!grp->IsLeader(GetGUID()) && !grp->IsAssistant(GetGUID()) && !(grp->GetGroupType() & GROUPTYPE_EVERYONE_IS_ASSISTANT))
             return ERR_NOT_LEADER;
 
         if (InBattleground())

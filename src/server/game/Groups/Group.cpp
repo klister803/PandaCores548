@@ -2161,7 +2161,7 @@ void Group::BroadcastReadyCheck(WorldPacket* packet)
     {
         Player* player = itr->getSource();
         if (player && player->GetSession())
-            if (IsLeader(player->GetGUID()) || IsAssistant(player->GetGUID()))
+            if (IsLeader(player->GetGUID()) || IsAssistant(player->GetGUID()) || m_groupType & GROUPTYPE_EVERYONE_IS_ASSISTANT)
                 player->GetSession()->SendPacket(packet);
     }
 }

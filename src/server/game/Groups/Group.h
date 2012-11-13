@@ -327,6 +327,7 @@ class Group
 
         void SetReadyCheckCount(uint8 count) { m_readyCheckCount = count; }
         uint8 GetReadyCheckCount() { return m_readyCheckCount; }
+        uint8 GetGroupType() const { return m_groupType; }
 
     protected:
         bool _setMembersGroup(uint64 guid, uint8 group);

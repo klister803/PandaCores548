@@ -227,7 +227,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
     if (group)
     {
         // not have permissions for invite
-        if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
+        if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()) || !(group->GetGroupType() & GROUPTYPE_EVERYONE_IS_ASSISTANT))
         {
             SendPartyResult(PARTY_OP_INVITE, "", ERR_NOT_LEADER);
             return;
@@ -843,7 +843,7 @@ void WorldSession::HandleRaidTargetUpdateOpcode(WorldPacket& recvData)
         group->SendTargetIconList(this);
     else                                                    // target icon update
     {
-        if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
+        if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()) || !(group->GetGroupType() & GROUPTYPE_EVERYONE_IS_ASSISTANT))
             return;
 
         ObjectGuid guid;
@@ -916,7 +916,7 @@ void WorldSession::HandleGroupChangeSubGroupOpcode(WorldPacket& recvData)
         return;
 
     uint64 senderGuid = GetPlayer()->GetGUID();
-    if (!group->IsLeader(senderGuid) && !group->IsAssistant(senderGuid))
+    if (!group->IsLeader(senderGuid) && !group->IsAssistant(senderGuid) || !(group->GetGroupType() & GROUPTYPE_EVERYONE_IS_ASSISTANT))
         return;
 
     if (!group->HasFreeSlotSubGroup(groupNr))
@@ -1050,7 +1050,7 @@ void WorldSession::HandlePartyAssignmentOpcode(WorldPacket& recvData)
         return;
 
     uint64 senderGuid = GetPlayer()->GetGUID();
-    if (!group->IsLeader(senderGuid) && !group->IsAssistant(senderGuid))
+    if (!group->IsLeader(senderGuid) && !group->IsAssistant(senderGuid) || !(group->GetGroupType() & GROUPTYPE_EVERYONE_IS_ASSISTANT))
         return;
 
     uint8 assignment;
@@ -1085,7 +1085,7 @@ void WorldSession::HandleRaidLeaderReadyCheck(WorldPacket& recvData)
     if (!group)
         return;
 
-    if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
+    if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()) || !(group->GetGroupType() & GROUPTYPE_EVERYONE_IS_ASSISTANT))
         return;
 
     ObjectGuid groupGUID = group->GetGUID();
