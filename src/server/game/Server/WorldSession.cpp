@@ -200,7 +200,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
     if (!m_Socket)
         return;
 
-    if (packet->GetOpcode() == NULL_OPCODE)
+    /*if (packet->GetOpcode() == NULL_OPCODE)
     {
         sLog->outError(LOG_FILTER_OPCODES, "Prevented sending of NULL_OPCODE to %s", GetPlayerName(false).c_str());
         return;
@@ -209,7 +209,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
     {
         sLog->outError(LOG_FILTER_OPCODES, "Prevented sending of UNKNOWN_OPCODE to %s", GetPlayerName(false).c_str());
         return;
-    }
+    }*/
 
     if (!forced)
     {
@@ -462,10 +462,6 @@ void WorldSession::LogoutPlayer(bool Save)
         }
         else if (!_player->getAttackers().empty())
         {
-            _player->CombatStop();
-            _player->getHostileRefManager().setOnlineOfflineState(false);
-            _player->RemoveAllAurasOnDeath();
-
             // build set of player who attack _player or who have pet attacking of _player
             std::set<Player*> aset;
             for (Unit::AttackerSet::const_iterator itr = _player->getAttackers().begin(); itr != _player->getAttackers().end(); ++itr)
@@ -476,7 +472,11 @@ void WorldSession::LogoutPlayer(bool Save)
                 else if ((*itr)->GetTypeId() == TYPEID_PLAYER)
                     aset.insert((Player*)(*itr));
             }
-
+            // CombatStop() method is removing all attackers from the AttackerSet
+            // That is why it must be AFTER building current set of attackers
+            _player->CombatStop();
+            _player->getHostileRefManager().setOnlineOfflineState(false);
+            _player->RemoveAllAurasOnDeath();
             _player->SetPvPDeath(!aset.empty());
             _player->KillPlayer();
             _player->BuildPlayerRepop();

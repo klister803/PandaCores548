@@ -2706,6 +2706,7 @@ struct spellDifficultyLoadInfo
 
 void SpellMgr::LoadSpellInfoStore()
 {
+    //Sleep(10000);
     uint32 oldMSTime = getMSTime();
 
     std::map<uint32, std::set<uint32> > spellDifficultyList;
@@ -2727,6 +2728,36 @@ void SpellMgr::LoadSpellInfoStore()
             for(std::set<uint32>::iterator itr = difficultyInfo.begin(); itr != difficultyInfo.end(); itr++)
                 mSpellInfoMap[(*itr)][i] = new SpellInfo(spellEntry, (*itr));
         }
+    }
+
+    std::set<uint32> alreadySet;
+    for (uint32 i = 0; i < sSpellPowerStore.GetNumRows(); i++)
+    {
+        SpellPowerEntry const* spellPower = sSpellPowerStore.LookupEntry(i);
+        if (!spellPower)
+            continue;
+
+        if(alreadySet.find(spellPower->SpellId) != alreadySet.end())
+            continue;
+
+        for (int difficulty = 0; difficulty < MAX_DIFFICULTY; difficulty++)
+        {
+            SpellInfo* spell = mSpellInfoMap[difficulty][spellPower->SpellId];
+            if (!spell)
+                continue;
+
+            spell->ManaCost = spellPower->manaCost;
+            spell->ManaCostPercentage = spellPower->ManaCostPercentage;
+            spell->ManaPerSecond = spellPower->manaPerSecond;
+            spell->PowerType = spellPower->powerType;
+
+            spell->spellPower->manaCost = spellPower->manaCost;
+            spell->spellPower->ManaCostPercentage = spellPower->ManaCostPercentage;
+            spell->spellPower->manaPerSecond = spellPower->manaPerSecond;
+            spell->spellPower->powerType = spellPower->powerType;
+        }
+
+        alreadySet.insert(spellPower->SpellId);
     }
 
     for (uint32 i = 0; i < sTalentStore.GetNumRows(); i++)
@@ -3884,4 +3915,33 @@ const SpellInfo* SpellMgr::GetSpellInfo(uint32 spellId, Difficulty difficulty) c
     }
 
     return NULL;
+}
+
+void SpellMgr::LoadSpellPowerInfo()
+{
+    mSpellPowerInfo.resize(sSpellStore.GetNumRows());
+    for (uint32 i = 0; i < sSpellPowerStore.GetNumRows(); i++)
+    {
+        SpellPowerEntry const* spellPower = sSpellPowerStore.LookupEntry(i);
+        if (!spellPower)
+            continue;
+
+        mSpellPowerInfo[spellPower->SpellId].push_back(spellPower->Id);
+    }
+}
+
+SpellPowerEntry const* SpellMgr::GetSpellPowerEntryByIdAndPower(uint32 id, Powers power) const
+{
+    for (auto itr : GetSpellPowerList(id))
+    {
+        SpellPowerEntry const* spellPower = sSpellPowerStore.LookupEntry(itr);
+        if(!spellPower)
+            continue;
+
+        if(spellPower->powerType == power)
+            return spellPower;
+    }
+
+    SpellInfo const* spell = sSpellMgr->GetSpellInfo(id);
+    return spell->spellPower;
 }

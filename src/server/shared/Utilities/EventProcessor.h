@@ -21,7 +21,7 @@
 
 #include "Define.h"
 
-#include<map>
+#include <map>
 
 // Note. All times are in milliseconds here.
 
@@ -29,9 +29,8 @@ class BasicEvent
 {
     public:
         BasicEvent() { to_Abort = false; }
-        virtual ~BasicEvent()                               // override destructor to perform some actions on event removal
-        {
-        };
+        virtual ~BasicEvent() {}                              // override destructor to perform some actions on event removal
+
 
         // this method executes when the event is triggered
         // return false if event does not want to be deleted
@@ -68,4 +67,3 @@ class EventProcessor
         bool m_aborting;
 };
 #endif
-

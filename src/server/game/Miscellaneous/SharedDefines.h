@@ -261,7 +261,11 @@ enum Powers
     POWER_HOLY_POWER                    = 9,
     POWER_ALTERNATE_POWER               = 10,           // Used in some quests
     POWER_CHI                           = 12,
-    MAX_POWERS                          = 13,
+    POWER_SHADOW_ORB                    = 13,
+    POWER_BURNING_EMBERS                = 14,
+    POWER_DEMONIC_FURY                  = 15,
+    POWER_UNKNOWN                       = 16,
+    MAX_POWERS                          = 17,
     POWER_ALL                           = 127,          // default for class?
     POWER_HEALTH                        = 0xFFFFFFFE    // (-2 as signed value)
 };
@@ -1032,7 +1036,7 @@ enum SpellEffects
     SPELL_EFFECT_169                                = 169,
     SPELL_EFFECT_170                                = 170,
     SPELL_EFFECT_171                                = 171, // Summons gamebject
-    SPELL_EFFECT_172                                = 172, // Aoe ressurection
+    SPELL_EFFECT_172                                = 172, // Aoe resurrection
     SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB             = 173, // Guild tab unlocked (guild perk)
     SPELL_EFFECT_174                                = 174,
     SPELL_EFFECT_175                                = 175, // Unused (4.3.4)

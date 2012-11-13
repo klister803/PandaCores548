@@ -15,6 +15,12 @@ if( USE_SCRIPTPCH )
   )
 endif()
 
+
+if(CMAKE_COMPILER_IS_GNUCXX)
+  add_definitions(-std=gnu++0x)
+endif(CMAKE_COMPILER_IS_GNUCXX)
+
+
 if( USE_SCRIPTPCH AND MSVC )
   set(scripts_STAT_SRCS
     PrecompiledHeaders/ScriptPCH.cpp
