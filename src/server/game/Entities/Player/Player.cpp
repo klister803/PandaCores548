@@ -1205,7 +1205,11 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
         }
 
         if (quest)
+        {
             this->AddQuest(quest, NULL);
+            if (CanCompleteQuest(quest->GetQuestId()))
+                CompleteQuest(quest->GetQuestId());
+        }
     }
     return true;
 }
