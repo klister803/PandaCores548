@@ -279,7 +279,7 @@ enum Opcodes
     CMSG_GUILD_SET_NOTE                               = 0x226,  // 5.0.5 16048
     CMSG_GUILD_SET_RANK_PERMISSIONS                   = 0x5A6,  // 5.0.5 16048
     CMSG_GUILD_SWITCH_RANK                            = 0x7C2,  // 5.0.5 16048
-    CMSG_HEARTH_AND_RESURRECT                         = 0x9D2,  // 5.0.5 16048
+    CMSG_HEARTH_AND_RESURRECT                         = 0,
     CMSG_IGNORE_TRADE                                 = 0,      // 5.0.5 16048 Deprecated ?
     CMSG_INITIATE_TRADE                               = 0x6F1,  // 5.0.5 16048
     CMSG_INSPECT                                      = 0x254,  // 5.0.5 16048
