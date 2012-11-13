@@ -567,6 +567,7 @@ enum Opcodes
     CMSG_ZONEUPDATE                                   = 0xD3B,	// 5.0.5 16048
     CMSG_PLAYER_MOVE                                  = 0x3F8,	// 5.0.5 16048 CUSTOM OPCODE, client patch
     CMSG_CORPSE_QUERY                                 = 0x20C,  // 5.0.5 16048
+    CMSG_RAID_TARGET_UPDATE                           = 0x396,  // 5.0.5 16048       
     MSG_AUCTION_HELLO                                 = 0x8DF,  // 5.0.5 16048
     MSG_BATTLEGROUND_PLAYER_POSITIONS                 = 0x000,  // 5.0.5 16048 deprecated
     MSG_CHANNEL_START                                 = 0x831,  // 5.0.5 16048
@@ -622,7 +623,6 @@ enum Opcodes
     MSG_PETITION_RENAME                               = 0xD53,  // 5.0.5 16048
     MSG_QUERY_NEXT_MAIL_TIME                          = 0x97C,	// 5.0.5 16048
     MSG_QUEST_PUSH_RESULT                             = 0x939,	// 5.0.5 16048
-    MSG_RAID_TARGET_UPDATE                            = 0xF13,	// 5.0.5 16048
     MSG_RANDOM_ROLL                                   = 0xEDB,  // 5.0.5 16048
     MSG_SAVE_GUILD_EMBLEM                             = 0xC3D,  // 5.0.5 16048
     MSG_SET_DUNGEON_DIFFICULTY                        = 0xD24,  // 5.0.5 16048
@@ -630,6 +630,8 @@ enum Opcodes
     MSG_TABARDVENDOR_ACTIVATE                         = 0xC1D,  // 5.0.5 16048
     MSG_TALENT_WIPE_CONFIRM                           = 0,      // Talents removed in 5.0.x
     MSG_VERIFY_CONNECTIVITY                           = 0x4F57, // 5.0.5 16048
+    SMSG_RAID_TARGET_UPDATE_SINGLE                    = 0xF13,	// 5.0.5 16048
+    SMSG_RAID_TARGET_UPDATE_ALL                       = 0xB9E,	// 5.0.5 16048
     SMSG_CORPSE_QUERY                                 = 0xAA2,  // 5.0.5 16048
     SMSG_ACCOUNT_DATA_TIMES                           = 0xC4B,  // 5.0.5 16048
     SMSG_ACCOUNT_INFO_RESPONSE                        = 0xF05,  // 5.0.5 16048

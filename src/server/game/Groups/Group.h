@@ -90,6 +90,7 @@ enum GroupType
     GROUPTYPE_BGRAID = GROUPTYPE_BG | GROUPTYPE_RAID,       // mask
     GROUPTYPE_UNK1   = 0x04,
     GROUPTYPE_LFG    = 0x08,
+    GROUPTYPE_EVERYONE_IS_ASSISTANT = 0x40,
     // 0x10, leave/change group?, I saw this flag when leaving group and after leaving BG while in group
 };
 
@@ -251,6 +252,7 @@ class Group
 
         uint8 GetMemberGroup(uint64 guid) const;
 
+        void ChangeFlagEveryoneAssistant(bool apply);
         void ConvertToLFG();
         void ConvertToRaid();
         void ConvertToGroup();
@@ -261,7 +263,7 @@ class Group
 
         void ChangeMembersGroup(uint64 guid, uint8 group);
         void ChangeMembersGroup(Player* player, uint8 group);
-        void SetTargetIcon(uint8 id, uint64 whoGuid, uint64 targetGuid);
+        void SetTargetIcon(uint8 id, ObjectGuid whoGuid, ObjectGuid targetGuid);
         void SetGroupMemberFlag(uint64 guid, bool apply, GroupMemberFlags flag);
         void setGroupMemberRole(uint64 guid, uint32 role);
         void RemoveUniqueGroupMemberFlag(GroupMemberFlags flag);

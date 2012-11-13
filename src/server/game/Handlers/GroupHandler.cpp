@@ -825,13 +825,14 @@ void WorldSession::HandleRandomRollOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleRaidTargetUpdateOpcode(WorldPacket& recvData)
 {
-    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received MSG_RAID_TARGET_UPDATE");
+    sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received SMSG_RAID_TARGET_UPDATE");
 
     Group* group = GetPlayer()->GetGroup();
     if (!group)
         return;
 
-    uint8 x;
+    uint8 x, unk;
+    recvData >> unk;
     recvData >> x;
 
     /** error handling **/
@@ -845,8 +846,25 @@ void WorldSession::HandleRaidTargetUpdateOpcode(WorldPacket& recvData)
         if (!group->IsLeader(GetPlayer()->GetGUID()) && !group->IsAssistant(GetPlayer()->GetGUID()))
             return;
 
-        uint64 guid;
-        recvData >> guid;
+        ObjectGuid guid;
+        guid[4] = recvData.ReadBit();
+        guid[1] = recvData.ReadBit();
+        guid[3] = recvData.ReadBit();
+        guid[5] = recvData.ReadBit();
+        guid[7] = recvData.ReadBit();
+        guid[0] = recvData.ReadBit();
+        guid[2] = recvData.ReadBit();
+        guid[6] = recvData.ReadBit();
+
+        recvData.ReadByteSeq(guid[3]);
+        recvData.ReadByteSeq(guid[1]);
+        recvData.ReadByteSeq(guid[6]);
+        recvData.ReadByteSeq(guid[4]);
+        recvData.ReadByteSeq(guid[7]);
+        recvData.ReadByteSeq(guid[0]);
+        recvData.ReadByteSeq(guid[2]);
+        recvData.ReadByteSeq(guid[5]);
+
         group->SetTargetIcon(x, _player->GetGUID(), guid);
     }
 }
@@ -977,10 +995,10 @@ void WorldSession::HandleGroupEveryoneIsAssistantOpcode(WorldPacket& recvData)
 
     if (!group->IsLeader(GetPlayer()->GetGUID()))
         return;
-
+    recvData.read_skip<uint8>();
     bool apply = recvData.ReadBit();
 
-    //TODO: sniff the party update for the flag.
+    group->ChangeFlagEveryoneAssistant(apply);
 }
 
 void WorldSession::HandleGroupAssistantLeaderOpcode(WorldPacket & recvData)
