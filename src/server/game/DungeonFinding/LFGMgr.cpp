@@ -24,6 +24,7 @@
 #include "SocialMgr.h"
 #include "LFGMgr.h"
 #include "GroupMgr.h"
+#include "GameEventMgr.h"
 #include "LFGScripts.h"
 #include "LFGGroupData.h"
 #include "LFGPlayerData.h"
@@ -183,6 +184,38 @@ void LFGMgr::LoadRewards()
     } while (result->NextRow());
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u lfg dungeon rewards in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
+}
+
+void LFGMgr::LoadEntrancePositions()
+{
+    uint32 oldMSTime = getMSTime();
+    m_entrancePositions.clear();
+
+    QueryResult result = WorldDatabase.Query("SELECT dungeonId, position_x, position_y, position_z, orientation FROM lfg_entrances");
+
+    if (!result)
+    {
+        sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 lfg entrance positions. DB table `lfg_entrances` is empty!");
+        return;
+    }
+
+    uint32 count = 0;
+
+    do
+    {
+        Field* fields = result->Fetch();
+        uint32 dungeonId = fields[0].GetUInt32();
+        Position pos;
+        pos.m_positionX = fields[1].GetFloat();
+        pos.m_positionY = fields[2].GetFloat();
+        pos.m_positionZ = fields[3].GetFloat();
+        pos.m_orientation = fields[4].GetFloat();
+        m_entrancePositions[dungeonId] = pos;
+        ++count;
+    }
+    while (result->NextRow());
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u lfg entrance positions in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
 void LFGMgr::Update(uint32 diff)
@@ -529,6 +562,12 @@ void LFGMgr::InitializeLockedDungeons(Player* player)
             locktype = LFG_LOCKSTATUS_TOO_LOW_LEVEL;
         else if (dungeon->maxlevel < level)
             locktype = LFG_LOCKSTATUS_TOO_HIGH_LEVEL;
+        else if (dungeon->flags & LFG_FLAG_SEASONAL)
+        {
+            if (HolidayIds holiday = sLFGMgr->GetDungeonSeason(dungeon->ID))
+                if (!IsHolidayActive(holiday))
+                    locktype = LFG_LOCKSTATUS_NOT_IN_SEASON;
+        }
         else if (locktype == LFG_LOCKSTATUS_OK && ar)
         {
             if (ar->achievement && !player->GetAchievementMgr().HasAchieved(ar->achievement))
@@ -551,7 +590,6 @@ void LFGMgr::InitializeLockedDungeons(Player* player)
             locktype = LFG_LOCKSTATUS_TOO_HIGH_GEAR_SCORE;
             locktype = LFG_LOCKSTATUS_ATTUNEMENT_TOO_LOW_LEVEL;
             locktype = LFG_LOCKSTATUS_ATTUNEMENT_TOO_HIGH_LEVEL;
-            locktype = LFG_LOCKSTATUS_NOT_IN_SEASON; // Need list of instances and needed season to open
         */
 
         if (locktype != LFG_LOCKSTATUS_OK)
@@ -2015,19 +2053,27 @@ void LFGMgr::TeleportPlayer(Player* player, bool out, bool fromOpcode /*= false*
 
             if (!mapid)
             {
-                AreaTrigger const* at = sObjectMgr->GetMapEntranceTrigger(dungeon->map);
-                if (!at)
+                LfgEntrancePositionMap::const_iterator itr = m_entrancePositions.find(dungeon->ID);
+                if (itr != m_entrancePositions.end())
                 {
-                    sLog->outError(LOG_FILTER_LFG, "LfgMgr::TeleportPlayer: Failed to teleport [" UI64FMTD "]: No areatrigger found for map: %u difficulty: %u", player->GetGUID(), dungeon->map, dungeon->difficulty);
-                    error = LFG_TELEPORTERROR_INVALID_LOCATION;
+                    mapid = dungeon->map;
+                    x = itr->second.GetPositionX();
+                    y = itr->second.GetPositionY();
+                    z = itr->second.GetPositionZ();
+                    orientation = itr->second.GetOrientation();
                 }
-                else
+                else if (AreaTrigger const* at = sObjectMgr->GetMapEntranceTrigger(dungeon->map))
                 {
                     mapid = at->target_mapId;
                     x = at->target_X;
                     y = at->target_Y;
                     z = at->target_Z;
                     orientation = at->target_Orientation;
+                }
+                else
+                {
+                    sLog->outError(LOG_FILTER_LFG, "LfgMgr::TeleportPlayer: Failed to teleport [" UI64FMTD "]: No areatrigger found for map: %u difficulty: %u", player->GetGUID(), dungeon->map, dungeon->difficulty);
+                    error = LFG_TELEPORTERROR_INVALID_LOCATION;
                 }
             }
 
@@ -2072,43 +2118,43 @@ void LFGMgr::SendUpdateStatus(Player* player, const std::string& comment, const 
         return;
 
     WorldPacket data(SMSG_LFG_UPDATE_STATUS);
-    data.WriteBit(1);       //unk bit, lfg join ? always 1
-    data.WriteBits(comment.size(), 9);   //unk NameLen
-    data.WriteBit(guid[0]);       //unk guid0
-    data.WriteBit(guid[6]);       //unk guid6
-    data.WriteBit(guid[7]);       //unk guid7
-    data.WriteBit(!quit);       //display or not the lfr button, lfg join ?, 0 for last one
-    data.WriteBits(selectedDungeons.size(), 24);  //unk count
-    data.WriteBit(guid[5]);       //unk guid5
-    data.WriteBit(guid[2]);       //unk guid2
-    data.WriteBit(0);       //unk, always 0 ?             
-    data.WriteBit(0);       //unk bit, lfg join ?   --1 on first packet, then 0
-    data.WriteBit(1);       //!Pause               --0 on first packet, 1 on second, 0 for last one
-    data.WriteBit(guid[4]);       //unk guid4
-    data.WriteBit(guid[3]);       //unk guid3
-    data.WriteBit(guid[1]);       //unk guid1
+    data.WriteBit(1);                               //unk bit, lfg join ? always 1
+    data.WriteBits(comment.size(), 9);              //unk NameLen
+    data.WriteBit(guid[0]);                         //unk guid0
+    data.WriteBit(guid[6]);                         //unk guid6
+    data.WriteBit(guid[7]);                         //unk guid7
+    data.WriteBit(!quit);                           //display or not the lfr button, lfg join ?, 0 for last one
+    data.WriteBits(selectedDungeons.size(), 24);    //unk count
+    data.WriteBit(guid[5]);                         //unk guid5
+    data.WriteBit(guid[2]);                         //unk guid2
+    data.WriteBit(0);                               //unk, always 0 ?             
+    data.WriteBit(0);                               //unk bit, lfg join ?   --1 on first packet, then 0
+    data.WriteBit(1);                               //!Pause               --0 on first packet, 1 on second, 0 for last one
+    data.WriteBit(guid[4]);                         //unk guid4
+    data.WriteBit(guid[3]);                         //unk guid3
+    data.WriteBit(guid[1]);                         //unk guid1
 
     data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(guid[6]);
     data.WriteByteSeq(guid[5]);
-    data << uint8(13);       //unk byte, 24, 13, doesn't depend on the player
+    data << uint8(13);                              //unk byte, 24, 13, doesn't depend on the player
     data.WriteString(comment);
     
     for (auto i = selectedDungeons.begin(); i != selectedDungeons.end(); ++i)
-        data << uint32(*i); //Dungeon entries
+        data << uint32(*i);                         //Dungeon entries
 
     data.WriteByteSeq(guid[0]);
     data.WriteByteSeq(guid[2]);
-    data << uint32(3);      //unk32
+    data << uint32(3);                              //unk32
     data.WriteByteSeq(guid[4]);
     data << uint32(info->joinTime);
     data.WriteByteSeq(guid[1]);
-    data << uint32(player->GetTeam());      //queueId
-    data << uint8(1);       //unk byte, 0 most of the time
+    data << uint32(player->GetTeam());              //queueId
+    data << uint8(1);                               //unk byte, 0 most of the time
     data.WriteByteSeq(guid[7]);
-    data << uint32(8);      //unk32; 8 most of the time
+    data << uint32(8);                              //unk32; 8 most of the time
     for (int i = 0; i < 3; ++i)
-        data << uint8(0);   //unk8 always 0 ?
+        data << uint8(0);                           //unk8 always 0 ?
     player->GetSession()->SendPacket(&data);
 }
 
@@ -2150,11 +2196,11 @@ void LFGMgr::RewardDungeonDoneFor(const uint32 dungeonId, Player* player)
     ClearState(guid);
     SetState(guid, LFG_STATE_FINISHED_DUNGEON);
 
-    // Give rewards only if its a random dungeon
+    // Give rewards only if its a random or seasonal  dungeon
     LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(rDungeonId);
-    if (!dungeon || dungeon->type != LFG_TYPE_RANDOM)
+    if (!dungeon || (dungeon->type != LFG_TYPE_RANDOM && !(dungeon->flags & LFG_FLAG_SEASONAL)))
     {
-        sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::RewardDungeonDoneFor: [" UI64FMTD "] dungeon %u is not random", guid, rDungeonId);
+        sLog->outDebug(LOG_FILTER_LFG, "LFGMgr::RewardDungeonDoneFor: [" UI64FMTD "] dungeon %u is not random nor seasonal", guid, rDungeonId);
         return;
     }
 
@@ -2260,6 +2306,31 @@ std::string LFGMgr::ConcatenateGuids(LfgGuidList check)
     for (++it; it != check.end(); ++it)
         o << '|' << (*it);
     return o.str();
+}
+
+HolidayIds LFGMgr::GetDungeonSeason(uint32 dungeonId)
+{
+    HolidayIds holiday = HOLIDAY_NONE;
+
+    switch (dungeonId)
+    {
+    case 285:
+        holiday = HOLIDAY_HALLOWS_END;
+        break;
+    case 286:
+        holiday = HOLIDAY_FIRE_FESTIVAL;
+        break;
+    case 287:
+        holiday = HOLIDAY_BREWFEST;
+        break;
+    case 288:
+        holiday = HOLIDAY_LOVE_IS_IN_THE_AIR;
+        break;
+    default:
+        break;
+    }
+
+    return holiday;
 }
 
 LfgState LFGMgr::GetState(uint64 guid)

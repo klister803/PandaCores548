@@ -41,6 +41,14 @@ enum LFGenum
     LFG_SPELL_LUCK_OF_THE_DRAW                   = 72221
 };
 
+enum LfgFlags
+{
+    LFG_FLAG_UNK1                                = 0x1,
+    LFG_FLAG_UNK2                                = 0x2,
+    LFG_FLAG_SEASONAL                            = 0x4,
+    LFG_FLAG_UNK3                                = 0x8
+};
+
 /// Determines the type of instance
 enum LfgType
 {
