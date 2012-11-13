@@ -9027,7 +9027,6 @@ Unit* Unit::GetMagicHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo)
             if (spellInfo->CheckExplicitTarget(this, magnet) == SPELL_CAST_OK
                 && spellInfo->CheckTarget(this, magnet, false) == SPELL_CAST_OK
                 && _IsValidAttackTarget(magnet, spellInfo)
-                && IsWithinLOSInMap(magnet))
             {
                 // TODO: handle this charge drop by proc in cast phase on explicit target
                 (*itr)->GetBase()->DropCharge(AURA_REMOVE_BY_EXPIRE);
