@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
+ * Copyright (C) 2008-2011 TrinityCore <http://www.trinitycore.org/>
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,7 +15,7 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef ICECROWN_CITADEL_H_
+#ifndef ICECROWN_CITADEL_H_ 
 #define ICECROWN_CITADEL_H_
 
 #include "SpellScript.h"
@@ -37,80 +37,104 @@ extern Position const TerenasSpawn;
 extern Position const TerenasSpawnHeroic;
 extern Position const SpiritWardenSpawn;
 
+#define MAX_PLAYER_DAMAGES_LOG   300000
+#define MAX_PLAYER_DAMAGES       400000
+
 // Shared spells used by more than one script
 enum SharedSpells
 {
-    SPELL_BERSERK                       = 26662,
-    SPELL_BERSERK2                      = 47008,
+    SPELL_BERSERK               = 26662,
+    SPELL_BERSERK2              = 47008,
 
     // Deathbound Ward
-    SPELL_STONEFORM                     = 70733,
+    SPELL_STONEFORM             = 70733,
+
+    // Gunship Visual
+    SPELL_TELEPORT_AFTER_EVENT  = 67335,
+    SPELL_FIRE_VISUAL           = 71025,
 
     // Residue Rendezvous
-    SPELL_ORANGE_BLIGHT_RESIDUE         = 72144,
-    SPELL_GREEN_BLIGHT_RESIDUE          = 72145,
+    SPELL_ORANGE_BLIGHT_RESIDUE = 72144,
+    SPELL_GREEN_BLIGHT_RESIDUE  = 72145,
 
     // The Lich King
-    SPELL_ARTHAS_TELEPORTER_CEREMONY    = 72915,
-    SPELL_FROSTMOURNE_TELEPORT_VISUAL   = 73078
+    SPELL_FROSTMOURNE_TELEPORT_VISUAL   = 73078,
 };
 
 enum TeleporterSpells
 {
-    LIGHT_S_HAMMER_TELEPORT             = 70781,
-    ORATORY_OF_THE_DAMNED_TELEPORT      = 70856,
-    RAMPART_OF_SKULLS_TELEPORT          = 70857,
-    DEATHBRINGER_S_RISE_TELEPORT        = 70858,
-    UPPER_SPIRE_TELEPORT                = 70859,
-    FROZEN_THRONE_TELEPORT              = 70860,
-    SINDRAGOSA_S_LAIR_TELEPORT          = 70861
+    LIGHT_S_HAMMER_TELEPORT         = 70781,
+    ORATORY_OF_THE_DAMNED_TELEPORT  = 70856,
+    RAMPART_OF_SKULLS_TELEPORT      = 70857,
+    DEATHBRINGER_S_RISE_TELEPORT    = 70858,
+    UPPER_SPIRE_TELEPORT            = 70859,
+    FROZEN_THRONE_TELEPORT          = 70860,
+    SINDRAGOSA_S_LAIR_TELEPORT      = 70861,
 };
 
 enum DataTypes
 {
     // Encounter States/Boss GUIDs
-    DATA_LORD_MARROWGAR                 = 0,
-    DATA_LADY_DEATHWHISPER              = 1,
-    DATA_GUNSHIP_EVENT                  = 2,
-    DATA_DEATHBRINGER_SAURFANG          = 3,
-    DATA_FESTERGUT                      = 4,
-    DATA_ROTFACE                        = 5,
-    DATA_PROFESSOR_PUTRICIDE            = 6,
-    DATA_BLOOD_PRINCE_COUNCIL           = 7,
-    DATA_BLOOD_QUEEN_LANA_THEL          = 8,
-    DATA_SISTER_SVALNA                  = 9,
-    DATA_VALITHRIA_DREAMWALKER          = 10,
-    DATA_SINDRAGOSA                     = 11,
-    DATA_THE_LICH_KING                  = 12,
+    DATA_LORD_MARROWGAR             = 0,
+    DATA_LADY_DEATHWHISPER          = 1,
+    DATA_GUNSHIP_EVENT              = 2,
+    DATA_DEATHBRINGER_SAURFANG      = 3,
+    DATA_FESTERGUT                  = 4,
+    DATA_ROTFACE                    = 5,
+    DATA_PROFESSOR_PUTRICIDE        = 6,
+    DATA_BLOOD_PRINCE_COUNCIL       = 7,
+    DATA_BLOOD_QUEEN_LANA_THEL      = 8,
+    DATA_SISTER_SVALNA              = 9,
+    DATA_VALITHRIA_DREAMWALKER      = 10,
+    DATA_SINDRAGOSA                 = 11,
+    DATA_THE_LICH_KING              = 12,
 
     // Additional data
-    DATA_SAURFANG_EVENT_NPC             = 13,
-    DATA_BONED_ACHIEVEMENT              = 14,
-    DATA_OOZE_DANCE_ACHIEVEMENT         = 15,
-    DATA_PUTRICIDE_TABLE                = 16,
-    DATA_NAUSEA_ACHIEVEMENT             = 17,
-    DATA_ORB_WHISPERER_ACHIEVEMENT      = 18,
-    DATA_PRINCE_KELESETH_GUID           = 19,
-    DATA_PRINCE_TALDARAM_GUID           = 20,
-    DATA_PRINCE_VALANAR_GUID            = 21,
-    DATA_BLOOD_PRINCES_CONTROL          = 22,
-    DATA_SINDRAGOSA_FROSTWYRMS          = 23,
-    DATA_SPINESTALKER                   = 24,
-    DATA_RIMEFANG                       = 25,
-    DATA_COLDFLAME_JETS                 = 26,
-    DATA_TEAM_IN_INSTANCE               = 27,
-    DATA_BLOOD_QUICKENING_STATE         = 28,
-    DATA_HEROIC_ATTEMPTS                = 29,
-    DATA_CROK_SCOURGEBANE               = 30,
-    DATA_CAPTAIN_ARNATH                 = 31,
-    DATA_CAPTAIN_BRANDON                = 32,
-    DATA_CAPTAIN_GRONDEL                = 33,
-    DATA_CAPTAIN_RUPERT                 = 34,
-    DATA_VALITHRIA_TRIGGER              = 35,
-    DATA_VALITHRIA_LICH_KING            = 36,
-    DATA_HIGHLORD_TIRION_FORDRING       = 37,
-    DATA_ARTHAS_PLATFORM                = 38,
-    DATA_TERENAS_MENETHIL               = 39
+    DATA_SAURFANG_EVENT_NPC         = 13,
+    DATA_BONED_ACHIEVEMENT          = 14,
+    DATA_OOZE_DANCE_ACHIEVEMENT     = 15,
+    DATA_PUTRICIDE_TABLE            = 16,
+    DATA_NAUSEA_ACHIEVEMENT         = 17,
+    DATA_ORB_WHISPERER_ACHIEVEMENT  = 18,
+    DATA_PRINCE_KELESETH_GUID       = 19,
+    DATA_PRINCE_TALDARAM_GUID       = 20,
+    DATA_PRINCE_VALANAR_GUID        = 21,
+    DATA_BLOOD_PRINCES_CONTROL      = 22,
+    DATA_BLOODQUEEN_TARGETS         = 23,
+    DATA_BLOODQUEEN_TARGETS_COUNT   = 24,
+    DATA_BLOODQUEEN_TARGETS_PROC    = 25,
+    DATA_SINDRAGOSA_FROSTWYRMS      = 26,
+    DATA_SPINESTALKER               = 27,
+    DATA_RIMEFANG                   = 28,
+    DATA_COLDFLAME_JETS             = 29,
+    DATA_TEAM_IN_INSTANCE           = 30,
+    DATA_BLOOD_QUICKENING_STATE     = 31,
+    DATA_HEROIC_ATTEMPTS            = 32,
+    
+    DATA_GUNSHIP_TRANSPORT_MAIN     = 33,
+    DATA_GUNSHIP_TRANSPORT_SECOND   = 34,
+    DATA_GUNSHIP_NPC_MAIN           = 35,
+    DATA_GUNSHIP_NPC_SECOND         = 36,
+    DATA_GUNSHIP_COMMANDER          = 37,
+    DATA_GUNSHIP_ENNEMY_COMMANDER   = 38,
+    DATA_GUNSHIP_ICE_CANON_EVENT    = 39,
+    DATA_GUNSHIP_PORTAL_MAGES       = 40,
+    DATA_GUNSHIP_ADD_RESPAWN        = 41,
+    DATA_GUNSHIP_BOARDING_COUNT     = 42,
+
+    // Frost Wing
+    DATA_CROK_SCOURGEBANE           = 43,
+    DATA_CAPTAIN_ARNATH             = 44,
+    DATA_CAPTAIN_BRANDON            = 45,
+    DATA_CAPTAIN_GRONDEL            = 46,
+    DATA_CAPTAIN_RUPERT             = 47,
+    DATA_CAPTAIN_NUMBER             = 48,
+    DATA_VALITHRIA_TRIGGER          = 49,
+    DATA_VALITHRIA_LICH_KING        = 50,
+
+    DATA_HIGHLORD_TIRION_FORDRING   = 51,
+    DATA_ARTHAS_PLATFORM            = 52,
+    DATA_TERENAS_MENETHIL           = 53,
 };
 
 enum CreaturesIds
@@ -163,6 +187,31 @@ enum CreaturesIds
     NPC_EMPOWERED_ADHERENT                      = 38136,
     NPC_REANIMATED_ADHERENT                     = 38010,
     NPC_VENGEFUL_SHADE                          = 38222,
+
+    // Gunship Event
+    //Alliance
+    NPC_MURADIN_GUNSHIP                         = 36948,
+    NPC_GUNSHIP_A                               = 37540,
+    NPC_CANON_A                                 = 36838,
+    NPC_TIREUR_A                                = 36969,
+    NPC_MAGE_A                                  = 37116,
+    NPC_ARTILLEUR_A                             = 36978,
+    NPC_SERGENT_A                               = 36961,
+    NPC_SOLDAT_A                                = 36950,
+
+	//Horde
+    NPC_SAURCROC_GUNSHIP                        = 36939,
+    NPC_GUNSHIP_H                               = 37215,
+    NPC_CANON_H	                                = 36839,
+    NPC_TIREUR_H                                = 36968,
+    NPC_MAGE_H                                  = 37117,
+    NPC_ARTILLEUR_H                             = 36982,
+    NPC_SERGENT_H                               = 36960,
+    NPC_SOLDAT_H                                = 36957,
+
+    //Neutral
+    NPC_GUNSHIP_PORTAL                          = 37227,
+    NPC_FIRE_TRIGGER                            = 27273,
 
     // Deathbringer Saurfang
     NPC_DEATHBRINGER_SAURFANG                   = 37813,
@@ -237,10 +286,10 @@ enum CreaturesIds
     NPC_BLAZING_SKELETON                        = 36791,
     NPC_SUPPRESSER                              = 37863,
     NPC_BLISTERING_ZOMBIE                       = 37934,
+    NPC_ROT_WORM                                = 37907,
     NPC_GLUTTONOUS_ABOMINATION                  = 37886,
     NPC_MANA_VOID                               = 38068,
     NPC_COLUMN_OF_FROST                         = 37918,
-    NPC_ROT_WORM                                = 37907,
     NPC_THE_LICH_KING_VALITHRIA                 = 16980,
     NPC_DREAM_PORTAL_PRE_EFFECT                 = 38186,
     NPC_NIGHTMARE_PORTAL_PRE_EFFECT             = 38429,
@@ -276,9 +325,6 @@ enum CreaturesIds
     NPC_WORLD_TRIGGER_INFINITE_AOI              = 36171,
     NPC_SPIRIT_BOMB                             = 39189,
     NPC_FROSTMOURNE_TRIGGER                     = 38584,
-
-    // Generic
-    NPC_INVISIBLE_STALKER                       = 30298,
 };
 
 enum GameObjectsIds
@@ -297,6 +343,17 @@ enum GameObjectsIds
     // Lady Deathwhisper
     GO_ORATORY_OF_THE_DAMNED_ENTRANCE       = 201563,
     GO_LADY_DEATHWHISPER_ELEVATOR           = 202220,
+
+    // Gunship Event
+    GO_GUNSHIP_COFFRE_A_10N                 = 201872,
+    GO_GUNSHIP_COFFRE_A_25N                 = 201873,
+    GO_GUNSHIP_COFFRE_A_10H                 = 201874,
+    GO_GUNSHIP_COFFRE_A_25H                 = 201875,
+
+    GO_GUNSHIP_COFFRE_H_10N                 = 202177,
+    GO_GUNSHIP_COFFRE_H_25N                 = 202178,
+    GO_GUNSHIP_COFFRE_H_10H                 = 202179,
+    GO_GUNSHIP_COFFRE_H_25H                 = 202180,
 
     // Deathbringer Saurfang
     GO_SAURFANG_S_DOOR                      = 201825,
@@ -318,6 +375,8 @@ enum GameObjectsIds
     GO_DRINK_ME                             = 201584,
     GO_PLAGUE_SIGIL                         = 202182,
 
+    GO_BLOOD_DOOR                           = 201920,
+
     // Blood Prince Council
     GO_CRIMSON_HALL_DOOR                    = 201376,
     GO_BLOOD_ELF_COUNCIL_DOOR               = 201378,
@@ -328,6 +387,8 @@ enum GameObjectsIds
     GO_DOODAD_ICECROWN_GRATE_01             = 201755,
     GO_BLOODWING_SIGIL                      = 202183,
 
+    GO_ICE_DOOR                             = 201919,
+
     // Valithria Dreamwalker
     GO_GREEN_DRAGON_BOSS_ENTRANCE           = 201375,
     GO_GREEN_DRAGON_BOSS_EXIT               = 201374,
@@ -335,10 +396,10 @@ enum GameObjectsIds
     GO_DOODAD_ICECROWN_ROOSTPORTCULLIS_02   = 201381,
     GO_DOODAD_ICECROWN_ROOSTPORTCULLIS_03   = 201382,
     GO_DOODAD_ICECROWN_ROOSTPORTCULLIS_04   = 201383,
-    GO_CACHE_OF_THE_DREAMWALKER_10N         = 201959,
-    GO_CACHE_OF_THE_DREAMWALKER_25N         = 202339,
-    GO_CACHE_OF_THE_DREAMWALKER_10H         = 202338,
-    GO_CACHE_OF_THE_DREAMWALKER_25H         = 202340,
+    GO_DREAMWALKER_S_CACHE_10N              = 201959,
+    GO_DREAMWALKER_S_CACHE_25N              = 202339,
+    GO_DREAMWALKER_S_CACHE_10H              = 202338,
+    GO_DREAMWALKER_S_CACHE_25H              = 202340,
 
     // Sindragosa
     GO_SINDRAGOSA_ENTRANCE_DOOR             = 201373,
@@ -349,7 +410,6 @@ enum GameObjectsIds
     GO_SIGIL_OF_THE_FROSTWING               = 202181,
 
     // The Lich King
-    GO_SCOURGE_TRANSPORTER_LK               = 202223,
     GO_ARTHAS_PLATFORM                      = 202161,
     GO_ARTHAS_PRECIPICE                     = 202078,
     GO_DOODAD_ICECROWN_THRONEFROSTYWIND01   = 202188,
@@ -364,6 +424,17 @@ enum GameObjectsIds
     GO_LAVAMAN_PILLARS_UNCHAINED            = 202438,
 };
 
+enum TransportsIds
+{
+    // Transports pour l'alliance
+    TRANSPORT_A_ORGRIM_HAMMER               = 201581, // Visible après x secondes
+    TRANSPORT_A_THE_SKYBREAKER              = 201580, // De base
+    TRANSPORT_A_THE_MIGHTY_WIND             = 201834, // Fin de l'event alliance de Saucroc
+    // Transports pour la horde
+    TRANSPORT_H_ORGRIM_HAMMER               = 201812, // De base
+    TRANSPORT_H_THE_SKYBREAKER              = 201811, // Visible après x secondes
+};
+
 enum AchievementCriteriaIds
 {
     // Lord Marrowgar
@@ -371,6 +442,12 @@ enum AchievementCriteriaIds
     CRITERIA_BONED_25N                  = 12962,
     CRITERIA_BONED_10H                  = 13393,
     CRITERIA_BONED_25H                  = 13394,
+
+    // Gunship
+    CRITERIA_WIN_GUNSHIP_10N            = 12771,
+    CRITERIA_WIN_GUNSHIP_25N            = 12947,
+    CRITERIA_WIN_GUNSHIP_10H            = 13041,
+    CRITERIA_WIN_GUNSHIP_25H            = 13052,
 
     // Rotface
     CRITERIA_DANCES_WITH_OOZES_10N      = 12984,
@@ -399,32 +476,76 @@ enum AchievementCriteriaIds
     CRITERIA_ONCE_BITTEN_TWICE_SHY_25V  = 13013,
 };
 
+enum AchivementsId
+{
+    I_M_ON_A_BOAT_10                    = 4536,
+    I_M_ON_A_BOAT_25                    = 4612,
+
+    ACHIEVEMENT_FULL_HOUSE              = 4535,
+};
+
 enum SharedActions
 {
+    // Gunship
+    ACTION_LAUNCH_FIRST_GUNSHIP     = 1,
+    ACTION_STOP_FIRST_GUNSHIP       = 2,
+    ACTION_LAUNCH_SECOND_GUNSHIP    = 3,
+    ACTION_STOP_SECOND_GUNSHIP      = 4,
+    
+    ACTION_START_INTRO              = 5,
+    ACTION_START_FIGHT              = 6,
+    ACTION_SET_ENNEMY_COMMANDER     = 7,
+
+    ACTION_SET_MAIN_GUNSHIP         = 8,
+    ACTION_SET_SECOND_GUNSHIP       = 9,
+
+    ACTION_ADD_ENCOUNTER_GUNSHIP    = 10,
+    ACTION_REMOVE_ENCOUNTER_GUNSHIP = 11,
+
+    ACTION_SET_EVENT_PORTAL         = 12,
+    ACTION_PORTAL_UNIT_KILLED       = 13,
+    
+    ACTION_ADD_MAGE                 = 14,
+    ACTION_REMOVE_MAGE              = 15,
+    ACTION_SET_CANON_SPELL          = 16,
+
+    ACTION_CANON_FREEZE             = 17,
+    ACTION_CANON_UNFREEZE           = 18,
+
+    ACTION_WIPE                     = 19,
+
     // Festergut
-    ACTION_FESTERGUT_COMBAT     = -366260,
-    ACTION_FESTERGUT_GAS        = -366261,
-    ACTION_FESTERGUT_DEATH      = -366262,
+    ACTION_FESTERGUT_COMBAT         = -366260,
+    ACTION_FESTERGUT_GAS            = -366261,
+    ACTION_FESTERGUT_DEATH          = -366262,
 
     // Rotface
-    ACTION_ROTFACE_COMBAT       = -366270,
-    ACTION_ROTFACE_OOZE         = -366271,
-    ACTION_ROTFACE_DEATH        = -366272,
-    ACTION_CHANGE_PHASE         = -366780,
+    ACTION_ROTFACE_COMBAT           = -366270,
+    ACTION_ROTFACE_OOZE             = -366271,
+    ACTION_ROTFACE_DEATH            = -366272,
+    ACTION_CHANGE_PHASE             = -366780,
 
     // Blood-Queen Lana'thel
-    ACTION_KILL_MINCHAR         = -379550,
+    ACTION_KILL_MINCHAR             = -379550,
 
     // Frostwing Halls gauntlet event
-    ACTION_VRYKUL_DEATH         = 37129,
+    ACTION_VRYKUL_DEATH             = 37129,
+
+    // Sister Svalna
+    ACTION_KILL_CAPTAIN             = -366781,
+    ACTION_START_GAUNTLET           = -366782,
+    ACTION_RESURRECT_CAPTAINS       = -366783,
+    ACTION_CAPTAIN_DIES             = -366784,
+    ACTION_RESET_EVENT              = -366785,
 
     // Sindragosa
-    ACTION_START_FROSTWYRM      = -368530,
-    ACTION_TRIGGER_ASPHYXIATION = -368531,
+    ACTION_START_FROSTWYRM          = -368530,
+    ACTION_BOMB_LANDED              = -368531,
+    ACTION_TRIGGER_ASPHYXIATION     = -368532,
 
     // The Lich King
-    ACTION_RESTORE_LIGHT        = -72262,
-    ACTION_FROSTMOURNE_INTRO    = -36823,
+    ACTION_RESTORE_LIGHT            = -72262,
+    ACTION_FROSTMOURNE_INTRO        = -36823,
 };
 
 enum WeekliesICC
@@ -453,6 +574,68 @@ enum WorldStatesICC
 enum AreaIds
 {
     AREA_THE_FROZEN_THRONE  = 4859,
+};
+
+struct creatureEntryAndGuid
+{
+    uint64 guid;
+    uint32 entry;
+};
+
+typedef creatureEntryAndGuid TypecreatureEntryAndGuid;
+
+
+extern Position const AllyIceMageSpawnPosition;
+extern Position const AllyIceMageCastPosition;
+extern Position const AllyPortalPosition;
+
+extern Position const HordeIceMageSpawnPosition;
+extern Position const HordeIceMageCastPosition;
+extern Position const HordePortalPosition;
+
+extern Position const AllianceCanonsPosition[4];
+extern Position const HordeCanonsPosition[4];
+
+extern Position const HordeFlammePosition[7];
+extern Position const AllianceFlammePosition[7];
+
+//  SAY_EVENT_ID_EVENTFACTION_COMMANDERFACTION
+enum GunshipYells
+{
+    SAY_EVENT_01_A_A                        = -2631050, // Faites chauffer les moteurs ! On a rencart avec le destin les gars !
+    SAY_EVENT_02_A_A                        = -2631051, // Accrochez-vous à vos casques !
+    SAY_EVENT_03_A_A                        = -2631052, // Qu''est-ce que c''est qu''ce truc ? Equipage, ma longue-vue, fissa.
+    SAY_EVENT_04_A_A                        = -2631053, // Par ma barbe... Horde en approche, et pas qu''à moitié !
+    SAY_EVENT_05_A_A                        = -2631054, // Manoeuvre d''esquive ! Tous à vos canons !
+    SAY_EVENT_06_A_A                        = -2631055, // Pleutres à foi jaune ! Nous attaquer par l''angle mort !
+    SAY_EVENT_07_A_H                        = -2631056, // Ce combat n''est pas le votre, nain. Retirez-vous, ou nous serons forcés de détruire votre vaisseau.'
+    SAY_EVENT_08_A_A                        = -2631057, // Pas mon combat ? Mon gars, j''sais pas pour qui tu te prends
+
+    SAY_EVENT_FIGHT_START_A_H               = -2631058, // Saccageurs, Sergents, à l''attaque !
+    SAY_EVENT_FIGHT_START_A_A               = -2631059, // Et puis quoi encore ? ''chuis un fils de Forgefer, et
+
+    SAY_EVENT_FIGHT_RESPAWN_TIREUR_A_H      = -2631060,
+    SAY_EVENT_FIGHT_RESPAWN_ARTILLEUR_A_H   = -2631061,
+    SAY_EVENT_FIGHT_RESPAWN_ICE_MAGE_A_H    = -2631042,
+
+    SAY_EVENT_VICTORY_A_A                   = -2631063,
+    SAY_EVENT_VICTORY_A_H                   = -2631044,
+
+    SAY_EVENT_01_H_H                        = -2631031,
+    SAY_EVENT_02_H_H                        = -2631032,
+    SAY_EVENT_03_H_H                        = -2631033,
+    SAY_EVENT_04_H_A                        = -2631036,
+    SAY_EVENT_05_H_H                        = -2631037,
+
+    SAY_EVENT_FIGHT_START_H_A               = -2631038,
+    SAY_EVENT_FIGHT_START_H_H               = -2631039,
+
+    SAY_EVENT_FIGHT_RESPAWN_TIREUR_H_A      = -2631040,
+    SAY_EVENT_FIGHT_RESPAWN_ARTILLEUR_H_A   = -2631041,
+    SAY_EVENT_FIGHT_RESPAWN_ICE_MAGE_H_A    = -2631062,
+
+    SAY_EVENT_VICTORY_H_H                   = -2631043,
+    SAY_EVENT_VICTORY_H_A                   = -2631064,
 };
 
 class spell_trigger_spell_from_caster : public SpellScriptLoader
@@ -506,4 +689,17 @@ CreatureAI* GetIcecrownCitadelAI(Creature* creature)
     return NULL;
 }
 
-#endif // ICECROWN_CITADEL_H_
+void CheckPlayerDamage(Unit* pUnit, uint32 & damage);
+
+// Declaration
+extern Position const SindragosaSpawnPos;
+uint32 GetPhase(const EventMap &em);
+void TeleportPlayerToFrozenThrone(Player* player);
+void LeaveOnlyPlayers(std::list<Unit*> &targets);
+typedef std::list<Player*> TPlayerList;
+TPlayerList GetPlayersInTheMap(Map* pMap);
+TPlayerList GetAttackablePlayersInTheMap(Map* pMap);
+
+void UnsummonSpecificCreaturesNearby(Creature* ref, uint32 entry, float radius);
+
+#endif // DEF_ICECROWN_CITADEL_H
