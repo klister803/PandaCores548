@@ -24,6 +24,7 @@
 #include "RefManager.h"
 #include "SharedDefines.h"
 #include "ConditionMgr.h"
+#include "Object.h"
 
 #include <map>
 #include <vector>
