@@ -1671,6 +1671,9 @@ public:
             case CLASS_DRUID:
                 ClassStr = "Druid";
                 break;
+            case CLASS_MONK:
+                ClassStr = "Monk";
+                break;
         }
 
         std::string timeStr = secsToTimeString(totalPlayerTime, true, true);
