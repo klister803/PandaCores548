@@ -1408,8 +1408,8 @@ struct LFGDungeonEntry
     uint32 tankNeeded;                                      // 18
     uint32 healerNeeded;                                    // 19
     uint32 dpsNeeded;                                       // 20
-    //uint32 unk_505;                                       // 21
-    //uint32 unk_505_2;                                     // 22
+    //uint32 unk_505_2;                                     // 21
+    //uint32 unk_505_3;                                     // 22
     // Helpers
     uint32 Entry() const { return ID + (type << 24); }
     // 1 = LFG_TYPE_DUNGEON
