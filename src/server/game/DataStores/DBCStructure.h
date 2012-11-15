@@ -1396,14 +1396,14 @@ struct LFGDungeonEntry
     uint32  recmaxlevel;                                    // 6
     int32  map;                                             // 7
     uint32  difficulty;                                     // 8
-    //uint32  unk;                                          // 9
+    uint32  flags;                                          // 9
     uint32  type;                                           // 10
     //uint32  unk505;                                       // 11
-    //char*   unk3;                                         // 12
+    //char*   namelite;                                     // 12 Name lite
     uint32  expansion;                                      // 13
     //uint32  unk2;                                         // 14
-    uint32 flags;                                           // 15
-    //char* unk                                             // 16
+    uint32 flags2;                                          // 15 Unk use
+    //char* descr                                           // 16 Description
     uint32 grouptype;                                       // 17
     uint32 tankNeeded;                                      // 18
     uint32 healerNeeded;                                    // 19
