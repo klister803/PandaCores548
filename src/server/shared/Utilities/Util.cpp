@@ -16,8 +16,9 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <iostream>
+
 #include "Util.h"
+#include "Common.h"
 #include "utf8.h"
 #include "SFMT.h"
 #include <ace/TSS_T.h>

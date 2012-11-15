@@ -126,6 +126,7 @@ void WorldSession::HandleGuildRosterOpcode(WorldPacket& recvPacket)
         guild->HandleRoster(this);
 }
 
+//Deprecated Handler
 void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GUILD_PROMOTE");

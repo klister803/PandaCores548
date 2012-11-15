@@ -1400,10 +1400,10 @@ class instance_icecrown_citadel : public InstanceMapScript
                     case DATA_CAPTAIN_NUMBER:
                         switch(data)
                         {
-                            case ACTION_RESURRECT_CAPTAINS:
+                            case (uint32)ACTION_RESURRECT_CAPTAINS:
                                 CaptainCount++;
                                 break;
-                            case ACTION_KILL_CAPTAIN:
+                            case (uint32)ACTION_KILL_CAPTAIN:
                                 CaptainCount--;
                                 if(!CaptainCount)
                                     if (Creature* Svalna = instance->GetCreature(GetData64(DATA_SISTER_SVALNA)))
