@@ -39,7 +39,7 @@
 #include "BattlegroundRB.h"
 #include "BattlegroundTP.h"
 #include "BattlegroundBFG.h"
-#include "BattlegroundVOP.h"
+#include "BattlegroundKT.h"
 #include "BattlegroundSSM.h"
 #include "Chat.h"
 #include "Map.h"
@@ -1007,8 +1007,8 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         case BATTLEGROUND_RB:
             bg = new BattlegroundRB(*(BattlegroundRB*)bg_template);
             break;
-        case BATTLEGROUND_VOP:
-            bg = new BattlegroundVOP(*(BattlegroundVOP*)bg_template);
+        case BATTLEGROUND_KT:
+            bg = new BattlegroundKT(*(BattlegroundKT*)bg_template);
             break;
         case BATTLEGROUND_SSM:
             bg = new BattlegroundSSM(*(BattlegroundSSM*)bg_template);
@@ -1398,8 +1398,8 @@ BattlegroundQueueTypeId BattlegroundMgr::BGQueueTypeId(BattlegroundTypeId bgType
             return BATTLEGROUND_QUEUE_BFG;
         case BATTLEGROUND_RB:
             return BATTLEGROUND_QUEUE_RB;
-        case BATTLEGROUND_VOP:
-            return BATTLEGROUND_QUEUE_VOP;
+        case BATTLEGROUND_KT:
+            return BATTLEGROUND_QUEUE_KT;
         case BATTLEGROUND_CTF3:
             return BATTLEGROUND_QUEUE_CTF3;
         case BATTLEGROUND_SSM:
@@ -1450,8 +1450,8 @@ BattlegroundTypeId BattlegroundMgr::BGTemplateId(BattlegroundQueueTypeId bgQueue
             return BATTLEGROUND_BFG;
         case BATTLEGROUND_QUEUE_RB:
             return BATTLEGROUND_RB;
-        case BATTLEGROUND_QUEUE_VOP:
-            return BATTLEGROUND_VOP;
+        case BATTLEGROUND_QUEUE_KT:
+            return BATTLEGROUND_KT;
         case BATTLEGROUND_QUEUE_CTF3:
             return BATTLEGROUND_CTF3;
         case BATTLEGROUND_QUEUE_SSM:

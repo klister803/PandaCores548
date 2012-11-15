@@ -23,6 +23,7 @@
 #include "SharedDefines.h"
 #include "DBCEnums.h"
 #include "ObjectDefines.h"
+#include "ByteBuffer.h"
 
 class Creature;
 class GameObject;
@@ -187,7 +188,7 @@ enum BattlegroundQueueTypeId
     BATTLEGROUND_QUEUE_2v2      = 10,
     BATTLEGROUND_QUEUE_3v3      = 11,
     BATTLEGROUND_QUEUE_5v5      = 12,
-    BATTLEGROUND_QUEUE_VOP      = 13,
+    BATTLEGROUND_QUEUE_KT       = 13,
     BATTLEGROUND_QUEUE_CTF3     = 14,
     BATTLEGROUND_QUEUE_SSM      = 15,
     BATTLEGROUND_QUEUE_TV       = 16,
@@ -220,6 +221,10 @@ enum ScoreType
     //SOTA
     SCORE_DESTROYED_DEMOLISHER  = 18,
     SCORE_DESTROYED_WALL        = 19,
+    //SM
+    SCORE_CARTS_HELPED          = 20,
+    //TK
+    SCORE_ORB_HANDLES           = 21
 };
 
 enum ArenaType
@@ -728,5 +733,43 @@ class Battleground
         float m_StartMaxDist;
         uint32 ScriptId;
 };
+
+// helper functions for world state list fill
+inline void FillInitialWorldState(ByteBuffer& data, uint32& count, uint32 state, uint32 value)
+{
+    data << uint32(state);
+    data << uint32(value);
+    ++count;
+}
+
+inline void FillInitialWorldState(ByteBuffer& data, uint32& count, uint32 state, int32 value)
+{
+    data << uint32(state);
+    data << int32(value);
+    ++count;
+}
+
+inline void FillInitialWorldState(ByteBuffer& data, uint32& count, uint32 state, bool value)
+{
+    data << uint32(state);
+    data << uint32(value?1:0);
+    ++count;
+}
+
+struct WorldStatePair
+{
+    uint32 state;
+    uint32 value;
+};
+
+inline void FillInitialWorldState(ByteBuffer& data, uint32& count, WorldStatePair const* array)
+{
+    for(WorldStatePair const* itr = array; itr->state; ++itr)
+    {
+        data << uint32(itr->state);
+        data << uint32(itr->value);
+        ++count;
+    }
+}
 #endif
 

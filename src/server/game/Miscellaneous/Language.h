@@ -896,7 +896,29 @@ enum TrinityStrings
     LANG_BG_AV_H_CAPTAIN_DEAD           = 1331,
     LANG_BG_AV_A_CAPTAIN_DEAD           = 1332,
     LANG_BG_AV_START_TWO_MINUTES        = 1333,
-    // FREE IDS                           1334-1999
+
+	// Silvershard Mines
+	LANG_BG_SM_CART_1                   = 1334,
+    LANG_BG_SM_CART_2                   = 1335,
+    LANG_BG_SM_CART_3                   = 1336,
+    LANG_BG_SM_CART_TAKEN               = 1337,
+    LANG_BG_SM_CART_DEFENDED            = 1338,
+    LANG_BG_SM_CART_ASSAULTED           = 1339,
+    LANG_BG_SM_CART_CLAIMED             = 1340,
+	LANG_BG_SM_START_ONE_MINUTE         = 1341,
+    LANG_BG_SM_START_HALF_MINUTE        = 1342,
+    LANG_BG_SM_HAS_BEGUN                = 1343,
+    LANG_BG_SM_A_NEAR_VICTORY           = 1344,
+    LANG_BG_SM_H_NEAR_VICTORY           = 1345,
+
+	// Temple of Kotmogu
+    LANG_BG_KT_START_ONE_MINUTE         = 1346,
+    LANG_BG_KT_START_HALF_MINUTE        = 1347,
+    LANG_BG_KT_HAS_BEGUN                = 1348,
+    LANG_BG_KT_DROPPED                  = 1349,
+    LANG_BG_KT_PICKEDUP                 = 1350,
+    LANG_BG_KT_O_PLACED                 = 1351,
+    // FREE IDS                           1352-1999
 
     // Ticket Strings 2000-2029
     LANG_COMMAND_TICKETNEW              = 2000,
