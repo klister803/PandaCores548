@@ -1634,8 +1634,10 @@ public:
                 break;
             case RACE_PANDAREN_ALLI:
                 raceStr = "Pandaren alliance";
+                break;
             case RACE_PANDAREN_HORDE:
                 raceStr = "Pandaren horde";
+                break;
             case RACE_PANDAREN_NEUTRAL:
                 raceStr = "Pandaren neutral";
                 break;
