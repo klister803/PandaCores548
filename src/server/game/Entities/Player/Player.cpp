@@ -20537,8 +20537,7 @@ inline void Player::BuildPlayerChat(WorldPacket* data, uint8 msgtype, const std:
     *data << uint32(0);                                      // constant unknown time
     if (addonPrefix)
         *data << addonPrefix;
-    else
-        *data << uint64(GetGUID());
+    *data << uint64(GetGUID());
 
     if(msgtype == 2 || msgtype == 51 || msgtype == 3 || msgtype == 39 || msgtype == 40)
         *data << uint64(GetGUID());
