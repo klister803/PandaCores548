@@ -734,7 +734,7 @@ public:
     void SendBankTabText(WorldSession* session, uint8 tabId) const;
     void SendPermissions(WorldSession* session) const;
     void SendMoneyInfo(WorldSession* session) const;
-    void SendLoginInfo(WorldSession* session) const;
+    void SendLoginInfo(WorldSession* session);
     void SendGuildReputationWeeklyCap(WorldSession* session) const;
     void SendGuildXP(WorldSession* session) const;
 
