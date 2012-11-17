@@ -1043,7 +1043,7 @@ enum EPlayerFields
     PLAYER_FIELD_LIFETIME_HONORABLE_KILLS            = UNIT_END + 0x6BE,
     PLAYER_FIELD_WATCHED_FACTION_INDEX               = UNIT_END + 0x6BF,
     PLAYER_FIELD_COMBAT_RATING_1                     = UNIT_END + 0x6C0,
-    PLAYER_FIELD_POWER_JCJ                           = UNIT_END + 0x6DA,
+    PLAYER_FIELD_PVP_POWER                           = UNIT_END + 0x6DA,
     PLAYER_FIELD_ARENA_TEAM_INFO_1_1                 = UNIT_END + 0x6DB,
     PLAYER_FIELD_BATTLEGROUND_RATING                 = UNIT_END + 0x6F0,
     PLAYER_FIELD_MAX_LEVEL                           = UNIT_END + 0x6F1,
