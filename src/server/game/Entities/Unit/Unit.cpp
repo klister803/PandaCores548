@@ -13235,7 +13235,7 @@ int32 Unit::GetCreatePowers(Powers power) const
         case POWER_HEALTH:
             return 0;
         case POWER_CHI:
-            return 4;
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK ? 4 : 0);
         default:
             break;
     }

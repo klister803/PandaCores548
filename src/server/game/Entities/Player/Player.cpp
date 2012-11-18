@@ -2701,6 +2701,7 @@ void Player::Regenerate(Powers power)
             if (!isInCombat())
                 addvalue += -1.0f;      // remove 1 each 10 sec
         }
+        break;
         case POWER_DEMONIC_FURY:                                // Regenerate Demonic Fury
         {
             if (!isInCombat() && GetPower(POWER_DEMONIC_FURY) >= 300 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
