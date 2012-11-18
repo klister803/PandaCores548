@@ -3072,6 +3072,11 @@ void SpellMgr::LoadSpellCustomAttr()
             case 72293: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
+            // Custom MoP Script
+            // Devouring plague - Heal
+            case 127626:
+                spellInfo->Effects[0].BasePoints = 1;
+                break;
             case 77513:  // Mastery : Blood Shield
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[0].BasePoints = 8;

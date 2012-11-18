@@ -6281,6 +6281,11 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
     {
         switch (GetSpellInfo()->Id)
         {
+            // Custom MoP Script
+            // Devouring Plague - Heal 1% of caster's health per tick
+            case 2944:
+                caster->CastSpell(caster, 127626, true);
+                break;
             case 43093: case 31956: case 38801:  // Grievous Wound
             case 35321: case 38363: case 39215:  // Gushing Wound
                 if (target->IsFullHealth())
