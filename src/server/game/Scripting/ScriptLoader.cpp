@@ -594,6 +594,10 @@ void AddSC_shattrath_city();
 void AddSC_terokkar_forest();
 void AddSC_zangarmarsh();
 
+// Temple of Jade Serpent
+void AddSC_instance_temple_of_jade_serpent();
+void AddSC_boss_wise_mari();
+
 // battlegrounds
 
 // outdoor pvp
@@ -620,6 +624,7 @@ void AddScripts()
     AddKalimdorScripts();
     AddOutlandScripts();
     AddNorthrendScripts();
+    AddPandarieScripts();
     AddBattlegroundScripts();
     AddOutdoorPvPScripts();
     AddCustomScripts();
@@ -1225,6 +1230,14 @@ void AddNorthrendScripts()
     AddSC_zuldrak();
     AddSC_crystalsong_forest();
     AddSC_isle_of_conquest();
+#endif
+}
+
+void AddPandarieScripts()
+{
+#ifdef SCRIPTS
+    AddSC_instance_temple_of_jade_serpent();
+    AddSC_boss_wise_mari();
 #endif
 }
 
