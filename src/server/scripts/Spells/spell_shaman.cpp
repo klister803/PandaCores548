@@ -45,8 +45,7 @@ enum ShamanSpells
     SHAMAN_BIND_SIGHT                      = 6277,
     ICON_ID_SHAMAN_LAVA_FLOW               = 3087,
     SHAMAN_LAVA_FLOWS_R1                   = 51480,
-    SHAMAN_LAVA_FLOWS_TRIGGERED_R1         = 64694,
-    SHAMAN_SPELL_GRACE_OF_AIR              = 116956
+    SHAMAN_LAVA_FLOWS_TRIGGERED_R1         = 64694
 };
 
 // 1535 Fire Nova
