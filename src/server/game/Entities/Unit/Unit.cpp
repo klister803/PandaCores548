@@ -11151,8 +11151,7 @@ void Unit::SetInCombatWith(Unit* enemy)
 
 void Unit::CombatStart(Unit* target, bool initialAggro)
 {
-    if (initialAggro && !target->HasUnitState(UNIT_STATE_EVADE))
-
+    if (initialAggro)
     {
         if (!target->IsStandState())
             target->SetStandState(UNIT_STAND_STATE_STAND);
