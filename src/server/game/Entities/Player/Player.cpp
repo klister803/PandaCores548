@@ -2852,7 +2852,8 @@ void Player::ResetAllPowers()
             SetPower(POWER_SOUL_SHARDS, 1);
             break;
         case POWER_SHADOW_ORB:
-            SetPower(POWER_SHADOW_ORB, 1);
+            SetPower(POWER_SHADOW_ORB, 0);
+            SetInt32Value(36, 0);
             break;
         case POWER_CHI:
             SetPower(POWER_CHI, 0);
@@ -3547,7 +3548,8 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetPower(POWER_SOUL_SHARDS, 1);
     SetPower(POWER_DEMONIC_FURY, 200);
     SetPower(POWER_BURNING_EMBERS, 1);
-    SetPower(POWER_SHADOW_ORB, 1);
+    SetPower(POWER_SHADOW_ORB, 0);
+    SetInt32Value(36, 0);
     SetPower(POWER_ECLIPSE, 0);
 
     // update level to hunter/summon pet
@@ -5393,6 +5395,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         SetPower(POWER_SOUL_SHARDS, 0);
         SetPower(POWER_CHI, 0);
         SetPower(POWER_SHADOW_ORB, 0);
+        SetInt32Value(36, 0);
     }
 
     // trigger update zone for alive state zone updates
@@ -23851,6 +23854,7 @@ void Player::ResurectUsingRequestData()
     SetPower(POWER_SOUL_SHARDS, 0);
     SetPower(POWER_DEMONIC_FURY, 200);
     SetPower(POWER_SHADOW_ORB, 0);
+    SetInt32Value(36, 0);
     SetPower(POWER_CHI, 0);
 
     SpawnCorpseBones();
