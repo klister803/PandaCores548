@@ -626,7 +626,7 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
                 /// first new/changed record prefix (for any counter value)
                 if (!need_execute_del)
                 {
-                    ssdel << "DELETE FROM account_achievement_progress WHERE account = " << GetOwner()->GetSession()->GetAccountId() << " AND criteria IN (";
+                    ssdel << "DELETE FROM character_achievement_progress WHERE guid = " << GetOwner()->GetSession()->GetAccountId() << " AND criteria IN (";
                     need_execute_del = true;
                 }
                 /// next new/changed record prefix
@@ -643,7 +643,7 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
                 /// first new/changed record prefix
                 if (!need_execute_ins)
                 {
-                    ssins << "INSERT INTO account_achievement_progress (account, criteria, counter, date) VALUES ";
+                    ssins << "INSERT INTO character_achievement_progress (guid, criteria, counter, date) VALUES ";
                     need_execute_ins = true;
                 }
                 /// next new/changed record prefix
@@ -725,12 +725,12 @@ void AchievementMgr<Guild>::SaveToDB(SQLTransaction& trans)
 }
 
 template<class T>
-void AchievementMgr<T>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult, PreparedQueryResult criteriaAccountResult)
+void AchievementMgr<T>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult)
 {
 }
 
 template<>
-void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult, PreparedQueryResult criteriaAccountResult)
+void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult)
 {
     if (achievementAccountResult)
     {
@@ -760,12 +760,12 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         while (achievementAccountResult->NextRow());
     }
 
-    if (criteriaAccountResult)
+    if (criteriaResult)
     {
         time_t now = time(NULL);
         do
         {
-            Field* fields = criteriaAccountResult->Fetch();
+            Field* fields = criteriaResult->Fetch();
             uint32 id      = fields[0].GetUInt16();
             uint32 counter = fields[1].GetUInt32();
             time_t date    = time_t(fields[2].GetUInt32());
@@ -796,7 +796,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             progress.date    = date;
             progress.changed = false;
         }
-        while (criteriaAccountResult->NextRow());
+        while (criteriaResult->NextRow());
     }
     
     if (achievementResult)
@@ -825,7 +825,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 }
 
 template<>
-void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult, PreparedQueryResult criteriaAccountResult)
+void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult)
 {
     if (achievementResult)
     {
@@ -1166,22 +1166,9 @@ void AchievementMgr<Guild>::SendCriteriaUpdate(AchievementCriteriaEntry const* e
 }
 
 template<class T>
-CriteriaProgressMap* AchievementMgr<T>::GetCriteriaProgressMap(bool account)
+CriteriaProgressMap* AchievementMgr<T>::GetCriteriaProgressMap()
 {
-    if (typeid(T) == typeid(Guild))
-    {
-        // Guilds only have 1 CriteriaProgressMap
-        return &m_personnal_criteriaProgress;
-    }
-    else if (typeid(T) == typeid(Player))
-    {
-        if (account)
-            return &m_account_criteriaProgress;
-        else
-            return &m_personnal_criteriaProgress;
-    }
-    else
-        return NULL;
+    return &m_criteriaProgress;
 }
 
 /**
@@ -1452,7 +1439,10 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
                 break;
             }
             case ACHIEVEMENT_CRITERIA_TYPE_EARN_HONORABLE_KILL:
-                SetCriteriaProgress(achievementCriteria, referencePlayer->GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS), referencePlayer);
+                if (!miscValue1)
+                    SetCriteriaProgress(achievementCriteria, referencePlayer->GetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS), referencePlayer, PROGRESS_HIGHEST);
+                else
+                    SetCriteriaProgress(achievementCriteria, miscValue1, referencePlayer, PROGRESS_ACCUMULATE);
                 break;
             case ACHIEVEMENT_CRITERIA_TYPE_HIGHEST_GOLD_VALUE_OWNED:
                 SetCriteriaProgress(achievementCriteria, referencePlayer->GetMoney(), referencePlayer, PROGRESS_HIGHEST);

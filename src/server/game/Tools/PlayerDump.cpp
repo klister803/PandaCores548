@@ -23,7 +23,7 @@
 #include "ObjectMgr.h"
 #include "AccountMgr.h"
 
-#define DUMP_TABLE_COUNT 29
+#define DUMP_TABLE_COUNT 30
 struct DumpTable
 {
     char const* name;
@@ -34,6 +34,7 @@ static DumpTable dumpTables[DUMP_TABLE_COUNT] =
 {
     { "characters",                       DTT_CHARACTER  },
     { "character_account_data",           DTT_CHAR_TABLE },
+    { "account_achievement",              DTT_CHAR_TABLE },
     { "character_achievement",            DTT_CHAR_TABLE },
     { "character_achievement_progress",   DTT_CHAR_TABLE },
     { "character_action",                 DTT_CHAR_TABLE },
