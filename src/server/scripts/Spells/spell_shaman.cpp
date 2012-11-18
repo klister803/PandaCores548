@@ -49,44 +49,6 @@ enum ShamanSpells
     SHAMAN_SPELL_GRACE_OF_AIR              = 116956
 };
 
-// Legacy of the Emperor - 115921
-class spell_sha_grace_of_air : public SpellScriptLoader
-{
-    public:
-        spell_sha_grace_of_air() : SpellScriptLoader("spell_sha_grace_of_air") { }
-
-        class spell_sha_grace_of_air_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_grace_of_air_SpellScript);
-
-            void HandleOnHit()
-            {
-                Unit* caster = GetCaster();
-                if (caster && caster->GetTypeId() == TYPEID_PLAYER)
-                {
-                    /*caster->CastSpell(caster, SHAMAN_SPELL_GRACE_OF_AIR, true);
-
-                    std::list<Unit*> memberList;
-                    Player* plr = caster->ToPlayer();
-                    plr->GetPartyMembers(memberList);
-
-                    for (auto itr : memberList)
-                        caster->CastSpell((itr), SHAMAN_SPELL_GRACE_OF_AIR, true);*/
-                }
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_sha_grace_of_air_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_grace_of_air_SpellScript();
-        }
-};
-
 // 1535 Fire Nova
 class spell_sha_fire_nova : public SpellScriptLoader
 {
@@ -748,7 +710,6 @@ class spell_sha_sentry_totem : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
-    new spell_sha_grace_of_air();
     new spell_sha_fire_nova();
     new spell_sha_mana_tide_totem();
     new spell_sha_earthbind_totem();
