@@ -95,10 +95,16 @@ class spell_monk_paralysis : public SpellScriptLoader
                     {
                         if (target->isInBack(caster))
                         {
-                            AuraApplication* aura = target->GetAuraApplication(115078);
-                            int32 duration = aura->GetBase()->GetDuration();
-                            duration *= 2;
-                            aura->GetBase()->SetDuration(duration, false);
+                            if (AuraApplication* aura = target->GetAuraApplication(115078))
+                            {
+                                Aura* Paralysis = aura->GetBase();
+                                int32 maxDuration = Paralysis->GetMaxDuration();
+                                int32 newDuration = maxDuration * 2;
+                                Paralysis->SetDuration(newDuration);
+
+                                if (newDuration > maxDuration)
+                                    Paralysis->SetMaxDuration(newDuration);
+                            }
                         }
                     }
                 }
