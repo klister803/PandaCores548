@@ -10586,15 +10586,12 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Custom MoP Script
     // 76659 - Mastery : Wild Quiver
-    if (HasAura(76659) && attType == RANGED_ATTACK && this->GetTypeId() == TYPEID_PLAYER && !this->ToPlayer()->HasSpellCooldown(76663))
+    if (HasAura(76659) && attType == RANGED_ATTACK && (spellProto->Id != 76663))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
 
         if (roll_chance_f(Mastery))
-        {
             CastSpell(victim, 76663, true);
-            this->ToPlayer()->AddSpellCooldown(76663, 0, time(NULL) + 1);
-        }
     }
 
     // Custom MoP Script
