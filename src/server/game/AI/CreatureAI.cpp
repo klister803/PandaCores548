@@ -118,6 +118,7 @@ void CreatureAI::MoveInLineOfSight_Safe(Unit* who)
     if (m_MoveInLineOfSight_locked == true)
         return;
     m_MoveInLineOfSight_locked = true;
+
     MoveInLineOfSight(who);
     m_MoveInLineOfSight_locked = false;
 }
@@ -153,12 +154,12 @@ void CreatureAI::EnterEvadeMode()
             me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle(), MOTION_SLOT_ACTIVE);
         }
         else
-            {
-                // Required to prevent attacking creatures that are evading and cause them to reenter combat
-                // Does not apply to MoveFollow
-                me->AddUnitState(UNIT_STATE_EVADE);
-                me->GetMotionMaster()->MoveTargetedHome();
-            }
+        {
+            // Required to prevent attacking creatures that are evading and cause them to reenter combat
+            // Does not apply to MoveFollow
+            me->AddUnitState(UNIT_STATE_EVADE);
+            me->GetMotionMaster()->MoveTargetedHome();
+        }
     }
 
     Reset();
