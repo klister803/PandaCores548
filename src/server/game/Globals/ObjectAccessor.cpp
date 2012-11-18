@@ -137,6 +137,11 @@ Player* ObjectAccessor::GetPlayer(WorldObject const& u, uint64 guid)
     return GetObjectInMap(guid, u.GetMap(), (Player*)NULL);
 }
 
+Transport* ObjectAccessor::GetTransport(WorldObject const& u, uint64 guid)
+{
+    return GetObjectInMap(guid, u.GetMap(), (Transport*)NULL);
+}
+
 Creature* ObjectAccessor::GetCreatureOrPetOrVehicle(WorldObject const& u, uint64 guid)
 {
     if (IS_PET_GUID(guid))
@@ -402,6 +407,7 @@ template class HashMapHolder<GameObject>;
 template class HashMapHolder<DynamicObject>;
 template class HashMapHolder<Creature>;
 template class HashMapHolder<Corpse>;
+template class HashMapHolder<Transport>;
 
 template Player* ObjectAccessor::GetObjectInWorld<Player>(uint32 mapid, float x, float y, uint64 guid, Player* /*fake*/);
 template Pet* ObjectAccessor::GetObjectInWorld<Pet>(uint32 mapid, float x, float y, uint64 guid, Pet* /*fake*/);
@@ -409,3 +415,4 @@ template Creature* ObjectAccessor::GetObjectInWorld<Creature>(uint32 mapid, floa
 template Corpse* ObjectAccessor::GetObjectInWorld<Corpse>(uint32 mapid, float x, float y, uint64 guid, Corpse* /*fake*/);
 template GameObject* ObjectAccessor::GetObjectInWorld<GameObject>(uint32 mapid, float x, float y, uint64 guid, GameObject* /*fake*/);
 template DynamicObject* ObjectAccessor::GetObjectInWorld<DynamicObject>(uint32 mapid, float x, float y, uint64 guid, DynamicObject* /*fake*/);
+template Transport* ObjectAccessor::GetObjectInWorld<Transport>(uint32 mapid, float x, float y, uint64 guid, Transport* /*fake*/);

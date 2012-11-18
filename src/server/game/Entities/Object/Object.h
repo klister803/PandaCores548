@@ -167,6 +167,16 @@ struct ObjectGuid
             return *this;
         }
 
+        void Clear()
+        {
+            _data.u64 = 0LL;
+        }
+
+        bool IsEmpty() const
+        {
+            return bool(_data.u64);
+        }
+
     private:
         union
         {
@@ -189,6 +199,7 @@ class Object
         uint32 GetGUIDLow() const { return GUID_LOPART(GetUInt64Value(0)); }
         uint32 GetGUIDMid() const { return GUID_ENPART(GetUInt64Value(0)); }
         uint32 GetGUIDHigh() const { return GUID_HIPART(GetUInt64Value(0)); }
+        ObjectGuid GetObjectGuid() const { return ObjectGuid(GetUInt64Value(0)); }
         const ByteBuffer& GetPackGUID() const { return m_PackGUID; }
         uint32 GetEntry() const { return GetUInt32Value(OBJECT_FIELD_ENTRY); }
         void SetEntry(uint32 entry) { SetUInt32Value(OBJECT_FIELD_ENTRY, entry); }

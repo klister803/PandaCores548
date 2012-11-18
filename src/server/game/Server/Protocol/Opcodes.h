@@ -209,7 +209,7 @@ enum Opcodes
     CMSG_GMSURVEY_SUBMIT                              = 0x96B,  // 5.0.5 16048
     CMSG_GMTICKET_CREATE                              = 0x8FE,  // 5.0.5 16048
     CMSG_GMTICKET_DELETETICKET                        = 0xDD7,  // 5.0.5 16048
-    CMSG_GMTICKET_GETTICKET                           = 0xC85,  // 5.0.5 16048
+    CMSG_GMTICKET_GETTICKET                           = 0,
     CMSG_GMTICKET_SYSTEMSTATUS                        = 0x925,	// 5.0.5 16048
     CMSG_GMTICKET_UPDATETEXT                          = 0xD14,  // 5.0.5 16048
     CMSG_GM_INVIS                                     = 0x000,  // Not found in 4.3.4
@@ -264,7 +264,7 @@ enum Opcodes
     CMSG_GUILD_MOTD                                   = 0x569,  // 5.0.5 16048
     CMSG_GUILD_NEWS_UPDATE_STICKY                     = 0x26B,  // 5.0.5 16048
     CMSG_GUILD_PERMISSIONS                            = 0x6C6,  // 5.0.5 16048
-    CMSG_GUILD_PROMOTE                                = 0x4A2,  // 5.0.5 16048
+    CMSG_GUILD_PROMOTE                                = 0x000,  // DEPRECATED
     CMSG_GUILD_QUERY                                  = 0x946,  // 5.0.5 16048
     CMSG_GUILD_QUERY_NEWS                             = 0x067,  // 5.0.5 16048
     CMSG_GUILD_QUERY_RANKS                            = 0x26E,  // 5.0.5 16048
@@ -272,18 +272,18 @@ enum Opcodes
     CMSG_GUILD_REPLACE_GUILD_MASTER                   = 0x4E3,  // 5.0.5 16048
     CMSG_GUILD_REQUEST_CHALLENGE_UPDATE               = 0x322,  // 5.0.5 16048
     CMSG_GUILD_REQUEST_MAX_DAILY_XP                   = 0x1C7,  // 5.0.5 16048
-    CMSG_GUILD_REQUEST_PARTY_STATE                    = 0x5B2,  // 5.0.5 16048
+    CMSG_GUILD_REQUEST_PARTY_STATE                    = 0,
     CMSG_GUILD_ROSTER                                 = 0x222,  // 5.0.5 16048
     CMSG_GUILD_SET_ACHIEVEMENT_TRACKING               = 0x2E7,  // 5.0.5 16048
     CMSG_GUILD_SET_GUILD_MASTER                       = 0x12B,  // 5.0.5 16048
     CMSG_GUILD_SET_NOTE                               = 0x226,  // 5.0.5 16048
     CMSG_GUILD_SET_RANK_PERMISSIONS                   = 0x5A6,  // 5.0.5 16048
     CMSG_GUILD_SWITCH_RANK                            = 0x7C2,  // 5.0.5 16048
-    CMSG_HEARTH_AND_RESURRECT                         = 0x9D2,  // 5.0.5 16048
+    CMSG_HEARTH_AND_RESURRECT                         = 0,
     CMSG_IGNORE_TRADE                                 = 0,      // 5.0.5 16048 Deprecated ?
     CMSG_INITIATE_TRADE                               = 0x6F1,  // 5.0.5 16048
     CMSG_INSPECT                                      = 0x254,  // 5.0.5 16048
-    CMSG_INSPECT_HONOR_STATS                          = 0,      // 0x791E in 4.3.4 FIND ME, I AM WALDO ! Go try to inspect someone
+    CMSG_INSPECT_HONOR_STATS                          = 0x171,  // 5.0.5 16048
     CMSG_INSTANCE_LOCK_WARNING_RESPONSE               = 0x816,  // 5.0.5 16048
     CMSG_ITEM_REFUND                                  = 0x120,  // 5.0.5 16048
     CMSG_ITEM_REFUND_INFO                             = 0x355,  // 5.0.5 16048
@@ -301,7 +301,7 @@ enum Opcodes
     CMSG_LFG_PARTY_LOCK_INFO_REQUEST                  = 0x000,  // Unused 434
     CMSG_LFG_PROPOSAL_RESULT                          = 0x107,  // 5.0.5 16048
     CMSG_LFG_SET_BOOT_VOTE                            = 0x64F,  // 5.0.5 16048
-    CMSG_LFG_SET_COMMENT                              = 0x530,  // 5.0.5 16048
+    CMSG_LFG_SET_COMMENT                              = 0x000,  // Only used for debug
     CMSG_LFG_SET_ROLES                                = 0x40D,  // 5.0.5 16048
     CMSG_LFG_TELEPORT                                 = 0x64B,  // 5.0.5 16048
     CMSG_LF_GUILD_ADD_RECRUIT                         = 0x045,  // 5.0.5 16048
@@ -369,7 +369,7 @@ enum Opcodes
     CMSG_OBJECT_UPDATE_FAILED                         = 0x476,  // 5.0.5 16048
     CMSG_OBJECT_UPDATE_RESCUED                        = 0x551,  // 5.0.5 16048
     CMSG_OFFER_PETITION                               = 0x806,  // 5.0.5 16048
-    CMSG_OPENING_CINEMATIC                            = 0xC69,  // 5.0.5 16048
+    CMSG_OPENING_CINEMATIC                            = 0,
     CMSG_OPEN_ITEM                                    = 0xD6A,  // 5.0.5 16048
     CMSG_OPT_OUT_OF_LOOT                              = 0xD12,  // 5.0.5 16048
     CMSG_PAGE_TEXT_QUERY                              = 0x862,  // 5.0.5 16048
@@ -387,7 +387,7 @@ enum Opcodes
     CMSG_PET_NAME_QUERY                               = 0x881,	// 5.0.5 16048
     CMSG_PET_RENAME                                   = 0x846,  // 5.0.5 16048
     CMSG_PET_SET_ACTION                               = 0xD07,  // 5.0.5 16048
-    CMSG_PET_SPELL_AUTOCAST                           = 0xD07,  // 5.0.5 16048
+    CMSG_PET_SPELL_AUTOCAST                           = 0x000,  // Deprecated in 5.0.5 16048
     CMSG_PET_STOP_ATTACK                              = 0xC59,  // 5.0.5 16048
     CMSG_PING                                         = 0x4EB,  // 5.0.5 16048
     CMSG_PLAYED_TIME                                  = 0x9B1,  // 5.0.5 16048
@@ -567,6 +567,8 @@ enum Opcodes
     CMSG_ZONEUPDATE                                   = 0xD3B,	// 5.0.5 16048
     CMSG_PLAYER_MOVE                                  = 0x3F8,	// 5.0.5 16048 CUSTOM OPCODE, client patch
     CMSG_CORPSE_QUERY                                 = 0x20C,  // 5.0.5 16048
+    CMSG_RAID_TARGET_UPDATE                           = 0x396,  // 5.0.5 16048
+    MSG_INSPECT_ARENA_TEAMS                           = 0xC75,  // 5.0.5 16048
     MSG_AUCTION_HELLO                                 = 0x8DF,  // 5.0.5 16048
     MSG_BATTLEGROUND_PLAYER_POSITIONS                 = 0x000,  // 5.0.5 16048 deprecated
     MSG_CHANNEL_START                                 = 0x831,  // 5.0.5 16048
@@ -574,7 +576,6 @@ enum Opcodes
     MSG_GM_BIND_OTHER                                 = 0x000,  // Not found in 4.3.4
     MSG_GM_SHOWLABEL                                  = 0x000,  // Not found in 4.3.4
     MSG_GM_SUMMON                                     = 0x000,  // Not found in 4.3.4
-    MSG_INSPECT_ARENA_TEAMS                           = 0xC75,  // 5.0.5 16048
     MSG_LIST_STABLED_PETS                             = 0xD91,  // 5.0.5 16048
     MSG_MINIMAP_PING                                  = 0x808,  // 5.0.5 16048
     MSG_MOVE_CHARM_TELEPORT_CHEAT                     = 0,      // Client patched
@@ -622,7 +623,6 @@ enum Opcodes
     MSG_PETITION_RENAME                               = 0xD53,  // 5.0.5 16048
     MSG_QUERY_NEXT_MAIL_TIME                          = 0x97C,	// 5.0.5 16048
     MSG_QUEST_PUSH_RESULT                             = 0x939,	// 5.0.5 16048
-    MSG_RAID_TARGET_UPDATE                            = 0xF13,	// 5.0.5 16048
     MSG_RANDOM_ROLL                                   = 0xEDB,  // 5.0.5 16048
     MSG_SAVE_GUILD_EMBLEM                             = 0xC3D,  // 5.0.5 16048
     MSG_SET_DUNGEON_DIFFICULTY                        = 0xD24,  // 5.0.5 16048
@@ -630,6 +630,8 @@ enum Opcodes
     MSG_TABARDVENDOR_ACTIVATE                         = 0xC1D,  // 5.0.5 16048
     MSG_TALENT_WIPE_CONFIRM                           = 0,      // Talents removed in 5.0.x
     MSG_VERIFY_CONNECTIVITY                           = 0x4F57, // 5.0.5 16048
+    SMSG_RAID_TARGET_UPDATE_SINGLE                    = 0xF13,	// 5.0.5 16048
+    SMSG_RAID_TARGET_UPDATE_ALL                       = 0xB9E,	// 5.0.5 16048
     SMSG_CORPSE_QUERY                                 = 0xAA2,  // 5.0.5 16048
     SMSG_ACCOUNT_DATA_TIMES                           = 0xC4B,  // 5.0.5 16048
     SMSG_ACCOUNT_INFO_RESPONSE                        = 0xF05,  // 5.0.5 16048
@@ -935,8 +937,8 @@ enum Opcodes
     SMSG_INIT_CURRENCY                                = 0xAE5,	// 5.0.5 16048
     SMSG_INIT_WORLD_STATES                            = 0x919,	// 5.0.5 16048
     SMSG_INSPECT                                      = 0,      // Not found in 4.3.4
-    SMSG_INSPECT_HONOR_STATS                          = 0,      // 0x79A5 in 4.3.4 @todo : Find me and BACON !
     SMSG_INSPECT_RATED_BG_STATS                       = 0xB42,  // 5.0.5 16048
+    SMSG_INSPECT_HONOR_STATS                          = 0xFD4,  // 5.0.5 16048
     SMSG_INSPECT_RESULTS_UPDATE                       = 0,      // 0x0C14 in 4.3.4 @todo : Find me and BACON !
     SMSG_INSPECT_TALENT                               = 0xE3D,  // 5.0.5 16048
     SMSG_INSTANCE_DIFFICULTY                          = 0,      // Not found in 4.3.4

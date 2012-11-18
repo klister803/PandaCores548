@@ -200,7 +200,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
     if (!m_Socket)
         return;
 
-    /*if (packet->GetOpcode() == NULL_OPCODE)
+    if (packet->GetOpcode() == NULL_OPCODE)
     {
         sLog->outError(LOG_FILTER_OPCODES, "Prevented sending of NULL_OPCODE to %s", GetPlayerName(false).c_str());
         return;
@@ -209,7 +209,7 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
     {
         sLog->outError(LOG_FILTER_OPCODES, "Prevented sending of UNKNOWN_OPCODE to %s", GetPlayerName(false).c_str());
         return;
-    }*/
+    }
 
     if (!forced)
     {

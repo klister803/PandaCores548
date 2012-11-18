@@ -2541,9 +2541,7 @@ float Unit::GetUnitCriticalChance(WeaponAttackType attackType, const Unit* victi
 
     // reduce crit chance from Rating for players
     if (attackType != RANGED_ATTACK)
-    
         ApplyResilience(victim, &crit, NULL, false, CR_CRIT_TAKEN_MELEE);
-
     else
         ApplyResilience(victim, &crit, NULL, false, CR_CRIT_TAKEN_RANGED);
 
@@ -9026,8 +9024,7 @@ Unit* Unit::GetMagicHitRedirectTarget(Unit* victim, SpellInfo const* spellInfo)
         if (Unit* magnet = (*itr)->GetBase()->GetCaster())
             if (spellInfo->CheckExplicitTarget(this, magnet) == SPELL_CAST_OK
                 && spellInfo->CheckTarget(this, magnet, false) == SPELL_CAST_OK
-                && _IsValidAttackTarget(magnet, spellInfo)
-                && IsWithinLOSInMap(magnet))
+                && _IsValidAttackTarget(magnet, spellInfo))
             {
                 // TODO: handle this charge drop by proc in cast phase on explicit target
                 (*itr)->GetBase()->DropCharge(AURA_REMOVE_BY_EXPIRE);
@@ -9265,6 +9262,13 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     float DoneTotalMod = 1.0f;
     float ApCoeffMod = 1.0f;
     int32 DoneTotal = 0;
+
+    // Apply Power JcJ damage bonus
+    if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER)
+    {
+        float PowerJcJ = this->ToPlayer()->GetRatingBonusValue(CR_PVP_POWER) / 100.0f;
+        DoneTotalMod += PowerJcJ;
+    }
 
     // Custom MoP Script
     // 76658 - Mastery : Essence of the Viper
@@ -10564,6 +10568,13 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Done total percent damage auras
     float DoneTotalMod = 1.0f;
+
+    // Apply Power JcJ damage bonus
+    if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER)
+    {
+        float PowerJcJ = this->ToPlayer()->GetRatingBonusValue(CR_PVP_POWER) / 100.0f;
+        DoneTotalMod += PowerJcJ;
+    }
 
     // Custom MoP Script
     // 76658 - Mastery : Essence of the Viper
@@ -16034,37 +16045,16 @@ void Unit::ApplyResilience(Unit const* victim, float* crit, int32* damage, bool 
     switch (type)
     {
         case CR_CRIT_TAKEN_MELEE:
-            // Crit chance reduction works against nonpets
-            if (crit)
-                *crit -= target->GetMeleeCritChanceReduction();
             if (source && damage)
-            {
-                if (isCrit)
-                    *damage -= target->GetMeleeCritDamageReduction(*damage);
                 *damage -= target->GetMeleeDamageReduction(*damage);
-            }
             break;
         case CR_CRIT_TAKEN_RANGED:
-            // Crit chance reduction works against nonpets
-            if (crit)
-                *crit -= target->GetRangedCritChanceReduction();
             if (source && damage)
-            {
-                if (isCrit)
-                    *damage -= target->GetRangedCritDamageReduction(*damage);
                 *damage -= target->GetRangedDamageReduction(*damage);
-            }
             break;
         case CR_CRIT_TAKEN_SPELL:
-            // Crit chance reduction works against nonpets
-            if (crit)
-                *crit -= target->GetSpellCritChanceReduction();
             if (source && damage)
-            {
-                if (isCrit)
-                    *damage -= target->GetSpellCritDamageReduction(*damage);
                 *damage -= target->GetSpellDamageReduction(*damage);
-            }
             break;
         default:
             break;

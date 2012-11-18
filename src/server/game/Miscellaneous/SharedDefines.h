@@ -852,6 +852,7 @@ enum TeamId
 
 enum Team
 {
+    TEAM_NONE           = 0,
     HORDE               = 67,
     ALLIANCE            = 469,
     //TEAM_STEAMWHEEDLE_CARTEL = 169,                       // not used in code
@@ -4012,7 +4013,7 @@ enum BattlegroundTypeId
     // 441 = "Icecrown Citadel"
     // 443 = "The Ruby Sanctum"
     // 656 = "Rated Eye of the Storm"
-    BATTLEGROUND_VOP                = 699, // Valley of Power
+    BATTLEGROUND_KT                 = 699, // Valley of Power
     BATTLEGROUND_CTF3               = 706,
     BATTLEGROUND_SSM                = 708, // Silver shard Mine
     BATTLEGROUND_TV                 = 719  // Tol'viron Arena

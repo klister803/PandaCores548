@@ -1626,6 +1626,21 @@ public:
             case RACE_DRAENEI:
                 raceStr = "Draenei";
                 break;
+            case RACE_GOBLIN:
+                raceStr = "Goblin";
+                break;
+            case RACE_WORGEN:
+                raceStr = "Worgen";
+                break;
+            case RACE_PANDAREN_ALLI:
+                raceStr = "Pandaren alliance";
+                break;
+            case RACE_PANDAREN_HORDE:
+                raceStr = "Pandaren horde";
+                break;
+            case RACE_PANDAREN_NEUTRAL:
+                raceStr = "Pandaren neutral";
+                break;
         }
 
         switch (Class)
@@ -1657,9 +1672,13 @@ public:
             case CLASS_WARLOCK:
                 ClassStr = "Warlock";
                 break;
+            case CLASS_MONK:
+                ClassStr = "Monk";
+                break;
             case CLASS_DRUID:
                 ClassStr = "Druid";
                 break;
+            
         }
 
         std::string timeStr = secsToTimeString(totalPlayerTime, true, true);

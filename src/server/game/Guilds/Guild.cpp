@@ -2207,7 +2207,7 @@ void Guild::SendMoneyInfo(WorldSession* session) const
     sLog->outDebug(LOG_FILTER_GUILD, "WORLD: Sent SMSG_GUILD_BANK_MONEY_WITHDRAWN");
 }
 
-void Guild::SendLoginInfo(WorldSession* session) const
+void Guild::SendLoginInfo(WorldSession* session)
 {
     /*
         Login sequence:

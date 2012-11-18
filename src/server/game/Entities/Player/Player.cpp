@@ -1189,40 +1189,26 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     // all item positions resolved
 
     //Pandaren's start quest
-    if (createInfo->Race == RACE_PANDAREN_NEUTRAL || createInfo->Race == RACE_PANDAREN_ALLI || createInfo->Race == RACE_PANDAREN_HORDE)
+    if (createInfo->Race == RACE_PANDAREN_NEUTRAL)
     {
-        uint32 quest = 0;
+        Quest const* quest = NULL;
         switch (createInfo->Class)
         {
-            case CLASS_WARRIOR:
-                quest = 30045;
-                break;
-            case CLASS_SHAMAN:
-                quest = 30044;
-                break;
-            case CLASS_ROGUE:
-                quest = 30043;
-                break;
-            case CLASS_PRIEST:
-                quest = 30042;
-                break;
-            case CLASS_HUNTER:
-                quest = 30041;
-                break;
-            case CLASS_MAGE:
-                quest = 30040;
-                break;
-            case CLASS_MONK:
-                quest = 30039;
-                break;
-            default:
-                break;
+            case CLASS_WARRIOR: quest = sObjectMgr->GetQuestTemplate(30045); break;
+            case CLASS_SHAMAN: quest = sObjectMgr->GetQuestTemplate(30044); break;
+            case CLASS_ROGUE: quest = sObjectMgr->GetQuestTemplate(30043); break;
+            case CLASS_PRIEST: quest = sObjectMgr->GetQuestTemplate(30042); break;
+            case CLASS_HUNTER: quest = sObjectMgr->GetQuestTemplate(30041); break;
+            case CLASS_MAGE: quest = sObjectMgr->GetQuestTemplate(30040); break;
+            case CLASS_MONK: quest = sObjectMgr->GetQuestTemplate(30039); break;
+            default: break;
         }
 
         if (quest)
         {
-            Quest const* questT = sObjectMgr->GetQuestTemplate(quest);
-            this->AddQuest(questT, NULL);
+            this->AddQuest(quest, NULL);
+            if (CanCompleteQuest(quest->GetQuestId()))
+                CompleteQuest(quest->GetQuestId());
         }
     }
     return true;
@@ -8326,6 +8312,9 @@ void Player::_ApplyItemBonuses(ItemTemplate const* proto, uint8 slot, bool apply
                 ApplyRatingMod(CR_CRIT_TAKEN_RANGED, int32(val), apply);
                 ApplyRatingMod(CR_CRIT_TAKEN_SPELL, int32(val), apply);
                 break;
+            case ITEM_MOD_PVP_POWER:
+                ApplyRatingMod(CR_PVP_POWER, int32(val), apply);
+                break;
             case ITEM_MOD_HASTE_RATING:
                 ApplyRatingMod(CR_HASTE_MELEE, int32(val), apply);
                 ApplyRatingMod(CR_HASTE_RANGED, int32(val), apply);
@@ -13909,6 +13898,9 @@ void Player::ApplyReforgeEnchantment(Item* item, bool apply)
             ApplyRatingMod(CR_CRIT_TAKEN_RANGED, -int32(removeValue), apply);
             ApplyRatingMod(CR_CRIT_TAKEN_SPELL, -int32(removeValue), apply);
             break;
+        case ITEM_MOD_PVP_POWER:
+            ApplyRatingMod(CR_PVP_POWER, -int32(removeValue), apply);
+            break;
         case ITEM_MOD_HASTE_RATING:
             ApplyRatingMod(CR_HASTE_MELEE, -int32(removeValue), apply);
             ApplyRatingMod(CR_HASTE_RANGED, -int32(removeValue), apply);
@@ -14020,6 +14012,9 @@ void Player::ApplyReforgeEnchantment(Item* item, bool apply)
             ApplyRatingMod(CR_CRIT_TAKEN_MELEE, int32(addValue), apply);
             ApplyRatingMod(CR_CRIT_TAKEN_RANGED, int32(addValue), apply);
             ApplyRatingMod(CR_CRIT_TAKEN_SPELL, int32(addValue), apply);
+            break;
+        case ITEM_MOD_PVP_POWER:
+            ApplyRatingMod(CR_PVP_POWER, int32(addValue), apply);
             break;
         case ITEM_MOD_HASTE_RATING:
             ApplyRatingMod(CR_HASTE_MELEE, int32(addValue), apply);
@@ -14350,6 +14345,10 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
                             ApplyRatingMod(CR_CRIT_TAKEN_RANGED, enchant_amount, apply);
                             ApplyRatingMod(CR_CRIT_TAKEN_SPELL, enchant_amount, apply);
                             sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "+ %u RESILIENCE", enchant_amount);
+                            break;
+                        case ITEM_MOD_PVP_POWER:
+                            ApplyRatingMod(CR_PVP_POWER, enchant_amount, apply);
+                            sLog->outDebug(LOG_FILTER_PLAYER_ITEMS, "+ %u POWER JCJ", enchant_amount);
                             break;
                         case ITEM_MOD_HASTE_RATING:
                             ApplyRatingMod(CR_HASTE_MELEE, enchant_amount, apply);
@@ -17182,9 +17181,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // load achievements before anything else to prevent multiple gains for the same achievement/criteria on every loading (as loading does call UpdateAchievementCriteria)
     m_achievementMgr.LoadFromDB(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS),
-                                NULL,//holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS),
-                                holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTACHIEVEMENTS),
-                                holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTCRITERIAPROGRESS));
+                                holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS),
+                                holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADACCOUNTACHIEVEMENTS));
 
     uint64 money = fields[8].GetUInt64();
     if (money > MAX_MONEY_AMOUNT)
@@ -24061,7 +24059,7 @@ PartyResult Player::CanUninviteFromGroup() const
     }
     else
     {
-        if (!grp->IsLeader(GetGUID()) && !grp->IsAssistant(GetGUID()))
+        if (!grp->IsLeader(GetGUID()) && !grp->IsAssistant(GetGUID()) && !(grp->GetGroupType() & GROUPTYPE_EVERYONE_IS_ASSISTANT))
             return ERR_NOT_LEADER;
 
         if (InBattleground())

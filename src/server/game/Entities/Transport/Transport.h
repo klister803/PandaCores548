@@ -33,6 +33,8 @@ class Transport : public GameObject, public TransportBase
         ~Transport();
 
         bool Create(uint32 guidlow, uint32 entry, uint32 mapid, float x, float y, float z, float ang, uint32 animprogress, uint32 dynflags);
+        void AddToWorld();
+        void RemoveFromWorld();
         bool GenerateWaypoints(uint32 pathid, std::set<uint32> &mapids);
         void Update(uint32 p_time);
         bool AddPassenger(Player* passenger);
@@ -45,6 +47,7 @@ class Transport : public GameObject, public TransportBase
 
         typedef std::set<Creature*> CreatureSet;
         CreatureSet m_NPCPassengerSet;
+        Creature * AddNPCPassengerCreature(uint32 tguid, uint32 entry, float x, float y, float z, float o, uint32 anim=0);
         uint32 AddNPCPassenger(uint32 tguid, uint32 entry, float x, float y, float z, float o, uint32 anim=0);
         void UpdatePosition(MovementInfo* mi);
         void UpdateNPCPositions();
@@ -58,6 +61,24 @@ class Transport : public GameObject, public TransportBase
         void BuildStartMovePacket(Map const* targetMap);
         void BuildStopMovePacket(Map const* targetMap);
         uint32 GetScriptId() const { return ScriptId; }
+            
+        static float getX(float x, float y, Transport* trans)
+        { 
+            return trans->GetPositionX() + (x * cos(trans->GetOrientation()) + y * sin(trans->GetOrientation() + float(M_PI)));
+        }
+        static float getY(float x, float y, Transport* trans)
+        { 
+            return trans->GetPositionY() + (y * cos(trans->GetOrientation()) + x * sin(trans->GetOrientation()));
+        }
+        static float getZ(float z, Transport* trans)
+        {
+            return z + trans->GetPositionZ();
+        }
+        static float getO(float o, Transport* trans)
+        {
+            return o + trans->GetOrientation();
+        }
+
     private:
         struct WayPoint
         {

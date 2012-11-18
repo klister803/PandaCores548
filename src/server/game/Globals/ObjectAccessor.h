@@ -29,6 +29,7 @@
 #include "GridDefines.h"
 #include "Object.h"
 #include "Player.h"
+#include "Transport.h"
 
 #include <set>
 
@@ -41,6 +42,7 @@ class WorldObject;
 class Vehicle;
 class Map;
 class WorldRunnable;
+class Transport;
 
 template <class T>
 class HashMapHolder
@@ -186,6 +188,7 @@ class ObjectAccessor
         static Pet* GetPet(WorldObject const&, uint64 guid);
         static Player* GetPlayer(WorldObject const&, uint64 guid);
         static Creature* GetCreatureOrPetOrVehicle(WorldObject const&, uint64);
+        static Transport* GetTransport(WorldObject const& u, uint64 guid);
 
         // these functions return objects if found in whole world
         // ACCESS LIKE THAT IS NOT THREAD SAFE
