@@ -74,11 +74,16 @@ class spell_pri_shadow_orb : public SpellScriptLoader
                             switch (GetSpellInfo()->Id)
                             {
                                 // 8092 - Mind Blast
-                                // 32379 - Shadow Word : Death
                                 case 8092:
+                                    if (!caster->HasAura(77487) && !caster->HasAura(57985))
+                                        caster->CastSpell(caster, 77487, true);
+                                    // Glyph of Shadow Ravens
+                                    else if (!caster->HasAura(77487) && caster->HasAura(57985))
+                                        caster->CastSpell(caster, 127850, true);
+                                    break;
+                                // 32379 - Shadow Word : Death
                                 case 32379:
                                     caster->SetPower(POWER_SHADOW_ORB, (currentPower + 1));
-                                    caster->SetInt32Value(36, (currentPower + 1));
                                     // Shadow Orb visual
                                     if (!caster->HasAura(77487) && !caster->HasAura(57985))
                                         caster->CastSpell(caster, 77487, true);
@@ -90,7 +95,6 @@ class spell_pri_shadow_orb : public SpellScriptLoader
                                 case 2944:
                                 {
                                     caster->SetPower(POWER_SHADOW_ORB, 0);
-                                    caster->SetInt32Value(36, 0);
                                     // Shadow Orb visual
                                     if (caster->HasAura(77487))
                                         caster->RemoveAura(77487);
@@ -103,7 +107,6 @@ class spell_pri_shadow_orb : public SpellScriptLoader
                                 case 64044:
                                 {
                                     caster->SetPower(POWER_SHADOW_ORB, 0);
-                                    caster->SetInt32Value(36, 0);
                                     // Shadow Orb visual
                                     if (caster->HasAura(77487))
                                         caster->RemoveAura(77487);
