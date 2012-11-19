@@ -40,7 +40,7 @@ class CreatureTextBuilder
             *data << uint8(_msgType);
             *data << uint32(_language);
             *data << uint64(_source->GetGUID());
-            *data << uint32(1);                                      // 2.1.0
+            *data << uint32(0);                                      // 2.1.0
             *data << uint32(strlen(localizedName)+1);
             *data << localizedName;
             size_t whisperGUIDpos = data->wpos();
@@ -52,7 +52,7 @@ class CreatureTextBuilder
             }
             *data << uint32(text.length() + 1);
             *data << text;
-            *data << uint8(0);                                       // ChatTag
+            *data << uint16(0);                                       // ChatTag
 
             return whisperGUIDpos;
         }
