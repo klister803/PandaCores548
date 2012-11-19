@@ -3073,8 +3073,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
-            // Devouring plague - Heal
-            case 127626:
+            case 116781: // Legacy of the White Tiger
+                spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ALLY;
+                break;
+            case 127626: // Devouring plague - Heal
                 spellInfo->Effects[0].BasePoints = 1;
                 break;
             case 77513:  // Mastery : Blood Shield
