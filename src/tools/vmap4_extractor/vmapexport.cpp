@@ -60,20 +60,24 @@
 HANDLE WorldMpq = NULL;
 HANDLE LocaleMpq = NULL;
 
-uint32 CONF_TargetBuild = 15595;              // 4.3.4.15595
+uint32 CONF_TargetBuild = 16135;              // 5.0.5 16135
 
 // List MPQ for extract maps from
 char const* CONF_mpq_list[]=
 {
     "world.MPQ",
-    "art.MPQ",
+    //"art.MPQ",
+    //"world2.MPQ",
     "expansion1.MPQ",
     "expansion2.MPQ",
     "expansion3.MPQ",
-    "world2.MPQ",
+    "expansion4.MPQ",
+    "texture.MPQ",
+    "model.MPQ",
+    "misc.MPQ"  //LiquiType.dbc
 };
 
-uint32 const Builds[] = {13164, 13205, 13287, 13329, 13596, 13623, 13914, 14007, 14333, 14480, 14545, 15005, 15050, 15211, 15354, 15595, 0};
+uint32 const Builds[] = {13164, 13205, 13287, 13329, 13596, 13623, 13914, 14007, 14333, 14480, 14545, 15005, 15050, 15211, 15354, 15595, 16016, 16048, 16057, 16135, 0};
 #define LAST_DBC_IN_DATA_BUILD 13623    // after this build mpqs with dbc are back to locale folder
 
 char* const Locales[] = {"enGB", "enUS", "deDE", "esES", "frFR", "koKR", "zhCN", "zhTW", "enCN", "enTW", "esMX", "ruRU"};
@@ -112,7 +116,7 @@ bool LoadLocaleMPQFile(int locale)
 {
     TCHAR buff[512];
     memset(buff, 0, sizeof(buff));
-    _stprintf(buff, _T("%s%s/locale-%s.MPQ"), input_path, LocalesT[locale], LocalesT[locale]);
+    _stprintf(buff, _T("%s/Data/%s/locale-%s.MPQ"), input_path, LocalesT[locale], LocalesT[locale]);
     if (!SFileOpenArchive(buff, 0, MPQ_OPEN_READ_ONLY, &LocaleMpq))
     {
         if (GetLastError() != ERROR_PATH_NOT_FOUND)
@@ -127,12 +131,12 @@ bool LoadLocaleMPQFile(int locale)
         if (Builds[i] > LAST_DBC_IN_DATA_BUILD)
         {
             prefix = "";
-            _stprintf(buff, _T("%s%s/wow-update-%s-%u.MPQ"), input_path, LocalesT[locale], LocalesT[locale], Builds[i]);
+            _stprintf(buff, _T("%s/Data/%s/wow-update-%s-%u.MPQ"), input_path, LocalesT[locale], LocalesT[locale], Builds[i]);
         }
         else
         {
             prefix = Locales[locale];
-            _stprintf(buff, _T("%swow-update-%u.MPQ"), input_path, Builds[i]);
+            _stprintf(buff, _T("%s/Data/wow-update-%u.MPQ"), input_path, Builds[i]);
         }
 
         if (!SFileOpenPatchArchive(LocaleMpq, buff, prefix, 0))
@@ -142,6 +146,8 @@ bool LoadLocaleMPQFile(int locale)
             continue;
         }
     }
+    _stprintf(buff, _T("%s/Data/misc.MPQ"), input_path);
+    SFileOpenPatchArchive(LocaleMpq, buff, "", 0);
 
     return true;
 }
@@ -149,7 +155,7 @@ bool LoadLocaleMPQFile(int locale)
 void LoadCommonMPQFiles(uint32 build)
 {
     TCHAR filename[512];
-    _stprintf(filename, _T("%sworld.MPQ"), input_path);
+    _stprintf(filename, _T("%s/Data/world.MPQ"), input_path);
     if (!SFileOpenArchive(filename, 0, MPQ_OPEN_READ_ONLY, &WorldMpq))
     {
         if (GetLastError() != ERROR_PATH_NOT_FOUND)
@@ -163,7 +169,7 @@ void LoadCommonMPQFiles(uint32 build)
         if (build < 15211 && !strcmp("world2.MPQ", CONF_mpq_list[i]))   // 4.3.2 and higher MPQ
             continue;
 
-        _stprintf(filename, _T("%s%s"), input_path, CONF_mpq_list[i]);
+        _stprintf(filename, _T("%s/Data/%s"), input_path, CONF_mpq_list[i]);
         if (!SFileOpenPatchArchive(WorldMpq, filename, "", 0))
         {
             if (GetLastError() != ERROR_PATH_NOT_FOUND)
@@ -172,29 +178,8 @@ void LoadCommonMPQFiles(uint32 build)
                 _tprintf(_T("Not found %s\n"), filename);
         }
         else
-        {
             _tprintf(_T("Loaded %s\n"), filename);
 
-            bool found = false;
-            int count = 0;
-            SFILE_FIND_DATA data;
-            HANDLE find = SFileFindFirstFile(WorldMpq, "*.*", &data, NULL);
-            if (find != NULL)
-            {
-                do
-                {
-                    ++count;
-                    if (data.dwFileFlags & MPQ_FILE_PATCH_FILE)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                while (SFileFindNextFile(find, &data));
-            }
-            SFileFindClose(find);
-            printf("Scanned %d files, found patch = %d\n", count, found);
-        }
     }
 
     char const* prefix = NULL;
@@ -204,12 +189,12 @@ void LoadCommonMPQFiles(uint32 build)
         if (Builds[i] > LAST_DBC_IN_DATA_BUILD)
         {
             prefix = "";
-            _stprintf(filename, _T("%swow-update-base-%u.MPQ"), input_path, Builds[i]);
+            _stprintf(filename, _T("%s/Data/wow-update-base-%u.MPQ"), input_path, Builds[i]);
         }
         else
         {
             prefix = "base";
-            _stprintf(filename, _T("%swow-update-%u.MPQ"), input_path, Builds[i]);
+            _stprintf(filename, _T("%s/Data/wow-update-%u.MPQ"), input_path, Builds[i]);
         }
 
         if (!SFileOpenPatchArchive(WorldMpq, filename, prefix, 0))
@@ -221,33 +206,11 @@ void LoadCommonMPQFiles(uint32 build)
             continue;
         }
         else
-        {
             _tprintf(_T("Loaded %s\n"), filename);
-
-
-            bool found = false;
-            int count = 0;
-            SFILE_FIND_DATA data;
-            HANDLE find = SFileFindFirstFile(WorldMpq, "*.*", &data, NULL);
-            if (find != NULL)
-            {
-                do
-                {
-                    ++count;
-                    if (data.dwFileFlags & MPQ_FILE_PATCH_FILE)
-                    {
-                        found = true;
-                        break;
-                    }
-                }
-                while (SFileFindNextFile(find, &data));
-            }
-            SFileFindClose(find);
-            printf("Scanned %d files, found patch = %d\n", count, found);
-        }
     }
 
 }
+
 
 
 // Local testing functions
@@ -275,6 +238,13 @@ void strToLower(char* str)
 void ReadLiquidTypeTableDBC()
 {
     printf("Read LiquidType.dbc file...");
+
+    HANDLE dbcFile;
+    if (!SFileOpenFileEx(LocaleMpq, "DBFilesClient\\LiquidType.dbc", SFILE_OPEN_PATCHED_FILE, &dbcFile))
+    {
+        printf("Fatal error: Cannot find LiquidType.dbc in archive!\n 2");
+        exit(1);
+    }
 
     DBCFile dbc(LocaleMpq, "DBFilesClient\\LiquidType.dbc");
     if(!dbc.open())
@@ -436,9 +406,9 @@ void ParsMapFiles()
 void getGamePath()
 {
 #ifdef _WIN32
-    strcpy(input_path,"Data\\");
+    strcpy(input_path,".");
 #else
-    strcpy(input_path,"Data/");
+    strcpy(input_path,".");
 #endif
 }
 
@@ -581,23 +551,13 @@ int main(int argc, char ** argv)
                     ))
             success = (errno == EEXIST);
 
-    LoadCommonMPQFiles(CONF_TargetBuild);
+    
 
     int FirstLocale = -1;
 
-    for (int i = 0; i < LOCALES_COUNT; ++i)
-    {
-        //Open MPQs
-        if (!LoadLocaleMPQFile(i))
-        {
-            if (GetLastError() != ERROR_PATH_NOT_FOUND)
-                printf("Unable to load %s locale archives!\n", Locales[i]);
-            continue;
-        }
+        LoadLocaleMPQFile(4);
+        LoadCommonMPQFiles(16057);
 
-        printf("Detected and using locale locale: %s\n", Locales[i]);
-        break;
-    }
 
     ReadLiquidTypeTableDBC();
 
