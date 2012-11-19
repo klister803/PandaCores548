@@ -28,7 +28,7 @@ enum eTexts
 
 enum eEvents
 {
-    EVENT_CALL_WATER,
+    EVENT_CALL_WATER = 1,
 };
 
 enum eCreatures
@@ -63,7 +63,7 @@ class boss_wase_mari : public CreatureScript
         {
             boss_wise_mari_AI(Creature* creature) : BossAI(creature, BOSS_WASE_MARI)
             {
-                creature->AddUnitState(UNIT_STATE_CANNOT_AUTOATTACK | UNIT_STATE_ROOT);
+                creature->AddUnitState(UNIT_STATE_ROOT);
             }
 
             bool ennemyInArea;
@@ -74,18 +74,8 @@ class boss_wase_mari : public CreatureScript
 
             void Reset()
             {
-                std::list<Creature*> searcher;
-                GetCreatureListWithEntryInGrid(searcher, me, CREATURE_FOUTAIN_TRIGGER, 50.0f);
-                uint8 tab = 0;
-                for (auto itr : searcher)
-                {
-                    if (!itr)
-                        continue;
 
-                    foutainTrigger[++tab] = itr->GetGUID();
-                }
-
-                for (uint8 i = tab; i < 4; i++)
+                for (uint8 i = 0; i < 4; i++)
                     foutainTrigger[i] = 0;
 
                 foutainCount = 0;
@@ -99,7 +89,25 @@ class boss_wase_mari : public CreatureScript
 
             void EnterCombat(Unit* /*who*/)
             {
-                events.ScheduleEvent(EVENT_CALL_WATER, 6000);
+                std::list<Creature*> searcher;
+                GetCreatureListWithEntryInGrid(searcher, me, CREATURE_FOUTAIN_TRIGGER, 50.0f);
+                uint8 tab = 0;
+                for (auto itr : searcher)
+                {
+                    if (!itr)
+                        continue;
+
+                    foutainTrigger[++tab] = itr->GetGUID();
+                }
+
+                me->SetInCombatWithZone();
+                me->CastSpell(me, SPELL_WATER_BUBBLE, true);
+                Talk(TEXT_AGGRO);
+                Talk(TEXT_BOSS_EMOTE_AGGRO);
+                intro = true;
+                phase = 1;
+                events.ScheduleEvent(EVENT_CALL_WATER, 8000);
+
                 _EnterCombat();
             }
 
@@ -135,17 +143,6 @@ class boss_wase_mari : public CreatureScript
                     ennemyInArea = true;
                     return;
                 }
-
-                if(who->GetDistance(me) < 8.00f)
-                {
-                    // Start combat
-                    me->SetInCombatWithZone();
-                    me->CastSpell(me, SPELL_WATER_BUBBLE, true);
-                    Talk(TEXT_AGGRO);
-                    Talk(TEXT_BOSS_EMOTE_AGGRO);
-                    intro = true;
-                    phase = 1;
-                }
                 
             }
 
@@ -167,12 +164,13 @@ class boss_wase_mari : public CreatureScript
                                 if (trigger)
                                 {
                                     me->CastSpell(trigger, SPELL_CALL_WATER, true);
-                                    // Corrupted Foutain is a perm aura, so i add a little hack to avoid handle duration in script
-                                    Aura* aur = trigger->AddAura(SPELL_CORRUPTED_FOUTAIN, trigger);
+                                    trigger->AddAura(SPELL_CORRUPTED_FOUTAIN, trigger);
                                 }
 
-                                if (foutainCount == 3)
+                                if (foutainCount == 4)
+                                {
                                     phase = 2;
+                                }
                             }
                             events.ScheduleEvent(EVENT_CALL_WATER, TIMER_CALL_WATTER + rand() % 6000);
                             break;
