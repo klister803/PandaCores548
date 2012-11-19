@@ -1401,8 +1401,8 @@ void ObjectMgr::LoadCreatures()
 
     //                                               0              1   2    3        4             5           6           7           8            9              10
     QueryResult result = WorldDatabase.Query("SELECT creature.guid, id, map, modelid, equipment_id, position_x, position_y, position_z, orientation, spawntimesecs, spawndist, "
-    //   11               12         13       14            15         16         17          18          19                20                   21
-        "currentwaypoint, curhealth, curmana, MovementType, spawnMask, phaseMask, eventEntry, pool_entry, creature.npcflag, creature.unit_flags, creature.dynamicflags "
+    //   11               12         13       14            15         16         17          18          19                20                   21                     22
+        "currentwaypoint, curhealth, curmana, MovementType, spawnMask, phaseMask, eventEntry, pool_entry, creature.npcflag, creature.unit_flags, creature.dynamicflags, creature.isActive "
         "FROM creature "
         "LEFT OUTER JOIN game_event_creature ON creature.guid = game_event_creature.guid "
         "LEFT OUTER JOIN pool_creature ON creature.guid = pool_creature.guid");
@@ -1460,6 +1460,7 @@ void ObjectMgr::LoadCreatures()
         data.npcflag        = fields[19].GetUInt32();
         data.unit_flags     = fields[20].GetUInt32();
         data.dynamicflags   = fields[21].GetUInt32();
+        data.isActive       = fields[22].GetBool();
 
         MapEntry const* mapEntry = sMapStore.LookupEntry(data.mapid);
         if (!mapEntry)
@@ -1711,8 +1712,8 @@ void ObjectMgr::LoadGameobjects()
 
     //                                                0                1   2    3           4           5           6
     QueryResult result = WorldDatabase.Query("SELECT gameobject.guid, id, map, position_x, position_y, position_z, orientation, "
-    //   7          8          9          10         11             12            13     14         15         16          17
-        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, spawnMask, phaseMask, eventEntry, pool_entry "
+    //   7          8          9          10         11             12            13     14        15         16         17          18
+        "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, isActive, spawnMask, phaseMask, eventEntry, pool_entry "
         "FROM gameobject LEFT OUTER JOIN game_event_gameobject ON gameobject.guid = game_event_gameobject.guid "
         "LEFT OUTER JOIN pool_gameobject ON gameobject.guid = pool_gameobject.guid");
 
@@ -1802,14 +1803,16 @@ void ObjectMgr::LoadGameobjects()
         }
         data.go_state       = GOState(go_state);
 
-        data.spawnMask      = fields[14].GetUInt32();
+        data.isActive       = fields[14].GetBool();
+
+        data.spawnMask      = fields[15].GetUInt32();
 
         if (data.spawnMask & ~spawnMasks[data.mapid])
             sLog->outError(LOG_FILTER_SQL, "Table `gameobject` has gameobject (GUID: %u Entry: %u) that has wrong spawn mask %u including not supported difficulty modes for map (Id: %u), skip", guid, data.id, data.spawnMask, data.mapid);
 
-        data.phaseMask      = fields[15].GetUInt16();
-        int16 gameEvent     = fields[16].GetInt8();
-        uint32 PoolId        = fields[17].GetUInt32();
+        data.phaseMask      = fields[16].GetUInt16();
+        int16 gameEvent     = fields[17].GetInt8();
+        uint32 PoolId        = fields[18].GetUInt32();
 
         if (data.rotation2 < -1.0f || data.rotation2 > 1.0f)
         {

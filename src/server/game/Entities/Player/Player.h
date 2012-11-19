@@ -2701,6 +2701,9 @@ class Player : public Unit, public GridObject<Player>
         VoidStorageItem* GetVoidStorageItem(uint8 slot) const;
         VoidStorageItem* GetVoidStorageItem(uint64 id, uint8& slot) const;
 
+        uint32 GetLastTargetedGO() { return _lastTargetedGO; }
+        void SetLastTargetedGO(uint32 lastTargetedGO) { _lastTargetedGO = lastTargetedGO; }
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
@@ -3036,6 +3039,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 _pendingBindTimer;
 
         uint32 _activeCheats;
+
+        uint32 _lastTargetedGO;
 };
 
 void AddItemsSetItem(Player*player, Item* item);
