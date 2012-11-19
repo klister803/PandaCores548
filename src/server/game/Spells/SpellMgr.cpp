@@ -3204,6 +3204,18 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[1].BasePoints = 8;
                 break;
+            case 107223:
+                spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                break;
+            case 113315:
+                {
+                    SpellInfo const* spell = sSpellMgr->GetSpellInfo(113379);
+                    if (!spell)
+                        break;
+                    spellInfo->DurationEntry = spell->DurationEntry;
+                }
+                break;
             default:
                 break;
             }
