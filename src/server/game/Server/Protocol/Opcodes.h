@@ -155,7 +155,7 @@ enum Opcodes
     CMSG_CHAR_RENAME                                  = 0xCD2,  // 5.0.5 16048
     CMSG_CHAT_FILTERED                                = 0x69B,  // 5.0.5 16048
     CMSG_CHAT_IGNORED                                 = 0x0C8,  // 5.0.5 16048
-    CMSG_CLEAR_CHANNEL_WATCH                          = 0xC71,  // 5.0.5 16048
+    CMSG_CLEAR_CHANNEL_WATCH                          = 0,
     CMSG_CLEAR_RAID_MARKER                            = 0x47C,  // 5.0.5 16048
     CMSG_CLEAR_TRADE_ITEM                             = 0x1BC,  // 5.0.5 16048
     CMSG_COMMENTATOR_ENABLE                           = 0x9A8,  // 5.0.5 16048
