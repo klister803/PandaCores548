@@ -547,7 +547,7 @@ const float m_diminishing_k[MAX_CLASSES] =
     0.9880f,  // Shaman
     0.9830f,  // Mage
     0.9830f,  // Warlock
-    0.0f,     // Monk  @todo: find me !
+    0.9560f,  // Monk  @todo: find me !
     0.9720f   // Druid
 };
 
@@ -564,7 +564,7 @@ void Player::UpdateParryPercentage()
         145.560408f,    // Shaman
         0.0f,           // Mage
         0.0f,           // Warlock
-        0.0f,           // Monk  @todo: find me !
+        65.631440f,     // Monk  @todo: find me !
         0.0f            // Druid
     };
 
