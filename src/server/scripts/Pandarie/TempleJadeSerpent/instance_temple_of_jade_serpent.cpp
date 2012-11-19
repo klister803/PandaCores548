@@ -453,6 +453,19 @@ public:
                         if (go != nullptr)
                             go->SetGoState(GOState::GO_STATE_ACTIVE);
                         eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_FINISH;
+
+                        Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+                        if (!PlayerList.isEmpty())
+                        {
+                            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                            {
+                                Player* plr = i->getSource();
+                                if( !plr)
+                                    continue;
+                                plr->CastSpell(plr, SPELL_LOREWALKER_ALACRITY, false);
+                            }
+                        }
                     }
                 }
             }
@@ -466,6 +479,19 @@ public:
                         if (go != nullptr)
                             go->SetGoState(GOState::GO_STATE_ACTIVE);
                         eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_FINISH;
+
+                        Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+                        if (!PlayerList.isEmpty())
+                        {
+                            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                            {
+                                Player* plr = i->getSource();
+                                if( !plr)
+                                    continue;
+                                plr->CastSpell(plr, SPELL_LOREWALKER_ALACRITY, false);
+                            }
+                        }
                     }
                 }
             }
@@ -475,6 +501,19 @@ public:
                 if (go != nullptr)
                     go->SetGoState(GOState::GO_STATE_ACTIVE);
                 eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_FINISH;
+
+                Map::PlayerList const& PlayerList = instance->GetPlayers();
+
+                if (!PlayerList.isEmpty())
+                {
+                    for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                    {
+                        Player* plr = i->getSource();
+                        if( !plr)
+                            continue;
+                        plr->CastSpell(plr, SPELL_LOREWALKER_ALACRITY, false);
+                    }
+                }
             }
             if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_SUN)
             {
