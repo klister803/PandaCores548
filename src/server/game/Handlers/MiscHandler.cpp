@@ -2199,3 +2199,28 @@ void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
 
     sLog->outError(LOG_FILTER_NETWORKIO, "Object update failed for object "UI64FMTD" (%s) for player %s (%u)", uint64(guid), obj ? obj->GetName() : "object-not-found", GetPlayerName().c_str(), GetGuidLow());
 }
+
+// DestrinyFrame.xml : lua function NeutralPlayerSelectFaction
+#define JOIN_THE_ALLIANCE 0
+#define JOIN_THE_HORDE    1
+
+void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
+{
+    uint32 choice = recvPacket.read<uint32>();
+
+    if (_player->getRace() != RACE_PANDAREN_NEUTRAL)
+        return;
+
+    if (choice == JOIN_THE_HORDE)
+    {
+        _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_HORDE);
+        _player->SaveToDB();
+        _player->TeleportTo(1, -618.518f, -4251.67f, 38.718f, M_PI);
+    }
+    else if (choice == JOIN_THE_ALLIANCE)
+    {
+        _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_HORDE);
+        _player->SaveToDB();
+        _player->TeleportTo(0, -8914.57f, -133.909f, 80.5378f, M_PI);
+    }
+}

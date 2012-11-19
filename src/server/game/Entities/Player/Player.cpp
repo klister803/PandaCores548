@@ -856,6 +856,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     _activeCheats = CHEAT_NONE;
 
+    _lastTargetedGO = 0;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 }
 
@@ -2701,6 +2703,7 @@ void Player::Regenerate(Powers power)
             if (!isInCombat())
                 addvalue += -1.0f;      // remove 1 each 10 sec
         }
+        break;
         case POWER_DEMONIC_FURY:                                // Regenerate Demonic Fury
         {
             if (!isInCombat() && GetPower(POWER_DEMONIC_FURY) >= 300 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
@@ -2852,7 +2855,7 @@ void Player::ResetAllPowers()
             SetPower(POWER_SOUL_SHARDS, 1);
             break;
         case POWER_SHADOW_ORB:
-            SetPower(POWER_SHADOW_ORB, 1);
+            SetPower(POWER_SHADOW_ORB, 0);
             break;
         case POWER_CHI:
             SetPower(POWER_CHI, 0);
@@ -3547,7 +3550,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetPower(POWER_SOUL_SHARDS, 1);
     SetPower(POWER_DEMONIC_FURY, 200);
     SetPower(POWER_BURNING_EMBERS, 1);
-    SetPower(POWER_SHADOW_ORB, 1);
+    SetPower(POWER_SHADOW_ORB, 0);
     SetPower(POWER_ECLIPSE, 0);
 
     // update level to hunter/summon pet
@@ -6154,6 +6157,23 @@ void Player::UpdateRating(CombatRating cr)
     SetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + cr, uint32(amount));
 
     if (cr == CR_HASTE_MELEE || cr == CR_HASTE_RANGED || cr == CR_HASTE_SPELL)
+    {
+        float haste = 1 / (1 + (amount * GetRatingMultiplier(cr)) / 100);
+        // Update haste percentage for client
+        SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, haste);
+        SetFloatValue(UNIT_MOD_CAST_HASTE, haste);
+        SetFloatValue(UNIT_MOD_HASTE, haste);
+    }
+
+    // Custom MoP Script
+    // Way of the Monk - 120275
+    if (HasAura(120275) && GetTypeId() == TYPEID_PLAYER && (cr == CR_HASTE_MELEE || cr == CR_HASTE_RANGED || cr == CR_HASTE_SPELL))
+    {
+        float haste = 1.0f / (1.0f + (amount * GetRatingMultiplier(cr) + 40.0f) / 100.0f);
+        // Update melee haste percentage for client
+        SetFloatValue(UNIT_MOD_HASTE, haste);
+    }
+    else if (!HasAura(120275) && GetTypeId() == TYPEID_PLAYER && (cr == CR_HASTE_MELEE || cr == CR_HASTE_RANGED || cr == CR_HASTE_SPELL))
     {
         float haste = 1 / (1 + (amount * GetRatingMultiplier(cr)) / 100);
         // Update haste percentage for client
@@ -12446,26 +12466,31 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
 
     // Custom MoP script
     // Way of the Monk - 120277
-    if (getClass() == CLASS_MONK && HasAura(120277))
+    if (GetTypeId() == TYPEID_PLAYER)
     {
-        RemoveAurasDueToSpell(120275);
-        RemoveAurasDueToSpell(108977);
-
-        uint32 trigger = 0;
-        if (IsTwoHandUsed())
+        if (getClass() == CLASS_MONK && HasAura(120277))
         {
-            trigger = 120275;
-        }
-        else
-        {
-            Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-            Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-            if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON && offItem && offItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
-                trigger = 108977;
-        }
+            RemoveAurasDueToSpell(120275);
+            RemoveAurasDueToSpell(108977);
 
-        if (trigger)
-            CastSpell(this, trigger, true);
+            uint32 trigger = 0;
+            if (IsTwoHandUsed())
+            {
+                trigger = 120275;
+            }
+            else
+            {
+                Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+                if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON && offItem && offItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
+                    trigger = 108977;
+            }
+
+            if (trigger)
+                CastSpell(this, trigger, true);
+
+            ToPlayer()->UpdateRating(CR_HASTE_MELEE);
+        }
     }
 
     return pItem;
@@ -13236,6 +13261,35 @@ void Player::SwapItem(uint16 src, uint16 dst)
             RemoveItem(srcbag, srcslot, true);
             EquipItem(dest, pSrcItem, true);
             AutoUnequipOffhandIfNeed();
+        }
+
+        // Custom MoP script
+        // Way of the Monk - 120277
+        if (GetTypeId() == TYPEID_PLAYER)
+        {
+            if (getClass() == CLASS_MONK && HasAura(120277))
+            {
+                RemoveAurasDueToSpell(120275);
+                RemoveAurasDueToSpell(108977);
+
+                uint32 trigger = 0;
+                if (IsTwoHandUsed())
+                {
+                    trigger = 120275;
+                }
+                else
+                {
+                    Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                    Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+                    if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON && offItem && offItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
+                        trigger = 108977;
+                }
+
+                if (trigger)
+                    CastSpell(this, trigger, true);
+
+                ToPlayer()->UpdateRating(CR_HASTE_MELEE);
+            }
         }
 
         return;
@@ -21518,6 +21572,8 @@ void Player::InitDataForForm(bool reapplyMods)
 
     switch (form)
     {
+        case FORM_FIERCE_TIGER:
+        case FORM_STURDY_OX:
         case FORM_GHOUL:
         case FORM_CAT:
         {
@@ -26405,4 +26461,10 @@ void Player::SetMover(Unit* target)
 
         GetSession()->SendPacket(&data);
     }
+}
+
+void Player::ShowNeutralPlayerFactionSelectUI()
+{
+    WorldPacket data(SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI);
+    GetSession()->SendPacket(&data);
 }

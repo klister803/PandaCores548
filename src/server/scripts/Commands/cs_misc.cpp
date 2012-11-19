@@ -113,6 +113,7 @@ public:
             { "bindsight",          SEC_ADMINISTRATOR,      false, HandleBindSightCommand,              "", NULL },
             { "unbindsight",        SEC_ADMINISTRATOR,      false, HandleUnbindSightCommand,            "", NULL },
             { "playall",            SEC_GAMEMASTER,         false, HandlePlayAllCommand,                "", NULL },
+            { "selectfaction",      SEC_ADMINISTRATOR,      false, HandleSelectFactionCommand,          "", NULL },
             { NULL,                 0,                      false, NULL,                                "", NULL }
         };
         return commandTable;
@@ -2769,6 +2770,12 @@ public:
             return false;
 
         player->StopCastingBindSight();
+        return true;
+    }
+
+    static bool HandleSelectFactionCommand(ChatHandler* handler, char const* /*args*/)
+    {
+        handler->GetSession()->GetPlayer()->ShowNeutralPlayerFactionSelectUI();
         return true;
     }
 };

@@ -44,6 +44,108 @@ enum PriestSpells
     PRIEST_GLYPH_OF_SHADOW                      = 107906,
 };
 
+// 8092 - Mind Blast, 32379 - Shadow Word : Death, 2944 - Devouring Plague and 64044 - Psychic Horror
+class spell_pri_shadow_orb : public SpellScriptLoader
+{
+    public:
+        spell_pri_shadow_orb() : SpellScriptLoader("spell_pri_shadow_orb") { }
+
+        class spell_pri_shadow_orb_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_shadow_orb_SpellScript);
+
+            bool Validate(SpellInfo const* /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(8092) || !sSpellMgr->GetSpellInfo(32379) || !sSpellMgr->GetSpellInfo(2944) || !sSpellMgr->GetSpellInfo(64044))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (caster->ToPlayer() && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_PRIEST_SHADOW)
+                        {
+                            int32 currentPower = caster->GetPower(POWER_SHADOW_ORB);
+
+                            switch (GetSpellInfo()->Id)
+                            {
+                                // 8092 - Mind Blast
+                                case 8092:
+                                    if (!caster->HasAura(77487) && !caster->HasAura(57985))
+                                        caster->CastSpell(caster, 77487, true);
+                                    // Glyph of Shadow Ravens
+                                    else if (!caster->HasAura(77487) && caster->HasAura(57985))
+                                        caster->CastSpell(caster, 127850, true);
+                                    break;
+                                // 32379 - Shadow Word : Death
+                                case 32379:
+                                    caster->SetPower(POWER_SHADOW_ORB, (currentPower + 1));
+                                    // Shadow Orb visual
+                                    if (!caster->HasAura(77487) && !caster->HasAura(57985))
+                                        caster->CastSpell(caster, 77487, true);
+                                    // Glyph of Shadow Ravens
+                                    else if (!caster->HasAura(77487) && caster->HasAura(57985))
+                                        caster->CastSpell(caster, 127850, true);
+                                    break;
+                                // 2944 - Devouring Plague
+                                case 2944:
+                                {
+                                    caster->SetPower(POWER_SHADOW_ORB, 0);
+                                    // Shadow Orb visual
+                                    if (caster->HasAura(77487))
+                                        caster->RemoveAura(77487);
+                                    // Glyph of Shadow Ravens
+                                    else if (caster->HasAura(127850))
+                                        caster->RemoveAura(127850);
+                                    break;
+                                }
+                                // 64044 - Psychic Horror
+                                case 64044:
+                                {
+                                    caster->SetPower(POWER_SHADOW_ORB, 0);
+                                    // Shadow Orb visual
+                                    if (caster->HasAura(77487))
+                                        caster->RemoveAura(77487);
+                                    // Glyph of Shadow Ravens
+                                    else if (caster->HasAura(127850))
+                                        caster->RemoveAura(127850);
+                                    // +1s per Shadow Orb consumed
+                                    if (AuraApplication* aura = target->GetAuraApplication(64044))
+                                    {
+                                        Aura* psychicHorror = aura->GetBase();
+                                        int32 maxDuration = psychicHorror->GetMaxDuration();
+                                        int32 newDuration = maxDuration + currentPower * IN_MILLISECONDS;
+                                        psychicHorror->SetDuration(newDuration);
+
+                                        if (newDuration > maxDuration)
+                                            psychicHorror->SetMaxDuration(newDuration);
+                                    }
+                                    break;
+                                }
+                                default:
+                                    break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_shadow_orb_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_shadow_orb_SpellScript();
+        }
+};
+
 // Guardian Spirit
 class spell_pri_guardian_spirit : public SpellScriptLoader
 {
@@ -494,6 +596,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_shadow_orb();
     new spell_pri_guardian_spirit();
     new spell_pri_mana_burn();
     new spell_pri_pain_and_suffering_proc();
