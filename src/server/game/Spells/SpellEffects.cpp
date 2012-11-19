@@ -586,6 +586,10 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                             damage = CalculateMonkMeleeAttacks(m_caster, 14.4f, 14);
                         m_caster->CastSpell(unitTarget, 130320, true);
                         break;
+                    case 100784: // Blackout Kick
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 8.0f, 14);
+                        break;
                     default:
                         break;
                 }
