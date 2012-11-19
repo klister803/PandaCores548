@@ -338,6 +338,7 @@ class Spell
         void EffectCastButtons(SpellEffIndex effIndex);
         void EffectRechargeManaGem(SpellEffIndex effIndex);
         void EffectUnlearnTalent(SpellEffIndex effIndex);
+        int32 CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier);
 
         typedef std::set<Aura*> UsedSpellMods;
 
