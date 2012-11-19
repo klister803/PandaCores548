@@ -97,6 +97,8 @@ class boss_wase_mari : public CreatureScript
                     if (!itr)
                         continue;
 
+                    itr->RemoveAllAuras();
+
                     foutainTrigger[++tab] = itr->GetGUID();
                 }
 
