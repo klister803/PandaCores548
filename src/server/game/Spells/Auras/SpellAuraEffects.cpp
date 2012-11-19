@@ -1921,6 +1921,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
 
     switch (form)
     {
+        case FORM_FIERCE_TIGER:
+        case FORM_STURDY_OX:
         case FORM_CAT:                                      // 0x01
         case FORM_GHOUL:                                    // 0x07
             PowerType = POWER_ENERGY;
@@ -1953,8 +1955,6 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
             break;
         case FORM_ZOMBIE:                                   // 0x15
         case FORM_METAMORPHOSIS:                            // 0x16
-        case FORM_STURDY_OX:                                // 0x17
-        case FORM_FIERCE_TIGER:                             // 0x18
         case FORM_UNDEAD:                                   // 0x19
         case FORM_MASTER_ANGLER:                            // 0x1A
         case FORM_FLIGHT_EPIC:                              // 0x1B

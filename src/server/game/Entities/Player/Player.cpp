@@ -21519,6 +21519,8 @@ void Player::InitDataForForm(bool reapplyMods)
 
     switch (form)
     {
+        case FORM_FIERCE_TIGER:
+        case FORM_STURDY_OX:
         case FORM_GHOUL:
         case FORM_CAT:
         {
