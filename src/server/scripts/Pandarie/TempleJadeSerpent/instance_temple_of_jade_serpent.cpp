@@ -63,6 +63,11 @@ enum eSpells
     //FISH SPELLS
     SPELL_WATER_BUBBLE          = 114549, //OnSpawn
     //ChannelSpell : 42808, 512
+
+    //LIU FLAMEHEART Event:
+    SPELL_POSSESSED_BY_SHA      = 110164,
+    SPELL_DUST_VISUAL           = 110518,
+
 };
 
 enum eCreatures
@@ -76,6 +81,8 @@ enum eCreatures
 
     CREATURE_STRIFE                 = 59726,
     CREATURE_PERIL                  = 59051,
+
+    CREATURE_MINION_OF_DOUBTS       = 57109,
 };
 
 enum eGameObjects
@@ -140,6 +147,14 @@ public:
         ** End of Lorewalker Stonestep script.
         */
 
+        /*
+        ** Liu Flameheart script.
+        */
+        uint32 countMinionDeads;
+        /*
+        ** End of Liu Flameheart script.
+        */
+
         instance_temple_of_jade_serpent_InstanceMapScript(Map* map) : InstanceScript(map)
         {
             roomCenter.m_positionX = 1046.941f;
@@ -148,6 +163,7 @@ public:
             roomCenter.m_orientation = 4.33f;
             waterDamageTimer = 250;
 
+            //LoreWalkter Stonestep script.
             lorewalkter_stonestep = 0;
             zao_sunseeker = 0;
             scroll = 0;
@@ -157,6 +173,9 @@ public:
             eventStatus_numberSunDefeated = 0;
             eventChoosen = 0;
             wipeTimer = 3000;
+
+            //Liu Flameheart script.
+            countMinionDeads = 0;
         }
 
         void Initialize()
@@ -173,14 +192,17 @@ public:
             }
         }
 
+        
         void OnCreatureCreate(Creature* creature)
         {
             OnCreatureCreate_lorewalker_stonestep(creature);
+            OnCreatureCreature_liu_flameheart(creature);
         }
 
         void OnUnitDeath(Unit* unit)
         {
             OnUnitDeath_lorewalker_stonestep(unit);
+            OnUnitDeath_liu_flameheat(unit);
         }
 
         bool isWipe()
@@ -278,6 +300,25 @@ public:
             return 0;
         }
         
+        void OnCreatureCreature_liu_flameheart(Creature* creature)
+        {
+        }
+        void OnUnitDeath_liu_flameheat(Unit* unit)
+        {
+            if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_MINION_OF_DOUBTS)
+            {
+                if (unit->GetAreaId() == 6119) //AreaId of Liu Flameheart.
+                {
+                    ++countMinionDeads;
+
+                    //Spawn Liu Flameheart.
+                    if (countMinionDeads == 3)
+                    {
+                    }
+                }
+            }
+        }
+
         void SetData_lorewalker_stonestep(uint32 type, uint32 data)
         {
             switch (type)
