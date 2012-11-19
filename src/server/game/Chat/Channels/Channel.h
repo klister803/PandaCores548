@@ -205,6 +205,8 @@ class Channel
         bool IsOn(uint64 who) const { return players.find(who) != players.end(); }
         bool IsBanned(uint64 guid) const { return banned.find(guid) != banned.end(); }
 
+        bool IsWorld() const;
+
         void UpdateChannelInDB() const;
         void UpdateChannelUseageInDB() const;
 
