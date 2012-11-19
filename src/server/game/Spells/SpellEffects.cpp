@@ -553,8 +553,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                 switch (m_spellInfo->Id)
                 {
                     // Custom MoP script
-                    // Jab - 100780
-                    case 100780:
+                    case 100780: // Jab
                     {
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                         {
@@ -567,9 +566,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         }
                         break;
                     }
-                    // Custom MoP script
-                    // Touch of Death - 115080
-                    case 115080:
+                    case 115080: // Touch of Death
                     {
                         Unit* caster = GetCaster();
                         if (caster)
@@ -583,6 +580,10 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         }
                         break;
                     }
+                    case 107270: // Spinning Crane Kick
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 1.59f, 14);
+                        break;
                     default:
                         break;
                 }

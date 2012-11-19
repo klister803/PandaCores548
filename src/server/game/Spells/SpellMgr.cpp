@@ -3073,6 +3073,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 101546: // Spinning Crane Kick - Decrease Speed
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
+                spellInfo->Effects[1].BasePoints = -30;
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
+                break;
+            case 107270: // Spinning Crane Kick - Radius
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
+                break;
             case 116781: // Legacy of the White Tiger
                 spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ALLY;
