@@ -816,21 +816,22 @@ enum PlayerLoginQueryIndex
     PLAYER_LOGIN_QUERY_LOADACHIEVEMENTS             = 19,
     PLAYER_LOGIN_QUERY_LOADACCOUNTACHIEVEMENTS      = 20,
     PLAYER_LOGIN_QUERY_LOADCRITERIAPROGRESS         = 21,
-    PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS            = 22,
-    PLAYER_LOGIN_QUERY_LOADBGDATA                   = 23,
-    PLAYER_LOGIN_QUERY_LOADGLYPHS                   = 24,
-    PLAYER_LOGIN_QUERY_LOADTALENTS                  = 25,
-    PLAYER_LOGIN_QUERY_LOADACCOUNTDATA              = 26,
-    PLAYER_LOGIN_QUERY_LOADSKILLS                   = 27,
-    PLAYER_LOGIN_QUERY_LOADWEEKLYQUESTSTATUS        = 28,
-    PLAYER_LOGIN_QUERY_LOADRANDOMBG                 = 29,
-    PLAYER_LOGIN_QUERY_LOADBANNED                   = 30,
-    PLAYER_LOGIN_QUERY_LOADQUESTSTATUSREW           = 31,
-    PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES        = 32,
-    PLAYER_LOGIN_QUERY_LOADSEASONALQUESTSTATUS      = 33,
-    PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE              = 34,
-    PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 35,
-    //PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES          = 36, //id on TC.
+    PLAYER_LOGIN_QUERY_LOADACCOUNTCRITERIAPROGRESS  = 22,
+    PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS            = 23,
+    PLAYER_LOGIN_QUERY_LOADBGDATA                   = 24,
+    PLAYER_LOGIN_QUERY_LOADGLYPHS                   = 25,
+    PLAYER_LOGIN_QUERY_LOADTALENTS                  = 26,
+    PLAYER_LOGIN_QUERY_LOADACCOUNTDATA              = 27,
+    PLAYER_LOGIN_QUERY_LOADSKILLS                   = 28,
+    PLAYER_LOGIN_QUERY_LOADWEEKLYQUESTSTATUS        = 29,
+    PLAYER_LOGIN_QUERY_LOADRANDOMBG                 = 30,
+    PLAYER_LOGIN_QUERY_LOADBANNED                   = 31,
+    PLAYER_LOGIN_QUERY_LOADQUESTSTATUSREW           = 32,
+    PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES        = 33,
+    PLAYER_LOGIN_QUERY_LOADSEASONALQUESTSTATUS      = 34,
+    PLAYER_LOGIN_QUERY_LOADVOIDSTORAGE              = 35,
+    PLAYER_LOGIN_QUERY_LOADCURRENCY                 = 36,
+    //PLAYER_LOGIN_QUERY_LOAD_CUF_PROFILES          = 37, //id on TC.
     MAX_PLAYER_LOGIN_QUERY
 };
 
@@ -2700,6 +2701,9 @@ class Player : public Unit, public GridObject<Player>
         VoidStorageItem* GetVoidStorageItem(uint8 slot) const;
         VoidStorageItem* GetVoidStorageItem(uint64 id, uint8& slot) const;
 
+        uint32 GetLastTargetedGO() { return _lastTargetedGO; }
+        void SetLastTargetedGO(uint32 lastTargetedGO) { _lastTargetedGO = lastTargetedGO; }
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
@@ -3035,6 +3039,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 _pendingBindTimer;
 
         uint32 _activeCheats;
+
+        uint32 _lastTargetedGO;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

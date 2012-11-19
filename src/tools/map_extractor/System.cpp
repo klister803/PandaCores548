@@ -86,7 +86,7 @@ char const* CONF_mpq_list[]=
     "expansion1.MPQ",
     "expansion2.MPQ",
     "expansion3.MPQ",
-    "expension4.MPQ",
+    "expansion4.MPQ",
     "misc.MPQ"  //LiquiType.dbc
 };
 

@@ -22,6 +22,8 @@
 #include "SpellMgr.h"
 #include "DBCfmt.h"
 #include "ItemPrototype.h"
+#include <iostream>
+#include <fstream>
 
 #include <map>
 
@@ -327,6 +329,51 @@ void LoadDBCStores(const std::string& dataPath)
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementStore,            dbcPath, "Achievement.dbc"/*, &CustomAchievementfmt, &CustomAchievementIndex*/);//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementCriteriaStore,    dbcPath, "Achievement_Criteria.dbc");//14545
+    
+    // N'est pas delete au cas ou on arrive un jour a recupere le nom, ils sont pour le moment tous en inconnus
+    if (false)
+    {
+        std::ofstream monFlux("Achievement_Criteria.dbc.csv");
+
+        system("pause");
+        if (monFlux)
+        {
+            for (uint32 i = 0; i < sAchievementCriteriaStore.GetNumRows(); ++i)
+            {
+                AchievementCriteriaEntry const* criteria = sAchievementCriteriaStore.LookupEntry(i);
+                if (!criteria)
+                    continue;
+
+                std::string name = criteria->name ? "Inconnu": criteria->name;
+
+                monFlux <<
+                            criteria->ID << "," <<
+                            criteria->achievement << "," <<
+                            criteria->type << "," <<
+                            criteria->raw.field3 << "," <<
+                            criteria->raw.count << "," <<
+                            criteria->additionalRequirements[0].additionalRequirement_type << "," <<
+                            criteria->additionalRequirements[0].additionalRequirement_value << "," <<
+                            criteria->additionalRequirements[1].additionalRequirement_type << "," <<
+                            criteria->additionalRequirements[1].additionalRequirement_value << "," <<
+                            name << "," <<
+                            criteria->completionFlag << "," <<
+                            criteria->timedCriteriaStartType << "," <<
+                            criteria->timedCriteriaMiscId << "," <<
+                            criteria->timeLimit << "," <<
+                            criteria->showOrder << "," <<
+                            "0" << "," <<
+                            "0" << "," <<
+                            criteria->additionalConditionType[0] << "," <<
+                            criteria->additionalConditionType[1] << "," <<
+                            criteria->additionalConditionType[2] << "," <<
+                            criteria->additionalConditionValue[0] << "," <<
+                            criteria->additionalConditionValue[1] << "," <<
+                            criteria->additionalConditionValue[2] << std::endl;
+            }
+        }
+    }
+
     LoadDBC(availableDbcLocales, bad_dbc_files, sAreaTriggerStore,            dbcPath, "AreaTrigger.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sAreaGroupStore,              dbcPath, "AreaGroup.dbc");//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sAreaPOIStore,                dbcPath, "AreaPOI.dbc");//14545
