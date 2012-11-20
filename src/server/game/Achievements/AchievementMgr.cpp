@@ -646,7 +646,7 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
             {
                 tableName = "character_achievement_progress";
                 guidOrAccountString = "guid";
-                guidOrAccountId = GetOwner()->GetGUID();
+                guidOrAccountId = GetOwner()->GetGUIDLow();
             }
 
             // deleted data (including 0 progress state)
