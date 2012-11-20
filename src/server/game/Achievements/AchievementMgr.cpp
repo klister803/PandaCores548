@@ -859,7 +859,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         time_t now = time(NULL);
         do
         {
-            Field* fields = criteriaResult->Fetch();
+            Field* fields = criteriaAccountResult->Fetch();
             uint32 id      = fields[0].GetUInt16();
             uint32 counter = fields[1].GetUInt32();
             time_t date    = time_t(fields[2].GetUInt32());
