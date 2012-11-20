@@ -6165,6 +6165,47 @@ void Player::UpdateRating(CombatRating cr)
         SetFloatValue(UNIT_MOD_HASTE, haste);
     }
 
+    // Custom MoP script
+    // Way of the Monk - 120277
+    if (getClass() == CLASS_MONK && HasAura(120277))
+    {
+        RemoveAurasDueToSpell(120275);
+        RemoveAurasDueToSpell(108977);
+
+        uint32 trigger = 0;
+        if (IsTwoHandUsed())
+        {
+            trigger = 120275;
+        }
+        else
+        {
+            Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+            Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+            if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON && offItem && offItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
+                trigger = 108977;
+        }
+
+        if (trigger)
+            CastSpell(this, trigger, true);
+    }
+
+    // Custom MoP Script
+    // Way of the Monk - 120275
+    if (HasAura(120275) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float haste = 1.0f / (1.0f + (amount * GetRatingMultiplier(cr) + 40.0f) / 100.0f);
+        // Update melee haste percentage for client
+        SetFloatValue(UNIT_MOD_HASTE, haste);
+    }
+    else if (HasAura(108977) && GetTypeId() == TYPEID_PLAYER)
+    {
+        float haste = 1 / (1 + (amount * GetRatingMultiplier(cr)) / 100);
+        // Update haste percentage for client
+        SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, haste);
+        SetFloatValue(UNIT_MOD_CAST_HASTE, haste);
+        SetFloatValue(UNIT_MOD_HASTE, haste);
+    }
+
     bool affectStats = CanModifyStats();
 
     switch (cr)
@@ -12446,30 +12487,6 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
     // only for full equip instead adding to stack
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_ITEM, pItem->GetEntry());
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EQUIP_EPIC_ITEM, pItem->GetEntry(), slot);
-
-    // Custom MoP script
-    // Way of the Monk - 120277
-    if (getClass() == CLASS_MONK && HasAura(120277))
-    {
-        RemoveAurasDueToSpell(120275);
-        RemoveAurasDueToSpell(108977);
-
-        uint32 trigger = 0;
-        if (IsTwoHandUsed())
-        {
-            trigger = 120275;
-        }
-        else
-        {
-            Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-            Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-            if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON && offItem && offItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
-                trigger = 108977;
-        }
-
-        if (trigger)
-            CastSpell(this, trigger, true);
-    }
 
     return pItem;
 }
