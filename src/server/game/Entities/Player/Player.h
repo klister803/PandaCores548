@@ -2703,6 +2703,7 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 GetLastTargetedGO() { return _lastTargetedGO; }
         void SetLastTargetedGO(uint32 lastTargetedGO) { _lastTargetedGO = lastTargetedGO; }
+        void ShowNeutralPlayerFactionSelectUI();
 
     protected:
         // Gamemaster whisper whitelist

@@ -464,6 +464,7 @@ enum Opcodes
     CMSG_SAVE_PLAYER                                  = 0x000,  // Not found in 4.3.4
     CMSG_SEARCH_LFG_JOIN                              = 0x000,  // Not found in 4.3.4
     CMSG_SEARCH_LFG_LEAVE                             = 0x000,  // Not found in 4.3.4
+    CMSG_SELECT_FACTION                               = 0x7DD,  // 5.0.5 16048
     CMSG_SELF_RES                                     = 0x974,  // 5.0.5 16048
     CMSG_SELL_ITEM                                    = 0x997,	// 5.0.5 16048
     CMSG_SEND_MAIL                                    = 0x10C,  // 5.0.5 16048
@@ -746,7 +747,7 @@ enum Opcodes
     SMSG_CHAR_ENUM                                    = 0xE28,  // 5.0.5 16048
     SMSG_CHAR_FACTION_CHANGE                          = 0x9E0,  // 5.0.5 16048
     SMSG_CHAR_RENAME                                  = 0x945,  // 5.0.5 16048
-    SMSG_CHAT_IGNORED_ACCOUNT_MUTED                   = 0xAC0,  // 5.0.5 16048
+    SMSG_CHAT_IGNORED_ACCOUNT_MUTED                   = 0x000,  // 5.0.5 16048
     SMSG_CHAT_NOT_IN_PARTY                            = 0xD98,  // 5.0.5 16048
     SMSG_CHAT_PLAYER_AMBIGUOUS                        = 0x989,  // 5.0.5 16048
     SMSG_CHAT_PLAYER_NOT_FOUND                        = 0x8F2,  // 5.0.5 16048
@@ -1233,6 +1234,7 @@ enum Opcodes
     SMSG_SET_PROJECTILE_POSITION                      = 0x8BC,  // 5.0.5 16048
     SMSG_SHOWTAXINODES                                = 0xD49,  // 5.0.5 16048
     SMSG_SHOW_BANK                                    = 0x9C8,  // 5.0.5 16048
+    SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI       = 0xAC0,  // 5.0.5 16048
     SMSG_SHOW_RATINGS                                 = 0xB99,  // 5.0.5 16048
     SMSG_SOR_START_EXPERIENCE_INCOMPLETE              = 0xAB4,  // 5.0.5 16048
     SMSG_SPELLBREAKLOG                                = 0xC45,	// 5.0.5 16048
