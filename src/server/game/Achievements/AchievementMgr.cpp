@@ -897,7 +897,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             progress.date    = date;
             progress.changed = false;
         }
-        while (criteriaResult->NextRow());
+        while (criteriaAccountResult->NextRow());
     }
 }
 
