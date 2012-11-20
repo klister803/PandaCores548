@@ -3072,6 +3072,27 @@ void SpellMgr::LoadSpellCustomAttr()
             case 72293: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
+            // Custom MoP Script
+            case 130320: // Rising Sun Kick - Monks abilities deal 10% more damage
+                spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
+                break;
+            case 101546: // Spinning Crane Kick - Decrease Speed
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
+                spellInfo->Effects[1].BasePoints = -30;
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
+                break;
+            case 107270: // Spinning Crane Kick - Radius
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
+                break;
+            case 116781: // Legacy of the White Tiger
+                spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ALLY;
+                break;
+            case 127626: // Devouring plague - Heal
+                spellInfo->Effects[0].BasePoints = 1;
+                break;
             case 77513:  // Mastery : Blood Shield
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[0].BasePoints = 8;

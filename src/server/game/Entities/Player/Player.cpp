@@ -856,6 +856,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     _activeCheats = CHEAT_NONE;
 
+    _lastTargetedGO = 0;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 }
 
@@ -2701,6 +2703,7 @@ void Player::Regenerate(Powers power)
             if (!isInCombat())
                 addvalue += -1.0f;      // remove 1 each 10 sec
         }
+        break;
         case POWER_DEMONIC_FURY:                                // Regenerate Demonic Fury
         {
             if (!isInCombat() && GetPower(POWER_DEMONIC_FURY) >= 300 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
@@ -2852,7 +2855,7 @@ void Player::ResetAllPowers()
             SetPower(POWER_SOUL_SHARDS, 1);
             break;
         case POWER_SHADOW_ORB:
-            SetPower(POWER_SHADOW_ORB, 1);
+            SetPower(POWER_SHADOW_ORB, 0);
             break;
         case POWER_CHI:
             SetPower(POWER_CHI, 0);
@@ -3547,7 +3550,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetPower(POWER_SOUL_SHARDS, 1);
     SetPower(POWER_DEMONIC_FURY, 200);
     SetPower(POWER_BURNING_EMBERS, 1);
-    SetPower(POWER_SHADOW_ORB, 1);
+    SetPower(POWER_SHADOW_ORB, 0);
     SetPower(POWER_ECLIPSE, 0);
 
     // update level to hunter/summon pet
@@ -21518,6 +21521,8 @@ void Player::InitDataForForm(bool reapplyMods)
 
     switch (form)
     {
+        case FORM_FIERCE_TIGER:
+        case FORM_STURDY_OX:
         case FORM_GHOUL:
         case FORM_CAT:
         {

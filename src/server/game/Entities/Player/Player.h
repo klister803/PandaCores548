@@ -1813,7 +1813,7 @@ class Player : public Unit, public GridObject<Player>
         uint8 GetSpecsCount() const { return _talentMgr->SpecsCount; }
         void SetSpecsCount(uint8 count) { _talentMgr->SpecsCount = count; }
         void SetSpecializationId(uint8 spec, uint32 id);
-        uint32 GetSpecializationId(uint8 spec) { return _talentMgr->SpecInfo[spec].SpecializationId; }
+        uint32 GetSpecializationId(uint8 spec) const { return _talentMgr->SpecInfo[spec].SpecializationId; }
 
         bool ResetTalents(bool no_cost = false);
         uint32 GetNextResetTalentsCost() const;
@@ -2701,6 +2701,9 @@ class Player : public Unit, public GridObject<Player>
         VoidStorageItem* GetVoidStorageItem(uint8 slot) const;
         VoidStorageItem* GetVoidStorageItem(uint64 id, uint8& slot) const;
 
+        uint32 GetLastTargetedGO() { return _lastTargetedGO; }
+        void SetLastTargetedGO(uint32 lastTargetedGO) { _lastTargetedGO = lastTargetedGO; }
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
@@ -3036,6 +3039,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 _pendingBindTimer;
 
         uint32 _activeCheats;
+
+        uint32 _lastTargetedGO;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

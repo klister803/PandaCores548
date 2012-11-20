@@ -91,6 +91,7 @@ public:
             { "whisper",        SEC_MODERATOR,      false, &HandleNpcWhisperCommand,           "", NULL },
             { "yell",           SEC_MODERATOR,      false, &HandleNpcYellCommand,              "", NULL },
             { "tame",           SEC_GAMEMASTER,     false, &HandleNpcTameCommand,              "", NULL },
+            { "map_activate",   SEC_GAMEMASTER,     false, &HandleNpcActivateCommand,          "", NULL },
             { "add",            SEC_GAMEMASTER,     false, NULL,                 "", npcAddCommandTable },
             { "delete",         SEC_GAMEMASTER,     false, NULL,              "", npcDeleteCommandTable },
             { "follow",         SEC_GAMEMASTER,     false, NULL,              "", npcFollowCommandTable },
@@ -1498,6 +1499,46 @@ public:
 
         creature->SaveToDB();
         */
+        return true;
+    }
+
+    static bool HandleNpcActivateCommand(ChatHandler* handler, const char* args)
+    {
+        Creature* unit = NULL;
+
+        if (*args)
+        {
+            // number or [name] Shift-click form |color|Hcreature:creature_guid|h[name]|h|r
+            char* cId = handler->extractKeyFromLink((char*)args, "Hcreature");
+            if (!cId)
+                return false;
+
+            uint32 lowguid = atoi(cId);
+            if (!lowguid)
+                return false;
+
+            if (CreatureData const* cr_data = sObjectMgr->GetCreatureData(lowguid))
+                unit = handler->GetSession()->GetPlayer()->GetMap()->GetCreature(MAKE_NEW_GUID(lowguid, cr_data->id, HIGHGUID_UNIT));
+        }
+        else
+            unit = handler->getSelectedCreature();
+
+        if (!unit || unit->isPet() || unit->isTotem())
+        {
+            handler->SendSysMessage(LANG_SELECT_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        // Activate
+        unit->setActive(!unit->isActiveObject());
+        WorldDatabase.PExecute("UPDATE creature SET isActive = %u WHERE guid = %u", uint8(unit->isActiveObject()), unit->GetGUIDLow());
+
+        if (unit->isActiveObject())
+            handler->PSendSysMessage("Creature added to actived creatures !");
+        else
+            handler->PSendSysMessage("Creature removed from actived creatures !");
+
         return true;
     }
 };

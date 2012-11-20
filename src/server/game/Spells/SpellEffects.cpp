@@ -553,8 +553,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                 switch (m_spellInfo->Id)
                 {
                     // Custom MoP script
-                    // Jab - 100780
-                    case 100780:
+                    case 100780: // Jab
                     {
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                         {
@@ -567,9 +566,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         }
                         break;
                     }
-                    // Custom MoP script
-                    // Touch of Death - 115080
-                    case 115080:
+                    case 115080: // Touch of Death
                     {
                         Unit* caster = GetCaster();
                         if (caster)
@@ -583,6 +580,15 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         }
                         break;
                     }
+                    case 107270: // Spinning Crane Kick
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 1.59f, 14);
+                        break;
+                    case 107428: // Rising Sun Kick
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 14.4f, 14);
+                        m_caster->CastSpell(unitTarget, 130320, true);
+                        break;
                     default:
                         break;
                 }
@@ -6247,4 +6253,54 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
 
     plr->SaveToDB();
     plr->SendTalentsInfoData(false);
+}
+
+int32 Spell::CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier)
+{
+    Item* mainItem = caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+    Item* offItem = caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+
+    float minDamage = 0;
+    float maxDamage = 0;
+    bool dualwield = (mainItem && offItem) ? 1 : 0;
+    int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+
+    // Main Hand
+    if (mainItem && coeff > 0)
+    {
+        minDamage += mainItem->GetTemplate()->DamageMin;
+        maxDamage += mainItem->GetTemplate()->DamageMax;
+
+        minDamage /= m_caster->GetAttackTime(BASE_ATTACK) / 1000;
+        maxDamage /= m_caster->GetAttackTime(BASE_ATTACK) / 1000;
+    }
+
+    // Off Hand
+    if (offItem && coeff > 0)
+    {
+        minDamage += offItem->GetTemplate()->DamageMin / 2;
+        maxDamage += offItem->GetTemplate()->DamageMax / 2;
+
+        minDamage /= m_caster->GetAttackTime(BASE_ATTACK) / 1000;
+        maxDamage /= m_caster->GetAttackTime(BASE_ATTACK) / 1000;
+    }
+
+    // DualWield coefficient
+    if (dualwield)
+    {
+        minDamage *= 0.898882275f;
+        maxDamage *= 0.898882275f;
+    }
+
+    minDamage += (AP / APmultiplier);
+    maxDamage += (AP / APmultiplier);
+
+    // Off Hand penalty reapplied if only equiped by an off hand weapon
+    if (offItem && !mainItem)
+    {
+        minDamage /= 2;
+        maxDamage /= 2;
+    }
+
+    return irand(int32(minDamage * coeff), int32(maxDamage * coeff));
 }

@@ -1109,6 +1109,7 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
     data.npcflag = npcflag;
     data.unit_flags = unit_flags;
     data.dynamicflags = dynamicflags;
+    data.isActive = isActiveObject();
 
     // update in DB
     SQLTransaction trans = WorldDatabase.BeginTransaction();
@@ -1140,6 +1141,7 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
     stmt->setUInt32(index++, npcflag);
     stmt->setUInt32(index++, unit_flags);
     stmt->setUInt32(index++, dynamicflags);
+    stmt->setUInt32(index++, uint8(isActiveObject()));
     trans->Append(stmt);
 
     WorldDatabase.CommitTransaction(trans);
@@ -1365,6 +1367,8 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
     m_defaultMovementType = MovementGeneratorType(data->movementType);
 
     m_creatureData = data;
+
+    setActive(data->isActive);
 
     if (addToMap && !GetMap()->AddToMap(this))
         return false;

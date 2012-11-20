@@ -1340,6 +1340,15 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
         if (m_spellInfo->Id == 5246 && effIndex != EFFECT_0)
             unitTargets.remove(m_targets.GetUnitTarget());
 
+        // Custom MoP Script
+        // 107270 - Spinning Crane Kick : Give 1 Chi if the spell hits at least 3 targets
+        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+            if (m_spellInfo->Id == 107270 && unitTargets.size() >= 3 && !m_caster->ToPlayer()->HasSpellCooldown(129881))
+            {
+                m_caster->CastSpell(m_caster, 129881, true);
+                m_caster->ToPlayer()->AddSpellCooldown(129881, 0, time(NULL) + 3);
+            }
+
         // Other special target selection goes here
         if (uint32 maxTargets = m_spellValue->MaxAffectedTargets)
             Trinity::Containers::RandomResizeList(unitTargets, maxTargets);
