@@ -26428,3 +26428,9 @@ void Player::SetMover(Unit* target)
         GetSession()->SendPacket(&data);
     }
 }
+
+void Player::ShowNeutralPlayerFactionSelectUI()
+{
+    WorldPacket data(SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI);
+    GetSession()->SendPacket(&data);
+}

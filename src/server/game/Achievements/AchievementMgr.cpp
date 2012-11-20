@@ -646,7 +646,7 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
             {
                 tableName = "character_achievement_progress";
                 guidOrAccountString = "guid";
-                guidOrAccountId = GetOwner()->GetGUID();
+                guidOrAccountId = GetOwner()->GetGUIDLow();
             }
 
             // deleted data (including 0 progress state)
@@ -859,7 +859,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
         time_t now = time(NULL);
         do
         {
-            Field* fields = criteriaResult->Fetch();
+            Field* fields = criteriaAccountResult->Fetch();
             uint32 id      = fields[0].GetUInt16();
             uint32 counter = fields[1].GetUInt32();
             time_t date    = time_t(fields[2].GetUInt32());
@@ -897,7 +897,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             progress.date    = date;
             progress.changed = false;
         }
-        while (criteriaResult->NextRow());
+        while (criteriaAccountResult->NextRow());
     }
 }
 
