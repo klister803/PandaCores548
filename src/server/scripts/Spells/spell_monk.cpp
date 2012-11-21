@@ -50,8 +50,6 @@ class spell_monk_zen_pilgrimage : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_zen_pilgrimage_SpellScript);
 
-            Position pos;
-
             bool Validate()
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PILGRIMAGE) || !sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PILGRIMAGE_RETURN))
