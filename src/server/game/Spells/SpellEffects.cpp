@@ -556,14 +556,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     case 100780: // Jab
                     {
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                        {
-                            float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
-                            float mwb = m_caster->GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE);
-                            float MWB = m_caster->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
-                            float MWS = m_caster->GetAttackTime(BASE_ATTACK);
-                            float mws = MWS;
-                            damage += irand(int32((1.5f * 0.898882f * (mwb / (MWS / 1000.0f)) + 1 * (mwb / 2.0f / (mws / 1000.0f)) + (ap / 14.0f) - 1.0f)), int32((1.5f * 0.898882f * (MWB / (MWS / 1000.0f)) + 1 * (MWB / 2.0f / (mws / 1000.0f)) + (ap / 14.0f) + 1)));
-                        }
+                            damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
                         break;
                     }
                     case 115080: // Touch of Death
@@ -580,6 +573,10 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         }
                         break;
                     }
+                    case 100787: // Tiger Palm
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 3.0f, 14);
+                        break;
                     case 107270: // Spinning Crane Kick
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 1.59f, 14);
@@ -588,6 +585,10 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 14.4f, 14);
                         m_caster->CastSpell(unitTarget, 130320, true);
+                        break;
+                    case 100784: // Blackout Kick
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 8.0f, 14);
                         break;
                     default:
                         break;

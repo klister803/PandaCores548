@@ -598,6 +598,7 @@ void AddSC_zangarmarsh();
 // Temple of Jade Serpent
 void AddSC_instance_temple_of_jade_serpent();
 void AddSC_boss_wise_mari();
+void AddSC_boss_lorewalker_stonestep();
 
 // battlegrounds
 
@@ -1240,6 +1241,7 @@ void AddPandarieScripts()
 #ifdef SCRIPTS
     AddSC_instance_temple_of_jade_serpent();
     AddSC_boss_wise_mari();
+    AddSC_boss_lorewalker_stonestep();
 #endif
 }
 
