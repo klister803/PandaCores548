@@ -28,6 +28,10 @@ Channel::Channel(const std::string& name, uint32 channel_id, uint32 Team)
  : m_announce(true), m_ownership(true), m_name(name), m_password(""), m_flags(0), m_channelId(channel_id), m_ownerGUID(0), m_Team(Team)
 {
     m_IsSaved = false;
+
+    if (IsWorld())
+        m_announce = false;
+
     // set special flags if built-in channel
     if (ChatChannelsEntry const* ch = sChatChannelsStore.LookupEntry(channel_id)) // check whether it's a built-in channel
     {
@@ -94,6 +98,19 @@ Channel::Channel(const std::string& name, uint32 channel_id, uint32 Team)
             m_IsSaved = true;
         }
     }
+}
+
+bool Channel::IsWorld() const
+{
+    std::string lowername;
+    uint32 nameLength = m_name.length();
+    for (uint32 i = 0; i < nameLength; ++i)
+        lowername.push_back(std::towlower(m_name[i]));
+
+    if (lowername == "world")
+        return true;
+
+    return false;
 }
 
 void Channel::UpdateChannelInDB() const
@@ -395,6 +412,12 @@ void Channel::Password(uint64 p, const char *pass)
         SendToOne(&data, p);
     }
     else if (!players[p].IsModerator() && !AccountMgr::IsGMAccount(sec))
+    {
+        WorldPacket data;
+        MakeNotModerator(&data);
+        SendToOne(&data, p);
+    }
+    else if (IsWorld())
     {
         WorldPacket data;
         MakeNotModerator(&data);
