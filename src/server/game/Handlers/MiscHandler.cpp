@@ -2201,8 +2201,8 @@ void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
 }
 
 // DestrinyFrame.xml : lua function NeutralPlayerSelectFaction
-#define JOIN_THE_ALLIANCE 0
-#define JOIN_THE_HORDE    1
+#define JOIN_THE_ALLIANCE 1
+#define JOIN_THE_HORDE    0
 
 void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
 {
@@ -2216,11 +2216,15 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
         _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_HORDE);
         _player->SaveToDB();
         _player->TeleportTo(1, -618.518f, -4251.67f, 38.718f, M_PI);
+        _player->learnSpell(669, false); // Language Orcish
+        _player->learnSpell(108127, false); // Language Pandaren
     }
     else if (choice == JOIN_THE_ALLIANCE)
     {
         _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_HORDE);
         _player->SaveToDB();
         _player->TeleportTo(0, -8914.57f, -133.909f, 80.5378f, M_PI);
+        _player->learnSpell(668, false); // Language Common
+        _player->learnSpell(108127, false); // Language Pandaren
     }
 }
