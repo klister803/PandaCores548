@@ -35,7 +35,60 @@ enum MonkSpells
     SPELL_MONK_BLACKOUT_KICK_DOT        = 128531,
     SPELL_MONK_BLACKOUT_KICK_HEAL       = 128591,
     SPELL_MONK_SHUFFLE                  = 115307,
-    SPELL_MONK_SERPENTS_ZEAL            = 127722
+    SPELL_MONK_SERPENTS_ZEAL            = 127722,
+    SPELL_MONK_ZEN_PILGRIMAGE           = 126892,
+    SPELL_MONK_ZEN_PILGRIMAGE_RETURN    = 126895
+};
+
+// Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
+class spell_monk_zen_pilgrimage : public SpellScriptLoader
+{
+    public:
+        spell_monk_zen_pilgrimage() : SpellScriptLoader("spell_monk_zen_pilgrimage") { }
+
+        class spell_monk_zen_pilgrimage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_zen_pilgrimage_SpellScript);
+
+            Position pos;
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PILGRIMAGE) || !sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PILGRIMAGE_RETURN))
+                    return false;
+                return true;
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        if (GetSpellInfo()->Id == SPELL_MONK_ZEN_PILGRIMAGE)
+                        {
+                            _player->SaveRecallPosition();
+                            _player->TeleportTo(870, 3818.55f, 1793.18f, 950.35f, _player->GetOrientation());
+                        }
+                        else if (GetSpellInfo()->Id == SPELL_MONK_ZEN_PILGRIMAGE_RETURN)
+                        {
+                            _player->TeleportTo(_player->m_recallMap, _player->m_recallX, _player->m_recallY, _player->m_recallZ, _player->m_recallO);
+                            _player->RemoveAura(126896);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_monk_zen_pilgrimage_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_zen_pilgrimage_SpellScript();
+        }
 };
 
 // Blackout Kick - 100784
@@ -350,6 +403,7 @@ class spell_monk_tiger_palm : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_zen_pilgrimage();
     new spell_monk_blackout_kick();
     new spell_monk_tiger_palm();
     new spell_monk_legacy_of_the_emperor();
