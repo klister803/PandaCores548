@@ -3033,6 +3033,32 @@ public:
     }
 };
 
+/*######
+## npc_experience
+######*/
+
+#define GOSSIP_CHOOSE_FACTION           "Je souhaiterais choisir ma faction"
+
+class npc_choose_faction : public CreatureScript
+{
+public:
+    npc_choose_faction() : CreatureScript("npc_choose_faction") { }
+
+    bool OnGossipHello(Player* player, Creature* creature)
+    {
+        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOOSE_FACTION, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        player->PlayerTalkClass->SendGossipMenu(GOSSIP_TEXT_EXP, creature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
+    {
+        player->PlayerTalkClass->SendCloseGossip();
+        player->ShowNeutralPlayerFactionSelectUI();
+        return true;
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3066,4 +3092,5 @@ void AddSC_npcs_special()
     new npc_firework();
     new npc_spring_rabbit();
     new npc_generic_harpoon_cannon();
+    new npc_choose_faction();
 }

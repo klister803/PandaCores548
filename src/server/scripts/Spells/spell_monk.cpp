@@ -31,7 +31,66 @@ enum MonkSpells
     SPELL_MONK_TIGER_POWER              = 125359,
     SPELL_MONK_LEGACY_OF_THE_EMPEROR    = 117667,
     SPELL_MONK_FORTIFYING_BREW          = 120954,
-    SPELL_MONK_PROVOKE                  = 118635
+    SPELL_MONK_PROVOKE                  = 118635,
+    SPELL_MONK_BLACKOUT_KICK_DOT        = 128531,
+    SPELL_MONK_BLACKOUT_KICK_HEAL       = 128591,
+    SPELL_MONK_SHUFFLE                  = 115307,
+    SPELL_MONK_SERPENTS_ZEAL            = 127722
+};
+
+// Blackout Kick - 100784
+class spell_monk_blackout_kick : public SpellScriptLoader
+{
+    public:
+        spell_monk_blackout_kick() : SpellScriptLoader("spell_monk_blackout_kick") { }
+
+        class spell_monk_blackout_kick_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_blackout_kick_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        // Second effect by spec : Instant heal or DoT
+                        if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_WINDWALKER)
+                        {
+                            // If behind : 20% damage on DoT
+                            if (target->isInBack(caster))
+                            {
+                                int32 bp = int32(GetHitDamage() * 0.2f) / 4;
+                                caster->CastCustomSpell(target, SPELL_MONK_BLACKOUT_KICK_DOT, &bp, NULL, NULL, true);
+                            }
+                            // else : 20% damage on instant heal
+                            else
+                            {
+                                int32 bp = int32(GetHitDamage() * 0.2f);
+                                caster->CastCustomSpell(caster, SPELL_MONK_BLACKOUT_KICK_HEAL, &bp, NULL, NULL, true);
+                            }
+                        }
+                        // +25% / +50% of the auto-attacks on heal nearby targets
+                        // TODO : Buff the Jade Serpent Statue too
+                        else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_MISTWEAVER)
+                            caster->CastSpell(caster, SPELL_MONK_SERPENTS_ZEAL, true);
+                        // Increase parry chance and stagger amount by 20%
+                        else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
+                            caster->CastSpell(caster, SPELL_MONK_SHUFFLE, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_blackout_kick_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_blackout_kick_SpellScript();
+        }
 };
 
 // Provoke - 115546
@@ -291,6 +350,7 @@ class spell_monk_tiger_palm : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_blackout_kick();
     new spell_monk_tiger_palm();
     new spell_monk_legacy_of_the_emperor();
     new spell_monk_fortifying_brew();
