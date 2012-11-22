@@ -39,7 +39,57 @@ enum MonkSpells
     SPELL_MONK_ZEN_PILGRIMAGE           = 126892,
     SPELL_MONK_ZEN_PILGRIMAGE_RETURN    = 126895,
     SPELL_MONK_DISABLE_ROOT             = 116706,
-    SPELL_MONK_DISABLE                  = 116095
+    SPELL_MONK_DISABLE                  = 116095,
+    SPELL_MONK_SOOTHING_MIST_VISUAL     = 125955,
+    SPELL_MONK_SOOTHING_MIST_ENERGIZE   = 116335
+};
+
+// Soothing Mist - 115175
+class spell_monk_soothing_mist : public SpellScriptLoader
+{
+    public:
+        spell_monk_soothing_mist() : SpellScriptLoader("spell_monk_soothing_mist") { }
+
+        class spell_monk_soothing_mist_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_soothing_mist_AuraScript);
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetTarget())
+                        target->CastSpell(target, SPELL_MONK_SOOTHING_MIST_VISUAL, true);
+            }
+
+            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetTarget())
+                        // 25% to give 1 chi per tick
+                        if (roll_chance_i(25))
+                            caster->CastSpell(caster, SPELL_MONK_SOOTHING_MIST_ENERGIZE, true);
+            }
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetTarget())
+                        if (target->HasAura(SPELL_MONK_SOOTHING_MIST_VISUAL))
+                            target->RemoveAura(SPELL_MONK_SOOTHING_MIST_VISUAL);
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_monk_soothing_mist_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_soothing_mist_AuraScript::HandleEffectPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_monk_soothing_mist_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_soothing_mist_AuraScript();
+        }
 };
 
 // Disable - 116095
@@ -449,6 +499,7 @@ class spell_monk_tiger_palm : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_soothing_mist();
     new spell_monk_disable();
     new spell_monk_zen_pilgrimage();
     new spell_monk_blackout_kick();
