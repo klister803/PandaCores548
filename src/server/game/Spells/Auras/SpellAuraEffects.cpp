@@ -5898,9 +5898,30 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                 break;
             }
             break;
+        // Custom MoP Script
+        case SPELLFAMILY_MONK:
+            switch (GetId())
+            {
+                case 116095: // Disable : duration refresh every 1 second if target remains within 10 yards of the Monk
+                {
+                    if (caster && caster->getClass() == CLASS_MONK && target)
+                    {
+                        if (target->IsInRange(caster, 0, 10))
+                        {
+                            if (AuraApplication* aura = target->GetAuraApplication(116095))
+                            {
+                                Aura* Disable = aura->GetBase();
+                                int32 maxDuration = Disable->GetMaxDuration();
+                                Disable->SetDuration(maxDuration);
+                            }
+                        }
+                    }
+                }
+            }
         case SPELLFAMILY_WARLOCK:
             switch (GetId())
             {
+                // Custom MoP Script
                 case 103958: // Metamorphosis
                 {
                     if (caster->GetPower(POWER_DEMONIC_FURY) > 0)

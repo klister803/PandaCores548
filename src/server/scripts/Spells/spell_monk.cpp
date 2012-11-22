@@ -37,7 +37,55 @@ enum MonkSpells
     SPELL_MONK_SHUFFLE                  = 115307,
     SPELL_MONK_SERPENTS_ZEAL            = 127722,
     SPELL_MONK_ZEN_PILGRIMAGE           = 126892,
-    SPELL_MONK_ZEN_PILGRIMAGE_RETURN    = 126895
+    SPELL_MONK_ZEN_PILGRIMAGE_RETURN    = 126895,
+    SPELL_MONK_DISABLE_ROOT             = 116706,
+    SPELL_MONK_DISABLE                  = 116095
+};
+
+// Disable - 116095
+class spell_monk_disable : public SpellScriptLoader
+{
+    public:
+        spell_monk_disable() : SpellScriptLoader("spell_monk_disable") { }
+
+        class spell_monk_disable_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_disable_SpellScript);
+
+            bool snaredOnHit;
+
+            SpellCastResult CheckCast()
+            {
+                snaredOnHit = false;
+
+                if (GetCaster())
+                    if (Unit* target = GetCaster()->getVictim())
+                        if (target->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED))
+                            snaredOnHit = true;
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                    if (Player* _player = caster->ToPlayer())
+                        if (Unit* target = GetHitUnit())
+                            if (snaredOnHit)
+                                _player->CastSpell(target, SPELL_MONK_DISABLE_ROOT, true);
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_monk_disable_SpellScript::CheckCast);
+                OnHit += SpellHitFn(spell_monk_disable_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_disable_SpellScript();
+        }
 };
 
 // Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
@@ -401,6 +449,7 @@ class spell_monk_tiger_palm : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_disable();
     new spell_monk_zen_pilgrimage();
     new spell_monk_blackout_kick();
     new spell_monk_tiger_palm();
