@@ -2762,6 +2762,11 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
             // Cast the serverside immunity shield marker
             m_caster->CastSpell(unit, 61988, true);
 
+        // Custom MoP Script
+        // Expel Harm - 115072 apply wrong aura (Flying Serpent Kick - 101545)
+        if (m_spellInfo->Id == 115072 && m_preCastSpell == 101545)
+            return;
+
         if (sSpellMgr->GetSpellInfo(m_preCastSpell))
             // Blizz seems to just apply aura without bothering to cast
             m_caster->AddAura(m_preCastSpell, unit);

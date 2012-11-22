@@ -1513,8 +1513,6 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
                 }
             }
         }
-
-        // Custom MoP Script
         // 77226 - Mastery : Deep Healing
         if (m_caster && m_caster->getClass() == CLASS_SHAMAN)
         {
@@ -1532,8 +1530,6 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
                 }
             }
         }
-
-        // Custom MoP Script
         // 77485 - Mastery : Echo of Light
         if (m_caster && m_caster->getClass() == CLASS_PRIEST && m_caster->HasAura(77485) && addhealth)
         {
@@ -1541,6 +1537,21 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             int32 bp = (Mastery * addhealth) / 6;
 
             m_caster->CastCustomSpell(unitTarget, 77489, &bp, NULL, NULL, true);
+        }
+        // 115072 - Expel Harm
+        if (m_caster && m_caster->getClass() == CLASS_MONK && addhealth)
+        {
+            addhealth = Spell::CalculateMonkMeleeAttacks(m_caster, 7, 14);
+
+            Unit* target;
+
+            target = m_caster->SelectNearbyTarget(m_caster, 10.0f);
+
+            if (target && m_caster->IsValidAttackTarget(target))
+            {
+                int32 bp = addhealth * 0.5;
+                m_caster->CastCustomSpell(target, 115129, &bp, NULL, NULL, true);
+            }
         }
 
         m_damage -= addhealth;
