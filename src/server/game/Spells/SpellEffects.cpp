@@ -712,6 +712,12 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             }
             break;
     }
+    switch (m_spellInfo->Id)
+    {
+    case 107045:
+        m_caster->CastSpell(unitTarget, 107098, false);
+        break;
+    }
 
     //spells triggered by dummy effect should not miss
     if (spell_id)

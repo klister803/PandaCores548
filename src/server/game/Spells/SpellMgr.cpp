@@ -3229,6 +3229,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                 break;
+            case 106909:
+                {
+                    SpellInfo const* spell = sSpellMgr->GetSpellInfo(113379);
+                    if (!spell)
+                        break;
+                    spellInfo->DurationEntry = spell->DurationEntry;
+                }
+                break;
             case 113315:
                 {
                     SpellInfo const* spell = sSpellMgr->GetSpellInfo(113379);
