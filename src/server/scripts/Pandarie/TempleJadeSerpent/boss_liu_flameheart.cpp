@@ -125,11 +125,6 @@ class boss_liu_flameheart : public CreatureScript
             eStatus status;
             uint32 wipe_timer;
 
-            void EnterCombat(Unit* u)
-            {
-                Talk(TALK_AGGRO_01);
-            }
-
             void Reset()
             {
                 status = PHASE_1;
@@ -158,6 +153,7 @@ class boss_liu_flameheart : public CreatureScript
 
             void EnterCombat(Unit* unit)
             {
+                Talk(TALK_AGGRO_01);
                 events.ScheduleEvent(EVENT_SERPENT_STRIKE, 5000);
                 events.ScheduleEvent(EVENT_JADE_SERPENT_KICK, 5000);
             }
