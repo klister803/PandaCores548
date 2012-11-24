@@ -442,7 +442,7 @@ enum AuraType
     SPELL_AURA_382                                          = 382,  // 5.0.5 unk aura
     SPELL_AURA_383                                          = 383,  // 5.0.5 unk aura
     SPELL_AURA_384                                          = 384,  // 5.0.5 unk aura
-    SPELL_AURA_385                                          = 385,  // 5.0.5 unk aura
+    SPELL_AURA_STRIKE_SELF                                  = 385,  // Give a chance to misfire attacks and hit self instead
     SPELL_AURA_386                                          = 386,  // 5.0.5 unk aura
     SPELL_AURA_387                                          = 387,  // 5.0.5 unk aura
     SPELL_AURA_388                                          = 388,  // 5.0.5 unk aura

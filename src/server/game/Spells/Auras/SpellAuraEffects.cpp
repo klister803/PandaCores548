@@ -427,21 +427,21 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleUnused,                                    //368 unused (4.3.4)
     &AuraEffect::HandleNULL,                                      //369 SPELL_SPELL_AURA_ENABLE_POWER_BAR_TIMER
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_SET_FAIR_FAR_CLIP
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //371 SPELL_AURA_372
+    &AuraEffect::HandleNULL,                                      //372 SPELL_AURA_372
+    &AuraEffect::HandleNULL,                                      //373 SPELL_AURA_373
+    &AuraEffect::HandleNULL,                                      //374 SPELL_AURA_374
+    &AuraEffect::HandleNULL,                                      //375 SPELL_AURA_375
+    &AuraEffect::HandleNULL,                                      //376 SPELL_AURA_376
+    &AuraEffect::HandleNULL,                                      //377 SPELL_AURA_377
+    &AuraEffect::HandleNULL,                                      //378 SPELL_AURA_378
+    &AuraEffect::HandleNULL,                                      //379 SPELL_AURA_379
+    &AuraEffect::HandleNULL,                                      //380 SPELL_AURA_380
+    &AuraEffect::HandleNULL,                                      //381 SPELL_AURA_381
+    &AuraEffect::HandleNULL,                                      //382 SPELL_AURA_382
+    &AuraEffect::HandleNULL,                                      //383 SPELL_AURA_383
+    &AuraEffect::HandleNULL,                                      //384 SPELL_AURA_384
+    &AuraEffect::HandleNoImmediateEffect,                         //385 SPELL_AURA_STRIKE_SELF in Unit::AttackerStateUpdate
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
