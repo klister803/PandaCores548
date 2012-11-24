@@ -13,6 +13,7 @@ set(scripts_STAT_SRCS
   Pandarie/TempleJadeSerpent/boss_wise_mari.cpp
   Pandarie/TempleJadeSerpent/instance_temple_of_jade_serpent.cpp
   Pandarie/TempleJadeSerpent/boss_lorewalker_stonestep.cpp
+  Pandarie/TempleJadeSerpent/boss_liu_flameheart.cpp
 )
 
 message("  -> Prepared: Pandarie")

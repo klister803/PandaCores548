@@ -63,11 +63,10 @@ enum eSpells
     //FISH SPELLS
     SPELL_WATER_BUBBLE          = 114549, //OnSpawn
     //ChannelSpell : 42808, 512
-
-    //LIU FLAMEHEART Event:
-    SPELL_POSSESSED_BY_SHA      = 110164,
-    SPELL_DUST_VISUAL           = 110518,
-
+    
+    SPELL_POSSESSED_BY_SHA                  = 110164, //On Spawn
+    SPELL_JADE_ESSENCE                      = 106797, //AddAura on phase 2
+    SPELL_TRANSFORM_VISUAL                  = 74620, //When the dragon is dead, cast this and remove the possess aura.
 };
 
 enum eCreatures
@@ -83,11 +82,15 @@ enum eCreatures
     CREATURE_PERIL                  = 59051,
 
     CREATURE_MINION_OF_DOUBTS       = 57109,
+    CREATURE_LIU_FLAMEHEART         = 56732,
+    CREATURE_YU_LON                 = 56762,
+    CREATURE_JADE_FIRE              = 56893,
 };
 
 enum eGameObjects
 {
     GAMEOBJECT_DOOR_LOREWALKER_STONSTEP = 213549,
+    GAMEOBJECT_DOOR_LIU_FLAMEHEART      = 213548,
 };
 
 enum eTypes
@@ -98,6 +101,8 @@ enum eTypes
     TYPE_LOREWALKER_STONESTEP_TALK_AFTER_ZAO = 3,
     TYPE_SET_SCROLL_SELECTABLE = 4,
     TYPE_GET_EVENT_LOREWALKER_STONESTEP = 5,
+    TYPE_LIU_FLAMEHEART_STATUS = 6,
+    TYPE_IS_WIPE = 7,
 };
 
 enum eStatus
@@ -151,6 +156,9 @@ public:
         ** Liu Flameheart script.
         */
         uint32 countMinionDeads;
+        uint64 liuGuid;
+        uint64 doorLiu;
+        std::list<uint64> mobs_liu;
         /*
         ** End of Liu Flameheart script.
         */
@@ -176,6 +184,7 @@ public:
 
             //Liu Flameheart script.
             countMinionDeads = 0;
+            liuGuid = 0;
         }
 
         void Initialize()
@@ -188,6 +197,9 @@ public:
             {
             case GAMEOBJECT_DOOR_LOREWALKER_STONSTEP:
                 door_lorewalker = go->GetGUID();
+                break;
+            case GAMEOBJECT_DOOR_LIU_FLAMEHEART:
+                doorLiu = go->GetGUID();
                 break;
             }
         }
@@ -276,12 +288,15 @@ public:
         void SetData(uint32 type, uint32 data)
         {
             SetData_lorewalker_stonestep(type, data);
+            SetData_liu_flameheart(type, data);
         }
 
         uint32 GetData(uint32 type)
         {
             switch (type)
             {
+            case TYPE_IS_WIPE:
+                return isWipe();
             case TYPE_GET_EVENT_LOREWALKER_STONESTEP:
                 return eventChoosen;
             case TYPE_LOREWALKTER_STONESTEP:
@@ -290,6 +305,18 @@ public:
                 return eventStatus_numberSunDefeated;
             default:
                 return STATUS_NONE;
+            case TYPE_LIU_FLAMEHEART_STATUS:
+                {
+                    Creature* creature = instance->GetCreature(liuGuid);
+                    if (creature == nullptr)
+                        return 2;
+
+                    if (creature->GetHealthPct() < 70.f)
+                        return 1;
+                    else
+                        return 0;
+                }
+                break;
             }
         }
 
@@ -302,6 +329,19 @@ public:
         
         void OnCreatureCreature_liu_flameheart(Creature* creature)
         {
+            switch (creature->GetEntry())
+            {
+            case CREATURE_JADE_FIRE:
+                creature->setFaction(14);
+                creature->SetDisplayId(11686);
+                creature->SetReactState(REACT_PASSIVE);
+                creature->CastSpell(creature, 107108, true);
+                creature->ForcedDespawn(5000);
+                break;
+            case CREATURE_LIU_FLAMEHEART:
+                liuGuid = creature->GetGUID();
+                break;
+            }
         }
         void OnUnitDeath_liu_flameheat(Unit* unit)
         {
@@ -313,10 +353,53 @@ public:
 
                     //Spawn Liu Flameheart.
                     if (countMinionDeads == 3)
-                    {
-                    }
+                        unit->SummonCreature(CREATURE_LIU_FLAMEHEART, 929.787f, -2561.016f, 180.070f + 5);
                 }
             }
+            if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_YU_LON)
+            {
+                Creature* creature = instance->GetCreature(liuGuid);
+                if (!creature)
+                    return;
+                
+                creature->RemoveAura(SPELL_JADE_ESSENCE);
+                creature->CastSpell(creature, SPELL_TRANSFORM_VISUAL, false);
+                creature->RemoveAura(SPELL_POSSESSED_BY_SHA);
+                creature->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+
+                if (creature->GetAI())
+                    creature->GetAI()->DoAction(0);
+
+                //Open the door!
+                GameObject* go = instance->GetGameObject(doorLiu);
+                if (go != nullptr)
+                    go->SetGoState(GOState::GO_STATE_ACTIVE);
+            }
+        }
+        void SetData_liu_flameheart(uint32 type, uint32 data)
+        {
+            switch (type)
+            {
+            case TYPE_IS_WIPE:
+                if (data == 1)
+                    IsWipe_liu_flameheart();
+                break;
+            }
+        }
+        void IsWipe_liu_flameheart()
+        {
+            Creature* liu = instance->GetCreature(liuGuid);
+            if (liu)
+                liu->ForcedDespawn();
+
+            for (auto guid : mobs_liu)
+            {
+                Creature* crea = instance->GetCreature(guid);
+                if (crea == nullptr)
+                    continue;
+                crea->Respawn();
+            }
+            countMinionDeads = 0;
         }
 
         void SetData_lorewalker_stonestep(uint32 type, uint32 data)
@@ -479,6 +562,10 @@ public:
                 creature->SetDisplayId(11686);
                 creature->SetReactState(REACT_PASSIVE);
                 sunfires.push_back(creature->GetGUID());
+                break;
+            default:
+                if (creature->GetAreaId() == 6118)
+                    mobs_liu.push_back(creature->GetGUID());
                 break;
             }
         }
