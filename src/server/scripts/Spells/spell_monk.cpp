@@ -41,7 +41,60 @@ enum MonkSpells
     SPELL_MONK_DISABLE_ROOT             = 116706,
     SPELL_MONK_DISABLE                  = 116095,
     SPELL_MONK_SOOTHING_MIST_VISUAL     = 125955,
-    SPELL_MONK_SOOTHING_MIST_ENERGIZE   = 116335
+    SPELL_MONK_SOOTHING_MIST_ENERGIZE   = 116335,
+    SPELL_MONK_BREATH_OF_FIRE_DOT       = 123725,
+    SPELL_MONK_BREATH_OF_FIRE_CONFUSED  = 123393
+};
+
+// Breath of Fire - 115181
+class spell_monk_breath_of_fire : public SpellScriptLoader
+{
+    public:
+        spell_monk_breath_of_fire() : SpellScriptLoader("spell_monk_breath_of_fire") { }
+
+        class spell_monk_breath_of_fire_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_breath_of_fire_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PILGRIMAGE) || !sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PILGRIMAGE_RETURN))
+                    return false;
+                return true;
+            }
+
+            void HandleAfterHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        if (Unit* target = GetHitUnit())
+                        {
+                            // if Dizzying Haze is on the target, they will burn for an additionnal damage over 8s
+                            if (target->HasAura(116330))
+                            {
+                                _player->CastSpell(target, SPELL_MONK_BREATH_OF_FIRE_DOT, true);
+
+                                // Glyph of Breath of Fire
+                                if (_player->HasAura(123394))
+                                    _player->CastSpell(target, SPELL_MONK_BREATH_OF_FIRE_CONFUSED, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_monk_breath_of_fire_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_breath_of_fire_SpellScript();
+        }
 };
 
 // Soothing Mist - 115175
@@ -499,6 +552,7 @@ class spell_monk_tiger_palm : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_breath_of_fire();
     new spell_monk_soothing_mist();
     new spell_monk_disable();
     new spell_monk_zen_pilgrimage();

@@ -13818,6 +13818,11 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
 
         SpellInfo const* spellProto = itr->second->GetBase()->GetSpellInfo();
 
+        // Custom MoP Script
+        // Breath of Fire DoT shoudn't remove Breath of Fire disorientation - Hack Fix
+        if (procSpell && procSpell->Id == 123725 && itr->first == 123393)
+            continue;
+
         // only auras that has triggered spell should proc from fully absorbed damage
         if (procExtra & PROC_EX_ABSORB && isVictim)
             if (damage || spellProto->Effects[EFFECT_0].TriggerSpell || spellProto->Effects[EFFECT_1].TriggerSpell || spellProto->Effects[EFFECT_2].TriggerSpell)
