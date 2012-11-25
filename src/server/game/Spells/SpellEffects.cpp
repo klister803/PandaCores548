@@ -590,6 +590,10 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 8.0f, 14);
                         break;
+                    case 124335: // Swift Reflexes
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 0.3f, 14);
+                        break;
                     default:
                         break;
                 }
