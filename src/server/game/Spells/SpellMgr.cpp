@@ -3073,6 +3073,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 115308: // Elusive Brew
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
+                break;
             case 115129: // Expel Harm - Damage to a nearby ennemy within 10 yards
                 spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_NEARBY_ENEMY;

@@ -43,7 +43,60 @@ enum MonkSpells
     SPELL_MONK_SOOTHING_MIST_VISUAL     = 125955,
     SPELL_MONK_SOOTHING_MIST_ENERGIZE   = 116335,
     SPELL_MONK_BREATH_OF_FIRE_DOT       = 123725,
-    SPELL_MONK_BREATH_OF_FIRE_CONFUSED  = 123393
+    SPELL_MONK_BREATH_OF_FIRE_CONFUSED  = 123393,
+    SPELL_MONK_ELUSIVE_BREW_STACKS      = 128939,
+    SPELL_MONK_ELUSIVE_BREW             = 115308
+};
+
+// Elusive Brew - 115308
+class spell_monk_elusive_brew : public SpellScriptLoader
+{
+    public:
+        spell_monk_elusive_brew() : SpellScriptLoader("spell_monk_elusive_brew") { }
+
+        class spell_monk_elusive_brew_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_elusive_brew_SpellScript);
+
+            void HandleOnHit()
+            {
+                int32 stackAmount = 0;
+
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        if (AuraApplication* brewStacks = _player->GetAuraApplication(SPELL_MONK_ELUSIVE_BREW_STACKS))
+                            stackAmount = brewStacks->GetBase()->GetStackAmount();
+
+                        _player->AddAura(SPELL_MONK_ELUSIVE_BREW, _player);
+
+                        if (AuraApplication* aura = _player->GetAuraApplication(SPELL_MONK_ELUSIVE_BREW))
+                        {
+                            Aura* elusiveBrew = aura->GetBase();
+                            int32 maxDuration = elusiveBrew->GetMaxDuration();
+                            int32 newDuration = stackAmount * 1000;
+                            elusiveBrew->SetDuration(newDuration);
+
+                            if (newDuration > maxDuration)
+                                elusiveBrew->SetMaxDuration(newDuration);
+
+                            _player->RemoveAura(SPELL_MONK_ELUSIVE_BREW_STACKS);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_elusive_brew_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_elusive_brew_SpellScript();
+        }
 };
 
 // Breath of Fire - 115181
@@ -55,13 +108,6 @@ class spell_monk_breath_of_fire : public SpellScriptLoader
         class spell_monk_breath_of_fire_SpellScript : public SpellScript
         {
             PrepareSpellScript(spell_monk_breath_of_fire_SpellScript);
-
-            bool Validate()
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PILGRIMAGE) || !sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PILGRIMAGE_RETURN))
-                    return false;
-                return true;
-            }
 
             void HandleAfterHit()
             {
@@ -552,6 +598,7 @@ class spell_monk_tiger_palm : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_elusive_brew();
     new spell_monk_breath_of_fire();
     new spell_monk_soothing_mist();
     new spell_monk_disable();

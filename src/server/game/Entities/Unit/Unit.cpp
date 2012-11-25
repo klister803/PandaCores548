@@ -1290,6 +1290,13 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
     CleanDamage cleanDamage(damageInfo->cleanDamage, damageInfo->absorb, damageInfo->attackType, damageInfo->hitOutCome);
     DealDamage(victim, damageInfo->damage, &cleanDamage, DIRECT_DAMAGE, SpellSchoolMask(damageInfo->damageSchoolMask), NULL, durabilityLoss);
 
+    // Custom MoP Script
+    // Brewing : Elusive Brew - 128938
+    if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_MONK && HasAura(128938)
+        && damageInfo->hitOutCome == MELEE_HIT_CRIT
+        && (damageInfo->attackType == BASE_ATTACK || damageInfo->attackType == OFF_ATTACK))
+        CastSpell(this, 128939, true); // Add one stack of Elusive Brew
+
     // If this is a creature and it attacks from behind it has a probability to daze it's victim
     if ((damageInfo->hitOutCome == MELEE_HIT_CRIT || damageInfo->hitOutCome == MELEE_HIT_CRUSHING || damageInfo->hitOutCome == MELEE_HIT_NORMAL || damageInfo->hitOutCome == MELEE_HIT_GLANCING) &&
         GetTypeId() != TYPEID_PLAYER && !ToCreature()->IsControlledByPlayer() && !victim->HasInArc(M_PI, this)
