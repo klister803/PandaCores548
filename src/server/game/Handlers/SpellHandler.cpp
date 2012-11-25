@@ -451,6 +451,18 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellInfo = actualSpellInfo;
     }
 
+    // Custom MoP Script
+    // Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
+    if (spellInfo->Id == 126892 && _player->HasAura(126896))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(126895);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
+
     Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
     spell->m_cast_count = castCount;                       // set count of casts
     spell->m_glyphIndex = glyphIndex;
