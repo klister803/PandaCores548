@@ -1776,6 +1776,21 @@ void Unit::AttackerStateUpdate (Unit* victim, WeaponAttackType attType, bool ext
         // attack can be redirected to another target
         victim = GetMeleeHitRedirectTarget(victim);
 
+        // Custom MoP Script
+        // SPELL_AURA_STRIKE_SELF
+        if (HasAuraType(SPELL_AURA_STRIKE_SELF))
+        {
+            // Dizzying Haze - 115180
+            if (AuraApplication* aura = this->GetAuraApplication(116330))
+            {
+                if (roll_chance_i(aura->GetBase()->GetEffect(1)->GetAmount()))
+                {
+                    victim->CastSpell(this, 118022, true);
+                    return;
+                }
+            }
+        }
+
         CalcDamageInfo damageInfo;
         CalculateMeleeDamage(victim, 0, &damageInfo, attType);
         // Send log damage message to client
