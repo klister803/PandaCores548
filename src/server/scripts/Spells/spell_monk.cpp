@@ -41,7 +41,9 @@ enum MonkSpells
     SPELL_MONK_DISABLE_ROOT             = 116706,
     SPELL_MONK_DISABLE                  = 116095,
     SPELL_MONK_SOOTHING_MIST_VISUAL     = 125955,
-    SPELL_MONK_SOOTHING_MIST_ENERGIZE   = 116335
+    SPELL_MONK_SOOTHING_MIST_ENERGIZE   = 116335,
+    SPELL_MONK_ROLL                     = 109132,
+    SPELL_MONK_ROLL_TRIGGER             = 107427
 };
 
 // Soothing Mist - 115175
@@ -497,6 +499,58 @@ class spell_monk_tiger_palm : public SpellScriptLoader
         }
 };
 
+// Roll - 109132
+class spell_monk_roll : public SpellScriptLoader
+{
+    public:
+        spell_monk_roll() : SpellScriptLoader("spell_monk_roll") { }
+
+        class spell_monk_roll_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_roll_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_ROLL))
+                    return false;
+                return true;
+            }
+
+            void HandleAfterCast()
+            {
+                Unit* caster = GetCaster();
+                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                caster->CastSpell(caster, SPELL_MONK_ROLL_TRIGGER, true);
+            }
+
+            void HandleBeforeCast()
+            {
+                Aura* aur = GetCaster()->AddAura(SPELL_MONK_ROLL_TRIGGER, GetCaster());
+                if (!aur)
+                    return;
+
+                AuraApplication* app =  aur->GetApplicationOfTarget(GetCaster()->GetGUID());
+                if (!app)
+                    return;
+
+                app->ClientUpdate();
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_monk_roll_SpellScript::HandleAfterCast);
+                BeforeCast += SpellCastFn(spell_monk_roll_SpellScript::HandleBeforeCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_roll_SpellScript();
+        }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_soothing_mist();
@@ -509,4 +563,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_touch_of_death();
     new spell_monk_paralysis();
     new spell_monk_provoke();
+    new spell_monk_roll();
 }
