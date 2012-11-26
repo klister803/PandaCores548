@@ -427,21 +427,21 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleUnused,                                    //368 unused (4.3.4)
     &AuraEffect::HandleNULL,                                      //369 SPELL_SPELL_AURA_ENABLE_POWER_BAR_TIMER
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_SET_FAIR_FAR_CLIP
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //371 SPELL_AURA_372
+    &AuraEffect::HandleNULL,                                      //372 SPELL_AURA_372
+    &AuraEffect::HandleAuraModIncreaseSpeed,                      //373 SPELL_AURA_INCREASE_MIN_SWIM_SPEED
+    &AuraEffect::HandleNULL,                                      //374 SPELL_AURA_374
+    &AuraEffect::HandleNULL,                                      //375 SPELL_AURA_375
+    &AuraEffect::HandleNULL,                                      //376 SPELL_AURA_376
+    &AuraEffect::HandleNULL,                                      //377 SPELL_AURA_377
+    &AuraEffect::HandleNULL,                                      //378 SPELL_AURA_378
+    &AuraEffect::HandleNULL,                                      //379 SPELL_AURA_379
+    &AuraEffect::HandleNULL,                                      //380 SPELL_AURA_380
+    &AuraEffect::HandleNULL,                                      //381 SPELL_AURA_381
+    &AuraEffect::HandleNULL,                                      //382 SPELL_AURA_382
+    &AuraEffect::HandleNULL,                                      //383 SPELL_AURA_383
+    &AuraEffect::HandleNULL,                                      //384 SPELL_AURA_384
+    &AuraEffect::HandleNoImmediateEffect,                         //385 SPELL_AURA_STRIKE_SELF in Unit::AttackerStateUpdate
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
@@ -3262,7 +3262,19 @@ void AuraEffect::HandleAuraModIncreaseSpeed(AuraApplication const* aurApp, uint8
 
     Unit* target = aurApp->GetTarget();
 
+    if (GetAuraType() == SPELL_AURA_INCREASE_MIN_SWIM_SPEED)
+    {
+        target->UpdateSpeed(MOVE_SWIM, true);
+        return;
+    }
+
     target->UpdateSpeed(MOVE_RUN, true);
+
+    if (GetAuraType() == SPELL_AURA_MOD_MINIMUM_SPEED)
+    {
+        target->UpdateSpeed(MOVE_RUN_BACK, true);
+        target->UpdateSpeed(MOVE_FLIGHT, true);
+    }
 }
 
 void AuraEffect::HandleAuraModIncreaseMountedSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -5898,9 +5910,30 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                 break;
             }
             break;
+        // Custom MoP Script
+        case SPELLFAMILY_MONK:
+            switch (GetId())
+            {
+                case 116095: // Disable : duration refresh every 1 second if target remains within 10 yards of the Monk
+                {
+                    if (caster && caster->getClass() == CLASS_MONK && target)
+                    {
+                        if (target->IsInRange(caster, 0, 10))
+                        {
+                            if (AuraApplication* aura = target->GetAuraApplication(116095))
+                            {
+                                Aura* Disable = aura->GetBase();
+                                int32 maxDuration = Disable->GetMaxDuration();
+                                Disable->SetDuration(maxDuration);
+                            }
+                        }
+                    }
+                }
+            }
         case SPELLFAMILY_WARLOCK:
             switch (GetId())
             {
+                // Custom MoP Script
                 case 103958: // Metamorphosis
                 {
                     if (caster->GetPower(POWER_DEMONIC_FURY) > 0)

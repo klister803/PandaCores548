@@ -430,7 +430,7 @@ enum AuraType
     SPELL_AURA_SET_FAIR_FAR_CLIP                            = 370,  // Overrides client's View Distance setting to max("Fair", current_setting)
     SPELL_AURA_371                                          = 371,  // 5.0.5 unk aura
     SPELL_AURA_372                                          = 372,  // 5.0.5 unk aura
-    SPELL_AURA_373                                          = 373,  // 5.0.5 unk aura
+    SPELL_AURA_INCREASE_MIN_SWIM_SPEED                      = 373,  // Not sure if increase only swim, but in Roll (Monk), blizz send only update swim speed packet
     SPELL_AURA_374                                          = 374,  // 5.0.5 unk aura
     SPELL_AURA_375                                          = 375,  // 5.0.5 unk aura
     SPELL_AURA_376                                          = 376,  // 5.0.5 unk aura
@@ -442,7 +442,7 @@ enum AuraType
     SPELL_AURA_382                                          = 382,  // 5.0.5 unk aura
     SPELL_AURA_383                                          = 383,  // 5.0.5 unk aura
     SPELL_AURA_384                                          = 384,  // 5.0.5 unk aura
-    SPELL_AURA_385                                          = 385,  // 5.0.5 unk aura
+    SPELL_AURA_STRIKE_SELF                                  = 385,  // Give a chance to misfire attacks and hit self instead
     SPELL_AURA_386                                          = 386,  // 5.0.5 unk aura
     SPELL_AURA_387                                          = 387,  // 5.0.5 unk aura
     SPELL_AURA_388                                          = 388,  // 5.0.5 unk aura

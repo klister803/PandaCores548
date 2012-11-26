@@ -895,7 +895,8 @@ void Spell::SelectEffectImplicitTargets(SpellEffIndex effIndex, SpellImplicitTar
             sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SPELL: target type %u, found in spellID %u, effect %u is not implemented yet!", m_spellInfo->Id, effIndex, targetType.GetTarget());
             break;
         default:
-            ASSERT(false && "Spell::SelectEffectImplicitTargets: received not implemented select target category");
+            printf("Spell::SelectEffectImplicitTargets: received not implemented select target category / Spell ID = %u and Effect = %u and target type = %u \n", m_spellInfo->Id, effIndex, targetType.GetTarget());
+            //ASSERT(false && "Spell::SelectEffectImplicitTargets: received not implemented select target category");
             break;
     }
 }
@@ -2761,6 +2762,11 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
         if (m_preCastSpell == 61987)
             // Cast the serverside immunity shield marker
             m_caster->CastSpell(unit, 61988, true);
+
+        // Custom MoP Script
+        // Expel Harm - 115072 apply wrong aura (Flying Serpent Kick - 101545)
+        if (m_spellInfo->Id == 115072 && m_preCastSpell == 101545)
+            return;
 
         if (sSpellMgr->GetSpellInfo(m_preCastSpell))
             // Blizz seems to just apply aura without bothering to cast

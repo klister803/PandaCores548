@@ -62,6 +62,8 @@ enum SpellEffIndex
 
 enum SpecIndex
 {
+    SPEC_NONE                   = 0,
+    SPEC_PET                    = 1,
     SPEC_MAGE_ARCANE            = 62,
     SPEC_MAGE_FIRE              = 63,
     SPEC_MAGE_FROST             = 64,

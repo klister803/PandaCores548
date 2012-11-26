@@ -273,7 +273,14 @@ void Quest::BuildExtraQuestInfo(WorldPacket& data, Player* player) const
     }
 
     data << uint32(GetRewOrReqMoney());
-    data << uint32(XPValue(player) * sWorld->getRate(RATE_XP_QUEST));
+
+    float QuestXpRate = 1;
+    if(player->GetPersonnalXpRate())
+        QuestXpRate = player->GetPersonnalXpRate();
+    else
+        QuestXpRate = sWorld->getRate(RATE_XP_QUEST);
+
+    data << uint32(XPValue(player) * QuestXpRate);
 
     data << uint32(0);                                      // unk
     data << uint32(GetBonusTalents());

@@ -2691,7 +2691,7 @@ void SpellMgr::LoadSpellClassInfo()
             if (!chrSpec)
                 continue;
 
-            mSpellClassInfo[chrSpec->classId].push_back(i);
+            mSpellClassInfo[chrSpec->classId].push_back(specializationInfo->LearnSpell);
         }
     }
 
@@ -3073,6 +3073,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 115129: // Expel Harm - Damage to a nearby ennemy within 10 yards
+                spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_NEARBY_ENEMY;
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
+                break;
+            case 126892: // Zen Pilgrimage
+            case 126895: // Zen Pilgrimage : Return
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
+                break;
             case 130320: // Rising Sun Kick - Monks abilities deal 10% more damage
                 spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ENEMY;

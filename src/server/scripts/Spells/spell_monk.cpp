@@ -35,7 +35,158 @@ enum MonkSpells
     SPELL_MONK_BLACKOUT_KICK_DOT        = 128531,
     SPELL_MONK_BLACKOUT_KICK_HEAL       = 128591,
     SPELL_MONK_SHUFFLE                  = 115307,
-    SPELL_MONK_SERPENTS_ZEAL            = 127722
+    SPELL_MONK_SERPENTS_ZEAL            = 127722,
+    SPELL_MONK_ZEN_PILGRIMAGE           = 126892,
+    SPELL_MONK_ZEN_PILGRIMAGE_RETURN    = 126895,
+    SPELL_MONK_DISABLE_ROOT             = 116706,
+    SPELL_MONK_DISABLE                  = 116095,
+    SPELL_MONK_SOOTHING_MIST_VISUAL     = 125955,
+    SPELL_MONK_SOOTHING_MIST_ENERGIZE   = 116335,
+    SPELL_MONK_ROLL                     = 109132,
+    SPELL_MONK_ROLL_TRIGGER             = 107427
+};
+
+// Soothing Mist - 115175
+class spell_monk_soothing_mist : public SpellScriptLoader
+{
+    public:
+        spell_monk_soothing_mist() : SpellScriptLoader("spell_monk_soothing_mist") { }
+
+        class spell_monk_soothing_mist_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_soothing_mist_AuraScript);
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetTarget())
+                        target->CastSpell(target, SPELL_MONK_SOOTHING_MIST_VISUAL, true);
+            }
+
+            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetTarget())
+                        // 25% to give 1 chi per tick
+                        if (roll_chance_i(25))
+                            caster->CastSpell(caster, SPELL_MONK_SOOTHING_MIST_ENERGIZE, true);
+            }
+
+            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetTarget())
+                        if (target->HasAura(SPELL_MONK_SOOTHING_MIST_VISUAL))
+                            target->RemoveAura(SPELL_MONK_SOOTHING_MIST_VISUAL);
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_monk_soothing_mist_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_soothing_mist_AuraScript::HandleEffectPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_monk_soothing_mist_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_soothing_mist_AuraScript();
+        }
+};
+
+// Disable - 116095
+class spell_monk_disable : public SpellScriptLoader
+{
+    public:
+        spell_monk_disable() : SpellScriptLoader("spell_monk_disable") { }
+
+        class spell_monk_disable_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_disable_SpellScript);
+
+            bool snaredOnHit;
+
+            SpellCastResult CheckCast()
+            {
+                snaredOnHit = false;
+
+                if (GetCaster())
+                    if (Unit* target = GetCaster()->getVictim())
+                        if (target->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED))
+                            snaredOnHit = true;
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                    if (Player* _player = caster->ToPlayer())
+                        if (Unit* target = GetHitUnit())
+                            if (snaredOnHit)
+                                _player->CastSpell(target, SPELL_MONK_DISABLE_ROOT, true);
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_monk_disable_SpellScript::CheckCast);
+                OnHit += SpellHitFn(spell_monk_disable_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_disable_SpellScript();
+        }
+};
+
+// Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
+class spell_monk_zen_pilgrimage : public SpellScriptLoader
+{
+    public:
+        spell_monk_zen_pilgrimage() : SpellScriptLoader("spell_monk_zen_pilgrimage") { }
+
+        class spell_monk_zen_pilgrimage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_zen_pilgrimage_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PILGRIMAGE) || !sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PILGRIMAGE_RETURN))
+                    return false;
+                return true;
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        if (GetSpellInfo()->Id == SPELL_MONK_ZEN_PILGRIMAGE)
+                        {
+                            _player->SaveRecallPosition();
+                            _player->TeleportTo(870, 3818.55f, 1793.18f, 950.35f, _player->GetOrientation());
+                        }
+                        else if (GetSpellInfo()->Id == SPELL_MONK_ZEN_PILGRIMAGE_RETURN)
+                        {
+                            _player->TeleportTo(_player->m_recallMap, _player->m_recallX, _player->m_recallY, _player->m_recallZ, _player->m_recallO);
+                            _player->RemoveAura(126896);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_monk_zen_pilgrimage_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_zen_pilgrimage_SpellScript();
+        }
 };
 
 // Blackout Kick - 100784
@@ -348,8 +499,63 @@ class spell_monk_tiger_palm : public SpellScriptLoader
         }
 };
 
+// Roll - 109132
+class spell_monk_roll : public SpellScriptLoader
+{
+    public:
+        spell_monk_roll() : SpellScriptLoader("spell_monk_roll") { }
+
+        class spell_monk_roll_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_roll_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_ROLL))
+                    return false;
+                return true;
+            }
+
+            void HandleAfterCast()
+            {
+                Unit* caster = GetCaster();
+                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                caster->CastSpell(caster, SPELL_MONK_ROLL_TRIGGER, true);
+            }
+
+            void HandleBeforeCast()
+            {
+                Aura* aur = GetCaster()->AddAura(SPELL_MONK_ROLL_TRIGGER, GetCaster());
+                if (!aur)
+                    return;
+
+                AuraApplication* app =  aur->GetApplicationOfTarget(GetCaster()->GetGUID());
+                if (!app)
+                    return;
+
+                app->ClientUpdate();
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_monk_roll_SpellScript::HandleAfterCast);
+                BeforeCast += SpellCastFn(spell_monk_roll_SpellScript::HandleBeforeCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_roll_SpellScript();
+        }
+};
+
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_soothing_mist();
+    new spell_monk_disable();
+    new spell_monk_zen_pilgrimage();
     new spell_monk_blackout_kick();
     new spell_monk_tiger_palm();
     new spell_monk_legacy_of_the_emperor();
@@ -357,4 +563,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_touch_of_death();
     new spell_monk_paralysis();
     new spell_monk_provoke();
+    new spell_monk_roll();
 }
