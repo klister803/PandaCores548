@@ -17841,6 +17841,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     m_achievementMgr.CheckAllAchievementCriteria(this);
 
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
+    
+    if(QueryResult PersonnalRateResult = CharacterDatabase.PQuery("SELECT rate FROM character_rates WHERE guid='%u' LIMIT 1", GetGUIDLow()))
+        m_PersonnalXpRate = (PersonnalRateResult->Fetch())[0].GetFloat();
 
     return true;
 }
@@ -26508,4 +26511,25 @@ void Player::ShowNeutralPlayerFactionSelectUI()
 {
     WorldPacket data(SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI);
     GetSession()->SendPacket(&data);
+}
+
+void Player::SetPersonnalXpRate(float PersonnalXpRate)
+{
+    if(PersonnalXpRate != m_PersonnalXpRate)
+    {
+        if(PersonnalXpRate)
+        {
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+            trans->PAppend("REPLACE INTO character_rates VALUES ('%u', '%f');", GetGUIDLow(), PersonnalXpRate);
+            CharacterDatabase.CommitTransaction(trans);
+        }
+        else // Rates normales
+        {
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+            trans->PAppend("DELETE FROM character_rates WHERE guid = '%u';", GetGUIDLow());
+            CharacterDatabase.CommitTransaction(trans);
+        }
+    }
+
+    m_PersonnalXpRate = PersonnalXpRate;
 }
