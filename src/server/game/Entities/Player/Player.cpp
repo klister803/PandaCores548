@@ -25412,7 +25412,7 @@ void Player::RemoveAtLoginFlag(AtLoginFlags flags, bool persist /*= false*/)
 
 void Player::SendClearCooldown(uint32 spell_id, Unit* target)
 {
-    WorldPacket data(SMSG_CLEAR_COOLDOWN);
+    WorldPacket data(SMSG_CLEAR_COOLDOWNS);
     ObjectGuid guid = target->GetGUID();
     uint32 count = 1;
 
