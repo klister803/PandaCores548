@@ -59,6 +59,7 @@ EndContentData */
 #include "CellImpl.h"
 #include "SpellAuras.h"
 #include "Vehicle.h"
+#include "Player.h"
 
 /*########
 # npc_air_force_bots
@@ -3067,9 +3068,8 @@ public:
 #define GOSSIP_TEXT_EXP_MODIF    1587
 #define GOSSIP_TEXT_EXP_MODIF_OK 1588
 #define GOSSIP_TEXT_EXP_NORMAL   1589
-#define GOSSIP_ITEM_XP_1         "Je souhaite des RATE XP de 1"
-#define GOSSIP_ITEM_XP_3         "Je souhaite des RATE XP de 3"
 #define GOSSIP_ITEM_XP_DEFAULT   "Je souhaite retrouver mes RATE XP normales (5)."
+
 #define GOSSIP_ITEM_XP_CLOSE     "Au revoir."
 
 class npc_rate_xp_modifier : public CreatureScript
@@ -3079,10 +3079,21 @@ public:
 
     bool OnGossipHello(Player *pPlayer, Creature *pCreature)
     {
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_XP_1,       GOSSIP_SENDER_MAIN, 1);
-        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_XP_3,       GOSSIP_SENDER_MAIN, 3);
+        uint32 maxRates = sWorld->getRate(RATE_XP_KILL);
+
+        for (uint32 i = 0; i < sWorld->getRate(RATE_XP_KILL); ++i)
+        {
+            std::ostringstream gossipText;
+            gossipText << "Je souhaiterais modifier mes RATES d'XP à " << i;
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, gossipText.str(), GOSSIP_SENDER_MAIN, i);
+        }
+
         if (pPlayer->GetPersonnalXpRate())
-            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_XP_DEFAULT, GOSSIP_SENDER_MAIN, 0);
+        {
+            std::ostringstream gossipText;
+            gossipText << "Je souhaite retrouver mes RATES d'XP normales (" << sWorld->getRate(RATE_XP_KILL) << ")";
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, gossipText.str(), GOSSIP_SENDER_MAIN, 0);
+        }
 		
         pPlayer->PlayerTalkClass->SendGossipMenu(GOSSIP_TEXT_EXP_MODIF, pCreature->GetGUID());
         return true;
@@ -3096,7 +3107,7 @@ public:
             return true;
         }
         
-        pPlayer->SetPersonnalXpRate(uiAction);
+        pPlayer->SetPersonnalXpRate(float(uiAction));
 
         pPlayer->PlayerTalkClass->ClearMenus();
         pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_XP_CLOSE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
