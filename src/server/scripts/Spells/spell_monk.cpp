@@ -27,8 +27,6 @@
 
 enum MonkSpells
 {
-    SPELL_MONK_TIGER_PALM               = 100787,
-    SPELL_MONK_TIGER_POWER              = 125359,
     SPELL_MONK_LEGACY_OF_THE_EMPEROR    = 117667,
     SPELL_MONK_FORTIFYING_BREW          = 120954,
     SPELL_MONK_PROVOKE                  = 118635,
@@ -50,7 +48,50 @@ enum MonkSpells
     SPELL_MONK_KEG_SMASH_ENERGIZE       = 127796,
     SPELL_MONK_WEAKENED_BLOWS           = 115798,
     SPELL_MONK_DIZZYING_HAZE            = 116330,
-    SPELL_MONK_CLASH_CHARGE             = 126452
+    SPELL_MONK_CLASH_CHARGE             = 126452,
+    SPELL_MONK_LIGHT_STAGGER            = 124275,
+    SPELL_MONK_MODERATE_STAGGER         = 124274,
+    SPELL_MONK_HEAVY_STAGGER            = 124273
+};
+
+// Purifying Brew - 119582
+class spell_monk_purifying_brew : public SpellScriptLoader
+{
+    public:
+        spell_monk_purifying_brew() : SpellScriptLoader("spell_monk_purifying_brew") { }
+
+        class spell_monk_purifying_brew_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_purifying_brew_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        AuraApplication* staggerAmount = _player->GetAuraApplication(SPELL_MONK_LIGHT_STAGGER);
+
+                        if (!staggerAmount)
+                            staggerAmount = _player->GetAuraApplication(SPELL_MONK_MODERATE_STAGGER);
+                        else if (!staggerAmount)
+                            staggerAmount = _player->GetAuraApplication(SPELL_MONK_HEAVY_STAGGER);
+
+                        _player->RemoveAura(staggerAmount->GetBase()->GetId());
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_purifying_brew_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_purifying_brew_SpellScript();
+        }
 };
 
 // Clash - 122057
@@ -636,52 +677,9 @@ class spell_monk_legacy_of_the_emperor : public SpellScriptLoader
         }
 };
 
-// Tiger Palm - 100787
-class spell_monk_tiger_palm : public SpellScriptLoader
-{
-    public:
-        spell_monk_tiger_palm() : SpellScriptLoader("spell_monk_tiger_palm") { }
-
-        class spell_monk_tiger_palm_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_monk_tiger_palm_SpellScript);
-
-            void SchoolDmg(SpellEffIndex /*effIndex*/)
-            {
-                /*Unit* caster = GetCaster();
-                if (caster)
-                {
-                    Unit* target = GetHitUnit();
-                    int32 bp = 0;
-
-                    float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
-                    float mwb = caster->GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE);
-                    float MWB = caster->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
-                    float MWS = caster->GetAttackTime(BASE_ATTACK);
-                    float min = 0;
-                    float max = 0;
-
-                    min = (3.0f * 1.0f * 1.0f * (0.898882f) * (mwb / MWS) + 1.0f * (mwb / 2.0f / MWS) + (ap / 14.0f) - 1.0f);
-                    max = (3.0f * 1.0f * 1.0f * (0.898882f) * (MWB / (MWS + 1.0f * (MWB / 2.0f / MWS) + (ap / 14.0f) + 1.0f)));
-                    bp = irand(int32(min), int32(max));
-
-                    caster->CastCustomSpell(target, SPELL_MONK_TIGER_PALM, &bp, NULL, NULL, true);
-                }*/
-            }
-
-            void Register()
-            {
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_monk_tiger_palm_SpellScript();
-        }
-};
-
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_purifying_brew();
     new spell_monk_clash();
     new spell_monk_keg_smash();
     new spell_monk_elusive_brew();
@@ -690,7 +688,6 @@ void AddSC_monk_spell_scripts()
     new spell_monk_disable();
     new spell_monk_zen_pilgrimage();
     new spell_monk_blackout_kick();
-    new spell_monk_tiger_palm();
     new spell_monk_legacy_of_the_emperor();
     new spell_monk_fortifying_brew();
     new spell_monk_touch_of_death();
