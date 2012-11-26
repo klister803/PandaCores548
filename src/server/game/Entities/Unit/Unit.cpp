@@ -59,7 +59,6 @@
 #include "UpdateFieldFlags.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
-
 #include <math.h>
 
 float baseMoveSpeed[MAX_MOVE_TYPE] =
@@ -17601,4 +17600,9 @@ uint32 Unit::GetDamageTakenInPastSecs(uint32 secs)
     }
 
     return damage;
+}
+
+void Unit::WriteMovementUpdate(WorldPacket &data) const
+{
+    WorldSession::WriteMovementInfo(data, (MovementInfo*)&m_movementInfo);
 }
