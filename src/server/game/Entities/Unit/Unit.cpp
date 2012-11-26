@@ -548,6 +548,17 @@ void Unit::DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb)
 
 uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
+    if (spellProto && spellProto->Id != LIGHT_STAGGER && spellProto->Id != MODERATE_STAGGER && spellProto->Id != HEAVY_STAGGER)
+    {
+        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
+                damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask, spellProto);
+    }
+    else if (!spellProto)
+    {
+        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
+            damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask);
+    }
+
     if (victim->IsAIEnabled)
         victim->GetAI()->DamageTaken(this, damage);
 
@@ -787,6 +798,106 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     sLog->outDebug(LOG_FILTER_UNITS, "DealDamageEnd returned %d damage", damage);
 
     return damage;
+}
+
+uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto)
+{
+    // Custom MoP Script
+    // Stagger Amount
+    if (victim->GetSpecializationId(victim->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER && damageSchoolMask == SPELL_SCHOOL_MASK_NORMAL && victim->HasAura(115069) && damage > 0)
+    {
+        float stagger = 0.80f;
+
+        if (victim->HasAura(117906))
+        {
+            float Mastery = victim->GetFloatValue(PLAYER_MASTERY) / 2.0f / 100.0f;
+            stagger = 0.80f - Mastery;
+
+            // Brewmaster Training : Your Fortifying Brew also increase stagger amount by 20%
+            if (victim->HasAura(115203) && victim->HasAura(117967))
+                stagger -= 0.20f;
+            // Shuffle also increase stagger amount by 20%
+            if (victim->HasAura(115307))
+                stagger -= 0.20f;
+        }
+
+        int32 bp = damage - (damage * stagger);
+        int32 spellId;
+        int32 ticks = sSpellMgr->GetSpellInfo(LIGHT_STAGGER)->GetDuration() / sSpellMgr->GetSpellInfo(LIGHT_STAGGER)->Effects[0].Amplitude;
+
+        AuraEffect* aurEff = victim->GetAuraEffect(LIGHT_STAGGER, 0, victim->GetGUID());
+        if (!aurEff)
+            aurEff = victim->GetAuraEffect(MODERATE_STAGGER, 0, victim->GetGUID());
+        if (!aurEff)
+            aurEff = victim->GetAuraEffect(HEAVY_STAGGER, 0, victim->GetGUID());
+
+        if (aurEff)
+        {
+            // Add remaining ticks to damage done
+            bp += aurEff->GetAmount() * (ticks - aurEff->GetTickNumber());
+        }
+
+        if (bp < int32(victim->CountPctFromMaxHealth(3)))
+            spellId = LIGHT_STAGGER;
+        else if (bp < int32(victim->CountPctFromMaxHealth(6)))
+            spellId = MODERATE_STAGGER;
+        else
+            spellId = HEAVY_STAGGER;
+
+        bp /= ticks;
+
+        if (!aurEff)
+            victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
+
+        switch (spellId)
+        {
+            case LIGHT_STAGGER:
+                if (aurEff && aurEff->GetId() != spellId)
+                {
+                    victim->RemoveAura(aurEff->GetId());
+                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
+                }
+                else if (aurEff && aurEff->GetId() == spellId)
+                {
+                    aurEff->SetAmount(bp);
+                    aurEff->GetBase()->RefreshDuration();
+                    aurEff->ResetPeriodic();
+                }
+                break;
+            case MODERATE_STAGGER:
+                if (aurEff && aurEff->GetId() != spellId)
+                {
+                    victim->RemoveAura(aurEff->GetId());
+                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
+                }
+                else if (aurEff && aurEff->GetId() == spellId)
+                {
+                    aurEff->SetAmount(bp);
+                    aurEff->GetBase()->RefreshDuration();
+                    aurEff->ResetPeriodic();
+                }
+                break;
+            case HEAVY_STAGGER:
+                if (aurEff && aurEff->GetId() != spellId)
+                {
+                    victim->RemoveAura(aurEff->GetId());
+                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
+                }
+                else if (aurEff && aurEff->GetId() == spellId)
+                {
+                    aurEff->SetAmount(bp);
+                    aurEff->GetBase()->RefreshDuration();
+                    aurEff->ResetPeriodic();
+                }
+                break;
+            default:
+                break;
+        }
+
+        return damage *= stagger;
+    }
+    else
+        return damage;
 }
 
 void Unit::CastStop(uint32 except_spellid)
@@ -9722,6 +9833,11 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     if (!spellProto || damagetype == DIRECT_DAMAGE)
         return pdamage;
 
+    // small exception for Stagger Amount, can't find any general rules
+    // Light Stagger, Moderate Stagger and Heavy Stagger ignore reduction mods
+    if (spellProto->Id == 124275 || spellProto->Id == 124274 || spellProto->Id == 124273)
+        return pdamage;
+
     int32 TakenTotal = 0;
     float TakenTotalMod = 1.0f;
     float TakenTotalCasterMod = 0.0f;
@@ -10771,20 +10887,6 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     // done scripted mod (take it from owner)
     Unit* owner = GetOwner() ? GetOwner() : this;
     // AuraEffectList const& mOverrideClassScript = owner->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
-
-    // Custom MoP Script
-    // Stagger
-    /*if (victim && victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_MONK && victim->ToPlayer()->GetSpecializationId(victim->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
-    {
-        int32 bp = (int32((pdamage + DoneFlatBenefit) * DoneTotalMod)) - (int32((pdamage + DoneFlatBenefit) * 0.8));
-
-        bp += victim->GetRemainingPeriodicAmount(victim->GetGUID(), 124255, SPELL_AURA_PERIODIC_DAMAGE);
-        bp /= 10;
-
-        victim->CastCustomSpell(victim, 124255, &bp, NULL, NULL, true);
-
-        DoneTotalMod *= 0.8f;
-    }*/
 
     float tmpDamage = float(int32(pdamage) + DoneFlatBenefit) * DoneTotalMod;
 

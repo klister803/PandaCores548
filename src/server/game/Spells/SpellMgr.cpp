@@ -3073,6 +3073,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 124273: // Heavy Stagger
+            case 124274: // Moderate Stagger
+            case 124275: // Light Stagger
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
+                spellInfo->Effects[0].Amplitude = 1000;
+                spellInfo->Effects[0].BasePoints = 0;
+                break;
             case 126451: // Clash - Impact
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
                 break;
