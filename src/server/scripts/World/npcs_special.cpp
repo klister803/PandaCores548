@@ -3068,8 +3068,6 @@ public:
 #define GOSSIP_TEXT_EXP_MODIF    1587
 #define GOSSIP_TEXT_EXP_MODIF_OK 1588
 #define GOSSIP_TEXT_EXP_NORMAL   1589
-#define GOSSIP_ITEM_XP_DEFAULT   "Je souhaite retrouver mes RATE XP normales (5)."
-
 #define GOSSIP_ITEM_XP_CLOSE     "Au revoir."
 
 class npc_rate_xp_modifier : public CreatureScript
@@ -3081,7 +3079,7 @@ public:
     {
         uint32 maxRates = sWorld->getRate(RATE_XP_KILL);
 
-        for (uint32 i = 0; i < sWorld->getRate(RATE_XP_KILL); ++i)
+        for (uint32 i = 1; i < sWorld->getRate(RATE_XP_KILL); ++i)
         {
             std::ostringstream gossipText;
             gossipText << "Je souhaiterais modifier mes RATES d'XP à " << i;
