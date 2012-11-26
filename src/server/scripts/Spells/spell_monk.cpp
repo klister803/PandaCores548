@@ -74,10 +74,11 @@ class spell_monk_purifying_brew : public SpellScriptLoader
 
                         if (!staggerAmount)
                             staggerAmount = _player->GetAuraApplication(SPELL_MONK_MODERATE_STAGGER);
-                        else if (!staggerAmount)
+                        if (!staggerAmount)
                             staggerAmount = _player->GetAuraApplication(SPELL_MONK_HEAVY_STAGGER);
 
-                        _player->RemoveAura(staggerAmount->GetBase()->GetId());
+                        if (staggerAmount)
+                            _player->RemoveAura(staggerAmount->GetBase()->GetId());
                     }
                 }
             }
