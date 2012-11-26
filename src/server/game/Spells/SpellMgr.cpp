@@ -2691,7 +2691,7 @@ void SpellMgr::LoadSpellClassInfo()
             if (!chrSpec)
                 continue;
 
-            mSpellClassInfo[chrSpec->classId].push_back(i);
+            mSpellClassInfo[chrSpec->classId].push_back(specializationInfo->LearnSpell);
         }
     }
 

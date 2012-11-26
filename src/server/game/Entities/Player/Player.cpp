@@ -25412,9 +25412,35 @@ void Player::RemoveAtLoginFlag(AtLoginFlags flags, bool persist /*= false*/)
 
 void Player::SendClearCooldown(uint32 spell_id, Unit* target)
 {
-    WorldPacket data(SMSG_CLEAR_COOLDOWN, 4+8);
-    data << uint32(spell_id);
-    data << uint64(target->GetGUID());
+    WorldPacket data(SMSG_CLEAR_COOLDOWNS);
+    ObjectGuid guid = target->GetGUID();
+    uint32 count = 1;
+
+    data.WriteBit(guid[0]);
+    data.WriteBit(guid[3]);
+    data.WriteBit(guid[7]);
+    data.WriteBit(guid[1]);
+    data.WriteBit(guid[5]);
+    data.WriteBit(guid[2]);
+    data.WriteBit(guid[4]);
+    data.WriteBit(guid[6]);
+
+    data.WriteBits(count, 24); // count
+    data.FlushBits();
+
+    data.WriteByteSeq(guid[5]);
+    data.WriteByteSeq(guid[3]);
+    data.WriteByteSeq(guid[0]);
+    data.WriteByteSeq(guid[1]);
+    data.WriteByteSeq(guid[2]);
+    data.WriteByteSeq(guid[4]);
+    data.WriteByteSeq(guid[6]);
+
+    for (uint32 i = 0; i < count; ++i)
+        data << spell_id;
+
+    data.WriteByteSeq(guid[7]);
+
     SendDirectMessage(&data);
 }
 
