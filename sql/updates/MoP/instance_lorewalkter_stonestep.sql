@@ -31,6 +31,7 @@ update creature_template set ScriptName = 'boss_yu_lon' where entry = 56762;
 update creature_template set ScriptName = 'mob_trigger_liu_flameheart' where entry = 56789;
 
 
+update gameobject_template set flags=4 where entry = 213548;
 update gameobject_template set flags=4 where entry = 213549;
 
 insert into creature_text values ('56732', '0', '0', 'The heart of the Great Serpent will not fall into your hands!', '12', '0', '100', '0', '0', '27603', 'LIU FLAME AGRO 01');
@@ -40,3 +41,7 @@ insert into creature_text values ('56732', '3', '0', 'The cycle must continue, t
 insert into creature_text values ('56732', '4', '0', 'Your forces are weak!', '12', '0', '100', '0', '0', '27607', 'LIU FLAME INTRO 01');
 insert into creature_text values ('56732', '5', '0', 'The heart is MINE!', '12', '0', '100', '0', '0', '27608', 'LIU FLAME KILL 01');
 insert into creature_text values ('56732', '6', '0', 'Leave this place.', '12', '0', '100', '0', '0', '27609', 'LIU FLAME KILL 02');
+
+
+update creature_template set ScriptName = 'boss_sha_of_doubt' where entry = 56439;
+update creature_template set ScriptName = 'mob_figment_of_doubt' where entry = 56792;

@@ -3245,6 +3245,26 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->DurationEntry = spell->DurationEntry;
                 }
                 break;
+            case 106736:
+                spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
+                break;
+            case 106113:
+                spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
+                break;
+            case 106112:
+                {
+                    const SpellRadiusEntry* radius = sSpellRadiusStore.LookupEntry(22);
+                    if (!radius)
+                        break;
+
+                    spellInfo->Effects[0].RadiusEntry = radius; //200yards.
+                    spellInfo->ExplicitTargetMask |= TARGET_FLAG_DEST_LOCATION;
+                }
+                break;
             default:
                 break;
             }
