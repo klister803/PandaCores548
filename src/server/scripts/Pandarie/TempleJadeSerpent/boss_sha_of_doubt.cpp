@@ -64,6 +64,17 @@ enum eCreatures
     CREATURE_SHA_OF_DOUBT           = 56439,
 };
 
+enum eTalks
+{
+    TALK_AGGRO,
+    TALK_DEATH,
+    TALK_FIGMENT_01,
+    TALK_FIGMENT_02,
+    TALK_RESET,
+    TALK_SLAY_01,
+    TALK_SLAY_02,
+};
+
 class boss_sha_of_doubt : public CreatureScript
 {
     public:
@@ -84,12 +95,24 @@ class boss_sha_of_doubt : public CreatureScript
 
             void Reset()
             {
+                Talk(TALK_RESET);
                 events.Reset();
                 _Reset();
             }
 
+            void KilledUnit(Unit* u)
+            {
+                Talk(TALK_SLAY_01 + urand(0, 1));
+            }
+
+            void JustDied(Unit* u)
+            {
+                Talk(TALK_DEATH);
+            }
+
             void EnterCombat(Unit* unit)
             {
+                Talk(TALK_AGGRO);
                 events.ScheduleEvent(EVENT_WITHER_WILL, 5000);
                 events.ScheduleEvent(EVENT_TOUCH_OF_NOTHINGNESS, 500);
                 events.ScheduleEvent(EVENT_BOUNDS_OF_REALITY, 3000);
@@ -121,6 +144,7 @@ class boss_sha_of_doubt : public CreatureScript
                         break;
                     case EVENT_BOUNDS_OF_REALITY:
                         {
+                            Talk(TALK_FIGMENT_01 + urand(0, 1));
                             me->GetInstanceScript()->SetData(TYPE_CLASS_FIGMENT, 0);
                             me->CastSpell(me, SPELL_BOUNDS_OF_REALITY_2, false);
                             //Spawns the figment of doubt

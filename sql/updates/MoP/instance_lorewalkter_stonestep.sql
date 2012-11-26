@@ -45,3 +45,23 @@ insert into creature_text values ('56732', '6', '0', 'Leave this place.', '12', 
 
 update creature_template set ScriptName = 'boss_sha_of_doubt' where entry = 56439;
 update creature_template set ScriptName = 'mob_figment_of_doubt' where entry = 56792;
+
+update creature_template set ScriptName = 'mob_minion_of_doubt' where entry = 57109;
+update creature_template set ScriptName = 'mob_minion_of_doubt' where entry = 65362;
+
+update creature_template set ScriptName = 'mob_lesser_sha' where entry = 59598;
+update creature_template set ScriptName = 'mob_lesser_sha' where entry = 58319;
+
+
+insert into creature_text values ('59546', '0', '0', '\'Tis hard to decipher his true wish...', '12', '0', '100', '0', '0', '0', '');
+insert into creature_text values ('59546', '1', '0', 'He often seeks a lordly dish...', '12', '0', '100', '0', '0', '0', '');
+insert into creature_text values ('59546', '2', '0', 'To serve upon his table.', '12', '0', '100', '0', '0', '0', '');
+insert into creature_text values ('59546', '3', '0', 'When man asks favor of a fish...', '12', '0', '100', '0', '0', '0', '');
+
+insert into creature_text values ('56439', '0', '0', 'Die or surrender. You cannot defeat me.', '12', '0', '100', '0', '0', '29633', 'VO_TJS_DOUBT_AGGRO');
+insert into creature_text values ('56439', '1', '0', 'You cannot escape me. I am... in... every... breath...', '12', '0', '100', '0', '0', '29634', 'VO_TJS_DOUBT_DEATH');
+insert into creature_text values ('56439', '2', '0', 'See how effortlessly you become unraveled.', '12', '0', '100', '0', '0', 29635'VO_TJS_DOUBT_FIGMENT_01');
+insert into creature_text values ('56439', '3', '0', 'Succumb to the darkness inside your soul.', '12', '0', '100', '0', '0', '29636', 'VO_TJS_DOUBT_FIGMENT_02');
+insert into creature_text values ('56439', '4', '0', 'All is lost.', '12', '0', '100', '0', '0', '29637', 'VO_TJS_DOUBT_RESET');
+insert into creature_text values ('56439', '5', '0', 'Abandon all hope.', '12', '0', '100', '0', '0', '29638', 'VO_TJS_DOUBT_SLAY_01');
+insert into creature_text values ('56439', '6', '0', 'Embrace your despair.', '12', '0', '100', '0', '0', '29639', 'VO_TJS_DOUBT_SLAY_02');

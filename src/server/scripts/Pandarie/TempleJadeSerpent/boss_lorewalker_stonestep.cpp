@@ -723,6 +723,250 @@ class mob_peril : public CreatureScript
         };
 };
 
+class mob_nodding_tiger: public CreatureScript
+{
+    public:
+        mob_nodding_tiger() : CreatureScript("mob_nodding_tiger") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_nodding_tiger_AI(creature);
+        }
+
+        struct mob_nodding_tiger_AI : public ScriptedAI
+        {
+            mob_nodding_tiger_AI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+            EventMap events;
+
+            void EnterCombat(Unit* unit)
+            {
+                events.ScheduleEvent(1, 2000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case 1:
+                        me->CastSpell(me->getVictim(), 31289, false);
+                        events.ScheduleEvent(1, 3000);
+                        break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+};
+
+class mob_golden_beetle: public CreatureScript
+{
+    public:
+        mob_golden_beetle() : CreatureScript("mob_golden_beetle") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_golden_beetle_AI(creature);
+        }
+
+        struct mob_golden_beetle_AI : public ScriptedAI
+        {
+            mob_golden_beetle_AI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+            EventMap events;
+
+            void EnterCombat(Unit* unit)
+            {
+                events.ScheduleEvent(1, 2000);
+                events.ScheduleEvent(2, 4000);
+                events.ScheduleEvent(3, 6000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case 1:
+                        me->CastSpell(me->getVictim(), 128051, false);
+                        events.ScheduleEvent(1, 10000);
+                        break;
+                    case 2:
+                        me->CastSpell(me->getVictim(), 88023, false);
+                        events.ScheduleEvent(2, 5000);
+                        break;
+                    case 3:
+                        me->CastSpell(me->getVictim(), 31589, false);
+                        events.ScheduleEvent(3, 15000);
+                        break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+};
+
+class mob_jiang_xiang: public CreatureScript
+{
+    public:
+        mob_jiang_xiang() : CreatureScript("mob_jiang_xiang") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_jiang_xiang_AI(creature);
+        }
+
+        struct mob_jiang_xiang_AI : public ScriptedAI
+        {
+            mob_jiang_xiang_AI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+            EventMap events;
+
+            void EnterCombat(Unit* unit)
+            {
+                events.ScheduleEvent(1, 2000);
+                events.ScheduleEvent(2, 4000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case 1:
+                        me->CastSpell(me->getVictim(), 114805, false);
+                        events.ScheduleEvent(1, 10000);
+                        break;
+                    case 2:
+                        me->CastSpell(me->getVictim(), 114803, false);
+                        events.ScheduleEvent(2, 5000);
+                        break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+};
+
+class mob_songbird_queen: public CreatureScript
+{
+    public:
+        mob_songbird_queen() : CreatureScript("mob_songbird_queen") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_songbird_queen_AI(creature);
+        }
+
+        struct mob_songbird_queen_AI : public ScriptedAI
+        {
+            mob_songbird_queen_AI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+            EventMap events;
+
+            void EnterCombat(Unit* unit)
+            {
+                events.ScheduleEvent(1, 2000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case 1:
+                        me->CastSpell(me->getVictim(), 114826, false);
+                        events.ScheduleEvent(1, 10000);
+                        break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+};
+
+class mob_talking_fish: public CreatureScript
+{
+    public:
+        mob_talking_fish() : CreatureScript("mob_talking_fish") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_talking_fish_AI(creature);
+        }
+
+        enum eTalks
+        {
+            TALK_0,
+            TALK_1,
+            TALK_2,
+            TALK_3,
+        };
+
+        struct mob_talking_fish_AI : public ScriptedAI
+        {
+            mob_talking_fish_AI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+            EventMap events;
+
+            void EnterCombat(Unit* unit)
+            {
+                Talk(TALK_0 + urand(0, 3));
+                events.ScheduleEvent(1, 2000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case 1:
+                        me->CastSpell(me->getVictim(), 114811, false);
+                        events.ScheduleEvent(1, 10000);
+                        break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+};
+
 void AddSC_boss_lorewalker_stonestep()
 {
     new boss_lorewalker_stonestep();
@@ -731,4 +975,10 @@ void AddSC_boss_lorewalker_stonestep()
     new mob_haunting_sha();
     new mob_peril();
     new mob_strife();
+    //Trashes
+    new mob_nodding_tiger();
+    new mob_golden_beetle();
+    new mob_jiang_xiang();
+    new mob_songbird_queen();
+    new mob_talking_fish();
 }
