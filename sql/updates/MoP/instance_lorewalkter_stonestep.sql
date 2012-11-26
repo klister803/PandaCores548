@@ -60,7 +60,7 @@ insert into creature_text values ('59546', '3', '0', 'When man asks favor of a f
 
 insert into creature_text values ('56439', '0', '0', 'Die or surrender. You cannot defeat me.', '12', '0', '100', '0', '0', '29633', 'VO_TJS_DOUBT_AGGRO');
 insert into creature_text values ('56439', '1', '0', 'You cannot escape me. I am... in... every... breath...', '12', '0', '100', '0', '0', '29634', 'VO_TJS_DOUBT_DEATH');
-insert into creature_text values ('56439', '2', '0', 'See how effortlessly you become unraveled.', '12', '0', '100', '0', '0', 29635'VO_TJS_DOUBT_FIGMENT_01');
+insert into creature_text values ('56439', '2', '0', 'See how effortlessly you become unraveled.', '12', '0', '100', '0', '0', '29635', 'VO_TJS_DOUBT_FIGMENT_01');
 insert into creature_text values ('56439', '3', '0', 'Succumb to the darkness inside your soul.', '12', '0', '100', '0', '0', '29636', 'VO_TJS_DOUBT_FIGMENT_02');
 insert into creature_text values ('56439', '4', '0', 'All is lost.', '12', '0', '100', '0', '0', '29637', 'VO_TJS_DOUBT_RESET');
 insert into creature_text values ('56439', '5', '0', 'Abandon all hope.', '12', '0', '100', '0', '0', '29638', 'VO_TJS_DOUBT_SLAY_01');
