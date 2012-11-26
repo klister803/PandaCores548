@@ -45,7 +45,52 @@ enum MonkSpells
     SPELL_MONK_BREATH_OF_FIRE_DOT       = 123725,
     SPELL_MONK_BREATH_OF_FIRE_CONFUSED  = 123393,
     SPELL_MONK_ELUSIVE_BREW_STACKS      = 128939,
-    SPELL_MONK_ELUSIVE_BREW             = 115308
+    SPELL_MONK_ELUSIVE_BREW             = 115308,
+    SPELL_MONK_KEG_SMASH_VISUAL         = 123662,
+    SPELL_MONK_KEG_SMASH_ENERGIZE       = 127796,
+    SPELL_MONK_WEAKENED_BLOWS           = 115798,
+    SPELL_MONK_DIZZYING_HAZE            = 116330
+};
+
+// Keg Smash - 121253
+class spell_monk_keg_smash : public SpellScriptLoader
+{
+    public:
+        spell_monk_keg_smash() : SpellScriptLoader("spell_monk_keg_smash") { }
+
+        class spell_monk_keg_smash_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_keg_smash_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        if (Unit* target = GetHitUnit())
+                        {
+                            _player->CastSpell(target, SPELL_MONK_KEG_SMASH_VISUAL, true);
+                            _player->CastSpell(target, SPELL_MONK_WEAKENED_BLOWS, true);
+                            _player->CastSpell(_player, SPELL_MONK_KEG_SMASH_ENERGIZE, true);
+                            // Prevent to receive 2 CHI more than once time per cast
+                            _player->AddSpellCooldown(SPELL_MONK_KEG_SMASH_ENERGIZE, 0, time(NULL) + 1);
+                            _player->CastSpell(target, SPELL_MONK_DIZZYING_HAZE, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_keg_smash_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_keg_smash_SpellScript();
+        }
 };
 
 // Elusive Brew - 115308
@@ -118,7 +163,7 @@ class spell_monk_breath_of_fire : public SpellScriptLoader
                         if (Unit* target = GetHitUnit())
                         {
                             // if Dizzying Haze is on the target, they will burn for an additionnal damage over 8s
-                            if (target->HasAura(116330))
+                            if (target->HasAura(SPELL_MONK_DIZZYING_HAZE))
                             {
                                 _player->CastSpell(target, SPELL_MONK_BREATH_OF_FIRE_DOT, true);
 
@@ -598,6 +643,7 @@ class spell_monk_tiger_palm : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_keg_smash();
     new spell_monk_elusive_brew();
     new spell_monk_breath_of_fire();
     new spell_monk_soothing_mist();
