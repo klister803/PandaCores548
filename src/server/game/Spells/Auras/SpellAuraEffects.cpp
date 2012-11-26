@@ -429,7 +429,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_SET_FAIR_FAR_CLIP
     &AuraEffect::HandleNULL,                                      //371 SPELL_AURA_372
     &AuraEffect::HandleNULL,                                      //372 SPELL_AURA_372
-    &AuraEffect::HandleNULL,                                      //373 SPELL_AURA_373
+    &AuraEffect::HandleAuraModIncreaseSpeed,                      //373 SPELL_AURA_INCREASE_MIN_SWIM_SPEED
     &AuraEffect::HandleNULL,                                      //374 SPELL_AURA_374
     &AuraEffect::HandleNULL,                                      //375 SPELL_AURA_375
     &AuraEffect::HandleNULL,                                      //376 SPELL_AURA_376
@@ -3262,7 +3262,19 @@ void AuraEffect::HandleAuraModIncreaseSpeed(AuraApplication const* aurApp, uint8
 
     Unit* target = aurApp->GetTarget();
 
+    if (GetAuraType() == SPELL_AURA_INCREASE_MIN_SWIM_SPEED)
+    {
+        target->UpdateSpeed(MOVE_SWIM, true);
+        return;
+    }
+
     target->UpdateSpeed(MOVE_RUN, true);
+
+    if (GetAuraType() == SPELL_AURA_MOD_MINIMUM_SPEED)
+    {
+        target->UpdateSpeed(MOVE_RUN_BACK, true);
+        target->UpdateSpeed(MOVE_FLIGHT, true);
+    }
 }
 
 void AuraEffect::HandleAuraModIncreaseMountedSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const
