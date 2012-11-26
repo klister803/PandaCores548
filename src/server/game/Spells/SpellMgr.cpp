@@ -3170,7 +3170,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 117906: // Mastery : Elusive Brawler
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 2;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 117907: // Mastery : Gift of the Serpent
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
