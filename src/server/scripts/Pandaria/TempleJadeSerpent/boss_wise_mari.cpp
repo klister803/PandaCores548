@@ -1,6 +1,6 @@
 /*
     Dungeon : Template of the Jade Serpent 85-87
-    Wise mari first boss
+    Wise mari
     Jade servers
 */
 
@@ -18,8 +18,10 @@ enum eSpells
     SPELL_CALL_WATER                = 106526,
     SPELL_CORRUPTED_FOUTAIN         = 106518,
     SPELL_SHA_RESIDUE               = 106653,
-    SPELL_HYDROLANCE_PRECAST_BOTTOM = 115229,
+    SPELL_HYDROLANCE_PRECAST        = 115220,
     SPELL_HYDROLANCE_DMG_BOTTOM     = 106267,
+    SPELL_HYDROLANCE_VISUAL         = 106055,
+    SPELL_HYDROLANCE_DMG            = 106105,
 };
 
 enum eTexts
@@ -31,7 +33,10 @@ enum eTexts
 
 enum eEvents
 {
-    EVENT_CALL_WATER = 1,
+    EVENT_CALL_WATER        = 1,
+    EVENT_HYDROLANCE        = 2,
+    EVENT_HYDROLANCE_START  = 3,
+    EVENT_SWITCH_PHASE_TWO  = 4,
 };
 
 enum eCreatures
@@ -44,6 +49,16 @@ enum eCreatures
 enum eTimers
 {
     TIMER_CALL_WATTER           = 29000,
+    TIMER_HYDROLANCE_START      = 10000,
+    TIMER_HYDROLANCE            =  5500,
+    TIMER_SWITCH_PHASE_TWO      = 25000,
+};
+
+enum hydrolancePhase
+{
+    HYDROLANCE_BOTTOM   = 1,
+    HYDROLANCE_LEFT     = 2,
+    HYDROLANCE_RIGHT    = 3,
 };
 
 static const float fountainTriggerPos[4][3] = 
@@ -52,6 +67,24 @@ static const float fountainTriggerPos[4][3] =
     {1023.314f, -2569.695f, 176.0339f},
     {1059.943f, -2581.648f, 176.1427f},
     {1075.231f, -2561.335f, 173.8758f},
+};
+
+static const float hydrolanceLeftTrigger[5][3] =
+{
+    {1061.411f, -2570.721f, 174.2403f},
+    {1058.921f, -2573.487f, 174.2403f},
+    {1055.910f, -2575.674f, 174.2403f},
+    {1052.511f, -2577.188f, 174.2403f},
+    {1048.871f, -2577.961f, 174.2403f},
+};
+
+static const float hydrolanceRightTrigger[5][3] =
+{
+    {1035.333f, -2573.693f, 174.2403f},
+    {1032.795f, -2570.971f, 174.2403f},
+    {1030.878f, -2567.781f, 174.2403f},
+    {1029.667f, -2564.263f, 174.2403f},
+    {1029.213f, -2560.569f, 174.2403f},
 };
 
 class boss_wase_mari : public CreatureScript
@@ -68,7 +101,7 @@ class boss_wase_mari : public CreatureScript
         {
             boss_wise_mari_AI(Creature* creature) : BossAI(creature, BOSS_WASE_MARI)
             {
-                creature->AddUnitState(UNIT_STATE_ROOT);
+                creature->AddUnitState(UNIT_STATE_ROOT | UNIT_STATE_CANNOT_TURN);
             }
 
             bool ennemyInArea;
@@ -76,13 +109,24 @@ class boss_wase_mari : public CreatureScript
             uint8 phase;
             uint8 foutainCount;
             uint64 foutainTrigger[4];
+            uint32 hydrolancePhase;
 
             void Reset()
             {
-
                 for (uint8 i = 0; i < 4; i++)
                     foutainTrigger[i] = 0;
 
+                std::list<Creature*> searcher;
+                GetCreatureListWithEntryInGrid(searcher, me, CREATURE_FOUTAIN_TRIGGER, 50.0f);
+                for (auto itr : searcher)
+                {
+                    if (!itr)
+                        continue;
+
+                    itr->RemoveAllAuras();
+                }
+
+                hydrolancePhase = 0;
                 foutainCount = 0;
                 phase = 0;
                 ennemyInArea= false;
@@ -113,7 +157,9 @@ class boss_wase_mari : public CreatureScript
                 Talk(TEXT_BOSS_EMOTE_AGGRO);
                 intro = true;
                 phase = 1;
+                hydrolancePhase = HYDROLANCE_BOTTOM;
                 events.ScheduleEvent(EVENT_CALL_WATER, 8000);
+                events.ScheduleEvent(EVENT_HYDROLANCE_START, TIMER_HYDROLANCE_START);
 
                 _EnterCombat();
             }
@@ -160,27 +206,105 @@ class boss_wase_mari : public CreatureScript
 
                 events.Update(diff);
 
+                // Wise Mari don't rotate
+                if (me->GetUInt32Value(UNIT_FIELD_TARGET))
+                    me->SetUInt32Value(UNIT_FIELD_TARGET, 0);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
                 while (uint32 eventId = events.ExecuteEvent())
                 {
                     switch (eventId)
                     {
                         case EVENT_CALL_WATER:
-                            if(phase == 1)
-                            {
-                                Creature* trigger = me->GetCreature(*me, foutainTrigger[++foutainCount]);
-                                if (trigger)
-                                {
-                                    me->CastSpell(trigger, SPELL_CALL_WATER, true);
-                                    trigger->AddAura(SPELL_CORRUPTED_FOUTAIN, trigger);
-                                }
+                        {
+                            if (phase != 1)
+                                break;
 
-                                if (foutainCount == 4)
-                                {
-                                    phase = 2;
-                                }
+                            Creature* trigger = me->GetCreature(*me, foutainTrigger[++foutainCount]);
+                            if (trigger)
+                            {
+                                me->CastSpell(trigger, SPELL_CALL_WATER, true);
+                                trigger->AddAura(SPELL_CORRUPTED_FOUTAIN, trigger);
+                            }
+
+                            if (foutainCount == 4)
+                            {
+                                phase = 2;
+                                events.ScheduleEvent(EVENT_SWITCH_PHASE_TWO, TIMER_SWITCH_PHASE_TWO);
+                                break;
                             }
                             events.ScheduleEvent(EVENT_CALL_WATER, TIMER_CALL_WATTER + rand() % 6000);
                             break;
+                        }
+                        case EVENT_HYDROLANCE_START:
+                        {
+                            if (phase != 1)
+                                break;
+
+                            float facing = 0.00f;
+                            events.ScheduleEvent(EVENT_HYDROLANCE, TIMER_HYDROLANCE);
+                            switch (hydrolancePhase)
+                            {
+                                case HYDROLANCE_BOTTOM:
+                                    {
+                                        std::list<Creature*> trigger;
+                                        me->GetCreatureListWithEntryInGrid(trigger,CREATURE_HYDROLANCE_BOTTOM_TRIGGER, 50.0f);
+                                        for (auto itr : trigger)
+                                            itr->CastSpell(itr, SPELL_HYDROLANCE_PRECAST, true);
+                                        facing = 1.23f;
+                                        break;
+                                    }
+                                case HYDROLANCE_RIGHT:
+                                    for (int i = 0; i < 5; i++)
+                                        me->CastSpell(hydrolanceRightTrigger[i][0], hydrolanceRightTrigger[i][1], hydrolanceRightTrigger[i][2], SPELL_HYDROLANCE_PRECAST, true);
+                                    facing = 3.55f;
+                                    break;
+                                case HYDROLANCE_LEFT:
+                                    for (int i = 0; i < 5; i++)
+                                        me->CastSpell(hydrolanceLeftTrigger[i][0], hydrolanceLeftTrigger[i][1], hydrolanceLeftTrigger[i][2], SPELL_HYDROLANCE_PRECAST, true);
+                                    facing = 5.25f;
+                                    break;
+                            }
+                            me->CastSpell(me, SPELL_HYDROLANCE_VISUAL, false);
+                            me->UpdatePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), facing);
+                            me->SetFacingTo(facing);
+                            break;
+                        }
+                        case EVENT_HYDROLANCE:
+                        {
+                            if (phase != 1)
+                                break;
+                            switch (hydrolancePhase)
+                            {
+                                case HYDROLANCE_BOTTOM:
+                                {
+                                    std::list<Creature*> trigger;
+                                    me->GetCreatureListWithEntryInGrid(trigger,CREATURE_HYDROLANCE_BOTTOM_TRIGGER, 50.0f);
+                                    for (auto itr : trigger)
+                                        itr->CastSpell(itr->GetPositionX(), itr->GetPositionY(), itr->GetPositionZ(), SPELL_HYDROLANCE_DMG_BOTTOM, true);
+                                    break;
+                                }
+                                case HYDROLANCE_RIGHT:
+                                    for (int i = 0; i < 5; i++)
+                                        me->CastSpell(hydrolanceRightTrigger[i][0], hydrolanceRightTrigger[i][1], hydrolanceRightTrigger[i][2], SPELL_HYDROLANCE_DMG, true);
+                                    break;
+                                case HYDROLANCE_LEFT:
+                                    for (int i = 0; i < 5; i++)
+                                        me->CastSpell(hydrolanceLeftTrigger[i][0], hydrolanceLeftTrigger[i][1], hydrolanceLeftTrigger[i][2], SPELL_HYDROLANCE_DMG, true);
+                                    break;
+                            }
+
+                            if( hydrolancePhase == HYDROLANCE_RIGHT)
+                                hydrolancePhase = HYDROLANCE_BOTTOM;
+                            else
+                                hydrolancePhase++;
+
+                            events.ScheduleEvent(EVENT_HYDROLANCE_START, TIMER_HYDROLANCE_START);
+                            break;
+
+                        }
                     }
                 }
 
