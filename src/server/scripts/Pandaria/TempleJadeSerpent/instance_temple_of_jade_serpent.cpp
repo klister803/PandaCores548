@@ -99,6 +99,7 @@ enum eGameObjects
 {
     GAMEOBJECT_DOOR_LOREWALKER_STONSTEP = 213549,
     GAMEOBJECT_DOOR_LIU_FLAMEHEART      = 213548,
+    GAMEOBJECT_DOOR_LIU_FLAMEHEART_2    = 513544,
 };
 
 enum eTypes
@@ -168,6 +169,7 @@ public:
         uint32 countMinionDeads;
         uint64 liuGuid;
         uint64 doorLiu;
+        uint64 doorLiu_2;
         std::list<uint64> mobs_liu;
         /*
         ** End of Liu Flameheart script.
@@ -206,6 +208,8 @@ public:
             //Liu Flameheart script.
             countMinionDeads = 0;
             liuGuid = 0;
+            doorLiu = 0;
+            doorLiu_2 = 0;
 
             //Sha of doubt script.
             sha_of_doubt_guid = 0;
@@ -223,6 +227,9 @@ public:
         {
             switch (go->GetEntry())
             {
+            case GAMEOBJECT_DOOR_LIU_FLAMEHEART_2:
+                doorLiu_2 = go->GetGUID();
+                break;
             case GAMEOBJECT_DOOR_LOREWALKER_STONSTEP:
                 door_lorewalker = go->GetGUID();
                 break;
@@ -245,24 +252,6 @@ public:
             OnUnitDeath_lorewalker_stonestep(unit);
             OnUnitDeath_liu_flameheat(unit);
         }
-
-        bool isWipe()
-        {
-            Map::PlayerList const& PlayerList = instance->GetPlayers();
-
-            if (!PlayerList.isEmpty())
-            {
-                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                {
-                    Player* plr = i->getSource();
-                    if( !plr)
-                        continue;
-                    if (plr->isAlive() && !plr->isGameMaster())
-                        return false;
-                }
-            }
-            return true;
-        }
         
         virtual void Update(uint32 diff) 
         {
@@ -270,7 +259,7 @@ public:
             if (wipeTimer <= diff
                 && eventStatus_lorewalkter_stonestep >= STATUS_LOREWALKER_STONESTEP_INTRO
                 && eventStatus_lorewalkter_stonestep < STATUS_LOREWALKER_STONESTEP_FINISH
-                && isWipe())
+                && IsWipe())
             {
                 Wipe_lorewalker_stonestep();
                 wipeTimer = 3000;
@@ -335,7 +324,7 @@ public:
                 return 3;
                 break;
             case TYPE_IS_WIPE:
-                return isWipe();
+                return IsWipe();
             case TYPE_GET_EVENT_LOREWALKER_STONESTEP:
                 return eventChoosen;
             case TYPE_LOREWALKTER_STONESTEP:
@@ -399,7 +388,6 @@ public:
                 break;
             }
         }
-        
         void OnCreatureCreate_sha_of_doubt(Creature* creature)
         {
             switch (creature->GetEntry())
@@ -505,6 +493,9 @@ public:
 
                 //Open the door!
                 GameObject* go = instance->GetGameObject(doorLiu);
+                if (go != nullptr)
+                    go->SetGoState(GOState::GO_STATE_ACTIVE);
+                go = instance->GetGameObject(doorLiu_2);
                 if (go != nullptr)
                     go->SetGoState(GOState::GO_STATE_ACTIVE);
             }

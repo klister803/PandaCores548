@@ -602,6 +602,10 @@ void AddSC_boss_lorewalker_stonestep();
 void AddSC_boss_liu_flameheat();
 void AddSC_boss_sha_of_doubt();
 
+//Mogu'Shan Palace
+void AddSC_instance_mogu_shan_palace();
+void AddSC_boss_trial_of_the_king();
+
 // battlegrounds
 
 // outdoor pvp
@@ -1246,6 +1250,9 @@ void AddPandarieScripts()
     AddSC_boss_lorewalker_stonestep();
     AddSC_boss_liu_flameheat();
     AddSC_boss_sha_of_doubt();
+
+    AddSC_instance_mogu_shan_palace();
+    AddSC_boss_trial_of_the_king();
 #endif
 }
 

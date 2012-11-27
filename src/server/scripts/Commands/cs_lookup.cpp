@@ -777,7 +777,8 @@ public:
         uint32 maxResults = sWorld->getIntConfig(CONFIG_MAX_RESULTS_LOOKUP_COMMANDS);
 
         // Search in Spell.dbc
-        for (uint32 id = 0; id < sSpellMgr->GetSpellInfoStoreSize(); id++)
+        uint32 StoreSize = sSpellMgr->GetSpellInfoStoreSize();
+        for (uint32 id = 0; id < StoreSize; ++id)
         {
             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(id);
             if (spellInfo)
