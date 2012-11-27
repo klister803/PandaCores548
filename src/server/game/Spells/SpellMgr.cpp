@@ -3073,6 +3073,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 115295: // Guard
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_DONE_PERCENT;
+                spellInfo->Effects[1].BasePoints = 30;
+                break;
             case 124273: // Heavy Stagger
             case 124274: // Moderate Stagger
             case 124275: // Light Stagger
