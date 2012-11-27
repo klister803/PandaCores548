@@ -215,6 +215,9 @@ class InstanceScript : public ZoneScript
 
         void SendEncounterUnit(uint32 type, Unit* unit = NULL, uint8 param1 = 0, uint8 param2 = 0);
 
+        // Check if all players are dead (expect gamemasters)
+        bool IsWipe();
+
         virtual void FillInitialWorldStates(WorldPacket& /*data*/) {}
 
     protected:
