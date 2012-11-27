@@ -65,6 +65,7 @@ public:
             { "standstate",     SEC_GAMEMASTER,     false, &HandleModifyStandStateCommand,    "", NULL },
             { "phase",          SEC_ADMINISTRATOR,  false, &HandleModifyPhaseCommand,         "", NULL },
             { "gender",         SEC_GAMEMASTER,     false, &HandleModifyGenderCommand,        "", NULL },
+            { "power",          SEC_GAMEMASTER,     false, &HandleModifyPowerCommand,         "", NULL },
             { "speed",          SEC_MODERATOR,      false, NULL,           "", modifyspeedCommandTable },
             { NULL,             0,                  false, NULL,                                           "", NULL }
         };
@@ -1407,6 +1408,38 @@ public:
 
         if (handler->needReportToTarget(target))
             (ChatHandler(target)).PSendSysMessage(LANG_YOUR_GENDER_CHANGED, gender_full, handler->GetNameLink().c_str());
+
+        return true;
+    }
+
+    static bool HandleModifyPowerCommand(ChatHandler* handler, const char* args)
+    {
+        if (!*args)
+            return false;
+
+        char* power_str = strtok((char*)args, " ");
+        char* value_str = strtok(NULL, " ");
+
+        if (!power_str || !value_str)
+            return false;
+
+        Player* target = handler->getSelectedPlayer();
+
+        if (!target)
+        {
+            handler->PSendSysMessage(LANG_PLAYER_NOT_FOUND);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        uint32 power = (uint32)atoi(power_str);
+
+        if (power >= MAX_POWERS)
+            return false;
+
+        uint32 value = (uint32)atoi(value_str);
+
+        target->SetPower(Powers(power), value);
 
         return true;
     }
