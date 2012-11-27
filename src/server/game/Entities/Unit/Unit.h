@@ -1243,6 +1243,13 @@ enum PlayerTotemType
     SUMMON_TYPE_TOTEM_AIR   = 83,
 };
 
+enum Stagger
+{
+    LIGHT_STAGGER       = 124275,
+    MODERATE_STAGGER    = 124274,
+    HEAVY_STAGGER       = 124273
+};
+
 // delay time next attack to prevent client attack animation problems
 #define ATTACK_DISPLAY_DELAY 200
 #define MAX_PLAYER_STEALTH_DETECT_RANGE 30.0f               // max distance for detection targets by player
@@ -1476,6 +1483,8 @@ class Unit : public WorldObject
         uint16 GetMaxSkillValueForLevel(Unit const* target = NULL) const { return (target ? getLevelForTarget(target) : getLevel()) * 5; }
         void DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb);
         uint32 DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDamage = NULL, DamageEffectType damagetype = DIRECT_DAMAGE, SpellSchoolMask damageSchoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const* spellProto = NULL, bool durabilityLoss = true);
+        uint32 CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto = NULL);
+        void CalcVengeanceAmount(Player* victim, uint32 damage, uint8 PlayerClass);
         void Kill(Unit* victim, bool durabilityLoss = true);
         int32 DealHeal(Unit* victim, uint32 addhealth);
 

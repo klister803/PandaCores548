@@ -27,8 +27,6 @@
 
 enum MonkSpells
 {
-    SPELL_MONK_TIGER_PALM               = 100787,
-    SPELL_MONK_TIGER_POWER              = 125359,
     SPELL_MONK_LEGACY_OF_THE_EMPEROR    = 117667,
     SPELL_MONK_FORTIFYING_BREW          = 120954,
     SPELL_MONK_PROVOKE                  = 118635,
@@ -42,8 +40,235 @@ enum MonkSpells
     SPELL_MONK_DISABLE                  = 116095,
     SPELL_MONK_SOOTHING_MIST_VISUAL     = 125955,
     SPELL_MONK_SOOTHING_MIST_ENERGIZE   = 116335,
+    SPELL_MONK_BREATH_OF_FIRE_DOT       = 123725,
+    SPELL_MONK_BREATH_OF_FIRE_CONFUSED  = 123393,
+    SPELL_MONK_ELUSIVE_BREW_STACKS      = 128939,
+    SPELL_MONK_ELUSIVE_BREW             = 115308,
+    SPELL_MONK_KEG_SMASH_VISUAL         = 123662,
+    SPELL_MONK_KEG_SMASH_ENERGIZE       = 127796,
+    SPELL_MONK_WEAKENED_BLOWS           = 115798,
+    SPELL_MONK_DIZZYING_HAZE            = 116330,
+    SPELL_MONK_CLASH_CHARGE             = 126452,
+    SPELL_MONK_LIGHT_STAGGER            = 124275,
+    SPELL_MONK_MODERATE_STAGGER         = 124274,
+    SPELL_MONK_HEAVY_STAGGER            = 124273,
     SPELL_MONK_ROLL                     = 109132,
     SPELL_MONK_ROLL_TRIGGER             = 107427
+};
+
+// Purifying Brew - 119582
+class spell_monk_purifying_brew : public SpellScriptLoader
+{
+    public:
+        spell_monk_purifying_brew() : SpellScriptLoader("spell_monk_purifying_brew") { }
+
+        class spell_monk_purifying_brew_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_purifying_brew_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        AuraApplication* staggerAmount = _player->GetAuraApplication(SPELL_MONK_LIGHT_STAGGER);
+
+                        if (!staggerAmount)
+                            staggerAmount = _player->GetAuraApplication(SPELL_MONK_MODERATE_STAGGER);
+                        if (!staggerAmount)
+                            staggerAmount = _player->GetAuraApplication(SPELL_MONK_HEAVY_STAGGER);
+
+                        if (staggerAmount)
+                            _player->RemoveAura(staggerAmount->GetBase()->GetId());
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_purifying_brew_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_purifying_brew_SpellScript();
+        }
+};
+
+// Clash - 122057
+class spell_monk_clash : public SpellScriptLoader
+{
+    public:
+        spell_monk_clash() : SpellScriptLoader("spell_monk_clash") { }
+
+        class spell_monk_clash_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_clash_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        if (Unit* target = GetHitUnit())
+                        {
+                            int32 basePoint = 2;
+                            _player->CastCustomSpell(target, SPELL_MONK_CLASH_CHARGE, &basePoint, NULL, NULL, true);
+                            target->CastSpell(_player, SPELL_MONK_CLASH_CHARGE, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_clash_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_clash_SpellScript();
+        }
+};
+
+// Keg Smash - 121253
+class spell_monk_keg_smash : public SpellScriptLoader
+{
+    public:
+        spell_monk_keg_smash() : SpellScriptLoader("spell_monk_keg_smash") { }
+
+        class spell_monk_keg_smash_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_keg_smash_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        if (Unit* target = GetHitUnit())
+                        {
+                            _player->CastSpell(target, SPELL_MONK_KEG_SMASH_VISUAL, true);
+                            _player->CastSpell(target, SPELL_MONK_WEAKENED_BLOWS, true);
+                            _player->CastSpell(_player, SPELL_MONK_KEG_SMASH_ENERGIZE, true);
+                            // Prevent to receive 2 CHI more than once time per cast
+                            _player->AddSpellCooldown(SPELL_MONK_KEG_SMASH_ENERGIZE, 0, time(NULL) + 1);
+                            _player->CastSpell(target, SPELL_MONK_DIZZYING_HAZE, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_keg_smash_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_keg_smash_SpellScript();
+        }
+};
+
+// Elusive Brew - 115308
+class spell_monk_elusive_brew : public SpellScriptLoader
+{
+    public:
+        spell_monk_elusive_brew() : SpellScriptLoader("spell_monk_elusive_brew") { }
+
+        class spell_monk_elusive_brew_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_elusive_brew_SpellScript);
+
+            void HandleOnHit()
+            {
+                int32 stackAmount = 0;
+
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        if (AuraApplication* brewStacks = _player->GetAuraApplication(SPELL_MONK_ELUSIVE_BREW_STACKS))
+                            stackAmount = brewStacks->GetBase()->GetStackAmount();
+
+                        _player->AddAura(SPELL_MONK_ELUSIVE_BREW, _player);
+
+                        if (AuraApplication* aura = _player->GetAuraApplication(SPELL_MONK_ELUSIVE_BREW))
+                        {
+                            Aura* elusiveBrew = aura->GetBase();
+                            int32 maxDuration = elusiveBrew->GetMaxDuration();
+                            int32 newDuration = stackAmount * 1000;
+                            elusiveBrew->SetDuration(newDuration);
+
+                            if (newDuration > maxDuration)
+                                elusiveBrew->SetMaxDuration(newDuration);
+
+                            _player->RemoveAura(SPELL_MONK_ELUSIVE_BREW_STACKS);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_elusive_brew_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_elusive_brew_SpellScript();
+        }
+};
+
+// Breath of Fire - 115181
+class spell_monk_breath_of_fire : public SpellScriptLoader
+{
+    public:
+        spell_monk_breath_of_fire() : SpellScriptLoader("spell_monk_breath_of_fire") { }
+
+        class spell_monk_breath_of_fire_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_breath_of_fire_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        if (Unit* target = GetHitUnit())
+                        {
+                            // if Dizzying Haze is on the target, they will burn for an additionnal damage over 8s
+                            if (target->HasAura(SPELL_MONK_DIZZYING_HAZE))
+                            {
+                                _player->CastSpell(target, SPELL_MONK_BREATH_OF_FIRE_DOT, true);
+
+                                // Glyph of Breath of Fire
+                                if (_player->HasAura(123394))
+                                    _player->CastSpell(target, SPELL_MONK_BREATH_OF_FIRE_CONFUSED, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_monk_breath_of_fire_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_breath_of_fire_SpellScript();
+        }
 };
 
 // Soothing Mist - 115175
@@ -225,7 +450,7 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                         // TODO : Buff the Jade Serpent Statue too
                         else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_MISTWEAVER)
                             caster->CastSpell(caster, SPELL_MONK_SERPENTS_ZEAL, true);
-                        // Increase parry chance and stagger amount by 20%
+                        // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
                         else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
                             caster->CastSpell(caster, SPELL_MONK_SHUFFLE, true);
                     }
@@ -455,50 +680,6 @@ class spell_monk_legacy_of_the_emperor : public SpellScriptLoader
         }
 };
 
-// Tiger Palm - 100787
-class spell_monk_tiger_palm : public SpellScriptLoader
-{
-    public:
-        spell_monk_tiger_palm() : SpellScriptLoader("spell_monk_tiger_palm") { }
-
-        class spell_monk_tiger_palm_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_monk_tiger_palm_SpellScript);
-
-            void SchoolDmg(SpellEffIndex /*effIndex*/)
-            {
-                /*Unit* caster = GetCaster();
-                if (caster)
-                {
-                    Unit* target = GetHitUnit();
-                    int32 bp = 0;
-
-                    float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
-                    float mwb = caster->GetWeaponDamageRange(BASE_ATTACK, MINDAMAGE);
-                    float MWB = caster->GetWeaponDamageRange(BASE_ATTACK, MAXDAMAGE);
-                    float MWS = caster->GetAttackTime(BASE_ATTACK);
-                    float min = 0;
-                    float max = 0;
-
-                    min = (3.0f * 1.0f * 1.0f * (0.898882f) * (mwb / MWS) + 1.0f * (mwb / 2.0f / MWS) + (ap / 14.0f) - 1.0f);
-                    max = (3.0f * 1.0f * 1.0f * (0.898882f) * (MWB / (MWS + 1.0f * (MWB / 2.0f / MWS) + (ap / 14.0f) + 1.0f)));
-                    bp = irand(int32(min), int32(max));
-
-                    caster->CastCustomSpell(target, SPELL_MONK_TIGER_PALM, &bp, NULL, NULL, true);
-                }*/
-            }
-
-            void Register()
-            {
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_monk_tiger_palm_SpellScript();
-        }
-};
-
 // Roll - 109132
 class spell_monk_roll : public SpellScriptLoader
 {
@@ -553,11 +734,15 @@ class spell_monk_roll : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_purifying_brew();
+    new spell_monk_clash();
+    new spell_monk_keg_smash();
+    new spell_monk_elusive_brew();
+    new spell_monk_breath_of_fire();
     new spell_monk_soothing_mist();
     new spell_monk_disable();
     new spell_monk_zen_pilgrimage();
     new spell_monk_blackout_kick();
-    new spell_monk_tiger_palm();
     new spell_monk_legacy_of_the_emperor();
     new spell_monk_fortifying_brew();
     new spell_monk_touch_of_death();

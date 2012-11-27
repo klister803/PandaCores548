@@ -97,6 +97,24 @@ template <> void PointMovementGenerator<Creature>::MovementInform(Creature &unit
         unit.AI()->MovementInform(POINT_MOTION_TYPE, id);
 }
 
+enum specialSpells
+{
+    MONK_CLASH          = 126452,
+    MONK_CLASH_IMPACT   = 126451
+};
+
+template <> void PointMovementGenerator<Player>::MovementInform(Player& unit)
+{
+    switch (id)
+    {
+        case MONK_CLASH:
+            unit.CastSpell(&unit, MONK_CLASH_IMPACT, true);
+            break;
+        default:
+            break;
+    }
+}
+
 template void PointMovementGenerator<Player>::Initialize(Player&);
 template void PointMovementGenerator<Creature>::Initialize(Creature&);
 template void PointMovementGenerator<Player>::Finalize(Player&);

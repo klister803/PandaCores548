@@ -3073,6 +3073,28 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 115295: // Guard
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_DONE_PERCENT;
+                spellInfo->Effects[1].BasePoints = 30;
+                break;
+            case 124273: // Heavy Stagger
+            case 124274: // Moderate Stagger
+            case 124275: // Light Stagger
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_PERIODIC_DAMAGE;
+                spellInfo->Effects[0].Amplitude = 1000;
+                spellInfo->Effects[0].BasePoints = 0;
+                break;
+            case 126451: // Clash - Impact
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
+                break;
+            case 121253: // Keg Smash
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
+                spellInfo->MaxAffectedTargets = 3;
+                break;
+            case 115308: // Elusive Brew
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
+                break;
             case 115129: // Expel Harm - Damage to a nearby ennemy within 10 yards
                 spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_NEARBY_ENEMY;
@@ -3160,7 +3182,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 117906: // Mastery : Elusive Brawler
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 2;
+                spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 117907: // Mastery : Gift of the Serpent
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;

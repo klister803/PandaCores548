@@ -590,6 +590,14 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 8.0f, 14);
                         break;
+                    case 124335: // Swift Reflexes
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 0.3f, 14);
+                        break;
+                    case 121253: // Keg Smash
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 8.12f, 11);
+                        break;
                     default:
                         break;
                 }
@@ -5046,9 +5054,16 @@ void Spell::EffectChargeDest(SpellEffIndex /*effIndex*/)
         destTarget->GetPosition(&pos);
         float angle = m_caster->GetRelativeAngle(pos.GetPositionX(), pos.GetPositionY());
         float dist = m_caster->GetDistance(pos);
+
+        // Custom MoP Script
+        // Hack Fix - Collision on charge for Clash
+        if (m_spellInfo->Id == 126452)
+            dist /= 2;
+
+
         m_caster->GetFirstCollisionPosition(pos, dist, angle);
 
-        m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ);
+        m_caster->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ, 42.0f, m_spellValue->EffectBasePoints[0] > 0 ? m_spellInfo->Id : 1003);
     }
 }
 
