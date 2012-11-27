@@ -559,6 +559,11 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
             damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask);
     }
 
+    // Calculate Attack Power amount for Vengeance
+    // Patch 4.3.2 : Vengeance is no longer triggered by receiving damage from other players
+    if (victim && victim->ToPlayer() && GetTypeId() != TYPEID_PLAYER)
+        victim->CalcVengeanceAmount(victim->ToPlayer(), damage, victim->getClass());
+
     if (victim->IsAIEnabled)
         victim->GetAI()->DamageTaken(this, damage);
 
@@ -898,6 +903,55 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
     }
     else
         return damage;
+}
+
+void Unit::CalcVengeanceAmount(Player* victim, uint32 damage, uint8 PlayerClass)
+{
+    // You need a minimum of 20 damage to proc a +1 AP bonus
+    if (damage == 0 || damage < 0 || damage < 20)
+        return;
+
+    int32 basepoints = int32(damage * 0.02f);
+
+    int32 stamina = victim->GetStat(STAT_STAMINA);
+    int32 basehealth = victim->GetHealth() - victim->GetHealthBonusFromStamina();
+
+    // Vengeance cap is equal to Stamina plus 10% of base health
+    if (basepoints > (stamina + int32(0.1f * basehealth)))
+        basepoints = (stamina + int32(0.1f * basehealth));
+
+    switch(PlayerClass)
+    {
+        case CLASS_MONK:
+            if (victim->HasAura(120267))
+                if (basepoints)
+                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
+            break;
+        case CLASS_DEATH_KNIGHT:
+            if (victim->HasAura(93099))
+                if (basepoints)
+                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
+            break;
+        case CLASS_WARRIOR:
+            if (victim->HasAura(93098))
+                if (basepoints)
+                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
+            break;
+        case CLASS_DRUID:
+            if (victim->HasAura(84840))
+                if (basepoints)
+                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
+            break;
+        case CLASS_PALADIN:
+            if (victim->HasAura(84839))
+                if (basepoints)
+                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
+            break;
+        default:
+            break;
+    }
+
+    return;
 }
 
 void Unit::CastStop(uint32 except_spellid)
