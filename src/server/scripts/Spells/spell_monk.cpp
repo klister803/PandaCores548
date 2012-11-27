@@ -59,6 +59,7 @@ enum MonkSpells
 };
 
 // Chi Torpedo - 115008
+// Chi Torpedo - 115008 or Chi Torpedo (3 charges) - 121828
 class spell_monk_chi_torpedo : public SpellScriptLoader
 {
     public:
@@ -738,7 +739,7 @@ class spell_monk_legacy_of_the_emperor : public SpellScriptLoader
         }
 };
 
-// Roll - 109132
+// Roll - 109132 or Roll (3 charges) - 121827
 class spell_monk_roll : public SpellScriptLoader
 {
     public:
