@@ -59,7 +59,6 @@
 #include "UpdateFieldFlags.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
-
 #include <math.h>
 
 float baseMoveSpeed[MAX_MOVE_TYPE] =
@@ -11911,15 +11910,25 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
     // Apply strongest slow aura mod to speed
     int32 slow = GetMaxNegativeAuraModifier(SPELL_AURA_MOD_DECREASE_SPEED);
     if (slow)
-    {
         AddPct(speed, slow);
-        if (float minSpeedMod = (float)GetMaxPositiveAuraModifier(SPELL_AURA_MOD_MINIMUM_SPEED))
+
+    if (float minSpeedMod = (float)GetMaxPositiveAuraModifier(SPELL_AURA_MOD_MINIMUM_SPEED))
+    {
+        float min_speed = minSpeedMod / 100.0f;
+        if (speed < min_speed && mtype != MOVE_SWIM)
+            speed = min_speed;
+    }
+
+    if (mtype == MOVE_SWIM)
+    {
+        if (float minSwimSpeedMod = (float)GetMaxPositiveAuraModifier(SPELL_AURA_INCREASE_MIN_SWIM_SPEED))
         {
-            float min_speed = minSpeedMod / 100.0f;
+            float min_speed = minSwimSpeedMod / 100.0f;
             if (speed < min_speed)
                 speed = min_speed;
         }
     }
+
     SetSpeed(mtype, speed, forced);
 }
 
@@ -17774,4 +17783,9 @@ uint32 Unit::GetDamageTakenInPastSecs(uint32 secs)
     }
 
     return damage;
+}
+
+void Unit::WriteMovementUpdate(WorldPacket &data) const
+{
+    WorldSession::WriteMovementInfo(data, (MovementInfo*)&m_movementInfo);
 }

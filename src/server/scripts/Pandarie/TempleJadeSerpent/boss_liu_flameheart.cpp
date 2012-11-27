@@ -438,9 +438,105 @@ class mob_trigger_liu_flameheart: public CreatureScript
         };
 };
 
+class mob_minion_of_doubt: public CreatureScript
+{
+    public:
+        mob_minion_of_doubt() : CreatureScript("mob_minion_of_doubt") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_minion_of_doubt_AI(creature);
+        }
+
+        struct mob_minion_of_doubt_AI : public ScriptedAI
+        {
+            mob_minion_of_doubt_AI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+            EventMap events;
+
+            void EnterCombat(Unit* unit)
+            {
+                events.ScheduleEvent(1, 2000);
+                events.ScheduleEvent(2, 4000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case 1:
+                        me->CastSpell(me->getVictim(), 110099, false);
+                        events.ScheduleEvent(1, 5000);
+                        break;
+                    case 2:
+                        me->CastSpell(me->getVictim(), 110125, false);
+                        events.ScheduleEvent(2, 5000);
+                        break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+};
+
+class mob_lesser_sha: public CreatureScript
+{
+    public:
+        mob_lesser_sha() : CreatureScript("mob_lesser_sha") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_lesser_sha_AI(creature);
+        }
+
+        struct mob_lesser_sha_AI : public ScriptedAI
+        {
+            mob_lesser_sha_AI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+            EventMap events;
+
+            void EnterCombat(Unit* unit)
+            {
+                events.ScheduleEvent(1, 2000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case 1:
+                        me->CastSpell(me->getVictim(), 122527, false);
+                        events.ScheduleEvent(1, 5000);
+                        break;
+                    }
+                }
+                DoMeleeAttackIfReady();
+            }
+        };
+};
+
 void AddSC_boss_liu_flameheat()
 {
     new boss_liu_flameheart();
     new boss_yu_lon();
     new mob_trigger_liu_flameheart();
+    //Trashes
+    new mob_minion_of_doubt();
+    new mob_lesser_sha();
 }

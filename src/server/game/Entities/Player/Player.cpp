@@ -858,6 +858,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     _lastTargetedGO = 0;
 
+    m_PersonnalXpRate = 0;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 }
 
@@ -7059,9 +7061,16 @@ void Player::CheckAreaExploreAndOutdoor()
             {
                 int32 diff = int32(getLevel()) - areaEntry->area_level;
                 uint32 XP = 0;
+
+                float ExploreXpRate = 1;
+                if(GetPersonnalXpRate())
+                   ExploreXpRate = GetPersonnalXpRate();
+                else
+                   ExploreXpRate = sWorld->getRate(RATE_XP_EXPLORE);
+
                 if (diff < -5)
                 {
-                    XP = uint32(sObjectMgr->GetBaseXP(getLevel()+5)*sWorld->getRate(RATE_XP_EXPLORE));
+                    XP = uint32(sObjectMgr->GetBaseXP(getLevel()+5) * ExploreXpRate);
                 }
                 else if (diff > 5)
                 {
@@ -7071,11 +7080,11 @@ void Player::CheckAreaExploreAndOutdoor()
                     else if (exploration_percent < 0)
                         exploration_percent = 0;
 
-                    XP = uint32(sObjectMgr->GetBaseXP(areaEntry->area_level)*exploration_percent/100*sWorld->getRate(RATE_XP_EXPLORE));
+                    XP = uint32(sObjectMgr->GetBaseXP(areaEntry->area_level) * exploration_percent / 100 * ExploreXpRate);
                 }
                 else
                 {
-                    XP = uint32(sObjectMgr->GetBaseXP(areaEntry->area_level)*sWorld->getRate(RATE_XP_EXPLORE));
+                    XP = uint32(sObjectMgr->GetBaseXP(areaEntry->area_level) * ExploreXpRate);
                 }
 
                 GiveXP(XP, NULL);
@@ -15576,8 +15585,14 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
 
     bool rewarded = (m_RewardedQuests.find(quest_id) != m_RewardedQuests.end());
 
+    float QuestXpRate = 1;
+    if(GetPersonnalXpRate())
+        QuestXpRate = GetPersonnalXpRate();
+    else
+        QuestXpRate = sWorld->getRate(RATE_XP_QUEST);
+
     // Not give XP in case already completed once repeatable quest
-    uint32 XP = rewarded ? 0 : uint32(quest->XPValue(this) * sWorld->getRate(RATE_XP_QUEST));
+    uint32 XP = rewarded ? 0 : uint32(quest->XPValue(this) * QuestXpRate);
 
     // handle SPELL_AURA_MOD_XP_QUEST_PCT auras
     Unit::AuraEffectList const& ModXPPctAuras = GetAuraEffectsByType(SPELL_AURA_MOD_XP_QUEST_PCT);
@@ -17826,6 +17841,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     m_achievementMgr.CheckAllAchievementCriteria(this);
 
     _LoadEquipmentSets(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADEQUIPMENTSETS));
+    
+    if(QueryResult PersonnalRateResult = CharacterDatabase.PQuery("SELECT rate FROM character_rates WHERE guid='%u' LIMIT 1", GetGUIDLow()))
+        m_PersonnalXpRate = (PersonnalRateResult->Fetch())[0].GetFloat();
 
     return true;
 }
@@ -26493,4 +26511,25 @@ void Player::ShowNeutralPlayerFactionSelectUI()
 {
     WorldPacket data(SMSG_SHOW_NEURTRAL_PLAYER_FACTION_SELECT_UI);
     GetSession()->SendPacket(&data);
+}
+
+void Player::SetPersonnalXpRate(float PersonnalXpRate)
+{
+    if(PersonnalXpRate != m_PersonnalXpRate)
+    {
+        if(PersonnalXpRate)
+        {
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+            trans->PAppend("REPLACE INTO character_rates VALUES ('%u', '%f');", GetGUIDLow(), PersonnalXpRate);
+            CharacterDatabase.CommitTransaction(trans);
+        }
+        else // Rates normales
+        {
+            SQLTransaction trans = CharacterDatabase.BeginTransaction();
+            trans->PAppend("DELETE FROM character_rates WHERE guid = '%u';", GetGUIDLow());
+            CharacterDatabase.CommitTransaction(trans);
+        }
+    }
+
+    m_PersonnalXpRate = PersonnalXpRate;
 }

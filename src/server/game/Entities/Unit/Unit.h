@@ -2143,6 +2143,8 @@ class Unit : public WorldObject
         void SetExtraUnitMovementFlags(uint16 f) { m_movementInfo.flags2 = f; }
         bool IsSplineEnabled() const;
 
+        void WriteMovementUpdate(WorldPacket &data) const;
+
         float GetPositionZMinusOffset() const
         {
             float offset = 0.0f;

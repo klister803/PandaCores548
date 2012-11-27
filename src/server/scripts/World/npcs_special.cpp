@@ -58,6 +58,8 @@ EndContentData */
 #include "Cell.h"
 #include "CellImpl.h"
 #include "SpellAuras.h"
+#include "Vehicle.h"
+#include "Player.h"
 
 /*########
 # npc_air_force_bots
@@ -3059,6 +3061,88 @@ public:
     }
 };
 
+/*######
+## npc_rate_xp_modifier
+######*/
+
+#define GOSSIP_TEXT_EXP_MODIF    1587
+#define GOSSIP_TEXT_EXP_MODIF_OK 1588
+#define GOSSIP_TEXT_EXP_NORMAL   1589
+#define GOSSIP_ITEM_XP_CLOSE     "Au revoir."
+
+class npc_rate_xp_modifier : public CreatureScript
+{
+public:
+    npc_rate_xp_modifier() : CreatureScript("npc_rate_xp_modifier") { }
+
+    bool OnGossipHello(Player *pPlayer, Creature *pCreature)
+    {
+        uint32 maxRates = sWorld->getRate(RATE_XP_KILL);
+
+        for (uint32 i = 1; i < sWorld->getRate(RATE_XP_KILL); ++i)
+        {
+            std::ostringstream gossipText;
+            gossipText << "Je souhaiterais modifier mes RATES d'XP à " << i;
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, gossipText.str(), GOSSIP_SENDER_MAIN, i);
+        }
+
+        if (pPlayer->GetPersonnalXpRate())
+        {
+            std::ostringstream gossipText;
+            gossipText << "Je souhaite retrouver mes RATES d'XP normales (" << sWorld->getRate(RATE_XP_KILL) << ")";
+            pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, gossipText.str(), GOSSIP_SENDER_MAIN, 0);
+        }
+		
+        pPlayer->PlayerTalkClass->SendGossipMenu(GOSSIP_TEXT_EXP_MODIF, pCreature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        if (uiAction < 0 || uiAction >= sWorld->getRate(RATE_XP_KILL))
+        {
+            pPlayer->PlayerTalkClass->SendCloseGossip();
+            return true;
+        }
+        
+        pPlayer->SetPersonnalXpRate(float(uiAction));
+
+        pPlayer->PlayerTalkClass->ClearMenus();
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_XP_CLOSE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        pPlayer->PlayerTalkClass->SendGossipMenu(GOSSIP_TEXT_EXP_MODIF_OK, pCreature->GetGUID());
+
+        return true;
+    }
+};
+
+#define GOSSIP_DEMORPH      "Je souhaiterais retrouver mon apparence normale"
+
+class npc_event_demorph : public CreatureScript
+{
+public:
+    npc_event_demorph() : CreatureScript("npc_event_demorph") { }
+
+    bool OnGossipHello(Player *pPlayer, Creature *pCreature)
+    {
+        pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_DEMORPH, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+		
+        pPlayer->PlayerTalkClass->SendGossipMenu(pPlayer->GetGossipTextId(pCreature), pCreature->GetGUID());
+        return true;
+    }
+
+    bool OnGossipSelect(Player* pPlayer, Creature* pCreature, uint32 /*uiSender*/, uint32 uiAction)
+    {
+        pPlayer->PlayerTalkClass->ClearMenus();
+
+        if (uiAction == GOSSIP_ACTION_INFO_DEF+1)
+            pPlayer->DeMorph();
+
+        pPlayer->PlayerTalkClass->SendCloseGossip();
+
+        return true;
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3093,4 +3177,6 @@ void AddSC_npcs_special()
     new npc_spring_rabbit();
     new npc_generic_harpoon_cannon();
     new npc_choose_faction();
+    new npc_rate_xp_modifier();
+    new npc_event_demorph();
 }

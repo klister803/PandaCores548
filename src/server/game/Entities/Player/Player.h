@@ -2705,6 +2705,9 @@ class Player : public Unit, public GridObject<Player>
         void SetLastTargetedGO(uint32 lastTargetedGO) { _lastTargetedGO = lastTargetedGO; }
         void ShowNeutralPlayerFactionSelectUI();
 
+        float GetPersonnalXpRate() { return m_PersonnalXpRate; }
+        void SetPersonnalXpRate(float PersonnalXpRate);
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
@@ -3042,6 +3045,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 _activeCheats;
 
         uint32 _lastTargetedGO;
+        float m_PersonnalXpRate;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

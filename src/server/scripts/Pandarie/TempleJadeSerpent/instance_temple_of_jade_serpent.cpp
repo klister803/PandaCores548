@@ -67,6 +67,11 @@ enum eSpells
     SPELL_POSSESSED_BY_SHA                  = 110164, //On Spawn
     SPELL_JADE_ESSENCE                      = 106797, //AddAura on phase 2
     SPELL_TRANSFORM_VISUAL                  = 74620, //When the dragon is dead, cast this and remove the possess aura.
+    
+    SPELL_FIGMENT_OF_DOUBT_2    = 106935,
+    SPELL_COPY_WEAPON           = 41054,
+    SPELL_COPY_WEAPON_2         = 41055,
+    SPELL_BOUNDS_OF_REALITY_2   = 117665,
 };
 
 enum eCreatures
@@ -85,6 +90,9 @@ enum eCreatures
     CREATURE_LIU_FLAMEHEART         = 56732,
     CREATURE_YU_LON                 = 56762,
     CREATURE_JADE_FIRE              = 56893,
+
+    CREATURE_FIGMENT_OF_DOUBT       = 56792,
+    CREATURE_SHA_OF_DOUBT           = 56439,
 };
 
 enum eGameObjects
@@ -103,6 +111,8 @@ enum eTypes
     TYPE_GET_EVENT_LOREWALKER_STONESTEP = 5,
     TYPE_LIU_FLAMEHEART_STATUS = 6,
     TYPE_IS_WIPE = 7,
+    TYPE_CLASS_FIGMENT = 8,
+    TYPE_CLASS_FIGMENT_DIE = 9,
 };
 
 enum eStatus
@@ -163,6 +173,17 @@ public:
         ** End of Liu Flameheart script.
         */
 
+        /*
+        ** Sha of Doubt script.
+        */
+        uint64 sha_of_doubt_guid;
+        uint8 countDps;
+        uint8 countHeal;
+        uint8 countTank;
+        uint8 countFigments;
+        /*
+        ** End of Sha of Doubt script.
+        */
         instance_temple_of_jade_serpent_InstanceMapScript(Map* map) : InstanceScript(map)
         {
             roomCenter.m_positionX = 1046.941f;
@@ -185,6 +206,13 @@ public:
             //Liu Flameheart script.
             countMinionDeads = 0;
             liuGuid = 0;
+
+            //Sha of doubt script.
+            sha_of_doubt_guid = 0;
+            countDps = 0;
+            countTank = 0;
+            countHeal = 0;
+            countFigments = 0;
         }
 
         void Initialize()
@@ -208,7 +236,8 @@ public:
         void OnCreatureCreate(Creature* creature)
         {
             OnCreatureCreate_lorewalker_stonestep(creature);
-            OnCreatureCreature_liu_flameheart(creature);
+            OnCreatureCreate_liu_flameheart(creature);
+            OnCreatureCreate_sha_of_doubt(creature);
         }
 
         void OnUnitDeath(Unit* unit)
@@ -289,12 +318,22 @@ public:
         {
             SetData_lorewalker_stonestep(type, data);
             SetData_liu_flameheart(type, data);
+            SetData_sha_of_doubt(type, data);
         }
 
         uint32 GetData(uint32 type)
         {
             switch (type)
             {
+            case TYPE_CLASS_FIGMENT:
+                if (countDps < 2)
+                    return 0;
+                else if (countHeal == 0)
+                    return 1;
+                else if (countTank == 0)
+                    return 2;
+                return 3;
+                break;
             case TYPE_IS_WIPE:
                 return isWipe();
             case TYPE_GET_EVENT_LOREWALKER_STONESTEP:
@@ -322,12 +361,106 @@ public:
 
         uint64 GetData64(uint32 type)
         {
-            if (type == CREATURE_ZAO_SUNSEEKER)
+            switch (type)
+            {
+            case CREATURE_ZAO_SUNSEEKER:
                 return zao_sunseeker;
+            case CREATURE_SHA_OF_DOUBT:
+                return sha_of_doubt_guid;
+            }
             return 0;
         }
+
+        void SetData_sha_of_doubt(uint32 type, uint32 data)
+        {
+            switch (type)
+            {
+            case TYPE_CLASS_FIGMENT_DIE:
+                if (data == 0)
+                    ++countDps;
+                else if (data == 1)
+                    ++countHeal;
+                else
+                    ++countTank;
+                if (countDps + countHeal + countTank == countFigments)
+                {
+                    Creature* sha_doubt = instance->GetCreature(sha_of_doubt_guid);
+                    if (!sha_doubt)
+                        return;
+
+                    sha_doubt->RemoveAura(SPELL_BOUNDS_OF_REALITY_2);
+                }
+                break;
+            case TYPE_CLASS_FIGMENT:
+                countFigments = 0;
+                countDps = 0;
+                countHeal = 0;
+                countTank = 0;
+                break;
+            }
+        }
         
-        void OnCreatureCreature_liu_flameheart(Creature* creature)
+        void OnCreatureCreate_sha_of_doubt(Creature* creature)
+        {
+            switch (creature->GetEntry())
+            {
+            case CREATURE_SHA_OF_DOUBT:
+                sha_of_doubt_guid = creature->GetGUID();
+                break;
+            case CREATURE_FIGMENT_OF_DOUBT:
+                if (creature->ToTempSummon())
+                {
+                    ++countFigments;
+                    Unit* summoner = creature->ToTempSummon()->GetSummoner();
+                    if (!summoner)
+                        return;
+                    summoner->AddAura(SPELL_FIGMENT_OF_DOUBT_2, creature);
+                    creature->SetDisplayId(summoner->GetDisplayId());
+                    creature->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
+                    summoner->CastSpell(creature, SPELL_COPY_WEAPON, false);
+                    summoner->CastSpell(creature, SPELL_COPY_WEAPON_2, false);
+
+                    Unit* caster = summoner;
+                    Unit* target = creature;
+
+                    if (!caster)
+                        return;
+                    uint32 prevItem = target->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID);
+                    if (Player* player = caster->ToPlayer())
+
+                    {
+                        if (Item* mainItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+                            target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, mainItem->GetEntry());
+
+                    }
+                    else
+                        target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID));
+
+                    prevItem = target->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID) + 1;
+
+                    if (Player* player = caster->ToPlayer())
+                    {
+                        if (Item* offItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                            target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, offItem->GetEntry());
+                    }
+                    else
+                        target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1));
+                    
+                    prevItem = target->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID) + 2;
+
+                    if (Player* player = caster->ToPlayer())
+                    {
+                        if (Item* rangedItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
+                            target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, rangedItem->GetEntry());
+                    }
+                    else 
+                        target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2));
+                }
+                break;
+            }
+        }
+
+        void OnCreatureCreate_liu_flameheart(Creature* creature)
         {
             switch (creature->GetEntry())
             {

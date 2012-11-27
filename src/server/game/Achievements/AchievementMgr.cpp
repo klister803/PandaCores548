@@ -612,14 +612,25 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
     if (!progressMap->empty())
     {
         /// prepare deleting and insert
-        bool need_execute_del = false;
-        bool need_execute_ins = false;
-        std::ostringstream ssdel;
-        std::ostringstream ssins;
+        bool need_execute_del       = false;
+        bool need_execute_ins       = false;
+        bool need_execute_account   = false;
+
+        bool isAccountAchievement   = false;
         
-        std::string tableName;
-        std::string guidOrAccountString;
-        uint64 guidOrAccountId;
+        bool alreadyOneCharDelLine  = false;
+        bool alreadyOneAccDelLine   = false;
+        bool alreadyOneCharInsLine  = false;
+        bool alreadyOneAccInsLine   = false;
+
+        std::ostringstream ssAccdel;
+        std::ostringstream ssAccins;
+        std::ostringstream ssChardel;
+        std::ostringstream ssCharins;
+
+        
+        uint64 guid      = GetOwner()->GetGUIDLow();
+        uint32 accountId = GetOwner()->GetSession()->GetAccountId();
 
         for (CriteriaProgressMap::iterator iter = progressMap->begin(); iter != progressMap->end(); ++iter)
         {
@@ -638,31 +649,47 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
 
             if (achievement->flags & ACHIEVEMENT_FLAG_ACCOUNT)
             {
-                tableName = "account_achievement_progress";
-                guidOrAccountString = "account";
-                guidOrAccountId = GetOwner()->GetSession()->GetAccountId();
+                isAccountAchievement = true;
+                need_execute_account = true;
             }
             else
-            {
-                tableName = "character_achievement_progress";
-                guidOrAccountString = "guid";
-                guidOrAccountId = GetOwner()->GetGUIDLow();
-            }
+                isAccountAchievement = false;
 
             // deleted data (including 0 progress state)
             {
                 /// first new/changed record prefix (for any counter value)
                 if (!need_execute_del)
                 {
-                    ssdel << "DELETE FROM " << tableName << " WHERE " << guidOrAccountString << " = " << guidOrAccountId << " AND criteria IN (";
+                    ssAccdel  << "DELETE FROM account_achievement_progress   WHERE account = " << accountId << " AND criteria IN (";
+                    ssChardel << "DELETE FROM character_achievement_progress WHERE guid    = " << guid      << " AND criteria IN (";
                     need_execute_del = true;
                 }
                 /// next new/changed record prefix
                 else
-                    ssdel << ',';
+                {
+                    if (isAccountAchievement)
+                    {
+                        if (alreadyOneAccDelLine)
+                            ssAccdel  << ',';
+                    }
+                    else
+                    {
+                        if (alreadyOneCharDelLine)
+                            ssChardel << ',';
+                    }
+                }
 
                 // new/changed record data
-                ssdel << iter->first;
+                if (isAccountAchievement)
+                {
+                    ssAccdel << iter->first;
+                    alreadyOneAccDelLine  = true;
+                }
+                else
+                {
+                    ssChardel << iter->first;
+                    alreadyOneCharDelLine = true;
+                }
             }
 
             // store data only for real progress
@@ -671,15 +698,36 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
                 /// first new/changed record prefix
                 if (!need_execute_ins)
                 {
-                    ssins << "INSERT INTO " << tableName << " (" << guidOrAccountString << ", criteria, counter, date) VALUES ";
+                    ssAccins  << "INSERT INTO account_achievement_progress   (account, criteria, counter, date) VALUES ";
+                    ssCharins << "INSERT INTO character_achievement_progress (guid,    criteria, counter, date) VALUES ";
                     need_execute_ins = true;
                 }
                 /// next new/changed record prefix
                 else
-                    ssins << ',';
+                {
+                    if (isAccountAchievement)
+                    {
+                        if (alreadyOneAccInsLine)
+                            ssAccins  << ',';
+                    }
+                    else
+                    {
+                        if (alreadyOneCharInsLine)
+                            ssCharins << ',';
+                    }
+                }
 
                 // new/changed record data
-                ssins << '(' << guidOrAccountId << ',' << iter->first << ',' << iter->second.counter << ',' << iter->second.date << ')';
+                if (isAccountAchievement)
+                {
+                    ssAccins  << '(' << accountId << ',' << iter->first << ',' << iter->second.counter << ',' << iter->second.date << ')';
+                    alreadyOneAccInsLine  = true;
+                }
+                else
+                {
+                    ssCharins << '(' << guid      << ',' << iter->first << ',' << iter->second.counter << ',' << iter->second.date << ')';
+                    alreadyOneCharInsLine = true;
+                }
             }
 
             /// mark as updated in db
@@ -687,14 +735,27 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
         }
 
         if (need_execute_del)                                // DELETE ... IN (.... _)_
-            ssdel << ')';
+        {
+            ssAccdel  << ')';
+            ssChardel << ')';
+        }
 
         if (need_execute_del || need_execute_ins)
         {
             if (need_execute_del)
-                trans->Append(ssdel.str().c_str());
+            {
+                if (need_execute_account)
+                    trans->Append(ssAccdel.str().c_str());
+
+                trans->Append(ssChardel.str().c_str());
+            }
             if (need_execute_ins)
-                trans->Append(ssins.str().c_str());
+            {
+                if (need_execute_account)
+                    trans->Append(ssAccins.str().c_str());
+
+                trans->Append(ssCharins.str().c_str());
+            }
         }
     }
 }

@@ -51,7 +51,9 @@ enum MonkSpells
     SPELL_MONK_CLASH_CHARGE             = 126452,
     SPELL_MONK_LIGHT_STAGGER            = 124275,
     SPELL_MONK_MODERATE_STAGGER         = 124274,
-    SPELL_MONK_HEAVY_STAGGER            = 124273
+    SPELL_MONK_HEAVY_STAGGER            = 124273,
+    SPELL_MONK_ROLL                     = 109132,
+    SPELL_MONK_ROLL_TRIGGER             = 107427
 };
 
 // Purifying Brew - 119582
@@ -678,6 +680,57 @@ class spell_monk_legacy_of_the_emperor : public SpellScriptLoader
         }
 };
 
+// Roll - 109132
+class spell_monk_roll : public SpellScriptLoader
+{
+    public:
+        spell_monk_roll() : SpellScriptLoader("spell_monk_roll") { }
+
+        class spell_monk_roll_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_roll_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_ROLL))
+                    return false;
+                return true;
+            }
+
+            void HandleAfterCast()
+            {
+                Unit* caster = GetCaster();
+                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                caster->CastSpell(caster, SPELL_MONK_ROLL_TRIGGER, true);
+            }
+
+            void HandleBeforeCast()
+            {
+                Aura* aur = GetCaster()->AddAura(SPELL_MONK_ROLL_TRIGGER, GetCaster());
+                if (!aur)
+                    return;
+
+                AuraApplication* app =  aur->GetApplicationOfTarget(GetCaster()->GetGUID());
+                if (!app)
+                    return;
+
+                app->ClientUpdate();
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_monk_roll_SpellScript::HandleAfterCast);
+                BeforeCast += SpellCastFn(spell_monk_roll_SpellScript::HandleBeforeCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_roll_SpellScript();
+        }
+};
 
 void AddSC_monk_spell_scripts()
 {
@@ -695,4 +748,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_touch_of_death();
     new spell_monk_paralysis();
     new spell_monk_provoke();
+    new spell_monk_roll();
 }

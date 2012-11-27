@@ -2013,7 +2013,7 @@ MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
     {
         case CMSG_PLAYER_MOVE:
             return MovementStartForwardSequence;
-        case SMSG_PLAYER_MOVE:
+        case SMSG_MOVE_UPDATE:
             return PlayerMoveSequence;
         default:
             break;
