@@ -3073,6 +3073,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 117993: // Chi Torpedo : Heal
+            case 124040: // Chi Torpedo : Damage
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(9);
+                break;
+            case 109132: // Roll - Override List with Chi Torpedo
+                spellInfo->OverrideSpellList.push_back(115008);
+                break;
             case 115295: // Guard
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_DONE_PERCENT;
                 spellInfo->Effects[1].BasePoints = 30;
