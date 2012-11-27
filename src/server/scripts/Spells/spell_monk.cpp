@@ -55,10 +55,56 @@ enum MonkSpells
     SPELL_MONK_ROLL                     = 109132,
     SPELL_MONK_ROLL_TRIGGER             = 107427,
     SPELL_MONK_CHI_TORPEDO_HEAL         = 124040,
-    SPELL_MONK_CHI_TORPEDO_DAMAGE       = 117993
+    SPELL_MONK_CHI_TORPEDO_DAMAGE       = 117993,
+    SPELL_MONK_FLYING_SERPENT_KICK      = 101545,
+    SPELL_MONK_FLYING_SERPENT_KICK_NEW  = 115057,
+    SPELL_MONK_FLYING_SERPENT_KICK_AOE  = 123586
 };
 
-// Chi Torpedo - 115008
+// Flying Serpent Kick - 115057
+class spell_monk_flying_serpent_kick : public SpellScriptLoader
+{
+    public:
+        spell_monk_flying_serpent_kick() : SpellScriptLoader("spell_monk_flying_serpent_kick") { }
+
+        class spell_monk_flying_serpent_kick_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_flying_serpent_kick_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_FLYING_SERPENT_KICK_NEW))
+                    return false;
+                return true;
+            }
+
+            void HandleOnCast()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        if (_player->HasAura(SPELL_MONK_FLYING_SERPENT_KICK))
+                            _player->RemoveAura(SPELL_MONK_FLYING_SERPENT_KICK);
+
+                        _player->CastSpell(_player, SPELL_MONK_FLYING_SERPENT_KICK_AOE, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_monk_flying_serpent_kick_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_flying_serpent_kick_SpellScript();
+        }
+};
+
+
 // Chi Torpedo - 115008 or Chi Torpedo (3 charges) - 121828
 class spell_monk_chi_torpedo : public SpellScriptLoader
 {
@@ -793,6 +839,7 @@ class spell_monk_roll : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_flying_serpent_kick();
     new spell_monk_chi_torpedo();
     new spell_monk_purifying_brew();
     new spell_monk_clash();
