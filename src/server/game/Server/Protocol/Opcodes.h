@@ -1125,7 +1125,7 @@ enum Opcodes
     SMSG_PLAYERBINDERROR                              = 0xC89,  // 5.0.5 16048
     SMSG_PLAYERBOUND                                  = 0xC95,  // 5.0.5 16048
     SMSG_PLAYER_DIFFICULTY_CHANGE                     = 0xCB4,  // 5.0.5 16048
-    SMSG_PLAYER_MOVE                                  = 0xA6F,  // 5.0.5 16048
+    SMSG_MOVE_UPDATE                                  = 0xA6F,  // 5.0.5 16048
     SMSG_PLAYER_SKINNED                               = 0x8B2,  // 5.0.5 16048
     SMSG_PLAYER_UNK_DEAD_ALIVE                        = 0,      // Not found in 4.3.4
     SMSG_PLAYER_VEHICLE_DATA                          = 0x9C1,  // 5.0.5 16048

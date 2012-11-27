@@ -377,10 +377,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     /*----------------------*/
 
     /* process position-change */
-    WorldPacket data(SMSG_PLAYER_MOVE, recvPacket.size());
+    WorldPacket data(SMSG_MOVE_UPDATE, recvPacket.size());
     movementInfo.time = getMSTime();
     movementInfo.guid = mover->GetGUID();
-    WriteMovementInfo(data, &movementInfo);
+    WorldSession::WriteMovementInfo(data, &movementInfo);
     mover->SendMessageToSet(&data, _player);
 
     mover->m_movementInfo = movementInfo;

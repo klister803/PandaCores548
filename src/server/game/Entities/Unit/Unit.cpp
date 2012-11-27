@@ -59,7 +59,6 @@
 #include "UpdateFieldFlags.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
-
 #include <math.h>
 
 float baseMoveSpeed[MAX_MOVE_TYPE] =
@@ -548,6 +547,22 @@ void Unit::DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb)
 
 uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
+    if (spellProto && spellProto->Id != LIGHT_STAGGER && spellProto->Id != MODERATE_STAGGER && spellProto->Id != HEAVY_STAGGER)
+    {
+        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
+                damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask, spellProto);
+    }
+    else if (!spellProto)
+    {
+        if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
+            damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask);
+    }
+
+    // Calculate Attack Power amount for Vengeance
+    // Patch 4.3.2 : Vengeance is no longer triggered by receiving damage from other players
+    if (victim && victim->ToPlayer() && GetTypeId() != TYPEID_PLAYER)
+        victim->CalcVengeanceAmount(victim->ToPlayer(), damage, victim->getClass());
+
     if (victim->IsAIEnabled)
         victim->GetAI()->DamageTaken(this, damage);
 
@@ -787,6 +802,155 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     sLog->outDebug(LOG_FILTER_UNITS, "DealDamageEnd returned %d damage", damage);
 
     return damage;
+}
+
+uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto)
+{
+    // Custom MoP Script
+    // Stagger Amount
+    if (victim->GetSpecializationId(victim->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER && damageSchoolMask == SPELL_SCHOOL_MASK_NORMAL && victim->HasAura(115069) && damage > 0)
+    {
+        float stagger = 0.80f;
+
+        if (victim->HasAura(117906))
+        {
+            float Mastery = victim->GetFloatValue(PLAYER_MASTERY) / 2.0f / 100.0f;
+            stagger = 0.80f - Mastery;
+
+            // Brewmaster Training : Your Fortifying Brew also increase stagger amount by 20%
+            if (victim->HasAura(115203) && victim->HasAura(117967))
+                stagger -= 0.20f;
+            // Shuffle also increase stagger amount by 20%
+            if (victim->HasAura(115307))
+                stagger -= 0.20f;
+        }
+
+        int32 bp = damage - (damage * stagger);
+        int32 spellId;
+        int32 ticks = sSpellMgr->GetSpellInfo(LIGHT_STAGGER)->GetDuration() / sSpellMgr->GetSpellInfo(LIGHT_STAGGER)->Effects[0].Amplitude;
+
+        AuraEffect* aurEff = victim->GetAuraEffect(LIGHT_STAGGER, 0, victim->GetGUID());
+        if (!aurEff)
+            aurEff = victim->GetAuraEffect(MODERATE_STAGGER, 0, victim->GetGUID());
+        if (!aurEff)
+            aurEff = victim->GetAuraEffect(HEAVY_STAGGER, 0, victim->GetGUID());
+
+        if (aurEff)
+        {
+            // Add remaining ticks to damage done
+            bp += aurEff->GetAmount() * (ticks - aurEff->GetTickNumber());
+        }
+
+        if (bp < int32(victim->CountPctFromMaxHealth(3)))
+            spellId = LIGHT_STAGGER;
+        else if (bp < int32(victim->CountPctFromMaxHealth(6)))
+            spellId = MODERATE_STAGGER;
+        else
+            spellId = HEAVY_STAGGER;
+
+        bp /= ticks;
+
+        if (!aurEff)
+            victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
+
+        switch (spellId)
+        {
+            case LIGHT_STAGGER:
+                if (aurEff && aurEff->GetId() != spellId)
+                {
+                    victim->RemoveAura(aurEff->GetId());
+                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
+                }
+                else if (aurEff && aurEff->GetId() == spellId)
+                {
+                    aurEff->SetAmount(bp);
+                    aurEff->GetBase()->RefreshDuration();
+                    aurEff->ResetPeriodic();
+                }
+                break;
+            case MODERATE_STAGGER:
+                if (aurEff && aurEff->GetId() != spellId)
+                {
+                    victim->RemoveAura(aurEff->GetId());
+                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
+                }
+                else if (aurEff && aurEff->GetId() == spellId)
+                {
+                    aurEff->SetAmount(bp);
+                    aurEff->GetBase()->RefreshDuration();
+                    aurEff->ResetPeriodic();
+                }
+                break;
+            case HEAVY_STAGGER:
+                if (aurEff && aurEff->GetId() != spellId)
+                {
+                    victim->RemoveAura(aurEff->GetId());
+                    victim->CastCustomSpell(victim, spellId, &bp, NULL, NULL, true);
+                }
+                else if (aurEff && aurEff->GetId() == spellId)
+                {
+                    aurEff->SetAmount(bp);
+                    aurEff->GetBase()->RefreshDuration();
+                    aurEff->ResetPeriodic();
+                }
+                break;
+            default:
+                break;
+        }
+
+        return damage *= stagger;
+    }
+    else
+        return damage;
+}
+
+void Unit::CalcVengeanceAmount(Player* victim, uint32 damage, uint8 PlayerClass)
+{
+    // You need a minimum of 20 damage to proc a +1 AP bonus
+    if (damage == 0 || damage < 0 || damage < 20)
+        return;
+
+    int32 basepoints = int32(damage * 0.02f);
+
+    int32 stamina = victim->GetStat(STAT_STAMINA);
+    int32 basehealth = victim->GetHealth() - victim->GetHealthBonusFromStamina();
+
+    // Vengeance cap is equal to Stamina plus 10% of base health
+    if (basepoints > (stamina + int32(0.1f * basehealth)))
+        basepoints = (stamina + int32(0.1f * basehealth));
+
+    switch(PlayerClass)
+    {
+        case CLASS_MONK:
+            if (victim->HasAura(120267))
+                if (basepoints)
+                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
+            break;
+        case CLASS_DEATH_KNIGHT:
+            if (victim->HasAura(93099))
+                if (basepoints)
+                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
+            break;
+        case CLASS_WARRIOR:
+            if (victim->HasAura(93098))
+                if (basepoints)
+                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
+            break;
+        case CLASS_DRUID:
+            if (victim->HasAura(84840))
+                if (basepoints)
+                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
+            break;
+        case CLASS_PALADIN:
+            if (victim->HasAura(84839))
+                if (basepoints)
+                    victim->CastCustomSpell(victim, 132365, &basepoints, &basepoints, &basepoints, true);
+            break;
+        default:
+            break;
+    }
+
+    return;
 }
 
 void Unit::CastStop(uint32 except_spellid)
@@ -1290,6 +1454,13 @@ void Unit::DealMeleeDamage(CalcDamageInfo* damageInfo, bool durabilityLoss)
     CleanDamage cleanDamage(damageInfo->cleanDamage, damageInfo->absorb, damageInfo->attackType, damageInfo->hitOutCome);
     DealDamage(victim, damageInfo->damage, &cleanDamage, DIRECT_DAMAGE, SpellSchoolMask(damageInfo->damageSchoolMask), NULL, durabilityLoss);
 
+    // Custom MoP Script
+    // Brewing : Elusive Brew - 128938
+    if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_MONK && HasAura(128938)
+        && damageInfo->hitOutCome == MELEE_HIT_CRIT
+        && (damageInfo->attackType == BASE_ATTACK || damageInfo->attackType == OFF_ATTACK))
+        CastSpell(this, 128939, true); // Add one stack of Elusive Brew
+
     // If this is a creature and it attacks from behind it has a probability to daze it's victim
     if ((damageInfo->hitOutCome == MELEE_HIT_CRIT || damageInfo->hitOutCome == MELEE_HIT_CRUSHING || damageInfo->hitOutCome == MELEE_HIT_NORMAL || damageInfo->hitOutCome == MELEE_HIT_GLANCING) &&
         GetTypeId() != TYPEID_PLAYER && !ToCreature()->IsControlledByPlayer() && !victim->HasInArc(M_PI, this)
@@ -1583,7 +1754,7 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
             // Reduce shield amount
             absorbAurEff->SetAmount(absorbAurEff->GetAmount() - currentAbsorb);
             // Aura cannot absorb anything more - remove it
-            if (absorbAurEff->GetAmount() <= 0)
+            if (absorbAurEff->GetAmount() <= 0 && absorbAurEff->GetBase()->GetId() != 115069) // Custom MoP Script - Stance of the Sturdy Ox shoudn't be removed at any damage
                 absorbAurEff->GetBase()->Remove(AURA_REMOVE_BY_ENEMY_SPELL);
         }
     }
@@ -1775,6 +1946,21 @@ void Unit::AttackerStateUpdate (Unit* victim, WeaponAttackType attType, bool ext
     {
         // attack can be redirected to another target
         victim = GetMeleeHitRedirectTarget(victim);
+
+        // Custom MoP Script
+        // SPELL_AURA_STRIKE_SELF
+        if (HasAuraType(SPELL_AURA_STRIKE_SELF))
+        {
+            // Dizzying Haze - 115180
+            if (AuraApplication* aura = this->GetAuraApplication(116330))
+            {
+                if (roll_chance_i(aura->GetBase()->GetEffect(1)->GetAmount()))
+                {
+                    victim->CastSpell(this, 118022, true);
+                    return;
+                }
+            }
+        }
 
         CalcDamageInfo damageInfo;
         CalculateMeleeDamage(victim, 0, &damageInfo, attType);
@@ -9700,6 +9886,11 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     if (!spellProto || damagetype == DIRECT_DAMAGE)
         return pdamage;
 
+    // small exception for Stagger Amount, can't find any general rules
+    // Light Stagger, Moderate Stagger and Heavy Stagger ignore reduction mods
+    if (spellProto->Id == 124275 || spellProto->Id == 124274 || spellProto->Id == 124273)
+        return pdamage;
+
     int32 TakenTotal = 0;
     float TakenTotalMod = 1.0f;
     float TakenTotalCasterMod = 0.0f;
@@ -10749,20 +10940,6 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     // done scripted mod (take it from owner)
     Unit* owner = GetOwner() ? GetOwner() : this;
     // AuraEffectList const& mOverrideClassScript = owner->GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
-
-    // Custom MoP Script
-    // Stagger
-    /*if (victim && victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_MONK && victim->ToPlayer()->GetSpecializationId(victim->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
-    {
-        int32 bp = (int32((pdamage + DoneFlatBenefit) * DoneTotalMod)) - (int32((pdamage + DoneFlatBenefit) * 0.8));
-
-        bp += victim->GetRemainingPeriodicAmount(victim->GetGUID(), 124255, SPELL_AURA_PERIODIC_DAMAGE);
-        bp /= 10;
-
-        victim->CastCustomSpell(victim, 124255, &bp, NULL, NULL, true);
-
-        DoneTotalMod *= 0.8f;
-    }*/
 
     float tmpDamage = float(int32(pdamage) + DoneFlatBenefit) * DoneTotalMod;
 
@@ -13827,6 +14004,11 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             procExtra &= ~PROC_EX_INTERNAL_REQ_FAMILY;
 
         SpellInfo const* spellProto = itr->second->GetBase()->GetSpellInfo();
+
+        // Custom MoP Script
+        // Breath of Fire DoT shoudn't remove Breath of Fire disorientation - Hack Fix
+        if (procSpell && procSpell->Id == 123725 && itr->first == 123393)
+            continue;
 
         // only auras that has triggered spell should proc from fully absorbed damage
         if (procExtra & PROC_EX_ABSORB && isVictim)
@@ -17601,4 +17783,9 @@ uint32 Unit::GetDamageTakenInPastSecs(uint32 secs)
     }
 
     return damage;
+}
+
+void Unit::WriteMovementUpdate(WorldPacket &data) const
+{
+    WorldSession::WriteMovementInfo(data, (MovementInfo*)&m_movementInfo);
 }
