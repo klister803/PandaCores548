@@ -1049,6 +1049,10 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
     SpellTargetCheckTypes selectionType = targetType.GetCheckType();
     ConditionList* condList = m_spellInfo->Effects[effIndex].ImplicitTargetConditions;
     float coneAngle = M_PI/2;
+
+    if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_110)
+        coneAngle = M_PI/6;
+
     float radius = m_spellInfo->Effects[effIndex].CalcRadius(m_caster) * m_spellValue->RadiusMod;
 
     if (uint32 containerTypeMask = GetSearcherTypeMask(objectType, condList))

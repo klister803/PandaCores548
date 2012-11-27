@@ -10,14 +10,17 @@
 
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
-  Pandarie/TempleJadeSerpent/boss_wise_mari.cpp
-  Pandarie/TempleJadeSerpent/instance_temple_of_jade_serpent.cpp
-  Pandarie/TempleJadeSerpent/boss_lorewalker_stonestep.cpp
-  Pandarie/TempleJadeSerpent/boss_liu_flameheart.cpp
-  Pandarie/TempleJadeSerpent/boss_sha_of_doubt.cpp
-
   Pandarie/MogushanPalace/instance_mogu_shan_palace.cpp
   Pandarie/MogushanPalace/boss_trial_of_the_king.cpp
+
+  Pandaria/TempleJadeSerpent/instance_temple_of_jade_serpent.cpp
+  Pandaria/TempleJadeSerpent/boss_wise_mari.cpp
+  Pandaria/TempleJadeSerpent/boss_lorewalker_stonestep.cpp
+  Pandaria/TempleJadeSerpent/boss_liu_flameheart.cpp
+  Pandaria/TempleJadeSerpent/boss_sha_of_doubt.cpp
+
+  Pandaria/StormstoutBrewery/instance_stormstout_brewery.cpp
+  Pandaria/StormstoutBrewery/stormstout_brewery.h
 )
 
-message("  -> Prepared: Pandarie")
+message("  -> Prepared: Pandaria")

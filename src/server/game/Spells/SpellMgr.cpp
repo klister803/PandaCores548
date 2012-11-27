@@ -3296,6 +3296,10 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_DEST_LOCATION;
                 }
                 break;
+                // Wise Mari Hydrolance damage
+            case 106267:
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY
+                break;
             default:
                 break;
             }

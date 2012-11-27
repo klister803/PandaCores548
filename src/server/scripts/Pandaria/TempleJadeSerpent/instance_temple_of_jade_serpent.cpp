@@ -252,24 +252,6 @@ public:
             OnUnitDeath_lorewalker_stonestep(unit);
             OnUnitDeath_liu_flameheat(unit);
         }
-
-        bool isWipe()
-        {
-            Map::PlayerList const& PlayerList = instance->GetPlayers();
-
-            if (!PlayerList.isEmpty())
-            {
-                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                {
-                    Player* plr = i->getSource();
-                    if( !plr)
-                        continue;
-                    if (plr->isAlive() && !plr->isGameMaster())
-                        return false;
-                }
-            }
-            return true;
-        }
         
         virtual void Update(uint32 diff) 
         {
@@ -277,7 +259,7 @@ public:
             if (wipeTimer <= diff
                 && eventStatus_lorewalkter_stonestep >= STATUS_LOREWALKER_STONESTEP_INTRO
                 && eventStatus_lorewalkter_stonestep < STATUS_LOREWALKER_STONESTEP_FINISH
-                && isWipe())
+                && IsWipe())
             {
                 Wipe_lorewalker_stonestep();
                 wipeTimer = 3000;
@@ -342,7 +324,7 @@ public:
                 return 3;
                 break;
             case TYPE_IS_WIPE:
-                return isWipe();
+                return IsWipe();
             case TYPE_GET_EVENT_LOREWALKER_STONESTEP:
                 return eventChoosen;
             case TYPE_LOREWALKTER_STONESTEP:
