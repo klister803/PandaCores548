@@ -80,24 +80,6 @@ public:
 
             return 0;
         }
-
-        bool isWipe()
-        {
-            Map::PlayerList const& PlayerList = instance->GetPlayers();
-
-            if (!PlayerList.isEmpty())
-            {
-                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                {
-                    Player* plr = i->getSource();
-                    if( !plr)
-                        continue;
-                    if (plr->isAlive() && !plr->isGameMaster())
-                        return false;
-                }
-            }
-            return true;
-        }
     };
 
 };
