@@ -14,9 +14,12 @@ enum eBoss
 
 enum eSpells
 {
-    SPELL_WATER_BUBBLE      = 106062,
-    SPELL_CALL_WATER        = 106526,
-    SPELL_CORRUPTED_FOUTAIN = 106518,
+    SPELL_WATER_BUBBLE              = 106062,
+    SPELL_CALL_WATER                = 106526,
+    SPELL_CORRUPTED_FOUTAIN         = 106518,
+    SPELL_SHA_RESIDUE               = 106653,
+    SPELL_HYDROLANCE_PRECAST_BOTTOM = 115229,
+    SPELL_HYDROLANCE_DMG_BOTTOM     = 106267,
 };
 
 enum eTexts
@@ -33,7 +36,9 @@ enum eEvents
 
 enum eCreatures
 {
-    CREATURE_FOUTAIN_TRIGGER    = 56586,
+    CREATURE_FOUTAIN_TRIGGER            = 56586,
+    CREATURE_CORRUPT_DROPLET            = 62358,
+    CREATURE_HYDROLANCE_BOTTOM_TRIGGER  = 56542,
 };
 
 enum eTimers
@@ -183,7 +188,57 @@ class boss_wase_mari : public CreatureScript
         };
 };
 
+class mob_corrupt_living_water : public CreatureScript
+{
+    public:
+        mob_corrupt_living_water() : CreatureScript("mob_corrupt_living_water") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_corrupt_living_water_AI(creature);
+        }
+
+        struct mob_corrupt_living_water_AI : public ScriptedAI
+        {
+            mob_corrupt_living_water_AI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+
+
+            void Reset()
+            {
+            }
+
+            void JustDied(Unit* /*killer*/)
+            {
+                for (int i = 0; i < 4; i++)
+                {
+                    Position pos;
+                    me->GetRandomNearPosition(pos, 4.0f);
+                    Creature* droplet = me->SummonCreature(CREATURE_CORRUPT_DROPLET, pos, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
+
+                    if (!droplet)
+                        continue;
+
+                    if(Unit* unit = SelectTarget(SELECT_TARGET_RANDOM))
+                        droplet->Attack(unit, true);
+                }
+
+                me->CastSpell(me, SPELL_SHA_RESIDUE, true);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+};
+
 void AddSC_boss_wise_mari()
 {
     new boss_wase_mari();
+    new mob_corrupt_living_water();
 }
