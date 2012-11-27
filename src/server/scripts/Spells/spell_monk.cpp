@@ -448,7 +448,7 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                         // TODO : Buff the Jade Serpent Statue too
                         else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_MISTWEAVER)
                             caster->CastSpell(caster, SPELL_MONK_SERPENTS_ZEAL, true);
-                        // Increase parry chance and stagger amount by 20%
+                        // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
                         else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
                             caster->CastSpell(caster, SPELL_MONK_SHUFFLE, true);
                     }
@@ -677,6 +677,7 @@ class spell_monk_legacy_of_the_emperor : public SpellScriptLoader
             return new spell_monk_legacy_of_the_emperor_SpellScript();
         }
 };
+
 
 void AddSC_monk_spell_scripts()
 {
