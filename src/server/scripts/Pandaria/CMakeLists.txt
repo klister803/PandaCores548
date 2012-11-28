@@ -10,11 +10,15 @@
 
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
-  Pandaria/TempleJadeSerpent/boss_wise_mari.cpp
+  Pandaria/MogushanPalace/instance_mogu_shan_palace.cpp
+  Pandaria/MogushanPalace/boss_trial_of_the_king.cpp
+
   Pandaria/TempleJadeSerpent/instance_temple_of_jade_serpent.cpp
+  Pandaria/TempleJadeSerpent/boss_wise_mari.cpp
   Pandaria/TempleJadeSerpent/boss_lorewalker_stonestep.cpp
   Pandaria/TempleJadeSerpent/boss_liu_flameheart.cpp
   Pandaria/TempleJadeSerpent/boss_sha_of_doubt.cpp
+
   Pandaria/StormstoutBrewery/instance_stormstout_brewery.cpp
   Pandaria/StormstoutBrewery/stormstout_brewery.h
 )

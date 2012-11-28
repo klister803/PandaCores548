@@ -1553,7 +1553,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             m_caster->CastCustomSpell(unitTarget, 77489, &bp, NULL, NULL, true);
         }
         // 115072 - Expel Harm
-        if (m_caster && m_caster->getClass() == CLASS_MONK && addhealth)
+        if (m_caster && m_caster->getClass() == CLASS_MONK && addhealth && m_spellInfo->Id == 115072)
         {
             addhealth = Spell::CalculateMonkMeleeAttacks(m_caster, 7, 14);
 

@@ -1,0 +1,473 @@
+/*
+    Dungeon : Mogu'shan palace 87-89
+    Trial of the king
+    Jade servers
+*/
+
+#include "ScriptMgr.h"
+#include "ScriptedCreature.h"
+
+#define TYPE_MING_ATTACK 0
+#define TYPE_KUAI_ATTACK 1
+#define TYPE_HAIYAN_ATTACK 2
+#define TYPE_ALL_ATTACK 3
+#define TYPE_MING_RETIRED 4
+#define TYPE_KUAI_RETIRED 5
+
+enum eBosses
+{
+    BOSS_MING_THE_CUNNING,
+    BOSS_KUAI_THE_BRUTE,
+};
+
+class mob_xian_the_weaponmaster_trigger : public CreatureScript
+{
+    public:
+        mob_xian_the_weaponmaster_trigger() : CreatureScript("mob_xian_the_weaponmaster_trigger") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_xian_the_weaponmaster_trigger_AI(creature);
+        }
+
+        enum eEvents
+        {
+            EVENT_TALK_0 = 1,
+            EVENT_TALK_1 = 2,
+            EVENT_JUMP   = 3,
+            EVENT_DISAPPEAR = 4,
+        };
+
+        enum eSpells
+        {
+            SPELL_MOGU_JUMP                 = 120444,
+        };
+
+        struct mob_xian_the_weaponmaster_trigger_AI : public ScriptedAI
+        {
+            mob_xian_the_weaponmaster_trigger_AI(Creature* creature) : ScriptedAI(creature)
+            {
+                event_go = false;
+            }
+            EventMap events;
+            bool event_go;
+
+            void Reset()
+            {
+                event_go = false;
+                me->GetMotionMaster()->MoveTargetedHome();
+            }
+
+            void MoveInLineOfSight(Unit* who)
+            {
+                // If Lorewalker stonestep sees a player, launch the speech.
+                if (!event_go && who->GetTypeId() == TYPEID_PLAYER && who->GetAreaId() == 6471)//Salle de l'assemblée cramoisie
+                {
+                    event_go = true;
+                    events.ScheduleEvent(EVENT_TALK_0, 3000);
+                }
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_TALK_0:
+                        me->GetMotionMaster()->MovePoint(0, -4220.277f, -2600.117f, 16.47f);
+                        events.ScheduleEvent(EVENT_TALK_1, 4000);
+                        break;
+                    case EVENT_TALK_1:
+                        me->GetMotionMaster()->MovePoint(0, -4229.333f, -2624.051f, 16.47f);
+                        events.ScheduleEvent(EVENT_JUMP, 7000);
+                        break;
+                    case EVENT_JUMP:
+                        me->CastSpell(me, SPELL_MOGU_JUMP, false);
+                        me->GetMotionMaster()->MoveJump(-4296.391f, -2613.577f, 22.325f, 30.f, 20.f);
+                        events.ScheduleEvent(EVENT_DISAPPEAR, 5000);
+                        break;
+                    case EVENT_DISAPPEAR:
+                        if (me->GetInstanceScript())
+                            me->GetInstanceScript()->SetData(TYPE_MING_ATTACK, 0);
+                        me->RemoveFromWorld();
+                        break;
+                    }
+                }
+            }
+        };
+};
+
+class boss_ming_the_cunning : public CreatureScript
+{
+    public:
+        boss_ming_the_cunning() : CreatureScript("boss_ming_the_cunning") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new boss_ming_the_cunning_AI(creature);
+        }
+
+        enum eEvents
+        {
+            EVENT_LIGHTNING_BOLT = 1,
+            EVENT_WHIRLING_DERVISH = 2,
+            EVENT_MAGNETIC_FIELD   = 3,
+            EVENT_BOSS_RETIRE = 4,
+        };
+
+        enum eSpells
+        {
+            SPELL_LIGHTNING_BOLT            = 123654,
+            SPELL_WHIRLING_DERVISH          = 119981,
+            SPELL_MAGNETIC_FIELD            = 120100,
+            SPELL_MAGNETIC_FIELD_2          = 120101,
+            SPELL_MAGNETIC_FIELD_3          = 120099,
+        };
+
+        struct boss_ming_the_cunning_AI : public BossAI
+        {
+            boss_ming_the_cunning_AI(Creature* creature) : BossAI(creature, BOSS_MING_THE_CUNNING)
+            {
+                magnetic_timer = 1000;
+            }
+            uint32 magnetic_timer;
+
+            void EnterCombat(Unit* unit)
+            {
+                events.ScheduleEvent(EVENT_LIGHTNING_BOLT, 3000);
+                events.ScheduleEvent(EVENT_WHIRLING_DERVISH, 10000);
+                events.ScheduleEvent(EVENT_MAGNETIC_FIELD, 30000);
+            }
+
+            void DamageTaken(Unit* killer, uint32 &damage)
+            {
+                //We need to retire Ming and let the next boss enter combat.
+                if (int(me->GetHealth()) - int(damage) <= 0)
+                {
+                    damage = 0;
+                    me->SetReactState(REACT_PASSIVE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+                    me->GetMotionMaster()->MoveTargetedHome();
+                    me->AttackStop();
+                    events.Reset();
+                    events.ScheduleEvent(EVENT_BOSS_RETIRE, 4000);
+                    if (me->GetInstanceScript())
+                        me->GetInstanceScript()->SetData(TYPE_MING_RETIRED, 0);
+                }
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasAura(SPELL_MAGNETIC_FIELD))
+                {
+                    if (magnetic_timer <= diff)
+                    {
+                        //Grip the players
+                        Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
+                        if (!PlayerList.isEmpty())
+                        {
+                            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                            {
+                                Player* plr = i->getSource();
+                                if( !plr)
+                                    continue;
+                                if (plr->GetDistance2d(me) <= 5.f)
+                                    plr->GetMotionMaster()->MoveJump(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 25.0f, 10.f);
+                            }
+                        }
+                        magnetic_timer = 1000;
+                    }
+                    else
+                        magnetic_timer -= diff;
+                }
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_LIGHTNING_BOLT:
+                        if (!me->HasAura(SPELL_MAGNETIC_FIELD))
+                            me->CastSpell(me->getVictim(), SPELL_LIGHTNING_BOLT, false);
+                        events.ScheduleEvent(EVENT_LIGHTNING_BOLT, 6000);
+                        break;
+                    case EVENT_WHIRLING_DERVISH:
+                        if (!me->HasAura(SPELL_MAGNETIC_FIELD))
+                            me->CastSpell(me, SPELL_WHIRLING_DERVISH, false);
+                        events.ScheduleEvent(EVENT_WHIRLING_DERVISH, 10000);
+                        break;
+                    case EVENT_MAGNETIC_FIELD:
+                        {
+                            me->CastSpell(me, SPELL_MAGNETIC_FIELD, false);
+                            events.ScheduleEvent(EVENT_MAGNETIC_FIELD, 30000);
+                        }
+                        break;
+                    case EVENT_BOSS_RETIRE:
+                        if (me->GetInstanceScript())
+                            me->GetInstanceScript()->SetData(TYPE_KUAI_ATTACK, 0);
+                        break;
+                    }
+                }
+
+                DoMeleeAttackIfReady();
+            }
+        };
+};
+
+class mob_whirling_dervish : public CreatureScript
+{
+    public:
+        mob_whirling_dervish() : CreatureScript("mob_whirling_dervish") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_whirling_dervish_AI(creature);
+        }
+
+        enum eSpells
+        {
+            SPELL_WIRHLING_DERVISH_2        = 119982,
+            SPELL_WHIRLING_DERVISH_3        = 119994,
+            SPELL_THROW                     = 120087,
+            SPELL_THROW_2                   = 120035,
+        };
+
+        struct mob_whirling_dervish_AI : public ScriptedAI
+        {
+            mob_whirling_dervish_AI(Creature* creature) : ScriptedAI(creature)
+            {
+                me->CastSpell(me, SPELL_WIRHLING_DERVISH_2, false);
+                me->ForcedDespawn(10000);
+            }
+            EventMap events;
+
+            void EnterCombat(Unit* unit)
+            {
+                events.ScheduleEvent(1, 2000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->getVictim()->GetDistance2d(me) > 5.0f)
+                    return;
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case 1:
+                        me->CastSpell(me->getVictim(), SPELL_THROW, false);
+                        me->CastSpell(me->getVictim(), SPELL_THROW_2, false);
+                        me->Attack(SelectTarget(SELECT_TARGET_RANDOM), false);
+                        events.ScheduleEvent(1, 3000);
+                        break;
+                    }
+                }
+            }
+        };
+};
+
+class mob_adepts : public CreatureScript
+{
+    public:
+        mob_adepts() : CreatureScript("mob_adepts") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new mob_adepts_AI(creature);
+        }
+
+        enum eEvents
+        {
+            EVENT_APPLAUSE = 1,
+            EVENT_TALK = 2,
+        };
+
+        enum eActions
+        {
+            ACTION_ENCOURAGE,
+            ACTION_RETIRE,
+        };
+
+        struct mob_adepts_AI : public ScriptedAI
+        {
+            mob_adepts_AI(Creature* creature) : ScriptedAI(creature)
+            {
+            }
+            EventMap events;
+
+            void DoAction(const int32 action)
+            {
+                switch (action)
+                {
+                case ACTION_ENCOURAGE:
+                    {
+                        float x = me->GetPositionX() + 5.f * cos(me->GetOrientation());
+                        float y = me->GetPositionY() + 5.f * sin(me->GetOrientation());
+                        me->GetMotionMaster()->MovePoint(0, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()));
+                        me->CastSpell(me, 120867, false);
+                        events.ScheduleEvent(EVENT_APPLAUSE + urand(0, 1), 500 + urand(500, 1500));
+                    }
+                    break;
+                case ACTION_RETIRE:
+                    {
+                        float x = me->GetPositionX() - 5.f * cos(me->GetOrientation());
+                        float y = me->GetPositionY() - 5.f * sin(me->GetOrientation());
+                        me->GetMotionMaster()->MovePoint(1, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()));
+
+                        me->RemoveAura(120867);
+                        me->CastSpell(me, 121569, false);
+                        events.Reset();
+                    }
+                    break;
+                }
+            }
+
+            void MovementInform(uint32 motionType, uint32 pointId)
+            {
+                if (pointId == 1)
+                    me->SetFacingTo(me->GetOrientation() - M_PI);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (me->getVictim())
+                {
+                    me->CastSpell(me->getVictim(), 120035, false);
+                    me->AttackStop();
+                }
+
+                events.Update(diff);
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_TALK:
+                        events.ScheduleEvent(EVENT_APPLAUSE + urand(0, 1), 5000 + urand(500, 1500));
+                        break;
+                    }
+                }
+            }
+        };
+};
+
+class boss_kuai_the_brute : public CreatureScript
+{
+    public:
+        boss_kuai_the_brute() : CreatureScript("boss_kuai_the_brute") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new boss_kuai_the_brute_AI(creature);
+        }
+
+        enum eEvents
+        {
+            EVENT_SHOCKWAVE = 1,
+            EVENT_BOSS_RETIRE = 2,
+            EVENT_SHOCKWAVE_2 = 3,
+        };
+
+        enum eSpells
+        {
+            SPELL_SHOCKWAVE                 = 119922,
+            SPELL_PICK_SHOCKWAVE_TARGET     = 120499,
+            SPELL_SHOCKWAVE_2               = 119929,
+            SPELL_SHOCKWAVE_3               = 119930,
+            SPELL_SHOCKWAVE_4               = 119931,
+            SPELL_SHOCKWAVE_5               = 119932,
+            SPELL_SHOCKWAVE_6               = 119933,
+        };
+
+        struct boss_kuai_the_brute_AI : public BossAI
+        {
+            boss_kuai_the_brute_AI(Creature* creature) : BossAI(creature, BOSS_KUAI_THE_BRUTE)
+            {
+            }
+
+            void EnterCombat(Unit* unit)
+            {
+                events.ScheduleEvent(EVENT_SHOCKWAVE, 3000);
+            }
+
+            void DamageTaken(Unit* killer, uint32 &damage)
+            {
+                //We need to retire Ming and let the next boss enter combat.
+                if (int(me->GetHealth()) - int(damage) <= 0)
+                {
+                    damage = 0;
+                    me->SetReactState(REACT_PASSIVE);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+                    me->GetMotionMaster()->MoveTargetedHome();
+                    me->AttackStop();
+                    events.Reset();
+                    events.ScheduleEvent(EVENT_BOSS_RETIRE, 4000);
+                    if (me->GetInstanceScript())
+                        me->GetInstanceScript()->SetData(TYPE_KUAI_RETIRED, 0);
+                }
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_SHOCKWAVE:
+                        {
+                            me->CastSpell(me->getVictim(), SPELL_SHOCKWAVE, false);
+                            events.ScheduleEvent(EVENT_SHOCKWAVE, 5000);
+                            events.ScheduleEvent(EVENT_SHOCKWAVE_2, 2000);
+                        }
+                        break;
+                    case EVENT_BOSS_RETIRE:
+                        if (me->GetInstanceScript())
+                            me->GetInstanceScript()->SetData(TYPE_ALL_ATTACK, 0);
+                        break;
+                    case EVENT_SHOCKWAVE_2:
+                        me->CastSpell(me->getVictim(), SPELL_SHOCKWAVE_2, false);
+                        me->CastSpell(me->getVictim(), SPELL_SHOCKWAVE_3, false);
+                        me->CastSpell(me->getVictim(), SPELL_SHOCKWAVE_4, false);
+                        me->CastSpell(me->getVictim(), SPELL_SHOCKWAVE_5, false);
+                        me->CastSpell(me->getVictim(), SPELL_SHOCKWAVE_6, false);
+                        break;
+                    }
+                }
+
+                DoMeleeAttackIfReady();
+            }
+        };
+};
+
+void AddSC_boss_trial_of_the_king()
+{
+    new mob_xian_the_weaponmaster_trigger();
+    new boss_ming_the_cunning();
+    new mob_whirling_dervish();
+    new mob_adepts();
+    new boss_kuai_the_brute();
+}
