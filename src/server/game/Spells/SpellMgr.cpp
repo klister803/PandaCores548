@@ -3073,6 +3073,17 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 117993: // Chi Torpedo : Heal
+            case 124040: // Chi Torpedo : Damage
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(9);
+                break;
+            case 115008: // Cho Torpedo
+                spellInfo->OverrideSpellList.push_back(121828); // Override List with Chi Torpedo - Talent
+                break;
+            case 109132: // Roll
+                spellInfo->OverrideSpellList.push_back(115008); // Override List with Chi Torpedo
+                spellInfo->OverrideSpellList.push_back(121827); // Override List with Roll - Talent
+                break;
             case 115295: // Guard
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_DONE_PERCENT;
                 spellInfo->Effects[1].BasePoints = 30;
@@ -3298,6 +3309,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 106847:
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                // Wise Mari Hydrolance damage
+            case 106267:
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
+                break;
+                // Wise Mari Wash Away
+            case 106334:
+                spellInfo->AttributesEx3 &= ~ SPELL_ATTR3_ONLY_TARGET_PLAYERS;
                 break;
             default:
                 break;
