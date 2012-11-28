@@ -291,6 +291,17 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 typ
     }
 }
 
+bool Vehicle::CheckCustomCanEnter()
+{
+    switch (GetCreatureEntry())
+    {
+        case 56682: // Keg in Stormstout Brewery
+            return true;
+    }
+
+    return false;
+}
+
 bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
 {
     if (unit->GetVehicle() != this)
@@ -300,7 +311,7 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
     if (seatId < 0) // no specific seat requirement
     {
         for (seat = Seats.begin(); seat != Seats.end(); ++seat)
-            if (!seat->second.Passenger && (seat->second.SeatInfo->CanEnterOrExit() || seat->second.SeatInfo->IsUsableByOverride()))
+            if (!seat->second.Passenger && (seat->second.SeatInfo->CanEnterOrExit() || seat->second.SeatInfo->IsUsableByOverride() || CheckCustomCanEnter()))
                 break;
 
         if (seat == Seats.end()) // no available seat

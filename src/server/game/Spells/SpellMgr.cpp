@@ -3296,6 +3296,9 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_DEST_LOCATION;
                 }
                 break;
+            case 106847:
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                break;
             default:
                 break;
             }

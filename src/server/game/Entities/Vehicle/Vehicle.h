@@ -49,6 +49,7 @@ class Vehicle : public TransportBase
         int8 GetNextEmptySeat(int8 seatId, bool next) const;
         uint8 GetAvailableSeatCount() const;
 
+        bool CheckCustomCanEnter();
         bool AddPassenger(Unit* passenger, int8 seatId = -1);
         void EjectPassenger(Unit* passenger, Unit* controller);
         void RemovePassenger(Unit* passenger);
