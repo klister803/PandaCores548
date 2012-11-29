@@ -47,6 +47,7 @@ public:
                 me->ForcedDespawn(1000);
                 me->SetRespawnDelay(15);
             }
+        }
     };
 };
 
