@@ -16787,6 +16787,8 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
                     return 30763;
                 case SUMMON_TYPE_TOTEM_AIR:     // air
                     return 30760;
+                case 3211: // Custom MoP Script - Hack Fix Searing Totem
+                    return 30762;
             }
             break;
         }
