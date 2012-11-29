@@ -248,6 +248,7 @@ void AddSC_burning_steppes();
 void AddSC_duskwood();
 void AddSC_eastern_plaguelands();
 void AddSC_eversong_woods();
+void AddSC_elwyn_forest();
 void AddSC_ghostlands();
 void AddSC_hinterlands();
 void AddSC_ironforge();
@@ -595,12 +596,15 @@ void AddSC_shattrath_city();
 void AddSC_terokkar_forest();
 void AddSC_zangarmarsh();
 
-// Temple of Jade Serpent
-void AddSC_instance_temple_of_jade_serpent();
+// Pandaria
+void AddSC_instance_temple_of_jade_serpent(); // Temple of Jade Serpent
 void AddSC_boss_wise_mari();
 void AddSC_boss_lorewalker_stonestep();
 void AddSC_boss_liu_flameheat();
 void AddSC_boss_sha_of_doubt();
+void AddSC_instance_stormstout_brewery();     // The Stormstout Brewery
+void AddSC_stormstout_brewery();
+void AddSC_boss_ook_ook();
 
 //Mogu'Shan Palace
 void AddSC_instance_mogu_shan_palace();
@@ -881,6 +885,7 @@ void AddEasternKingdomsScripts()
     AddSC_duskwood();
     AddSC_eastern_plaguelands();
     AddSC_eversong_woods();
+    AddSC_elwyn_forest();
     AddSC_ghostlands();
     AddSC_hinterlands();
     AddSC_ironforge();
@@ -1245,13 +1250,15 @@ void AddNorthrendScripts()
 void AddPandarieScripts()
 {
 #ifdef SCRIPTS
-    AddSC_instance_temple_of_jade_serpent();
+    AddSC_instance_temple_of_jade_serpent();    // Temple of Jade Serpent
     AddSC_boss_wise_mari();
     AddSC_boss_lorewalker_stonestep();
     AddSC_boss_liu_flameheat();
     AddSC_boss_sha_of_doubt();
-
-    AddSC_instance_mogu_shan_palace();
+    AddSC_instance_stormstout_brewery();        // The Stormstout Brewery
+    AddSC_stormstout_brewery();
+    AddSC_boss_ook_ook();
+    AddSC_instance_mogu_shan_palace();          // The Mogu'Shan Palace
     AddSC_boss_trial_of_the_king();
 #endif
 }

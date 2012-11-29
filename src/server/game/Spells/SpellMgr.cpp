@@ -3310,9 +3310,15 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_DEST_LOCATION;
                 }
                 break;
+            case 106847:
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
                 // Wise Mari Hydrolance damage
             case 106267:
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
+                break;
+                // Wise Mari Wash Away
+            case 106334:
+                spellInfo->AttributesEx3 &= ~ SPELL_ATTR3_ONLY_TARGET_PLAYERS;
                 break;
             default:
                 break;
