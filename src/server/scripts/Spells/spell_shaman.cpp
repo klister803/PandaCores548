@@ -66,7 +66,88 @@ enum ShamanSpells
     SPELL_SHA_FULMINATION                   = 88766,
     SPELL_SHA_FULMINATION_TRIGGERED         = 88767,
     SPELL_SHA_FULMINATION_INFO              = 95774,
-    SPELL_SHA_ROLLING_THUNDER_ENERGIZE      = 88765
+    SPELL_SHA_ROLLING_THUNDER_ENERGIZE      = 88765,
+    SPELL_SHA_UNLEASH_ELEMENTS              = 73680
+};
+
+// Unleash Elements - 73680
+class spell_sha_unleash_elements : public SpellScriptLoader
+{
+    public:
+        spell_sha_unleash_elements() : SpellScriptLoader("spell_sha_unleash_elements") { }
+
+        class spell_sha_unleash_elements_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_unleash_elements_SpellScript);
+
+            bool Validate(SpellEntry const * spellEntry)
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_UNLEASH_ELEMENTS))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        Item *weapons[2];
+                        weapons[0] = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                        weapons[1] = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+
+                        for (int i = 0; i < 2; i++)
+                        {
+                            if(!weapons[i])
+                                continue;
+
+                            uint32 unleashSpell = 0;
+                            bool hostileTarget = _player->IsHostileTo(target);
+                            bool hostileSpell = true;
+                            switch (weapons[i]->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
+                            {
+                                case 3345: // Earthliving Weapon
+                                    unleashSpell = 73685; // Unleash Life
+                                    hostileSpell = false;
+                                    break;
+                                case 5: // Flametongue Weapon
+                                    unleashSpell = 73683; // Unleash Flame
+                                    break;
+                                case 2: // Frostbrand Weapon
+                                    unleashSpell = 73682; // Unleash Frost
+                                    break;
+                                case 3021: // Rockbiter Weapon
+                                    unleashSpell = 73684; // Unleash Earth
+                                    break;
+                                case 283: // Windfury Weapon
+                                    unleashSpell = 73681; // Unleash Wind
+                                    break;
+                            }
+
+                            if (hostileSpell && !hostileTarget)
+                                return; // don't allow to attack non-hostile targets. TODO: check this before cast
+
+                            if (!hostileSpell && hostileTarget)
+                                target = _player;   // heal ourselves instead of the enemy
+
+                            if (unleashSpell)
+                                _player->CastSpell(target, unleashSpell, false);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_unleash_elements_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_unleash_elements_SpellScript();
+        }
 };
 
 // Called by Lightning Bolt - 403 and Chain Lightning - 421
@@ -1137,6 +1218,7 @@ class spell_sha_sentry_totem : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_unleash_elements();
     new spell_sha_rolling_thunder();
     new spell_sha_fulmination();
     new spell_sha_lava_surge();
