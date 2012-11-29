@@ -249,6 +249,7 @@ void AddSC_duskwood();
 void AddSC_eastern_plaguelands();
 void AddSC_eversong_woods();
 void AddSC_elwyn_forest();
+void AddSC_dun_morogh();
 void AddSC_ghostlands();
 void AddSC_hinterlands();
 void AddSC_ironforge();
@@ -886,6 +887,7 @@ void AddEasternKingdomsScripts()
     AddSC_eastern_plaguelands();
     AddSC_eversong_woods();
     AddSC_elwyn_forest();
+    AddSC_dun_morogh();
     AddSC_ghostlands();
     AddSC_hinterlands();
     AddSC_ironforge();
