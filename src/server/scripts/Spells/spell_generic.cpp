@@ -3239,6 +3239,49 @@ public:
     }
 };
 
+/*struct vengeanceHistory
+{
+    vengeanceHistory(uint32 amount) : m_increaseAmount(amount), m_duration(20000)
+    {
+    }
+
+    uint32 m_increaseAmount;
+    uint32 m_duration;
+};
+
+class spell_gen_vengeance : public SpellScriptLoader
+{
+    public:
+        spell_gen_vengeance() : SpellScriptLoader("spell_gen_vengeance") { }
+
+        class spell_gen_vengeance_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_vengeance_AuraScript);
+
+            std::list<vengeanceHistory> historyList;
+
+            void OnReapply(AuraEffect const* /*aurEff*//*, AuraEffectHandleModes /*mode*//*)
+            {
+                uint32 baseAmount = 0;
+                for (auto itr : historyList)
+                    baseAmount += itr.m_increaseAmount;
+
+                historyList.push_back(vengeanceHistory(GetAura()->GetEffect(0)->GetAmount() - baseAmount));
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_gen_vengeance_AuraScript::OnReapply, EFFECT_0, SPELL_AURA_MOD_ATTACK_POWER, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gen_vengeance_AuraScript();
+        }
+};
+*/
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -3314,4 +3357,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_mount("spell_x53_touring_rocket", 0, 0, 0, SPELL_X53_TOURING_ROCKET_150, SPELL_X53_TOURING_ROCKET_280, SPELL_X53_TOURING_ROCKET_310);
     new spell_gen_upper_deck_create_foam_sword();
     new spell_gen_bonked();
+    //new spell_gen_vengeance();
 }
