@@ -7034,23 +7034,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 CastCustomSpell(victim, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
                 return true;
             }
-            // Static Shock
-            if (dummySpell->SpellIconID == 3059)
-            {
-                // Lightning Shield
-                if (GetAuraEffect(SPELL_AURA_PROC_TRIGGER_SPELL, SPELLFAMILY_SHAMAN, 0x400, 0, 0))
-                {
-                    uint32 spell = 26364;
-
-                    // custom cooldown processing case
-                    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(spell))
-                        ToPlayer()->RemoveSpellCooldown(spell);
-
-                    CastSpell(target, spell, true, castItem, triggeredByAura);
-                    return true;
-                }
-                return false;
-            }
             break;
         }
         case SPELLFAMILY_DEATHKNIGHT:

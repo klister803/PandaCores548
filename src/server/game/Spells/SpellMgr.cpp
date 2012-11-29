@@ -3073,6 +3073,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 52042: // Healing Stream - Totem
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL;
+                spellInfo->Effects[0].BasePoints = 31;
+                break;
+            case 324: // Lightning Shield
+                spellInfo->ProcCharges = -1;
+                break;
             case 116740: // Tigereye Brew
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                 break;
