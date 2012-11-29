@@ -61,7 +61,44 @@ enum ShamanSpells
     SPELL_SHA_STORMSTRIKE                   = 17364,
     SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE   = 26364,
     SPELL_SHA_HEALING_STREAM                = 52042,
-    SPELL_SHA_GLYPH_OF_HEALING_STREAM      = 119423
+    SPELL_SHA_GLYPH_OF_HEALING_STREAM       = 119423,
+    SPELL_SHA_LAVA_SURGE_CAST_TIME          = 77762
+};
+
+// Triggered by Flame Shock - 8050
+// Lava Surge - 77756
+class spell_sha_lava_surge : public SpellScriptLoader
+{
+    public:
+        spell_sha_lava_surge() : SpellScriptLoader("spell_sha_lava_surge") { }
+
+        class spell_sha_lava_surge_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_lava_surge_AuraScript);
+
+            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+            {
+                // 20% chance to reset the cooldown of Lavaburst and make the next to be instantly casted
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (roll_chance_i(20))
+                    {
+                        _player->CastSpell(_player, SPELL_SHA_LAVA_SURGE_CAST_TIME, true);
+                        _player->RemoveSpellCooldown(51505, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_lava_surge_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_lava_surge_AuraScript();
+        }
 };
 
 // Healing Stream - 52042
@@ -986,6 +1023,7 @@ class spell_sha_sentry_totem : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_lava_surge();
     new spell_sha_healing_stream();
     new spell_sha_static_shock();
     new spell_sha_elemental_blast();
