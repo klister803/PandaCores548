@@ -56,7 +56,259 @@ enum ShamanSpells
     SPELL_SHA_EARTHQUAKE_TICK               = 77478,
     SPELL_SHA_EARTHQUAKE_KNOCKING_DOWN      = 77505,
     SPELL_SHA_ELEMENTAL_BLAST               = 117014,
-    SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS  = 118522
+    SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS  = 118522,
+    SPELL_SHA_LAVA_LASH                     = 60103,
+    SPELL_SHA_STORMSTRIKE                   = 17364,
+    SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE   = 26364,
+    SPELL_SHA_HEALING_STREAM                = 52042,
+    SPELL_SHA_GLYPH_OF_HEALING_STREAM       = 119423,
+    SPELL_SHA_LAVA_SURGE_CAST_TIME          = 77762,
+    SPELL_SHA_FULMINATION                   = 88766,
+    SPELL_SHA_FULMINATION_TRIGGERED         = 88767,
+    SPELL_SHA_FULMINATION_INFO              = 95774,
+    SPELL_SHA_ROLLING_THUNDER_ENERGIZE      = 88765
+};
+
+// Called by Lightning Bolt - 403 and Chain Lightning - 421
+// Rolling Thunder - 88765
+class spell_sha_rolling_thunder : public SpellScriptLoader
+{
+public:
+    spell_sha_rolling_thunder() : SpellScriptLoader("spell_sha_rolling_thunder") { }
+
+    class spell_sha_rolling_thunder_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sha_rolling_thunder_SpellScript)
+
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            if (!sSpellMgr->GetSpellInfo(403) || !sSpellMgr->GetSpellInfo(421))
+                return false;
+            return true;
+        }
+
+        void HandleOnHit()
+        {
+            if (Player* _player = GetCaster()->ToPlayer())
+            {
+                if (Unit* target = GetHitUnit())
+                {
+                    if (roll_chance_i(60))
+                    {
+                        if (Aura * lightningShield = _player->GetAura(324))
+                        {
+                            _player->CastSpell(_player, SPELL_SHA_ROLLING_THUNDER_ENERGIZE, true);
+
+                            uint8 lsCharges = lightningShield->GetCharges();
+                            if (lsCharges < 7)
+                                lightningShield->SetCharges(lsCharges + 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_sha_rolling_thunder_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript *GetSpellScript() const
+    {
+        return new spell_sha_rolling_thunder_SpellScript();
+    }
+};
+
+// 88766 Fulmination handled in 8042 Earth Shock
+class spell_sha_fulmination : public SpellScriptLoader
+{
+public:
+    spell_sha_fulmination() : SpellScriptLoader("spell_sha_fulmination") { }
+
+    class spell_sha_fulmination_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sha_fulmination_SpellScript)
+
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            if (!sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION) || !sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION_TRIGGERED) || !sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION_INFO))
+                return false;
+            return true;
+        }
+
+        void HandleFulmination(SpellEffIndex /*effIndex*/)
+        {
+            // make caster cast a spell on a unit target of effect
+            Unit *target = GetHitUnit();
+            Unit *caster = GetCaster();
+            if(!target || !caster)
+                return;
+
+            AuraEffect *fulminationAura = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2010, 0);
+            if (!fulminationAura)
+                return;
+
+            Aura * lightningShield = caster->GetAura(324);
+            if(!lightningShield)
+                return;
+
+            uint8 lsCharges = lightningShield->GetCharges();
+            if(lsCharges <= 1)
+                return;
+
+            uint8 usedCharges = lsCharges - 1;
+
+            SpellEntry const* spellInfo = sSpellStore.LookupEntry(SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE);
+            int32 basePoints = caster->CalculateSpellDamage(target, GetSpellInfo(), 0);
+            uint32 damage = usedCharges * caster->SpellDamageBonusDone(target, GetSpellInfo(), basePoints, SPELL_DIRECT_DAMAGE);
+
+            caster->CastCustomSpell(SPELL_SHA_FULMINATION_TRIGGERED, SPELLVALUE_BASE_POINT0, damage, target, true, NULL, fulminationAura);
+            lightningShield->SetCharges(lsCharges - usedCharges);
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_sha_fulmination_SpellScript::HandleFulmination, EFFECT_FIRST_FOUND, SPELL_EFFECT_ANY);
+        }
+    };
+
+    SpellScript *GetSpellScript() const
+    {
+        return new spell_sha_fulmination_SpellScript();
+    }
+};
+
+// Triggered by Flame Shock - 8050
+// Lava Surge - 77756
+class spell_sha_lava_surge : public SpellScriptLoader
+{
+    public:
+        spell_sha_lava_surge() : SpellScriptLoader("spell_sha_lava_surge") { }
+
+        class spell_sha_lava_surge_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_lava_surge_AuraScript);
+
+            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+            {
+                // 20% chance to reset the cooldown of Lavaburst and make the next to be instantly casted
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (roll_chance_i(20))
+                    {
+                        _player->CastSpell(_player, SPELL_SHA_LAVA_SURGE_CAST_TIME, true);
+                        _player->RemoveSpellCooldown(51505, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_lava_surge_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_lava_surge_AuraScript();
+        }
+};
+
+// Healing Stream - 52042
+class spell_sha_healing_stream : public SpellScriptLoader
+{
+    public:
+        spell_sha_healing_stream() : SpellScriptLoader("spell_sha_healing_stream") { }
+
+        class spell_sha_healing_stream_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_healing_stream_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_HEALING_STREAM))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->GetOwner()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        // Glyph of Healing Stream Totem
+                        if (target->GetGUID() != _player->GetGUID() && _player->HasAura(55456))
+                            _player->CastSpell(target, SPELL_SHA_GLYPH_OF_HEALING_STREAM, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_healing_stream_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_healing_stream_SpellScript();
+        }
+};
+
+// Called by Stormstrike - 17364 and Lava Lash - 60103
+// Static Shock - 51527
+class spell_sha_static_shock : public SpellScriptLoader
+{
+    public:
+        spell_sha_static_shock() : SpellScriptLoader("spell_sha_static_shock") { }
+
+        class spell_sha_static_shock_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_static_shock_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_LAVA_LASH) || !sSpellMgr->GetSpellInfo(SPELL_SHA_STORMSTRIKE))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    Unit* target = GetHitUnit();
+
+                    // While have Lightning Shield active
+                    if (target && _player->HasAura(324))
+                    {
+                        // Item - Shaman T9 Enhancement 2P Bonus (Static Shock)
+                        if (_player->HasAura(67220))
+                        {
+                            if (roll_chance_i(48))
+                            {
+                                _player->CastSpell(target, SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE, true);
+                            }
+                        }
+                        else
+                        {
+                            if (roll_chance_i(45))
+                            {
+                                _player->CastSpell(target, SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_static_shock_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_static_shock_SpellScript();
+        }
 };
 
 // Elemental Blast - 117014
@@ -659,67 +911,6 @@ class spell_sha_cleansing_totem_pulse : public SpellScriptLoader
         }
 };
 
-enum HealingStreamTotem
-{
-    SPELL_GLYPH_OF_HEALING_STREAM_TOTEM     = 55456,
-    ICON_ID_RESTORATIVE_TOTEMS              = 338,
-    SPELL_HEALING_STREAM_TOTEM_HEAL         = 52042,
-};
-
-class spell_sha_healing_stream_totem : public SpellScriptLoader
-{
-    public:
-        spell_sha_healing_stream_totem() : SpellScriptLoader("spell_sha_healing_stream_totem") { }
-
-        class spell_sha_healing_stream_totem_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_healing_stream_totem_SpellScript);
-
-            bool Validate(SpellInfo const* /*SpellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_GLYPH_OF_HEALING_STREAM_TOTEM) || !sSpellMgr->GetSpellInfo(SPELL_HEALING_STREAM_TOTEM_HEAL))
-                    return false;
-                return true;
-            }
-
-            void HandleDummy(SpellEffIndex /* effIndex */)
-            {
-                int32 damage = GetEffectValue();
-                SpellInfo const* triggeringSpell = GetTriggeringSpell();
-                if (Unit* target = GetHitUnit())
-                    if (Unit* caster = GetCaster())
-                    {
-                        if (Unit* owner = caster->GetOwner())
-                        {
-                            if (triggeringSpell)
-                                damage = int32(owner->SpellHealingBonusDone(target, triggeringSpell, damage, HEAL));
-
-                            // Restorative Totems
-                            if (AuraEffect* dummy = owner->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, ICON_ID_RESTORATIVE_TOTEMS, 1))
-                                AddPct(damage, dummy->GetAmount());
-
-                            // Glyph of Healing Stream Totem
-                            if (AuraEffect const* aurEff = owner->GetAuraEffect(SPELL_GLYPH_OF_HEALING_STREAM_TOTEM, EFFECT_0))
-                                AddPct(damage, aurEff->GetAmount());
-
-                            damage = int32(target->SpellHealingBonusTaken(owner, triggeringSpell, damage, HEAL));
-                        }
-                        caster->CastCustomSpell(target, SPELL_HEALING_STREAM_TOTEM_HEAL, &damage, 0, 0, true, 0, 0, GetOriginalCaster()->GetGUID());
-                    }
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_sha_healing_stream_totem_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_healing_stream_totem_SpellScript();
-        }
-};
-
 enum ManaSpringTotem
 {
     SPELL_MANA_SPRING_TOTEM_ENERGIZE     = 52032,
@@ -946,6 +1137,11 @@ class spell_sha_sentry_totem : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_rolling_thunder();
+    new spell_sha_fulmination();
+    new spell_sha_lava_surge();
+    new spell_sha_healing_stream();
+    new spell_sha_static_shock();
     new spell_sha_elemental_blast();
     new spell_sha_earthquake_tick();
     new spell_sha_earthquake();
@@ -959,7 +1155,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_heroism();
     new spell_sha_ancestral_awakening_proc();
     new spell_sha_cleansing_totem_pulse();
-    new spell_sha_healing_stream_totem();
     new spell_sha_mana_spring_totem();
     new spell_sha_lava_lash();
     new spell_sha_chain_heal();
