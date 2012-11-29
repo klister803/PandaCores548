@@ -22,6 +22,7 @@ enum eSpells
     SPELL_HYDROLANCE_DMG_BOTTOM     = 106267,
     SPELL_HYDROLANCE_VISUAL         = 106055,
     SPELL_HYDROLANCE_DMG            = 106105,
+    SPELL_WASH_AWAY                 = 106331,
 };
 
 enum eTexts
@@ -29,6 +30,10 @@ enum eTexts
     TEXT_INTRO            = 0,
     TEXT_AGGRO            = 1,
     TEXT_BOSS_EMOTE_AGGRO = 2,
+    TEXT_CALL_WATER       = 3,
+    TEXT_PHASE_SWITCH     = 4,
+    TEXT_DEATH            = 5,
+    TEXT_KILL_PLAYER      = 6,
 };
 
 enum eEvents
@@ -37,6 +42,7 @@ enum eEvents
     EVENT_HYDROLANCE        = 2,
     EVENT_HYDROLANCE_START  = 3,
     EVENT_SWITCH_PHASE_TWO  = 4,
+    EVENT_WASH_AWAY         = 5,
 };
 
 enum eCreatures
@@ -51,7 +57,8 @@ enum eTimers
     TIMER_CALL_WATTER           = 29000,
     TIMER_HYDROLANCE_START      = 10000,
     TIMER_HYDROLANCE            =  5500,
-    TIMER_SWITCH_PHASE_TWO      = 25000,
+    TIMER_SWITCH_PHASE_TWO      = 15000,
+    TIMER_WASH_AWAY             =   125,
 };
 
 enum hydrolancePhase
@@ -151,6 +158,17 @@ class boss_wase_mari : public CreatureScript
                     foutainTrigger[++tab] = itr->GetGUID();
                 }
 
+                searcher.clear();
+                GetCreatureListWithEntryInGrid(searcher, me, CREATURE_CORRUPT_DROPLET, 50.0f);
+                for (auto itr : searcher)
+                {
+                    if (!itr)
+                        continue;
+
+                    if (itr->isSummon())
+                        itr->ForcedDespawn();
+                }
+
                 me->SetInCombatWithZone();
                 me->CastSpell(me, SPELL_WATER_BUBBLE, true);
                 Talk(TEXT_AGGRO);
@@ -170,10 +188,12 @@ class boss_wase_mari : public CreatureScript
 
             void KilledUnit(Unit* /*victim*/)
             {
+                Talk(TEXT_KILL_PLAYER);
             }
 
             void JustDied(Unit* /*killer*/)
             {
+                Talk(TEXT_DEATH);
                 _JustDied();
             }
 
@@ -210,7 +230,7 @@ class boss_wase_mari : public CreatureScript
                 if (me->GetUInt32Value(UNIT_FIELD_TARGET))
                     me->SetUInt32Value(UNIT_FIELD_TARGET, 0);
 
-                if (me->HasUnitState(UNIT_STATE_CASTING))
+                if (me->HasUnitState(UNIT_STATE_CASTING) && phase != 2)
                     return;
 
                 while (uint32 eventId = events.ExecuteEvent())
@@ -221,6 +241,8 @@ class boss_wase_mari : public CreatureScript
                         {
                             if (phase != 1)
                                 break;
+
+                            Talk(TEXT_CALL_WATER);
 
                             Creature* trigger = me->GetCreature(*me, foutainTrigger[++foutainCount]);
                             if (trigger)
@@ -238,6 +260,7 @@ class boss_wase_mari : public CreatureScript
                             events.ScheduleEvent(EVENT_CALL_WATER, TIMER_CALL_WATTER + rand() % 6000);
                             break;
                         }
+
                         case EVENT_HYDROLANCE_START:
                         {
                             if (phase != 1)
@@ -272,6 +295,7 @@ class boss_wase_mari : public CreatureScript
                             me->SetFacingTo(facing);
                             break;
                         }
+
                         case EVENT_HYDROLANCE:
                         {
                             if (phase != 1)
@@ -304,6 +328,46 @@ class boss_wase_mari : public CreatureScript
                             events.ScheduleEvent(EVENT_HYDROLANCE_START, TIMER_HYDROLANCE_START);
                             break;
 
+                        }
+
+                        case EVENT_SWITCH_PHASE_TWO:
+                        {
+                            if (phase !=2)
+                                break;
+
+                            Talk(TEXT_PHASE_SWITCH);
+
+                            me->RemoveAurasDueToSpell(SPELL_WATER_BUBBLE);
+                            float facing = me->GetOrientation();
+                            facing += M_PI/48;
+
+                            if(facing > M_PI*2)
+                                facing -= M_PI*2;
+
+                            //me->UpdatePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), facing);
+                            me->SetOrientation(facing);
+                            me->SetFacingTo(facing);
+                            me->CastSpell(me, SPELL_WASH_AWAY, true);
+                            events.ScheduleEvent(EVENT_WASH_AWAY, TIMER_WASH_AWAY);
+                            break;
+                        }
+
+                        case EVENT_WASH_AWAY:
+                        {
+                            if (phase !=2)
+                                break;
+
+                            float facing = me->GetOrientation();
+                            facing += M_PI/48;
+
+                            if(facing > M_PI*2)
+                                facing -= M_PI*2;
+
+                            me->SetOrientation(facing);
+                            me->SetFacingTo(facing);
+
+                            events.ScheduleEvent(EVENT_WASH_AWAY, TIMER_WASH_AWAY);
+                            break;
                         }
                     }
                 }
@@ -339,8 +403,7 @@ class mob_corrupt_living_water : public CreatureScript
                 {
                     Position pos;
                     me->GetRandomNearPosition(pos, 4.0f);
-                    Creature* droplet = me->SummonCreature(CREATURE_CORRUPT_DROPLET, pos, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
-
+                    Creature* droplet = me->SummonCreature(CREATURE_CORRUPT_DROPLET, pos);
                     if (!droplet)
                         continue;
 
