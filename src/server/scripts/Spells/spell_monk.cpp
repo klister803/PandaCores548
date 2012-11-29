@@ -27,38 +27,39 @@
 
 enum MonkSpells
 {
-    SPELL_MONK_LEGACY_OF_THE_EMPEROR    = 117667,
-    SPELL_MONK_FORTIFYING_BREW          = 120954,
-    SPELL_MONK_PROVOKE                  = 118635,
-    SPELL_MONK_BLACKOUT_KICK_DOT        = 128531,
-    SPELL_MONK_BLACKOUT_KICK_HEAL       = 128591,
-    SPELL_MONK_SHUFFLE                  = 115307,
-    SPELL_MONK_SERPENTS_ZEAL            = 127722,
-    SPELL_MONK_ZEN_PILGRIMAGE           = 126892,
-    SPELL_MONK_ZEN_PILGRIMAGE_RETURN    = 126895,
-    SPELL_MONK_DISABLE_ROOT             = 116706,
-    SPELL_MONK_DISABLE                  = 116095,
-    SPELL_MONK_SOOTHING_MIST_VISUAL     = 125955,
-    SPELL_MONK_SOOTHING_MIST_ENERGIZE   = 116335,
-    SPELL_MONK_BREATH_OF_FIRE_DOT       = 123725,
-    SPELL_MONK_BREATH_OF_FIRE_CONFUSED  = 123393,
-    SPELL_MONK_ELUSIVE_BREW_STACKS      = 128939,
-    SPELL_MONK_ELUSIVE_BREW             = 115308,
-    SPELL_MONK_KEG_SMASH_VISUAL         = 123662,
-    SPELL_MONK_KEG_SMASH_ENERGIZE       = 127796,
-    SPELL_MONK_WEAKENED_BLOWS           = 115798,
-    SPELL_MONK_DIZZYING_HAZE            = 116330,
-    SPELL_MONK_CLASH_CHARGE             = 126452,
-    SPELL_MONK_LIGHT_STAGGER            = 124275,
-    SPELL_MONK_MODERATE_STAGGER         = 124274,
-    SPELL_MONK_HEAVY_STAGGER            = 124273,
-    SPELL_MONK_ROLL                     = 109132,
-    SPELL_MONK_ROLL_TRIGGER             = 107427,
-    SPELL_MONK_CHI_TORPEDO_HEAL         = 124040,
-    SPELL_MONK_CHI_TORPEDO_DAMAGE       = 117993,
-    SPELL_MONK_FLYING_SERPENT_KICK      = 101545,
-    SPELL_MONK_FLYING_SERPENT_KICK_NEW  = 115057,
-    SPELL_MONK_FLYING_SERPENT_KICK_AOE  = 123586
+    SPELL_MONK_LEGACY_OF_THE_EMPEROR            = 117667,
+    SPELL_MONK_FORTIFYING_BREW                  = 120954,
+    SPELL_MONK_PROVOKE                          = 118635,
+    SPELL_MONK_BLACKOUT_KICK_DOT                = 128531,
+    SPELL_MONK_BLACKOUT_KICK_HEAL               = 128591,
+    SPELL_MONK_SHUFFLE                          = 115307,
+    SPELL_MONK_SERPENTS_ZEAL                    = 127722,
+    SPELL_MONK_ZEN_PILGRIMAGE                   = 126892,
+    SPELL_MONK_ZEN_PILGRIMAGE_RETURN            = 126895,
+    SPELL_MONK_DISABLE_ROOT                     = 116706,
+    SPELL_MONK_DISABLE                          = 116095,
+    SPELL_MONK_SOOTHING_MIST_VISUAL             = 125955,
+    SPELL_MONK_SOOTHING_MIST_ENERGIZE           = 116335,
+    SPELL_MONK_BREATH_OF_FIRE_DOT               = 123725,
+    SPELL_MONK_BREATH_OF_FIRE_CONFUSED          = 123393,
+    SPELL_MONK_ELUSIVE_BREW_STACKS              = 128939,
+    SPELL_MONK_ELUSIVE_BREW                     = 115308,
+    SPELL_MONK_KEG_SMASH_VISUAL                 = 123662,
+    SPELL_MONK_KEG_SMASH_ENERGIZE               = 127796,
+    SPELL_MONK_WEAKENED_BLOWS                   = 115798,
+    SPELL_MONK_DIZZYING_HAZE                    = 116330,
+    SPELL_MONK_CLASH_CHARGE                     = 126452,
+    SPELL_MONK_LIGHT_STAGGER                    = 124275,
+    SPELL_MONK_MODERATE_STAGGER                 = 124274,
+    SPELL_MONK_HEAVY_STAGGER                    = 124273,
+    SPELL_MONK_ROLL                             = 109132,
+    SPELL_MONK_ROLL_TRIGGER                     = 107427,
+    SPELL_MONK_CHI_TORPEDO_HEAL                 = 124040,
+    SPELL_MONK_CHI_TORPEDO_DAMAGE               = 117993,
+    SPELL_MONK_FLYING_SERPENT_KICK              = 101545,
+    SPELL_MONK_FLYING_SERPENT_KICK_NEW          = 115057,
+    SPELL_MONK_FLYING_SERPENT_KICK_AOE          = 123586,
+    SPELL_MONK_CRACKLING_JADE_LIGHTNING         = 117952
 };
 
 // Flying Serpent Kick - 115057
@@ -103,7 +104,6 @@ class spell_monk_flying_serpent_kick : public SpellScriptLoader
             return new spell_monk_flying_serpent_kick_SpellScript();
         }
 };
-
 
 // Chi Torpedo - 115008 or Chi Torpedo (3 charges) - 121828
 class spell_monk_chi_torpedo : public SpellScriptLoader

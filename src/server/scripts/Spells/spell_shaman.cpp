@@ -29,23 +29,260 @@
 
 enum ShamanSpells
 {
-    SHAMAN_SPELL_GLYPH_OF_MANA_TIDE        = 55441,
-    SHAMAN_SPELL_MANA_TIDE_TOTEM           = 39609,
-    SHAMAN_SPELL_FIRE_NOVA_R1              = 1535,
-    SHAMAN_SPELL_FIRE_NOVA_TRIGGERED_R1    = 8349,
-    SHAMAN_SPELL_SATED                     = 57724,
-    SHAMAN_SPELL_EXHAUSTION                = 57723,
-    HUNTER_SPELL_INSANITY                  = 95809,
-    MAGE_SPELL_TEMPORAL_DISPLACEMENT       = 80354,
-    SHAMAN_SPELL_STORM_EARTH_AND_FIRE      = 51483,
-    EARTHBIND_TOTEM_SPELL_EARTHGRAB        = 64695,
+    SHAMAN_SPELL_GLYPH_OF_MANA_TIDE         = 55441,
+    SHAMAN_SPELL_MANA_TIDE_TOTEM            = 39609,
+    SHAMAN_SPELL_FIRE_NOVA_R1               = 1535,
+    SHAMAN_SPELL_FIRE_NOVA_TRIGGERED_R1     = 8349,
+    SHAMAN_SPELL_SATED                      = 57724,
+    SHAMAN_SPELL_EXHAUSTION                 = 57723,
+    HUNTER_SPELL_INSANITY                   = 95809,
+    MAGE_SPELL_TEMPORAL_DISPLACEMENT        = 80354,
+    SHAMAN_SPELL_STORM_EARTH_AND_FIRE       = 51483,
+    EARTHBIND_TOTEM_SPELL_EARTHGRAB         = 64695,
     // For Earthen Power
-    SHAMAN_TOTEM_SPELL_EARTHBIND_TOTEM     = 6474,
-    SHAMAN_TOTEM_SPELL_EARTHEN_POWER       = 59566,
-    SHAMAN_BIND_SIGHT                      = 6277,
-    ICON_ID_SHAMAN_LAVA_FLOW               = 3087,
-    SHAMAN_LAVA_FLOWS_R1                   = 51480,
-    SHAMAN_LAVA_FLOWS_TRIGGERED_R1         = 64694
+    SHAMAN_TOTEM_SPELL_EARTHBIND_TOTEM      = 6474,
+    SHAMAN_TOTEM_SPELL_EARTHEN_POWER        = 59566,
+    SHAMAN_BIND_SIGHT                       = 6277,
+    ICON_ID_SHAMAN_LAVA_FLOW                = 3087,
+    SHAMAN_LAVA_FLOWS_R1                    = 51480,
+    SHAMAN_LAVA_FLOWS_TRIGGERED_R1          = 64694,
+    SPELL_SHA_ASCENDANCE_ELEMENTAL	        = 114050,
+    SPELL_SHA_ASCENDANCE_RESTORATION        = 114052,
+    SPELL_SHA_ASCENDANCE_ENHANCED	        = 114051,
+    SPELL_SHA_ASCENDANCE			        = 114049,
+    SPELL_SHA_HEALING_RAIN                  = 73920,
+    SPELL_SHA_HEALING_RAIN_TICK             = 73921,
+    SPELL_SHA_EARTHQUAKE                    = 61882,
+    SPELL_SHA_EARTHQUAKE_TICK               = 77478,
+    SPELL_SHA_EARTHQUAKE_KNOCKING_DOWN      = 77505,
+    SPELL_SHA_ELEMENTAL_BLAST               = 117014,
+    SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS  = 118522
+};
+
+// Elemental Blast - 117014
+class spell_sha_elemental_blast : public SpellScriptLoader
+{
+    public:
+        spell_sha_elemental_blast() : SpellScriptLoader("spell_sha_elemental_blast") { }
+
+        class spell_sha_elemental_blast_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_elemental_blast_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_ELEMENTAL_BLAST))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    int32 randomEffect = irand(0, 2);
+
+                    _player->CastSpell(_player, SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS, true);
+
+                    AuraApplication* aura = _player->GetAuraApplication(SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS, _player->GetGUID());
+
+                    if (aura)
+                    {
+                        switch (randomEffect)
+                        {
+                            case 0:
+                            {
+                                aura->GetBase()->GetEffect(1)->ChangeAmount(0);
+                                aura->GetBase()->GetEffect(2)->ChangeAmount(0);
+                                break;
+                            }
+                            case 1:
+                            {
+                                aura->GetBase()->GetEffect(0)->ChangeAmount(0);
+                                aura->GetBase()->GetEffect(2)->ChangeAmount(0);
+                                break;
+                            }
+                            case 2:
+                            {
+                                aura->GetBase()->GetEffect(0)->ChangeAmount(0);
+                                aura->GetBase()->GetEffect(1)->ChangeAmount(0);
+                                break;
+                            }
+                            default:
+                                break;
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_elemental_blast_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_elemental_blast_SpellScript();
+        }
+};
+
+// Earthquake : Ticks - 77478
+class spell_sha_earthquake_tick : public SpellScriptLoader
+{
+    public:
+        spell_sha_earthquake_tick() : SpellScriptLoader("spell_sha_earthquake_tick") { }
+
+        class spell_sha_earthquake_tick_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_earthquake_tick_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_EARTHQUAKE_TICK))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                // With a 10% chance of knocking down affected targets
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (roll_chance_i(10))
+                            _player->CastSpell(target, SPELL_SHA_EARTHQUAKE_KNOCKING_DOWN, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_earthquake_tick_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_earthquake_tick_SpellScript();
+        }
+};
+
+// Earthquake - 61882
+class spell_sha_earthquake : public SpellScriptLoader
+{
+    public:
+        spell_sha_earthquake() : SpellScriptLoader("spell_sha_earthquake") { }
+
+        class spell_sha_earthquake_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_earthquake_AuraScript);
+
+            void OnTick(AuraEffect const* aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_EARTHQUAKE))
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_EARTHQUAKE_TICK, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_earthquake_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_earthquake_AuraScript();
+        }
+};
+
+// Healing Rain - 73920
+class spell_sha_healing_rain : public SpellScriptLoader
+{
+    public:
+        spell_sha_healing_rain() : SpellScriptLoader("spell_sha_healing_rain") { }
+
+        class spell_sha_healing_rain_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_healing_rain_AuraScript);
+
+            void OnTick(AuraEffect const* aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_HEALING_RAIN))
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_HEALING_RAIN_TICK, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_healing_rain_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_healing_rain_AuraScript();
+        }
+};
+
+// Ascendance - 114049
+class spell_sha_ascendance : public SpellScriptLoader
+{
+    public:
+        spell_sha_ascendance() : SpellScriptLoader("spell_sha_ascendance") { }
+
+        class spell_sha_ascendance_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_ascendance_SpellScript);
+
+            bool Validate(SpellInfo const* spellEntry)
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_ASCENDANCE))
+                    return false;
+                return true;
+            }
+
+            SpellCastResult CheckCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_NONE)
+                        return SPELL_FAILED_CUSTOM_ERROR;
+
+                    return SPELL_CAST_OK;
+                }
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    switch(_player->GetSpecializationId(_player->GetActiveSpec()))
+                    {
+                        case SPEC_SHAMAN_ELEMENTAL:
+                            _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_ELEMENTAL, true);
+                            break;
+                        case SPEC_SHAMAN_ENHANCEMENT:
+                            _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_ENHANCED, true);
+                            break;
+                        case SPEC_SHAMAN_RESTORATION:
+                            _player->CastSpell(_player, SPELL_SHA_ASCENDANCE_RESTORATION, true);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_sha_ascendance_SpellScript::CheckCast);
+                AfterCast += SpellCastFn(spell_sha_ascendance_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_ascendance_SpellScript();
+        }
 };
 
 // 1535 Fire Nova
@@ -709,6 +946,11 @@ class spell_sha_sentry_totem : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_elemental_blast();
+    new spell_sha_earthquake_tick();
+    new spell_sha_earthquake();
+    new spell_sha_healing_rain();
+    new spell_sha_ascendance();
     new spell_sha_fire_nova();
     new spell_sha_mana_tide_totem();
     new spell_sha_earthbind_totem();

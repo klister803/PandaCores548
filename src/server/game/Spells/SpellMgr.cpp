@@ -3073,6 +3073,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 116740: // Tigereye Brew
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
+                break;
             case 117993: // Chi Torpedo : Heal
             case 124040: // Chi Torpedo : Damage
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(9);
