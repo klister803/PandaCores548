@@ -3143,6 +3143,45 @@ public:
     }
 };
 
+/*######
+## npc_capacitor_totem
+######*/
+
+class npc_capacitor_totem : public CreatureScript
+{
+    public:
+        npc_capacitor_totem() : CreatureScript("npc_capacitor_totem") { }
+
+    struct npc_capacitor_totemAI : public ScriptedAI
+    {
+        uint32 CastTimer;
+
+        npc_capacitor_totemAI(Creature* creature) : ScriptedAI(creature)
+        {
+            CastTimer = 1000;
+
+            if (creature->GetOwner() && creature->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                if (creature->GetEntry() == 61245)
+                    creature->CastSpell(creature, 118905, false);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            if (CastTimer >= diff)
+                if (me->GetOwner() && me->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                    if (me->GetEntry() == 61245)
+                        me->CastSpell(me, 118905, false);
+
+            CastTimer = 0;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_capacitor_totemAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3179,4 +3218,5 @@ void AddSC_npcs_special()
     new npc_choose_faction();
     new npc_rate_xp_modifier();
     new npc_event_demorph();
+    new npc_capacitor_totem();
 }
