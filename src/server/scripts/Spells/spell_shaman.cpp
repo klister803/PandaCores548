@@ -62,7 +62,121 @@ enum ShamanSpells
     SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE   = 26364,
     SPELL_SHA_HEALING_STREAM                = 52042,
     SPELL_SHA_GLYPH_OF_HEALING_STREAM       = 119423,
-    SPELL_SHA_LAVA_SURGE_CAST_TIME          = 77762
+    SPELL_SHA_LAVA_SURGE_CAST_TIME          = 77762,
+    SPELL_SHA_FULMINATION                   = 88766,
+    SPELL_SHA_FULMINATION_TRIGGERED         = 88767,
+    SPELL_SHA_FULMINATION_INFO              = 95774,
+    SPELL_SHA_ROLLING_THUNDER_ENERGIZE      = 88765
+};
+
+// Called by Lightning Bolt - 403 and Chain Lightning - 421
+// Rolling Thunder - 88765
+class spell_sha_rolling_thunder : public SpellScriptLoader
+{
+public:
+    spell_sha_rolling_thunder() : SpellScriptLoader("spell_sha_rolling_thunder") { }
+
+    class spell_sha_rolling_thunder_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sha_rolling_thunder_SpellScript)
+
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            if (!sSpellMgr->GetSpellInfo(403) || !sSpellMgr->GetSpellInfo(421))
+                return false;
+            return true;
+        }
+
+        void HandleOnHit()
+        {
+            if (Player* _player = GetCaster()->ToPlayer())
+            {
+                if (Unit* target = GetHitUnit())
+                {
+                    if (roll_chance_i(60))
+                    {
+                        if (Aura * lightningShield = _player->GetAura(324))
+                        {
+                            _player->CastSpell(_player, SPELL_SHA_ROLLING_THUNDER_ENERGIZE, true);
+
+                            uint8 lsCharges = lightningShield->GetCharges();
+                            if (lsCharges < 7)
+                                lightningShield->SetCharges(lsCharges + 1);
+                        }
+                    }
+                }
+            }
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_sha_rolling_thunder_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript *GetSpellScript() const
+    {
+        return new spell_sha_rolling_thunder_SpellScript();
+    }
+};
+
+// 88766 Fulmination handled in 8042 Earth Shock
+class spell_sha_fulmination : public SpellScriptLoader
+{
+public:
+    spell_sha_fulmination() : SpellScriptLoader("spell_sha_fulmination") { }
+
+    class spell_sha_fulmination_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sha_fulmination_SpellScript)
+
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            if (!sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION) || !sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION_TRIGGERED) || !sSpellMgr->GetSpellInfo(SPELL_SHA_FULMINATION_INFO))
+                return false;
+            return true;
+        }
+
+        void HandleFulmination(SpellEffIndex /*effIndex*/)
+        {
+            // make caster cast a spell on a unit target of effect
+            Unit *target = GetHitUnit();
+            Unit *caster = GetCaster();
+            if(!target || !caster)
+                return;
+
+            AuraEffect *fulminationAura = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2010, 0);
+            if (!fulminationAura)
+                return;
+
+            Aura * lightningShield = caster->GetAura(324);
+            if(!lightningShield)
+                return;
+
+            uint8 lsCharges = lightningShield->GetCharges();
+            if(lsCharges <= 1)
+                return;
+
+            uint8 usedCharges = lsCharges - 1;
+
+            SpellEntry const* spellInfo = sSpellStore.LookupEntry(SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE);
+            int32 basePoints = caster->CalculateSpellDamage(target, GetSpellInfo(), 0);
+            uint32 damage = usedCharges * caster->SpellDamageBonusDone(target, GetSpellInfo(), basePoints, SPELL_DIRECT_DAMAGE);
+
+            caster->CastCustomSpell(SPELL_SHA_FULMINATION_TRIGGERED, SPELLVALUE_BASE_POINT0, damage, target, true, NULL, fulminationAura);
+            lightningShield->SetCharges(lsCharges - usedCharges);
+        }
+
+        void Register()
+        {
+            OnEffectHitTarget += SpellEffectFn(spell_sha_fulmination_SpellScript::HandleFulmination, EFFECT_FIRST_FOUND, SPELL_EFFECT_ANY);
+        }
+    };
+
+    SpellScript *GetSpellScript() const
+    {
+        return new spell_sha_fulmination_SpellScript();
+    }
 };
 
 // Triggered by Flame Shock - 8050
@@ -1023,6 +1137,8 @@ class spell_sha_sentry_totem : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_rolling_thunder();
+    new spell_sha_fulmination();
     new spell_sha_lava_surge();
     new spell_sha_healing_stream();
     new spell_sha_static_shock();

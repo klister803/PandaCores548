@@ -3078,7 +3078,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = 31;
                 break;
             case 324: // Lightning Shield
-                spellInfo->ProcCharges = -1;
+                spellInfo->ProcCharges = 0;
                 break;
             case 116740: // Tigereye Brew
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
