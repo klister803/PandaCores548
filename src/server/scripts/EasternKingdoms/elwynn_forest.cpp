@@ -37,20 +37,24 @@ public:
     {
         npc_stormwind_infantryAI(Creature* creature) : ScriptedAI(creature) {}
 
+        bool HasATarget;
+
         void Reset()
-        {}
+        {
+            HasATarget = false;
+        }
 
         void DamageTaken(Unit* doneBy, uint32& damage)
         {
             if (doneBy->ToCreature())
-                if (me->GetHealthPct() <= 80.0f)
+                if (me->GetHealth() <= damage || me->GetHealthPct() <= 80.0f)
                     damage = 0;
         }
 
         void DamageDealt(Unit* target, uint32& damage, DamageEffectType damageType)
         {
             if (target->ToCreature())
-                if (target->GetHealthPct() <= 70.0f)
+                if (target->GetHealth() <= damage || target->GetHealthPct() <= 70.0f)
                     damage = 0;
         }
 
@@ -59,16 +63,65 @@ public:
             if (me->GetDistance(who) < 5.0f)
                 if (Creature* creature = who->ToCreature())
                     if (creature->GetEntry() == NPC_WOLF)
-                        if (who->Attack(me, true))
-                        {
-                            who->AddThreat(me, 0.0f);
-                            who->SetInCombatWith(me);
-                            me->SetInCombatWith(who);
-                            who->GetMotionMaster()->MoveChase(me);
-                        }
+                        if (!HasATarget)
+                            if (who->Attack(me, true))
+                            {
+                                who->AddThreat(me, 0.0f);
+                                who->SetInCombatWith(me);
+                                me->SetInCombatWith(who);
+                                who->GetMotionMaster()->MoveChase(me);
+                                HasATarget = true;
+                            }
+        }
+
+        void EnterEvadeMode()
+        {
+            HasATarget = false;
         }
     };
 };
+
+/*######
+## npc_stormwind_injured_soldier
+######*/
+
+#define SPELL_HEAL          93072
+
+class npc_stormwind_injured_soldier : public CreatureScript
+{
+public:
+    npc_stormwind_injured_soldier() : CreatureScript("npc_stormwind_injured_soldier") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_stormwind_injured_soldierAI (creature);
+    }
+
+    struct npc_stormwind_injured_soldierAI : public ScriptedAI
+    {
+        npc_stormwind_injured_soldierAI(Creature* creature) : ScriptedAI(creature) {}
+
+        void Reset()
+        {}
+
+        void OnSpellClick(Unit* Clicker)
+        {
+            me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+            me->RemoveFlag(UNIT_FIELD_BYTES_1, UNIT_STAND_STATE_DEAD);
+            me->ForcedDespawn(2000);
+            me->SetRespawnDelay(10);
+        }
+
+        void EnterCombat(Unit* /*who*/)
+        {
+            return;
+        }
+    };
+};
+
+/*######
+## npc_training_dummy_elwynn
+######*/
 
 enum eTrainingDummySpells
 {
@@ -175,6 +228,10 @@ public:
     }
 };
 
+/*######
+## spell_quest_fear_no_evil
+######*/
+
 class spell_quest_fear_no_evil : public SpellScriptLoader
 {
     public:
@@ -202,6 +259,10 @@ class spell_quest_fear_no_evil : public SpellScriptLoader
             return new spell_quest_fear_no_evil_SpellScript();
         }
 };
+
+/*######
+## spell_quest_extincteur
+######*/
 
 #define SPELL_VISUAL_EXTINGUISHER   96028
 
@@ -257,6 +318,7 @@ class spell_quest_extincteur : public SpellScriptLoader
 void AddSC_elwyn_forest()
 {
     new npc_stormwind_infantry();
+    new npc_stormwind_injured_soldier();
     new npc_training_dummy_elwynn();
     new spell_quest_fear_no_evil();
     new spell_quest_extincteur();
