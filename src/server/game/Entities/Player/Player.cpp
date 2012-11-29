@@ -860,6 +860,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_PersonnalXpRate = 0;
 
+    m_knockBackTimer = 0;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 }
 
@@ -1801,6 +1803,12 @@ void Player::Update(uint32 p_time)
         }
         else
             m_deathTimer -= p_time;
+    }
+
+    if (m_knockBackTimer)
+    {
+        if( m_knockBackTimer + 2000 < getMSTime())
+            m_knockBackTimer = 0;
     }
 
     UpdateEnchantTime(p_time);
