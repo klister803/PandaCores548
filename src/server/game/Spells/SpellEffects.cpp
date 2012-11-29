@@ -5099,6 +5099,11 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
             return;
     }
 
+    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+        if (unitTarget->ToPlayer()->GetKnockBackTime())
+            return;
+
+
     // Instantly interrupt non melee spells being casted
     if (unitTarget->IsNonMeleeSpellCasted(true))
         unitTarget->InterruptNonMeleeSpells(true);
@@ -5123,6 +5128,9 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
     }
 
     unitTarget->KnockbackFrom(x, y, speedxy, speedz);
+
+    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+        unitTarget->ToPlayer()->SetKnockBackTime(getMSTime());
 }
 
 void Spell::EffectLeapBack(SpellEffIndex effIndex)

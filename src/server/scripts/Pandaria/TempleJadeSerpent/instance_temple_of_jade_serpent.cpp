@@ -76,6 +76,8 @@ enum eSpells
 
 enum eCreatures
 {
+    CREATURE_WISE_MARI              = 56448,
+
     CREATURE_SCROLL                 = 57080,
     CREATURE_ZAO_SUNSEEKER          = 58826,
     CREATURE_LOREWALKTER_STONESTEP  = 56843,
@@ -97,9 +99,10 @@ enum eCreatures
 
 enum eGameObjects
 {
+    GAMEOBJECT_DOOR_WISE_MARI           = 213550,
     GAMEOBJECT_DOOR_LOREWALKER_STONSTEP = 213549,
     GAMEOBJECT_DOOR_LIU_FLAMEHEART      = 213548,
-    GAMEOBJECT_DOOR_LIU_FLAMEHEART_2    = 513544,
+    GAMEOBJECT_DOOR_LIU_FLAMEHEART_2    = 213544,
 };
 
 enum eTypes
@@ -138,8 +141,15 @@ public:
 
     struct instance_temple_of_jade_serpent_InstanceMapScript : public InstanceScript
     {
+        /*
+        ** Wise Mari script.
+        */
         Position roomCenter;
         uint32 waterDamageTimer;
+        uint64 doorWiseMari;
+        /*
+        ** End of Wise Mari script
+        */
 
         /*
         ** LoreWalkter Stonestep script.
@@ -186,8 +196,11 @@ public:
         /*
         ** End of Sha of Doubt script.
         */
+
         instance_temple_of_jade_serpent_InstanceMapScript(Map* map) : InstanceScript(map)
         {
+            // Wise Mari script
+            doorWiseMari = 0;
             roomCenter.m_positionX = 1046.941f;
             roomCenter.m_positionY = -2560.606f;
             roomCenter.m_positionZ = 174.9552f;
@@ -227,15 +240,18 @@ public:
         {
             switch (go->GetEntry())
             {
-            case GAMEOBJECT_DOOR_LIU_FLAMEHEART_2:
-                doorLiu_2 = go->GetGUID();
-                break;
-            case GAMEOBJECT_DOOR_LOREWALKER_STONSTEP:
-                door_lorewalker = go->GetGUID();
-                break;
-            case GAMEOBJECT_DOOR_LIU_FLAMEHEART:
-                doorLiu = go->GetGUID();
-                break;
+                case GAMEOBJECT_DOOR_WISE_MARI:
+                    doorWiseMari = go->GetGUID();
+                    break;
+                case GAMEOBJECT_DOOR_LIU_FLAMEHEART_2:
+                    doorLiu_2 = go->GetGUID();
+                    break;
+                case GAMEOBJECT_DOOR_LOREWALKER_STONSTEP:
+                    door_lorewalker = go->GetGUID();
+                    break;
+                case GAMEOBJECT_DOOR_LIU_FLAMEHEART:
+                    doorLiu = go->GetGUID();
+                    break;
             }
         }
 
@@ -251,6 +267,7 @@ public:
         {
             OnUnitDeath_lorewalker_stonestep(unit);
             OnUnitDeath_liu_flameheat(unit);
+            OnUnitDeath_wise_mari(unit);
         }
         
         virtual void Update(uint32 diff) 
@@ -358,6 +375,16 @@ public:
                 return sha_of_doubt_guid;
             }
             return 0;
+        }
+
+        void OnUnitDeath_wise_mari(Unit* unit)
+        {
+            if (unit->GetEntry() == CREATURE_WISE_MARI)
+            {
+                GameObject* go = instance->GetGameObject(doorWiseMari);
+                if (go != nullptr)
+                    go->SetGoState(GOState::GO_STATE_ACTIVE);
+            }
         }
 
         void SetData_sha_of_doubt(uint32 type, uint32 data)

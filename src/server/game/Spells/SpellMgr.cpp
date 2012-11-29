@@ -3321,7 +3321,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
                 // Wise Mari Hydrolance damage
             case 106267:
-                spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
+                //spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
                 break;
                 // Wise Mari Wash Away
             case 106334:
