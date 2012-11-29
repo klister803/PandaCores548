@@ -3320,8 +3320,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 106334:
                 spellInfo->AttributesEx3 &= ~ SPELL_ATTR3_ONLY_TARGET_PLAYERS;
                 break;
-            case 80199:
-                spellInfo->Effects[0].TriggerSpell = 96028;
             default:
                 break;
             }

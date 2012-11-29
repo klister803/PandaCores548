@@ -40,6 +40,20 @@ public:
         void Reset()
         {}
 
+        void DamageTaken(Unit* doneBy, uint32& damage)
+        {
+            if (doneBy->ToCreature())
+                if (me->GetHealthPct() <= 80.0f)
+                    damage = 0;
+        }
+
+        void DamageDealt(Unit* target, uint32& damage, DamageEffectType damageType)
+        {
+            if (target->ToCreature())
+                if (target->GetHealthPct() <= 70.0f)
+                    damage = 0;
+        }
+
         void MoveInLineOfSight(Unit* who)
         {
             if (me->GetDistance(who) < 5.0f)
@@ -189,6 +203,8 @@ class spell_quest_fear_no_evil : public SpellScriptLoader
         }
 };
 
+#define SPELL_VISUAL_EXTINGUISHER   96028
+
 class spell_quest_extincteur : public SpellScriptLoader
 {
     public:
@@ -197,6 +213,12 @@ class spell_quest_extincteur : public SpellScriptLoader
         class spell_quest_extincteur_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_quest_extincteur_AuraScript);
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (GetCaster())
+                    GetCaster()->AddAura(SPELL_VISUAL_EXTINGUISHER, GetCaster());
+            }
 
             void OnPeriodic(AuraEffect const* /*aurEff*/)
             {
@@ -215,13 +237,14 @@ class spell_quest_extincteur : public SpellScriptLoader
             void OnRemove(AuraEffect const*, AuraEffectHandleModes)
             {
                 if (GetCaster())
-                    GetCaster()->RemoveAurasDueToSpell(96028);
+                    GetCaster()->RemoveAurasDueToSpell(SPELL_VISUAL_EXTINGUISHER);
             }
 
             void Register()
             {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_quest_extincteur_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
-                OnEffectRemove += AuraEffectRemoveFn(spell_quest_extincteur_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectApply += AuraEffectApplyFn(spell_quest_extincteur_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_quest_extincteur_AuraScript::OnPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_quest_extincteur_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
