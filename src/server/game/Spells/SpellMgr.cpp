@@ -3073,6 +3073,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 116740: // Tigereye Brew
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
+                break;
             case 117993: // Chi Torpedo : Heal
             case 124040: // Chi Torpedo : Damage
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(9);
@@ -3307,6 +3310,8 @@ void SpellMgr::LoadSpellCustomAttr()
                     spellInfo->ExplicitTargetMask |= TARGET_FLAG_DEST_LOCATION;
                 }
                 break;
+            case 106847:
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
                 // Wise Mari Hydrolance damage
             case 106267:
                 //spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
@@ -3315,6 +3320,8 @@ void SpellMgr::LoadSpellCustomAttr()
             case 106334:
                 spellInfo->AttributesEx3 &= ~ SPELL_ATTR3_ONLY_TARGET_PLAYERS;
                 break;
+            case 80199:
+                spellInfo->Effects[0].TriggerSpell = 96028;
             default:
                 break;
             }
