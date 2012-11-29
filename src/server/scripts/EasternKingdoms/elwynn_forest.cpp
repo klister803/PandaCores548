@@ -40,6 +40,20 @@ public:
         void Reset()
         {}
 
+        void DamageTaken(Unit* doneBy, uint32& damage)
+        {
+            if (doneBy->ToCreature())
+                if (me->GetHealthPct() <= 80.0f)
+                    damage = 0;
+        }
+
+        void DamageDealt(Unit* target, uint32& damage, DamageEffectType damageType)
+        {
+            if (target->ToCreature())
+                if (target->GetHealthPct() <= 70.0f)
+                    damage = 0;
+        }
+
         void MoveInLineOfSight(Unit* who)
         {
             if (me->GetDistance(who) < 5.0f)
