@@ -58,6 +58,7 @@ enum ShamanSpells
     SPELL_SHA_ELEMENTAL_BLAST               = 117014,
     SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS  = 118522,
     SPELL_SHA_LAVA_LASH                     = 60103,
+    SPELL_SHA_FLAME_SHOCK                   = 8050,
     SPELL_SHA_STORMSTRIKE                   = 17364,
     SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE   = 26364,
     SPELL_SHA_HEALING_STREAM                = 52042,
@@ -276,10 +277,13 @@ class spell_sha_lava_surge : public SpellScriptLoader
                 // 20% chance to reset the cooldown of Lavaburst and make the next to be instantly casted
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (roll_chance_i(20))
+                    if (_player->HasAura(77756))
                     {
-                        _player->CastSpell(_player, SPELL_SHA_LAVA_SURGE_CAST_TIME, true);
-                        _player->RemoveSpellCooldown(51505, true);
+                        if (roll_chance_i(20))
+                        {
+                            _player->CastSpell(_player, SPELL_SHA_LAVA_SURGE_CAST_TIME, true);
+                            _player->RemoveSpellCooldown(51505, true);
+                        }
                     }
                 }
             }
@@ -1035,6 +1039,7 @@ class spell_sha_mana_spring_totem : public SpellScriptLoader
         }
 };
 
+// Lava Lash - 60103
 class spell_sha_lava_lash : public SpellScriptLoader
 {
     public:
@@ -1049,25 +1054,54 @@ class spell_sha_lava_lash : public SpellScriptLoader
                 return GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            void HandleDummy(SpellEffIndex /* effIndex */)
+            void HandleOnHit()
             {
-                if (Player* caster = GetCaster()->ToPlayer())
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    int32 damage = GetEffectValue();
-                    int32 hitDamage = GetHitDamage();
-                    if (caster->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                    if (Unit* target = GetHitUnit())
                     {
-                        // Damage is increased by 25% if your off-hand weapon is enchanted with Flametongue.
-                        if (caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 0x200000, 0, 0))
-                            AddPct(hitDamage, damage);
-                        SetHitDamage(hitDamage);
+                        int32 hitDamage = GetHitDamage();
+                        if (_player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                        {
+                            // Damage is increased by 40% if your off-hand weapon is enchanted with Flametongue.
+                            if (_player->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 0x200000, 0, 0))
+                                AddPct(hitDamage, 40);
+
+                            SetHitDamage(hitDamage);
+
+                            // Spreading your Flame shock from the target to up to four ennemies within 12 yards
+                            // Effect desactivated if has Glyph of Lava Lash
+                            if (!_player->HasAura(55444))
+                            {
+                                if (target->HasAura(SPELL_SHA_FLAME_SHOCK))
+                                {
+                                    std::list<Unit*> targetList;
+
+                                    _player->GetAttackableUnitListInRange(_player, targetList, 12.0f);
+
+                                    int32 hitTargets = 0;
+
+                                    for (auto itr : targetList)
+                                    {
+                                        if (!_player->IsValidAttackTarget(itr) || itr->GetGUID() == target->GetGUID())
+                                            continue;
+
+                                        if (hitTargets >= 4)
+                                            continue;
+
+                                        _player->CastSpell(itr, SPELL_SHA_FLAME_SHOCK, true);
+                                        hitTargets++;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             void Register()
             {
-                OnEffectHitTarget += SpellEffectFn(spell_sha_lava_lash_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+                OnHit += SpellHitFn(spell_sha_lava_lash_SpellScript::HandleOnHit);
             }
 
         };
@@ -1125,50 +1159,6 @@ class spell_sha_chain_heal : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_sha_chain_heal_SpellScript();
-        }
-};
-
-class spell_sha_flame_shock : public SpellScriptLoader
-{
-    public:
-        spell_sha_flame_shock() : SpellScriptLoader("spell_sha_flame_shock") { }
-
-        class spell_sha_flame_shock_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_sha_flame_shock_AuraScript);
-
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SHAMAN_LAVA_FLOWS_R1))
-                    return false;
-                if (!sSpellMgr->GetSpellInfo(SHAMAN_LAVA_FLOWS_TRIGGERED_R1))
-                    return false;
-                return true;
-            }
-
-            void HandleDispel(DispelInfo* /*dispelInfo*/)
-            {
-                if (Unit* caster = GetCaster())
-                    // Lava Flows
-                    if (AuraEffect const* aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, ICON_ID_SHAMAN_LAVA_FLOW, EFFECT_0))
-                    {
-                        if (sSpellMgr->GetFirstSpellInChain(SHAMAN_LAVA_FLOWS_R1) != sSpellMgr->GetFirstSpellInChain(aurEff->GetId()))
-                            return;
-
-                        uint8 rank = sSpellMgr->GetSpellRank(aurEff->GetId());
-                        caster->CastSpell(caster, sSpellMgr->GetSpellWithRank(SHAMAN_LAVA_FLOWS_TRIGGERED_R1, rank), true);
-                    }
-            }
-
-            void Register()
-            {
-                AfterDispel += AuraDispelFn(spell_sha_flame_shock_AuraScript::HandleDispel);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_sha_flame_shock_AuraScript();
         }
 };
 
@@ -1240,6 +1230,5 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_mana_spring_totem();
     new spell_sha_lava_lash();
     new spell_sha_chain_heal();
-    new spell_sha_flame_shock();
     new spell_sha_sentry_totem();
 }
