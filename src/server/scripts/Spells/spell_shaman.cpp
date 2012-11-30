@@ -68,7 +68,8 @@ enum ShamanSpells
     SPELL_SHA_FULMINATION_TRIGGERED         = 88767,
     SPELL_SHA_FULMINATION_INFO              = 95774,
     SPELL_SHA_ROLLING_THUNDER_ENERGIZE      = 88765,
-    SPELL_SHA_UNLEASH_ELEMENTS              = 73680
+    SPELL_SHA_UNLEASH_ELEMENTS              = 73680,
+    SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE    = 77661
 };
 
 // Unleash Elements - 73680
@@ -1049,6 +1050,8 @@ class spell_sha_lava_lash : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_lava_lash_SpellScript)
 
+            int32 searingFlameAmount;
+
             bool Load()
             {
                 return GetCaster()->GetTypeId() == TYPEID_PLAYER;
@@ -1066,6 +1069,16 @@ class spell_sha_lava_lash : public SpellScriptLoader
                             // Damage is increased by 40% if your off-hand weapon is enchanted with Flametongue.
                             if (_player->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 0x200000, 0, 0))
                                 AddPct(hitDamage, 40);
+
+                            // Your Lava Lash ability will consume Searing Flame effect, dealing 20% increased damage for each application
+                            if (AuraApplication* searingFlame = _player->GetAuraApplication(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE))
+                            {
+                                searingFlameAmount = searingFlame->GetBase()->GetStackAmount();
+                                searingFlameAmount *= 8;
+                                AddPct(hitDamage, searingFlameAmount);
+
+                                _player->RemoveAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE);
+                            }
 
                             SetHitDamage(hitDamage);
 
