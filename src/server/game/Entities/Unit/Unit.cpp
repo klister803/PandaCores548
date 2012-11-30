@@ -548,6 +548,19 @@ void Unit::DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb)
 uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
     // Custom MoP Script
+    // Spirit Hunt - 58879 : Feral Spirit heal their owner for 150% of their damage
+    if (GetTypeId() == TYPEID_UNIT && GetEntry() == 29264 && damage > 0)
+    {
+        int32 basepoints = 0;
+
+        // Glyph of Feral Spirit : +40% heal
+        if (GetOwner()->HasAura(63271))
+            basepoints = CalculatePct(damage, 190);
+        else
+            basepoints = CalculatePct(damage, 150);
+
+        CastCustomSpell(GetOwner(), 58879, &basepoints, NULL, NULL, true, 0, NULL, GetGUID());
+    }
     // Searing Flames - 77657 : Fire Elemental attacks or Searing Totem attacks
     if ((GetTypeId() == TYPEID_UNIT && GetEntry() == 15438 && !spellProto) || (isTotem() && GetEntry() == 2523))
         GetOwner()->CastSpell(GetOwner(), 77661, true);
@@ -6855,19 +6868,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                     basepoints0 = CalculatePct(int32(damage), triggerAmount);
                     target = this;
                     triggered_spell_id = 55533;
-                    break;
-                }
-                // Spirit Hunt
-                case 58877:
-                {
-                    // Cast on owner
-                    target = GetOwner();
-                    if (!target)
-                        return false;
-                    basepoints0 = CalculatePct(int32(damage), triggerAmount);
-                    triggered_spell_id = 58879;
-                    // Cast on spirit wolf
-                    CastCustomSpell(this, triggered_spell_id, &basepoints0, NULL, NULL, true, NULL, triggeredByAura);
                     break;
                 }
                 // Shaman T8 Elemental 4P Bonus

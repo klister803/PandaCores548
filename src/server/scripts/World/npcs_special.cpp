@@ -3159,6 +3159,53 @@ class npc_capacitor_totem : public CreatureScript
     }
 };
 
+/*######
+## npc_feral_spirit
+######*/
+
+class npc_feral_spirit : public CreatureScript
+{
+public:
+    npc_feral_spirit() : CreatureScript("npc_feral_spirit") { }
+
+    struct npc_feral_spiritAI : public ScriptedAI
+    {
+        npc_feral_spiritAI(Creature* creature) : ScriptedAI(creature) {}
+
+        uint32 SpiritBiteTimer;
+
+        void Reset()
+        {
+            SpiritBiteTimer = 6000;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (!UpdateVictim())
+                return;
+
+            if (me->HasUnitState(UNIT_STATE_CASTING))
+                return;
+
+            if (SpiritBiteTimer <= diff)
+            {
+                me->CastSpell(me->getVictim(), 58859, true);
+                SpiritBiteTimer = 6000;
+            }
+            else
+                SpiritBiteTimer -= diff;
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_feral_spiritAI(creature);
+    }
+};
+
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3196,4 +3243,5 @@ void AddSC_npcs_special()
     new npc_rate_xp_modifier();
     new npc_event_demorph();
     new npc_capacitor_totem();
+    new npc_feral_spirit();
 }
