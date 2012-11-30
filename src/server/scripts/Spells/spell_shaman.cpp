@@ -103,7 +103,7 @@ class spell_sha_unleash_elements : public SpellScriptLoader
                                 continue;
 
                             uint32 unleashSpell = 0;
-                            bool hostileTarget = _player->IsHostileTo(target);
+                            bool hostileTarget = _player->IsValidAttackTarget(target);
                             bool hostileSpell = true;
                             switch (weapons[i]->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
                             {
