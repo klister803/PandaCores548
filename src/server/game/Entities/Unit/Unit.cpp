@@ -10012,6 +10012,15 @@ int32 Unit::SpellBaseDamageBonusDone(SpellSchoolMask schoolMask)
             if ((*i)->GetMiscValue() & schoolMask)
                 DoneAdvertisedBenefit += int32(CalculatePct(GetTotalAttackPowerValue(BASE_ATTACK), (*i)->GetAmount()));
 
+        AuraEffectList const& mOverrideSpellpower = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_SPELL_POWER_BY_AP_PCT);
+        for (AuraEffectList::const_iterator i = mOverrideSpellpower.begin(); i != mOverrideSpellpower.end(); ++i)
+        {
+            if (((*i)->GetMiscValue() & schoolMask))
+            {
+                int32 attackPower = GetTotalAttackPowerValue(BASE_ATTACK);
+                DoneAdvertisedBenefit = (*i)->GetAmount() * attackPower / 100;
+            }
+        }
     }
     return DoneAdvertisedBenefit;
 }
