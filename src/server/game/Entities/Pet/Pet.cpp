@@ -790,6 +790,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     {
         if ((m_owner->getClass() == CLASS_WARLOCK)
             || (m_owner->getClass() == CLASS_SHAMAN)        // Fire Elemental
+            || (m_owner->getClass() == CLASS_PRIEST)
             || (m_owner->getClass() == CLASS_DEATH_KNIGHT)) // Risen Ghoul
             petType = SUMMON_PET;
         else if (m_owner->getClass() == CLASS_HUNTER)
