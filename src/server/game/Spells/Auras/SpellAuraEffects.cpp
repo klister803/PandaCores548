@@ -2163,9 +2163,9 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
             else
                 target->ToPlayer()->RemoveTemporarySpell(shapeInfo->stanceSpell[i]);
         }
+        // Update the Mastery percentage for Shapeshift
+        target->ToPlayer()->UpdateMasteryPercentage();
     }
-    // Update the Mastery percentage for Shapeshift
-    target->ToPlayer()->UpdateMasteryPercentage();
 }
 
 void AuraEffect::HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, bool apply) const
