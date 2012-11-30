@@ -364,7 +364,7 @@ class spell_sha_static_shock : public SpellScriptLoader
                     Unit* target = GetHitUnit();
 
                     // While have Lightning Shield active
-                    if (target && _player->HasAura(324))
+                    if (target && _player->HasAura(324) && _player->HasAura(51527))
                     {
                         // Item - Shaman T9 Enhancement 2P Bonus (Static Shock)
                         if (_player->HasAura(67220))
@@ -620,66 +620,6 @@ class spell_sha_ascendance : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_sha_ascendance_SpellScript();
-        }
-};
-
-// 1535 Fire Nova
-class spell_sha_fire_nova : public SpellScriptLoader
-{
-    public:
-        spell_sha_fire_nova() : SpellScriptLoader("spell_sha_fire_nova") { }
-
-        class spell_sha_fire_nova_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_fire_nova_SpellScript);
-
-            bool Validate(SpellInfo const* spellEntry)
-            {
-                if (!sSpellMgr->GetSpellInfo(SHAMAN_SPELL_FIRE_NOVA_R1) || sSpellMgr->GetFirstSpellInChain(SHAMAN_SPELL_FIRE_NOVA_R1) != sSpellMgr->GetFirstSpellInChain(spellEntry->Id))
-                    return false;
-
-                uint8 rank = sSpellMgr->GetSpellRank(spellEntry->Id);
-                if (!sSpellMgr->GetSpellWithRank(SHAMAN_SPELL_FIRE_NOVA_TRIGGERED_R1, rank, true))
-                    return false;
-                return true;
-            }
-
-            SpellCastResult CheckFireTotem()
-            {
-                // fire totem
-                if (!GetCaster()->m_SummonSlot[1])
-                {
-                    SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_MUST_HAVE_FIRE_TOTEM);
-                    return SPELL_FAILED_CUSTOM_ERROR;
-                }
-
-                return SPELL_CAST_OK;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    uint8 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
-                    if (uint32 spellId = sSpellMgr->GetSpellWithRank(SHAMAN_SPELL_FIRE_NOVA_TRIGGERED_R1, rank))
-                    {
-                        Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[1]);
-                        if (totem && totem->isTotem())
-                            caster->CastSpell(totem, spellId, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_sha_fire_nova_SpellScript::CheckFireTotem);
-                OnEffectHitTarget += SpellEffectFn(spell_sha_fire_nova_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_fire_nova_SpellScript();
         }
 };
 
@@ -1232,7 +1172,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_earthquake();
     new spell_sha_healing_rain();
     new spell_sha_ascendance();
-    new spell_sha_fire_nova();
     new spell_sha_mana_tide_totem();
     new spell_sha_earthbind_totem();
     new spell_sha_earthen_power();
