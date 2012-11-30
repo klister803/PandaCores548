@@ -2145,9 +2145,6 @@ class npc_shadowfiend : public CreatureScript
 /*######
 # npc_fire_elemental
 ######*/
-#define SPELL_FIRENOVA        12470
-#define SPELL_FIRESHIELD      13376
-#define SPELL_FIREBLAST       57984
 
 class npc_fire_elemental : public CreatureScript
 {
@@ -2158,16 +2155,12 @@ public:
     {
         npc_fire_elementalAI(Creature* creature) : ScriptedAI(creature) {}
 
-        uint32 FireNova_Timer;
-        uint32 FireShield_Timer;
-        uint32 FireBlast_Timer;
+        uint32 FireBlastTimer;
 
         void Reset()
         {
-            FireNova_Timer = 5000 + rand() % 15000; // 5-20 sec cd
-            FireBlast_Timer = 5000 + rand() % 15000; // 5-20 sec cd
-            FireShield_Timer = 0;
             me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
+            FireBlastTimer = 6000;
         }
 
         void UpdateAI(const uint32 diff)
@@ -2178,29 +2171,13 @@ public:
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
-            if (FireShield_Timer <= diff)
+            if (FireBlastTimer <= diff)
             {
-                DoCast(me->getVictim(), SPELL_FIRESHIELD);
-                FireShield_Timer = 2 * IN_MILLISECONDS;
+                me->CastSpell(me->getVictim(), 57984, true);
+                FireBlastTimer = 6000;
             }
             else
-                FireShield_Timer -= diff;
-
-            if (FireBlast_Timer <= diff)
-            {
-                DoCast(me->getVictim(), SPELL_FIREBLAST);
-                FireBlast_Timer = 5000 + rand() % 15000; // 5-20 sec cd
-            }
-            else
-                FireBlast_Timer -= diff;
-
-            if (FireNova_Timer <= diff)
-            {
-                DoCast(me->getVictim(), SPELL_FIRENOVA);
-                FireNova_Timer = 5000 + rand() % 15000; // 5-20 sec cd
-            }
-            else
-                FireNova_Timer -= diff;
+                FireBlastTimer -= diff;
 
             DoMeleeAttackIfReady();
         }
