@@ -462,7 +462,7 @@ enum AuraType
     SPELL_AURA_402                                          = 402,  // 5.0.5 unk aura
     SPELL_AURA_403                                          = 403,  // 5.0.5 unk aura
     SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT               = 404,  // Sets attack power equal to % of spellpower, discarding all other bonuses (from gear and buffs)
-    SPELL_AURA_405                                          = 405,  // 5.0.5 unk aura
+    SPELL_AURA_INCREASE_HASTE_FROM_ITEMS_BY_PCT             = 405,  // SPELL_AURA_INCREASE_STATS_FROM_ITEMS_BY_PCT
     SPELL_AURA_406                                          = 406,  // 5.0.5 unk aura
     SPELL_AURA_407                                          = 407,  // 5.0.5 unk aura
     SPELL_AURA_408                                          = 408,  // 5.0.5 unk aura

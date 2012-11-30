@@ -461,7 +461,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
     &AuraEffect::HandleOverrideAttackPowerBySpellPower,           //404 SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleIncreaseHasteFromItemsByPct,               //405 SPELL_AURA_INCREASE_HASTE_FROM_ITEMS_BY_PCT
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
     &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
@@ -4657,6 +4657,31 @@ void AuraEffect::HandleOverrideSpellPowerByAttackPower(AuraApplication const* au
     // This information for client side use only
     // Get healing bonus for all schools
     target->SetFloatValue(PLAYER_FIELD_OVERRIDE_SPELL_POWER_BY_AP_PCT, GetAmount());
+}
+
+void AuraEffect::HandleIncreaseHasteFromItemsByPct(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & (AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK | AURA_EFFECT_HANDLE_STAT)))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+
+    if (!target->ToPlayer())
+        return;
+
+    if (apply)
+    {
+        float HasteRating = target->ToPlayer()->GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE);
+        HasteRating *= (1 + GetAmount() / 100.0f);
+        float haste = 1 / (1 + (HasteRating * target->ToPlayer()->GetRatingMultiplier(CR_HASTE_MELEE)) / 100);
+
+        // Update haste percentage for client
+        target->SetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE, haste);
+        target->SetFloatValue(UNIT_MOD_CAST_HASTE, haste);
+        target->SetFloatValue(UNIT_MOD_HASTE, haste);
+    }
+    else
+        target->ToPlayer()->UpdateRating(CR_HASTE_MELEE);
 }
 
 /********************************/
