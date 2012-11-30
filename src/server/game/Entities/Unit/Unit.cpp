@@ -547,6 +547,11 @@ void Unit::DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb)
 
 uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
+    // Custom MoP Script
+    // Searing Flames - 77657 : Fire Elemental attacks or Searing Totem attacks
+    if ((GetTypeId() == TYPEID_UNIT && GetEntry() == 15438 && !spellProto) || (isTotem() && GetEntry() == 2523))
+        GetOwner()->CastSpell(GetOwner(), 77661, true);
+    // Stagger Amount
     if (spellProto && spellProto->Id != LIGHT_STAGGER && spellProto->Id != MODERATE_STAGGER && spellProto->Id != HEAVY_STAGGER)
     {
         if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
