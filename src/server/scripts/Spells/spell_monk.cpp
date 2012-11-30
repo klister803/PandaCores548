@@ -27,33 +27,138 @@
 
 enum MonkSpells
 {
-    SPELL_MONK_LEGACY_OF_THE_EMPEROR    = 117667,
-    SPELL_MONK_FORTIFYING_BREW          = 120954,
-    SPELL_MONK_PROVOKE                  = 118635,
-    SPELL_MONK_BLACKOUT_KICK_DOT        = 128531,
-    SPELL_MONK_BLACKOUT_KICK_HEAL       = 128591,
-    SPELL_MONK_SHUFFLE                  = 115307,
-    SPELL_MONK_SERPENTS_ZEAL            = 127722,
-    SPELL_MONK_ZEN_PILGRIMAGE           = 126892,
-    SPELL_MONK_ZEN_PILGRIMAGE_RETURN    = 126895,
-    SPELL_MONK_DISABLE_ROOT             = 116706,
-    SPELL_MONK_DISABLE                  = 116095,
-    SPELL_MONK_SOOTHING_MIST_VISUAL     = 125955,
-    SPELL_MONK_SOOTHING_MIST_ENERGIZE   = 116335,
-    SPELL_MONK_BREATH_OF_FIRE_DOT       = 123725,
-    SPELL_MONK_BREATH_OF_FIRE_CONFUSED  = 123393,
-    SPELL_MONK_ELUSIVE_BREW_STACKS      = 128939,
-    SPELL_MONK_ELUSIVE_BREW             = 115308,
-    SPELL_MONK_KEG_SMASH_VISUAL         = 123662,
-    SPELL_MONK_KEG_SMASH_ENERGIZE       = 127796,
-    SPELL_MONK_WEAKENED_BLOWS           = 115798,
-    SPELL_MONK_DIZZYING_HAZE            = 116330,
-    SPELL_MONK_CLASH_CHARGE             = 126452,
-    SPELL_MONK_LIGHT_STAGGER            = 124275,
-    SPELL_MONK_MODERATE_STAGGER         = 124274,
-    SPELL_MONK_HEAVY_STAGGER            = 124273,
-    SPELL_MONK_ROLL                     = 109132,
-    SPELL_MONK_ROLL_TRIGGER             = 107427
+    SPELL_MONK_LEGACY_OF_THE_EMPEROR            = 117667,
+    SPELL_MONK_FORTIFYING_BREW                  = 120954,
+    SPELL_MONK_PROVOKE                          = 118635,
+    SPELL_MONK_BLACKOUT_KICK_DOT                = 128531,
+    SPELL_MONK_BLACKOUT_KICK_HEAL               = 128591,
+    SPELL_MONK_SHUFFLE                          = 115307,
+    SPELL_MONK_SERPENTS_ZEAL                    = 127722,
+    SPELL_MONK_ZEN_PILGRIMAGE                   = 126892,
+    SPELL_MONK_ZEN_PILGRIMAGE_RETURN            = 126895,
+    SPELL_MONK_DISABLE_ROOT                     = 116706,
+    SPELL_MONK_DISABLE                          = 116095,
+    SPELL_MONK_SOOTHING_MIST_VISUAL             = 125955,
+    SPELL_MONK_SOOTHING_MIST_ENERGIZE           = 116335,
+    SPELL_MONK_BREATH_OF_FIRE_DOT               = 123725,
+    SPELL_MONK_BREATH_OF_FIRE_CONFUSED          = 123393,
+    SPELL_MONK_ELUSIVE_BREW_STACKS              = 128939,
+    SPELL_MONK_ELUSIVE_BREW                     = 115308,
+    SPELL_MONK_KEG_SMASH_VISUAL                 = 123662,
+    SPELL_MONK_KEG_SMASH_ENERGIZE               = 127796,
+    SPELL_MONK_WEAKENED_BLOWS                   = 115798,
+    SPELL_MONK_DIZZYING_HAZE                    = 116330,
+    SPELL_MONK_CLASH_CHARGE                     = 126452,
+    SPELL_MONK_LIGHT_STAGGER                    = 124275,
+    SPELL_MONK_MODERATE_STAGGER                 = 124274,
+    SPELL_MONK_HEAVY_STAGGER                    = 124273,
+    SPELL_MONK_ROLL                             = 109132,
+    SPELL_MONK_ROLL_TRIGGER                     = 107427,
+    SPELL_MONK_CHI_TORPEDO_HEAL                 = 124040,
+    SPELL_MONK_CHI_TORPEDO_DAMAGE               = 117993,
+    SPELL_MONK_FLYING_SERPENT_KICK              = 101545,
+    SPELL_MONK_FLYING_SERPENT_KICK_NEW          = 115057,
+    SPELL_MONK_FLYING_SERPENT_KICK_AOE          = 123586,
+    SPELL_MONK_CRACKLING_JADE_LIGHTNING         = 117952
+};
+
+// Flying Serpent Kick - 115057
+class spell_monk_flying_serpent_kick : public SpellScriptLoader
+{
+    public:
+        spell_monk_flying_serpent_kick() : SpellScriptLoader("spell_monk_flying_serpent_kick") { }
+
+        class spell_monk_flying_serpent_kick_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_flying_serpent_kick_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_FLYING_SERPENT_KICK_NEW))
+                    return false;
+                return true;
+            }
+
+            void HandleOnCast()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        if (_player->HasAura(SPELL_MONK_FLYING_SERPENT_KICK))
+                            _player->RemoveAura(SPELL_MONK_FLYING_SERPENT_KICK);
+
+                        _player->CastSpell(_player, SPELL_MONK_FLYING_SERPENT_KICK_AOE, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_monk_flying_serpent_kick_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_flying_serpent_kick_SpellScript();
+        }
+};
+
+// Chi Torpedo - 115008 or Chi Torpedo (3 charges) - 121828
+class spell_monk_chi_torpedo : public SpellScriptLoader
+{
+    public:
+        spell_monk_chi_torpedo() : SpellScriptLoader("spell_monk_chi_torpedo") { }
+
+        class spell_monk_chi_torpedo_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_chi_torpedo_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        CellCoord p(Trinity::ComputeCellCoord(_player->GetPositionX(), _player->GetPositionY()));
+                        Cell cell(p);
+                        cell.SetNoCreate();
+
+                        std::list<Unit*> tempUnitMap;
+                        {
+                            Trinity::AnyUnitInObjectRangeCheck u_check(_player, 20.0f);
+                            Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(_player, tempUnitMap, u_check);
+
+                            TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+                            TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+
+                            cell.Visit(p, world_unit_searcher, *_player->GetMap(), *_player, 20.0f);
+                            cell.Visit(p, grid_unit_searcher, *_player->GetMap(), *_player, 20.0f);
+                        }
+
+                        for (auto itr : tempUnitMap)
+                        {
+                            if (!itr->isInFront(_player, M_PI / 3) && itr->GetGUID() != _player->GetGUID())
+                                continue;
+
+                            uint32 spell = _player->IsValidAttackTarget(itr) ? SPELL_MONK_CHI_TORPEDO_DAMAGE : SPELL_MONK_CHI_TORPEDO_HEAL;
+                            _player->CastSpell(itr, spell, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_monk_chi_torpedo_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_chi_torpedo_SpellScript();
+        }
 };
 
 // Purifying Brew - 119582
@@ -680,7 +785,7 @@ class spell_monk_legacy_of_the_emperor : public SpellScriptLoader
         }
 };
 
-// Roll - 109132
+// Roll - 109132 or Roll (3 charges) - 121827
 class spell_monk_roll : public SpellScriptLoader
 {
     public:
@@ -734,6 +839,8 @@ class spell_monk_roll : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_flying_serpent_kick();
+    new spell_monk_chi_torpedo();
     new spell_monk_purifying_brew();
     new spell_monk_clash();
     new spell_monk_keg_smash();

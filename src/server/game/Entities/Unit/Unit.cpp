@@ -7034,23 +7034,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggere
                 CastCustomSpell(victim, triggered_spell_id, &basepoints0, NULL, NULL, true, castItem, triggeredByAura);
                 return true;
             }
-            // Static Shock
-            if (dummySpell->SpellIconID == 3059)
-            {
-                // Lightning Shield
-                if (GetAuraEffect(SPELL_AURA_PROC_TRIGGER_SPELL, SPELLFAMILY_SHAMAN, 0x400, 0, 0))
-                {
-                    uint32 spell = 26364;
-
-                    // custom cooldown processing case
-                    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->HasSpellCooldown(spell))
-                        ToPlayer()->RemoveSpellCooldown(spell);
-
-                    CastSpell(target, spell, true, castItem, triggeredByAura);
-                    return true;
-                }
-                return false;
-            }
             break;
         }
         case SPELLFAMILY_DEATHKNIGHT:
@@ -10006,6 +9989,11 @@ int32 Unit::SpellBaseDamageBonusDone(SpellSchoolMask schoolMask)
         // Check if we are ever using mana - PaperDollFrame.lua
         if (GetPowerIndexByClass(POWER_MANA, getClass()) != MAX_POWERS)
             DoneAdvertisedBenefit += std::max(0, int32(GetStat(STAT_INTELLECT)) - 10); // spellpower from intellect
+
+        // Spell power from SPELL_AURA_MOD_SPELL_POWER_PCT
+        AuraEffectList const& mSpellPowerPct = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_POWER_PCT);
+        for (AuraEffectList::const_iterator i = mSpellPowerPct.begin(); i != mSpellPowerPct.end(); ++i)
+            AddPct(DoneAdvertisedBenefit, (*i)->GetAmount());
 
         // Damage bonus from stats
         AuraEffectList const& mDamageDoneOfStatPercent = GetAuraEffectsByType(SPELL_AURA_MOD_SPELL_DAMAGE_OF_STAT_PERCENT);
@@ -14273,7 +14261,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         } // if (!handled)
 
         // Remove charge (aura can be removed by triggers)
-        if (useCharges && takeCharges)
+        if (useCharges && takeCharges && i->aura->GetId() != 324) // Custom MoP Script - Hack Fix for Lightning Shield
             i->aura->DropCharge();
 
         if (spellInfo->AttributesEx3 & SPELL_ATTR3_DISABLE_PROC)
@@ -15949,7 +15937,7 @@ void Unit::RemoveCharmedBy(Unit* charmer)
                         if (GetCharmInfo())
                             GetCharmInfo()->SetPetNumber(0, true);
                         else
-                            sLog->outError(LOG_FILTER_UNITS, "Aura::HandleModCharm: target="UI64FMTD" with typeid=%d has a charm aura but no charm info!", GetGUID(), GetTypeId());
+                            sLog->outError(LOG_FILTER_UNITS, "Aura::HandleModCharm: target=" UI64FMTD " with typeid=%d has a charm aura but no charm info!", GetGUID(), GetTypeId());
                     }
                 }
                 break;
@@ -16799,6 +16787,8 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
                     return 30763;
                 case SUMMON_TYPE_TOTEM_AIR:     // air
                     return 30760;
+                case 3211: // Custom MoP Script - Hack Fix Searing Totem
+                    return 30762;
             }
             break;
         }
@@ -17395,8 +17385,8 @@ void Unit::StopAttackFaction(uint32 faction_id)
 void Unit::OutDebugInfo() const
 {
     sLog->outError(LOG_FILTER_UNITS, "Unit::OutDebugInfo");
-    sLog->outInfo(LOG_FILTER_UNITS, "GUID "UI64FMTD", entry %u, type %u, name %s", GetGUID(), GetEntry(), (uint32)GetTypeId(), GetName());
-    sLog->outInfo(LOG_FILTER_UNITS, "OwnerGUID "UI64FMTD", MinionGUID "UI64FMTD", CharmerGUID "UI64FMTD", CharmedGUID "UI64FMTD, GetOwnerGUID(), GetMinionGUID(), GetCharmerGUID(), GetCharmGUID());
+    sLog->outInfo(LOG_FILTER_UNITS, "GUID " UI64FMTD ", entry %u, type %u, name %s", GetGUID(), GetEntry(), (uint32)GetTypeId(), GetName());
+    sLog->outInfo(LOG_FILTER_UNITS, "OwnerGUID " UI64FMTD ", MinionGUID " UI64FMTD ", CharmerGUID " UI64FMTD ", CharmedGUID " UI64FMTD, GetOwnerGUID(), GetMinionGUID(), GetCharmerGUID(), GetCharmGUID());
     sLog->outInfo(LOG_FILTER_UNITS, "In world %u, unit type mask %u", (uint32)(IsInWorld() ? 1 : 0), m_unitTypeMask);
     if (IsInWorld())
         sLog->outInfo(LOG_FILTER_UNITS, "Mapid %u", GetMapId());

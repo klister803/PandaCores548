@@ -1569,7 +1569,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             m_caster->CastCustomSpell(unitTarget, 77489, &bp, NULL, NULL, true);
         }
         // 115072 - Expel Harm
-        if (m_caster && m_caster->getClass() == CLASS_MONK && addhealth)
+        if (m_caster && m_caster->getClass() == CLASS_MONK && addhealth && m_spellInfo->Id == 115072)
         {
             addhealth = Spell::CalculateMonkMeleeAttacks(m_caster, 7, 14);
 
@@ -5115,6 +5115,11 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
             return;
     }
 
+    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+        if (unitTarget->ToPlayer()->GetKnockBackTime())
+            return;
+
+
     // Instantly interrupt non melee spells being casted
     if (unitTarget->IsNonMeleeSpellCasted(true))
         unitTarget->InterruptNonMeleeSpells(true);
@@ -5139,6 +5144,9 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
     }
 
     unitTarget->KnockbackFrom(x, y, speedxy, speedz);
+
+    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+        unitTarget->ToPlayer()->SetKnockBackTime(getMSTime());
 }
 
 void Spell::EffectLeapBack(SpellEffIndex effIndex)

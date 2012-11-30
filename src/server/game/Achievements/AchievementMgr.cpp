@@ -1996,7 +1996,7 @@ void AchievementMgr<T>::SetCriteriaProgress(AchievementCriteriaEntry const* entr
     if (entry->timeLimit && timedIter == m_timedAchievements.end())
         return;
 
-    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::SetCriteriaProgress(%u, %u) for (%s GUID: "UI64FMTD")", entry->ID, changeValue, GetLogNameForGuid(GetOwner()->GetGUID()), GetOwner()->GetGUID());
+    sLog->outDebug(LOG_FILTER_ACHIEVEMENTSYS, "AchievementMgr::SetCriteriaProgress(%u, %u) for (%s GUID: " UI64FMTD ")", entry->ID, changeValue, GetLogNameForGuid(GetOwner()->GetGUID()), GetOwner()->GetGUID());
 
     CriteriaProgress* progress = GetCriteriaProgress(entry);
     if (!progress)

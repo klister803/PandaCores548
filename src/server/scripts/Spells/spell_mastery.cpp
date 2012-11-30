@@ -30,6 +30,7 @@ enum MasterySpells
     MASTERY_SPELL_LIGHTNING_BOLT        = 45284,
     MASTERY_SPELL_CHAIN_LIGHTNING       = 45297,
     MASTERY_SPELL_LAVA_BURST            = 77451,
+    MASTERY_SPELL_ELEMENTAL_BLAST       = 120588,
     MASTERY_SPELL_HAND_OF_LIGHT         = 96172,
     MASTERY_SPELL_IGNITE                = 12654,
     MASTERY_SPELL_BLOOD_SHIELD          = 77535,
@@ -256,7 +257,7 @@ class spell_mastery_hand_of_light : public SpellScriptLoader
         }
 };
 
-// Called by 403 - Lightning Bolt, 421 - Chain Lightning and 51505 - Lava Burst
+// Called by 403 - Lightning Bolt, 421 - Chain Lightning, 51505 - Lava Burst and 117014 - Elemental Blast
 // 77222 - Mastery : Elemental Overload
 class spell_mastery_elemental_overload : public SpellScriptLoader
 {
@@ -269,7 +270,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
 
             bool Validate(SpellInfo const* /*spellEntry*/)
             {
-                if (!sSpellMgr->GetSpellInfo(403) || !sSpellMgr->GetSpellInfo(421) || !sSpellMgr->GetSpellInfo(51505))
+                if (!sSpellMgr->GetSpellInfo(403) || !sSpellMgr->GetSpellInfo(421) || !sSpellMgr->GetSpellInfo(51505) || !sSpellMgr->GetSpellInfo(117014))
                     return false;
                 return true;
             }
@@ -289,33 +290,43 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
                                 // Every Lightning Bolt, Chain Lightning and Lava Burst spells have duplicate vs 75% damage and no cost
                                 switch (procSpell->Id)
                                 {
+                                    // Lava Burst
                                     case 51505:
                                     {
                                         float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
-                                        int32 bp = int32(GetHitDamage() * 0.75f);
 
                                         if (roll_chance_f(Mastery))
-                                            caster->CastCustomSpell(unitTarget, MASTERY_SPELL_LAVA_BURST, &bp, NULL, NULL, true);
+                                            caster->CastSpell(unitTarget, MASTERY_SPELL_LAVA_BURST, true);
 
                                         break;
                                     }
+                                    // Lightning Bolt
                                     case 403:
                                     {
                                         float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
-                                        int32 bp = int32(GetHitDamage() * 0.75f);
 
                                         if (roll_chance_f(Mastery))
-                                            caster->CastCustomSpell(unitTarget, MASTERY_SPELL_LIGHTNING_BOLT, &bp, NULL, NULL, true);
+                                            caster->CastSpell(unitTarget, MASTERY_SPELL_LIGHTNING_BOLT, true);
 
                                         break;
                                     }
+                                    // Chain Lightning
                                     case 421:
                                     {
                                         float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
-                                        int32 bp = int32(GetHitDamage() * 0.75f);
 
                                         if (roll_chance_f(Mastery))
-                                            caster->CastCustomSpell(unitTarget, MASTERY_SPELL_CHAIN_LIGHTNING, &bp, NULL, NULL, true);
+                                            caster->CastSpell(unitTarget, MASTERY_SPELL_CHAIN_LIGHTNING, true);
+
+                                        break;
+                                    }
+                                    // Elemental Blast
+                                    case 117014:
+                                    {
+                                        float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
+
+                                        if (roll_chance_f(Mastery))
+                                            caster->CastSpell(unitTarget, MASTERY_SPELL_ELEMENTAL_BLAST, true);
 
                                         break;
                                     }

@@ -2145,9 +2145,6 @@ class npc_shadowfiend : public CreatureScript
 /*######
 # npc_fire_elemental
 ######*/
-#define SPELL_FIRENOVA        12470
-#define SPELL_FIRESHIELD      13376
-#define SPELL_FIREBLAST       57984
 
 class npc_fire_elemental : public CreatureScript
 {
@@ -2158,16 +2155,12 @@ public:
     {
         npc_fire_elementalAI(Creature* creature) : ScriptedAI(creature) {}
 
-        uint32 FireNova_Timer;
-        uint32 FireShield_Timer;
-        uint32 FireBlast_Timer;
+        uint32 FireBlastTimer;
 
         void Reset()
         {
-            FireNova_Timer = 5000 + rand() % 15000; // 5-20 sec cd
-            FireBlast_Timer = 5000 + rand() % 15000; // 5-20 sec cd
-            FireShield_Timer = 0;
             me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
+            FireBlastTimer = 6000;
         }
 
         void UpdateAI(const uint32 diff)
@@ -2178,29 +2171,13 @@ public:
             if (me->HasUnitState(UNIT_STATE_CASTING))
                 return;
 
-            if (FireShield_Timer <= diff)
+            if (FireBlastTimer <= diff)
             {
-                DoCast(me->getVictim(), SPELL_FIRESHIELD);
-                FireShield_Timer = 2 * IN_MILLISECONDS;
+                me->CastSpell(me->getVictim(), 57984, true);
+                FireBlastTimer = 6000;
             }
             else
-                FireShield_Timer -= diff;
-
-            if (FireBlast_Timer <= diff)
-            {
-                DoCast(me->getVictim(), SPELL_FIREBLAST);
-                FireBlast_Timer = 5000 + rand() % 15000; // 5-20 sec cd
-            }
-            else
-                FireBlast_Timer -= diff;
-
-            if (FireNova_Timer <= diff)
-            {
-                DoCast(me->getVictim(), SPELL_FIRENOVA);
-                FireNova_Timer = 5000 + rand() % 15000; // 5-20 sec cd
-            }
-            else
-                FireNova_Timer -= diff;
+                FireBlastTimer -= diff;
 
             DoMeleeAttackIfReady();
         }
@@ -3143,6 +3120,45 @@ public:
     }
 };
 
+/*######
+## npc_capacitor_totem
+######*/
+
+class npc_capacitor_totem : public CreatureScript
+{
+    public:
+        npc_capacitor_totem() : CreatureScript("npc_capacitor_totem") { }
+
+    struct npc_capacitor_totemAI : public ScriptedAI
+    {
+        uint32 CastTimer;
+
+        npc_capacitor_totemAI(Creature* creature) : ScriptedAI(creature)
+        {
+            CastTimer = 1000;
+
+            if (creature->GetOwner() && creature->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                if (creature->GetEntry() == 61245)
+                    creature->CastSpell(creature, 118905, false);
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            if (CastTimer >= diff)
+                if (me->GetOwner() && me->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                    if (me->GetEntry() == 61245)
+                        me->CastSpell(me, 118905, false);
+
+            CastTimer = 0;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_capacitor_totemAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3179,4 +3195,5 @@ void AddSC_npcs_special()
     new npc_choose_faction();
     new npc_rate_xp_modifier();
     new npc_event_demorph();
+    new npc_capacitor_totem();
 }

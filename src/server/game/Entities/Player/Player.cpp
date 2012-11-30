@@ -860,6 +860,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_PersonnalXpRate = 0;
 
+    m_knockBackTimer = 0;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 }
 
@@ -1801,6 +1803,12 @@ void Player::Update(uint32 p_time)
         }
         else
             m_deathTimer -= p_time;
+    }
+
+    if (m_knockBackTimer)
+    {
+        if( m_knockBackTimer + 2000 < getMSTime())
+            m_knockBackTimer = 0;
     }
 
     UpdateEnchantTime(p_time);
@@ -3444,6 +3452,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
         SetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, 0);
         SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT+i, 1.00f);
     }
+    SetFloatValue(PLAYER_FIELD_MOD_SPELL_POWER_PCT, 1.0f);
 
     //reset attack power, damage and attack speed fields
     SetFloatValue(UNIT_FIELD_BASEATTACKTIME, 2000.0f);
@@ -16083,7 +16092,7 @@ bool Player::SatisfyQuestPrevChain(Quest const* qInfo, bool msg)
 
 bool Player::SatisfyQuestDay(Quest const* qInfo, bool msg)
 {
-    /*if (!qInfo->IsDaily() && !qInfo->IsDFQuest())
+    if (!qInfo->IsDaily() && !qInfo->IsDFQuest())
         return true;
 
     if (qInfo->IsDFQuest())
@@ -16097,7 +16106,7 @@ bool Player::SatisfyQuestDay(Quest const* qInfo, bool msg)
     bool have_slot = false;
     for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
     {
-        uint32 id = GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx);
+        uint32 id = GetDynamicUInt32Value(PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED, quest_daily_idx);
         if (qInfo->GetQuestId() == id)
             return false;
 
@@ -16110,7 +16119,7 @@ bool Player::SatisfyQuestDay(Quest const* qInfo, bool msg)
         if (msg)
             SendCanTakeQuestResponse(INVALIDREASON_DAILY_QUESTS_REMAINING);
         return false;
-    }*/
+    }
 
     return true;
 }
@@ -16869,6 +16878,9 @@ void Player::SendQuestReward(Quest const* quest, uint32 XP, Object* questGiver)
     }
 
     WorldPacket data(SMSG_QUESTGIVER_QUEST_COMPLETE, (4 + 4 + 4 + 4 + 4));
+    
+    data.WriteBit(0);                                      // FIXME: unknown bits, common values sent
+    data.WriteBit(1);
 
     data << uint32(quest->GetBonusTalents());              // bonus talents (not verified for 4.x)
     data << uint32(quest->GetRewardSkillPoints());         // 4.x bonus skill points
@@ -16876,9 +16888,6 @@ void Player::SendQuestReward(Quest const* quest, uint32 XP, Object* questGiver)
     data << uint32(xp);
     data << uint32(questId);
     data << uint32(quest->GetRewardSkillId());             // 4.x bonus skill id
-
-    data.WriteBit(0);                                      // FIXME: unknown bits, common values sent
-    data.WriteBit(1);
     data.FlushBits();
 
     GetSession()->SendPacket(&data);
@@ -16960,13 +16969,16 @@ void Player::SendQuestUpdateAddCreatureOrGo(Quest const* quest, uint64 guid, uin
         // client expected gameobject template id in form (id|0x80000000)
         entry = (-entry) | 0x80000000;
 
+    uint8 unk1 = 0;
+
     WorldPacket data(SMSG_QUESTUPDATE_ADD_KILL, (4*4+8));
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_QUESTUPDATE_ADD_KILL");
     data << uint32(quest->GetQuestId());
     data << uint32(entry);
-    data << uint32(old_count + add_count);
+    data << uint16(old_count + add_count);
     data << uint32(quest->RequiredNpcOrGoCount[ creatureOrGO_idx ]);
     data << uint64(guid);
+    data << uint8(unk1);
     GetSession()->SendPacket(&data);
 
     uint16 log_slot = FindQuestSlot(quest->GetQuestId());
@@ -18618,8 +18630,8 @@ void Player::_LoadQuestStatusRewarded(PreparedQueryResult result)
 
 void Player::_LoadDailyQuestStatus(PreparedQueryResult result)
 {
-    /*for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
-        SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx, 0);
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+        SetDynamicUInt32Value(PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED, quest_daily_idx, 0);
 
     m_DFQuests.clear();
 
@@ -18657,7 +18669,7 @@ void Player::_LoadDailyQuestStatus(PreparedQueryResult result)
             if (!quest)
                 continue;
 
-            SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx, quest_id);
+             SetDynamicUInt32Value(PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED, quest_daily_idx, quest_id);
             ++quest_daily_idx;
 
             sLog->outDebug(LOG_FILTER_PLAYER_LOADING, "Daily quest (%u) cooldown for player (GUID: %u)", quest_id, GetGUIDLow());
@@ -18665,7 +18677,7 @@ void Player::_LoadDailyQuestStatus(PreparedQueryResult result)
         while (result->NextRow());
     }
 
-    m_DailyQuestChanged = false;*/
+    m_DailyQuestChanged = false;
 }
 
 void Player::_LoadWeeklyQuestStatus(PreparedQueryResult result)
@@ -19942,7 +19954,7 @@ void Player::_SaveQuestStatus(SQLTransaction& trans)
 
 void Player::_SaveDailyQuestStatus(SQLTransaction& trans)
 {
-    /*if (!m_DailyQuestChanged)
+    if (!m_DailyQuestChanged)
         return;
 
     m_DailyQuestChanged = false;
@@ -19954,12 +19966,12 @@ void Player::_SaveDailyQuestStatus(SQLTransaction& trans)
     stmt->setUInt32(0, GetGUIDLow());
     trans->Append(stmt);
     for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
-    {
-        if (GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
+    { 
+        if (GetDynamicUInt32Value(PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED, quest_daily_idx))
         {
             stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHARACTER_DAILYQUESTSTATUS);
             stmt->setUInt32(0, GetGUIDLow());
-            stmt->setUInt32(1, GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx));
+            stmt->setUInt32(1, GetDynamicUInt32Value(PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED, quest_daily_idx));
             stmt->setUInt64(2, uint64(m_lastDailyQuestTime));
             trans->Append(stmt);
         }
@@ -19975,7 +19987,7 @@ void Player::_SaveDailyQuestStatus(SQLTransaction& trans)
             stmt->setUInt64(2, uint64(m_lastDailyQuestTime));
             trans->Append(stmt);
         }
-    }*/
+    }
 }
 
 void Player::_SaveWeeklyQuestStatus(SQLTransaction& trans)
@@ -20793,7 +20805,7 @@ void Player::PossessSpellInitialize()
 
     if (!charmInfo)
     {
-        sLog->outError(LOG_FILTER_PLAYER, "Player::PossessSpellInitialize(): charm ("UI64FMTD") has no charminfo!", charm->GetGUID());
+        sLog->outError(LOG_FILTER_PLAYER, "Player::PossessSpellInitialize(): charm (" UI64FMTD ") has no charminfo!", charm->GetGUID());
         return;
     }
 
@@ -20909,7 +20921,7 @@ void Player::CharmSpellInitialize()
     CharmInfo* charmInfo = charm->GetCharmInfo();
     if (!charmInfo)
     {
-        sLog->outError(LOG_FILTER_PLAYER, "Player::CharmSpellInitialize(): the player's charm ("UI64FMTD") has no charminfo!", charm->GetGUID());
+        sLog->outError(LOG_FILTER_PLAYER, "Player::CharmSpellInitialize(): the player's charm (" UI64FMTD ") has no charminfo!", charm->GetGUID());
         return;
     }
 
@@ -23316,15 +23328,15 @@ void Player::SendAurasForTarget(Unit* target)
 
 void Player::SetDailyQuestStatus(uint32 quest_id)
 {
-   /* if (Quest const* qQuest = sObjectMgr->GetQuestTemplate(quest_id))
+    if (Quest const* qQuest = sObjectMgr->GetQuestTemplate(quest_id))
     {
         if (!qQuest->IsDFQuest())
         {
             for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
             {
-                if (!GetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx))
+                if (!GetDynamicUInt32Value(PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED, quest_daily_idx))
                 {
-                    SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx, quest_id);
+                    SetDynamicUInt32Value(PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED, quest_daily_idx, quest_id);
                     m_lastDailyQuestTime = time(NULL);              // last daily quest time
                     m_DailyQuestChanged = true;
                     break;
@@ -23336,7 +23348,7 @@ void Player::SetDailyQuestStatus(uint32 quest_id)
             m_lastDailyQuestTime = time(NULL);
             m_DailyQuestChanged = true;
         }
-    }*/
+    }
 }
 
 void Player::SetWeeklyQuestStatus(uint32 quest_id)
@@ -23357,8 +23369,8 @@ void Player::SetSeasonalQuestStatus(uint32 quest_id)
 
 void Player::ResetDailyQuestStatus()
 {
-/*    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
-        SetUInt32Value(PLAYER_FIELD_DAILY_QUESTS_1+quest_daily_idx, 0);*/
+    for (uint32 quest_daily_idx = 0; quest_daily_idx < PLAYER_MAX_DAILY_QUESTS; ++quest_daily_idx)
+        SetDynamicUInt32Value(PLAYER_DYNAMIC_DAILY_QUESTS_COMPLETED, quest_daily_idx, 0);
 
     m_DFQuests.clear(); // Dungeon Finder Quests.
 
@@ -23766,8 +23778,8 @@ uint32 Player::GetResurrectionSpellId()
         }
     }
 
-    // Reincarnation (passive spell)  // prio: 1                  // Glyph of Renewed Life
-    if (prio < 1 && HasSpell(20608) && !HasSpellCooldown(21169) && (HasAura(58059) || HasItemCount(17030)))
+    // Reincarnation (passive spell)  // prio: 1
+    if (prio < 1 && HasSpell(20608) && !HasSpellCooldown(21169))
         spell_id = 21169;
 
     return spell_id;
@@ -25302,7 +25314,7 @@ void Player::SetEquipmentSet(uint32 index, EquipmentSet eqset)
 
         if (!found)                                          // something wrong...
         {
-            sLog->outError(LOG_FILTER_PLAYER, "Player %s tried to save equipment set "UI64FMTD" (index %u), but that equipment set not found!", GetName(), eqset.Guid, index);
+            sLog->outError(LOG_FILTER_PLAYER, "Player %s tried to save equipment set " UI64FMTD " (index %u), but that equipment set not found!", GetName(), eqset.Guid, index);
             return;
         }
     }

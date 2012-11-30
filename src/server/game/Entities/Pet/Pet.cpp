@@ -790,6 +790,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     {
         if ((m_owner->getClass() == CLASS_WARLOCK)
             || (m_owner->getClass() == CLASS_SHAMAN)        // Fire Elemental
+            || (m_owner->getClass() == CLASS_PRIEST)
             || (m_owner->getClass() == CLASS_DEATH_KNIGHT)) // Risen Ghoul
             petType = SUMMON_PET;
         else if (m_owner->getClass() == CLASS_HUNTER)
@@ -908,24 +909,20 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 2.5f + (petlevel / 2) + bonusDmg));
                     break;
                 }
-                case 15352: //earth elemental 36213
+                case 15352: // Earth Elemental Totem - 2062
                 {
-                    if (!pInfo)
-                        SetCreateHealth(100 + 120*petlevel);
-                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
-                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+                    SetCreateHealth(m_owner->GetMaxHealth());
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 40));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 40));
                     break;
                 }
-                case 15438: //fire elemental
+                case 15438: // Fire Elemental Totem - 2894
                 {
-                    if (!pInfo)
-                    {
-                        SetCreateHealth(40*petlevel);
-                        SetCreateMana(28 + 10*petlevel);
-                    }
-                    SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FIRE) * 0.5f));
-                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 4 - petlevel));
-                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 4 + petlevel));
+                    SetCreateHealth(uint32(m_owner->GetMaxHealth() * 0.75f));
+                    SetCreateMana(28 + 100 * petlevel);
+                    SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SPELL) * 0.4f));
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 80));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 80));
                     break;
                 }
                 case 19668: // Shadowfiend
