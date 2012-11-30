@@ -12,6 +12,8 @@ set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
   Pandaria/MogushanPalace/instance_mogu_shan_palace.cpp
   Pandaria/MogushanPalace/boss_trial_of_the_king.cpp
+  Pandaria/MogushanPalace/boss_gekkan.cpp
+  Pandaria/MogushanPalace/boss_xin_the_weaponmaster.cpp
 
   Pandaria/TempleJadeSerpent/instance_temple_of_jade_serpent.cpp
   Pandaria/TempleJadeSerpent/boss_wise_mari.cpp

@@ -3286,6 +3286,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
                 break;
+            case 119922: //Shockwave
+            case 119929:
+            case 119930:
+            case 119931:
+            case 119932:
+            case 119933:
+                spellInfo->Speed = 5.f;
+                break;
             case 106112:
                 {
                     const SpellRadiusEntry* radius = sSpellRadiusStore.LookupEntry(22);
@@ -3298,7 +3306,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
                 // Wise Mari Hydrolance damage
             case 106267:
-                spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
                 break;
             default:
                 break;

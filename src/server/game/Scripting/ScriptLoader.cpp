@@ -605,6 +605,8 @@ void AddSC_boss_sha_of_doubt();
 //Mogu'Shan Palace
 void AddSC_instance_mogu_shan_palace();
 void AddSC_boss_trial_of_the_king();
+void AddSC_boss_gekkan();
+void AddSC_boss_xin_the_weaponmaster();
 
 // battlegrounds
 
@@ -1253,6 +1255,8 @@ void AddPandarieScripts()
 
     AddSC_instance_mogu_shan_palace();
     AddSC_boss_trial_of_the_king();
+    AddSC_boss_gekkan();
+    AddSC_boss_xin_the_weaponmaster();
 #endif
 }
 

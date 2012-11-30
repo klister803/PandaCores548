@@ -808,7 +808,7 @@ public:
                         c->CastSpell(unit, SPELL_DRAW_SHA_3, false);
                         c->SetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT, scroll);
                         c->SetUInt32Value(UNIT_CHANNEL_SPELL, 42808);
-                        c->ForcedDespawn(1500);
+                        c->ForcedDespawn(2000);
                     }
 
                     TempSummon* sum = nullptr;
