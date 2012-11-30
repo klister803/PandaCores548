@@ -31,8 +31,6 @@ enum ShamanSpells
 {
     SHAMAN_SPELL_GLYPH_OF_MANA_TIDE         = 55441,
     SHAMAN_SPELL_MANA_TIDE_TOTEM            = 39609,
-    SHAMAN_SPELL_FIRE_NOVA_R1               = 1535,
-    SHAMAN_SPELL_FIRE_NOVA_TRIGGERED_R1     = 8349,
     SHAMAN_SPELL_SATED                      = 57724,
     SHAMAN_SPELL_EXHAUSTION                 = 57723,
     HUNTER_SPELL_INSANITY                   = 95809,
@@ -69,7 +67,46 @@ enum ShamanSpells
     SPELL_SHA_FULMINATION_INFO              = 95774,
     SPELL_SHA_ROLLING_THUNDER_ENERGIZE      = 88765,
     SPELL_SHA_UNLEASH_ELEMENTS              = 73680,
-    SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE    = 77661
+    SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE    = 77661,
+    SPELL_SHA_FIRE_NOVA                     = 1535,
+    SPELL_SHA_FIRE_NOVA_TRIGGERED           = 131786
+};
+
+// Fire Nova - 1535
+class spell_sha_fire_nova : public SpellScriptLoader
+{
+    public:
+        spell_sha_fire_nova() : SpellScriptLoader("spell_sha_fire_nova") { }
+
+        class spell_sha_fire_nova_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_fire_nova_SpellScript);
+
+            bool Validate(SpellInfo const* spellEntry)
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_FIRE_NOVA))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (target->HasAura(SPELL_SHA_FLAME_SHOCK))
+                            _player->CastSpell(target, SPELL_SHA_FIRE_NOVA_TRIGGERED, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_fire_nova_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_fire_nova_SpellScript();
+        }
 };
 
 // Unleash Elements - 73680
@@ -581,7 +618,10 @@ class spell_sha_ascendance : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_NONE)
+                    {
+                        SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_MUST_SELECT_TALENT_SPECIAL);
                         return SPELL_FAILED_CUSTOM_ERROR;
+                    }
 
                     return SPELL_CAST_OK;
                 }
@@ -1161,6 +1201,7 @@ class spell_sha_sentry_totem : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_fire_nova();
     new spell_sha_unleash_elements();
     new spell_sha_rolling_thunder();
     new spell_sha_fulmination();
