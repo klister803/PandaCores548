@@ -33,6 +33,8 @@ update creature_template set ScriptName = 'mob_trigger_liu_flameheart' where ent
 
 update gameobject_template set flags=4 where entry = 213548;
 update gameobject_template set flags=4 where entry = 213549;
+update gameobject_template set flags=4 where entry = 213544;
+update gameobject_template set flags=4 where entry = 213550;
 
 insert into creature_text values ('56732', '0', '0', 'The heart of the Great Serpent will not fall into your hands!', '12', '0', '100', '0', '0', '27603', 'LIU FLAME AGRO 01');
 insert into creature_text values ('56732', '1', '0', 'The haze has been lifted from my eyes... forgive me for doubting you...', '12', '0', '100', '0', '0', '27604', 'LIU FLAME DEATH 01');
