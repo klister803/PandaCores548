@@ -69,7 +69,45 @@ enum ShamanSpells
     SPELL_SHA_UNLEASH_ELEMENTS              = 73680,
     SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE    = 77661,
     SPELL_SHA_FIRE_NOVA                     = 1535,
-    SPELL_SHA_FIRE_NOVA_TRIGGERED           = 131786
+    SPELL_SHA_FIRE_NOVA_TRIGGERED           = 131786,
+    SPELL_SHA_TIDAL_WAVES                   = 53390
+};
+
+// Called by Chain Heal - 1064 or Riptide - 61295
+// Tidal Waves - 51564
+class spell_sha_tidal_waves : public SpellScriptLoader
+{
+public:
+    spell_sha_tidal_waves() : SpellScriptLoader("spell_sha_tidal_waves") { }
+
+    class spell_sha_tidal_waves_SpellScript : public SpellScript
+    {
+        PrepareSpellScript(spell_sha_tidal_waves_SpellScript)
+
+        bool Validate(SpellEntry const * /*spellEntry*/)
+        {
+            if (!sSpellMgr->GetSpellInfo(1064) || !sSpellMgr->GetSpellInfo(61295))
+                return false;
+            return true;
+        }
+
+        void HandleOnHit()
+        {
+            if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* target = GetHitUnit())
+                    _player->CastSpell(_player, SPELL_SHA_TIDAL_WAVES, true);
+        }
+
+        void Register()
+        {
+            OnHit += SpellHitFn(spell_sha_tidal_waves_SpellScript::HandleOnHit);
+        }
+    };
+
+    SpellScript *GetSpellScript() const
+    {
+        return new spell_sha_tidal_waves_SpellScript();
+    }
 };
 
 // Fire Nova - 1535
@@ -1201,6 +1239,7 @@ class spell_sha_sentry_totem : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_tidal_waves();
     new spell_sha_fire_nova();
     new spell_sha_unleash_elements();
     new spell_sha_rolling_thunder();
