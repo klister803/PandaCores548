@@ -1338,7 +1338,7 @@ void Pet::_SaveAuras(SQLTransaction& trans)
         uint64 casterGUID = (itr->second->GetCasterGUID() == GetGUID()) ? 0 : itr->second->GetCasterGUID();
 
        
-
+        index = 0;
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_PET_AURA);
         stmt->setUInt32(index++, m_charmInfo->GetPetNumber());
         stmt->setUInt8(index++, foundAura->GetSlot());
