@@ -3282,7 +3282,7 @@ class spell_gen_vengeance : public SpellScriptLoader
 };
 */
 
-// TP to Stormwind (17334) or Orgrimmar (17069)
+// TP to Stormwind (17334) or Orgrimmar (17609)
 class spell_gen_tp_storm_orgri : public SpellScriptLoader
 {
     public:
@@ -3294,7 +3294,7 @@ class spell_gen_tp_storm_orgri : public SpellScriptLoader
 
             bool Validate()
             {
-                if (!sSpellMgr->GetSpellInfo(17334) || !sSpellMgr->GetSpellInfo(17069))
+                if (!sSpellMgr->GetSpellInfo(17334) || !sSpellMgr->GetSpellInfo(17609))
                     return false;
                 return true;
             }
@@ -3307,7 +3307,7 @@ class spell_gen_tp_storm_orgri : public SpellScriptLoader
                     if (GetSpellInfo()->Id == 17334)
                         _player->TeleportTo(0, -8833.07, 622.778f, 93.9317f, _player->GetOrientation());
                     // Tp to Orgrimmar
-                    else if (GetSpellInfo()->Id == 17069)
+                    else if (GetSpellInfo()->Id == 17609)
                         _player->TeleportTo(1, 1569.97f, -4397.41f, 16.0472, _player->GetOrientation());
                 }
             }
