@@ -9148,6 +9148,14 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
         unit = GetOwner();
 
     // Custom MoP Script
+    // Purification (passive) - 16213 : Increase maximum health by 10% of the amount healed up to a maximum of 10% of health
+    if (unit && unit->GetTypeId() == TYPEID_PLAYER && addhealth != 0 && unit->HasAura(16213))
+    {
+        int32 bp = 0;
+        bp = int32(addhealth / 10);
+        // Ancestral Vigor - 105284
+        unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
+    }
     // 76669 - Mastery : Illuminated Healing
     if (unit && victim && addhealth != 0)
     {
