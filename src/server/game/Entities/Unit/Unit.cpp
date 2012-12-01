@@ -10826,7 +10826,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         Unit* owner = GetOwner();
         if (owner && owner->GetTypeId() == TYPEID_PLAYER && owner->HasAura(76657))
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
             DoneTotalMod += Mastery;
         }
     }
