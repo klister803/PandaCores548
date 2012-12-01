@@ -284,7 +284,7 @@ class spell_pal_holy_shock_damage : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_pal_holy_shock_SpellScript::HandleOnHit);
+                OnHit += SpellHitFn(spell_pal_holy_shock_damage_SpellScript::HandleOnHit);
             }
         };
 
