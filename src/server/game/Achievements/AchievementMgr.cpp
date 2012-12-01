@@ -742,16 +742,20 @@ void AchievementMgr<Player>::SaveToDB(SQLTransaction& trans)
 
         if (need_execute_del || need_execute_ins)
         {
-            if (alreadyOneAccInsLine || alreadyOneCharInsLine)
+            if (need_execute_del)
             {
-                if (need_execute_del)
+                if (alreadyOneAccDelLine || alreadyOneCharDelLine)
                 {
                     if (need_execute_account)
                         trans->Append(ssAccdel.str().c_str());
 
                     trans->Append(ssChardel.str().c_str());
                 }
-                if (need_execute_ins)
+            }
+
+            if (need_execute_ins)
+            {
+                if (alreadyOneAccInsLine || alreadyOneCharInsLine)
                 {
                     if (need_execute_account)
                         trans->Append(ssAccins.str().c_str());
