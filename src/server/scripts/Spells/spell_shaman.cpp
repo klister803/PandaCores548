@@ -94,8 +94,9 @@ public:
         void HandleOnHit()
         {
             if (Player* _player = GetCaster()->ToPlayer())
-                if (Unit* target = GetHitUnit())
-                    _player->CastSpell(_player, SPELL_SHA_TIDAL_WAVES, true);
+                if (_player->HasAura(51564))
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(_player, SPELL_SHA_TIDAL_WAVES, true);
         }
 
         void Register()
