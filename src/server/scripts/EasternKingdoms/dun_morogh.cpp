@@ -340,7 +340,7 @@ public:
 class npc_gnomeregan_recrue : public CreatureScript
 {
 public:
-    npc_gnomeregan_recrue() : CreatureScript("npc_canon_propre") { }
+    npc_gnomeregan_recrue() : CreatureScript("npc_gnomeregan_recrue") { }
 
     CreatureAI* GetAI(Creature* creature) const
     {
