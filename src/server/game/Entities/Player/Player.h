@@ -2183,8 +2183,6 @@ class Player : public Unit, public GridObject<Player>
         void RewardReputation(Unit* victim, float rate);
         void RewardReputation(Quest const* quest);
 
-        void UpdateSkillsForLevel();
-        void UpdateSkillsToMaxSkillsForLevel();             // for .levelup
         void ModifySkillBonus(uint32 skillid, int32 val, bool talent);
 
         /*********************************************************/

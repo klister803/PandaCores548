@@ -3249,8 +3249,6 @@ void Player::GiveLevel(uint8 level)
 
     SetLevel(level);
 
-    UpdateSkillsForLevel();
-
     // save base values (bonuses already included in stored stats
     for (uint8 i = STAT_STRENGTH; i < MAX_STATS; ++i)
         SetCreateStat(Stats(i), info.stats[i]);
@@ -3264,9 +3262,6 @@ void Player::GiveLevel(uint8 level)
     InitGlyphsForLevel();
 
     UpdateAllStats();
-
-    if (sWorld->getBoolConfig(CONFIG_ALWAYS_MAXSKILL)) // Max weapon skill when leveling up
-        UpdateSkillsToMaxSkillsForLevel();
 
     // set current level health and mana/energy to maximum after applying all mods.
     SetFullHealth();
@@ -3412,8 +3407,6 @@ void Player::InitStatsForLevel(bool reapplyMods)
 
     // reset before any aura state sources (health set/aura apply)
     SetUInt32Value(UNIT_FIELD_AURASTATE, 0);
-
-    UpdateSkillsForLevel();
 
     // set default cast time multiplier
     SetFloatValue(UNIT_MOD_CAST_SPEED, 1.0f);
@@ -6487,66 +6480,6 @@ void Player::ModifySkillBonus(uint32 skillid, int32 val, bool talent)
     uint16 bonus = GetUInt16Value(field, offset);
 
     SetUInt16Value(field, offset, bonus + val);
-}
-
-void Player::UpdateSkillsForLevel()
-{
-    uint32 maxSkill = GetMaxSkillValueForLevel();
-
-    for (SkillStatusMap::iterator itr = mSkillStatus.begin(); itr != mSkillStatus.end(); ++itr)
-    {
-        if (itr->second.uState == SKILL_DELETED)
-            continue;
-
-        uint32 pskill = itr->first;
-        SkillLineEntry const* pSkill = sSkillLineStore.LookupEntry(pskill);
-        if (!pSkill)
-            continue;
-
-        if (GetSkillRangeType(pSkill, false) != SKILL_RANGE_LEVEL)
-            continue;
-
-        uint16 field = itr->second.pos / 2;
-        uint8 offset = itr->second.pos & 1; // itr->second.pos % 2
-
-        uint16 val = GetUInt16Value(PLAYER_SKILL_RANK_0 + field, offset);
-        uint16 max = GetUInt16Value(PLAYER_SKILL_MAX_RANK_0 + field, offset);
-
-        /// update only level dependent max skill values
-        if (max != 1)
-        {
-            SetUInt16Value(PLAYER_SKILL_RANK_0 + field, offset, maxSkill);
-            SetUInt16Value(PLAYER_SKILL_MAX_RANK_0 + field, offset, maxSkill);
-            if (itr->second.uState != SKILL_NEW)
-                itr->second.uState = SKILL_CHANGED;
-        }
-    }
-}
-
-void Player::UpdateSkillsToMaxSkillsForLevel()
-{
-    for (SkillStatusMap::iterator itr = mSkillStatus.begin(); itr != mSkillStatus.end(); ++itr)
-    {
-        if (itr->second.uState == SKILL_DELETED)
-            continue;
-
-        uint32 pskill = itr->first;
-        if (IsProfessionOrRidingSkill(pskill))
-            continue;
-
-        uint16 field = itr->second.pos / 2;
-        uint8 offset = itr->second.pos & 1; // itr->second.pos % 2
-
-        uint16 max = GetUInt16Value(PLAYER_SKILL_MAX_RANK_0 + field, offset);
-
-        if (max > 1)
-        {
-            SetUInt16Value(PLAYER_SKILL_RANK_0 + field, offset, max);
-
-            if (itr->second.uState != SKILL_NEW)
-                itr->second.uState = SKILL_CHANGED;
-        }
-    }
 }
 
 // This functions sets a skill line value (and adds if doesn't exist yet)
@@ -17666,7 +17599,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // load skills after InitStatsForLevel because it triggering aura apply also
     _LoadSkills(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADSKILLS));
-    UpdateSkillsForLevel(); //update skills after load, to make sure they are correctly update at player load
 
     // apply original stats mods before spell loading or item equipment that call before equip _RemoveStatsMods()
 
