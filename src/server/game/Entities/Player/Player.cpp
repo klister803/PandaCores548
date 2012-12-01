@@ -17072,13 +17072,18 @@ bool Player::LoadPositionFromDB(uint32& mapid, float& x, float& y, float& z, flo
     return true;
 }
 
-void Player::SetHomebind(WorldLocation const& /*loc*/, uint32 /*area_id*/)
+void Player::SetHomebind(WorldLocation const& loc, uint32 area_id)
 {
-    m_homebindMapId = GetMapId();
-    m_homebindAreaId = GetAreaId();
-    m_homebindX = GetPositionX();
-    m_homebindY = GetPositionY();
-    m_homebindZ = GetPositionZ();
+    m_homebindMapId  = loc.GetMapId();
+
+    if (area_id)
+        m_homebindAreaId = area_id;
+    else
+        m_homebindAreaId = loc.GetAreaId();
+
+    m_homebindX      = loc.GetPositionX();
+    m_homebindY      = loc.GetPositionY();
+    m_homebindZ      = loc.GetPositionZ();
 
     // update sql homebind
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_PLAYER_HOMEBIND);
