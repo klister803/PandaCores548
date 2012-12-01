@@ -671,7 +671,7 @@ void Player::UpdateMasteryPercentage()
 {
     // No mastery
     float value = 0.0f;
-    if (CanMastery())
+    if (CanMastery() && getLevel() >= 80)
     {
         // Mastery from SPELL_AURA_MASTERY aura
         value += GetTotalAuraModifier(SPELL_AURA_MASTERY);
