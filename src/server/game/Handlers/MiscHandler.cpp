@@ -2214,6 +2214,7 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
     if (choice == JOIN_THE_HORDE)
     {
         _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_HORDE);
+        _player->setFactionForRace(RACE_PANDAREN_HORDE);
         _player->SaveToDB();
         _player->TeleportTo(1, -618.518f, -4251.67f, 38.718f, M_PI);
         _player->learnSpell(669, false); // Language Orcish
@@ -2222,6 +2223,7 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
     else if (choice == JOIN_THE_ALLIANCE)
     {
         _player->SetByteValue(UNIT_FIELD_BYTES_0, 0, RACE_PANDAREN_ALLI);
+        _player->setFactionForRace(RACE_PANDAREN_ALLI);
         _player->SaveToDB();
         _player->TeleportTo(0, -8914.57f, -133.909f, 80.5378f, M_PI);
         _player->learnSpell(668, false); // Language Common
