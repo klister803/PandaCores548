@@ -31,8 +31,6 @@ enum ShamanSpells
 {
     SHAMAN_SPELL_GLYPH_OF_MANA_TIDE         = 55441,
     SHAMAN_SPELL_MANA_TIDE_TOTEM            = 39609,
-    SHAMAN_SPELL_FIRE_NOVA_R1               = 1535,
-    SHAMAN_SPELL_FIRE_NOVA_TRIGGERED_R1     = 8349,
     SHAMAN_SPELL_SATED                      = 57724,
     SHAMAN_SPELL_EXHAUSTION                 = 57723,
     HUNTER_SPELL_INSANITY                   = 95809,
@@ -58,6 +56,7 @@ enum ShamanSpells
     SPELL_SHA_ELEMENTAL_BLAST               = 117014,
     SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS  = 118522,
     SPELL_SHA_LAVA_LASH                     = 60103,
+    SPELL_SHA_FLAME_SHOCK                   = 8050,
     SPELL_SHA_STORMSTRIKE                   = 17364,
     SPELL_SHA_LIGHTNING_SHIELD_ORB_DAMAGE   = 26364,
     SPELL_SHA_HEALING_STREAM                = 52042,
@@ -66,7 +65,128 @@ enum ShamanSpells
     SPELL_SHA_FULMINATION                   = 88766,
     SPELL_SHA_FULMINATION_TRIGGERED         = 88767,
     SPELL_SHA_FULMINATION_INFO              = 95774,
-    SPELL_SHA_ROLLING_THUNDER_ENERGIZE      = 88765
+    SPELL_SHA_ROLLING_THUNDER_ENERGIZE      = 88765,
+    SPELL_SHA_UNLEASH_ELEMENTS              = 73680,
+    SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE    = 77661,
+    SPELL_SHA_FIRE_NOVA                     = 1535,
+    SPELL_SHA_FIRE_NOVA_TRIGGERED           = 131786
+};
+
+// Fire Nova - 1535
+class spell_sha_fire_nova : public SpellScriptLoader
+{
+    public:
+        spell_sha_fire_nova() : SpellScriptLoader("spell_sha_fire_nova") { }
+
+        class spell_sha_fire_nova_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_fire_nova_SpellScript);
+
+            bool Validate(SpellInfo const* spellEntry)
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_FIRE_NOVA))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (target->HasAura(SPELL_SHA_FLAME_SHOCK))
+                            _player->CastSpell(target, SPELL_SHA_FIRE_NOVA_TRIGGERED, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_fire_nova_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_fire_nova_SpellScript();
+        }
+};
+
+// Unleash Elements - 73680
+class spell_sha_unleash_elements : public SpellScriptLoader
+{
+    public:
+        spell_sha_unleash_elements() : SpellScriptLoader("spell_sha_unleash_elements") { }
+
+        class spell_sha_unleash_elements_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_unleash_elements_SpellScript);
+
+            bool Validate(SpellEntry const * spellEntry)
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_UNLEASH_ELEMENTS))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        Item *weapons[2];
+                        weapons[0] = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                        weapons[1] = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+
+                        for (int i = 0; i < 2; i++)
+                        {
+                            if(!weapons[i])
+                                continue;
+
+                            uint32 unleashSpell = 0;
+                            bool hostileTarget = _player->IsValidAttackTarget(target);
+                            bool hostileSpell = true;
+                            switch (weapons[i]->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
+                            {
+                                case 3345: // Earthliving Weapon
+                                    unleashSpell = 73685; // Unleash Life
+                                    hostileSpell = false;
+                                    break;
+                                case 5: // Flametongue Weapon
+                                    unleashSpell = 73683; // Unleash Flame
+                                    break;
+                                case 2: // Frostbrand Weapon
+                                    unleashSpell = 73682; // Unleash Frost
+                                    break;
+                                case 3021: // Rockbiter Weapon
+                                    unleashSpell = 73684; // Unleash Earth
+                                    break;
+                                case 283: // Windfury Weapon
+                                    unleashSpell = 73681; // Unleash Wind
+                                    break;
+                            }
+
+                            if (hostileSpell && !hostileTarget)
+                                return; // don't allow to attack non-hostile targets. TODO: check this before cast
+
+                            if (!hostileSpell && hostileTarget)
+                                target = _player;   // heal ourselves instead of the enemy
+
+                            if (unleashSpell)
+                                _player->CastSpell(target, unleashSpell, false);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_unleash_elements_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_unleash_elements_SpellScript();
+        }
 };
 
 // Called by Lightning Bolt - 403 and Chain Lightning - 421
@@ -195,10 +315,13 @@ class spell_sha_lava_surge : public SpellScriptLoader
                 // 20% chance to reset the cooldown of Lavaburst and make the next to be instantly casted
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (roll_chance_i(20))
+                    if (_player->HasAura(77756))
                     {
-                        _player->CastSpell(_player, SPELL_SHA_LAVA_SURGE_CAST_TIME, true);
-                        _player->RemoveSpellCooldown(51505, true);
+                        if (roll_chance_i(20))
+                        {
+                            _player->CastSpell(_player, SPELL_SHA_LAVA_SURGE_CAST_TIME, true);
+                            _player->RemoveSpellCooldown(51505, true);
+                        }
                     }
                 }
             }
@@ -278,7 +401,7 @@ class spell_sha_static_shock : public SpellScriptLoader
                     Unit* target = GetHitUnit();
 
                     // While have Lightning Shield active
-                    if (target && _player->HasAura(324))
+                    if (target && _player->HasAura(324) && _player->HasAura(51527))
                     {
                         // Item - Shaman T9 Enhancement 2P Bonus (Static Shock)
                         if (_player->HasAura(67220))
@@ -495,7 +618,10 @@ class spell_sha_ascendance : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_NONE)
+                    {
+                        SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_MUST_SELECT_TALENT_SPECIAL);
                         return SPELL_FAILED_CUSTOM_ERROR;
+                    }
 
                     return SPELL_CAST_OK;
                 }
@@ -534,66 +660,6 @@ class spell_sha_ascendance : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_sha_ascendance_SpellScript();
-        }
-};
-
-// 1535 Fire Nova
-class spell_sha_fire_nova : public SpellScriptLoader
-{
-    public:
-        spell_sha_fire_nova() : SpellScriptLoader("spell_sha_fire_nova") { }
-
-        class spell_sha_fire_nova_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_sha_fire_nova_SpellScript);
-
-            bool Validate(SpellInfo const* spellEntry)
-            {
-                if (!sSpellMgr->GetSpellInfo(SHAMAN_SPELL_FIRE_NOVA_R1) || sSpellMgr->GetFirstSpellInChain(SHAMAN_SPELL_FIRE_NOVA_R1) != sSpellMgr->GetFirstSpellInChain(spellEntry->Id))
-                    return false;
-
-                uint8 rank = sSpellMgr->GetSpellRank(spellEntry->Id);
-                if (!sSpellMgr->GetSpellWithRank(SHAMAN_SPELL_FIRE_NOVA_TRIGGERED_R1, rank, true))
-                    return false;
-                return true;
-            }
-
-            SpellCastResult CheckFireTotem()
-            {
-                // fire totem
-                if (!GetCaster()->m_SummonSlot[1])
-                {
-                    SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_MUST_HAVE_FIRE_TOTEM);
-                    return SPELL_FAILED_CUSTOM_ERROR;
-                }
-
-                return SPELL_CAST_OK;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    uint8 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
-                    if (uint32 spellId = sSpellMgr->GetSpellWithRank(SHAMAN_SPELL_FIRE_NOVA_TRIGGERED_R1, rank))
-                    {
-                        Creature* totem = caster->GetMap()->GetCreature(caster->m_SummonSlot[1]);
-                        if (totem && totem->isTotem())
-                            caster->CastSpell(totem, spellId, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_sha_fire_nova_SpellScript::CheckFireTotem);
-                OnEffectHitTarget += SpellEffectFn(spell_sha_fire_nova_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_sha_fire_nova_SpellScript();
         }
 };
 
@@ -954,6 +1020,7 @@ class spell_sha_mana_spring_totem : public SpellScriptLoader
         }
 };
 
+// Lava Lash - 60103
 class spell_sha_lava_lash : public SpellScriptLoader
 {
     public:
@@ -963,30 +1030,71 @@ class spell_sha_lava_lash : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_lava_lash_SpellScript)
 
+            int32 searingFlameAmount;
+
             bool Load()
             {
                 return GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            void HandleDummy(SpellEffIndex /* effIndex */)
+            void HandleOnHit()
             {
-                if (Player* caster = GetCaster()->ToPlayer())
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    int32 damage = GetEffectValue();
-                    int32 hitDamage = GetHitDamage();
-                    if (caster->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                    if (Unit* target = GetHitUnit())
                     {
-                        // Damage is increased by 25% if your off-hand weapon is enchanted with Flametongue.
-                        if (caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 0x200000, 0, 0))
-                            AddPct(hitDamage, damage);
-                        SetHitDamage(hitDamage);
+                        int32 hitDamage = GetHitDamage();
+                        if (_player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                        {
+                            // Damage is increased by 40% if your off-hand weapon is enchanted with Flametongue.
+                            if (_player->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_SHAMAN, 0x200000, 0, 0))
+                                AddPct(hitDamage, 40);
+
+                            // Your Lava Lash ability will consume Searing Flame effect, dealing 20% increased damage for each application
+                            if (AuraApplication* searingFlame = _player->GetAuraApplication(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE))
+                            {
+                                searingFlameAmount = searingFlame->GetBase()->GetStackAmount();
+                                searingFlameAmount *= 8;
+                                AddPct(hitDamage, searingFlameAmount);
+
+                                _player->RemoveAura(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE);
+                            }
+
+                            SetHitDamage(hitDamage);
+
+                            // Spreading your Flame shock from the target to up to four ennemies within 12 yards
+                            // Effect desactivated if has Glyph of Lava Lash
+                            if (!_player->HasAura(55444))
+                            {
+                                if (target->HasAura(SPELL_SHA_FLAME_SHOCK))
+                                {
+                                    std::list<Unit*> targetList;
+
+                                    _player->GetAttackableUnitListInRange(_player, targetList, 12.0f);
+
+                                    int32 hitTargets = 0;
+
+                                    for (auto itr : targetList)
+                                    {
+                                        if (!_player->IsValidAttackTarget(itr) || itr->GetGUID() == target->GetGUID())
+                                            continue;
+
+                                        if (hitTargets >= 4)
+                                            continue;
+
+                                        _player->CastSpell(itr, SPELL_SHA_FLAME_SHOCK, true);
+                                        hitTargets++;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
 
             void Register()
             {
-                OnEffectHitTarget += SpellEffectFn(spell_sha_lava_lash_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+                OnHit += SpellHitFn(spell_sha_lava_lash_SpellScript::HandleOnHit);
             }
 
         };
@@ -1047,50 +1155,6 @@ class spell_sha_chain_heal : public SpellScriptLoader
         }
 };
 
-class spell_sha_flame_shock : public SpellScriptLoader
-{
-    public:
-        spell_sha_flame_shock() : SpellScriptLoader("spell_sha_flame_shock") { }
-
-        class spell_sha_flame_shock_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_sha_flame_shock_AuraScript);
-
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SHAMAN_LAVA_FLOWS_R1))
-                    return false;
-                if (!sSpellMgr->GetSpellInfo(SHAMAN_LAVA_FLOWS_TRIGGERED_R1))
-                    return false;
-                return true;
-            }
-
-            void HandleDispel(DispelInfo* /*dispelInfo*/)
-            {
-                if (Unit* caster = GetCaster())
-                    // Lava Flows
-                    if (AuraEffect const* aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, ICON_ID_SHAMAN_LAVA_FLOW, EFFECT_0))
-                    {
-                        if (sSpellMgr->GetFirstSpellInChain(SHAMAN_LAVA_FLOWS_R1) != sSpellMgr->GetFirstSpellInChain(aurEff->GetId()))
-                            return;
-
-                        uint8 rank = sSpellMgr->GetSpellRank(aurEff->GetId());
-                        caster->CastSpell(caster, sSpellMgr->GetSpellWithRank(SHAMAN_LAVA_FLOWS_TRIGGERED_R1, rank), true);
-                    }
-            }
-
-            void Register()
-            {
-                AfterDispel += AuraDispelFn(spell_sha_flame_shock_AuraScript::HandleDispel);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_sha_flame_shock_AuraScript();
-        }
-};
-
 class spell_sha_sentry_totem : public SpellScriptLoader
 {
     public:
@@ -1137,6 +1201,8 @@ class spell_sha_sentry_totem : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_fire_nova();
+    new spell_sha_unleash_elements();
     new spell_sha_rolling_thunder();
     new spell_sha_fulmination();
     new spell_sha_lava_surge();
@@ -1147,7 +1213,6 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_earthquake();
     new spell_sha_healing_rain();
     new spell_sha_ascendance();
-    new spell_sha_fire_nova();
     new spell_sha_mana_tide_totem();
     new spell_sha_earthbind_totem();
     new spell_sha_earthen_power();
@@ -1158,6 +1223,5 @@ void AddSC_shaman_spell_scripts()
     new spell_sha_mana_spring_totem();
     new spell_sha_lava_lash();
     new spell_sha_chain_heal();
-    new spell_sha_flame_shock();
     new spell_sha_sentry_totem();
 }

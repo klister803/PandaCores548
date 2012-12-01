@@ -722,7 +722,23 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
     }
     switch (m_spellInfo->Id)
     {
-    case 107045:
+    case 120165: //Conflagrate
+        {
+            UnitList friends;
+            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, 5.0f);
+            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(m_caster, friends, u_check);
+            m_caster->VisitNearbyObject(5.0f, searcher);
+
+            for (auto unit : friends)
+            {
+                if (m_caster->GetGUID() == unit->GetGUID())
+                    continue;
+                GetOriginalCaster()->CastSpell(unit, 120160, true);
+                GetOriginalCaster()->CastSpell(unit, 120201, true);
+            }
+        }
+        break;
+    case 107045: //Jade Fire 
         m_caster->CastSpell(unitTarget, 107098, false);
         break;
     }
