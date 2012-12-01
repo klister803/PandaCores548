@@ -297,6 +297,8 @@ bool Vehicle::CheckCustomCanEnter()
     {
         case 56682: // Keg in Stormstout Brewery
             return true;
+        case 46185: // Sanitron
+            return true;
     }
 
     return false;

@@ -87,16 +87,16 @@ class npc_barrel : public CreatureScript
                 if (id != 100)
                     return;
 
-                float x = me->GetPositionX() + (5 * cos(me->GetOrientation()));
-                float y = me->GetPositionY() + (5 * sin(me->GetOrientation()));
+                float x = 0, y = 0;
+                GetPositionWithDistInOrientation(me, 5.0f, x, y);
             
                 me->GetMotionMaster()->MovePoint(100, x, y, me->GetPositionZ());
             }
 
             bool CheckIfAgainstWall()
             {                
-                float x = me->GetPositionX() + (2 * cos(me->GetOrientation()));
-                float y = me->GetPositionY() + (2 * sin(me->GetOrientation()));
+                float x = 0, y = 0;
+                GetPositionWithDistInOrientation(me, 5.0f, x, y);
 
                 if (!me->IsWithinLOS(x, y, me->GetPositionZ()))
                     return true;
@@ -112,16 +112,19 @@ class npc_barrel : public CreatureScript
                 return false;
             }
 
+            void DoExplode()
+            {
+                if (Vehicle* barrel = me->GetVehicleKit())
+                    barrel->RemoveAllPassengers();
+
+                me->Kill(me);
+                me->CastSpell(me, SPELL_BAREL_EXPLOSION, true);
+            }
+
             void UpdateAI(const uint32 diff)
             {
                 if (CheckIfAgainstWall() || CheckIfAgainstUnit())
-                {
-                    if (Vehicle* barrel = me->GetVehicleKit())
-                        barrel->RemoveAllPassengers();
-
-                    me->Kill(me);
-                    me->CastSpell(me, SPELL_BAREL_EXPLOSION, true);
-                }
+                    DoExplode();
             }
         };
 };

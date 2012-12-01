@@ -1120,9 +1120,15 @@ public:
         char* c_entry = NULL;
         uint32 entry = 0;
         uint32 oldMax = 0;
+        uint32 waitTime = 0;
 
         if (*args)
+        {
             c_entry = strtok((char*)args, " ");
+            
+            if (char* arg_waitTime = strtok(NULL, " "))
+                waitTime = atoi(arg_waitTime);
+        }
 
         Creature* target = handler->getSelectedCreature();
 
@@ -1149,9 +1155,10 @@ public:
 
         Player* player = handler->GetSession()->GetPlayer();
         
-        WorldDatabase.PExecute("INSERT INTO script_waypoint VALUES (%u, %u, %f, %f, %f, 0, '');", entry, oldMax + 1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+        WorldDatabase.PExecute("INSERT INTO script_waypoint VALUES (%u, %u, %f, %f, %f, %u, '');", entry, oldMax + 1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), waitTime);
 
-        handler->PSendSysMessage("Point %u de l'entry %u ajoute aux coordonnee %f %f %f", entry, oldMax + 1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
+        handler->PSendSysMessage("Point %u de l'entry %u ajoute aux coordonnee %f %f %f avec un temps d'attente de %u",
+                                  entry, oldMax + 1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), waitTime);
         return true;
     }
 };
