@@ -69,7 +69,7 @@ public:
                                 who->AddThreat(me, 0.0f);
                                 who->SetInCombatWith(me);
                                 me->SetInCombatWith(who);
-                                who->GetMotionMaster()->MoveChase(me);
+                                who->GetMotionMaster()->MoveChase(me, 1.5f);
                                 HasATarget = true;
                             }
         }
