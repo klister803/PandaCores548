@@ -60,7 +60,7 @@ typedef std::deque<Mail*> PlayerMails;
 
 #define PLAYER_MAX_SKILLS           128
 #define PLAYER_MAX_DAILY_QUESTS     25
-#define PLAYER_EXPLORED_ZONES_SIZE  156
+#define PLAYER_EXPLORED_ZONES_SIZE  200
 
 // Note: SPELLMOD_* values is aura types in fact
 enum SpellModType
@@ -2183,8 +2183,6 @@ class Player : public Unit, public GridObject<Player>
         void RewardReputation(Unit* victim, float rate);
         void RewardReputation(Quest const* quest);
 
-        void UpdateSkillsForLevel();
-        void UpdateSkillsToMaxSkillsForLevel();             // for .levelup
         void ModifySkillBonus(uint32 skillid, int32 val, bool talent);
 
         /*********************************************************/

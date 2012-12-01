@@ -249,6 +249,7 @@ void AddSC_duskwood();
 void AddSC_eastern_plaguelands();
 void AddSC_eversong_woods();
 void AddSC_elwyn_forest();
+void AddSC_dun_morogh();
 void AddSC_ghostlands();
 void AddSC_hinterlands();
 void AddSC_ironforge();
@@ -609,6 +610,8 @@ void AddSC_boss_ook_ook();
 //Mogu'Shan Palace
 void AddSC_instance_mogu_shan_palace();
 void AddSC_boss_trial_of_the_king();
+void AddSC_boss_gekkan();
+void AddSC_boss_xin_the_weaponmaster();
 
 // battlegrounds
 
@@ -886,6 +889,7 @@ void AddEasternKingdomsScripts()
     AddSC_eastern_plaguelands();
     AddSC_eversong_woods();
     AddSC_elwyn_forest();
+    AddSC_dun_morogh();
     AddSC_ghostlands();
     AddSC_hinterlands();
     AddSC_ironforge();
@@ -1260,6 +1264,8 @@ void AddPandarieScripts()
     AddSC_boss_ook_ook();
     AddSC_instance_mogu_shan_palace();          // The Mogu'Shan Palace
     AddSC_boss_trial_of_the_king();
+    AddSC_boss_gekkan();
+    AddSC_boss_xin_the_weaponmaster();
 #endif
 }
 

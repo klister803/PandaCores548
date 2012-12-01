@@ -3073,6 +3073,16 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 73680: // Unleash Elements
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                break;
+            case 52042: // Healing Stream - Totem
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL;
+                spellInfo->Effects[0].BasePoints = 31;
+                break;
+            case 324: // Lightning Shield
+                spellInfo->ProcCharges = 0;
+                break;
             case 116740: // Tigereye Brew
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
                 break;
@@ -3299,6 +3309,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->ExplicitTargetMask = TARGET_FLAG_UNIT_MASK;
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_TARGET_ENEMY;
+                break;
+            case 119922: //Shockwave
+            case 119929:
+            case 119930:
+            case 119931:
+            case 119932:
+            case 119933:
+                spellInfo->Speed = 5.f;
                 break;
             case 106112:
                 {

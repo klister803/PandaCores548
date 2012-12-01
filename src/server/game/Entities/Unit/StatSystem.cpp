@@ -131,7 +131,6 @@ void Player::UpdateSpellDamageAndHealingBonus()
     // This information for client side use only
     // Get healing bonus for all schools
     SetStatInt32Value(PLAYER_FIELD_MOD_HEALING_DONE_POS, SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_ALL));
-    SetFloatValue(PLAYER_FIELD_MOD_SPELL_POWER_PCT, 1.0f);
     // Get damage bonus for all schools
     for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; ++i)
         SetStatInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, SpellBaseDamageBonusDone(SpellSchoolMask(1 << i)));
@@ -223,7 +222,7 @@ void Player::UpdateArmor()
 
     // Custom MoP Script
     // 77494 - Mastery : Nature's Guardian
-    if (HasAura(77494))
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(77494))
     {
         float Mastery = 1.0f + GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
         value *= Mastery;
@@ -502,12 +501,12 @@ void Player::UpdateBlockPercentage()
 
         // Custom MoP Script
         // 76671 - Mastery : Divine Bulwark - Block Percentage
-        if (HasAura(76671))
+        if (GetTypeId() == TYPEID_PLAYER && HasAura(76671))
             value += GetFloatValue(PLAYER_MASTERY);
 
         // Custom MoP Script
         // 76857 - Mastery : Critical Block - Block Percentage
-        if (HasAura(76857))
+        if (GetTypeId() == TYPEID_PLAYER && HasAura(76857))
             value += GetFloatValue(PLAYER_MASTERY) / 2.0f;
 
         // Increase from rating
@@ -672,7 +671,7 @@ void Player::UpdateMasteryPercentage()
 {
     // No mastery
     float value = 0.0f;
-    if (CanMastery())
+    if (CanMastery() && getLevel() >= 80)
     {
         // Mastery from SPELL_AURA_MASTERY aura
         value += GetTotalAuraModifier(SPELL_AURA_MASTERY);
@@ -762,18 +761,13 @@ void Player::UpdateManaRegen()
     // Apply PCT bonus from SPELL_AURA_MOD_POWER_REGEN_PERCENT aura on spirit base regen
     spirit_regen *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
 
-    // SpiritRegen(SPI,INT,LEVEL) = (0.001 + (SPI x sqrt(INT) x BASE_REGEN[LEVEL])) x 5
-    if (GetStat(STAT_INTELLECT) > 0.0f)
-        spirit_regen *= sqrt(GetStat(STAT_INTELLECT));
-
-    // CombatRegen = 5% of Base Mana
-    float base_regen = GetCreateMana() * 0.01f + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA) / 5.0f;
-
     // Set regen rate in cast state apply only on spirit based regen
     int32 modManaRegenInterrupt = GetTotalAuraModifier(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT);
     
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, base_regen + CalculatePct(spirit_regen, modManaRegenInterrupt));
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, 0.001f + spirit_regen + base_regen);
+    // Not In Combat : 2% of base mana + spirit_regen
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, 0.004f * GetMaxPower(POWER_MANA));
+    // In Combat : 2% of base mana
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, 0.004f * GetMaxPower(POWER_MANA) + spirit_regen);
 }
 
 void Player::UpdateRuneRegen(RuneType rune)

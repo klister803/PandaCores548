@@ -893,8 +893,8 @@ class WorldObject : public Object, public WorldLocation
         void SetZoneScript();
         ZoneScript* GetZoneScript() const { return m_zoneScript; }
 
-        TempSummon* SummonCreature(uint32 id, const Position &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint32 vehId = 0) const;
-        TempSummon* SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0)
+        TempSummon* SummonCreature(uint32 id, const Position &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint32 vehId = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL) const;
+        TempSummon* SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL)
         {
             if (!x && !y && !z)
             {
@@ -903,7 +903,7 @@ class WorldObject : public Object, public WorldLocation
             }
             Position pos;
             pos.Relocate(x, y, z, ang);
-            return SummonCreature(id, pos, spwtype, despwtime, 0);
+            return SummonCreature(id, pos, spwtype, despwtime, 0, viewerGuid, viewersList);
         }
         GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime);
         Creature*   SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
@@ -959,6 +959,16 @@ class WorldObject : public Object, public WorldLocation
         void SetTransport(Transport* t) { m_transport = t; }
 
         MovementInfo m_movementInfo;
+
+        // Personal visibility system
+        bool MustBeVisibleOnlyForSomePlayers() const { return !_visibilityPlayerList.empty(); }
+        void GetMustBeVisibleForPlayersList(std::list<uint64/* guid*/>& _playerList) const;
+
+        bool IsPlayerInPersonnalVisibilityList(uint64 guid) const;
+        void AddPlayerInPersonnalVisibilityList(uint64 guid) { if (IS_PLAYER_GUID(guid)) _visibilityPlayerList.push_back(guid); }
+        void AddPlayersInPersonnalVisibilityList(std::list<uint64> viewerList);
+        void RemovePlayerFromPersonnalVisibilityList(uint64 guid) { if (IS_PLAYER_GUID(guid)) _visibilityPlayerList.remove(guid); }
+
     protected:
         std::string m_name;
         bool m_isActive;
@@ -979,6 +989,7 @@ class WorldObject : public Object, public WorldLocation
         virtual bool IsInvisibleDueToDespawn() const { return false; }
         //difference from IsAlwaysVisibleFor: 1. after distance check; 2. use owner or charmer as seer
         virtual bool IsAlwaysDetectableFor(WorldObject const* /*seer*/) const { return false; }
+
     private:
         Map* m_currMap;                                    //current object's Map location
 
@@ -988,6 +999,8 @@ class WorldObject : public Object, public WorldLocation
 
         uint16 m_notifyflags;
         uint16 m_executed_notifies;
+
+        std::list<uint64/* guid*/> _visibilityPlayerList;
 
         virtual bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D) const;
 

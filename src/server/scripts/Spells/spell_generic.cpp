@@ -3282,6 +3282,48 @@ class spell_gen_vengeance : public SpellScriptLoader
 };
 */
 
+// TP to Stormwind (17334) or Orgrimmar (17609)
+class spell_gen_tp_storm_orgri : public SpellScriptLoader
+{
+    public:
+        spell_gen_tp_storm_orgri() : SpellScriptLoader("spell_gen_tp_storm_orgri") { }
+
+        class spell_gen_tp_storm_orgri_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_tp_storm_orgri_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(17334) || !sSpellMgr->GetSpellInfo(17609))
+                    return false;
+                return true;
+            }
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    // Tp to Stormwind
+                    if (GetSpellInfo()->Id == 17334)
+                        _player->TeleportTo(0, -8833.07f, 622.778f, 93.9317f, _player->GetOrientation());
+                    // Tp to Orgrimmar
+                    else if (GetSpellInfo()->Id == 17609)
+                        _player->TeleportTo(1, 1569.97f, -4397.41f, 16.0472, _player->GetOrientation());
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_gen_tp_storm_orgri_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_tp_storm_orgri_SpellScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -3358,4 +3400,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_upper_deck_create_foam_sword();
     new spell_gen_bonked();
     //new spell_gen_vengeance();
+    new spell_gen_tp_storm_orgri();
 }
