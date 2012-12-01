@@ -121,21 +121,8 @@ class spell_monk_chi_torpedo : public SpellScriptLoader
                 {
                     if (Player* _player = caster->ToPlayer())
                     {
-                        CellCoord p(Trinity::ComputeCellCoord(_player->GetPositionX(), _player->GetPositionY()));
-                        Cell cell(p);
-                        cell.SetNoCreate();
-
                         std::list<Unit*> tempUnitMap;
-                        {
-                            Trinity::AnyUnitInObjectRangeCheck u_check(_player, 20.0f);
-                            Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(_player, tempUnitMap, u_check);
-
-                            TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-                            TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-
-                            cell.Visit(p, world_unit_searcher, *_player->GetMap(), *_player, 20.0f);
-                            cell.Visit(p, grid_unit_searcher, *_player->GetMap(), *_player, 20.0f);
-                        }
+                        _player->GetAttackableUnitListInRange(_player, tempUnitMap, 20.0f);
 
                         for (auto itr : tempUnitMap)
                         {
