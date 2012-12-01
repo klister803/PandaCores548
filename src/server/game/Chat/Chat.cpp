@@ -707,6 +707,9 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
     else
         *data << uint64(target_guid);
 
+    if ( type == CHAT_MSG_PARTY || type == CHAT_MSG_PARTY_LEADER || type == CHAT_MSG_RAID || type == CHAT_MSG_RAID_LEADER || type == CHAT_MSG_RAID_WARNING )
+        *data << uint64(0); // unk guid (MoP 5.0.5)
+
     *data << uint32(messageLength);
     *data << message;
     if (session != 0 && type != CHAT_MSG_WHISPER_INFORM && type != CHAT_MSG_DND && type != CHAT_MSG_AFK)
