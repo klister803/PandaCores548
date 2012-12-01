@@ -9153,6 +9153,10 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
     {
         int32 bp = 0;
         bp = int32(addhealth / 10);
+
+        if (bp > (victim->GetMaxHealth() * 0.1f))
+            bp = (victim->GetMaxHealth() * 0.1f);
+
         // Ancestral Vigor - 105284
         unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
     }
