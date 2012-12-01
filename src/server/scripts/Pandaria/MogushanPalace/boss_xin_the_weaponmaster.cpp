@@ -118,6 +118,8 @@ class mob_animated_staff : public CreatureScript
         enum eSpells
         {
             SPELL_PERMANENT_FEIGN_DEATH = 29266,
+            SPELL_RING_OF_FIRE_0 = 119544,
+            SPELL_RING_OF_FIRE_1 = 119590,
         };
 
         enum eActions
@@ -129,6 +131,7 @@ class mob_animated_staff : public CreatureScript
         {
             EVENT_SUMMON_RING_OF_FIRE = 1,
             EVENT_UNSUMMON = 2,
+            EVENT_SUMMON_RING_TRIGGER = 3,
         };
 
         enum eCreatures
@@ -143,11 +146,20 @@ class mob_animated_staff : public CreatureScript
                 me->SetDisplayId(42195);
                 me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, 76364);
                 me->AddAura(SPELL_PERMANENT_FEIGN_DEATH, me);
+            
+                _x = 0.f;
+                _y = 0.f;
+                point = 0.f;
             }
             EventMap events;
+            float _x;
+            float _y;
+            float point;
 
             void Reset()
             {
+                me->GetMotionMaster()->MoveTargetedHome();
+                me->AddAura(SPELL_PERMANENT_FEIGN_DEATH, me);
             }
 
             void EnterCombat(Unit* unit)
@@ -176,16 +188,61 @@ class mob_animated_staff : public CreatureScript
                     case EVENT_SUMMON_RING_OF_FIRE:
                         {
                             events.ScheduleEvent(EVENT_UNSUMMON, 6000);
-                            Unit* target = SelectTarget(SELECT_TARGET_RANDOM);
+                            Unit* target = nullptr;
+                            std::list<Unit*> units;
+                            Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
+
+                            if (!PlayerList.isEmpty())
+                            {
+                                for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                                {
+                                    Player* plr = i->getSource();
+                                    if( !plr)
+                                        continue;
+                                    if (plr->isAlive() && !plr->isGameMaster())
+                                        units.push_back(plr);
+                                }
+                            }
+                            if (units.empty())
+                                return;
+                            std::list<Unit*>::iterator itr = units.begin();
+                            std::advance(itr, units.size() - 1);
+                            target = *itr;
                             if (!target)
                                 return;
-                            float x = target->GetPositionX() + 5.f * cos(0);
-                            float y = target->GetPositionY() + 5.f * sin(0);
-                            me->SummonCreature(CREATURE_RING_OF_FIRE, x, y, me->GetMap()->GetHeight(0, x, y, target->GetPositionZ()));
+                            me->GetMotionMaster()->MoveFollow(target, 6.0f, frand(0, 2 * M_PI));
+                            _x = target->GetPositionX();
+                            _y = target->GetPositionY();
+                            point = 1.f;
+
+                            float x = _x + 5.0f * cos(0);
+                            float y = _y + 5.0f * sin(0);
+                            me->SummonCreature(CREATURE_RING_OF_FIRE, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()));
+                            events.ScheduleEvent(EVENT_SUMMON_RING_TRIGGER, 400);
                         }
                         break;
                     case EVENT_UNSUMMON:
-                        me->DespawnOrUnsummon();
+                        Reset();
+                        break;
+                    case EVENT_SUMMON_RING_TRIGGER:
+                        {
+                            if (point == 21)
+                            {
+                                TempSummon* tmp = me->SummonCreature(CREATURE_RING_OF_FIRE, _x, _y, me->GetMap()->GetHeight(0, _x, _y, me->GetPositionZ()));
+                                if (tmp)
+                                {
+                                    tmp->RemoveAura(SPELL_RING_OF_FIRE_0);
+                                    tmp->CastSpell(tmp, SPELL_RING_OF_FIRE_1, false);
+                                }
+                                return;
+                            }
+                            float x = _x + 5.0f * cos(point * 2 * M_PI / 20);
+                            float y = _y + 5.0f * sin(point * 2 * M_PI / 20);
+                            me->SummonCreature(CREATURE_RING_OF_FIRE, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()));
+                            point++;
+                            if (point <= 21)
+                                events.ScheduleEvent(EVENT_SUMMON_RING_TRIGGER, 400);
+                        }
                         break;
                     }
                 }
@@ -206,39 +263,74 @@ class mob_ring_of_fire : public CreatureScript
         enum eSpells
         {
             SPELL_RING_OF_FIRE_0 = 119544,
-        };
-
-        enum eEvents
-        {
-            EVENT_SUMMON_RING_OF_FIRE = 1,
-            EVENT_UNSUMMON = 2,
+            SPELL_RING_OF_FIRE_1 = 119590,
         };
 
         struct mob_ring_of_fire_AI : public ScriptedAI
         {
             mob_ring_of_fire_AI(Creature* creature) : ScriptedAI(creature)
             {
+                me->setFaction(14);
+                me->SetReactState(REACT_PASSIVE);
                 me->AddAura(SPELL_RING_OF_FIRE_0, me);
-                _x = me->GetPositionX() - 5.0f * cos(0);
-                _y = me->GetPositionY() - 5.0f * sin(0);
-                _point = 0;
-
-                me->GetMotionMaster()->MovePoint(++_point, _x + 5.0f * cos(_point * 2 * M_PI / 20), _y + 5.0f * sin(_point * 2 * M_PI / 20),
-                    me->GetMap()->GetHeight(0, _x + 5.0f * cos(_point * 2 * M_PI / 20), _y + 5.0f * sin(_point * 2 * M_PI / 20), me->GetPositionZ()));
+                me->DespawnOrUnsummon(10000);
             }
-            float _x;
-            float _y;
-            uint32 _point;
+        };
+};
 
-            void MovementInform(uint32 motionType, uint32 pointId)
+class boss_xin_the_weaponmaster : public CreatureScript
+{
+    public:
+        boss_xin_the_weaponmaster() : CreatureScript("boss_xin_the_weaponmaster") { }
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new boss_xin_the_weaponmaster_AI(creature);
+        }
+
+        enum eBosses
+        {
+            BOSS_XIN_THE_WEAPONMASTER,
+        };
+
+        enum eEvents
+        {
+            EVENT_RING_OF_FIRE = 1,
+        };
+
+        struct boss_xin_the_weaponmaster_AI : public BossAI
+        {
+            boss_xin_the_weaponmaster_AI(Creature* creature) : BossAI(creature, BOSS_XIN_THE_WEAPONMASTER)
             {
-                if (pointId == 20)
-                {
-                    me->GetMotionMaster()->MovePoint(21, _x, _y, me->GetMap()->GetHeight(0, _x, _y, me->GetPositionZ()));
+            }
+
+            void EnterCombat(Unit* who)
+            {
+                events.ScheduleEvent(EVENT_RING_OF_FIRE, 3000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
                     return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                    case EVENT_RING_OF_FIRE:
+                        if (me->GetInstanceScript())
+                            me->GetInstanceScript()->SetData(18, 0); //TYPE_ACTIVATE_ANIMATED_STAFF
+                        events.ScheduleEvent(EVENT_RING_OF_FIRE, 10000);
+                        break;
+                    }
                 }
-                me->GetMotionMaster()->MovePoint(++_point, _x + 5.0f * cos(_point * 2 * M_PI / 20), _y + 5.0f * sin(_point * 2 * M_PI / 20),
-                    me->GetMap()->GetHeight(0, _x + 5.0f * cos(_point * 2 * M_PI / 20), _y + 5.0f * sin(_point * 2 * M_PI / 20), me->GetPositionZ()));
+                DoMeleeAttackIfReady();
             }
         };
 };
@@ -247,4 +339,6 @@ void AddSC_boss_xin_the_weaponmaster()
 {
     new spell_dart();
     new mob_animated_staff();
+    new mob_ring_of_fire();
+    new boss_xin_the_weaponmaster();
 }

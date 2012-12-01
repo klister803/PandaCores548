@@ -67,6 +67,9 @@ enum eCreatures
     CREATURE_GLINTROK_SKULKER               = 61338,
     CREATURE_GLINTROK_ORACLE                = 61339,
     CREATURE_GLINTROK_HEXXER                = 61340,
+
+    //XIN THE WEAPONMASTER
+    CREATURE_ANIMATED_STAFF                 = 61433,
 };
 
 enum eTypes
@@ -93,6 +96,8 @@ enum eTypes
     TYPE_GET_ENTOURAGE_1, //15
     TYPE_GET_ENTOURAGE_2, //16
     TYPE_GET_ENTOURAGE_3, //17
+
+    TYPE_ACTIVATE_ANIMATED_STAFF, //18
 };
 
 class instance_mogu_shan_palace : public InstanceMapScript
@@ -131,6 +136,13 @@ public:
         /*
         ** End of Gekkan.
         */
+        /*
+        ** Xin the weaponmaster.
+        */
+        std::list<uint64> animated_staffs;
+        /*
+        ** End of Xin the weaponmaster.
+        */
         instance_mogu_shan_palace_InstanceMapScript(Map* map) : InstanceScript(map)
         {
             xin_guid = 0;
@@ -157,6 +169,7 @@ public:
         {
             OnCreatureCreate_gekkan(creature);
             OnCreatureCreate_trial_of_the_king(creature);
+            OnCreatureCreate_xin_the_weaponmaster(creature);
         }
 
         void OnUnitDeath(Unit* unit)
@@ -171,6 +184,7 @@ public:
         void SetData(uint32 type, uint32 data)
         {
             SetData_trial_of_the_king(type, data);
+            SetData_xin_the_weaponmaster(type, data);
         }
 
         uint32 GetData(uint32 type)
@@ -210,6 +224,37 @@ public:
                 }
             }
             return true;
+        }
+
+        void SetData_xin_the_weaponmaster(uint32 type, uint32 data)
+        {
+            switch (type)
+            {
+            case TYPE_ACTIVATE_ANIMATED_STAFF:
+                {
+                    std::list<uint64>::iterator itr = animated_staffs.begin();
+                    std::advance(itr, animated_staffs.size() - 1);
+                    Creature* creature = instance->GetCreature(*itr);
+                    if (!creature)
+                        return;
+                    if (creature->GetAI())
+                        creature->GetAI()->DoAction(0); //ACTION_ACTIVATE
+                }
+                break;
+            }
+        }
+        void OnCreatureCreate_xin_the_weaponmaster(Creature* creature)
+        {
+            switch (creature->GetEntry())
+            {
+            case 59481:
+            case 61451:
+                creature->SetReactState(REACT_PASSIVE);
+                break;
+            case CREATURE_ANIMATED_STAFF:
+                animated_staffs.push_back(creature->GetGUID());
+                break;
+            }
         }
 
         void OnUnitDeath_gekkan(Unit* unit)
@@ -327,6 +372,8 @@ public:
                         for (auto guid : adepts)
                         {
                             Creature* creature = instance->GetCreature(guid);
+                            if (!creature)
+                                continue;
 
                             if (creature && creature->GetAI())
                                 creature->GetAI()->DoAction(1); //EVENT_RETIRE
@@ -337,6 +384,8 @@ public:
                         for (auto guid : scrappers)
                         {
                             Creature* creature = instance->GetCreature(guid);
+                            if (!creature)
+                                continue;
 
                             if (creature && creature->GetAI())
                                 creature->GetAI()->DoAction(1); //EVENT_RETIRE
@@ -347,6 +396,8 @@ public:
                         for (auto guid : grunts)
                         {
                             Creature* creature = instance->GetCreature(guid);
+                            if (!creature)
+                                continue;
 
                             if (creature && creature->GetAI())
                                 creature->GetAI()->DoAction(1); //EVENT_RETIRE
