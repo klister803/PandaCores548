@@ -4511,7 +4511,7 @@ void AuraEffect::HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mod
 
     // Custom MoP Script
     // 76808 - Mastery : Executioner - Increase effect of Slice and Dice
-    if (aurApp->GetTarget()->HasAura(76808) && aurApp->GetBase()->GetId() == 5171)
+    if (aurApp->GetTarget()->GetTypeId() == TYPEID_PLAYER && aurApp->GetTarget()->HasAura(76808) && aurApp->GetBase()->GetId() == 5171)
     {
         float Mastery = 1.0f + aurApp->GetTarget()->GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
         value *= Mastery;

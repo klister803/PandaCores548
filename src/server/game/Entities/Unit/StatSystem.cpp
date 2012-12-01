@@ -222,7 +222,7 @@ void Player::UpdateArmor()
 
     // Custom MoP Script
     // 77494 - Mastery : Nature's Guardian
-    if (HasAura(77494))
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(77494))
     {
         float Mastery = 1.0f + GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
         value *= Mastery;
@@ -501,12 +501,12 @@ void Player::UpdateBlockPercentage()
 
         // Custom MoP Script
         // 76671 - Mastery : Divine Bulwark - Block Percentage
-        if (HasAura(76671))
+        if (GetTypeId() == TYPEID_PLAYER && HasAura(76671))
             value += GetFloatValue(PLAYER_MASTERY);
 
         // Custom MoP Script
         // 76857 - Mastery : Critical Block - Block Percentage
-        if (HasAura(76857))
+        if (GetTypeId() == TYPEID_PLAYER && HasAura(76857))
             value += GetFloatValue(PLAYER_MASTERY) / 2.0f;
 
         // Increase from rating

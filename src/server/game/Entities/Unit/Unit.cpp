@@ -826,7 +826,7 @@ uint32 Unit::CalcStaggerDamage(Player* victim, uint32 damage, DamageEffectType d
 {
     // Custom MoP Script
     // Stagger Amount
-    if (victim->GetSpecializationId(victim->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER && damageSchoolMask == SPELL_SCHOOL_MASK_NORMAL && victim->HasAura(115069) && damage > 0)
+    if (victim->GetTypeId() == TYPEID_PLAYER && victim->GetSpecializationId(victim->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER && damageSchoolMask == SPELL_SCHOOL_MASK_NORMAL && victim->HasAura(115069) && damage > 0)
     {
         float stagger = 0.80f;
 
@@ -9453,7 +9453,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Custom MoP Script
     // 76658 - Mastery : Essence of the Viper
-    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
         DoneTotalMod += Mastery;
@@ -9464,16 +9464,16 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     if (isPet())
     {
         Unit* owner = GetOwner();
-        if (owner->HasAura(76657))
+        if (owner && owner->GetTypeId() == TYPEID_PLAYER && owner->HasAura(76657))
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
             DoneTotalMod += Mastery;
         }
     }
 
     // Custom MoP Script
     // 76808 - Mastery : Executioner
-    if (spellProto && (spellProto->Id == 1943 || spellProto->Id == 2098 || spellProto->Id == 121411) && HasAura(76808))
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 1943 || spellProto->Id == 2098 || spellProto->Id == 121411) && HasAura(76808))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
         DoneTotalMod += Mastery;
@@ -9482,7 +9482,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // Custom MoP Script
     // 77215 - Mastery : Potent Afflictions
     // Increase periodic damage of Corruption, Agony and Unstable Affliction
-    if (spellProto && (spellProto->Id == 172 || spellProto->Id == 131737 || spellProto->Id == 131736) && damagetype == DOT && HasAura(77215))
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 172 || spellProto->Id == 131737 || spellProto->Id == 131736) && damagetype == DOT && HasAura(77215))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.1f / 100.0f;
         DoneTotalMod += Mastery;
@@ -9490,7 +9490,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Custom MoP Script
     // 76803 - Mastery : Potent Poisons
-    if (spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680) && pdamage != 0 && HasAura(76803))
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680) && pdamage != 0 && HasAura(76803))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.5f / 100.0f;
         DoneTotalMod += Mastery;
@@ -9499,7 +9499,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // Custom MoP Script
     // 77219 - Mastery : Master Demonologist
     // Bonus damage while using Metamorphosis
-    if (HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(103958) && HasAura(77219))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
         DoneTotalMod += Mastery;
@@ -9514,7 +9514,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     else if (isPet())
     {
         Unit* owner = GetOwner();
-        if (owner->HasAura(77219) && owner->GetTypeId() == TYPEID_PLAYER)
+        if (owner && owner->HasAura(77219) && owner->GetTypeId() == TYPEID_PLAYER)
         {
             float Mastery = owner->GetFloatValue(PLAYER_MASTERY) / 100.0f;
             DoneTotalMod += Mastery;
@@ -9523,7 +9523,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Custom MoP Script
     // 77493 - Mastery : Razor Claws
-    if (spellProto && damagetype == DOT)
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && damagetype == DOT)
     {
         if (HasAura(77493))
         {
@@ -9534,7 +9534,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Custom MoP Script
     // 76547 - Mastery : Mana Adept
-    if (spellProto)
+    if (spellProto && GetTypeId() == TYPEID_PLAYER)
     {
         if (HasAura(76547))
         {
@@ -9549,7 +9549,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Custom MoP Script
     // 77514 - Mastery : Frozen Heart
-    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST)
+    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST)
     {
         if (HasAura(77514))
         {
@@ -9560,7 +9560,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Custom MoP Script
     // 77515 - Mastery : Dreadblade
-    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_SHADOW)
+    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_SHADOW)
     {
         if (HasAura(77515))
         {
@@ -9576,7 +9576,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         if (isPet())
         {
             Unit* owner = GetOwner();
-            if (owner->HasAura(76613))
+            if (owner && owner->GetTypeId() == TYPEID_PLAYER && owner->HasAura(76613))
             {
                 float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
                 DoneTotalMod += Mastery;
@@ -9584,7 +9584,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         }
         else
         {
-            if (HasAura(76613))
+            if (GetTypeId() == TYPEID_PLAYER && HasAura(76613))
             {
                 if (victim->HasAuraState(AURA_STATE_FROZEN))
                 {
@@ -9597,7 +9597,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Custom MoP Script
     // 77223 - Mastery : Enhanced Elements
-    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FIRE || spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST || spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE)
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FIRE || spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST || spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE)
     {
         if (HasAura(77223))
         {
@@ -9609,12 +9609,12 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Custom MoP Script
     // 77492 - Mastery : Total Eclipse
-    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE && HasAura(77492) && HasAura(48517)) // Solar Eclipse
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE && HasAura(77492) && HasAura(48517)) // Solar Eclipse
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f / 100.0f;
         DoneTotalMod += Mastery;
     }
-    else if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_ARCANE && HasAura(77492) && HasAura(48518)) // Lunar Eclipse
+    else if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_ARCANE && HasAura(77492) && HasAura(48518)) // Lunar Eclipse
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f / 100.0f;
         DoneTotalMod += Mastery;
@@ -9861,7 +9861,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Custom MoP Script
     // 77486 - Mastery : Shadowy Recall
-    if (spellProto && damagetype == DOT && HasAura(77486))
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && damagetype == DOT && HasAura(77486))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.8f;
 
@@ -10778,7 +10778,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Custom MoP Script
     // 76658 - Mastery : Essence of the Viper
-    if (spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
         DoneTotalMod += Mastery;
@@ -10786,7 +10786,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Custom MoP Script
     // 76659 - Mastery : Wild Quiver
-    if (HasAura(76659) && attType == RANGED_ATTACK && (spellProto->Id != 76663))
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(76659) && attType == RANGED_ATTACK && (spellProto->Id != 76663))
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
 
@@ -10812,7 +10812,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     else if (isPet())
     {
         Unit* owner = GetOwner();
-        if (owner->HasAura(77219) && owner->GetTypeId() == TYPEID_PLAYER)
+        if (owner && owner->HasAura(77219) && owner->GetTypeId() == TYPEID_PLAYER)
         {
             float Mastery = owner->GetFloatValue(PLAYER_MASTERY) / 100.0f;
             DoneTotalMod += Mastery;
@@ -10824,7 +10824,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     if (isPet())
     {
         Unit* owner = GetOwner();
-        if (owner->HasAura(76657))
+        if (owner && owner->GetTypeId() == TYPEID_PLAYER && owner->HasAura(76657))
         {
             float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
             DoneTotalMod += Mastery;
@@ -10833,7 +10833,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Custom MoP Script
     // 76856 - Mastery : Unshackled Fury
-    if (victim && pdamage != 0)
+    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0)
     {
         if (HasAura(76856) && HasAuraState(AURA_STATE_ENRAGE))
         {
@@ -10844,7 +10844,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Custom MoP Script
     // 77514 - Mastery : Frozen Heart
-    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST)
+    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_FROST)
     {
         if (HasAura(77514))
         {
@@ -10855,7 +10855,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Custom MoP Script
     // 77515 - Mastery : Dreadblade
-    if (victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_SHADOW)
+    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0 && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_SHADOW)
     {
         if (HasAura(77515))
         {
@@ -10866,7 +10866,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Custom MoP Script
     // 76806 - Mastery : Main Gauche
-    if (victim && pdamage != 0 && attType == BASE_ATTACK && !spellProto)
+    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0 && attType == BASE_ATTACK && !spellProto)
     {
         if (HasAura(76806))
         {
@@ -10879,7 +10879,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Custom MoP Script
     // 76838 - Mastery : Strikes of Opportunity
-    if (victim && pdamage != 0 && (attType == BASE_ATTACK || attType == OFF_ATTACK) && !spellProto)
+    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0 && (attType == BASE_ATTACK || attType == OFF_ATTACK) && !spellProto)
     {
         if (HasAura(76838))
         {
@@ -10892,7 +10892,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
 
     // Custom MoP Script
     // 76613 - Mastery : Frostburn for Water elemental Melee damage
-    if (victim && pdamage != 0)
+    if (GetTypeId() == TYPEID_PLAYER && victim && pdamage != 0)
     {
         if (isPet())
         {

@@ -1524,7 +1524,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
 
         // Custom MoP Script
         // 77495 - Mastery : Harmony
-        if (m_caster && m_caster->getClass() == CLASS_DRUID)
+        if (m_caster && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->getClass() == CLASS_DRUID)
         {
             if (m_caster->HasAura(77495))
             {
@@ -1544,7 +1544,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             }
         }
         // 77226 - Mastery : Deep Healing
-        if (m_caster && m_caster->getClass() == CLASS_SHAMAN)
+        if (m_caster && m_caster->GetTypeId() == TYPEID_PLAYER && m_caster->getClass() == CLASS_SHAMAN)
         {
             if (m_caster->HasAura(77226))
             {
