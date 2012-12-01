@@ -273,7 +273,7 @@ class spell_pal_holy_shock_damage : public SpellScriptLoader
                             int32 damage = int32(GetHitDamage() * 0.15f);
                             SetHitDamage(damage);
                         }
-                        else if (caster->getLevel < 90)
+                        else if (caster->getLevel() < 90)
                         {
                             int32 damage = int32(GetHitDamage() * 0.61f);
                             SetHitDamage(damage);
