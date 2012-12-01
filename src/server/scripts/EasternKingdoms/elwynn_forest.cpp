@@ -138,14 +138,14 @@ enum eTrainingDummySpells
     SPELL_PAUME_TIGRE   = 100787
 };
 
-class npc_training_dummy_elwynn : public CreatureScript
+class npc_training_dummy_start_zones : public CreatureScript
 {
 public:
-    npc_training_dummy_elwynn() : CreatureScript("npc_training_dummy_elwynn") { }
+    npc_training_dummy_start_zones() : CreatureScript("npc_training_dummy_start_zones") { }
 
-    struct npc_training_dummy_elwynnAI : Scripted_NoMovementAI
+    struct npc_training_dummy_start_zonesAI : Scripted_NoMovementAI
     {
-        npc_training_dummy_elwynnAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        npc_training_dummy_start_zonesAI(Creature* creature) : Scripted_NoMovementAI(creature)
         {}
 
         uint32 resetTimer;
@@ -224,7 +224,7 @@ public:
 
     CreatureAI* GetAI(Creature* creature) const
     {
-        return new npc_training_dummy_elwynnAI(creature);
+        return new npc_training_dummy_start_zonesAI(creature);
     }
 };
 
@@ -319,7 +319,7 @@ void AddSC_elwyn_forest()
 {
     new npc_stormwind_infantry();
     new npc_stormwind_injured_soldier();
-    new npc_training_dummy_elwynn();
+    new npc_training_dummy_start_zones();
     new spell_quest_fear_no_evil();
     new spell_quest_extincteur();
 }

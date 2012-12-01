@@ -262,6 +262,10 @@ void WorldSession::HandleQuestgiverQueryQuestOpcode(WorldPacket& recvData)
         {
             if (quest->IsAutoAccept())
             {
+                if (Creature* pQuestGiver = ObjectAccessor::GetCreature(*_player, guid))
+                    if (pQuestGiver->IsAIEnabled)
+                        sScriptMgr->OnQuestAccept(_player, pQuestGiver, quest);
+
                 _player->AddQuest(quest, object);
                 if (_player->CanCompleteQuest(questId))
                     _player->CompleteQuest(questId);

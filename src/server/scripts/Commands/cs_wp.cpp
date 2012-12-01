@@ -45,9 +45,14 @@ public:
             { "show",           SEC_GAMEMASTER,     false, &HandleWpShowCommand,               "", NULL },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
+        static ChatCommand scriptWpCommandTable[] =
+        {
+            { "add",            SEC_GAMEMASTER,     false, &HandleScriptWpAddCommand,          "", NULL },
+        };
         static ChatCommand commandTable[] =
         {
-            { "wp",             SEC_GAMEMASTER,     false, NULL,                     "", wpCommandTable },
+            { "wp",             SEC_GAMEMASTER,     false, NULL,               "",       wpCommandTable },
+            { "script_wp",      SEC_GAMEMASTER,     false, NULL,               "", scriptWpCommandTable },
             { NULL,             0,                  false, NULL,                               "", NULL }
         };
         return commandTable;
@@ -1106,6 +1111,54 @@ public:
         }
 
         handler->PSendSysMessage("|cffff33ffDEBUG: wpshow - no valid command found|r");
+        return true;
+    }
+
+    static bool HandleScriptWpAddCommand(ChatHandler* handler, const char* args)
+    {
+        // optional
+        char* c_entry = NULL;
+        uint32 entry = 0;
+        uint32 oldMax = 0;
+        uint32 waitTime = 0;
+
+        if (*args)
+        {
+            c_entry = strtok((char*)args, " ");
+            
+            if (char* arg_waitTime = strtok(NULL, " "))
+                waitTime = atoi(arg_waitTime);
+        }
+
+        Creature* target = handler->getSelectedCreature();
+
+        if (!c_entry)
+        {
+            if (target)
+                entry = target->GetEntry();
+            else
+                return false;
+        }
+        else
+            entry = atoi(c_entry);
+
+        if (!entry)
+        {
+            handler->PSendSysMessage("Mauvais id");
+            return true;
+        }
+
+        QueryResult maxPointIdQuery = WorldDatabase.PQuery("SELECT MAX(pointId) AS maxPointId FROM script_waypoint WHERE entry = %u;", entry);
+
+        if (maxPointIdQuery)
+            oldMax = (maxPointIdQuery->Fetch())[0].GetUInt32();
+
+        Player* player = handler->GetSession()->GetPlayer();
+        
+        WorldDatabase.PExecute("INSERT INTO script_waypoint VALUES (%u, %u, %f, %f, %f, %u, '');", entry, oldMax + 1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), waitTime);
+
+        handler->PSendSysMessage("Point %u de l'entry %u ajoute aux coordonnee %f %f %f avec un temps d'attente de %u",
+                                  entry, oldMax + 1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), waitTime);
         return true;
     }
 };
