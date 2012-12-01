@@ -17075,12 +17075,7 @@ bool Player::LoadPositionFromDB(uint32& mapid, float& x, float& y, float& z, flo
 void Player::SetHomebind(WorldLocation const& loc, uint32 area_id)
 {
     m_homebindMapId  = loc.GetMapId();
-
-    if (area_id)
-        m_homebindAreaId = area_id;
-    else
-        m_homebindAreaId = loc.GetAreaId();
-
+    m_homebindAreaId = area_id;
     m_homebindX      = loc.GetPositionX();
     m_homebindY      = loc.GetPositionY();
     m_homebindZ      = loc.GetPositionZ();

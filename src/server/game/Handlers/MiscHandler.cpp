@@ -2218,7 +2218,7 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
         _player->SaveToDB();
         WorldLocation location(1, -618.518f, -4251.67f, 38.718f, M_PI);
         _player->TeleportTo(location);
-        _player->SetHomebind(location);
+        _player->SetHomebind(location, 363);
         _player->learnSpell(669, false); // Language Orcish
         _player->learnSpell(108127, false); // Language Pandaren
     }
@@ -2229,7 +2229,7 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
         _player->SaveToDB();
         WorldLocation location(0, -8914.57f, -133.909f, 80.5378f, M_PI);
         _player->TeleportTo(location);
-        _player->SetHomebind(location);
+        _player->SetHomebind(location, 9);
         _player->learnSpell(668, false); // Language Common
         _player->learnSpell(108127, false); // Language Pandaren
     }
