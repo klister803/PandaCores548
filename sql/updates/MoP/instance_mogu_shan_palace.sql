@@ -81,6 +81,11 @@ INSERT INTO creature_text VALUES ('61243', '4', '0', 'Such a waste...', '14', '0
 
 #EVENT XIN THE WEAPONMASTER
 
+update creature_template set ScriptName = 'boss_xin_the_weaponmaster' where entry = 61398;
+
+update creature_template set ScriptName = 'mob_animated_staff' where entry = 61433;
+update creature_template set ScriptName = 'mob_ring_of_fire' where entry = 61499;
+
 insert into spell_script_names values ('120142', 'spell_dart');
 
 
