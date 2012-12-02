@@ -3016,7 +3016,9 @@ public:
 ## npc_experience
 ######*/
 
-#define GOSSIP_CHOOSE_FACTION           "Je souhaiterais choisir ma faction"
+#define GOSSIP_CHOOSE_FACTION     "Je souhaiterais choisir ma faction"
+#define GOSSIP_TP_STORMIND        "Je souhaiterais me rendre a Hurlevent"
+#define GOSSIP_TP_ORGRI           "Je souhaiterais me rendre a Orgrimmar"
 
 class npc_choose_faction : public CreatureScript
 {
@@ -3025,15 +3027,27 @@ public:
 
     bool OnGossipHello(Player* player, Creature* creature)
     {
-        player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOOSE_FACTION, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
+        if (player->getRace() == RACE_PANDAREN_NEUTRAL)
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_CHOOSE_FACTION, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+        else if (player->getRace() == RACE_PANDAREN_ALLI)
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_TP_STORMIND, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 2);
+        else if (player->getRace() == RACE_PANDAREN_HORDE)
+            player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_TP_ORGRI, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 3);
+
         player->PlayerTalkClass->SendGossipMenu(GOSSIP_TEXT_EXP, creature->GetGUID());
         return true;
     }
 
     bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
     {
+        if (action == GOSSIP_ACTION_INFO_DEF + 1)
+            player->ShowNeutralPlayerFactionSelectUI();
+        else if (action == GOSSIP_ACTION_INFO_DEF + 2)
+            player->TeleportTo(0, -8866.55, 671.93, 97.90, 5.31);
+        else if (action == GOSSIP_ACTION_INFO_DEF + 3)
+            player->TeleportTo(1, 1575.95, -449.48, 16.04, 1.80);
+
         player->PlayerTalkClass->SendCloseGossip();
-        player->ShowNeutralPlayerFactionSelectUI();
         return true;
     }
 };
