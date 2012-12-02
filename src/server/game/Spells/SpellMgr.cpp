@@ -2638,20 +2638,24 @@ void SpellMgr::LoadSpellClassInfo()
         if(!classEntry)
             continue;
 
+        // Ancestral Focus
+        if (ClassID == CLASS_SHAMAN)
+            mSpellClassInfo[ClassID].push_back(89920);
+
         // Plate Mail skill
-        if(ClassID == CLASS_PALADIN || ClassID == CLASS_WARRIOR)
+        if (ClassID == CLASS_PALADIN || ClassID == CLASS_WARRIOR)
             mSpellClassInfo[ClassID].push_back(750);
 
         // Mail skill
-        if(ClassID == CLASS_SHAMAN || ClassID == CLASS_HUNTER)
+        if (ClassID == CLASS_SHAMAN || ClassID == CLASS_HUNTER)
             mSpellClassInfo[ClassID].push_back(8737);
 
         // Dual Wield
-        if(ClassID == CLASS_WARRIOR || ClassID == CLASS_HUNTER || ClassID == CLASS_ROGUE || ClassID == CLASS_DEATH_KNIGHT || ClassID == CLASS_MONK)
+        if (ClassID == CLASS_WARRIOR || ClassID == CLASS_HUNTER || ClassID == CLASS_ROGUE || ClassID == CLASS_DEATH_KNIGHT || ClassID == CLASS_MONK)
             mSpellClassInfo[ClassID].push_back(674);
 
         // Natural Insight druid
-        if(ClassID == CLASS_DRUID)
+        if (ClassID == CLASS_DRUID)
             mSpellClassInfo[ClassID].push_back(112857);
 
         for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)

@@ -3362,8 +3362,6 @@ void Player::InitTalentForLevel()
 
 void Player::InitSpellForLevel()
 {
-    bool update = false;
-
     auto spellList = sSpellMgr->GetSpellClassList(getClass());
     uint8 level = getLevel();
     uint32 specializationId = GetSpecializationId(GetActiveSpec());
