@@ -65,6 +65,54 @@ enum ShamanSpells
     SPELL_SHA_MANA_TIDE                     = 16191
 };
 
+// Spirit Link - 98020 : triggered by 98017
+// Spirit Link Totem
+class spell_sha_spirit_link : public SpellScriptLoader
+{
+    public:
+        spell_sha_spirit_link() : SpellScriptLoader("spell_sha_spirit_link") { }
+
+        class spell_sha_spirit_link_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_spirit_link_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->GetEntry() == 53006)
+                    {
+                        if (Player* _player = caster->GetOwner()->ToPlayer())
+                        {
+                            std::list<Unit*> memberList;
+                            _player->GetPartyMembers(memberList);
+
+                            float totalRaidHealthPct = 0;
+
+                            for (auto itr : memberList)
+                                totalRaidHealthPct += itr->GetHealthPct();
+
+                            totalRaidHealthPct /= memberList.size() * 100.0f;
+
+                            for (auto itr : memberList)
+                                itr->SetHealth(uint32(totalRaidHealthPct * itr->GetMaxHealth()));
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_sha_spirit_link_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_spirit_link_SpellScript();
+        }
+};
+
 // Mana Tide - 16191
 class spell_sha_mana_tide : public SpellScriptLoader
 {
@@ -1048,6 +1096,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_spirit_link();
     new spell_sha_mana_tide();
     new spell_sha_tidal_waves();
     new spell_sha_fire_nova();

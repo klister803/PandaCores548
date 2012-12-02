@@ -3206,6 +3206,57 @@ public:
 };
 
 
+/*######
+## npc_spirit_link_totem
+######*/
+
+class npc_spirit_link_totem : public CreatureScript
+{
+    public:
+        npc_spirit_link_totem() : CreatureScript("npc_spirit_link_totem") { }
+
+    struct npc_spirit_link_totemAI : public ScriptedAI
+    {
+        uint32 CastTimer;
+
+        npc_spirit_link_totemAI(Creature* creature) : ScriptedAI(creature)
+        {
+            CastTimer = 1000;
+
+            if (creature->GetOwner() && creature->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+            {
+                if (creature->GetEntry() == 53006)
+                {
+                    creature->CastSpell(creature, 98007, false);
+                    creature->CastSpell(creature, 98017, true);
+                }
+            }
+        }
+
+        void UpdateAI(uint32 const diff)
+        {
+            if (CastTimer >= diff)
+            {
+                if (me->GetOwner() && me->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if (me->GetEntry() == 53006)
+                    {
+                        me->CastSpell(me, 98007, false);
+                        me->CastSpell(me, 98017, true);
+                    }
+                }
+            }
+
+            CastTimer = 0;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_spirit_link_totemAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3244,4 +3295,5 @@ void AddSC_npcs_special()
     new npc_event_demorph();
     new npc_capacitor_totem();
     new npc_feral_spirit();
+    new npc_spirit_link_totem();
 }
