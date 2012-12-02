@@ -3308,7 +3308,7 @@ class spell_gen_tp_storm_orgri : public SpellScriptLoader
                         _player->TeleportTo(0, -8833.07f, 622.778f, 93.9317f, _player->GetOrientation());
                     // Tp to Orgrimmar
                     else if (GetSpellInfo()->Id == 17609)
-                        _player->TeleportTo(1, 1569.97f, -4397.41f, 16.0472, _player->GetOrientation());
+                        _player->TeleportTo(1, 1569.97f, -4397.41f, 16.0472f, _player->GetOrientation());
                 }
             }
 
