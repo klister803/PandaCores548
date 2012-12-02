@@ -515,6 +515,9 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
         }
         ObjectGuid guid = itr2->first;
         Player* player = ObjectAccessor::FindPlayer(itr2->first);
+
+        if (!player)
+            continue;
         
         if (!isArena) // Unk 3 prolly is (bg)
         {
