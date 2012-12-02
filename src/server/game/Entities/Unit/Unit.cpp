@@ -10433,6 +10433,25 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, heal);
 
+    // Custom MoP Script
+    // Ascendance - 114052 : Water Ascendant - Healing done is duplicated and distribued evenly among all nearby (15 yards) allies
+    if (GetTypeId() == TYPEID_PLAYER && heal != 0 && HasAura(114052) && spellProto->Id != 114083)
+    {
+        std::list<Unit*> nearbyUnits;
+        std::list<Unit*> nearbyAllies;
+        GetAttackableUnitListInRange(ToPlayer(), nearbyUnits, 15.0f);
+
+        for (auto itr : nearbyUnits)
+            if (!itr->IsHostileTo(this))
+                nearbyAllies.push_back(itr);
+
+        // Heal amount distribued for all allies, caster included
+        int32 bp = heal / nearbyAllies.size();
+
+        for (auto itr : nearbyAllies)
+            CastCustomSpell(itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
+    }
+
     return uint32(std::max(heal, 0.0f));
 }
 
@@ -14267,9 +14286,9 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                             }
                             int32 damageLeft = triggeredByAura->GetAmount();
                             // No damage left
-                            if (damageLeft < int32(damage))
+                            if (damageLeft < int32(damage) && triggeredByAura->GetId() != 114052)
                                 i->aura->Remove();
-                            else
+                            else if (triggeredByAura->GetId() != 114052)
                                 triggeredByAura->SetAmount(damageLeft - damage);
                         }
                         break;
