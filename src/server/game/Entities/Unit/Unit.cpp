@@ -13466,6 +13466,13 @@ SpellPowerEntry const* Unit::GetSpellPowerEntryBySpell(SpellInfo const* spell) c
                 return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_MANA);
         }
     }
+    else if (getClass() == CLASS_MONK)
+    {
+        if (GetShapeshiftForm() == FORM_WISE_SERPENT)
+            return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_MANA);
+
+        return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_ENERGY);
+    }
 
     return spell->spellPower;
 }
