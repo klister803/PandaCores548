@@ -3077,6 +3077,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 8122: // Psychic Scream
+                spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
+                spellInfo->MaxAffectedTargets = 5;
+                break;
             case 53390: // Tidal Waves
                 spellInfo->Effects[0].BasePoints = -30;
                 spellInfo->Effects[0].SpellClassMask[0] |= 0x10000;
