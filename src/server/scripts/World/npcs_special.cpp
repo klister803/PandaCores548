@@ -1228,14 +1228,10 @@ public:
                 else canBuy = true;
                 break;
             case 65068:                                         //Old Whitenose
-                if (player->GetReputationRank(1353) != REP_EXALTED && race != RACE_PANDAREN_ALLI && race != RACE_PANDAREN_NEUTRAL)
-                    break;
-                else canBuy = true;
+                canBuy = true;
                 break;
             case 66022:                                         //Turtlemaster Odai
-                if (player->GetReputationRank(1352) != REP_EXALTED && race != RACE_PANDAREN_HORDE && race != RACE_PANDAREN_NEUTRAL)
-                    break;
-                else canBuy = true;
+                canBuy = true;
                 break;
         }
 
