@@ -196,6 +196,7 @@ void AuraApplication::BuildUpdatePacket(ByteBuffer& data, bool remove) const
     if (aura->GetMaxDuration() > 0 && !(aura->GetSpellInfo()->AttributesEx5 & SPELL_ATTR5_HIDE_DURATION))
         flags |= AFLAG_DURATION;
     data << uint8(flags);
+    uint32 effectMaskPos = data.wpos();
     data << uint32(GetEffectMask());
     data << uint16(aura->GetCasterLevel());
     // send stack amount for aura which could be stacked (never 0 - causes incorrect display) or charges
@@ -211,6 +212,7 @@ void AuraApplication::BuildUpdatePacket(ByteBuffer& data, bool remove) const
         data << uint32(aura->GetDuration());
     }
 
+    uint32 EffectMask = 0;
     if (flags & AFLAG_ANY_EFFECT_AMOUNT_SENT)
     {
         size_t pos = data.wpos();
@@ -220,9 +222,15 @@ void AuraApplication::BuildUpdatePacket(ByteBuffer& data, bool remove) const
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
             if (AuraEffect const* eff = aura->GetEffect(i)) // NULL if effect flag not set
+            {
                 data << float(eff->GetAmount());
+                EffectMask |= 1 << i;
+            }
             count++;
         }
+
+        data.put(effectMaskPos, EffectMask);
+
         data.put(pos, count);
     }
 }

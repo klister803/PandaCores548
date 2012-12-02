@@ -252,6 +252,48 @@ class spell_pal_guarded_by_the_light : public SpellScriptLoader
         }
 };
 
+// PALADIN_SPELL_HOLY_SHOCK_R1_DAMAGE Hot Fix Blizzard
+class spell_pal_holy_shock_damage : public SpellScriptLoader
+{
+    public:
+        spell_pal_holy_shock_damage() : SpellScriptLoader("spell_pal_holy_shock_damage") { }
+
+        class spell_pal_holy_shock_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_holy_shock_damage_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* caster = GetCaster()->ToPlayer())
+                {
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if (caster->getLevel() < 85)
+                        {
+                            int32 damage = int32(GetHitDamage() * 0.15f);
+                            SetHitDamage(damage);
+                        }
+                        else if (caster->getLevel() < 90)
+                        {
+                            int32 damage = int32(GetHitDamage() * 0.61f);
+                            SetHitDamage(damage);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_holy_shock_damage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_holy_shock_damage_SpellScript();
+        }
+};
+
 class spell_pal_holy_shock : public SpellScriptLoader
 {
     public:
@@ -580,6 +622,7 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_blessing_of_faith();
     new spell_pal_blessing_of_sanctuary();
     new spell_pal_guarded_by_the_light();
+    new spell_pal_holy_shock_damage();
     new spell_pal_holy_shock();
     new spell_pal_judgement_of_command();
     new spell_pal_divine_storm();

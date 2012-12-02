@@ -3073,6 +3073,17 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 53390: // Tidal Waves
+                spellInfo->Effects[0].BasePoints = -30;
+                spellInfo->Effects[0].SpellClassMask[0] |= 0x10000;
+                spellInfo->Effects[0].SpellClassMask[2] |= 0x40;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+                spellInfo->Effects[0].MiscValue = SPELLMOD_CASTING_TIME;
+                spellInfo->Effects[1].BasePoints = 30;
+                spellInfo->Effects[1].SpellClassMask[2] |= 0x80;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_ADD_FLAT_MODIFIER;
+                spellInfo->Effects[1].MiscValue = SPELLMOD_CRITICAL_CHANCE;
+                break;
             case 73680: // Unleash Elements
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                 break;
