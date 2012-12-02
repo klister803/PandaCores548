@@ -1623,7 +1623,7 @@ void Player::Update(uint32 p_time)
 
             if (isAttackReady(BASE_ATTACK))
             {
-                if (!IsWithinMeleeRange(victim))
+                if (!IsWithinMeleeRange(victim) && !HasAura(114051))
                 {
                     setAttackTimer(BASE_ATTACK, 100);
                     if (m_swingErrorMsg != 1)               // send single time (client auto repeat)
@@ -1651,15 +1651,24 @@ void Player::Update(uint32 p_time)
                         if (getAttackTimer(OFF_ATTACK) < ATTACK_DISPLAY_DELAY)
                             setAttackTimer(OFF_ATTACK, ATTACK_DISPLAY_DELAY);
 
-                    // do attack
+                    // do attack if player doesn't have Ascendance for Enhanced Shamans
+                    if (!HasAura(114051))
+                    {
                     AttackerStateUpdate(victim, BASE_ATTACK);
                     resetAttackTimer(BASE_ATTACK);
+                    }
+                    // Custom MoP Script - Wind Lash
+                    else
+                    {
+                        CastSpell(victim, 114089, true);
+                        resetAttackTimer(BASE_ATTACK);
+                    }
                 }
             }
 
             if (haveOffhandWeapon() && isAttackReady(OFF_ATTACK))
             {
-                if (!IsWithinMeleeRange(victim))
+                if (!IsWithinMeleeRange(victim) && !HasAura(114051))
                     setAttackTimer(OFF_ATTACK, 100);
                 else if (!HasInArc(2*M_PI/3, victim))
                     setAttackTimer(OFF_ATTACK, 100);
@@ -1669,9 +1678,18 @@ void Player::Update(uint32 p_time)
                     if (getAttackTimer(BASE_ATTACK) < ATTACK_DISPLAY_DELAY)
                         setAttackTimer(BASE_ATTACK, ATTACK_DISPLAY_DELAY);
 
-                    // do attack
-                    AttackerStateUpdate(victim, OFF_ATTACK);
-                    resetAttackTimer(OFF_ATTACK);
+                    // do attack if player doesn't have Ascendance for Enhanced Shamans
+                    if (!HasAura(114051))
+                    {
+                        AttackerStateUpdate(victim, OFF_ATTACK);
+                        resetAttackTimer(OFF_ATTACK);
+                    }
+                    // Custom MoP Script - Wind Lash Off-Hand
+                    else
+                    {
+                        CastSpell(victim, 114093, true);
+                        resetAttackTimer(OFF_ATTACK);
+                    }
                 }
             }
 
