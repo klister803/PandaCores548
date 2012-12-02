@@ -61,7 +61,54 @@ enum ShamanSpells
     SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE    = 77661,
     SPELL_SHA_FIRE_NOVA                     = 1535,
     SPELL_SHA_FIRE_NOVA_TRIGGERED           = 131786,
-    SPELL_SHA_TIDAL_WAVES                   = 53390
+    SPELL_SHA_TIDAL_WAVES                   = 53390,
+    SPELL_SHA_MANA_TIDE                     = 16191
+};
+
+// Mana Tide - 16191
+class spell_sha_mana_tide : public SpellScriptLoader
+{
+    public:
+        spell_sha_mana_tide() : SpellScriptLoader("spell_sha_mana_tide") { }
+
+        class spell_sha_mana_tide_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_mana_tide_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_SHA_ELEMENTAL_BLAST))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Unit* target = GetHitUnit())
+                {
+                    if (Player* _player = GetCaster()->GetOwner()->ToPlayer())
+                    {
+                        AuraApplication* aura = target->GetAuraApplication(SPELL_SHA_MANA_TIDE, GetCaster()->GetGUID());
+
+                        aura->GetBase()->GetEffect(0)->ChangeAmount(0);
+
+                        int32 spirit = _player->GetStat(STAT_SPIRIT) * 2;
+
+                        aura->GetBase()->GetEffect(0)->ChangeAmount(spirit);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_mana_tide_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_mana_tide_SpellScript();
+        }
 };
 
 // Called by Chain Heal - 1064 or Riptide - 61295
@@ -1001,6 +1048,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_mana_tide();
     new spell_sha_tidal_waves();
     new spell_sha_fire_nova();
     new spell_sha_unleash_elements();
