@@ -3043,9 +3043,9 @@ public:
         if (action == GOSSIP_ACTION_INFO_DEF + 1)
             player->ShowNeutralPlayerFactionSelectUI();
         else if (action == GOSSIP_ACTION_INFO_DEF + 2)
-            player->TeleportTo(0, -8866.55, 671.93, 97.90, 5.31);
+            player->TeleportTo(0, -8866.55f, 671.93f, 97.90f, 5.31f);
         else if (action == GOSSIP_ACTION_INFO_DEF + 3)
-            player->TeleportTo(1, 1575.95, -449.48, 16.04, 1.80);
+            player->TeleportTo(1, 1575.95f, -449.48f, 16.04f, 1.80f);
 
         player->PlayerTalkClass->SendCloseGossip();
         return true;
