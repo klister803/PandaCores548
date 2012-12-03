@@ -3056,7 +3056,7 @@ public:
         else if (action == GOSSIP_ACTION_INFO_DEF + 2)
             player->TeleportTo(0, -8866.55f, 671.93f, 97.90f, 5.31f);
         else if (action == GOSSIP_ACTION_INFO_DEF + 3)
-            player->TeleportTo(1, 1575.95f, -449.48f, 16.04f, 1.80f);
+            player->TeleportTo(1, 1577.30f, -4453.64f, 15.68f, 1.84f);
 
         player->PlayerTalkClass->SendCloseGossip();
         return true;
