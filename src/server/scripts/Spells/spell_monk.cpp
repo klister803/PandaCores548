@@ -62,6 +62,42 @@ enum MonkSpells
     SPELL_MONK_CRACKLING_JADE_LIGHTNING         = 117952
 };
 
+// Tiger's Lust - 116841
+class spell_monk_tigers_lust : public SpellScriptLoader
+{
+    public:
+        spell_monk_tigers_lust() : SpellScriptLoader("spell_monk_tigers_lust") { }
+
+        class spell_monk_tigers_lust_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_tigers_lust_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_FLYING_SERPENT_KICK_NEW))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        target->RemoveMovementImpairingAuras();
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_tigers_lust_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_tigers_lust_SpellScript();
+        }
+};
+
 // Flying Serpent Kick - 115057
 class spell_monk_flying_serpent_kick : public SpellScriptLoader
 {
@@ -827,6 +863,7 @@ class spell_monk_roll : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_tigers_lust();
     new spell_monk_flying_serpent_kick();
     new spell_monk_chi_torpedo();
     new spell_monk_purifying_brew();
