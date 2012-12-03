@@ -523,7 +523,8 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         // Second effect by spec : Instant heal or DoT
-                        if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_WINDWALKER)
+                        if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_WINDWALKER
+                            && caster->ToPlayer()->HasAura(128595))
                         {
                             // If behind : 20% damage on DoT
                             if (target->isInBack(caster))

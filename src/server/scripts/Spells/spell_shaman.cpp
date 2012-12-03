@@ -338,7 +338,7 @@ public:
             {
                 if (Unit* target = GetHitUnit())
                 {
-                    if (roll_chance_i(60))
+                    if (roll_chance_i(60) && _player->HasAura(88765))
                     {
                         if (Aura * lightningShield = _player->GetAura(324))
                         {

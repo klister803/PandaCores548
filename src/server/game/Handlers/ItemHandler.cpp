@@ -764,6 +764,18 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
                 if (!(itemTemplate->AllowableClass & _player->getClassMask()) && itemTemplate->Bonding == BIND_WHEN_PICKED_UP)
                     continue;
 
+                // Custom MoP Script for Pandarens Mounts (Alliance)
+                if (itemTemplate->Class == 15 && itemTemplate->SubClass == 5 && _player->getRace() != RACE_PANDAREN_ALLI
+                    && _player->getRace() != RACE_PANDAREN_HORDE && _player->getRace() != RACE_PANDAREN_NEUTRAL
+                    && vendor->GetEntry() == 65068 && _player->GetReputationRank(1353) != REP_EXALTED)
+                    continue;
+
+                // Custom MoP Script for Pandarens Mounts (Horde)
+                if (itemTemplate->Class == 15 && itemTemplate->SubClass == 5 && _player->getRace() != RACE_PANDAREN_ALLI
+                    && _player->getRace() != RACE_PANDAREN_HORDE && _player->getRace() != RACE_PANDAREN_NEUTRAL
+                    && vendor->GetEntry() == 66022 && _player->GetReputationRank(1352) != REP_EXALTED)
+                    continue;
+
                 // Only display items in vendor lists for the team the player is on
                 if ((itemTemplate->Flags2 & ITEM_FLAGS_EXTRA_HORDE_ONLY && _player->GetTeam() == ALLIANCE) ||
                     (itemTemplate->Flags2 & ITEM_FLAGS_EXTRA_ALLIANCE_ONLY && _player->GetTeam() == HORDE))

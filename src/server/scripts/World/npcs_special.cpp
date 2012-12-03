@@ -1222,6 +1222,17 @@ public:
                     player->SEND_GOSSIP_MENU(10239, creature->GetGUID());
                 else canBuy = true;
                 break;
+            case 48510:                                         //Kall Worthalon
+                if (player->GetReputationRank(1133) != REP_EXALTED && race != RACE_GOBLIN)
+                    player->SEND_GOSSIP_MENU(30002, creature->GetGUID());
+                else canBuy = true;
+                break;
+            case 65068:                                         //Old Whitenose
+                canBuy = true;
+                break;
+            case 66022:                                         //Turtlemaster Odai
+                canBuy = true;
+                break;
         }
 
         if (canBuy)
