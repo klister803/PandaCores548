@@ -410,9 +410,9 @@ enum Opcodes
     CMSG_QUESTGIVER_ACCEPT_QUEST                      = 0xDA0,  // 5.0.5 16048
     CMSG_QUESTGIVER_CANCEL                            = 0x000,  // Not found in 4.3.4
     CMSG_QUESTGIVER_CHOOSE_REWARD                     = 0x9FC,  // 5.0.5 16048
-    CMSG_QUESTGIVER_COMPLETE_QUEST                    = 0xCEB,  // 5.0.5 16048
+    CMSG_QUESTGIVER_COMPLETE_QUEST                    = 0xCA1,  // 5.0.5 16048
     CMSG_QUESTGIVER_HELLO                             = 0xD0A,  // 5.0.5 16048
-    CMSG_QUESTGIVER_QUERY_QUEST                       = 0xCA1,  // 5.0.5 16048
+    CMSG_QUESTGIVER_QUERY_QUEST                       = 0xCEB,  // 5.0.5 16048
     CMSG_QUESTGIVER_QUEST_AUTOLAUNCH                  = 0x000,  // Not found in 4.3.4
     CMSG_QUESTGIVER_REQUEST_REWARD                    = 0xD92,  // 5.0.5 16048
     CMSG_QUESTGIVER_STATUS_MULTIPLE_QUERY             = 0xC97,  // 5.0.5 16048
