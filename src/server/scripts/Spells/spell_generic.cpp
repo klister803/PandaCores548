@@ -3292,7 +3292,7 @@ class spell_gen_tp_storm_orgri : public SpellScriptLoader
         {
             PrepareSpellScript(spell_gen_tp_storm_orgri_SpellScript);
 
-            bool Validate()
+            bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(17334) || !sSpellMgr->GetSpellInfo(17609))
                     return false;
