@@ -199,7 +199,7 @@ class spell_monk_flying_serpent_kick : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_flying_serpent_kick_SpellScript);
 
-            bool Validate()
+            bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_MONK_FLYING_SERPENT_KICK_NEW))
                     return false;
@@ -594,7 +594,7 @@ class spell_monk_zen_pilgrimage : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_zen_pilgrimage_SpellScript);
 
-            bool Validate()
+            bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PILGRIMAGE) || !sSpellMgr->GetSpellInfo(SPELL_MONK_ZEN_PILGRIMAGE_RETURN))
                     return false;
@@ -910,7 +910,7 @@ class spell_monk_roll : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_roll_SpellScript);
 
-            bool Validate()
+            bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_MONK_ROLL))
                     return false;
@@ -952,6 +952,47 @@ class spell_monk_roll : public SpellScriptLoader
         }
 };
 
+// Brewing : Tigereye Brew - 123980
+class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
+{
+    public:
+        spell_monk_tigereye_brew_stacks() : SpellScriptLoader("spell_monk_tigereye_brew_stacks") { }
+
+        class spell_monk_tigereye_brew_stacks_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_tigereye_brew_stacks_AuraScript);
+
+            uint32 chiConsumed;
+
+            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                chiConsumed = 0;
+            }
+
+            void SetData(uint32 type, uint32 data)
+            {
+                while ((chiConsumed += data) >= 4)
+                {
+                    chiConsumed = 0;
+                    data = data > 4 ? data - 4: 0;
+
+                    if (GetCaster())
+                        GetCaster()->CastSpell(GetCaster(), SPELL_MONK_TIGEREYE_BREW_STACKS, true);
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_monk_tigereye_brew_stacks_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_tigereye_brew_stacks_AuraScript();
+        }
+};
+
 void AddSC_monk_spell_scripts()
 {
     new spell_monk_spear_hand_strike();
@@ -974,4 +1015,5 @@ void AddSC_monk_spell_scripts()
     new spell_monk_paralysis();
     new spell_monk_provoke();
     new spell_monk_roll();
+    new spell_monk_tigereye_brew_stacks();
 }

@@ -11758,6 +11758,11 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
     if (dVal == 0)
         return 0;
 
+    if (power == POWER_CHI)
+        if (dVal < 0)
+            if (Aura* tigereyeBrew = this->GetAura(123980))
+                tigereyeBrew->SetScriptData(0, -dVal);
+
     int32 curPower = GetPower(power);
 
     int32 val = dVal + curPower;

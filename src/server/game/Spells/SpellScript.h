@@ -764,6 +764,9 @@ class AuraScript : public _SpellScript
         // check if aura has effect of given aura type
         bool HasEffectType(AuraType type) const;
 
+        // Permit to communicate some data with the script
+        virtual void SetData(uint32 type, uint32 data) {}
+
         // AuraScript interface - functions which are redirecting to AuraApplication class
         // Do not call these in hooks in which AuraApplication is not avalible, otherwise result will differ from expected (the functions will return NULL)
 

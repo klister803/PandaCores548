@@ -123,7 +123,7 @@ class spell_sha_mana_tide : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_mana_tide_SpellScript);
 
-            bool Validate()
+            bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_SHA_ELEMENTAL_BLAST))
                     return false;
@@ -473,7 +473,7 @@ class spell_sha_healing_stream : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_healing_stream_SpellScript);
 
-            bool Validate()
+            bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_SHA_HEALING_STREAM))
                     return false;
@@ -512,7 +512,7 @@ class spell_sha_static_shock : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_static_shock_SpellScript);
 
-            bool Validate()
+            bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_SHA_LAVA_LASH) || !sSpellMgr->GetSpellInfo(SPELL_SHA_STORMSTRIKE))
                     return false;
@@ -569,7 +569,7 @@ class spell_sha_elemental_blast : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_elemental_blast_SpellScript);
 
-            bool Validate()
+            bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_SHA_ELEMENTAL_BLAST))
                     return false;
@@ -637,7 +637,7 @@ class spell_sha_earthquake_tick : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_earthquake_tick_SpellScript);
 
-            bool Validate()
+            bool Validate(SpellInfo const* /*spell*/)
             {
                 if (!sSpellMgr->GetSpellInfo(SPELL_SHA_EARTHQUAKE_TICK))
                     return false;
