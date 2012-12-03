@@ -60,7 +60,97 @@ enum MonkSpells
     SPELL_MONK_FLYING_SERPENT_KICK_NEW          = 115057,
     SPELL_MONK_FLYING_SERPENT_KICK_AOE          = 123586,
     SPELL_MONK_CRACKLING_JADE_LIGHTNING         = 117952,
-    SPELL_MONG_TIGEREYE_BREW                    = 125195
+    SPELL_MONK_TIGEREYE_BREW                    = 116740,
+    SPELL_MONK_TIGEREYE_BREW_STACKS             = 125195,
+    SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE        = 116709
+};
+
+// Spear Hand Strike - 116705
+class spell_monk_spear_hand_strike : public SpellScriptLoader
+{
+    public:
+        spell_monk_spear_hand_strike() : SpellScriptLoader("spell_monk_spear_hand_strike") { }
+
+        class spell_monk_spear_hand_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_spear_hand_strike_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->isInFront(_player))
+                        {
+                            _player->CastSpell(target, SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE, true);
+                            _player->AddSpellCooldown(116705, 0, time(NULL) + 15);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_spear_hand_strike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_spear_hand_strike_SpellScript();
+        }
+};
+
+// Tigereye Brew - 116740
+class spell_monk_tigereye_brew : public SpellScriptLoader
+{
+    public:
+        spell_monk_tigereye_brew() : SpellScriptLoader("spell_monk_tigereye_brew") { }
+
+        class spell_monk_tigereye_brew_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_tigereye_brew_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_TIGEREYE_BREW))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        AuraApplication* aura = _player->GetAuraApplication(SPELL_MONK_TIGEREYE_BREW_STACKS, _player->GetGUID());
+
+                        if (aura)
+                        {
+                            int32 stackAmount = aura->GetBase()->GetStackAmount() * 2;
+
+                            AuraApplication* tigereyeBrew = _player->GetAuraApplication(SPELL_MONK_TIGEREYE_BREW, _player->GetGUID());
+                            if (tigereyeBrew)
+                                tigereyeBrew->GetBase()->GetEffect(0)->ChangeAmount(stackAmount);
+
+                            _player->RemoveAura(SPELL_MONK_TIGEREYE_BREW_STACKS);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_tigereye_brew_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_tigereye_brew_SpellScript();
+        }
 };
 
 // Tiger's Lust - 116841
@@ -887,7 +977,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
                     data = data > 4 ? data - 4: 0;
 
                     if (GetCaster())
-                        GetCaster()->CastSpell(GetCaster(), SPELL_MONG_TIGEREYE_BREW, true);
+                        GetCaster()->CastSpell(GetCaster(), SPELL_MONK_TIGEREYE_BREW_STACKS, true);
                 }
             }
 
@@ -905,6 +995,8 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_spear_hand_strike();
+    new spell_monk_tigereye_brew();
     new spell_monk_tigers_lust();
     new spell_monk_flying_serpent_kick();
     new spell_monk_chi_torpedo();
