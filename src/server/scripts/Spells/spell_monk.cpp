@@ -59,7 +59,60 @@ enum MonkSpells
     SPELL_MONK_FLYING_SERPENT_KICK              = 101545,
     SPELL_MONK_FLYING_SERPENT_KICK_NEW          = 115057,
     SPELL_MONK_FLYING_SERPENT_KICK_AOE          = 123586,
-    SPELL_MONK_CRACKLING_JADE_LIGHTNING         = 117952
+    SPELL_MONK_CRACKLING_JADE_LIGHTNING         = 117952,
+    SPELL_MONK_TIGEREYE_BREW                    = 116740,
+    SPELL_MONK_TIGEREYE_BREW_STACKS             = 125195
+};
+
+// Tigereye Brew - 116740
+class spell_monk_tigereye_brew : public SpellScriptLoader
+{
+    public:
+        spell_monk_tigereye_brew() : SpellScriptLoader("spell_monk_tigereye_brew") { }
+
+        class spell_monk_tigereye_brew_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_tigereye_brew_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MONK_TIGEREYE_BREW))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        AuraApplication* aura = _player->GetAuraApplication(SPELL_MONK_TIGEREYE_BREW_STACKS, _player->GetGUID());
+
+                        if (aura)
+                        {
+                            int32 stackAmount = aura->GetBase()->GetStackAmount() * 2;
+
+                            AuraApplication* tigereyeBrew = _player->GetAuraApplication(SPELL_MONK_TIGEREYE_BREW, _player->GetGUID());
+                            if (tigereyeBrew)
+                                tigereyeBrew->GetBase()->GetEffect(0)->ChangeAmount(stackAmount);
+
+                            _player->RemoveAura(SPELL_MONK_TIGEREYE_BREW_STACKS);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_tigereye_brew_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_tigereye_brew_SpellScript();
+        }
 };
 
 // Tiger's Lust - 116841
@@ -863,6 +916,7 @@ class spell_monk_roll : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_tigereye_brew();
     new spell_monk_tigers_lust();
     new spell_monk_flying_serpent_kick();
     new spell_monk_chi_torpedo();
