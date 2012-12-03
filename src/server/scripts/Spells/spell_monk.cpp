@@ -77,10 +77,17 @@ class spell_monk_spear_hand_strike : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
                     if (Unit* target = GetHitUnit())
-                        if (target->isInFront(caster))
-                            caster->CastSpell(target, SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE, true);
+                    {
+                        if (target->isInFront(_player))
+                        {
+                            _player->CastSpell(target, SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE, true);
+                            _player->AddSpellCooldown(116705, 0, time(NULL) + 15);
+                        }
+                    }
+                }
             }
 
             void Register()
