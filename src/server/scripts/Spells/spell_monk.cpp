@@ -61,7 +61,38 @@ enum MonkSpells
     SPELL_MONK_FLYING_SERPENT_KICK_AOE          = 123586,
     SPELL_MONK_CRACKLING_JADE_LIGHTNING         = 117952,
     SPELL_MONK_TIGEREYE_BREW                    = 116740,
-    SPELL_MONK_TIGEREYE_BREW_STACKS             = 125195
+    SPELL_MONK_TIGEREYE_BREW_STACKS             = 125195,
+    SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE        = 116709
+};
+
+// Spear Hand Strike - 116705
+class spell_monk_spear_hand_strike : public SpellScriptLoader
+{
+    public:
+        spell_monk_spear_hand_strike() : SpellScriptLoader("spell_monk_spear_hand_strike") { }
+
+        class spell_monk_spear_hand_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_spear_hand_strike_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetHitUnit())
+                        if (target->isInFront(caster))
+                            caster->CastSpell(target, SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_spear_hand_strike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_spear_hand_strike_SpellScript();
+        }
 };
 
 // Tigereye Brew - 116740
@@ -916,6 +947,7 @@ class spell_monk_roll : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_spear_hand_strike();
     new spell_monk_tigereye_brew();
     new spell_monk_tigers_lust();
     new spell_monk_flying_serpent_kick();
