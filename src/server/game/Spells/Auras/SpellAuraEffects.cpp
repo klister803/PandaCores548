@@ -1010,6 +1010,9 @@ void AuraEffect::HandleEffect(AuraApplication * aurApp, uint8 mode, bool apply)
     if ((apply && aurApp->GetRemoveMode()) || prevented)
         return;
 
+    if (GetAuraType() >= TOTAL_AURAS)
+        return;
+
     (*this.*AuraEffectHandler [GetAuraType()])(const_cast<AuraApplication const*>(aurApp), mode, apply);
 
     // check if script events have removed the aura or if default effect prevention was requested
