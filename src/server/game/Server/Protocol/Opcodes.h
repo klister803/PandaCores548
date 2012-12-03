@@ -859,7 +859,7 @@ enum Opcodes
     SMSG_GMRESPONSE_STATUS_UPDATE                     = 0xD2F,  // 5.0.5 16048
     SMSG_GMTICKET_CREATE                              = 0xC32,  // 5.0.5 16048
     SMSG_GMTICKET_DELETETICKET                        = 0x8D0,  // 5.0.5 16048
-    SMSG_GMTICKET_GETTICKET                           = 0,      // 0x2C15 in 4.3.4 @todo : Find me and BACON !
+    SMSG_GMTICKET_GETTICKET                           = 0x1BD,  // 5.0.5 16048
     SMSG_GMTICKET_SYSTEMSTATUS                        = 0xD1F,	// 5.0.5 16048
     SMSG_GMTICKET_UPDATETEXT                          = 0xCFB,  // 5.0.5 16048
     SMSG_GM_MESSAGECHAT                               = 0x90F,  // 5.0.5 16048

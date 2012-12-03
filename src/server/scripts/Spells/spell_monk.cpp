@@ -826,15 +826,6 @@ class spell_monk_roll : public SpellScriptLoader
                 return true;
             }
 
-            void HandleAfterCast()
-            {
-                Unit* caster = GetCaster();
-                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
-                    return;
-
-                caster->CastSpell(caster, SPELL_MONK_ROLL_TRIGGER, true);
-            }
-
             void HandleBeforeCast()
             {
                 Aura* aur = GetCaster()->AddAura(SPELL_MONK_ROLL_TRIGGER, GetCaster());
@@ -848,10 +839,19 @@ class spell_monk_roll : public SpellScriptLoader
                 app->ClientUpdate();
             }
 
+            void HandleAfterCast()
+            {
+                Unit* caster = GetCaster();
+                if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
+                    return;
+
+                caster->CastSpell(caster, SPELL_MONK_ROLL_TRIGGER, true);
+            }
+
             void Register()
             {
-                AfterCast += SpellCastFn(spell_monk_roll_SpellScript::HandleAfterCast);
                 BeforeCast += SpellCastFn(spell_monk_roll_SpellScript::HandleBeforeCast);
+                AfterCast += SpellCastFn(spell_monk_roll_SpellScript::HandleAfterCast);
             }
         };
 
