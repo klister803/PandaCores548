@@ -6234,6 +6234,7 @@ void Spell::EffectBind(SpellEffIndex effIndex)
     else
     {
         player->GetPosition(&loc);
+        loc.m_mapId = player->GetMapId();
         area_id = player->GetAreaId();
     }
 
