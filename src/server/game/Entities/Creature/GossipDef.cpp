@@ -148,13 +148,22 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, uint64 objectGUID) const
         QuestMenuItem const& item = _questMenu.GetItem(iI);
         uint32 questID = item.QuestId;
         Quest const* quest = sObjectMgr->GetQuestTemplate(questID);
+
+        Player* plr = _session->GetPlayer();
+
+        uint32 questStat = plr ? plr->GetQuestStatus(questID) : 0;
+
+        if(questStat == QuestStatus::QUEST_STATUS_COMPLETE)
+            questStat = 0;
+        else if(questStat == QuestStatus::QUEST_STATUS_NONE)
+            questStat = 1;
         
         data << uint32(questID);
-        data << uint32(0); // unk
-        data << uint32(item.QuestIcon);
+        data << uint32(questStat);
         data << int32(quest->GetQuestLevel());
-        data << uint8(0);                               // 3.3.3 changes icon: blue question or yellow exclamation
         data << uint32(quest->GetFlags());              // 3.3.3 quest flags
+        data << uint32(0); // unk
+        data << uint8(0);                               // 3.3.3 changes icon: blue question or yellow exclamation
         std::string title = quest->GetTitle();
 
         int locale = _session->GetSessionDbLocaleIndex();
@@ -264,13 +273,22 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title
         {
             std::string title = quest->GetTitle();
 
+            Player* plr = _session->GetPlayer();
+
             int loc_idx = _session->GetSessionDbLocaleIndex();
             if (loc_idx >= 0)
                 if (QuestLocale const* ql = sObjectMgr->GetQuestLocale(questID))
                     ObjectMgr::GetLocaleString(ql->Title, loc_idx, title);
 
+            uint32 questStat = plr ? plr->GetQuestStatus(questID) : 0;
+
+            if(questStat == QuestStatus::QUEST_STATUS_COMPLETE)
+                questStat = 0;
+            else if(questStat == QuestStatus::QUEST_STATUS_NONE)
+                questStat = 1;
+
             data << uint32(questID);
-            data << uint32(qmi.QuestIcon);
+            data << uint32(questStat);
             data << int32(quest->GetQuestLevel());
             data << uint32(quest->GetFlags());             // 3.3.3 quest flags
             data << uint32(0); //unk
