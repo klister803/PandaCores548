@@ -315,7 +315,7 @@ class spell_sha_unleash_elements : public SpellScriptLoader
 };
 
 // Called by Lightning Bolt - 403 and Chain Lightning - 421
-// Rolling Thunder - 88765
+// Rolling Thunder - 88764
 class spell_sha_rolling_thunder : public SpellScriptLoader
 {
 public:
@@ -338,7 +338,7 @@ public:
             {
                 if (Unit* target = GetHitUnit())
                 {
-                    if (roll_chance_i(60) && _player->HasAura(88765))
+                    if (roll_chance_i(60) && _player->HasAura(88764))
                     {
                         if (Aura * lightningShield = _player->GetAura(324))
                         {
