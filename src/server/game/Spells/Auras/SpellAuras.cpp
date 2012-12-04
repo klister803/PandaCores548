@@ -699,6 +699,12 @@ void Aura::Update(uint32 diff, Unit* caster)
                 m_timeCla -= diff;
             else if (caster)
             {
+                if (!m_spellPowerData)
+                {
+                    printf("Probleme dans l'aura %u, m_spellPowerData NULL", this->GetId());
+                    return;
+                }
+
                 if (int32 manaPerSecond = m_spellPowerData->manaPerSecond)
                 {
                     m_timeCla += 1000 - diff;
