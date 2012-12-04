@@ -365,8 +365,10 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     }
 
     // fall damage generation (ignore in flight case that can be triggered also at lags in moment teleportation to another map).
-    if (plrMover && plrMover->m_movementInfo.GetMovementFlags() & MOVEMENTFLAG_FALLING && (movementInfo.GetMovementFlags() & MOVEMENTFLAG_FALLING) == 0 && plrMover && !plrMover->isInFlight())
+    if (plrMover && plrMover->m_movementInfo.GetMovementFlags() & MOVEMENTFLAG_FALLING && (movementInfo.GetMovementFlags() & MOVEMENTFLAG_FALLING) == 0 && (movementInfo.GetMovementFlags() & MOVEMENTFLAG_SWIMMING) == 0 && plrMover && !plrMover->isInFlight())
+    {
         plrMover->HandleFall(movementInfo);
+    }
 
     if (plrMover && ((movementInfo.flags & MOVEMENTFLAG_SWIMMING) != 0) != plrMover->IsInWater())
     {
