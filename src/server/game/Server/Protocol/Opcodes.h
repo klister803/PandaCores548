@@ -209,7 +209,7 @@ enum Opcodes
     CMSG_GMSURVEY_SUBMIT                              = 0x96B,  // 5.0.5 16048
     CMSG_GMTICKET_CREATE                              = 0x8FE,  // 5.0.5 16048
     CMSG_GMTICKET_DELETETICKET                        = 0xDD7,  // 5.0.5 16048
-    CMSG_GMTICKET_GETTICKET                           = 0,
+    CMSG_GMTICKET_GETTICKET                           = 0x8A2,
     CMSG_GMTICKET_SYSTEMSTATUS                        = 0x925,	// 5.0.5 16048
     CMSG_GMTICKET_UPDATETEXT                          = 0xD14,  // 5.0.5 16048
     CMSG_GM_INVIS                                     = 0x000,  // Not found in 4.3.4
@@ -859,7 +859,7 @@ enum Opcodes
     SMSG_GMRESPONSE_STATUS_UPDATE                     = 0xD2F,  // 5.0.5 16048
     SMSG_GMTICKET_CREATE                              = 0xC32,  // 5.0.5 16048
     SMSG_GMTICKET_DELETETICKET                        = 0x8D0,  // 5.0.5 16048
-    SMSG_GMTICKET_GETTICKET                           = 0x1BD,  // 5.0.5 16048
+    SMSG_GMTICKET_GETTICKET                           = 0xBBD,  // 5.0.5 16048
     SMSG_GMTICKET_SYSTEMSTATUS                        = 0xD1F,	// 5.0.5 16048
     SMSG_GMTICKET_UPDATETEXT                          = 0xCFB,  // 5.0.5 16048
     SMSG_GM_MESSAGECHAT                               = 0x90F,  // 5.0.5 16048
