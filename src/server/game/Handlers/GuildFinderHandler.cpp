@@ -79,9 +79,9 @@ void WorldSession::HandleGuildFinderBrowse(WorldPacket& recvPacket)
     uint32 classRoles = 0;
     uint32 availability = 0;
     uint32 guildInterests = 0;
-    uint32 playerLevel = 0; // Raw player level (1-85), do they use MAX_FINDER_LEVEL when on level 85 ?
+    uint32 playerLevel = 0; // Raw player level (1-90), do they use MAX_FINDER_LEVEL when on level 90 ?
 
-    recvPacket >> classRoles >> availability >> guildInterests >> playerLevel;
+    recvPacket >> guildInterests >> availability >> classRoles >> playerLevel;
     
     if (!(classRoles & GUILDFINDER_ALL_ROLES) || classRoles > GUILDFINDER_ALL_ROLES)
         return;
