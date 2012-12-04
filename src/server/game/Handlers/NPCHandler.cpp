@@ -223,9 +223,9 @@ void WorldSession::SendTrainerList(uint64 guid, const std::string& strTitle)
             ++maxReq;
         }
 
-        data << uint32(primary_prof_first_rank && can_learn_primary_prof ? 1 : 0);
+        data << uint32(/*primary_prof_first_rank && can_learn_primary_prof ? 1 : 0*/0);
         // primary prof. learn confirmation dialog
-        data << uint32(primary_prof_first_rank ? 1 : 0);    // must be equal prev. field to have learn button in enabled state
+        data << uint32(/*primary_prof_first_rank ? 1 : 0*/0);    // must be equal prev. field to have learn button in enabled state
 
         ++count;
     }
