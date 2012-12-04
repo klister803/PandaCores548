@@ -442,37 +442,39 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //383 SPELL_AURA_383
     &AuraEffect::HandleNULL,                                      //384 SPELL_AURA_384
     &AuraEffect::HandleNoImmediateEffect,                         //385 SPELL_AURA_STRIKE_SELF in Unit::AttackerStateUpdate
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //386 SPELL_AURA_386
+    &AuraEffect::HandleNULL,                                      //387 SPELL_AURA_387
+    &AuraEffect::HandleNULL,                                      //388 SPELL_AURA_388
+    &AuraEffect::HandleNULL,                                      //389 SPELL_AURA_389
+    &AuraEffect::HandleNULL,                                      //390 SPELL_AURA_390
+    &AuraEffect::HandleNULL,                                      //391 SPELL_AURA_391
+    &AuraEffect::HandleNULL,                                      //392 SPELL_AURA_392
+    &AuraEffect::HandleNULL,                                      //393 SPELL_AURA_393
+    &AuraEffect::HandleNULL,                                      //394 SPELL_AURA_394
+    &AuraEffect::HandleNULL,                                      //395 SPELL_AURA_395
+    &AuraEffect::HandleNULL,                                      //396 SPELL_AURA_396
+    &AuraEffect::HandleNULL,                                      //397 SPELL_AURA_397
+    &AuraEffect::HandleNULL,                                      //398 SPELL_AURA_398
+    &AuraEffect::HandleNULL,                                      //399 SPELL_AURA_399
+    &AuraEffect::HandleNULL,                                      //400 SPELL_AURA_400
+    &AuraEffect::HandleNULL,                                      //401 SPELL_AURA_401
+    &AuraEffect::HandleNULL,                                      //402 SPELL_AURA_402
+    &AuraEffect::HandleNULL,                                      //403 SPELL_AURA_403
     &AuraEffect::HandleOverrideAttackPowerBySpellPower,           //404 SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT
     &AuraEffect::HandleIncreaseHasteFromItemsByPct,               //405 SPELL_AURA_INCREASE_HASTE_FROM_ITEMS_BY_PCT
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
-    &AuraEffect::HandleNULL,                                      //370 SPELL_AURA_370
+    &AuraEffect::HandleNULL,                                      //406 SPELL_AURA_406
+    &AuraEffect::HandleNULL,                                      //407 SPELL_AURA_407
+    &AuraEffect::HandleNULL,                                      //408 SPELL_AURA_408
+    &AuraEffect::HandleNULL,                                      //409 SPELL_AURA_409
+    &AuraEffect::HandleNULL,                                      //410 SPELL_AURA_410
+    &AuraEffect::HandleNULL,                                      //411 SPELL_AURA_411
+    &AuraEffect::HandleNULL,                                      //412 SPELL_AURA_412
+    &AuraEffect::HandleNULL,                                      //413 SPELL_AURA_413
+    &AuraEffect::HandleNULL,                                      //414 SPELL_AURA_414
+    &AuraEffect::HandleNULL,                                      //415 SPELL_AURA_415
+    &AuraEffect::HandleNULL,                                      //416 SPELL_AURA_416
+    &AuraEffect::HandleNULL,                                      //417 SPELL_AURA_417
+    &AuraEffect::HandleNULL,                                      //418 SPELL_AURA_418
 };
 
 AuraEffect::AuraEffect(Aura* base, uint8 effIndex, int32 *baseAmount, Unit* caster):
@@ -1008,6 +1010,9 @@ void AuraEffect::HandleEffect(AuraApplication * aurApp, uint8 mode, bool apply)
 
     // check if script events have removed the aura or if default effect prevention was requested
     if ((apply && aurApp->GetRemoveMode()) || prevented)
+        return;
+
+    if (GetAuraType() >= TOTAL_AURAS)
         return;
 
     (*this.*AuraEffectHandler [GetAuraType()])(const_cast<AuraApplication const*>(aurApp), mode, apply);
