@@ -3077,6 +3077,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 13165: // Aspect of the Hawk
+                spellInfo->OverrideSpellList.push_back(109260); // Add Aspect of the Iron Hack to override spell list of Aspect of the Hawk
+                break;
             case 6346: // Fear Ward
                 spellInfo->ProcCharges = 1;
                 break;
