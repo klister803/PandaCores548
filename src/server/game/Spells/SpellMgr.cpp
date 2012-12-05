@@ -2657,6 +2657,10 @@ void SpellMgr::LoadSpellClassInfo()
         // Natural Insight druid
         if (ClassID == CLASS_DRUID)
             mSpellClassInfo[ClassID].push_back(112857);
+        
+        //Sinister Strike Enabler
+        if (ClassID == CLASS_ROGUE)
+            mSpellClassInfo[ClassID].push_back(79327);
 
         for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
         {
