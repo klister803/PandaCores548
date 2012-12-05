@@ -44,6 +44,8 @@ enum HunterSpells
     HUNTER_SPELL_CHIMERA_SHOT_VIPER              = 53358,
     HUNTER_SPELL_CHIMERA_SHOT_SCORPID            = 53359,
     HUNTER_SPELL_ASPECT_OF_THE_BEAST_PET         = 61669,
+    HUNTER_SPELL_POSTHASTE                       = 109215,
+    HUNTER_SPELL_POSTHASTE_INCREASE_SPEED        = 118922
 };
 
 // 13161 Aspect of the Beast
@@ -622,6 +624,7 @@ class spell_hun_misdirection_proc : public SpellScriptLoader
         }
 };
 
+// Disengage - 781
 class spell_hun_disengage : public SpellScriptLoader
 {
     public:
@@ -640,9 +643,22 @@ class spell_hun_disengage : public SpellScriptLoader
                 return SPELL_CAST_OK;
             }
 
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(HUNTER_SPELL_POSTHASTE))
+                    {
+                        _player->RemoveMovementImpairingAuras();
+                        _player->CastSpell(_player, HUNTER_SPELL_POSTHASTE_INCREASE_SPEED, true);
+                    }
+                }
+            }
+
             void Register()
             {
                 OnCheckCast += SpellCheckCastFn(spell_hun_disengage_SpellScript::CheckCast);
+                AfterCast += SpellCastFn(spell_hun_disengage_SpellScript::HandleAfterCast);
             }
         };
 
