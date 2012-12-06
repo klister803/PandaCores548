@@ -62,7 +62,46 @@ enum ShamanSpells
     SPELL_SHA_FIRE_NOVA                     = 1535,
     SPELL_SHA_FIRE_NOVA_TRIGGERED           = 131786,
     SPELL_SHA_TIDAL_WAVES                   = 53390,
-    SPELL_SHA_MANA_TIDE                     = 16191
+    SPELL_SHA_MANA_TIDE                     = 16191,
+    SPELL_SHA_FROST_SHOCK_FREEZE            = 63685,
+    SPELL_SHA_FROZEN_POWER                  = 63374
+};
+
+// Frost Shock - 8056
+class spell_sha_frozen_power : public SpellScriptLoader
+{
+    public:
+        spell_sha_frozen_power() : SpellScriptLoader("spell_sha_frozen_power") { }
+
+        class spell_sha_frozen_power_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_frozen_power_SpellScript);
+
+            bool Validate(SpellEntry const * spellEntry)
+            {
+                if (!sSpellMgr->GetSpellInfo(8056))
+                    return false;
+                return true;
+            }
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(SPELL_SHA_FROZEN_POWER))
+                            _player->CastSpell(target, SPELL_SHA_FROST_SHOCK_FREEZE, true);
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_sha_frozen_power_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_frozen_power_SpellScript();
+        }
 };
 
 // Spirit Link - 98020 : triggered by 98017
@@ -1096,6 +1135,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_frozen_power();
     new spell_sha_spirit_link();
     new spell_sha_mana_tide();
     new spell_sha_tidal_waves();
