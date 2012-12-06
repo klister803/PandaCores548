@@ -1754,7 +1754,7 @@ void Pet::CastPetAura(PetAura const* aura)
         CastSpell(this, auraId, true);
 }
 
-bool Pet::IsPetAura(AuraPtr const aura)
+bool Pet::IsPetAura(constAuraPtr aura)
 {
     Unit* owner = GetOwner();
 

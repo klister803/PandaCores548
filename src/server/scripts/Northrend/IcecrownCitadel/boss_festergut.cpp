@@ -406,7 +406,7 @@ class spell_festergut_gastric_bloat : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                AuraPtr const aura = GetHitUnit()->GetAura(GetSpellInfo()->Id);
+                constAuraPtr aura = GetHitUnit()->GetAura(GetSpellInfo()->Id);
                 if (!(aura && aura->GetStackAmount() == 10))
                     return;
 
@@ -449,7 +449,7 @@ class spell_festergut_blighted_spores : public SpellScriptLoader
 
                 uint32 currStack = 0;
                 uint32 inoculatedId = sSpellMgr->GetSpellIdForDifficulty(SPELL_INOCULATED, GetCaster());
-                if (AuraPtr const inoculate = GetTarget()->GetAura(inoculatedId))
+                if (constAuraPtr inoculate = GetTarget()->GetAura(inoculatedId))
                     currStack = inoculate->GetStackAmount();
 
                 GetTarget()->CastSpell(GetTarget(), inoculatedId, true);

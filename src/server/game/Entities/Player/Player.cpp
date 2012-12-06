@@ -8080,7 +8080,7 @@ void Player::DuelComplete(DuelCompleteType type)
     AuraApplicationMap &itsAuras = duel->opponent->GetAppliedAuras();
     for (AuraApplicationMap::iterator i = itsAuras.begin(); i != itsAuras.end();)
     {
-        AuraPtr const aura = i->second->GetBase();
+        constAuraPtr aura = i->second->GetBase();
         if (!i->second->IsPositive() && aura->GetCasterGUID() == GetGUID() && aura->GetApplyTime() >= duel->startTime)
             duel->opponent->RemoveAura(i);
         else
@@ -8090,7 +8090,7 @@ void Player::DuelComplete(DuelCompleteType type)
     AuraApplicationMap &myAuras = GetAppliedAuras();
     for (AuraApplicationMap::iterator i = myAuras.begin(); i != myAuras.end();)
     {
-        AuraPtr const aura = i->second->GetBase();
+        constAuraPtr aura = i->second->GetBase();
         if (!i->second->IsPositive() && aura->GetCasterGUID() == duel->opponent->GetGUID() && aura->GetApplyTime() >= duel->startTime)
             RemoveAura(i);
         else
@@ -20937,7 +20937,7 @@ bool Player::IsAffectedBySpellmod(SpellInfo const* spellInfo, SpellModifier* mod
         return false;
 
     // Mod out of charges
-    if (spell && mod->charges == -1 && spell->m_appliedMods.find(mod->ownerAura) == spell->m_appliedMods.end())
+    if (spell && mod->charges == -1 && spell->m_appliedMods.find(std::const_pointer_cast<Aura>(mod->ownerAura)) == spell->m_appliedMods.end())
         return false;
 
     // +duration to infinite duration spells making them limited
@@ -21033,7 +21033,7 @@ void Player::RestoreSpellMods(Spell* spell, uint32 ownerAuraId, AuraPtr aura)
 
             // check if mod affected this spell
             // first, check if the mod aura applied at least one spellmod to this spell
-            Spell::UsedSpellMods::iterator iterMod = spell->m_appliedMods.find(mod->ownerAura);
+            Spell::UsedSpellMods::iterator iterMod = spell->m_appliedMods.find(std::const_pointer_cast<Aura>(mod->ownerAura));
             if (iterMod == spell->m_appliedMods.end())
                 continue;
             // secondly, check if the current mod is one of the spellmods applied by the mod aura
@@ -21087,14 +21087,14 @@ void Player::RemoveSpellMods(Spell* spell)
                 continue;
 
             // check if mod affected this spell
-            Spell::UsedSpellMods::iterator iterMod = spell->m_appliedMods.find(mod->ownerAura);
+            Spell::UsedSpellMods::iterator iterMod = spell->m_appliedMods.find(std::const_pointer_cast<Aura>(mod->ownerAura));
             if (iterMod == spell->m_appliedMods.end())
                 continue;
 
             // remove from list
             spell->m_appliedMods.erase(iterMod);
 
-            if (mod->ownerAura->DropCharge(AURA_REMOVE_BY_EXPIRE))
+            if (std::const_pointer_cast<Aura>(mod->ownerAura)->DropCharge(AURA_REMOVE_BY_EXPIRE))
                 itr = m_spellMods[i].begin();
         }
     }
@@ -21112,7 +21112,7 @@ void Player::DropModCharge(SpellModifier* mod, Spell* spell)
         if (--mod->charges == 0)
             mod->charges = -1;
 
-        spell->m_appliedMods.insert(mod->ownerAura);
+        spell->m_appliedMods.insert(std::const_pointer_cast<Aura>(mod->ownerAura));
     }
 }
 

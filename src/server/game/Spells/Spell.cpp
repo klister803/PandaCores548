@@ -2698,7 +2698,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                 }
                 else
                 {
-                    UnitAuraPtr unitauraptr = std::dynamic_pointer_cast<UnitAura>(m_spellAura);
+                    UnitAuraPtr unitauraptr = TO_UNITAURA(m_spellAura);
                     unitauraptr->SetDiminishGroup(m_diminishGroup);
 
                     bool positive = m_spellAura->GetSpellInfo()->IsPositive();
@@ -5721,7 +5721,7 @@ SpellCastResult Spell::CheckCasterAuras() const
             Unit::AuraApplicationMap const& auras = m_caster->GetAppliedAuras();
             for (Unit::AuraApplicationMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
             {
-                AuraPtr const aura = itr->second->GetBase();
+                constAuraPtr aura = itr->second->GetBase();
                 SpellInfo const* auraInfo = aura->GetSpellInfo();
                 if (auraInfo->GetAllEffectsMechanicMask() & mechanic_immune)
                     continue;

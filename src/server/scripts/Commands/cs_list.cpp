@@ -434,7 +434,7 @@ public:
             bool talent = false;// GetTalentSpellCost(itr->second->GetBase()->GetId()) > 0;
 
             AuraApplication const* aurApp = itr->second;
-            AuraPtr const aura = aurApp->GetBase();
+            constAuraPtr aura = aurApp->GetBase();
             char const* name = aura->GetSpellInfo()->SpellName;
 
             std::ostringstream ss_name;

@@ -3212,14 +3212,14 @@ public:
         {
             if (Player* target = GetHitPlayer())
             {
-                AuraPtr const aura = GetHitAura();
+                constAuraPtr aura = GetHitAura();
                 if (!(aura && aura->GetStackAmount() == 3))
                     return;
 
                 target->CastSpell(target, SPELL_FOAM_SWORD_DEFEAT, true);
                 target->RemoveAurasDueToSpell(SPELL_BONKED);
 
-                if (AuraPtr const aura = target->GetAura(SPELL_ON_GUARD))
+                if (constAuraPtr aura = target->GetAura(SPELL_ON_GUARD))
                 {
                     if (Item* item = target->GetItemByGuid(aura->GetCastItemGUID()))
                         target->DestroyItemCount(item->GetEntry(), 1, true);

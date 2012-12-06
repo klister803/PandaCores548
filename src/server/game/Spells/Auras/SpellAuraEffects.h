@@ -38,7 +38,7 @@ class AuraEffect : public std::enable_shared_from_this<AuraEffect>
         ~AuraEffect();
         Unit* GetCaster() const { return GetBase()->GetCaster(); }
         uint64 GetCasterGUID() const { return GetBase()->GetCasterGUID(); }
-        AuraPtr GetBase() const { return m_base; }
+        AuraPtr GetBase() const { return std::const_pointer_cast<Aura>(m_base); }
         void GetTargetList(std::list<Unit*> & targetList) const;
         void GetApplicationList(std::list<AuraApplication*> & applicationList) const;
         SpellModifier* GetSpellModifier() const { return m_spellmod; }
@@ -92,7 +92,7 @@ class AuraEffect : public std::enable_shared_from_this<AuraEffect>
         // add/remove SPELL_AURA_MOD_SHAPESHIFT (36) linked auras
         void HandleShapeshiftBoosts(Unit* target, bool apply) const;
     private:
-        AuraPtr const m_base;
+        constAuraPtr m_base;
 
         SpellInfo const* const m_spellInfo;
         int32 const m_baseAmount;

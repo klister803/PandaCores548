@@ -191,7 +191,7 @@ void AuraApplication::BuildUpdatePacket(ByteBuffer& data, bool remove) const
     }
     ASSERT(_target->GetVisibleAura(_slot));
 
-    AuraPtr const aura = GetBase();
+    constAuraPtr aura = GetBase();
     data << uint32(aura->GetId());
     uint32 flags = _flags;
     if (aura->GetMaxDuration() > 0 && !(aura->GetSpellInfo()->AttributesEx5 & SPELL_ATTR5_HIDE_DURATION))
@@ -346,7 +346,7 @@ AuraPtr Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* o
         case TYPEID_UNIT:
         case TYPEID_PLAYER:
             aura = AuraPtr(new UnitAura(spellproto, effMask, owner, caster, spellPowerData, baseAmount, castItem, casterGUID));
-            aura->GetUnitOwner()->_AddAura(std::dynamic_pointer_cast<UnitAura>(aura), caster);
+            aura->GetUnitOwner()->_AddAura(TO_UNITAURA(aura), caster);
             aura->LoadScripts();
             aura->_InitEffects(effMask, caster, baseAmount);
             break;
@@ -585,7 +585,7 @@ void Aura::UpdateTargetMap(Unit* caster, bool apply)
                     // this one prevents unwanted usefull buff loss because of stacking and prevents overriding auras periodicaly by 2 near area aura owners
                     for (Unit::AuraApplicationMap::iterator iter = itr->first->GetAppliedAuras().begin(); iter != itr->first->GetAppliedAuras().end(); ++iter)
                     {
-                        AuraPtr const aura = iter->second->GetBase();
+                        constAuraPtr aura = iter->second->GetBase();
                         if (!CanStackWith(aura))
                         {
                             addUnit = false;
@@ -1363,7 +1363,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL && GetSpellInfo()->SpellFamilyFlags[0] & 0x00000001)
                 {
                     // Rapture
-                    if (AuraPtr const aura = caster->GetAuraOfRankedSpell(47535))
+                    if (constAuraPtr aura = caster->GetAuraOfRankedSpell(47535))
                     {
                         // check cooldown
                         if (caster->GetTypeId() == TYPEID_PLAYER)
@@ -1563,7 +1563,7 @@ bool Aura::CheckAreaTarget(Unit* target)
     return CallScriptCheckAreaTargetHandlers(target);
 }
 
-bool Aura::CanStackWith(AuraPtr const existingAura) const
+bool Aura::CanStackWith(constAuraPtr existingAura) const
 {
     // Can stack with self
     if (this == existingAura.get())

@@ -48,7 +48,7 @@ class AuraApplication
     friend AuraApplication * Unit::_CreateAuraApplication(AuraPtr aura, uint32 effMask);
     private:
         Unit* const _target;
-        AuraPtr const _base;
+        constAuraPtr _base;
         AuraRemoveMode _removeMode:8;                  // Store info for know remove aura reason
         uint8 _slot;                                   // Aura slot on unit
         uint8 _flags;                                  // Aura info flag
@@ -64,7 +64,7 @@ class AuraApplication
     public:
 
         Unit* GetTarget() const { return _target; }
-        AuraPtr GetBase() const { return _base; }
+        AuraPtr GetBase() const { return std::const_pointer_cast<Aura>(_base); }
 
         uint8 GetSlot() const { return _slot; }
         uint8 GetFlags() const { return _flags; }
@@ -185,7 +185,7 @@ class Aura : public std::enable_shared_from_this<Aura>
         void HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, bool apply, bool onReapply);
         bool CanBeAppliedOn(Unit* target);
         bool CheckAreaTarget(Unit* target);
-        bool CanStackWith(AuraPtr const existingAura) const;
+        bool CanStackWith(constAuraPtr existingAura) const;
 
         // Proc system
         // this subsystem is not yet in use - the core of it is functional, but still some research has to be done

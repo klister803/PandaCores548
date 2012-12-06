@@ -156,7 +156,7 @@ struct SpellModifier
     int32 value;
     flag96 mask;
     uint32 spellId;
-    AuraPtr const ownerAura;
+    constAuraPtr ownerAura;
 };
 
 enum PlayerCurrencyState

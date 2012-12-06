@@ -400,7 +400,7 @@ class boss_sindragosa : public CreatureScript
                 {
                     if (spellId == spell->Id)
                     {
-                        if (AuraPtr const mysticBuffet = target->GetAura(spell->Id))
+                        if (constAuraPtr mysticBuffet = target->GetAura(spell->Id))
                             _mysticBuffetStack = std::max<uint8>(_mysticBuffetStack, mysticBuffet->GetStackAmount());
 
                         return;
