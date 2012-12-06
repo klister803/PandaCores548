@@ -44,7 +44,49 @@ enum WarlockSpells
     WARLOCK_IMPROVED_HEALTH_FUNNEL_R1       = 18703,
     WARLOCK_IMPROVED_HEALTH_FUNNEL_R2       = 18704,
     WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R1  = 60955,
-    WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2  = 60956
+    WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2  = 60956,
+    WARLOCK_GLYPH_OF_FEAR                   = 56244,
+    WARLOCK_FEAR_EFFECT                     = 118699,
+    WARLOCK_GLYPH_OF_FEAR_EFFECT            = 130616
+};
+
+// Fear - 5782
+class spell_warl_fear : public SpellScriptLoader
+{
+    public:
+        spell_warl_fear() : SpellScriptLoader("spell_warl_fear") { }
+
+        class spell_warl_fear_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_fear_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(WARLOCK_GLYPH_OF_FEAR))
+                        {
+                            _player->CastSpell(target, WARLOCK_GLYPH_OF_FEAR_EFFECT, true);
+                            _player->AddSpellCooldown(5782, 0, time(NULL) + 5);
+                        }
+                        else
+                            _player->CastSpell(target, WARLOCK_FEAR_EFFECT, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_fear_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_fear_SpellScript();
+        }
 };
 
 // Updated 4.3.4
@@ -765,6 +807,7 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_fear();
     new spell_warl_banish();
     new spell_warl_demonic_empowerment();
     new spell_warl_create_healthstone();
