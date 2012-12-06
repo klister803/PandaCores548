@@ -767,7 +767,7 @@ class spell_shield_of_runes : public SpellScriptLoader
         {
             PrepareAuraScript(spell_shield_of_runes_AuraScript);
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                     if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)

@@ -1688,7 +1688,7 @@ class spell_icc_stoneform : public SpellScriptLoader
         {
             PrepareAuraScript(spell_icc_stoneform_AuraScript);
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Creature* target = GetTarget()->ToCreature())
                 {
@@ -1698,7 +1698,7 @@ class spell_icc_stoneform : public SpellScriptLoader
                 }
             }
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Creature* target = GetTarget()->ToCreature())
                 {

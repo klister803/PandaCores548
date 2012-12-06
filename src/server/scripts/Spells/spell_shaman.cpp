@@ -390,7 +390,7 @@ public:
             if(!target || !caster)
                 return;
 
-            AuraEffect *fulminationAura = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2010, 0);
+            AuraEffectPtr fulminationAura = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2010, 0);
             if (!fulminationAura)
                 return;
 
@@ -435,7 +435,7 @@ class spell_sha_lava_surge : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_lava_surge_AuraScript);
 
-            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
             {
                 // 20% chance to reset the cooldown of Lavaburst and make the next to be instantly casted
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -675,7 +675,7 @@ class spell_sha_earthquake : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_earthquake_AuraScript);
 
-            void OnTick(AuraEffect const* aurEff)
+            void OnTick(constAuraEffectPtr aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_EARTHQUAKE))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_EARTHQUAKE_TICK, true);
@@ -703,7 +703,7 @@ class spell_sha_healing_rain : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_healing_rain_AuraScript);
 
-            void OnTick(AuraEffect const* aurEff)
+            void OnTick(constAuraEffectPtr aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_HEALING_RAIN))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_HEALING_RAIN_TICK, true);
@@ -1066,7 +1066,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
                 if (firstHeal)
                 {
                     // Check if the target has Riptide
-                    if (AuraEffect* aurEff = GetHitUnit()->GetAuraEffect(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_SHAMAN, 0, 0, 0x10, GetCaster()->GetGUID()))
+                    if (AuraEffectPtr aurEff = GetHitUnit()->GetAuraEffect(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_SHAMAN, 0, 0, 0x10, GetCaster()->GetGUID()))
                     {
                         riptide = true;
                         // Consume it

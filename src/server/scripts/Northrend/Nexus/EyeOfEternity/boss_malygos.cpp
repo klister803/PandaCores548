@@ -679,7 +679,7 @@ class spell_malygos_vortex_visual : public SpellScriptLoader
         {
             PrepareAuraScript(spell_malygos_vortex_visual_AuraScript);
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                 {

@@ -27,15 +27,15 @@ class Aura;
 
 typedef void(AuraEffect::*pAuraEffectHandler)(AuraApplication const* aurApp, uint8 mode, bool apply) const;
 
-class AuraEffect
+class AuraEffect : public std::enable_shared_from_this<AuraEffect>
 {
     friend void Aura::_InitEffects(uint32 effMask, Unit* caster, int32 *baseAmount);
     friend AuraPtr Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, int32* baseAmount, Item* castItem, uint64 casterGUID);
     friend Aura::~Aura();
     private:
-        ~AuraEffect();
         explicit AuraEffect(AuraPtr base, uint8 effIndex, int32 *baseAmount, Unit* caster);
     public:
+        ~AuraEffect();
         Unit* GetCaster() const { return GetBase()->GetCaster(); }
         uint64 GetCasterGUID() const { return GetBase()->GetCasterGUID(); }
         AuraPtr GetBase() const { return m_base; }
@@ -311,7 +311,7 @@ namespace Trinity
     {
         public:
             AbsorbAuraOrderPred() { }
-            bool operator() (AuraEffect* aurEffA, AuraEffect* aurEffB) const
+            bool operator() (AuraEffectPtr aurEffA, AuraEffectPtr aurEffB) const
             {
                 SpellInfo const* spellProtoA = aurEffA->GetSpellInfo();
                 SpellInfo const* spellProtoB = aurEffB->GetSpellInfo();

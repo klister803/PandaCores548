@@ -526,7 +526,7 @@ class spell_marrowgar_coldflame_damage : public SpellScriptLoader
         {
             PrepareAuraScript(spell_marrowgar_coldflame_damage_AuraScript);
 
-            void OnPeriodic(AuraEffect const* /*aurEff*/)
+            void OnPeriodic(constAuraEffectPtr /*aurEff*/)
             {
                 if (DynamicObject* owner = GetDynobjOwner())
                     if (GetTarget()->GetExactDist2d(owner) >= owner->GetRadius() || GetTarget()->HasAura(SPELL_IMPALED))

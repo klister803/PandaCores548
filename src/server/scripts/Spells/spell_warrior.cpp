@@ -163,13 +163,13 @@ public:
             return true;
         }
 
-        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
                 target->CastSpell(target, SPELL_DAMAGE_REDUCTION_AURA, true);
         }
 
-        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
             {
@@ -235,7 +235,7 @@ class spell_warr_deep_wounds : public SpellScriptLoader
                     uint32 ticks = spellInfo->GetDuration() / spellInfo->Effects[EFFECT_0].Amplitude;
 
                     // Add remaining ticks to damage done
-                    if (AuraEffect const* aurEff = target->GetAuraEffect(SPELL_DEEP_WOUNDS_RANK_PERIODIC, EFFECT_0, caster->GetGUID()))
+                    if (constAuraEffectPtr aurEff = target->GetAuraEffect(SPELL_DEEP_WOUNDS_RANK_PERIODIC, EFFECT_0, caster->GetGUID()))
                         damage += aurEff->GetAmount() * (ticks - aurEff->GetTickNumber());
 
                     damage = damage / ticks;
@@ -378,7 +378,7 @@ class spell_warr_execute : public SpellScriptLoader
                     int32 newRage = std::max<int32>(0, caster->GetPower(POWER_RAGE) - rageUsed);
 
                     // Sudden Death rage save
-                    if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_AURA_PROC_TRIGGER_SPELL, SPELLFAMILY_GENERIC, ICON_ID_SUDDEN_DEATH, EFFECT_0))
+                    if (AuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_AURA_PROC_TRIGGER_SPELL, SPELLFAMILY_GENERIC, ICON_ID_SUDDEN_DEATH, EFFECT_0))
                     {
                         int32 ragesave = aurEff->GetSpellInfo()->Effects[EFFECT_1].CalcValue() * 10;
                         newRage = std::max(newRage, ragesave);
@@ -386,7 +386,7 @@ class spell_warr_execute : public SpellScriptLoader
 
                     caster->SetPower(POWER_RAGE, uint32(newRage));
                     // Glyph of Execution bonus
-                    if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_GLYPH_OF_EXECUTION, EFFECT_0))
+                    if (AuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_GLYPH_OF_EXECUTION, EFFECT_0))
                         rageUsed += aurEff->GetAmount() * 10;
 
 

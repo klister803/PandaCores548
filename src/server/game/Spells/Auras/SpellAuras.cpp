@@ -17,6 +17,7 @@
  */
 
 #include "Common.h"
+#include "SharedPtrs.h"
 #include "WorldPacket.h"
 #include "Opcodes.h"
 #include "Log.h"
@@ -154,7 +155,7 @@ void AuraApplication::_InitFlags(Unit* caster, uint32 effMask)
 
 void AuraApplication::_HandleEffect(uint8 effIndex, bool apply)
 {
-    AuraEffect* aurEff = GetBase()->GetEffect(effIndex);
+    AuraEffectPtr aurEff = GetBase()->GetEffect(effIndex);
     ASSERT(aurEff);
     ASSERT(HasEffect(effIndex) == (!apply));
     ASSERT((1<<effIndex) & _effectsToApply);
@@ -221,7 +222,7 @@ void AuraApplication::BuildUpdatePacket(ByteBuffer& data, bool remove) const
         data << uint8(0);
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (AuraEffect const* eff = aura->GetEffect(i)) // NULL if effect flag not set
+            if (constAuraEffectPtr eff = aura->GetEffect(i)) // NULL if effect flag not set
             {
                 data << float(eff->GetAmount());
                 EffectMask |= 1 << i;
@@ -387,7 +388,13 @@ void Aura::_InitEffects(uint32 effMask, Unit* caster, int32 *baseAmount)
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
         if (effMask & (uint8(1) << i))
-            m_effects[i] = new AuraEffect(shared_from_this(), i, baseAmount ? baseAmount + i : NULL, caster);
+        {
+            m_effects[i] = AuraEffectPtr(new AuraEffect(shared_from_this(), i, baseAmount ? baseAmount + i : NULL, caster));
+
+            m_effects[i]->CalculatePeriodic(caster, true, false);
+            m_effects[i]->SetAmount(m_effects[i]->CalculateAmount(caster));
+            m_effects[i]->CalculateSpellMod();
+        }
         else
             m_effects[i] = NULL;
     }
@@ -403,10 +410,6 @@ Aura::~Aura()
         delete (*itr);
         m_loadedScripts.erase(itr);
     }
-
-    // free effects memory
-    for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-         delete m_effects[i];
 
     ASSERT(m_applications.empty());
     _DeleteRemovedApplications();
@@ -793,7 +796,7 @@ void Aura::RefreshTimers()
     {
         int32 minAmplitude = m_maxDuration;
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (AuraEffect const* eff = GetEffect(i))
+            if (constAuraEffectPtr eff = GetEffect(i))
                 if (int32 ampl = eff->GetAmplitude())
                     minAmplitude = std::min(ampl, minAmplitude);
 
@@ -912,7 +915,7 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode)
         SetCharges(CalcMaxCharges());
         // FIXME: not a best way to synchronize charges, but works
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (AuraEffect* aurEff = GetEffect(i))
+            if (AuraEffectPtr aurEff = GetEffect(i))
                 if (aurEff->GetAuraType() == SPELL_AURA_ADD_FLAT_MODIFIER || aurEff->GetAuraType() == SPELL_AURA_ADD_PCT_MODIFIER)
                     if (SpellModifier* mod = aurEff->GetSpellModifier())
                         mod->charges = GetCharges();
@@ -1224,7 +1227,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     case 12536: // Clearcasting
                     case 12043: // Presence of Mind
                         // Arcane Potency
-                        if (AuraEffect const* aurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_MAGE, 2120, 0))
+                        if (constAuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_MAGE, 2120, 0))
                         {
                             uint32 spellId = 0;
 
@@ -1250,7 +1253,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 if (GetSpellInfo()->SpellFamilyFlags[0] & 0x02000000 && GetEffect(0))
                 {
                     // Improved Devouring Plague
-                    if (AuraEffect const* aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, 3790, 0))
+                    if (constAuraEffectPtr aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, 3790, 0))
                     {
                         uint32 damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), GetEffect(0)->GetAmount(), DOT);
                         damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage, DOT);
@@ -1265,7 +1268,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 else if (m_spellInfo->SpellFamilyFlags[0] & 0x1 && m_spellInfo->SpellFamilyFlags[2] & 0x400 && GetEffect(0))
                 {
                     // Glyph of Power Word: Shield
-                    if (AuraEffect* glyph = caster->GetAuraEffect(55672, 0))
+                    if (AuraEffectPtr glyph = caster->GetAuraEffect(55672, 0))
                     {
                         // instantly heal m_amount% of the absorb-value
                         int32 heal = glyph->GetAmount() * GetEffect(0)->GetAmount()/100;
@@ -1299,7 +1302,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     case 72369:
                         if (caster)
                         {
-                            if (AuraEffect* aurEff = GetEffect(0))
+                            if (AuraEffectPtr aurEff = GetEffect(0))
                             {
                                 int32 remainingDamage = aurEff->GetAmount() * (aurEff->GetTotalTicks() - aurEff->GetTickNumber());
                                 if (remainingDamage > 0)
@@ -1327,7 +1330,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL && GetSpellInfo()->SpellFamilyFlags[1] & 0x1)
                 {
                     // Shattered Barrier
-                    if (AuraEffect * dummy = caster->GetDummyAuraEffect(SPELLFAMILY_MAGE, 3260, 0))
+                    if (AuraEffectPtr dummy = caster->GetDummyAuraEffect(SPELLFAMILY_MAGE, 3260, 0))
                         if (roll_chance_i(dummy->GetSpellInfo()->ProcChance))
                             caster->CastSpell(target, 55080, true, NULL, GetEffect(0));
                 }
@@ -1338,7 +1341,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                 // Improved Fear
                 if (GetSpellInfo()->SpellFamilyFlags[1] & 0x00000400)
                 {
-                    if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_WARLOCK, 98, 0))
+                    if (AuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_WARLOCK, 98, 0))
                     {
                         uint32 spellId = 0;
                         switch (aurEff->GetId())
@@ -1377,7 +1380,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
 
                         }
                         // effect on caster
-                        if (AuraEffect const* aurEff = aura->GetEffect(0))
+                        if (constAuraEffectPtr aurEff = aura->GetEffect(0))
                         {
                             float multiplier = float(aurEff->GetAmount());
                             int32 basepoints0 = int32(CalculatePct(caster->GetMaxPower(POWER_MANA), multiplier));
@@ -1451,7 +1454,7 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
             if (GetSpellInfo()->SpellFamilyFlags[0] & 0x00400000)
             {
                 // Master of subtlety
-                if (AuraEffect const* aurEff = target->GetAuraEffect(31223, 0))
+                if (constAuraEffectPtr aurEff = target->GetAuraEffect(31223, 0))
                 {
                     if (!apply)
                         target->CastSpell(target, 31666, true);
@@ -1884,7 +1887,7 @@ void Aura::CallScriptAfterDispel(DispelInfo* dispelInfo)
     }
 }
 
-bool Aura::CallScriptEffectApplyHandlers(AuraEffect const* aurEff, AuraApplication const* aurApp, AuraEffectHandleModes mode)
+bool Aura::CallScriptEffectApplyHandlers(constAuraEffectPtr aurEff, AuraApplication const* aurApp, AuraEffectHandleModes mode)
 {
     bool preventDefault = false;
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
@@ -1903,7 +1906,7 @@ bool Aura::CallScriptEffectApplyHandlers(AuraEffect const* aurEff, AuraApplicati
     return preventDefault;
 }
 
-bool Aura::CallScriptEffectRemoveHandlers(AuraEffect const* aurEff, AuraApplication const* aurApp, AuraEffectHandleModes mode)
+bool Aura::CallScriptEffectRemoveHandlers(constAuraEffectPtr aurEff, AuraApplication const* aurApp, AuraEffectHandleModes mode)
 {
     bool preventDefault = false;
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
@@ -1922,7 +1925,7 @@ bool Aura::CallScriptEffectRemoveHandlers(AuraEffect const* aurEff, AuraApplicat
     return preventDefault;
 }
 
-void Aura::CallScriptAfterEffectApplyHandlers(AuraEffect const* aurEff, AuraApplication const* aurApp, AuraEffectHandleModes mode)
+void Aura::CallScriptAfterEffectApplyHandlers(constAuraEffectPtr aurEff, AuraApplication const* aurApp, AuraEffectHandleModes mode)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -1937,7 +1940,7 @@ void Aura::CallScriptAfterEffectApplyHandlers(AuraEffect const* aurEff, AuraAppl
     }
 }
 
-void Aura::CallScriptAfterEffectRemoveHandlers(AuraEffect const* aurEff, AuraApplication const* aurApp, AuraEffectHandleModes mode)
+void Aura::CallScriptAfterEffectRemoveHandlers(constAuraEffectPtr aurEff, AuraApplication const* aurApp, AuraEffectHandleModes mode)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -1952,7 +1955,7 @@ void Aura::CallScriptAfterEffectRemoveHandlers(AuraEffect const* aurEff, AuraApp
     }
 }
 
-bool Aura::CallScriptEffectPeriodicHandlers(AuraEffect const* aurEff, AuraApplication const* aurApp)
+bool Aura::CallScriptEffectPeriodicHandlers(constAuraEffectPtr aurEff, AuraApplication const* aurApp)
 {
     bool preventDefault = false;
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
@@ -1971,7 +1974,7 @@ bool Aura::CallScriptEffectPeriodicHandlers(AuraEffect const* aurEff, AuraApplic
     return preventDefault;
 }
 
-void Aura::CallScriptEffectUpdateHandlers(uint32 diff, AuraEffect* aurEff)
+void Aura::CallScriptEffectUpdateHandlers(uint32 diff, AuraEffectPtr aurEff)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -1986,7 +1989,7 @@ void Aura::CallScriptEffectUpdateHandlers(uint32 diff, AuraEffect* aurEff)
     }
 }
 
-void Aura::CallScriptEffectUpdatePeriodicHandlers(AuraEffect* aurEff)
+void Aura::CallScriptEffectUpdatePeriodicHandlers(AuraEffectPtr aurEff)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -2001,7 +2004,7 @@ void Aura::CallScriptEffectUpdatePeriodicHandlers(AuraEffect* aurEff)
     }
 }
 
-void Aura::CallScriptEffectCalcAmountHandlers(AuraEffect const* aurEff, int32 & amount, bool & canBeRecalculated)
+void Aura::CallScriptEffectCalcAmountHandlers(constAuraEffectPtr aurEff, int32 & amount, bool & canBeRecalculated)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -2016,7 +2019,7 @@ void Aura::CallScriptEffectCalcAmountHandlers(AuraEffect const* aurEff, int32 & 
     }
 }
 
-void Aura::CallScriptEffectCalcPeriodicHandlers(AuraEffect const* aurEff, bool & isPeriodic, int32 & amplitude)
+void Aura::CallScriptEffectCalcPeriodicHandlers(constAuraEffectPtr aurEff, bool & isPeriodic, int32 & amplitude)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -2031,7 +2034,7 @@ void Aura::CallScriptEffectCalcPeriodicHandlers(AuraEffect const* aurEff, bool &
     }
 }
 
-void Aura::CallScriptEffectCalcSpellModHandlers(AuraEffect const* aurEff, SpellModifier* & spellMod)
+void Aura::CallScriptEffectCalcSpellModHandlers(constAuraEffectPtr aurEff, SpellModifier* & spellMod)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -2046,7 +2049,7 @@ void Aura::CallScriptEffectCalcSpellModHandlers(AuraEffect const* aurEff, SpellM
     }
 }
 
-void Aura::CallScriptEffectAbsorbHandlers(AuraEffect* aurEff, AuraApplication const* aurApp, DamageInfo & dmgInfo, uint32 & absorbAmount, bool& defaultPrevented)
+void Aura::CallScriptEffectAbsorbHandlers(AuraEffectPtr aurEff, AuraApplication const* aurApp, DamageInfo & dmgInfo, uint32 & absorbAmount, bool& defaultPrevented)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -2062,7 +2065,7 @@ void Aura::CallScriptEffectAbsorbHandlers(AuraEffect* aurEff, AuraApplication co
     }
 }
 
-void Aura::CallScriptEffectAfterAbsorbHandlers(AuraEffect* aurEff, AuraApplication const* aurApp, DamageInfo & dmgInfo, uint32 & absorbAmount)
+void Aura::CallScriptEffectAfterAbsorbHandlers(AuraEffectPtr aurEff, AuraApplication const* aurApp, DamageInfo & dmgInfo, uint32 & absorbAmount)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -2077,7 +2080,7 @@ void Aura::CallScriptEffectAfterAbsorbHandlers(AuraEffect* aurEff, AuraApplicati
     }
 }
 
-void Aura::CallScriptEffectManaShieldHandlers(AuraEffect* aurEff, AuraApplication const* aurApp, DamageInfo & dmgInfo, uint32 & absorbAmount, bool & /*defaultPrevented*/)
+void Aura::CallScriptEffectManaShieldHandlers(AuraEffectPtr aurEff, AuraApplication const* aurApp, DamageInfo & dmgInfo, uint32 & absorbAmount, bool & /*defaultPrevented*/)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {
@@ -2092,7 +2095,7 @@ void Aura::CallScriptEffectManaShieldHandlers(AuraEffect* aurEff, AuraApplicatio
     }
 }
 
-void Aura::CallScriptEffectAfterManaShieldHandlers(AuraEffect* aurEff, AuraApplication const* aurApp, DamageInfo & dmgInfo, uint32 & absorbAmount)
+void Aura::CallScriptEffectAfterManaShieldHandlers(AuraEffectPtr aurEff, AuraApplication const* aurApp, DamageInfo & dmgInfo, uint32 & absorbAmount)
 {
     for (std::list<AuraScript*>::iterator scritr = m_loadedScripts.begin(); scritr != m_loadedScripts.end(); ++scritr)
     {

@@ -545,7 +545,7 @@ class spell_rotface_slime_spray : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rotface_slime_spray_AuraScript);
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetCaster())
                 {
@@ -943,7 +943,7 @@ class spell_rotface_unstable_ooze_explosion_suicide : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rotface_unstable_ooze_explosion_suicide_AuraScript);
 
-            void DespawnSelf(AuraEffect const* /*aurEff*/)
+            void DespawnSelf(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
                 Unit* target = GetTarget();

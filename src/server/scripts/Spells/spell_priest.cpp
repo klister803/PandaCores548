@@ -171,13 +171,13 @@ class spell_pri_guardian_spirit : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 // Set absorbtion amount to unlimited
                 amount = -1;
             }
 
-            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 Unit* target = GetTarget();
                 if (dmgInfo.GetDamage() < target->GetHealth())
@@ -270,7 +270,7 @@ class spell_pri_pain_and_suffering_proc : public SpellScriptLoader
             {
                 // Refresh Shadow Word: Pain on target
                 if (Unit* unitTarget = GetHitUnit())
-                    if (AuraEffect* aur = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x8000, 0, 0, GetCaster()->GetGUID()))
+                    if (AuraEffectPtr aur = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x8000, 0, 0, GetCaster()->GetGUID()))
                         aur->GetBase()->RefreshDuration();
             }
 
@@ -374,14 +374,14 @@ class spell_pri_reflective_shield_trigger : public SpellScriptLoader
                 return true;
             }
 
-            void Trigger(AuraEffect* aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void Trigger(AuraEffectPtr aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 Unit* target = GetTarget();
                 if (dmgInfo.GetAttacker() == target)
                     return;
 
                 if (GetCaster())
-                    if (AuraEffect* talentAurEff = target->GetAuraEffectOfRankedSpell(PRIEST_SPELL_REFLECTIVE_SHIELD_R1, EFFECT_0))
+                    if (AuraEffectPtr talentAurEff = target->GetAuraEffectOfRankedSpell(PRIEST_SPELL_REFLECTIVE_SHIELD_R1, EFFECT_0))
                     {
                         int32 bp = CalculatePct(absorbAmount, talentAurEff->GetAmount());
                         target->CastCustomSpell(dmgInfo.GetAttacker(), PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED, &bp, NULL, NULL, true, NULL, aurEff);
@@ -418,7 +418,7 @@ public:
         {
             if (Unit* caster = GetOriginalCaster())
             {
-                if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_T9_HEALING_2_PIECE, EFFECT_0))
+                if (AuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_T9_HEALING_2_PIECE, EFFECT_0))
                 {
                     int32 heal = GetHitHeal();
                     AddPct(heal, aurEff->GetAmount());
@@ -460,7 +460,7 @@ class spell_pri_vampiric_touch : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                     if (Unit* target = GetUnitOwner())
-                        if (AuraEffect const* aurEff = GetEffect(EFFECT_1))
+                        if (constAuraEffectPtr aurEff = GetEffect(EFFECT_1))
                         {
                             int32 damage = aurEff->GetAmount() * 8;
                             // backfire damage
@@ -494,12 +494,12 @@ class spell_priest_renew : public SpellScriptLoader
                 return GetCaster() && GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            void HandleApplyEffect(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void HandleApplyEffect(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                 {
                     // Empowered Renew
-                    if (AuraEffect const* empoweredRenewAurEff = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_EMPOWERED_RENEW_TALENT, EFFECT_1))
+                    if (constAuraEffectPtr empoweredRenewAurEff = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_EMPOWERED_RENEW_TALENT, EFFECT_1))
                     {
                         uint32 heal = caster->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), GetEffect(EFFECT_0)->GetAmount(), DOT);
                         heal = GetTarget()->SpellHealingBonusTaken(caster, GetSpellInfo(), heal, DOT);
@@ -536,7 +536,7 @@ class spell_pri_shadow_word_death : public SpellScriptLoader
                 int32 damage = GetHitDamage();
 
                 // Pain and Suffering reduces damage
-                if (AuraEffect* aurEff = GetCaster()->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_PAIN_AND_SUFFERING, EFFECT_1))
+                if (AuraEffectPtr aurEff = GetCaster()->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_PAIN_AND_SUFFERING, EFFECT_1))
                     AddPct(damage, aurEff->GetAmount());
 
                 GetCaster()->CastCustomSpell(GetCaster(), PRIEST_SHADOW_WORD_DEATH, &damage, 0, 0, true);
@@ -571,12 +571,12 @@ public:
             return true;
         }
 
-        void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             GetTarget()->CastSpell(GetTarget(), GetTarget()->HasAura(PRIEST_GLYPH_OF_SHADOW) ? PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH : PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH, true);
         }
 
-        void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             GetTarget()->RemoveAurasDueToSpell(GetTarget()->HasAura(PRIEST_GLYPH_OF_SHADOW) ? PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH : PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH);
         }

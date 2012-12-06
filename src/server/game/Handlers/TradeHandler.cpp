@@ -29,6 +29,7 @@
 #include "SocialMgr.h"
 #include "Language.h"
 #include "AccountMgr.h"
+#include "SpellAuraEffects.h"
 
 void WorldSession::SendTradeStatus(TradeStatus status)
 {

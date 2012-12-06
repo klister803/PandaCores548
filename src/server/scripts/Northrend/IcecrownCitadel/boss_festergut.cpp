@@ -442,7 +442,7 @@ class spell_festergut_blighted_spores : public SpellScriptLoader
                 return true;
             }
 
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (!GetCaster())
                     return;

@@ -447,7 +447,7 @@ class spell_mark_of_the_faceless : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mark_of_the_faceless_AuraScript);
 
-            void HandleEffectPeriodic(AuraEffect const* aurEff)
+            void HandleEffectPeriodic(constAuraEffectPtr aurEff)
             {
                 if (Unit* caster = GetCaster())
                     caster->CastCustomSpell(SPELL_MARK_OF_THE_FACELESS_DAMAGE, SPELLVALUE_BASE_POINT1, aurEff->GetAmount(), GetTarget(), true);
@@ -481,7 +481,7 @@ class spell_general_vezax_saronite_vapors : public SpellScriptLoader
                 return true;
             }
 
-            void HandleEffectApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void HandleEffectApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                 {

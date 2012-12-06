@@ -1537,7 +1537,7 @@ class spell_fureur_du_combat : public SpellScriptLoader
         {
             PrepareAuraScript(spell_fureur_du_combat_AuraScript);
 
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                 {

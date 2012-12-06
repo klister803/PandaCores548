@@ -73,13 +73,13 @@ enum PaladinSpells
 //                return GetUnitOwner()->GetTypeId() == TYPEID_PLAYER;
 //            }
 //
-//            void CalculateAmount(AuraEffect const* aurEff, int32 & amount, bool & canBeRecalculated)
+//            void CalculateAmount(constAuraEffectPtr aurEff, int32 & amount, bool & canBeRecalculated)
 //            {
 //                // Set absorbtion amount to unlimited
 //                amount = -1;
 //            }
 //
-//            void Absorb(AuraEffect* aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
+//            void Absorb(AuraEffectPtr aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
 //            {
 //                Unit* victim = GetTarget();
 //                int32 remainingHealth = victim->GetHealth() - dmgInfo.GetDamage();
@@ -190,14 +190,14 @@ class spell_pal_blessing_of_sanctuary : public SpellScriptLoader
                 return true;
             }
 
-            void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit* target = GetTarget();
                 if (Unit* caster = GetCaster())
                     caster->CastSpell(target, PALADIN_SPELL_BLESSING_OF_SANCTUARY_BUFF, true);
             }
 
-            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit* target = GetTarget();
                 target->RemoveAura(PALADIN_SPELL_BLESSING_OF_SANCTUARY_BUFF, GetCasterGUID());
@@ -590,7 +590,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
         {
             PrepareAuraScript(spell_pal_exorcism_and_holy_wrath_damage_AuraScript);
 
-            void HandleEffectCalcSpellMod(AuraEffect const* aurEff, SpellModifier*& spellMod)
+            void HandleEffectCalcSpellMod(constAuraEffectPtr aurEff, SpellModifier*& spellMod)
             {
                 if (!spellMod)
                 {

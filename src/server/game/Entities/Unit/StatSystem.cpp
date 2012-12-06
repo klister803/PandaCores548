@@ -1004,7 +1004,7 @@ bool Guardian::UpdateStats(Stats stat)
             default: break;
         }
         // Ravenous Dead
-        AuraEffect const* aurEff = NULL;
+        constAuraEffectPtr aurEff = NULL;
         // Check just if owner has Ravenous Dead since it's effect is not an aura
         aurEff = owner->GetAuraEffect(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, SPELLFAMILY_DEATHKNIGHT, 3010, 0);
         if (aurEff)

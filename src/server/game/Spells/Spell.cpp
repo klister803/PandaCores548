@@ -2011,7 +2011,7 @@ void Spell::SearchChainTargets(std::list<WorldObject*>& targets, uint32 chainTar
     }
 }
 
-void Spell::prepareDataForTriggerSystem(AuraEffect const* /*triggeredByAura*/)
+void Spell::prepareDataForTriggerSystem(constAuraEffectPtr /*triggeredByAura*/)
 {
     //==========================================================================================
     // Now fill data for trigger system, need know:
@@ -2720,7 +2720,7 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                             int32 origDuration = duration;
                             duration = 0;
                             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-                                if (AuraEffect const* eff = m_spellAura->GetEffect(i))
+                                if (constAuraEffectPtr eff = m_spellAura->GetEffect(i))
                                     if (int32 amplitude = eff->GetAmplitude())  // amplitude is hastened by UNIT_MOD_CAST_SPEED
                                         duration = std::max(std::max(origDuration / amplitude, 1) * amplitude, duration);
 
@@ -2928,7 +2928,7 @@ bool Spell::UpdateChanneledTargetList()
     return channelTargetEffectMask == 0;
 }
 
-void Spell::prepare(SpellCastTargets const* targets, AuraEffect const* triggeredByAura)
+void Spell::prepare(SpellCastTargets const* targets, constAuraEffectPtr triggeredByAura)
 {
     if (m_CastItem)
         m_castItemGUID = m_CastItem->GetGUID();
@@ -5734,7 +5734,7 @@ SpellCastResult Spell::CheckCasterAuras() const
                 //That is needed when your casting is prevented by multiple states and you are only immune to some of them.
                 for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 {
-                    if (AuraEffect* part = aura->GetEffect(i))
+                    if (AuraEffectPtr part = aura->GetEffect(i))
                     {
                         switch (part->GetAuraType())
                         {
@@ -5817,7 +5817,7 @@ bool Spell::CanAutoCast(Unit* target)
             }
             else
             {
-                if (AuraEffect* aureff = target->GetAuraEffect(m_spellInfo->Id, j))
+                if (AuraEffectPtr aureff = target->GetAuraEffect(m_spellInfo->Id, j))
                     if (aureff->GetBase()->GetStackAmount() >= m_spellInfo->StackAmount)
                         return false;
             }

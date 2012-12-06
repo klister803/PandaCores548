@@ -1467,7 +1467,7 @@ class spell_load_into_catapult : public SpellScriptLoader
         {
             PrepareAuraScript(spell_load_into_catapult_AuraScript);
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit* owner = GetOwner()->ToUnit();
                 if (!owner)
@@ -1476,7 +1476,7 @@ class spell_load_into_catapult : public SpellScriptLoader
                 owner->CastSpell(owner, SPELL_PASSENGER_LOADED, true);
             }
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit* owner = GetOwner()->ToUnit();
                 if (!owner)
@@ -1573,7 +1573,7 @@ class spell_systems_shutdown : public SpellScriptLoader
         {
             PrepareAuraScript(spell_systems_shutdown_AuraScript);
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Creature* owner = GetOwner()->ToCreature();
                 if (!owner)
@@ -1585,7 +1585,7 @@ class spell_systems_shutdown : public SpellScriptLoader
                 owner->RemoveAurasDueToSpell(SPELL_GATHERING_SPEED);
             }
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Creature* owner = GetOwner()->ToCreature();
                 if (!owner)

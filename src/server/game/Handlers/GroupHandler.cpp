@@ -1310,7 +1310,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
                     *data << uint8(0);
                     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                     {
-                        if (AuraEffect const* eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
+                        if (constAuraEffectPtr eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
                         {
                             *data << float(eff->GetAmount());
                             count++;
@@ -1426,7 +1426,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
                         *data << uint8(0);
                         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                         {
-                            if (AuraEffect const* eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
+                            if (constAuraEffectPtr eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
                             {
                                 *data << float(eff->GetAmount());
                                 count++;
@@ -1542,7 +1542,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
                 data << uint8(0);
                 for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 {
-                    if (AuraEffect const* eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
+                    if (constAuraEffectPtr eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
                     {
                         data << float(eff->GetAmount());
                         count++;
@@ -1589,7 +1589,7 @@ void WorldSession::HandleRequestPartyMemberStatsOpcode(WorldPacket& recvData)
                     data << uint8(0);
                     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                     {
-                        if (AuraEffect const* eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
+                        if (constAuraEffectPtr eff = aurApp->GetBase()->GetEffect(i)) // NULL if effect flag not set
                         {
                             data << float(eff->GetAmount());
                             count++;

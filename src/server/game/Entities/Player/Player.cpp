@@ -8487,7 +8487,7 @@ void Player::_ApplyWeaponDependentAuraMods(Item* item, WeaponAttackType attackTy
         _ApplyWeaponDependentAuraDamageMod(item, attackType, *itr, apply);
 }
 
-void Player::_ApplyWeaponDependentAuraCritMod(Item* item, WeaponAttackType attackType, AuraEffect const* aura, bool apply)
+void Player::_ApplyWeaponDependentAuraCritMod(Item* item, WeaponAttackType attackType, constAuraEffectPtr aura, bool apply)
 {
     // don't apply mod if item is broken or cannot be used
     if (item->IsBroken() || !CanUseAttackType(attackType))
@@ -8510,7 +8510,7 @@ void Player::_ApplyWeaponDependentAuraCritMod(Item* item, WeaponAttackType attac
         HandleBaseModValue(mod, FLAT_MOD, float (aura->GetAmount()), apply);
 }
 
-void Player::_ApplyWeaponDependentAuraDamageMod(Item* item, WeaponAttackType attackType, AuraEffect const* aura, bool apply)
+void Player::_ApplyWeaponDependentAuraDamageMod(Item* item, WeaponAttackType attackType, constAuraEffectPtr aura, bool apply)
 {
     // don't apply mod if item is broken or cannot be used
     if (item->IsBroken() || !CanUseAttackType(attackType))
@@ -19566,7 +19566,7 @@ void Player::_SaveAuras(SQLTransaction& trans)
         uint32 recalculateMask = 0;
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (AuraEffect const* effect = aura->GetEffect(i))
+            if (constAuraEffectPtr effect = aura->GetEffect(i))
             {
                 index = 0;
                 stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_AURA_EFFECT);
@@ -24534,7 +24534,7 @@ uint32 Player::GetRuneTypeBaseCooldown(RuneType runeType) const
     return cooldown;
 }
 
-void Player::RemoveRunesByAuraEffect(AuraEffect const* aura)
+void Player::RemoveRunesByAuraEffect(constAuraEffectPtr aura)
 {
     for (uint8 i = 0; i < MAX_RUNES; ++i)
     {
@@ -24548,7 +24548,7 @@ void Player::RemoveRunesByAuraEffect(AuraEffect const* aura)
 
 void Player::RestoreBaseRune(uint8 index)
 {
-    AuraEffect const* aura = m_runes->runes[index].ConvertAura;
+    constAuraEffectPtr aura = m_runes->runes[index].ConvertAura;
     // If rune was converted by a non-pasive aura that still active we should keep it converted
     if (aura && !(aura->GetSpellInfo()->Attributes & SPELL_ATTR0_PASSIVE))
         return;
