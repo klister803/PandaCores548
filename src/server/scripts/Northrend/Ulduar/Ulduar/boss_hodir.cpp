@@ -448,9 +448,12 @@ class boss_hodir : public CreatureScript
                     std::list<HostileReference*> ThreatList = me->getThreatManager().getThreatList();
                     for (std::list<HostileReference*>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
                         if (Unit* target = ObjectAccessor::GetUnit(*me, (*itr)->getUnitGuid()))
-                            if (Aura* BitingColdAura = target->GetAura(SPELL_BITING_COLD_TRIGGERED))
+                        {
+                            AuraPtr BitingColdAura = target->GetAura(SPELL_BITING_COLD_TRIGGERED);
+                            if (BitingColdAura != NULLAURA)
                                 if ((target->GetTypeId() == TYPEID_PLAYER) && (BitingColdAura->GetStackAmount() > 2))
-                                        me->AI()->SetData(DATA_GETTING_COLD_IN_HERE, 0);
+                                    me->AI()->SetData(DATA_GETTING_COLD_IN_HERE, 0);
+                        }
                     gettingColdInHereTimer = 1000;
                 }
                 else

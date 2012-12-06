@@ -5452,7 +5452,8 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         {
             int32 delta = (int32(getLevel()) - startLevel + 1)*MINUTE;
 
-            if (Aura* aur = GetAura(15007, GetGUID()))
+            AuraPtr aur = GetAura(15007, GetGUID());
+            if (aur != NULLAURA)
             {
                 aur->SetDuration(delta*IN_MILLISECONDS);
             }
@@ -8079,7 +8080,7 @@ void Player::DuelComplete(DuelCompleteType type)
     AuraApplicationMap &itsAuras = duel->opponent->GetAppliedAuras();
     for (AuraApplicationMap::iterator i = itsAuras.begin(); i != itsAuras.end();)
     {
-        Aura const* aura = i->second->GetBase();
+        AuraPtr const aura = i->second->GetBase();
         if (!i->second->IsPositive() && aura->GetCasterGUID() == GetGUID() && aura->GetApplyTime() >= duel->startTime)
             duel->opponent->RemoveAura(i);
         else
@@ -8089,7 +8090,7 @@ void Player::DuelComplete(DuelCompleteType type)
     AuraApplicationMap &myAuras = GetAppliedAuras();
     for (AuraApplicationMap::iterator i = myAuras.begin(); i != myAuras.end();)
     {
-        Aura const* aura = i->second->GetBase();
+        AuraPtr const aura = i->second->GetBase();
         if (!i->second->IsPositive() && aura->GetCasterGUID() == duel->opponent->GetGUID() && aura->GetApplyTime() >= duel->startTime)
             RemoveAura(i);
         else
@@ -17966,7 +17967,8 @@ void Player::_LoadAuras(PreparedQueryResult result, PreparedQueryResult resultEf
                 }
             }
 
-            if (Aura* aura = Aura::TryCreate(spellInfo, effmask, this, NULL, spellInfo->spellPower, &baseDamage[0], NULL, caster_guid))
+            AuraPtr aura = Aura::TryCreate(spellInfo, effmask, this, NULL, spellInfo->spellPower, &baseDamage[0], NULL, caster_guid);
+            if (aura != NULLAURA)
             {
                 if (!aura->CanBeSaved())
                 {
@@ -19550,7 +19552,7 @@ void Player::_SaveAuras(SQLTransaction& trans)
         if (!itr->second->CanBeSaved())
             continue;
 
-        Aura* aura = itr->second;
+        AuraPtr aura = itr->second;
         AuraApplication * foundAura = GetAuraApplication(aura->GetId(), aura->GetCasterGUID(), aura->GetCastItemGUID());
 
         if(!foundAura)
@@ -21007,7 +21009,7 @@ void Player::AddSpellMod(SpellModifier* mod, bool apply)
 }
 
 // Restore spellmods in case of failed cast
-void Player::RestoreSpellMods(Spell* spell, uint32 ownerAuraId, Aura* aura)
+void Player::RestoreSpellMods(Spell* spell, uint32 ownerAuraId, AuraPtr aura)
 {
     if (!spell || spell->m_appliedMods.empty())
         return;
@@ -21058,7 +21060,7 @@ void Player::RestoreSpellMods(Spell* spell, uint32 ownerAuraId, Aura* aura)
     }
 }
 
-void Player::RestoreAllSpellMods(uint32 ownerAuraId, Aura* aura)
+void Player::RestoreAllSpellMods(uint32 ownerAuraId, AuraPtr aura)
 {
     for (uint32 i = 0; i < CURRENT_MAX_SPELL; ++i)
         if (m_currentSpells[i])
@@ -23685,7 +23687,7 @@ void Player::RemoveItemDependentAurasAndCasts(Item* pItem)
 {
     for (AuraMap::iterator itr = m_ownedAuras.begin(); itr != m_ownedAuras.end();)
     {
-        Aura* aura = itr->second;
+        AuraPtr aura = itr->second;
 
         // skip passive (passive item dependent spells work in another way) and not self applied auras
         SpellInfo const* spellInfo = aura->GetSpellInfo();

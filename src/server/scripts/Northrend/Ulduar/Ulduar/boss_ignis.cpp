@@ -326,7 +326,8 @@ class npc_iron_construct : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                if (Aura* aur = me->GetAura(SPELL_HEAT))
+                AuraPtr aur = me->GetAura(SPELL_HEAT);
+                if (aur != NULLAURA)
                 {
                     if (aur->GetStackAmount() >= 10)
                     {

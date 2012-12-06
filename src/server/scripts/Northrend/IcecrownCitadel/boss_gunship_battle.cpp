@@ -1542,7 +1542,7 @@ class spell_fureur_du_combat : public SpellScriptLoader
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                 {
                     if (GetTarget()->isInCombat())
-                        if (Aura * pAura = GetTarget()->AddAura(aurEff->GetId(), GetTarget()))
+                        if (AuraPtr pAura = GetTarget()->AddAura(aurEff->GetId(), GetTarget()))
                             pAura->SetStackAmount(GetStackAmount());
                 }
             }

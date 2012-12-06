@@ -215,16 +215,19 @@ class boss_lord_marrowgar : public CreatureScript
                             events.ScheduleEvent(EVENT_WARN_BONE_STORM, urand(90000, 95000));
                             break;
                         case EVENT_BONE_STORM_BEGIN:
-                            if (Aura* pStorm = me->GetAura(SPELL_BONE_STORM))
-                                pStorm->SetDuration(1 * HOUR * IN_MILLISECONDS);
+                            {
+                                AuraPtr pStorm = me->GetAura(SPELL_BONE_STORM);
+                                if (pStorm != NULLAURA)
+                                    pStorm->SetDuration(1 * HOUR * IN_MILLISECONDS);
 
-                            me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
-                            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
-                            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_AURA_MOD_DECREASE_SPEED, true);
-                            me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED, true);
+                                me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
+                                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, true);
+                                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_AURA_MOD_DECREASE_SPEED, true);
+                                me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED, true);
 
-                            Talk(SAY_BONE_STORM);
-                            // no break here
+                                Talk(SAY_BONE_STORM);
+                                // no break here
+                            }
                         case EVENT_BONE_STORM_MOVE:
                         {
                             me->SetSpeed(MOVE_RUN, _baseSpeed*3.0f, true);

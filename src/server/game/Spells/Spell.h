@@ -340,7 +340,7 @@ class Spell
         void EffectUnlearnTalent(SpellEffIndex effIndex);
         int32 CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier);
 
-        typedef std::set<Aura*> UsedSpellMods;
+        typedef std::set<AuraPtr> UsedSpellMods;
 
         Spell(Unit* caster, SpellInfo const* info, TriggerCastFlags triggerFlags, uint64 originalCasterGUID = 0, bool skipCheck = false);
         ~Spell();
@@ -540,7 +540,7 @@ class Spell
         int32 damage;
         SpellEffectHandleMode effectHandleMode;
         // used in effects handlers
-        Aura* m_spellAura;
+        AuraPtr m_spellAura;
 
         // this is set in Spell Hit, but used in Apply Aura handler
         DiminishingLevels m_diminishLevel;

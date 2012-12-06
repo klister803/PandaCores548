@@ -1793,7 +1793,7 @@ class spell_item_pygmy_oil : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
                 Unit* caster = GetCaster();
-                if (Aura* aura = caster->GetAura(SPELL_PYGMY_OIL_PYGMY_AURA))
+                if (AuraPtr aura = caster->GetAura(SPELL_PYGMY_OIL_PYGMY_AURA))
                     aura->RefreshDuration();
                 else
                 {

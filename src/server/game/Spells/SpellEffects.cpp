@@ -1854,7 +1854,8 @@ void Spell::EffectPersistentAA(SpellEffIndex effIndex)
             return;
         }
 
-        if (Aura* aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]))
+        AuraPtr aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]);
+        if (aura != NULLAURA)
         {
             m_spellAura = aura;
             m_spellAura->_RegisterForTargets();
@@ -3219,7 +3220,8 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 if (needCast)
                     m_caster->CastSpell(unitTarget, 58567, true);
 
-                if (Aura* aur = unitTarget->GetAura(58567, m_caster->GetGUID()))
+                AuraPtr aur = unitTarget->GetAura(58567, m_caster->GetGUID());
+                if (aur != NULLAURA)
                 {
                     if (int32 num = (needCast ? 0 : 1))
                         aur->ModStackAmount(num);
@@ -4093,7 +4095,8 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     }
 
                     // proc a spellcast
-                    if (Aura* chargesAura = m_caster->GetAura(59907))
+                    AuraPtr chargesAura = m_caster->GetAura(59907);
+                    if (chargesAura != NULLAURA)
                     {
                         m_caster->CastSpell(unitTarget, spell_heal, true, NULL, NULL, m_caster->ToTempSummon()->GetSummonerGUID());
                         if (chargesAura->ModCharges(-1))
@@ -4201,7 +4204,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 Unit::AuraApplicationMap & sealAuras = m_caster->GetAppliedAuras();
                 for (Unit::AuraApplicationMap::iterator iter = sealAuras.begin(); iter != sealAuras.end();)
                 {
-                    Aura* aura = iter->second->GetBase();
+                    AuraPtr aura = iter->second->GetBase();
                     if (aura->GetSpellInfo()->GetSpellSpecific() == SPELL_SPECIFIC_SEAL)
                     {
                         if (AuraEffect* aureff = aura->GetEffect(2))
@@ -5258,7 +5261,7 @@ void Spell::EffectDispelMechanic(SpellEffIndex effIndex)
     Unit::AuraMap const& auras = unitTarget->GetOwnedAuras();
     for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
     {
-        Aura* aura = itr->second;
+        AuraPtr aura = itr->second;
         if (!aura->GetApplicationOfTarget(unitTarget->GetGUID()))
             continue;
         if (roll_chance_i(aura->CalcDispelChance(unitTarget, !unitTarget->IsFriendlyTo(m_caster))))
@@ -5663,7 +5666,7 @@ void Spell::EffectStealBeneficialBuff(SpellEffIndex effIndex)
     Unit::AuraMap const& auras = unitTarget->GetOwnedAuras();
     for (Unit::AuraMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
     {
-        Aura* aura = itr->second;
+        AuraPtr aura = itr->second;
         AuraApplication * aurApp = aura->GetApplicationOfTarget(unitTarget->GetGUID());
         if (!aurApp)
             continue;

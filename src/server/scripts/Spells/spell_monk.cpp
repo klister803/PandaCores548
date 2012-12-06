@@ -420,7 +420,7 @@ class spell_monk_elusive_brew : public SpellScriptLoader
 
                         if (AuraApplication* aura = _player->GetAuraApplication(SPELL_MONK_ELUSIVE_BREW))
                         {
-                            Aura* elusiveBrew = aura->GetBase();
+                            AuraPtr elusiveBrew = aura->GetBase();
                             int32 maxDuration = elusiveBrew->GetMaxDuration();
                             int32 newDuration = stackAmount * 1000;
                             elusiveBrew->SetDuration(newDuration);
@@ -752,7 +752,7 @@ class spell_monk_paralysis : public SpellScriptLoader
                         {
                             if (AuraApplication* aura = target->GetAuraApplication(115078))
                             {
-                                Aura* Paralysis = aura->GetBase();
+                                AuraPtr Paralysis = aura->GetBase();
                                 int32 maxDuration = Paralysis->GetMaxDuration();
                                 int32 newDuration = maxDuration * 2;
                                 Paralysis->SetDuration(newDuration);
@@ -919,7 +919,7 @@ class spell_monk_roll : public SpellScriptLoader
 
             void HandleBeforeCast()
             {
-                Aura* aur = GetCaster()->AddAura(SPELL_MONK_ROLL_TRIGGER, GetCaster());
+                AuraPtr aur = GetCaster()->AddAura(SPELL_MONK_ROLL_TRIGGER, GetCaster());
                 if (!aur)
                     return;
 

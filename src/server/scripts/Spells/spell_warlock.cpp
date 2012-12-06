@@ -585,7 +585,7 @@ class spell_warl_haunt : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Aura* aura = GetHitAura())
+                if (AuraPtr aura = GetHitAura())
                     if (AuraEffect* aurEff = aura->GetEffect(EFFECT_1))
                         aurEff->SetAmount(CalculatePct(aurEff->GetAmount(), GetHitDamage()));
             }

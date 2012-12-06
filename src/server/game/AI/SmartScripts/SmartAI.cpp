@@ -434,7 +434,7 @@ void SmartAI::RemoveAuras()
     Unit::AuraApplicationMap appliedAuras = me->GetAppliedAuras();
     for (Unit::AuraApplicationMap::iterator iter = appliedAuras.begin(); iter != appliedAuras.end(); ++iter)
     {
-        Aura const* aura = iter->second->GetBase();
+        AuraPtr const aura = iter->second->GetBase();
         if (!aura->GetSpellInfo()->IsPassive() && !aura->GetSpellInfo()->HasAura(SPELL_AURA_CONTROL_VEHICLE) && aura->GetCaster() != me)
             me->RemoveAurasDueToSpell(aura->GetId());
     }

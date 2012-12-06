@@ -1504,7 +1504,8 @@ class spell_taldaram_ball_of_inferno_flame : public SpellScriptLoader
 
             void ModAuraStack()
             {
-                if (Aura* aur = GetHitAura())
+                AuraPtr aur = GetHitAura();
+                if (aur != NULLAURA)
                     aur->SetStackAmount(uint8(GetSpellInfo()->StackAmount));
             }
 
@@ -1678,7 +1679,8 @@ class spell_blood_council_shadow_prison_damage : public SpellScriptLoader
 
             void AddExtraDamage()
             {
-                if (Aura* aur = GetHitUnit()->GetAura(GetSpellInfo()->Id))
+                AuraPtr aur = GetHitUnit()->GetAura(GetSpellInfo()->Id);
+                if (aur != NULLAURA)
                     if (AuraEffect const* eff = aur->GetEffect(EFFECT_1))
                         SetHitDamage(GetHitDamage() + eff->GetAmount());
             }

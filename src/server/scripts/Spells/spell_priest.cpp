@@ -116,7 +116,7 @@ class spell_pri_shadow_orb : public SpellScriptLoader
                                     // +1s per Shadow Orb consumed
                                     if (AuraApplication* aura = target->GetAuraApplication(64044))
                                     {
-                                        Aura* psychicHorror = aura->GetBase();
+                                        AuraPtr psychicHorror = aura->GetBase();
                                         int32 maxDuration = psychicHorror->GetMaxDuration();
                                         int32 newDuration = maxDuration + currentPower * IN_MILLISECONDS;
                                         psychicHorror->SetDuration(newDuration);

@@ -149,14 +149,14 @@ enum TalentTree // talent tabs
 // Spell modifier (used for modify other spells)
 struct SpellModifier
 {
-    SpellModifier(Aura* _ownerAura = NULL) : op(SPELLMOD_DAMAGE), type(SPELLMOD_FLAT), charges(0), value(0), mask(), spellId(0), ownerAura(_ownerAura) {}
+    SpellModifier(AuraPtr _ownerAura = NULLAURA) : op(SPELLMOD_DAMAGE), type(SPELLMOD_FLAT), charges(0), value(0), mask(), spellId(0), ownerAura(_ownerAura) {}
     SpellModOp   op   : 8;
     SpellModType type : 8;
     int16 charges     : 16;
     int32 value;
     flag96 mask;
     uint32 spellId;
-    Aura* const ownerAura;
+    AuraPtr const ownerAura;
 };
 
 enum PlayerCurrencyState
@@ -1861,8 +1861,8 @@ class Player : public Unit, public GridObject<Player>
         bool IsAffectedBySpellmod(SpellInfo const* spellInfo, SpellModifier* mod, Spell* spell = NULL);
         template <class T> T ApplySpellMod(uint32 spellId, SpellModOp op, T &basevalue, Spell* spell = NULL);
         void RemoveSpellMods(Spell* spell);
-        void RestoreSpellMods(Spell* spell, uint32 ownerAuraId = 0, Aura* aura = NULL);
-        void RestoreAllSpellMods(uint32 ownerAuraId = 0, Aura* aura = NULL);
+        void RestoreSpellMods(Spell* spell, uint32 ownerAuraId = 0, AuraPtr aura = NULLAURA);
+        void RestoreAllSpellMods(uint32 ownerAuraId = 0, AuraPtr aura = NULLAURA);
         void DropModCharge(SpellModifier* mod, Spell* spell);
         void SetSpellModTakingSpell(Spell* spell, bool apply);
 
