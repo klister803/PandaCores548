@@ -58,13 +58,13 @@ class spell_rog_cheat_death : public SpellScriptLoader
                 return GetUnitOwner()->ToPlayer();
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 // Set absorbtion amount to unlimited
                 amount = -1;
             }
 
-            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 Player* target = GetTarget()->ToPlayer();
                 if (dmgInfo.GetDamage() < target->GetHealth() || target->HasSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_COOLDOWN) ||  !roll_chance_i(absorbChance))
@@ -114,13 +114,13 @@ class spell_rog_nerves_of_steel : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 // Set absorbtion amount to unlimited
                 amount = -1;
             }
 
-            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 // reduces all damage taken while stun or fear
                 if (GetTarget()->GetUInt32Value(UNIT_FIELD_FLAGS) & (UNIT_FLAG_FLEEING) || (GetTarget()->GetUInt32Value(UNIT_FIELD_FLAGS) & (UNIT_FLAG_STUNNED) && GetTarget()->HasAuraWithMechanic(1<<MECHANIC_STUN)))
@@ -224,7 +224,7 @@ public:
             return true;
         }
 
-        void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+        void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
         {
             Unit* target = GetTarget();
             Unit* victim = target->getVictim();
@@ -313,7 +313,7 @@ class spell_rog_deadly_poison : public SpellScriptLoader
             {
                 if (Unit* target = GetHitUnit())
                     // Deadly Poison
-                    if (AuraEffect const* aurEff = target->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_ROGUE, 0x10000, 0x80000, 0, GetCaster()->GetGUID()))
+                    if (constAuraEffectPtr aurEff = target->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_ROGUE, 0x10000, 0x80000, 0, GetCaster()->GetGUID()))
                         _stackAmount = aurEff->GetBase()->GetStackAmount();
             }
 

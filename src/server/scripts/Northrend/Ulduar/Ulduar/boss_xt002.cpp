@@ -771,7 +771,7 @@ class spell_xt002_searing_light_spawn_life_spark : public SpellScriptLoader
                 return true;
             }
 
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* player = GetOwner()->ToPlayer())
                     if (Unit* xt002 = GetCaster())
@@ -807,7 +807,7 @@ class spell_xt002_gravity_bomb_aura : public SpellScriptLoader
                 return true;
             }
 
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* player = GetOwner()->ToPlayer())
                     if (Unit* xt002 = GetCaster())
@@ -815,7 +815,7 @@ class spell_xt002_gravity_bomb_aura : public SpellScriptLoader
                             player->CastSpell(player, SPELL_SUMMON_VOID_ZONE, true);
             }
 
-            void OnPeriodic(AuraEffect const* aurEff)
+            void OnPeriodic(constAuraEffectPtr aurEff)
             {
                 Unit* xt002 = GetCaster();
                 if (!xt002)

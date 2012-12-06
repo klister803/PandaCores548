@@ -918,7 +918,7 @@ class spell_biting_cold : public SpellScriptLoader
         {
             PrepareAuraScript(spell_biting_cold_AuraScript);
 
-            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
             {
                 Unit* target = GetTarget();
                 bool found = false;
@@ -974,7 +974,7 @@ public:
     {
         PrepareAuraScript(spell_biting_cold_dot_AuraScript);
 
-        void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+        void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
         {
             Unit* caster = GetCaster();
             if (!caster)

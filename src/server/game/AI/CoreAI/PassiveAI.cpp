@@ -19,6 +19,7 @@
 #include "PassiveAI.h"
 #include "Creature.h"
 #include "TemporarySummon.h"
+#include "SpellAuraEffects.h"
 
 PassiveAI::PassiveAI(Creature* c) : CreatureAI(c) { me->SetReactState(REACT_PASSIVE); }
 PossessedAI::PossessedAI(Creature* c) : CreatureAI(c) { me->SetReactState(REACT_PASSIVE); }

@@ -22,14 +22,6 @@
 #include "Define.h"
 #include <cassert>
 
-class Aura;
-class UnitAura;
-
-//Shared_ptr for Auras
-typedef std::shared_ptr<Aura> AuraPtr;
-typedef std::shared_ptr<UnitAura> UnitAuraPtr;
-#define NULLAURA AuraPtr()
-
 #define MAX_CREATURE_BASE_HP 5
 
 enum SpellEffIndex

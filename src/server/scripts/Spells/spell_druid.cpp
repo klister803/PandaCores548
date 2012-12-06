@@ -217,7 +217,7 @@ class spell_dru_glyph_of_starfire : public SpellScriptLoader
             {
                 Unit* caster = GetCaster();
                 if (Unit* unitTarget = GetHitUnit())
-                    if (AuraEffect const* aurEff = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_DRUID, 0x00000002, 0, 0, caster->GetGUID()))
+                    if (constAuraEffectPtr aurEff = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_DRUID, 0x00000002, 0, 0, caster->GetGUID()))
                     {
                         AuraPtr aura = aurEff->GetBase();
 
@@ -266,13 +266,13 @@ class spell_dru_moonkin_form_passive : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 // Set absorbtion amount to unlimited
                 amount = -1;
             }
 
-            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 // reduces all damage taken while Stunned in Moonkin Form
                 if (GetTarget()->GetUInt32Value(UNIT_FIELD_FLAGS) & (UNIT_FLAG_STUNNED) && GetTarget()->HasAuraWithMechanic(1<<MECHANIC_STUN))
@@ -310,13 +310,13 @@ class spell_dru_primal_tenacity : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 // Set absorbtion amount to unlimited
                 amount = -1;
             }
 
-            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
+            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
                 // reduces all damage taken while Stunned in Cat Form
                 if (GetTarget()->GetShapeshiftForm() == FORM_CAT && GetTarget()->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_STUNNED) && GetTarget()->HasAuraWithMechanic(1<<MECHANIC_STUN))
@@ -354,13 +354,13 @@ class spell_dru_savage_defense : public SpellScriptLoader
                 return true;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 // Set absorbtion amount to unlimited
                 amount = -1;
             }
 
-            void Absorb(AuraEffect* aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
+            void Absorb(AuraEffectPtr aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
             {
                 absorbAmount = uint32(CalculatePct(GetTarget()->GetTotalAttackPowerValue(BASE_ATTACK), absorbPct));
                 aurEff->SetAmount(0);
@@ -474,7 +474,7 @@ class spell_dru_swift_flight_passive : public SpellScriptLoader
                 return GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            void CalculateAmount(AuraEffect const* /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
                 if (Player* caster = GetCaster()->ToPlayer())
                     if (caster->GetSkillValue(SKILL_RIDING) >= 375)
@@ -556,7 +556,7 @@ class spell_dru_lifebloom : public SpellScriptLoader
                 return true;
             }
 
-            void AfterRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void AfterRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 // Final heal only on duration end
                 if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
@@ -585,7 +585,7 @@ class spell_dru_lifebloom : public SpellScriptLoader
             {
                 if (Unit* target = GetUnitOwner())
                 {
-                    if (AuraEffect const* aurEff = GetEffect(EFFECT_1))
+                    if (constAuraEffectPtr aurEff = GetEffect(EFFECT_1))
                     {
                         // final heal
                         int32 healAmount = aurEff->GetAmount();
@@ -628,7 +628,7 @@ class spell_dru_predatory_strikes : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dru_predatory_strikes_AuraScript);
 
-            void UpdateAmount(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void UpdateAmount(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* target = GetTarget()->ToPlayer())
                     target->UpdateAttackPowerAndDamage();
@@ -682,13 +682,13 @@ class spell_dru_savage_roar : public SpellScriptLoader
                 return true;
             }
 
-            void AfterApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void AfterApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 Unit* target = GetTarget();
                 target->CastSpell(target, DRUID_SAVAGE_ROAR, true, NULL, aurEff, GetCasterGUID());
             }
 
-            void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void AfterRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 GetTarget()->RemoveAurasDueToSpell(DRUID_SAVAGE_ROAR);
             }
@@ -746,14 +746,14 @@ class spell_dru_survival_instincts : public SpellScriptLoader
                 return true;
             }
 
-            void AfterApply(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void AfterApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 Unit* target = GetTarget();
                 int32 bp0 = target->CountPctFromMaxHealth(aurEff->GetAmount());
                 target->CastCustomSpell(target, DRUID_SURVIVAL_INSTINCTS, &bp0, NULL, NULL, true);
             }
 
-            void AfterRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void AfterRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 GetTarget()->RemoveAurasDueToSpell(DRUID_SURVIVAL_INSTINCTS);
             }

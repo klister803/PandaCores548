@@ -517,7 +517,7 @@ class spell_ulduar_stone_grip_absorb : public SpellScriptLoader
 
             //! This will be called when Right Arm (vehicle) has sustained a specific amount of damage depending on instance mode
             //! What we do here is remove all harmful aura's related and teleport to safe spot.
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTargetApplication()->GetRemoveMode() !=  AURA_REMOVE_BY_ENEMY_SPELL)
                     return;
@@ -552,13 +552,13 @@ class spell_ulduar_stone_grip : public SpellScriptLoader
         {
             PrepareAuraScript(spell_ulduar_stone_grip_AuraScript);
 
-            void OnRemoveStun(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemoveStun(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* owner = GetOwner()->ToPlayer())
                     owner->RemoveAurasDueToSpell(aurEff->GetAmount());
             }
 
-            void OnRemoveVehicle(AuraEffect const* /*aurEff*/, AuraEffectHandleModes mode)
+            void OnRemoveVehicle(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
             {
                 if (!(mode & AURA_EFFECT_HANDLE_REAL))
                     return;

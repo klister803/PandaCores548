@@ -724,7 +724,7 @@ class spell_powering_up : public SpellScriptLoader
         {
             PrepareAuraScript(spell_powering_up_AuraScript);
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* target = GetTarget())
                 {
@@ -809,7 +809,7 @@ class spell_valkyr_essences : public SpellScriptLoader
                 return true;
             }
 
-            void Absorb(AuraEffect* /*aurEff*/, DamageInfo & /*dmgInfo*/, uint32 & /*absorbAmount*/)
+            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & /*dmgInfo*/, uint32 & /*absorbAmount*/)
             {
                 if (urand(0, 99) < 5)
                     GetTarget()->CastSpell(GetTarget(), spellId, true);
@@ -841,7 +841,7 @@ class spell_power_of_the_twins : public SpellScriptLoader
                 return GetCaster()->GetTypeId() == TYPEID_UNIT;
             }
 
-            void HandleEffectApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                 {
@@ -850,7 +850,7 @@ class spell_power_of_the_twins : public SpellScriptLoader
                 }
             }
 
-            void HandleEffectRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                 {

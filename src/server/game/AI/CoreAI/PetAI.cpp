@@ -29,6 +29,7 @@
 #include "Util.h"
 #include "Group.h"
 #include "SpellInfo.h"
+#include "SpellAuraEffects.h"
 
 int PetAI::Permissible(const Creature* creature)
 {

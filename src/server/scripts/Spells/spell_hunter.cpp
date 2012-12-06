@@ -72,14 +72,14 @@ class spell_hun_aspect_of_the_beast : public SpellScriptLoader
                 return true;
             }
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* caster = GetCaster()->ToPlayer())
                     if (Pet* pet = caster->GetPet())
                         pet->RemoveAurasDueToSpell(HUNTER_SPELL_ASPECT_OF_THE_BEAST_PET);
             }
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Player* caster = GetCaster()->ToPlayer())
                     if (caster->GetPet())
@@ -134,7 +134,7 @@ class spell_hun_chimera_shot : public SpellScriptLoader
                         flag96 familyFlag = aura->GetSpellInfo()->SpellFamilyFlags;
                         if (!(familyFlag[1] & 0x00000080 || familyFlag[0] & 0x0000C000))
                             continue;
-                        if (AuraEffect const* aurEff = aura->GetEffect(0))
+                        if (constAuraEffectPtr aurEff = aura->GetEffect(0))
                         {
                             // Serpent Sting - Instantly deals 40% of the damage done by your Serpent Sting.
                             if (familyFlag[0] & 0x4000)
@@ -212,7 +212,7 @@ class spell_hun_invigoration : public SpellScriptLoader
             void HandleScriptEffect(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* unitTarget = GetHitUnit())
-                    if (AuraEffect* aurEff = unitTarget->GetDummyAuraEffect(SPELLFAMILY_HUNTER, 3487, 0))
+                    if (AuraEffectPtr aurEff = unitTarget->GetDummyAuraEffect(SPELLFAMILY_HUNTER, 3487, 0))
                         if (roll_chance_i(aurEff->GetAmount()))
                             unitTarget->CastSpell(unitTarget, HUNTER_SPELL_INVIGORATION_TRIGGERED, true);
             }
@@ -423,7 +423,7 @@ class spell_hun_sniper_training : public SpellScriptLoader
                 return true;
             }
 
-            void HandlePeriodic(AuraEffect const* aurEff)
+            void HandlePeriodic(constAuraEffectPtr aurEff)
             {
                 PreventDefaultAction();
                 if (aurEff->GetAmount() <= 0)
@@ -440,7 +440,7 @@ class spell_hun_sniper_training : public SpellScriptLoader
                 }
             }
 
-            void HandleUpdatePeriodic(AuraEffect* aurEff)
+            void HandleUpdatePeriodic(AuraEffectPtr aurEff)
             {
                 if (Player* playerTarget = GetUnitOwner()->ToPlayer())
                 {
@@ -579,7 +579,7 @@ class spell_hun_misdirection : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_misdirection_AuraScript);
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                     if (!GetDuration())
@@ -608,7 +608,7 @@ class spell_hun_misdirection_proc : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_misdirection_proc_AuraScript);
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetCaster())
                     GetCaster()->SetReducedThreatPercent(0, 0);

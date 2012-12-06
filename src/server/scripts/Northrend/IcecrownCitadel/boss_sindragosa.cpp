@@ -400,7 +400,7 @@ class boss_sindragosa : public CreatureScript
                 {
                     if (spellId == spell->Id)
                     {
-                        if (AuraPtr const mysticBuffet = target->GetAura(spell->Id))
+                        if (constAuraPtr mysticBuffet = target->GetAura(spell->Id))
                             _mysticBuffetStack = std::max<uint8>(_mysticBuffetStack, mysticBuffet->GetStackAmount());
 
                         return;
@@ -1221,7 +1221,7 @@ class spell_sindragosa_instability : public SpellScriptLoader
                 return true;
             }
 
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                     GetTarget()->CastCustomSpell(SPELL_BACKLASH, SPELLVALUE_BASE_POINT0, aurEff->GetAmount(), GetTarget(), true, NULL, aurEff, GetCasterGUID());
@@ -1255,7 +1255,7 @@ class spell_sindragosa_frost_beacon : public SpellScriptLoader
                 return true;
             }
 
-            void PeriodicTick(AuraEffect const* /*aurEff*/)
+            void PeriodicTick(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
                 if (Unit* caster = GetCaster())
@@ -1317,7 +1317,7 @@ class spell_sindragosa_ice_tomb : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sindragosa_ice_tomb_AuraScript);
 
-            void PeriodicTick(AuraEffect const* /*aurEff*/)
+            void PeriodicTick(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
             }
@@ -1569,7 +1569,7 @@ class spell_frostwarden_handler_focus_fire : public SpellScriptLoader
         {
             PrepareAuraScript(spell_frostwarden_handler_focus_fire_AuraScript);
 
-            void PeriodicTick(AuraEffect const* /*aurEff*/)
+            void PeriodicTick(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
                 if (Unit* caster = GetCaster())

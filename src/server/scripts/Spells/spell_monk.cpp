@@ -500,14 +500,14 @@ class spell_monk_soothing_mist : public SpellScriptLoader
         {
             PrepareAuraScript(spell_monk_soothing_mist_AuraScript);
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                     if (Unit* target = GetTarget())
                         target->CastSpell(target, SPELL_MONK_SOOTHING_MIST_VISUAL, true);
             }
 
-            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
             {
                 if (Unit* caster = GetCaster())
                     if (Unit* target = GetTarget())
@@ -516,7 +516,7 @@ class spell_monk_soothing_mist : public SpellScriptLoader
                             caster->CastSpell(caster, SPELL_MONK_SOOTHING_MIST_ENERGIZE, true);
             }
 
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                     if (Unit* target = GetTarget())
@@ -964,7 +964,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
             uint32 chiConsumed;
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 chiConsumed = 0;
             }

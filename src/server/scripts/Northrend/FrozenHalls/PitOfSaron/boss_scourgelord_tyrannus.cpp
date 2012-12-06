@@ -419,7 +419,7 @@ class spell_tyrannus_overlord_brand : public SpellScriptLoader
         {
             PrepareAuraScript(spell_tyrannus_overlord_brand_AuraScript);
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget()->GetTypeId() != TYPEID_PLAYER)
                     return;
@@ -430,7 +430,7 @@ class spell_tyrannus_overlord_brand : public SpellScriptLoader
                 GetTarget()->GetAI()->SetGUID(GetCasterGUID());
             }
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget()->GetTypeId() != TYPEID_PLAYER)
                     return;
@@ -465,7 +465,7 @@ class spell_tyrannus_mark_of_rimefang : public SpellScriptLoader
         {
             PrepareAuraScript(spell_tyrannus_mark_of_rimefang_AuraScript);
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit* caster = GetCaster();
                 if (!caster || caster->GetTypeId() != TYPEID_UNIT)

@@ -667,7 +667,7 @@ public:
             return true;
         }
 
-        void OnStackChange(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        void OnStackChange(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             Unit* target = GetTarget();
             switch (GetStackAmount())
@@ -688,7 +688,7 @@ public:
             }
         }
 
-        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             Unit* target = GetTarget();
             target->RemoveAurasDueToSpell(SPELL_SHADOWMOURNE_VISUAL_LOW);
@@ -1044,7 +1044,7 @@ class spell_magic_eater_food : public SpellScriptLoader
         {
             PrepareAuraScript(spell_magic_eater_food_AuraScript);
 
-            void HandleTriggerSpell(AuraEffect const* /*aurEff*/)
+            void HandleTriggerSpell(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
                 Unit* target = GetTarget();
