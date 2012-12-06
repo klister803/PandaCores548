@@ -530,7 +530,8 @@ class spell_blood_queen_vampiric_bite : public SpellScriptLoader
                 {
                     if (GetCaster()->GetMap()->Is25ManRaid())
                     {
-                        if (Aura* aura = GetCaster()->GetAura(SPELL_GUSHING_WOUND))
+                        AuraPtr aura = GetCaster()->GetAura(SPELL_GUSHING_WOUND);
+                        if (aura != NULLAURA)
                         {
                             if (aura->GetStackAmount() == 3)
                             {

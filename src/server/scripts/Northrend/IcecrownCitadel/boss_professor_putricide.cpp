@@ -902,7 +902,8 @@ class spell_putricide_slime_puddle : public SpellScriptLoader
                 {
                     int32 radiusMod = 200; // The SPELLVALUE_RADIUS_MOD divide it by 10000, so 200 = 0.02%
 
-                    if (Aura* size = caster->GetAura(70347))
+                    AuraPtr size = caster->GetAura(70347);
+                    if (size != NULLAURA)
                         radiusMod *= (1 + (size->GetStackAmount() * 0.2));
 
                     uint32 triggerSpellId = GetSpellInfo()->Effects[aurEff->GetEffIndex()].TriggerSpell;
@@ -1129,9 +1130,11 @@ class spell_putricide_unbound_plague : public SpellScriptLoader
                 {
                     if (Creature* professor = ObjectAccessor::GetCreature(*GetCaster(), instance->GetData64(DATA_PROFESSOR_PUTRICIDE)))
                     {
-                        if (Aura* oldPlague = GetCaster()->GetAura(plagueId, professor->GetGUID()))
+                        AuraPtr oldPlague = GetCaster()->GetAura(plagueId, professor->GetGUID());
+                        if (oldPlague != NULLAURA)
                         {
-                            if (Aura* newPlague = professor->AddAura(plagueId, GetHitUnit()))
+                            AuraPtr newPlague = professor->AddAura(plagueId, GetHitUnit());
+                            if (newPlague != NULLAURA)
                             {
                                 newPlague->SetMaxDuration(oldPlague->GetDuration());
                                 newPlague->SetDuration(oldPlague->GetDuration());
@@ -1185,7 +1188,8 @@ class spell_putricide_eat_ooze : public SpellScriptLoader
                     if(!(target = GetCaster()->FindNearestCreature(NPC_GROWING_OOZE_PUDDLE, 25.0f, true)))
                         return;
 
-                if (Aura* grow = target->GetAura(uint32(GetEffectValue())))
+                AuraPtr grow = target->GetAura(uint32(GetEffectValue()));
+                if (grow != NULLAURA)
                 {
                     if (grow->GetStackAmount() < 4)
                     {

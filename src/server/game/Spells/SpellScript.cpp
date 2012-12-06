@@ -516,7 +516,7 @@ void SpellScript::SetHitHeal(int32 heal)
     m_spell->m_healing = heal;
 }
 
-Aura* SpellScript::GetHitAura()
+AuraPtr SpellScript::GetHitAura()
 {
     if (!IsInTargetHook())
     {
@@ -524,9 +524,9 @@ Aura* SpellScript::GetHitAura()
         return NULL;
     }
     if (!m_spell->m_spellAura)
-        return NULL;
+        return NULLAURA;
     if (m_spell->m_spellAura->IsRemoved())
-        return NULL;
+        return NULLAURA;
     return m_spell->m_spellAura;
 }
 
@@ -814,7 +814,7 @@ void AuraScript::EffectManaShieldHandler::Call(AuraScript* auraScript, AuraEffec
     (auraScript->*pEffectHandlerScript)(aurEff, dmgInfo, absorbAmount);
 }
 
-bool AuraScript::_Load(Aura* aura)
+bool AuraScript::_Load(AuraPtr aura)
 {
     m_aura = aura;
     _PrepareScriptCall((AuraScriptHookType)SPELL_SCRIPT_STATE_LOADING, NULL);
@@ -911,7 +911,7 @@ void AuraScript::Remove(uint32 removeMode)
     m_aura->Remove((AuraRemoveMode)removeMode);
 }
 
-Aura* AuraScript::GetAura() const
+AuraPtr AuraScript::GetAura() const
 {
     return m_aura;
 }

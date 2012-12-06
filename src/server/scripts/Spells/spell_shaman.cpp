@@ -340,7 +340,7 @@ public:
                 {
                     if (roll_chance_i(60) && _player->HasAura(88764))
                     {
-                        if (Aura * lightningShield = _player->GetAura(324))
+                        if (AuraPtr lightningShield = _player->GetAura(324))
                         {
                             _player->CastSpell(_player, SPELL_SHA_ROLLING_THUNDER_ENERGIZE, true);
 
@@ -394,7 +394,7 @@ public:
             if (!fulminationAura)
                 return;
 
-            Aura * lightningShield = caster->GetAura(324);
+            AuraPtr lightningShield = caster->GetAura(324);
             if(!lightningShield)
                 return;
 

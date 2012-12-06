@@ -236,7 +236,7 @@ class spell_pal_guarded_by_the_light : public SpellScriptLoader
             void HandleScriptEffect(SpellEffIndex /*effIndex*/)
             {
                 // Divine Plea
-                if (Aura* aura = GetCaster()->GetAura(PALADIN_SPELL_DIVINE_PLEA))
+                if (AuraPtr aura = GetCaster()->GetAura(PALADIN_SPELL_DIVINE_PLEA))
                     aura->RefreshDuration();
             }
 

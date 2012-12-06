@@ -704,7 +704,7 @@ class spell_gen_animal_blood : public SpellScriptLoader
             void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 // Remove all auras with spell id 46221, except the one currently being applied
-                while (Aura* aur = GetUnitOwner()->GetOwnedAura(SPELL_ANIMAL_BLOOD, 0, 0, 0, GetAura()))
+                while (AuraPtr aur = GetUnitOwner()->GetOwnedAura(SPELL_ANIMAL_BLOOD, 0, 0, 0, GetAura()))
                     GetUnitOwner()->RemoveOwnedAura(aur);
             }
 
@@ -1912,7 +1912,7 @@ class spell_gen_break_shield: public SpellScriptLoader
                             Unit::AuraApplicationMap const& auras = target->GetAppliedAuras();
                             for (Unit::AuraApplicationMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
                             {
-                                if (Aura* aura = itr->second->GetBase())
+                                if (AuraPtr aura = itr->second->GetBase())
                                 {
                                     SpellInfo const* auraInfo = aura->GetSpellInfo();
                                     if (auraInfo && auraInfo->SpellIconID == 2007 && aura->HasEffectType(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN))
@@ -1920,7 +1920,7 @@ class spell_gen_break_shield: public SpellScriptLoader
                                         aura->ModStackAmount(-1, AURA_REMOVE_BY_ENEMY_SPELL);
                                         // Remove dummys from rider (Necessary for updating visual shields)
                                         if (Unit* rider = target->GetCharmer())
-                                            if (Aura* defend = rider->GetAura(aura->GetId()))
+                                            if (AuraPtr defend = rider->GetAura(aura->GetId()))
                                                 defend->ModStackAmount(-1, AURA_REMOVE_BY_ENEMY_SPELL);
                                         break;
                                     }
@@ -2042,7 +2042,7 @@ class spell_gen_mounted_charge: public SpellScriptLoader
                             Unit::AuraApplicationMap const& auras = target->GetAppliedAuras();
                             for (Unit::AuraApplicationMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
                             {
-                                if (Aura* aura = itr->second->GetBase())
+                                if (AuraPtr aura = itr->second->GetBase())
                                 {
                                     SpellInfo const* auraInfo = aura->GetSpellInfo();
                                     if (auraInfo && auraInfo->SpellIconID == 2007 && aura->HasEffectType(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN))
@@ -2050,7 +2050,7 @@ class spell_gen_mounted_charge: public SpellScriptLoader
                                         aura->ModStackAmount(-1, AURA_REMOVE_BY_ENEMY_SPELL);
                                         // Remove dummys from rider (Necessary for updating visual shields)
                                         if (Unit* rider = target->GetCharmer())
-                                            if (Aura* defend = rider->GetAura(aura->GetId()))
+                                            if (AuraPtr defend = rider->GetAura(aura->GetId()))
                                                 defend->ModStackAmount(-1, AURA_REMOVE_BY_ENEMY_SPELL);
                                         break;
                                     }
@@ -3212,14 +3212,14 @@ public:
         {
             if (Player* target = GetHitPlayer())
             {
-                Aura const* aura = GetHitAura();
+                AuraPtr const aura = GetHitAura();
                 if (!(aura && aura->GetStackAmount() == 3))
                     return;
 
                 target->CastSpell(target, SPELL_FOAM_SWORD_DEFEAT, true);
                 target->RemoveAurasDueToSpell(SPELL_BONKED);
 
-                if (Aura const* aura = target->GetAura(SPELL_ON_GUARD))
+                if (AuraPtr const aura = target->GetAura(SPELL_ON_GUARD))
                 {
                     if (Item* item = target->GetItemByGuid(aura->GetCastItemGUID()))
                         target->DestroyItemCount(item->GetEntry(), 1, true);

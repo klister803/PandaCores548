@@ -345,7 +345,7 @@ class Vehicle;
 class TransportBase;
 
 typedef std::list<Unit*> UnitList;
-typedef std::list< std::pair<Aura*, uint8> > DispelChargesList;
+typedef std::list< std::pair<AuraPtr, uint8> > DispelChargesList;
 
 struct SpellImmune
 {
@@ -1262,11 +1262,11 @@ class Unit : public WorldObject
         typedef std::set<Unit*> AttackerSet;
         typedef std::set<Unit*> ControlList;
         typedef std::pair<uint32, uint8> spellEffectPair;
-        typedef std::multimap<uint32,  Aura*> AuraMap;
+        typedef std::multimap<uint32,  AuraPtr> AuraMap;
         typedef std::multimap<uint32,  AuraApplication*> AuraApplicationMap;
         typedef std::multimap<AuraStateType,  AuraApplication*> AuraStateAurasMap;
         typedef std::list<AuraEffect*> AuraEffectList;
-        typedef std::list<Aura*> AuraList;
+        typedef std::list<AuraPtr> AuraList;
         typedef std::list<AuraApplication *> AuraApplicationList;
         typedef std::list<DiminishingReturn> Diminishing;
         typedef std::set<uint32> ComboPointHolderSet;
@@ -1630,8 +1630,8 @@ class Unit : public WorldObject
         void CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* Victim = NULL, bool triggered = true, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
         void CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim = NULL, bool triggered = true, Item* castItem = NULL, AuraEffect const* triggeredByAura = NULL, uint64 originalCaster = 0);
         void CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffect* triggeredByAura = NULL, uint64 originalCaster = 0);
-        Aura* AddAura(uint32 spellId, Unit* target);
-        Aura* AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target);
+        AuraPtr AddAura(uint32 spellId, Unit* target);
+        AuraPtr AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target);
         void SetAuraStack(uint32 spellId, Unit* target, uint32 stack);
         void SendPlaySpellVisualKit(uint32 id, uint32 unkParam);
 
@@ -1784,16 +1784,16 @@ class Unit : public WorldObject
         bool InitTamedPet(Pet* pet, uint8 level, uint32 spell_id);
 
         // aura apply/remove helpers - you should better not use these
-        Aura* _TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, int32* baseAmount = NULL, Item* castItem = NULL, uint64 casterGUID = 0);
-        void _AddAura(UnitAura* aura, Unit* caster);
-        AuraApplication * _CreateAuraApplication(Aura* aura, uint32 effMask);
-        void _ApplyAuraEffect(Aura* aura, uint32 effIndex);
+        AuraPtr _TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, int32* baseAmount = NULL, Item* castItem = NULL, uint64 casterGUID = 0);
+        void _AddAura(UnitAuraPtr aura, Unit* caster);
+        AuraApplication * _CreateAuraApplication(AuraPtr aura, uint32 effMask);
+        void _ApplyAuraEffect(AuraPtr aura, uint32 effIndex);
         void _ApplyAura(AuraApplication * aurApp, uint32 effMask);
         void _UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMode);
         void _UnapplyAura(AuraApplication * aurApp, AuraRemoveMode removeMode);
-        void _RemoveNoStackAuraApplicationsDueToAura(Aura* aura);
-        void _RemoveNoStackAurasDueToAura(Aura* aura);
-        bool _IsNoStackAuraDueToAura(Aura* appliedAura, Aura* existingAura) const;
+        void _RemoveNoStackAuraApplicationsDueToAura(AuraPtr aura);
+        void _RemoveNoStackAurasDueToAura(AuraPtr aura);
+        bool _IsNoStackAuraDueToAura(AuraPtr appliedAura, AuraPtr existingAura) const;
         void _RegisterAuraEffect(AuraEffect* aurEff, bool apply);
 
         // m_ownedAuras container management
@@ -1802,9 +1802,9 @@ class Unit : public WorldObject
 
         void RemoveOwnedAura(AuraMap::iterator &i, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         void RemoveOwnedAura(uint32 spellId, uint64 casterGUID = 0, uint32 reqEffMask = 0, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
-        void RemoveOwnedAura(Aura* aura, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
+        void RemoveOwnedAura(AuraPtr aura, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
 
-        Aura* GetOwnedAura(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0, Aura* except = NULL) const;
+        AuraPtr GetOwnedAura(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0, AuraPtr except = NULLAURA) const;
 
         // m_appliedAuras container management
         AuraApplicationMap      & GetAppliedAuras()       { return m_appliedAuras; }
@@ -1813,14 +1813,14 @@ class Unit : public WorldObject
         void RemoveAura(AuraApplicationMap::iterator &i, AuraRemoveMode mode = AURA_REMOVE_BY_DEFAULT);
         void RemoveAura(uint32 spellId, uint64 casterGUID = 0, uint32 reqEffMask = 0, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         void RemoveAura(AuraApplication * aurApp, AuraRemoveMode mode = AURA_REMOVE_BY_DEFAULT);
-        void RemoveAura(Aura* aur, AuraRemoveMode mode = AURA_REMOVE_BY_DEFAULT);
+        void RemoveAura(AuraPtr aur, AuraRemoveMode mode = AURA_REMOVE_BY_DEFAULT);
 
         void RemoveAurasDueToSpell(uint32 spellId, uint64 casterGUID = 0, uint32 reqEffMask = 0, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         void RemoveAuraFromStack(uint32 spellId, uint64 casterGUID = 0, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         void RemoveAurasDueToSpellByDispel(uint32 spellId, uint32 dispellerSpellId, uint64 casterGUID, Unit* dispeller, uint8 chargesRemoved = 1);
         void RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, Unit* stealer);
         void RemoveAurasDueToItemSpell(Item* castItem, uint32 spellId);
-        void RemoveAurasByType(AuraType auraType, uint64 casterGUID = 0, Aura* except = NULL, bool negative = true, bool positive = true);
+        void RemoveAurasByType(AuraType auraType, uint64 casterGUID = 0, AuraPtr except = NULLAURA, bool negative = true, bool positive = true);
         void RemoveNotOwnSingleTargetAuras(uint32 newPhase = 0x0);
         void RemoveAurasWithInterruptFlags(uint32 flag, uint32 except = 0);
         void RemoveAurasWithAttribute(uint32 flags);
@@ -1850,10 +1850,10 @@ class Unit : public WorldObject
         inline AuraEffect* GetDummyAuraEffect(SpellFamilyNames name, uint32 iconId, uint32 effIndex) const { return GetAuraEffect(SPELL_AURA_DUMMY, name, iconId, effIndex);}
 
         AuraApplication * GetAuraApplication(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0, AuraApplication * except = NULL) const;
-        Aura* GetAura(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0) const;
+        AuraPtr GetAura(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0) const;
 
         AuraApplication * GetAuraApplicationOfRankedSpell(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0, AuraApplication * except = NULL) const;
-        Aura* GetAuraOfRankedSpell(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0) const;
+        AuraPtr GetAuraOfRankedSpell(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0) const;
 
         void GetDispellableAuraList(Unit* caster, uint32 dispelMask, DispelChargesList& dispelList);
 
@@ -2367,14 +2367,14 @@ class Unit : public WorldObject
 
         void DisableSpline();
     private:
-        bool IsTriggeredAtSpellProcEvent(Unit* victim, Aura* aura, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent);
+        bool IsTriggeredAtSpellProcEvent(Unit* victim, AuraPtr aura, SpellInfo const* procSpell, uint32 procFlag, uint32 procExtra, WeaponAttackType attType, bool isVictim, bool active, SpellProcEventEntry const* & spellProcEvent);
         bool HandleAuraProcOnPowerAmount(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const *procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleHasteAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleSpellCritChanceAuraProc(Unit* victim, uint32 damage, AuraEffect* triggredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleObsModEnergyAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleModDamagePctTakenAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
-        bool HandleAuraProc(Unit* victim, uint32 damage, Aura* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown, bool * handled);
+        bool HandleAuraProc(Unit* victim, uint32 damage, AuraPtr triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown, bool * handled);
         bool HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 procFlag, uint32 procEx, uint32 cooldown);
         bool HandleOverrideClassScriptAuraProc(Unit* victim, uint32 damage, AuraEffect* triggeredByAura, SpellInfo const* procSpell, uint32 cooldown);
         bool HandleAuraRaidProcFromChargeWithValue(AuraEffect* triggeredByAura);

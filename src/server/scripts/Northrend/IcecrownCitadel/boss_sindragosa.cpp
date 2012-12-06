@@ -400,7 +400,7 @@ class boss_sindragosa : public CreatureScript
                 {
                     if (spellId == spell->Id)
                     {
-                        if (Aura const* mysticBuffet = target->GetAura(spell->Id))
+                        if (AuraPtr const mysticBuffet = target->GetAura(spell->Id))
                             _mysticBuffetStack = std::max<uint8>(_mysticBuffetStack, mysticBuffet->GetStackAmount());
 
                         return;
@@ -422,7 +422,8 @@ class boss_sindragosa : public CreatureScript
                                     {
                                         if (!player->HasAura(SPELL_FROST_IMBUED_BLADE) && shadowsEdge->GetEntry() == ITEM_SHADOW_S_EDGE)
                                         {
-                                            if (Aura* infusion = player->GetAura(SPELL_FROST_INFUSION))
+                                            AuraPtr infusion = player->GetAura(SPELL_FROST_INFUSION);
+                                            if (infusion != NULLAURA)
                                             {
                                                 if (infusion->GetStackAmount() == 3)
                                                 {

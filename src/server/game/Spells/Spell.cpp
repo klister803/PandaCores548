@@ -2698,7 +2698,8 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
                 }
                 else
                 {
-                    ((UnitAura*)m_spellAura)->SetDiminishGroup(m_diminishGroup);
+                    UnitAuraPtr unitauraptr = std::dynamic_pointer_cast<UnitAura>(m_spellAura);
+                    unitauraptr->SetDiminishGroup(m_diminishGroup);
 
                     bool positive = m_spellAura->GetSpellInfo()->IsPositive();
                     if (AuraApplication* aurApp = m_spellAura->GetApplicationOfTarget(m_originalCaster->GetGUID()))
@@ -2795,12 +2796,13 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
                 // set duration of current aura to the triggered spell
                 if (i->triggeredSpell->GetDuration() == -1)
                 {
-                    if (Aura* triggeredAur = unit->GetAura(i->triggeredSpell->Id, m_caster->GetGUID()))
+                    AuraPtr triggeredAur = unit->GetAura(i->triggeredSpell->Id, m_caster->GetGUID());
+                    if (triggeredAur != NULLAURA)
                     {
                         // get duration from aura-only once
                         if (!_duration)
                         {
-                            Aura* aur = unit->GetAura(m_spellInfo->Id, m_caster->GetGUID());
+                            AuraPtr aur = unit->GetAura(m_spellInfo->Id, m_caster->GetGUID());
                             _duration = aur ? aur->GetDuration() : -1;
                         }
                         triggeredAur->SetDuration(_duration);
@@ -5719,7 +5721,7 @@ SpellCastResult Spell::CheckCasterAuras() const
             Unit::AuraApplicationMap const& auras = m_caster->GetAppliedAuras();
             for (Unit::AuraApplicationMap::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
             {
-                Aura const* aura = itr->second->GetBase();
+                AuraPtr const aura = itr->second->GetBase();
                 SpellInfo const* auraInfo = aura->GetSpellInfo();
                 if (auraInfo->GetAllEffectsMechanicMask() & mechanic_immune)
                     continue;

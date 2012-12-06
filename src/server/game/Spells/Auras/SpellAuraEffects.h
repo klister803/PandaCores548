@@ -30,15 +30,15 @@ typedef void(AuraEffect::*pAuraEffectHandler)(AuraApplication const* aurApp, uin
 class AuraEffect
 {
     friend void Aura::_InitEffects(uint32 effMask, Unit* caster, int32 *baseAmount);
-    friend Aura* Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, int32* baseAmount, Item* castItem, uint64 casterGUID);
+    friend AuraPtr Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, int32* baseAmount, Item* castItem, uint64 casterGUID);
     friend Aura::~Aura();
     private:
         ~AuraEffect();
-        explicit AuraEffect(Aura* base, uint8 effIndex, int32 *baseAmount, Unit* caster);
+        explicit AuraEffect(AuraPtr base, uint8 effIndex, int32 *baseAmount, Unit* caster);
     public:
         Unit* GetCaster() const { return GetBase()->GetCaster(); }
         uint64 GetCasterGUID() const { return GetBase()->GetCasterGUID(); }
-        Aura* GetBase() const { return m_base; }
+        AuraPtr GetBase() const { return m_base; }
         void GetTargetList(std::list<Unit*> & targetList) const;
         void GetApplicationList(std::list<AuraApplication*> & applicationList) const;
         SpellModifier* GetSpellModifier() const { return m_spellmod; }
@@ -92,7 +92,7 @@ class AuraEffect
         // add/remove SPELL_AURA_MOD_SHAPESHIFT (36) linked auras
         void HandleShapeshiftBoosts(Unit* target, bool apply) const;
     private:
-        Aura* const m_base;
+        AuraPtr const m_base;
 
         SpellInfo const* const m_spellInfo;
         int32 const m_baseAmount;

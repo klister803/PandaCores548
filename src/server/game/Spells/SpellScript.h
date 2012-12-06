@@ -374,7 +374,7 @@ class SpellScript : public _SpellScript
         void PreventHitHeal() { SetHitHeal(0); }
         Spell* GetSpell() { return m_spell; }
         // returns current spell hit target aura
-        Aura* GetHitAura();
+        AuraPtr GetHitAura();
         // prevents applying aura on current spell hit target
         void PreventHitAura();
 
@@ -570,12 +570,12 @@ class AuraScript : public _SpellScript
         AuraScript() : _SpellScript(), m_aura(NULL), m_auraApplication(NULL), m_defaultActionPrevented(false)
         {}
         bool _Validate(SpellInfo const* entry);
-        bool _Load(Aura* aura);
+        bool _Load(AuraPtr aura);
         void _PrepareScriptCall(AuraScriptHookType hookType, AuraApplication const* aurApp = NULL);
         void _FinishScriptCall();
         bool _IsDefaultActionPrevented();
     private:
-        Aura* m_aura;
+        AuraPtr m_aura;
         AuraApplication const* m_auraApplication;
         bool m_defaultActionPrevented;
 
@@ -719,7 +719,7 @@ class AuraScript : public _SpellScript
         // removes aura with remove mode (see AuraRemoveMode enum)
         void Remove(uint32 removeMode = 0);
         // returns aura object of script
-        Aura* GetAura() const;
+        AuraPtr GetAura() const;
 
         // returns type of the aura, may be dynobj owned aura or unit owned aura
         AuraObjectType GetType() const;

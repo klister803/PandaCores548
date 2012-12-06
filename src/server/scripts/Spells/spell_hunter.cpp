@@ -122,7 +122,7 @@ class spell_hun_chimera_shot : public SpellScriptLoader
                     Unit::AuraApplicationMap& Auras = unitTarget->GetAppliedAuras();
                     for (Unit::AuraApplicationMap::iterator i = Auras.begin(); i != Auras.end(); ++i)
                     {
-                        Aura* aura = i->second->GetBase();
+                        AuraPtr aura = i->second->GetBase();
                         if (aura->GetCasterGUID() != caster->GetGUID())
                             continue;
 

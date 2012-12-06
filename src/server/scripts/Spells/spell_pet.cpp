@@ -684,7 +684,7 @@ public:
                 CritSpell += owner->GetRatingBonusValue(CR_CRIT_SPELL);
 
                 if (AuraApplication* improvedDemonicTacticsApp = owner->GetAuraApplicationOfRankedSpell(54347))
-                    if (Aura* improvedDemonicTactics = improvedDemonicTacticsApp->GetBase())
+                    if (AuraPtr improvedDemonicTactics = improvedDemonicTacticsApp->GetBase())
                         if (AuraEffect* improvedDemonicTacticsEffect = improvedDemonicTactics->GetEffect(EFFECT_0))
                             amount += CalculatePct(CritSpell, improvedDemonicTacticsEffect->GetAmount());
             }
@@ -706,7 +706,7 @@ public:
                 CritMelee += owner->GetRatingBonusValue(CR_CRIT_MELEE);
 
                 if (AuraApplication* improvedDemonicTacticsApp = owner->GetAuraApplicationOfRankedSpell(54347))
-                    if (Aura* improvedDemonicTactics = improvedDemonicTacticsApp->GetBase())
+                    if (AuraPtr improvedDemonicTactics = improvedDemonicTacticsApp->GetBase())
                         if (AuraEffect* improvedDemonicTacticsEffect = improvedDemonicTactics->GetEffect(EFFECT_0))
                             amount += CalculatePct(CritMelee, improvedDemonicTacticsEffect->GetAmount());
             }
@@ -1433,7 +1433,7 @@ public:
                     if (pet->GetEntry() == ENTRY_ARMY_OF_THE_DEAD_GHOUL)
                         amount = -90;
                     // Night of the dead
-                    else if ( Aura * aur = owner->GetAuraOfRankedSpell(SPELL_NIGHT_OF_THE_DEAD))
+                    else if (AuraPtr aur = owner->GetAuraOfRankedSpell(SPELL_NIGHT_OF_THE_DEAD))
                         amount = aur->GetSpellInfo()->Effects[EFFECT_2].CalcValue();
                 }
             }

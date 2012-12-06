@@ -728,7 +728,8 @@ class spell_powering_up : public SpellScriptLoader
             {
                 if (Unit* target = GetTarget())
                 {
-                    if (Aura* pAura = target->GetAura(GetId()))
+                    AuraPtr pAura = target->GetAura(GetId());
+                    if (pAura != NULLAURA)
                     {
                         if (pAura->GetStackAmount() == 100)
                         {

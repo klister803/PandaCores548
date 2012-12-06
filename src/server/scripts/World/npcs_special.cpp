@@ -213,7 +213,7 @@ public:
                         if (!who->IsWithinDistInMap(me, RANGE_GUARDS_MARK))
                             return;
 
-                        Aura* markAura = who->GetAura(SPELL_GUARDS_MARK);
+                        AuraPtr markAura = who->GetAura(SPELL_GUARDS_MARK);
                         if (markAura)
                         {
                             // the target wasn't able to move out of our range within 25 seconds

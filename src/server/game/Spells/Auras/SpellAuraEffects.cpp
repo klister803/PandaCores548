@@ -477,7 +477,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //418 SPELL_AURA_418
 };
 
-AuraEffect::AuraEffect(Aura* base, uint8 effIndex, int32 *baseAmount, Unit* caster):
+AuraEffect::AuraEffect(AuraPtr base, uint8 effIndex, int32 *baseAmount, Unit* caster):
 m_base(base), m_spellInfo(base->GetSpellInfo()),
 m_baseAmount(baseAmount ? *baseAmount : m_spellInfo->Effects[effIndex].BasePoints),
 m_spellmod(NULL), m_periodicTimer(0), m_tickNumber(0), m_effIndex(effIndex),
@@ -1058,7 +1058,7 @@ void AuraEffect::ApplySpellMod(Unit* target, bool apply)
             Unit::AuraApplicationMap & auras = target->GetAppliedAuras();
             for (Unit::AuraApplicationMap::iterator iter = auras.begin(); iter != auras.end(); ++iter)
             {
-                Aura* aura = iter->second->GetBase();
+                AuraPtr aura = iter->second->GetBase();
                 // only passive and permament auras-active auras should have amount set on spellcast and not be affected
                 // if aura is casted by others, it will not be affected
                 if ((aura->IsPassive() || aura->IsPermanent()) && aura->GetCasterGUID() == guid && aura->GetSpellInfo()->IsAffectedBySpellMod(m_spellmod))
@@ -4990,12 +4990,12 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                     target->CastSpell(target, 34027, true, NULL, this);
 
                     // set 3 stacks and 3 charges (to make all auras not disappear at once)
-                    Aura* owner_aura = target->GetAura(34027, GetCasterGUID());
-                    Aura* pet_aura  = pet->GetAura(58914, GetCasterGUID());
-                    if (owner_aura)
+                    AuraPtr owner_aura = target->GetAura(34027, GetCasterGUID());
+                    AuraPtr pet_aura  = pet->GetAura(58914, GetCasterGUID());
+                    if (owner_aura != NULLAURA)
                     {
                         owner_aura->SetStackAmount(owner_aura->GetSpellInfo()->StackAmount);
-                        if (pet_aura)
+                        if (pet_aura != NULLAURA)
                         {
                             pet_aura->SetCharges(0);
                             pet_aura->SetStackAmount(owner_aura->GetSpellInfo()->StackAmount);
@@ -5052,9 +5052,12 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                             target->CastSpell(spellTarget, 51699, true);
                    break;
                 case 71563:
-                    if (Aura* newAura = target->AddAura(71564, target))
-                        newAura->SetStackAmount(newAura->GetSpellInfo()->StackAmount);
-                        break;
+                    {
+                        AuraPtr newAura = target->AddAura(71564, target);
+                        if (newAura != NULLAURA)
+                            newAura->SetStackAmount(newAura->GetSpellInfo()->StackAmount);
+                    }
+                    break;
                 case 59628: // Tricks of the Trade
                     if (caster && caster->GetMisdirectionTarget())
                         target->SetReducedThreatPercent(100, caster->GetMisdirectionTarget()->GetGUID());
@@ -5399,7 +5402,8 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                 {
                     if (apply)
                     {
-                        if (Aura* newAura = target->AddAura(88611, target))
+                        AuraPtr newAura = target->AddAura(88611, target);
+                        if (newAura != NULLAURA)
                         {
                             newAura->SetMaxDuration(GetBase()->GetDuration());
                             newAura->SetDuration(GetBase()->GetDuration());
@@ -5674,7 +5678,8 @@ void AuraEffect::HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, boo
     {
         uint64 casterGUID = triggeredSpellInfo->NeedsToBeTriggeredByCaster() ? GetCasterGUID() : target->GetGUID();
         // change the stack amount to be equal to stack amount of our aura
-        if (Aura* triggeredAura = target->GetAura(triggeredSpellId, casterGUID))
+        AuraPtr triggeredAura = target->GetAura(triggeredSpellId, casterGUID);
+        if (triggeredAura != NULLAURA)
             triggeredAura->ModStackAmount(GetBase()->GetStackAmount() - triggeredAura->GetStackAmount());
     }
 }
@@ -5981,7 +5986,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                         {
                             if (AuraApplication* aura = target->GetAuraApplication(116095))
                             {
-                                Aura* Disable = aura->GetBase();
+                                AuraPtr Disable = aura->GetBase();
                                 int32 maxDuration = Disable->GetMaxDuration();
                                 Disable->SetDuration(maxDuration);
                             }
@@ -6233,7 +6238,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster) 
             case 65923:
             {
                 Unit* permafrostCaster = NULL;
-                Aura* permafrostAura = target->GetAura(66193);
+                AuraPtr permafrostAura = target->GetAura(66193);
                 if (!permafrostAura)
                     permafrostAura = target->GetAura(67855);
                 if (!permafrostAura)
@@ -6967,7 +6972,8 @@ void AuraEffect::HandleRaidProcFromChargeAuraProc(AuraApplication* aurApp, ProcE
             if (Unit* triggerTarget = target->GetNextRandomRaidMemberOrPet(radius))
             {
                 target->CastSpell(triggerTarget, GetSpellInfo(), true, NULL, this, GetCasterGUID());
-                if (Aura* aura = triggerTarget->GetAura(GetId(), GetCasterGUID()))
+                AuraPtr aura = triggerTarget->GetAura(GetId(), GetCasterGUID());
+                if (aura != NULLAURA)
                     aura->SetCharges(jumps);
             }
         }
@@ -7008,7 +7014,8 @@ void AuraEffect::HandleRaidProcFromChargeWithValueAuraProc(AuraApplication* aurA
             if (Unit* triggerTarget = target->GetNextRandomRaidMemberOrPet(radius))
             {
                 target->CastCustomSpell(triggerTarget, GetId(), &value, NULL, NULL, true, NULL, this, GetCasterGUID());
-                if (Aura* aura = triggerTarget->GetAura(GetId(), GetCasterGUID()))
+                AuraPtr aura = triggerTarget->GetAura(GetId(), GetCasterGUID());
+                if (aura != NULLAURA)
                     aura->SetCharges(jumps);
             }
         }
