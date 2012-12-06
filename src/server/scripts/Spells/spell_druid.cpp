@@ -43,7 +43,43 @@ enum DruidSpells
     SPELL_DRUID_SOLAR_ECLIPSE            = 48517,
     SPELL_DRUID_LUNAR_ECLIPSE            = 48518,
     SPELL_DRUID_NATURES_GRACE            = 16886,
-    SPELL_DRUID_EUPHORIA                 = 81062
+    SPELL_DRUID_EUPHORIA                 = 81062,
+    SPELL_DRUID_PROWL                    = 5215
+};
+
+// Prowl - 5212
+class spell_dru_prowl : public SpellScriptLoader
+{
+    public:
+        spell_dru_prowl() : SpellScriptLoader("spell_dru_prowl") { }
+
+        class spell_dru_prowl_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_prowl_SpellScript);
+
+            bool Validate(SpellInfo const* /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_DRUID_PROWL))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->CastSpell(_player, 768, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_prowl_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_prowl_SpellScript();
+        }
 };
 
 // 5176 - Wrath, 2912 - Starfire and 78674 - Starsurge
@@ -742,6 +778,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_prowl();
     new spell_dru_eclipse();
     new spell_dru_glyph_of_starfire();
     new spell_dru_moonkin_form_passive();
