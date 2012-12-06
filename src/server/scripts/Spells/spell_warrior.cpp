@@ -30,7 +30,45 @@ enum WarriorSpells
     WARRIOR_SPELL_LAST_STAND_TRIGGERED          = 12976,
     WARRIOR_SPELL_VICTORY_RUSH_DAMAGE           = 34428,
     WARRIOR_SPELL_VICTORY_RUSH_HEAL             = 118779,
-    WARRIOR_SPELL_VICTORIOUS_STATE              = 32216
+    WARRIOR_SPELL_VICTORIOUS_STATE              = 32216,
+    WARRIOR_SPELL_BLOODTHIRST                   = 23881,
+    WARRIOR_SPELL_BLOODTHIRST_HEAL              = 117313
+};
+
+// Bloodthirst - 23881
+class spell_warr_bloodthirst : public SpellScriptLoader
+{
+    public:
+        spell_warr_bloodthirst() : SpellScriptLoader("spell_warr_bloodthirst") { }
+
+        class spell_warr_bloodthirst_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_bloodthirst_SpellScript);
+
+            bool Validate(SpellInfo const* /*SpellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(WARRIOR_SPELL_BLOODTHIRST))
+                    return false;
+                return true;
+            }
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (GetHitDamage())
+                            _player->CastSpell(_player, WARRIOR_SPELL_BLOODTHIRST_HEAL, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_bloodthirst_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_bloodthirst_SpellScript();
+        }
 };
 
 // Victory Rush - 34428
@@ -441,6 +479,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_bloodthirst();
     new spell_warr_victory_rush();
     new spell_warr_last_stand();
     new spell_warr_improved_spell_reflection();
