@@ -553,6 +553,12 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                 switch (m_spellInfo->Id)
                 {
                     // Custom MoP script
+                    case 117418: // Fists of Fury
+                    {
+                        if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                            damage = CalculateMonkMeleeAttacks(m_caster, 7.5f, 14);
+                        break;
+                    }
                     case 100780: // Jab
                     {
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)

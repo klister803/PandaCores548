@@ -27,7 +27,51 @@
 
 enum WarriorSpells
 {
-    WARRIOR_SPELL_LAST_STAND_TRIGGERED           = 12976,
+    WARRIOR_SPELL_LAST_STAND_TRIGGERED          = 12976,
+    WARRIOR_SPELL_VICTORY_RUSH_DAMAGE           = 34428,
+    WARRIOR_SPELL_VICTORY_RUSH_HEAL             = 118779,
+    WARRIOR_SPELL_VICTORIOUS_STATE              = 32216
+};
+
+// Victory Rush - 34428
+class spell_warr_victory_rush : public SpellScriptLoader
+{
+    public:
+        spell_warr_victory_rush() : SpellScriptLoader("spell_warr_victory_rush") { }
+
+        class spell_warr_victory_rush_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_victory_rush_SpellScript);
+
+            bool Validate(SpellInfo const* /*SpellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(WARRIOR_SPELL_VICTORY_RUSH_DAMAGE))
+                    return false;
+                return true;
+            }
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        _player->CastSpell(_player, WARRIOR_SPELL_VICTORY_RUSH_HEAL, true);
+                        if (_player->HasAura(WARRIOR_SPELL_VICTORIOUS_STATE))
+                            _player->RemoveAura(WARRIOR_SPELL_VICTORIOUS_STATE);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_victory_rush_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_victory_rush_SpellScript();
+        }
 };
 
 class spell_warr_last_stand : public SpellScriptLoader
@@ -214,9 +258,10 @@ class spell_warr_deep_wounds : public SpellScriptLoader
 
 enum Charge
 {
-    SPELL_JUGGERNAUT_CRIT_BONUS_TALENT      = 64976,
-    SPELL_JUGGERNAUT_CRIT_BONUS_BUFF        = 65156,
-    SPELL_CHARGE                            = 34846,
+    SPELL_CHARGE                            = 100,
+    SPELL_CHARGE_STUN                       = 7922,
+    SPELL_WARBRINGER                        = 103828,
+    SPELL_CHARGE_WARBRINGER_STUN            = 105771
 };
 
 class spell_warr_charge : public SpellScriptLoader
@@ -230,24 +275,29 @@ class spell_warr_charge : public SpellScriptLoader
 
             bool Validate(SpellInfo const* /*SpellEntry*/)
             {
-                if (!sSpellMgr->GetSpellInfo(SPELL_JUGGERNAUT_CRIT_BONUS_TALENT) || !sSpellMgr->GetSpellInfo(SPELL_JUGGERNAUT_CRIT_BONUS_BUFF) || !sSpellMgr->GetSpellInfo(SPELL_CHARGE))
+                if (!sSpellMgr->GetSpellInfo(SPELL_CHARGE))
                     return false;
                 return true;
             }
-            void HandleDummy(SpellEffIndex /* effIndex */)
+            void HandleOnHit()
             {
-                int32 chargeBasePoints0 = GetEffectValue();
-                Unit* caster = GetCaster();
-                caster->CastCustomSpell(caster, SPELL_CHARGE, &chargeBasePoints0, NULL, NULL, true);
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(SPELL_WARBRINGER))
+                            _player->CastSpell(target, SPELL_CHARGE_WARBRINGER_STUN, true);
+                        else
+                            _player->CastSpell(target, SPELL_CHARGE_STUN, true);
 
-                //Juggernaut crit bonus
-                if (caster->HasAura(SPELL_JUGGERNAUT_CRIT_BONUS_TALENT))
-                    caster->CastSpell(caster, SPELL_JUGGERNAUT_CRIT_BONUS_BUFF, true);
+                        _player->SetPower(POWER_RAGE, _player->GetPower(POWER_RAGE) + 75);
+                    }
+                }
             }
 
             void Register()
             {
-                OnEffectHitTarget += SpellEffectFn(spell_warr_charge_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+                OnHit += SpellHitFn(spell_warr_charge_SpellScript::HandleOnHit);
             }
         };
 
@@ -508,6 +558,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_victory_rush();
     new spell_warr_last_stand();
     new spell_warr_improved_spell_reflection();
     new spell_warr_vigilance();

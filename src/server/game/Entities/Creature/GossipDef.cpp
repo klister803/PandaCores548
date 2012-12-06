@@ -154,9 +154,11 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, uint64 objectGUID) const
         uint32 questStat = plr ? plr->GetQuestStatus(questID) : 0;
 
         if(questStat == QuestStatus::QUEST_STATUS_COMPLETE)
-            questStat = 0;
+            questStat = 3;
         else if(questStat == QuestStatus::QUEST_STATUS_NONE)
             questStat = 1;
+        else if(questStat == QuestStatus::QUEST_STATUS_INCOMPLETE)
+            questStat = 2;
         
         data << uint32(questID);
         data << uint32(questStat);
@@ -283,9 +285,11 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title
             uint32 questStat = plr ? plr->GetQuestStatus(questID) : 0;
 
             if(questStat == QuestStatus::QUEST_STATUS_COMPLETE)
-                questStat = 0;
+                questStat = 3;
             else if(questStat == QuestStatus::QUEST_STATUS_NONE)
                 questStat = 1;
+            else if(questStat == QuestStatus::QUEST_STATUS_INCOMPLETE)
+                questStat = 2;
 
             data << uint32(questID);
             data << uint32(questStat);
