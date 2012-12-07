@@ -42,6 +42,62 @@ enum PriestSpells
     PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH      = 107903,
     PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH         = 107904,
     PRIEST_GLYPH_OF_SHADOW                      = 107906,
+    PRIEST_VOID_SHIFT                           = 108968
+};
+
+// Void Shift - 108968
+class spell_pri_void_shift : public SpellScriptLoader
+{
+    public:
+        spell_pri_void_shift() : SpellScriptLoader("spell_pri_void_shift") { }
+
+        class spell_pri_void_shift_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_void_shift_SpellScript);
+
+            bool Validate(SpellInfo const* /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(PRIEST_VOID_SHIFT))
+                    return false;
+                return true;
+            }
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        float playerPct;
+                        float targetPct;
+
+                        playerPct = _player->GetHealthPct();
+                        targetPct = target->GetHealthPct();
+
+                        if (playerPct < 25.0f)
+                            playerPct = 25.0f;
+                        if (targetPct < 25.0f)
+                            targetPct = 25.0f;
+
+                        playerPct /= 100.0f;
+                        targetPct /= 100.0f;
+
+                        _player->SetHealth(_player->GetMaxHealth() * targetPct);
+                        target->SetHealth(target->GetMaxHealth() * playerPct);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_pri_void_shift_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_void_shift_SpellScript;
+        }
 };
 
 // 8092 - Mind Blast, 32379 - Shadow Word : Death, 2944 - Devouring Plague and 64044 - Psychic Horror
@@ -596,6 +652,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_void_shift();
     new spell_pri_shadow_orb();
     new spell_pri_guardian_spirit();
     new spell_pri_mana_burn();
