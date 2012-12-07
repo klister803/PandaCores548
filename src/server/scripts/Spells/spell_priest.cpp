@@ -44,7 +44,55 @@ enum PriestSpells
     PRIEST_GLYPH_OF_SHADOW                      = 107906,
     PRIEST_VOID_SHIFT                           = 108968,
     PRIEST_LEAP_OF_FAITH                        = 73325,
-    PRIEST_LEAP_OF_FAITH_JUMP                   = 110726
+    PRIEST_LEAP_OF_FAITH_JUMP                   = 110726,
+    PRIEST_INNER_WILL                           = 73413,
+    PRIEST_INNER_FIRE                           = 588
+};
+
+// Inner Fire - 588 or Inner Will - 73413
+class spell_pri_inner_fire_or_will : public SpellScriptLoader
+{
+    public:
+        spell_pri_inner_fire_or_will() : SpellScriptLoader("spell_pri_inner_fire_or_will") { }
+
+        class spell_pri_inner_fire_or_will_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_inner_fire_or_will_SpellScript);
+
+            bool Validate(SpellInfo const* /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(PRIEST_INNER_FIRE) || !sSpellMgr->GetSpellInfo(PRIEST_INNER_WILL))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (GetSpellInfo()->Id == PRIEST_INNER_FIRE)
+                    {
+                        if (_player->HasAura(PRIEST_INNER_WILL))
+                            _player->RemoveAura(PRIEST_INNER_WILL);
+                    }
+                    else if (GetSpellInfo()->Id == PRIEST_INNER_WILL)
+                    {
+                        if (_player->HasAura(PRIEST_INNER_FIRE))
+                            _player->RemoveAura(PRIEST_INNER_FIRE);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_inner_fire_or_will_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_inner_fire_or_will_SpellScript;
+        }
 };
 
 // Leap of Faith - 73325
@@ -690,6 +738,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_inner_fire_or_will();
     new spell_pri_leap_of_faith();
     new spell_pri_void_shift();
     new spell_pri_shadow_orb();
