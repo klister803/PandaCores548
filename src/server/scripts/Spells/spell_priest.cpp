@@ -42,7 +42,45 @@ enum PriestSpells
     PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH      = 107903,
     PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH         = 107904,
     PRIEST_GLYPH_OF_SHADOW                      = 107906,
-    PRIEST_VOID_SHIFT                           = 108968
+    PRIEST_VOID_SHIFT                           = 108968,
+    PRIEST_LEAP_OF_FAITH                        = 73325,
+    PRIEST_LEAP_OF_FAITH_JUMP                   = 110726
+};
+
+// Leap of Faith - 73325
+class spell_pri_leap_of_faith : public SpellScriptLoader
+{
+    public:
+        spell_pri_leap_of_faith() : SpellScriptLoader("spell_pri_leap_of_faith") { }
+
+        class spell_pri_leap_of_faith_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_leap_of_faith_SpellScript);
+
+            bool Validate(SpellInfo const* /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(PRIEST_LEAP_OF_FAITH))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        target->CastSpell(_player, PRIEST_LEAP_OF_FAITH_JUMP, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_leap_of_faith_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_leap_of_faith_SpellScript;
+        }
 };
 
 // Void Shift - 108968
@@ -652,6 +690,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_leap_of_faith();
     new spell_pri_void_shift();
     new spell_pri_shadow_orb();
     new spell_pri_guardian_spirit();
