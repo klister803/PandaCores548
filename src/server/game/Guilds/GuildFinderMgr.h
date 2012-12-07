@@ -100,7 +100,8 @@ struct MembershipRequest
         std::string const& GetName() const
         {
             const CharacterNameData *nameData = sWorld->GetCharacterNameData(GetPlayerGUID());
-            return nameData ? nameData->m_name : std::string("");
+            std::string name = "";
+            return nameData ? nameData->m_name : name;
         }
 
     private:
