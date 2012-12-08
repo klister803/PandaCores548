@@ -2224,6 +2224,7 @@ void UnitAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster)
 DynObjAura::DynObjAura(SpellInfo const* spellproto, uint32 effMask, WorldObject* owner, Unit* caster, SpellPowerEntry const* spellPowerData, int32 *baseAmount, Item* castItem, uint64 casterGUID)
     : Aura(spellproto, owner, caster, spellPowerData, castItem, casterGUID)
 {
+    m_spellPowerData = spellPowerData;
 }
 
 void DynObjAura::Remove(AuraRemoveMode removeMode)
