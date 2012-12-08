@@ -31,6 +31,11 @@ enum PaladinSpells
     PALADIN_SPELL_DIVINE_PLEA                    = 54428,
     PALADIN_SPELL_BLESSING_OF_SANCTUARY_BUFF     = 67480,
 
+    PALADIN_SPELL_JUDGMENT                       = 20271,
+    PALADIN_SPELL_JUDGMENTS_OF_THE_BOLD          = 111529,
+    PALADIN_SPELL_JUDGMENTS_OF_THE_WISE          = 105424,
+    PALADIN_SPELL_PHYSICAL_VULNERABILITY         = 81326,
+
     PALADIN_SPELL_HOLY_SHOCK_R1                  = 20473,
     PALADIN_SPELL_HOLY_SHOCK_R1_DAMAGE           = 25912,
     PALADIN_SPELL_HOLY_SHOCK_R1_HEALING          = 25914,
@@ -47,6 +52,52 @@ enum PaladinSpells
     SPELL_FORBEARANCE                            = 25771,
     SPELL_AVENGING_WRATH_MARKER                  = 61987,
     SPELL_IMMUNE_SHIELD_MARKER                   = 61988,
+};
+
+// Judgment - 20271
+class spell_pal_judgment : public SpellScriptLoader
+{
+    public:
+        spell_pal_judgment() : SpellScriptLoader("spell_pal_judgment") { }
+
+        class spell_pal_judgment_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_judgment_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(PALADIN_SPELL_JUDGMENT))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if (_player->HasAura(PALADIN_SPELL_JUDGMENTS_OF_THE_BOLD))
+                        {
+                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + 1);
+                            _player->CastSpell(unitTarget, PALADIN_SPELL_PHYSICAL_VULNERABILITY, true);
+                        }
+                        else if (_player->HasAura(PALADIN_SPELL_JUDGMENTS_OF_THE_WISE))
+                            _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + 1);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_judgment_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_judgment_SpellScript();
+        }
 };
 
 // 31850 - Ardent Defender
@@ -618,6 +669,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_judgment();
     //new spell_pal_ardent_defender();
     new spell_pal_blessing_of_faith();
     new spell_pal_blessing_of_sanctuary();
