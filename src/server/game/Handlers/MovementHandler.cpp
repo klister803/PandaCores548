@@ -45,6 +45,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         return;
 
     GetPlayer()->SetSemaphoreTeleportFar(false);
+    GetPlayer()->SetIgnoreMovementCount(3);
 
     // get the teleport destination
     WorldLocation const loc = GetPlayer()->GetTeleportDest();
@@ -226,6 +227,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
         return;
 
     plMover->SetSemaphoreTeleportNear(false);
+    plMover->SetIgnoreMovementCount(3);
 
     uint32 old_zone = plMover->GetZoneId();
 
@@ -269,6 +271,15 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
     if (plrMover && plrMover->IsBeingTeleported())
     {
+        recvPacket.rfinish();                     // prevent warnings spam
+        return;
+    }
+
+    // Sometime, client send movement packet after teleporation with position before teleportation, so we ignore 3 first movement packet after teleporation
+    // TODO: find a better way to check that, may be a new CMSG send by client ?
+    if (plrMover->GetIgnoreMovementCount())
+    {
+        plrMover->SetIgnoreMovementCount(plrMover->GetIgnoreMovementCount() - 1);
         recvPacket.rfinish();                     // prevent warnings spam
         return;
     }
