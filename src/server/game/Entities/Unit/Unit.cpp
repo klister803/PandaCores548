@@ -9459,7 +9459,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     int32 DoneTotal = 0;
 
     // Apply Power JcJ damage bonus
-    if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER)
+    if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && victim->GetGUID() == TYPEID_PLAYER)
     {
         float PowerJcJ = this->ToPlayer()->GetRatingBonusValue(CR_PVP_POWER) / 100.0f;
         DoneTotalMod += PowerJcJ;
@@ -10803,7 +10803,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     float DoneTotalMod = 1.0f;
 
     // Apply Power JcJ damage bonus
-    if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER)
+    if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && victim->GetGUID() == TYPEID_PLAYER)
     {
         float PowerJcJ = this->ToPlayer()->GetRatingBonusValue(CR_PVP_POWER) / 100.0f;
         DoneTotalMod += PowerJcJ;
