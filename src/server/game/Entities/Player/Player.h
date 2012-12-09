@@ -2709,6 +2709,9 @@ class Player : public Unit, public GridObject<Player>
         void SetKnockBackTime(uint32 timer) { m_knockBackTimer = timer; }
         uint32 GetKnockBackTime() const { return m_knockBackTimer; }
 
+        void SetIgnoreMovementCount(uint8 count) { m_ignoreMovementCount = count; }
+        uint8 GetIgnoreMovementCount() const { return m_ignoreMovementCount; }
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
@@ -3049,6 +3052,7 @@ class Player : public Unit, public GridObject<Player>
         float m_PersonnalXpRate;
 
         uint32 m_knockBackTimer;
+        uint8  m_ignoreMovementCount;
 };
 
 void AddItemsSetItem(Player*player, Item* item);
