@@ -53,6 +53,40 @@ enum DeathKnightSpells
     DK_SPELL_CHAINS_OF_ICE_ROOT                 = 53534
 };
 
+// Unholy Blight - 115994
+class spell_dk_unholy_blight : public SpellScriptLoader
+{
+    public:
+        spell_dk_unholy_blight() : SpellScriptLoader("spell_dk_unholy_blight") { }
+
+        class spell_dk_unholy_blight_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_unholy_blight_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        _player->CastSpell(target, DK_SPELL_BLOOD_PLAGUE, true);
+                        _player->CastSpell(target, DK_SPELL_FROST_FEVER, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_unholy_blight_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_unholy_blight_SpellScript();
+        }
+};
+
 // Called by Chains of Ice - 45524
 // Chilblains - 50041
 class spell_dk_chilblains : public SpellScriptLoader
@@ -961,6 +995,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_unholy_blight();
     new spell_dk_chilblains();
     new spell_dk_outbreak();
     new spell_dk_raise_dead();
