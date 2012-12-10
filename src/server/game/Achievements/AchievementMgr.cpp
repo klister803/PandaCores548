@@ -1723,18 +1723,38 @@ void AchievementMgr<T>::UpdateAchievementCriteria(AchievementCriteriaTypes type,
 }
 
 template<class T>
-bool AchievementMgr<T>::IsCompletedCriteria(AchievementCriteriaEntry const* achievementCriteria, AchievementEntry const* achievement)
+bool AchievementMgr<T>::CanCompleteCriteria(AchievementCriteriaEntry const* achievementCriteria, AchievementEntry const* achievement)
 {
-    // counter can never complete
-    if (achievement->flags & ACHIEVEMENT_FLAG_COUNTER)
-        return false;
+    return true;
+}
 
+template<>
+bool AchievementMgr<Player>::CanCompleteCriteria(AchievementCriteriaEntry const* achievementCriteria, AchievementEntry const* achievement)
+{
     if (achievement->flags & (ACHIEVEMENT_FLAG_REALM_FIRST_REACH | ACHIEVEMENT_FLAG_REALM_FIRST_KILL))
     {
         // someone on this realm has already completed that achievement
         if (sAchievementMgr->IsRealmCompleted(achievement))
             return false;
+
+        if (GetOwner())
+            if (GetOwner()->GetSession())
+                if (GetOwner()->GetSession()->GetSecurity())
+                    return false;
     }
+
+    return true;
+}
+
+template<class T>
+bool AchievementMgr<T>::IsCompletedCriteria(AchievementCriteriaEntry const* achievementCriteria, AchievementEntry const* achievement)
+{
+    // counter can never complete
+    if (achievement->flags & ACHIEVEMENT_FLAG_COUNTER)
+        return false;
+    
+    if (!CanCompleteCriteria(achievementCriteria, achievement))
+        return false;
 
     CriteriaProgress const* progress = GetCriteriaProgress(achievementCriteria);
     if (!progress)
