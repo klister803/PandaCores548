@@ -46,7 +46,9 @@ enum DeathKnightSpells
     DK_SPELL_FROST_FEVER                        = 55095,
     DK_SPELL_MASTER_OF_GHOULS                   = 52143,
     DK_SPELL_GHOUL_AS_GUARDIAN                  = 46585,
-    DK_SPELL_GHOUL_AS_PET                       = 52150
+    DK_SPELL_GHOUL_AS_PET                       = 52150,
+    DK_SPELL_ROILING_BLOOD                      = 108170,
+    DK_SPELL_PESTILENCE                         = 50842
 };
 
 // Outbreak - 77575
@@ -580,9 +582,21 @@ class spell_dk_blood_boil : public SpellScriptLoader
 
                         // Deals 50% additional damage to targets infected with Blood Plague or Frost Fever
                         if (AuraApplication* aura = target->GetAuraApplication(DK_SPELL_FROST_FEVER))
+                        {
                             SetHitDamage(int32(GetHitDamage() * 1.5f));
+
+                            // Roiling Blood
+                            if (_player->HasAura(DK_SPELL_ROILING_BLOOD))
+                                _player->CastSpell(target, DK_SPELL_PESTILENCE, true);
+                        }
                         else if (AuraApplication* aura = target->GetAuraApplication(DK_SPELL_BLOOD_PLAGUE))
+                        {
                             SetHitDamage(int32(GetHitDamage() * 1.5f));
+
+                            // Roiling Blood
+                            if (_player->HasAura(DK_SPELL_ROILING_BLOOD))
+                                _player->CastSpell(target, DK_SPELL_PESTILENCE, true);
+                        }
                     }
                 }
             }
