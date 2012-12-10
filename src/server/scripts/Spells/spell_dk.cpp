@@ -42,6 +42,8 @@ enum DeathKnightSpells
     DK_SPELL_IMPROVED_UNHOLY_PRESENCE_TRIGGERED = 63622,
     SPELL_DK_ITEM_T8_MELEE_4P_BONUS             = 64736,
     DK_SPELL_BLACK_ICE_R1                       = 49140,
+    DK_SPELL_BLOOD_PLAGUE                       = 55078,
+    DK_SPELL_FROST_FEVER                        = 55095
 };
 
 // 50462 - Anti-Magic Shell (on raid member)
@@ -488,7 +490,7 @@ class spell_dk_spell_deflection : public SpellScriptLoader
         }
 };
 
-// 48721 Blood Boil
+// Blood Boil - 48721
 class spell_dk_blood_boil : public SpellScriptLoader
 {
     public:
@@ -498,34 +500,27 @@ class spell_dk_blood_boil : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dk_blood_boil_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
+            void HandleOnHit()
             {
-                if (!sSpellMgr->GetSpellInfo(DK_SPELL_BLOOD_BOIL_TRIGGERED))
-                    return false;
-                return true;
-            }
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        GetCaster()->CastSpell(GetCaster(), DK_SPELL_BLOOD_BOIL_TRIGGERED, true);
 
-            bool Load()
-            {
-                _executed = false;
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER && GetCaster()->getClass() == CLASS_DEATH_KNIGHT;
-            }
-
-            void HandleAfterHit()
-            {
-                if (_executed || !GetHitUnit())
-                    return;
-
-                _executed = true;
-                GetCaster()->CastSpell(GetCaster(), DK_SPELL_BLOOD_BOIL_TRIGGERED, true);
+                        // Deals 50% additional damage to targets infected with Blood Plague or Frost Fever
+                        if (AuraApplication* aura = target->GetAuraApplication(DK_SPELL_FROST_FEVER))
+                            SetHitDamage(int32(GetHitDamage() * 1.5f));
+                        else if (AuraApplication* aura = target->GetAuraApplication(DK_SPELL_BLOOD_PLAGUE))
+                            SetHitDamage(int32(GetHitDamage() * 1.5f));
+                    }
+                }
             }
 
             void Register()
             {
-                AfterHit += SpellHitFn(spell_dk_blood_boil_SpellScript::HandleAfterHit);
+                OnHit += SpellHitFn(spell_dk_blood_boil_SpellScript::HandleOnHit);
             }
-
-            bool _executed;
         };
 
         SpellScript* GetSpellScript() const
