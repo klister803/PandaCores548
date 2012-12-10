@@ -48,7 +48,40 @@ enum DeathKnightSpells
     DK_SPELL_GHOUL_AS_GUARDIAN                  = 46585,
     DK_SPELL_GHOUL_AS_PET                       = 52150,
     DK_SPELL_ROILING_BLOOD                      = 108170,
-    DK_SPELL_PESTILENCE                         = 50842
+    DK_SPELL_PESTILENCE                         = 50842,
+    DK_SPELL_CHILBLAINS                         = 50041,
+    DK_SPELL_CHAINS_OF_ICE_ROOT                 = 53534
+};
+
+// Called by Chains of Ice - 45524
+// Chilblains - 50041
+class spell_dk_chilblains : public SpellScriptLoader
+{
+    public:
+        spell_dk_chilblains() : SpellScriptLoader("spell_dk_chilblains") { }
+
+        class spell_dk_chilblains_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_chilblains_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(DK_SPELL_CHILBLAINS))
+                            _player->CastSpell(target, DK_SPELL_CHAINS_OF_ICE_ROOT, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_chilblains_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_chilblains_SpellScript();
+        }
 };
 
 // Outbreak - 77575
@@ -928,6 +961,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_chilblains();
     new spell_dk_outbreak();
     new spell_dk_raise_dead();
     new spell_dk_anti_magic_shell_raid();
