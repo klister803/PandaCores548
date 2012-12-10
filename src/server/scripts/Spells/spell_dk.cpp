@@ -43,7 +43,43 @@ enum DeathKnightSpells
     SPELL_DK_ITEM_T8_MELEE_4P_BONUS             = 64736,
     DK_SPELL_BLACK_ICE_R1                       = 49140,
     DK_SPELL_BLOOD_PLAGUE                       = 55078,
-    DK_SPELL_FROST_FEVER                        = 55095
+    DK_SPELL_FROST_FEVER                        = 55095,
+    DK_SPELL_MASTER_OF_GHOULS                   = 52143,
+    DK_SPELL_GHOUL_AS_GUARDIAN                  = 46585,
+    DK_SPELL_GHOUL_AS_PET                       = 52150
+};
+
+// Raise Dead - 46584
+class spell_dk_raise_dead : public SpellScriptLoader
+{
+    public:
+        spell_dk_raise_dead() : SpellScriptLoader("spell_dk_raise_dead") { }
+
+        class spell_dk_raise_dead_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_raise_dead_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(DK_SPELL_MASTER_OF_GHOULS))
+                        _player->CastSpell(_player, DK_SPELL_GHOUL_AS_PET, true);
+                    else
+                        _player->CastSpell(_player, DK_SPELL_GHOUL_AS_GUARDIAN, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_dk_raise_dead_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_raise_dead_SpellScript();
+        }
 };
 
 // 50462 - Anti-Magic Shell (on raid member)
@@ -844,6 +880,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_raise_dead();
     new spell_dk_anti_magic_shell_raid();
     new spell_dk_anti_magic_shell_self();
     new spell_dk_anti_magic_zone();
