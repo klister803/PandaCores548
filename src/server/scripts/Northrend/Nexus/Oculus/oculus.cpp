@@ -225,7 +225,7 @@ public:
     {
         PrepareAuraScript(spell_gen_stop_time_AuraScript);
 
-        void Apply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        void Apply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             Unit* caster = GetCaster();
             if (!caster)

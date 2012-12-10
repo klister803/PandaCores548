@@ -1178,7 +1178,7 @@ class spell_dreamwalker_mana_void : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dreamwalker_mana_void_AuraScript);
 
-            void PeriodicTick(AuraEffect const* aurEff)
+            void PeriodicTick(constAuraEffectPtr aurEff)
             {
                 // first 3 ticks have amplitude 1 second
                 // remaining tick every 500ms
@@ -1214,7 +1214,7 @@ class spell_dreamwalker_decay_periodic_timer : public SpellScriptLoader
                 return true;
             }
 
-            void DecayPeriodicTimer(AuraEffect* aurEff)
+            void DecayPeriodicTimer(AuraEffectPtr aurEff)
             {
                 int32 timer = aurEff->GetPeriodicTimer();
                 if (timer <= 5)
@@ -1295,7 +1295,7 @@ class spell_dreamwalker_summon_suppresser : public SpellScriptLoader
         {
             PrepareAuraScript(spell_dreamwalker_summon_suppresser_AuraScript);
 
-            void PeriodicTick(AuraEffect const* /*aurEff*/)
+            void PeriodicTick(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
                 Unit* caster = GetCaster();
@@ -1441,7 +1441,7 @@ class spell_dreamwalker_nightmare_cloud : public SpellScriptLoader
                 return _instance != NULL;
             }
 
-            void PeriodicTick(AuraEffect const* /*aurEff*/)
+            void PeriodicTick(constAuraEffectPtr /*aurEff*/)
             {
                 if (_instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) != IN_PROGRESS)
                     PreventDefaultAction();

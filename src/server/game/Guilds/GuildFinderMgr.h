@@ -81,12 +81,29 @@ struct MembershipRequest
         uint8 GetAvailability() const  { return _availability; }
         uint8 GetClassRoles() const    { return _classRoles; }
         uint8 GetInterests() const     { return _interests; }
-        uint8 GetClass() const         { return sWorld->GetCharacterNameData(GetPlayerGUID())->m_class; }
-        uint8 GetLevel() const         { return sWorld->GetCharacterNameData(GetPlayerGUID())->m_level; }
+
+        uint8 GetClass() const
+        {
+            const CharacterNameData *nameData = sWorld->GetCharacterNameData(GetPlayerGUID());
+            return nameData ? nameData->m_class : 0;
+        }
+
+        uint8 GetLevel() const
+        {
+            const CharacterNameData *nameData = sWorld->GetCharacterNameData(GetPlayerGUID());
+            return nameData ? nameData->m_level : 1;
+        }
+
         time_t GetSubmitTime() const   { return _time; }
         time_t GetExpiryTime() const   { return time_t(_time + 30 * 24 * 3600); } // Adding 30 days
         std::string const& GetComment() const { return _comment; }
-        std::string const& GetName() const    { return sWorld->GetCharacterNameData(GetPlayerGUID())->m_name; }
+        std::string const& GetName() const
+        {
+            const CharacterNameData *nameData = sWorld->GetCharacterNameData(GetPlayerGUID());
+            std::string name = "";
+            return nameData ? nameData->m_name : name;
+        }
+
     private:
         std::string _comment;
 
@@ -215,7 +232,10 @@ class GuildFinderMgr
          * @brief Returns settings for a guild.
          * @param guildGuid The guild's database guid.
          */
-        LFGuildSettings GetGuildSettings(uint32 guildGuid) { return _guildSettings[guildGuid]; }
+        LFGuildSettings GetGuildSettings(uint32 guildGuid)
+        {
+            return _guildSettings.find(guildGuid) != _guildSettings.end() ? _guildSettings[guildGuid] : LFGuildSettings();
+        }
 
         /**
          * @brief Files a membership request to a guild
@@ -244,7 +264,10 @@ class GuildFinderMgr
          * @brief Returns a set of membership requests for a guild
          * @param guildGuid The guild's database guid.
          */
-        std::vector<MembershipRequest> GetAllMembershipRequestsForGuild(uint32 guildGuid) { return _membershipRequests[guildGuid]; }
+        std::vector<MembershipRequest> GetAllMembershipRequestsForGuild(uint32 guildGuid)
+        {
+            return _membershipRequests.find(guildGuid) != _membershipRequests.end() ?  _membershipRequests[guildGuid] : std::vector<MembershipRequest>();
+        }
 
         /**
          * @brief Returns a list of membership requests for a player.

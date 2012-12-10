@@ -358,7 +358,8 @@ class npc_big_ooze : public CreatureScript
                             if (hasExploded)
                                 break;
 
-                            if (Aura* unstable = me->GetAura(SPELL_UNSTABLE_OOZE))
+                            AuraPtr unstable = me->GetAura(SPELL_UNSTABLE_OOZE);
+                            if (unstable != NULLAURA)
                             {
                                 uint8 stack = uint8(unstable->GetStackAmount());
 
@@ -544,7 +545,7 @@ class spell_rotface_slime_spray : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rotface_slime_spray_AuraScript);
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetCaster())
                 {
@@ -770,9 +771,11 @@ class spell_rotface_large_ooze_combine : public SpellScriptLoader
                 if (!(GetHitCreature() && GetHitCreature()->isAlive()))
                     return;
 
-                if (Aura* unstable = GetCaster()->GetAura(SPELL_UNSTABLE_OOZE))
+                AuraPtr unstable = GetCaster()->GetAura(SPELL_UNSTABLE_OOZE);
+                if (unstable != NULLAURA)
                 {
-                    if (Aura* targetAura = GetHitCreature()->GetAura(SPELL_UNSTABLE_OOZE))
+                    AuraPtr targetAura = GetHitCreature()->GetAura(SPELL_UNSTABLE_OOZE);
+                    if (targetAura != NULLAURA)
                         unstable->ModStackAmount(targetAura->GetStackAmount());
                     else
                         unstable->ModStackAmount(1);
@@ -812,7 +815,8 @@ class spell_rotface_large_ooze_buff_combine : public SpellScriptLoader
                 if (!(GetHitCreature() && GetHitCreature()->isAlive()))
                     return;
 
-                if (Aura* unstable = GetCaster()->GetAura(SPELL_UNSTABLE_OOZE))
+                AuraPtr unstable = GetCaster()->GetAura(SPELL_UNSTABLE_OOZE);
+                if (unstable != NULLAURA)
                 {
                     uint8 newStack = uint8(unstable->GetStackAmount()+1);
                     unstable->SetStackAmount(newStack);
@@ -939,7 +943,7 @@ class spell_rotface_unstable_ooze_explosion_suicide : public SpellScriptLoader
         {
             PrepareAuraScript(spell_rotface_unstable_ooze_explosion_suicide_AuraScript);
 
-            void DespawnSelf(AuraEffect const* /*aurEff*/)
+            void DespawnSelf(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
                 Unit* target = GetTarget();

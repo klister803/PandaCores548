@@ -62,7 +62,46 @@ enum ShamanSpells
     SPELL_SHA_FIRE_NOVA                     = 1535,
     SPELL_SHA_FIRE_NOVA_TRIGGERED           = 131786,
     SPELL_SHA_TIDAL_WAVES                   = 53390,
-    SPELL_SHA_MANA_TIDE                     = 16191
+    SPELL_SHA_MANA_TIDE                     = 16191,
+    SPELL_SHA_FROST_SHOCK_FREEZE            = 63685,
+    SPELL_SHA_FROZEN_POWER                  = 63374
+};
+
+// Frost Shock - 8056
+class spell_sha_frozen_power : public SpellScriptLoader
+{
+    public:
+        spell_sha_frozen_power() : SpellScriptLoader("spell_sha_frozen_power") { }
+
+        class spell_sha_frozen_power_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_frozen_power_SpellScript);
+
+            bool Validate(SpellEntry const * spellEntry)
+            {
+                if (!sSpellMgr->GetSpellInfo(8056))
+                    return false;
+                return true;
+            }
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(SPELL_SHA_FROZEN_POWER))
+                            _player->CastSpell(target, SPELL_SHA_FROST_SHOCK_FREEZE, true);
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_sha_frozen_power_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_frozen_power_SpellScript();
+        }
 };
 
 // Spirit Link - 98020 : triggered by 98017
@@ -315,7 +354,7 @@ class spell_sha_unleash_elements : public SpellScriptLoader
 };
 
 // Called by Lightning Bolt - 403 and Chain Lightning - 421
-// Rolling Thunder - 88765
+// Rolling Thunder - 88764
 class spell_sha_rolling_thunder : public SpellScriptLoader
 {
 public:
@@ -338,9 +377,9 @@ public:
             {
                 if (Unit* target = GetHitUnit())
                 {
-                    if (roll_chance_i(60) && _player->HasAura(88765))
+                    if (roll_chance_i(60) && _player->HasAura(88764))
                     {
-                        if (Aura * lightningShield = _player->GetAura(324))
+                        if (AuraPtr lightningShield = _player->GetAura(324))
                         {
                             _player->CastSpell(_player, SPELL_SHA_ROLLING_THUNDER_ENERGIZE, true);
 
@@ -390,11 +429,11 @@ public:
             if(!target || !caster)
                 return;
 
-            AuraEffect *fulminationAura = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2010, 0);
+            AuraEffectPtr fulminationAura = caster->GetDummyAuraEffect(SPELLFAMILY_SHAMAN, 2010, 0);
             if (!fulminationAura)
                 return;
 
-            Aura * lightningShield = caster->GetAura(324);
+            AuraPtr lightningShield = caster->GetAura(324);
             if(!lightningShield)
                 return;
 
@@ -435,7 +474,7 @@ class spell_sha_lava_surge : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_lava_surge_AuraScript);
 
-            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
             {
                 // 20% chance to reset the cooldown of Lavaburst and make the next to be instantly casted
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -675,7 +714,7 @@ class spell_sha_earthquake : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_earthquake_AuraScript);
 
-            void OnTick(AuraEffect const* aurEff)
+            void OnTick(constAuraEffectPtr aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_EARTHQUAKE))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_EARTHQUAKE_TICK, true);
@@ -703,7 +742,7 @@ class spell_sha_healing_rain : public SpellScriptLoader
         {
             PrepareAuraScript(spell_sha_healing_rain_AuraScript);
 
-            void OnTick(AuraEffect const* aurEff)
+            void OnTick(constAuraEffectPtr aurEff)
             {
                 if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_HEALING_RAIN))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_HEALING_RAIN_TICK, true);
@@ -1066,7 +1105,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
                 if (firstHeal)
                 {
                     // Check if the target has Riptide
-                    if (AuraEffect* aurEff = GetHitUnit()->GetAuraEffect(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_SHAMAN, 0, 0, 0x10, GetCaster()->GetGUID()))
+                    if (AuraEffectPtr aurEff = GetHitUnit()->GetAuraEffect(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_SHAMAN, 0, 0, 0x10, GetCaster()->GetGUID()))
                     {
                         riptide = true;
                         // Consume it
@@ -1096,6 +1135,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_frozen_power();
     new spell_sha_spirit_link();
     new spell_sha_mana_tide();
     new spell_sha_tidal_waves();

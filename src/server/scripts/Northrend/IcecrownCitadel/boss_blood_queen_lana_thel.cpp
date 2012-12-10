@@ -530,7 +530,8 @@ class spell_blood_queen_vampiric_bite : public SpellScriptLoader
                 {
                     if (GetCaster()->GetMap()->Is25ManRaid())
                     {
-                        if (Aura* aura = GetCaster()->GetAura(SPELL_GUSHING_WOUND))
+                        AuraPtr aura = GetCaster()->GetAura(SPELL_GUSHING_WOUND);
+                        if (aura != NULLAURA)
                         {
                             if (aura->GetStackAmount() == 3)
                             {
@@ -569,14 +570,14 @@ class spell_blood_queen_frenzied_bloodthirst : public SpellScriptLoader
         {
             PrepareAuraScript(spell_blood_queen_frenzied_bloodthirst_AuraScript);
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (InstanceScript* instance = GetTarget()->GetInstanceScript())
                     if (Creature* bloodQueen = ObjectAccessor::GetCreature(*GetTarget(), instance->GetData64(DATA_BLOOD_QUEEN_LANA_THEL)))
                         bloodQueen->AI()->Talk(EMOTE_BLOODTHIRST, GetTarget()->GetGUID());
             }
 
-            void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 Unit* target = GetTarget();
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
@@ -772,7 +773,7 @@ class spell_blood_queen_pact_of_the_darkfallen_dmg : public SpellScriptLoader
             }
 
             // this is an additional effect to be executed
-            void PeriodicTick(AuraEffect const* aurEff)
+            void PeriodicTick(constAuraEffectPtr aurEff)
             {
                 SpellInfo const* damageSpell = sSpellMgr->GetSpellInfo(SPELL_PACT_OF_THE_DARKFALLEN_DAMAGE);
                 int32 damage = damageSpell->Effects[EFFECT_0].CalcValue();

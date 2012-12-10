@@ -420,7 +420,7 @@ class spell_monk_elusive_brew : public SpellScriptLoader
 
                         if (AuraApplication* aura = _player->GetAuraApplication(SPELL_MONK_ELUSIVE_BREW))
                         {
-                            Aura* elusiveBrew = aura->GetBase();
+                            AuraPtr elusiveBrew = aura->GetBase();
                             int32 maxDuration = elusiveBrew->GetMaxDuration();
                             int32 newDuration = stackAmount * 1000;
                             elusiveBrew->SetDuration(newDuration);
@@ -500,14 +500,14 @@ class spell_monk_soothing_mist : public SpellScriptLoader
         {
             PrepareAuraScript(spell_monk_soothing_mist_AuraScript);
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                     if (Unit* target = GetTarget())
                         target->CastSpell(target, SPELL_MONK_SOOTHING_MIST_VISUAL, true);
             }
 
-            void HandleEffectPeriodic(AuraEffect const* /*aurEff*/)
+            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
             {
                 if (Unit* caster = GetCaster())
                     if (Unit* target = GetTarget())
@@ -516,7 +516,7 @@ class spell_monk_soothing_mist : public SpellScriptLoader
                             caster->CastSpell(caster, SPELL_MONK_SOOTHING_MIST_ENERGIZE, true);
             }
 
-            void OnRemove(AuraEffect const* aurEff, AuraEffectHandleModes /*mode*/)
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                     if (Unit* target = GetTarget())
@@ -752,7 +752,7 @@ class spell_monk_paralysis : public SpellScriptLoader
                         {
                             if (AuraApplication* aura = target->GetAuraApplication(115078))
                             {
-                                Aura* Paralysis = aura->GetBase();
+                                AuraPtr Paralysis = aura->GetBase();
                                 int32 maxDuration = Paralysis->GetMaxDuration();
                                 int32 newDuration = maxDuration * 2;
                                 Paralysis->SetDuration(newDuration);
@@ -919,7 +919,7 @@ class spell_monk_roll : public SpellScriptLoader
 
             void HandleBeforeCast()
             {
-                Aura* aur = GetCaster()->AddAura(SPELL_MONK_ROLL_TRIGGER, GetCaster());
+                AuraPtr aur = GetCaster()->AddAura(SPELL_MONK_ROLL_TRIGGER, GetCaster());
                 if (!aur)
                     return;
 
@@ -964,7 +964,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
             uint32 chiConsumed;
 
-            void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 chiConsumed = 0;
             }

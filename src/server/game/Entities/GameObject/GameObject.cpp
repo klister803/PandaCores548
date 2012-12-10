@@ -32,6 +32,7 @@
 #include "MapManager.h"
 #include "GameObjectModel.h"
 #include "DynamicTree.h"
+#include "SpellAuraEffects.h"
 
 GameObject::GameObject() : WorldObject(false), m_model(NULL), m_goValue(new GameObjectValue), m_AI(NULL)
 {

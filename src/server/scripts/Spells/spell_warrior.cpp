@@ -27,7 +27,89 @@
 
 enum WarriorSpells
 {
-    WARRIOR_SPELL_LAST_STAND_TRIGGERED           = 12976,
+    WARRIOR_SPELL_LAST_STAND_TRIGGERED          = 12976,
+    WARRIOR_SPELL_VICTORY_RUSH_DAMAGE           = 34428,
+    WARRIOR_SPELL_VICTORY_RUSH_HEAL             = 118779,
+    WARRIOR_SPELL_VICTORIOUS_STATE              = 32216,
+    WARRIOR_SPELL_BLOODTHIRST                   = 23881,
+    WARRIOR_SPELL_BLOODTHIRST_HEAL              = 117313
+};
+
+// Bloodthirst - 23881
+class spell_warr_bloodthirst : public SpellScriptLoader
+{
+    public:
+        spell_warr_bloodthirst() : SpellScriptLoader("spell_warr_bloodthirst") { }
+
+        class spell_warr_bloodthirst_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_bloodthirst_SpellScript);
+
+            bool Validate(SpellInfo const* /*SpellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(WARRIOR_SPELL_BLOODTHIRST))
+                    return false;
+                return true;
+            }
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (GetHitDamage())
+                            _player->CastSpell(_player, WARRIOR_SPELL_BLOODTHIRST_HEAL, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_bloodthirst_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_bloodthirst_SpellScript();
+        }
+};
+
+// Victory Rush - 34428
+class spell_warr_victory_rush : public SpellScriptLoader
+{
+    public:
+        spell_warr_victory_rush() : SpellScriptLoader("spell_warr_victory_rush") { }
+
+        class spell_warr_victory_rush_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_victory_rush_SpellScript);
+
+            bool Validate(SpellInfo const* /*SpellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(WARRIOR_SPELL_VICTORY_RUSH_DAMAGE))
+                    return false;
+                return true;
+            }
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        _player->CastSpell(_player, WARRIOR_SPELL_VICTORY_RUSH_HEAL, true);
+                        if (_player->HasAura(WARRIOR_SPELL_VICTORIOUS_STATE))
+                            _player->RemoveAura(WARRIOR_SPELL_VICTORIOUS_STATE);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_victory_rush_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_victory_rush_SpellScript();
+        }
 };
 
 class spell_warr_last_stand : public SpellScriptLoader
@@ -119,13 +201,13 @@ public:
             return true;
         }
 
-        void OnApply(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
                 target->CastSpell(target, SPELL_DAMAGE_REDUCTION_AURA, true);
         }
 
-        void OnRemove(AuraEffect const* /*aurEff*/, AuraEffectHandleModes /*mode*/)
+        void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
             if (Unit* target = GetTarget())
             {
@@ -191,7 +273,7 @@ class spell_warr_deep_wounds : public SpellScriptLoader
                     uint32 ticks = spellInfo->GetDuration() / spellInfo->Effects[EFFECT_0].Amplitude;
 
                     // Add remaining ticks to damage done
-                    if (AuraEffect const* aurEff = target->GetAuraEffect(SPELL_DEEP_WOUNDS_RANK_PERIODIC, EFFECT_0, caster->GetGUID()))
+                    if (constAuraEffectPtr aurEff = target->GetAuraEffect(SPELL_DEEP_WOUNDS_RANK_PERIODIC, EFFECT_0, caster->GetGUID()))
                         damage += aurEff->GetAmount() * (ticks - aurEff->GetTickNumber());
 
                     damage = damage / ticks;
@@ -214,9 +296,10 @@ class spell_warr_deep_wounds : public SpellScriptLoader
 
 enum Charge
 {
-    SPELL_JUGGERNAUT_CRIT_BONUS_TALENT      = 64976,
-    SPELL_JUGGERNAUT_CRIT_BONUS_BUFF        = 65156,
-    SPELL_CHARGE                            = 34846,
+    SPELL_CHARGE                            = 100,
+    SPELL_CHARGE_STUN                       = 7922,
+    SPELL_WARBRINGER                        = 103828,
+    SPELL_CHARGE_WARBRINGER_STUN            = 105771
 };
 
 class spell_warr_charge : public SpellScriptLoader
@@ -230,69 +313,35 @@ class spell_warr_charge : public SpellScriptLoader
 
             bool Validate(SpellInfo const* /*SpellEntry*/)
             {
-                if (!sSpellMgr->GetSpellInfo(SPELL_JUGGERNAUT_CRIT_BONUS_TALENT) || !sSpellMgr->GetSpellInfo(SPELL_JUGGERNAUT_CRIT_BONUS_BUFF) || !sSpellMgr->GetSpellInfo(SPELL_CHARGE))
+                if (!sSpellMgr->GetSpellInfo(SPELL_CHARGE))
                     return false;
                 return true;
             }
-            void HandleDummy(SpellEffIndex /* effIndex */)
+            void HandleOnHit()
             {
-                int32 chargeBasePoints0 = GetEffectValue();
-                Unit* caster = GetCaster();
-                caster->CastCustomSpell(caster, SPELL_CHARGE, &chargeBasePoints0, NULL, NULL, true);
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(SPELL_WARBRINGER))
+                            _player->CastSpell(target, SPELL_CHARGE_WARBRINGER_STUN, true);
+                        else
+                            _player->CastSpell(target, SPELL_CHARGE_STUN, true);
 
-                //Juggernaut crit bonus
-                if (caster->HasAura(SPELL_JUGGERNAUT_CRIT_BONUS_TALENT))
-                    caster->CastSpell(caster, SPELL_JUGGERNAUT_CRIT_BONUS_BUFF, true);
+                        _player->SetPower(POWER_RAGE, _player->GetPower(POWER_RAGE) + 75);
+                    }
+                }
             }
 
             void Register()
             {
-                OnEffectHitTarget += SpellEffectFn(spell_warr_charge_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
+                OnHit += SpellHitFn(spell_warr_charge_SpellScript::HandleOnHit);
             }
         };
 
         SpellScript* GetSpellScript() const
         {
             return new spell_warr_charge_SpellScript();
-        }
-};
-
-enum Slam
-{
-    SPELL_SLAM      = 50783,
-};
-
-class spell_warr_slam : public SpellScriptLoader
-{
-    public:
-        spell_warr_slam() : SpellScriptLoader("spell_warr_slam") { }
-
-        class spell_warr_slam_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_slam_SpellScript);
-
-            bool Validate(SpellInfo const* /*SpellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_SLAM))
-                    return false;
-                return true;
-            }
-            void HandleDummy(SpellEffIndex /* effIndex */)
-            {
-                int32 bp0 = GetEffectValue();
-                if (GetHitUnit())
-                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_SLAM, &bp0, NULL, NULL, true, 0);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_warr_slam_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_slam_SpellScript();
         }
 };
 
@@ -328,7 +377,7 @@ class spell_warr_execute : public SpellScriptLoader
                     int32 newRage = std::max<int32>(0, caster->GetPower(POWER_RAGE) - rageUsed);
 
                     // Sudden Death rage save
-                    if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_AURA_PROC_TRIGGER_SPELL, SPELLFAMILY_GENERIC, ICON_ID_SUDDEN_DEATH, EFFECT_0))
+                    if (AuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_AURA_PROC_TRIGGER_SPELL, SPELLFAMILY_GENERIC, ICON_ID_SUDDEN_DEATH, EFFECT_0))
                     {
                         int32 ragesave = aurEff->GetSpellInfo()->Effects[EFFECT_1].CalcValue() * 10;
                         newRage = std::max(newRage, ragesave);
@@ -336,7 +385,7 @@ class spell_warr_execute : public SpellScriptLoader
 
                     caster->SetPower(POWER_RAGE, uint32(newRage));
                     // Glyph of Execution bonus
-                    if (AuraEffect* aurEff = caster->GetAuraEffect(SPELL_GLYPH_OF_EXECUTION, EFFECT_0))
+                    if (AuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_GLYPH_OF_EXECUTION, EFFECT_0))
                         rageUsed += aurEff->GetAmount() * 10;
 
 
@@ -380,84 +429,6 @@ class spell_warr_concussion_blow : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_warr_concussion_blow_SpellScript();
-        }
-};
-
-enum Bloodthirst
-{
-    SPELL_BLOODTHIRST = 23885,
-};
-
-class spell_warr_bloodthirst : public SpellScriptLoader
-{
-    public:
-        spell_warr_bloodthirst() : SpellScriptLoader("spell_warr_bloodthirst") { }
-
-        class spell_warr_bloodthirst_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_bloodthirst_SpellScript);
-
-            void HandleDamage(SpellEffIndex /*effIndex*/)
-            {
-                int32 damage = GetEffectValue();
-                ApplyPct(damage, GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
-
-                if (Unit* target = GetHitUnit())
-                {
-                    damage = GetCaster()->SpellDamageBonusDone(target, GetSpellInfo(), uint32(damage), SPELL_DIRECT_DAMAGE);
-                    damage = target->SpellDamageBonusTaken(GetCaster(), GetSpellInfo(), uint32(damage), SPELL_DIRECT_DAMAGE);
-                }
-                SetHitDamage(damage);
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                int32 damage = GetEffectValue();
-                GetCaster()->CastCustomSpell(GetCaster(), SPELL_BLOODTHIRST, &damage, NULL, NULL, true, NULL);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_warr_bloodthirst_SpellScript::HandleDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
-                OnEffectHit += SpellEffectFn(spell_warr_bloodthirst_SpellScript::HandleDummy, EFFECT_1, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_bloodthirst_SpellScript();
-        }
-};
-
-enum BloodthirstHeal
-{
-    SPELL_BLOODTHIRST_DAMAGE = 23881,
-};
-
-class spell_warr_bloodthirst_heal : public SpellScriptLoader
-{
-    public:
-        spell_warr_bloodthirst_heal() : SpellScriptLoader("spell_warr_bloodthirst_heal") { }
-
-        class spell_warr_bloodthirst_heal_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warr_bloodthirst_heal_SpellScript);
-
-            void HandleHeal(SpellEffIndex /*effIndex*/)
-            {
-                if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_BLOODTHIRST_DAMAGE))
-                    SetHitHeal(GetCaster()->CountPctFromMaxHealth(spellInfo->Effects[EFFECT_1].CalcValue(GetCaster())));
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_warr_bloodthirst_heal_SpellScript::HandleHeal, EFFECT_0, SPELL_EFFECT_HEAL);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warr_bloodthirst_heal_SpellScript();
         }
 };
 
@@ -508,15 +479,14 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_bloodthirst();
+    new spell_warr_victory_rush();
     new spell_warr_last_stand();
     new spell_warr_improved_spell_reflection();
     new spell_warr_vigilance();
     new spell_warr_deep_wounds();
     new spell_warr_charge();
-    new spell_warr_slam();
     new spell_warr_execute();
     new spell_warr_concussion_blow();
-    new spell_warr_bloodthirst();
-    new spell_warr_bloodthirst_heal();
     new spell_warr_overpower();
 }

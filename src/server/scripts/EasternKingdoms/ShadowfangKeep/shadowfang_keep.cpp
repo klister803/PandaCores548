@@ -206,18 +206,18 @@ class spell_shadowfang_keep_haunting_spirits : public SpellScriptLoader
         {
             PrepareAuraScript(spell_shadowfang_keep_haunting_spirits_AuraScript);
 
-            void CalcPeriodic(AuraEffect const* /*aurEff*/, bool& isPeriodic, int32& amplitude)
+            void CalcPeriodic(constAuraEffectPtr /*aurEff*/, bool& isPeriodic, int32& amplitude)
             {
                 isPeriodic = true;
                 amplitude = (irand(0, 60) + 30) * IN_MILLISECONDS;
             }
 
-            void HandleDummyTick(AuraEffect const* aurEff)
+            void HandleDummyTick(constAuraEffectPtr aurEff)
             {
                 GetTarget()->CastSpell((Unit*)NULL, aurEff->GetAmount(), true);
             }
 
-            void HandleUpdatePeriodic(AuraEffect* aurEff)
+            void HandleUpdatePeriodic(AuraEffectPtr aurEff)
             {
                 aurEff->CalculatePeriodic(GetCaster());
             }

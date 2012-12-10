@@ -461,7 +461,8 @@ class boss_freya : public CreatureScript
                     me->CastSpell(me, SPELL_TOUCH_OF_EONAR, true);
 
                 // For achievement check
-                if (Aura* aura = me->GetAura(SPELL_ATTUNED_TO_NATURE))
+                AuraPtr aura = me->GetAura(SPELL_ATTUNED_TO_NATURE);
+                if (aura != NULLAURA)
                     attunedToNature = aura->GetStackAmount();
                 else
                     attunedToNature = 0;
@@ -762,7 +763,8 @@ class boss_elder_brightleaf : public CreatureScript
                         case EVENT_FLUX:
                             me->RemoveAurasDueToSpell(SPELL_FLUX_AURA);
                             me->AddAura(SPELL_FLUX_AURA, me);
-                            if (Aura* Flux = me->GetAura(SPELL_FLUX_AURA))
+                            AuraPtr Flux = me->GetAura(SPELL_FLUX_AURA);
+                            if (Flux != NULLAURA)
                                 Flux->SetStackAmount(urand(1, 8));
                             events.ScheduleEvent(EVENT_FLUX, 7500);
                             break;

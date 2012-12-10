@@ -562,7 +562,8 @@ class boss_deathbringer_saurfang : public CreatureScript
                             ++_fallenChampionCastCount;
                             DoCast(target, SPELL_MARK_OF_THE_FALLEN_CHAMPION);
                             me->SetPower(POWER_ENERGY, 0);
-                            if (Aura* bloodPower = me->GetAura(SPELL_BLOOD_POWER))
+                            AuraPtr bloodPower = me->GetAura(SPELL_BLOOD_POWER);
+                            if (bloodPower != NULLAURA)
                                 bloodPower->RecalculateAmountOfEffects();
                         }
                         break;
@@ -1060,7 +1061,8 @@ class spell_deathbringer_blood_link : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 GetHitUnit()->CastCustomSpell(SPELL_BLOOD_LINK_POWER, SPELLVALUE_BASE_POINT0, GetEffectValue(), GetHitUnit(), true);
-                if (Aura* bloodPower = GetHitUnit()->GetAura(SPELL_BLOOD_POWER))
+                AuraPtr bloodPower = GetHitUnit()->GetAura(SPELL_BLOOD_POWER);
+                if (bloodPower != NULLAURA)
                     bloodPower->RecalculateAmountOfEffects();
                 PreventHitDefaultEffect(EFFECT_0);
             }
@@ -1093,7 +1095,7 @@ class spell_deathbringer_blood_link_aura : public SpellScriptLoader
                 return true;
             }
 
-            void HandlePeriodicTick(AuraEffect const* /*aurEff*/)
+            void HandlePeriodicTick(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
                 if (GetUnitOwner()->getPowerType() == POWER_ENERGY && GetUnitOwner()->GetPower(POWER_ENERGY) == GetUnitOwner()->GetMaxPower(POWER_ENERGY))
@@ -1124,7 +1126,8 @@ class spell_deathbringer_blood_power : public SpellScriptLoader
 
             void ModAuraValue()
             {
-                if (Aura* aura = GetHitAura())
+                AuraPtr aura = GetHitAura();
+                if (aura != NULLAURA)
                     aura->RecalculateAmountOfEffects();
             }
 
@@ -1138,7 +1141,7 @@ class spell_deathbringer_blood_power : public SpellScriptLoader
         {
             PrepareAuraScript(spell_deathbringer_blood_power_AuraScript);
 
-            void RecalculateHook(AuraEffect const* /*aurEffect*/, int32& amount, bool& canBeRecalculated)
+            void RecalculateHook(constAuraEffectPtr /*aurEffect*/, int32& amount, bool& canBeRecalculated)
             {
                 amount = int32(GetUnitOwner()->GetPower(POWER_ENERGY));
                 canBeRecalculated = true;

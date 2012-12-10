@@ -2657,6 +2657,10 @@ void SpellMgr::LoadSpellClassInfo()
         // Natural Insight druid
         if (ClassID == CLASS_DRUID)
             mSpellClassInfo[ClassID].push_back(112857);
+        
+        //Sinister Strike Enabler
+        if (ClassID == CLASS_ROGUE)
+            mSpellClassInfo[ClassID].push_back(79327);
 
         for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
         {
@@ -3077,6 +3081,22 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 49821: // Mind Sear
+                spellInfo->Effects[0].TargetA = TARGET_DEST_CHANNEL_TARGET;
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                break;
+            case 118699: // Fear Effect
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
+                break;
+            case 130616: // Glyph of Fear Effect
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_STUN;
+                break;
+            case 113656: // Fists of Fury
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_TRIGGER_SPELL;
+                break;
+            case 13165: // Aspect of the Hawk
+                spellInfo->OverrideSpellList.push_back(109260); // Add Aspect of the Iron Hack to override spell list of Aspect of the Hawk
+                break;
             case 6346: // Fear Ward
                 spellInfo->ProcCharges = 1;
                 break;

@@ -44,7 +44,6 @@ DynamicObject::~DynamicObject()
     ASSERT(!_aura);
     ASSERT(!_caster);
     ASSERT(!_isViewpoint);
-    delete _removedAura;
 }
 
 void DynamicObject::AddToWorld()
@@ -184,7 +183,7 @@ void DynamicObject::Delay(int32 delaytime)
     SetDuration(GetDuration() - delaytime);
 }
 
-void DynamicObject::SetAura(Aura* aura)
+void DynamicObject::SetAura(AuraPtr aura)
 {
     ASSERT(!_aura && aura);
     _aura = aura;
