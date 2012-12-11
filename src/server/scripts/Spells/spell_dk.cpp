@@ -839,53 +839,6 @@ class spell_dk_blood_boil : public SpellScriptLoader
         }
 };
 
-// 50365, 50371 Improved Blood Presence
-class spell_dk_improved_blood_presence : public SpellScriptLoader
-{
-public:
-    spell_dk_improved_blood_presence() : SpellScriptLoader("spell_dk_improved_blood_presence") { }
-
-    class spell_dk_improved_blood_presence_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_dk_improved_blood_presence_AuraScript);
-
-        bool Validate(SpellInfo const* /*entry*/)
-        {
-            if (!sSpellMgr->GetSpellInfo(DK_SPELL_BLOOD_PRESENCE) || !sSpellMgr->GetSpellInfo(DK_SPELL_IMPROVED_BLOOD_PRESENCE_TRIGGERED))
-                return false;
-            return true;
-        }
-
-        void HandleEffectApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
-        {
-            Unit* target = GetTarget();
-            if (!target->HasAura(DK_SPELL_BLOOD_PRESENCE) && !target->HasAura(DK_SPELL_IMPROVED_BLOOD_PRESENCE_TRIGGERED))
-            {
-                int32 basePoints1 = aurEff->GetAmount();
-                target->CastCustomSpell(target, DK_SPELL_IMPROVED_BLOOD_PRESENCE_TRIGGERED, NULL, &basePoints1, NULL, true, 0, aurEff);
-            }
-        }
-
-        void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            Unit* target = GetTarget();
-            if (!target->HasAura(DK_SPELL_BLOOD_PRESENCE))
-                target->RemoveAura(DK_SPELL_IMPROVED_BLOOD_PRESENCE_TRIGGERED);
-        }
-
-        void Register()
-        {
-            AfterEffectApply += AuraEffectApplyFn(spell_dk_improved_blood_presence_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            AfterEffectRemove += AuraEffectRemoveFn(spell_dk_improved_blood_presence_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_dk_improved_blood_presence_AuraScript();
-    }
-};
-
 enum DeathCoil
 {
     SPELL_DEATH_COIL_DAMAGE     = 47632,
@@ -1012,7 +965,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_death_pact();
     new spell_dk_scourge_strike();
     new spell_dk_blood_boil();
-    new spell_dk_improved_blood_presence();
     new spell_dk_death_coil();
     new spell_dk_death_grip();
 }
