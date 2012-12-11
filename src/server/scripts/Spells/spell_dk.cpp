@@ -85,7 +85,6 @@ class spell_dk_purgatory : public SpellScriptLoader
             return new spell_dk_purgatory_AuraScript();
         }
 };
-};
 
 // Unholy Blight - 115994
 class spell_dk_unholy_blight : public SpellScriptLoader
