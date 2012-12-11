@@ -277,7 +277,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
     // Sometime, client send movement packet after teleporation with position before teleportation, so we ignore 3 first movement packet after teleporation
     // TODO: find a better way to check that, may be a new CMSG send by client ?
-    if (plrMover->GetIgnoreMovementCount())
+    if (plrMover && plrMover->GetIgnoreMovementCount() && opcode != CMSG_CAST_SPELL)
     {
         plrMover->SetIgnoreMovementCount(plrMover->GetIgnoreMovementCount() - 1);
         recvPacket.rfinish();                     // prevent warnings spam
