@@ -34,10 +34,6 @@ enum DeathKnightSpells
     DK_SPELL_GHOUL_EXPLODE                      = 47496,
     DK_SPELL_SCOURGE_STRIKE_TRIGGERED           = 70890,
     DK_SPELL_BLOOD_BOIL_TRIGGERED               = 65658,
-    DK_SPELL_BLOOD_PRESENCE                     = 48266,
-    DK_SPELL_IMPROVED_BLOOD_PRESENCE_TRIGGERED  = 63611,
-    DK_SPELL_UNHOLY_PRESENCE                    = 48265,
-    DK_SPELL_IMPROVED_UNHOLY_PRESENCE_TRIGGERED = 63622,
     SPELL_DK_ITEM_T8_MELEE_4P_BONUS             = 64736,
     DK_SPELL_BLACK_ICE_R1                       = 49140,
     DK_SPELL_BLOOD_PLAGUE                       = 55078,
@@ -51,7 +47,60 @@ enum DeathKnightSpells
     DK_SPELL_CHAINS_OF_ICE_ROOT                 = 53534,
     DK_SPELL_PLAGUE_LEECH                       = 123693,
     DK_SPELL_PURGATORY_INSTAKILL                = 123982,
-    DK_SPELL_BLOOD_RITES                        = 50034
+    DK_SPELL_BLOOD_RITES                        = 50034,
+    DK_SPELL_DEATH_SIPHON_HEAL                  = 116783
+};
+
+// Death Siphon - 108196
+class spell_dk_death_siphon : public SpellScriptLoader
+{
+    public:
+        spell_dk_death_siphon() : SpellScriptLoader("spell_dk_death_siphon") { }
+
+        class spell_dk_death_siphon_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_death_siphon_SpellScript);
+
+            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 bp = GetHitDamage();
+                        bool runeDeath = false;
+
+                        _player->CastCustomSpell(_player, DK_SPELL_DEATH_SIPHON_HEAL, &bp, NULL, NULL, true);
+
+                        for (uint8 i = 0; i < MAX_RUNES; ++i)
+                        {
+                            if (_player->GetCurrentRune(i) != RUNE_DEATH)
+                                continue;
+
+                            if (runeDeath)
+                                continue;
+
+                            if (!_player->GetRuneCooldown(i))
+                            {
+                                _player->RestoreBaseRune(i);
+                                _player->SetRuneCooldown(i, _player->GetRuneBaseCooldown(i));
+                                runeDeath = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_dk_death_siphon_SpellScript::HandleScriptEffect, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_death_siphon_SpellScript();
+        }
 };
 
 // Improved Blood Presence - 50371
@@ -976,6 +1025,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_death_siphon();
     new spell_dk_improved_blood_presence();
     new spell_dk_unholy_presence();
     new spell_dk_death_strike();
