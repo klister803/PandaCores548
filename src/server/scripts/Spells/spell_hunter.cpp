@@ -48,7 +48,8 @@ enum HunterSpells
     HUNTER_SPELL_SERPENT_STING                   = 118253,
     HUNTER_SPELL_CHIMERA_SHOT_HEAL               = 53353,
     HUNTER_SPELL_RAPID_INTENSITY                 = 131564,
-    HUNTER_SPELL_RAPID_FIRE                      = 3045
+    HUNTER_SPELL_RAPID_FIRE                      = 3045,
+    HUNTER_SPELL_STEADY_AND_COBRA_SHOT_ENERGIZE  = 77443
 };
 
 // Rapid Fire - 3045
@@ -115,7 +116,7 @@ class spell_hun_steady_and_cobra_shot : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        _player->SetPower(POWER_FOCUS, _player->GetPower(POWER_FOCUS) + 14);
+                        _player->CastSpell(_player, HUNTER_SPELL_STEADY_AND_COBRA_SHOT_ENERGIZE, true);
 
                         if (GetSpellInfo()->Id == 77767)
                         {
