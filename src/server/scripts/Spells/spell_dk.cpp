@@ -54,6 +54,34 @@ enum DeathKnightSpells
     DK_SPELL_BLOOD_RITES                        = 50034
 };
 
+// Unholy Presence - 48265 and Improved Unholy Presence - 50392
+class spell_dk_unholy_presence : public SpellScriptLoader
+{
+    public:
+        spell_dk_unholy_presence() : SpellScriptLoader("spell_dk_unholy_presence") { }
+
+        class spell_dk_unholy_presence_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_unholy_presence_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->UpdateAllRunesRegen();
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_dk_unholy_presence_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_unholy_presence_SpellScript();
+        }
+};
+
 // Death Strike - 49998
 class spell_dk_death_strike : public SpellScriptLoader
 {
@@ -858,52 +886,6 @@ public:
     }
 };
 
-// 50391, 50392 Improved Unholy Presence
-class spell_dk_improved_unholy_presence : public SpellScriptLoader
-{
-public:
-    spell_dk_improved_unholy_presence() : SpellScriptLoader("spell_dk_improved_unholy_presence") { }
-
-    class spell_dk_improved_unholy_presence_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_dk_improved_unholy_presence_AuraScript);
-
-        bool Validate(SpellInfo const* /*entry*/)
-        {
-            if (!sSpellMgr->GetSpellInfo(DK_SPELL_UNHOLY_PRESENCE) || !sSpellMgr->GetSpellInfo(DK_SPELL_IMPROVED_UNHOLY_PRESENCE_TRIGGERED))
-                return false;
-            return true;
-        }
-
-        void HandleEffectApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
-        {
-            Unit* target = GetTarget();
-            if (target->HasAura(DK_SPELL_UNHOLY_PRESENCE) && !target->HasAura(DK_SPELL_IMPROVED_UNHOLY_PRESENCE_TRIGGERED))
-            {
-                // Not listed as any effect, only base points set in dbc
-                int32 basePoints0 = aurEff->GetSpellInfo()->Effects[EFFECT_1].CalcValue();
-                target->CastCustomSpell(target, DK_SPELL_IMPROVED_UNHOLY_PRESENCE_TRIGGERED, &basePoints0, &basePoints0, &basePoints0, true, 0, aurEff);
-            }
-        }
-
-        void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            GetTarget()->RemoveAura(DK_SPELL_IMPROVED_UNHOLY_PRESENCE_TRIGGERED);
-        }
-
-        void Register()
-        {
-            AfterEffectApply += AuraEffectApplyFn(spell_dk_improved_unholy_presence_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            AfterEffectRemove += AuraEffectRemoveFn(spell_dk_improved_unholy_presence_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_dk_improved_unholy_presence_AuraScript();
-    }
-};
-
 enum DeathCoil
 {
     SPELL_DEATH_COIL_DAMAGE     = 47632,
@@ -1013,6 +995,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_unholy_presence();
     new spell_dk_death_strike();
     new spell_dk_purgatory();
     new spell_dk_plague_leech();
@@ -1030,7 +1013,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_scourge_strike();
     new spell_dk_blood_boil();
     new spell_dk_improved_blood_presence();
-    new spell_dk_improved_unholy_presence();
     new spell_dk_death_coil();
     new spell_dk_death_grip();
 }
