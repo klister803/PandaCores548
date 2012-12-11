@@ -3254,16 +3254,6 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 AddPct(totalDamagePercentMod, bonusPct);
                 break;
             }
-            // Death Strike
-            if (m_spellInfo->SpellFamilyFlags[0] & 0x10)
-            {
-                // Glyph of Death Strike
-                // 2% more damage per 5 runic power, up to a maximum of 40%
-                if (constAuraEffectPtr aurEff = m_caster->GetAuraEffect(59336, EFFECT_0))
-                    if (uint32 runic = std::min<uint32>(uint32(m_caster->GetPower(POWER_RUNIC_POWER) / 2.5f), aurEff->GetSpellInfo()->Effects[EFFECT_1].CalcValue(m_caster)))
-                        AddPct(totalDamagePercentMod, runic);
-                break;
-            }
             // Obliterate (12.5% more damage per disease)
             if (m_spellInfo->SpellFamilyFlags[1] & 0x20000)
             {
@@ -3272,12 +3262,6 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 if (constAuraEffectPtr aurEff = m_caster->GetAuraEffect(64736, EFFECT_0))
                     AddPct(bonusPct, aurEff->GetAmount());
                 AddPct(totalDamagePercentMod, bonusPct);
-                break;
-            }
-            // Blood-Caked Strike - Blood-Caked Blade
-            if (m_spellInfo->SpellIconID == 1736)
-            {
-                AddPct(totalDamagePercentMod, unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) * 12.5f);
                 break;
             }
             // Heart Strike
