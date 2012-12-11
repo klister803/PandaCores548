@@ -46,6 +46,8 @@ enum ShamanSpells
     SPELL_SHA_EARTHQUAKE_KNOCKING_DOWN      = 77505,
     SPELL_SHA_ELEMENTAL_BLAST               = 117014,
     SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS  = 118522,
+    SPELL_SHA_ELEMENTAL_BLAST_NATURE_VISUAL = 118517,
+    SPELL_SHA_ELEMENTAL_BLAST_FROST_VISUAL  = 118515,
     SPELL_SHA_LAVA_LASH                     = 60103,
     SPELL_SHA_FLAME_SHOCK                   = 8050,
     SPELL_SHA_STORMSTRIKE                   = 17364,
@@ -615,6 +617,18 @@ class spell_sha_elemental_blast : public SpellScriptLoader
                 return true;
             }
 
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_FROST_VISUAL, true);
+                        _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_NATURE_VISUAL, true);
+                    }
+                }
+            }
+
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -656,6 +670,7 @@ class spell_sha_elemental_blast : public SpellScriptLoader
 
             void Register()
             {
+                AfterCast += SpellCastFn(spell_sha_elemental_blast_SpellScript::HandleAfterCast);
                 OnHit += SpellHitFn(spell_sha_elemental_blast_SpellScript::HandleOnHit);
             }
         };

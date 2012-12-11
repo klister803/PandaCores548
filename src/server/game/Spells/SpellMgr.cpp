@@ -3081,6 +3081,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 114556 : // Purgatory
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                break;
+            case 49821: // Mind Sear
+                spellInfo->Effects[0].TargetA = TARGET_DEST_CHANNEL_TARGET;
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                break;
             case 118699: // Fear Effect
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                 break;

@@ -345,59 +345,6 @@ class spell_pri_guardian_spirit : public SpellScriptLoader
         }
 };
 
-class spell_pri_mana_burn : public SpellScriptLoader
-{
-    public:
-        spell_pri_mana_burn() : SpellScriptLoader("spell_pri_mana_burn") { }
-
-        class spell_pri_mana_burn_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_mana_burn_SpellScript);
-
-            void HandleAfterHit()
-            {
-                if (Unit* unitTarget = GetHitUnit())
-                    unitTarget->RemoveAurasWithMechanic((1 << MECHANIC_FEAR) | (1 << MECHANIC_POLYMORPH));
-            }
-
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_pri_mana_burn_SpellScript::HandleAfterHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_mana_burn_SpellScript;
-        }
-};
-
-class spell_pri_mind_sear : public SpellScriptLoader
-{
-    public:
-        spell_pri_mind_sear() : SpellScriptLoader("spell_pri_mind_sear") { }
-
-        class spell_pri_mind_sear_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_mind_sear_SpellScript);
-
-            void FilterTargets(std::list<WorldObject*>& unitList)
-            {
-                unitList.remove_if(Trinity::ObjectGUIDCheck(GetCaster()->GetUInt64Value(UNIT_FIELD_CHANNEL_OBJECT)));
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_pri_mind_sear_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_mind_sear_SpellScript();
-        }
-};
-
 class spell_pri_pain_and_suffering_proc : public SpellScriptLoader
 {
     public:
@@ -743,11 +690,9 @@ void AddSC_priest_spell_scripts()
     new spell_pri_void_shift();
     new spell_pri_shadow_orb();
     new spell_pri_guardian_spirit();
-    new spell_pri_mana_burn();
     new spell_pri_pain_and_suffering_proc();
     new spell_pri_penance();
     new spell_pri_reflective_shield_trigger();
-    new spell_pri_mind_sear();
     new spell_pri_prayer_of_mending_heal();
     new spell_pri_vampiric_touch();
     new spell_priest_renew();

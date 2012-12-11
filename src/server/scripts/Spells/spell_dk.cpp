@@ -42,6 +42,147 @@ enum DeathKnightSpells
     DK_SPELL_IMPROVED_UNHOLY_PRESENCE_TRIGGERED = 63622,
     SPELL_DK_ITEM_T8_MELEE_4P_BONUS             = 64736,
     DK_SPELL_BLACK_ICE_R1                       = 49140,
+    DK_SPELL_BLOOD_PLAGUE                       = 55078,
+    DK_SPELL_FROST_FEVER                        = 55095,
+    DK_SPELL_MASTER_OF_GHOULS                   = 52143,
+    DK_SPELL_GHOUL_AS_GUARDIAN                  = 46585,
+    DK_SPELL_GHOUL_AS_PET                       = 52150,
+    DK_SPELL_ROILING_BLOOD                      = 108170,
+    DK_SPELL_PESTILENCE                         = 50842,
+    DK_SPELL_CHILBLAINS                         = 50041,
+    DK_SPELL_CHAINS_OF_ICE_ROOT                 = 53534
+};
+
+// Unholy Blight - 115994
+class spell_dk_unholy_blight : public SpellScriptLoader
+{
+    public:
+        spell_dk_unholy_blight() : SpellScriptLoader("spell_dk_unholy_blight") { }
+
+        class spell_dk_unholy_blight_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_unholy_blight_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        _player->CastSpell(target, DK_SPELL_BLOOD_PLAGUE, true);
+                        _player->CastSpell(target, DK_SPELL_FROST_FEVER, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_unholy_blight_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_unholy_blight_SpellScript();
+        }
+};
+
+// Called by Chains of Ice - 45524
+// Chilblains - 50041
+class spell_dk_chilblains : public SpellScriptLoader
+{
+    public:
+        spell_dk_chilblains() : SpellScriptLoader("spell_dk_chilblains") { }
+
+        class spell_dk_chilblains_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_chilblains_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(DK_SPELL_CHILBLAINS))
+                            _player->CastSpell(target, DK_SPELL_CHAINS_OF_ICE_ROOT, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_chilblains_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_chilblains_SpellScript();
+        }
+};
+
+// Outbreak - 77575
+class spell_dk_outbreak : public SpellScriptLoader
+{
+    public:
+        spell_dk_outbreak() : SpellScriptLoader("spell_dk_outbreak") { }
+
+        class spell_dk_outbreak_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_outbreak_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        _player->CastSpell(target, DK_SPELL_BLOOD_PLAGUE, true);
+                        _player->CastSpell(target, DK_SPELL_FROST_FEVER, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_outbreak_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_outbreak_SpellScript();
+        }
+};
+
+// Raise Dead - 46584
+class spell_dk_raise_dead : public SpellScriptLoader
+{
+    public:
+        spell_dk_raise_dead() : SpellScriptLoader("spell_dk_raise_dead") { }
+
+        class spell_dk_raise_dead_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_raise_dead_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(DK_SPELL_MASTER_OF_GHOULS))
+                        _player->CastSpell(_player, DK_SPELL_GHOUL_AS_PET, true);
+                    else
+                        _player->CastSpell(_player, DK_SPELL_GHOUL_AS_GUARDIAN, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_dk_raise_dead_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_raise_dead_SpellScript();
+        }
 };
 
 // 50462 - Anti-Magic Shell (on raid member)
@@ -488,7 +629,7 @@ class spell_dk_spell_deflection : public SpellScriptLoader
         }
 };
 
-// 48721 Blood Boil
+// Blood Boil - 48721
 class spell_dk_blood_boil : public SpellScriptLoader
 {
     public:
@@ -498,34 +639,39 @@ class spell_dk_blood_boil : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dk_blood_boil_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
+            void HandleOnHit()
             {
-                if (!sSpellMgr->GetSpellInfo(DK_SPELL_BLOOD_BOIL_TRIGGERED))
-                    return false;
-                return true;
-            }
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        GetCaster()->CastSpell(GetCaster(), DK_SPELL_BLOOD_BOIL_TRIGGERED, true);
 
-            bool Load()
-            {
-                _executed = false;
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER && GetCaster()->getClass() == CLASS_DEATH_KNIGHT;
-            }
+                        // Deals 50% additional damage to targets infected with Blood Plague or Frost Fever
+                        if (AuraApplication* aura = target->GetAuraApplication(DK_SPELL_FROST_FEVER))
+                        {
+                            SetHitDamage(int32(GetHitDamage() * 1.5f));
 
-            void HandleAfterHit()
-            {
-                if (_executed || !GetHitUnit())
-                    return;
+                            // Roiling Blood
+                            if (_player->HasAura(DK_SPELL_ROILING_BLOOD))
+                                _player->CastSpell(target, DK_SPELL_PESTILENCE, true);
+                        }
+                        else if (AuraApplication* aura = target->GetAuraApplication(DK_SPELL_BLOOD_PLAGUE))
+                        {
+                            SetHitDamage(int32(GetHitDamage() * 1.5f));
 
-                _executed = true;
-                GetCaster()->CastSpell(GetCaster(), DK_SPELL_BLOOD_BOIL_TRIGGERED, true);
+                            // Roiling Blood
+                            if (_player->HasAura(DK_SPELL_ROILING_BLOOD))
+                                _player->CastSpell(target, DK_SPELL_PESTILENCE, true);
+                        }
+                    }
+                }
             }
 
             void Register()
             {
-                AfterHit += SpellHitFn(spell_dk_blood_boil_SpellScript::HandleAfterHit);
+                OnHit += SpellHitFn(spell_dk_blood_boil_SpellScript::HandleOnHit);
             }
-
-            bool _executed;
         };
 
         SpellScript* GetSpellScript() const
@@ -849,6 +995,10 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_unholy_blight();
+    new spell_dk_chilblains();
+    new spell_dk_outbreak();
+    new spell_dk_raise_dead();
     new spell_dk_anti_magic_shell_raid();
     new spell_dk_anti_magic_shell_self();
     new spell_dk_anti_magic_zone();
