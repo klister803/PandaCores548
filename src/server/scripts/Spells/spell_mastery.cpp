@@ -326,7 +326,11 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
                                         float Mastery = caster->GetFloatValue(PLAYER_MASTERY) * 2.0f;
 
                                         if (roll_chance_f(Mastery))
+                                        {
                                             caster->CastSpell(unitTarget, MASTERY_SPELL_ELEMENTAL_BLAST, true);
+                                            caster->CastSpell(unitTarget, 118517, true); // Nature visual
+                                            caster->CastSpell(unitTarget, 118515, true); // Frost visual
+                                        }
 
                                         break;
                                     }
