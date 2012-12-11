@@ -949,55 +949,6 @@ public:
     }
 };
 
-enum DeathStrike
-{
-    ICON_ID_IMPROVED_DEATH_STRIKE   = 2751,
-    SPELL_DEATH_STRIKE_HEAL         = 45470,
-};
-
-class spell_dk_death_strike : public SpellScriptLoader
-{
-    public:
-        spell_dk_death_strike() : SpellScriptLoader("spell_dk_death_strike") { }
-
-        class spell_dk_death_strike_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dk_death_strike_SpellScript);
-
-            bool Validate(SpellInfo const* /*SpellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_DEATH_STRIKE_HEAL))
-                    return false;
-                return true;
-            }
-
-            void HandleDummy(SpellEffIndex /* effIndex */)
-            {
-                Unit* caster = GetCaster();
-                if (Unit* target = GetHitUnit())
-                {
-                    uint32 count = target->GetDiseasesByCaster(caster->GetGUID());
-                    int32 bp = int32(count * caster->CountPctFromMaxHealth(int32(GetSpellInfo()->Effects[EFFECT_0].DamageMultiplier)));
-                    // Improved Death Strike
-                    if (constAuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_AURA_ADD_PCT_MODIFIER, SPELLFAMILY_DEATHKNIGHT, ICON_ID_IMPROVED_DEATH_STRIKE, 0))
-                        AddPct(bp, caster->CalculateSpellDamage(caster, aurEff->GetSpellInfo(), 2));
-                    caster->CastCustomSpell(caster, SPELL_DEATH_STRIKE_HEAL, &bp, NULL, NULL, false);
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_dk_death_strike_SpellScript::HandleDummy, EFFECT_2, SPELL_EFFECT_DUMMY);
-            }
-
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dk_death_strike_SpellScript();
-        }
-};
-
 enum DeathCoil
 {
     SPELL_DEATH_COIL_DAMAGE     = 47632,
@@ -1126,7 +1077,6 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_will_of_the_necropolis();
     new spell_dk_improved_blood_presence();
     new spell_dk_improved_unholy_presence();
-    new spell_dk_death_strike();
     new spell_dk_death_coil();
     new spell_dk_death_grip();
 }
