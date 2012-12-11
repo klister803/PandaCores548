@@ -7939,6 +7939,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Will of the Necropolis
+        case 81164:
+        {
+            if (GetTypeId() != TYPEID_PLAYER || getClass() != CLASS_DEATH_KNIGHT)
+                return false;
+
+            if (GetHealthPct() > 30.0f)
+                return false;
+
+            break;
+        }
         // Deep Wounds
         case 12834:
         case 12849:
