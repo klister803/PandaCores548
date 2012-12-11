@@ -51,6 +51,7 @@ enum DeathKnightSpells
     DK_SPELL_PESTILENCE                         = 50842,
     DK_SPELL_CHILBLAINS                         = 50041,
     DK_SPELL_CHAINS_OF_ICE_ROOT                 = 53534,
+    DK_SPELL_PLAGUE_LEECH                       = 123693,
     DK_SPELL_PURGATORY_INSTAKILL                = 123982
 };
 
@@ -85,6 +86,83 @@ class spell_dk_purgatory : public SpellScriptLoader
             return new spell_dk_purgatory_AuraScript();
         }
 };
+
+// Plague Leech - 123693
+class spell_dk_plague_leech : public SpellScriptLoader
+{
+    public:
+        spell_dk_plague_leech() : SpellScriptLoader("spell_dk_plague_leech") { }
+
+        class spell_dk_plague_leech_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_plague_leech_SpellScript);
+
+            SpellCastResult CheckRunes()
+            {
+                int32 runesUsed = 0;
+
+                if (GetCaster() && GetCaster()->ToPlayer())
+                {
+                    for (uint8 i = 0; i < MAX_RUNES; ++i)
+                        if (GetCaster()->ToPlayer()->GetRuneCooldown(i))
+                            runesUsed++;
+
+                    if (runesUsed != 6)
+                        return SPELL_FAILED_DONT_REPORT;
+                    else
+                        return SPELL_CAST_OK;
+
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        if (!target->HasAura(DK_SPELL_BLOOD_PLAGUE) && !target->HasAura(DK_SPELL_FROST_FEVER))
+                            return SPELL_FAILED_DONT_REPORT;
+                        else
+                            return SPELL_CAST_OK;
+                    }
+                }
+                else
+                    return SPELL_FAILED_DONT_REPORT;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        target->RemoveAura(DK_SPELL_FROST_FEVER);
+                        target->RemoveAura(DK_SPELL_BLOOD_PLAGUE);
+
+                        uint32 runeRandom;
+                        bool runeOff = true;
+
+                        while (runeOff)
+                        {
+                            runeRandom = urand(0, 5);
+
+                            if (_player->GetRuneCooldown(runeRandom))
+                            {
+                                _player->SetRuneCooldown(runeRandom, 0);
+                                _player->ConvertRune(runeRandom, RUNE_DEATH);
+                                _player->ResyncRunes(6);
+                                runeOff = false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_dk_plague_leech_SpellScript::CheckRunes);
+                OnHit += SpellHitFn(spell_dk_plague_leech_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_plague_leech_SpellScript();
+        }
 };
 
 // Unholy Blight - 115994
@@ -1030,6 +1108,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 void AddSC_deathknight_spell_scripts()
 {
     new spell_dk_purgatory();
+    new spell_dk_plague_leech();
     new spell_dk_unholy_blight();
     new spell_dk_chilblains();
     new spell_dk_outbreak();
