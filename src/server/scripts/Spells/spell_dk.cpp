@@ -34,8 +34,6 @@ enum DeathKnightSpells
     DK_SPELL_GHOUL_EXPLODE                      = 47496,
     DK_SPELL_SCOURGE_STRIKE_TRIGGERED           = 70890,
     DK_SPELL_BLOOD_BOIL_TRIGGERED               = 65658,
-    DK_SPELL_WILL_OF_THE_NECROPOLIS_TALENT_R1   = 49189,
-    DK_SPELL_WILL_OF_THE_NECROPOLIS_AURA_R1     = 52284,
     DK_SPELL_BLOOD_PRESENCE                     = 48266,
     DK_SPELL_IMPROVED_BLOOD_PRESENCE_TRIGGERED  = 63611,
     DK_SPELL_UNHOLY_PRESENCE                    = 48265,
@@ -52,7 +50,72 @@ enum DeathKnightSpells
     DK_SPELL_CHILBLAINS                         = 50041,
     DK_SPELL_CHAINS_OF_ICE_ROOT                 = 53534,
     DK_SPELL_PLAGUE_LEECH                       = 123693,
-    DK_SPELL_PURGATORY_INSTAKILL                = 123982
+    DK_SPELL_PURGATORY_INSTAKILL                = 123982,
+    DK_SPELL_BLOOD_RITES                        = 50034
+};
+
+// Death Strike - 49998
+class spell_dk_death_strike : public SpellScriptLoader
+{
+    public:
+        spell_dk_death_strike() : SpellScriptLoader("spell_dk_death_strike") { }
+
+        class spell_dk_death_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_death_strike_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        // Apply Blood Rites effects
+                        if (_player->HasAura(DK_SPELL_BLOOD_RITES))
+                        {
+                            SetHitDamage(int32(GetHitDamage() * 1.4f));
+
+                            bool runeFrost = false;
+                            bool runeUnholy = false;
+
+                            for (uint8 i = 0; i < MAX_RUNES; ++i)
+                            {
+                                if (_player->GetCurrentRune(i) == RUNE_DEATH
+                                    || _player->GetCurrentRune(i) == RUNE_BLOOD
+                                    || _player->GetBaseRune(i) == RUNE_BLOOD)
+                                    continue;
+
+                                if (runeUnholy && _player->GetCurrentRune(i) == RUNE_UNHOLY)
+                                    continue;
+
+                                if (runeFrost && _player->GetCurrentRune(i) == RUNE_FROST)
+                                    continue;
+
+                                if (_player->GetRuneCooldown(i))
+                                {
+                                    if (_player->GetCurrentRune(i) == RUNE_FROST)
+                                        runeFrost = true;
+                                    else
+                                        runeUnholy = true;
+
+                                    _player->ConvertRune(i, RUNE_DEATH);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_death_strike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_death_strike_SpellScript();
+        }
 };
 
 // Purgatory - 116888
@@ -950,6 +1013,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_death_strike();
     new spell_dk_purgatory();
     new spell_dk_plague_leech();
     new spell_dk_unholy_blight();
