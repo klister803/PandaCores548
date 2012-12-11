@@ -50,7 +50,41 @@ enum DeathKnightSpells
     DK_SPELL_ROILING_BLOOD                      = 108170,
     DK_SPELL_PESTILENCE                         = 50842,
     DK_SPELL_CHILBLAINS                         = 50041,
-    DK_SPELL_CHAINS_OF_ICE_ROOT                 = 53534
+    DK_SPELL_CHAINS_OF_ICE_ROOT                 = 53534,
+    DK_SPELL_PURGATORY_INSTAKILL                = 123982
+};
+
+// Purgatory - 116888
+class spell_dk_purgatory : public SpellScriptLoader
+{
+    public:
+        spell_dk_purgatory() : SpellScriptLoader("spell_dk_purgatory") { }
+
+        class spell_dk_purgatory_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_purgatory_AuraScript);
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                {
+                    AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                    if (removeMode == AURA_REMOVE_BY_EXPIRE)
+                        _player->CastSpell(_player, DK_SPELL_PURGATORY_INSTAKILL, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_dk_purgatory_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_SCHOOL_HEAL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_purgatory_AuraScript();
+        }
+};
 };
 
 // Unholy Blight - 115994
@@ -995,6 +1029,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_purgatory();
     new spell_dk_unholy_blight();
     new spell_dk_chilblains();
     new spell_dk_outbreak();
