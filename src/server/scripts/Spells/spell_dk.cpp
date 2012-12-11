@@ -48,7 +48,116 @@ enum DeathKnightSpells
     DK_SPELL_PLAGUE_LEECH                       = 123693,
     DK_SPELL_PURGATORY_INSTAKILL                = 123982,
     DK_SPELL_BLOOD_RITES                        = 50034,
-    DK_SPELL_DEATH_SIPHON_HEAL                  = 116783
+    DK_SPELL_DEATH_SIPHON_HEAL                  = 116783,
+    DK_SPELL_BLOOD_CHARGE                       = 114851
+};
+
+// Called by Death Coil - 47541, Rune Strike - 56815 and Frost Strike - 49143
+// Blood Charges - 114851 for Blood Tap - 45529
+class spell_dk_blood_charges : public SpellScriptLoader
+{
+    public:
+        spell_dk_blood_charges() : SpellScriptLoader("spell_dk_blood_charges") { }
+
+        class spell_dk_blood_charges_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_blood_charges_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
+                        _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_blood_charges_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_blood_charges_SpellScript();
+        }
+};
+
+// Blood Tap - 45529
+class spell_dk_blood_tap : public SpellScriptLoader
+{
+    public:
+        spell_dk_blood_tap() : SpellScriptLoader("spell_dk_blood_tap") { }
+
+        class spell_dk_blood_tap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_blood_tap_SpellScript);
+
+            SpellCastResult CheckBloodCharges()
+            {
+                if (GetCaster()->ToPlayer())
+                {
+                    if (AuraPtr bloodCharges = GetCaster()->ToPlayer()->GetAura(DK_SPELL_BLOOD_CHARGE))
+                    {
+                        if (bloodCharges->GetStackAmount() < 5)
+                            return SPELL_FAILED_DONT_REPORT;
+                    }
+                }
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (AuraPtr bloodCharges = _player->GetAura(DK_SPELL_BLOOD_CHARGE))
+                        {
+                            int32 newAmount = bloodCharges->GetStackAmount();
+
+                            if ((newAmount - 5) <= 0)
+                                _player->RemoveAura(DK_SPELL_BLOOD_CHARGE);
+                            else
+                                bloodCharges->SetStackAmount(newAmount - 5);
+                        }
+
+                        bool runeDeath = false;
+
+                        for (uint8 i = 0; i < MAX_RUNES; ++i)
+                        {
+                            if (_player->GetCurrentRune(i) == RUNE_DEATH)
+                                continue;
+
+                            if (!_player->GetRuneCooldown(i))
+                                continue;
+
+                            if (runeDeath)
+                                continue;
+
+                            _player->ConvertRune(i, RUNE_DEATH);
+                            runeDeath = true;
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_dk_blood_tap_SpellScript::CheckBloodCharges);
+                OnHit += SpellHitFn(spell_dk_blood_tap_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_blood_tap_SpellScript();
+        }
 };
 
 // Death Siphon - 108196
@@ -312,7 +421,7 @@ class spell_dk_plague_leech : public SpellScriptLoader
                             {
                                 _player->SetRuneCooldown(runeRandom, 0);
                                 _player->ConvertRune(runeRandom, RUNE_DEATH);
-                                _player->ResyncRunes(6);
+                                _player->ResyncRunes(MAX_RUNES);
                                 runeOff = false;
                             }
                         }
@@ -1025,6 +1134,8 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_blood_charges();
+    new spell_dk_blood_tap();
     new spell_dk_death_siphon();
     new spell_dk_improved_blood_presence();
     new spell_dk_unholy_presence();
