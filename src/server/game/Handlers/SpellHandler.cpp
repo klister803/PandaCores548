@@ -36,9 +36,13 @@
 
 void WorldSession::HandleClientCastFlags(WorldPacket& recvPacket, uint8 castFlags, SpellCastTargets& targets)
 {
+    Unit* mover = _player->m_mover;
+
     // some spell cast packet including more data (for projectiles?)
     if (castFlags & 0x02)
     {
+        targets.Read(recvPacket, mover);
+
         // not sure about these two
         float elevation, speed;
         recvPacket >> elevation;
@@ -61,8 +65,21 @@ void WorldSession::HandleClientCastFlags(WorldPacket& recvPacket, uint8 castFlag
             movementInfo.guid = guid;
             ReadMovementInfo(recvPacket, &movementInfo);*/
         }
+        return;
     }
-    else if (castFlags & 0x8)   // Archaeology
+
+    // Movement date send by some AOE spells
+    if (castFlags & 0x10)
+    {
+        uint8 hasMovementData;
+        recvPacket >> hasMovementData;
+        if (hasMovementData)
+            HandleMovementOpcodes(recvPacket);
+    }
+
+    targets.Read(recvPacket, mover);
+
+    if (castFlags & 0x8)   // Archaeology
     {
         uint32 count, entry, usedCount;
         uint8 type;
@@ -184,7 +201,6 @@ void WorldSession::HandleUseItemOpcode(WorldPacket& recvPacket)
     }
 
     SpellCastTargets targets;
-    targets.Read(recvPacket, pUser);
     HandleClientCastFlags(recvPacket, castFlags, targets);
 
     // Note: If script stop casting it must send appropriate data to client to prevent stuck item in gray state.
@@ -438,7 +454,6 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
 
     // client provided targets
     SpellCastTargets targets;
-    targets.Read(recvPacket, mover);
     HandleClientCastFlags(recvPacket, castFlags, targets);
 
     // auto-selection buff level base at target level (in spellInfo)

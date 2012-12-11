@@ -2011,6 +2011,7 @@ MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
 {
     switch (opcode)
     {
+        case CMSG_CAST_SPELL:       // Cast spell has movement data part when castflags & 0x10, patched ClientSide to have same data of CMSG_PLAYER_MOVE
         case CMSG_PLAYER_MOVE:
             return MovementStartForwardSequence;
         case SMSG_MOVE_UPDATE:
