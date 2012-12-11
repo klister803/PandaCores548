@@ -151,7 +151,9 @@ void MotionMaster::DirectExpire(bool reset)
     {
         MovementGenerator *curr = top();
         pop();
-        DirectDelete(curr);
+
+        if (curr)
+            DirectDelete(curr);
     }
 
     while (!top())
