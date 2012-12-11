@@ -54,6 +54,34 @@ enum DeathKnightSpells
     DK_SPELL_BLOOD_RITES                        = 50034
 };
 
+// Improved Blood Presence - 50371
+class spell_dk_improved_blood_presence : public SpellScriptLoader
+{
+    public:
+        spell_dk_improved_blood_presence() : SpellScriptLoader("spell_dk_improved_blood_presence") { }
+
+        class spell_dk_improved_blood_presence_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_improved_blood_presence_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->UpdateAllRunesRegen();
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_dk_improved_blood_presence_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_improved_blood_presence_SpellScript();
+        }
+};
+
 // Unholy Presence - 48265 and Improved Unholy Presence - 50392
 class spell_dk_unholy_presence : public SpellScriptLoader
 {
@@ -948,6 +976,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_improved_blood_presence();
     new spell_dk_unholy_presence();
     new spell_dk_death_strike();
     new spell_dk_purgatory();
