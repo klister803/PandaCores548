@@ -1263,6 +1263,8 @@ void GameObject::Use(Unit* user)
                     bg->EventPlayerUsedGO(player, this);
 
                 player->CastedCreatureOrGO(info->entry, GetGUID(), 0);
+
+                GetMap()->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), player, this);
             }
 
             if (uint32 trapEntry = info->goober.linkedTrapId)
