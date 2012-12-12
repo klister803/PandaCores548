@@ -49,7 +49,68 @@ enum HunterSpells
     HUNTER_SPELL_CHIMERA_SHOT_HEAL               = 53353,
     HUNTER_SPELL_RAPID_INTENSITY                 = 131564,
     HUNTER_SPELL_RAPID_FIRE                      = 3045,
-    HUNTER_SPELL_STEADY_AND_COBRA_SHOT_ENERGIZE  = 77443
+    HUNTER_SPELL_STEADY_SHOT_ENERGIZE            = 77443,
+    HUNTER_SPELL_COBRA_SHOT_ENERGIZE             = 91954,
+    HUNTER_SPELL_KILL_COMMAND                    = 34026,
+    HUNTER_SPELL_KILL_COMMAND_TRIGGER            = 83381
+};
+
+// Kill Command - 34026
+class spell_hun_kill_command : public SpellScriptLoader
+{
+    public:
+        spell_hun_kill_command() : SpellScriptLoader("spell_hun_kill_command") { }
+
+        class spell_hun_kill_command_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_kill_command_SpellScript);
+
+            bool Validate(SpellInfo const* /*SpellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(HUNTER_SPELL_KILL_COMMAND))
+                    return false;
+                return true;
+            }
+
+            SpellCastResult CheckCastMeet()
+            {
+                Unit* pet = GetCaster()->GetGuardianPet();
+                Unit* petTarget = pet->getVictim();
+
+                if (!pet || pet->isDead())
+                    return SPELL_FAILED_NO_PET;
+
+                // pet has a target and target is within 5 yards
+                if (!petTarget || !pet->IsWithinDist(petTarget, 5.0f, true))
+                {
+                    SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_TARGET_TOO_FAR);
+                    return SPELL_FAILED_CUSTOM_ERROR;
+                }
+
+                return SPELL_CAST_OK;
+            }
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Unit* pet = GetCaster()->GetGuardianPet())
+                {
+                    if (!pet)
+                        return;
+
+                    pet->CastSpell(pet->getVictim(), HUNTER_SPELL_KILL_COMMAND_TRIGGER, true);
+                }
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_hun_kill_command_SpellScript::CheckCastMeet);
+                OnEffectHit += SpellEffectFn(spell_hun_kill_command_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_kill_command_SpellScript();
+        }
 };
 
 // Rapid Fire - 3045
@@ -100,44 +161,31 @@ class spell_hun_rapid_fire : public SpellScriptLoader
         }
 };
 
-// Steady Shot - 56641 and Cobra Shot - 77767
-class spell_hun_steady_and_cobra_shot : public SpellScriptLoader
+// Cobra Shot - 77767
+class spell_hun_cobra_shot : public SpellScriptLoader
 {
     public:
-        spell_hun_steady_and_cobra_shot() : SpellScriptLoader("spell_hun_steady_and_cobra_shot") { }
+        spell_hun_cobra_shot() : SpellScriptLoader("spell_hun_cobra_shot") { }
 
-        class spell_hun_steady_and_cobra_shot_SpellScript : public SpellScript
+        class spell_hun_cobra_shot_SpellScript : public SpellScript
         {
-            PrepareSpellScript(spell_hun_steady_and_cobra_shot_SpellScript);
+            PrepareSpellScript(spell_hun_cobra_shot_SpellScript);
 
-            void HandleOnHit()
+            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        _player->CastSpell(_player, HUNTER_SPELL_STEADY_AND_COBRA_SHOT_ENERGIZE, true);
+                        _player->CastSpell(_player, HUNTER_SPELL_COBRA_SHOT_ENERGIZE, true);
 
-                        if (GetSpellInfo()->Id == 77767)
+                        if (AuraEffectPtr aurEff = target->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_HUNTER, 16384, 0, 0, GetCaster()->GetGUID()))
                         {
-                            if (AuraApplication* aura = target->GetAuraApplication(HUNTER_SPELL_SERPENT_STING))
-                            {
-                                AuraPtr serpentSting = aura->GetBase();
+                            AuraPtr serpentSting = aurEff->GetBase();
+                            serpentSting->SetDuration(serpentSting->GetDuration() + (GetSpellInfo()->Effects[EFFECT_2].BasePoints * 1000));
 
-                                int32 addDuration = 6000;
-                                int32 Duration;
-                                int32 maxDuration;
-
-                                Duration = serpentSting->GetDuration();
-                                maxDuration = serpentSting->GetMaxDuration();
-
-                                addDuration += Duration;
-
-                                serpentSting->SetDuration(addDuration);
-
-                                if (maxDuration < addDuration)
-                                    serpentSting->SetMaxDuration(addDuration);
-                            }
+                            if (serpentSting->GetMaxDuration() < serpentSting->GetDuration())
+                                serpentSting->SetMaxDuration(serpentSting->GetDuration());
                         }
                     }
                 }
@@ -145,13 +193,42 @@ class spell_hun_steady_and_cobra_shot : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_hun_steady_and_cobra_shot_SpellScript::HandleOnHit);
+                OnEffectHitTarget += SpellEffectFn(spell_hun_cobra_shot_SpellScript::HandleScriptEffect, EFFECT_2, SPELL_EFFECT_SCRIPT_EFFECT);
             }
         };
 
         SpellScript* GetSpellScript() const
         {
-            return new spell_hun_steady_and_cobra_shot_SpellScript();
+            return new spell_hun_cobra_shot_SpellScript();
+        }
+};
+
+// Steady Shot - 56641
+class spell_hun_steady_shot : public SpellScriptLoader
+{
+    public:
+        spell_hun_steady_shot() : SpellScriptLoader("spell_hun_steady_shot") { }
+
+        class spell_hun_steady_shot_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_steady_shot_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(_player, HUNTER_SPELL_STEADY_SHOT_ENERGIZE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_hun_steady_shot_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_steady_shot_SpellScript();
         }
 };
 
@@ -787,8 +864,10 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_kill_command();
     new spell_hun_rapid_fire();
-    new spell_hun_steady_and_cobra_shot();
+    new spell_hun_cobra_shot();
+    new spell_hun_steady_shot();
     new spell_hun_aspect_of_the_beast();
     new spell_hun_chimera_shot();
     new spell_hun_invigoration();
