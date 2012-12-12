@@ -479,14 +479,17 @@ class spell_sha_lava_surge : public SpellScriptLoader
             void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
             {
                 // 20% chance to reset the cooldown of Lavaburst and make the next to be instantly casted
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (GetCaster())
                 {
-                    if (_player->HasAura(77756))
+                    if (Player* _player = GetCaster()->ToPlayer())
                     {
-                        if (roll_chance_i(20))
+                        if (_player->HasAura(77756))
                         {
-                            _player->CastSpell(_player, SPELL_SHA_LAVA_SURGE_CAST_TIME, true);
-                            _player->RemoveSpellCooldown(51505, true);
+                            if (roll_chance_i(20))
+                            {
+                                _player->CastSpell(_player, SPELL_SHA_LAVA_SURGE_CAST_TIME, true);
+                                _player->RemoveSpellCooldown(51505, true);
+                            }
                         }
                     }
                 }

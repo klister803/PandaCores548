@@ -36,6 +36,7 @@
 #include "Unit.h"
 #include "Util.h"                                           // for Tokenizer typedef
 #include "WorldSession.h"
+#include "PhaseMgr.h"
 
 // for template
 #include "SpellMgr.h"
@@ -55,6 +56,7 @@ class PlayerMenu;
 class PlayerSocial;
 class SpellCastTargets;
 class UpdateMask;
+class PhaseMgr;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -1302,7 +1304,8 @@ class Player : public Unit, public GridObject<Player>
         Pet* GetPet() const;
         Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime);
         void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false);
-        uint32 GetPhaseMaskForSpawn() const;                // used for proper set phase for DB at GM-mode creature/GO spawn
+
+        PhaseMgr& GetPhaseMgr() { return phaseMgr; }
 
         void Say(const std::string& text, const uint32 language);
         void Yell(const std::string& text, const uint32 language);
@@ -3048,6 +3051,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 _pendingBindTimer;
 
         uint32 _activeCheats;
+
+        PhaseMgr phaseMgr;
 
         uint32 _lastTargetedGO;
         float m_PersonnalXpRate;

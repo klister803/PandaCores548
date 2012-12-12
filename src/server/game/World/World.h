@@ -784,6 +784,7 @@ class World
         void   SetCleaningFlags(uint32 flags) { m_CleaningFlags = flags; }
         void   ResetEventSeasonalQuests(uint16 event_id);
         std::string GetRealmName() { return m_realmName; }
+        void UpdatePhaseDefinitions();
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
