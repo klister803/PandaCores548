@@ -2638,6 +2638,45 @@ void SpellMgr::LoadSpellClassInfo()
         if(!classEntry)
             continue;
 
+        // All portals and teleports for mages
+        if (ClassID == CLASS_MAGE)
+        {
+            mSpellClassInfo[ClassID].push_back(3561);
+            mSpellClassInfo[ClassID].push_back(3562);
+            mSpellClassInfo[ClassID].push_back(3563);
+            mSpellClassInfo[ClassID].push_back(3565);
+            mSpellClassInfo[ClassID].push_back(3566);
+            mSpellClassInfo[ClassID].push_back(3567);
+            mSpellClassInfo[ClassID].push_back(32271);
+            mSpellClassInfo[ClassID].push_back(32272);
+            mSpellClassInfo[ClassID].push_back(49359);
+            mSpellClassInfo[ClassID].push_back(49360);
+            mSpellClassInfo[ClassID].push_back(32266);
+            mSpellClassInfo[ClassID].push_back(32267);
+            mSpellClassInfo[ClassID].push_back(10059);
+            mSpellClassInfo[ClassID].push_back(11416);
+            mSpellClassInfo[ClassID].push_back(11417);
+            mSpellClassInfo[ClassID].push_back(11418);
+            mSpellClassInfo[ClassID].push_back(11419);
+            mSpellClassInfo[ClassID].push_back(11420);
+            mSpellClassInfo[ClassID].push_back(49358);
+            mSpellClassInfo[ClassID].push_back(49361);
+            mSpellClassInfo[ClassID].push_back(35715);
+            mSpellClassInfo[ClassID].push_back(33690);
+            mSpellClassInfo[ClassID].push_back(33691);
+            mSpellClassInfo[ClassID].push_back(35717);
+            mSpellClassInfo[ClassID].push_back(53140);
+            mSpellClassInfo[ClassID].push_back(53142);
+            mSpellClassInfo[ClassID].push_back(88342);
+            mSpellClassInfo[ClassID].push_back(88344);
+            mSpellClassInfo[ClassID].push_back(88345);
+            mSpellClassInfo[ClassID].push_back(88346);
+            mSpellClassInfo[ClassID].push_back(132620);
+            mSpellClassInfo[ClassID].push_back(132621);
+            mSpellClassInfo[ClassID].push_back(132626);
+            mSpellClassInfo[ClassID].push_back(132627);
+        }
+
         // Ancestral Focus
         if (ClassID == CLASS_SHAMAN)
             mSpellClassInfo[ClassID].push_back(89920);
