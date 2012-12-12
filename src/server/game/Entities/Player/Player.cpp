@@ -15162,7 +15162,7 @@ Quest const* Player::GetNextQuest(uint64 guid, Quest const* quest)
 
 bool Player::CanSeeStartQuest(Quest const* quest)
 {
-    if (SatisfyQuestClass(quest, false) && SatisfyQuestRace(quest, false) && SatisfyQuestSkill(quest, false) &&
+    if (SatisfyQuestTeam(quest, false) && SatisfyQuestClass(quest, false) && SatisfyQuestRace(quest, false) && SatisfyQuestSkill(quest, false) &&
         SatisfyQuestExclusiveGroup(quest, false) && SatisfyQuestReputation(quest, false) &&
         SatisfyQuestPreviousQuest(quest, false) && SatisfyQuestNextChain(quest, false) &&
         SatisfyQuestPrevChain(quest, false) && SatisfyQuestDay(quest, false) && SatisfyQuestWeek(quest, false) &&
@@ -15178,6 +15178,7 @@ bool Player::CanTakeQuest(Quest const* quest, bool msg)
 {
 	return !DisableMgr::IsDisabledFor(DISABLE_TYPE_QUEST, quest->GetQuestId(), this) 
 		&& SatisfyQuestStatus(quest, msg) && SatisfyQuestExclusiveGroup(quest, msg)
+        && SatisfyQuestTeam(quest, msg)
         && SatisfyQuestClass(quest, msg) && SatisfyQuestRace(quest, msg) && SatisfyQuestLevel(quest, msg)
         && SatisfyQuestSkill(quest, msg) && SatisfyQuestReputation(quest, msg)
         && SatisfyQuestPreviousQuest(quest, msg) && SatisfyQuestTimed(quest, msg)
@@ -15862,19 +15863,45 @@ bool Player::SatisfyQuestPreviousQuest(Quest const* qInfo, bool msg)
     return false;
 }
 
-bool Player::SatisfyQuestClass(Quest const* qInfo, bool msg) const
+bool Player::SatisfyQuestTeam(Quest const* qInfo, bool msg)
 {
-    uint32 reqClass = qInfo->GetRequiredClasses();
-
-    if (reqClass == 0)
+    int8 reqteam = qInfo->GetRequiredTeam();
+    if (reqteam < 0)
         return true;
 
-    if ((reqClass & getClassMask()) == 0)
-    {
-        if (msg)
-            SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
+    return reqteam == GetTeamId();
+}
 
-        return false;
+bool Player::SatisfyQuestClass(Quest const* qInfo, bool msg) const
+{
+    int32 reqClass = qInfo->GetRequiredClasses();
+
+    if (!reqClass)
+        return true;
+
+    if (reqClass > 0)
+    {
+        // Positive = Only specified
+        if ((reqClass & getClassMask()) == 0)
+        {
+            if (msg)
+                SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
+
+            return false;
+        }
+    }
+    else
+    {
+        // Negative = All except specified
+        reqClass = -reqClass;
+
+        if (reqClass & getClassMask())
+        {
+            if (msg)
+                SendCanTakeQuestResponse(INVALIDREASON_DONT_HAVE_REQ);
+
+            return false;
+        }
     }
 
     return true;
@@ -15882,15 +15909,33 @@ bool Player::SatisfyQuestClass(Quest const* qInfo, bool msg) const
 
 bool Player::SatisfyQuestRace(Quest const* qInfo, bool msg)
 {
-    uint32 reqraces = qInfo->GetRequiredRaces();
-    if (reqraces == 0)
+    int32 reqraces = qInfo->GetRequiredRaces();
+    if (!reqraces)
         return true;
-    if ((reqraces & getRaceMask()) == 0)
+
+    if (reqraces > 0)
     {
-        if (msg)
-            SendCanTakeQuestResponse(INVALIDREASON_QUEST_FAILED_WRONG_RACE);
-        return false;
+        // Positive = Only specified
+        if ((reqraces & getRaceMask()) == 0)
+        {
+            if (msg)
+                SendCanTakeQuestResponse(INVALIDREASON_QUEST_FAILED_WRONG_RACE);
+            return false;
+        }
     }
+    else
+    {
+        // Negative = All except specified
+        reqraces = -reqraces;
+
+        if (reqraces & getRaceMask())
+        {
+            if (msg)
+                SendCanTakeQuestResponse(INVALIDREASON_QUEST_FAILED_WRONG_RACE);
+            return false;
+        }
+    }
+
     return true;
 }
 
