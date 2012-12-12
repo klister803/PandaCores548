@@ -34,12 +34,6 @@ enum DeathKnightSpells
     DK_SPELL_GHOUL_EXPLODE                      = 47496,
     DK_SPELL_SCOURGE_STRIKE_TRIGGERED           = 70890,
     DK_SPELL_BLOOD_BOIL_TRIGGERED               = 65658,
-    DK_SPELL_WILL_OF_THE_NECROPOLIS_TALENT_R1   = 49189,
-    DK_SPELL_WILL_OF_THE_NECROPOLIS_AURA_R1     = 52284,
-    DK_SPELL_BLOOD_PRESENCE                     = 48266,
-    DK_SPELL_IMPROVED_BLOOD_PRESENCE_TRIGGERED  = 63611,
-    DK_SPELL_UNHOLY_PRESENCE                    = 48265,
-    DK_SPELL_IMPROVED_UNHOLY_PRESENCE_TRIGGERED = 63622,
     SPELL_DK_ITEM_T8_MELEE_4P_BONUS             = 64736,
     DK_SPELL_BLACK_ICE_R1                       = 49140,
     DK_SPELL_BLOOD_PLAGUE                       = 55078,
@@ -50,7 +44,402 @@ enum DeathKnightSpells
     DK_SPELL_ROILING_BLOOD                      = 108170,
     DK_SPELL_PESTILENCE                         = 50842,
     DK_SPELL_CHILBLAINS                         = 50041,
-    DK_SPELL_CHAINS_OF_ICE_ROOT                 = 53534
+    DK_SPELL_CHAINS_OF_ICE_ROOT                 = 53534,
+    DK_SPELL_PLAGUE_LEECH                       = 123693,
+    DK_SPELL_PURGATORY_INSTAKILL                = 123982,
+    DK_SPELL_BLOOD_RITES                        = 50034,
+    DK_SPELL_DEATH_SIPHON_HEAL                  = 116783,
+    DK_SPELL_BLOOD_CHARGE                       = 114851
+};
+
+// Called by Death Coil - 47541, Rune Strike - 56815 and Frost Strike - 49143
+// Blood Charges - 114851 for Blood Tap - 45529
+class spell_dk_blood_charges : public SpellScriptLoader
+{
+    public:
+        spell_dk_blood_charges() : SpellScriptLoader("spell_dk_blood_charges") { }
+
+        class spell_dk_blood_charges_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_blood_charges_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
+                        _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_blood_charges_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_blood_charges_SpellScript();
+        }
+};
+
+// Blood Tap - 45529
+class spell_dk_blood_tap : public SpellScriptLoader
+{
+    public:
+        spell_dk_blood_tap() : SpellScriptLoader("spell_dk_blood_tap") { }
+
+        class spell_dk_blood_tap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_blood_tap_SpellScript);
+
+            SpellCastResult CheckBloodCharges()
+            {
+                if (GetCaster()->ToPlayer())
+                {
+                    if (AuraPtr bloodCharges = GetCaster()->ToPlayer()->GetAura(DK_SPELL_BLOOD_CHARGE))
+                    {
+                        if (bloodCharges->GetStackAmount() < 5)
+                            return SPELL_FAILED_DONT_REPORT;
+                    }
+                }
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (AuraPtr bloodCharges = _player->GetAura(DK_SPELL_BLOOD_CHARGE))
+                        {
+                            int32 newAmount = bloodCharges->GetStackAmount();
+
+                            if ((newAmount - 5) <= 0)
+                                _player->RemoveAura(DK_SPELL_BLOOD_CHARGE);
+                            else
+                                bloodCharges->SetStackAmount(newAmount - 5);
+                        }
+
+                        bool runeDeath = false;
+
+                        for (uint8 i = 0; i < MAX_RUNES; ++i)
+                        {
+                            if (_player->GetCurrentRune(i) == RUNE_DEATH)
+                                continue;
+
+                            if (!_player->GetRuneCooldown(i))
+                                continue;
+
+                            if (runeDeath)
+                                continue;
+
+                            _player->ConvertRune(i, RUNE_DEATH);
+                            runeDeath = true;
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_dk_blood_tap_SpellScript::CheckBloodCharges);
+                OnHit += SpellHitFn(spell_dk_blood_tap_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_blood_tap_SpellScript();
+        }
+};
+
+// Death Siphon - 108196
+class spell_dk_death_siphon : public SpellScriptLoader
+{
+    public:
+        spell_dk_death_siphon() : SpellScriptLoader("spell_dk_death_siphon") { }
+
+        class spell_dk_death_siphon_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_death_siphon_SpellScript);
+
+            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 bp = GetHitDamage();
+                        bool runeDeath = false;
+
+                        _player->CastCustomSpell(_player, DK_SPELL_DEATH_SIPHON_HEAL, &bp, NULL, NULL, true);
+
+                        for (uint8 i = 0; i < MAX_RUNES; ++i)
+                        {
+                            if (_player->GetCurrentRune(i) != RUNE_DEATH)
+                                continue;
+
+                            if (runeDeath)
+                                continue;
+
+                            if (!_player->GetRuneCooldown(i))
+                            {
+                                _player->RestoreBaseRune(i);
+                                _player->SetRuneCooldown(i, _player->GetRuneBaseCooldown(i));
+                                runeDeath = true;
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_dk_death_siphon_SpellScript::HandleScriptEffect, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_death_siphon_SpellScript();
+        }
+};
+
+// Improved Blood Presence - 50371
+class spell_dk_improved_blood_presence : public SpellScriptLoader
+{
+    public:
+        spell_dk_improved_blood_presence() : SpellScriptLoader("spell_dk_improved_blood_presence") { }
+
+        class spell_dk_improved_blood_presence_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_improved_blood_presence_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->UpdateAllRunesRegen();
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_dk_improved_blood_presence_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_improved_blood_presence_SpellScript();
+        }
+};
+
+// Unholy Presence - 48265 and Improved Unholy Presence - 50392
+class spell_dk_unholy_presence : public SpellScriptLoader
+{
+    public:
+        spell_dk_unholy_presence() : SpellScriptLoader("spell_dk_unholy_presence") { }
+
+        class spell_dk_unholy_presence_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_unholy_presence_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->UpdateAllRunesRegen();
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_dk_unholy_presence_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_unholy_presence_SpellScript();
+        }
+};
+
+// Death Strike - 49998
+class spell_dk_death_strike : public SpellScriptLoader
+{
+    public:
+        spell_dk_death_strike() : SpellScriptLoader("spell_dk_death_strike") { }
+
+        class spell_dk_death_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_death_strike_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        // Apply Blood Rites effects
+                        if (_player->HasAura(DK_SPELL_BLOOD_RITES))
+                        {
+                            SetHitDamage(int32(GetHitDamage() * 1.4f));
+
+                            bool runeFrost = false;
+                            bool runeUnholy = false;
+
+                            for (uint8 i = 0; i < MAX_RUNES; ++i)
+                            {
+                                if (_player->GetCurrentRune(i) == RUNE_DEATH
+                                    || _player->GetCurrentRune(i) == RUNE_BLOOD
+                                    || _player->GetBaseRune(i) == RUNE_BLOOD)
+                                    continue;
+
+                                if (runeUnholy && _player->GetCurrentRune(i) == RUNE_UNHOLY)
+                                    continue;
+
+                                if (runeFrost && _player->GetCurrentRune(i) == RUNE_FROST)
+                                    continue;
+
+                                if (_player->GetRuneCooldown(i))
+                                {
+                                    if (_player->GetCurrentRune(i) == RUNE_FROST)
+                                        runeFrost = true;
+                                    else
+                                        runeUnholy = true;
+
+                                    _player->ConvertRune(i, RUNE_DEATH);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_death_strike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_death_strike_SpellScript();
+        }
+};
+
+// Purgatory - 116888
+class spell_dk_purgatory : public SpellScriptLoader
+{
+    public:
+        spell_dk_purgatory() : SpellScriptLoader("spell_dk_purgatory") { }
+
+        class spell_dk_purgatory_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_purgatory_AuraScript);
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                {
+                    AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                    if (removeMode == AURA_REMOVE_BY_EXPIRE)
+                        _player->CastSpell(_player, DK_SPELL_PURGATORY_INSTAKILL, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_dk_purgatory_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_SCHOOL_HEAL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_purgatory_AuraScript();
+        }
+};
+
+// Plague Leech - 123693
+class spell_dk_plague_leech : public SpellScriptLoader
+{
+    public:
+        spell_dk_plague_leech() : SpellScriptLoader("spell_dk_plague_leech") { }
+
+        class spell_dk_plague_leech_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_plague_leech_SpellScript);
+
+            SpellCastResult CheckRunes()
+            {
+                int32 runesUsed = 0;
+
+                if (GetCaster() && GetCaster()->ToPlayer())
+                {
+                    for (uint8 i = 0; i < MAX_RUNES; ++i)
+                        if (GetCaster()->ToPlayer()->GetRuneCooldown(i))
+                            runesUsed++;
+
+                    if (runesUsed != 6)
+                        return SPELL_FAILED_DONT_REPORT;
+                    else
+                        return SPELL_CAST_OK;
+
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        if (!target->HasAura(DK_SPELL_BLOOD_PLAGUE) && !target->HasAura(DK_SPELL_FROST_FEVER))
+                            return SPELL_FAILED_DONT_REPORT;
+                        else
+                            return SPELL_CAST_OK;
+                    }
+                }
+                else
+                    return SPELL_FAILED_DONT_REPORT;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        target->RemoveAura(DK_SPELL_FROST_FEVER);
+                        target->RemoveAura(DK_SPELL_BLOOD_PLAGUE);
+
+                        uint32 runeRandom;
+                        bool runeOff = true;
+
+                        while (runeOff)
+                        {
+                            runeRandom = urand(0, 5);
+
+                            if (_player->GetRuneCooldown(runeRandom))
+                            {
+                                _player->SetRuneCooldown(runeRandom, 0);
+                                _player->ConvertRune(runeRandom, RUNE_DEATH);
+                                _player->ResyncRunes(MAX_RUNES);
+                                runeOff = false;
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_dk_plague_leech_SpellScript::CheckRunes);
+                OnHit += SpellHitFn(spell_dk_plague_leech_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_plague_leech_SpellScript();
+        }
 };
 
 // Unholy Blight - 115994
@@ -585,50 +974,6 @@ class spell_dk_scourge_strike : public SpellScriptLoader
         }
 };
 
-// 49145 - Spell Deflection
-class spell_dk_spell_deflection : public SpellScriptLoader
-{
-    public:
-        spell_dk_spell_deflection() : SpellScriptLoader("spell_dk_spell_deflection") { }
-
-        class spell_dk_spell_deflection_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dk_spell_deflection_AuraScript);
-
-            uint32 absorbPct;
-
-            bool Load()
-            {
-                absorbPct = GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster());
-                return true;
-            }
-
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                // Set absorbtion amount to unlimited
-                amount = -1;
-            }
-
-            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
-            {
-                // You have a chance equal to your Parry chance
-                if ((dmgInfo.GetDamageType() == SPELL_DIRECT_DAMAGE) && roll_chance_f(GetTarget()->GetUnitParryChance()))
-                    absorbAmount = CalculatePct(dmgInfo.GetDamage(), absorbPct);
-            }
-
-            void Register()
-            {
-                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_spell_deflection_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_dk_spell_deflection_AuraScript::Absorb, EFFECT_0);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dk_spell_deflection_AuraScript();
-        }
-};
-
 // Blood Boil - 48721
 class spell_dk_blood_boil : public SpellScriptLoader
 {
@@ -677,212 +1022,6 @@ class spell_dk_blood_boil : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_dk_blood_boil_SpellScript();
-        }
-};
-
-// 52284 - Will of the Necropolis
-class spell_dk_will_of_the_necropolis : public SpellScriptLoader
-{
-    public:
-        spell_dk_will_of_the_necropolis() : SpellScriptLoader("spell_dk_will_of_the_necropolis") { }
-
-        class spell_dk_will_of_the_necropolis_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dk_will_of_the_necropolis_AuraScript);
-
-            bool Validate(SpellInfo const* spellEntry)
-            {
-                // can't use other spell than will of the necropolis due to spell_ranks dependency
-                if (sSpellMgr->GetFirstSpellInChain(DK_SPELL_WILL_OF_THE_NECROPOLIS_AURA_R1) != sSpellMgr->GetFirstSpellInChain(spellEntry->Id))
-                    return false;
-
-                uint8 rank = sSpellMgr->GetSpellRank(spellEntry->Id);
-                if (!sSpellMgr->GetSpellWithRank(DK_SPELL_WILL_OF_THE_NECROPOLIS_TALENT_R1, rank, true))
-                    return false;
-
-                return true;
-            }
-
-            uint32 absorbPct;
-
-            bool Load()
-            {
-                absorbPct = GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster());
-                return true;
-            }
-
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                // Set absorbtion amount to unlimited
-                amount = -1;
-            }
-
-            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
-            {
-                // min pct of hp is stored in effect 0 of talent spell
-                uint32 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
-                SpellInfo const* talentProto = sSpellMgr->GetSpellInfo(sSpellMgr->GetSpellWithRank(DK_SPELL_WILL_OF_THE_NECROPOLIS_TALENT_R1, rank));
-
-                int32 remainingHp = int32(GetTarget()->GetHealth() - dmgInfo.GetDamage());
-                int32 minHp = int32(GetTarget()->CountPctFromMaxHealth(talentProto->Effects[EFFECT_0].CalcValue(GetCaster())));
-
-                // Damage that would take you below [effect0] health or taken while you are at [effect0]
-                if (remainingHp < minHp)
-                    absorbAmount = CalculatePct(dmgInfo.GetDamage(), absorbPct);
-            }
-
-            void Register()
-            {
-                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_will_of_the_necropolis_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_dk_will_of_the_necropolis_AuraScript::Absorb, EFFECT_0);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dk_will_of_the_necropolis_AuraScript();
-        }
-};
-
-// 50365, 50371 Improved Blood Presence
-class spell_dk_improved_blood_presence : public SpellScriptLoader
-{
-public:
-    spell_dk_improved_blood_presence() : SpellScriptLoader("spell_dk_improved_blood_presence") { }
-
-    class spell_dk_improved_blood_presence_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_dk_improved_blood_presence_AuraScript);
-
-        bool Validate(SpellInfo const* /*entry*/)
-        {
-            if (!sSpellMgr->GetSpellInfo(DK_SPELL_BLOOD_PRESENCE) || !sSpellMgr->GetSpellInfo(DK_SPELL_IMPROVED_BLOOD_PRESENCE_TRIGGERED))
-                return false;
-            return true;
-        }
-
-        void HandleEffectApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
-        {
-            Unit* target = GetTarget();
-            if (!target->HasAura(DK_SPELL_BLOOD_PRESENCE) && !target->HasAura(DK_SPELL_IMPROVED_BLOOD_PRESENCE_TRIGGERED))
-            {
-                int32 basePoints1 = aurEff->GetAmount();
-                target->CastCustomSpell(target, DK_SPELL_IMPROVED_BLOOD_PRESENCE_TRIGGERED, NULL, &basePoints1, NULL, true, 0, aurEff);
-            }
-        }
-
-        void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            Unit* target = GetTarget();
-            if (!target->HasAura(DK_SPELL_BLOOD_PRESENCE))
-                target->RemoveAura(DK_SPELL_IMPROVED_BLOOD_PRESENCE_TRIGGERED);
-        }
-
-        void Register()
-        {
-            AfterEffectApply += AuraEffectApplyFn(spell_dk_improved_blood_presence_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            AfterEffectRemove += AuraEffectRemoveFn(spell_dk_improved_blood_presence_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_dk_improved_blood_presence_AuraScript();
-    }
-};
-
-// 50391, 50392 Improved Unholy Presence
-class spell_dk_improved_unholy_presence : public SpellScriptLoader
-{
-public:
-    spell_dk_improved_unholy_presence() : SpellScriptLoader("spell_dk_improved_unholy_presence") { }
-
-    class spell_dk_improved_unholy_presence_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_dk_improved_unholy_presence_AuraScript);
-
-        bool Validate(SpellInfo const* /*entry*/)
-        {
-            if (!sSpellMgr->GetSpellInfo(DK_SPELL_UNHOLY_PRESENCE) || !sSpellMgr->GetSpellInfo(DK_SPELL_IMPROVED_UNHOLY_PRESENCE_TRIGGERED))
-                return false;
-            return true;
-        }
-
-        void HandleEffectApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
-        {
-            Unit* target = GetTarget();
-            if (target->HasAura(DK_SPELL_UNHOLY_PRESENCE) && !target->HasAura(DK_SPELL_IMPROVED_UNHOLY_PRESENCE_TRIGGERED))
-            {
-                // Not listed as any effect, only base points set in dbc
-                int32 basePoints0 = aurEff->GetSpellInfo()->Effects[EFFECT_1].CalcValue();
-                target->CastCustomSpell(target, DK_SPELL_IMPROVED_UNHOLY_PRESENCE_TRIGGERED, &basePoints0, &basePoints0, &basePoints0, true, 0, aurEff);
-            }
-        }
-
-        void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            GetTarget()->RemoveAura(DK_SPELL_IMPROVED_UNHOLY_PRESENCE_TRIGGERED);
-        }
-
-        void Register()
-        {
-            AfterEffectApply += AuraEffectApplyFn(spell_dk_improved_unholy_presence_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            AfterEffectRemove += AuraEffectRemoveFn(spell_dk_improved_unholy_presence_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_dk_improved_unholy_presence_AuraScript();
-    }
-};
-
-enum DeathStrike
-{
-    ICON_ID_IMPROVED_DEATH_STRIKE   = 2751,
-    SPELL_DEATH_STRIKE_HEAL         = 45470,
-};
-
-class spell_dk_death_strike : public SpellScriptLoader
-{
-    public:
-        spell_dk_death_strike() : SpellScriptLoader("spell_dk_death_strike") { }
-
-        class spell_dk_death_strike_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dk_death_strike_SpellScript);
-
-            bool Validate(SpellInfo const* /*SpellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_DEATH_STRIKE_HEAL))
-                    return false;
-                return true;
-            }
-
-            void HandleDummy(SpellEffIndex /* effIndex */)
-            {
-                Unit* caster = GetCaster();
-                if (Unit* target = GetHitUnit())
-                {
-                    uint32 count = target->GetDiseasesByCaster(caster->GetGUID());
-                    int32 bp = int32(count * caster->CountPctFromMaxHealth(int32(GetSpellInfo()->Effects[EFFECT_0].DamageMultiplier)));
-                    // Improved Death Strike
-                    if (constAuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_AURA_ADD_PCT_MODIFIER, SPELLFAMILY_DEATHKNIGHT, ICON_ID_IMPROVED_DEATH_STRIKE, 0))
-                        AddPct(bp, caster->CalculateSpellDamage(caster, aurEff->GetSpellInfo(), 2));
-                    caster->CastCustomSpell(caster, SPELL_DEATH_STRIKE_HEAL, &bp, NULL, NULL, false);
-                }
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_dk_death_strike_SpellScript::HandleDummy, EFFECT_2, SPELL_EFFECT_DUMMY);
-            }
-
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dk_death_strike_SpellScript();
         }
 };
 
@@ -995,6 +1134,14 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_blood_charges();
+    new spell_dk_blood_tap();
+    new spell_dk_death_siphon();
+    new spell_dk_improved_blood_presence();
+    new spell_dk_unholy_presence();
+    new spell_dk_death_strike();
+    new spell_dk_purgatory();
+    new spell_dk_plague_leech();
     new spell_dk_unholy_blight();
     new spell_dk_chilblains();
     new spell_dk_outbreak();
@@ -1007,12 +1154,7 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_death_gate();
     new spell_dk_death_pact();
     new spell_dk_scourge_strike();
-    new spell_dk_spell_deflection();
     new spell_dk_blood_boil();
-    new spell_dk_will_of_the_necropolis();
-    new spell_dk_improved_blood_presence();
-    new spell_dk_improved_unholy_presence();
-    new spell_dk_death_strike();
     new spell_dk_death_coil();
     new spell_dk_death_grip();
 }

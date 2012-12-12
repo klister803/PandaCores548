@@ -107,12 +107,12 @@ public:
             { "unfreeze",           SEC_MODERATOR,          false, &HandleUnFreezeCommand,              "", NULL },
             { "listfreeze",         SEC_MODERATOR,          false, &HandleListFreezeCommand,            "", NULL },
             { "group",              SEC_ADMINISTRATOR,      false, NULL,                                "", groupCommandTable },
-            { "possess",            SEC_ADMINISTRATOR,      false, HandlePossessCommand,                "", NULL },
-            { "unpossess",          SEC_ADMINISTRATOR,      false, HandleUnPossessCommand,              "", NULL },
-            { "bindsight",          SEC_ADMINISTRATOR,      false, HandleBindSightCommand,              "", NULL },
-            { "unbindsight",        SEC_ADMINISTRATOR,      false, HandleUnbindSightCommand,            "", NULL },
-            { "playall",            SEC_GAMEMASTER,         false, HandlePlayAllCommand,                "", NULL },
-            { "selectfaction",      SEC_ADMINISTRATOR,      false, HandleSelectFactionCommand,          "", NULL },
+            { "possess",            SEC_ADMINISTRATOR,      false, &HandlePossessCommand,                "", NULL },
+            { "unpossess",          SEC_ADMINISTRATOR,      false, &HandleUnPossessCommand,              "", NULL },
+            { "bindsight",          SEC_ADMINISTRATOR,      false, &HandleBindSightCommand,              "", NULL },
+            { "unbindsight",        SEC_ADMINISTRATOR,      false, &HandleUnbindSightCommand,            "", NULL },
+            { "playall",            SEC_GAMEMASTER,         false, &HandlePlayAllCommand,                "", NULL },
+            { "selectfaction",      SEC_ADMINISTRATOR,      false, &HandleSelectFactionCommand,          "", NULL },
             { NULL,                 0,                      false, NULL,                                "", NULL }
         };
         return commandTable;

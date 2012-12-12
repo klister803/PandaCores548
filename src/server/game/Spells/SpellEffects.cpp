@@ -671,6 +671,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             }
             break;
         case SPELLFAMILY_DEATHKNIGHT:
+            // Death Strike
             if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE)
             {
                 if ((m_caster->CountPctFromMaxHealth(7)) > (20 * m_caster->GetDamageTakenInPastSecs(5) / 100))
@@ -3254,16 +3255,6 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 AddPct(totalDamagePercentMod, bonusPct);
                 break;
             }
-            // Death Strike
-            if (m_spellInfo->SpellFamilyFlags[0] & 0x10)
-            {
-                // Glyph of Death Strike
-                // 2% more damage per 5 runic power, up to a maximum of 40%
-                if (constAuraEffectPtr aurEff = m_caster->GetAuraEffect(59336, EFFECT_0))
-                    if (uint32 runic = std::min<uint32>(uint32(m_caster->GetPower(POWER_RUNIC_POWER) / 2.5f), aurEff->GetSpellInfo()->Effects[EFFECT_1].CalcValue(m_caster)))
-                        AddPct(totalDamagePercentMod, runic);
-                break;
-            }
             // Obliterate (12.5% more damage per disease)
             if (m_spellInfo->SpellFamilyFlags[1] & 0x20000)
             {
@@ -3272,12 +3263,6 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                 if (constAuraEffectPtr aurEff = m_caster->GetAuraEffect(64736, EFFECT_0))
                     AddPct(bonusPct, aurEff->GetAmount());
                 AddPct(totalDamagePercentMod, bonusPct);
-                break;
-            }
-            // Blood-Caked Strike - Blood-Caked Blade
-            if (m_spellInfo->SpellIconID == 1736)
-            {
-                AddPct(totalDamagePercentMod, unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) * 12.5f);
                 break;
             }
             // Heart Strike
@@ -5814,27 +5799,6 @@ void Spell::EffectActivateRune(SpellEffIndex effIndex)
                     continue;
             player->SetRuneCooldown(j, 0);
             --count;
-        }
-    }
-
-    // Blood Tap
-    if (m_spellInfo->Id == 45529 && count > 0)
-    {
-        for (uint32 l = 0; l < MAX_RUNES && count > 0; ++l)
-        {
-            // Check if both runes are on cd as that is the only time when this needs to come into effect
-            if ((player->GetRuneCooldown(l) && player->GetCurrentRune(l) == RuneType(m_spellInfo->Effects[effIndex].MiscValueB)) && (player->GetRuneCooldown(l+1) && player->GetCurrentRune(l+1) == RuneType(m_spellInfo->Effects[effIndex].MiscValueB)))
-            {
-                // Should always update the rune with the lowest cd
-                if (player->GetRuneCooldown(l) >= player->GetRuneCooldown(l+1))
-                    l++;
-                player->SetRuneCooldown(l, 0);
-                --count;
-                // is needed to push through to the client that the rune is active
-                player->ResyncRunes(MAX_RUNES);
-            }
-            else
-                break;
         }
     }
 

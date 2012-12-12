@@ -58,6 +58,7 @@ public:
             { "near",           SEC_GAMEMASTER,     false, &HandleGameObjectNearCommand,      "", NULL },
             { "target",         SEC_GAMEMASTER,     false, &HandleGameObjectTargetCommand,    "", NULL },
             { "turn",           SEC_GAMEMASTER,     false, &HandleGameObjectTurnCommand,      "", NULL },
+            { "bindportal",     SEC_GAMEMASTER,     false, &HandleBindPortalCommand,          "", NULL },
             { "add",            SEC_GAMEMASTER,     false, NULL,            "", gobjectAddCommandTable },
             { "set",            SEC_GAMEMASTER,     false, NULL,            "", gobjectSetCommandTable },
             { NULL,             0,                  false, NULL,                              "", NULL }
@@ -70,9 +71,8 @@ public:
         return commandTable;
     }
 
-    static bool HandleGameObjectActivateCommand(ChatHandler* handler, char const* args)
+    static uint32 GetGuidLowFromArgsOrLastTargetedGo(ChatHandler* handler, char const* args)
     {
-        uint32 guidLow = 0;
         Player* player = handler->GetSession()->GetPlayer();
 
         if (*args)
@@ -80,19 +80,25 @@ public:
             // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
             char* cId = handler->extractKeyFromLink((char*)args,"Hgameobject");
             if (!cId)
-                return false;
+                return 0;
 
-            guidLow = atoi(cId);
-            if (!guidLow)
-                return false;
+            return atoi(cId);
         }
         else
         {
             if(player->GetLastTargetedGO())
-                guidLow = player->GetLastTargetedGO();
+                return player->GetLastTargetedGO();
             else
-                return false;
+                return 0;
         }
+    }
+
+    static bool HandleGameObjectActivateCommand(ChatHandler* handler, char const* args)
+    {
+        uint32 guidLow = GetGuidLowFromArgsOrLastTargetedGo(handler, args);
+
+        if (!guidLow)
+            return false;
 
         GameObject* object = NULL;
 
@@ -118,27 +124,10 @@ public:
 
     static bool HandleGameObjectActivateMapCommand(ChatHandler* handler, const char* args)
     {
-        uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        uint32 guidLow = GetGuidLowFromArgsOrLastTargetedGo(handler, args);
 
-        if (*args)
-        {
-            // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
-            char* cId = handler->extractKeyFromLink((char*)args,"Hgameobject");
-            if (!cId)
-                return false;
-
-            guidLow = atoi(cId);
-            if (!guidLow)
-                return false;
-        }
-        else
-        {
-            if(player->GetLastTargetedGO())
-                guidLow = player->GetLastTargetedGO();
-            else
-                return false;
-        }
+        if (!guidLow)
+            return false;
 
         GameObject* obj = NULL;
 
@@ -234,6 +223,10 @@ public:
 
         // TODO: is it really necessary to add both the real and DB table guid here ?
         sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
+
+        if (handler->GetSession())
+            if (handler->GetSession()->GetPlayer())
+                handler->GetSession()->GetPlayer()->SetLastTargetedGO(guidLow);
 
         handler->PSendSysMessage(LANG_GAMEOBJECT_ADD, objectId, objectInfo->name.c_str(), guidLow, x, y, z);
         return true;
@@ -393,27 +386,10 @@ public:
     //delete object by selection or guid
     static bool HandleGameObjectDeleteCommand(ChatHandler* handler, char const* args)
     {
-        uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        uint32 guidLow = GetGuidLowFromArgsOrLastTargetedGo(handler, args);
 
-        if (*args)
-        {
-            // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
-            char* cId = handler->extractKeyFromLink((char*)args,"Hgameobject");
-            if (!cId)
-                return false;
-
-            guidLow = atoi(cId);
-            if (!guidLow)
-                return false;
-        }
-        else
-        {
-            if(player->GetLastTargetedGO())
-                guidLow = player->GetLastTargetedGO();
-            else
-                return false;
-        }
+        if (!guidLow)
+            return false;
 
         GameObject* object = NULL;
 
@@ -454,27 +430,10 @@ public:
     //turn selected object
     static bool HandleGameObjectTurnCommand(ChatHandler* handler, char const* args)
     {
-        uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        uint32 guidLow = GetGuidLowFromArgsOrLastTargetedGo(handler, args);
 
-        if (*args)
-        {
-            // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
-            char* cId = handler->extractKeyFromLink((char*)args,"Hgameobject");
-            if (!cId)
-                return false;
-
-            guidLow = atoi(cId);
-            if (!guidLow)
-                return false;
-        }
-        else
-        {
-            if(player->GetLastTargetedGO())
-                guidLow = player->GetLastTargetedGO();
-            else
-                return false;
-        }
+        if (!guidLow)
+            return false;
 
         GameObject* object = NULL;
 
@@ -516,27 +475,10 @@ public:
     //move selected object
     static bool HandleGameObjectMoveCommand(ChatHandler* handler, char const* args)
     {
-        uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        uint32 guidLow = GetGuidLowFromArgsOrLastTargetedGo(handler, args);
 
-        if (*args)
-        {
-            // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
-            char* cId = handler->extractKeyFromLink((char*)args,"Hgameobject");
-            if (!cId)
-                return false;
-
-            guidLow = atoi(cId);
-            if (!guidLow)
-                return false;
-        }
-        else
-        {
-            if(player->GetLastTargetedGO())
-                guidLow = player->GetLastTargetedGO();
-            else
-                return false;
-        }
+        if (!guidLow)
+            return false;
 
         GameObject* object = NULL;
 
@@ -594,27 +536,10 @@ public:
     //set phasemask for selected object
     static bool HandleGameObjectSetPhaseCommand(ChatHandler* handler, char const* args)
     {
-        uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        uint32 guidLow = GetGuidLowFromArgsOrLastTargetedGo(handler, args);
 
-        if (*args)
-        {
-            // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
-            char* cId = handler->extractKeyFromLink((char*)args,"Hgameobject");
-            if (!cId)
-                return false;
-
-            guidLow = atoi(cId);
-            if (!guidLow)
-                return false;
-        }
-        else
-        {
-            if(player->GetLastTargetedGO())
-                guidLow = player->GetLastTargetedGO();
-            else
-                return false;
-        }
+        if (!guidLow)
+            return false;
 
         GameObject* object = NULL;
 
@@ -729,27 +654,10 @@ public:
 
     static bool HandleGameObjectSetStateCommand(ChatHandler* handler, char const* args)
     {
-        uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        uint32 guidLow = GetGuidLowFromArgsOrLastTargetedGo(handler, args);
 
-        if (*args)
-        {
-            // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
-            char* cId = handler->extractKeyFromLink((char*)args,"Hgameobject");
-            if (!cId)
-                return false;
-
-            guidLow = atoi(cId);
-            if (!guidLow)
-                return false;
-        }
-        else
-        {
-            if(player->GetLastTargetedGO())
-                guidLow = player->GetLastTargetedGO();
-            else
-                return false;
-        }
+        if (!guidLow)
+            return false;
 
         GameObject* object = NULL;
 
@@ -793,6 +701,43 @@ public:
             object->SendMessageToSet(&data, true);
         }
         handler->PSendSysMessage("Set gobject type %d state %d", objectType, objectState);
+        return true;
+    }
+
+    static bool HandleBindPortalCommand(ChatHandler* handler, char const* args)
+    {
+        uint32 guidLow = GetGuidLowFromArgsOrLastTargetedGo(handler, args);
+
+        if (!guidLow)
+            return false;
+
+        if (!handler->GetSession())
+            return true;
+
+        Player* pPlayer = handler->GetSession()->GetPlayer();
+
+        if (!pPlayer)
+            return true;
+
+        uint32 mapId = pPlayer->GetMapId();
+        float  posX  = pPlayer->GetPositionX();
+        float  posY  = pPlayer->GetPositionY();
+        float  posZ  = pPlayer->GetPositionZ();
+        float  posO  = pPlayer->GetOrientation();
+        
+        WorldDatabase.PExecute("DELETE FROM gameobject_scripts WHERE id = %u AND command = 6;", guidLow);
+        WorldDatabase.PExecute("INSERT INTO gameobject_scripts VALUES (%u, 0, 6, %u, 0, 0, %f, %f, %f, %f);", guidLow, mapId, posX, posY, posZ, posO);
+
+        handler->SendGlobalGMSysMessage("Portal Binded");
+
+        if (sScriptMgr->IsScriptScheduled())
+        {
+            handler->SendSysMessage("DB scripts used currently, please attempt reload later.");
+            handler->SetSentErrorMessage(true);
+            return true;
+        }
+
+        sObjectMgr->LoadGameObjectScripts();
         return true;
     }
 };
