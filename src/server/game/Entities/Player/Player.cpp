@@ -24532,6 +24532,9 @@ uint32 Player::GetRuneTypeBaseCooldown(RuneType runeType) const
     // Hack Fix Improved Unholy Presence - Increase runes regen speed by an additional 10%
     if (HasAura(50392))
         hastePct += 10.0f;
+    // Hack Fix Improved Blood Presence - Increase runes regen speed by 20%
+    if (HasAura(50371))
+        hastePct += 20.0f;
 
     // ... and some auras.
     hastePct += GetTotalAuraModifier(SPELL_AURA_MOD_MELEE_HASTE);
