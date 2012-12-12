@@ -107,14 +107,14 @@ Object::~Object()
         sLog->outFatal(LOG_FILTER_GENERAL, "Object::~Object - guid=" UI64FMTD ", typeid=%d, entry=%u deleted but still in world!!", GetGUID(), GetTypeId(), GetEntry());
         if (isType(TYPEMASK_ITEM))
             sLog->outFatal(LOG_FILTER_GENERAL, "Item slot %u", ((Item*)this)->GetSlot());
-        ASSERT(false);
+        //ASSERT(false);
         RemoveFromWorld();
     }
 
     if (m_objectUpdated)
     {
         sLog->outFatal(LOG_FILTER_GENERAL, "Object::~Object - guid=" UI64FMTD ", typeid=%d, entry=%u deleted but still in update list!!", GetGUID(), GetTypeId(), GetEntry());
-        ASSERT(false);
+        //ASSERT(false);
         sObjectAccessor->RemoveUpdateObject(this);
     }
 
