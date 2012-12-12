@@ -635,7 +635,7 @@ void KillRewarder::Reward()
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
-Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_reputationMgr(this)
+Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_reputationMgr(this), phaseMgr(this)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -3047,18 +3047,6 @@ void Player::SetGameMaster(bool on)
     }
     else
     {
-        // restore phase
-        uint32 newPhase = 0;
-        AuraEffectList const& phases = GetAuraEffectsByType(SPELL_AURA_PHASE);
-        if (!phases.empty())
-            for (AuraEffectList::const_iterator itr = phases.begin(); itr != phases.end(); ++itr)
-                newPhase |= (*itr)->GetMiscValue();
-
-        if (!newPhase)
-            newPhase = PHASEMASK_NORMAL;
-
-        SetPhaseMask(newPhase, false);
-
         m_ExtraFlags &= ~ PLAYER_EXTRA_GM_ON;
         setFactionForRace(getRace());
         RemoveFlag(PLAYER_FLAGS, PLAYER_FLAGS_GM);
@@ -3079,6 +3067,9 @@ void Player::SetGameMaster(bool on)
 
         getHostileRefManager().setOnlineOfflineState(true);
         m_serverSideVisibilityDetect.SetValue(SERVERSIDE_VISIBILITY_GM, SEC_PLAYER);
+
+        phaseMgr.AddUpdateFlag(PHASE_UPDATE_FLAG_SERVERSIDE_CHANGED);
+        phaseMgr.Update();
     }
 
     UpdateObjectVisibility();
@@ -3306,6 +3297,11 @@ void Player::GiveLevel(uint8 level)
     }
 
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_LEVEL);
+
+    PhaseUpdateData phaseUdateData;
+    phaseUdateData.AddConditionType(CONDITION_LEVEL);
+
+    phaseMgr.NotifyConditionChanged(phaseUdateData);
 
     // Refer-A-Friend
     if (GetSession()->GetRecruiterId())
@@ -7835,6 +7831,8 @@ void Player::UpdateArea(uint32 newArea)
     // so apply them accordingly
     m_areaUpdateId    = newArea;
 
+    phaseMgr.AddUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
+
     AreaTableEntry const* area = GetAreaEntryByAreaID(newArea);
     pvpInfo.inFFAPvPArea = area && (area->flags & AREA_FLAG_ARENA);
     UpdatePvPState(true);
@@ -7851,10 +7849,14 @@ void Player::UpdateArea(uint32 newArea)
     }
     else
         RemoveByteFlag(UNIT_FIELD_BYTES_2, 1, UNIT_BYTE2_FLAG_SANCTUARY);
+
+    phaseMgr.RemoveUpdateFlag(PHASE_UPDATE_FLAG_AREA_UPDATE);
 }
 
 void Player::UpdateZone(uint32 newZone, uint32 newArea)
 {
+    phaseMgr.AddUpdateFlag(PHASE_UPDATE_FLAG_ZONE_UPDATE);
+
     if (m_zoneUpdateId != newZone)
     {
         sOutdoorPvPMgr->HandlePlayerLeaveZone(this, m_zoneUpdateId);
@@ -7968,6 +7970,8 @@ void Player::UpdateZone(uint32 newZone, uint32 newArea)
     UpdateLocalChannels(newZone);
 
     UpdateZoneDependentAuras(newZone);
+
+    phaseMgr.RemoveUpdateFlag(PHASE_UPDATE_FLAG_ZONE_UPDATE);
 }
 
 //If players are too far away from the duel flag... they lose the duel
@@ -15457,6 +15461,12 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
                     CastSpell(this, itr->second->spellId, true);
     }
 
+    PhaseUpdateData phaseUdateData;
+    phaseUdateData.AddQuestUpdate(quest_id);
+
+    phaseMgr.NotifyConditionChanged(phaseUdateData);
+
+
     UpdateForQuestWorldObjects();
 }
 
@@ -15630,6 +15640,12 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     RemoveActiveQuest(quest_id);
     m_RewardedQuests.insert(quest_id);
     m_RewardedQuestsSave[quest_id] = true;
+
+    PhaseUpdateData phaseUdateData;
+    phaseUdateData.AddQuestUpdate(quest_id);
+
+    phaseMgr.NotifyConditionChanged(phaseUdateData);
+
 
     // StoreNewItem, mail reward, etc. save data directly to the database
     // to prevent exploitable data desynchronisation we save the quest status to the database too
@@ -16221,6 +16237,11 @@ void Player::SetQuestStatus(uint32 quest_id, QuestStatus status)
         m_QuestStatusSave[quest_id] = true;
     }
 
+    PhaseUpdateData phaseUdateData;
+    phaseUdateData.AddQuestUpdate(quest_id);
+
+    phaseMgr.NotifyConditionChanged(phaseUdateData);
+
     UpdateForQuestWorldObjects();
 }
 
@@ -16231,6 +16252,11 @@ void Player::RemoveActiveQuest(uint32 quest_id)
     {
         m_QuestStatus.erase(itr);
         m_QuestStatusSave[quest_id] = false;
+
+        PhaseUpdateData phaseUdateData;
+        phaseUdateData.AddQuestUpdate(quest_id);
+
+        phaseMgr.NotifyConditionChanged(phaseUdateData);
         return;
     }
 }
@@ -16242,6 +16268,11 @@ void Player::RemoveRewardedQuest(uint32 quest_id)
     {
         m_RewardedQuests.erase(rewItr);
         m_RewardedQuestsSave[quest_id] = false;
+
+        PhaseUpdateData phaseUdateData;
+        phaseUdateData.AddQuestUpdate(quest_id);
+
+        phaseMgr.NotifyConditionChanged(phaseUdateData);
     }
 }
 
@@ -24887,25 +24918,6 @@ void Player::_LoadSkills(PreparedQueryResult result)
         if (GetPureSkillValue(SKILL_UNARMED) < base_skill)
             SetSkill(SKILL_UNARMED, 0, base_skill, base_skill);
     }
-}
-
-uint32 Player::GetPhaseMaskForSpawn() const
-{
-    uint32 phase = PHASEMASK_NORMAL;
-    if (!isGameMaster())
-        phase = GetPhaseMask();
-    else
-    {
-        AuraEffectList const& phases = GetAuraEffectsByType(SPELL_AURA_PHASE);
-        if (!phases.empty())
-            phase = phases.front()->GetMiscValue();
-    }
-
-    // some aura phases include 1 normal map in addition to phase itself
-    if (uint32 n_phase = phase & ~PHASEMASK_NORMAL)
-        return n_phase;
-
-    return PHASEMASK_NORMAL;
 }
 
 InventoryResult Player::CanEquipUniqueItem(Item* pItem, uint8 eslot, uint32 limit_count) const
