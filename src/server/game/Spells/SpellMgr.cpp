@@ -3120,6 +3120,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 31230: // Cheat Death
             case 114556 : // Purgatory
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
