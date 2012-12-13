@@ -16856,6 +16856,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
 }
 
 uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
+    // TODO FIND for Pandaren horde/alliance
 {
     switch (getRace())
     {

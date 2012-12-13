@@ -153,6 +153,7 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 chrClass, uint8 level
     }
 
     // race specific initial known nodes: capital and taxi hub masks
+    // TODO MISSING PANDAREN HORDE/ALLIANCE WORGEN and GOBLIN
     switch (race)
     {
         case RACE_HUMAN:    SetTaximaskNode(2);  break;     // Human
@@ -166,6 +167,10 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 chrClass, uint8 level
         case RACE_TROLL:    SetTaximaskNode(23); break;     // Troll
         case RACE_BLOODELF: SetTaximaskNode(82); break;     // Blood Elf
         case RACE_DRAENEI:  SetTaximaskNode(94); break;     // Draenei
+        //case RACE_WORGEN:  SetTaximaskNode(); break;        // Worgen
+        //case RACE_GOBLIN:  SetTaximaskNode(); break;        // Goblin
+        //case RACE_PANDAREN_HORDE:  SetTaximaskNode(); break;     // Pandaren Horde
+        //case RACE_PANDAREN_ALLI:  SetTaximaskNode(); break;     // Pandaren Alliance
     }
 
     // new continent starting masks (It will be accessible only at new map)
