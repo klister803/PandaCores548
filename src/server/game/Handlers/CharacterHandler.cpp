@@ -1889,6 +1889,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
         case RACE_UNDEAD_PLAYER:
         case RACE_TROLL:
         case RACE_BLOODELF:
+        case RACE_PANDAREN_HORDE:
             team = BG_TEAM_HORDE;
             break;
         default:
@@ -1914,6 +1915,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     trans->Append(stmt);
 
     // Race specific languages
+    // TODO Add RACE_PANDAREN_HORDE/RACE_PANDAREN_ALLI/RACE_PANDAREN_NEUTRAL
     if (race != RACE_ORC && race != RACE_HUMAN)
     {
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_SKILL_LANGUAGE);
