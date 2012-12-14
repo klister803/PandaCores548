@@ -52,7 +52,50 @@ enum HunterSpells
     HUNTER_SPELL_STEADY_SHOT_ENERGIZE            = 77443,
     HUNTER_SPELL_COBRA_SHOT_ENERGIZE             = 91954,
     HUNTER_SPELL_KILL_COMMAND                    = 34026,
-    HUNTER_SPELL_KILL_COMMAND_TRIGGER            = 83381
+    HUNTER_SPELL_KILL_COMMAND_TRIGGER            = 83381,
+    SPELL_MAGE_TEMPORAL_DISPLACEMENT             = 80354,
+    HUNTER_SPELL_INSANITY                        = 95809,
+    SPELL_SHAMAN_SATED                           = 57724,
+    SPELL_SHAMAN_EXHAUSTED                       = 57723
+};
+
+// Ancient Hysteria - 90355
+class spell_hun_ancient_hysteria : public SpellScriptLoader
+{
+    public:
+        spell_hun_ancient_hysteria() : SpellScriptLoader("spell_hun_ancient_hysteria") { }
+
+        class spell_hun_ancient_hysteria_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_ancient_hysteria_SpellScript);
+
+            void RemoveInvalidTargets(std::list<WorldObject*>& targets)
+            {
+                targets.remove_if(Trinity::UnitAuraCheck(true, HUNTER_SPELL_INSANITY));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_EXHAUSTED));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_SATED));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
+            }
+
+            void ApplyDebuff()
+            {
+                if (Unit* target = GetHitUnit())
+                    target->CastSpell(target, HUNTER_SPELL_INSANITY, true);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hun_ancient_hysteria_SpellScript::RemoveInvalidTargets, EFFECT_0, TARGET_UNIT_CASTER_AREA_RAID);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hun_ancient_hysteria_SpellScript::RemoveInvalidTargets, EFFECT_1, TARGET_UNIT_CASTER_AREA_RAID);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_hun_ancient_hysteria_SpellScript::RemoveInvalidTargets, EFFECT_2, TARGET_UNIT_CASTER_AREA_RAID);
+                AfterHit += SpellHitFn(spell_hun_ancient_hysteria_SpellScript::ApplyDebuff);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_ancient_hysteria_SpellScript();
+        }
 };
 
 // Kill Command - 34026
@@ -864,6 +907,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_ancient_hysteria();
     new spell_hun_kill_command();
     new spell_hun_rapid_fire();
     new spell_hun_cobra_shot();
