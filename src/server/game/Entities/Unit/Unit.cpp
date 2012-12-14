@@ -9814,7 +9814,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             // Ice Lance
             if (spellProto->SpellIconID == 186)
                 if (victim->HasAuraState(AURA_STATE_FROZEN, spellProto, this))
-                    DoneTotalMod *= 2.0f;
+                    DoneTotalMod *= 4.0f;
 
             // Torment the weak
             if (spellProto->GetSchoolMask() & SPELL_SCHOOL_MASK_ARCANE)
