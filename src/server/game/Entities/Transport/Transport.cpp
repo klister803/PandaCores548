@@ -174,7 +174,7 @@ Transport::~Transport()
 {
     for (CreatureSet::iterator itr = m_NPCPassengerSet.begin(); itr != m_NPCPassengerSet.end(); ++itr)
     {
-        (*itr)->SetTransport(NULL);
+        (*itr)->SetTransport(nullptr);
         GetMap()->AddObjectToRemoveList(*itr);
     }
 
@@ -663,7 +663,7 @@ CreaturePtr Transport::AddNPCPassengerCreature(uint32 tguid, uint32 entry, float
     CreaturePtr pCreature (new Creature);
 
     if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, GetPhaseMask(), entry, 0, GetGOInfo()->faction, 0, 0, 0, 0))
-        return NULL;
+        return nullptr;
 
     pCreature->SetTransport(THIS_TRANSPORT);
     pCreature->m_movementInfo.guid = GetGUID();
@@ -683,7 +683,7 @@ CreaturePtr Transport::AddNPCPassengerCreature(uint32 tguid, uint32 entry, float
     if(!pCreature->IsPositionValid())
     {
         sLog->outError(LOG_FILTER_TRANSPORTS, "Creature (guidlow %d, entry %d) not created. Suggested coordinates isn't valid (X: %f Y: %f)", pCreature->GetGUIDLow(), pCreature->GetEntry(), pCreature->GetPositionX(), pCreature->GetPositionY());
-        return NULL;
+        return nullptr;
     }
 
     map->AddToMap(pCreature);

@@ -71,7 +71,7 @@ struct OutdoorPvPData;
 #define VISIBLE_RANGE       166.0f                          //MAX visible range (size of grid)
 
 // Generic scripting text function.
-void DoScriptText(int32 textEntry, WorldObjectPtr pSource, UnitPtr target = NULL);
+void DoScriptText(int32 textEntry, WorldObjectPtr pSource, UnitPtr target = nullptr);
 
 /*
     TODO: Add more script type classes.
@@ -201,10 +201,10 @@ class SpellScriptLoader : public ScriptObject
         bool IsDatabaseBound() const { return true; }
 
         // Should return a fully valid SpellScript pointer.
-        virtual SpellScript* GetSpellScript() const { return NULL; }
+        virtual SpellScript* GetSpellScript() const { return nullptr; }
 
         // Should return a fully valid AuraScript pointer.
-        virtual AuraScript* GetAuraScript() const { return NULL; }
+        virtual AuraScript* GetAuraScript() const { return nullptr; }
 };
 
 class ServerScript : public ScriptObject
@@ -319,7 +319,7 @@ template<class TMap> class MapScript : public UpdatableScript<TMap>
 
     public:
 
-        // Gets the MapEntry structure associated with this script. Can return NULL.
+        // Gets the MapEntry structure associated with this script. Can return nullptr.
         MapEntry const* GetEntry() { return _mapEntry; }
 
         // Called when the map is created.
@@ -362,7 +362,7 @@ class InstanceMapScript : public ScriptObject, public MapScript<InstanceMap>
         bool IsDatabaseBound() const { return true; }
 
         // Gets an InstanceScript object for this instance.
-        virtual InstanceScript* GetInstanceScript(InstanceMapPtr /*Map*/) const { return NULL; }
+        virtual InstanceScript* GetInstanceScript(InstanceMapPtr /*Map*/) const { return nullptr; }
 };
 
 class BattlegroundMapScript : public ScriptObject, public MapScript<BattlegroundMap>
@@ -433,7 +433,7 @@ class CreatureScript : public ScriptObject, public UpdatableScript<Creature>
         virtual uint32 GetDialogStatus(PlayerPtr /*Player*/, CreaturePtr /*Creature*/) { return 100; }
 
         // Called when a CreatureAI object is needed for the creature.
-        virtual CreatureAI* GetAI(CreaturePtr /*Creature*/) const { return NULL; }
+        virtual CreatureAI* GetAI(CreaturePtr /*Creature*/) const { return nullptr; }
 };
 
 class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
@@ -480,7 +480,7 @@ class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
         virtual void OnGameObjectStateChanged(GameObjectPtr /*go*/, uint32 /*state*/) { }
 
         // Called when a GameObjectAI object is needed for the gameobject.
-        virtual GameObjectAI* GetAI(GameObjectPtr /*go*/) const { return NULL; }
+        virtual GameObjectAI* GetAI(GameObjectPtr /*go*/) const { return nullptr; }
 };
 
 class AreaTriggerScript : public ScriptObject

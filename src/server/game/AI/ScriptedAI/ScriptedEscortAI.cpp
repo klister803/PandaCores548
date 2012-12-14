@@ -25,7 +25,7 @@ npc_escortAI::npc_escortAI(CreaturePtr creature) : ScriptedAI(creature),
     m_uiPlayerCheckTimer(1000),
     m_uiEscortState(STATE_ESCORT_NONE),
     MaxPlayerDistance(DEFAULT_MAX_PLAYER_DISTANCE),
-    m_pQuestForEscort(NULL),
+    m_pQuestForEscort(nullptr),
     m_bIsActiveAttacker(true),
     m_bIsRunning(false),
     m_bCanInstantRespawn(false),
@@ -128,7 +128,7 @@ void npc_escortAI::JustDied(UnitPtr /*killer*/)
     {
         if (GroupPtr group = player->GetGroup())
         {
-            for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
+            for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != nullptr; groupRef = groupRef->next())
                 if (PlayerPtr member = groupRef->getSource())
                     if (member->GetQuestStatus(m_pQuestForEscort->GetQuestId()) == QUEST_STATUS_INCOMPLETE)
                         member->FailQuest(m_pQuestForEscort->GetQuestId());
@@ -169,7 +169,7 @@ void npc_escortAI::EnterEvadeMode()
     me->RemoveAllAuras();
     me->DeleteThreatList();
     me->CombatStop(true);
-    me->SetLootRecipient(NULL);
+    me->SetLootRecipient(nullptr);
 
     if (HasEscortState(STATE_ESCORT_ESCORTING))
     {
@@ -192,7 +192,7 @@ bool npc_escortAI::IsPlayerOrGroupInRange()
     {
         if (GroupPtr group = player->GetGroup())
         {
-            for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
+            for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != nullptr; groupRef = groupRef->next())
                 if (PlayerPtr member = groupRef->getSource())
                     if (me->IsWithinDistInMap(member, GetMaxPlayerDistance()))
                         return true;
@@ -415,7 +415,7 @@ void npc_escortAI::SetRun(bool on)
 }
 
 //TODO: get rid of this many variables passed in function.
-void npc_escortAI::Start(bool isActiveAttacker /* = true*/, bool run /* = false */, uint64 playerGUID /* = 0 */, Quest const* quest /* = NULL */, bool instantRespawn /* = false */, bool canLoopPath /* = false */, bool resetWaypoints /* = true */)
+void npc_escortAI::Start(bool isActiveAttacker /* = true*/, bool run /* = false */, uint64 playerGUID /* = 0 */, Quest const* quest /* = nullptr */, bool instantRespawn /* = false */, bool canLoopPath /* = false */, bool resetWaypoints /* = true */)
 {
     if (me->getVictim())
     {

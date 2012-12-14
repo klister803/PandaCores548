@@ -281,7 +281,7 @@ class LFGMgr
 
         // Queue
         void Join(PlayerPtr player, uint8 roles, const LfgDungeonSet& dungeons, const std::string& comment);
-        void Leave(PlayerPtr player, GroupPtr grp = NULL);
+        void Leave(PlayerPtr player, GroupPtr grp = nullptr);
 
         // Role Check
         void UpdateRoleCheck(uint64 gguid, uint64 guid = 0, uint8 roles = ROLE_NONE);
@@ -328,7 +328,7 @@ class LFGMgr
             if(itr != m_QueueInfoMap.end())
                 return itr->second;
 
-            return NULL;
+            return nullptr;
         }
 
     private:

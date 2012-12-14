@@ -58,7 +58,7 @@ TrainerSpell const* TrainerSpellData::Find(uint32 spell_id) const
     if (itr != spellList.end())
         return &itr->second;
 
-    return NULL;
+    return nullptr;
 }
 
 bool VendorItemData::RemoveItem(uint32 item_id, uint8 type)
@@ -82,7 +82,7 @@ VendorItem const* VendorItemData::FindItemCostPair(uint32 item_id, uint32 extend
     for (VendorItemList::const_iterator i = m_items.begin(); i != m_items.end(); ++i)
         if ((*i)->item == item_id && (*i)->ExtendedCost == extendedCost && (*i)->Type == type)
             return *i;
-    return NULL;
+    return nullptr;
 }
 
 uint32 CreatureTemplate::GetRandomValidModelId() const
@@ -145,7 +145,7 @@ m_PlayerDamageReq(0), m_lootRecipient(0), m_lootRecipientGroup(0), m_corpseRemov
 m_respawnDelay(300), m_corpseDelay(60), m_respawnradius(0.0f), m_reactState(REACT_AGGRESSIVE),
 m_defaultMovementType(IDLE_MOTION_TYPE), m_DBTableGuid(0), m_equipmentId(0), m_AlreadyCallAssistance(false),
 m_AlreadySearchedAssistance(false), m_regenHealth(true), m_AI_locked(false), m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),
-m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL)
+m_creatureInfo(nullptr), m_creatureData(nullptr), m_path_id(0), m_formation(nullptr)
 {
     m_regenTimer = CREATURE_REGEN_INTERVAL;
     m_valuesCount = UNIT_END;
@@ -170,7 +170,7 @@ Creature::~Creature()
     m_vendorItemCounts.clear();
 
     delete i_AI;
-    i_AI = NULL;
+    i_AI = nullptr;
 
     //if (m_uint32Values)
     //    sLog->outError(LOG_FILTER_UNITS, "Deconstruct Creature Entry = %u", GetEntry());
@@ -234,7 +234,7 @@ void Creature::RemoveCorpse(bool setSpawnTime)
     if (getDeathState() != CORPSE)
         return;
 
-    m_corpseRemoveTime = time(NULL);
+    m_corpseRemoveTime = time(nullptr);
     setDeathState(DEAD);
     RemoveAllAuras();
     UpdateObjectVisibility();
@@ -245,7 +245,7 @@ void Creature::RemoveCorpse(bool setSpawnTime)
 
     // Should get removed later, just keep "compatibility" with scripts
     if (setSpawnTime)
-        m_respawnTime = time(NULL) + respawnDelay;
+        m_respawnTime = time(nullptr) + respawnDelay;
 
     float x, y, z, o;
     GetRespawnPosition(x, y, z, &o);
@@ -493,7 +493,7 @@ void Creature::Update(uint32 diff)
             break;
         case DEAD:
         {
-            time_t now = time(NULL);
+            time_t now = time(nullptr);
             if (m_respawnTime <= now)
             {
                 bool allowed = IsAIEnabled ? AI()->CanRespawn() : true;     // First check if there are any scripts that object to us respawning
@@ -535,7 +535,7 @@ void Creature::Update(uint32 diff)
                 }
                 else m_groupLootTimer -= diff;
             }
-            else if (m_corpseRemoveTime <= time(NULL))
+            else if (m_corpseRemoveTime <= time(nullptr))
             {
                 RemoveCorpse(false);
                 sLog->outDebug(LOG_FILTER_UNITS, "Removing corpse... %u ", GetUInt32Value(OBJECT_FIELD_ENTRY));
@@ -695,7 +695,7 @@ void Creature::DoFleeToGetAssistance()
     float radius = sWorld->getFloatConfig(CONFIG_CREATURE_FAMILY_FLEE_ASSISTANCE_RADIUS);
     if (radius >0)
     {
-        CreaturePtr creature = NULL;
+        CreaturePtr creature = nullptr;
 
         CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
         Cell cell(p);
@@ -990,14 +990,14 @@ void Creature::AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint3
 PlayerPtr Creature::GetLootRecipient() const
 {
     if (!m_lootRecipient)
-        return NULL;
+        return nullptr;
     return ObjectAccessor::FindPlayer(m_lootRecipient);
 }
 
 GroupPtr Creature::GetLootRecipientGroup() const
 {
     if (!m_lootRecipientGroup)
-        return NULL;
+        return nullptr;
     return sGroupMgr->GetGroupByGUID(m_lootRecipientGroup);
 }
 
@@ -1005,7 +1005,7 @@ void Creature::SetLootRecipient(UnitPtr unit)
 {
     // set the player whose group should receive the right
     // to loot the creature after it dies
-    // should be set to NULL after the loot disappears
+    // should be set to nullptr after the loot disappears
 
     if (!unit)
     {
@@ -1456,7 +1456,7 @@ bool Creature::IsInvisibleDueToDespawn() const
     if (Unit::IsInvisibleDueToDespawn())
         return true;
 
-    if (isAlive() || m_corpseRemoveTime > time(NULL))
+    if (isAlive() || m_corpseRemoveTime > time(nullptr))
         return false;
 
     return true;
@@ -1552,8 +1552,8 @@ void Creature::setDeathState(DeathState s)
 
     if (s == JUST_DIED)
     {
-        m_corpseRemoveTime = time(NULL) + m_corpseDelay;
-        m_respawnTime = time(NULL) + m_respawnDelay + m_corpseDelay;
+        m_corpseRemoveTime = time(nullptr) + m_corpseDelay;
+        m_respawnTime = time(nullptr) + m_respawnDelay + m_corpseDelay;
 
         // always save boss respawn time at death to prevent crash cheating
         if (sWorld->getBoolConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY) || isWorldBoss())
@@ -1589,7 +1589,7 @@ void Creature::setDeathState(DeathState s)
         //if (isPet())
         //    setActive(true);
         SetFullHealth();
-        SetLootRecipient(NULL);
+        SetLootRecipient(nullptr);
         ResetPlayerDamageReq();
         CreatureTemplate const* cinfo = GetCreatureTemplate();
         SetWalk(true);
@@ -1734,7 +1734,7 @@ bool Creature::IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) 
 SpellInfo const* Creature::reachWithSpellAttack(UnitPtr victim)
 {
     if (!victim)
-        return NULL;
+        return nullptr;
 
     for (uint32 i=0; i < CREATURE_MAX_SPELLS; ++i)
     {
@@ -1779,13 +1779,13 @@ SpellInfo const* Creature::reachWithSpellAttack(UnitPtr victim)
             continue;
         return spellInfo;
     }
-    return NULL;
+    return nullptr;
 }
 
 SpellInfo const* Creature::reachWithSpellCure(UnitPtr victim)
 {
     if (!victim)
-        return NULL;
+        return nullptr;
 
     for (uint32 i=0; i < CREATURE_MAX_SPELLS; ++i)
     {
@@ -1826,7 +1826,7 @@ SpellInfo const* Creature::reachWithSpellCure(UnitPtr victim)
             continue;
         return spellInfo;
     }
-    return NULL;
+    return nullptr;
 }
 
 // select nearest hostile unit within the given distance (regardless of threat list).
@@ -1836,7 +1836,7 @@ UnitPtr Creature::SelectNearestTarget(float dist) const
     Cell cell(p);
     cell.SetNoCreate();
 
-    UnitPtr target = NULL;
+    UnitPtr target = nullptr;
 
     {
         if (dist == 0.0f)
@@ -1862,7 +1862,7 @@ UnitPtr Creature::SelectNearestTargetInAttackDistance(float dist) const
     Cell cell(p);
     cell.SetNoCreate();
 
-    UnitPtr target = NULL;
+    UnitPtr target = nullptr;
 
     if (dist > MAX_VISIBILITY_DISTANCE)
     {
@@ -1886,7 +1886,7 @@ UnitPtr Creature::SelectNearestTargetInAttackDistance(float dist) const
 
 PlayerPtr Creature::SelectNearestPlayer(float distance) const
 {
-    PlayerPtr target = NULL;
+    PlayerPtr target = nullptr;
 
     Trinity::NearestPlayerInObjectRangeCheck checker(THIS_CONST_CREATURE, distance);
     Trinity::PlayerLastSearcher<Trinity::NearestPlayerInObjectRangeCheck> searcher(THIS_CONST_CREATURE, target, checker);
@@ -2178,7 +2178,7 @@ void Creature::SendZoneUnderAttackMessage(PlayerPtr attacker)
 
     WorldPacket data(SMSG_ZONE_UNDER_ATTACK, 4);
     data << (uint32)GetAreaId();
-    sWorld->SendGlobalMessage(&data, NULL, (enemy_team == ALLIANCE ? HORDE : ALLIANCE));
+    sWorld->SendGlobalMessage(&data, nullptr, (enemy_team == ALLIANCE ? HORDE : ALLIANCE));
 }
 
 void Creature::SetInCombatWithZone()
@@ -2240,10 +2240,10 @@ void Creature::AddCreatureSpellCooldown(uint32 spellid)
         modOwner->ApplySpellMod(spellid, SPELLMOD_COOLDOWN, cooldown);
 
     if (cooldown)
-        _AddCreatureSpellCooldown(spellid, time(NULL) + cooldown/IN_MILLISECONDS);
+        _AddCreatureSpellCooldown(spellid, time(nullptr) + cooldown/IN_MILLISECONDS);
 
     if (spellInfo->Category)
-        _AddCreatureCategoryCooldown(spellInfo->Category, time(NULL));
+        _AddCreatureCategoryCooldown(spellInfo->Category, time(nullptr));
 }
 
 bool Creature::HasCategoryCooldown(uint32 spell_id) const
@@ -2253,13 +2253,13 @@ bool Creature::HasCategoryCooldown(uint32 spell_id) const
         return false;
 
     CreatureSpellCooldowns::const_iterator itr = m_CreatureCategoryCooldowns.find(spellInfo->Category);
-    return(itr != m_CreatureCategoryCooldowns.end() && time_t(itr->second + (spellInfo->CategoryRecoveryTime / IN_MILLISECONDS)) > time(NULL));
+    return(itr != m_CreatureCategoryCooldowns.end() && time_t(itr->second + (spellInfo->CategoryRecoveryTime / IN_MILLISECONDS)) > time(nullptr));
 }
 
 bool Creature::HasSpellCooldown(uint32 spell_id) const
 {
     CreatureSpellCooldowns::const_iterator itr = m_CreatureSpellCooldowns.find(spell_id);
-    return (itr != m_CreatureSpellCooldowns.end() && itr->second > time(NULL)) || HasCategoryCooldown(spell_id);
+    return (itr != m_CreatureSpellCooldowns.end() && itr->second > time(nullptr)) || HasCategoryCooldown(spell_id);
 }
 
 bool Creature::HasSpell(uint32 spellID) const
@@ -2273,7 +2273,7 @@ bool Creature::HasSpell(uint32 spellID) const
 
 time_t Creature::GetRespawnTimeEx() const
 {
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     if (m_respawnTime > now)
         return m_respawnTime;
     else
@@ -2311,7 +2311,7 @@ void Creature::AllLootRemovedFromCorpse()
 {
     if (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SKINNABLE))
     {
-        time_t now = time(NULL);
+        time_t now = time(nullptr);
         if (m_corpseRemoveTime <= now)
             return;
 
@@ -2325,7 +2325,7 @@ void Creature::AllLootRemovedFromCorpse()
 
         // corpse skinnable, but without skinning flag, and then skinned, corpse will despawn next update
         if (cinfo && cinfo->SkinLootId)
-            m_corpseRemoveTime = time(NULL);
+            m_corpseRemoveTime = time(nullptr);
         else
             m_corpseRemoveTime -= diff;
     }
@@ -2379,7 +2379,7 @@ uint32 Creature::GetVendorItemCurrentCount(VendorItem const* vItem)
 
     VendorItemCount* vCount = &*itr;
 
-    time_t ptime = time(NULL);
+    time_t ptime = time(nullptr);
 
     if (time_t(vCount->lastIncrementTime + vItem->incrtime) <= ptime)
     {
@@ -2418,7 +2418,7 @@ uint32 Creature::UpdateVendorItemCurrentCount(VendorItem const* vItem, uint32 us
 
     VendorItemCount* vCount = &*itr;
 
-    time_t ptime = time(NULL);
+    time_t ptime = time(nullptr);
 
     if (time_t(vCount->lastIncrementTime + vItem->incrtime) <= ptime)
     {

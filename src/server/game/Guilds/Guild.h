@@ -322,7 +322,7 @@ private:
         };
 
     public:
-        Member(uint32 guildId, uint64 guid, uint32 rankId) : m_guildId(guildId), m_guid(guid), m_logoutTime(::time(NULL)), m_rankId(rankId) { }
+        Member(uint32 guildId, uint64 guid, uint32 rankId) : m_guildId(guildId), m_guid(guid), m_logoutTime(::time(nullptr)), m_rankId(rankId) { }
 
         void SetStats(PlayerPtr player);
         void SetStats(const std::string& name, uint8 level, uint8 _class, uint32 zoneId, uint32 accountId);
@@ -348,7 +348,7 @@ private:
 
         void ChangeRank(uint8 newRank);
 
-        inline void UpdateLogoutTime() { m_logoutTime = ::time(NULL); }
+        inline void UpdateLogoutTime() { m_logoutTime = ::time(nullptr); }
         inline bool IsRank(uint8 rankId) const { return m_rankId == rankId; }
         inline bool IsRankNotLower(uint8 rankId) const { return m_rankId <= rankId; }
         inline bool IsSamePlayer(uint64 guid) const { return m_guid == guid; }
@@ -396,7 +396,7 @@ private:
             GuildNewsLogMap::iterator itr = _newsLog.find(id);
             if (itr != _newsLog.end())
                 return &itr->second;
-            return NULL;
+            return nullptr;
         }
         GuildPtr GetGuild() const { return _guild; }
 
@@ -409,7 +409,7 @@ private:
     class LogEntry
     {
     public:
-        LogEntry(uint32 guildId, uint32 guid) : m_guildId(guildId), m_guid(guid), m_timestamp(::time(NULL)) { }
+        LogEntry(uint32 guildId, uint32 guid) : m_guildId(guildId), m_guid(guid), m_timestamp(::time(nullptr)) { }
         LogEntry(uint32 guildId, uint32 guid, time_t timestamp) : m_guildId(guildId), m_guid(guid), m_timestamp(timestamp) { }
         virtual ~LogEntry() { }
 
@@ -576,7 +576,7 @@ private:
         std::string const& GetIcon() const { return m_icon; }
         std::string const& GetText() const { return m_text; }
 
-        inline ItemPtr GetItem(uint8 slotId) const { return slotId < GUILD_BANK_MAX_SLOTS ?  m_items[slotId] : NULL; }
+        inline ItemPtr GetItem(uint8 slotId) const { return slotId < GUILD_BANK_MAX_SLOTS ?  m_items[slotId] : nullptr; }
         bool SetItem(SQLTransaction& trans, uint8 slotId, ItemPtr item);
 
     private:
@@ -594,7 +594,7 @@ private:
     {
     public:
         MoveItemData(GuildPtr guild, PlayerPtr player, uint8 container, uint8 slotId) : m_pGuild(guild), m_pPlayer(player),
-            m_container(container), m_slotId(slotId), m_pItem(NULL), m_pClonedItem(NULL) { }
+            m_container(container), m_slotId(slotId), m_pItem(nullptr), m_pClonedItem(nullptr) { }
         virtual ~MoveItemData() { }
 
         virtual bool IsBank() const = 0;
@@ -700,7 +700,7 @@ public:
     const std::string& GetInfo() const { return m_info; }
 
     // Handle client commands
-    void HandleRoster(WorldSession* session = NULL);          // NULL = broadcast
+    void HandleRoster(WorldSession* session = nullptr);          // nullptr = broadcast
     void HandleQuery(WorldSession* session);
     void HandleGuildRanks(WorldSession* session) const;
     void HandleSetMOTD(WorldSession* session, const std::string& motd);
@@ -756,7 +756,7 @@ public:
     void BroadcastPacket(WorldPacket* packet) const;
 
     template<class Do>
-    void BroadcastWorker(Do& _do, PlayerPtr except = NULL)
+    void BroadcastWorker(Do& _do, PlayerPtr except = nullptr)
     {
         for (Members::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
             if (PlayerPtr player = itr->second->FindPlayer())
@@ -821,24 +821,24 @@ protected:
 
 private:
     inline uint32 _GetRanksSize() const { return uint32(m_ranks.size()); }
-    inline const RankInfo* GetRankInfo(uint32 rankId) const { return rankId < _GetRanksSize() ? &m_ranks[rankId] : NULL; }
-    inline RankInfo* GetRankInfo(uint32 rankId) { return rankId < _GetRanksSize() ? &m_ranks[rankId] : NULL; }
+    inline const RankInfo* GetRankInfo(uint32 rankId) const { return rankId < _GetRanksSize() ? &m_ranks[rankId] : nullptr; }
+    inline RankInfo* GetRankInfo(uint32 rankId) { return rankId < _GetRanksSize() ? &m_ranks[rankId] : nullptr; }
     inline bool _HasRankRight(PlayerPtr player, uint32 right) const { return (_GetRankRights(player->GetRank()) & right) != GR_RIGHT_EMPTY; }
     inline uint32 _GetLowestRankId() const { return uint32(m_ranks.size() - 1); }
 
     inline uint8 _GetPurchasedTabsSize() const { return uint8(m_bankTabs.size()); }
-    inline BankTab* GetBankTab(uint8 tabId) { return tabId < m_bankTabs.size() ? m_bankTabs[tabId] : NULL; }
-    inline const BankTab* GetBankTab(uint8 tabId) const { return tabId < m_bankTabs.size() ? m_bankTabs[tabId] : NULL; }
+    inline BankTab* GetBankTab(uint8 tabId) { return tabId < m_bankTabs.size() ? m_bankTabs[tabId] : nullptr; }
+    inline const BankTab* GetBankTab(uint8 tabId) const { return tabId < m_bankTabs.size() ? m_bankTabs[tabId] : nullptr; }
 
     inline const Member* GetMember(uint64 guid) const
     {
         Members::const_iterator itr = m_members.find(GUID_LOPART(guid));
-        return itr != m_members.end() ? itr->second : NULL;
+        return itr != m_members.end() ? itr->second : nullptr;
     }
     inline Member* GetMember(uint64 guid)
     {
         Members::iterator itr = m_members.find(GUID_LOPART(guid));
-        return itr != m_members.end() ? itr->second : NULL;
+        return itr != m_members.end() ? itr->second : nullptr;
     }
     inline Member* GetMember(WorldSession* session, const std::string& name)
     {
@@ -847,7 +847,7 @@ private:
                 return itr->second;
 
         SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_PLAYER_NOT_IN_GUILD_S, name);
-        return NULL;
+        return nullptr;
     }
     inline void _DeleteMemberFromDB(uint32 lowguid) const
     {
@@ -897,6 +897,6 @@ private:
 
     void SendGuildRanksUpdate(uint64 setterGuid, uint64 targetGuid, uint32 rank);
 
-    void _BroadcastEvent(GuildEvents guildEvent, uint64 guid, const char* param1 = NULL, const char* param2 = NULL, const char* param3 = NULL) const;
+    void _BroadcastEvent(GuildEvents guildEvent, uint64 guid, const char* param1 = nullptr, const char* param2 = nullptr, const char* param3 = nullptr) const;
 };
 #endif

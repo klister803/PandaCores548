@@ -261,18 +261,18 @@ void ThreatContainer::clearReferences()
 }
 
 //============================================================
-// Return the HostileReference of NULL, if not found
+// Return the HostileReference of nullptr, if not found
 HostileReferencePtr ThreatContainer::getReferenceByTarget(UnitPtr victim)
 {
     if (!victim)
-        return NULL;
+        return nullptr;
 
     uint64 guid = victim->GetGUID();
     for (std::list<HostileReferencePtr>::const_iterator i = iThreatList.begin(); i != iThreatList.end(); ++i)
         if ((*i) && (*i)->getUnitGuid() == guid)
             return (*i);
 
-    return NULL;
+    return nullptr;
 }
 
 //============================================================
@@ -311,7 +311,7 @@ void ThreatContainer::update()
 
 HostileReferencePtr ThreatContainer::selectNextVictim(CreaturePtr attacker, HostileReferencePtr currentVictim)
 {
-    HostileReferencePtr currentRef = NULL;
+    HostileReferencePtr currentRef = nullptr;
     bool found = false;
     bool noPriorityTargetFound = false;
 
@@ -332,7 +332,7 @@ HostileReferencePtr ThreatContainer::selectNextVictim(CreaturePtr attacker, Host
             {
                 // current victim is a second choice target, so don't compare threat with it below
                 if (currentRef == currentVictim)
-                    currentVictim = NULL;
+                    currentVictim = nullptr;
                 ++iter;
                 continue;
             }
@@ -376,7 +376,7 @@ HostileReferencePtr ThreatContainer::selectNextVictim(CreaturePtr attacker, Host
         ++iter;
     }
     if (!found)
-        currentRef = NULL;
+        currentRef = nullptr;
 
     return currentRef;
 }
@@ -385,7 +385,7 @@ HostileReferencePtr ThreatContainer::selectNextVictim(CreaturePtr attacker, Host
 //=================== ThreatManager ==========================
 //============================================================
 
-ThreatManager::ThreatManager(UnitPtr owner) : iCurrentVictim(NULL), iOwner(owner), iUpdateTimer(THREAT_UPDATE_INTERVAL)
+ThreatManager::ThreatManager(UnitPtr owner) : iCurrentVictim(nullptr), iOwner(owner), iUpdateTimer(THREAT_UPDATE_INTERVAL)
 {
 }
 
@@ -395,7 +395,7 @@ void ThreatManager::clearReferences()
 {
     iThreatContainer.clearReferences();
     iThreatOfflineContainer.clearReferences();
-    iCurrentVictim = NULL;
+    iCurrentVictim = nullptr;
     iUpdateTimer = THREAT_UPDATE_INTERVAL;
 }
 
@@ -462,7 +462,7 @@ UnitPtr ThreatManager::getHostilTarget()
     iThreatContainer.update();
     HostileReferencePtr nextVictim = iThreatContainer.selectNextVictim(getOwner()->ToCreature(), getCurrentVictim());
     setCurrentVictim(nextVictim);
-    return getCurrentVictim() != NULL ? getCurrentVictim()->getTarget() : NULL;
+    return getCurrentVictim() != nullptr ? getCurrentVictim()->getTarget() : nullptr;
 }
 
 //============================================================
@@ -532,7 +532,7 @@ void ThreatManager::processThreatEvent(ThreatRefStatusChangeEvent* threatRefStat
             {
                 if (hostilRef == getCurrentVictim())
                 {
-                    setCurrentVictim(NULL);
+                    setCurrentVictim(nullptr);
                     setDirty(true);
                 }
                 iOwner->SendRemoveFromThreatListOpcode(hostilRef);
@@ -550,7 +550,7 @@ void ThreatManager::processThreatEvent(ThreatRefStatusChangeEvent* threatRefStat
         case UEV_THREAT_REF_REMOVE_FROM_LIST:
             if (hostilRef == getCurrentVictim())
             {
-                setCurrentVictim(NULL);
+                setCurrentVictim(nullptr);
                 setDirty(true);
             }
             iOwner->SendRemoveFromThreatListOpcode(hostilRef);

@@ -35,18 +35,18 @@ class SmartScript
         SmartScript();
         ~SmartScript();
 
-        void OnInitialize(WorldObjectPtr obj, AreaTriggerEntry const* at = NULL);
+        void OnInitialize(WorldObjectPtr obj, AreaTriggerEntry const* at = nullptr);
         void GetScript();
         void FillScript(SmartAIEventList e, WorldObjectPtr obj, AreaTriggerEntry const* at);
 
-        void ProcessEventsFor(SMART_EVENT e, UnitPtr unit = NULL, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = NULL, GameObjectPtr gob = NULL);
-        void ProcessEvent(SmartScriptHolder& e, UnitPtr unit = NULL, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = NULL, GameObjectPtr gob = NULL);
+        void ProcessEventsFor(SMART_EVENT e, UnitPtr unit = nullptr, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = nullptr, GameObjectPtr gob = nullptr);
+        void ProcessEvent(SmartScriptHolder& e, UnitPtr unit = nullptr, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = nullptr, GameObjectPtr gob = nullptr);
         bool CheckTimer(SmartScriptHolder const& e) const;
         void RecalcTimer(SmartScriptHolder& e, uint32 min, uint32 max);
         void UpdateTimer(SmartScriptHolder& e, uint32 const diff);
         void InitTimer(SmartScriptHolder& e);
-        void ProcessAction(SmartScriptHolder& e, UnitPtr unit = NULL, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = NULL, GameObjectPtr gob = NULL);
-        ObjectList* GetTargets(SmartScriptHolder const& e, UnitPtr invoker = NULL);
+        void ProcessAction(SmartScriptHolder& e, UnitPtr unit = nullptr, uint32 var0 = 0, uint32 var1 = 0, bool bvar = false, const SpellInfo* spell = nullptr, GameObjectPtr gob = nullptr);
+        ObjectList* GetTargets(SmartScriptHolder const& e, UnitPtr invoker = nullptr);
         ObjectList* GetWorldObjectsInDist(float dist);
         void InstallTemplate(SmartScriptHolder const& e);
         SmartScriptHolder CreateEvent(SMART_EVENT e, uint32 event_flags, uint32 event_param1, uint32 event_param2, uint32 event_param3, uint32 event_param4, SMART_ACTION action, uint32 action_param1, uint32 action_param2, uint32 action_param3, uint32 action_param4, uint32 action_param5, uint32 action_param6, SMARTAI_TARGETS t, uint32 target_param1, uint32 target_param2, uint32 target_param3, uint32 phaseMask = 0);
@@ -55,7 +55,7 @@ class SmartScript
         uint32 GetPathId() const { return mPathId; }
         WorldObjectPtr GetBaseObject()
         {
-            WorldObjectPtr obj = NULL;
+            WorldObjectPtr obj = nullptr;
             if (me)
                 obj = me;
             else if (go)
@@ -107,7 +107,7 @@ class SmartScript
             (*mTargetStorage)[id] = targets;
         }
 
-        bool IsSmart(CreaturePtr c = NULL)
+        bool IsSmart(CreaturePtr c = nullptr)
         {
             bool smart = true;
             if (c && c->GetAIName() != "SmartAI")
@@ -122,7 +122,7 @@ class SmartScript
             return smart;
         }
 
-        bool IsSmartGO(GameObjectPtr g = NULL)
+        bool IsSmartGO(GameObjectPtr g = nullptr)
         {
             bool smart = true;
             if (g && g->GetAIName() != "SmartGameObjectAI")
@@ -141,12 +141,12 @@ class SmartScript
             ObjectListMap::iterator itr = mTargetStorage->find(id);
             if (itr != mTargetStorage->end())
                 return (*itr).second;
-            return NULL;
+            return nullptr;
         }
 
         GameObjectPtr FindGameObjectNear(WorldObjectPtr searchObject, uint32 guid) const
         {
-            GameObjectPtr gameObject = NULL;
+            GameObjectPtr gameObject = nullptr;
 
             CellCoord p(Trinity::ComputeCellCoord(searchObject->GetPositionX(), searchObject->GetPositionY()));
             Cell cell(p);
@@ -162,7 +162,7 @@ class SmartScript
 
         CreaturePtr FindCreatureNear(WorldObjectPtr searchObject, uint32 guid) const
         {
-            CreaturePtr creature = NULL;
+            CreaturePtr creature = nullptr;
             CellCoord p(Trinity::ComputeCellCoord(searchObject->GetPositionX(), searchObject->GetPositionY()));
             Cell cell(p);
 
@@ -185,14 +185,14 @@ class SmartScript
                 if (CreaturePtr m = HashMapHolder<Creature>::Find(meOrigGUID))
                 {
                     me = m;
-                    go = NULL;
+                    go = nullptr;
                 }
             }
             if (goOrigGUID)
             {
                 if (GameObjectPtr o = HashMapHolder<GameObject>::Find(goOrigGUID))
                 {
-                    me = NULL;
+                    me = nullptr;
                     go = o;
                 }
             }

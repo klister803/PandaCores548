@@ -367,11 +367,11 @@ class Spell
         uint32 GetSearcherTypeMask(SpellTargetObjectTypes objType, ConditionList* condList);
         template<class SEARCHER> void SearchTargets(SEARCHER& searcher, uint32 containerMask, UnitPtr referer, const Position* pos, float radius);
 
-        WorldObjectPtr SearchNearbyTarget(float range, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList = NULL);
+        WorldObjectPtr SearchNearbyTarget(float range, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList = nullptr);
         void SearchAreaTargets(std::list<WorldObjectPtr>& targets, float range, const Position* position, UnitPtr referer, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectionType, ConditionList* condList);
         void SearchChainTargets(std::list<WorldObjectPtr>& targets, uint32 chainTargets, WorldObjectPtr target, SpellTargetObjectTypes objectType, SpellTargetCheckTypes selectType, ConditionList* condList, bool isChainHeal);
 
-        void prepare(SpellCastTargets const* targets, constAuraEffectPtr triggeredByAura = NULL);
+        void prepare(SpellCastTargets const* targets, constAuraEffectPtr triggeredByAura = nullptr);
         void cancel();
         void update(uint32 difftime);
         void cast(bool skipCheck = false);
@@ -644,7 +644,7 @@ class Spell
             int32 chance;
         };
 
-        bool CanExecuteTriggersOnHit(uint32 effMask, SpellInfo const* triggeredByAura = NULL) const;
+        bool CanExecuteTriggersOnHit(uint32 effMask, SpellInfo const* triggeredByAura = nullptr) const;
         void PrepareTriggersExecutedOnHit();
         typedef std::list<HitTriggerSpell> HitTriggerSpellList;
         HitTriggerSpellList m_hitTriggerSpells;

@@ -263,7 +263,7 @@ CreaturePtr BattlegroundAV::AddAVCreature(uint16 cinfoid, uint16 type)
 {
     uint8 level;
     bool isStatic = false;
-    CreaturePtr creature = NULL;
+    CreaturePtr creature = nullptr;
     ASSERT(type <= AV_CPLACE_MAX + AV_STATICCPLACE_MAX);
     if (type >= AV_CPLACE_MAX) //static
     {
@@ -279,7 +279,7 @@ CreaturePtr BattlegroundAV::AddAVCreature(uint16 cinfoid, uint16 type)
         level = (BG_AV_CreatureInfo[cinfoid][2] == BG_AV_CreatureInfo[cinfoid][3]) ? BG_AV_CreatureInfo[cinfoid][2] : urand(BG_AV_CreatureInfo[cinfoid][2], BG_AV_CreatureInfo[cinfoid][3]);
     }
     if (!creature)
-        return NULL;
+        return nullptr;
     if (creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_CAPTAIN][0] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_CAPTAIN][0])
         creature->SetRespawnDelay(RESPAWN_ONE_DAY); // TODO: look if this can be done by database + also add this for the wingcommanders
 
@@ -791,7 +791,7 @@ void BattlegroundAV::DePopulateNode(BG_AV_Nodes node)
 
     //remove bonus honor aura trigger creature when node is lost
     if (node < BG_AV_NODES_MAX)//fail safe
-        DelCreature(node + 302);//NULL checks are in DelCreature! 0-302 spirit guides
+        DelCreature(node + 302);//nullptr checks are in DelCreature! 0-302 spirit guides
 }
 
 BG_AV_Nodes BattlegroundAV::GetNodeThroughObject(uint32 object)
@@ -1033,7 +1033,7 @@ void BattlegroundAV::EventPlayerAssaultsPoint(PlayerPtr player, uint32 object)
             if (!ghost_list.empty())
             {
                 PlayerPtr waitingPlayer;  // player waiting at graveyard for resurrection
-                WorldSafeLocsEntry const* closestGrave = NULL;
+                WorldSafeLocsEntry const* closestGrave = nullptr;
                 for (std::vector<uint64>::iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
                 {
                     waitingPlayer = ObjectAccessor::FindPlayer(*ghost_list.begin());
@@ -1166,8 +1166,8 @@ void BattlegroundAV::SendMineWorldStates(uint32 mine)
 
 WorldSafeLocsEntry const* BattlegroundAV::GetClosestGraveYard(PlayerPtr player)
 {
-    WorldSafeLocsEntry const* pGraveyard = NULL;
-    WorldSafeLocsEntry const* entry = NULL;
+    WorldSafeLocsEntry const* pGraveyard = nullptr;
+    WorldSafeLocsEntry const* entry = nullptr;
     float dist = 0;
     float minDist = 0;
     float x, y;

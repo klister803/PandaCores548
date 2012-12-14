@@ -217,7 +217,7 @@ class boss_rotface : public CreatureScript
                             }
                             break;
                         case EVENT_MUTATED_INFECTION:
-                            me->CastCustomSpell(SPELL_MUTATED_INFECTION, SPELLVALUE_MAX_TARGETS, 1, NULL, false);
+                            me->CastCustomSpell(SPELL_MUTATED_INFECTION, SPELLVALUE_MAX_TARGETS, 1, nullptr, false);
                             events.ScheduleEvent(EVENT_MUTATED_INFECTION, infectionCooldown);
                             break;
                             break;
@@ -378,7 +378,7 @@ class npc_big_ooze : public CreatureScript
 
                                     DoAction(EVENT_STICKY_OOZE);
 
-                                    me->CastSpell(me, SPELL_UNSTABLE_OOZE_EXPLOSION, false, NULL, NULL, me->GetGUID());
+                                    me->CastSpell(me, SPELL_UNSTABLE_OOZE_EXPLOSION, false, nullptr, nullptr, me->GetGUID());
 
                                     if (InstanceScript* instance = me->GetInstanceScript())
                                         instance->SetData(DATA_OOZE_DANCE_ACHIEVEMENT, uint32(false));
@@ -592,7 +592,7 @@ class spell_rotface_ooze_flood : public SpellScriptLoader
                 std::list<CreaturePtr> triggers;
                 GetHitUnit()->GetCreatureListWithEntryInGrid(triggers, GetHitUnit()->GetEntry(), 12.5f);
                 triggers.sort(Trinity::ObjectDistanceOrderPred(GetHitUnit()));
-                GetHitUnit()->CastSpell(triggers.back(), uint32(GetEffectValue()), false, NULL, NULL, GetOriginalCaster() ? GetOriginalCaster()->GetGUID() : 0);
+                GetHitUnit()->CastSpell(triggers.back(), uint32(GetEffectValue()), false, nullptr, nullptr, GetOriginalCaster() ? GetOriginalCaster()->GetGUID() : 0);
             }
 
             void FilterTargets(std::list<WorldObjectPtr>& targetList)
@@ -676,7 +676,7 @@ class spell_rotface_mutated_infection : public SpellScriptLoader
 
             bool Load()
             {
-                _target = NULL;
+                _target = nullptr;
                 return true;
             }
 
@@ -836,7 +836,7 @@ class spell_rotface_large_ooze_buff_combine : public SpellScriptLoader
 
                         if (CreaturePtr cre = GetCaster()->ToCreature())
                             cre->AI()->DoAction(EVENT_STICKY_OOZE);
-                        GetCaster()->CastSpell(GetCaster(), SPELL_UNSTABLE_OOZE_EXPLOSION, false, NULL, NULL, GetCaster()->GetGUID());
+                        GetCaster()->CastSpell(GetCaster(), SPELL_UNSTABLE_OOZE_EXPLOSION, false, nullptr, nullptr, GetCaster()->GetGUID());
                         if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                             instance->SetData(DATA_OOZE_DANCE_ACHIEVEMENT, uint32(false));
                     }
@@ -919,7 +919,7 @@ class spell_rotface_unstable_ooze_explosion : public SpellScriptLoader
                 // let Rotface handle the cast - caster dies before this executes
                 if (InstanceScript* script = GetCaster()->GetInstanceScript())
                     if (CreaturePtr rotface = script->instance->GetCreature(script->GetData64(DATA_ROTFACE)))
-                        rotface->CastSpell(x, y, z, triggered_spell_id, true, NULL, NULL, GetCaster()->GetGUID());
+                        rotface->CastSpell(x, y, z, triggered_spell_id, true, nullptr, nullptr, GetCaster()->GetGUID());
             }
 
             void Register()

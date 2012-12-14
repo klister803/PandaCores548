@@ -77,9 +77,9 @@ class TrinityStringTextBuilder
 
 SmartScript::SmartScript()
 {
-    go = NULL;
-    me = NULL;
-    trigger = NULL;
+    go = nullptr;
+    me = nullptr;
+    trigger = nullptr;
     mEventPhase = 0;
     mPathId = 0;
     mTargetStorage = new ObjectListMap();
@@ -164,7 +164,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
         {
             ObjectList* targets = GetTargets(e, unit);
             CreaturePtr talker = me;
-            PlayerPtr targetPlayer = NULL;
+            PlayerPtr targetPlayer = nullptr;
             if (targets)
             {
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
@@ -371,7 +371,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
                 {
                     if (Quest const* q = sObjectMgr->GetQuestTemplate(e.action.quest.quest))
                     {
-                        TO_PLAYER(*itr)->AddQuest(q, NULL);
+                        TO_PLAYER(*itr)->AddQuest(q, nullptr);
                         sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_ADD_QUEST: Player guidLow %u add quest %u",
                             (*itr)->GetGUIDLow(), e.action.quest.quest);
                     }
@@ -868,7 +868,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
         }
         case SMART_ACTION_CALL_KILLEDMONSTER:
         {
-            PlayerPtr player = NULL;
+            PlayerPtr player = nullptr;
             if (me)
                 player = me->GetLootRecipient();
 
@@ -1372,7 +1372,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
             if (!IsSmart())
                 break;
 
-            WorldObjectPtr target = NULL;
+            WorldObjectPtr target = nullptr;
 
             if (e.GetTargetType() == SMART_TARGET_CREATURE_RANGE || e.GetTargetType() == SMART_TARGET_CREATURE_GUID ||
                 e.GetTargetType() == SMART_TARGET_CREATURE_DISTANCE || e.GetTargetType() == SMART_TARGET_GAMEOBJECT_RANGE ||
@@ -1496,7 +1496,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
             break;
         }
         case SMART_ACTION_TRIGGER_TIMED_EVENT:
-            ProcessEventsFor((SMART_EVENT)SMART_EVENT_TIMED_EVENT_TRIGGERED, NULL, e.action.timeEvent.id);
+            ProcessEventsFor((SMART_EVENT)SMART_EVENT_TIMED_EVENT_TRIGGERED, nullptr, e.action.timeEvent.id);
             break;
         case SMART_ACTION_REMOVE_TIMED_EVENT:
             mRemIDs.push_back(e.action.timeEvent.id);
@@ -1515,7 +1515,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
                         meOrigGUID = me ? me->GetGUID() : 0;
                     if (!goOrigGUID)
                         goOrigGUID = go ? go->GetGUID() : 0;
-                    go = NULL;
+                    go = nullptr;
                     me = (*itr)->ToCreature();
                     break;
                 }
@@ -1526,7 +1526,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
                     if (!goOrigGUID)
                         goOrigGUID = go ? go->GetGUID() : 0;
                     go = (*itr)->ToGameObject();
-                    me = NULL;
+                    me = nullptr;
                     break;
                 }
             }
@@ -2089,9 +2089,9 @@ SmartScriptHolder SmartScript::CreateEvent(SMART_EVENT e, uint32 event_flags, ui
     return script;
 }
 
-ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, UnitPtr invoker /*= NULL*/)
+ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, UnitPtr invoker /*= nullptr*/)
 {
-    UnitPtr trigger = NULL;
+    UnitPtr trigger = nullptr;
     if (invoker)
         trigger = invoker;
     else if (UnitPtr tempLastInvoker = GetLastInvoker())
@@ -2144,7 +2144,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, UnitPtr invoker 
                 {
                     if (GroupPtr group = player->GetGroup())
                     {
-                        for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
+                        for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != nullptr; groupRef = groupRef->next())
                             if (PlayerPtr member = groupRef->getSource())
                                 l->push_back(member);
                     }
@@ -2234,7 +2234,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, UnitPtr invoker 
         }
         case SMART_TARGET_CREATURE_GUID:
         {
-            CreaturePtr target = NULL;
+            CreaturePtr target = nullptr;
             if (e.target.unitGUID.entry)
             {
                 uint64 guid = MAKE_NEW_GUID(e.target.unitGUID.guid, e.target.unitGUID.entry, HIGHGUID_UNIT);
@@ -2257,7 +2257,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, UnitPtr invoker 
         }
         case SMART_TARGET_GAMEOBJECT_GUID:
         {
-            GameObjectPtr target = NULL;
+            GameObjectPtr target = nullptr;
             if (e.target.unitGUID.entry)
             {
                 uint64 guid = MAKE_NEW_GUID(e.target.goGUID.guid, e.target.goGUID.entry, HIGHGUID_GAMEOBJECT);
@@ -2359,7 +2359,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, UnitPtr invoker 
     if (l->empty())
     {
         delete l;
-        l = NULL;
+        l = nullptr;
     }
 
     return l;
@@ -2779,7 +2779,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, UnitPtr unit, uint32 var0, 
         {
             if (e.event.gameEvent.gameEventId != var0)
                 return;
-            ProcessAction(e, NULL, var0);
+            ProcessAction(e, nullptr, var0);
             break;
         }
         case SMART_EVENT_GO_STATE_CHANGED:
@@ -2793,7 +2793,7 @@ void SmartScript::ProcessEvent(SmartScriptHolder& e, UnitPtr unit, uint32 var0, 
         {
             if (e.event.eventInform.eventId != var0)
                 return;
-            ProcessAction(e, NULL, var0);
+            ProcessAction(e, nullptr, var0);
             break;
         }
         case SMART_EVENT_ACTION_DONE:
@@ -2844,7 +2844,7 @@ void SmartScript::UpdateTimer(SmartScriptHolder& e, uint32 const diff)
     if (e.GetEventType() == SMART_EVENT_UPDATE_IC && (!me || !me->isInCombat()))
         return;
 
-    if (e.GetEventType() == SMART_EVENT_UPDATE_OOC && (me && me->isInCombat()))//can be used with me=NULL (go script)
+    if (e.GetEventType() == SMART_EVENT_UPDATE_OOC && (me && me->isInCombat()))//can be used with me=nullptr (go script)
         return;
 
     if (e.timer < diff)
@@ -2965,7 +2965,7 @@ void SmartScript::OnUpdate(uint32 const diff)
             mTalkerEntry = 0;
             mTextTimer = 0;
             mUseTextTimer = false;
-            ProcessEventsFor(SMART_EVENT_TEXT_OVER, NULL, textID, entry);
+            ProcessEventsFor(SMART_EVENT_TEXT_OVER, nullptr, textID, entry);
         } else mTextTimer -= diff;
     }
 }
@@ -3014,19 +3014,19 @@ void SmartScript::GetScript()
         e = sSmartScriptMgr->GetScript(-((int32)me->GetDBTableGUIDLow()), mScriptType);
         if (e.empty())
             e = sSmartScriptMgr->GetScript((int32)me->GetEntry(), mScriptType);
-        FillScript(e, me, NULL);
+        FillScript(e, me, nullptr);
     }
     else if (go)
     {
         e = sSmartScriptMgr->GetScript(-((int32)go->GetDBTableGUIDLow()), mScriptType);
         if (e.empty())
             e = sSmartScriptMgr->GetScript((int32)go->GetEntry(), mScriptType);
-        FillScript(e, go, NULL);
+        FillScript(e, go, nullptr);
     }
     else if (trigger)
     {
         e = sSmartScriptMgr->GetScript((int32)trigger->id, mScriptType);
-        FillScript(e, NULL, trigger);
+        FillScript(e, nullptr, trigger);
     }
 }
 
@@ -3058,7 +3058,7 @@ void SmartScript::OnInitialize(WorldObjectPtr obj, AreaTriggerEntry const* at)
     }
     else
     {
-        sLog->outError(LOG_FILTER_GENERAL, "SmartScript::OnInitialize: !WARNING! Initialized objects are NULL.");
+        sLog->outError(LOG_FILTER_GENERAL, "SmartScript::OnInitialize: !WARNING! Initialized objects are nullptr.");
         return;
     }
 
@@ -3134,13 +3134,13 @@ uint32 SmartScript::DoChat(int8 id, uint64 whisperGuid)
 UnitPtr SmartScript::DoSelectLowestHpFriendly(float range, uint32 MinHPDiff)
 {
     if (!me)
-        return NULL;
+        return nullptr;
 
     CellCoord p(Trinity::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
     Cell cell(p);
     cell.SetNoCreate();
 
-    UnitPtr unit = NULL;
+    UnitPtr unit = nullptr;
 
     Trinity::MostHPMissingInRange u_check(me, range, MinHPDiff);
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(me, unit, u_check);

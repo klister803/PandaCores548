@@ -87,13 +87,13 @@ void BattlegroundAB::PostUpdateImpl(uint32 diff)
                     if (teamIndex == 0)
                     {
                         // FIXME: team and node names not localized
-                        SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_ALLIANCE, NULL, LANG_BG_AB_ALLY, _GetNodeNameId(node));
+                        SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_ALLIANCE, nullptr, LANG_BG_AB_ALLY, _GetNodeNameId(node));
                         PlaySoundToAll(BG_AB_SOUND_NODE_CAPTURED_ALLIANCE);
                     }
                     else
                     {
                         // FIXME: team and node names not localized
-                        SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_HORDE, NULL, LANG_BG_AB_HORDE, _GetNodeNameId(node));
+                        SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_HORDE, nullptr, LANG_BG_AB_HORDE, _GetNodeNameId(node));
                         PlaySoundToAll(BG_AB_SOUND_NODE_CAPTURED_HORDE);
                     }
                 }
@@ -373,7 +373,7 @@ void BattlegroundAB::_NodeOccupied(uint8 node, Team team)
 
     if (node >= BG_AB_DYNAMIC_NODES_COUNT)//only dynamic nodes, no start points
         return;
-    CreaturePtr trigger = BgCreatures[node+7] ? GetBGCreature(node+7) : NULL;//0-6 spirit guides
+    CreaturePtr trigger = BgCreatures[node+7] ? GetBGCreature(node+7) : nullptr;//0-6 spirit guides
     if (!trigger)
         trigger = AddCreature(WORLD_TRIGGER, node+7, team, BG_AB_NodePositions[node][0], BG_AB_NodePositions[node][1], BG_AB_NodePositions[node][2], BG_AB_NodePositions[node][3]);
 
@@ -394,13 +394,13 @@ void BattlegroundAB::_NodeDeOccupied(uint8 node)
 
     //remove bonus honor aura trigger creature when node is lost
     if (node < BG_AB_DYNAMIC_NODES_COUNT)//only dynamic nodes, no start points
-        DelCreature(node+7);//NULL checks are in DelCreature! 0-6 spirit guides
+        DelCreature(node+7);//nullptr checks are in DelCreature! 0-6 spirit guides
 
     // Those who are waiting to resurrect at this node are taken to the closest own node's graveyard
     std::vector<uint64> ghost_list = m_ReviveQueue[BgCreatures[node]];
     if (!ghost_list.empty())
     {
-        WorldSafeLocsEntry const* ClosestGrave = NULL;
+        WorldSafeLocsEntry const* ClosestGrave = nullptr;
         for (std::vector<uint64>::const_iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
         {
             PlayerPtr player = ObjectAccessor::FindPlayer(*itr);
@@ -542,9 +542,9 @@ void BattlegroundAB::EventPlayerClickedOnFlag(PlayerPtr source, GameObjectPtr /*
     {
         // FIXME: team and node names not localized
         if (teamIndex == BG_TEAM_ALLIANCE)
-            SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_ALLIANCE, NULL, LANG_BG_AB_ALLY, _GetNodeNameId(node));
+            SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_ALLIANCE, nullptr, LANG_BG_AB_ALLY, _GetNodeNameId(node));
         else
-            SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_HORDE, NULL, LANG_BG_AB_HORDE, _GetNodeNameId(node));
+            SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_HORDE, nullptr, LANG_BG_AB_HORDE, _GetNodeNameId(node));
     }
     PlaySoundToAll(sound);
 }
@@ -644,7 +644,7 @@ WorldSafeLocsEntry const* BattlegroundAB::GetClosestGraveYard(PlayerPtr player)
         if (m_Nodes[i] == teamIndex + 3)
             nodes.push_back(i);
 
-    WorldSafeLocsEntry const* good_entry = NULL;
+    WorldSafeLocsEntry const* good_entry = nullptr;
     // If so, select the closest node to place ghost on
     if (!nodes.empty())
     {

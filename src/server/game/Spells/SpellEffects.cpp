@@ -310,7 +310,7 @@ void Spell::EffectInstaKill(SpellEffIndex /*effIndex*/)
     data << uint32(m_spellInfo->Id);
     m_caster->SendMessageToSet(&data, true);
 
-    m_caster->DealDamage(unitTarget, unitTarget->GetHealth(), NULL, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+    m_caster->DealDamage(unitTarget, unitTarget->GetHealth(), nullptr, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
 }
 
 void Spell::EffectEnvironmentalDMG(SpellEffIndex /*effIndex*/)
@@ -688,7 +688,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                         if (m_caster->HasAura(48265) || m_caster->HasAura(48266)) // Only in frost/unholy presence
                             bp = m_caster->CountPctFromMaxHealth(aurEff->GetAmount());
 
-                m_caster->CastCustomSpell(m_caster, 45470, &bp, NULL, NULL, false);
+                m_caster->CastCustomSpell(m_caster, 45470, &bp, nullptr, nullptr, false);
                 return;
             }
             switch (m_spellInfo->Id)
@@ -721,7 +721,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                 case 48289:
                     if (m_targets.HasDst())
                         targets.SetDst(*m_targets.GetDstPos());
-                    spell_id = CalculateDamage(0, NULL);
+                    spell_id = CalculateDamage(0, nullptr);
                     break;
             }
             break;
@@ -930,7 +930,7 @@ void Spell::EffectTriggerSpell(SpellEffIndex effIndex)
         TO_PLAYER(m_caster)->RemoveSpellCooldown(spellInfo->Id);
 
     // original caster guid only for GO cast
-    m_caster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, m_originalCasterGUID);
+    m_caster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, nullptr, nullptr, m_originalCasterGUID);
 }
 
 void Spell::EffectTriggerMissileSpell(SpellEffIndex effIndex)
@@ -983,7 +983,7 @@ void Spell::EffectTriggerMissileSpell(SpellEffIndex effIndex)
         TO_PLAYER(m_caster)->RemoveSpellCooldown(spellInfo->Id);
 
     // original caster guid only for GO cast
-    m_caster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, NULL, NULL, m_originalCasterGUID);
+    m_caster->CastSpell(targets, spellInfo, &values, TRIGGERED_FULL_MASK, nullptr, nullptr, m_originalCasterGUID);
 }
 
 void Spell::EffectForceCast(SpellEffIndex effIndex)
@@ -1015,7 +1015,7 @@ void Spell::EffectForceCast(SpellEffIndex effIndex)
                 break;
             case 52463: // Hide In Mine Car
             case 52349: // Overtake
-                unitTarget->CastCustomSpell(unitTarget, spellInfo->Id, &damage, NULL, NULL, true, NULL, NULL, m_originalCasterGUID);
+                unitTarget->CastCustomSpell(unitTarget, spellInfo->Id, &damage, nullptr, nullptr, true, nullptr, nullptr, m_originalCasterGUID);
                 return;
         }
     }
@@ -1362,7 +1362,7 @@ void Spell::EffectSendEvent(SpellEffIndex effIndex)
         && effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    WorldObjectPtr target = NULL;
+    WorldObjectPtr target = nullptr;
 
     // call events for object target if present
     if (effectHandleMode == SPELL_EFFECT_HANDLE_HIT_TARGET)
@@ -1476,7 +1476,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
         {
             Unit::AuraEffectList const& RejorRegr = unitTarget->GetAuraEffectsByType(SPELL_AURA_PERIODIC_HEAL);
             // find most short by duration
-            AuraEffectPtr targetAura = NULL;
+            AuraEffectPtr targetAura = nullptr;
             for (Unit::AuraEffectList::const_iterator i = RejorRegr.begin(); i != RejorRegr.end(); ++i)
             {
                 if ((*i)->GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DRUID
@@ -1544,7 +1544,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
 
                         int32 bp = int32(100.0f * Mastery);
 
-                        m_caster->CastCustomSpell(m_caster, 100977, &bp, NULL, NULL, true);
+                        m_caster->CastCustomSpell(m_caster, 100977, &bp, nullptr, nullptr, true);
                     }
                 }
             }
@@ -1572,7 +1572,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
             int32 bp = (Mastery * addhealth) / 6;
 
-            m_caster->CastCustomSpell(unitTarget, 77489, &bp, NULL, NULL, true);
+            m_caster->CastCustomSpell(unitTarget, 77489, &bp, nullptr, nullptr, true);
         }
         // 115072 - Expel Harm
         if (m_caster && m_caster->getClass() == CLASS_MONK && addhealth && m_spellInfo->Id == 115072)
@@ -1586,7 +1586,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             if (target && m_caster->IsValidAttackTarget(target))
             {
                 int32 bp = addhealth * 0.5;
-                m_caster->CastCustomSpell(target, 115129, &bp, NULL, NULL, true);
+                m_caster->CastCustomSpell(target, 115129, &bp, nullptr, nullptr, true);
             }
         }
 
@@ -1672,7 +1672,7 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(newitemid);
     if (!pProto)
     {
-        player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL);
+        player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr);
         return;
     }
 
@@ -1732,7 +1732,7 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
         else
         {
             // if not created by another reason from full inventory or unique items amount limitation
-            player->SendEquipError(msg, NULL, NULL, newitemid);
+            player->SendEquipError(msg, nullptr, nullptr, newitemid);
             return;
         }
     }
@@ -1744,12 +1744,12 @@ void Spell::DoCreateItem(uint32 /*i*/, uint32 itemtype)
 
         if (pProto->Quality > ITEM_QUALITY_EPIC || (pProto->Quality == ITEM_QUALITY_EPIC && pProto->ItemLevel >= MinNewsItemLevel[sWorld->getIntConfig(CONFIG_EXPANSION)]))
             if (GuildPtr guild = sGuildMgr->GetGuildById(player->GetGuildId()))
-                guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_CRAFTED, time(NULL), player->GetGUID(), 0, pProto->ItemId);
+                guild->GetNewsLog().AddNewEvent(GUILD_NEWS_ITEM_CRAFTED, time(nullptr), player->GetGUID(), 0, pProto->ItemId);
 
         // was it successful? return error if not
         if (!pItem)
         {
-            player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL);
+            player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr);
             return;
         }
 
@@ -2219,9 +2219,9 @@ void Spell::EffectSummonChangeItem(SpellEffIndex effIndex)
 
             // prevent crash at access and unexpected charges counting with item update queue corrupt
             if (m_CastItem == m_targets.GetItemTarget())
-                m_targets.SetItemTarget(NULL);
+                m_targets.SetItemTarget(nullptr);
 
-            m_CastItem = NULL;
+            m_CastItem = nullptr;
 
             player->StoreItem(dest, pNewItem, true);
             return;
@@ -2237,9 +2237,9 @@ void Spell::EffectSummonChangeItem(SpellEffIndex effIndex)
 
             // prevent crash at access and unexpected charges counting with item update queue corrupt
             if (m_CastItem == m_targets.GetItemTarget())
-                m_targets.SetItemTarget(NULL);
+                m_targets.SetItemTarget(nullptr);
 
-            m_CastItem = NULL;
+            m_CastItem = nullptr;
 
             player->BankItem(dest, pNewItem, true);
             return;
@@ -2259,9 +2259,9 @@ void Spell::EffectSummonChangeItem(SpellEffIndex effIndex)
 
             // prevent crash at access and unexpected charges counting with item update queue corrupt
             if (m_CastItem == m_targets.GetItemTarget())
-                m_targets.SetItemTarget(NULL);
+                m_targets.SetItemTarget(nullptr);
 
-            m_CastItem = NULL;
+            m_CastItem = nullptr;
 
             player->EquipItem(dest, pNewItem, true);
             player->AutoUnequipOffhandIfNeed();
@@ -2315,7 +2315,7 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
     if (PlayerPtr modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
 
-    TempSummonPtr summon = NULL;
+    TempSummonPtr summon = nullptr;
 
     // determine how many units should be summoned
     uint32 numSummons;
@@ -2593,11 +2593,11 @@ void Spell::EffectDispel(SpellEffIndex effIndex)
     if (m_spellInfo->SpellFamilyName == SPELLFAMILY_WARLOCK && m_spellInfo->Category == SPELLCATEGORY_DEVOUR_MAGIC)
     {
         int32 heal_amount = m_spellInfo->Effects[EFFECT_1].CalcValue(m_caster);
-        m_caster->CastCustomSpell(m_caster, 19658, &heal_amount, NULL, NULL, true);
+        m_caster->CastCustomSpell(m_caster, 19658, &heal_amount, nullptr, nullptr, true);
         // Glyph of Felhunter
         if (UnitPtr owner = m_caster->GetOwner())
             if (owner->GetAura(56249))
-                owner->CastCustomSpell(owner, 19658, &heal_amount, NULL, NULL, true);
+                owner->CastCustomSpell(owner, 19658, &heal_amount, nullptr, nullptr, true);
     }
 }
 
@@ -2773,8 +2773,8 @@ void Spell::EffectEnchantItemPerm(SpellEffIndex effIndex)
         unitTarget=p_caster;
         // and add a scroll
         DoCreateItem(effIndex, m_spellInfo->Effects[effIndex].ItemType);
-        itemTarget=NULL;
-        m_targets.SetItemTarget(NULL);
+        itemTarget=nullptr;
+        m_targets.SetItemTarget(nullptr);
     }
     else
     {
@@ -3018,7 +3018,7 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
         return;
 
-    PlayerPtr owner = NULL;
+    PlayerPtr owner = nullptr;
     if (m_originalCaster)
     {
         owner = TO_PLAYER(m_originalCaster);
@@ -3245,7 +3245,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
             // Skyshatter Harness item set bonus
             // Stormstrike
             if (AuraEffectPtr aurEff = m_caster->IsScriptOverriden(m_spellInfo, 5634))
-                m_caster->CastSpell(m_caster, 38430, true, NULL, aurEff);
+                m_caster->CastSpell(m_caster, 38430, true, nullptr, aurEff);
             break;
         }
         case SPELLFAMILY_DRUID:
@@ -3655,7 +3655,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
                     uint32 spell_id = roll_chance_i(20) ? 8854 : 8855;
 
-                    m_caster->CastSpell(m_caster, spell_id, true, NULL);
+                    m_caster->CastSpell(m_caster, spell_id, true, nullptr);
                     return;
                 }
                 // Brittle Armor - need remove one 24575 Brittle Armor aura
@@ -3757,7 +3757,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
                     uint8 bag = 19;
                     uint8 slot = 0;
-                    ItemPtr item = NULL;
+                    ItemPtr item = nullptr;
 
                     while (bag) // 256 = 0 due to var type
                     {
@@ -4089,7 +4089,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     AuraPtr chargesAura = m_caster->GetAura(59907);
                     if (chargesAura != nullptr)
                     {
-                        m_caster->CastSpell(unitTarget, spell_heal, true, NULL, NULL, m_caster->ToTempSummon()->GetSummonerGUID());
+                        m_caster->CastSpell(unitTarget, spell_heal, true, nullptr, nullptr, m_caster->ToTempSummon()->GetSummonerGUID());
                         if (chargesAura->ModCharges(-1))
                             m_caster->ToTempSummon()->UnSummon();
                     }
@@ -4118,14 +4118,14 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                         CreaturePtr totem = unitTarget->GetMap()->GetCreature(unitTarget->m_SummonSlot[slot]);
                         if (totem && totem->isTotem())
                         {
-                            m_caster->CastCustomSpell(totem, 55277, &basepoints0, NULL, NULL, true);
+                            m_caster->CastCustomSpell(totem, 55277, &basepoints0, nullptr, nullptr, true);
                         }
                     }
                     // Glyph of Stoneclaw Totem
                     if (AuraEffectPtr aur=unitTarget->GetAuraEffect(63298, 0))
                     {
                         basepoints0 *= aur->GetAmount();
-                        m_caster->CastCustomSpell(unitTarget, 55277, &basepoints0, NULL, NULL, true);
+                        m_caster->CastCustomSpell(unitTarget, 55277, &basepoints0, nullptr, nullptr, true);
                     }
                     break;
                 }
@@ -4706,7 +4706,7 @@ void Spell::EffectFeedPet(SpellEffIndex effIndex)
     player->DestroyItemCount(foodItem, count, true);
     // TODO: fix crash when a spell has two effects, both pointed at the same item target
 
-    m_caster->CastCustomSpell(pet, m_spellInfo->Effects[effIndex].TriggerSpell, &benefit, NULL, NULL, true);
+    m_caster->CastCustomSpell(pet, m_spellInfo->Effects[effIndex].TriggerSpell, &benefit, nullptr, nullptr, true);
 }
 
 void Spell::EffectDismissPet(SpellEffIndex effIndex)
@@ -4743,7 +4743,7 @@ void Spell::EffectSummonObject(SpellEffIndex effIndex)
     uint64 guid = m_caster->m_ObjectSlot[slot];
     if (guid != 0)
     {
-        GameObjectPtr obj = NULL;
+        GameObjectPtr obj = nullptr;
         if (m_caster)
             obj = m_caster->GetMap()->GetGameObject(guid);
 
@@ -5325,7 +5325,7 @@ void Spell::EffectDestroyAllTotems(SpellEffIndex /*effIndex*/)
     }
     ApplyPct(mana, damage);
     if (mana)
-        m_caster->CastCustomSpell(m_caster, 39104, &mana, NULL, NULL, true);
+        m_caster->CastCustomSpell(m_caster, 39104, &mana, nullptr, nullptr, true);
 }
 
 void Spell::EffectDurabilityDamage(SpellEffIndex effIndex)
@@ -5789,7 +5789,7 @@ void Spell::EffectQuestStart(SpellEffIndex effIndex)
     {
         if (player->CanTakeQuest(qInfo, false) && player->CanAddQuest(qInfo, false))
         {
-            player->AddQuest(qInfo, NULL);
+            player->AddQuest(qInfo, nullptr);
         }
     }
 }
@@ -6181,7 +6181,7 @@ void Spell::EffectRechargeManaGem(SpellEffIndex /*effIndex*/)
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item_id);
     if (!pProto)
     {
-        player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL);
+        player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, nullptr, nullptr);
         return;
     }
 

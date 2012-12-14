@@ -109,9 +109,9 @@ void MapInstanced::UnloadAll()
 MapPtr MapInstanced::CreateInstanceForPlayer(const uint32 mapId, PlayerPtr player)
 {
     if (GetId() != mapId || !player)
-        return NULL;
+        return nullptr;
 
-    MapPtr map = NULL;
+    MapPtr map = nullptr;
     uint32 newInstanceId = 0;                       // instanceId of the resulting map
 
     if (IsBattlegroundOrArena())
@@ -120,7 +120,7 @@ MapPtr MapInstanced::CreateInstanceForPlayer(const uint32 mapId, PlayerPtr playe
         // the instance id is set in battlegroundid
         newInstanceId = player->GetBattlegroundId();
         if (!newInstanceId)
-            return NULL;
+            return nullptr;
 
         map = sMapMgr->FindMap(mapId, newInstanceId);
         if (!map)
@@ -130,20 +130,20 @@ MapPtr MapInstanced::CreateInstanceForPlayer(const uint32 mapId, PlayerPtr playe
             else
             {
                 player->TeleportToBGEntryPoint();
-                return NULL;
+                return nullptr;
             }
         }
     }
     else
     {
         InstancePlayerBind* pBind = player->GetBoundInstance(GetId(), player->GetDifficulty(IsRaid()));
-        InstanceSave* pSave = pBind ? pBind->save : NULL;
+        InstanceSave* pSave = pBind ? pBind->save : nullptr;
 
         // the player's permanent player bind is taken into consideration first
         // then the player's group bind and finally the solo bind.
         if (!pBind || !pBind->perm)
         {
-            InstanceGroupBind* groupBind = NULL;
+            InstanceGroupBind* groupBind = nullptr;
             GroupPtr group = player->GetGroup();
             // use the player's difficulty setting (it may not be the same as the group's)
             if (group)
@@ -173,7 +173,7 @@ MapPtr MapInstanced::CreateInstanceForPlayer(const uint32 mapId, PlayerPtr playe
             //ASSERT(!FindInstanceMap(NewInstanceId));
             map = FindInstanceMap(newInstanceId);
             if (!map)
-                map = CreateInstance(newInstanceId, NULL, diff);
+                map = CreateInstance(newInstanceId, nullptr, diff);
         }
     }
 
@@ -212,7 +212,7 @@ InstanceMapPtr MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* sav
 
     map->LoadRespawnTimes();
 
-    bool load_data = save != NULL;
+    bool load_data = save != nullptr;
     map->CreateInstanceData(load_data);
 
     m_InstancedMaps[InstanceId] = map;

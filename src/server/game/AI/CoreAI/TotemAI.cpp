@@ -68,14 +68,14 @@ void TotemAI::UpdateAI(uint32 const /*diff*/)
     // SPELLMOD_RANGE not applied in this place just because not existence range mods for attacking totems
 
     // pointer to appropriate target if found any
-    UnitPtr victim = i_victimGuid ? ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(me), i_victimGuid) : NULL;
+    UnitPtr victim = i_victimGuid ? ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(me), i_victimGuid) : nullptr;
 
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
     if (!victim ||
         !victim->isTargetableForAttack() || !me->IsWithinDistInMap(victim, max_range) ||
         me->IsFriendlyTo(victim) || !me->canSeeOrDetect(victim))
     {
-        victim = NULL;
+        victim = nullptr;
         Trinity::NearestAttackableUnitInObjectRangeCheck u_check(me, me, max_range);
         Trinity::UnitLastSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> checker(me, victim, u_check);
         me->VisitNearbyObject(max_range, checker);

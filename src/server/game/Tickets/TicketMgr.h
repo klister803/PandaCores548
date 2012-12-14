@@ -123,7 +123,7 @@ public:
     void SetMessage(const std::string& message)
     {
         _message = message;
-        _lastModifiedTime = uint64(time(NULL));
+        _lastModifiedTime = uint64(time(nullptr));
     }
     void SetComment(const std::string& comment) { _comment = comment; }
     void SetViewed() { _viewed = true; }
@@ -182,7 +182,7 @@ public:
         if (itr != _ticketList.end())
             return itr->second;
 
-        return NULL;
+        return nullptr;
     }
 
     GmTicket* GetTicketByPlayer(uint64 playerGuid)
@@ -191,7 +191,7 @@ public:
             if (itr->second && itr->second->IsFromPlayer(playerGuid) && !itr->second->IsClosed())
                 return itr->second;
 
-        return NULL;
+        return nullptr;
     }
 
     GmTicket* GetOldestOpenTicket()
@@ -200,7 +200,7 @@ public:
             if (itr->second && !itr->second->IsClosed() && !itr->second->IsCompleted())
                 return itr->second;
 
-        return NULL;
+        return nullptr;
     }
 
     void AddTicket(GmTicket* ticket);
@@ -211,7 +211,7 @@ public:
     void SetStatus(bool status) { _status = status; }
 
     uint64 GetLastChange() const { return _lastChange; }
-    void UpdateLastChange() { _lastChange = uint64(time(NULL)); }
+    void UpdateLastChange() { _lastChange = uint64(time(nullptr)); }
 
     uint32 GenerateTicketId() { return ++_lastTicketId; }
     uint32 GetOpenTicketCount() const { return _openTicketCount; }

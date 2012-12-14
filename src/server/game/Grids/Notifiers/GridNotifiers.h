@@ -127,7 +127,7 @@ namespace Trinity
         float i_distSq;
         uint32 team;
         constPlayerPtr skipped_receiver;
-        MessageDistDeliverer(WorldObjectPtr src, WorldPacket* msg, float dist, bool own_team_only = false, constPlayerPtr skipped = NULL)
+        MessageDistDeliverer(WorldObjectPtr src, WorldPacket* msg, float dist, bool own_team_only = false, constPlayerPtr skipped = nullptr)
             : i_source(src), i_message(msg), i_phaseMask(src->GetPhaseMask()), i_distSq(dist * dist)
             , team((own_team_only && src->GetTypeId() == TYPEID_PLAYER) ? (TO_PLAYER(src))->GetTeam() : 0)
             , skipped_receiver(skipped)
@@ -579,7 +579,7 @@ namespace Trinity
     {
         public:
             AnyDeadUnitSpellTargetInRangeCheck(UnitPtr searchObj, float range, SpellInfo const* spellInfo, SpellTargetCheckTypes check)
-                : AnyDeadUnitObjectInRangeCheck(searchObj, range), i_spellInfo(spellInfo), i_check(searchObj, searchObj, spellInfo, check, NULL)
+                : AnyDeadUnitObjectInRangeCheck(searchObj, range), i_spellInfo(spellInfo), i_check(searchObj, searchObj, spellInfo, check, nullptr)
             {}
             bool operator()(PlayerPtr u);
             bool operator()(CorpsePtr u);
@@ -952,7 +952,7 @@ namespace Trinity
     {
         public:
             AnyAoETargetUnitInObjectRangeCheck(constWorldObjectPtr obj, constUnitPtr funit, float range)
-                : i_obj(obj), i_funit(funit), _spellInfo(NULL), i_range(range)
+                : i_obj(obj), i_funit(funit), _spellInfo(nullptr), i_range(range)
             {
                 constUnitPtr check = i_funit;
                 constUnitPtr owner = i_funit->GetOwner();
@@ -968,7 +968,7 @@ namespace Trinity
                 if (u->GetTypeId() == TYPEID_UNIT && (TO_CREATURE(u))->isTotem())
                     return false;
 
-                if (i_funit->_IsValidAttackTarget(u, _spellInfo,i_obj->GetTypeId() == TYPEID_DYNAMICOBJECT ? i_obj : NULL) && i_obj->IsWithinDistInMap(u, i_range))
+                if (i_funit->_IsValidAttackTarget(u, _spellInfo,i_obj->GetTypeId() == TYPEID_DYNAMICOBJECT ? i_obj : nullptr) && i_obj->IsWithinDistInMap(u, i_range))
                     return true;
 
                 return false;

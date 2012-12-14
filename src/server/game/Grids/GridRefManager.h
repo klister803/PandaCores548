@@ -34,9 +34,9 @@ class GridRefManager : public RefManager<GridRefManager<OBJECT>, OBJECT>
         std::shared_ptr<GridReference<OBJECT>> getLast() { return std::static_pointer_cast<GridReference<OBJECT>>(RefManager<GridRefManager<OBJECT>, OBJECT>::getLast()); }
 
         iterator begin() { return iterator(getFirst()); }
-        iterator end() { return iterator(NULL); }
+        iterator end() { return iterator(nullptr); }
         iterator rbegin() { return iterator(getLast()); }
-        iterator rend() { return iterator(NULL); }
+        iterator rend() { return iterator(nullptr); }
 };
 #endif
 

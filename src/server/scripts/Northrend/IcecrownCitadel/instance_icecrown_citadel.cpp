@@ -187,9 +187,9 @@ class instance_icecrown_citadel : public InstanceMapScript
                 IsOrbWhispererEligible = true;
                 ColdflameJetsState = NOT_STARTED;
                 AreGunshipsSpawned = false;
-                m_GunshipMain   = NULL;
-                m_GunshipSecond = NULL;
-                m_ZeppelinHorde = NULL;
+                m_GunshipMain   = nullptr;
+                m_GunshipSecond = nullptr;
+                m_ZeppelinHorde = nullptr;
                 
                 m_blood_doorGUID = 0;
                 m_ice_doorGUID = 0;
@@ -207,8 +207,8 @@ class instance_icecrown_citadel : public InstanceMapScript
                 sMapMgr->m_Transports.erase(m_GunshipMain);
                 sMapMgr->m_Transports.erase(m_GunshipSecond);
 
-                m_GunshipMain = NULL;
-                m_GunshipSecond = NULL;
+                m_GunshipMain = nullptr;
+                m_GunshipSecond = nullptr;
             }
 
             TransportPtr MakeTransport(uint32 gobentry,uint32 period,std::string nametransport, std::string scriptname)
@@ -222,14 +222,14 @@ class instance_icecrown_citadel : public InstanceMapScript
 
                 if (!goinfo)
                 {
-                    return NULL;
+                    return nullptr;
                 }
                 std::set<uint32> mapsUsed;
                 
                 if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathId, mapsUsed))
                     // skip transports with empty waypoints list
                 {
-                    return NULL;
+                    return nullptr;
                 }
 
                 float x, y, z, o;
@@ -243,7 +243,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 // creates the Gameobject
                 if (!t->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT),entry, mapid, x, y, z, o, 100, 0))
                 {
-                    return NULL;
+                    return nullptr;
                 }
 
                 t->SetMap(instance);
@@ -265,8 +265,8 @@ class instance_icecrown_citadel : public InstanceMapScript
                 printf("void OnDestroy(InstanceMap * pMap)\n");
                 sMapMgr->m_Transports.erase(m_GunshipMain);
                 sMapMgr->m_Transports.erase(m_GunshipSecond);
-                m_GunshipMain = NULL;
-                m_GunshipSecond = NULL;
+                m_GunshipMain = nullptr;
+                m_GunshipSecond = nullptr;
             }
 
             CreaturePtr SpawnTransportNpc(TransportPtr pTransport, uint32 npc_entry = 0, float TransOffsetX = 0, float TransOffsetY = 0, float TransOffsetZ = 0, float TransOffsetO = 0, uint32 emote = 0)
@@ -281,7 +281,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                     QueryResult npc_transport = WorldDatabase.PQuery("SELECT npc_entry, TransOffsetX, TransOffsetY, TransOffsetZ, TransOffsetO, emote, guid FROM creature_transport WHERE transport_entry = '%u' ORDER BY guid", pTransport->GetEntry());
 
                     if(!npc_transport)
-                        return NULL;
+                        return nullptr;
 
                     do
                     {
@@ -547,7 +547,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 else
                     return pTransport->AddNPCPassengerCreature(0/*tGuid*/, npc_entry, TransOffsetX, TransOffsetY, TransOffsetZ, TransOffsetO, emote);
 
-                 return NULL;
+                 return nullptr;
             }
 
             void FillInitialWorldStates(WorldPacket& data)
@@ -1574,7 +1574,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 return false;
             }
 
-            bool CheckRequiredBosses(uint32 bossId, constPlayerPtr player = NULL) const
+            bool CheckRequiredBosses(uint32 bossId, constPlayerPtr player = nullptr) const
             {
                 if (player && player->isGameMaster())
                     return true;
@@ -1999,7 +1999,7 @@ class instance_icecrown_citadel : public InstanceMapScript
 
                         uint8 MAX_GUNSHIP_CANONS      = !instance->Is25ManRaid() ? 2: 4;
                         uint32 CanonsEntry = 0;
-                        Position const * CanonsPosition = NULL;
+                        Position const * CanonsPosition = nullptr;
 
                         if (TeamInInstance == ALLIANCE)
                         {
@@ -2174,7 +2174,7 @@ class instance_icecrown_citadel : public InstanceMapScript
 
                         std::set<PlayerPtr> pSet = Friendtransport->GetPassengers();
 
-                        UnitPtr  pTarget = NULL;
+                        UnitPtr  pTarget = nullptr;
 
                         if (!pSet.empty())
                         {
@@ -2556,7 +2556,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         }
                         break;
                     case EVENT_TELEPORT_TO_FROSMOURNE: // Harvest Soul (normal mode)
-                        if (CreaturePtr terenas = instance->SummonCreature(NPC_TERENAS_MENETHIL_FROSTMOURNE, TerenasSpawn, NULL, 63000))
+                        if (CreaturePtr terenas = instance->SummonCreature(NPC_TERENAS_MENETHIL_FROSTMOURNE, TerenasSpawn, nullptr, 63000))
                         {
                             terenas->AI()->DoAction(ACTION_FROSTMOURNE_INTRO);
                             std::list<CreaturePtr> triggers;
@@ -2568,7 +2568,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                                 visual->CastSpell(visual, SPELL_FROSTMOURNE_TELEPORT_VISUAL, true);
                             }
 
-                            if (CreaturePtr warden = instance->SummonCreature(NPC_SPIRIT_WARDEN, SpiritWardenSpawn, NULL, 63000))
+                            if (CreaturePtr warden = instance->SummonCreature(NPC_SPIRIT_WARDEN, SpiritWardenSpawn, nullptr, 63000))
                             {
                                 terenas->AI()->AttackStart(warden);
                                 warden->AddThreat(terenas, 300000.0f);

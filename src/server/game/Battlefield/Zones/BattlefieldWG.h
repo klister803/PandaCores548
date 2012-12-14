@@ -1142,7 +1142,7 @@ struct BfWGGameObjectBuilding
     {
         m_WG = WG;
         m_Team = 0;
-        m_Build = NULL;
+        m_Build = nullptr;
         m_Type = 0;
         m_WorldState = 0;
         m_State = 0;
@@ -1200,7 +1200,7 @@ struct BfWGGameObjectBuilding
         // Rebuild gameobject
         if (m_Build->IsDestructibleBuilding())
         {
-            m_Build->SetDestructibleState(GO_DESTRUCTIBLE_REBUILDING, NULL, true);
+            m_Build->SetDestructibleState(GO_DESTRUCTIBLE_REBUILDING, nullptr, true);
                 if (m_Build->GetEntry() == GO_WINTERGRASP_VAULT_GATE)
                     if (GameObjectPtr go = m_Build->FindNearestGameObject(GO_WINTERGRASP_KEEP_COLLISION_WALL, 10.0f))
                         go->EnableCollision(true);
@@ -1309,7 +1309,7 @@ struct BfWGGameObjectBuilding
             {
                 case BATTLEFIELD_WG_OBJECTSTATE_ALLIANCE_INTACT:
                 case BATTLEFIELD_WG_OBJECTSTATE_HORDE_INTACT:
-                    m_Build->SetDestructibleState(GO_DESTRUCTIBLE_REBUILDING, NULL, true);
+                    m_Build->SetDestructibleState(GO_DESTRUCTIBLE_REBUILDING, nullptr, true);
                     break;
                 case BATTLEFIELD_WG_OBJECTSTATE_ALLIANCE_DESTROY:
                 case BATTLEFIELD_WG_OBJECTSTATE_HORDE_DESTROY:
@@ -1633,7 +1633,7 @@ struct WintergraspWorkshopData
     WintergraspWorkshopData(BattlefieldWG* WG)
     {
         m_WG = WG;
-        m_Build = NULL;
+        m_Build = nullptr;
         m_Type = 0;
         m_State = 0;
         m_WorldState = 0;

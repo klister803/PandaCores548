@@ -1172,7 +1172,7 @@ class spell_algalon_collapse : public SpellScriptLoader
             void HandlePeriodic(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
-                GetTarget()->DealDamage(GetTarget(), GetTarget()->CountPctFromMaxHealth(1), NULL, NODAMAGE);
+                GetTarget()->DealDamage(GetTarget(), GetTarget()->CountPctFromMaxHealth(1), nullptr, NODAMAGE);
             }
 
             void Register()

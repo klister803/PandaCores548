@@ -40,7 +40,7 @@ namespace
     WeatherData const* GetWeatherData(uint32 zone_id)
     {
         WeatherZoneMap::const_iterator itr = mWeatherZoneMap.find(zone_id);
-        return (itr != mWeatherZoneMap.end()) ? &itr->second : NULL;
+        return (itr != mWeatherZoneMap.end()) ? &itr->second : nullptr;
     }
 }
 
@@ -68,7 +68,7 @@ WeatherPtr AddWeather(uint32 zone_id)
 
     // zone does not have weather, ignore
     if (!weatherChances)
-        return NULL;
+        return nullptr;
 
     WeatherPtr w (new Weather(zone_id, weatherChances));
     m_weathers[w->GetZone()].reset(&*w);

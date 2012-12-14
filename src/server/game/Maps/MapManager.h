@@ -148,7 +148,7 @@ class MapManager
         MapPtr FindBaseMap(uint32 mapId) const
         {
             MapMapType::const_iterator iter = i_maps.find(mapId);
-            return (iter == i_maps.end() ? NULL : iter->second);
+            return (iter == i_maps.end() ? nullptr : iter->second);
         }
 
         MapManager(const MapManager &);

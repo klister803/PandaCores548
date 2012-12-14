@@ -336,7 +336,7 @@ void BattlefieldWG::OnBattleEnd(bool endByTimer)
     // Remove relic
     if (m_titansRelic)
         m_titansRelic->RemoveFromWorld();
-    m_titansRelic = NULL;
+    m_titansRelic = nullptr;
 
     // Remove turret
     for (GuidSet::const_iterator itr = CanonList.begin(); itr != CanonList.end(); ++itr)
@@ -874,7 +874,7 @@ WorldPacket BattlefieldWG::BuildInitWorldStates()
     data << uint32(BATTLEFIELD_WG_WORLD_STATE_SHOW_WORLDSTATE) << uint32(IsWarTime()? 1 : 0);
 
     for (uint32 i = 0; i < 2; ++i)
-        data << ClockWorldState[i] << uint32(time(NULL) + (m_Timer / 1000));
+        data << ClockWorldState[i] << uint32(time(nullptr) + (m_Timer / 1000));
 
     data << uint32(BATTLEFIELD_WG_WORLD_STATE_VEHICLE_H) << uint32(GetData(BATTLEFIELD_WG_DATA_VEHICLE_H));
     data << uint32(BATTLEFIELD_WG_WORLD_STATE_MAX_VEHICLE_H) << GetData(BATTLEFIELD_WG_DATA_MAX_VEHICLE_H);
@@ -1094,7 +1094,7 @@ WintergraspCapturePoint::WintergraspCapturePoint(BattlefieldWG* battlefield, Tea
 {
     m_Bf = battlefield;
     m_team = teamInControl;
-    m_Workshop = NULL;
+    m_Workshop = nullptr;
 }
 
 void WintergraspCapturePoint::ChangeTeam(TeamId /*oldTeam*/)

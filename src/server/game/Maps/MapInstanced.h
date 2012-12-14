@@ -43,7 +43,7 @@ class MapInstanced : public Map
         MapPtr FindInstanceMap(uint32 instanceId) const
         {
             InstancedMaps::const_iterator i = m_InstancedMaps.find(instanceId);
-            return(i == m_InstancedMaps.end() ? NULL : i->second);
+            return(i == m_InstancedMaps.end() ? nullptr : i->second);
         }
         bool DestroyInstance(InstancedMaps::iterator &itr);
 

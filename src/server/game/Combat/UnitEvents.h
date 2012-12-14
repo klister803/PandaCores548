@@ -48,7 +48,7 @@ enum UNIT_EVENT_TYPE
     // New target should be fetched, could tbe the current target as well
     UEV_THREAT_SET_NEXT_TARGET          = 1<<5,
 
-    // A new victim (target) was set. Could be NULL
+    // A new victim (target) was set. Could be nullptr
     UEV_THREAT_VICTIM_CHANGED           = 1<<6,
 
     // Future use
@@ -93,7 +93,7 @@ class ThreatRefStatusChangeEvent : public UnitBaseEvent
         };
         ThreatManager* iThreatManager;
     public:
-        ThreatRefStatusChangeEvent(uint32 pType) : UnitBaseEvent(pType) { iHostileReference = NULL; }
+        ThreatRefStatusChangeEvent(uint32 pType) : UnitBaseEvent(pType) { iHostileReference = nullptr; }
 
         ThreatRefStatusChangeEvent(uint32 pType, HostileReferencePtr pHostileReference) : UnitBaseEvent(pType) { iHostileReference = pHostileReference; }
 
@@ -123,8 +123,8 @@ class ThreatManagerEvent : public ThreatRefStatusChangeEvent
     private:
         ThreatContainer* iThreatContainer;
     public:
-        ThreatManagerEvent(uint32 pType) : ThreatRefStatusChangeEvent(pType), iThreatContainer(NULL) {}
-        ThreatManagerEvent(uint32 pType, HostileReferencePtr pHostileReference) : ThreatRefStatusChangeEvent(pType, pHostileReference), iThreatContainer(NULL) {}
+        ThreatManagerEvent(uint32 pType) : ThreatRefStatusChangeEvent(pType), iThreatContainer(nullptr) {}
+        ThreatManagerEvent(uint32 pType, HostileReferencePtr pHostileReference) : ThreatRefStatusChangeEvent(pType, pHostileReference), iThreatContainer(nullptr) {}
 
         void setThreatContainer(ThreatContainer* pThreatContainer) { iThreatContainer = pThreatContainer; }
 

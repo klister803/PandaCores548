@@ -158,7 +158,7 @@ class Player;
 
 struct CalendarAction
 {
-        CalendarAction(): _action(CALENDAR_ACTION_NONE), _player(NULL), _inviteId(0), _data(0)
+        CalendarAction(): _action(CALENDAR_ACTION_NONE), _player(nullptr), _inviteId(0), _data(0)
         {
         }
 

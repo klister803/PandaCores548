@@ -98,7 +98,7 @@ MapPtr MapManager::CreateBaseMap(uint32 id)
 {
     MapPtr map = FindBaseMap(id);
 
-    if (map == NULL)
+    if (map == nullptr)
     {
         TRINITY_GUARD(ACE_Thread_Mutex, Lock);
 
@@ -123,7 +123,7 @@ MapPtr MapManager::FindBaseNonInstanceMap(uint32 mapId) const
 {
     MapPtr map = FindBaseMap(mapId);
     if (map && map->Instanceable())
-        return NULL;
+        return nullptr;
     return map;
 }
 
@@ -141,10 +141,10 @@ MapPtr MapManager::FindMap(uint32 mapid, uint32 instanceId) const
 {
     MapPtr map = FindBaseMap(mapid);
     if (!map)
-        return NULL;
+        return nullptr;
 
     if (!map->Instanceable())
-        return instanceId == 0 ? map : NULL;
+        return instanceId == 0 ? map : nullptr;
 
     return TO_MAPINSTANCED(map)->FindInstanceMap(instanceId);
 }

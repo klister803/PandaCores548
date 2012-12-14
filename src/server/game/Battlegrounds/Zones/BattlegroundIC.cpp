@@ -51,8 +51,8 @@ BattlegroundIC::BattlegroundIC()
 
     siegeEngineWorkshopTimer = WORKSHOP_UPDATE_TIME;
 
-    gunshipHorde = NULL;
-    gunshipAlliance = NULL;
+    gunshipHorde = nullptr;
+    gunshipAlliance = nullptr;
 }
 
 BattlegroundIC::~BattlegroundIC()
@@ -224,7 +224,7 @@ void BattlegroundIC::PostUpdateImpl(uint32 diff)
                 UpdateNodeWorldState(&nodePoint[i]);
                 HandleCapturedNodes(&nodePoint[i], false);
 
-                SendMessage2ToAll(LANG_BG_IC_TEAM_HAS_TAKEN_NODE, CHAT_MSG_BG_SYSTEM_NEUTRAL, NULL, (nodePoint[i].faction == TEAM_ALLIANCE ? LANG_BG_IC_ALLIANCE : LANG_BG_IC_HORDE), nodePoint[i].string);
+                SendMessage2ToAll(LANG_BG_IC_TEAM_HAS_TAKEN_NODE, CHAT_MSG_BG_SYSTEM_NEUTRAL, nullptr, (nodePoint[i].faction == TEAM_ALLIANCE ? LANG_BG_IC_ALLIANCE : LANG_BG_IC_HORDE), nodePoint[i].string);
 
                 nodePoint[i].needChange = false;
                 nodePoint[i].timer = BANNER_STATE_CHANGE_TIME;
@@ -467,7 +467,7 @@ void BattlegroundIC::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
 
 void BattlegroundIC::EndBattleground(uint32 winner)
 {
-    SendMessage2ToAll(LANG_BG_IC_TEAM_WINS, CHAT_MSG_BG_SYSTEM_NEUTRAL, NULL, (winner == ALLIANCE ? LANG_BG_IC_ALLIANCE : LANG_BG_IC_HORDE));
+    SendMessage2ToAll(LANG_BG_IC_TEAM_WINS, CHAT_MSG_BG_SYSTEM_NEUTRAL, nullptr, (winner == ALLIANCE ? LANG_BG_IC_ALLIANCE : LANG_BG_IC_HORDE));
 
     Battleground::EndBattleground(winner);
 }
@@ -478,7 +478,7 @@ void BattlegroundIC::RealocatePlayers(ICNodePointType nodeType)
     std::vector<uint64> ghost_list = m_ReviveQueue[BgCreatures[BG_IC_NPC_SPIRIT_GUIDE_1+nodeType-2]];
     if (!ghost_list.empty())
     {
-        WorldSafeLocsEntry const* ClosestGrave = NULL;
+        WorldSafeLocsEntry const* ClosestGrave = nullptr;
         for (std::vector<uint64>::const_iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
         {
             PlayerPtr player = ObjectAccessor::FindPlayer(*itr);
@@ -852,7 +852,7 @@ void BattlegroundIC::DestroyGate(PlayerPtr player, GameObjectPtr go)
         break;
     }
 
-    SendMessage2ToAll(lang_entry, CHAT_MSG_BG_SYSTEM_NEUTRAL, NULL, (player->GetTeamId() == TEAM_ALLIANCE ? LANG_BG_IC_HORDE_KEEP : LANG_BG_IC_ALLIANCE_KEEP));
+    SendMessage2ToAll(lang_entry, CHAT_MSG_BG_SYSTEM_NEUTRAL, nullptr, (player->GetTeamId() == TEAM_ALLIANCE ? LANG_BG_IC_HORDE_KEEP : LANG_BG_IC_ALLIANCE_KEEP));
 }
 
 void BattlegroundIC::EventPlayerDamagedGO(PlayerPtr /*Player*/, GameObjectPtr /*go*/, uint32 /*eventType*/)
@@ -870,7 +870,7 @@ WorldSafeLocsEntry const* BattlegroundIC::GetClosestGraveYard(PlayerPtr player)
         if (nodePoint[i].faction == player->GetTeamId())
             nodes.push_back(i);
 
-    WorldSafeLocsEntry const* good_entry = NULL;
+    WorldSafeLocsEntry const* good_entry = nullptr;
     // If so, select the closest node to place ghost on
     if (!nodes.empty())
     {
@@ -908,7 +908,7 @@ TransportPtr BattlegroundIC::CreateTransport(uint32 goEntry, uint32 period)
     if (!goinfo)
     {
         sLog->outError(LOG_FILTER_SQL, "Transport ID: %u will not be loaded, gameobject_template missing", goEntry);
-        return NULL;
+        return nullptr;
     }
 
     std::set<uint32> mapsUsed;
@@ -917,7 +917,7 @@ TransportPtr BattlegroundIC::CreateTransport(uint32 goEntry, uint32 period)
         // skip transports with empty waypoints list
     {
         sLog->outError(LOG_FILTER_SQL, "Transport (path id %u) path size = 0. Transport ignored, check DBC files or transport GO data0 field.", goinfo->moTransport.taxiPathId);
-        return NULL;
+        return nullptr;
     }
 
     uint32 mapid = t->m_WayPoints[0].mapid;
@@ -930,7 +930,7 @@ TransportPtr BattlegroundIC::CreateTransport(uint32 goEntry, uint32 period)
     // creates the Gameobject
     if (!t->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_MO_TRANSPORT), goEntry, mapid, x, y, z, o, 255, 0))
     {
-        return NULL;
+        return nullptr;
     }
 
     //If we someday decide to use the grid to track transports, here:

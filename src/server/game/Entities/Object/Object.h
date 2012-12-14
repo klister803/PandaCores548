@@ -706,7 +706,7 @@ class WorldObject : public Object, public WorldLocation
         void GetClosePoint(float &x, float &y, float &z, float size, float distance2d = 0, float angle = 0) const
         {
             // angle calculated from current orientation
-            GetNearPoint(NULL, x, y, z, size, distance2d, GetOrientation() + angle);
+            GetNearPoint(nullptr, x, y, z, size, distance2d, GetOrientation() + angle);
         }
         void MovePosition(Position &pos, float dist, float angle);
         void GetNearPosition(Position &pos, float dist, float angle)
@@ -851,8 +851,8 @@ class WorldObject : public Object, public WorldLocation
         void MonsterYellToZone(int32 textId, uint32 language, uint64 TargetGuid);
         void BuildMonsterChat(WorldPacket* data, uint8 msgtype, char const* text, uint32 language, char const* name, uint64 TargetGuid) const;
 
-        void PlayDistanceSound(uint32 sound_id, PlayerPtr target = NULL);
-        void PlayDirectSound(uint32 sound_id, PlayerPtr target = NULL);
+        void PlayDistanceSound(uint32 sound_id, PlayerPtr target = nullptr);
+        void PlayDirectSound(uint32 sound_id, PlayerPtr target = nullptr);
 
         void SendObjectDeSpawnAnim(uint64 guid);
 
@@ -861,7 +861,7 @@ class WorldObject : public Object, public WorldLocation
 
         float GetGridActivationRange() const;
         float GetVisibilityRange() const;
-        float GetSightRange(constWorldObjectPtr target = NULL) const;
+        float GetSightRange(constWorldObjectPtr target = nullptr) const;
         bool canSeeOrDetect(constWorldObjectPtr obj, bool ignoreStealth = false, bool distanceCheck = false) const;
 
         FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealth;
@@ -888,8 +888,8 @@ class WorldObject : public Object, public WorldLocation
         void SetZoneScript();
         ZoneScript* GetZoneScript() const { return m_zoneScript; }
 
-        TempSummonPtr SummonCreature(uint32 id, const Position &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint32 vehId = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL) const;
-        TempSummonPtr SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL)
+        TempSummonPtr SummonCreature(uint32 id, const Position &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint32 vehId = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = nullptr) const;
+        TempSummonPtr SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = nullptr)
         {
             if (!x && !y && !z)
             {
@@ -901,7 +901,7 @@ class WorldObject : public Object, public WorldLocation
             return SummonCreature(id, pos, spwtype, despwtime, 0, viewerGuid, viewersList);
         }
         GameObjectPtr SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime);
-        CreaturePtr SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(CreaturePtr) = NULL);
+        CreaturePtr SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(CreaturePtr) = nullptr);
 
         CreaturePtr FindNearestCreature(uint32 entry, float range, bool alive = true) const;
         GameObjectPtr FindNearestGameObject(uint32 entry, float range) const;

@@ -104,12 +104,12 @@ class ObjectAccessor
         static UnitPtr GetObjectInOrOutOfWorld(uint64 guid, Unit* /*typeSpecifier*/)
         {
             if (IS_PLAYER_GUID(guid))
-                return TO_UNIT(GetObjectInOrOutOfWorld(guid, (Player*)NULL));
+                return TO_UNIT(GetObjectInOrOutOfWorld(guid, (Player*)nullptr));
 
             if (IS_PET_GUID(guid))
-                return TO_UNIT(GetObjectInOrOutOfWorld(guid, (Pet*)NULL));
+                return TO_UNIT(GetObjectInOrOutOfWorld(guid, (Pet*)nullptr));
 
-            return TO_UNIT(GetObjectInOrOutOfWorld(guid, (Creature*)NULL));
+            return TO_UNIT(GetObjectInOrOutOfWorld(guid, (Creature*)nullptr));
         }
 
         // returns object if is in world
@@ -130,42 +130,42 @@ class ObjectAccessor
         static UnitPtr GetObjectInWorld(uint64 guid, Unit* /*typeSpecifier*/)
         {
             if (IS_PLAYER_GUID(guid))
-                return TO_UNIT(GetObjectInWorld(guid, (Player*)NULL));
+                return TO_UNIT(GetObjectInWorld(guid, (Player*)nullptr));
 
             if (IS_PET_GUID(guid))
-                return TO_UNIT(GetObjectInWorld(guid, (Pet*)NULL));
+                return TO_UNIT(GetObjectInWorld(guid, (Pet*)nullptr));
 
-            return TO_UNIT(GetObjectInWorld(guid, (Creature*)NULL));
+            return TO_UNIT(GetObjectInWorld(guid, (Creature*)nullptr));
         }
 
         // returns object if is in map
         template<class T> static std::shared_ptr<T> GetObjectInMap(uint64 guid, MapPtr map, T* /*typeSpecifier*/)
         {
             ASSERT(map);
-            if (std::shared_ptr<T> obj = GetObjectInWorld(guid, (T*)NULL))
+            if (std::shared_ptr<T> obj = GetObjectInWorld(guid, (T*)nullptr))
                 if (obj->GetMap() == map)
                     return obj;
-            return NULL;
+            return nullptr;
         }
 
         template<class T> static std::shared_ptr<T> GetObjectInWorld(uint32 mapid, float x, float y, uint64 guid, T* /*fake*/)
         {
             std::shared_ptr<T> obj = HashMapHolder<T>::Find(guid);
             if (!obj || obj->GetMapId() != mapid)
-                return NULL;
+                return nullptr;
 
             CellCoord p = Trinity::ComputeCellCoord(x, y);
             if (!p.IsCoordValid())
             {
                 sLog->outError(LOG_FILTER_GENERAL, "ObjectAccessor::GetObjectInWorld: invalid coordinates supplied X:%f Y:%f grid cell [%u:%u]", x, y, p.x_coord, p.y_coord);
-                return NULL;
+                return nullptr;
             }
 
             CellCoord q = Trinity::ComputeCellCoord(obj->GetPositionX(), obj->GetPositionY());
             if (!q.IsCoordValid())
             {
                 sLog->outError(LOG_FILTER_GENERAL, "ObjectAccessor::GetObjecInWorld: object (GUID: %u TypeId: %u) has invalid coordinates X:%f Y:%f grid cell [%u:%u]", obj->GetGUIDLow(), obj->GetTypeId(), obj->GetPositionX(), obj->GetPositionY(), q.x_coord, q.y_coord);
-                return NULL;
+                return nullptr;
             }
 
             int32 dx = int32(p.x_coord) - int32(q.x_coord);
@@ -174,7 +174,7 @@ class ObjectAccessor
             if (dx > -2 && dx < 2 && dy > -2 && dy < 2)
                 return obj;
             else
-                return NULL;
+                return nullptr;
         }
 
         // these functions return objects only if in map of specified object

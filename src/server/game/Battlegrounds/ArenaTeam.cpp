@@ -361,7 +361,7 @@ void ArenaTeam::Disband(WorldSession* session)
 
 void ArenaTeam::Roster(WorldSession* session)
 {
-    PlayerPtr player = NULL;
+    PlayerPtr player = nullptr;
 
     uint8 unk308 = 0;
 
@@ -721,7 +721,7 @@ void ArenaTeam::OfflineMemberLost(uint64 guid, uint32 againstMatchmakerRating, i
         {
             // update personal rating
             int32 mod = GetRatingMod(itr->PersonalRating, againstMatchmakerRating, false);
-            itr->ModifyPersonalRating(NULL, mod, GetType());
+            itr->ModifyPersonalRating(nullptr, mod, GetType());
 
             // update matchmaker rating
             itr->ModifyMatchmakerRating(MatchmakerRatingChange, GetSlot());
@@ -830,7 +830,7 @@ ArenaTeamMember* ArenaTeam::GetMember(const std::string& name)
         if (itr->Name == name)
             return &(*itr);
 
-    return NULL;
+    return nullptr;
 }
 
 ArenaTeamMember* ArenaTeam::GetMember(uint64 guid)
@@ -839,7 +839,7 @@ ArenaTeamMember* ArenaTeam::GetMember(uint64 guid)
         if (itr->Guid == guid)
             return &(*itr);
 
-    return NULL;
+    return nullptr;
 }
 
 uint8 ArenaTeam::GetTypeBySlot(uint8 slot)

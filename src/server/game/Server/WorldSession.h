@@ -962,7 +962,7 @@ class WorldSession
         void SendCalendarClearPendingAction();
         void SendCalendarRaidLockout(InstanceSave const* save, bool add);
         void SendCalendarRaidLockoutUpdated(InstanceSave const* save);
-        void SendCalendarCommandResult(CalendarError err, char const* param = NULL);
+        void SendCalendarCommandResult(CalendarError err, char const* param = nullptr);
 
         // Void Storage
         void HandleVoidStorageUnlock(WorldPacket& recvData);
@@ -1048,7 +1048,7 @@ class WorldSession
         typedef std::list<AddonInfo> AddonsList;
 
         // Warden
-        Warden* _warden;                                    // Remains NULL if Warden system is not enabled by config
+        Warden* _warden;                                    // Remains nullptr if Warden system is not enabled by config
 
         time_t _logoutTime;
         bool m_inQueue;                                     // session wait in auth.queue

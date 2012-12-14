@@ -678,7 +678,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         time_t GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const
         {
-            time_t now = time(NULL);
+            time_t now = time(nullptr);
             if (m_respawnTime > now)
                 return m_respawnTime;
             else
@@ -687,7 +687,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
 
         void SetRespawnTime(int32 respawn)
         {
-            m_respawnTime = respawn > 0 ? time(NULL) + respawn : 0;
+            m_respawnTime = respawn > 0 ? time(nullptr) + respawn : 0;
             m_respawnDelayTime = respawn > 0 ? respawn : 0;
         }
         void Respawn();
@@ -720,7 +720,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
 
         LootState getLootState() const { return m_lootState; }
         // Note: unit is only used when s = GO_ACTIVATED
-        void SetLootState(LootState s, UnitPtr unit = NULL);
+        void SetLootState(LootState s, UnitPtr unit = nullptr);
 
         uint16 GetLootMode() { return m_LootMode; }
         bool HasLootMode(uint16 lootMode) { return m_LootMode & lootMode; }
@@ -761,7 +761,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         bool hasQuest(uint32 quest_id) const;
         bool hasInvolvedQuest(uint32 quest_id) const;
         bool ActivateToQuest(PlayerPtr target) const;
-        void UseDoorOrButton(uint32 time_to_restore = 0, bool alternative = false, UnitPtr user = NULL);
+        void UseDoorOrButton(uint32 time_to_restore = 0, bool alternative = false, UnitPtr user = nullptr);
                                                             // 0 = use `gameobject`.`spawntimesecs`
         void ResetDoorOrButton();
 
@@ -784,9 +784,9 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         void SendCustomAnim(uint32 anim);
         bool IsInRange(float x, float y, float z, float radius) const;
 
-        void ModifyHealth(int32 change, UnitPtr attackerOrHealer = NULL, uint32 spellId = 0);
+        void ModifyHealth(int32 change, UnitPtr attackerOrHealer = nullptr, uint32 spellId = 0);
         // sets GameObject type 33 destruction flags and optionally default health for that state
-        void SetDestructibleState(GameObjectDestructibleState state, PlayerPtr eventInvoker = NULL, bool setHealth = false);
+        void SetDestructibleState(GameObjectDestructibleState state, PlayerPtr eventInvoker = nullptr, bool setHealth = false);
         GameObjectDestructibleState GetDestructibleState() const
         {
             if (HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED))

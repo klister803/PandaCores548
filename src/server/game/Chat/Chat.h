@@ -51,11 +51,11 @@ class ChatHandler
         explicit ChatHandler(PlayerPtr player) : m_session(player->GetSession()), sentErrorMessage(false) {}
         virtual ~ChatHandler() {}
 
-        static void FillMessageData(WorldPacket* data, WorldSession* session, uint8 type, uint32 language, const char *channelName, uint64 target_guid, const char *message, UnitPtr speaker, const char* addonPrefix = NULL);
+        static void FillMessageData(WorldPacket* data, WorldSession* session, uint8 type, uint32 language, const char *channelName, uint64 target_guid, const char *message, UnitPtr speaker, const char* addonPrefix = nullptr);
 
         void FillMessageData(WorldPacket* data, uint8 type, uint32 language, uint64 target_guid, const char* message)
         {
-            FillMessageData(data, m_session, type, language, NULL, target_guid, message, NULL);
+            FillMessageData(data, m_session, type, language, nullptr, target_guid, message, nullptr);
         }
 
         void FillSystemMessageData(WorldPacket* data, const char* message)
@@ -63,7 +63,7 @@ class ChatHandler
             FillMessageData(data, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, 0, message);
         }
 
-        static char* LineFromMessage(char*& pos) { char* start = strtok(pos, "\n"); pos = NULL; return start; }
+        static char* LineFromMessage(char*& pos) { char* start = strtok(pos, "\n"); pos = nullptr; return start; }
 
         // function with different implementation for chat/console
         virtual const char *GetTrinityString(int32 entry) const;
@@ -99,10 +99,10 @@ class ChatHandler
         UnitPtr     getSelectedUnit();
         WorldObjectPtr getSelectedObject();
 
-        char*     extractKeyFromLink(char* text, char const* linkType, char** something1 = NULL);
-        char*     extractKeyFromLink(char* text, char const* const* linkTypes, int* found_idx, char** something1 = NULL);
+        char*     extractKeyFromLink(char* text, char const* linkType, char** something1 = nullptr);
+        char*     extractKeyFromLink(char* text, char const* const* linkTypes, int* found_idx, char** something1 = nullptr);
 
-        // if args have single value then it return in arg2 and arg1 == NULL
+        // if args have single value then it return in arg2 and arg1 == nullptr
         void      extractOptFirstArg(char* args, char** arg1, char** arg2);
         char*     extractQuotedArg(char* args);
 
@@ -112,7 +112,7 @@ class ChatHandler
         bool GetPlayerGroupAndGUIDByName(const char* cname, PlayerPtr &player, GroupPtr &group, uint64 &guid, bool offline = false);
         std::string extractPlayerNameFromLink(char* text);
         // select by arg (name/link) or in-game selection online/offline player
-        bool extractPlayerTarget(char* args, PlayerPtr* player, uint64* player_guid = NULL, std::string* player_name = NULL);
+        bool extractPlayerTarget(char* args, PlayerPtr* player, uint64* player_guid = nullptr, std::string* player_name = nullptr);
 
         std::string playerLink(std::string const& name) const { return m_session ? "|cffffffff|Hplayer:"+name+"|h["+name+"]|h|r" : name; }
         std::string GetNameLink(PlayerPtr chr) const { return playerLink(chr->GetName()); }
@@ -126,13 +126,13 @@ class ChatHandler
 
         bool ShowHelpForCommand(ChatCommand* table, const char* cmd);
     protected:
-        explicit ChatHandler() : m_session(NULL), sentErrorMessage(false) {}      // for CLI subclass
+        explicit ChatHandler() : m_session(nullptr), sentErrorMessage(false) {}      // for CLI subclass
         static bool SetDataForCommandInTable(ChatCommand* table, const char* text, uint32 security, std::string const& help, std::string const& fullcommand);
         bool ExecuteCommandInTable(ChatCommand* table, const char* text, const std::string& fullcmd);
         bool ShowHelpForSubCommands(ChatCommand* table, char const* cmd, char const* subcmd);
 
     private:
-        WorldSession* m_session;                           // != NULL for chat command call and NULL for CLI command
+        WorldSession* m_session;                           // != nullptr for chat command call and nullptr for CLI command
 
         // common global flag
         static bool load_command_table;

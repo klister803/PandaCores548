@@ -274,7 +274,7 @@ void PetAI::UpdateAllies()
     m_AllySet.insert(me->GetGUID());
     if (group)                                              //add group
     {
-        for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+        for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             PlayerPtr Target (itr->getSource());
             if (!Target || !group->SameSubGroup(TO_PLAYER(owner), Target))
@@ -352,7 +352,7 @@ void PetAI::OwnerAttacked(UnitPtr target)
     // Called when owner attacks something. Allows defensive pets to know
     //  that they need to assist
 
-    // Target might be NULL if called from spell with invalid cast targets
+    // Target might be nullptr if called from spell with invalid cast targets
     if (!target)
         return;
 
@@ -374,7 +374,7 @@ UnitPtr PetAI::SelectNextTarget()
 
     // Passive pets don't do next target selection
     if (me->HasReactState(REACT_PASSIVE))
-        return NULL;
+        return nullptr;
 
     UnitPtr target = me->getAttackerForHelper();
 
@@ -396,7 +396,7 @@ UnitPtr PetAI::SelectNextTarget()
     }
 
     // Default
-    return NULL;
+    return nullptr;
 }
 
 void PetAI::HandleReturnMovement()

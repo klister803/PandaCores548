@@ -90,8 +90,8 @@ class Aura : public std::enable_shared_from_this<Aura>
         typedef std::map<uint64, AuraApplicationPtr> ApplicationMap;
 
         static uint32 BuildEffectMaskForOwner(SpellInfo const* spellProto, uint32 avalibleEffectMask, WorldObjectPtr owner);
-        static AuraPtr TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEffMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32* baseAmount = NULL, ItemPtr castItem = NULL, uint64 casterGUID = 0, bool* refresh = NULL);
-        static AuraPtr TryCreate(SpellInfo const* spellproto, uint32 effMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32 *baseAmount = NULL, ItemPtr castItem = NULL, uint64 casterGUID = 0);
+        static AuraPtr TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEffMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32* baseAmount = nullptr, ItemPtr castItem = nullptr, uint64 casterGUID = 0, bool* refresh = nullptr);
+        static AuraPtr TryCreate(SpellInfo const* spellproto, uint32 effMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32 *baseAmount = nullptr, ItemPtr castItem = nullptr, uint64 casterGUID = 0);
         static AuraPtr Create(SpellInfo const* spellproto, uint32 effMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32* baseAmount, ItemPtr castItem, uint64 casterGUID);
         explicit Aura(SpellInfo const* spellproto, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, ItemPtr castItem, uint64 casterGUID);
         void _InitEffects(uint32 effMask, UnitPtr caster, int32 *baseAmount);
@@ -167,7 +167,7 @@ class Aura : public std::enable_shared_from_this<Aura>
         void SetLoadedState(int32 maxduration, int32 duration, int32 charges, uint8 stackamount, uint32 recalculateMask, int32 * amount);
 
         // helpers for aura effects
-        bool HasEffect(uint8 effIndex) const { return GetEffect(effIndex) != NULL; }
+        bool HasEffect(uint8 effIndex) const { return GetEffect(effIndex) != nullptr; }
         bool HasEffectType(AuraType type) const;
         AuraEffectPtr GetEffect(uint8 effIndex) const { ASSERT (effIndex < MAX_SPELL_EFFECTS); return m_effects[effIndex]; }
         uint32 GetEffectMask() const { uint32 effMask = 0; for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i) if (m_effects[i]) effMask |= 1<<i; return effMask; }

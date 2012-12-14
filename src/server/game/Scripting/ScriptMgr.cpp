@@ -120,7 +120,7 @@ class ScriptRegistry
             if (it != ScriptPointerList.end())
                 return it->second;
 
-            return NULL;
+            return nullptr;
         }
 
     private:
@@ -711,7 +711,7 @@ InstanceScript* ScriptMgr::CreateInstanceData(InstanceMapPtr map)
 {
     ASSERT(map);
 
-    GET_SCRIPT_RET(InstanceMapScript, map->GetScriptId(), tmpscript, NULL);
+    GET_SCRIPT_RET(InstanceMapScript, map->GetScriptId(), tmpscript, nullptr);
     return tmpscript->GetInstanceScript(map);
 }
 
@@ -850,7 +850,7 @@ CreatureAI* ScriptMgr::GetCreatureAI(CreaturePtr creature)
 {
     ASSERT(creature);
 
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, NULL);
+    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, nullptr);
     return tmpscript->GetAI(creature);
 }
 
@@ -858,7 +858,7 @@ GameObjectAI* ScriptMgr::GetGameObjectAI(GameObjectPtr gameobject)
 {
     ASSERT(gameobject);
 
-    GET_SCRIPT_RET(GameObjectScript, gameobject->GetScriptId(), tmpscript, NULL);
+    GET_SCRIPT_RET(GameObjectScript, gameobject->GetScriptId(), tmpscript, nullptr);
     return tmpscript->GetAI(gameobject);
 }
 
@@ -994,14 +994,14 @@ Battleground* ScriptMgr::CreateBattleground(BattlegroundTypeId /*typeId*/)
 {
     // TODO: Implement script-side battlegrounds.
     ASSERT(false);
-    return NULL;
+    return nullptr;
 }
 
 OutdoorPvP* ScriptMgr::CreateOutdoorPvP(OutdoorPvPData const* data)
 {
     ASSERT(data);
 
-    GET_SCRIPT_RET(OutdoorPvPScript, data->ScriptId, tmpscript, NULL);
+    GET_SCRIPT_RET(OutdoorPvPScript, data->ScriptId, tmpscript, nullptr);
     return tmpscript->GetOutdoorPvP();
 }
 
@@ -1190,7 +1190,7 @@ void ScriptMgr::OnShutdown()
 bool ScriptMgr::OnCriteriaCheck(AchievementCriteriaData const* data, PlayerPtr source, UnitPtr target)
 {
     ASSERT(source);
-    // target can be NULL.
+    // target can be nullptr.
 
     GET_SCRIPT_RET(AchievementCriteriaScript, data->ScriptId, tmpscript, false);
     return tmpscript->OnCheck(source, target);

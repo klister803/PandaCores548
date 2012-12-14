@@ -161,11 +161,11 @@ void Map::LoadMap(int gx, int gy, bool reload)
         sScriptMgr->OnUnloadGridMap(THIS_MAP, GridMaps[gx][gy], gx, gy);
 
         delete (GridMaps[gx][gy]);
-        GridMaps[gx][gy]=NULL;
+        GridMaps[gx][gy]=nullptr;
     }
 
     // map file name
-    char *tmp=NULL;
+    char *tmp=nullptr;
     int len = sWorld->GetDataPath().length()+strlen("maps/%03u%02u%02u.map")+1;
     tmp = new char[len];
     snprintf(tmp, len, (char *)(sWorld->GetDataPath()+"maps/%03u%02u%02u.map").c_str(), GetId(), gx, gy);
@@ -217,8 +217,8 @@ i_scriptLock(false)
         for (unsigned int j=0; j < MAX_NUMBER_OF_GRIDS; ++j)
         {
             //z code
-            GridMaps[idx][j] =NULL;
-            setNGrid(NULL, idx, j);
+            GridMaps[idx][j] =nullptr;
+            setNGrid(nullptr, idx, j);
         }
     }
 
@@ -274,7 +274,7 @@ void Map::SwitchGridContainers(CreaturePtr obj, bool on)
 
     sLog->outDebug(LOG_FILTER_MAPS, "Switch object " UI64FMTD " from grid[%u, %u] %u", obj->GetGUID(), cell.data.Part.grid_x, cell.data.Part.grid_y, on);
     NGridType *ngrid = getNGrid(cell.GridX(), cell.GridY());
-    ASSERT(ngrid != NULL);
+    ASSERT(ngrid != nullptr);
 
     GridType &grid = ngrid->GetGridType(cell.CellX(), cell.CellY());
 
@@ -338,7 +338,7 @@ void Map::EnsureGridLoadedForActiveObject(const Cell &cell, WorldObjectPtr objec
 {
     EnsureGridLoaded(cell);
     NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
-    ASSERT(grid != NULL);
+    ASSERT(grid != nullptr);
 
     // refresh grid state & timer
     if (grid->GetGridState() != GRID_STATE_ACTIVE)
@@ -355,7 +355,7 @@ bool Map::EnsureGridLoaded(const Cell &cell)
     EnsureGridCreated(GridCoord(cell.GridX(), cell.GridY()));
     NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
 
-    ASSERT(grid != NULL);
+    ASSERT(grid != nullptr);
     if (!isGridObjectDataLoaded(cell.GridX(), cell.GridY()))
     {
         sLog->outDebug(LOG_FILTER_MAPS, "Loading grid[%u, %u] for map %u instance %u", cell.GridX(), cell.GridY(), GetId(), i_InstanceId);
@@ -976,7 +976,7 @@ bool Map::UnloadGrid(NGridType& ngrid, bool unloadAll)
         ASSERT(i_objectsToRemove.empty());
 
         delete &ngrid;
-        setNGrid(NULL, x, y);
+        setNGrid(nullptr, x, y);
     }
     int gx = (MAX_NUMBER_OF_GRIDS - 1) - x;
     int gy = (MAX_NUMBER_OF_GRIDS - 1) - y;
@@ -997,7 +997,7 @@ bool Map::UnloadGrid(NGridType& ngrid, bool unloadAll)
         else
             TO_MAPINSTANCED(m_parentMap)->RemoveGridMapReference(GridCoord(gx, gy));
 
-        GridMaps[gx][gy] = NULL;
+        GridMaps[gx][gy] = nullptr;
     }
     sLog->outDebug(LOG_FILTER_MAPS, "Unloading grid[%u, %u] for map %u finished", x, y, GetId());
     return true;
@@ -1041,12 +1041,12 @@ GridMap::GridMap()
     _flags = 0;
     // Area data
     _gridArea = 0;
-    _areaMap = NULL;
+    _areaMap = nullptr;
     // Height level data
     _gridHeight = INVALID_HEIGHT;
     _gridGetHeight = &GridMap::getHeightFromFlat;
-    m_V9 = NULL;
-    m_V8 = NULL;
+    m_V9 = nullptr;
+    m_V8 = nullptr;
     // Liquid data
     _liquidType    = 0;
     _liquidOffX   = 0;
@@ -1054,9 +1054,9 @@ GridMap::GridMap()
     _liquidWidth  = 0;
     _liquidHeight = 0;
     _liquidLevel = INVALID_HEIGHT;
-    _liquidEntry = NULL;
-    _liquidFlags = NULL;
-    _liquidMap  = NULL;
+    _liquidEntry = nullptr;
+    _liquidFlags = nullptr;
+    _liquidMap  = nullptr;
 }
 
 GridMap::~GridMap()
@@ -1120,12 +1120,12 @@ void GridMap::unloadData()
     delete[] _liquidEntry;
     delete[] _liquidFlags;
     delete[] _liquidMap;
-    _areaMap = NULL;
-    m_V9 = NULL;
-    m_V8 = NULL;
-    _liquidEntry = NULL;
-    _liquidFlags = NULL;
-    _liquidMap  = NULL;
+    _areaMap = nullptr;
+    m_V9 = nullptr;
+    m_V8 = nullptr;
+    _liquidEntry = nullptr;
+    _liquidFlags = nullptr;
+    _liquidMap  = nullptr;
     _gridGetHeight = &GridMap::getHeightFromFlat;
 }
 
@@ -1600,7 +1600,7 @@ inline GridMap* Map::GetGrid(float x, float y)
     return GridMaps[gx][gy];
 }
 
-float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= NULL*/, bool /*swim = false*/) const
+float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= nullptr*/, bool /*swim = false*/) const
 {
     if (THIS_MAP->GetGrid(x, y))
     {
@@ -2278,7 +2278,7 @@ template void Map::RemoveFromMap(DynamicObjectPtr, bool);
 InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 SpawnMode, MapPtr _parent)
   : Map(id, expiry, InstanceId, SpawnMode, _parent),
     m_resetAfterUnload(false), m_unloadWhenEmpty(false),
-    i_data(NULL), i_script_id(0)
+    i_data(nullptr), i_script_id(0)
 {
     //lets initialize visibility distance for dungeons
     InstanceMap::InitVisibilityDistance();
@@ -2291,7 +2291,7 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 Spaw
 InstanceMap::~InstanceMap()
 {
     delete i_data;
-    i_data = NULL;
+    i_data = nullptr;
 }
 
 void InstanceMap::InitVisibilityDistance()
@@ -2385,7 +2385,7 @@ bool InstanceMap::AddPlayerToMap(PlayerPtr player)
 
             // increase current instances (hourly limit)
             if (!group || !group->isLFGGroup())
-                player->AddInstanceEnterTime(GetInstanceId(), time(NULL));
+                player->AddInstanceEnterTime(GetInstanceId(), time(nullptr));
 
             // get or create an instance save for the map
             InstanceSave* mapSave = sInstanceSaveMgr->GetInstanceSave(GetInstanceId());
@@ -2432,11 +2432,11 @@ bool InstanceMap::AddPlayerToMap(PlayerPtr player)
                             if (mapSave)
                                 sLog->outError(LOG_FILTER_MAPS, "MapSave players: %d, group count: %d", mapSave->GetPlayerCount(), mapSave->GetGroupCount());
                             else
-                                sLog->outError(LOG_FILTER_MAPS, "MapSave NULL");
+                                sLog->outError(LOG_FILTER_MAPS, "MapSave nullptr");
                             if (groupBind->save)
                                 sLog->outError(LOG_FILTER_MAPS, "GroupBind save players: %d, group count: %d", groupBind->save->GetPlayerCount(), groupBind->save->GetGroupCount());
                             else
-                                sLog->outError(LOG_FILTER_MAPS, "GroupBind save NULL");
+                                sLog->outError(LOG_FILTER_MAPS, "GroupBind save nullptr");
                             return false;
                         }
                         // if the group/leader is permanently bound to the instance
@@ -2513,7 +2513,7 @@ void InstanceMap::RemovePlayerFromMap(PlayerPtr player, bool remove)
 
 void InstanceMap::CreateInstanceData(bool load)
 {
-    if (i_data != NULL)
+    if (i_data != nullptr)
         return;
 
     InstanceTemplate const* mInstance = sObjectMgr->GetInstanceTemplate(GetId());
@@ -2686,7 +2686,7 @@ uint32 InstanceMap::GetMaxResetDelay() const
 /* ******* Battleground Instance Maps ******* */
 
 BattlegroundMap::BattlegroundMap(uint32 id, time_t expiry, uint32 InstanceId, MapPtr _parent, uint8 spawnMode)
-  : Map(id, expiry, InstanceId, spawnMode, _parent), m_bg(NULL)
+  : Map(id, expiry, InstanceId, spawnMode, _parent), m_bg(nullptr)
 {
     //lets initialize visibility distance for BG/Arenas
     BattlegroundMap::InitVisibilityDistance();
@@ -2697,8 +2697,8 @@ BattlegroundMap::~BattlegroundMap()
     if (m_bg)
     {
         //unlink to prevent crash, always unlink all pointer reference before destruction
-        m_bg->SetBgMap(NULL);
-        m_bg = NULL;
+        m_bg->SetBgMap(nullptr);
+        m_bg = nullptr;
     }
 }
 
@@ -2761,17 +2761,17 @@ void BattlegroundMap::RemoveAllPlayers()
 
 CreaturePtr Map::GetCreature(uint64 guid)
 {
-    return ObjectAccessor::GetObjectInMap(guid, THIS_MAP, (Creature*)NULL);
+    return ObjectAccessor::GetObjectInMap(guid, THIS_MAP, (Creature*)nullptr);
 }
 
 GameObjectPtr Map::GetGameObject(uint64 guid)
 {
-    return ObjectAccessor::GetObjectInMap(guid, THIS_MAP, (GameObject*)NULL);
+    return ObjectAccessor::GetObjectInMap(guid, THIS_MAP, (GameObject*)nullptr);
 }
 
 DynamicObjectPtr Map::GetDynamicObject(uint64 guid)
 {
-    return ObjectAccessor::GetObjectInMap(guid, THIS_MAP, (DynamicObject*)NULL);
+    return ObjectAccessor::GetObjectInMap(guid, THIS_MAP, (DynamicObject*)nullptr);
 }
 
 void Map::UpdateIteratorBack(PlayerPtr player)

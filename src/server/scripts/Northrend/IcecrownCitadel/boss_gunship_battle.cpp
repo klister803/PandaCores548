@@ -270,7 +270,7 @@ TransportPtr GetTransportByGUID(UnitPtr u, uint64 GUID)
     if (TransportPtr transport = ObjectAccessor::GetTransport(TO_CONST_WORLDOBJECT(u), GUID))
         return transport;
 
-    return NULL;
+    return nullptr;
 }
 
 class npc_gunship_commander : public CreatureScript
@@ -443,7 +443,7 @@ public:
 
         bool CheckPlayerOnTransport()
         {
-            TransportPtr pTransport = NULL;
+            TransportPtr pTransport = nullptr;
 
             if (!pInstance)
                 return false;
@@ -777,7 +777,7 @@ public:
             npc_gunship_adds_AI::Reset();
             events.ScheduleEvent(EVENT_TIR, CONFIG_TIR_TIMER);
 
-            FriendlyTransport = NULL;
+            FriendlyTransport = nullptr;
 
             if (pInstance)
                 FriendlyTransport = GetTransportByGUID(me, pInstance->GetData64(DATA_GUNSHIP_TRANSPORT_MAIN));

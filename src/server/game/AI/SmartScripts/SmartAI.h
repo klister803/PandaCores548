@@ -50,7 +50,7 @@ class SmartAI : public CreatureAI
         explicit SmartAI(CreaturePtr c);
 
         // Start moving to the desired MovePoint
-        void StartPath(bool run = false, uint32 path = 0, bool repeat = false, UnitPtr invoker = NULL);
+        void StartPath(bool run = false, uint32 path = 0, bool repeat = false, UnitPtr invoker = nullptr);
         bool LoadPath(uint32 entry);
         void PausePath(uint32 delay, bool forced = false);
         void StopPath(uint32 DespawnTime = 0, uint32 quest = 0, bool fail = false);
@@ -78,7 +78,7 @@ class SmartAI : public CreatureAI
         // Called at reaching home after evade
         void JustReachedHome();
 
-        // Called for reaction at enter to combat if not in combat yet (enemy can be NULL)
+        // Called for reaction at enter to combat if not in combat yet (enemy can be nullptr)
         void EnterCombat(UnitPtr enemy);
 
         // Called for reaction at stopping attack at no attackers or targets

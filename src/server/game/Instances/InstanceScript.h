@@ -162,8 +162,8 @@ class InstanceScript : public ZoneScript
 
         //Handle open / close objects
         //use HandleGameObject(0, boolen, GO); in OnObjectCreate in instance scripts
-        //use HandleGameObject(GUID, boolen, NULL); in any other script
-        void HandleGameObject(uint64 guid, bool open, GameObjectPtr go = NULL);
+        //use HandleGameObject(GUID, boolen, nullptr); in any other script
+        void HandleGameObject(uint64 guid, bool open, GameObjectPtr go = nullptr);
 
         //change active state of doors or buttons
         void DoUseDoorOrButton(uint64 guid, uint32 withRestoreTime = 0, bool useAlternativeState = false);
@@ -178,7 +178,7 @@ class InstanceScript : public ZoneScript
         void DoSendNotifyToInstance(char const* format, ...);
 
         // Update Achievement Criteria for all players in instance
-        void DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, UnitPtr unit = NULL);
+        void DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, UnitPtr unit = nullptr);
 
         // Start/Stop Timed Achievement Criteria for all players in instance
         void DoStartTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry);
@@ -195,14 +195,14 @@ class InstanceScript : public ZoneScript
 
         virtual bool SetBossState(uint32 id, EncounterState state);
         EncounterState GetBossState(uint32 id) const { return id < bosses.size() ? bosses[id].state : TO_BE_DECIDED; }
-        BossBoundaryMap const* GetBossBoundary(uint32 id) const { return id < bosses.size() ? &bosses[id].boundary : NULL; }
+        BossBoundaryMap const* GetBossBoundary(uint32 id) const { return id < bosses.size() ? &bosses[id].boundary : nullptr; }
 
         // Achievement criteria additional requirements check
         // NOTE: not use this if same can be checked existed requirement types from AchievementCriteriaRequirementType
-        virtual bool CheckAchievementCriteriaMeet(uint32 /*criteria_id*/, constPlayerPtr /*source*/, constUnitPtr /*target*/ = NULL, uint32 /*miscvalue1*/ = 0);
+        virtual bool CheckAchievementCriteriaMeet(uint32 /*criteria_id*/, constPlayerPtr /*source*/, constUnitPtr /*target*/ = nullptr, uint32 /*miscvalue1*/ = 0);
 
         // Checks boss requirements (one boss required to kill other)
-        virtual bool CheckRequiredBosses(uint32 /*bossId*/, constPlayerPtr /*Player*/ = NULL) const { return true; }
+        virtual bool CheckRequiredBosses(uint32 /*bossId*/, constPlayerPtr /*Player*/ = nullptr) const { return true; }
 
         // Checks encounter state at kill/spellcast
         void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, UnitPtr source);
@@ -213,7 +213,7 @@ class InstanceScript : public ZoneScript
         // Returns completed encounters mask for packets
         uint32 GetCompletedEncounterMask() const { return completedEncounters; }
 
-        void SendEncounterUnit(uint32 type, UnitPtr unit = NULL, uint8 param1 = 0, uint8 param2 = 0);
+        void SendEncounterUnit(uint32 type, UnitPtr unit = nullptr, uint8 param1 = 0, uint8 param2 = 0);
 
         // Check if all players are dead (except gamemasters)
         bool IsWipe();

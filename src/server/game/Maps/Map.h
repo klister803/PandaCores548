@@ -238,7 +238,7 @@ class Map : public GridRefManager<NGridType>, public std::enable_shared_from_thi
 {
     friend class MapReference;
     public:
-        Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, MapPtr _parent = NULL);
+        Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, MapPtr _parent = nullptr);
         virtual ~Map();
 
         MapEntry const* GetEntry() const { return i_mapEntry; }
@@ -426,17 +426,17 @@ class Map : public GridRefManager<NGridType>, public std::enable_shared_from_thi
 
         void UpdateIteratorBack(PlayerPtr player);
 
-        TempSummonPtr SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties = NULL, uint32 duration = 0, UnitPtr summoner = NULL, uint32 spellId = 0, uint32 vehId = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL);
+        TempSummonPtr SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties = nullptr, uint32 duration = 0, UnitPtr summoner = nullptr, uint32 spellId = 0, uint32 vehId = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = nullptr);
         CreaturePtr GetCreature(uint64 guid);
         GameObjectPtr GetGameObject(uint64 guid);
         DynamicObjectPtr GetDynamicObject(uint64 guid);
 
-        MapInstanced* ToMapInstanced(){ if (Instanceable())  return reinterpret_cast<MapInstanced*>(this); else return NULL;  }
-        const MapInstanced* ToMapInstanced() const { if (Instanceable())  return (const MapInstanced*)((MapInstanced*)this); else return NULL;  }
+        MapInstanced* ToMapInstanced(){ if (Instanceable())  return reinterpret_cast<MapInstanced*>(this); else return nullptr;  }
+        const MapInstanced* ToMapInstanced() const { if (Instanceable())  return (const MapInstanced*)((MapInstanced*)this); else return nullptr;  }
 
         InstanceMapPtr ToInstanceMap(){ return IsDungeon() ? THIS_INSTANCEMAP : nullptr;  }
-        constInstanceMapPtr ToInstanceMap() const { if (IsDungeon())  return THIS_CONST_INSTANCEMAP; else return NULL;  }
-        float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
+        constInstanceMapPtr ToInstanceMap() const { if (IsDungeon())  return THIS_CONST_INSTANCEMAP; else return nullptr;  }
+        float GetWaterOrGroundLevel(float x, float y, float z, float* ground = nullptr, bool swim = false) const;
         float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;
         bool isInLineOfSight(float x1, float y1, float z1, float x2, float y2, float z2, uint32 phasemask) const;
         void Balance() { _dynamicTree.balance(); }

@@ -173,11 +173,11 @@ SpellInfo const* ScriptedAI::SelectSpell(UnitPtr target, uint32 school, uint32 m
 {
     //No target so we can't cast
     if (!target)
-        return NULL;
+        return nullptr;
 
     //Silenced so we can't cast
     if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_SILENCED))
-        return NULL;
+        return nullptr;
 
     //Using the extended script system we first create a list of viable spells
     SpellInfo const* apSpell[CREATURE_MAX_SPELLS];
@@ -185,7 +185,7 @@ SpellInfo const* ScriptedAI::SelectSpell(UnitPtr target, uint32 school, uint32 m
 
     uint32 spellCount = 0;
 
-    SpellInfo const* tempSpell = NULL;
+    SpellInfo const* tempSpell = nullptr;
 
     //Check if each spell is viable(set it to null if not)
     for (uint32 i = 0; i < CREATURE_MAX_SPELLS; i++)
@@ -241,7 +241,7 @@ SpellInfo const* ScriptedAI::SelectSpell(UnitPtr target, uint32 school, uint32 m
 
     //We got our usable spells so now lets randomly pick one
     if (!spellCount)
-        return NULL;
+        return nullptr;
 
     return apSpell[urand(0, spellCount - 1)];
 }
@@ -455,7 +455,7 @@ void Scripted_NoMovementAI::AttackStart(UnitPtr target)
 BossAI::BossAI(CreaturePtr creature, uint32 bossId) : ScriptedAI(creature),
     instance(creature->GetInstanceScript()),
     summons(creature),
-    _boundary(instance ? instance->GetBossBoundary(bossId) : NULL),
+    _boundary(instance ? instance->GetBossBoundary(bossId) : nullptr),
     _bossId(bossId)
 {
 }

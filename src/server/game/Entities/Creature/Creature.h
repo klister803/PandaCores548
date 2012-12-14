@@ -340,7 +340,7 @@ struct VendorItemData
     VendorItem* GetItem(uint32 slot) const
     {
         if (slot >= m_items.size())
-            return NULL;
+            return nullptr;
 
         return m_items[slot];
     }
@@ -361,7 +361,7 @@ struct VendorItemData
 struct VendorItemCount
 {
     explicit VendorItemCount(uint32 _item, uint32 _count)
-        : itemId(_item), count(_count), lastIncrementTime(time(NULL)) {}
+        : itemId(_item), count(_count), lastIncrementTime(time(nullptr)) {}
 
     uint32 itemId;
     uint32 count;
@@ -450,7 +450,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         void DisappearAndDie();
 
-        bool Create(uint32 guidlow, MapPtr map, uint32 phaseMask, uint32 Entry, uint32 vehId, uint32 team, float x, float y, float z, float ang, const CreatureData* data = NULL);
+        bool Create(uint32 guidlow, MapPtr map, uint32 phaseMask, uint32 Entry, uint32 vehId, uint32 team, float x, float y, float z, float ang, const CreatureData* data = nullptr);
         bool LoadCreaturesAddon(bool reload = false);
         void SelectLevel(const CreatureTemplate* cinfo);
         void LoadEquipment(uint32 equip_entry, bool force=false);
@@ -458,7 +458,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
 
         void Update(uint32 time);                         // overwrited Unit::Update
-        void GetRespawnPosition(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
+        void GetRespawnPosition(float &x, float &y, float &z, float* ori = nullptr, float* dist =nullptr) const;
         uint32 GetEquipmentId() const { return GetCreatureTemplate()->equipmentId; }
 
         void SetCorpseDelay(uint32 delay) { m_corpseDelay = delay; }
@@ -516,7 +516,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         bool IsInEvadeMode() const { return HasUnitState(UNIT_STATE_EVADE); }
 
-        bool AIM_Initialize(CreatureAI* ai = NULL);
+        bool AIM_Initialize(CreatureAI* ai = nullptr);
         void Motion_Initialize();
 
         void AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, uint8 type);
@@ -537,7 +537,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         bool HasSpell(uint32 spellID) const;
 
-        bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
+        bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=nullptr);
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
         void UpdateResistances(uint32 school);
@@ -634,7 +634,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         time_t const& GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const;
-        void SetRespawnTime(uint32 respawn) { m_respawnTime = respawn ? time(NULL) + respawn : 0; }
+        void SetRespawnTime(uint32 respawn) { m_respawnTime = respawn ? time(nullptr) + respawn : 0; }
         void Respawn(bool force = false);
         void SaveRespawnTime();
 
@@ -720,8 +720,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         void ForcedDespawn(uint32 timeMSToDespawn = 0);
 
     protected:
-        bool CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint32 team, const CreatureData* data = NULL);
-        bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
+        bool CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint32 team, const CreatureData* data = nullptr);
+        bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=nullptr);
 
         // vendor items
         VendorItemCounts m_vendorItemCounts;

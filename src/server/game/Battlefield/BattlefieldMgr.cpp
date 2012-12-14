@@ -101,10 +101,10 @@ Battlefield *BattlefieldMgr::GetBattlefieldToZoneId(uint32 zoneid)
     if (itr == m_BattlefieldMap.end())
     {
         // no handle for this zone, return
-        return NULL;
+        return nullptr;
     }
     if (!itr->second->IsEnabled())
-        return NULL;
+        return nullptr;
     return itr->second;
 }
 
@@ -115,7 +115,7 @@ Battlefield *BattlefieldMgr::GetBattlefieldByBattleId(uint32 battleid)
         if ((*itr)->GetBattleId() == battleid)
             return (*itr);
     }
-    return NULL;
+    return nullptr;
 }
 
 Battlefield* BattlefieldMgr::GetBattlefieldByGUID(uint64 guid)
@@ -124,7 +124,7 @@ Battlefield* BattlefieldMgr::GetBattlefieldByGUID(uint64 guid)
         if ((*itr)->GetGUID() == guid)
             return (*itr);
 
-    return NULL;
+    return nullptr;
 }
 
 void BattlefieldMgr::Update(uint32 diff)
@@ -145,5 +145,5 @@ ZoneScript *BattlefieldMgr::GetZoneScript(uint32 zoneId)
     if (itr != m_BattlefieldMap.end())
         return itr->second;
     else
-        return NULL;
+        return nullptr;
 }

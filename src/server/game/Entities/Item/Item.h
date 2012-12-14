@@ -215,8 +215,8 @@ bool ItemCanGoIntoBag(ItemTemplate const* proto, ItemTemplate const* pBagProto);
 class Item : public Object
 {
     public:
-        static ItemPtr CreateItem(uint32 item, uint32 count, constPlayerPtr player = NULL);
-        ItemPtr CloneItem(uint32 count, constPlayerPtr player = NULL) const;
+        static ItemPtr CreateItem(uint32 item, uint32 count, constPlayerPtr player = nullptr);
+        ItemPtr CloneItem(uint32 count, constPlayerPtr player = nullptr) const;
 
         Item();
 
@@ -242,8 +242,8 @@ class Item : public Object
         void SaveRefundDataToDB();
         void DeleteRefundDataFromDB(SQLTransaction* trans);
 
-        BagPtr ToBag() { if (IsBag()) return THIS_BAG; else return NULL; }
-        constBagPtr ToBag() const { if (IsBag()) return THIS_CONST_BAG; else return NULL; }
+        BagPtr ToBag() { if (IsBag()) return THIS_BAG; else return nullptr; }
+        constBagPtr ToBag() const { if (IsBag()) return THIS_CONST_BAG; else return nullptr; }
 
         bool IsLocked() const { return !HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNLOCKED); }
         bool IsBag() const { return GetTemplate()->InventoryType == INVTYPE_BAG; }
@@ -275,7 +275,7 @@ class Item : public Object
         uint16 GetPos() const { return uint16(GetBagSlot()) << 8 | GetSlot(); }
         void SetContainer(BagPtr container) { m_container = container; }
 
-        bool IsInBag() const { return m_container != NULL; }
+        bool IsInBag() const { return m_container != nullptr; }
         bool IsEquipped() const;
 
         uint32 GetSkill();
@@ -309,7 +309,7 @@ class Item : public Object
 
         // Update States
         ItemUpdateState GetState() const { return uState; }
-        void SetState(ItemUpdateState state, PlayerPtr forplayer = NULL);
+        void SetState(ItemUpdateState state, PlayerPtr forplayer = nullptr);
         void AddToUpdateQueueOf(PlayerPtr player);
         void RemoveFromUpdateQueueOf(PlayerPtr player);
         bool IsInUpdateQueue() const { return uQueuePos != -1; }
@@ -328,7 +328,7 @@ class Item : public Object
         bool IsRangedWeapon() const { return GetTemplate()->IsRangedWeapon(); }
 
         // Item Refund system
-        void SetNotRefundable(PlayerPtr owner, bool changestate = true, SQLTransaction* trans = NULL);
+        void SetNotRefundable(PlayerPtr owner, bool changestate = true, SQLTransaction* trans = nullptr);
         void SetRefundRecipient(uint32 pGuidLow) { m_refundRecipient = pGuidLow; }
         void SetPaidMoney(uint32 money) { m_paidMoney = money; }
         void SetPaidExtendedCost(uint32 iece) { m_paidExtendedCost = iece; }

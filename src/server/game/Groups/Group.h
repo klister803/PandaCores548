@@ -111,7 +111,7 @@ enum GroupUpdateFlags
     GROUP_UPDATE_FLAG_POSITION          = 0x00000800,       // uint16 (x), uint16 (y), uint16 (z)
     GROUP_UPDATE_FLAG_AURAS             = 0x00001000,       // uint8 (unk), uint64 (mask), uint32 (count), for each bit set: uint32 (spell id) + uint16 (AuraFlags)  (if has flags Scalable -> 3x int32 (bps))
     GROUP_UPDATE_FLAG_PET_GUID          = 0x00002000,       // uint64 (pet guid)
-    GROUP_UPDATE_FLAG_PET_NAME          = 0x00004000,       // cstring (name, NULL terminated string)
+    GROUP_UPDATE_FLAG_PET_NAME          = 0x00004000,       // cstring (name, nullptr terminated string)
     GROUP_UPDATE_FLAG_PET_MODEL_ID      = 0x00008000,       // uint16 (model id)
     GROUP_UPDATE_FLAG_PET_CUR_HP        = 0x00010000,       // uint32 (HP)
     GROUP_UPDATE_FLAG_PET_MAX_HP        = 0x00020000,       // uint32 (HP)
@@ -167,7 +167,7 @@ struct InstanceGroupBind
     bool perm;
     /* permanent InstanceGroupBinds exist if the leader has a permanent
        PlayerInstanceBind for the same instance. */
-    InstanceGroupBind() : save(NULL), perm(false) {}
+    InstanceGroupBind() : save(nullptr), perm(false) {}
 };
 
 /** request member stats checken **/
@@ -206,7 +206,7 @@ class Group : public std::enable_shared_from_this<Group>
         void   RemoveAllInvites();
         bool   AddLeaderInvite(PlayerPtr player);
         bool   AddMember(PlayerPtr player);
-        bool   RemoveMember(uint64 guid, const RemoveMethod &method = GROUP_REMOVEMETHOD_DEFAULT, uint64 kicker = 0, const char* reason = NULL);
+        bool   RemoveMember(uint64 guid, const RemoveMethod &method = GROUP_REMOVEMETHOD_DEFAULT, uint64 kicker = 0, const char* reason = nullptr);
         void   ChangeLeader(uint64 guid);
         void   SetLootMethod(LootMethod method);
         void   SetLooterGuid(uint64 guid);
@@ -282,7 +282,7 @@ class Group : public std::enable_shared_from_this<Group>
         //void SendInit(WorldSession* session);
         void SendTargetIconList(WorldSession* session);
         void SendUpdate();
-        void SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot = NULL);
+        void SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot = nullptr);
         void UpdatePlayerOutOfRange(PlayerPtr player);
                                                             // ignore: GUID of player that will be ignored
         void BroadcastPacket(WorldPacket* packet, bool ignorePlayersInBGRaid, int group = -1, uint64 ignore = 0);

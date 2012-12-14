@@ -75,8 +75,8 @@ Object::Object() : m_PackGUID(sizeof(uint64)+1)
     m_objectTypeId      = TYPEID_OBJECT;
     m_objectType        = TYPEMASK_OBJECT;
 
-    m_uint32Values      = NULL;
-    _changedFields      = NULL;
+    m_uint32Values      = nullptr;
+    _changedFields      = nullptr;
     m_valuesCount       = 0;
     _fieldNotifyFlags   = UF_FLAG_DYNAMIC;
 
@@ -1036,7 +1036,7 @@ bool Object::IsUpdateFieldVisible(uint32 flags, bool isSelf, bool isOwner, bool 
 void Object::_SetUpdateBits(UpdateMask* updateMask, PlayerPtr target) const
 {
     bool* indexes = _changedFields;
-    uint32* flags = NULL;
+    uint32* flags = nullptr;
     bool isSelf = target == shared_from_this();
     bool isOwner = false;
     bool isItemOwner = false;
@@ -1057,7 +1057,7 @@ void Object::_SetUpdateBits(UpdateMask* updateMask, PlayerPtr target) const
 void Object::_SetCreateBits(UpdateMask* updateMask, PlayerPtr target) const
 {
     uint32* value = m_uint32Values;
-    uint32* flags = NULL;
+    uint32* flags = nullptr;
     bool isSelf = target == shared_from_this();
     bool isOwner = false;
     bool isItemOwner = false;
@@ -1455,7 +1455,7 @@ void MovementInfo::OutDebug()
     sLog->outInfo(LOG_FILTER_GENERAL, "guid " UI64FMTD, guid);
     sLog->outInfo(LOG_FILTER_GENERAL, "flags %u", flags);
     sLog->outInfo(LOG_FILTER_GENERAL, "flags2 %u", flags2);
-    sLog->outInfo(LOG_FILTER_GENERAL, "time %u current time " UI64FMTD "", flags2, uint64(::time(NULL)));
+    sLog->outInfo(LOG_FILTER_GENERAL, "time %u current time " UI64FMTD "", flags2, uint64(::time(nullptr)));
     sLog->outInfo(LOG_FILTER_GENERAL, "position: `%s`", pos.ToString().c_str());
     if (t_guid)
     {
@@ -1480,8 +1480,8 @@ void MovementInfo::OutDebug()
 }
 
 WorldObject::WorldObject(bool isWorldObject): WorldLocation(),
-m_name(""), m_isActive(false), m_isWorldObject(isWorldObject), m_zoneScript(NULL),
-m_transport(NULL), m_currMap(NULL), m_InstanceId(0),
+m_name(""), m_isActive(false), m_isWorldObject(isWorldObject), m_zoneScript(nullptr),
+m_transport(nullptr), m_currMap(nullptr), m_InstanceId(0),
 m_phaseMask(PHASEMASK_NORMAL), m_notifyflags(0), m_executed_notifies(0)
 {
     m_serverSideVisibility.SetValue(SERVERSIDE_VISIBILITY_GHOST, GHOST_VISIBILITY_ALIVE | GHOST_VISIBILITY_GHOST);
@@ -1570,7 +1570,7 @@ void WorldObject::GetZoneAndAreaId(uint32& zoneid, uint32& areaid) const
 InstanceScript* WorldObject::GetInstanceScript()
 {
     MapPtr map = GetMap();
-    return map->IsDungeon() ? TO_INSTANCEMAP(map)->GetInstanceScript() : NULL;
+    return map->IsDungeon() ? TO_INSTANCEMAP(map)->GetInstanceScript() : nullptr;
 }
 
 float WorldObject::GetDistanceZ(constWorldObjectPtr obj) const
@@ -2447,7 +2447,7 @@ void WorldObject::ResetMap()
     ASSERT(!IsInWorld());
     if (IsWorldObject())
         m_currMap->RemoveWorldObject(THIS_WORLDOBJECT);
-    m_currMap = NULL;
+    m_currMap = nullptr;
     //maybe not for corpse
     //m_mapId = 0;
     //m_InstanceId = 0;
@@ -2473,7 +2473,7 @@ void WorldObject::AddObjectToRemoveList()
     map->AddObjectToRemoveList(THIS_WORLDOBJECT);
 }
 
-TempSummonPtr Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= NULL*/, uint32 duration /*= 0*/, UnitPtr summoner /*= NULL*/, uint32 spellId /*= 0*/, uint32 vehId /*= 0*/, uint64 viewerGuid /*= 0*/, std::list<uint64>* viewersList /*= NULL*/)
+TempSummonPtr Map::SummonCreature(uint32 entry, Position const& pos, SummonPropertiesEntry const* properties /*= nullptr*/, uint32 duration /*= 0*/, UnitPtr summoner /*= nullptr*/, uint32 spellId /*= 0*/, uint32 vehId /*= 0*/, uint64 viewerGuid /*= 0*/, std::list<uint64>* viewersList /*= nullptr*/)
 {
     uint32 mask = UNIT_MASK_SUMMON;
     if (properties)
@@ -2518,7 +2518,7 @@ TempSummonPtr Map::SummonCreature(uint32 entry, Position const& pos, SummonPrope
                 break;
             }
             default:
-                return NULL;
+                return nullptr;
         }
     }
 
@@ -2531,7 +2531,7 @@ TempSummonPtr Map::SummonCreature(uint32 entry, Position const& pos, SummonPrope
             team = TO_PLAYER(summoner)->GetTeam();
     }
 
-    TempSummonPtr summon = NULL;
+    TempSummonPtr summon = nullptr;
     switch (mask)
     {
         case UNIT_MASK_SUMMON:
@@ -2550,12 +2550,12 @@ TempSummonPtr Map::SummonCreature(uint32 entry, Position const& pos, SummonPrope
             summon = MinionPtr(new Minion(properties, summoner, false));
             break;
         default:
-            return NULL;
+            return nullptr;
     }
 
     if (!summon->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), THIS_MAP, phase, entry, vehId, team, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation()))
     {
-        return NULL;
+        return nullptr;
     }
 
     summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, spellId);
@@ -2603,14 +2603,14 @@ TempSummonPtr WorldObject::SummonCreature(uint32 entry, const Position &pos, Tem
 {
     if (MapPtr map = FindMap())
     {
-        if (TempSummonPtr summon = map->SummonCreature(entry, pos, NULL, duration, isType(TYPEMASK_UNIT) ? THIS_UNIT : NULL, 0, 0, viewerGuid, viewersList))
+        if (TempSummonPtr summon = map->SummonCreature(entry, pos, nullptr, duration, isType(TYPEMASK_UNIT) ? THIS_UNIT : nullptr, 0, 0, viewerGuid, viewersList))
         {
             summon->SetTempSummonType(spwtype);
             return summon;
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 
 PetPtr Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration)
@@ -2635,20 +2635,20 @@ PetPtr Player::SummonPet(uint32 entry, float x, float y, float z, float ang, Pet
         if (duration > 0)
             pet->SetDuration(duration);
 
-        return NULL;
+        return nullptr;
     }
 
     // petentry == 0 for hunter "call pet" (current pet summoned if any)
     if (!entry)
     {
-        return NULL;
+        return nullptr;
     }
 
     pet->Relocate(x, y, z, ang);
     if (!pet->IsPositionValid())
     {
         sLog->outError(LOG_FILTER_GENERAL, "Pet (guidlow %d, entry %d) not summoned. Suggested coordinates isn't valid (X: %f Y: %f)", pet->GetGUIDLow(), pet->GetEntry(), pet->GetPositionX(), pet->GetPositionY());
-        return NULL;
+        return nullptr;
     }
 
     MapPtr map = GetMap();
@@ -2656,7 +2656,7 @@ PetPtr Player::SummonPet(uint32 entry, float x, float y, float z, float ang, Pet
     if (!pet->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_PET), map, GetPhaseMask(), entry, pet_number))
     {
         sLog->outError(LOG_FILTER_GENERAL, "no such creature entry %u", entry);
-        return NULL;
+        return nullptr;
     }
 
     pet->SetCreatorGUID(GetGUID());
@@ -2679,7 +2679,7 @@ PetPtr Player::SummonPet(uint32 entry, float x, float y, float z, float ang, Pet
             pet->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, 1000);
             pet->SetFullHealth();
             pet->SetPower(POWER_MANA, pet->GetMaxPower(POWER_MANA));
-            pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(NULL))); // cast can't be helped in shared_from_this() case
+            pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(nullptr))); // cast can't be helped in shared_from_this() case
             break;
         default:
             break;
@@ -2725,19 +2725,19 @@ PetPtr Player::SummonPet(uint32 entry, float x, float y, float z, float ang, Pet
 GameObjectPtr WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime)
 {
     if (!IsInWorld())
-        return NULL;
+        return nullptr;
 
     GameObjectTemplate const* goinfo = sObjectMgr->GetGameObjectTemplate(entry);
     if (!goinfo)
     {
         sLog->outError(LOG_FILTER_SQL, "Gameobject template %u not found in database!", entry);
-        return NULL;
+        return nullptr;
     }
     MapPtr map = GetMap();
     GameObjectPtr go (new GameObject());
     if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), entry, map, GetPhaseMask(), x, y, z, ang, rotation0, rotation1, rotation2, rotation3, 100, GO_STATE_READY))
     {
-        return NULL;
+        return nullptr;
     }
     go->SetRespawnTime(respawnTime);
     if (GetTypeId() == TYPEID_PLAYER || GetTypeId() == TYPEID_UNIT) //not sure how to handle shared_from_this()
@@ -2754,7 +2754,7 @@ CreaturePtr WorldObject::SummonTrigger(float x, float y, float z, float ang, uin
     TempSummonType summonType = (duration == 0) ? TEMPSUMMON_DEAD_DESPAWN : TEMPSUMMON_TIMED_DESPAWN;
     CreaturePtr summon = SummonCreature(WORLD_TRIGGER, x, y, z, ang, summonType, duration);
     if (!summon)
-        return NULL;
+        return nullptr;
 
     //summon->SetName(GetName());
     if (GetTypeId() == TYPEID_PLAYER || GetTypeId() == TYPEID_UNIT)
@@ -2770,7 +2770,7 @@ CreaturePtr WorldObject::SummonTrigger(float x, float y, float z, float ang, uin
 
 CreaturePtr WorldObject::FindNearestCreature(uint32 entry, float range, bool alive) const
 {
-    CreaturePtr creature = NULL;
+    CreaturePtr creature = nullptr;
     Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck checker(THIS_CONST_WORLDOBJECT, entry, alive, range);
     Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(THIS_WORLDOBJECT, creature, checker);
     VisitNearbyObject(range, searcher);
@@ -2779,7 +2779,7 @@ CreaturePtr WorldObject::FindNearestCreature(uint32 entry, float range, bool ali
 
 GameObjectPtr WorldObject::FindNearestGameObject(uint32 entry, float range) const
 {
-    GameObjectPtr go = NULL;
+    GameObjectPtr go = nullptr;
     Trinity::NearestGameObjectEntryInObjectRangeCheck checker(THIS_CONST_WORLDOBJECT, entry, range);
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(THIS_WORLDOBJECT, go, checker);
     VisitNearbyGridObject(range, searcher);
@@ -2788,7 +2788,7 @@ GameObjectPtr WorldObject::FindNearestGameObject(uint32 entry, float range) cons
 
 GameObjectPtr WorldObject::FindNearestGameObjectOfType(GameobjectTypes type, float range) const
 { 
-    GameObjectPtr go = NULL;
+    GameObjectPtr go = nullptr;
     Trinity::NearestGameObjectTypeInObjectRangeCheck checker(THIS_CONST_WORLDOBJECT, type, range);
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectTypeInObjectRangeCheck> searcher(THIS_WORLDOBJECT, go, checker);
     VisitNearbyGridObject(range, searcher);
@@ -3151,7 +3151,7 @@ void WorldObject::SetPhaseMask(uint32 newPhaseMask, bool update)
         UpdateObjectVisibility();
 }
 
-void WorldObject::PlayDistanceSound(uint32 sound_id, PlayerPtr target /*= NULL*/)
+void WorldObject::PlayDistanceSound(uint32 sound_id, PlayerPtr target /*= nullptr*/)
 {
     WorldPacket data(SMSG_PLAY_OBJECT_SOUND, 4+8);
     data << uint32(sound_id);
@@ -3162,7 +3162,7 @@ void WorldObject::PlayDistanceSound(uint32 sound_id, PlayerPtr target /*= NULL*/
         SendMessageToSet(&data, true);
 }
 
-void WorldObject::PlayDirectSound(uint32 sound_id, PlayerPtr target /*= NULL*/)
+void WorldObject::PlayDirectSound(uint32 sound_id, PlayerPtr target /*= nullptr*/)
 {
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << uint32(sound_id);
@@ -3255,7 +3255,7 @@ struct WorldObjectChangeAccumulator
 
             if (IS_PLAYER_GUID(guid))
             {
-                //Caster may be NULL if DynObj is in removelist
+                //Caster may be nullptr if DynObj is in removelist
                 if (PlayerPtr caster = ObjectAccessor::FindPlayer(guid))
                     if (caster->GetUInt64Value(PLAYER_FARSIGHT) == source->GetGUID())
                         BuildPacket(caster);

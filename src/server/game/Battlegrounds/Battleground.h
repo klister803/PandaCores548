@@ -166,7 +166,7 @@ struct BattlegroundPlayer
 
 struct BattlegroundObjectInfo
 {
-    BattlegroundObjectInfo() : object(NULL), timer(0), spellid(0) {}
+    BattlegroundObjectInfo() : object(nullptr), timer(0), spellid(0) {}
 
     GameObject  *object;
     int32       timer;
@@ -477,7 +477,7 @@ class Battleground
         // Packet Transfer
         // method that should fill worldpacket with actual world states (not yet implemented for all battlegrounds!)
         virtual void FillInitialWorldStates(WorldPacket& /*data*/) {}
-        void SendPacketToTeam(uint32 TeamID, WorldPacket* packet, PlayerPtr sender = NULL, bool self = true);
+        void SendPacketToTeam(uint32 TeamID, WorldPacket* packet, PlayerPtr sender = nullptr, bool self = true);
         void SendPacketToAll(WorldPacket* packet);
         void YellToAll(CreaturePtr creature, const char* text, uint32 language);
 
@@ -496,7 +496,7 @@ class Battleground
         void BlockMovement(PlayerPtr player);
 
         void SendWarningToAll(int32 entry, ...);
-        void SendMessageToAll(int32 entry, ChatMsg type, constPlayerPtr source = NULL);
+        void SendMessageToAll(int32 entry, ChatMsg type, constPlayerPtr source = nullptr);
         void PSendMessageToAll(int32 entry, ChatMsg type, constPlayerPtr source, ...);
 
         // specialized version with 2 string id args
