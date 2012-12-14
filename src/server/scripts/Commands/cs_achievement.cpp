@@ -59,7 +59,7 @@ public:
                 return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);

@@ -199,13 +199,13 @@ LanguageDesc const* GetLanguageDescByID(uint32 lang)
     return NULL;
 }
 
-bool SpellClickInfo::IsFitToRequirements(Unit const* clicker, Unit const* clickee) const
+bool SpellClickInfo::IsFitToRequirements(constUnitPtr clicker, constUnitPtr clickee) const
 {
-    Player const* playerClicker = clicker->ToPlayer();
+    constPlayerPtr playerClicker = TO_CONST_PLAYER(clicker);
     if (!playerClicker)
         return true;
 
-    Unit const* summoner = NULL;
+    constUnitPtr summoner = NULL;
     // Check summoners for party
     if (clickee->isSummon())
         summoner = clickee->ToTempSummon()->GetSummoner();
@@ -1574,7 +1574,7 @@ uint32 ObjectMgr::AddGOData(uint32 entry, uint32 mapId, float x, float y, float 
     if (!goinfo)
         return 0;
 
-    Map* map = sMapMgr->CreateBaseMap(mapId);
+    MapPtr map = sMapMgr->CreateBaseMap(mapId);
     if (!map)
         return 0;
 
@@ -1604,11 +1604,10 @@ uint32 ObjectMgr::AddGOData(uint32 entry, uint32 mapId, float x, float y, float 
     // We use spawn coords to spawn
     if (!map->Instanceable() && map->IsGridLoaded(x, y))
     {
-        GameObject* go = new GameObject;
+        GameObjectPtr go (new GameObject);
         if (!go->LoadGameObjectFromDB(guid, map))
         {
             sLog->outError(LOG_FILTER_GENERAL, "AddGOData: cannot add gameobject entry %u to map", entry);
-            delete go;
             return 0;
         }
     }
@@ -1634,16 +1633,15 @@ bool ObjectMgr::MoveCreData(uint32 guid, uint32 mapId, Position pos)
     AddCreatureToGrid(guid, &data);
 
     // Spawn if necessary (loaded grids only)
-    if (Map* map = sMapMgr->CreateBaseMap(mapId))
+    if (MapPtr map = sMapMgr->CreateBaseMap(mapId))
     {
         // We use spawn coords to spawn
         if (!map->Instanceable() && map->IsGridLoaded(data.posX, data.posY))
         {
-            Creature* creature = new Creature;
+            CreaturePtr creature (new Creature);
             if (!creature->LoadCreatureFromDB(guid, map))
             {
                 sLog->outError(LOG_FILTER_GENERAL, "AddCreature: cannot add creature entry %u to map", guid);
-                delete creature;
                 return false;
             }
         }
@@ -1686,16 +1684,15 @@ uint32 ObjectMgr::AddCreData(uint32 entry, uint32 /*team*/, uint32 mapId, float 
     AddCreatureToGrid(guid, &data);
 
     // Spawn if necessary (loaded grids only)
-    if (Map* map = sMapMgr->CreateBaseMap(mapId))
+    if (MapPtr map = sMapMgr->CreateBaseMap(mapId))
     {
         // We use spawn coords to spawn
         if (!map->Instanceable() && !map->IsRemovalGrid(x, y))
         {
-            Creature* creature = new Creature;
+            CreaturePtr creature (new Creature);
             if (!creature->LoadCreatureFromDB(guid, map))
             {
                 sLog->outError(LOG_FILTER_GENERAL, "AddCreature: cannot add creature entry %u to map", entry);
-                delete creature;
                 return 0;
             }
         }
@@ -1874,7 +1871,7 @@ void ObjectMgr::RemoveGameobjectFromGrid(uint32 guid, GameObjectData const* data
     }
 }
 
-Player* ObjectMgr::GetPlayerByLowGUID(uint32 lowguid) const
+PlayerPtr ObjectMgr::GetPlayerByLowGUID(uint32 lowguid) const
 {
     uint64 guid = MAKE_NEW_GUID(lowguid, 0, HIGHGUID_PLAYER);
     return ObjectAccessor::FindPlayer(guid);
@@ -1900,7 +1897,7 @@ uint64 ObjectMgr::GetPlayerGUIDByName(std::string name) const
 bool ObjectMgr::GetPlayerNameByGUID(uint64 guid, std::string &name) const
 {
     // prevent DB access for online player
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
     {
         name = player->GetName();
         return true;
@@ -1924,7 +1921,7 @@ bool ObjectMgr::GetPlayerNameByGUID(uint64 guid, std::string &name) const
 uint32 ObjectMgr::GetPlayerTeamByGUID(uint64 guid) const
 {
     // prevent DB access for online player
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
     {
         return Player::TeamForRace(player->getRace());
     }
@@ -1947,7 +1944,7 @@ uint32 ObjectMgr::GetPlayerTeamByGUID(uint64 guid) const
 uint32 ObjectMgr::GetPlayerAccountIdByGUID(uint64 guid) const
 {
     // prevent DB access for online player
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
     {
         return player->GetSession()->GetAccountId();
     }
@@ -5197,7 +5194,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
         m->checked        = fields[7].GetUInt8();
         m->mailTemplateId = fields[8].GetInt16();
 
-        Player* player = NULL;
+        PlayerPtr player = NULL;
         if (serverUp)
             player = ObjectAccessor::FindPlayer((uint64)m->receiver);
 
@@ -6556,10 +6553,9 @@ void ObjectMgr::LoadCorpses()
             continue;
         }
 
-        Corpse* corpse = new Corpse(type);
+        CorpsePtr corpse (new Corpse(type));
         if (!corpse->LoadCorpseFromDB(guid, fields))
         {
-            delete corpse;
             continue;
         }
 
@@ -8160,7 +8156,7 @@ bool ObjectMgr::RemoveVendorItem(uint32 entry, uint32 item, uint8 type, bool per
     return true;
 }
 
-bool ObjectMgr::IsVendorItemValid(uint32 vendor_entry, uint32 id, int32 maxcount, uint32 incrtime, uint32 ExtendedCost, uint8 type, Player* player, std::set<uint32>* skip_vendors, uint32 ORnpcflag) const
+bool ObjectMgr::IsVendorItemValid(uint32 vendor_entry, uint32 id, int32 maxcount, uint32 incrtime, uint32 ExtendedCost, uint8 type, PlayerPtr player, std::set<uint32>* skip_vendors, uint32 ORnpcflag) const
 {
     CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(vendor_entry);
     if (!cInfo)
@@ -8679,9 +8675,9 @@ CreatureTemplate const* ObjectMgr::GetCreatureTemplate(uint32 entry)
     return NULL;
 }
 
-VehicleAccessoryList const* ObjectMgr::GetVehicleAccessoryList(Vehicle* veh) const
+VehicleAccessoryList const* ObjectMgr::GetVehicleAccessoryList(VehiclePtr veh) const
 {
-    if (Creature* cre = veh->GetBase()->ToCreature())
+    if (CreaturePtr cre = veh->GetBase()->ToCreature())
     {
         // Give preference to GUID-based accessories
         VehicleAccessoryContainer::const_iterator itr = _vehicleAccessoryStore.find(cre->GetDBTableGUIDLow());

@@ -25,7 +25,7 @@
 #include "SpellMgr.h"
 #include "SpellInfo.h"
 
-Totem::Totem(SummonPropertiesEntry const* properties, Unit* owner) : Minion(properties, owner, false)
+Totem::Totem(SummonPropertiesEntry const* properties, UnitPtr owner) : Minion(properties, owner, false)
 {
     m_unitTypeMask |= UNIT_MASK_TOTEM;
     m_duration = 0;
@@ -63,7 +63,7 @@ void Totem::InitStats(uint32 duration)
         data << uint64(GetGUID());
         data << uint32(duration);
         data << uint32(GetUInt32Value(UNIT_CREATED_BY_SPELL));
-        m_owner->ToPlayer()->SendDirectMessage(&data);
+        TO_PLAYER(m_owner)->SendDirectMessage(&data);
 
         // set display id depending on caster's race
         SetDisplayId(m_owner->GetModelForTotem(PlayerTotemType(m_Properties->Id)));
@@ -88,19 +88,19 @@ void Totem::InitSummon()
 {
     if (m_type == TOTEM_PASSIVE && GetSpell())
     {
-        CastSpell(this, GetSpell(), true);
+        CastSpell(THIS_UNIT, GetSpell(), true);
     }
 
     // Some totems can have both instant effect and passive spell
     if (GetSpell(1))
-        CastSpell(this, GetSpell(1), true);
+        CastSpell(THIS_UNIT, GetSpell(1), true);
 }
 
 void Totem::UnSummon(uint32 msTime)
 {
     if (msTime)
     {
-        m_Events.AddEvent(new ForcedUnsummonDelayEvent(*this), m_Events.CalculateTime(msTime));
+        m_Events.AddEvent(new ForcedUnsummonDelayEvent(THIS_TEMPSUMMON), m_Events.CalculateTime(msTime));
         return;
     }
 
@@ -124,18 +124,18 @@ void Totem::UnSummon(uint32 msTime)
         m_owner->RemoveAurasDueToSpell(SENTRY_TOTEM_SPELLID);
 
     //remove aura all party members too
-    if (Player* owner = m_owner->ToPlayer())
+    if (PlayerPtr owner = TO_PLAYER(m_owner))
     {
-        owner->SendAutoRepeatCancel(this);
+        owner->SendAutoRepeatCancel(THIS_UNIT);
 
         if (SpellInfo const* spell = sSpellMgr->GetSpellInfo(GetUInt32Value(UNIT_CREATED_BY_SPELL)))
             owner->SendCooldownEvent(spell, 0, NULL, false);
 
-        if (Group* group = owner->GetGroup())
+        if (GroupPtr group = owner->GetGroup())
         {
-            for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
             {
-                Player* target = itr->getSource();
+                PlayerPtr target = itr->getSource();
                 if (target && group->SameSubGroup(owner, target))
                     target->RemoveAurasDueToSpell(GetSpell(), GetGUID());
             }

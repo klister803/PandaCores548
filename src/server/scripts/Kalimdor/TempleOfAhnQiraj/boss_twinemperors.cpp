@@ -62,7 +62,7 @@ EndScriptData */
 
 struct boss_twinemperorsAI : public ScriptedAI
 {
-    boss_twinemperorsAI(Creature* creature): ScriptedAI(creature)
+    boss_twinemperorsAI(CreaturePtr creature): ScriptedAI(creature)
     {
         instance = creature->GetInstanceScript();
     }
@@ -80,7 +80,7 @@ struct boss_twinemperorsAI : public ScriptedAI
 
     virtual bool IAmVeklor() = 0;
     virtual void Reset() = 0;
-    virtual void CastSpellOnBug(Creature* target) = 0;
+    virtual void CastSpellOnBug(CreaturePtr target) = 0;
 
     void TwinReset()
     {
@@ -96,17 +96,17 @@ struct boss_twinemperorsAI : public ScriptedAI
         EnrageTimer = 15*60000;
     }
 
-    Creature* GetOtherBoss()
+    CreaturePtr GetOtherBoss()
     {
         if (instance)
-            return Unit::GetCreature(*me, instance->GetData64(IAmVeklor() ? DATA_VEKNILASH : DATA_VEKLOR));
+            return Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(IAmVeklor() ? DATA_VEKNILASH : DATA_VEKLOR));
         else
             return NULL;
     }
 
-    void DamageTaken(Unit* /*done_by*/, uint32 &damage)
+    void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
     {
-        Unit* pOtherBoss = GetOtherBoss();
+        UnitPtr pOtherBoss = GetOtherBoss();
         if (pOtherBoss)
         {
             float dPercent = ((float)damage) / ((float)me->GetMaxHealth());
@@ -121,9 +121,9 @@ struct boss_twinemperorsAI : public ScriptedAI
         }
     }
 
-    void JustDied(Unit* /*killer*/)
+    void JustDied(UnitPtr /*killer*/)
     {
-        Creature* pOtherBoss = GetOtherBoss();
+        CreaturePtr pOtherBoss = GetOtherBoss();
         if (pOtherBoss)
         {
             pOtherBoss->SetHealth(0);
@@ -135,15 +135,15 @@ struct boss_twinemperorsAI : public ScriptedAI
             DoPlaySoundToSet(me, IAmVeklor() ? SOUND_VL_DEATH : SOUND_VN_DEATH);
     }
 
-    void KilledUnit(Unit* /*victim*/)
+    void KilledUnit(UnitPtr /*victim*/)
     {
         DoPlaySoundToSet(me, IAmVeklor() ? SOUND_VL_KILL : SOUND_VN_KILL);
     }
 
-    void EnterCombat(Unit* who)
+    void EnterCombat(UnitPtr who)
     {
         DoZoneInCombat();
-        Creature* pOtherBoss = GetOtherBoss();
+        CreaturePtr pOtherBoss = GetOtherBoss();
         if (pOtherBoss)
         {
             // TODO: we should activate the other boss location so he can start attackning even if nobody
@@ -158,12 +158,12 @@ struct boss_twinemperorsAI : public ScriptedAI
         }
     }
 
-    void SpellHit(Unit* caster, const SpellInfo* entry)
+    void SpellHit(UnitPtr caster, const SpellInfo* entry)
     {
         if (caster == me)
             return;
 
-        Creature* pOtherBoss = GetOtherBoss();
+        CreaturePtr pOtherBoss = GetOtherBoss();
         if (entry->Id != SPELL_HEAL_BROTHER || !pOtherBoss)
             return;
 
@@ -194,7 +194,7 @@ struct boss_twinemperorsAI : public ScriptedAI
 
         if (Heal_Timer <= diff)
         {
-            Unit* pOtherBoss = GetOtherBoss();
+            UnitPtr pOtherBoss = GetOtherBoss();
             if (pOtherBoss && pOtherBoss->IsWithinDist(me, 60))
             {
                 DoCast(pOtherBoss, SPELL_HEAL_BROTHER);
@@ -213,14 +213,14 @@ struct boss_twinemperorsAI : public ScriptedAI
         if (IAmVeklor())
             return;                                         // mechanics handled by veknilash so they teleport exactly at the same time and to correct coordinates
 
-        Creature* pOtherBoss = GetOtherBoss();
+        CreaturePtr pOtherBoss = GetOtherBoss();
         if (pOtherBoss)
         {
             //me->MonsterYell("Teleporting ...", LANG_UNIVERSAL, 0);
             Position thisPos;
-            thisPos.Relocate(me);
+            thisPos.Relocate(me.get());
             Position otherPos;
-            otherPos.Relocate(pOtherBoss);
+            otherPos.Relocate(pOtherBoss.get());
             pOtherBoss->SetPosition(thisPos);
             me->SetPosition(otherPos);
 
@@ -258,7 +258,7 @@ struct boss_twinemperorsAI : public ScriptedAI
             {
                 AfterTeleport = false;
                 me->ClearUnitState(UNIT_STATE_STUNNED);
-                if (Unit* nearu = me->SelectNearestTarget(100))
+                if (UnitPtr nearu = me->SelectNearestTarget(100))
                 {
                     //DoYell(nearu->GetName(), LANG_UNIVERSAL, 0);
                     AttackStart(nearu);
@@ -287,7 +287,7 @@ struct boss_twinemperorsAI : public ScriptedAI
         }
     }
 
-    void MoveInLineOfSight(Unit* who)
+    void MoveInLineOfSight(UnitPtr who)
     {
         if (!who || me->getVictim())
             return;
@@ -306,20 +306,20 @@ struct boss_twinemperorsAI : public ScriptedAI
         }
     }
 
-    Creature* RespawnNearbyBugsAndGetOne()
+    CreaturePtr RespawnNearbyBugsAndGetOne()
     {
-        std::list<Creature*> lUnitList;
+        std::list<CreaturePtr> lUnitList;
         me->GetCreatureListWithEntryInGrid(lUnitList, 15316, 150.0f);
         me->GetCreatureListWithEntryInGrid(lUnitList, 15317, 150.0f);
 
         if (lUnitList.empty())
             return NULL;
 
-        Creature* nearb = NULL;
+        CreaturePtr nearb = NULL;
 
-        for (std::list<Creature*>::const_iterator iter = lUnitList.begin(); iter != lUnitList.end(); ++iter)
+        for (std::list<CreaturePtr>::const_iterator iter = lUnitList.begin(); iter != lUnitList.end(); ++iter)
         {
-            Creature* c = *iter;
+            CreaturePtr c = *iter;
             if (c)
             {
                 if (c->isDead())
@@ -342,7 +342,7 @@ struct boss_twinemperorsAI : public ScriptedAI
     {
         if (BugsTimer < diff || Abuse_Bug_Timer <= diff)
         {
-            Creature* c = RespawnNearbyBugsAndGetOne();
+            CreaturePtr c = RespawnNearbyBugsAndGetOne();
             if (Abuse_Bug_Timer <= diff)
             {
                 if (c)
@@ -386,7 +386,7 @@ class boss_veknilash : public CreatureScript
 public:
     boss_veknilash() : CreatureScript("boss_veknilash") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_veknilashAI (creature);
     }
@@ -394,7 +394,7 @@ public:
     struct boss_veknilashAI : public boss_twinemperorsAI
     {
         bool IAmVeklor() {return false;}
-        boss_veknilashAI(Creature* creature) : boss_twinemperorsAI(creature) {}
+        boss_veknilashAI(CreaturePtr creature) : boss_twinemperorsAI(creature) {}
 
         uint32 UpperCut_Timer;
         uint32 UnbalancingStrike_Timer;
@@ -403,7 +403,7 @@ public:
         int RandX;
         int RandY;
 
-        Creature* Summoned;
+        CreaturePtr Summoned;
 
         void Reset()
         {
@@ -416,7 +416,7 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
         }
 
-        void CastSpellOnBug(Creature* target)
+        void CastSpellOnBug(CreaturePtr target)
         {
             target->setFaction(14);
             target->AI()->AttackStart(me->getThreatManager().getHostilTarget());
@@ -442,7 +442,7 @@ public:
 
             if (UpperCut_Timer <= diff)
             {
-                Unit* randomMelee = SelectTarget(SELECT_TARGET_RANDOM, 0, NOMINAL_MELEE_RANGE, true);
+                UnitPtr randomMelee = SelectTarget(SELECT_TARGET_RANDOM, 0, NOMINAL_MELEE_RANGE, true);
                 if (randomMelee)
                     DoCast(randomMelee, SPELL_UPPERCUT);
                 UpperCut_Timer = 15000+rand()%15000;
@@ -472,7 +472,7 @@ class boss_veklor : public CreatureScript
 public:
     boss_veklor() : CreatureScript("boss_veklor") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_veklorAI (creature);
     }
@@ -480,7 +480,7 @@ public:
     struct boss_veklorAI : public boss_twinemperorsAI
     {
         bool IAmVeklor() {return true;}
-        boss_veklorAI(Creature* creature) : boss_twinemperorsAI(creature) {}
+        boss_veklorAI(CreaturePtr creature) : boss_twinemperorsAI(creature) {}
 
         uint32 ShadowBolt_Timer;
         uint32 Blizzard_Timer;
@@ -490,7 +490,7 @@ public:
         int RandX;
         int RandY;
 
-        Creature* Summoned;
+        CreaturePtr Summoned;
 
         void Reset()
         {
@@ -506,7 +506,7 @@ public:
             me->SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, 0);
         }
 
-        void CastSpellOnBug(Creature* target)
+        void CastSpellOnBug(CreaturePtr target)
         {
             target->setFaction(14);
             target->AddAura(SPELL_EXPLODEBUG, target);
@@ -540,7 +540,7 @@ public:
             //Blizzard_Timer
             if (Blizzard_Timer <= diff)
             {
-                Unit* target = NULL;
+                UnitPtr target = NULL;
                 target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45, true);
                 if (target)
                     DoCast(target, SPELL_BLIZZARD);
@@ -549,7 +549,7 @@ public:
 
             if (ArcaneBurst_Timer <= diff)
             {
-                Unit* mvic;
+                UnitPtr mvic;
                 if ((mvic=SelectTarget(SELECT_TARGET_NEAREST, 0, NOMINAL_MELEE_RANGE, true)) != NULL)
                 {
                     DoCast(mvic, SPELL_ARCANEBURST);
@@ -574,7 +574,7 @@ public:
             //DoMeleeAttackIfReady();
         }
 
-        void AttackStart(Unit* who)
+        void AttackStart(UnitPtr who)
         {
             if (!who)
                 return;

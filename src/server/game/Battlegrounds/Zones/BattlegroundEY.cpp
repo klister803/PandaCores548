@@ -141,7 +141,7 @@ void BattlegroundEY::AddPoints(uint32 Team, uint32 Points)
 
 void BattlegroundEY::CheckSomeoneJoinedPoint()
 {
-    GameObject* obj = NULL;
+    GameObjectPtr obj = NULL;
     for (uint8 i = 0; i < EY_POINTS_MAX; ++i)
     {
         obj = HashMapHolder<GameObject>::Find(BgObjects[BG_EY_OBJECT_TOWER_CAP_FEL_REAVER + i]);
@@ -150,7 +150,7 @@ void BattlegroundEY::CheckSomeoneJoinedPoint()
             uint8 j = 0;
             while (j < m_PlayersNearPoint[EY_POINTS_MAX].size())
             {
-                Player* player = ObjectAccessor::FindPlayer(m_PlayersNearPoint[EY_POINTS_MAX][j]);
+                PlayerPtr player = ObjectAccessor::FindPlayer(m_PlayersNearPoint[EY_POINTS_MAX][j]);
                 if (!player)
                 {
                     sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundEY:CheckSomeoneJoinedPoint: Player (GUID: %u) not found!", GUID_LOPART(m_PlayersNearPoint[EY_POINTS_MAX][j]));
@@ -181,7 +181,7 @@ void BattlegroundEY::CheckSomeoneLeftPoint()
     //reset current point counts
     for (uint8 i = 0; i < 2*EY_POINTS_MAX; ++i)
         m_CurrentPointPlayersCount[i] = 0;
-    GameObject* obj = NULL;
+    GameObjectPtr obj = NULL;
     for (uint8 i = 0; i < EY_POINTS_MAX; ++i)
     {
         obj = HashMapHolder<GameObject>::Find(BgObjects[BG_EY_OBJECT_TOWER_CAP_FEL_REAVER + i]);
@@ -190,7 +190,7 @@ void BattlegroundEY::CheckSomeoneLeftPoint()
             uint8 j = 0;
             while (j < m_PlayersNearPoint[i].size())
             {
-                Player* player = ObjectAccessor::FindPlayer(m_PlayersNearPoint[i][j]);
+                PlayerPtr player = ObjectAccessor::FindPlayer(m_PlayersNearPoint[i][j]);
                 if (!player)
                 {
                     sLog->outError(LOG_FILTER_BATTLEGROUND, "BattlegroundEY:CheckSomeoneLeftPoint Player (GUID: %u) not found!", GUID_LOPART(m_PlayersNearPoint[i][j]));
@@ -244,7 +244,7 @@ void BattlegroundEY::UpdatePointStatuses()
 
         for (uint8 i = 0; i < m_PlayersNearPoint[point].size(); ++i)
         {
-            Player* player = ObjectAccessor::FindPlayer(m_PlayersNearPoint[point][i]);
+            PlayerPtr player = ObjectAccessor::FindPlayer(m_PlayersNearPoint[point][i]);
             if (player)
             {
                 this->UpdateWorldStateForPlayer(PROGRESS_BAR_STATUS, m_PointBarStatus[point], player);
@@ -333,7 +333,7 @@ void BattlegroundEY::UpdatePointsIcons(uint32 Team, uint32 Point)
     }
 }
 
-void BattlegroundEY::AddPlayer(Player* player)
+void BattlegroundEY::AddPlayer(PlayerPtr player)
 {
     Battleground::AddPlayer(player);
     //create score and add it to map
@@ -344,7 +344,7 @@ void BattlegroundEY::AddPlayer(Player* player)
     PlayerScores[player->GetGUID()] = sc;
 }
 
-void BattlegroundEY::RemovePlayer(Player* player, uint64 guid, uint32 /*team*/)
+void BattlegroundEY::RemovePlayer(PlayerPtr player, uint64 guid, uint32 /*team*/)
 {
     // sometimes flag aura not removed :(
     for (int j = EY_POINTS_MAX; j >= 0; --j)
@@ -368,7 +368,7 @@ void BattlegroundEY::RemovePlayer(Player* player, uint64 guid, uint32 /*team*/)
     }
 }
 
-void BattlegroundEY::HandleAreaTrigger(Player* Source, uint32 Trigger)
+void BattlegroundEY::HandleAreaTrigger(PlayerPtr Source, uint32 Trigger)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -566,7 +566,7 @@ void BattlegroundEY::RespawnFlagAfterDrop()
 {
     RespawnFlag(true);
 
-    GameObject* obj = HashMapHolder<GameObject>::Find(GetDroppedFlagGUID());
+    GameObjectPtr obj = HashMapHolder<GameObject>::Find(GetDroppedFlagGUID());
     if (obj)
         obj->Delete();
     else
@@ -575,7 +575,7 @@ void BattlegroundEY::RespawnFlagAfterDrop()
     SetDroppedFlagGUID(0);
 }
 
-void BattlegroundEY::HandleKillPlayer(Player* player, Player* killer)
+void BattlegroundEY::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -584,7 +584,7 @@ void BattlegroundEY::HandleKillPlayer(Player* player, Player* killer)
     EventPlayerDroppedFlag(player);
 }
 
-void BattlegroundEY::EventPlayerDroppedFlag(Player* Source)
+void BattlegroundEY::EventPlayerDroppedFlag(PlayerPtr Source)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
     {
@@ -620,7 +620,7 @@ void BattlegroundEY::EventPlayerDroppedFlag(Player* Source)
         SendMessageToAll(LANG_BG_EY_DROPPED_FLAG, CHAT_MSG_BG_SYSTEM_HORDE, NULL);
 }
 
-void BattlegroundEY::EventPlayerClickedOnFlag(Player* Source, GameObject* target_obj)
+void BattlegroundEY::EventPlayerClickedOnFlag(PlayerPtr Source, GameObjectPtr target_obj)
 {
     if (GetStatus() != STATUS_IN_PROGRESS || IsFlagPickedup() || !Source->IsWithinDistInMap(target_obj, 10))
         return;
@@ -652,7 +652,7 @@ void BattlegroundEY::EventPlayerClickedOnFlag(Player* Source, GameObject* target
         PSendMessageToAll(LANG_BG_EY_HAS_TAKEN_FLAG, CHAT_MSG_BG_SYSTEM_HORDE, NULL, Source->GetName());
 }
 
-void BattlegroundEY::EventTeamLostPoint(Player* Source, uint32 Point)
+void BattlegroundEY::EventTeamLostPoint(PlayerPtr Source, uint32 Point)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -700,7 +700,7 @@ void BattlegroundEY::EventTeamLostPoint(Player* Source, uint32 Point)
          DelCreature(Point + 6);//NULL checks are in DelCreature! 0-5 spirit guides
 }
 
-void BattlegroundEY::EventTeamCapturedPoint(Player* Source, uint32 Point)
+void BattlegroundEY::EventTeamCapturedPoint(PlayerPtr Source, uint32 Point)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -753,7 +753,7 @@ void BattlegroundEY::EventTeamCapturedPoint(Player* Source, uint32 Point)
     if (Point >= EY_POINTS_MAX)
         return;
 
-    Creature* trigger = GetBGCreature(Point + 6);//0-5 spirit guides
+    CreaturePtr trigger = GetBGCreature(Point + 6);//0-5 spirit guides
     if (!trigger)
        trigger = AddCreature(WORLD_TRIGGER, Point+6, Team, BG_EY_TriggerPositions[Point][0], BG_EY_TriggerPositions[Point][1], BG_EY_TriggerPositions[Point][2], BG_EY_TriggerPositions[Point][3]);
 
@@ -767,7 +767,7 @@ void BattlegroundEY::EventTeamCapturedPoint(Player* Source, uint32 Point)
     }
 }
 
-void BattlegroundEY::EventPlayerCapturedFlag(Player* Source, uint32 BgObjectType)
+void BattlegroundEY::EventPlayerCapturedFlag(PlayerPtr Source, uint32 BgObjectType)
 {
     if (GetStatus() != STATUS_IN_PROGRESS || GetFlagPickerGUID() != Source->GetGUID())
         return;
@@ -806,7 +806,7 @@ void BattlegroundEY::EventPlayerCapturedFlag(Player* Source, uint32 BgObjectType
     UpdatePlayerScore(Source, SCORE_FLAG_CAPTURES, 1);
 }
 
-void BattlegroundEY::UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor)
+void BattlegroundEY::UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor)
 {
     BattlegroundScoreMap::iterator itr = PlayerScores.find(Source->GetGUID());
     if (itr == PlayerScores.end())                         // player not found
@@ -874,7 +874,7 @@ void BattlegroundEY::FillInitialWorldStates(WorldPacket& data)
     data << uint32(0xc0d) << uint32(0x17b);
 }
 
-WorldSafeLocsEntry const* BattlegroundEY::GetClosestGraveYard(Player* player)
+WorldSafeLocsEntry const* BattlegroundEY::GetClosestGraveYard(PlayerPtr player)
 {
     uint32 g_id = 0;
 

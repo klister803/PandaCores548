@@ -28,7 +28,7 @@
 
 namespace FactorySelector
 {
-    CreatureAI* selectAI(Creature* creature)
+    CreatureAI* selectAI(CreaturePtr creature)
     {
         const CreatureAICreator* ai_factory = NULL;
         CreatureAIRegistry& ai_registry(*CreatureAIRepository::instance());
@@ -51,7 +51,7 @@ namespace FactorySelector
         {
             if (creature->IsVehicle())
                 ai_factory = ai_registry.GetRegistryItem("VehicleAI");
-            else if (creature->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN) && ((Guardian*)creature)->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+            else if (creature->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN) && TO_GUARDIAN(creature)->GetOwner()->GetTypeId() == TYPEID_PLAYER)
                 ai_factory = ai_registry.GetRegistryItem("PetAI");
             else if (creature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK))
                 ai_factory = ai_registry.GetRegistryItem("NullCreatureAI");
@@ -96,10 +96,10 @@ namespace FactorySelector
         ainame = (ai_factory == NULL) ? "NullCreatureAI" : ai_factory->key();
 
         sLog->outDebug(LOG_FILTER_TSCR, "Creature %u used AI is %s.", creature->GetGUIDLow(), ainame.c_str());
-        return (ai_factory == NULL ? new NullCreatureAI(creature) : ai_factory->Create(creature));
+        return (ai_factory == NULL ? new NullCreatureAI(creature) : ai_factory->Create(&creature));
     }
 
-    MovementGenerator* selectMovementGenerator(Creature* creature)
+    MovementGenerator* selectMovementGenerator(CreaturePtr creature)
     {
         MovementGeneratorRegistry& mv_registry(*MovementGeneratorRepository::instance());
         ASSERT(creature->GetCreatureTemplate());
@@ -124,10 +124,10 @@ namespace FactorySelector
             }
         }*/
 
-        return (mv_factory == NULL ? NULL : mv_factory->Create(creature));
+        return (mv_factory == NULL ? NULL : mv_factory->Create(&creature));
     }
 
-    GameObjectAI* SelectGameObjectAI(GameObject* go)
+    GameObjectAI* SelectGameObjectAI(GameObjectPtr go)
     {
         const GameObjectAICreator* ai_factory = NULL;
         GameObjectAIRegistry& ai_registry(*GameObjectAIRepository::instance());
@@ -148,7 +148,7 @@ namespace FactorySelector
 
         sLog->outDebug(LOG_FILTER_TSCR, "GameObject %u used AI is %s.", go->GetGUIDLow(), ainame.c_str());
 
-        return (ai_factory == NULL ? new NullGameObjectAI(go) : ai_factory->Create(go));
+        return (ai_factory == NULL ? new NullGameObjectAI(go) : ai_factory->Create(&go));
     }
 }
 

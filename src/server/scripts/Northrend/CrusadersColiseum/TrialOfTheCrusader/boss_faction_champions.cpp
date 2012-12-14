@@ -57,14 +57,14 @@ class boss_toc_champion_controller : public CreatureScript
 public:
     boss_toc_champion_controller() : CreatureScript("boss_toc_champion_controller") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_toc_champion_controllerAI (creature);
     }
 
     struct boss_toc_champion_controllerAI : public ScriptedAI
     {
-        boss_toc_champion_controllerAI(Creature* creature) : ScriptedAI(creature), Summons(me)
+        boss_toc_champion_controllerAI(CreaturePtr creature) : ScriptedAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -170,7 +170,7 @@ public:
             for (uint8 i = 0; i < vChampionEntries.size(); ++i)
             {
                 uint8 pos = urand(0, vChampionJumpTarget.size()-1);
-                if (Creature* temp = me->SummonCreature(vChampionEntries[i], vChampionJumpOrigin[urand(0, vChampionJumpOrigin.size()-1)], TEMPSUMMON_MANUAL_DESPAWN))
+                if (CreaturePtr temp = me->SummonCreature(vChampionEntries[i], vChampionJumpOrigin[urand(0, vChampionJumpOrigin.size()-1)], TEMPSUMMON_MANUAL_DESPAWN))
                 {
                     Summons.Summon(temp);
                     temp->SetReactState(REACT_PASSIVE);
@@ -202,7 +202,7 @@ public:
                 case 1:
                     for (std::list<uint64>::iterator i = Summons.begin(); i != Summons.end(); ++i)
                     {
-                        if (Creature* temp = Unit::GetCreature(*me, *i))
+                        if (CreaturePtr temp = Unit::GetCreature(TO_WORLDOBJECT(me), *i))
                         {
                             temp->SetReactState(REACT_AGGRESSIVE);
                             temp->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
@@ -253,7 +253,7 @@ public:
 
 struct boss_faction_championsAI : public ScriptedAI
 {
-    boss_faction_championsAI(Creature* creature, uint32 aitype) : ScriptedAI(creature)
+    boss_faction_championsAI(CreaturePtr creature, uint32 aitype) : ScriptedAI(creature)
     {
         instance = creature->GetInstanceScript();
         mAIType = aitype;
@@ -276,7 +276,7 @@ struct boss_faction_championsAI : public ScriptedAI
     void JustReachedHome()
     {
         if (instance)
-            if (Creature* pChampionController = Unit::GetCreature((*me), instance->GetData64(NPC_CHAMPIONS_CONTROLLER)))
+            if (CreaturePtr pChampionController = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(NPC_CHAMPIONS_CONTROLLER)))
                 pChampionController->AI()->SetData(2, FAIL);
         me->DespawnOrUnsummon();
     }
@@ -291,10 +291,10 @@ struct boss_faction_championsAI : public ScriptedAI
 
     void UpdateThreat()
     {
-        std::list<HostileReference*> const& tList = me->getThreatManager().getThreatList();
-        for (std::list<HostileReference*>::const_iterator itr = tList.begin(); itr != tList.end(); ++itr)
+        std::list<HostileReferencePtr> const& tList = me->getThreatManager().getThreatList();
+        for (std::list<HostileReferencePtr>::const_iterator itr = tList.begin(); itr != tList.end(); ++itr)
         {
-            Unit* unit = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+            UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid());
             if (unit && me->getThreatManager().getThreat(unit))
             {
                 if (unit->GetTypeId()==TYPEID_PLAYER)
@@ -325,24 +325,24 @@ struct boss_faction_championsAI : public ScriptedAI
         //DoCast(me, SPELL_PVP_TRINKET);
     }
 
-    void JustDied(Unit* /*killer*/)
+    void JustDied(UnitPtr /*killer*/)
     {
         if (mAIType != AI_PET)
             if (instance)
-                if (Creature* pChampionController = Unit::GetCreature((*me), instance->GetData64(NPC_CHAMPIONS_CONTROLLER)))
+                if (CreaturePtr pChampionController = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(NPC_CHAMPIONS_CONTROLLER)))
                     pChampionController->AI()->SetData(2, DONE);
     }
 
-    void EnterCombat(Unit* /*who*/)
+    void EnterCombat(UnitPtr /*who*/)
     {
         DoCast(me, SPELL_ANTI_AOE, true);
         me->SetInCombatWithZone();
         if (instance)
-            if (Creature* pChampionController = Unit::GetCreature((*me), instance->GetData64(NPC_CHAMPIONS_CONTROLLER)))
+            if (CreaturePtr pChampionController = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(NPC_CHAMPIONS_CONTROLLER)))
                 pChampionController->AI()->SetData(2, IN_PROGRESS);
     }
 
-    void KilledUnit(Unit* who)
+    void KilledUnit(UnitPtr who)
     {
         if (who->GetTypeId() == TYPEID_PLAYER)
         {
@@ -350,18 +350,18 @@ struct boss_faction_championsAI : public ScriptedAI
             uint32 TeamInInstance = 0;
 
             if (!players.isEmpty())
-                if (Player* player = players.begin()->getSource())
+                if (PlayerPtr player = players.begin()->getSource())
                     TeamInInstance = player->GetTeam();
 
             if (instance)
             {
                 if (TeamInInstance == ALLIANCE)
                 {
-                    if (Creature* temp = Unit::GetCreature(*me, instance->GetData64(NPC_VARIAN)))
+                    if (CreaturePtr temp = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(NPC_VARIAN)))
                         temp->AI()->Talk(SAY_KILL_PLAYER);
                 }
                 else
-                    if (Creature* temp = Unit::GetCreature(*me, instance->GetData64(NPC_GARROSH)))
+                    if (CreaturePtr temp = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(NPC_GARROSH)))
                         temp->AI()->Talk(SAY_KILL_PLAYER);
 
 
@@ -370,24 +370,24 @@ struct boss_faction_championsAI : public ScriptedAI
         }
     }
 
-    Creature* SelectRandomFriendlyMissingBuff(uint32 spell)
+    CreaturePtr SelectRandomFriendlyMissingBuff(uint32 spell)
     {
-        std::list<Creature*> lst = DoFindFriendlyMissingBuff(40.0f, spell);
-        std::list<Creature*>::const_iterator itr = lst.begin();
+        std::list<CreaturePtr> lst = DoFindFriendlyMissingBuff(40.0f, spell);
+        std::list<CreaturePtr>::const_iterator itr = lst.begin();
         if (lst.empty())
             return NULL;
         advance(itr, rand()%lst.size());
         return (*itr);
     }
 
-    Unit* SelectEnemyCaster(bool /*casting*/)
+    UnitPtr SelectEnemyCaster(bool /*casting*/)
     {
-        std::list<HostileReference*> const& tList = me->getThreatManager().getThreatList();
-        std::list<HostileReference*>::const_iterator iter;
-        Unit* target;
+        std::list<HostileReferencePtr> const& tList = me->getThreatManager().getThreatList();
+        std::list<HostileReferencePtr>::const_iterator iter;
+        UnitPtr target;
         for (iter = tList.begin(); iter!=tList.end(); ++iter)
         {
-            target = Unit::GetUnit(*me, (*iter)->getUnitGuid());
+            target = Unit::GetUnit(TO_WORLDOBJECT(me), (*iter)->getUnitGuid());
             if (target && target->getPowerType() == POWER_MANA)
                 return target;
         }
@@ -396,20 +396,20 @@ struct boss_faction_championsAI : public ScriptedAI
 
     uint32 EnemiesInRange(float distance)
     {
-        std::list<HostileReference*> const& tList = me->getThreatManager().getThreatList();
-        std::list<HostileReference*>::const_iterator iter;
+        std::list<HostileReferencePtr> const& tList = me->getThreatManager().getThreatList();
+        std::list<HostileReferencePtr>::const_iterator iter;
         uint32 count = 0;
-        Unit* target;
+        UnitPtr target;
         for (iter = tList.begin(); iter!=tList.end(); ++iter)
         {
-            target = Unit::GetUnit(*me, (*iter)->getUnitGuid());
+            target = Unit::GetUnit(TO_WORLDOBJECT(me), (*iter)->getUnitGuid());
                 if (target && me->GetDistance2d(target) < distance)
                     ++count;
         }
         return count;
     }
 
-    void AttackStart(Unit* who)
+    void AttackStart(UnitPtr who)
     {
         if (!who)
             return;
@@ -472,14 +472,14 @@ class mob_toc_druid : public CreatureScript
 public:
     mob_toc_druid() : CreatureScript("mob_toc_druid") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_druidAI (creature);
     }
 
     struct mob_toc_druidAI : public boss_faction_championsAI
     {
-        mob_toc_druidAI(Creature* creature) : boss_faction_championsAI(creature, AI_HEALER) {}
+        mob_toc_druidAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_HEALER) {}
 
         uint32 m_uiNatureGraspTimer;
         uint32 m_uiTranquilityTimer;
@@ -537,7 +537,7 @@ public:
                         DoCast(me, SPELL_REJUVENATION);
                         break;
                     case 4:
-                        if (Creature* target = SelectRandomFriendlyMissingBuff(SPELL_THORNS))
+                        if (CreaturePtr target = SelectRandomFriendlyMissingBuff(SPELL_THORNS))
                             DoCast(target, SPELL_THORNS);
                         break;
                 }
@@ -569,14 +569,14 @@ class mob_toc_shaman : public CreatureScript
 public:
     mob_toc_shaman() : CreatureScript("mob_toc_shaman") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_shamanAI (creature);
     }
 
     struct mob_toc_shamanAI : public boss_faction_championsAI
     {
-        mob_toc_shamanAI(Creature* creature) : boss_faction_championsAI(creature, AI_HEALER) {}
+        mob_toc_shamanAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_HEALER) {}
 
         uint32 m_uiHeroismOrBloodlustTimer;
         uint32 m_uiHexTimer;
@@ -611,7 +611,7 @@ public:
 
             if (m_uiHexTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_HEX);
                 m_uiHexTimer = urand(10*IN_MILLISECONDS, 40*IN_MILLISECONDS);
             } else m_uiHexTimer -= uiDiff;
@@ -633,7 +633,7 @@ public:
                         DoCast(me, SPELL_SPIRIT_CLEANSE);
                         break;
                     case 5:
-                        if (Unit* target = SelectRandomFriendlyMissingBuff(SPELL_EARTH_SHIELD))
+                        if (UnitPtr target = SelectRandomFriendlyMissingBuff(SPELL_EARTH_SHIELD))
                             DoCast(target, SPELL_EARTH_SHIELD);
                         break;
                 }
@@ -663,14 +663,14 @@ class mob_toc_paladin : public CreatureScript
 public:
     mob_toc_paladin() : CreatureScript("mob_toc_paladin") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_paladinAI (creature);
     }
 
     struct mob_toc_paladinAI : public boss_faction_championsAI
     {
-        mob_toc_paladinAI(Creature* creature) : boss_faction_championsAI(creature, AI_HEALER) {}
+        mob_toc_paladinAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_HEALER) {}
 
         uint32 m_uiBubbleTimer;
         uint32 m_uiHandOfProtectionTimer;
@@ -706,7 +706,7 @@ public:
 
             if (m_uiHandOfProtectionTimer <= uiDiff)
             {
-                if (Unit* target = DoSelectLowestHpFriendly(40.0f))
+                if (UnitPtr target = DoSelectLowestHpFriendly(40.0f))
                     if (target->HealthBelowPct(15))
                         DoCast(target, SPELL_HAND_OF_PROTECTION);
                 m_uiHandOfProtectionTimer = urand(0*IN_MILLISECONDS, 360*IN_MILLISECONDS);
@@ -714,21 +714,21 @@ public:
 
             if (m_uiHolyShockTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_HOLY_SHOCK);
                 m_uiHolyShockTimer = urand(6*IN_MILLISECONDS, 15*IN_MILLISECONDS);
             } else m_uiHolyShockTimer -= uiDiff;
 
             if (m_uiHandOfFreedomTimer <= uiDiff)
             {
-                if (Unit* target = SelectRandomFriendlyMissingBuff(SPELL_HAND_OF_FREEDOM))
+                if (UnitPtr target = SelectRandomFriendlyMissingBuff(SPELL_HAND_OF_FREEDOM))
                     DoCast(target, SPELL_HAND_OF_FREEDOM);
                 m_uiHandOfFreedomTimer = urand(25*IN_MILLISECONDS, 40*IN_MILLISECONDS);
             } else m_uiHandOfFreedomTimer -= uiDiff;
 
             if (m_uiHammerOfJusticeTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_HAMMER_OF_JUSTICE);
                 m_uiHammerOfJusticeTimer = urand(5*IN_MILLISECONDS, 15*IN_MILLISECONDS);
             } else m_uiHammerOfJusticeTimer -= uiDiff;
@@ -771,14 +771,14 @@ class mob_toc_priest : public CreatureScript
 public:
     mob_toc_priest() : CreatureScript("mob_toc_priest") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_priestAI (creature);
     }
 
     struct mob_toc_priestAI : public boss_faction_championsAI
     {
-        mob_toc_priestAI(Creature* creature) : boss_faction_championsAI(creature, AI_HEALER) {}
+        mob_toc_priestAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_HEALER) {}
 
         uint32 m_uiPsychicScreamTimer;
         uint32 m_uiCommonTimer;
@@ -817,7 +817,7 @@ public:
                         DoCast(me, SPELL_FLASH_HEAL);
                         break;
                     case 4:
-                        if (Unit* target = urand(0, 1) ? SelectTarget(SELECT_TARGET_RANDOM, 0) : DoSelectLowestHpFriendly(40.0f))
+                        if (UnitPtr target = urand(0, 1) ? SelectTarget(SELECT_TARGET_RANDOM, 0) : DoSelectLowestHpFriendly(40.0f))
                             DoCast(target, SPELL_DISPEL);
                         break;
                     case 5:
@@ -853,14 +853,14 @@ class mob_toc_shadow_priest : public CreatureScript
 public:
     mob_toc_shadow_priest() : CreatureScript("mob_toc_shadow_priest") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_shadow_priestAI (creature);
     }
 
     struct mob_toc_shadow_priestAI : public boss_faction_championsAI
     {
-        mob_toc_shadow_priestAI(Creature* creature) : boss_faction_championsAI(creature, AI_RANGED) {}
+        mob_toc_shadow_priestAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_RANGED) {}
 
         uint32 m_uiPsychicScreamTimer;
         uint32 m_uiDispersionTimer;
@@ -880,7 +880,7 @@ public:
             DoCast(me, SPELL_SHADOWFORM);
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             boss_faction_championsAI::EnterCombat(who);
         }
@@ -906,14 +906,14 @@ public:
 
             if (m_uiSilenceTimer <= uiDiff)
             {
-                if (Unit* target = SelectEnemyCaster(false))
+                if (UnitPtr target = SelectEnemyCaster(false))
                     DoCast(target, SPELL_SILENCE);
                 m_uiSilenceTimer = urand(8*IN_MILLISECONDS, 15*IN_MILLISECONDS);
             } else m_uiSilenceTimer -= uiDiff;
 
             if (m_uiMindBlastTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_MIND_BLAST);
                 m_uiMindBlastTimer = urand(3*IN_MILLISECONDS, 8*IN_MILLISECONDS);
             } else m_uiMindBlastTimer -= uiDiff;
@@ -923,19 +923,19 @@ public:
                 switch (urand(0, 4))
                 {
                     case 0: case 1:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(target, SPELL_MIND_FLAY);
                         break;
                     case 2:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(target, SPELL_VAMPIRIC_TOUCH);
                         break;
                    case 3:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(target, SPELL_SW_PAIN);
                         break;
                    case 4:
-                        if (Unit* target = urand(0, 1) ? SelectTarget(SELECT_TARGET_RANDOM, 0) : DoSelectLowestHpFriendly(40.0f))
+                        if (UnitPtr target = urand(0, 1) ? SelectTarget(SELECT_TARGET_RANDOM, 0) : DoSelectLowestHpFriendly(40.0f))
                             DoCast(target, SPELL_DISPEL);
                         break;
                 }
@@ -967,14 +967,14 @@ class mob_toc_warlock : public CreatureScript
 public:
     mob_toc_warlock() : CreatureScript("mob_toc_warlock") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_warlockAI (creature);
     }
 
     struct mob_toc_warlockAI : public boss_faction_championsAI
     {
-        mob_toc_warlockAI(Creature* creature) : boss_faction_championsAI(creature, AI_RANGED), Summons(me) {}
+        mob_toc_warlockAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_RANGED), Summons(me) {}
 
         SummonList Summons;
 
@@ -1004,7 +1004,7 @@ public:
 
             if (m_uiFearTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_FEAR);
                 m_uiFearTimer = urand(4*IN_MILLISECONDS, 15*IN_MILLISECONDS);
             } else m_uiFearTimer -= uiDiff;
@@ -1018,7 +1018,7 @@ public:
 
             if (m_uiUnstableAfflictionTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_UNSTABLE_AFFLICTION);
                 m_uiUnstableAfflictionTimer = urand(2*IN_MILLISECONDS, 10*IN_MILLISECONDS);
             } else m_uiUnstableAfflictionTimer -= uiDiff;
@@ -1045,7 +1045,7 @@ public:
                         DoCastVictim(SPELL_CURSE_OF_AGONY);
                         break;
                     case 5:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(target, SPELL_CURSE_OF_EXHAUSTION);
                         break;
                 }
@@ -1075,14 +1075,14 @@ class mob_toc_mage : public CreatureScript
 public:
     mob_toc_mage() : CreatureScript("mob_toc_mage") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_mageAI (creature);
     }
 
     struct mob_toc_mageAI : public boss_faction_championsAI
     {
-        mob_toc_mageAI(Creature* creature) : boss_faction_championsAI(creature, AI_RANGED) {}
+        mob_toc_mageAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_RANGED) {}
 
         uint32 m_uiCounterspellTimer;
         uint32 m_uiBlinkTimer;
@@ -1108,7 +1108,7 @@ public:
 
             if (m_uiCounterspellTimer <= uiDiff)
             {
-                if (Unit* target = SelectEnemyCaster(false))
+                if (UnitPtr target = SelectEnemyCaster(false))
                     DoCast(target, SPELL_COUNTERSPELL);
                 m_uiCounterspellTimer = urand(5*IN_MILLISECONDS, 15*IN_MILLISECONDS);
             } else m_uiCounterspellTimer -= uiDiff;
@@ -1132,7 +1132,7 @@ public:
 
             if (m_uiPolymorphTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_POLYMORPH);
                 m_uiPolymorphTimer = urand(15*IN_MILLISECONDS, 40*IN_MILLISECONDS);
             } else m_uiPolymorphTimer -= uiDiff;
@@ -1179,14 +1179,14 @@ class mob_toc_hunter : public CreatureScript
 public:
     mob_toc_hunter() : CreatureScript("mob_toc_hunter") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_hunterAI (creature);
     }
 
     struct mob_toc_hunterAI : public boss_faction_championsAI
     {
-        mob_toc_hunterAI(Creature* creature) : boss_faction_championsAI(creature, AI_RANGED), Summons(me) {}
+        mob_toc_hunterAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_RANGED), Summons(me) {}
 
         SummonList Summons;
 
@@ -1296,14 +1296,14 @@ class mob_toc_boomkin : public CreatureScript
 public:
     mob_toc_boomkin() : CreatureScript("mob_toc_boomkin") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_boomkinAI (creature);
     }
 
     struct mob_toc_boomkinAI : public boss_faction_championsAI
     {
-        mob_toc_boomkinAI(Creature* creature) : boss_faction_championsAI(creature, AI_RANGED) {}
+        mob_toc_boomkinAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_RANGED) {}
 
         uint32 m_uiBarkskinTimer;
         uint32 m_uiCycloneTimer;
@@ -1336,14 +1336,14 @@ public:
 
             if (m_uiCycloneTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_CYCLONE);
                 m_uiCycloneTimer = urand(5*IN_MILLISECONDS, 40*IN_MILLISECONDS);
             } else m_uiCycloneTimer -= uiDiff;
 
             if (m_uiEntanglingRootsTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_ENTANGLING_ROOTS);
                 m_uiEntanglingRootsTimer = urand(5*IN_MILLISECONDS, 40*IN_MILLISECONDS);
             } else m_uiEntanglingRootsTimer -= uiDiff;
@@ -1401,14 +1401,14 @@ class mob_toc_warrior : public CreatureScript
 public:
     mob_toc_warrior() : CreatureScript("mob_toc_warrior") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_warriorAI (creature);
     }
 
     struct mob_toc_warriorAI : public boss_faction_championsAI
     {
-        mob_toc_warriorAI(Creature* creature) : boss_faction_championsAI(creature, AI_MELEE) {}
+        mob_toc_warriorAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_MELEE) {}
 
         uint32 m_uiBladestormTimer;
         uint32 m_uiIntimidatingShoutTimer;
@@ -1516,14 +1516,14 @@ class mob_toc_dk : public CreatureScript
 public:
     mob_toc_dk() : CreatureScript("mob_toc_dk") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_dkAI (creature);
     }
 
     struct mob_toc_dkAI : public boss_faction_championsAI
     {
-        mob_toc_dkAI(Creature* creature) : boss_faction_championsAI(creature, AI_MELEE) {}
+        mob_toc_dkAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_MELEE) {}
 
         uint32 m_uiIceboundFortitudeTimer;
         uint32 m_uiChainsOfIceTimer;
@@ -1560,7 +1560,7 @@ public:
 
             if (m_uiChainsOfIceTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_CHAINS_OF_ICE);
                 m_uiChainsOfIceTimer = urand(5*IN_MILLISECONDS, 15*IN_MILLISECONDS);
             } else m_uiChainsOfIceTimer -= uiDiff;
@@ -1573,7 +1573,7 @@ public:
 
             if (m_uiStrangulateTimer <= uiDiff)
             {
-                if (Unit* target = SelectEnemyCaster(false))
+                if (UnitPtr target = SelectEnemyCaster(false))
                     DoCast(target, SPELL_STRANGULATE);
                 m_uiStrangulateTimer = urand(10*IN_MILLISECONDS, 90*IN_MILLISECONDS);
             } else m_uiStrangulateTimer -= uiDiff;
@@ -1619,14 +1619,14 @@ class mob_toc_rogue : public CreatureScript
 public:
     mob_toc_rogue() : CreatureScript("mob_toc_rogue") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_rogueAI (creature);
     }
 
     struct mob_toc_rogueAI : public boss_faction_championsAI
     {
-        mob_toc_rogueAI(Creature* creature) : boss_faction_championsAI(creature, AI_MELEE) {}
+        mob_toc_rogueAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_MELEE) {}
 
         uint32 m_uiFanOfKnivesTimer;
         uint32 m_uiHemorrhageTimer;
@@ -1682,7 +1682,7 @@ public:
 
             if (m_uiBlindTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                     if (me->IsInRange(target, 0.0f, 15.0f, false))
                         DoCast(target, SPELL_BLIND);
                 m_uiBlindTimer = urand(7*IN_MILLISECONDS, 8*IN_MILLISECONDS);
@@ -1719,14 +1719,14 @@ class mob_toc_enh_shaman : public CreatureScript
 public:
     mob_toc_enh_shaman() : CreatureScript("mob_toc_enh_shaman") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_enh_shamanAI (creature);
     }
 
     struct mob_toc_enh_shamanAI : public boss_faction_championsAI
     {
-        mob_toc_enh_shamanAI(Creature* creature) : boss_faction_championsAI(creature, AI_MELEE), Summons(me) {}
+        mob_toc_enh_shamanAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_MELEE), Summons(me) {}
 
         SummonList Summons;
 
@@ -1753,12 +1753,12 @@ public:
             Summons.DespawnAll();
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             Summons.Summon(summoned);
         }
 
-        void SummonedCreatureDespawn(Creature* /*pSummoned*/)
+        void SummonedCreatureDespawn(CreaturePtr /*pSummoned*/)
         {
             --m_uiTotemCount;
         }
@@ -1781,7 +1781,7 @@ public:
             */
         }
 
-        void JustDied(Unit* killer)
+        void JustDied(UnitPtr killer)
         {
             boss_faction_championsAI::JustDied(killer);
             Summons.DespawnAll();
@@ -1854,14 +1854,14 @@ class mob_toc_retro_paladin : public CreatureScript
 public:
     mob_toc_retro_paladin() : CreatureScript("mob_toc_retro_paladin") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_retro_paladinAI (creature);
     }
 
     struct mob_toc_retro_paladinAI : public boss_faction_championsAI
     {
-        mob_toc_retro_paladinAI(Creature* creature) : boss_faction_championsAI(creature, AI_MELEE) {}
+        mob_toc_retro_paladinAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_MELEE) {}
 
         uint32 m_uiRepeteanceTimer;
         uint32 m_uiCrusaderStrikeTimer;
@@ -1882,7 +1882,7 @@ public:
             SetEquipmentSlots(false, 47519, EQUIP_NO_CHANGE, EQUIP_NO_CHANGE);
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             boss_faction_championsAI::EnterCombat(who);
             DoCast(SPELL_SEAL_OF_COMMAND);
@@ -1895,7 +1895,7 @@ public:
 
             if (m_uiRepeteanceTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_REPENTANCE);
                 m_uiRepeteanceTimer = 60*IN_MILLISECONDS;
             } else m_uiRepeteanceTimer -= uiDiff;
@@ -1948,14 +1948,14 @@ class mob_toc_pet_warlock : public CreatureScript
 public:
     mob_toc_pet_warlock() : CreatureScript("mob_toc_pet_warlock") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_pet_warlockAI (creature);
     }
 
     struct mob_toc_pet_warlockAI : public boss_faction_championsAI
     {
-        mob_toc_pet_warlockAI(Creature* creature) : boss_faction_championsAI(creature, AI_PET) {}
+        mob_toc_pet_warlockAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_PET) {}
 
         uint32 m_uiDevourMagicTimer;
         uint32 m_uiSpellLockTimer;
@@ -2000,14 +2000,14 @@ class mob_toc_pet_hunter : public CreatureScript
 public:
     mob_toc_pet_hunter() : CreatureScript("mob_toc_pet_hunter") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_toc_pet_hunterAI (creature);
     }
 
     struct mob_toc_pet_hunterAI : public boss_faction_championsAI
     {
-        mob_toc_pet_hunterAI(Creature* creature) : boss_faction_championsAI(creature, AI_PET) {}
+        mob_toc_pet_hunterAI(CreaturePtr creature) : boss_faction_championsAI(creature, AI_PET) {}
 
         uint32 m_uiClawTimer;
 
@@ -2051,7 +2051,7 @@ class spell_faction_champion_warl_unstable_affliction : public SpellScriptLoader
 
             void HandleDispel(DispelInfo* dispelInfo)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                     caster->CastSpell(dispelInfo->GetDispeller(), SPELL_UNSTABLE_AFFLICTION_DISPEL, true, NULL, GetEffect(EFFECT_0));
             }
 

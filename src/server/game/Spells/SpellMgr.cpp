@@ -342,7 +342,7 @@ SpellMgr::~SpellMgr()
 }
 
 /// Some checks for spells, to prevent adding deprecated/broken spells for trainers, spell book, etc
-bool SpellMgr::IsSpellValid(SpellInfo const* spellInfo, Player* player, bool msg)
+bool SpellMgr::IsSpellValid(SpellInfo const* spellInfo, PlayerPtr player, bool msg)
 {
     // not exist
     if (!spellInfo)
@@ -445,7 +445,7 @@ void SpellMgr::SetSpellDifficultyId(uint32 spellId, uint32 id)
     mSpellDifficultySearcherMap[spellId] = id;
 }
 
-uint32 SpellMgr::GetSpellIdForDifficulty(uint32 spellId, Unit const* caster) const
+uint32 SpellMgr::GetSpellIdForDifficulty(uint32 spellId, constUnitPtr caster) const
 {
     // Dbc supprimée au passage a MoP
     return spellId;
@@ -489,7 +489,7 @@ uint32 SpellMgr::GetSpellIdForDifficulty(uint32 spellId, Unit const* caster) con
     return uint32(difficultyEntry->SpellID[mode]);*/
 }
 
-SpellInfo const* SpellMgr::GetSpellForDifficultyFromSpell(SpellInfo const* spell, Unit const* caster) const
+SpellInfo const* SpellMgr::GetSpellForDifficultyFromSpell(SpellInfo const* spell, constUnitPtr caster) const
 {
     if (!caster || !caster->GetMap() || !caster->GetMap()->IsDungeon())
         return spell;
@@ -912,7 +912,7 @@ bool SpellMgr::CanSpellTriggerProcOnEvent(SpellProcEntry const& procEntry, ProcE
 
     // check XP or honor target requirement
     if (procEntry.attributesMask & PROC_ATTR_REQ_EXP_OR_HONOR)
-        if (Player* actor = eventInfo.GetActor()->ToPlayer())
+        if (PlayerPtr actor = TO_PLAYER(eventInfo.GetActor()))
             if (eventInfo.GetActionTarget() && !actor->isHonorOrXPTarget(eventInfo.GetActionTarget()))
                 return false;
 
@@ -1078,7 +1078,7 @@ SpellAreaForAreaMapBounds SpellMgr::GetSpellAreaForAreaMapBounds(uint32 area_id)
     return SpellAreaForAreaMapBounds(mSpellAreaForAreaMap.lower_bound(area_id), mSpellAreaForAreaMap.upper_bound(area_id));
 }
 
-bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32 newArea) const
+bool SpellArea::IsFitToRequirements(constPlayerPtr player, uint32 newZone, uint32 newArea) const
 {
     if (gender != GENDER_NONE)                   // not in expected gender
         if (!player || gender != player->getGender())

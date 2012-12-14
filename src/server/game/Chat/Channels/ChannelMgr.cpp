@@ -57,7 +57,7 @@ Channel* ChannelMgr::GetJoinChannel(std::string name, uint32 channel_id)
     return channels[wname];
 }
 
-Channel* ChannelMgr::GetChannel(std::string name, Player* p, bool pkt)
+Channel* ChannelMgr::GetChannel(std::string name, PlayerPtr p, bool pkt)
 {
     std::wstring wname;
     Utf8toWStr(name, wname);

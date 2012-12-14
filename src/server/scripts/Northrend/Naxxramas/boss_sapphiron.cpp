@@ -75,14 +75,14 @@ class boss_sapphiron : public CreatureScript
 public:
     boss_sapphiron() : CreatureScript("boss_sapphiron") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_sapphironAI (creature);
     }
 
     struct boss_sapphironAI : public BossAI
     {
-        boss_sapphironAI(Creature* creature) : BossAI(creature, BOSS_SAPPHIRON)
+        boss_sapphironAI(CreaturePtr creature) : BossAI(creature, BOSS_SAPPHIRON)
             , phase(PHASE_NULL)
         {
             map = me->GetMap();
@@ -94,7 +94,7 @@ public:
 
         bool CanTheHundredClub; // needed for achievement: The Hundred Club(2146, 2147)
         uint32 CheckFrostResistTimer;
-        Map* map;
+        MapPtr map;
 
         void InitializeAI()
         {
@@ -121,7 +121,7 @@ public:
             CheckFrostResistTimer = 5000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
 
@@ -133,20 +133,20 @@ public:
             CheckPlayersFrostResist();
         }
 
-        void SpellHitTarget(Unit* target, const SpellInfo* spell)
+        void SpellHitTarget(UnitPtr target, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_ICEBOLT)
             {
                 IceBlockMap::iterator itr = iceblocks.find(target->GetGUID());
                 if (itr != iceblocks.end() && !itr->second)
                 {
-                    if (GameObject* iceblock = me->SummonGameObject(GO_ICEBLOCK, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, 0, 0, 0, 0, 25000))
+                    if (GameObjectPtr iceblock = me->SummonGameObject(GO_ICEBLOCK, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, 0, 0, 0, 0, 25000))
                         itr->second = iceblock->GetGUID();
                 }
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             _JustDied();
             me->CastSpell(me, SPELL_DIES, true);
@@ -214,9 +214,9 @@ public:
         {
             for (IceBlockMap::const_iterator itr = iceblocks.begin(); itr != iceblocks.end(); ++itr)
             {
-                if (Player* player = Unit::GetPlayer(*me, itr->first))
+                if (PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), itr->first))
                     player->RemoveAura(SPELL_ICEBOLT);
-                if (GameObject* go = GameObject::GetGameObject(*me, itr->second))
+                if (GameObjectPtr go = GameObject::GetGameObject(*me, itr->second))
                     go->Delete();
             }
             iceblocks.clear();
@@ -266,7 +266,7 @@ public:
                         case EVENT_BLIZZARD:
                         {
                             //DoCastAOE(SPELL_SUMMON_BLIZZARD);
-                            if (Creature* summon = DoSummon(MOB_BLIZZARD, me, 0.0f, urand(25000, 30000), TEMPSUMMON_TIMED_DESPAWN))
+                            if (CreaturePtr summon = DoSummon(MOB_BLIZZARD, me, 0.0f, urand(25000, 30000), TEMPSUMMON_TIMED_DESPAWN))
                                 summon->GetMotionMaster()->MoveRandom(40);
                             events.ScheduleEvent(EVENT_BLIZZARD, RAID_MODE(20000, 7000), 0, PHASE_GROUND);
                             break;
@@ -304,8 +304,8 @@ public:
                             return;
                         case EVENT_ICEBOLT:
                         {
-                            std::vector<Unit*> targets;
-                            std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
+                            std::vector<UnitPtr> targets;
+                            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin();
                             for (; i != me->getThreatManager().getThreatList().end(); ++i)
                                 if ((*i)->getTarget()->GetTypeId() == TYPEID_PLAYER && !(*i)->getTarget()->HasAura(SPELL_ICEBOLT))
                                     targets.push_back((*i)->getTarget());
@@ -314,7 +314,7 @@ public:
                                 iceboltCount = 0;
                             else
                             {
-                                std::vector<Unit*>::const_iterator itr = targets.begin();
+                                std::vector<UnitPtr>::const_iterator itr = targets.begin();
                                 advance(itr, rand()%targets.size());
                                 iceblocks.insert(std::make_pair((*itr)->GetGUID(), 0));
                                 DoCast(*itr, SPELL_ICEBOLT);
@@ -361,11 +361,11 @@ public:
         void CastExplosion()
         {
             DoZoneInCombat(); // make sure everyone is in threatlist
-            std::vector<Unit*> targets;
-            std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
+            std::vector<UnitPtr> targets;
+            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin();
             for (; i != me->getThreatManager().getThreatList().end(); ++i)
             {
-                Unit* target = (*i)->getTarget();
+                UnitPtr target = (*i)->getTarget();
                 if (target->GetTypeId() != TYPEID_PLAYER)
                     continue;
 
@@ -378,7 +378,7 @@ public:
 
                 for (IceBlockMap::const_iterator itr = iceblocks.begin(); itr != iceblocks.end(); ++itr)
                 {
-                    if (GameObject* go = GameObject::GetGameObject(*me, itr->second))
+                    if (GameObjectPtr go = GameObject::GetGameObject(*me, itr->second))
                     {
                         if (go->IsInBetween(me, target, 2.0f)
                             && me->GetExactDist2d(target->GetPositionX(), target->GetPositionY()) - me->GetExactDist2d(go->GetPositionX(), go->GetPositionY()) < 5.0f)
@@ -393,7 +393,7 @@ public:
 
             me->CastSpell(me, SPELL_FROST_EXPLOSION, true);
 
-            for (std::vector<Unit*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+            for (std::vector<UnitPtr>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
                 (*itr)->ApplySpellImmune(0, IMMUNITY_ID, SPELL_FROST_EXPLOSION, false);
         }
     };

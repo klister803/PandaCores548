@@ -27,7 +27,7 @@
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 
-int TotemAI::Permissible(Creature const* creature)
+int TotemAI::Permissible(constCreaturePtr creature)
 {
     if (creature->isTotem())
         return PERMIT_BASE_PROACTIVE;
@@ -35,12 +35,12 @@ int TotemAI::Permissible(Creature const* creature)
     return PERMIT_BASE_NO;
 }
 
-TotemAI::TotemAI(Creature* c) : CreatureAI(c), i_victimGuid(0)
+TotemAI::TotemAI(CreaturePtr c) : CreatureAI(c), i_victimGuid(0)
 {
     ASSERT(c->isTotem());
 }
 
-void TotemAI::MoveInLineOfSight(Unit* /*who*/)
+void TotemAI::MoveInLineOfSight(UnitPtr /*who*/)
 {
 }
 
@@ -68,7 +68,7 @@ void TotemAI::UpdateAI(uint32 const /*diff*/)
     // SPELLMOD_RANGE not applied in this place just because not existence range mods for attacking totems
 
     // pointer to appropriate target if found any
-    Unit* victim = i_victimGuid ? ObjectAccessor::GetUnit(*me, i_victimGuid) : NULL;
+    UnitPtr victim = i_victimGuid ? ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(me), i_victimGuid) : NULL;
 
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
     if (!victim ||
@@ -95,7 +95,7 @@ void TotemAI::UpdateAI(uint32 const /*diff*/)
         i_victimGuid = 0;
 }
 
-void TotemAI::AttackStart(Unit* /*victim*/)
+void TotemAI::AttackStart(UnitPtr /*victim*/)
 {
     // Sentry totem sends ping on attack
     if (me->GetEntry() == SENTRY_TOTEM_ENTRY && me->GetOwner()->GetTypeId() == TYPEID_PLAYER)
@@ -104,6 +104,6 @@ void TotemAI::AttackStart(Unit* /*victim*/)
         data << me->GetGUID();
         data << me->GetPositionX();
         data << me->GetPositionY();
-        ((Player*)me->GetOwner())->GetSession()->SendPacket(&data);
+        (TO_PLAYER(me->GetOwner()))->GetSession()->SendPacket(&data);
     }
 }

@@ -30,15 +30,15 @@
 #endif
 
 template<class T>
-void ConfusedMovementGenerator<T>::Initialize(T &unit)
+void ConfusedMovementGenerator<T>::Initialize(std::shared_ptr<T> &unit)
 {
-    unit.StopMoving();
+    unit->StopMoving();
     float const wander_distance = 4;
-    float x = unit.GetPositionX();
-    float y = unit.GetPositionY();
-    float z = unit.GetPositionZ();
+    float x = unit->GetPositionX();
+    float y = unit->GetPositionY();
+    float z = unit->GetPositionZ();
 
-    Map const* map = unit.GetBaseMap();
+    constMapPtr map = unit->GetBaseMap();
 
     i_nextMove = 1;
 
@@ -54,7 +54,7 @@ void ConfusedMovementGenerator<T>::Initialize(T &unit)
         Trinity::NormalizeMapCoord(wanderX);
         Trinity::NormalizeMapCoord(wanderY);
 
-        if (unit.IsWithinLOS(wanderX, wanderY, z))
+        if (unit->IsWithinLOS(wanderX, wanderY, z))
         {
             bool is_water = map->IsInWater(wanderX, wanderY, z);
 
@@ -72,7 +72,7 @@ void ConfusedMovementGenerator<T>::Initialize(T &unit)
             wanderY = idx > 0 ? i_waypoints[idx-1][1] : y;
         }
 
-        unit.UpdateAllowedPositionZ(wanderX, wanderY, z);
+        unit->UpdateAllowedPositionZ(wanderX, wanderY, z);
 
         //! Positions are fine - apply them to this waypoint
         i_waypoints[idx][0] = wanderX;
@@ -80,46 +80,46 @@ void ConfusedMovementGenerator<T>::Initialize(T &unit)
         i_waypoints[idx][2] = z;
     }
 
-    unit.StopMoving();
-    unit.SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
-    unit.AddUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_CONFUSED_MOVE);
+    unit->StopMoving();
+    unit->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
+    unit->AddUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_CONFUSED_MOVE);
 }
 
 template<>
-void ConfusedMovementGenerator<Creature>::_InitSpecific(Creature &creature, bool &is_water_ok, bool &is_land_ok)
+void ConfusedMovementGenerator<Creature>::_InitSpecific(CreaturePtr &creature, bool &is_water_ok, bool &is_land_ok)
 {
-    is_water_ok = creature.canSwim();
-    is_land_ok  = creature.canWalk();
+    is_water_ok = creature->canSwim();
+    is_land_ok  = creature->canWalk();
 }
 
 template<>
-void ConfusedMovementGenerator<Player>::_InitSpecific(Player &, bool &is_water_ok, bool &is_land_ok)
+void ConfusedMovementGenerator<Player>::_InitSpecific(PlayerPtr &, bool &is_water_ok, bool &is_land_ok)
 {
     is_water_ok = true;
     is_land_ok  = true;
 }
 
 template<class T>
-void ConfusedMovementGenerator<T>::Reset(T &unit)
+void ConfusedMovementGenerator<T>::Reset(std::shared_ptr<T> &unit)
 {
     i_nextMove = 1;
     i_nextMoveTime.Reset(0);
-    unit.StopMoving();
-    unit.AddUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_CONFUSED_MOVE);
+    unit->StopMoving();
+    unit->AddUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_CONFUSED_MOVE);
 }
 
 template<class T>
-bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
+bool ConfusedMovementGenerator<T>::Update(std::shared_ptr<T> &unit, const uint32 &diff)
 {
-    if (unit.HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
+    if (unit->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
         return true;
 
     if (i_nextMoveTime.Passed())
     {
         // currently moving, update location
-        unit.AddUnitState(UNIT_STATE_CONFUSED_MOVE);
+        unit->AddUnitState(UNIT_STATE_CONFUSED_MOVE);
 
-        if (unit.movespline->Finalized())
+        if (unit->movespline->Finalized())
         {
             i_nextMove = urand(1, MAX_CONF_WAYPOINTS);
             i_nextMoveTime.Reset(urand(500, 1200)); // Guessed
@@ -132,13 +132,13 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
         if (i_nextMoveTime.Passed())
         {
             // start moving
-            unit.AddUnitState(UNIT_STATE_CONFUSED_MOVE);
+            unit->AddUnitState(UNIT_STATE_CONFUSED_MOVE);
 
             ASSERT(i_nextMove <= MAX_CONF_WAYPOINTS);
             float x = i_waypoints[i_nextMove][0];
             float y = i_waypoints[i_nextMove][1];
             float z = i_waypoints[i_nextMove][2];
-            Movement::MoveSplineInit init(unit);
+            Movement::MoveSplineInit init(TO_UNIT(unit));
             init.MoveTo(x, y, z);
             init.SetWalk(true);
             init.Launch();
@@ -149,25 +149,25 @@ bool ConfusedMovementGenerator<T>::Update(T &unit, const uint32 &diff)
 }
 
 template<>
-void ConfusedMovementGenerator<Player>::Finalize(Player &unit)
+void ConfusedMovementGenerator<Player>::Finalize(PlayerPtr &unit)
 {
-    unit.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
-    unit.ClearUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_CONFUSED_MOVE);
+    unit->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
+    unit->ClearUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_CONFUSED_MOVE);
 }
 
 template<>
-void ConfusedMovementGenerator<Creature>::Finalize(Creature &unit)
+void ConfusedMovementGenerator<Creature>::Finalize(CreaturePtr &unit)
 {
-    unit.RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
-    unit.ClearUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_CONFUSED_MOVE);
-    if (unit.getVictim())
-        unit.SetTarget(unit.getVictim()->GetGUID());
+    unit->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_CONFUSED);
+    unit->ClearUnitState(UNIT_STATE_CONFUSED | UNIT_STATE_CONFUSED_MOVE);
+    if (unit->getVictim())
+        unit->SetTarget(unit->getVictim()->GetGUID());
 }
 
-template void ConfusedMovementGenerator<Player>::Initialize(Player &player);
-template void ConfusedMovementGenerator<Creature>::Initialize(Creature &creature);
-template void ConfusedMovementGenerator<Player>::Reset(Player &player);
-template void ConfusedMovementGenerator<Creature>::Reset(Creature &creature);
-template bool ConfusedMovementGenerator<Player>::Update(Player &player, const uint32 &diff);
-template bool ConfusedMovementGenerator<Creature>::Update(Creature &creature, const uint32 &diff);
+template void ConfusedMovementGenerator<Player>::Initialize(PlayerPtr &player);
+template void ConfusedMovementGenerator<Creature>::Initialize(CreaturePtr &creature);
+template void ConfusedMovementGenerator<Player>::Reset(PlayerPtr &player);
+template void ConfusedMovementGenerator<Creature>::Reset(CreaturePtr &creature);
+template bool ConfusedMovementGenerator<Player>::Update(PlayerPtr &player, const uint32 &diff);
+template bool ConfusedMovementGenerator<Creature>::Update(CreaturePtr &creature, const uint32 &diff);
 

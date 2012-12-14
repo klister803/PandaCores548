@@ -38,7 +38,7 @@ void WorldSession::SendVoidStorageTransferResult(VoidTransferError result)
 void WorldSession::HandleVoidStorageUnlock(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_VOID_STORAGE_UNLOCK");
-    Player* player = GetPlayer();
+    PlayerPtr player = GetPlayer();
 
     ObjectGuid npcGuid;
     npcGuid[5] = recvData.ReadBit();
@@ -59,7 +59,7 @@ void WorldSession::HandleVoidStorageUnlock(WorldPacket& recvData)
     recvData.ReadByteSeq(npcGuid[2]);
     recvData.ReadByteSeq(npcGuid[1]);
 
-    Creature* unit = player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_VAULTKEEPER);
+    CreaturePtr unit = player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_VAULTKEEPER);
     if (!unit)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleVoidStorageUnlock - Unit (GUID: %u) not found or player can't interact with it.", GUID_LOPART(npcGuid));
@@ -79,7 +79,7 @@ void WorldSession::HandleVoidStorageUnlock(WorldPacket& recvData)
 void WorldSession::HandleVoidStorageQuery(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_VOID_STORAGE_QUERY");
-    Player* player = GetPlayer();
+    PlayerPtr player = GetPlayer();
 
     ObjectGuid npcGuid;
 
@@ -103,7 +103,7 @@ void WorldSession::HandleVoidStorageQuery(WorldPacket& recvData)
     recvData.ReadByteSeq(npcGuid[1]);
     recvData.ReadByteSeq(npcGuid[5]);
 
-    Creature* unit = player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_VAULTKEEPER);
+    CreaturePtr unit = player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_VAULTKEEPER);
     if (!unit)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleVoidStorageQuery - Unit (GUID: %u) not found or player can't interact with it.", GUID_LOPART(npcGuid));
@@ -190,7 +190,7 @@ void WorldSession::HandleVoidStorageQuery(WorldPacket& recvData)
 void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_VOID_STORAGE_TRANSFER");
-    Player* player = GetPlayer();
+    PlayerPtr player = GetPlayer();
 
     // Read everything
 
@@ -284,7 +284,7 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     recvData.ReadByteSeq(npcGuid[2]);
     recvData.ReadByteSeq(npcGuid[7]);
 
-    Creature* unit = player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_VAULTKEEPER);
+    CreaturePtr unit = player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_VAULTKEEPER);
     if (!unit)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleVoidStorageTransfer - Unit (GUID: %u) not found or player can't interact with it.", GUID_LOPART(npcGuid));
@@ -308,7 +308,7 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     {
         // make this a Player function
         for (uint8 i = INVENTORY_SLOT_BAG_START; i < INVENTORY_SLOT_BAG_END; i++)
-            if (Bag* bag = player->GetBagByPos(i))
+            if (BagPtr bag = player->GetBagByPos(i))
                 freeBagSlots += bag->GetFreeSlots();
         for (uint8 i = INVENTORY_SLOT_ITEM_START; i < INVENTORY_SLOT_ITEM_END; i++)
             if (!player->GetItemByPos(INVENTORY_SLOT_BAG_0, i))
@@ -331,7 +331,7 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     uint8 depositCount = 0;
     for (std::vector<ObjectGuid>::iterator itr = itemGuids.begin(); itr != itemGuids.end(); ++itr)
     {
-        Item* item = player->GetItemByGuid(*itr);
+        ItemPtr item = player->GetItemByGuid(*itr);
         if (!item)
         {
             sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleVoidStorageTransfer - Player (GUID: %u, name: %s) wants to deposit an invalid item (item guid: " UI64FMTD ").", player->GetGUIDLow(), player->GetName(), uint64(*itr));
@@ -372,7 +372,7 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
             return;
         }
 
-        Item* item = player->StoreNewItem(dest, itemVS->ItemEntry, true, itemVS->ItemRandomPropertyId);
+        ItemPtr item = player->StoreNewItem(dest, itemVS->ItemEntry, true, itemVS->ItemRandomPropertyId);
         item->SetUInt64Value(ITEM_FIELD_CREATOR, uint64(itemVS->CreatorGuid));
         item->SetBinding(true);
         player->SendNewItem(item, 1, false, false, false);
@@ -484,7 +484,7 @@ void WorldSession::HandleVoidSwapItem(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_VOID_SWAP_ITEM");
 
-    Player* player = GetPlayer();
+    PlayerPtr player = GetPlayer();
     uint32 newSlot;
     ObjectGuid npcGuid;
     ObjectGuid itemId;
@@ -527,7 +527,7 @@ void WorldSession::HandleVoidSwapItem(WorldPacket& recvData)
     recvData.ReadByteSeq(itemId[5]);
     recvData.ReadByteSeq(itemId[6]);
 
-    Creature* unit = player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_VAULTKEEPER);
+    CreaturePtr unit = player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_VAULTKEEPER);
     if (!unit)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleVoidSwapItem - Unit (GUID: %u) not found or player can't interact with it.", GUID_LOPART(npcGuid));

@@ -113,7 +113,7 @@ public:
 
         // If assigned to different player other than current, leave
         //! Console can override though
-        Player* player = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
+        PlayerPtr player = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
         if (player && ticket->IsAssignedNotTo(player->GetGUID()))
         {
             handler->PSendSysMessage(LANG_COMMAND_TICKETALREADYASSIGNED, ticket->GetId(), target.c_str());
@@ -146,7 +146,7 @@ public:
 
         // Ticket should be assigned to the player who tries to close it.
         // Console can override though
-        Player* player = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
+        PlayerPtr player = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
         if (player && ticket->IsAssignedNotTo(player->GetGUID()))
         {
             handler->PSendSysMessage(LANG_COMMAND_TICKETCANNOTCLOSE, ticket->GetId());
@@ -160,7 +160,7 @@ public:
         handler->SendGlobalGMSysMessage(msg.c_str());
 
         // Inform player, who submitted this ticket, that it is closed
-        if (Player* submitter = ticket->GetPlayer())
+        if (PlayerPtr submitter = ticket->GetPlayer())
         {
             if (submitter->IsInWorld())
             {
@@ -193,7 +193,7 @@ public:
 
         // Cannot comment ticket assigned to someone else
         //! Console excluded
-        Player* player = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
+        PlayerPtr player = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
         if (player && ticket->IsAssignedNotTo(player->GetGUID()))
         {
             handler->PSendSysMessage(LANG_COMMAND_TICKETALREADYASSIGNED, ticket->GetId());
@@ -231,7 +231,7 @@ public:
             return true;
         }
 
-        if (Player* player = ticket->GetPlayer())
+        if (PlayerPtr player = ticket->GetPlayer())
             if (player->IsInWorld())
                 ticket->SendResponse(player->GetSession());
 
@@ -264,7 +264,7 @@ public:
         sTicketMgr->RemoveTicket(ticket->GetId());
         sTicketMgr->UpdateLastChange();
 
-        if (Player* player = ticket->GetPlayer())
+        if (PlayerPtr player = ticket->GetPlayer())
         {
             if (player->IsInWorld())
             {
@@ -293,7 +293,7 @@ public:
 
         ticket->SetEscalatedStatus(TICKET_IN_ESCALATION_QUEUE);
 
-        if (Player* player = ticket->GetPlayer())
+        if (PlayerPtr player = ticket->GetPlayer())
             if (player->IsInWorld())
                 sTicketMgr->SendTicket(player->GetSession(), ticket);
 
@@ -364,7 +364,7 @@ public:
 
         // Get security level of player, whom this ticket is assigned to
         uint32 security = SEC_PLAYER;
-        Player* assignedPlayer = ticket->GetAssignedPlayer();
+        PlayerPtr assignedPlayer = ticket->GetAssignedPlayer();
         if (assignedPlayer && assignedPlayer->IsInWorld())
             security = assignedPlayer->GetSession()->GetSecurity();
         else
@@ -427,7 +427,7 @@ public:
 
         // Detect target's GUID
         uint64 guid = 0;
-        if (Player* player = sObjectAccessor->FindPlayerByName(name.c_str()))
+        if (PlayerPtr player = sObjectAccessor->FindPlayerByName(name.c_str()))
             guid = player->GetGUID();
         else
             guid = sObjectMgr->GetPlayerGUIDByName(name);
@@ -476,7 +476,7 @@ public:
 
         // Cannot add response to ticket, assigned to someone else
         //! Console excluded
-        Player* player = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
+        PlayerPtr player = handler->GetSession() ? handler->GetSession()->GetPlayer() : NULL;
         if (player && ticket->IsAssignedNotTo(player->GetGUID()))
         {
             handler->PSendSysMessage(LANG_COMMAND_TICKETALREADYASSIGNED, ticket->GetId());

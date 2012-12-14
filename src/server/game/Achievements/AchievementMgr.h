@@ -22,6 +22,7 @@
 #include <string>
 
 #include "Common.h"
+#include "../SharedPtrs/SharedPtrs.h"
 #include <ace/Singleton.h>
 #include "DatabaseEnv.h"
 #include "DBCEnums.h"
@@ -172,7 +173,7 @@ struct AchievementCriteriaData
     }
 
     bool IsValid(AchievementCriteriaEntry const* criteria);
-    bool Meets(uint32 criteria_id, Player const* source, Unit const* target, uint32 miscvalue1 = 0) const;
+    bool Meets(uint32 criteria_id, constPlayerPtr source, constUnitPtr target, uint32 miscvalue1 = 0) const;
 };
 
 struct AchievementCriteriaDataSet
@@ -180,7 +181,7 @@ struct AchievementCriteriaDataSet
         AchievementCriteriaDataSet() : criteria_id(0) {}
         typedef std::vector<AchievementCriteriaData> Storage;
         void Add(AchievementCriteriaData const& data) { storage.push_back(data); }
-        bool Meets(Player const* source, Unit const* target, uint32 miscvalue = 0) const;
+        bool Meets(constPlayerPtr source, constUnitPtr target, uint32 miscvalue = 0) const;
         void SetCriteriaId(uint32 id) {criteria_id = id;}
     private:
         uint32 criteria_id;
@@ -224,7 +225,7 @@ template<class T>
 class AchievementMgr
 {
     public:
-        AchievementMgr(T* owner);
+        AchievementMgr(std::shared_ptr<T> owner);
         ~AchievementMgr();
 
         void Reset();
@@ -232,15 +233,15 @@ class AchievementMgr
         void LoadFromDB(PreparedQueryResult achievementResult, PreparedQueryResult criteriaResult, PreparedQueryResult achievementAccountResult = NULL, PreparedQueryResult criteriaAccountResult = NULL);
         void SaveToDB(SQLTransaction& trans);
         void ResetAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, bool evenIfCriteriaComplete = false);
-        void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, Unit const* unit = NULL, Player* referencePlayer = NULL);
-        void CompletedAchievement(AchievementEntry const* entry, Player* referencePlayer);
-        void CheckAllAchievementCriteria(Player* referencePlayer);
-        void SendAllAchievementData(Player* receiver);
-        void SendAchievementInfo(Player* receiver, uint32 achievementId = 0);
+        void UpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, constUnitPtr unit = NULL, PlayerPtr referencePlayer = NULL);
+        void CompletedAchievement(AchievementEntry const* entry, PlayerPtr referencePlayer);
+        void CheckAllAchievementCriteria(PlayerPtr referencePlayer);
+        void SendAllAchievementData(PlayerPtr receiver);
+        void SendAchievementInfo(PlayerPtr receiver, uint32 achievementId = 0);
         bool HasAchieved(uint32 achievementId) const;
         bool HasAccountAchieved(uint32 achievementId) const;
         uint64 GetFirstAchievedCharacterOnAccount(uint32 achievementId) const;
-        T* GetOwner() const { return _owner; }
+        std::shared_ptr<T> GetOwner() const { return _owner; }
 
         void UpdateTimedAchievements(uint32 timeDiff);
         void StartTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry, uint32 timeLost = 0);
@@ -253,19 +254,19 @@ class AchievementMgr
         CriteriaProgressMap* GetCriteriaProgressMap();
         CriteriaProgress* GetCriteriaProgress(uint32 entry);
         CriteriaProgress* GetCriteriaProgress(AchievementCriteriaEntry const* entry);
-        void SetCriteriaProgress(AchievementCriteriaEntry const* entry, uint32 changeValue, Player* referencePlayer, ProgressType ptype = PROGRESS_SET);
+        void SetCriteriaProgress(AchievementCriteriaEntry const* entry, uint32 changeValue, PlayerPtr referencePlayer, ProgressType ptype = PROGRESS_SET);
         void RemoveCriteriaProgress(AchievementCriteriaEntry const* entry);
-        void CompletedCriteriaFor(AchievementEntry const* achievement, Player* referencePlayer);
+        void CompletedCriteriaFor(AchievementEntry const* achievement, PlayerPtr referencePlayer);
         bool IsCompletedCriteria(AchievementCriteriaEntry const* achievementCriteria, AchievementEntry const* achievement);
         bool IsCompletedAchievement(AchievementEntry const* entry);
-        bool CanUpdateCriteria(AchievementCriteriaEntry const* criteria, AchievementEntry const* achievement, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer);
+        bool CanUpdateCriteria(AchievementCriteriaEntry const* criteria, AchievementEntry const* achievement, uint64 miscValue1, uint64 miscValue2, constUnitPtr unit, PlayerPtr referencePlayer);
         void SendPacket(WorldPacket* data) const;
 
-        bool ConditionsSatisfied(AchievementCriteriaEntry const *criteria, Player* referencePlayer) const;
-        bool RequirementsSatisfied(AchievementCriteriaEntry const *criteria, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer) const;
-        bool AdditionalRequirementsSatisfied(AchievementCriteriaEntry const* criteria, uint64 miscValue1, uint64 miscValue2, Unit const* unit, Player* referencePlayer) const;
+        bool ConditionsSatisfied(AchievementCriteriaEntry const *criteria, PlayerPtr referencePlayer) const;
+        bool RequirementsSatisfied(AchievementCriteriaEntry const *criteria, uint64 miscValue1, uint64 miscValue2, constUnitPtr unit, PlayerPtr referencePlayer) const;
+        bool AdditionalRequirementsSatisfied(AchievementCriteriaEntry const* criteria, uint64 miscValue1, uint64 miscValue2, constUnitPtr unit, PlayerPtr referencePlayer) const;
 
-        T* _owner;
+        std::shared_ptr<T> _owner;
         CriteriaProgressMap m_criteriaProgress;
         CompletedAchievementMap m_completedAchievements;
         typedef std::map<uint32, uint32> TimedAchievementMap;

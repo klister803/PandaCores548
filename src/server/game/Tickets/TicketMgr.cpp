@@ -31,7 +31,7 @@ inline float GetAge(uint64 t) { return float(time(NULL) - t) / DAY; }
 // GM ticket
 GmTicket::GmTicket() { }
 
-GmTicket::GmTicket(Player* player, WorldPacket& recvData) : _createTime(time(NULL)), _lastModifiedTime(time(NULL)), _closedBy(0), _assignedTo(0), _completed(false), _escalatedStatus(TICKET_UNASSIGNED)
+GmTicket::GmTicket(PlayerPtr player, WorldPacket& recvData) : _createTime(time(NULL)), _lastModifiedTime(time(NULL)), _closedBy(0), _assignedTo(0), _completed(false), _escalatedStatus(TICKET_UNASSIGNED)
 {
     _id = sTicketMgr->GenerateTicketId();
     _playerName = player->GetName();
@@ -226,7 +226,7 @@ void GmTicket::SetUnassigned()
     }
 }
 
-void GmTicket::TeleportTo(Player* player) const
+void GmTicket::TeleportTo(PlayerPtr player) const
 {
     player->TeleportTo(_mapId, _posX, _posY, _posZ, 0.0f, 0);
 }

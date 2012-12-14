@@ -54,8 +54,8 @@ class spell_item_trigger_spell : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
-                if (Item* item = GetCastItem())
+                UnitPtr caster = GetCaster();
+                if (ItemPtr item = GetCastItem())
                     caster->CastSpell(caster, _triggeredSpellId, true, item);
             }
 
@@ -106,7 +106,7 @@ class spell_item_deviate_fish : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 uint32 spellId = urand(SPELL_SLEEPY, SPELL_HEALTHY_SPIRIT);
                 caster->CastSpell(caster, spellId, true, NULL);
             }
@@ -150,7 +150,7 @@ class spell_item_flask_of_the_north : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 std::vector<uint32> possibleSpells;
                 switch (caster->getClass())
                 {
@@ -219,8 +219,8 @@ class spell_item_gnomish_death_ray : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
-                if (Unit* target = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr target = GetHitUnit())
                 {
                     if (urand(0, 99) < 15)
                         caster->CastSpell(caster, SPELL_GNOMISH_DEATH_RAY_SELF, true, NULL);    // failure
@@ -275,7 +275,7 @@ class spell_item_make_a_wish : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 uint32 spellId = SPELL_MR_PINCHYS_GIFT;
                 switch (urand(1, 5))
                 {
@@ -382,7 +382,7 @@ class spell_item_net_o_matic : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* target = GetHitUnit())
+                if (UnitPtr target = GetHitUnit())
                 {
                     uint32 spellId = SPELL_NET_O_MATIC_TRIGGERED3;
                     uint32 roll = urand(0, 99);
@@ -439,7 +439,7 @@ class spell_item_noggenfogger_elixir : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 uint32 spellId = SPELL_NOGGENFOGGER_ELIXIR_TRIGGERED3;
                 switch (urand(1, 3))
                 {
@@ -496,7 +496,7 @@ class spell_item_savory_deviate_delight : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 uint32 spellId = 0;
                 switch (urand(1, 2))
                 {
@@ -550,8 +550,8 @@ class spell_item_six_demon_bag : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
-                if (Unit* target = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr target = GetHitUnit())
                 {
                     uint32 spellId = 0;
                     uint32 rand = urand(0, 99);
@@ -622,7 +622,7 @@ class spell_item_underbelly_elixir : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 uint32 spellId = SPELL_UNDERBELLY_ELIXIR_TRIGGERED3;
                 switch (urand(1, 3))
                 {
@@ -669,7 +669,7 @@ public:
 
         void OnStackChange(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            Unit* target = GetTarget();
+            UnitPtr target = GetTarget();
             switch (GetStackAmount())
             {
                 case 1:
@@ -690,7 +690,7 @@ public:
 
         void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            Unit* target = GetTarget();
+            UnitPtr target = GetTarget();
             target->RemoveAurasDueToSpell(SPELL_SHADOWMOURNE_VISUAL_LOW);
             target->RemoveAurasDueToSpell(SPELL_SHADOWMOURNE_VISUAL_HIGH);
         }
@@ -734,12 +734,12 @@ class spell_item_red_rider_air_rifle : public SpellScriptLoader
             void HandleScript(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                Unit* caster = GetCaster();
-                if (Unit* target = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr target = GetHitUnit())
                 {
                     caster->CastSpell(caster, SPELL_AIR_RIFLE_HOLD_VISUAL, true);
                     // needed because this spell shares GCD with its triggered spells (which must not be cast with triggered flag)
-                    if (Player* player = caster->ToPlayer())
+                    if (PlayerPtr player = TO_PLAYER(caster))
                         player->GetGlobalCooldownMgr().CancelGlobalCooldown(GetSpellInfo());
                     if (urand(0, 4))
                         caster->CastSpell(target, SPELL_AIR_RIFLE_SHOOT, false);
@@ -792,7 +792,7 @@ class spell_item_create_heart_candy : public SpellScriptLoader
             void HandleScript(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                if (Player* target = GetHitPlayer())
+                if (PlayerPtr target = GetHitPlayer())
                 {
                     static const uint32 items[] = {ITEM_HEART_CANDY_1, ITEM_HEART_CANDY_2, ITEM_HEART_CANDY_3, ITEM_HEART_CANDY_4, ITEM_HEART_CANDY_5, ITEM_HEART_CANDY_6, ITEM_HEART_CANDY_7, ITEM_HEART_CANDY_8};
                     target->AddItem(items[urand(0, 7)], 1);
@@ -827,7 +827,7 @@ class spell_item_book_of_glyph_mastery : public SpellScriptLoader
 
             SpellCastResult CheckRequirement()
             {
-                if (HasDiscoveredAllSpells(GetSpellInfo()->Id, GetCaster()->ToPlayer()))
+                if (HasDiscoveredAllSpells(GetSpellInfo()->Id, TO_PLAYER(GetCaster())))
                 {
                     SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_LEARNED_EVERYTHING);
                     return SPELL_FAILED_CUSTOM_ERROR;
@@ -865,7 +865,7 @@ class spell_item_gift_of_the_harvester : public SpellScriptLoader
 
             SpellCastResult CheckRequirement()
             {
-                std::list<Creature*> ghouls;
+                std::list<CreaturePtr> ghouls;
                 GetCaster()->GetAllMinionsByEntry(ghouls, NPC_GHOUL);
                 if (ghouls.size() >= MAX_GHOULS)
                 {
@@ -906,7 +906,7 @@ class spell_item_map_of_the_geyser_fields : public SpellScriptLoader
 
             SpellCastResult CheckSinkholes()
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (caster->FindNearestCreature(NPC_SOUTH_SINKHOLE, 30.0f, true) ||
                     caster->FindNearestCreature(NPC_NORTHEAST_SINKHOLE, 30.0f, true) ||
                     caster->FindNearestCreature(NPC_NORTHWEST_SINKHOLE, 30.0f, true))
@@ -954,7 +954,7 @@ class spell_item_vanquished_clutches : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 uint32 spellId = RAND(SPELL_CRUSHER, SPELL_CONSTRICTOR, SPELL_CORRUPTOR);
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 caster->CastSpell(caster, spellId, true);
             }
 
@@ -1004,7 +1004,7 @@ class spell_item_ashbringer : public SpellScriptLoader
             {
                 PreventHitDefaultEffect(effIndex);
 
-                Player* player = GetCaster()->ToPlayer();
+                PlayerPtr player = TO_PLAYER(GetCaster());
                 uint32 sound_id = RAND( SOUND_ASHBRINGER_1, SOUND_ASHBRINGER_2, SOUND_ASHBRINGER_3, SOUND_ASHBRINGER_4, SOUND_ASHBRINGER_5, SOUND_ASHBRINGER_6,
                                 SOUND_ASHBRINGER_7, SOUND_ASHBRINGER_8, SOUND_ASHBRINGER_9, SOUND_ASHBRINGER_10, SOUND_ASHBRINGER_11, SOUND_ASHBRINGER_12 );
 
@@ -1047,7 +1047,7 @@ class spell_magic_eater_food : public SpellScriptLoader
             void HandleTriggerSpell(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 switch (urand(0, 5))
                 {
                     case 0:
@@ -1094,7 +1094,7 @@ class spell_item_shimmering_vessel : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                if (Creature* target = GetHitCreature())
+                if (CreaturePtr target = GetHitCreature())
                     target->setDeathState(JUST_RESPAWNED);
             }
 
@@ -1139,7 +1139,7 @@ class spell_item_purify_helboar_meat : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 caster->CastSpell(caster, roll_chance_i(50) ? SPELL_SUMMON_PURIFIED_HELBOAR_MEAT : SPELL_SUMMON_TOXIC_HELBOAR_MEAT, true, NULL);
             }
 
@@ -1178,7 +1178,7 @@ class spell_item_crystal_prison_dummy_dnd : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                if (Creature* target = GetHitCreature())
+                if (CreaturePtr target = GetHitCreature())
                     if (target->isDead() && !target->isPet())
                     {
                         GetCaster()->SummonGameObject(OBJECT_IMPRISONED_DOOMGUARD, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation(), 0, 0, 0, 0, uint32(target->GetRespawnTime()-time(NULL)));
@@ -1227,7 +1227,7 @@ class spell_item_reindeer_transformation : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (caster->HasAuraType(SPELL_AURA_MOUNTED))
                 {
                     float flyspeed = caster->GetSpeedRate(MOVE_FLIGHT);
@@ -1290,8 +1290,8 @@ class spell_item_nigh_invulnerability : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Unit* caster = GetCaster();
-                if (Item* castItem = GetCastItem())
+                UnitPtr caster = GetCaster();
+                if (ItemPtr castItem = GetCastItem())
                 {
                     if (roll_chance_i(86))                  // Nigh-Invulnerability   - success
                         caster->CastSpell(caster, SPELL_NIGH_INVULNERABILITY, true, castItem);
@@ -1380,7 +1380,7 @@ class spell_item_socrethars_stone : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 switch (caster->GetAreaId())
                 {
                     case 3900:
@@ -1436,17 +1436,17 @@ class spell_item_demon_broiled_surprise : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Unit* player = GetCaster();
+                UnitPtr player = GetCaster();
                 player->CastSpell(player, SPELL_CREATE_DEMON_BROILED_SURPRISE, false);
             }
 
             SpellCastResult CheckRequirement()
             {
-                Player* player = GetCaster()->ToPlayer();
+                PlayerPtr player = TO_PLAYER(GetCaster());
                 if (player->GetQuestStatus(QUEST_SUPER_HOT_STEW) != QUEST_STATUS_INCOMPLETE)
                     return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
 
-                if (Creature* creature = player->FindNearestCreature(NPC_ABYSSAL_FLAMEBRINGER, 10, false))
+                if (CreaturePtr creature = player->FindNearestCreature(NPC_ABYSSAL_FLAMEBRINGER, 10, false))
                     if (creature->isDead())
                         return SPELL_CAST_OK;
                 return SPELL_FAILED_NOT_HERE;
@@ -1488,7 +1488,7 @@ class spell_item_complete_raptor_capture : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (GetHitCreature())
                 {
                     GetHitCreature()->DespawnOrUnsummon();
@@ -1534,7 +1534,7 @@ class spell_item_impale_leviroth : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                if (Unit* target = GetHitCreature())
+                if (UnitPtr target = GetHitCreature())
                     if (target->GetEntry() == NPC_LEVIROTH && !target->HealthBelowPct(95))
                         target->CastSpell(target, SPELL_LEVIROTH_SELF_IMPALE, true);
             }
@@ -1579,7 +1579,7 @@ class spell_item_brewfest_mount_transformation : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Player* caster = GetCaster()->ToPlayer();
+                PlayerPtr caster = TO_PLAYER(GetCaster());
                 if (caster->HasAuraType(SPELL_AURA_MOUNTED))
                 {
                     caster->RemoveAurasByType(SPELL_AURA_MOUNTED);
@@ -1649,7 +1649,7 @@ class spell_item_nitro_boots : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 caster->CastSpell(caster, roll_chance_i(95) ? SPELL_NITRO_BOOTS_SUCCESS : SPELL_NITRO_BOOTS_BACKFIRE, true, GetCastItem());
             }
 
@@ -1694,7 +1694,7 @@ class spell_item_teach_language : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Player* caster = GetCaster()->ToPlayer();
+                PlayerPtr caster = TO_PLAYER(GetCaster());
 
                 if (roll_chance_i(34))
                     caster->CastSpell(caster,caster->GetTeam() == ALLIANCE ? SPELL_LEARN_GNOMISH_BINARY : SPELL_LEARN_GOBLIN_BINARY, true);
@@ -1740,7 +1740,7 @@ class spell_item_rocket_boots : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Player* caster = GetCaster()->ToPlayer();
+                PlayerPtr caster = TO_PLAYER(GetCaster());
                 if (Battleground* bg = caster->GetBattleground())
                     bg->EventPlayerDroppedFlag(caster);
 
@@ -1792,7 +1792,7 @@ class spell_item_pygmy_oil : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (AuraPtr aura = caster->GetAura(SPELL_PYGMY_OIL_PYGMY_AURA))
                     aura->RefreshDuration();
                 else
@@ -1831,7 +1831,7 @@ class spell_item_unusual_compass : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 caster->SetOrientation(frand(0.0f, 62832.0f) / 10000.0f);
                 caster->SendMovementFlagUpdate();
             }
@@ -1879,8 +1879,8 @@ class spell_item_chicken_cover : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Player* caster = GetCaster()->ToPlayer();
-                if (Unit* target = GetHitUnit())
+                PlayerPtr caster = TO_PLAYER(GetCaster());
+                if (UnitPtr target = GetHitUnit())
                 {
                     if (!target->HasAura(SPELL_CHICKEN_NET) && (caster->GetQuestStatus(QUEST_CHICKEN_PARTY) == QUEST_STATUS_INCOMPLETE || caster->GetQuestStatus(QUEST_FLOWN_THE_COOP) == QUEST_STATUS_INCOMPLETE))
                     {
@@ -1920,7 +1920,7 @@ class spell_item_refocus : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Player* caster = GetCaster()->ToPlayer();
+                PlayerPtr caster = TO_PLAYER(GetCaster());
 
                 if (!caster || caster->getClass() != CLASS_HUNTER)
                     return;
@@ -1958,7 +1958,7 @@ class spell_item_muisek_vessel : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Creature* target = GetHitCreature())
+                if (CreaturePtr target = GetHitCreature())
                     if (target->isDead())
                         target->DespawnOrUnsummon();
             }

@@ -58,14 +58,14 @@ class boss_varos : public CreatureScript
 public:
     boss_varos() : CreatureScript("boss_varos") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_varosAI (creature);
     }
 
     struct boss_varosAI : public BossAI
     {
-        boss_varosAI(Creature* creature) : BossAI(creature, DATA_VAROS_EVENT)
+        boss_varosAI(CreaturePtr creature) : BossAI(creature, DATA_VAROS_EVENT)
         {
             if (instance->GetBossState(DATA_DRAKOS_EVENT) != DONE)
                 DoCast(me, SPELL_CENTRIFUGE_SHIELD);
@@ -84,7 +84,7 @@ public:
             coreEnergizeOrientation = 0.0f;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
 
@@ -144,7 +144,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             _JustDied();
             Talk(SAY_DEATH);
@@ -163,7 +163,7 @@ class npc_azure_ring_captain : public CreatureScript
 
         struct npc_azure_ring_captainAI : public ScriptedAI
         {
-            npc_azure_ring_captainAI(Creature* creature) : ScriptedAI(creature)
+            npc_azure_ring_captainAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -178,7 +178,7 @@ class npc_azure_ring_captain : public CreatureScript
                 me->SetReactState(REACT_AGGRESSIVE);
             }
 
-            void SpellHitTarget(Unit* target, SpellInfo const* spell)
+            void SpellHitTarget(UnitPtr target, SpellInfo const* spell)
             {
                 if (spell->Id == SPELL_ICE_BEAM)
                 {
@@ -203,7 +203,7 @@ class npc_azure_ring_captain : public CreatureScript
 
                 me->GetMotionMaster()->MoveIdle();
 
-                if (Unit* target = ObjectAccessor::GetUnit(*me, targetGUID))
+                if (UnitPtr target = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(me), targetGUID))
                     DoCast(target, SPELL_ICE_BEAM);
             }
 
@@ -214,9 +214,9 @@ class npc_azure_ring_captain : public CreatureScript
                    case ACTION_CALL_DRAGON_EVENT:
                         if (instance)
                         {
-                            if (Creature* varos = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_VAROS)))
+                            if (CreaturePtr varos = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_VAROS)))
                             {
-                                if (Unit* victim = varos->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0))
+                                if (UnitPtr victim = varos->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 {
                                     me->SetReactState(REACT_PASSIVE);
                                     me->SetWalk(false);
@@ -234,7 +234,7 @@ class npc_azure_ring_captain : public CreatureScript
             InstanceScript* instance;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new npc_azure_ring_captainAI(creature);
         }
@@ -251,13 +251,13 @@ class spell_varos_centrifuge_shield : public SpellScriptLoader
 
             bool Load()
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 return (caster && caster->ToCreature());
             }
 
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
                     // flags taken from sniffs
                     // UNIT_FLAG_UNK_9 -> means passive but it is not yet implemented in core
@@ -271,7 +271,7 @@ class spell_varos_centrifuge_shield : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
                     caster->ToCreature()->SetReactState(REACT_AGGRESSIVE);
                     caster->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_UNK_15|UNIT_FLAG_IMMUNE_TO_NPC|UNIT_FLAG_IMMUNE_TO_PC|UNIT_FLAG_UNK_6);
@@ -300,9 +300,9 @@ class spell_varos_energize_core_area_enemy : public SpellScriptLoader
         {
             PrepareSpellScript(spell_varos_energize_core_area_enemySpellScript)
 
-            void FilterTargets(std::list<WorldObject*>& targets)
+            void FilterTargets(std::list<WorldObjectPtr>& targets)
             {
-                Creature* varos = GetCaster()->ToCreature();
+                CreaturePtr varos = GetCaster()->ToCreature();
                 if (!varos)
                     return;
 
@@ -311,7 +311,7 @@ class spell_varos_energize_core_area_enemy : public SpellScriptLoader
 
                 float orientation = CAST_AI(boss_varos::boss_varosAI, varos->AI())->GetCoreEnergizeOrientation();
 
-                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+                for (std::list<WorldObjectPtr>::iterator itr = targets.begin(); itr != targets.end();)
                 {
                     Position pos;
                     (*itr)->GetPosition(&pos);
@@ -347,9 +347,9 @@ class spell_varos_energize_core_area_entry : public SpellScriptLoader
         {
             PrepareSpellScript(spell_varos_energize_core_area_entrySpellScript)
 
-            void FilterTargets(std::list<WorldObject*>& targets)
+            void FilterTargets(std::list<WorldObjectPtr>& targets)
             {
-                Creature* varos = GetCaster()->ToCreature();
+                CreaturePtr varos = GetCaster()->ToCreature();
                 if (!varos)
                     return;
 
@@ -358,7 +358,7 @@ class spell_varos_energize_core_area_entry : public SpellScriptLoader
 
                 float orientation = CAST_AI(boss_varos::boss_varosAI, varos->AI())->GetCoreEnergizeOrientation();
 
-                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
+                for (std::list<WorldObjectPtr>::iterator itr = targets.begin(); itr != targets.end();)
                 {
                     Position pos;
                     (*itr)->GetPosition(&pos);

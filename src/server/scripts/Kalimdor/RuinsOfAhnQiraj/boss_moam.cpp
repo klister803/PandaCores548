@@ -58,7 +58,7 @@ class boss_moam : public CreatureScript
 
         struct boss_moamAI : public BossAI
         {
-            boss_moamAI(Creature* creature) : BossAI(creature, BOSS_MOAM)
+            boss_moamAI(CreaturePtr creature) : BossAI(creature, BOSS_MOAM)
             {
             }
 
@@ -71,7 +71,7 @@ class boss_moam : public CreatureScript
                 //events.ScheduleEvent(EVENT_WIDE_SLASH, 11000);
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
             {
                 if (!_isStonePhase && HealthBelowPct(45))
                 {
@@ -140,17 +140,17 @@ class boss_moam : public CreatureScript
                             break;
                         case EVENT_DRAIN_MANA:
                         {
-                            std::list<Unit*> targetList;
+                            std::list<UnitPtr> targetList;
                             {
-                                const std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
-                                for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+                                const std::list<HostileReferencePtr>& threatlist = me->getThreatManager().getThreatList();
+                                for (std::list<HostileReferencePtr>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
                                     if ((*itr)->getTarget()->GetTypeId() == TYPEID_PLAYER && (*itr)->getTarget()->getPowerType() == POWER_MANA)
                                         targetList.push_back((*itr)->getTarget());
                             }
 
                             Trinity::Containers::RandomResizeList(targetList, 5);
 
-                            for (std::list<Unit*>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
+                            for (std::list<UnitPtr>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                                 DoCast(*itr, SPELL_DRAIN_MANA);
 
                             events.ScheduleEvent(EVENT_DRAIN_MANA, urand(5000, 15000));
@@ -175,7 +175,7 @@ class boss_moam : public CreatureScript
             bool _isStonePhase;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_moamAI(creature);
         }

@@ -50,9 +50,9 @@ enum SelectAggroTarget
 };
 
 // default predicate function to select target based on distance, player and/or aura criteria
-struct DefaultTargetSelector : public std::unary_function<Unit*, bool>
+struct DefaultTargetSelector : public std::unary_function<UnitPtr, bool>
 {
-    const Unit* me;
+    constUnitPtr me;
     float m_dist;
     bool m_playerOnly;
     int32 m_aura;
@@ -61,9 +61,9 @@ struct DefaultTargetSelector : public std::unary_function<Unit*, bool>
     // dist: if 0: ignored, if > 0: maximum distance to the reference unit, if < 0: minimum distance to the reference unit
     // playerOnly: self explaining
     // aura: if 0: ignored, if > 0: the target shall have the aura, if < 0, the target shall NOT have the aura
-    DefaultTargetSelector(Unit const* unit, float dist, bool playerOnly, int32 aura) : me(unit), m_dist(dist), m_playerOnly(playerOnly), m_aura(aura) {}
+    DefaultTargetSelector(constUnitPtr unit, float dist, bool playerOnly, int32 aura) : me(unit), m_dist(dist), m_playerOnly(playerOnly), m_aura(aura) {}
 
-    bool operator()(Unit const* target) const
+    bool operator()(constUnitPtr target) const
     {
         if (!me)
             return false;
@@ -74,10 +74,10 @@ struct DefaultTargetSelector : public std::unary_function<Unit*, bool>
         if (m_playerOnly && (target->GetTypeId() != TYPEID_PLAYER))
             return false;
 
-        if (m_dist > 0.0f && !me->IsWithinCombatRange(target, m_dist))
+        if (m_dist > 0.0f && !me->IsWithinCombatRange(NO_CONST(Unit, target), m_dist))
             return false;
 
-        if (m_dist < 0.0f && me->IsWithinCombatRange(target, -m_dist))
+        if (m_dist < 0.0f && me->IsWithinCombatRange(NO_CONST(Unit, target), -m_dist))
             return false;
 
         if (m_aura)
@@ -100,41 +100,41 @@ struct DefaultTargetSelector : public std::unary_function<Unit*, bool>
 
 // Target selector for spell casts checking range, auras and attributes
 // TODO: Add more checks from Spell::CheckCast
-struct SpellTargetSelector : public std::unary_function<Unit*, bool>
+struct SpellTargetSelector : public std::unary_function<UnitPtr, bool>
 {
     public:
-        SpellTargetSelector(Unit* caster, uint32 spellId);
-        bool operator()(Unit const* target) const;
+        SpellTargetSelector(UnitPtr caster, uint32 spellId);
+        bool operator()(constUnitPtr target) const;
 
     private:
-        Unit const* _caster;
+        constUnitPtr _caster;
         SpellInfo const* _spellInfo;
 };
 
 // Very simple target selector, will just skip main target
 // NOTE: When passing to UnitAI::SelectTarget remember to use 0 as position for random selection
 //       because tank will not be in the temporary list
-struct NonTankTargetSelector : public std::unary_function<Unit*, bool>
+struct NonTankTargetSelector : public std::unary_function<UnitPtr, bool>
 {
     public:
-        NonTankTargetSelector(Creature* source, bool playerOnly = true) : _source(source), _playerOnly(playerOnly) { }
-        bool operator()(Unit const* target) const;
+        NonTankTargetSelector(CreaturePtr source, bool playerOnly = true) : _source(source), _playerOnly(playerOnly) { }
+        bool operator()(constUnitPtr target) const;
 
     private:
-        Creature const* _source;
+        constCreaturePtr _source;
         bool _playerOnly;
 };
 
 class UnitAI
 {
     protected:
-        Unit* const me;
+        UnitPtr const me;
     public:
-        explicit UnitAI(Unit* unit) : me(unit) {}
+        explicit UnitAI(UnitPtr unit) : me(unit) {}
         virtual ~UnitAI() {}
 
-        virtual bool CanAIAttack(Unit const* /*target*/) const { return true; }
-        virtual void AttackStart(Unit* /*target*/);
+        virtual bool CanAIAttack(constUnitPtr /*target*/) const { return true; }
+        virtual void AttackStart(UnitPtr /*target*/);
         virtual void UpdateAI(uint32 const diff) = 0;
 
         virtual void InitializeAI() { if (!me->isDead()) Reset(); }
@@ -151,17 +151,17 @@ class UnitAI
         virtual void SetGUID(uint64 /*guid*/, int32 /*id*/ = 0) {}
         virtual uint64 GetGUID(int32 /*id*/ = 0) { return 0; }
 
-        Unit* SelectTarget(SelectAggroTarget targetType, uint32 position = 0, float dist = 0.0f, bool playerOnly = false, int32 aura = 0);
+        UnitPtr SelectTarget(SelectAggroTarget targetType, uint32 position = 0, float dist = 0.0f, bool playerOnly = false, int32 aura = 0);
         // Select the targets satisfying the predicate.
-        // predicate shall extend std::unary_function<Unit*, bool>
-        template <class PREDICATE> Unit* SelectTarget(SelectAggroTarget targetType, uint32 position, PREDICATE const& predicate)
+        // predicate shall extend std::unary_function<UnitPtr, bool>
+        template <class PREDICATE> UnitPtr SelectTarget(SelectAggroTarget targetType, uint32 position, PREDICATE const& predicate)
         {
-            const std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
+            const std::list<HostileReferencePtr>& threatlist = me->getThreatManager().getThreatList();
             if (position >= threatlist.size())
                 return NULL;
 
-            std::list<Unit*> targetList;
-            for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+            std::list<UnitPtr> targetList;
+            for (std::list<HostileReferencePtr>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
                 if (predicate((*itr)->getTarget()))
                     targetList.push_back((*itr)->getTarget());
 
@@ -176,20 +176,20 @@ class UnitAI
                 case SELECT_TARGET_NEAREST:
                 case SELECT_TARGET_TOPAGGRO:
                 {
-                    std::list<Unit*>::iterator itr = targetList.begin();
+                    std::list<UnitPtr>::iterator itr = targetList.begin();
                     std::advance(itr, position);
                     return *itr;
                 }
                 case SELECT_TARGET_FARTHEST:
                 case SELECT_TARGET_BOTTOMAGGRO:
                 {
-                    std::list<Unit*>::reverse_iterator ritr = targetList.rbegin();
+                    std::list<UnitPtr>::reverse_iterator ritr = targetList.rbegin();
                     std::advance(ritr, position);
                     return *ritr;
                 }
                 case SELECT_TARGET_RANDOM:
                 {
-                    std::list<Unit*>::iterator itr = targetList.begin();
+                    std::list<UnitPtr>::iterator itr = targetList.begin();
                     std::advance(itr, urand(position, targetList.size() - 1));
                     return *itr;
                 }
@@ -200,17 +200,17 @@ class UnitAI
             return NULL;
         }
 
-        void SelectTargetList(std::list<Unit*>& targetList, uint32 num, SelectAggroTarget targetType, float dist = 0.0f, bool playerOnly = false, int32 aura = 0);
+        void SelectTargetList(std::list<UnitPtr>& targetList, uint32 num, SelectAggroTarget targetType, float dist = 0.0f, bool playerOnly = false, int32 aura = 0);
 
         // Select the targets satifying the predicate.
-        // predicate shall extend std::unary_function<Unit*, bool>
-        template <class PREDICATE> void SelectTargetList(std::list<Unit*>& targetList, PREDICATE const& predicate, uint32 maxTargets, SelectAggroTarget targetType)
+        // predicate shall extend std::unary_function<UnitPtr, bool>
+        template <class PREDICATE> void SelectTargetList(std::list<UnitPtr>& targetList, PREDICATE const& predicate, uint32 maxTargets, SelectAggroTarget targetType)
         {
-            std::list<HostileReference*> const& threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr> const& threatlist = me->getThreatManager().getThreatList();
             if (threatlist.empty())
                 return;
 
-            for (std::list<HostileReference*>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+            for (std::list<HostileReferencePtr>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
                 if (predicate((*itr)->getTarget()))
                     targetList.push_back((*itr)->getTarget());
 
@@ -230,24 +230,24 @@ class UnitAI
         }
 
         // Called at any Damage to any victim (before damage apply)
-        virtual void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/) { }
+        virtual void DamageDealt(UnitPtr /*victim*/, uint32& /*damage*/, DamageEffectType /*damageType*/) { }
 
         // Called at any Damage from any attacker (before damage apply)
         // Note: it for recalculation damage or special reaction at damage
         // for attack reaction use AttackedBy called for not DOT damage in Unit::DealDamage also
-        virtual void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/) {}
+        virtual void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/) {}
 
         // Called when the creature receives heal
-        virtual void HealReceived(Unit* /*done_by*/, uint32& /*addhealth*/) {}
+        virtual void HealReceived(UnitPtr /*done_by*/, uint32& /*addhealth*/) {}
 
         // Called when the unit heals
-        virtual void HealDone(Unit* /*done_to*/, uint32& /*addhealth*/) {}
+        virtual void HealDone(UnitPtr /*done_to*/, uint32& /*addhealth*/) {}
 
-        void AttackStartCaster(Unit* victim, float dist);
+        void AttackStartCaster(UnitPtr victim, float dist);
 
         void DoAddAuraToAllHostilePlayers(uint32 spellid);
         void DoCast(uint32 spellId);
-        void DoCast(Unit* victim, uint32 spellId, bool triggered = false);
+        void DoCast(UnitPtr victim, uint32 spellId, bool triggered = false);
         void DoCastToAllHostilePlayers(uint32 spellid, bool triggered = false);
         void DoCastVictim(uint32 spellId, bool triggered = false);
         void DoCastAOE(uint32 spellId, bool triggered = false);
@@ -260,23 +260,23 @@ class UnitAI
         static AISpellInfoType* AISpellInfo;
         static void FillAISpellInfo();
 
-        virtual void sGossipHello(Player* /*player*/) {}
-        virtual void sGossipSelect(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/) {}
-        virtual void sGossipSelectCode(Player* /*player*/, uint32 /*sender*/, uint32 /*action*/, char const* /*code*/) {}
-        virtual void sQuestAccept(Player* /*player*/, Quest const* /*quest*/) {}
-        virtual void sQuestSelect(Player* /*player*/, Quest const* /*quest*/) {}
-        virtual void sQuestComplete(Player* /*player*/, Quest const* /*quest*/) {}
-        virtual void sQuestReward(Player* /*player*/, Quest const* /*quest*/, uint32 /*opt*/) {}
-        virtual bool sOnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/) { return false; }
+        virtual void sGossipHello(PlayerPtr /*Player*/) {}
+        virtual void sGossipSelect(PlayerPtr /*Player*/, uint32 /*sender*/, uint32 /*action*/) {}
+        virtual void sGossipSelectCode(PlayerPtr /*Player*/, uint32 /*sender*/, uint32 /*action*/, char const* /*code*/) {}
+        virtual void sQuestAccept(PlayerPtr /*Player*/, Quest const* /*quest*/) {}
+        virtual void sQuestSelect(PlayerPtr /*Player*/, Quest const* /*quest*/) {}
+        virtual void sQuestComplete(PlayerPtr /*Player*/, Quest const* /*quest*/) {}
+        virtual void sQuestReward(PlayerPtr /*Player*/, Quest const* /*quest*/, uint32 /*opt*/) {}
+        virtual bool sOnDummyEffect(UnitPtr /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/) { return false; }
         virtual void sOnGameEvent(bool /*start*/, uint16 /*eventId*/) {}
 };
 
 class PlayerAI : public UnitAI
 {
     protected:
-        Player* const me;
+        PlayerPtr const me;
     public:
-        explicit PlayerAI(Player* player) : UnitAI((Unit*)player), me(player) {}
+        explicit PlayerAI(PlayerPtr player) : UnitAI(TO_UNIT(player)), me(player) {}
 
         void OnCharmed(bool apply);
 };
@@ -285,7 +285,7 @@ class SimpleCharmedAI : public PlayerAI
 {
     public:
         void UpdateAI(uint32 const diff);
-        SimpleCharmedAI(Player* player): PlayerAI(player) {}
+        SimpleCharmedAI(PlayerPtr player): PlayerAI(player) {}
 };
 
 #endif

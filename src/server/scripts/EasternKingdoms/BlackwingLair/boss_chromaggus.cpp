@@ -65,14 +65,14 @@ class boss_chromaggus : public CreatureScript
 public:
     boss_chromaggus() : CreatureScript("boss_chromaggus") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_chromaggusAI (creature);
     }
 
     struct boss_chromaggusAI : public ScriptedAI
     {
-        boss_chromaggusAI(Creature* creature) : ScriptedAI(creature)
+        boss_chromaggusAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             //Select the 2 breaths that we are going to use until despawned
             //5 possiblities for the first breath, 4 for the second, 20 total possiblites
@@ -198,7 +198,7 @@ public:
             Enraged = false;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -240,12 +240,12 @@ public:
             //Affliction_Timer
             if (Affliction_Timer <= diff)
             {
-                std::list<HostileReference*> threatlist = me->getThreatManager().getThreatList();
-                for (std::list<HostileReference*>::const_iterator i = threatlist.begin(); i != threatlist.end(); ++i)
+                std::list<HostileReferencePtr> threatlist = me->getThreatManager().getThreatList();
+                for (std::list<HostileReferencePtr>::const_iterator i = threatlist.begin(); i != threatlist.end(); ++i)
                 {
                     if ((*i) && (*i)->getSource())
                     {
-                        if (Unit* unit = Unit::GetUnit(*me, (*i)->getUnitGuid()))
+                        if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid()))
                         {
                             //Cast affliction
                             DoCast(unit, RAND(SPELL_BROODAF_BLUE, SPELL_BROODAF_BLACK,

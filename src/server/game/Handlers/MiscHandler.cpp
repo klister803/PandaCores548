@@ -99,8 +99,8 @@ void WorldSession::HandleGossipSelectOptionOpcode(WorldPacket& recvData)
     if (_player->PlayerTalkClass->IsGossipOptionCoded(gossipListId))
         recvData >> code;
 
-    Creature* unit = NULL;
-    GameObject* go = NULL;
+    CreaturePtr unit = NULL;
+    GameObjectPtr go = NULL;
     if (IS_CRE_OR_VEH_GUID(guid))
     {
         unit = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_NONE);
@@ -604,7 +604,7 @@ void WorldSession::HandleAddFriendOpcodeCallBack(PreparedQueryResult result, std
                     friendResult = FRIEND_ALREADY;
                 else
                 {
-                    Player* pFriend = ObjectAccessor::FindPlayer(friendGuid);
+                    PlayerPtr pFriend = ObjectAccessor::FindPlayer(friendGuid);
                     if (pFriend && pFriend->IsInWorld() && pFriend->IsVisibleGloballyFor(GetPlayer()))
                         friendResult = FRIEND_ADDED_ONLINE;
                     else
@@ -765,7 +765,7 @@ void WorldSession::HandleReclaimCorpseOpcode(WorldPacket& recvData)
     if (!GetPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))
         return;
 
-    Corpse* corpse = GetPlayer()->GetCorpse();
+    CorpsePtr corpse = GetPlayer()->GetCorpse();
 
     if (!corpse)
         return;
@@ -832,7 +832,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_AREATRIGGER. Trigger ID: %u", triggerId);
 
-    Player* player = GetPlayer();
+    PlayerPtr player = GetPlayer();
     if (player->isInFlight())
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "HandleAreaTriggerOpcode: Player '%s' (GUID: %u) in flight, ignore Area Trigger ID:%u",
@@ -946,7 +946,7 @@ void WorldSession::HandleAreaTriggerOpcode(WorldPacket& recvData)
             if (!sMapMgr->CanPlayerEnter(at->target_mapId, player, false))
                 return;
 
-            if (Group* group = player->GetGroup())
+            if (GroupPtr group = player->GetGroup())
                 if (group->isLFGGroup() && player->GetMap()->IsDungeon())
                     teleported = player->TeleportToBGEntryPoint();
         }
@@ -1263,7 +1263,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
     _player->SetSelection(guid);
 
-    Player* player = ObjectAccessor::FindPlayer(guid);
+    PlayerPtr player = ObjectAccessor::FindPlayer(guid);
     if (!player)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_INSPECT: No player found from GUID: " UI64FMTD, uint64(guid));
@@ -1289,7 +1289,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
     for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
     {
-        Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        ItemPtr item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
         if (!item)
             continue;
         
@@ -1321,7 +1321,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
     }
     data.PutBits<uint32>(equipmentPos, equipmentCount, 22);
 
-    Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId());
+    GuildPtr guild = sGuildMgr->GetGuildById(player->GetGuildId());
     data.WriteBit(guild != nullptr);
     if (guild != nullptr)
     {
@@ -1351,7 +1351,7 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
 
     for (uint32 i = 0; i < EQUIPMENT_SLOT_END; ++i)
     {
-        Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        ItemPtr item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
         if (!item)
             continue;
         
@@ -1455,7 +1455,7 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
     recvData.ReadByteSeq(guid[3]);
     recvData.ReadByteSeq(guid[1]);
 
-    Player* player = ObjectAccessor::FindPlayer(guid);
+    PlayerPtr player = ObjectAccessor::FindPlayer(guid);
 
     if (!player)
     {
@@ -1565,7 +1565,7 @@ void WorldSession::HandleWhoisOpcode(WorldPacket& recvData)
         return;
     }
 
-    Player* player = sObjectAccessor->FindPlayerByName(charname.c_str());
+    PlayerPtr player = sObjectAccessor->FindPlayerByName(charname.c_str());
 
     if (!player)
     {
@@ -1709,7 +1709,7 @@ void WorldSession::HandleFarSightOpcode(WorldPacket& recvData)
         break;
     case 1:
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Added FarSight " UI64FMTD " to player %u", _player->GetUInt64Value(PLAYER_FARSIGHT), _player->GetGUIDLow());
-        if (WorldObject* target = _player->GetViewpoint())
+        if (WorldObjectPtr target = _player->GetViewpoint())
             _player->SetSeer(target);
         else
             sLog->outError(LOG_FILTER_NETWORKIO, "Player %s requests non-existing seer " UI64FMTD, _player->GetName(), _player->GetUInt64Value(PLAYER_FARSIGHT));
@@ -1765,7 +1765,7 @@ void WorldSession::HandleResetInstancesOpcode(WorldPacket& /*recvData*/)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_RESET_INSTANCES");
 
-    if (Group* group = _player->GetGroup())
+    if (GroupPtr group = _player->GetGroup())
     {
         if (group->IsLeader(_player->GetGUID()))
             group->ResetInstances(INSTANCE_RESET_ALL, false, _player);
@@ -1791,21 +1791,21 @@ void WorldSession::HandleSetDungeonDifficultyOpcode(WorldPacket & recvData)
         return;
 
     // cannot reset while in an instance
-    Map* map = _player->FindMap();
+    MapPtr map = _player->FindMap();
     if (map && map->IsDungeon())
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSession::HandleSetDungeonDifficultyOpcode: player (Name: %s, GUID: %u) tried to reset the instance while player is inside!", _player->GetName(), _player->GetGUIDLow());
         return;
     }
 
-    Group* group = _player->GetGroup();
+    GroupPtr group = _player->GetGroup();
     if (group)
     {
         if (group->IsLeader(_player->GetGUID()))
         {
-            for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
             {
-                Player* groupGuy = itr->getSource();
+                PlayerPtr groupGuy = itr->getSource();
                 if (!groupGuy)
                     continue;
 
@@ -1847,7 +1847,7 @@ void WorldSession::HandleSetRaidDifficultyOpcode(WorldPacket& recvData)
     }
 
     // cannot reset while in an instance
-    Map* map = _player->FindMap();
+    MapPtr map = _player->FindMap();
     if (map && map->IsDungeon())
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSession::HandleSetRaidDifficultyOpcode: player %d tried to reset the instance while inside!", _player->GetGUIDLow());
@@ -1857,14 +1857,14 @@ void WorldSession::HandleSetRaidDifficultyOpcode(WorldPacket& recvData)
     if (Difficulty(mode) == _player->GetRaidDifficulty())
         return;
 
-    Group* group = _player->GetGroup();
+    GroupPtr group = _player->GetGroup();
     if (group)
     {
         if (group->IsLeader(_player->GetGUID()))
         {
-            for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
             {
-                Player* groupGuy = itr->getSource();
+                PlayerPtr groupGuy = itr->getSource();
                 if (!groupGuy)
                     continue;
 
@@ -1934,7 +1934,7 @@ void WorldSession::HandleQueryInspectAchievements(WorldPacket& recvData)
     uint64 guid;
     recvData.readPackGUID(guid);
 
-    Player* player = ObjectAccessor::FindPlayer(guid);
+    PlayerPtr player = ObjectAccessor::FindPlayer(guid);
     if (!player)
         return;
 
@@ -1946,7 +1946,7 @@ void WorldSession::HandleGuildAchievementProgressQuery(WorldPacket& recvData)
     uint32 achievementId;
     recvData >> achievementId;
 
-    if (Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
+    if (GuildPtr guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
         guild->GetAchievementMgr().SendAchievementInfo(_player, achievementId);
 }
 
@@ -1985,7 +1985,7 @@ void WorldSession::HandleAreaSpiritHealerQueryOpcode(WorldPacket& recv_data)
     uint64 guid;
     recv_data >> guid;
 
-    Creature* unit = GetPlayer()->GetMap()->GetCreature(guid);
+    CreaturePtr unit = GetPlayer()->GetMap()->GetCreature(guid);
     if (!unit)
         return;
 
@@ -2008,7 +2008,7 @@ void WorldSession::HandleAreaSpiritHealerQueueOpcode(WorldPacket& recv_data)
     uint64 guid;
     recv_data >> guid;
 
-    Creature* unit = GetPlayer()->GetMap()->GetCreature(guid);
+    CreaturePtr unit = GetPlayer()->GetMap()->GetCreature(guid);
     if (!unit)
         return;
 
@@ -2137,7 +2137,7 @@ void WorldSession::HandleUpdateMissileTrajectory(WorldPacket& recvPacket)
     recvPacket >> targetX >> targetY >> targetZ;
     recvPacket >> moveStop;
 
-    Unit* caster = ObjectAccessor::GetUnit(*_player, guid);
+    UnitPtr caster = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(_player), guid);
     Spell* spell = caster ? caster->GetCurrentSpell(CURRENT_GENERIC_SPELL) : NULL;
     if (!spell || spell->m_spellInfo->Id != spellId || !spell->m_targets.HasDst() || !spell->m_targets.HasSrc())
     {
@@ -2193,7 +2193,7 @@ void WorldSession::HandleObjectUpdateFailedOpcode(WorldPacket& recvPacket)
     recvPacket.ReadByteSeq(guid[1]);
     recvPacket.ReadByteSeq(guid[4]);
 
-    WorldObject* obj = ObjectAccessor::GetWorldObject(*GetPlayer(), guid);
+    WorldObjectPtr obj = ObjectAccessor::GetWorldObject(TO_CONST_WORLDOBJECT(GetPlayer()), guid);
     if(obj)
         obj->SendUpdateToPlayer(GetPlayer());
 

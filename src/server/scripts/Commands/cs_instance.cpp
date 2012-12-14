@@ -68,7 +68,7 @@ public:
 
     static bool HandleInstanceListBindsCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* player = handler->getSelectedPlayer();
+        PlayerPtr player = handler->getSelectedPlayer();
         if (!player)
             player = handler->GetSession()->GetPlayer();
 
@@ -87,7 +87,7 @@ public:
         handler->PSendSysMessage("player binds: %d", counter);
 
         counter = 0;
-        if (Group* group = player->GetGroup())
+        if (GroupPtr group = player->GetGroup())
         {
             for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
             {
@@ -111,7 +111,7 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->getSelectedPlayer();
+        PlayerPtr player = handler->getSelectedPlayer();
         if (!player)
             player = handler->GetSession()->GetPlayer();
 
@@ -165,8 +165,8 @@ public:
 
     static bool HandleInstanceSaveDataCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* player = handler->GetSession()->GetPlayer();
-        Map* map = player->GetMap();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
+        MapPtr map = player->GetMap();
         if (!map->IsDungeon())
         {
             handler->PSendSysMessage("Map is not a dungeon.");
@@ -174,14 +174,14 @@ public:
             return false;
         }
 
-        if (!((InstanceMap*)map)->GetInstanceScript())
+        if (!TO_INSTANCEMAP(map)->GetInstanceScript())
         {
             handler->PSendSysMessage("Map has no instance data.");
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        ((InstanceMap*)map)->GetInstanceScript()->SaveToDB();
+        TO_INSTANCEMAP(map)->GetInstanceScript()->SaveToDB();
 
         return true;
     }

@@ -207,7 +207,7 @@ Quest::Quest(Field* questRecord)
 
 }
 
-uint32 Quest::XPValue(Player* player) const
+uint32 Quest::XPValue(PlayerPtr player) const
 {
     if (player)
     {
@@ -246,7 +246,7 @@ int32 Quest::GetRewOrReqMoney() const
     return int32(RewardOrRequiredMoney * sWorld->getRate(RATE_DROP_MONEY));
 }
 
-void Quest::BuildExtraQuestInfo(WorldPacket& data, Player* player) const
+void Quest::BuildExtraQuestInfo(WorldPacket& data, PlayerPtr player) const
 {
     data << uint32(GetRewChoiceItemsCount());
     for (uint8 i = 0; i < QUEST_REWARD_CHOICES_COUNT; ++i)

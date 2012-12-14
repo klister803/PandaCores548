@@ -123,12 +123,12 @@ public:
 
         uint32 id  = atoi(charID);
 
-        Player* chr = handler->GetSession()->GetPlayer();
+        PlayerPtr chr = handler->GetSession()->GetPlayer();
         float x = chr->GetPositionX();
         float y = chr->GetPositionY();
         float z = chr->GetPositionZ();
         float o = chr->GetOrientation();
-        Map* map = chr->GetMap();
+        MapPtr map = chr->GetMap();
 
         if (chr->GetTransport())
         {
@@ -151,12 +151,10 @@ public:
             return true;
         }
 
-        Creature* creature = new Creature();
+        CreaturePtr creature (new Creature());
+
         if (!creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
-        {
-            delete creature;
             return false;
-        }
 
         creature->SaveToDB(map->GetId(), (1 << map->GetSpawnMode()), chr->GetPhaseMaskForSpawn());
 
@@ -164,10 +162,7 @@ public:
 
         // To call _LoadGoods(); _LoadQuests(); CreateTrainerSpells();
         if (!creature->LoadCreatureFromDB(db_guid, map))
-        {
-            delete creature;
             return false;
-        }
 
         sObjectMgr->AddCreatureToGrid(db_guid, sObjectMgr->GetCreatureData(db_guid));
         return true;
@@ -207,7 +202,7 @@ public:
 
         char* fextendedcost = strtok(NULL, " ");                //add ExtendedCost, default: 0
         uint32 extendedcost = fextendedcost ? atol(fextendedcost) : 0;
-        Creature* vendor = handler->getSelectedCreature();
+        CreaturePtr vendor = handler->getSelectedCreature();
         if (!vendor)
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
@@ -242,7 +237,7 @@ public:
 
         uint32 lowGuid = atoi((char*)guidStr);
 
-        Creature* creature = NULL;
+        CreaturePtr creature = NULL;
 
         /* FIXME: impossible without entry
         if (lowguid)
@@ -320,14 +315,14 @@ public:
         if (!newEntryNum)
             return false;
 
-        Unit* unit = handler->getSelectedUnit();
+        UnitPtr unit = handler->getSelectedUnit();
         if (!unit || unit->GetTypeId() != TYPEID_UNIT)
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
             handler->SetSentErrorMessage(true);
             return false;
         }
-        Creature* creature = unit->ToCreature();
+        CreaturePtr creature = unit->ToCreature();
         if (creature->UpdateEntry(newEntryNum))
             handler->SendSysMessage(LANG_DONE);
         else
@@ -349,7 +344,7 @@ public:
             return false;
         }
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
         if (!creature)
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
@@ -359,12 +354,12 @@ public:
 
         if (creature->isPet())
         {
-            if (((Pet*)creature)->getPetType() == HUNTER_PET)
+            if ((TO_PET(creature))->getPetType() == HUNTER_PET)
             {
                 creature->SetUInt32Value(UNIT_FIELD_PETNEXTLEVELEXP, sObjectMgr->GetXPForLevel(lvl)/4);
                 creature->SetUInt32Value(UNIT_FIELD_PETEXPERIENCE, 0);
             }
-            ((Pet*)creature)->GivePetLevel(lvl);
+            (TO_PET(creature))->GivePetLevel(lvl);
         }
         else
         {
@@ -379,7 +374,7 @@ public:
 
     static bool HandleNpcDeleteCommand(ChatHandler* handler, const char* args)
     {
-        Creature* unit = NULL;
+        CreaturePtr unit = NULL;
 
         if (*args)
         {
@@ -421,7 +416,7 @@ public:
         if (!*args)
             return false;
 
-        Creature* vendor = handler->getSelectedCreature();
+        CreaturePtr vendor = handler->getSelectedCreature();
         if (!vendor || !vendor->isVendor())
         {
             handler->SendSysMessage(LANG_COMMAND_VENDORSELECTION);
@@ -468,7 +463,7 @@ public:
             return false;
         }
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
 
         if (!creature)
         {
@@ -508,7 +503,7 @@ public:
 
         uint32 npcFlags = (uint32) atoi((char*)args);
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
 
         if (!creature)
         {
@@ -549,7 +544,7 @@ public:
         if (!data_1 || !data_2)
             return false;
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
 
         if (!creature)
         {
@@ -567,8 +562,8 @@ public:
     //npc follow handling
     static bool HandleNpcFollowCommand(ChatHandler* handler, const char* /*args*/)
     {
-        Player* player = handler->GetSession()->GetPlayer();
-        Creature* creature = handler->getSelectedCreature();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
+        CreaturePtr creature = handler->getSelectedCreature();
 
         if (!creature)
         {
@@ -586,7 +581,7 @@ public:
 
     static bool HandleNpcInfoCommand(ChatHandler* handler, const char* /*args*/)
     {
-        Creature* target = handler->getSelectedCreature();
+        CreaturePtr target = handler->getSelectedCreature();
 
         if (!target)
         {
@@ -634,7 +629,7 @@ public:
     {
         uint32 lowguid = 0;
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
 
         if (!creature)
         {
@@ -722,7 +717,7 @@ public:
     {
         uint32 emote = atoi((char*)args);
 
-        Creature* target = handler->getSelectedCreature();
+        CreaturePtr target = handler->getSelectedCreature();
         if (!target)
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
@@ -754,7 +749,7 @@ public:
 
         uint32 displayId = (uint32) atoi((char*)args);
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
 
         if (!creature || creature->isPet())
         {
@@ -805,7 +800,7 @@ public:
             return false;
 
         uint32 lowguid = 0;
-        Creature* creature = NULL;
+        CreaturePtr creature = NULL;
 
         if (dontdel_str)
         {
@@ -932,7 +927,7 @@ public:
             return false;
         }
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
         if (!creature)
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
@@ -965,7 +960,7 @@ public:
         if (option >0.0f)
             mtype = RANDOM_MOTION_TYPE;
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
         uint32 guidLow = 0;
 
         if (creature)
@@ -1014,7 +1009,7 @@ public:
             return false;
         }
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
         uint32 guidLow = 0;
 
         if (creature)
@@ -1040,7 +1035,7 @@ public:
         if (!*args)
             return false;
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
         if (!creature)
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
@@ -1068,7 +1063,7 @@ public:
         if (!*args)
             return false;
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
 
         if (!creature)
         {
@@ -1085,8 +1080,8 @@ public:
     //npc unfollow handling
     static bool HandleNpcUnFollowCommand(ChatHandler* handler, const char* /*args*/)
     {
-        Player* player = handler->GetSession()->GetPlayer();
-        Creature* creature = handler->getSelectedCreature();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
+        CreaturePtr creature = handler->getSelectedCreature();
 
         if (!creature)
         {
@@ -1129,7 +1124,7 @@ public:
         char* text = strtok(NULL, "");
 
         uint64 guid = handler->GetSession()->GetPlayer()->GetSelection();
-        Creature* creature = handler->GetSession()->GetPlayer()->GetMap()->GetCreature(guid);
+        CreaturePtr creature = handler->GetSession()->GetPlayer()->GetMap()->GetCreature(guid);
 
         if (!creature || !receiver_str || !text)
         {
@@ -1152,7 +1147,7 @@ public:
         if (!*args)
             return false;
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
         if (!creature)
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
@@ -1177,7 +1172,7 @@ public:
         if (!charID)
             return false;
 
-        Player* chr = handler->GetSession()->GetPlayer();
+        PlayerPtr chr = handler->GetSession()->GetPlayer();
 
         uint32 id = atoi(charID);
         if (!id)
@@ -1191,7 +1186,7 @@ public:
     //npc tame handling
     static bool HandleNpcTameCommand(ChatHandler* handler, const char* /*args*/)
     {
-        Creature* creatureTarget = handler->getSelectedCreature();
+        CreaturePtr creatureTarget = handler->getSelectedCreature();
         if (!creatureTarget || creatureTarget->isPet())
         {
             handler->PSendSysMessage (LANG_SELECT_CREATURE);
@@ -1199,7 +1194,7 @@ public:
             return false;
         }
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (player->GetPetGUID())
         {
@@ -1218,7 +1213,7 @@ public:
         }
 
         // Everything looks OK, create new pet
-        Pet* pet = player->CreateTamedPetFrom(creatureTarget);
+        PetPtr pet = player->CreateTamedPetFrom(creatureTarget);
         if (!pet)
         {
             handler->PSendSysMessage (LANG_CREATURE_NON_TAMEABLE, cInfo->Entry);
@@ -1241,7 +1236,7 @@ public:
         pet->SetUInt32Value(UNIT_FIELD_LEVEL, level - 1);
 
         // add to world
-        pet->GetMap()->AddToMap(pet->ToCreature());
+        pet->GetMap()->AddToMap(TO_CREATURE(pet));
 
         // visual effect for levelup
         pet->SetUInt32Value(UNIT_FIELD_LEVEL, level);
@@ -1261,7 +1256,7 @@ public:
             return false;
 
         uint32 leaderGUID = (uint32) atoi((char*)args);
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
 
         if (!creature || !creature->GetDBTableGUIDLow())
         {
@@ -1280,11 +1275,11 @@ public:
         if (!lowguid)
             return false;
 
-        Player* chr = handler->GetSession()->GetPlayer();
+        PlayerPtr chr = handler->GetSession()->GetPlayer();
         FormationInfo* group_member;
 
         group_member                 = new FormationInfo;
-        group_member->follow_angle   = (creature->GetAngle(chr) - chr->GetOrientation()) * 180 / M_PI;
+        group_member->follow_angle   = (creature->GetAngle(chr.get()) - chr->GetOrientation()) * 180 / M_PI;
         group_member->follow_dist    = sqrtf(pow(chr->GetPositionX() - creature->GetPositionX(), int(2))+pow(chr->GetPositionY() - creature->GetPositionY(), int(2)));
         group_member->leaderGUID     = leaderGUID;
         group_member->groupAI        = 0;
@@ -1314,7 +1309,7 @@ public:
 
         uint32 linkguid = (uint32) atoi((char*)args);
 
-        Creature* creature = handler->getSelectedCreature();
+        CreaturePtr creature = handler->getSelectedCreature();
 
         if (!creature)
         {
@@ -1354,7 +1349,7 @@ public:
             return true;
         }
 
-        Creature* creature = ObjectAccessor::GetCreature(*handler->GetSession()->GetPlayer(), guid);
+        CreaturePtr creature = ObjectAccessor::GetCreature(*handler->GetSession()->GetPlayer(), guid);
 
         if (!creature)
         {
@@ -1439,7 +1434,7 @@ public:
             return true;
         }
 
-        Creature* creature = ObjectAccessor::GetCreature(*handler->GetSession()->GetPlayer(), guid);
+        CreaturePtr creature = ObjectAccessor::GetCreature(*handler->GetSession()->GetPlayer(), guid);
 
         if (!creature)
         {
@@ -1486,7 +1481,7 @@ public:
             return true;
         }
 
-        Creature* creature = ObjectAccessor::GetCreature(*handler->GetSession()->GetPlayer(), guid);
+        CreaturePtr creature = ObjectAccessor::GetCreature(*handler->GetSession()->GetPlayer(), guid);
 
         if (!creature)
         {
@@ -1504,7 +1499,7 @@ public:
 
     static bool HandleNpcActivateCommand(ChatHandler* handler, const char* args)
     {
-        Creature* unit = NULL;
+        CreaturePtr unit = NULL;
 
         if (*args)
         {

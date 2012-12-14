@@ -37,8 +37,8 @@ class Player;
 class GameObject;
 class Creature;
 
-typedef std::set<GameObject*> DoorSet;
-typedef std::set<Creature*> MinionSet;
+typedef std::set<GameObjectPtr> DoorSet;
+typedef std::set<CreaturePtr> MinionSet;
 
 enum EncounterFrameType
 {
@@ -134,11 +134,11 @@ typedef std::map<uint32 /*entry*/, MinionInfo> MinionInfoMap;
 class InstanceScript : public ZoneScript
 {
     public:
-        explicit InstanceScript(Map* map) : instance(map), completedEncounters(0) {}
+        explicit InstanceScript(MapPtr map) : instance(map), completedEncounters(0) {}
 
         virtual ~InstanceScript() {}
 
-        Map* instance;
+        MapPtr instance;
 
         //On creation, NOT load.
         virtual void Initialize() {}
@@ -158,12 +158,12 @@ class InstanceScript : public ZoneScript
         virtual bool IsEncounterInProgress() const;
 
         //Called when a player successfully enters the instance.
-        virtual void OnPlayerEnter(Player* /*player*/) {}
+        virtual void OnPlayerEnter(PlayerPtr /*Player*/) {}
 
         //Handle open / close objects
         //use HandleGameObject(0, boolen, GO); in OnObjectCreate in instance scripts
         //use HandleGameObject(GUID, boolen, NULL); in any other script
-        void HandleGameObject(uint64 guid, bool open, GameObject* go = NULL);
+        void HandleGameObject(uint64 guid, bool open, GameObjectPtr go = NULL);
 
         //change active state of doors or buttons
         void DoUseDoorOrButton(uint64 guid, uint32 withRestoreTime = 0, bool useAlternativeState = false);
@@ -178,7 +178,7 @@ class InstanceScript : public ZoneScript
         void DoSendNotifyToInstance(char const* format, ...);
 
         // Update Achievement Criteria for all players in instance
-        void DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, Unit* unit = NULL);
+        void DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 = 0, uint32 miscValue2 = 0, UnitPtr unit = NULL);
 
         // Start/Stop Timed Achievement Criteria for all players in instance
         void DoStartTimedAchievement(AchievementCriteriaTimedTypes type, uint32 entry);
@@ -199,13 +199,13 @@ class InstanceScript : public ZoneScript
 
         // Achievement criteria additional requirements check
         // NOTE: not use this if same can be checked existed requirement types from AchievementCriteriaRequirementType
-        virtual bool CheckAchievementCriteriaMeet(uint32 /*criteria_id*/, Player const* /*source*/, Unit const* /*target*/ = NULL, uint32 /*miscvalue1*/ = 0);
+        virtual bool CheckAchievementCriteriaMeet(uint32 /*criteria_id*/, constPlayerPtr /*source*/, constUnitPtr /*target*/ = NULL, uint32 /*miscvalue1*/ = 0);
 
         // Checks boss requirements (one boss required to kill other)
-        virtual bool CheckRequiredBosses(uint32 /*bossId*/, Player const* /*player*/ = NULL) const { return true; }
+        virtual bool CheckRequiredBosses(uint32 /*bossId*/, constPlayerPtr /*Player*/ = NULL) const { return true; }
 
         // Checks encounter state at kill/spellcast
-        void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, Unit* source);
+        void UpdateEncounterState(EncounterCreditType type, uint32 creditEntry, UnitPtr source);
 
         // Used only during loading
         void SetCompletedEncountersMask(uint32 newMask) { completedEncounters = newMask; }
@@ -213,7 +213,7 @@ class InstanceScript : public ZoneScript
         // Returns completed encounters mask for packets
         uint32 GetCompletedEncounterMask() const { return completedEncounters; }
 
-        void SendEncounterUnit(uint32 type, Unit* unit = NULL, uint8 param1 = 0, uint8 param2 = 0);
+        void SendEncounterUnit(uint32 type, UnitPtr unit = NULL, uint8 param1 = 0, uint8 param2 = 0);
 
         // Check if all players are dead (except gamemasters)
         bool IsWipe();
@@ -225,11 +225,11 @@ class InstanceScript : public ZoneScript
         void LoadDoorData(DoorData const* data);
         void LoadMinionData(MinionData const* data);
 
-        void AddDoor(GameObject* door, bool add);
-        void AddMinion(Creature* minion, bool add);
+        void AddDoor(GameObjectPtr door, bool add);
+        void AddMinion(CreaturePtr minion, bool add);
 
-        void UpdateDoorState(GameObject* door);
-        void UpdateMinionState(Creature* minion, EncounterState state);
+        void UpdateDoorState(GameObjectPtr door);
+        void UpdateMinionState(CreaturePtr minion, EncounterState state);
 
         std::string LoadBossState(char const* data);
         std::string GetBossSaveData();

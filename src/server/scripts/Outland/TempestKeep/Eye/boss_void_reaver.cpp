@@ -54,7 +54,7 @@ class boss_void_reaver : public CreatureScript
 
         struct boss_void_reaverAI : public ScriptedAI
         {
-            boss_void_reaverAI(Creature* creature) : ScriptedAI(creature)
+            boss_void_reaverAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -81,12 +81,12 @@ class boss_void_reaver : public CreatureScript
                     instance->SetData(DATA_VOIDREAVEREVENT, NOT_STARTED);
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoScriptText(SAY_DEATH, me);
                 DoZoneInCombat();
@@ -95,7 +95,7 @@ class boss_void_reaver : public CreatureScript
                     instance->SetData(DATA_VOIDREAVEREVENT, DONE);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 DoScriptText(SAY_AGGRO, me);
 
@@ -119,12 +119,12 @@ class boss_void_reaver : public CreatureScript
                 // Arcane Orb
                 if (ArcaneOrb_Timer <= diff)
                 {
-                    Unit* target = NULL;
-                    std::list<HostileReference*> t_list = me->getThreatManager().getThreatList();
-                    std::vector<Unit*> target_list;
-                    for (std::list<HostileReference*>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+                    UnitPtr target = NULL;
+                    std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
+                    std::vector<UnitPtr> target_list;
+                    for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                     {
-                        target = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                        target = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid());
                         if (!target)
                             continue;
                         // exclude pets & totems, 18 yard radius minimum
@@ -170,7 +170,7 @@ class boss_void_reaver : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_void_reaverAI(creature);
         }

@@ -33,7 +33,7 @@
 
 #define PET_XP_FACTOR 0.05f
 
-Pet::Pet(Player* owner, PetType type) : Guardian(NULL, owner, true),
+Pet::Pet(PlayerPtr owner, PetType type) : Guardian(NULL, owner, true),
 m_removed(false), m_owner(owner),
 m_petType(type), m_duration(0), m_specialization(0),
 m_auraRaidUpdateMask(0), m_loading(false), m_declinedname(NULL)
@@ -63,7 +63,7 @@ void Pet::AddToWorld()
     if (!IsInWorld())
     {
         ///- Register the pet for guid lookup
-        sObjectAccessor->AddObject(this);
+        sObjectAccessor->AddObject(THIS_PET);
         Unit::AddToWorld();
         AIM_Initialize();
     }
@@ -87,11 +87,11 @@ void Pet::RemoveFromWorld()
     {
         ///- Don't call the function for Creature, normal mobs + totems go in a different storage
         Unit::RemoveFromWorld();
-        sObjectAccessor->RemoveObject(this);
+        sObjectAccessor->RemoveObject(THIS_PET);
     }
 }
 
-bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool current)
+bool Pet::LoadPetFromDB(PlayerPtr owner, uint32 petentry, uint32 petnumber, bool current)
 {
     m_loading = true;
 
@@ -172,7 +172,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         return false;
     }
 
-    Map* map = owner->GetMap();
+    MapPtr map = owner->GetMap();
     uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_PET);
     if (!Create(guid, map, owner->GetPhaseMask(), petentry, pet_number))
         return false;
@@ -297,8 +297,8 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         owner->SendMessageToSet(&data, true);
     }
 
-    owner->SetMinion(this, true);
-    map->AddToMap(this->ToCreature());
+    owner->SetMinion(THIS_PET, true);
+    map->AddToMap(THIS_CREATURE);
 
     uint32 timediff = uint32(time(NULL) - fields[13].GetUInt32());
     _LoadAuras(timediff);
@@ -347,7 +347,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 
     //set last used pet number (for use in BG's)
     if (owner->GetTypeId() == TYPEID_PLAYER && isControlled() && !isTemporarySummoned() && (getPetType() == SUMMON_PET || getPetType() == HUNTER_PET))
-        owner->ToPlayer()->SetLastPetNumber(pet_number);
+        TO_PLAYER(owner)->SetLastPetNumber(pet_number);
 
     m_loading = false;
 
@@ -367,7 +367,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
     if (!IS_PLAYER_GUID(GetOwnerGUID()))
         return;
 
-    Player* owner = (Player*)GetOwner();
+    PlayerPtr owner = TO_PLAYER(GetOwner());
     if (!owner)
         return;
 
@@ -541,7 +541,7 @@ void Pet::Update(uint32 diff)
         case ALIVE:
         {
             // unsummon pet that lost owner
-            Player* owner = GetOwner();
+            PlayerPtr owner = GetOwner();
             if (!owner || (!IsWithinDistInMap(owner, GetMap()->GetVisibilityRange()) && !isPossessed()) || (isControlled() && !owner->GetPetGUID()))
             //if (!owner || (!IsWithinDistInMap(owner, GetMap()->GetVisibilityDistance()) && (owner->GetCharmGUID() && (owner->GetCharmGUID() != GetGUID()))) || (isControlled() && !owner->GetPetGUID()))
             {
@@ -651,7 +651,7 @@ void Creature::Regenerate(Powers power)
 
 void Pet::Remove(PetSaveMode mode, bool returnreagent)
 {
-    m_owner->RemovePet(this, mode, returnreagent);
+    m_owner->RemovePet(THIS_PET, mode, returnreagent);
 }
 
 void Pet::GivePetXP(uint32 xp)
@@ -706,7 +706,7 @@ void Pet::GivePetLevel(uint8 level)
     InitLevelupSpellsForLevel();
 }
 
-bool Pet::CreateBaseAtCreature(Creature* creature)
+bool Pet::CreateBaseAtCreature(CreaturePtr creature)
 {
     ASSERT(creature);
 
@@ -739,7 +739,7 @@ bool Pet::CreateBaseAtCreature(Creature* creature)
     return true;
 }
 
-bool Pet::CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, Unit* owner)
+bool Pet::CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, UnitPtr owner)
 {
     if (!CreateBaseAtTamed(cinfo, owner->GetMap(), owner->GetPhaseMask()))
         return false;
@@ -752,7 +752,7 @@ bool Pet::CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, Unit* owner)
     return true;
 }
 
-bool Pet::CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phaseMask)
+bool Pet::CreateBaseAtTamed(CreatureTemplate const* cinfo, MapPtr map, uint32 phaseMask)
 {
     sLog->outDebug(LOG_FILTER_PETS, "Pet::CreateBaseForTamed");
     uint32 guid=sObjectMgr->GenerateLowGuid(HIGHGUID_PET);
@@ -1086,7 +1086,7 @@ void Pet::_LoadSpellCooldowns()
         while (result->NextRow());
 
         if (!m_CreatureSpellCooldowns.empty() && GetOwner())
-            ((Player*)GetOwner())->GetSession()->SendPacket(&data);
+            (TO_PLAYER(GetOwner()))->GetSession()->SendPacket(&data);
     }
 }
 
@@ -1264,7 +1264,7 @@ void Pet::_LoadAuras(uint32 timediff)
                 }
             }
 
-            AuraPtr aura = Aura::TryCreate(spellInfo, effmask, this, NULL, spellInfo->spellPower, &baseDamage[0], NULL, caster_guid);
+            AuraPtr aura = Aura::TryCreate(spellInfo, effmask, THIS_PET, NULL, spellInfo->spellPower, &baseDamage[0], NULL, caster_guid);
             if (aura != NULLAURA)
             {
                 if (!aura->CanBeSaved())
@@ -1298,7 +1298,7 @@ void Pet::_SaveAuras(SQLTransaction& trans)
             continue;
 
         AuraPtr aura = itr->second;
-        AuraApplication * foundAura = GetAuraApplication(aura->GetId(), aura->GetCasterGUID(), aura->GetCastItemGUID());
+        AuraApplicationPtr foundAura = GetAuraApplication(aura->GetId(), aura->GetCasterGUID(), aura->GetCastItemGUID());
 
         if(!foundAura)
             continue;
@@ -1451,7 +1451,7 @@ bool Pet::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpel
     m_spells[spellId] = newspell;
 
     if (spellInfo->IsPassive() && (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState))))
-        CastSpell(this, spellId, true);
+        CastSpell(THIS_PET, spellId, true);
     else
         m_charmInfo->AddSpellToActionBar(spellInfo);
 
@@ -1563,9 +1563,9 @@ bool Pet::removeSpell(uint32 spell_id, bool learn_prev, bool clear_ab)
         if (!m_loading)
         {
             // need update action bar for last removed rank
-            if (Unit* owner = GetOwner())
+            if (UnitPtr owner = GetOwner())
                 if (owner->GetTypeId() == TYPEID_PLAYER)
-                    owner->ToPlayer()->PetSpellInitialize();
+                    TO_PLAYER(owner)->PetSpellInitialize();
         }
     }
 
@@ -1648,7 +1648,7 @@ void Pet::ToggleAutocast(SpellInfo const* spellInfo, bool apply)
     }
 }
 
-bool Pet::IsPermanentPetFor(Player* owner)
+bool Pet::IsPermanentPetFor(PlayerPtr owner)
 {
     switch (getPetType())
     {
@@ -1671,7 +1671,7 @@ bool Pet::IsPermanentPetFor(Player* owner)
     }
 }
 
-bool Pet::Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint32 pet_number)
+bool Pet::Create(uint32 guidlow, MapPtr map, uint32 phaseMask, uint32 Entry, uint32 pet_number)
 {
     ASSERT(map);
     SetMap(map);
@@ -1720,11 +1720,11 @@ void Pet::LearnPetPassives()
 
 void Pet::CastPetAuras(bool current)
 {
-    Unit* owner = GetOwner();
+    UnitPtr owner = GetOwner();
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if (!IsPermanentPetFor(owner->ToPlayer()))
+    if (!IsPermanentPetFor(TO_PLAYER(owner)))
         return;
 
     for (PetAuraSet::const_iterator itr = owner->m_petAuras.begin(); itr != owner->m_petAuras.end();)
@@ -1748,15 +1748,15 @@ void Pet::CastPetAura(PetAura const* aura)
     if (auraId == 35696)                                      // Demonic Knowledge
     {
         int32 basePoints = CalculatePct(aura->GetDamage(), GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT));
-        CastCustomSpell(this, auraId, &basePoints, NULL, NULL, true);
+        CastCustomSpell(THIS_PET, auraId, &basePoints, NULL, NULL, true);
     }
     else
-        CastSpell(this, auraId, true);
+        CastSpell(THIS_PET, auraId, true);
 }
 
 bool Pet::IsPetAura(constAuraPtr aura)
 {
-    Unit* owner = GetOwner();
+    UnitPtr owner = GetOwner();
 
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return false;
@@ -1780,7 +1780,7 @@ void Pet::learnSpellHighRank(uint32 spellid)
 
 void Pet::SynchronizeLevelWithOwner()
 {
-    Unit* owner = GetOwner();
+    UnitPtr owner = GetOwner();
     if (!owner || owner->GetTypeId() != TYPEID_PLAYER)
         return;
 

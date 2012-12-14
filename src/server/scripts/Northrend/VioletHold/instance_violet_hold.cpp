@@ -106,14 +106,14 @@ class instance_violet_hold : public InstanceMapScript
 public:
     instance_violet_hold() : InstanceMapScript("instance_violet_hold", 608) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_violet_hold_InstanceMapScript(map);
     }
 
     struct instance_violet_hold_InstanceMapScript : public InstanceScript
     {
-        instance_violet_hold_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_violet_hold_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
 
         uint64 uiMoragg;
         uint64 uiErekem;
@@ -228,7 +228,7 @@ public:
             return false;
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -273,7 +273,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {
@@ -333,7 +333,7 @@ public:
                     {
                         SaveToDB();
                         uiMainEventPhase = DONE;
-                        if (GameObject* pMainDoor = instance->GetGameObject(uiMainDoor))
+                        if (GameObjectPtr pMainDoor = instance->GetGameObject(uiMainDoor))
                             pMainDoor->SetGoState(GO_STATE_ACTIVE);
                     }
                     break;
@@ -360,7 +360,7 @@ public:
                         NpcAtDoorCastingList.pop_back();
                     break;
                 case DATA_MAIN_DOOR:
-                    if (GameObject* pMainDoor = instance->GetGameObject(uiMainDoor))
+                    if (GameObjectPtr pMainDoor = instance->GetGameObject(uiMainDoor))
                     {
                         switch (data)
                         {
@@ -394,7 +394,7 @@ public:
                     uiMainEventPhase = data;
                     if (data == IN_PROGRESS) // Start event
                     {
-                        if (GameObject* pMainDoor = instance->GetGameObject(uiMainDoor))
+                        if (GameObjectPtr pMainDoor = instance->GetGameObject(uiMainDoor))
                             pMainDoor->SetGoState(GO_STATE_READY);
                         uiWaveCount = 1;
                         bActive = true;
@@ -471,14 +471,14 @@ public:
         void SpawnPortal()
         {
             SetData(DATA_PORTAL_LOCATION, (GetData(DATA_PORTAL_LOCATION) + urand(1, 5))%6);
-            if (Creature* pSinclari = instance->GetCreature(uiSinclari))
-                if (Creature* portal = pSinclari->SummonCreature(CREATURE_TELEPORTATION_PORTAL, PortalLocation[GetData(DATA_PORTAL_LOCATION)], TEMPSUMMON_CORPSE_DESPAWN))
+            if (CreaturePtr pSinclari = instance->GetCreature(uiSinclari))
+                if (CreaturePtr portal = pSinclari->SummonCreature(CREATURE_TELEPORTATION_PORTAL, PortalLocation[GetData(DATA_PORTAL_LOCATION)], TEMPSUMMON_CORPSE_DESPAWN))
                     uiTeleportationPortal = portal->GetGUID();
         }
 
         void StartBossEncounter(uint8 uiBoss, bool bForceRespawn = true)
         {
-            Creature* pBoss = NULL;
+            CreaturePtr pBoss = NULL;
 
             switch (uiBoss)
             {
@@ -498,7 +498,7 @@ public:
                     if (pBoss)
                         pBoss->GetMotionMaster()->MovePoint(0, BossStartMove2);
 
-                    if (Creature* pGuard1 = instance->GetCreature(uiErekemGuard[0]))
+                    if (CreaturePtr pGuard1 = instance->GetCreature(uiErekemGuard[0]))
                     {
                         if (bForceRespawn)
                             pGuard1->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC|UNIT_FLAG_NON_ATTACKABLE);
@@ -507,7 +507,7 @@ public:
                         pGuard1->GetMotionMaster()->MovePoint(0, BossStartMove21);
                     }
 
-                    if (Creature* pGuard2 = instance->GetCreature(uiErekemGuard[1]))
+                    if (CreaturePtr pGuard2 = instance->GetCreature(uiErekemGuard[1]))
                     {
                         if (bForceRespawn)
                             pGuard2->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC|UNIT_FLAG_NON_ATTACKABLE);
@@ -572,11 +572,11 @@ public:
                 case 6:
                     if (uiFirstBoss == 0)
                         uiFirstBoss = urand(1, 6);
-                    if (Creature* pSinclari = instance->GetCreature(uiSinclari))
+                    if (CreaturePtr pSinclari = instance->GetCreature(uiSinclari))
                     {
-                        if (Creature* pPortal = pSinclari->SummonCreature(CREATURE_TELEPORTATION_PORTAL, MiddleRoomPortalSaboLocation, TEMPSUMMON_CORPSE_DESPAWN))
+                        if (CreaturePtr pPortal = pSinclari->SummonCreature(CREATURE_TELEPORTATION_PORTAL, MiddleRoomPortalSaboLocation, TEMPSUMMON_CORPSE_DESPAWN))
                             uiSaboteurPortal = pPortal->GetGUID();
-                        if (Creature* pAzureSaboteur = pSinclari->SummonCreature(CREATURE_SABOTEOUR, MiddleRoomLocation, TEMPSUMMON_DEAD_DESPAWN))
+                        if (CreaturePtr pAzureSaboteur = pSinclari->SummonCreature(CREATURE_SABOTEOUR, MiddleRoomLocation, TEMPSUMMON_DEAD_DESPAWN))
                             pAzureSaboteur->CastSpell(pAzureSaboteur, SABOTEUR_SHIELD_EFFECT, false);
                     }
                     break;
@@ -586,24 +586,24 @@ public:
                         {
                             uiSecondBoss = urand(1, 6);
                         } while (uiSecondBoss == uiFirstBoss);
-                    if (Creature* pSinclari = instance->GetCreature(uiSinclari))
+                    if (CreaturePtr pSinclari = instance->GetCreature(uiSinclari))
                     {
-                        if (Creature* pPortal = pSinclari->SummonCreature(CREATURE_TELEPORTATION_PORTAL, MiddleRoomPortalSaboLocation, TEMPSUMMON_CORPSE_DESPAWN))
+                        if (CreaturePtr pPortal = pSinclari->SummonCreature(CREATURE_TELEPORTATION_PORTAL, MiddleRoomPortalSaboLocation, TEMPSUMMON_CORPSE_DESPAWN))
                             uiSaboteurPortal = pPortal->GetGUID();
-                        if (Creature* pAzureSaboteur = pSinclari->SummonCreature(CREATURE_SABOTEOUR, MiddleRoomLocation, TEMPSUMMON_DEAD_DESPAWN))
+                        if (CreaturePtr pAzureSaboteur = pSinclari->SummonCreature(CREATURE_SABOTEOUR, MiddleRoomLocation, TEMPSUMMON_DEAD_DESPAWN))
                             pAzureSaboteur->CastSpell(pAzureSaboteur, SABOTEUR_SHIELD_EFFECT, false);
                     }
                     break;
                 case 18:
                 {
-                    Creature* pSinclari = instance->GetCreature(uiSinclari);
+                    CreaturePtr pSinclari = instance->GetCreature(uiSinclari);
                     if (pSinclari)
                         pSinclari->SummonCreature(CREATURE_CYANIGOSA, CyanigosasSpawnLocation, TEMPSUMMON_DEAD_DESPAWN);
                     break;
                 }
                 case 1:
                 {
-                    if (GameObject* pMainDoor = instance->GetGameObject(uiMainDoor))
+                    if (GameObjectPtr pMainDoor = instance->GetGameObject(uiMainDoor))
                         pMainDoor->SetGoState(GO_STATE_READY);
                     DoUpdateWorldState(WORLD_STATE_VH_PRISON_STATE, 100);
                 }
@@ -668,7 +668,7 @@ public:
             Map::PlayerList const &players = instance->GetPlayers();
             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
             {
-                Player* player = itr->getSource();
+                PlayerPtr player = itr->getSource();
                 if (player->isGameMaster())
                     continue;
 
@@ -707,17 +707,17 @@ public:
                 SetData(DATA_WAVE_COUNT, 0);
                 uiMainEventPhase = NOT_STARTED;
 
-                if (Creature* pSinclari = instance->GetCreature(uiSinclari))
+                if (CreaturePtr pSinclari = instance->GetCreature(uiSinclari))
                 {
                     pSinclari->SetVisible(true);
 
-                    std::list<Creature*> GuardList;
+                    std::list<CreaturePtr> GuardList;
                     pSinclari->GetCreatureListWithEntryInGrid(GuardList, NPC_VIOLET_HOLD_GUARD, 40.0f);
                     if (!GuardList.empty())
                     {
-                        for (std::list<Creature*>::const_iterator itr = GuardList.begin(); itr != GuardList.end(); ++itr)
+                        for (std::list<CreaturePtr>::const_iterator itr = GuardList.begin(); itr != GuardList.end(); ++itr)
                         {
-                            if (Creature* pGuard = *itr)
+                            if (CreaturePtr pGuard = *itr)
                             {
                                 pGuard->SetVisible(true);
                                 pGuard->SetReactState(REACT_AGGRESSIVE);
@@ -731,7 +731,7 @@ public:
             }
 
             // Cyanigosa is spawned but not tranformed, prefight event
-            Creature* pCyanigosa = instance->GetCreature(uiCyanigosa);
+            CreaturePtr pCyanigosa = instance->GetCreature(uiCyanigosa);
             if (pCyanigosa && !pCyanigosa->HasAura(CYANIGOSA_SPELL_TRANSFORM))
             {
                 if (uiCyanigosaEventTimer <= diff)
@@ -792,13 +792,13 @@ public:
             // TODO: All visual, spells etc
             for (std::set<uint64>::const_iterator itr = trashMobs.begin(); itr != trashMobs.end(); ++itr)
             {
-                Creature* creature = instance->GetCreature(*itr);
+                CreaturePtr creature = instance->GetCreature(*itr);
                 if (creature && creature->isAlive())
                     creature->CastSpell(creature, SPELL_ARCANE_LIGHTNING, true);  // Who should cast the spell?
             }
         }
 
-        void ProcessEvent(WorldObject* /*go*/, uint32 uiEventId)
+        void ProcessEvent(WorldObjectPtr /*go*/, uint32 uiEventId)
         {
             switch (uiEventId)
             {

@@ -36,7 +36,7 @@ public:
 
     struct generic_creatureAI : public ScriptedAI
     {
-        generic_creatureAI(Creature* creature) : ScriptedAI(creature) {}
+        generic_creatureAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 GlobalCooldown;      //This variable acts like the global cooldown that players have (1.5 seconds)
         uint32 BuffTimer;           //This variable keeps track of buffs
@@ -49,7 +49,7 @@ public:
             IsSelfRooted = false;
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             if (!me->IsWithinMeleeRange(who))
                 IsSelfRooted = true;
@@ -163,7 +163,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new generic_creatureAI(creature);
     }
@@ -176,7 +176,7 @@ public:
 
     struct trigger_periodicAI : public NullCreatureAI
     {
-        trigger_periodicAI(Creature* creature) : NullCreatureAI(creature)
+        trigger_periodicAI(CreaturePtr creature) : NullCreatureAI(creature)
         {
             spell = me->m_spells[0] ? sSpellMgr->GetSpellInfo(me->m_spells[0]) : NULL;
             interval = me->GetAttackTime(BASE_ATTACK);
@@ -199,7 +199,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new trigger_periodicAI(creature);
     }
@@ -212,15 +212,15 @@ public:
 
     struct trigger_deathAI : public NullCreatureAI
     {
-        trigger_deathAI(Creature* creature) : NullCreatureAI(creature) {}
-        void JustDied(Unit* killer)
+        trigger_deathAI(CreaturePtr creature) : NullCreatureAI(creature) {}
+        void JustDied(UnitPtr killer)
         {
             if (me->m_spells[0])
                 me->CastSpell(killer, me->m_spells[0], true);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new trigger_deathAI(creature);
     }

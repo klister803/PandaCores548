@@ -38,7 +38,7 @@
 template<class OBJECT> struct ContainerMapList
 {
     //std::map<OBJECT_HANDLE, OBJECT *> _element;
-    GridRefManager<OBJECT> _element;
+    std::shared_ptr<GridRefManager<OBJECT>> _element;
 };
 
 template<> struct ContainerMapList<TypeNull>                /* nothing is in type null */
@@ -56,7 +56,7 @@ template<class H, class T> struct ContainerMapList<TypeList<H, T> >
  */
 template<class OBJECT> struct ContainerArrayList
 {
-    std::vector<OBJECT> _element;
+    std::shared_ptr<std::vector<OBJECT>> _element;
 };
 
 // termination condition
@@ -74,7 +74,7 @@ template<class H, class T> struct ContainerArrayList<TypeList<H, T> >
  */
 template<class OBJECT> struct ContainerList
 {
-    OBJECT _element;
+    std::shared_ptr<OBJECT> _element;
 };
 
 /* TypeNull is underfined */
@@ -101,9 +101,9 @@ class TypeMapContainer
         template<class SPECIFIC_TYPE> size_t Count() const { return Trinity::Count(i_elements, (SPECIFIC_TYPE*)NULL); }
 
         /// inserts a specific object into the container
-        template<class SPECIFIC_TYPE> bool insert(SPECIFIC_TYPE *obj)
+        template<class SPECIFIC_TYPE> bool insert(std::shared_ptr<SPECIFIC_TYPE> obj)
         {
-            SPECIFIC_TYPE* t = Trinity::Insert(i_elements, obj);
+            std::shared_ptr<SPECIFIC_TYPE> t = Trinity::Insert(i_elements, obj);
             return (t != NULL);
         }
 

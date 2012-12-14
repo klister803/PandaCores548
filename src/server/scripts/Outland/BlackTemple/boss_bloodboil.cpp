@@ -61,14 +61,14 @@ class boss_gurtogg_bloodboil : public CreatureScript
 public:
     boss_gurtogg_bloodboil() : CreatureScript("boss_gurtogg_bloodboil") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_gurtogg_bloodboilAI (creature);
     }
 
     struct boss_gurtogg_bloodboilAI : public ScriptedAI
     {
-        boss_gurtogg_bloodboilAI(Creature* creature) : ScriptedAI(creature)
+        boss_gurtogg_bloodboilAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -118,7 +118,7 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_ATTACK_ME, false);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoZoneInCombat();
             DoScriptText(SAY_AGGRO, me);
@@ -126,12 +126,12 @@ public:
                 instance->SetData(DATA_GURTOGGBLOODBOILEVENT, IN_PROGRESS);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(DATA_GURTOGGBLOODBOILEVENT, DONE);
@@ -143,16 +143,16 @@ public:
         void CastBloodboil()
         {
             // Get the Threat List
-            std::list<HostileReference*> m_threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr> m_threatlist = me->getThreatManager().getThreatList();
 
             if (m_threatlist.empty()) // He doesn't have anyone in his threatlist, useless to continue
                 return;
 
-            std::list<Unit*> targets;
-            std::list<HostileReference*>::const_iterator itr = m_threatlist.begin();
+            std::list<UnitPtr> targets;
+            std::list<HostileReferencePtr>::const_iterator itr = m_threatlist.begin();
             for (; itr!= m_threatlist.end(); ++itr)             //store the threat list in a different container
             {
-                Unit* target = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid());
                                                                 //only on alive players
                 if (target && target->isAlive() && target->GetTypeId() == TYPEID_PLAYER)
                     targets.push_back(target);
@@ -167,9 +167,9 @@ public:
             /*SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_BLOODBOIL);
             if (spellInfo)
             {
-                for (std::list<Unit*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                for (std::list<UnitPtr>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
                 {
-                    Unit* target = *itr;
+                    UnitPtr target = *itr;
                     if (!target) return;
                     for (uint32 i = 0; i<3; ++i)
                     {
@@ -186,8 +186,8 @@ public:
 
         void RevertThreatOnTarget(uint64 guid)
         {
-            Unit* unit = NULL;
-            unit = Unit::GetUnit(*me, guid);
+            UnitPtr unit = NULL;
+            unit = Unit::GetUnit(TO_WORLDOBJECT(me), guid);
             if (unit)
             {
                 if (DoGetThreat(unit))
@@ -229,7 +229,7 @@ public:
                 {
                     DoCast(me->getVictim(), SPELL_BEWILDERING_STRIKE);
                     float mt_threat = DoGetThreat(me->getVictim());
-                    if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 1))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_TOPAGGRO, 1))
                         me->AddThreat(target, mt_threat);
                     BewilderingStrikeTimer = 20000;
                 } else BewilderingStrikeTimer -= diff;
@@ -278,7 +278,7 @@ public:
             {
                 if (Phase1)
                 {
-                    Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (target && target->isAlive())
                     {
                         Phase1 = false;

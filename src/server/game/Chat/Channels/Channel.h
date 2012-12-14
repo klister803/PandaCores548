@@ -275,7 +275,7 @@ class Channel
         void UnsetModerator(uint64 p, const char *newname) { SetMode(p, newname, true, false); }
         void SetMute(uint64 p, const char *newname) { SetMode(p, newname, false, true); }
         void UnsetMute(uint64 p, const char *newname) { SetMode(p, newname, false, false); }
-        void List(Player* p);
+        void List(PlayerPtr p);
         void Announce(uint64 p);
         void Say(uint64 p, const char *what, uint32 lang);
         void Invite(uint64 p, const char *newp);

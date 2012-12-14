@@ -227,7 +227,7 @@ public:
             sWorld->AddCharacterNameData(delInfo.lowGuid, delInfo.name, (*result)[2].GetUInt8(), (*result)[0].GetUInt8(), (*result)[1].GetUInt8(), (*result)[2].GetUInt8());
     }
 
-    static void HandleCharacterLevel(Player* player, uint64 playerGuid, uint32 oldLevel, uint32 newLevel, ChatHandler* handler)
+    static void HandleCharacterLevel(PlayerPtr player, uint64 playerGuid, uint32 oldLevel, uint32 newLevel, ChatHandler* handler)
     {
         if (player)
         {
@@ -260,7 +260,7 @@ public:
         if (!*args)
             return false;
 
-        Player* target;
+        PlayerPtr target;
         if (!handler->extractPlayerTarget((char*)args, &target))
             return false;
 
@@ -300,7 +300,7 @@ public:
     //rename characters
     static bool HandleCharacterRenameCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
@@ -348,7 +348,7 @@ public:
             levelStr = NULL;                                    // current level will used
         }
 
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget(nameStr, &target, &targetGuid, &targetName))
@@ -376,7 +376,7 @@ public:
     // customize characters
     static bool HandleCharacterCustomizeCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
@@ -403,7 +403,7 @@ public:
 
     static bool HandleCharacterChangeFactionCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
 
@@ -431,7 +431,7 @@ public:
 
     static bool HandleCharacterChangeRaceCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
@@ -460,7 +460,7 @@ public:
 
     static bool HandleCharacterReputationCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         if (!handler->extractPlayerTarget((char*)args, &target))
             return false;
 
@@ -681,7 +681,7 @@ public:
         uint64 characterGuid;
         uint32 accountId;
 
-        Player* player = sObjectAccessor->FindPlayerByName(characterName.c_str());
+        PlayerPtr player = sObjectAccessor->FindPlayerByName(characterName.c_str());
         if (player)
         {
             characterGuid = player->GetGUID();
@@ -722,7 +722,7 @@ public:
             levelStr = NULL;                                    // current level will used
         }
 
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget(nameStr, &target, &targetGuid, &targetName))

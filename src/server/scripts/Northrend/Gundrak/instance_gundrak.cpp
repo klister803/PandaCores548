@@ -34,14 +34,14 @@ class instance_gundrak : public InstanceMapScript
 public:
     instance_gundrak() : InstanceMapScript("instance_gundrak", 604) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_gundrak_InstanceMapScript(map);
     }
 
     struct instance_gundrak_InstanceMapScript : public InstanceScript
     {
-        instance_gundrak_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_gundrak_InstanceMapScript(MapPtr map) : InstanceScript(map)
         {
             bHeroicMode = map->IsHeroic();
         }
@@ -138,7 +138,7 @@ public:
             return false;
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -154,7 +154,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {
@@ -261,7 +261,7 @@ public:
                 m_auiEncounter[0] = data;
                 if (data == DONE)
                 {
-                  GameObject* go = instance->GetGameObject(uiSladRanAltar);
+                  GameObjectPtr go = instance->GetGameObject(uiSladRanAltar);
                   if (go)
                       go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                 }
@@ -270,7 +270,7 @@ public:
                 m_auiEncounter[1] = data;
                 if (data == DONE)
                 {
-                  GameObject* go = instance->GetGameObject(uiMoorabiAltar);
+                  GameObjectPtr go = instance->GetGameObject(uiMoorabiAltar);
                   if (go)
                       go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                   if (bHeroicMode)
@@ -281,7 +281,7 @@ public:
                 m_auiEncounter[2] = data;
                 if (data == DONE)
                 {
-                  GameObject* go = instance->GetGameObject(uiDrakkariColossusAltar);
+                  GameObjectPtr go = instance->GetGameObject(uiDrakkariColossusAltar);
                   if (go)
                       go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                 }
@@ -424,7 +424,7 @@ public:
              // Spawn the support for the bridge if necessary
              if (spawnSupport)
              {
-                 if (GameObject* pCollision = instance->GetGameObject(uiCollision))
+                 if (GameObjectPtr pCollision = instance->GetGameObject(uiCollision))
                      pCollision->SummonGameObject(192743, pCollision->GetPositionX(), pCollision->GetPositionY(), pCollision->GetPositionZ(), pCollision->GetOrientation(), 0, 0, 0, 0, 0);
                  spawnSupport = false;
              }
@@ -438,12 +438,12 @@ public:
                  timer = 0;
                  if (toActivate == uiBridge)
                  {
-                     GameObject* pBridge = instance->GetGameObject(uiBridge);
-                     GameObject* pCollision = instance->GetGameObject(uiCollision);
-                     GameObject* pSladRanStatue = instance->GetGameObject(uiSladRanStatue);
-                     GameObject* pMoorabiStatue = instance->GetGameObject(uiMoorabiStatue);
-                     GameObject* pDrakkariColossusStatue = instance->GetGameObject(uiDrakkariColossusStatue);
-                     GameObject* pGalDarahStatue = instance->GetGameObject(uiGalDarahStatue);
+                     GameObjectPtr pBridge = instance->GetGameObject(uiBridge);
+                     GameObjectPtr pCollision = instance->GetGameObject(uiCollision);
+                     GameObjectPtr pSladRanStatue = instance->GetGameObject(uiSladRanStatue);
+                     GameObjectPtr pMoorabiStatue = instance->GetGameObject(uiMoorabiStatue);
+                     GameObjectPtr pDrakkariColossusStatue = instance->GetGameObject(uiDrakkariColossusStatue);
+                     GameObjectPtr pGalDarahStatue = instance->GetGameObject(uiGalDarahStatue);
 
                      toActivate = 0;
 
@@ -464,7 +464,7 @@ public:
                  else
                  {
                      uint32 spell = 0;
-                     GameObject* pAltar = NULL;
+                     GameObjectPtr pAltar = NULL;
                      if (toActivate == uiSladRanStatue)
                      {
                          spell = 57071;
@@ -484,14 +484,14 @@ public:
                      // This is a workaround to make the beam cast properly. The caster should be ID 30298 but since the spells
                      // all are with scripted target for that same ID, it will hit itself.
                      if (pAltar)
-                         if (Creature* trigger = pAltar->SummonCreature(18721, pAltar->GetPositionX(), pAltar->GetPositionY(), pAltar->GetPositionZ() + 3, pAltar->GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN, 5000))
+                         if (CreaturePtr trigger = pAltar->SummonCreature(18721, pAltar->GetPositionX(), pAltar->GetPositionY(), pAltar->GetPositionZ() + 3, pAltar->GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN, 5000))
                          {
                              // Set the trigger model to invisible
                              trigger->SetDisplayId(11686);
                              trigger->CastSpell(trigger, spell, false);
                          }
 
-                     if (GameObject* statueGO = instance->GetGameObject(toActivate))
+                     if (GameObjectPtr statueGO = instance->GetGameObject(toActivate))
                          statueGO->SetGoState(GO_STATE_READY);
 
                      toActivate = 0;
@@ -508,7 +508,7 @@ public:
 
          GOState GetObjState(uint64 guid)
          {
-             if (GameObject* go = instance->GetGameObject(guid))
+             if (GameObjectPtr go = instance->GetGameObject(guid))
                  return go->GetGoState();
              return GO_STATE_ACTIVE;
          }
@@ -521,7 +521,7 @@ class go_gundrak_altar : public GameObjectScript
 public:
     go_gundrak_altar() : GameObjectScript("go_gundrak_altar") { }
 
-    bool OnGossipHello(Player* /*player*/, GameObject* go)
+    bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
     {
         InstanceScript* instance = go->GetInstanceScript();
         uint64 uiStatue = 0;

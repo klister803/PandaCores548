@@ -82,7 +82,7 @@ class GmTicket
 {
 public:
     GmTicket();
-    explicit GmTicket(Player* player, WorldPacket& recvData);
+    explicit GmTicket(PlayerPtr player, WorldPacket& recvData);
     ~GmTicket();
 
     bool IsClosed() const { return _closedBy; }
@@ -93,10 +93,10 @@ public:
     bool IsAssignedNotTo(uint64 guid) const { return IsAssigned() && !IsAssignedTo(guid); }
 
     uint32 GetId() const { return _id; }
-    Player* GetPlayer() const { return ObjectAccessor::FindPlayer(_playerGuid); }
+    PlayerPtr GetPlayer() const { return ObjectAccessor::FindPlayer(_playerGuid); }
     std::string GetPlayerName() const { return _playerName; }
     std::string GetMessage() const { return _message; }
-    Player* GetAssignedPlayer() const { return ObjectAccessor::FindPlayer(_assignedTo); }
+    PlayerPtr GetAssignedPlayer() const { return ObjectAccessor::FindPlayer(_assignedTo); }
     uint64 GetAssignedToGUID() const { return _assignedTo; }
     std::string GetAssignedToName() const
     {
@@ -138,7 +138,7 @@ public:
     void WritePacket(WorldPacket& data) const;
     void SendResponse(WorldSession* session) const;
 
-    void TeleportTo(Player* player) const;
+    void TeleportTo(PlayerPtr player) const;
     std::string FormatMessageString(ChatHandler& handler, bool detailed = false) const;
     std::string FormatMessageString(ChatHandler& handler, const char* szClosedName, const char* szAssignedToName, const char* szUnassignedName, const char* szDeletedName) const;
 

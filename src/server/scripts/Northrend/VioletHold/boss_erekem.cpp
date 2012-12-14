@@ -49,14 +49,14 @@ class boss_erekem : public CreatureScript
 public:
     boss_erekem() : CreatureScript("boss_erekem") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_erekemAI (creature);
     }
 
     struct boss_erekemAI : public ScriptedAI
     {
-        boss_erekemAI(Creature* creature) : ScriptedAI(creature)
+        boss_erekemAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -84,19 +84,19 @@ public:
                     instance->SetData(DATA_2ND_BOSS_EVENT, NOT_STARTED);
             }
 
-            if (Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0))
+            if (CreaturePtr pGuard1 = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0))
             {
                 if (!pGuard1->isAlive())
                     pGuard1->Respawn();
             }
-            if (Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0))
+            if (CreaturePtr pGuard2 = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0))
             {
                 if (!pGuard2->isAlive())
                     pGuard2->Respawn();
             }
         }
 
-        void AttackStart(Unit* who)
+        void AttackStart(UnitPtr who)
         {
             if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                 return;
@@ -108,13 +108,13 @@ public:
                 who->SetInCombatWith(me);
                 DoStartMovement(who);
 
-                if (Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0))
+                if (CreaturePtr pGuard1 = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0))
                 {
                     pGuard1->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC|UNIT_FLAG_NON_ATTACKABLE);
                     if (!pGuard1->getVictim() && pGuard1->AI())
                         pGuard1->AI()->AttackStart(who);
                 }
-                if (Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0))
+                if (CreaturePtr pGuard2 = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0))
                 {
                     pGuard2->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC|UNIT_FLAG_NON_ATTACKABLE);
                     if (!pGuard2->getVictim() && pGuard2->AI())
@@ -123,14 +123,14 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             DoCast(me, SPELL_EARTH_SHIELD);
 
             if (instance)
             {
-                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_EREKEM_CELL)))
+                if (GameObjectPtr pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_EREKEM_CELL)))
                     if (pDoor->GetGoState() == GO_STATE_READY)
                     {
                         EnterEvadeMode();
@@ -144,7 +144,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -155,9 +155,9 @@ public:
             //spam stormstrike in hc mode if spawns are dead
             if (IsHeroic())
             {
-                if (Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0))
+                if (CreaturePtr pGuard1 = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0))
                 {
-                    if (Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0))
+                    if (CreaturePtr pGuard2 = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0))
                     {
                         if (!pGuard1->isAlive() && !pGuard2->isAlive())
                             DoCast(me->getVictim(), SPELL_STORMSTRIKE);
@@ -175,12 +175,12 @@ public:
             {
                 if (uint64 TargetGUID = GetChainHealTargetGUID())
                 {
-                    if (Creature* target = Unit::GetCreature(*me, TargetGUID))
+                    if (CreaturePtr target = Unit::GetCreature(TO_WORLDOBJECT(me), TargetGUID))
                         DoCast(target, SPELL_CHAIN_HEAL);
 
                     //If one of the adds is dead spawn heals faster
-                    Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0);
-                    Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0);
+                    CreaturePtr pGuard1 = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0);
+                    CreaturePtr pGuard2 = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0);
                     uiChainHealTimer = ((pGuard1 && !pGuard1->isAlive()) || (pGuard2 && !pGuard2->isAlive()) ? 3000 : 8000) + rand()%3000;
                 }
             } else uiChainHealTimer -= diff;
@@ -199,7 +199,7 @@ public:
 
             if (uiLightningBoltTimer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_LIGHTNING_BOLT);
                 uiLightningBoltTimer = urand(18000, 24000);
             } else uiLightningBoltTimer -= diff;
@@ -207,7 +207,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -226,7 +226,7 @@ public:
             }
         }
 
-        void KilledUnit(Unit* victim)
+        void KilledUnit(UnitPtr victim)
         {
             if (victim == me)
                 return;
@@ -238,11 +238,11 @@ public:
             if (HealthBelowPct(85))
                 return me->GetGUID();
 
-            Creature* pGuard1 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0);
+            CreaturePtr pGuard1 = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_EREKEM_GUARD_1) : 0);
             if (pGuard1 && pGuard1->isAlive() && !pGuard1->HealthAbovePct(75))
                 return pGuard1->GetGUID();
 
-            Creature* pGuard2 = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0);
+            CreaturePtr pGuard2 = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_EREKEM_GUARD_2) : 0);
             if (pGuard2 && pGuard2->isAlive() && !pGuard2->HealthAbovePct(75))
                 return pGuard2->GetGUID();
 
@@ -264,14 +264,14 @@ class mob_erekem_guard : public CreatureScript
 public:
     mob_erekem_guard() : CreatureScript("mob_erekem_guard") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_erekem_guardAI (creature);
     }
 
     struct mob_erekem_guardAI : public ScriptedAI
     {
-        mob_erekem_guardAI(Creature* creature) : ScriptedAI(creature)
+        mob_erekem_guardAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -289,7 +289,7 @@ public:
             uiGushingWoundTimer = urand(1000, 3000);
         }
 
-        void AttackStart(Unit* who)
+        void AttackStart(UnitPtr who)
         {
             if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                 return;
@@ -303,7 +303,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {

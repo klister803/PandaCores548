@@ -30,14 +30,14 @@ class ConfusedMovementGenerator : public MovementGeneratorMedium< T, ConfusedMov
     public:
         explicit ConfusedMovementGenerator() : i_nextMoveTime(0) {}
 
-        void Initialize(T &);
-        void Finalize(T &);
-        void Reset(T &);
-        bool Update(T &, const uint32 &);
+        void Initialize(std::shared_ptr<T> &);
+        void Finalize(std::shared_ptr<T> &);
+        void Reset(std::shared_ptr<T> &);
+        bool Update(std::shared_ptr<T> &, const uint32 &);
 
         MovementGeneratorType GetMovementGeneratorType() { return CONFUSED_MOTION_TYPE; }
     private:
-        void _InitSpecific(T &, bool &, bool &);
+        void _InitSpecific(std::shared_ptr<T> &, bool &, bool &);
         TimeTracker i_nextMoveTime;
         float i_waypoints[MAX_CONF_WAYPOINTS+1][3];
         uint32 i_nextMove;

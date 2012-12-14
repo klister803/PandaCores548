@@ -19,6 +19,7 @@
 #ifndef __BATTLEGROUND_H
 #define __BATTLEGROUND_H
 
+#include "../SharedPtrs/SharedPtrs.h"
 #include "Common.h"
 #include "SharedDefines.h"
 #include "DBCEnums.h"
@@ -355,7 +356,7 @@ class Battleground
         {
         }
 
-        virtual void DestroyGate(Player* /*player*/, GameObject* /*go*/) {}
+        virtual void DestroyGate(PlayerPtr /*Player*/, GameObjectPtr /*go*/) {}
 
         /* achievement req. */
         virtual bool IsAllNodesConrolledByTeam(uint32 /*team*/) const { return false; }
@@ -449,17 +450,17 @@ class Battleground
 
         void StartBattleground();
 
-        GameObject* GetBGObject(uint32 type);
-        Creature* GetBGCreature(uint32 type);
+        GameObjectPtr GetBGObject(uint32 type);
+        CreaturePtr GetBGCreature(uint32 type);
 
         // Location
         void SetMapId(uint32 MapID) { m_MapId = MapID; }
         uint32 GetMapId() const { return m_MapId; }
 
         // Map pointers
-        void SetBgMap(BattlegroundMap* map) { m_Map = map; }
-        BattlegroundMap* GetBgMap() const { ASSERT(m_Map); return m_Map; }
-        BattlegroundMap* FindBgMap() const { return m_Map; }
+        void SetBgMap(BattlegroundMapPtr map) { m_Map = map; }
+        BattlegroundMapPtr GetBgMap() const { ASSERT(m_Map); return m_Map; }
+        BattlegroundMapPtr FindBgMap() const { return m_Map; }
 
         void SetTeamStartLoc(uint32 TeamID, float X, float Y, float Z, float O);
         void GetTeamStartLoc(uint32 TeamID, float &X, float &Y, float &Z, float &O) const
@@ -476,9 +477,9 @@ class Battleground
         // Packet Transfer
         // method that should fill worldpacket with actual world states (not yet implemented for all battlegrounds!)
         virtual void FillInitialWorldStates(WorldPacket& /*data*/) {}
-        void SendPacketToTeam(uint32 TeamID, WorldPacket* packet, Player* sender = NULL, bool self = true);
+        void SendPacketToTeam(uint32 TeamID, WorldPacket* packet, PlayerPtr sender = NULL, bool self = true);
         void SendPacketToAll(WorldPacket* packet);
-        void YellToAll(Creature* creature, const char* text, uint32 language);
+        void YellToAll(CreaturePtr creature, const char* text, uint32 language);
 
         template<class Do>
         void BroadcastWorker(Do& _do);
@@ -490,22 +491,22 @@ class Battleground
         void RewardHonorToTeam(uint32 Honor, uint32 TeamID);
         void RewardReputationToTeam(uint32 faction_id, uint32 Reputation, uint32 TeamID);
         void UpdateWorldState(uint32 Field, uint32 Value);
-        void UpdateWorldStateForPlayer(uint32 Field, uint32 Value, Player* Source);
+        void UpdateWorldStateForPlayer(uint32 Field, uint32 Value, PlayerPtr Source);
         void EndBattleground(uint32 winner);
-        void BlockMovement(Player* player);
+        void BlockMovement(PlayerPtr player);
 
         void SendWarningToAll(int32 entry, ...);
-        void SendMessageToAll(int32 entry, ChatMsg type, Player const* source = NULL);
-        void PSendMessageToAll(int32 entry, ChatMsg type, Player const* source, ...);
+        void SendMessageToAll(int32 entry, ChatMsg type, constPlayerPtr source = NULL);
+        void PSendMessageToAll(int32 entry, ChatMsg type, constPlayerPtr source, ...);
 
         // specialized version with 2 string id args
-        void SendMessage2ToAll(int32 entry, ChatMsg type, Player const* source, int32 strId1 = 0, int32 strId2 = 0);
+        void SendMessage2ToAll(int32 entry, ChatMsg type, constPlayerPtr source, int32 strId1 = 0, int32 strId2 = 0);
 
         // Raid Group
-        Group* GetBgRaid(uint32 TeamID) const { return TeamID == ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE]; }
-        void SetBgRaid(uint32 TeamID, Group* bg_raid);
+        GroupPtr GetBgRaid(uint32 TeamID) const { return TeamID == ALLIANCE ? m_BgRaids[BG_TEAM_ALLIANCE] : m_BgRaids[BG_TEAM_HORDE]; }
+        void SetBgRaid(uint32 TeamID, GroupPtr bg_raid);
 
-        virtual void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
+        virtual void UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor = true);
 
         static BattlegroundTeamId GetTeamIndexByTeamId(uint32 Team) { return Team == ALLIANCE ? BG_TEAM_ALLIANCE : BG_TEAM_HORDE; }
         uint32 GetPlayersCountByTeam(uint32 Team) const { return m_PlayersCount[GetTeamIndexByTeamId(Team)]; }
@@ -534,30 +535,30 @@ class Battleground
 
         // Triggers handle
         // must be implemented in BG subclass
-        virtual void HandleAreaTrigger(Player* /*Source*/, uint32 /*Trigger*/) {}
+        virtual void HandleAreaTrigger(PlayerPtr /*Source*/, uint32 /*Trigger*/) {}
         // must be implemented in BG subclass if need AND call base class generic code
-        virtual void HandleKillPlayer(Player* player, Player* killer);
-        virtual void HandleKillUnit(Creature* /*unit*/, Player* /*killer*/);
+        virtual void HandleKillPlayer(PlayerPtr player, PlayerPtr killer);
+        virtual void HandleKillUnit(CreaturePtr /*Unit*/, PlayerPtr /*killer*/);
 
         // Battleground events
-        virtual void EventPlayerDroppedFlag(Player* /*player*/) {}
-        virtual void EventPlayerClickedOnFlag(Player* /*player*/, GameObject* /*target_obj*/) {}
-        void EventPlayerLoggedIn(Player* player);
-        void EventPlayerLoggedOut(Player* player);
-        virtual void EventPlayerDamagedGO(Player* /*player*/, GameObject* /*go*/, uint32 /*eventType*/) {}
-        virtual void EventPlayerUsedGO(Player* /*player*/, GameObject* /*go*/){}
+        virtual void EventPlayerDroppedFlag(PlayerPtr /*Player*/) {}
+        virtual void EventPlayerClickedOnFlag(PlayerPtr /*Player*/, GameObjectPtr /*target_obj*/) {}
+        void EventPlayerLoggedIn(PlayerPtr player);
+        void EventPlayerLoggedOut(PlayerPtr player);
+        virtual void EventPlayerDamagedGO(PlayerPtr /*Player*/, GameObjectPtr /*go*/, uint32 /*eventType*/) {}
+        virtual void EventPlayerUsedGO(PlayerPtr /*Player*/, GameObjectPtr /*go*/){}
 
         // this function can be used by spell to interact with the BG map
         virtual void DoAction(uint32 /*action*/, uint64 /*var*/) {}
 
-        virtual void HandlePlayerResurrect(Player* /*player*/) {}
+        virtual void HandlePlayerResurrect(PlayerPtr /*Player*/) {}
 
         // Death related
-        virtual WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
+        virtual WorldSafeLocsEntry const* GetClosestGraveYard(PlayerPtr player);
 
-        virtual void AddPlayer(Player* player);                // must be implemented in BG subclass
+        virtual void AddPlayer(PlayerPtr player);                // must be implemented in BG subclass
 
-        void AddOrSetPlayerToCorrectBgGroup(Player* player, uint32 team);
+        void AddOrSetPlayerToCorrectBgGroup(PlayerPtr player, uint32 team);
 
         virtual void RemovePlayerAtLeave(uint64 guid, bool Transport, bool SendPacket);
                                                             // can be extended in in BG subclass
@@ -572,7 +573,7 @@ class Battleground
         BGCreatures BgCreatures;
         void SpawnBGObject(uint32 type, uint32 respawntime);
         bool AddObject(uint32 type, uint32 entry, float x, float y, float z, float o, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime = 0);
-        Creature* AddCreature(uint32 entry, uint32 type, uint32 teamval, float x, float y, float z, float o, uint32 respawntime = 0);
+        CreaturePtr AddCreature(uint32 entry, uint32 type, uint32 teamval, float x, float y, float z, float o, uint32 respawntime = 0);
         bool DelCreature(uint32 type);
         bool DelObject(uint32 type);
         bool AddSpiritGuide(uint32 type, float x, float y, float z, float o, uint32 team);
@@ -583,7 +584,7 @@ class Battleground
         //to be removed
         const char* GetTrinityString(int32 entry);
 
-        virtual bool HandlePlayerUnderMap(Player* /*player*/) { return false; }
+        virtual bool HandlePlayerUnderMap(PlayerPtr /*Player*/) { return false; }
 
         // since arenas can be AvA or Hvh, we have to get the "temporary" team of a player
         uint32 GetPlayerTeam(uint64 guid) const;
@@ -596,7 +597,7 @@ class Battleground
         // virtual score-array - get's used in bg-subclasses
         int32 m_TeamScores[BG_TEAMS_COUNT];
 
-        void RewardXPAtKill(Player* killer, Player* victim);
+        void RewardXPAtKill(PlayerPtr killer, PlayerPtr victim);
         bool CanAwardArenaPoints() const { return m_LevelMin >= BG_AWARD_ARENA_POINTS_MIN_LEVEL; }
 
         virtual uint64 GetFlagPickerGUID(int32 /*team*/ = -1) const { return 0; }
@@ -604,12 +605,12 @@ class Battleground
     protected:
         // this method is called, when BG cannot spawn its own spirit guide, or something is wrong, It correctly ends Battleground
         void EndNow();
-        void PlayerAddedToBGCheckIfBGIsRunning(Player* player);
+        void PlayerAddedToBGCheckIfBGIsRunning(PlayerPtr player);
 
-        Player* _GetPlayer(uint64 guid, bool offlineRemove, const char* context) const;
-        Player* _GetPlayer(BattlegroundPlayerMap::iterator itr, const char* context);
-        Player* _GetPlayer(BattlegroundPlayerMap::const_iterator itr, const char* context) const;
-        Player* _GetPlayerForTeam(uint32 teamId, BattlegroundPlayerMap::const_iterator itr, const char* context) const;
+        PlayerPtr _GetPlayer(uint64 guid, bool offlineRemove, const char* context) const;
+        PlayerPtr _GetPlayer(BattlegroundPlayerMap::iterator itr, const char* context);
+        PlayerPtr _GetPlayer(BattlegroundPlayerMap::const_iterator itr, const char* context) const;
+        PlayerPtr _GetPlayerForTeam(uint32 teamId, BattlegroundPlayerMap::const_iterator itr, const char* context) const;
 
         void _ProcessOfflineQueue();
         void _ProcessRessurect(uint32 diff);
@@ -620,7 +621,7 @@ class Battleground
         // Scorekeeping
         BattlegroundScoreMap PlayerScores;                // Player scores
         // must be implemented in BG subclass
-        virtual void RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/) {}
+        virtual void RemovePlayer(PlayerPtr /*Player*/, uint64 /*guid*/, uint32 /*team*/) {}
 
         // Player lists, those need to be accessible by inherited classes
         BattlegroundPlayerMap  m_Players;
@@ -704,7 +705,7 @@ class Battleground
         uint32 m_InvitedHorde;
 
         // Raid Group
-        Group* m_BgRaids[BG_TEAMS_COUNT];                   // 0 - alliance, 1 - horde
+        GroupPtr m_BgRaids[BG_TEAMS_COUNT];                   // 0 - alliance, 1 - horde
 
         // Players count by team
         uint32 m_PlayersCount[BG_TEAMS_COUNT];
@@ -725,7 +726,7 @@ class Battleground
 
         // Start location
         uint32 m_MapId;
-        BattlegroundMap* m_Map;
+        BattlegroundMapPtr m_Map;
         float m_TeamStartLocX[BG_TEAMS_COUNT];
         float m_TeamStartLocY[BG_TEAMS_COUNT];
         float m_TeamStartLocZ[BG_TEAMS_COUNT];

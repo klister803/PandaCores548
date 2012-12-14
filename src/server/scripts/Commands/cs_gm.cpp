@@ -92,7 +92,7 @@ public:
         if (!*args)
             return false;
 
-        Player* target =  handler->getSelectedPlayer();
+        PlayerPtr target =  handler->getSelectedPlayer();
         if (!target)
             target = handler->GetSession()->GetPlayer();
 
@@ -195,7 +195,7 @@ public:
 
         const uint32 VISUAL_AURA = 37800;
         std::string param = (char*)args;
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (param == "on")
         {

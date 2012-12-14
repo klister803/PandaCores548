@@ -79,7 +79,7 @@ enum Actions
 // handled the summonList and the notification events to/from the InstanceScript
 struct boss_horAI : ScriptedAI
 {
-    boss_horAI(Creature* creature) : ScriptedAI(creature), summons(creature)
+    boss_horAI(CreaturePtr creature) : ScriptedAI(creature), summons(creature)
     {
         instance = me->GetInstanceScript();
     }
@@ -96,7 +96,7 @@ struct boss_horAI : ScriptedAI
         me->SetReactState(REACT_PASSIVE);
     }
 
-    void DamageTaken(Unit* /*who*/, uint32 &uiDamage)
+    void DamageTaken(UnitPtr /*who*/, uint32 &uiDamage)
     {
         if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
             uiDamage = 0;
@@ -114,7 +114,7 @@ struct boss_horAI : ScriptedAI
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_NOT_SELECTABLE);
                 me->SetReactState(REACT_AGGRESSIVE);
 
-                if (Unit* unit = me->SelectNearestTarget())
+                if (UnitPtr unit = me->SelectNearestTarget())
                     AttackStart(unit);
 
                 DoZoneInCombat();
@@ -122,11 +122,11 @@ struct boss_horAI : ScriptedAI
         }
     }
 
-    void JustSummoned(Creature* summoned)
+    void JustSummoned(CreaturePtr summoned)
     {
         summons.Summon(summoned);
 
-        if (Unit* target = summoned->SelectNearestTarget())
+        if (UnitPtr target = summoned->SelectNearestTarget())
         {
             if (summoned->AI())
                 summoned->AI()->AttackStart(target);
@@ -141,7 +141,7 @@ struct boss_horAI : ScriptedAI
             summoned->AI()->DoZoneInCombat();
     }
 
-    void SummonedCreatureDespawn(Creature* summoned)
+    void SummonedCreatureDespawn(CreaturePtr summoned)
     {
         summons.Despawn(summoned);
         if (summons.empty())

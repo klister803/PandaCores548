@@ -62,12 +62,12 @@ class npc_shadowfang_prisoner : public CreatureScript
 public:
     npc_shadowfang_prisoner() : CreatureScript("npc_shadowfang_prisoner") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_shadowfang_prisonerAI(creature);
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -80,7 +80,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         InstanceScript* instance = creature->GetInstanceScript();
 
@@ -94,7 +94,7 @@ public:
 
     struct npc_shadowfang_prisonerAI : public npc_escortAI
     {
-        npc_shadowfang_prisonerAI(Creature* creature) : npc_escortAI(creature)
+        npc_shadowfang_prisonerAI(CreaturePtr creature) : npc_escortAI(creature)
         {
             instance = creature->GetInstanceScript();
             uiNpcEntry = creature->GetEntry();
@@ -140,7 +140,7 @@ public:
         }
 
         void Reset() {}
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
     };
 
 };
@@ -150,14 +150,14 @@ class npc_arugal_voidwalker : public CreatureScript
 public:
     npc_arugal_voidwalker() : CreatureScript("npc_arugal_voidwalker") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_arugal_voidwalkerAI(creature);
     }
 
     struct npc_arugal_voidwalkerAI : public ScriptedAI
     {
-        npc_arugal_voidwalkerAI(Creature* creature) : ScriptedAI(creature)
+        npc_arugal_voidwalkerAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -178,7 +178,7 @@ public:
 
             if (uiDarkOffering <= uiDiff)
             {
-                if (Creature* pFriend = me->FindNearestCreature(me->GetEntry(), 25.0f, true))
+                if (CreaturePtr pFriend = me->FindNearestCreature(me->GetEntry(), 25.0f, true))
                     DoCast(pFriend, SPELL_DARK_OFFERING);
                 else
                     DoCast(me, SPELL_DARK_OFFERING);
@@ -188,7 +188,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(TYPE_FENRUS, instance->GetData(TYPE_FENRUS) + 1);
@@ -214,7 +214,7 @@ class spell_shadowfang_keep_haunting_spirits : public SpellScriptLoader
 
             void HandleDummyTick(constAuraEffectPtr aurEff)
             {
-                GetTarget()->CastSpell((Unit*)NULL, aurEff->GetAmount(), true);
+                GetTarget()->CastSpell(NULLUNIT, aurEff->GetAmount(), true);
             }
 
             void HandleUpdatePeriodic(AuraEffectPtr aurEff)

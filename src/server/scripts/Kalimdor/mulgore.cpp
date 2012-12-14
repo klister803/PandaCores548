@@ -43,7 +43,7 @@ class npc_skorn_whitecloud : public CreatureScript
 public:
     npc_skorn_whitecloud() : CreatureScript("npc_skorn_whitecloud") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF)
@@ -52,7 +52,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -89,14 +89,14 @@ class npc_kyle_frenzied : public CreatureScript
 public:
     npc_kyle_frenzied() : CreatureScript("npc_kyle_frenzied") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_kyle_frenziedAI (creature);
     }
 
     struct npc_kyle_frenziedAI : public ScriptedAI
     {
-        npc_kyle_frenziedAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_kyle_frenziedAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         bool EventActive;
         bool IsMovingToLunch;
@@ -116,7 +116,7 @@ public:
                 me->UpdateEntry(NPC_KYLE_FRENZIED);
         }
 
-        void SpellHit(Unit* Caster, SpellInfo const* Spell)
+        void SpellHit(UnitPtr Caster, SpellInfo const* Spell)
         {
             if (!me->getVictim() && !EventActive && Spell->Id == SPELL_LUNCH)
             {
@@ -160,9 +160,9 @@ public:
                     switch (EventPhase)
                     {
                         case 1:
-                            if (Unit* unit = Unit::GetUnit(*me, PlayerGUID))
+                            if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), PlayerGUID))
                             {
-                                if (GameObject* go = unit->GetGameObject(SPELL_LUNCH))
+                                if (GameObjectPtr go = unit->GetGameObject(SPELL_LUNCH))
                                 {
                                     IsMovingToLunch = true;
                                     me->GetMotionMaster()->MovePoint(POINT_ID, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ());
@@ -174,7 +174,7 @@ public:
                             me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_USE_STANDING);
                             break;
                         case 3:
-                            if (Player* unit = Unit::GetPlayer(*me, PlayerGUID))
+                            if (PlayerPtr unit = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID))
                                 unit->TalkedToCreature(me->GetEntry(), me->GetGUID());
 
                             me->UpdateEntry(NPC_KYLE_FRIENDLY);

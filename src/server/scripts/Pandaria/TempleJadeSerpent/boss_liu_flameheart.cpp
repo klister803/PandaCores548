@@ -107,14 +107,14 @@ class boss_liu_flameheart : public CreatureScript
     public:
         boss_liu_flameheart() : CreatureScript("boss_liu_flameheart") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_liu_flameheart_AI(creature);
         }
 
         struct boss_liu_flameheart_AI : public BossAI
         {
-            boss_liu_flameheart_AI(Creature* creature) : BossAI(creature, BOSS_LIU_FLAMEHEART)
+            boss_liu_flameheart_AI(CreaturePtr creature) : BossAI(creature, BOSS_LIU_FLAMEHEART)
             {
                 me->CastSpell(me, SPELL_POSSESSED_BY_SHA, false);
                 status = PHASE_1;
@@ -143,7 +143,7 @@ class boss_liu_flameheart : public CreatureScript
                 }
             }
 
-            void KilledUnit(Unit* u)
+            void KilledUnit(UnitPtr u)
             {
                 if (urand(0, 1))
                     Talk(TALK_KILL_01);
@@ -151,7 +151,7 @@ class boss_liu_flameheart : public CreatureScript
                     Talk(TALK_KILL_02);
             }
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 Talk(TALK_AGGRO_01);
                 events.ScheduleEvent(EVENT_SERPENT_STRIKE, 5000);
@@ -207,7 +207,7 @@ class boss_liu_flameheart : public CreatureScript
                             {
                                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                                 {
-                                    Player* plr = i->getSource();
+                                    PlayerPtr plr = i->getSource();
                                     if( !plr)
                                         continue;
                                     if (plr->GetDistance2d(me) < 10.f)
@@ -224,7 +224,7 @@ class boss_liu_flameheart : public CreatureScript
                         break;
                     case EVENT_SERPENT_WAVE:
                         {
-                            TempSummon* sum = nullptr;
+                            TempSummonPtr sum = nullptr;
                             sum = me->SummonCreature(CREATURE_TRIGGER_WAVE, 932.775f, -2548.743f, 179.821f, 1.254f);
                             if (sum)
                             {
@@ -273,7 +273,7 @@ class boss_liu_flameheart : public CreatureScript
                             {
                                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                                 {
-                                    Player* plr = i->getSource();
+                                    PlayerPtr plr = i->getSource();
                                     if( !plr)
                                         continue;
                                     if (plr->GetDistance2d(me) < 10.f)
@@ -290,7 +290,7 @@ class boss_liu_flameheart : public CreatureScript
                         break;
                     case EVENT_JADE_SERPENT_WAVE:
                         {
-                            TempSummon* sum = nullptr;
+                            TempSummonPtr sum = nullptr;
                             sum = me->SummonCreature(CREATURE_TRIGGER_WAVE, 932.775f, -2548.743f, 179.821f, 1.254f);
                             if (sum)
                             {
@@ -357,23 +357,23 @@ class boss_yu_lon : public CreatureScript
     public:
         boss_yu_lon() : CreatureScript("boss_yu_lon") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_yu_lon_AI(creature);
         }
 
         struct boss_yu_lon_AI : public BossAI
         {
-            boss_yu_lon_AI(Creature* creature) : BossAI(creature, BOSS_YU_LON)
+            boss_yu_lon_AI(CreaturePtr creature) : BossAI(creature, BOSS_YU_LON)
             {
             }
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 events.ScheduleEvent(EVENT_JADE_FIRE, 100);
             }
 
-            void JustDied(Unit* died)
+            void JustDied(UnitPtr died)
             {
                 me->CastSpell(me, 132387, false);
             }
@@ -406,14 +406,14 @@ class mob_trigger_liu_flameheart: public CreatureScript
     public:
         mob_trigger_liu_flameheart() : CreatureScript("mob_trigger_liu_flameheart") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_trigger_liu_flameheart_AI(creature);
         }
 
         struct mob_trigger_liu_flameheart_AI : public ScriptedAI
         {
-            mob_trigger_liu_flameheart_AI(Creature* creature) : ScriptedAI(creature)
+            mob_trigger_liu_flameheart_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 if (me->GetInstanceScript() && me->GetInstanceScript()->GetData(TYPE_LIU_FLAMEHEART_STATUS))
                     timer = 500;
@@ -443,19 +443,19 @@ class mob_minion_of_doubt: public CreatureScript
     public:
         mob_minion_of_doubt() : CreatureScript("mob_minion_of_doubt") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_minion_of_doubt_AI(creature);
         }
 
         struct mob_minion_of_doubt_AI : public ScriptedAI
         {
-            mob_minion_of_doubt_AI(Creature* creature) : ScriptedAI(creature)
+            mob_minion_of_doubt_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
             EventMap events;
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 events.ScheduleEvent(1, 2000);
                 events.ScheduleEvent(2, 4000);
@@ -492,19 +492,19 @@ class mob_lesser_sha: public CreatureScript
     public:
         mob_lesser_sha() : CreatureScript("mob_lesser_sha") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_lesser_sha_AI(creature);
         }
 
         struct mob_lesser_sha_AI : public ScriptedAI
         {
-            mob_lesser_sha_AI(Creature* creature) : ScriptedAI(creature)
+            mob_lesser_sha_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
             EventMap events;
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 events.ScheduleEvent(1, 2000);
             }

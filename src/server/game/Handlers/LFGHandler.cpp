@@ -122,7 +122,7 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
 
 void WorldSession::HandleLfgLeaveOpcode(WorldPacket&  /*recvData*/)
 {
-    Group* grp = GetPlayer()->GetGroup();
+    GroupPtr grp = GetPlayer()->GetGroup();
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LFG_LEAVE [" UI64FMTD "] in group: %u", GetPlayer()->GetGUID(), grp ? 1 : 0);
 
@@ -176,7 +176,7 @@ void WorldSession::HandleLfgSetRolesOpcode(WorldPacket& recvData)
     recvData >> unk;
 
     uint64 guid = GetPlayer()->GetGUID();
-    Group* grp = GetPlayer()->GetGroup();
+    GroupPtr grp = GetPlayer()->GetGroup();
     if (!grp)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LFG_SET_ROLES [" UI64FMTD "] Not in group", guid);
@@ -345,15 +345,15 @@ void WorldSession::HandleLfgPartyLockInfoRequestOpcode(WorldPacket&  /*recvData*
     uint64 guid = GetPlayer()->GetGUID();
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_LFD_PARTY_LOCK_INFO_REQUEST [" UI64FMTD "]", guid);
 
-    Group* grp = GetPlayer()->GetGroup();
+    GroupPtr grp = GetPlayer()->GetGroup();
     if (!grp)
         return;
 
     // Get the locked dungeons of the other party members
     LfgLockPartyMap lockMap;
-    for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+    for (GroupReferencePtr itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
     {
-        Player* plrg = itr->getSource();
+        PlayerPtr plrg = itr->getSource();
         if (!plrg)
             continue;
 
@@ -537,7 +537,7 @@ void WorldSession::SendLfgRoleCheckUpdate(const LfgRoleCheck* pRoleCheck, bool u
         // Player info MUST be sent 1st :S
         ObjectGuid guid = GetPlayer()->GetGUID();
         uint8 roles = pRoleCheck->roles.find(guid)->second;
-        Player* player = ObjectAccessor::FindPlayer(guid);
+        PlayerPtr player = ObjectAccessor::FindPlayer(guid);
 
         data.WriteBit(guid[1]);
         data.WriteBit(guid[7]);
@@ -624,7 +624,7 @@ void WorldSession::SendLfgRoleCheckUpdate(const LfgRoleCheck* pRoleCheck, bool u
         uint8 roles = pRoleCheck->roles.find(guid)->second;
         data << uint64(guid);                              // Guid
         data << uint8(roles > 0);                          // Ready
-        Player* player = ObjectAccessor::FindPlayer(guid);
+        PlayerPtr player = ObjectAccessor::FindPlayer(guid);
         data << uint8(player ? player->getLevel() : 0);          // Level
 
         for (LfgRolesMap::const_iterator it = pRoleCheck->roles.begin(); it != pRoleCheck->roles.end(); ++it)
@@ -807,7 +807,7 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal* p
     uint32 dungeonId = pProp->dungeonId;
     bool isSameDungeon = false;
     bool isContinue = false;
-    Group* grp = dLowGuid ? sGroupMgr->GetGroupByGUID(dLowGuid) : NULL;
+    GroupPtr grp = dLowGuid ? sGroupMgr->GetGroupByGUID(dLowGuid) : NULL;
     uint32 completedEncounters = 0;
     if (grp)
     {
@@ -833,9 +833,9 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal* p
         // Select a player inside to be get completed encounters from
         if (grp)
         {
-            for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+            for (GroupReferencePtr itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
             {
-                Player* groupMember = itr->getSource();
+                PlayerPtr groupMember = itr->getSource();
                 if (groupMember && groupMember->GetMapId() == uint32(dungeon->map))
                 {
                     if (InstanceScript* instance = groupMember->GetInstanceScript())

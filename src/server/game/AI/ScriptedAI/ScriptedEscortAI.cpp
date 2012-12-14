@@ -19,7 +19,7 @@ enum ePoints
     POINT_HOME          = 0xFFFFFE
 };
 
-npc_escortAI::npc_escortAI(Creature* creature) : ScriptedAI(creature),
+npc_escortAI::npc_escortAI(CreaturePtr creature) : ScriptedAI(creature),
     m_uiPlayerGUID(0),
     m_uiWPWaitTimer(2500),
     m_uiPlayerCheckTimer(1000),
@@ -36,7 +36,7 @@ npc_escortAI::npc_escortAI(Creature* creature) : ScriptedAI(creature),
     HasImmuneToNPCFlags(false)
 {}
 
-void npc_escortAI::AttackStart(Unit* who)
+void npc_escortAI::AttackStart(UnitPtr who)
 {
     if (!who)
         return;
@@ -52,7 +52,7 @@ void npc_escortAI::AttackStart(Unit* who)
 }
 
 //see followerAI
-bool npc_escortAI::AssistPlayerInCombat(Unit* who)
+bool npc_escortAI::AssistPlayerInCombat(UnitPtr who)
 {
     if (!who || !who->getVictim())
         return false;
@@ -89,7 +89,7 @@ bool npc_escortAI::AssistPlayerInCombat(Unit* who)
     return false;
 }
 
-void npc_escortAI::MoveInLineOfSight(Unit* who)
+void npc_escortAI::MoveInLineOfSight(UnitPtr who)
 {
     if (!me->HasUnitState(UNIT_STATE_STUNNED) && who->isTargetableForAttack() && who->isInAccessiblePlaceFor(me))
     {
@@ -119,17 +119,17 @@ void npc_escortAI::MoveInLineOfSight(Unit* who)
     }
 }
 
-void npc_escortAI::JustDied(Unit* /*killer*/)
+void npc_escortAI::JustDied(UnitPtr /*killer*/)
 {
     if (!HasEscortState(STATE_ESCORT_ESCORTING) || !m_uiPlayerGUID || !m_pQuestForEscort)
         return;
 
-    if (Player* player = GetPlayerForEscort())
+    if (PlayerPtr player = GetPlayerForEscort())
     {
-        if (Group* group = player->GetGroup())
+        if (GroupPtr group = player->GetGroup())
         {
-            for (GroupReference* groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
-                if (Player* member = groupRef->getSource())
+            for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
+                if (PlayerPtr member = groupRef->getSource())
                     if (member->GetQuestStatus(m_pQuestForEscort->GetQuestId()) == QUEST_STATUS_INCOMPLETE)
                         member->FailQuest(m_pQuestForEscort->GetQuestId());
         }
@@ -188,12 +188,12 @@ void npc_escortAI::EnterEvadeMode()
 
 bool npc_escortAI::IsPlayerOrGroupInRange()
 {
-    if (Player* player = GetPlayerForEscort())
+    if (PlayerPtr player = GetPlayerForEscort())
     {
-        if (Group* group = player->GetGroup())
+        if (GroupPtr group = player->GetGroup())
         {
-            for (GroupReference* groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
-                if (Player* member = groupRef->getSource())
+            for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
+                if (PlayerPtr member = groupRef->getSource())
                     if (me->IsWithinDistInMap(member, GetMaxPlayerDistance()))
                         return true;
         }

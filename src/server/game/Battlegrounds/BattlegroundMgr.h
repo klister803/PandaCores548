@@ -90,13 +90,13 @@ class BattlegroundMgr
         /* Packet Building */
         void BuildPlayerJoinedBattlegroundPacket(WorldPacket* data, uint64 guid);
         void BuildPlayerLeftBattlegroundPacket(WorldPacket* data, uint64 guid);
-        void BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid guid, Player* player, BattlegroundTypeId bgTypeId);
-        void BuildStatusFailedPacket(WorldPacket* data, Battleground* bg, Player* player, uint8 QueueSlot, GroupJoinBattlegroundResult result);
+        void BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid guid, PlayerPtr player, BattlegroundTypeId bgTypeId);
+        void BuildStatusFailedPacket(WorldPacket* data, Battleground* bg, PlayerPtr player, uint8 QueueSlot, GroupJoinBattlegroundResult result);
         void BuildUpdateWorldStatePacket(WorldPacket* data, uint32 field, uint32 value);
         void BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg);
-        void BuildBattlegroundStatusPacket(WorldPacket* data, Battleground* bg, Player * pPlayer, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint8 uiFrame = 1);
+        void BuildBattlegroundStatusPacket(WorldPacket* data, Battleground* bg, PlayerPtr pPlayer, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint8 uiFrame = 1);
         void BuildPlaySoundPacket(WorldPacket* data, uint32 soundid);
-        void SendAreaSpiritHealerQueryOpcode(Player* player, Battleground* bg, uint64 guid);
+        void SendAreaSpiritHealerQueryOpcode(PlayerPtr player, Battleground* bg, uint64 guid);
 
         /* Battlegrounds */
         Battleground* GetBattlegroundThroughClientInstance(uint32 instanceId, BattlegroundTypeId bgTypeId);
@@ -115,7 +115,7 @@ class BattlegroundMgr
         void InitAutomaticArenaPointDistribution();
         void DeleteAllBattlegrounds();
 
-        void SendToBattleground(Player* player, uint32 InstanceID, BattlegroundTypeId bgTypeId);
+        void SendToBattleground(PlayerPtr player, uint32 InstanceID, BattlegroundTypeId bgTypeId);
 
         /* Battleground queues */
         //these queues are instantiated when creating BattlegroundMrg

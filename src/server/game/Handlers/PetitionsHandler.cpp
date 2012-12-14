@@ -90,7 +90,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Petitioner with GUID %u tried sell petition: name %s", GUID_LOPART(guidNPC), name.c_str());
 
     // prevent cheating
-    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(guidNPC, UNIT_NPC_FLAG_PETITIONER);
+    CreaturePtr creature = GetPlayer()->GetNPCIfCanInteractWith(guidNPC, UNIT_NPC_FLAG_PETITIONER);
     if (!creature)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandlePetitionBuyOpcode - Unit (GUID: %u) not found or you can't interact with him.", GUID_LOPART(guidNPC));
@@ -202,7 +202,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
     }
 
     _player->ModifyMoney(-(int32)cost);
-    Item* charter = _player->StoreNewItem(dest, charterid, true);
+    ItemPtr charter = _player->StoreNewItem(dest, charterid, true);
     if (!charter)
         return;
 
@@ -398,7 +398,7 @@ void WorldSession::HandlePetitionRenameOpcode(WorldPacket & recvData)
     recvData >> petitionGuid;                              // guid
     recvData >> newName;                                   // new name
 
-    Item* item = _player->GetItemByGuid(petitionGuid);
+    ItemPtr item = _player->GetItemByGuid(petitionGuid);
     if (!item)
         return;
 
@@ -584,12 +584,12 @@ void WorldSession::HandlePetitionSignOpcode(WorldPacket & recvData)
     SendPacket(&data);
 
     // update signs count on charter, required testing...
-    //Item* item = _player->GetItemByGuid(petitionguid));
+    //ItemPtr item = _player->GetItemByGuid(petitionguid));
     //if (item)
     //    item->SetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1+1, signs);
 
     // update for owner if online
-    if (Player* owner = ObjectAccessor::FindPlayer(ownerGuid))
+    if (PlayerPtr owner = ObjectAccessor::FindPlayer(ownerGuid))
         owner->GetSession()->SendPacket(&data);
 }
 
@@ -614,7 +614,7 @@ void WorldSession::HandlePetitionDeclineOpcode(WorldPacket & recvData)
     Field* fields = result->Fetch();
     ownerguid = MAKE_NEW_GUID(fields[0].GetUInt32(), 0, HIGHGUID_PLAYER);
 
-    Player* owner = ObjectAccessor::FindPlayer(ownerguid);
+    PlayerPtr owner = ObjectAccessor::FindPlayer(ownerguid);
     if (owner)                                               // petition owner online
     {
         WorldPacket data(MSG_PETITION_DECLINE, 8);
@@ -630,7 +630,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
     uint8 signs = 0;
     uint64 petitionguid, plguid;
     uint32 type, junk;
-    Player* player;
+    PlayerPtr player;
     recvData >> junk;                                      // this is not petition type!
     recvData >> petitionguid;                              // petition guid
     recvData >> plguid;                                    // player guid
@@ -743,7 +743,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     recvData >> petitionGuid;
 
     // Check if player really has the required petition charter
-    Item* item = _player->GetItemByGuid(petitionGuid);
+    ItemPtr item = _player->GetItemByGuid(petitionGuid);
     if (!item)
         return;
 
@@ -821,11 +821,10 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     _player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
 
     // Create guild
-    Guild* guild = new Guild;
+    GuildPtr guild (new Guild);
 
     if (!guild->Create(_player, name))
     {
-        delete guild;
         return;
     }
 
@@ -872,7 +871,7 @@ void WorldSession::HandlePetitionShowListOpcode(WorldPacket & recvData)
 
 void WorldSession::SendPetitionShowList(uint64 guid)
 {
-    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_PETITIONER);
+    CreaturePtr creature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_PETITIONER);
     if (!creature)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandlePetitionShowListOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)));

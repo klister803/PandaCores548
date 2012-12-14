@@ -81,7 +81,7 @@ class boss_alar : public CreatureScript
         }
         struct boss_alarAI : public ScriptedAI
         {
-            boss_alarAI(Creature* creature) : ScriptedAI(creature)
+            boss_alarAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
                 DefaultMoveSpeedRate = creature->GetSpeedRate(MOVE_RUN);
@@ -136,7 +136,7 @@ class boss_alar : public CreatureScript
                 me->setActive(false);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 if (instance)
                     instance->SetData(DATA_ALAREVENT, IN_PROGRESS);
@@ -146,22 +146,22 @@ class boss_alar : public CreatureScript
                 me->setActive(true);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 if (instance)
                     instance->SetData(DATA_ALAREVENT, DONE);
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(CreaturePtr summon)
             {
                 if (summon->GetEntry() == CREATURE_EMBER_OF_ALAR)
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         summon->AI()->AttackStart(target);
             }
 
-            void MoveInLineOfSight(Unit* /*who*/) {}
+            void MoveInLineOfSight(UnitPtr /*who*/) {}
 
-            void AttackStart(Unit* who)
+            void AttackStart(UnitPtr who)
             {
                 if (Phase1)
                     AttackStartNoMove(who);
@@ -169,7 +169,7 @@ class boss_alar : public CreatureScript
                     ScriptedAI::AttackStart(who);
             }
 
-            void DamageTaken(Unit* /*killer*/, uint32 &damage)
+            void DamageTaken(UnitPtr /*killer*/, uint32 &damage)
             {
                 if (damage >= me->GetHealth() && Phase1)
                 {
@@ -191,7 +191,7 @@ class boss_alar : public CreatureScript
                 }
             }
 
-            void SpellHit(Unit*, const SpellInfo* spell)
+            void SpellHit(UnitPtr, const SpellInfo* spell)
             {
                 if (spell->Id == SPELL_DIVE_BOMB_VISUAL)
                 {
@@ -284,7 +284,7 @@ class boss_alar : public CreatureScript
                                 WaitTimer = 4000;
                                 return;
                             case WE_DIVE:
-                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 {
                                     me->RemoveAurasDueToSpell(SPELL_DIVE_BOMB_VISUAL);
                                     DoCast(target, SPELL_DIVE_BOMB, true);
@@ -372,7 +372,7 @@ class boss_alar : public CreatureScript
                 {
                     if (Charge_Timer <= diff)
                     {
-                        Unit* target= SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true);
+                        UnitPtr target= SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true);
                         if (target)
                             DoCast(target, SPELL_CHARGE);
                         Charge_Timer = 30000;
@@ -404,9 +404,9 @@ class boss_alar : public CreatureScript
 
                     if (FlamePatch_Timer <= diff)
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         {
-                            Creature* Summoned = me->SummonCreature(CREATURE_FLAME_PATCH_ALAR, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000);
+                            CreaturePtr Summoned = me->SummonCreature(CREATURE_FLAME_PATCH_ALAR, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 120000);
                             if (Summoned)
                             {
                                 Summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -437,7 +437,7 @@ class boss_alar : public CreatureScript
                     }
                     else
                     {
-                        Unit* target = NULL;
+                        UnitPtr target = NULL;
                         target = me->SelectNearestTargetInAttackDistance(5);
                         if (target)
                             me->AI()->AttackStart(target);
@@ -451,7 +451,7 @@ class boss_alar : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_alarAI(creature);
         }
@@ -468,7 +468,7 @@ class mob_ember_of_alar : public CreatureScript
 
         struct mob_ember_of_alarAI : public ScriptedAI
         {
-            mob_ember_of_alarAI(Creature* creature) : ScriptedAI(creature)
+            mob_ember_of_alarAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
                 creature->SetUnitMovementFlags(MOVEMENTFLAG_DISABLE_GRAVITY);
@@ -482,7 +482,7 @@ class mob_ember_of_alar : public CreatureScript
             {
                 toDie = false;
             }
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 DoZoneInCombat();
             }
@@ -491,7 +491,7 @@ class mob_ember_of_alar : public CreatureScript
                 me->setDeathState(JUST_DIED);
             }
 
-            void DamageTaken(Unit* killer, uint32 &damage)
+            void DamageTaken(UnitPtr killer, uint32 &damage)
             {
                 if (damage >= me->GetHealth() && killer != me && !toDie)
                 {
@@ -501,7 +501,7 @@ class mob_ember_of_alar : public CreatureScript
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     if (instance && instance->GetData(DATA_ALAREVENT) == 2)
                     {
-                        if (Unit* Alar = Unit::GetUnit(*me, instance->GetData64(DATA_ALAR)))
+                        if (UnitPtr Alar = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_ALAR)))
                         {
                             int32 AlarHealth = int32(Alar->GetHealth()) - int32(Alar->CountPctFromMaxHealth(3));
                             if (AlarHealth > 0)
@@ -530,7 +530,7 @@ class mob_ember_of_alar : public CreatureScript
 
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_ember_of_alarAI(creature);
         }
@@ -547,15 +547,15 @@ class mob_flame_patch_alar : public CreatureScript
 
         struct mob_flame_patch_alarAI : public ScriptedAI
         {
-            mob_flame_patch_alarAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_flame_patch_alarAI(CreaturePtr creature) : ScriptedAI(creature) {}
             void Reset() {}
-            void EnterCombat(Unit* /*who*/) {}
-            void AttackStart(Unit* /*who*/) {}
-            void MoveInLineOfSight(Unit* /*who*/) {}
+            void EnterCombat(UnitPtr /*who*/) {}
+            void AttackStart(UnitPtr /*who*/) {}
+            void MoveInLineOfSight(UnitPtr /*who*/) {}
             void UpdateAI(const uint32 /*diff*/) {}
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_flame_patch_alarAI(creature);
         }

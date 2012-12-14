@@ -152,7 +152,7 @@ class boss_zuljin : public CreatureScript
 
         struct boss_zuljinAI : public ScriptedAI
         {
-            boss_zuljinAI(Creature* creature) : ScriptedAI(creature), Summons(me)
+            boss_zuljinAI(CreaturePtr creature) : ScriptedAI(creature), Summons(me)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -222,7 +222,7 @@ class boss_zuljin : public CreatureScript
                 //me->SetByteValue(UNIT_FIELD_BYTES_2, 0, SHEATH_STATE_MELEE);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 if (instance)
                     instance->SetData(DATA_ZULJINEVENT, IN_PROGRESS);
@@ -235,7 +235,7 @@ class boss_zuljin : public CreatureScript
                 EnterPhase(0);
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 if (Intro_Timer)
                     return;
@@ -253,7 +253,7 @@ class boss_zuljin : public CreatureScript
                 }
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 if (instance)
                     instance->SetData(DATA_ZULJINEVENT, DONE);
@@ -262,11 +262,11 @@ class boss_zuljin : public CreatureScript
                 DoPlaySoundToSet(me, SOUND_DEATH);
                 Summons.DespawnEntry(CREATURE_COLUMN_OF_FIRE);
 
-                if (Unit* Temp = Unit::GetUnit(*me, SpiritGUID[3]))
+                if (UnitPtr Temp = Unit::GetUnit(TO_WORLDOBJECT(me), SpiritGUID[3]))
                     Temp->SetUInt32Value(UNIT_FIELD_BYTES_1, UNIT_STAND_STATE_DEAD);
             }
 
-            void AttackStart(Unit* who)
+            void AttackStart(UnitPtr who)
             {
                 if (Phase == 2)
                     AttackStartNoMove(who);
@@ -297,7 +297,7 @@ class boss_zuljin : public CreatureScript
 
             void SpawnAdds()
             {
-                Creature* creature = NULL;
+                CreaturePtr creature = NULL;
                 for (uint8 i = 0; i < 4; ++i)
                 {
                     creature = me->SummonCreature(SpiritInfo[i].entry, SpiritInfo[i].x, SpiritInfo[i].y, SpiritInfo[i].z, SpiritInfo[i].orient, TEMPSUMMON_DEAD_DESPAWN, 0);
@@ -317,7 +317,7 @@ class boss_zuljin : public CreatureScript
                 {
                     if (SpiritGUID[i])
                     {
-                        if (Unit* temp = Unit::GetUnit(*me, SpiritGUID[i]))
+                        if (UnitPtr temp = Unit::GetUnit(TO_WORLDOBJECT(me), SpiritGUID[i]))
                         {
                             temp->SetVisible(false);
                             temp->setDeathState(DEAD);
@@ -327,12 +327,12 @@ class boss_zuljin : public CreatureScript
                 }
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(CreaturePtr summon)
             {
                 Summons.Summon(summon);
             }
 
-            void SummonedCreatureDespawn(Creature* summon)
+            void SummonedCreatureDespawn(CreaturePtr summon)
             {
                 Summons.Despawn(summon);
             }
@@ -356,10 +356,10 @@ class boss_zuljin : public CreatureScript
                     DoPlaySoundToSet(me, Transform[Phase].sound);
                     if (Phase > 0)
                     {
-                        if (Unit* Temp = Unit::GetUnit(*me, SpiritGUID[Phase - 1]))
+                        if (UnitPtr Temp = Unit::GetUnit(TO_WORLDOBJECT(me), SpiritGUID[Phase - 1]))
                             Temp->SetUInt32Value(UNIT_FIELD_BYTES_1, UNIT_STAND_STATE_DEAD);
                     }
-                    if (Unit* Temp = Unit::GetUnit(*me, SpiritGUID[NextPhase - 1]))
+                    if (UnitPtr Temp = Unit::GetUnit(TO_WORLDOBJECT(me), SpiritGUID[NextPhase - 1]))
                         Temp->CastSpell(me, SPELL_SIPHON_SOUL, false); // should m cast on temp
                     if (NextPhase == 2)
                     {
@@ -367,7 +367,7 @@ class boss_zuljin : public CreatureScript
                         DoCast(me, SPELL_ENERGY_STORM, true); // enemy aura
                         for (uint8 i = 0; i < 4; ++i)
                         {
-                            Creature* Vortex = DoSpawnCreature(CREATURE_FEATHER_VORTEX, 0, 0, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                            CreaturePtr Vortex = DoSpawnCreature(CREATURE_FEATHER_VORTEX, 0, 0, 0, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
                             if (Vortex)
                             {
                                 Vortex->CastSpell(Vortex, SPELL_CYCLONE_PASSIVE, true);
@@ -434,7 +434,7 @@ class boss_zuljin : public CreatureScript
 
                     if (Grievous_Throw_Timer <= diff)
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             DoCast(target, SPELL_GRIEVOUS_THROW, false);
                         Grievous_Throw_Timer = 10000;
                     } else Grievous_Throw_Timer -= diff;
@@ -462,7 +462,7 @@ class boss_zuljin : public CreatureScript
                     {
                         if (!TankGUID)
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             {
                                 TankGUID = me->getVictim()->GetGUID();
                                 me->SetSpeed(MOVE_RUN, 5.0f);
@@ -476,8 +476,8 @@ class boss_zuljin : public CreatureScript
                         {
                             if (Claw_Loop_Timer <= diff)
                             {
-                                Unit* target = me->getVictim();
-                                if (!target || !target->isTargetableForAttack()) target = Unit::GetUnit(*me, TankGUID);
+                                UnitPtr target = me->getVictim();
+                                if (!target || !target->isTargetableForAttack()) target = Unit::GetUnit(TO_WORLDOBJECT(me), TankGUID);
                                 if (!target || !target->isTargetableForAttack()) target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                                 if (target)
                                 {
@@ -490,7 +490,7 @@ class boss_zuljin : public CreatureScript
                                         {
                                             Claw_Rage_Timer = urand(15000, 20000);
                                             me->SetSpeed(MOVE_RUN, 1.2f);
-                                            AttackStart(Unit::GetUnit(*me, TankGUID));
+                                            AttackStart(Unit::GetUnit(TO_WORLDOBJECT(me), TankGUID));
                                             TankGUID = 0;
                                             return;
                                         }
@@ -511,7 +511,7 @@ class boss_zuljin : public CreatureScript
                     {
                         if (!TankGUID)
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             {
                                 TankGUID = me->getVictim()->GetGUID();
                                 me->SetSpeed(MOVE_RUN, 5.0f);
@@ -522,7 +522,7 @@ class boss_zuljin : public CreatureScript
                         }
                         else if (!Lynx_Rush_Timer)
                         {
-                            Unit* target = me->getVictim();
+                            UnitPtr target = me->getVictim();
                             if (!target || !target->isTargetableForAttack())
                             {
                                 target = SelectTarget(SELECT_TARGET_RANDOM, 0);
@@ -538,7 +538,7 @@ class boss_zuljin : public CreatureScript
                                     {
                                         Lynx_Rush_Timer = urand(15000, 20000);
                                         me->SetSpeed(MOVE_RUN, 1.2f);
-                                        AttackStart(Unit::GetUnit(*me, TankGUID));
+                                        AttackStart(Unit::GetUnit(TO_WORLDOBJECT(me), TankGUID));
                                         TankGUID = 0;
                                     }
                                     else
@@ -563,14 +563,14 @@ class boss_zuljin : public CreatureScript
 
                     if (Pillar_Of_Fire_Timer <= diff)
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(target, SPELL_SUMMON_PILLAR);
                         Pillar_Of_Fire_Timer = 10000;
                     } else Pillar_Of_Fire_Timer -= diff;
 
                     if (Flame_Breath_Timer <= diff)
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             me->SetInFront(target);
                         DoCast(me, SPELL_FLAME_BREATH);
                         Flame_Breath_Timer = 10000;
@@ -586,7 +586,7 @@ class boss_zuljin : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_zuljinAI(creature);
         }
@@ -603,13 +603,13 @@ class mob_zuljin_vortex : public CreatureScript
 
         struct mob_zuljin_vortexAI : public ScriptedAI
         {
-            mob_zuljin_vortexAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_zuljin_vortexAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
             void Reset() {}
 
-            void EnterCombat(Unit* /*target*/) {}
+            void EnterCombat(UnitPtr /*target*/) {}
 
-            void SpellHit(Unit* caster, const SpellInfo* spell)
+            void SpellHit(UnitPtr caster, const SpellInfo* spell)
             {
                 if (spell->Id == SPELL_ZAP_INFORM)
                     DoCast(caster, SPELL_ZAP_DAMAGE, true);
@@ -623,7 +623,7 @@ class mob_zuljin_vortex : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_zuljin_vortexAI(creature);
         }

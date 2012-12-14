@@ -112,7 +112,7 @@ class Player;
 class Pet : public Guardian
 {
     public:
-        explicit Pet(Player* owner, PetType type = MAX_PET_TYPE);
+        explicit Pet(PlayerPtr owner, PetType type = MAX_PET_TYPE);
         virtual ~Pet();
 
         void AddToWorld();
@@ -123,13 +123,13 @@ class Pet : public Guardian
         bool isControlled() const { return getPetType() == SUMMON_PET || getPetType() == HUNTER_PET; }
         bool isTemporarySummoned() const { return m_duration > 0; }
 
-        bool IsPermanentPetFor(Player* owner);              // pet have tab in character windows and set UNIT_FIELD_PETNUMBER
+        bool IsPermanentPetFor(PlayerPtr owner);              // pet have tab in character windows and set UNIT_FIELD_PETNUMBER
 
-        bool Create (uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint32 pet_number);
-        bool CreateBaseAtCreature(Creature* creature);
-        bool CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, Unit* owner);
-        bool CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phaseMask);
-        bool LoadPetFromDB(Player* owner, uint32 petentry = 0, uint32 petnumber = 0, bool current = false);
+        bool Create (uint32 guidlow, MapPtr map, uint32 phaseMask, uint32 Entry, uint32 pet_number);
+        bool CreateBaseAtCreature(CreaturePtr creature);
+        bool CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, UnitPtr owner);
+        bool CreateBaseAtTamed(CreatureTemplate const* cinfo, MapPtr map, uint32 phaseMask);
+        bool LoadPetFromDB(PlayerPtr owner, uint32 petentry = 0, uint32 petnumber = 0, bool current = false);
         bool isBeingLoaded() const { return m_loading;}
         void SavePetToDB(PetSaveMode mode);
         void Remove(PetSaveMode mode, bool returnreagent = false);
@@ -203,7 +203,7 @@ class Pet : public Guardian
 
         bool    m_removed;                                  // prevent overwrite pet state in DB at next Pet::Update if pet already removed(saved)
 
-        Player* GetOwner() { return m_owner; }
+        PlayerPtr GetOwner() { return m_owner; }
 
         uint32 GetSpecializationId() const { return m_specialization; }
         void SetSpecializationId(uint32 id) { m_specialization = id; }
@@ -211,7 +211,7 @@ class Pet : public Guardian
         void UnlearnSpecializationSpell();
 
     protected:
-        Player* m_owner;
+        PlayerPtr m_owner;
         PetType m_petType;
         int32   m_duration;                                 // time until unsummon (used mostly for summoned guardians and not used for controlled pets)
         uint64  m_auraRaidUpdateMask;

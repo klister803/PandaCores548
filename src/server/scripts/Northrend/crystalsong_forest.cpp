@@ -50,7 +50,7 @@ public:
 
     struct npc_warmage_violetstandAI : public Scripted_NoMovementAI
     {
-        npc_warmage_violetstandAI(Creature* creature) : Scripted_NoMovementAI(creature){}
+        npc_warmage_violetstandAI(CreaturePtr creature) : Scripted_NoMovementAI(creature){}
 
         uint64 uiTargetGUID;
 
@@ -68,13 +68,13 @@ public:
             {
                 if (!uiTargetGUID)
                 {
-                    std::list<Creature*> orbList;
+                    std::list<CreaturePtr> orbList;
                     GetCreatureListWithEntryInGrid(orbList, me, NPC_TRANSITUS_SHIELD_DUMMY, 32.0f);
                     if (!orbList.empty())
                     {
-                        for (std::list<Creature*>::const_iterator itr = orbList.begin(); itr != orbList.end(); ++itr)
+                        for (std::list<CreaturePtr>::const_iterator itr = orbList.begin(); itr != orbList.end(); ++itr)
                         {
-                            if (Creature* pOrb = *itr)
+                            if (CreaturePtr pOrb = *itr)
                             {
                                 if (pOrb->GetPositionY() < 1000)
                                 {
@@ -88,18 +88,18 @@ public:
             }else
             {
                 if (!uiTargetGUID)
-                    if (Creature* pOrb = GetClosestCreatureWithEntry(me, NPC_TRANSITUS_SHIELD_DUMMY, 32.0f))
+                    if (CreaturePtr pOrb = GetClosestCreatureWithEntry(me, NPC_TRANSITUS_SHIELD_DUMMY, 32.0f))
                         uiTargetGUID = pOrb->GetGUID();
 
             }
 
-            if (Creature* pOrb = me->GetCreature(*me, uiTargetGUID))
+            if (CreaturePtr pOrb = me->GetCreature(TO_WORLDOBJECT(me), uiTargetGUID))
                 DoCast(pOrb, SPELL_TRANSITUS_SHIELD_BEAM);
 
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_warmage_violetstandAI(creature);
     }

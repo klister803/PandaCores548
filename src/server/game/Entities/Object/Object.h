@@ -26,6 +26,7 @@
 #include "ObjectDefines.h"
 #include "GridDefines.h"
 #include "Map.h"
+#include "../SharedPtrs/SharedPtrs.h"
 
 #include <set>
 #include <string>
@@ -117,7 +118,7 @@ class ZoneScript;
 class Unit;
 class Transport;
 
-typedef UNORDERED_MAP<Player*, UpdateData> UpdateDataMapType;
+typedef UNORDERED_MAP<PlayerPtr, UpdateData> UpdateDataMapType;
 
 //! Structure to ease conversions from single 64 bit integer guid into individual bytes, for packet sending purposes
 //! Nuke this out when porting ObjectGuid from MaNGOS, but preserve the per-byte storage
@@ -185,7 +186,7 @@ struct ObjectGuid
         } _data;
 };
 
-class Object
+class Object : public std::enable_shared_from_this<Object>
 {
     public:
         virtual ~Object();
@@ -209,13 +210,13 @@ class Object
         TypeID GetTypeId() const { return m_objectTypeId; }
         bool isType(uint16 mask) const { return (mask & m_objectType); }
 
-        virtual void BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) const;
-        void SendUpdateToPlayer(Player* player);
+        virtual void BuildCreateUpdateBlockForPlayer(UpdateData* data, PlayerPtr target) const;
+        void SendUpdateToPlayer(PlayerPtr player);
 
-        void BuildValuesUpdateBlockForPlayer(UpdateData* data, Player* target) const;
+        void BuildValuesUpdateBlockForPlayer(UpdateData* data, PlayerPtr target) const;
         void BuildOutOfRangeUpdateBlock(UpdateData* data) const;
 
-        virtual void DestroyForPlayer(Player* target, bool onDeath = false) const;
+        virtual void DestroyForPlayer(PlayerPtr target, bool onDeath = false) const;
 
         int32 GetInt32Value(uint16 index) const
         {
@@ -375,7 +376,7 @@ class Object
         virtual bool hasQuest(uint32 /* quest_id */) const { return false; }
         virtual bool hasInvolvedQuest(uint32 /* quest_id */) const { return false; }
         virtual void BuildUpdate(UpdateDataMapType&) {}
-        void BuildFieldsUpdate(Player*, UpdateDataMapType &) const;
+        void BuildFieldsUpdate(PlayerPtr, UpdateDataMapType &) const;
 
         void SetFieldNotifyFlag(uint16 flag) { _fieldNotifyFlags |= flag; }
         void RemoveFieldNotifyFlag(uint16 flag) { _fieldNotifyFlags &= ~flag; }
@@ -383,23 +384,17 @@ class Object
         // FG: some hacky helpers
         void ForceValuesUpdateAtIndex(uint32);
 
-        Player* ToPlayer() { if (GetTypeId() == TYPEID_PLAYER) return reinterpret_cast<Player*>(this); else return NULL; }
-        Player const* ToPlayer() const { if (GetTypeId() == TYPEID_PLAYER) return reinterpret_cast<Player const*>(this); else return NULL; }
+        CreaturePtr ToCreature() { if (GetTypeId() == TYPEID_UNIT) return TO_CREATURE(shared_from_this()); else return NULLCREATURE; }
+        constCreaturePtr ToCreature() const { if (GetTypeId() == TYPEID_UNIT) return TO_CONST_CREATURE(shared_from_this()); else return NULLCREATURE; }
 
-        Creature* ToCreature() { if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Creature*>(this); else return NULL; }
-        Creature const* ToCreature() const { if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Creature const*>(this); else return NULL; }
+        UnitPtr ToUnit() { if (isType(TYPEMASK_UNIT)) return TO_UNIT(shared_from_this()); else return NULLUNIT; }
+        constUnitPtr ToUnit() const { if (isType(TYPEMASK_UNIT)) return TO_CONST_UNIT(shared_from_this()); else return NULLUNIT; }
 
-        Unit* ToUnit() { if (isType(TYPEMASK_UNIT)) return reinterpret_cast<Unit*>(this); else return NULL; }
-        Unit const* ToUnit() const { if (isType(TYPEMASK_UNIT)) return reinterpret_cast<Unit const*>(this); else return NULL; }
+        GameObjectPtr ToGameObject() { if (GetTypeId() == TYPEID_GAMEOBJECT) return TO_GAMEOBJECT(shared_from_this()); else return NULLGAMEOBJECT; }
+        constGameObjectPtr ToGameObject() const { if (GetTypeId() == TYPEID_GAMEOBJECT) return TO_CONST_GAMEOBJECT(shared_from_this()); else return NULLGAMEOBJECT; }
 
-        GameObject* ToGameObject() { if (GetTypeId() == TYPEID_GAMEOBJECT) return reinterpret_cast<GameObject*>(this); else return NULL; }
-        GameObject const* ToGameObject() const { if (GetTypeId() == TYPEID_GAMEOBJECT) return reinterpret_cast<GameObject const*>(this); else return NULL; }
-
-        Corpse* ToCorpse() { if (GetTypeId() == TYPEID_CORPSE) return reinterpret_cast<Corpse*>(this); else return NULL; }
-        Corpse const* ToCorpse() const { if (GetTypeId() == TYPEID_CORPSE) return reinterpret_cast<Corpse const*>(this); else return NULL; }
-
-        DynamicObject* ToDynObject() { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject*>(this); else return NULL; }
-        DynamicObject const* ToDynObject() const { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject const*>(this); else return NULL; }
+        /*DynamicObjectPtr ToDynObject() { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return TO_DYNAMICOBJECT(shared_from_this()); else return NULLDYNAMICOBJECT; }
+        constDynamicObjectPtr ToDynObject() const { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return TO_CONST_DYNAMICOBJECT(shared_from_this()); else return NULLDYNAMICOBJECT; }*/
 
     protected:
         Object();
@@ -409,14 +404,14 @@ class Object
         std::string _ConcatFields(uint16 startIndex, uint16 size) const;
         void _LoadIntoDataField(const char* data, uint32 startOffset, uint32 count);
 
-        void GetUpdateFieldData(Player const* target, uint32*& flags, bool& isOwner, bool& isItemOwner, bool& hasSpecialInfo, bool& isPartyMember) const;
+        void GetUpdateFieldData(constPlayerPtr target, uint32*& flags, bool& isOwner, bool& isItemOwner, bool& hasSpecialInfo, bool& isPartyMember) const;
 
         bool IsUpdateFieldVisible(uint32 flags, bool isSelf, bool isOwner, bool isItemOwner, bool isPartyMember) const;
 
-        void _SetUpdateBits(UpdateMask* updateMask, Player* target) const;
-        void _SetCreateBits(UpdateMask* updateMask, Player* target) const;
+        void _SetUpdateBits(UpdateMask* updateMask, PlayerPtr target) const;
+        void _SetCreateBits(UpdateMask* updateMask, PlayerPtr target) const;
         void _BuildMovementUpdate(ByteBuffer * data, uint16 flags) const;
-        void _BuildValuesUpdate(uint8 updatetype, ByteBuffer *data, UpdateMask* updateMask, Player* target) const;
+        void _BuildValuesUpdate(uint8 updatetype, ByteBuffer *data, UpdateMask* updateMask, PlayerPtr target) const;
 
         uint16 m_objectType;
 
@@ -551,7 +546,7 @@ struct Position
     bool IsInDist(const Position* pos, float dist) const
         { return GetExactDistSq(pos) < dist * dist; }
     bool HasInArc(float arcangle, const Position* pos) const;
-    bool HasInLine(WorldObject const* target, float width) const;
+    bool HasInLine(constWorldObjectPtr target, float width) const;
     std::string ToString() const;
 
     // modulos a radian orientation to the range of 0..2PI
@@ -651,11 +646,11 @@ class WorldLocation : public Position
 };
 
 template<class T>
-class GridObject
+class GridObject : std::enable_shared_from_this<GridObject<T>>
 {
     public:
         bool IsInGrid() const { return _gridRef.isValid(); }
-        void AddToGrid(GridRefManager<T>& m) { ASSERT(!IsInGrid()); _gridRef.link(&m, (T*)this); }
+        void AddToGrid(std::shared_ptr<GridRefManager<T>>& m) { ASSERT(!IsInGrid()); _gridRef.link(m, STATIC_CAST(T,shared_from_this())); }
         void RemoveFromGrid() { ASSERT(IsInGrid()); _gridRef.unlink(); }
     private:
         GridReference<T> _gridRef;
@@ -707,7 +702,7 @@ class WorldObject : public Object, public WorldLocation
         }
 
         void GetNearPoint2D(float &x, float &y, float distance, float absAngle) const;
-        void GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle) const;
+        void GetNearPoint(constWorldObjectPtr searcher, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle) const;
         void GetClosePoint(float &x, float &y, float &z, float size, float distance2d = 0, float angle = 0) const
         {
             // angle calculated from current orientation
@@ -731,10 +726,10 @@ class WorldObject : public Object, public WorldLocation
             MovePosition(pos, radius * (float)rand_norm(), (float)rand_norm() * static_cast<float>(2 * M_PI));
         }
 
-        void GetContactPoint(const WorldObject* obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const
+        void GetContactPoint(constWorldObjectPtr obj, float &x, float &y, float &z, float distance2d = CONTACT_DISTANCE) const
         {
             // angle to face `obj` to `this` using distance includes size of `obj`
-            GetNearPoint(obj, x, y, z, obj->GetObjectSize(), distance2d, GetAngle(obj));
+            GetNearPoint(obj, x, y, z, obj->GetObjectSize(), distance2d, GetAngle(obj.get()));
         }
 
         float GetObjectSize() const
@@ -756,7 +751,7 @@ class WorldObject : public Object, public WorldLocation
 
         virtual void SetPhaseMask(uint32 newPhaseMask, bool update);
         uint32 GetPhaseMask() const { return m_phaseMask; }
-        bool InSamePhase(WorldObject const* obj) const { return InSamePhase(obj->GetPhaseMask()); }
+        bool InSamePhase(constWorldObjectPtr obj) const { return InSamePhase(obj->GetPhaseMask()); }
         bool InSamePhase(uint32 phasemask) const { return (GetPhaseMask() & phasemask); }
 
         uint32 GetZoneId() const;
@@ -770,9 +765,9 @@ class WorldObject : public Object, public WorldLocation
 
         virtual const char* GetNameForLocaleIdx(LocaleConstant /*locale_idx*/) const { return GetName(); }
 
-        float GetDistance(const WorldObject* obj) const
+        float GetDistance(constWorldObjectPtr obj) const
         {
-            float d = GetExactDist(obj) - GetObjectSize() - obj->GetObjectSize();
+            float d = GetExactDist(obj.get()) - GetObjectSize() - obj->GetObjectSize();
             return d > 0.0f ? d : 0.0f;
         }
         float GetDistance(const Position &pos) const
@@ -785,9 +780,9 @@ class WorldObject : public Object, public WorldLocation
             float d = GetExactDist(x, y, z) - GetObjectSize();
             return d > 0.0f ? d : 0.0f;
         }
-        float GetDistance2d(const WorldObject* obj) const
+        float GetDistance2d(constWorldObjectPtr obj) const
         {
-            float d = GetExactDist2d(obj) - GetObjectSize() - obj->GetObjectSize();
+            float d = GetExactDist2d(obj.get()) - GetObjectSize() - obj->GetObjectSize();
             return d > 0.0f ? d : 0.0f;
         }
         float GetDistance2d(float x, float y) const
@@ -795,15 +790,15 @@ class WorldObject : public Object, public WorldLocation
             float d = GetExactDist2d(x, y) - GetObjectSize();
             return d > 0.0f ? d : 0.0f;
         }
-        float GetDistanceZ(const WorldObject* obj) const;
+        float GetDistanceZ(constWorldObjectPtr obj) const;
 
-        bool IsSelfOrInSameMap(const WorldObject* obj) const
+        bool IsSelfOrInSameMap(constWorldObjectPtr obj) const
         {
-            if (this == obj)
+            if (shared_from_this() == obj)
                 return true;
             return IsInMap(obj);
         }
-        bool IsInMap(const WorldObject* obj) const
+        bool IsInMap(constWorldObjectPtr obj) const
         {
             if (obj)
                 return IsInWorld() && obj->IsInWorld() && (GetMap() == obj->GetMap());
@@ -818,32 +813,32 @@ class WorldObject : public Object, public WorldLocation
         bool IsWithinDist2d(const Position* pos, float dist) const
             { return IsInDist2d(pos, dist + GetObjectSize()); }
         // use only if you will sure about placing both object at same map
-        bool IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D = true) const
+        bool IsWithinDist(constWorldObjectPtr obj, float dist2compare, bool is3D = true) const
         {
             return obj && _IsWithinDist(obj, dist2compare, is3D);
         }
-        bool IsWithinDistInMap(WorldObject const* obj, float dist2compare, bool is3D = true) const
+        bool IsWithinDistInMap(constWorldObjectPtr obj, float dist2compare, bool is3D = true) const
         {
             return obj && IsInMap(obj) && InSamePhase(obj) && _IsWithinDist(obj, dist2compare, is3D);
         }
         bool IsWithinLOS(float x, float y, float z) const;
-        bool IsWithinLOSInMap(const WorldObject* obj) const;
-        bool GetDistanceOrder(WorldObject const* obj1, WorldObject const* obj2, bool is3D = true) const;
-        bool IsInRange(WorldObject const* obj, float minRange, float maxRange, bool is3D = true) const;
+        bool IsWithinLOSInMap(constWorldObjectPtr obj) const;
+        bool GetDistanceOrder(constWorldObjectPtr obj1, constWorldObjectPtr obj2, bool is3D = true) const;
+        bool IsInRange(constWorldObjectPtr obj, float minRange, float maxRange, bool is3D = true) const;
         bool IsInRange2d(float x, float y, float minRange, float maxRange) const;
         bool IsInRange3d(float x, float y, float z, float minRange, float maxRange) const;
-        bool isInFront(WorldObject const* target, float arc = M_PI) const;
-        bool isInBack(WorldObject const* target, float arc = M_PI) const;
+        bool isInFront(constWorldObjectPtr target, float arc = M_PI) const;
+        bool isInBack(constWorldObjectPtr target, float arc = M_PI) const;
 
-        bool IsInBetween(const WorldObject* obj1, const WorldObject* obj2, float size = 0) const;
+        bool IsInBetween(constWorldObjectPtr obj1, constWorldObjectPtr obj2, float size = 0) const;
 
         virtual void CleanupsBeforeDelete(bool finalCleanup = true);  // used in destructor or explicitly before mass creature delete to remove cross-references to already deleted units
 
         virtual void SendMessageToSet(WorldPacket* data, bool self);
         virtual void SendMessageToSetInRange(WorldPacket* data, float dist, bool self);
-        virtual void SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr);
+        virtual void SendMessageToSet(WorldPacket* data, constPlayerPtr skipped_rcvr);
 
-        virtual uint8 getLevelForTarget(WorldObject const* /*target*/) const { return 1; }
+        virtual uint8 getLevelForTarget(constWorldObjectPtr /*target*/) const { return 1; }
 
         void MonsterSay(const char* text, uint32 language, uint64 TargetGuid);
         void MonsterYell(const char* text, uint32 language, uint64 TargetGuid);
@@ -856,8 +851,8 @@ class WorldObject : public Object, public WorldLocation
         void MonsterYellToZone(int32 textId, uint32 language, uint64 TargetGuid);
         void BuildMonsterChat(WorldPacket* data, uint8 msgtype, char const* text, uint32 language, char const* name, uint64 TargetGuid) const;
 
-        void PlayDistanceSound(uint32 sound_id, Player* target = NULL);
-        void PlayDirectSound(uint32 sound_id, Player* target = NULL);
+        void PlayDistanceSound(uint32 sound_id, PlayerPtr target = NULL);
+        void PlayDirectSound(uint32 sound_id, PlayerPtr target = NULL);
 
         void SendObjectDeSpawnAnim(uint64 guid);
 
@@ -866,8 +861,8 @@ class WorldObject : public Object, public WorldLocation
 
         float GetGridActivationRange() const;
         float GetVisibilityRange() const;
-        float GetSightRange(const WorldObject* target = NULL) const;
-        bool canSeeOrDetect(WorldObject const* obj, bool ignoreStealth = false, bool distanceCheck = false) const;
+        float GetSightRange(constWorldObjectPtr target = NULL) const;
+        bool canSeeOrDetect(constWorldObjectPtr obj, bool ignoreStealth = false, bool distanceCheck = false) const;
 
         FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealth;
         FlaggedValuesArray32<int32, uint32, StealthType, TOTAL_STEALTH_TYPES> m_stealthDetect;
@@ -881,20 +876,20 @@ class WorldObject : public Object, public WorldLocation
         // Low Level Packets
         void SendPlaySound(uint32 Sound, bool OnlySelf);
 
-        virtual void SetMap(Map* map);
+        virtual void SetMap(MapPtr map);
         virtual void ResetMap();
-        Map* GetMap() const { ASSERT(m_currMap); return m_currMap; }
-        Map* FindMap() const { return m_currMap; }
+        MapPtr GetMap() const { ASSERT(m_currMap); return m_currMap; }
+        MapPtr FindMap() const { return m_currMap; }
         //used to check all object's GetMap() calls when object is not in world!
 
         //this function should be removed in nearest time...
-        Map const* GetBaseMap() const;
+        constMapPtr GetBaseMap() const;
 
         void SetZoneScript();
         ZoneScript* GetZoneScript() const { return m_zoneScript; }
 
-        TempSummon* SummonCreature(uint32 id, const Position &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint32 vehId = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL) const;
-        TempSummon* SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL)
+        TempSummonPtr SummonCreature(uint32 id, const Position &pos, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint32 vehId = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL) const;
+        TempSummonPtr SummonCreature(uint32 id, float x, float y, float z, float ang = 0, TempSummonType spwtype = TEMPSUMMON_MANUAL_DESPAWN, uint32 despwtime = 0, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL)
         {
             if (!x && !y && !z)
             {
@@ -905,15 +900,15 @@ class WorldObject : public Object, public WorldLocation
             pos.Relocate(x, y, z, ang);
             return SummonCreature(id, pos, spwtype, despwtime, 0, viewerGuid, viewersList);
         }
-        GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime);
-        Creature*   SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
+        GameObjectPtr SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime);
+        CreaturePtr SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(CreaturePtr) = NULL);
 
-        Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;
-        GameObject* FindNearestGameObject(uint32 entry, float range) const;
-        GameObject* FindNearestGameObjectOfType(GameobjectTypes type, float range) const;
+        CreaturePtr FindNearestCreature(uint32 entry, float range, bool alive = true) const;
+        GameObjectPtr FindNearestGameObject(uint32 entry, float range) const;
+        GameObjectPtr FindNearestGameObjectOfType(GameobjectTypes type, float range) const;
 
-        void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
-        void GetCreatureListWithEntryInGrid(std::list<Creature*>& lList, uint32 uiEntry, float fMaxSearchRange) const;
+        void GetGameObjectListWithEntryInGrid(std::list<GameObjectPtr>& lList, uint32 uiEntry, float fMaxSearchRange) const;
+        void GetCreatureListWithEntryInGrid(std::list<CreaturePtr>& lList, uint32 uiEntry, float fMaxSearchRange) const;
 
         void DestroyForNearbyPlayers();
         virtual void UpdateObjectVisibility(bool forced = true);
@@ -948,7 +943,7 @@ class WorldObject : public Object, public WorldLocation
         uint32  LastUsedScriptID;
 
         // Transports
-        Transport* GetTransport() const { return m_transport; }
+        TransportPtr GetTransport() const { return m_transport; }
         virtual float GetTransOffsetX() const { return 0; }
         virtual float GetTransOffsetY() const { return 0; }
         virtual float GetTransOffsetZ() const { return 0; }
@@ -956,7 +951,7 @@ class WorldObject : public Object, public WorldLocation
         virtual uint32 GetTransTime()   const { return 0; }
         virtual int8 GetTransSeat()     const { return -1; }
         virtual uint64 GetTransGUID()   const;
-        void SetTransport(Transport* t) { m_transport = t; }
+        void SetTransport(TransportPtr t) { m_transport = t; }
 
         MovementInfo m_movementInfo;
 
@@ -976,7 +971,7 @@ class WorldObject : public Object, public WorldLocation
         ZoneScript* m_zoneScript;
 
         // transports
-        Transport* m_transport;
+        TransportPtr m_transport;
 
         //these functions are used mostly for Relocate() and Corpse/Player specific stuff...
         //use them ONLY in LoadFromDB()/Create() funcs and nowhere else!
@@ -985,13 +980,13 @@ class WorldObject : public Object, public WorldLocation
         void SetLocationInstanceId(uint32 _instanceId) { m_InstanceId = _instanceId; }
 
         virtual bool IsNeverVisible() const { return !IsInWorld(); }
-        virtual bool IsAlwaysVisibleFor(WorldObject const* /*seer*/) const { return false; }
+        virtual bool IsAlwaysVisibleFor(constWorldObjectPtr /*seer*/) const { return false; }
         virtual bool IsInvisibleDueToDespawn() const { return false; }
         //difference from IsAlwaysVisibleFor: 1. after distance check; 2. use owner or charmer as seer
-        virtual bool IsAlwaysDetectableFor(WorldObject const* /*seer*/) const { return false; }
+        virtual bool IsAlwaysDetectableFor(constWorldObjectPtr /*seer*/) const { return false; }
 
     private:
-        Map* m_currMap;                                    //current object's Map location
+        MapPtr m_currMap;                                    //current object's Map location
 
         //uint32 m_mapId;                                     // object at map with map_id
         uint32 m_InstanceId;                                // in map copy with instance id
@@ -1002,13 +997,13 @@ class WorldObject : public Object, public WorldLocation
 
         std::list<uint64/* guid*/> _visibilityPlayerList;
 
-        virtual bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool is3D) const;
+        virtual bool _IsWithinDist(constWorldObjectPtr obj, float dist2compare, bool is3D) const;
 
-        bool CanNeverSee(WorldObject const* obj) const { return GetMap() != obj->GetMap() || !InSamePhase(obj); }
-        virtual bool CanAlwaysSee(WorldObject const* /*obj*/) const { return false; }
-        bool CanDetect(WorldObject const* obj, bool ignoreStealth) const;
-        bool CanDetectInvisibilityOf(WorldObject const* obj) const;
-        bool CanDetectStealthOf(WorldObject const* obj) const;
+        bool CanNeverSee(constWorldObjectPtr obj) const { return GetMap() != obj->GetMap() || !InSamePhase(obj); }
+        virtual bool CanAlwaysSee(constWorldObjectPtr /*obj*/) const { return false; }
+        bool CanDetect(constWorldObjectPtr obj, bool ignoreStealth) const;
+        bool CanDetectInvisibilityOf(constWorldObjectPtr obj) const;
+        bool CanDetectStealthOf(constWorldObjectPtr obj) const;
 };
 
 namespace Trinity
@@ -1017,13 +1012,13 @@ namespace Trinity
     class ObjectDistanceOrderPred
     {
         public:
-            ObjectDistanceOrderPred(const WorldObject* pRefObj, bool ascending = true) : m_refObj(pRefObj), m_ascending(ascending) {}
-            bool operator()(const WorldObject* pLeft, const WorldObject* pRight) const
+            ObjectDistanceOrderPred(constWorldObjectPtr pRefObj, bool ascending = true) : m_refObj(pRefObj), m_ascending(ascending) {}
+            bool operator()(constWorldObjectPtr pLeft, constWorldObjectPtr pRight) const
             {
                 return m_ascending ? m_refObj->GetDistanceOrder(pLeft, pRight) : !m_refObj->GetDistanceOrder(pLeft, pRight);
             }
         private:
-            const WorldObject* m_refObj;
+            constWorldObjectPtr m_refObj;
             const bool m_ascending;
     };
 }

@@ -273,7 +273,7 @@ public:
         if (!*args)
             return false;
 
-        Player* target = sObjectAccessor->FindPlayerByName(args);
+        PlayerPtr target = sObjectAccessor->FindPlayerByName(args);
         uint32 targetGuid = 0;
         std::string name(args);
 

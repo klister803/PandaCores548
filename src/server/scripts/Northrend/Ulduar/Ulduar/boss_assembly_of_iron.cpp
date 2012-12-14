@@ -137,7 +137,7 @@ enum AssemblyNPCs
 #define FLOOR_Z                                  427.28f
 #define FINAL_FLIGHT_Z                           435.0f
 
-bool IsEncounterComplete(InstanceScript* instance, Creature* me)
+bool IsEncounterComplete(InstanceScript* instance, CreaturePtr me)
 {
     if (!instance || !me)
         return false;
@@ -148,7 +148,7 @@ bool IsEncounterComplete(InstanceScript* instance, Creature* me)
         if (!guid)
             return false;
 
-        if (Creature* boss = ObjectAccessor::GetCreature(*me, guid))
+        if (CreaturePtr boss = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), guid))
         {
             if (boss->isAlive())
                 return false;
@@ -160,7 +160,7 @@ bool IsEncounterComplete(InstanceScript* instance, Creature* me)
     return true;
 }
 
-void RespawnEncounter(InstanceScript* instance, Creature* me)
+void RespawnEncounter(InstanceScript* instance, CreaturePtr me)
 {
     for (uint8 i = 0; i < 3; ++i)
     {
@@ -168,7 +168,7 @@ void RespawnEncounter(InstanceScript* instance, Creature* me)
         if (!guid)
             continue;
 
-        if (Creature* boss = ObjectAccessor::GetCreature(*me, guid))
+        if (CreaturePtr boss = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), guid))
         {
             if (!boss->isAlive())
             {
@@ -179,7 +179,7 @@ void RespawnEncounter(InstanceScript* instance, Creature* me)
     }
 }
 
-void StartEncounter(InstanceScript* instance, Creature* me, Unit* /*target*/)
+void StartEncounter(InstanceScript* instance, CreaturePtr me, UnitPtr /*target*/)
 {
     if (instance->GetBossState(BOSS_ASSEMBLY_OF_IRON) == IN_PROGRESS)
         return; // Prevent recursive calls
@@ -192,7 +192,7 @@ void StartEncounter(InstanceScript* instance, Creature* me, Unit* /*target*/)
         if (!guid)
             continue;
 
-        if (Creature* boss = ObjectAccessor::GetCreature(*me, guid))
+        if (CreaturePtr boss = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), guid))
             boss->SetInCombatWithZone();
     }
 }
@@ -204,7 +204,7 @@ class boss_steelbreaker : public CreatureScript
 
         struct boss_steelbreakerAI : public BossAI
         {
-            boss_steelbreakerAI(Creature* creature) : BossAI(creature, BOSS_ASSEMBLY_OF_IRON)
+            boss_steelbreakerAI(CreaturePtr creature) : BossAI(creature, BOSS_ASSEMBLY_OF_IRON)
             {
                 instance = me->GetInstanceScript();
             }
@@ -220,7 +220,7 @@ class boss_steelbreaker : public CreatureScript
                 RespawnEncounter(instance, me);
             }
 
-            void EnterCombat(Unit* who)
+            void EnterCombat(UnitPtr who)
             {
                 StartEncounter(instance, me, who);
                 DoScriptText(SAY_STEELBREAKER_AGGRO, me);
@@ -251,7 +251,7 @@ class boss_steelbreaker : public CreatureScript
                 }
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoScriptText(RAND(SAY_STEELBREAKER_DEATH_1, SAY_STEELBREAKER_DEATH_2), me);
                 if (IsEncounterComplete(instance, me))
@@ -264,16 +264,16 @@ class boss_steelbreaker : public CreatureScript
                 else
                     me->SetLootRecipient(NULL);
 
-                if (Creature* Brundir = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_BRUNDIR)))
+                if (CreaturePtr Brundir = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_BRUNDIR)))
                     if (Brundir->isAlive())
                         Brundir->AI()->DoAction(ACTION_BRUNDIR);
 
-                if (Creature* Molgeim = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_MOLGEIM)))
+                if (CreaturePtr Molgeim = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_MOLGEIM)))
                     if (Molgeim->isAlive())
                         Molgeim->AI()->DoAction(ACTION_MOLGEIM);
             }
 
-            void KilledUnit(Unit* /*who*/)
+            void KilledUnit(UnitPtr /*who*/)
             {
                 DoScriptText(RAND(SAY_STEELBREAKER_SLAY_1, SAY_STEELBREAKER_SLAY_2), me);
 
@@ -306,7 +306,7 @@ class boss_steelbreaker : public CreatureScript
                             events.ScheduleEvent(EVENT_FUSION_PUNCH, urand(13000, 22000));
                             break;
                         case EVENT_STATIC_DISRUPTION:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_STATIC_DISRUPTION);
                             events.ScheduleEvent(EVENT_STATIC_DISRUPTION, urand(20000, 40000));
                             break;
@@ -322,7 +322,7 @@ class boss_steelbreaker : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetUlduarAI<boss_steelbreakerAI>(creature);
         }
@@ -335,7 +335,7 @@ class boss_runemaster_molgeim : public CreatureScript
 
         struct boss_runemaster_molgeimAI : public BossAI
         {
-            boss_runemaster_molgeimAI(Creature* creature) : BossAI(creature, BOSS_ASSEMBLY_OF_IRON)
+            boss_runemaster_molgeimAI(CreaturePtr creature) : BossAI(creature, BOSS_ASSEMBLY_OF_IRON)
             {
                 instance = me->GetInstanceScript();
             }
@@ -351,7 +351,7 @@ class boss_runemaster_molgeim : public CreatureScript
                 RespawnEncounter(instance, me);
             }
 
-            void EnterCombat(Unit* who)
+            void EnterCombat(UnitPtr who)
             {
                 StartEncounter(instance, me, who);
                 DoScriptText(SAY_MOLGEIM_AGGRO, me);
@@ -380,7 +380,7 @@ class boss_runemaster_molgeim : public CreatureScript
                 }
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoScriptText(RAND(SAY_MOLGEIM_DEATH_1, SAY_MOLGEIM_DEATH_2), me);
                 if (IsEncounterComplete(instance, me))
@@ -393,16 +393,16 @@ class boss_runemaster_molgeim : public CreatureScript
                 else
                     me->SetLootRecipient(NULL);
 
-                if (Creature* Brundir = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_BRUNDIR)))
+                if (CreaturePtr Brundir = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_BRUNDIR)))
                     if (Brundir->isAlive())
                         Brundir->AI()->DoAction(ACTION_BRUNDIR);
 
-                if (Creature* Steelbreaker = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_STEELBREAKER)))
+                if (CreaturePtr Steelbreaker = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_STEELBREAKER)))
                     if (Steelbreaker->isAlive())
                         Steelbreaker->AI()->DoAction(ACTION_STEELBREAKER);
             }
 
-            void KilledUnit(Unit* /*who*/)
+            void KilledUnit(UnitPtr /*who*/)
             {
                 DoScriptText(RAND(SAY_MOLGEIM_SLAY_1, SAY_MOLGEIM_SLAY_2), me);
             }
@@ -428,19 +428,19 @@ class boss_runemaster_molgeim : public CreatureScript
                             break;
                         case EVENT_RUNE_OF_POWER:
                         {
-                            Unit* target = NULL;
+                            UnitPtr target = NULL;
                             switch (urand(0, 2))
                             {
                                 case 0:
                                     target = me;
                                     break;
                                 case 1:
-                                    if (Creature* Steelbreaker = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_STEELBREAKER)))
+                                    if (CreaturePtr Steelbreaker = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_STEELBREAKER)))
                                         if (Steelbreaker->isAlive())
                                             target = Steelbreaker;
                                     break;
                                 case 2:
-                                    if (Creature* Brundir = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_STEELBREAKER)))
+                                    if (CreaturePtr Brundir = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_STEELBREAKER)))
                                         if (Brundir->isAlive())
                                             target = Brundir;
                                     break;
@@ -455,13 +455,13 @@ class boss_runemaster_molgeim : public CreatureScript
                             break;
                         case EVENT_RUNE_OF_DEATH:
                             DoScriptText(SAY_MOLGEIM_RUNE_DEATH, me);
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_RUNE_OF_DEATH);
                             events.ScheduleEvent(EVENT_RUNE_OF_DEATH, urand(30000, 40000));
                             break;
                         case EVENT_RUNE_OF_SUMMONING:
                             DoScriptText(SAY_MOLGEIM_SUMMON, me);
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_RUNE_OF_SUMMONING);
                             events.ScheduleEvent(EVENT_RUNE_OF_SUMMONING, urand(30000, 45000));
                             break;
@@ -472,7 +472,7 @@ class boss_runemaster_molgeim : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetUlduarAI<boss_runemaster_molgeimAI>(creature);
         }
@@ -485,7 +485,7 @@ class mob_rune_of_power : public CreatureScript
 
         struct mob_rune_of_powerAI : public ScriptedAI
         {
-            mob_rune_of_powerAI(Creature* creature) : ScriptedAI(creature)
+            mob_rune_of_powerAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -496,7 +496,7 @@ class mob_rune_of_power : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_rune_of_powerAI(creature);
         }
@@ -509,7 +509,7 @@ class mob_lightning_elemental : public CreatureScript
 
         struct mob_lightning_elementalAI : public ScriptedAI
         {
-            mob_lightning_elementalAI(Creature* creature) : ScriptedAI(creature)
+            mob_lightning_elementalAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 me->SetInCombatWithZone();
                 me->AddAura(SPELL_LIGHTNING_ELEMENTAL_PASSIVE, me);
@@ -518,7 +518,7 @@ class mob_lightning_elemental : public CreatureScript
             // Nothing to do here, just let the creature chase players and procflags == 2 on the applied aura will trigger explosion
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_lightning_elementalAI(creature);
         }
@@ -531,7 +531,7 @@ class mob_rune_of_summoning : public CreatureScript
 
         struct mob_rune_of_summoningAI : public ScriptedAI
         {
-            mob_rune_of_summoningAI(Creature* creature) : ScriptedAI(creature)
+            mob_rune_of_summoningAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 me->AddAura(SPELL_RUNE_OF_SUMMONING_VIS, me);
                 summonCount = 0;
@@ -559,7 +559,7 @@ class mob_rune_of_summoning : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_rune_of_summoningAI(creature);
         }
@@ -572,7 +572,7 @@ class boss_stormcaller_brundir : public CreatureScript
 
         struct boss_stormcaller_brundirAI : public BossAI
         {
-            boss_stormcaller_brundirAI(Creature* creature) : BossAI(creature, BOSS_ASSEMBLY_OF_IRON)
+            boss_stormcaller_brundirAI(CreaturePtr creature) : BossAI(creature, BOSS_ASSEMBLY_OF_IRON)
             {
                 instance = me->GetInstanceScript();
             }
@@ -591,7 +591,7 @@ class boss_stormcaller_brundir : public CreatureScript
                 RespawnEncounter(instance, me);
             }
 
-            void EnterCombat(Unit* who)
+            void EnterCombat(UnitPtr who)
             {
                 StartEncounter(instance, me, who);
                 DoScriptText(SAY_BRUNDIR_AGGRO, me);
@@ -626,7 +626,7 @@ class boss_stormcaller_brundir : public CreatureScript
                 }
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoScriptText(RAND(SAY_BRUNDIR_DEATH_1, SAY_BRUNDIR_DEATH_2), me);
                 if (IsEncounterComplete(instance, me))
@@ -639,11 +639,11 @@ class boss_stormcaller_brundir : public CreatureScript
                 else
                     me->SetLootRecipient(NULL);
 
-            if (Creature* Molgeim = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_MOLGEIM)))
+            if (CreaturePtr Molgeim = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_MOLGEIM)))
                 if (Molgeim->isAlive())
                     Molgeim->AI()->DoAction(ACTION_MOLGEIM);
 
-            if (Creature* Steelbreaker = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_STEELBREAKER)))
+            if (CreaturePtr Steelbreaker = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_STEELBREAKER)))
                 if (Steelbreaker->isAlive())
                     Steelbreaker->AI()->DoAction(ACTION_STEELBREAKER);
 
@@ -652,7 +652,7 @@ class boss_stormcaller_brundir : public CreatureScript
                     me->GetMotionMaster()->MoveFall();
             }
 
-            void KilledUnit(Unit* /*who*/)
+            void KilledUnit(UnitPtr /*who*/)
             {
                 DoScriptText(RAND(SAY_BRUNDIR_SLAY_1, SAY_BRUNDIR_SLAY_2), me);
             }
@@ -677,7 +677,7 @@ class boss_stormcaller_brundir : public CreatureScript
                             events.CancelEvent(EVENT_BERSERK);
                             break;
                         case EVENT_CHAIN_LIGHTNING:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_CHAIN_LIGHTNING);
                             events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, urand(7000, 10000));
                             break;
@@ -705,7 +705,7 @@ class boss_stormcaller_brundir : public CreatureScript
                             events.ScheduleEvent(EVENT_LIGHTNING_TENDRILS, 90000);
                             break;
                         case EVENT_FLIGHT:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 me->GetMotionMaster()->MovePoint(0, target->GetPositionX(), target->GetPositionY(), FINAL_FLIGHT_Z);
                             events.ScheduleEvent(EVENT_FLIGHT, 6000);
                             break;
@@ -737,7 +737,7 @@ class boss_stormcaller_brundir : public CreatureScript
                                 float y = float(irand(-25, 25));
                                 me->GetMotionMaster()->MovePoint(0, me->GetPositionX() + x, me->GetPositionY() + y, FLOOR_Z);
                                 // Prevention to go outside the room or into the walls
-                                if (Creature* trigger = me->FindNearestCreature(NPC_WORLD_TRIGGER, 100.0f, true))
+                                if (CreaturePtr trigger = me->FindNearestCreature(NPC_WORLD_TRIGGER, 100.0f, true))
                                     if (me->GetDistance(trigger) >= 50.0f)
                                         me->GetMotionMaster()->MovePoint(0, trigger->GetPositionX(), trigger->GetPositionY(), FLOOR_Z);
                             }
@@ -752,7 +752,7 @@ class boss_stormcaller_brundir : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetUlduarAI<boss_stormcaller_brundirAI>(creature);
         }
@@ -769,7 +769,7 @@ class spell_shield_of_runes : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                     if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
                         caster->CastSpell(caster, SPELL_SHIELD_OF_RUNES_BUFF, false);
             }
@@ -798,7 +798,7 @@ class spell_assembly_meltdown : public SpellScriptLoader
             void HandleInstaKill(SpellEffIndex /*effIndex*/)
             {
                 if (InstanceScript* instance = GetCaster()->GetInstanceScript())
-                    if (Creature* Steelbreaker = ObjectAccessor::GetCreature(*GetCaster(), instance->GetData64(BOSS_STEELBREAKER)))
+                    if (CreaturePtr Steelbreaker = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(GetCaster()), instance->GetData64(BOSS_STEELBREAKER)))
                         Steelbreaker->AI()->DoAction(ACTION_ADD_CHARGE);
             }
 

@@ -52,22 +52,22 @@ class OutdoorPvPMgr
         void Die();
 
         // called when a player enters an outdoor pvp area
-        void HandlePlayerEnterZone(Player* player, uint32 areaflag);
+        void HandlePlayerEnterZone(PlayerPtr player, uint32 areaflag);
 
         // called when player leaves an outdoor pvp area
-        void HandlePlayerLeaveZone(Player* player, uint32 areaflag);
+        void HandlePlayerLeaveZone(PlayerPtr player, uint32 areaflag);
 
         // called when player resurrects
-        void HandlePlayerResurrects(Player* player, uint32 areaflag);
+        void HandlePlayerResurrects(PlayerPtr player, uint32 areaflag);
 
         // return assigned outdoor pvp
         OutdoorPvP* GetOutdoorPvPToZoneId(uint32 zoneid);
 
         // handle custom (non-exist in dbc) spell if registered
-        bool HandleCustomSpell(Player* player, uint32 spellId, GameObject* go);
+        bool HandleCustomSpell(PlayerPtr player, uint32 spellId, GameObjectPtr go);
 
         // handle custom go if registered
-        bool HandleOpenGo(Player* player, uint64 guid);
+        bool HandleOpenGo(PlayerPtr player, uint64 guid);
 
         ZoneScript* GetZoneScript(uint32 zoneId);
 
@@ -75,11 +75,11 @@ class OutdoorPvPMgr
 
         void Update(uint32 diff);
 
-        void HandleGossipOption(Player* player, uint64 guid, uint32 gossipid);
+        void HandleGossipOption(PlayerPtr player, uint64 guid, uint32 gossipid);
 
-        bool CanTalkTo(Player* player, Creature* creature, GossipMenuItems const& gso);
+        bool CanTalkTo(PlayerPtr player, CreaturePtr creature, GossipMenuItems const& gso);
 
-        void HandleDropFlag(Player* player, uint32 spellId);
+        void HandleDropFlag(PlayerPtr player, uint32 spellId);
 
     private:
         typedef std::vector<OutdoorPvP*> OutdoorPvPSet;

@@ -44,7 +44,7 @@ class go_gauntlet_gate : public GameObjectScript
 public:
     go_gauntlet_gate() : GameObjectScript("go_gauntlet_gate") { }
 
-    bool OnGossipHello(Player* player, GameObject* go)
+    bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
     {
         InstanceScript* instance = go->GetInstanceScript();
 
@@ -54,11 +54,11 @@ public:
         if (instance->GetData(TYPE_BARON_RUN) != NOT_STARTED)
             return false;
 
-        if (Group* group = player->GetGroup())
+        if (GroupPtr group = player->GetGroup())
         {
-            for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
             {
-                Player* pGroupie = itr->getSource();
+                PlayerPtr pGroupie = itr->getSource();
                 if (!pGroupie)
                     continue;
 
@@ -93,21 +93,21 @@ class mob_freed_soul : public CreatureScript
 public:
     mob_freed_soul() : CreatureScript("mob_freed_soul") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_freed_soulAI (creature);
     }
 
     struct mob_freed_soulAI : public ScriptedAI
     {
-        mob_freed_soulAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_freed_soulAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         void Reset()
         {
             DoScriptText(RAND(SAY_ZAPPED0, SAY_ZAPPED1, SAY_ZAPPED2, SAY_ZAPPED3), me);
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
     };
 
 };
@@ -127,14 +127,14 @@ class mob_restless_soul : public CreatureScript
 public:
     mob_restless_soul() : CreatureScript("mob_restless_soul") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_restless_soulAI (creature);
     }
 
     struct mob_restless_soulAI : public ScriptedAI
     {
-        mob_restless_soulAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_restless_soulAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint64 Tagger;
         uint32 Die_Timer;
@@ -147,9 +147,9 @@ public:
             Tagged = false;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void SpellHit(Unit* caster, const SpellInfo* spell)
+        void SpellHit(UnitPtr caster, const SpellInfo* spell)
         {
             if (caster->GetTypeId() == TYPEID_PLAYER)
             {
@@ -161,12 +161,12 @@ public:
             }
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->CastSpell(summoned, SPELL_SOUL_FREED, false);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (Tagged)
                 me->SummonCreature(ENTRY_FREED, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 300000);
@@ -178,7 +178,7 @@ public:
             {
                 if (Die_Timer <= diff)
                 {
-                    if (Unit* temp = Unit::GetUnit(*me, Tagger))
+                    if (UnitPtr temp = Unit::GetUnit(TO_WORLDOBJECT(me), Tagger))
                     {
                         CAST_PLR(temp)->KilledMonsterCredit(ENTRY_RESTLESS, me->GetGUID());
                         me->Kill(me);
@@ -205,14 +205,14 @@ class mobs_spectral_ghostly_citizen : public CreatureScript
 public:
     mobs_spectral_ghostly_citizen() : CreatureScript("mobs_spectral_ghostly_citizen") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mobs_spectral_ghostly_citizenAI (creature);
     }
 
     struct mobs_spectral_ghostly_citizenAI : public ScriptedAI
     {
-        mobs_spectral_ghostly_citizenAI(Creature* creature) : ScriptedAI(creature) {}
+        mobs_spectral_ghostly_citizenAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 Die_Timer;
         bool Tagged;
@@ -223,15 +223,15 @@ public:
             Tagged = false;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
+        void SpellHit(UnitPtr /*caster*/, const SpellInfo* spell)
         {
             if (!Tagged && spell->Id == SPELL_EGAN_BLASTER)
                 Tagged = true;
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (Tagged)
             {
@@ -259,7 +259,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void ReceiveEmote(Player* player, uint32 emote)
+        void ReceiveEmote(PlayerPtr player, uint32 emote)
         {
             switch (emote)
             {

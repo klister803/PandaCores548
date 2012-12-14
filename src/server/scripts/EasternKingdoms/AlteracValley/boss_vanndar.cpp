@@ -42,7 +42,7 @@ public:
 
     struct boss_vanndarAI : public ScriptedAI
     {
-        boss_vanndarAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_vanndarAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 AvatarTimer;
         uint32 ThunderclapTimer;
@@ -59,7 +59,7 @@ public:
             YellTimer = urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             Talk(YELL_AGGRO);
         }
@@ -114,7 +114,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_vanndarAI(creature);
     }

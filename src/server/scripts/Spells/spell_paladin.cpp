@@ -73,9 +73,9 @@ class spell_pal_judgment : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
                 {
-                    if (Unit* unitTarget = GetHitUnit())
+                    if (UnitPtr unitTarget = GetHitUnit())
                     {
                         if (_player->HasAura(PALADIN_SPELL_JUDGMENTS_OF_THE_BOLD))
                         {
@@ -132,7 +132,7 @@ class spell_pal_judgment : public SpellScriptLoader
 //
 //            void Absorb(AuraEffectPtr aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
 //            {
-//                Unit* victim = GetTarget();
+//                UnitPtr victim = GetTarget();
 //                int32 remainingHealth = victim->GetHealth() - dmgInfo.GetDamage();
 //                uint32 allowedHealth = victim->CountPctFromMaxHealth(35);
 //                // If damage kills us
@@ -194,7 +194,7 @@ class spell_pal_blessing_of_faith : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* unitTarget = GetHitUnit())
+                if (UnitPtr unitTarget = GetHitUnit())
                 {
                     uint32 spell_id = 0;
                     switch (unitTarget->getClass())
@@ -205,7 +205,7 @@ class spell_pal_blessing_of_faith : public SpellScriptLoader
                         case CLASS_SHAMAN:  spell_id = SPELL_BLESSING_OF_LOWER_CITY_SHAMAN; break;
                         default: return;                    // ignore for non-healing classes
                     }
-                    Unit* caster = GetCaster();
+                    UnitPtr caster = GetCaster();
                     caster->CastSpell(caster, spell_id, true);
                 }
             }
@@ -243,14 +243,14 @@ class spell_pal_blessing_of_sanctuary : public SpellScriptLoader
 
             void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                Unit* target = GetTarget();
-                if (Unit* caster = GetCaster())
+                UnitPtr target = GetTarget();
+                if (UnitPtr caster = GetCaster())
                     caster->CastSpell(target, PALADIN_SPELL_BLESSING_OF_SANCTUARY_BUFF, true);
             }
 
             void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 target->RemoveAura(PALADIN_SPELL_BLESSING_OF_SANCTUARY_BUFF, GetCasterGUID());
             }
 
@@ -315,9 +315,9 @@ class spell_pal_holy_shock_damage : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* caster = GetCaster()->ToPlayer())
+                if (PlayerPtr caster = TO_PLAYER(GetCaster()))
                 {
-                    if (Unit* unitTarget = GetHitUnit())
+                    if (UnitPtr unitTarget = GetHitUnit())
                     {
                         if (caster->getLevel() < 85)
                         {
@@ -372,20 +372,20 @@ class spell_pal_holy_shock : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Player* caster = GetCaster()->ToPlayer())
+                if (PlayerPtr caster = TO_PLAYER(GetCaster()))
                 {
-                    if (Unit* unitTarget = GetHitUnit())
+                    if (UnitPtr unitTarget = GetHitUnit())
                     {
                         uint8 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
                         if (caster->IsFriendlyTo(unitTarget))
                         {
                             caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PALADIN_SPELL_HOLY_SHOCK_R1_HEALING, rank), true, 0);
-                            caster->ToPlayer()->AddSpellCooldown(PALADIN_SPELL_HOLY_SHOCK_R1, 0, time(NULL) + 6);
+                            TO_PLAYER(caster)->AddSpellCooldown(PALADIN_SPELL_HOLY_SHOCK_R1, 0, time(NULL) + 6);
                         }
                         else
                         {
                             caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PALADIN_SPELL_HOLY_SHOCK_R1_DAMAGE, rank), true, 0);
-                            caster->ToPlayer()->AddSpellCooldown(PALADIN_SPELL_HOLY_SHOCK_R1, 0, time(NULL) + 6);
+                            TO_PLAYER(caster)->AddSpellCooldown(PALADIN_SPELL_HOLY_SHOCK_R1, 0, time(NULL) + 6);
                         }
                     }
                 }
@@ -393,8 +393,8 @@ class spell_pal_holy_shock : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                Unit* caster = GetCaster();
-                if (Unit* target = GetExplTargetUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr target = GetExplTargetUnit())
                 {
                     if (!caster->IsFriendlyTo(target))
                     {
@@ -434,7 +434,7 @@ class spell_pal_judgement_of_command : public SpellScriptLoader
             PrepareSpellScript(spell_pal_judgement_of_command_SpellScript)
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* unitTarget = GetHitUnit())
+                if (UnitPtr unitTarget = GetHitUnit())
                     if (SpellInfo const* spell_proto = sSpellMgr->GetSpellInfo(GetEffectValue()))
                         GetCaster()->CastSpell(unitTarget, spell_proto, true, NULL);
             }
@@ -478,7 +478,7 @@ class spell_pal_divine_storm : public SpellScriptLoader
 
             void TriggerHeal()
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 caster->CastCustomSpell(SPELL_DIVINE_STORM_DUMMY, SPELLVALUE_BASE_POINT0, (GetHitDamage() * healPct) / 100, caster, true);
             }
 
@@ -510,7 +510,7 @@ class spell_pal_divine_storm_dummy : public SpellScriptLoader
                 return true;
             }
 
-            void CountTargets(std::list<WorldObject*>& targetList)
+            void CountTargets(std::list<WorldObjectPtr>& targetList)
             {
                 _targetCount = targetList.size();
             }
@@ -561,8 +561,8 @@ class spell_pal_lay_on_hands : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                Unit* caster = GetCaster();
-                if (Unit* target = GetExplTargetUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr target = GetExplTargetUnit())
                     if (caster == target)
                         if (target->HasAura(SPELL_FORBEARANCE) || target->HasAura(SPELL_AVENGING_WRATH_MARKER) || target->HasAura(SPELL_IMMUNE_SHIELD_MARKER))
                             return SPELL_FAILED_TARGET_AURASTATE;
@@ -572,7 +572,7 @@ class spell_pal_lay_on_hands : public SpellScriptLoader
 
             void HandleScript()
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (caster == GetHitUnit())
                 {
                     caster->CastSpell(caster, SPELL_FORBEARANCE, true);
@@ -605,11 +605,11 @@ class spell_pal_righteous_defense : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (caster->GetTypeId() != TYPEID_PLAYER)
                     return SPELL_FAILED_DONT_REPORT;
 
-                if (Unit* target = GetExplTargetUnit())
+                if (UnitPtr target = GetExplTargetUnit())
                 {
                     if (!target->IsFriendlyTo(caster) || target->getAttackers().empty())
                         return SPELL_FAILED_BAD_TARGETS;

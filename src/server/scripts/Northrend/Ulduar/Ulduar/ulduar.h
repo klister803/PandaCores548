@@ -244,9 +244,9 @@ enum UlduarEvents
 };
 
 template<class AI>
-CreatureAI* GetUlduarAI(Creature* creature)
+CreatureAI* GetUlduarAI(CreaturePtr creature)
 {
-    if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
+    if (InstanceMapPtr instance = creature->GetMap()->ToInstanceMap())
         if (instance->GetInstanceScript())
             if (instance->GetScriptId() == sObjectMgr->GetScriptId(UlduarScriptName))
                 return new AI(creature);
@@ -255,9 +255,9 @@ CreatureAI* GetUlduarAI(Creature* creature)
 }
 
 template<class AI>
-GameObjectAI* GetUlduarAI(GameObject* go)
+GameObjectAI* GetUlduarAI(GameObjectPtr go)
 {
-    if (InstanceMap* instance = go->GetMap()->ToInstanceMap())
+    if (InstanceMapPtr instance = go->GetMap()->ToInstanceMap())
         if (instance->GetInstanceScript())
             if (instance->GetScriptId() == sObjectMgr->GetScriptId(UlduarScriptName))
                 return new AI(go);
@@ -268,7 +268,7 @@ GameObjectAI* GetUlduarAI(GameObject* go)
 class PlayerOrPetCheck
 {
     public:
-        bool operator()(WorldObject* object) const
+        bool operator()(WorldObjectPtr object) const
         {
             if (object->GetTypeId() != TYPEID_PLAYER)
                 if (!object->ToCreature()->isPet())

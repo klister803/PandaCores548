@@ -89,20 +89,20 @@ class BfCapturePoint
         void SendObjectiveComplete(uint32 id, uint64 guid);
 
         // Used when player is activated/inactivated in the area
-        virtual bool HandlePlayerEnter(Player* player);
-        virtual GuidSet::iterator HandlePlayerLeave(Player* player);
-        //virtual void HandlePlayerActivityChanged(Player* player);
+        virtual bool HandlePlayerEnter(PlayerPtr player);
+        virtual GuidSet::iterator HandlePlayerLeave(PlayerPtr player);
+        //virtual void HandlePlayerActivityChanged(PlayerPtr player);
 
         // Checks if player is in range of a capture credit marker
-        bool IsInsideObjective(Player* player) const;
+        bool IsInsideObjective(PlayerPtr player) const;
 
         // Returns true if the state of the objective has changed, in this case, the OutdoorPvP must send a world state ui update.
         virtual bool Update(uint32 diff);
         virtual void ChangeTeam(TeamId /*oldTeam*/) {}
         virtual void SendChangePhase();
 
-        bool SetCapturePointData(GameObject* capturePoint);
-        GameObject* GetCapturePointGo() { return m_capturePoint; }
+        bool SetCapturePointData(GameObjectPtr capturePoint);
+        GameObjectPtr GetCapturePointGo() { return m_capturePoint; }
 
         TeamId GetTeamId() { return m_team; }
     protected:
@@ -136,7 +136,7 @@ class BfCapturePoint
         uint32 m_capturePointEntry;
 
         // Gameobject related to that capture point
-        GameObject* m_capturePoint;
+        GameObjectPtr m_capturePoint;
 };
 
 class BfGraveyard
@@ -149,13 +149,13 @@ class BfGraveyard
         TeamId GetControlTeamId() { return m_ControlTeam; }
 
         // Find the nearest graveyard to a player
-        float GetDistance(Player* player);
+        float GetDistance(PlayerPtr player);
 
         // Initialize the graveyard
         void Initialize(TeamId startcontrol, uint32 gy);
 
         // Set spirit service for the graveyard
-        void SetSpirit(Creature* spirit, TeamId team);
+        void SetSpirit(CreaturePtr spirit, TeamId team);
 
         // Add a player to the graveyard
         void AddPlayer(uint64 player_guid);
@@ -235,7 +235,7 @@ class Battlefield : public ZoneScript
         void InvitePlayersInZoneToWar();
 
         /// Called when a Unit is kill in battlefield zone
-        virtual void HandleKill(Player* /*killer*/, Unit* /*killed*/) {};
+        virtual void HandleKill(PlayerPtr /*killer*/, UnitPtr /*killed*/) {};
 
         uint32 GetTypeId() { return m_TypeId; }
         uint32 GetZoneId() { return m_ZoneId; }
@@ -258,9 +258,9 @@ class Battlefield : public ZoneScript
         void KickPlayerFromBattlefield(uint64 guid);
 
         /// Called when player (player) enter in zone
-        void HandlePlayerEnterZone(Player* player, uint32 zone);
+        void HandlePlayerEnterZone(PlayerPtr player, uint32 zone);
         /// Called when player (player) leave the zone
-        void HandlePlayerLeaveZone(Player* player, uint32 zone);
+        void HandlePlayerLeaveZone(PlayerPtr player, uint32 zone);
 
         // All-purpose data storage 64 bit
         virtual uint64 GetData64(uint32 dataId) { return m_Data64[dataId]; }
@@ -282,15 +282,15 @@ class Battlefield : public ZoneScript
          * \brief Find a not full battlefield group, if there is no, create one
          * \param TeamId : Id of player team for who we search a group (player->GetTeamId())
          */
-        Group* GetFreeBfRaid(TeamId TeamId);
+        GroupPtr GetFreeBfRaid(TeamId TeamId);
         /// Return battlefield group where player is.
-        Group* GetGroupPlayer(uint64 guid, TeamId TeamId);
+        GroupPtr GetGroupPlayer(uint64 guid, TeamId TeamId);
         /// Force player to join a battlefield group
-        bool AddOrSetPlayerToCorrectBfGroup(Player* player);
+        bool AddOrSetPlayerToCorrectBfGroup(PlayerPtr player);
 
         // Graveyard methods
         // Find which graveyard the player must be teleported to to be resurrected by spiritguide
-        WorldSafeLocsEntry const * GetClosestGraveYard(Player* player);
+        WorldSafeLocsEntry const * GetClosestGraveYard(PlayerPtr player);
 
         virtual void AddPlayerToResurrectQueue(uint64 npc_guid, uint64 player_guid);
         void RemovePlayerFromResurrectQueue(uint64 player_guid);
@@ -298,9 +298,9 @@ class Battlefield : public ZoneScript
         BfGraveyard* GetGraveyardById(uint32 id);
 
         // Misc methods
-        Creature* SpawnCreature(uint32 entry, float x, float y, float z, float o, TeamId team);
-        Creature* SpawnCreature(uint32 entry, Position pos, TeamId team);
-        GameObject* SpawnGameObject(uint32 entry, float x, float y, float z, float o);
+        CreaturePtr SpawnCreature(uint32 entry, float x, float y, float z, float o, TeamId team);
+        CreaturePtr SpawnCreature(uint32 entry, Position pos, TeamId team);
+        GameObjectPtr SpawnGameObject(uint32 entry, float x, float y, float z, float o);
 
         // Script-methods
 
@@ -311,25 +311,25 @@ class Battlefield : public ZoneScript
         /// Called x minutes before battle start when player in zone are invite to join queue
         virtual void OnStartGrouping() {};
         /// Called when a player accept to join the battle
-        virtual void OnPlayerJoinWar(Player* /*player*/) {};
+        virtual void OnPlayerJoinWar(PlayerPtr /*Player*/) {};
         /// Called when a player leave the battle
-        virtual void OnPlayerLeaveWar(Player* /*player*/) {};
+        virtual void OnPlayerLeaveWar(PlayerPtr /*Player*/) {};
         /// Called when a player leave battlefield zone
-        virtual void OnPlayerLeaveZone(Player* /*player*/) {};
+        virtual void OnPlayerLeaveZone(PlayerPtr /*Player*/) {};
         /// Called when a player enter in battlefield zone
-        virtual void OnPlayerEnterZone(Player* /*player*/) {};
+        virtual void OnPlayerEnterZone(PlayerPtr /*Player*/) {};
 
         WorldPacket BuildWarningAnnPacket(std::string msg);
         void SendWarningToAllInZone(uint32 entry);
         //void SendWarningToAllInWar(int32 entry, ...); -- UNUSED
-        void SendWarningToPlayer(Player* player, uint32 entry);
+        void SendWarningToPlayer(PlayerPtr player, uint32 entry);
 
-        void PlayerAcceptInviteToQueue(Player* player);
-        void PlayerAcceptInviteToWar(Player* player);
+        void PlayerAcceptInviteToQueue(PlayerPtr player);
+        void PlayerAcceptInviteToWar(PlayerPtr player);
         uint32 GetBattleId() { return m_BattleId; }
-        void AskToLeaveQueue(Player* player);
+        void AskToLeaveQueue(PlayerPtr player);
 
-        virtual void DoCompleteOrIncrementAchievement(uint32 /*achievement*/, Player* /*player*/, uint8 /*incrementNumber = 1*/) {};
+        virtual void DoCompleteOrIncrementAchievement(uint32 /*achievement*/, PlayerPtr /*Player*/, uint8 /*incrementNumber = 1*/) {};
 
         /// Send all worldstate data to all player in zone.
         virtual void SendInitWorldStatesToAll() {};
@@ -337,13 +337,13 @@ class Battlefield : public ZoneScript
         /// Return if we can use mount in battlefield
         bool CanFlyIn() { return !m_isActive; }
 
-        void SendAreaSpiritHealerQueryOpcode(Player* player, const uint64 & guid);
+        void SendAreaSpiritHealerQueryOpcode(PlayerPtr player, const uint64 & guid);
 
         void StartBattle();
         void EndBattle(bool endByTimer);
 
-        void HideNpc(Creature* creature);
-        void ShowNpc(Creature* creature, bool aggressive);
+        void HideNpc(CreaturePtr creature);
+        void ShowNpc(CreaturePtr creature, bool aggressive);
 
         GraveyardVect GetGraveyardVector() { return m_GraveyardList; }
 
@@ -352,8 +352,8 @@ class Battlefield : public ZoneScript
 
         void DoPlaySoundToAll(uint32 SoundID);
 
-        void InvitePlayerToQueue(Player* player);
-        void InvitePlayerToWar(Player* player);
+        void InvitePlayerToQueue(PlayerPtr player);
+        void InvitePlayerToWar(PlayerPtr player);
 
         void InitStalker(uint32 entry, float x, float y, float z, float o);
 
@@ -409,7 +409,7 @@ class Battlefield : public ZoneScript
         void KickAfkPlayers();
 
         // use for switch off all worldstate for client
-        virtual void SendRemoveWorldStates(Player* /*player*/) {}
+        virtual void SendRemoveWorldStates(PlayerPtr /*Player*/) {}
 
         // use for send a packet for all player list
         void BroadcastPacketToZone(WorldPacket& data) const;
@@ -428,7 +428,7 @@ class Battlefield : public ZoneScript
         }
 
         void RegisterZone(uint32 zoneid);
-        bool HasPlayer(Player* player) const;
+        bool HasPlayer(PlayerPtr player) const;
         void TeamCastSpell(TeamId team, int32 spellId);
 };
 

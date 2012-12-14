@@ -44,14 +44,14 @@ class instance_old_hillsbrad : public InstanceMapScript
 public:
     instance_old_hillsbrad() : InstanceMapScript("instance_old_hillsbrad", 560) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_old_hillsbrad_InstanceMapScript(map);
     }
 
     struct instance_old_hillsbrad_InstanceMapScript : public InstanceScript
     {
-        instance_old_hillsbrad_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_old_hillsbrad_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         uint32 mBarrelCount;
@@ -72,7 +72,7 @@ public:
             EpochGUID        = 0;
         }
 
-        Player* GetPlayerInMap()
+        PlayerPtr GetPlayerInMap()
         {
             Map::PlayerList const& players = instance->GetPlayers();
 
@@ -80,7 +80,7 @@ public:
             {
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 {
-                    if (Player* player = itr->getSource())
+                    if (PlayerPtr player = itr->getSource())
                         return player;
                 }
             }
@@ -97,13 +97,13 @@ public:
             {
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 {
-                    if (Player* player = itr->getSource())
+                    if (PlayerPtr player = itr->getSource())
                         player->KilledMonsterCredit(LODGE_QUEST_TRIGGER, 0);
                 }
             }
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -121,7 +121,7 @@ public:
 
         void SetData(uint32 type, uint32 data)
         {
-            Player* player = GetPlayerInMap();
+            PlayerPtr player = GetPlayerInMap();
 
             if (!player)
             {

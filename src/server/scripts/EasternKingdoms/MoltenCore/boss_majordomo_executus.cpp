@@ -76,17 +76,17 @@ class boss_majordomo : public CreatureScript
 
         struct boss_majordomoAI : public BossAI
         {
-            boss_majordomoAI(Creature* creature) : BossAI(creature, BOSS_MAJORDOMO_EXECUTUS)
+            boss_majordomoAI(CreaturePtr creature) : BossAI(creature, BOSS_MAJORDOMO_EXECUTUS)
             {
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 if (urand(0, 99) < 25)
                     DoScriptText(SAY_SLAY, me);
             }
 
-            void EnterCombat(Unit* who)
+            void EnterCombat(UnitPtr who)
             {
                 BossAI::EnterCombat(who);
                 DoScriptText(SAY_AGGRO, me);
@@ -139,7 +139,7 @@ class boss_majordomo : public CreatureScript
                                 events.ScheduleEvent(EVENT_BLAST_WAVE, 10000);
                                 break;
                             case EVENT_TELEPORT:
-                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                                     DoCast(target, SPELL_TELEPORT);
                                 events.ScheduleEvent(EVENT_TELEPORT, 20000);
                                 break;
@@ -193,21 +193,21 @@ class boss_majordomo : public CreatureScript
             }
         };
 
-        bool OnGossipHello(Player* player, Creature* creature)
+        bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
         {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_SELECT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
             player->SEND_GOSSIP_MENU(GOSSIP_HELLO, creature->GetGUID());
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 /*action*/)
+        bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 /*action*/)
         {
             player->CLOSE_GOSSIP_MENU();
             creature->AI()->DoAction(ACTION_START_RAGNAROS);
             return true;
         }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_majordomoAI(creature);
         }

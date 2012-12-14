@@ -141,7 +141,7 @@ World::~World()
 }
 
 /// Find a player in a specified zone
-Player* World::FindPlayerInZone(uint32 zone)
+PlayerPtr World::FindPlayerInZone(uint32 zone)
 {
     ///- circle through active sessions and return the first player found in the zone
     SessionMap::const_iterator itr;
@@ -150,7 +150,7 @@ Player* World::FindPlayerInZone(uint32 zone)
         if (!itr->second)
             continue;
 
-        Player* player = itr->second->GetPlayer();
+        PlayerPtr player = itr->second->GetPlayer();
         if (!player)
             continue;
 
@@ -2411,7 +2411,7 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameOrIP)
 /// Ban an account or ban an IP address, duration will be parsed using TimeStringToSecs if it is positive, otherwise permban
 BanReturn World::BanCharacter(std::string name, std::string duration, std::string reason, std::string author)
 {
-    Player* pBanned = sObjectAccessor->FindPlayerByName(name.c_str());
+    PlayerPtr pBanned = sObjectAccessor->FindPlayerByName(name.c_str());
     uint32 guid = 0;
 
     uint32 duration_secs = TimeStringToSecs(duration);
@@ -2452,7 +2452,7 @@ BanReturn World::BanCharacter(std::string name, std::string duration, std::strin
 /// Remove a ban from a character
 bool World::RemoveBanCharacter(std::string name)
 {
-    Player* pBanned = sObjectAccessor->FindPlayerByName(name.c_str());
+    PlayerPtr pBanned = sObjectAccessor->FindPlayerByName(name.c_str());
     uint32 guid = 0;
 
     /// Pick a player to ban if not online
@@ -2537,7 +2537,7 @@ void World::ShutdownServ(uint32 time, uint32 options, uint8 exitcode)
 }
 
 /// Display a shutdown message to the user(s)
-void World::ShutdownMsg(bool show, Player* player)
+void World::ShutdownMsg(bool show, PlayerPtr player)
 {
     // not show messages for idle shutdown mode
     if (m_ShutdownMask & SHUTDOWN_MASK_IDLE)
@@ -2580,7 +2580,7 @@ void World::ShutdownCancel()
 }
 
 /// Send a server message to the user(s)
-void World::SendServerMessage(ServerMessageType type, const char *text, Player* player)
+void World::SendServerMessage(ServerMessageType type, const char *text, PlayerPtr player)
 {
     WorldPacket data(SMSG_SERVER_MESSAGE, 50);              // guess size
     data << uint32(type);

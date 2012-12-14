@@ -64,7 +64,7 @@ class Player;
 class ReputationMgr
 {
     public:                                                 // constructors and global modifiers
-        explicit ReputationMgr(Player* owner) : _player(owner),
+        explicit ReputationMgr(PlayerPtr owner) : _player(owner),
             _visibleFactionCount(0), _honoredFactionCount(0), _reveredFactionCount(0), _exaltedFactionCount(0), _sendFactionIncreased(false) {}
         ~ReputationMgr() {}
 
@@ -151,7 +151,7 @@ class ReputationMgr
         void SendVisible(FactionState const* faction) const;
         void UpdateRankCounters(ReputationRank old_rank, ReputationRank new_rank);
     private:
-        Player* _player;
+        PlayerPtr _player;
         FactionStateList _factions;
         ForcedReactions _forcedReactions;
         uint8 _visibleFactionCount :8;

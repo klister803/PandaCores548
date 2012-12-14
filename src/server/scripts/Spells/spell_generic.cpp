@@ -107,7 +107,7 @@ class spell_gen_av_drekthar_presence : public SpellScriptLoader
         {
             PrepareAuraScript(spell_gen_av_drekthar_presence_AuraScript);
 
-            bool CheckAreaTarget(Unit* target)
+            bool CheckAreaTarget(UnitPtr target)
             {
                 switch (target->GetEntry())
                 {
@@ -192,9 +192,9 @@ class spell_gen_cannibalize : public SpellScriptLoader
 
             SpellCastResult CheckIfCorpseNear()
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 float max_range = GetSpellInfo()->GetMaxRange(false);
-                WorldObject* result = NULL;
+                WorldObjectPtr result = NULL;
                 // search for nearby enemy corpse in range
                 Trinity::AnyDeadUnitSpellTargetInRangeCheck check(caster, max_range, GetSpellInfo(), TARGET_CHECK_ENEMY);
                 Trinity::WorldObjectSearcher<Trinity::AnyDeadUnitSpellTargetInRangeCheck> searcher(caster, result, check);
@@ -206,7 +206,7 @@ class spell_gen_cannibalize : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 caster->CastSpell(caster, SPELL_CANNIBALIZE_TRIGGERED, false);
             }
 
@@ -248,7 +248,7 @@ class spell_gen_parachute : public SpellScriptLoader
 
             void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
             {
-                if (Player* target = GetTarget()->ToPlayer())
+                if (PlayerPtr target = TO_PLAYER(GetTarget()))
                     if (target->IsFalling())
                     {
                         target->RemoveAurasDueToSpell(SPELL_PARACHUTE);
@@ -291,11 +291,12 @@ class spell_gen_pet_summoned : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                Player* player = GetCaster()->ToPlayer();
+                PlayerPtr player = TO_PLAYER(GetCaster());
                 if (player->GetLastPetNumber())
                 {
                     PetType newPetType = (player->getClass() == CLASS_HUNTER) ? HUNTER_PET : SUMMON_PET;
-                    if (Pet* newPet = new Pet(player, newPetType))
+                    PetPtr newPet (new Pet(player, newPetType));
+                    if (newPet)
                     {
                         if (newPet->LoadPetFromDB(player, 0, player->GetLastPetNumber(), true))
                         {
@@ -316,8 +317,6 @@ class spell_gen_pet_summoned : public SpellScriptLoader
                                     break;
                             }
                         }
-                        else
-                            delete newPet;
                     }
                 }
             }
@@ -345,7 +344,7 @@ class spell_gen_remove_flight_auras : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* target = GetHitUnit())
+                if (UnitPtr target = GetHitUnit())
                 {
                     target->RemoveAurasByType(SPELL_AURA_FLY);
                     target->RemoveAurasByType(SPELL_AURA_MOD_INCREASE_MOUNTED_FLIGHT_SPEED);
@@ -389,8 +388,8 @@ class spell_gen_leeching_swarm : public SpellScriptLoader
 
             void HandleEffectPeriodic(constAuraEffectPtr aurEff)
             {
-                Unit* caster = GetCaster();
-                if (Unit* target = GetTarget())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr target = GetTarget())
                 {
                     int32 lifeLeeched = target->CountPctFromCurHealth(aurEff->GetAmount());
                     if (lifeLeeched < 250)
@@ -514,8 +513,8 @@ class spell_gen_trick : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
-                if (Player* target = GetHitPlayer())
+                UnitPtr caster = GetCaster();
+                if (PlayerPtr target = GetHitPlayer())
                 {
                     uint8 gender = target->getGender();
                     uint32 spellId = SPELL_TRICK_BUFF;
@@ -582,8 +581,8 @@ class spell_gen_trick_or_treat : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
-                if (Player* target = GetHitPlayer())
+                UnitPtr caster = GetCaster();
+                if (PlayerPtr target = GetHitPlayer())
                 {
                     caster->CastSpell(target, roll_chance_i(50) ? SPELL_TRICK : SPELL_TREAT, true, NULL);
                     caster->CastSpell(target, SPELL_TRICKED_OR_TREATED, true, NULL);
@@ -613,7 +612,7 @@ class spell_creature_permanent_feign_death : public SpellScriptLoader
 
             void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 target->SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_DEAD);
                 target->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_FEIGN_DEATH);
 
@@ -664,7 +663,7 @@ class spell_pvp_trinket_wotf_shared_cd : public SpellScriptLoader
             {
                 // This is only needed because spells cast from spell_linked_spell are triggered by default
                 // Spell::SendSpellCooldown() skips all spells with TRIGGERED_IGNORE_SPELL_AND_CATEGORY_CD
-                GetCaster()->ToPlayer()->AddSpellAndCategoryCooldowns(GetSpellInfo(), GetCastItem() ? GetCastItem()->GetEntry() : 0, GetSpell());
+                TO_PLAYER(GetCaster())->AddSpellAndCategoryCooldowns(GetSpellInfo(), GetCastItem() ? GetCastItem()->GetEntry() : 0, GetSpell());
             }
 
             void Register()
@@ -710,7 +709,7 @@ class spell_gen_animal_blood : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* owner = GetUnitOwner())
+                if (UnitPtr owner = GetUnitOwner())
                     if (owner->IsInWater())
                         owner->CastSpell(owner, SPELL_SPAWN_BLOOD_POOL, true);
             }
@@ -757,7 +756,7 @@ class spell_gen_divine_storm_cd_reset : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                Player* caster = GetCaster()->ToPlayer();
+                PlayerPtr caster = TO_PLAYER(GetCaster());
                 if (caster->HasSpellCooldown(SPELL_DIVINE_STORM))
                     caster->RemoveSpellCooldown(SPELL_DIVINE_STORM, true);
             }
@@ -790,7 +789,7 @@ class spell_gen_gunship_portal : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                Player* caster = GetCaster()->ToPlayer();
+                PlayerPtr caster = TO_PLAYER(GetCaster());
                 if (Battleground* bg = caster->GetBattleground())
                     if (bg->GetTypeID(true) == BATTLEGROUND_IC)
                         bg->DoAction(1, caster->GetGUID());
@@ -824,7 +823,7 @@ class spell_gen_parachute_ic : public SpellScriptLoader
 
             void HandleTriggerSpell(constAuraEffectPtr /*aurEff*/)
             {
-                if (Player* target = GetTarget()->ToPlayer())
+                if (PlayerPtr target = TO_PLAYER(GetTarget()))
                     if (target->m_movementInfo.fallTime > 2000)
                         target->CastSpell(target, SPELL_PARACHUTE_IC, true);
             }
@@ -863,7 +862,7 @@ class spell_gen_dungeon_credit : public SpellScriptLoader
                     return;
 
                 _handled = true;
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (InstanceScript* instance = caster->GetInstanceScript())
                     instance->UpdateEncounterState(ENCOUNTER_CREDIT_CAST_SPELL, GetSpellInfo()->Id, caster);
             }
@@ -898,7 +897,7 @@ class spell_gen_profession_research : public SpellScriptLoader
 
             SpellCastResult CheckRequirement()
             {
-                if (HasDiscoveredAllSpells(GetSpellInfo()->Id, GetCaster()->ToPlayer()))
+                if (HasDiscoveredAllSpells(GetSpellInfo()->Id, TO_PLAYER(GetCaster())))
                 {
                     SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_NOTHING_TO_DISCOVER);
                     return SPELL_FAILED_CUSTOM_ERROR;
@@ -972,9 +971,9 @@ class spell_generic_clone_weapon : public SpellScriptLoader
             void HandleScriptEffect(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
 
-                if (Unit* target = GetHitUnit())
+                if (UnitPtr target = GetHitUnit())
                 {
 
                     uint32 spellId = uint32(GetSpellInfo()->Effects[EFFECT_0].CalcValue());
@@ -1016,8 +1015,8 @@ class spell_gen_clone_weapon_aura : public SpellScriptLoader
 
                 void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
                 {
-                    Unit* caster = GetCaster();
-                    Unit* target = GetTarget();
+                    UnitPtr caster = GetCaster();
+                    UnitPtr target = GetTarget();
 
                     if (!caster)
                         return;
@@ -1030,10 +1029,10 @@ class spell_gen_clone_weapon_aura : public SpellScriptLoader
                         {
 
                         prevItem = target->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID);
-                        if (Player* player = caster->ToPlayer())
+                        if (PlayerPtr player = TO_PLAYER(caster))
 
                         {
-                            if (Item* mainItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+                            if (ItemPtr mainItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
                                 target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, mainItem->GetEntry());
 
                         }
@@ -1046,9 +1045,9 @@ class spell_gen_clone_weapon_aura : public SpellScriptLoader
                     {
                         prevItem = target->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID) + 1;
 
-                        if (Player* player = caster->ToPlayer())
+                        if (PlayerPtr player = TO_PLAYER(caster))
                         {
-                            if (Item* offItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                            if (ItemPtr offItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
                                 target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, offItem->GetEntry());
                         }
                         else
@@ -1059,9 +1058,9 @@ class spell_gen_clone_weapon_aura : public SpellScriptLoader
                     {
                         prevItem = target->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID) + 2;
 
-                        if (Player* player = caster->ToPlayer())
+                        if (PlayerPtr player = TO_PLAYER(caster))
                         {
-                            if (Item* rangedItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
+                            if (ItemPtr rangedItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
                                 target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, rangedItem->GetEntry());
                         }
                         else 
@@ -1075,7 +1074,7 @@ class spell_gen_clone_weapon_aura : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             { 
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
 
                 switch (GetSpellInfo()->Id)
                 { 
@@ -1144,8 +1143,8 @@ class spell_gen_seaforium_blast : public SpellScriptLoader
             void AchievementCredit(SpellEffIndex /*effIndex*/)
             {
                 // but in effect handling OriginalCaster can become NULL
-                if (Unit* originalCaster = GetOriginalCaster())
-                    if (GameObject* go = GetHitGObj())
+                if (UnitPtr originalCaster = GetOriginalCaster())
+                    if (GameObjectPtr go = GetHitGObj())
                         if (go->GetGOInfo()->type == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
                             originalCaster->CastSpell(originalCaster, SPELL_PLANT_CHARGES_CREDIT_ACHIEVEMENT, true);
             }
@@ -1180,7 +1179,7 @@ class spell_gen_turkey_marker : public SpellScriptLoader
             {
                 // store stack apply times, so we can pop them while they expire
                 _applyTimes.push_back(getMSTime());
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
 
                 // on stack 15 cast the achievement crediting spell
                 if (GetStackAmount() >= 15)
@@ -1223,7 +1222,7 @@ class spell_gen_lifeblood : public SpellScriptLoader
 
             void CalculateAmount(constAuraEffectPtr aurEff, int32& amount, bool& /*canBeRecalculated*/)
             {
-                if (Unit* owner = GetUnitOwner())
+                if (UnitPtr owner = GetUnitOwner())
                     amount += int32(CalculatePct(owner->GetMaxHealth(), 1.5f / aurEff->GetTotalTicks()));
             }
 
@@ -1258,7 +1257,7 @@ class spell_gen_magic_rooster : public SpellScriptLoader
             void HandleScript(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                if (Player* target = GetHitPlayer())
+                if (PlayerPtr target = GetHitPlayer())
                 {
                     // prevent client crashes from stacking mounts
                     target->RemoveAurasByType(SPELL_AURA_MOUNTED);
@@ -1338,7 +1337,7 @@ class spell_gen_launch : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                if (Player* player = GetHitPlayer())
+                if (PlayerPtr player = GetHitPlayer())
                     player->AddAura(SPELL_LAUNCH_NO_FALLING_DAMAGE, player); // prevents falling damage
             }
 
@@ -1346,7 +1345,7 @@ class spell_gen_launch : public SpellScriptLoader
             {
                 WorldLocation const* const position = GetExplTargetDest();
 
-                if (Player* player = GetHitPlayer())
+                if (PlayerPtr player = GetHitPlayer())
                 {
                     player->ExitVehicle();
 
@@ -1395,7 +1394,7 @@ class spell_gen_vehicle_scaling : public SpellScriptLoader
 
             void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 float factor;
                 uint16 baseItemLevel;
 
@@ -1412,7 +1411,7 @@ class spell_gen_vehicle_scaling : public SpellScriptLoader
                         break;
                 }
 
-                float avgILvl = caster->ToPlayer()->GetAverageItemLevel();
+                float avgILvl = TO_PLAYER(caster)->GetAverageItemLevel();
                 if (avgILvl < baseItemLevel)
                     return;                     // TODO: Research possibility of scaling down
 
@@ -1450,7 +1449,7 @@ class spell_gen_oracle_wolvar_reputation : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex effIndex)
             {
-                Player* player = GetCaster()->ToPlayer();
+                PlayerPtr player = TO_PLAYER(GetCaster());
                 uint32 factionId = GetSpellInfo()->Effects[effIndex].CalcValue();
                 int32  repChange =  GetSpellInfo()->Effects[EFFECT_1].CalcValue();
 
@@ -1506,13 +1505,13 @@ class spell_gen_damage_reduction_aura : public SpellScriptLoader
 
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 target->CastSpell(target, SPELL_DAMAGE_REDUCTION_AURA, true);
             }
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 if (target->HasAura(SPELL_DAMAGE_REDUCTION_AURA) && !(target->HasAura(SPELL_BLESSING_OF_SANCTUARY) ||
                     target->HasAura(SPELL_GREATER_BLESSING_OF_SANCTUARY) ||
                     target->HasAura(SPELL_RENEWED_HOPE) ||
@@ -1557,7 +1556,7 @@ class spell_gen_luck_of_the_draw : public SpellScriptLoader
 
             void Update(AuraEffectPtr /*effect*/)
             {
-                if (Player* owner = GetUnitOwner()->ToPlayer())
+                if (PlayerPtr owner = TO_PLAYER(GetUnitOwner()))
                 {
                     const LfgDungeonSet dungeons = sLFGMgr->GetSelectedDungeons(owner->GetGUID());
                     LfgDungeonSet::const_iterator itr = dungeons.begin();
@@ -1570,8 +1569,8 @@ class spell_gen_luck_of_the_draw : public SpellScriptLoader
 
 
                     LFGDungeonEntry const* randomDungeon = sLFGDungeonStore.LookupEntry(*itr);
-                    if (Group* group = owner->GetGroup())
-                        if (Map const* map = owner->GetMap())
+                    if (GroupPtr group = owner->GetGroup())
+                        if (constMapPtr map = owner->GetMap())
                             if (group->isLFGGroup())
                                 if (uint32 dungeonId = sLFGMgr->GetDungeon(group->GetGUID(), true))
                                     if (LFGDungeonEntry const* dungeon = sLFGDungeonStore.LookupEntry(dungeonId))
@@ -1621,8 +1620,8 @@ class spell_gen_dummy_trigger : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
                 int32 damage = GetEffectValue();
-                Unit* caster = GetCaster();
-                if (Unit* target = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr target = GetHitUnit())
                     if (SpellInfo const* triggeredByAuraSpell = GetTriggeringSpell())
                         if (triggeredByAuraSpell->Id == SPELL_PERSISTANT_SHIELD_TRIGGERED)
                             caster->CastCustomSpell(target, SPELL_PERSISTANT_SHIELD_TRIGGERED, &damage, NULL, NULL, true);
@@ -1657,8 +1656,8 @@ class spell_gen_spirit_healer_res : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Player* originalCaster = GetOriginalCaster()->ToPlayer();
-                if (Unit* target = GetHitUnit())
+                PlayerPtr originalCaster = TO_PLAYER(GetOriginalCaster());
+                if (UnitPtr target = GetHitUnit())
                 {
                     WorldPacket data(SMSG_SPIRIT_HEALER_CONFIRM, 8);
                     data << uint64(target->GetGUID());
@@ -1704,7 +1703,7 @@ class spell_gen_gadgetzan_transporter_backfire : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 int32 r = irand(0, 119);
                 if (r < 20)                           // Transporter Malfunction - 1/6 polymorph
                     caster->CastSpell(caster, SPELL_TRANSPORTER_MALFUNCTION_POLYMORPH, true);
@@ -1750,7 +1749,7 @@ class spell_gen_gnomish_transporter : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 caster->CastSpell(caster, roll_chance_i(50) ? SPELL_TRANSPORTER_SUCCESS : SPELL_TRANSPORTER_FAILURE , true);
             }
 
@@ -1803,7 +1802,7 @@ class spell_gen_dalaran_disguise : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                if (Player* player = GetHitPlayer())
+                if (PlayerPtr player = GetHitPlayer())
                 {
                     uint8 gender = player->getGender();
 
@@ -1880,7 +1879,7 @@ class spell_gen_break_shield: public SpellScriptLoader
 
             void HandleScriptEffect(SpellEffIndex effIndex)
             {
-                Unit* target = GetHitUnit();
+                UnitPtr target = GetHitUnit();
 
                 switch (effIndex)
                 {
@@ -1901,7 +1900,7 @@ class spell_gen_break_shield: public SpellScriptLoader
                                 return;
                         }
 
-                        if (Unit* rider = GetCaster()->GetCharmer())
+                        if (UnitPtr rider = GetCaster()->GetCharmer())
                             rider->CastSpell(target, spellId, false);
                         else
                             GetCaster()->CastSpell(target, spellId, false);
@@ -1919,7 +1918,7 @@ class spell_gen_break_shield: public SpellScriptLoader
                                     {
                                         aura->ModStackAmount(-1, AURA_REMOVE_BY_ENEMY_SPELL);
                                         // Remove dummys from rider (Necessary for updating visual shields)
-                                        if (Unit* rider = target->GetCharmer())
+                                        if (UnitPtr rider = target->GetCharmer())
                                             if (AuraPtr defend = rider->GetAura(aura->GetId()))
                                                 defend->ModStackAmount(-1, AURA_REMOVE_BY_ENEMY_SPELL);
                                         break;
@@ -2006,7 +2005,7 @@ class spell_gen_mounted_charge: public SpellScriptLoader
 
             void HandleScriptEffect(SpellEffIndex effIndex)
             {
-                Unit* target = GetHitUnit();
+                UnitPtr target = GetHitUnit();
 
                 switch (effIndex)
                 {
@@ -2030,7 +2029,7 @@ class spell_gen_mounted_charge: public SpellScriptLoader
                         if (!target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE) && roll_chance_f(12.5f))
                             spellId = SPELL_CHARGE_MISS_EFFECT;
 
-                        if (Unit* vehicle = GetCaster()->GetVehicleBase())
+                        if (UnitPtr vehicle = GetCaster()->GetVehicleBase())
                             vehicle->CastSpell(target, spellId, false);
                         else
                             GetCaster()->CastSpell(target, spellId, false);
@@ -2049,7 +2048,7 @@ class spell_gen_mounted_charge: public SpellScriptLoader
                                     {
                                         aura->ModStackAmount(-1, AURA_REMOVE_BY_ENEMY_SPELL);
                                         // Remove dummys from rider (Necessary for updating visual shields)
-                                        if (Unit* rider = target->GetCharmer())
+                                        if (UnitPtr rider = target->GetCharmer())
                                             if (AuraPtr defend = rider->GetAura(aura->GetId()))
                                                 defend->ModStackAmount(-1, AURA_REMOVE_BY_ENEMY_SPELL);
                                         break;
@@ -2082,7 +2081,7 @@ class spell_gen_mounted_charge: public SpellScriptLoader
                         return;
                 }
 
-                if (Unit* rider = GetCaster()->GetCharmer())
+                if (UnitPtr rider = GetCaster()->GetCharmer())
                     rider->CastSpell(GetHitUnit(), spellId, false);
                 else
                     GetCaster()->CastSpell(GetHitUnit(), spellId, false);
@@ -2137,7 +2136,7 @@ class spell_gen_defend : public SpellScriptLoader
             {
                 if (GetCaster())
                 {
-                    Unit* target = GetTarget();
+                    UnitPtr target = GetTarget();
 
                     for (uint8 i = 0; i < GetSpellInfo()->StackAmount; ++i)
                         target->RemoveAurasDueToSpell(SPELL_VISUAL_SHIELD_1 + i);
@@ -2156,9 +2155,9 @@ class spell_gen_defend : public SpellScriptLoader
 
             void RemoveDummyFromDriver(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
-                    if (TempSummon* vehicle = caster->ToTempSummon())
-                        if (Unit* rider = vehicle->GetSummoner())
+                if (UnitPtr caster = GetCaster())
+                    if (TempSummonPtr vehicle = caster->ToTempSummon())
+                        if (UnitPtr rider = vehicle->GetSummoner())
                             rider->RemoveAurasDueToSpell(GetId());
             }
 
@@ -2218,14 +2217,14 @@ class spell_gen_tournament_duel : public SpellScriptLoader
 
             void HandleScriptEffect(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* rider = GetCaster()->GetCharmer())
+                if (UnitPtr rider = GetCaster()->GetCharmer())
                 {
-                    if (Player* plrTarget = GetHitPlayer())
+                    if (PlayerPtr plrTarget = GetHitPlayer())
                     {
                         if (plrTarget->HasAura(SPELL_ON_TOURNAMENT_MOUNT) && plrTarget->GetVehicleBase())
                             rider->CastSpell(plrTarget, SPELL_MOUNTED_DUEL, true);
                     }
-                    else if (Unit* unitTarget = GetHitUnit())
+                    else if (UnitPtr unitTarget = GetHitUnit())
                     {
                         if (unitTarget->GetCharmer() && unitTarget->GetCharmer()->GetTypeId() == TYPEID_PLAYER && unitTarget->GetCharmer()->HasAura(SPELL_ON_TOURNAMENT_MOUNT))
                             rider->CastSpell(unitTarget->GetCharmer(), SPELL_MOUNTED_DUEL, true);
@@ -2406,11 +2405,11 @@ class spell_gen_on_tournament_mount : public SpellScriptLoader
 
             void HandleApplyEffect(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Unit* vehicle = caster->GetVehicleBase())
+                    if (UnitPtr vehicle = caster->GetVehicleBase())
                     {
-                        _pennantSpellId = GetPennatSpellId(caster->ToPlayer(), vehicle);
+                        _pennantSpellId = GetPennatSpellId(TO_PLAYER(caster), vehicle);
                         caster->CastSpell(caster, _pennantSpellId, true);
                     }
                 }
@@ -2418,11 +2417,11 @@ class spell_gen_on_tournament_mount : public SpellScriptLoader
 
             void HandleRemoveEffect(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                     caster->RemoveAurasDueToSpell(_pennantSpellId);
             }
 
-            uint32 GetPennatSpellId(Player* player, Unit* mount)
+            uint32 GetPennatSpellId(PlayerPtr player, UnitPtr mount)
             {
                 switch (mount->GetEntry())
                 {
@@ -2561,7 +2560,7 @@ class spell_gen_tournament_pennant : public SpellScriptLoader
 
             void HandleApplyEffect(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                     if (!caster->GetVehicleBase())
                         caster->RemoveAurasDueToSpell(GetId());
             }
@@ -2601,8 +2600,8 @@ class spell_gen_chaos_blast : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
                 int32 basepoints0 = 100;
-                Unit* caster = GetCaster();
-                if (Unit* target = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr target = GetHitUnit())
                     caster->CastCustomSpell(target, SPELL_CHAOS_BLAST, &basepoints0, NULL, NULL, true);
             }
 
@@ -2631,9 +2630,9 @@ class spell_gen_ds_flush_knockback : public SpellScriptLoader
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
                 // Here the target is the water spout and determines the position where the player is knocked from
-                if (Unit* target = GetHitUnit())
+                if (UnitPtr target = GetHitUnit())
                 {
-                    if (Player* player = GetCaster()->ToPlayer())
+                    if (PlayerPtr player = TO_PLAYER(GetCaster()))
                     {
                         float horizontalSpeed = 20.0f + (40.0f - GetCaster()->GetDistance(target));
                         float verticalSpeed = 8.0f;
@@ -2834,7 +2833,7 @@ class spell_gen_bandage : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                if (Unit* target = GetExplTargetUnit())
+                if (UnitPtr target = GetExplTargetUnit())
                 {
                     if (target->HasAura(SPELL_RECENTLY_BANDAGED))
                         return SPELL_FAILED_TARGET_AURASTATE;
@@ -2844,7 +2843,7 @@ class spell_gen_bandage : public SpellScriptLoader
 
             void HandleScript()
             {
-                if (Unit* target = GetHitUnit())
+                if (UnitPtr target = GetHitUnit())
                     GetCaster()->CastSpell(target, SPELL_RECENTLY_BANDAGED, true);
             }
 
@@ -2945,16 +2944,16 @@ class spell_gen_summon_elemental : public SpellScriptLoader
             void AfterApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetCaster())
-                    if (Unit* owner = GetCaster()->GetOwner())
+                    if (UnitPtr owner = GetCaster()->GetOwner())
                         owner->CastSpell(owner, _spellId, true);
             }
 
             void AfterRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetCaster())
-                    if (Unit* owner = GetCaster()->GetOwner())
+                    if (UnitPtr owner = GetCaster()->GetOwner())
                         if (owner->GetTypeId() == TYPEID_PLAYER) // todo: this check is maybe wrong
-                            owner->ToPlayer()->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
+                            TO_PLAYER(owner)->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
             }
 
             void Register()
@@ -3061,7 +3060,7 @@ class spell_gen_mount : public SpellScriptLoader
             {
                 PreventHitDefaultEffect(effIndex);
 
-                if (Player* target = GetHitPlayer())
+                if (PlayerPtr target = GetHitPlayer())
                 {
                     // Prevent stacking of mounts and client crashes upon dismounting
                     target->RemoveAurasByType(SPELL_AURA_MOUNTED, 0, GetHitAura());
@@ -3173,7 +3172,7 @@ public:
 
         void HandleScript(SpellEffIndex effIndex)
         {
-            if (Player* player = GetHitPlayer())
+            if (PlayerPtr player = GetHitPlayer())
             {
                 static uint32 const itemId[5] = { ITEM_FOAM_SWORD_GREEN, ITEM_FOAM_SWORD_PINK, ITEM_FOAM_SWORD_BLUE, ITEM_FOAM_SWORD_RED, ITEM_FOAM_SWORD_YELLOW };
                 // player can only have one of these items
@@ -3210,7 +3209,7 @@ public:
 
         void HandleScript(SpellEffIndex /*effIndex*/)
         {
-            if (Player* target = GetHitPlayer())
+            if (PlayerPtr target = GetHitPlayer())
             {
                 constAuraPtr aura = GetHitAura();
                 if (!(aura && aura->GetStackAmount() == 3))
@@ -3221,7 +3220,7 @@ public:
 
                 if (constAuraPtr aura = target->GetAura(SPELL_ON_GUARD))
                 {
-                    if (Item* item = target->GetItemByGuid(aura->GetCastItemGUID()))
+                    if (ItemPtr item = target->GetItemByGuid(aura->GetCastItemGUID()))
                         target->DestroyItemCount(item->GetEntry(), 1, true);
                 }
             }
@@ -3301,7 +3300,7 @@ class spell_gen_tp_storm_orgri : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
                 {
                     // Tp to Stormwind
                     if (GetSpellInfo()->Id == 17334)
@@ -3336,7 +3335,7 @@ class spell_gen_gift_of_the_naaru : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
                 {
                     int32 healAmount = _player->GetMaxHealth() * 0.2f / 5;
 

@@ -101,7 +101,7 @@ void WorldSession::HandleAutoEquipItemSlotOpcode(WorldPacket& recvData)
     if (!Player::IsEquipmentPos(INVENTORY_SLOT_BAG_0, dstslot))
         return;
 
-    Item* item = _player->GetItemByGuid(itemguid);
+    ItemPtr item = _player->GetItemByGuid(itemguid);
     uint16 dstpos = dstslot | (INVENTORY_SLOT_BAG_0 << 8);
 
     if (!item || item->GetPos() == dstpos)
@@ -148,7 +148,7 @@ void WorldSession::HandleAutoEquipItemOpcode(WorldPacket & recvData)
     recvData >> srcbag >> srcslot;
     //sLog->outDebug("STORAGE: receive srcbag = %u, srcslot = %u", srcbag, srcslot);
 
-    Item* pSrcItem  = _player->GetItemByPos(srcbag, srcslot);
+    ItemPtr pSrcItem  = _player->GetItemByPos(srcbag, srcslot);
     if (!pSrcItem)
         return;                                             // only at cheat
 
@@ -164,7 +164,7 @@ void WorldSession::HandleAutoEquipItemOpcode(WorldPacket & recvData)
     if (dest == src)                                           // prevent equip in same slot, only at cheat
         return;
 
-    Item* pDstItem = _player->GetItemByPos(dest);
+    ItemPtr pDstItem = _player->GetItemByPos(dest);
     if (!pDstItem)                                         // empty slot, simple case
     {
         _player->RemoveItem(srcbag, srcslot, true);
@@ -255,7 +255,7 @@ void WorldSession::HandleDestroyItemOpcode(WorldPacket & recvData)
         }
     }
 
-    Item* pItem  = _player->GetItemByPos(bag, slot);
+    ItemPtr pItem  = _player->GetItemByPos(bag, slot);
     if (!pItem)
     {
         _player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, NULL, NULL);
@@ -448,7 +448,7 @@ void WorldSession::HandleReadItem(WorldPacket& recvData)
     uint8 bag, slot;
     recvData >> slot >> bag;
 
-    Item* pItem = _player->GetItemByPos(bag, slot);
+    ItemPtr pItem = _player->GetItemByPos(bag, slot);
 
     if (pItem && pItem->GetTemplate()->PageText)
     {
@@ -484,7 +484,7 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
     if (!itemguid)
         return;
 
-    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
+    CreaturePtr creature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!creature)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleSellItemOpcode - Unit (GUID: %u) not found or you can not interact with him.", uint32(GUID_LOPART(vendorguid)));
@@ -496,7 +496,7 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-    Item* pItem = _player->GetItemByGuid(itemguid);
+    ItemPtr pItem = _player->GetItemByGuid(itemguid);
     if (pItem)
     {
         // prevent sell not owner item
@@ -548,7 +548,7 @@ void WorldSession::HandleSellItemOpcode(WorldPacket & recvData)
             {
                 if (count < pItem->GetCount())               // need split items
                 {
-                    Item* pNewItem = pItem->CloneItem(count, _player);
+                    ItemPtr pNewItem = pItem->CloneItem(count, _player);
                     if (!pNewItem)
                     {
                         sLog->outError(LOG_FILTER_NETWORKIO, "WORLD: HandleSellItemOpcode - could not create clone of item %u; count = %u", pItem->GetEntry(), count);
@@ -595,7 +595,7 @@ void WorldSession::HandleBuybackItem(WorldPacket& recvData)
 
     recvData >> vendorguid >> slot;
 
-    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
+    CreaturePtr creature = GetPlayer()->GetNPCIfCanInteractWith(vendorguid, UNIT_NPC_FLAG_VENDOR);
     if (!creature)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleBuybackItem - Unit (GUID: %u) not found or you can not interact with him.", uint32(GUID_LOPART(vendorguid)));
@@ -607,7 +607,7 @@ void WorldSession::HandleBuybackItem(WorldPacket& recvData)
     if (GetPlayer()->HasUnitState(UNIT_STATE_DIED))
         GetPlayer()->RemoveAurasByType(SPELL_AURA_FEIGN_DEATH);
 
-    Item* pItem = _player->GetItemFromBuyBackSlot(slot);
+    ItemPtr pItem = _player->GetItemFromBuyBackSlot(slot);
     if (pItem)
     {
         uint32 price = _player->GetUInt32Value(PLAYER_FIELD_BUYBACK_PRICE_1 + slot - BUYBACK_SLOT_START);
@@ -651,7 +651,7 @@ void WorldSession::HandleBuyItemInSlotOpcode(WorldPacket & recvData)
         return;                                             // cheating
 
     uint8 bag = NULL_BAG;                                   // init for case invalid bagGUID
-    Item* bagItem = NULL;
+    ItemPtr bagItem = NULL;
     // find bag slot by bag guid
     if (bagguid == _player->GetGUID())
         bag = INVENTORY_SLOT_BAG_0;
@@ -686,7 +686,7 @@ void WorldSession::HandleBuyItemOpcode(WorldPacket& recvData)
 
     if (itemType == ITEM_VENDOR_TYPE_ITEM)
     {
-        Item* bagItem = _player->GetItemByGuid(bagGuid);
+        ItemPtr bagItem = _player->GetItemByGuid(bagGuid);
 
         uint8 bag = NULL_BAG;
         if (bagItem && bagItem->IsBag())
@@ -718,7 +718,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_LIST_INVENTORY");
 
-    Creature* vendor = GetPlayer()->GetNPCIfCanInteractWith(vendorGuid, UNIT_NPC_FLAG_VENDOR);
+    CreaturePtr vendor = GetPlayer()->GetNPCIfCanInteractWith(vendorGuid, UNIT_NPC_FLAG_VENDOR);
     if (!vendor)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: SendListInventory - Unit (GUID: %u) not found or you can not interact with him.", uint32(GUID_LOPART(vendorGuid)));
@@ -889,7 +889,7 @@ void WorldSession::HandleAutoStoreBagItemOpcode(WorldPacket& recvData)
     recvData >> srcbag >> srcslot >> dstbag;
     //sLog->outDebug("STORAGE: receive srcbag = %u, srcslot = %u, dstbag = %u", srcbag, srcslot, dstbag);
 
-    Item* pItem = _player->GetItemByPos(srcbag, srcslot);
+    ItemPtr pItem = _player->GetItemByPos(srcbag, srcslot);
     if (!pItem)
         return;
 
@@ -941,7 +941,7 @@ void WorldSession::HandleBuyBankSlotOpcode(WorldPacket& recvPacket)
 
     // cheating protection
     /* not critical if "cheated", and check skip allow by slots in bank windows open by .bank command.
-    Creature* creature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_BANKER);
+    CreaturePtr creature = GetPlayer()->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_BANKER);
     if (!creature)
     {
         sLog->outDebug("WORLD: HandleBuyBankSlotOpcode - Unit (GUID: %u) not found or you can't interact with him.", uint32(GUID_LOPART(guid)));
@@ -993,7 +993,7 @@ void WorldSession::HandleAutoBankItemOpcode(WorldPacket& recvPacket)
     recvPacket >> srcbag >> srcslot;
     sLog->outDebug(LOG_FILTER_NETWORKIO, "STORAGE: receive srcbag = %u, srcslot = %u", srcbag, srcslot);
 
-    Item* pItem = _player->GetItemByPos(srcbag, srcslot);
+    ItemPtr pItem = _player->GetItemByPos(srcbag, srcslot);
     if (!pItem)
         return;
 
@@ -1024,7 +1024,7 @@ void WorldSession::HandleAutoStoreBankItemOpcode(WorldPacket& recvPacket)
     recvPacket >> srcbag >> srcslot;
     sLog->outDebug(LOG_FILTER_NETWORKIO, "STORAGE: receive srcbag = %u, srcslot = %u", srcbag, srcslot);
 
-    Item* pItem = _player->GetItemByPos(srcbag, srcslot);
+    ItemPtr pItem = _player->GetItemByPos(srcbag, srcslot);
     if (!pItem)
         return;
 
@@ -1091,7 +1091,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WRAP: receive gift_bag = %u, gift_slot = %u, item_bag = %u, item_slot = %u", gift_bag, gift_slot, item_bag, item_slot);
 
-    Item* gift = _player->GetItemByPos(gift_bag, gift_slot);
+    ItemPtr gift = _player->GetItemByPos(gift_bag, gift_slot);
     if (!gift)
     {
         _player->SendEquipError(EQUIP_ERR_ITEM_NOT_FOUND, gift, NULL);
@@ -1104,7 +1104,7 @@ void WorldSession::HandleWrapItemOpcode(WorldPacket& recvData)
         return;
     }
 
-    Item* item = _player->GetItemByPos(item_bag, item_slot);
+    ItemPtr item = _player->GetItemByPos(item_bag, item_slot);
 
     if (!item)
     {
@@ -1210,7 +1210,7 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
         (gem_guids[1] && (gem_guids[1] == gem_guids[2])))
         return;
 
-    Item* itemTarget = _player->GetItemByGuid(item_guid);
+    ItemPtr itemTarget = _player->GetItemByGuid(item_guid);
     if (!itemTarget)                                         //missing item to socket
         return;
 
@@ -1221,7 +1221,7 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
     //this slot is excepted when applying / removing meta gem bonus
     uint8 slot = itemTarget->IsEquipped() ? itemTarget->GetSlot() : uint8(NULL_SLOT);
 
-    Item* Gems[MAX_GEM_SOCKETS];
+    ItemPtr Gems[MAX_GEM_SOCKETS];
     for (int i = 0; i < MAX_GEM_SOCKETS; ++i)
         Gems[i] = gem_guids[i] ? _player->GetItemByGuid(gem_guids[i]) : NULL;
 
@@ -1371,7 +1371,7 @@ void WorldSession::HandleSocketOpcode(WorldPacket& recvData)
         {
             uint32 gemCount = 1;
             itemTarget->SetEnchantment(EnchantmentSlot(SOCK_ENCHANTMENT_SLOT+i), GemEnchants[i], 0, 0);
-            if (Item* guidItem = _player->GetItemByGuid(gem_guids[i]))
+            if (ItemPtr guidItem = _player->GetItemByGuid(gem_guids[i]))
                 _player->DestroyItemCount(guidItem, gemCount, true);
         }
     }
@@ -1406,7 +1406,7 @@ void WorldSession::HandleCancelTempEnchantmentOpcode(WorldPacket& recvData)
     if (!Player::IsEquipmentPos(INVENTORY_SLOT_BAG_0, slot))
         return;
 
-    Item* item = GetPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
+    ItemPtr item = GetPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, slot);
 
     if (!item)
         return;
@@ -1441,7 +1441,7 @@ void WorldSession::HandleItemRefundInfoRequest(WorldPacket& recvData)
     recvData.ReadByteSeq(guid[4]);
     recvData.ReadByteSeq(guid[5]);
 
-    Item* item = _player->GetItemByGuid(guid);
+    ItemPtr item = _player->GetItemByGuid(guid);
     if (!item)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Item refund: item not found!");
@@ -1473,7 +1473,7 @@ void WorldSession::HandleItemRefund(WorldPacket &recvData)
     recvData.ReadByteSeq(guid[2]);
     recvData.ReadByteSeq(guid[4]);
 
-    Item* item = _player->GetItemByGuid(guid);
+    ItemPtr item = _player->GetItemByGuid(guid);
     if (!item)
     {
         sLog->outDebug(LOG_FILTER_NETWORKIO, "Item refund: item not found!");
@@ -1497,7 +1497,7 @@ void WorldSession::HandleItemTextQuery(WorldPacket & recvData )
 
     WorldPacket data(SMSG_ITEM_TEXT_QUERY_RESPONSE, 14);    // guess size
 
-    if (Item* item = _player->GetItemByGuid(itemGuid))
+    if (ItemPtr item = _player->GetItemByGuid(itemGuid))
     {
         data << uint8(0);                                       // has text
         data << uint64(itemGuid);                               // item guid
@@ -1514,7 +1514,7 @@ void WorldSession::HandleItemTextQuery(WorldPacket & recvData )
 void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_TRANSMOGRIFY_ITEMS");
-    Player* player = GetPlayer();
+    PlayerPtr player = GetPlayer();
 
     ObjectGuid npcGuid;
     npcGuid[6] = recvData.ReadBit();
@@ -1611,7 +1611,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
             }
         }
 
-        Item* itemTransmogrifier = NULL;
+        ItemPtr itemTransmogrifier = NULL;
         // guid of the transmogrifier item, if it's not 0
         if (itemGuids[i])
         {
@@ -1624,7 +1624,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
         }
 
         // transmogrified item
-        Item* itemTransmogrified = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slots[i]);
+        ItemPtr itemTransmogrified = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slots[i]);
         if (!itemTransmogrified)
         {
             sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: HandleTransmogrifyItems - Player (GUID: %u, name: %s) tried to transmogrify an invalid item in a valid slot (slot: %u).", player->GetGUIDLow(), player->GetName(), slots[i]);
@@ -1699,7 +1699,7 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
     uint32 slot, reforgeEntry;
     ObjectGuid guid;
     uint32 bag;
-    Player* player = GetPlayer();
+    PlayerPtr player = GetPlayer();
 
     recvData >> slot >> reforgeEntry >> bag;
     
@@ -1728,7 +1728,7 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
         return;
     }
 
-    Item* item = player->GetItemByPos(bag, slot);
+    ItemPtr item = player->GetItemByPos(bag, slot);
 
     if (!item)
     {

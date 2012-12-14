@@ -60,7 +60,7 @@ public:
         if (!*args)
             return false;
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -79,7 +79,7 @@ public:
 
     static bool HandleHonorAddKillCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -88,7 +88,7 @@ public:
         }
 
         // check online security
-        if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity((Player*)target, 0))
+        if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(TO_PLAYER(target), 0))
             return false;
 
         handler->GetSession()->GetPlayer()->RewardHonor(target, 1);
@@ -97,7 +97,7 @@ public:
 
     static bool HandleHonorUpdateCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);

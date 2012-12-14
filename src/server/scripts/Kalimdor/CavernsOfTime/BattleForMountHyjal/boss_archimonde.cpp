@@ -80,14 +80,14 @@ class mob_ancient_wisp : public CreatureScript
 public:
     mob_ancient_wisp() : CreatureScript("mob_ancient_wisp") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_ancient_wispAI(creature);
     }
 
     struct mob_ancient_wispAI : public ScriptedAI
     {
-        mob_ancient_wispAI(Creature* creature) : ScriptedAI(creature)
+        mob_ancient_wispAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             ArchimondeGUID = 0;
@@ -107,9 +107,9 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void DamageTaken(Unit* /*done_by*/, uint32 &damage)
+        void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
         {
             damage = 0;
         }
@@ -118,7 +118,7 @@ public:
         {
             if (CheckTimer <= diff)
             {
-                if (Unit* Archimonde = Unit::GetUnit(*me, ArchimondeGUID))
+                if (UnitPtr Archimonde = Unit::GetUnit(TO_WORLDOBJECT(me), ArchimondeGUID))
                 {
                     if (Archimonde->HealthBelowPct(2) || !Archimonde->isAlive())
                         DoCast(me, SPELL_DENOUEMENT_WISP);
@@ -139,21 +139,21 @@ class mob_doomfire : public CreatureScript
 public:
     mob_doomfire() : CreatureScript("mob_doomfire") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_doomfireAI(creature);
     }
 
     struct mob_doomfireAI : public ScriptedAI
     {
-        mob_doomfireAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_doomfireAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         void Reset() { }
 
-        void MoveInLineOfSight(Unit* /*who*/) {}
-        void EnterCombat(Unit* /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void DamageTaken(Unit* /*done_by*/, uint32 &damage)
+        void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
         {
             damage = 0;
         }
@@ -167,14 +167,14 @@ class mob_doomfire_targetting : public CreatureScript
 public:
     mob_doomfire_targetting() : CreatureScript("mob_doomfire_targetting") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_doomfire_targettingAI(creature);
     }
 
     struct mob_doomfire_targettingAI : public ScriptedAI
     {
-        mob_doomfire_targettingAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_doomfire_targettingAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint64 TargetGUID;
         uint32 ChangeTargetTimer;
@@ -185,7 +185,7 @@ public:
             ChangeTargetTimer = 5000;
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             //will update once TargetGUID is 0. In case noone actually moves(not likely) and this is 0
             //when UpdateAI needs it, it will be forced to select randomPoint
@@ -193,9 +193,9 @@ public:
                 TargetGUID = who->GetGUID();
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void DamageTaken(Unit* /*done_by*/, uint32 &damage)
+        void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
         {
             damage = 0;
         }
@@ -204,7 +204,7 @@ public:
         {
             if (ChangeTargetTimer <= diff)
             {
-                if (Unit* temp = Unit::GetUnit(*me, TargetGUID))
+                if (UnitPtr temp = Unit::GetUnit(TO_WORLDOBJECT(me), TargetGUID))
                 {
                     me->GetMotionMaster()->MoveFollow(temp, 0.0f, 0.0f);
                     TargetGUID = 0;
@@ -236,14 +236,14 @@ class boss_archimonde : public CreatureScript
 public:
     boss_archimonde() : CreatureScript("boss_archimonde") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_archimondeAI (creature);
     }
 
     struct boss_archimondeAI : public hyjal_trashAI
     {
-        boss_archimondeAI(Creature* creature) : hyjal_trashAI(creature)
+        boss_archimondeAI(CreaturePtr creature) : hyjal_trashAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -301,7 +301,7 @@ public:
             IsChanneling = false;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             me->InterruptSpell(CURRENT_CHANNELED_SPELL);
             Talk(SAY_AGGRO);
@@ -311,7 +311,7 @@ public:
                 instance->SetData(DATA_ARCHIMONDEEVENT, IN_PROGRESS);
         }
 
-        void KilledUnit(Unit* victim)
+        void KilledUnit(UnitPtr victim)
         {
             Talk(SAY_SLAY);
 
@@ -319,7 +319,7 @@ public:
                 GainSoulCharge(CAST_PLR(victim));
         }
 
-        void GainSoulCharge(Player* victim)
+        void GainSoulCharge(PlayerPtr victim)
         {
             switch (victim->getClass())
             {
@@ -344,7 +344,7 @@ public:
             ++SoulChargeCount;
         }
 
-        void JustDied(Unit* killer)
+        void JustDied(UnitPtr killer)
         {
             hyjal_trashAI::JustDied(killer);
             Talk(SAY_DEATH);
@@ -356,19 +356,19 @@ public:
         bool CanUseFingerOfDeath()
         {
             // First we check if our current victim is in melee range or not.
-            Unit* victim = me->getVictim();
+            UnitPtr victim = me->getVictim();
             if (victim && me->IsWithinDistInMap(victim, me->GetAttackDistance(victim)))
                 return false;
 
-            std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager().getThreatList();
             if (m_threatlist.empty())
                 return false;
 
-            std::list<Unit*> targets;
-            std::list<HostileReference*>::const_iterator itr = m_threatlist.begin();
+            std::list<UnitPtr> targets;
+            std::list<HostileReferencePtr>::const_iterator itr = m_threatlist.begin();
             for (; itr != m_threatlist.end(); ++itr)
             {
-                Unit* unit = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid());
                 if (unit && unit->isAlive())
                     targets.push_back(unit);
             }
@@ -377,7 +377,7 @@ public:
                 return false;
 
             targets.sort(Trinity::ObjectDistanceOrderPred(me));
-            Unit* target = targets.front();
+            UnitPtr target = targets.front();
             if (target)
             {
                 if (!me->IsWithinDistInMap(target, me->GetAttackDistance(target)))
@@ -389,7 +389,7 @@ public:
             return false;
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             if (summoned->GetEntry() == CREATURE_ANCIENT_WISP)
                 summoned->AI()->AttackStart(me);
@@ -410,7 +410,7 @@ public:
                 summoned->CastSpell(summoned, SPELL_DOOMFIRE_SPAWN, false);
                 summoned->CastSpell(summoned, SPELL_DOOMFIRE, true, 0, 0, me->GetGUID());
 
-                if (Unit* DoomfireSpirit = Unit::GetUnit(*me, DoomfireSpiritGUID))
+                if (UnitPtr DoomfireSpirit = Unit::GetUnit(TO_WORLDOBJECT(me), DoomfireSpiritGUID))
                 {
                     summoned->GetMotionMaster()->MoveFollow(DoomfireSpirit, 0.0f, 0.0f);
                     DoomfireSpiritGUID = 0;
@@ -419,7 +419,7 @@ public:
         }
 
         //this is code doing close to what the summoning spell would do (spell 31903)
-        void SummonDoomfire(Unit* target)
+        void SummonDoomfire(UnitPtr target)
         {
             me->SummonCreature(CREATURE_DOOMFIRE_SPIRIT,
                 target->GetPositionX()+15.0f, target->GetPositionY()+15.0f, target->GetPositionZ(), 0,
@@ -489,12 +489,12 @@ public:
                 {
                     if (!IsChanneling)
                     {
-                        Creature* temp = me->SummonCreature(CREATURE_CHANNEL_TARGET, NordrassilLoc, TEMPSUMMON_TIMED_DESPAWN, 1200000);
+                        CreaturePtr temp = me->SummonCreature(CREATURE_CHANNEL_TARGET, NordrassilLoc, TEMPSUMMON_TIMED_DESPAWN, 1200000);
 
                         if (temp)
                             WorldTreeGUID = temp->GetGUID();
 
-                        if (Unit* Nordrassil = Unit::GetUnit(*me, WorldTreeGUID))
+                        if (UnitPtr Nordrassil = Unit::GetUnit(TO_WORLDOBJECT(me), WorldTreeGUID))
                         {
                             Nordrassil->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             Nordrassil->SetDisplayId(11686);
@@ -503,7 +503,7 @@ public:
                         }
                     }
 
-                    if (Unit* Nordrassil = Unit::GetUnit(*me, WorldTreeGUID))
+                    if (UnitPtr Nordrassil = Unit::GetUnit(TO_WORLDOBJECT(me), WorldTreeGUID))
                     {
                         Nordrassil->CastSpell(me, SPELL_DRAIN_WORLD_TREE_2, true);
                         DrainNordrassilTimer = 1000;
@@ -533,7 +533,7 @@ public:
                 if (CheckDistanceTimer <= diff)
                 {
                     // To simplify the check, we simply summon a Creature in the location and then check how far we are from the creature
-                    Creature* Check = me->SummonCreature(CREATURE_CHANNEL_TARGET, NordrassilLoc, TEMPSUMMON_TIMED_DESPAWN, 2000);
+                    CreaturePtr Check = me->SummonCreature(CREATURE_CHANNEL_TARGET, NordrassilLoc, TEMPSUMMON_TIMED_DESPAWN, 2000);
                     if (Check)
                     {
                         Check->SetVisible(false);
@@ -613,7 +613,7 @@ public:
             if (DoomfireTimer <= diff)
             {
                 Talk(SAY_DOOMFIRE);
-                Unit* temp = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                UnitPtr temp = SelectTarget(SELECT_TARGET_RANDOM, 1);
                 if (!temp)
                     temp = me->getVictim();
 

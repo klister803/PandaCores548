@@ -127,7 +127,7 @@ bool ChatHandler::isAvailable(ChatCommand const& cmd) const
     return m_session->GetSecurity() >= AccountTypes(cmd.SecurityLevel);
 }
 
-bool ChatHandler::HasLowerSecurity(Player* target, uint64 guid, bool strong)
+bool ChatHandler::HasLowerSecurity(PlayerPtr target, uint64 guid, bool strong)
 {
     WorldSession* target_session = NULL;
     uint32 target_account = 0;
@@ -347,7 +347,7 @@ bool ChatHandler::ExecuteCommandInTable(ChatCommand* table, const char* text, co
                 // chat case
                 if (m_session)
                 {
-                    Player* p = m_session->GetPlayer();
+                    PlayerPtr p = m_session->GetPlayer();
                     uint64 sel_guid = p->GetSelection();
                     sLog->outCommand(m_session->GetAccountId(), "Command: %s [Player: %s (Account: %u) X: %f Y: %f Z: %f Map: %u Selected %s: %s (GUID: %u)]",
                         fullcmd.c_str(), p->GetName(), m_session->GetAccountId(), p->GetPositionX(), p->GetPositionY(), p->GetPositionZ(), p->GetMapId(),
@@ -621,7 +621,7 @@ bool ChatHandler::ShowHelpForCommand(ChatCommand* table, const char* cmd)
 }
 
 //Note: target_guid used only in CHAT_MSG_WHISPER_INFORM mode (in this case channelName ignored)
-void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint8 type, uint32 language, const char *channelName, uint64 target_guid, const char *message, Unit* speaker, const char* addonPrefix /*= NULL*/)
+void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint8 type, uint32 language, const char *channelName, uint64 target_guid, const char *message, UnitPtr speaker, const char* addonPrefix /*= NULL*/)
 {
     uint32 messageLength = (message ? strlen(message) : 0) + 1;
 
@@ -718,7 +718,7 @@ void ChatHandler::FillMessageData(WorldPacket* data, WorldSession* session, uint
         *data << uint16(0);
 }
 
-Player* ChatHandler::getSelectedPlayer()
+PlayerPtr ChatHandler::getSelectedPlayer()
 {
     if (!m_session)
         return NULL;
@@ -731,7 +731,7 @@ Player* ChatHandler::getSelectedPlayer()
     return ObjectAccessor::FindPlayer(guid);
 }
 
-Unit* ChatHandler::getSelectedUnit()
+UnitPtr ChatHandler::getSelectedUnit()
 {
     if (!m_session)
         return NULL;
@@ -741,10 +741,10 @@ Unit* ChatHandler::getSelectedUnit()
     if (guid == 0)
         return m_session->GetPlayer();
 
-    return ObjectAccessor::GetUnit(*m_session->GetPlayer(), guid);
+    return ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(m_session->GetPlayer()), guid);
 }
 
-WorldObject* ChatHandler::getSelectedObject()
+WorldObjectPtr ChatHandler::getSelectedObject()
 {
     if (!m_session)
         return NULL;
@@ -754,15 +754,15 @@ WorldObject* ChatHandler::getSelectedObject()
     if (guid == 0)
         return GetNearbyGameObject();
 
-    return ObjectAccessor::GetUnit(*m_session->GetPlayer(), guid);
+    return ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(m_session->GetPlayer()), guid);
 }
 
-Creature* ChatHandler::getSelectedCreature()
+CreaturePtr ChatHandler::getSelectedCreature()
 {
     if (!m_session)
         return NULL;
 
-    return ObjectAccessor::GetCreatureOrPetOrVehicle(*m_session->GetPlayer(), m_session->GetPlayer()->GetSelection());
+    return ObjectAccessor::GetCreatureOrPetOrVehicle(TO_CONST_WORLDOBJECT(m_session->GetPlayer()), m_session->GetPlayer()->GetSelection());
 }
 
 char* ChatHandler::extractKeyFromLink(char* text, char const* linkType, char** something1)
@@ -877,27 +877,27 @@ char* ChatHandler::extractKeyFromLink(char* text, char const* const* linkTypes, 
     return NULL;
 }
 
-GameObject* ChatHandler::GetNearbyGameObject()
+GameObjectPtr ChatHandler::GetNearbyGameObject()
 {
     if (!m_session)
         return NULL;
 
-    Player* pl = m_session->GetPlayer();
-    GameObject* obj = NULL;
-    Trinity::NearestGameObjectCheck check(*pl);
+    PlayerPtr pl = m_session->GetPlayer();
+    GameObjectPtr obj = NULL;
+    Trinity::NearestGameObjectCheck check(TO_CONST_WORLDOBJECT(pl));
     Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectCheck> searcher(pl, obj, check);
     pl->VisitNearbyGridObject(SIZE_OF_GRIDS, searcher);
     return obj;
 }
 
-GameObject* ChatHandler::GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid, uint32 entry)
+GameObjectPtr ChatHandler::GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid, uint32 entry)
 {
     if (!m_session)
         return NULL;
 
-    Player* pl = m_session->GetPlayer();
+    PlayerPtr pl = m_session->GetPlayer();
 
-    GameObject* obj = pl->GetMap()->GetGameObject(MAKE_NEW_GUID(lowguid, entry, HIGHGUID_GAMEOBJECT));
+    GameObjectPtr obj = pl->GetMap()->GetGameObject(MAKE_NEW_GUID(lowguid, entry, HIGHGUID_GAMEOBJECT));
 
     if (!obj && sObjectMgr->GetGOData(lowguid))                   // guid is DB guid of object
     {
@@ -905,11 +905,11 @@ GameObject* ChatHandler::GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid
         CellCoord p(Trinity::ComputeCellCoord(pl->GetPositionX(), pl->GetPositionY()));
         Cell cell(p);
 
-        Trinity::GameObjectWithDbGUIDCheck go_check(*pl, lowguid);
+        Trinity::GameObjectWithDbGUIDCheck go_check(TO_CONST_WORLDOBJECT(pl), lowguid);
         Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck> checker(pl, obj, go_check);
 
         TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::GameObjectWithDbGUIDCheck>, GridTypeMapContainer > object_checker(checker);
-        cell.Visit(p, object_checker, *pl->GetMap(), *pl, pl->GetGridActivationRange());
+        cell.Visit(p, object_checker, *pl->GetMap(), TO_CONST_WORLDOBJECT(pl), pl->GetGridActivationRange());
     }
 
     return obj;
@@ -1037,7 +1037,7 @@ uint64 ChatHandler::extractGuidFromLink(char* text)
             if (!normalizePlayerName(name))
                 return 0;
 
-            if (Player* player = sObjectAccessor->FindPlayerByName(name.c_str()))
+            if (PlayerPtr player = sObjectAccessor->FindPlayerByName(name.c_str()))
                 return player->GetGUID();
 
             if (uint64 guid = sObjectMgr->GetPlayerGUIDByName(name))
@@ -1083,7 +1083,7 @@ std::string ChatHandler::extractPlayerNameFromLink(char* text)
     return name;
 }
 
-bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* player_guid /*=NULL*/, std::string* player_name /*= NULL*/)
+bool ChatHandler::extractPlayerTarget(char* args, PlayerPtr* player, uint64* player_guid /*=NULL*/, std::string* player_name /*= NULL*/)
 {
     if (args && *args)
     {
@@ -1095,7 +1095,7 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* playe
             return false;
         }
 
-        Player* pl = sObjectAccessor->FindPlayerByName(name.c_str());
+        PlayerPtr pl = sObjectAccessor->FindPlayerByName(name.c_str());
 
         // if allowed player pointer
         if (player)
@@ -1113,7 +1113,7 @@ bool ChatHandler::extractPlayerTarget(char* args, Player** player, uint64* playe
     }
     else
     {
-        Player* pl = getSelectedPlayer();
+        PlayerPtr pl = getSelectedPlayer();
         // if allowed player pointer
         if (player)
             *player = pl;
@@ -1170,9 +1170,9 @@ char* ChatHandler::extractQuotedArg(char* args)
     }
 }
 
-bool ChatHandler::needReportToTarget(Player* chr) const
+bool ChatHandler::needReportToTarget(PlayerPtr chr) const
 {
-    Player* pl = m_session->GetPlayer();
+    PlayerPtr pl = m_session->GetPlayer();
     return pl != chr && pl->IsVisibleGloballyFor(chr);
 }
 
@@ -1208,12 +1208,12 @@ std::string CliHandler::GetNameLink() const
     return GetTrinityString(LANG_CONSOLE_COMMAND);
 }
 
-bool CliHandler::needReportToTarget(Player* /*chr*/) const
+bool CliHandler::needReportToTarget(PlayerPtr /*chr*/) const
 {
     return true;
 }
 
-bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, Player* &player, Group* &group, uint64 &guid, bool offline)
+bool ChatHandler::GetPlayerGroupAndGUIDByName(const char* cname, PlayerPtr &player, GroupPtr &group, uint64 &guid, bool offline)
 {
     player  = NULL;
     guid = 0;

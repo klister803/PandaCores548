@@ -43,14 +43,14 @@ class instance_sunwell_plateau : public InstanceMapScript
 public:
     instance_sunwell_plateau() : InstanceMapScript("instance_sunwell_plateau", 580) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_sunwell_plateau_InstanceMapScript(map);
     }
 
     struct instance_sunwell_plateau_InstanceMapScript : public InstanceScript
     {
-        instance_sunwell_plateau_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_sunwell_plateau_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
 
@@ -121,7 +121,7 @@ public:
             return false;
         }
 
-        Player* GetPlayerInMap()
+        PlayerPtr GetPlayerInMap()
         {
             Map::PlayerList const& players = instance->GetPlayers();
 
@@ -129,7 +129,7 @@ public:
             {
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 {
-                    Player* player = itr->getSource();
+                    PlayerPtr player = itr->getSource();
                     if (player && !player->HasAura(45839, 0))
                             return player;
                 }
@@ -139,7 +139,7 @@ public:
             return NULL;
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -159,7 +159,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {
@@ -213,7 +213,7 @@ public:
                 case DATA_ANVEENA:              return Anveena;
                 case DATA_KALECGOS_KJ:          return KalecgosKJ;
                 case DATA_PLAYER_GUID:
-                    Player* Target = GetPlayerInMap();
+                    PlayerPtr Target = GetPlayerInMap();
                     return Target->GetGUID();
             }
             return 0;

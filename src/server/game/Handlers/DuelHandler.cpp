@@ -52,14 +52,14 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
     recvPacket.ReadByteSeq(guid[6]);
 
 
-    Player* caster = GetPlayer();
-    Unit* unitTarget = NULL;
+    PlayerPtr caster = GetPlayer();
+    UnitPtr unitTarget = NULL;
 
-    unitTarget = sObjectAccessor->GetUnit(*caster, guid);
+    unitTarget = sObjectAccessor->GetUnit(TO_CONST_WORLDOBJECT(caster), guid);
 
     if (!unitTarget || caster->GetTypeId() != TYPEID_PLAYER || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
-    Player* target = unitTarget->ToPlayer();
+    PlayerPtr target = TO_PLAYER(unitTarget);
     // caster or target already have requested duel
     if (caster->duel || target->duel || !target->GetSocial() || target->GetSocial()->HasIgnore(caster->GetGUIDLow()))
         return;
@@ -80,11 +80,11 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
     }
 
     //CREATE DUEL FLAG OBJECT
-    GameObject* pGameObj = new GameObject;
+    GameObjectPtr pGameObj (new GameObject);
 
     uint32 gameobject_id = 21680;//m_spellInfo->Effects[effIndex].MiscValue;
 
-    Map* map = caster->GetMap();
+    MapPtr map = caster->GetMap();
     if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), gameobject_id,
         map, caster->GetPhaseMask(),
         caster->GetPositionX()+(unitTarget->GetPositionX()-caster->GetPositionX())/2,
@@ -137,8 +137,8 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
 void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
 {
     uint64 guid;
-    Player* player;
-    Player* plTarget;
+    PlayerPtr player;
+    PlayerPtr plTarget;
 
     recvPacket >> guid;
 

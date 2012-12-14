@@ -48,10 +48,10 @@ class ChatHandler
     public:
         WorldSession* GetSession() { return m_session; }
         explicit ChatHandler(WorldSession* session) : m_session(session), sentErrorMessage(false) {}
-        explicit ChatHandler(Player* player) : m_session(player->GetSession()), sentErrorMessage(false) {}
+        explicit ChatHandler(PlayerPtr player) : m_session(player->GetSession()), sentErrorMessage(false) {}
         virtual ~ChatHandler() {}
 
-        static void FillMessageData(WorldPacket* data, WorldSession* session, uint8 type, uint32 language, const char *channelName, uint64 target_guid, const char *message, Unit* speaker, const char* addonPrefix = NULL);
+        static void FillMessageData(WorldPacket* data, WorldSession* session, uint8 type, uint32 language, const char *channelName, uint64 target_guid, const char *message, UnitPtr speaker, const char* addonPrefix = NULL);
 
         void FillMessageData(WorldPacket* data, uint8 type, uint32 language, uint64 target_guid, const char* message)
         {
@@ -86,18 +86,18 @@ class ChatHandler
         // function with different implementation for chat/console
         virtual bool isAvailable(ChatCommand const& cmd) const;
         virtual std::string GetNameLink() const { return GetNameLink(m_session->GetPlayer()); }
-        virtual bool needReportToTarget(Player* chr) const;
+        virtual bool needReportToTarget(PlayerPtr chr) const;
         virtual LocaleConstant GetSessionDbcLocale() const;
         virtual int GetSessionDbLocaleIndex() const;
 
-        bool HasLowerSecurity(Player* target, uint64 guid, bool strong = false);
+        bool HasLowerSecurity(PlayerPtr target, uint64 guid, bool strong = false);
         bool HasLowerSecurityAccount(WorldSession* target, uint32 account, bool strong = false);
 
         void SendGlobalGMSysMessage(const char *str);
-        Player*   getSelectedPlayer();
-        Creature* getSelectedCreature();
-        Unit*     getSelectedUnit();
-        WorldObject* getSelectedObject();
+        PlayerPtr   getSelectedPlayer();
+        CreaturePtr getSelectedCreature();
+        UnitPtr     getSelectedUnit();
+        WorldObjectPtr getSelectedObject();
 
         char*     extractKeyFromLink(char* text, char const* linkType, char** something1 = NULL);
         char*     extractKeyFromLink(char* text, char const* const* linkTypes, int* found_idx, char** something1 = NULL);
@@ -109,16 +109,16 @@ class ChatHandler
         uint32    extractSpellIdFromLink(char* text);
         uint64    extractGuidFromLink(char* text);
         GameTele const* extractGameTeleFromLink(char* text);
-        bool GetPlayerGroupAndGUIDByName(const char* cname, Player* &player, Group* &group, uint64 &guid, bool offline = false);
+        bool GetPlayerGroupAndGUIDByName(const char* cname, PlayerPtr &player, GroupPtr &group, uint64 &guid, bool offline = false);
         std::string extractPlayerNameFromLink(char* text);
         // select by arg (name/link) or in-game selection online/offline player
-        bool extractPlayerTarget(char* args, Player** player, uint64* player_guid = NULL, std::string* player_name = NULL);
+        bool extractPlayerTarget(char* args, PlayerPtr* player, uint64* player_guid = NULL, std::string* player_name = NULL);
 
         std::string playerLink(std::string const& name) const { return m_session ? "|cffffffff|Hplayer:"+name+"|h["+name+"]|h|r" : name; }
-        std::string GetNameLink(Player* chr) const { return playerLink(chr->GetName()); }
+        std::string GetNameLink(PlayerPtr chr) const { return playerLink(chr->GetName()); }
 
-        GameObject* GetNearbyGameObject();
-        GameObject* GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid, uint32 entry);
+        GameObjectPtr GetNearbyGameObject();
+        GameObjectPtr GetObjectGlobalyWithGuidOrNearWithDbGuid(uint32 lowguid, uint32 entry);
         bool HasSentErrorMessage() const { return sentErrorMessage; }
         void SetSentErrorMessage(bool val){ sentErrorMessage = val; }
         static bool LoadCommandTable() { return load_command_table; }
@@ -150,7 +150,7 @@ class CliHandler : public ChatHandler
         bool isAvailable(ChatCommand const& cmd) const;
         void SendSysMessage(const char *str);
         std::string GetNameLink() const;
-        bool needReportToTarget(Player* chr) const;
+        bool needReportToTarget(PlayerPtr chr) const;
         LocaleConstant GetSessionDbcLocale() const;
         int GetSessionDbLocaleIndex() const;
 

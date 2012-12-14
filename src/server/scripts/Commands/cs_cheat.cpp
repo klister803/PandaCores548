@@ -162,7 +162,7 @@ public:
 
     static bool HandleCheatStatusCommand(ChatHandler* handler, const char* /*args*/)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
         const char* enabled = "enabled";
         const char* disabled = "disabled";
         handler->SendSysMessage(LANG_COMMAND_CHEAT_STATUS);
@@ -219,7 +219,7 @@ public:
 
         std::string argstr = (char*)args;
 
-        Player* chr = handler->getSelectedPlayer();
+        PlayerPtr chr = handler->getSelectedPlayer();
 
         if (!chr)
             chr = handler->GetSession()->GetPlayer();
@@ -257,7 +257,7 @@ public:
 
         int flag = atoi((char*)args);
 
-        Player* chr = handler->getSelectedPlayer();
+        PlayerPtr chr = handler->getSelectedPlayer();
         if (chr == NULL)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);

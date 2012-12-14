@@ -33,7 +33,7 @@ class instance_archavon : public InstanceMapScript
 
         struct instance_archavon_InstanceMapScript : public InstanceScript
         {
-            instance_archavon_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_archavon_InstanceMapScript(MapPtr map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
             }
@@ -47,7 +47,7 @@ class instance_archavon : public InstanceMapScript
                 KoralonDeath = 0;
             }
 
-            void OnCreatureCreate(Creature* creature)
+            void OnCreatureCreate(CreaturePtr creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -106,7 +106,7 @@ class instance_archavon : public InstanceMapScript
                 return true;
             }
 
-            bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
+            bool CheckAchievementCriteriaMeet(uint32 criteria_id, constPlayerPtr /*source*/, constUnitPtr /*target*/, uint32 /*miscvalue1*/)
             {
                 switch (criteria_id)
                 {
@@ -136,7 +136,7 @@ class instance_archavon : public InstanceMapScript
             time_t KoralonDeath;
         };
 
-        InstanceScript* GetInstanceScript(InstanceMap* map) const
+        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
         {
             return new instance_archavon_InstanceMapScript(map);
         }

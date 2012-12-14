@@ -73,7 +73,7 @@ public:
 
     struct boss_novosAI : public Scripted_NoMovementAI
     {
-        boss_novosAI(Creature* creature) : Scripted_NoMovementAI(creature), lSummons(me)
+        boss_novosAI(CreaturePtr creature) : Scripted_NoMovementAI(creature), lSummons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -115,13 +115,13 @@ public:
                     luiCrystals.push_back(instance->GetData64(DATA_NOVOS_CRYSTAL_1 + n));
                 for (std::list<uint64>::const_iterator itr = luiCrystals.begin(); itr != luiCrystals.end(); ++itr)
                 {
-                    if (GameObject* temp = instance->instance->GetGameObject(*itr))
+                    if (GameObjectPtr temp = instance->instance->GetGameObject(*itr))
                         temp->SetGoState(GO_STATE_READY);
                 }
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             Phase = PHASE_1;
@@ -132,7 +132,7 @@ public:
             {
                 for (std::list<uint64>::const_iterator itr = luiCrystals.begin(); itr != luiCrystals.end(); ++itr)
                 {
-                    if (GameObject* temp = instance->instance->GetGameObject(*itr))
+                    if (GameObjectPtr temp = instance->instance->GetGameObject(*itr))
                         temp->SetGoState(GO_STATE_ACTIVE);
                 }
                 instance->SetData(DATA_NOVOS_EVENT, IN_PROGRESS);
@@ -149,7 +149,7 @@ public:
                 case PHASE_1:
                     if (uiTimer <= diff)
                     {
-                        Creature* summon = me->SummonCreature(RAND(CREATURE_FETID_TROLL_CORPSE, CREATURE_HULKING_CORPSE, CREATURE_RISEN_SHADOWCASTER), AddSpawnPoint, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20*IN_MILLISECONDS);
+                        CreaturePtr summon = me->SummonCreature(RAND(CREATURE_FETID_TROLL_CORPSE, CREATURE_HULKING_CORPSE, CREATURE_RISEN_SHADOWCASTER), AddSpawnPoint, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20*IN_MILLISECONDS);
                         summon->GetMotionMaster()->MovePoint(0, AddDestinyPoint);
                         //If spell is casted stops casting arcane field so no spell casting
                         //DoCast(me, SPELL_SUMMON_MINIONS);
@@ -160,7 +160,7 @@ public:
                         if (uiCrystalHandlerTimer <= diff)
                         {
                             DoScriptText(SAY_NECRO_ADD, me);
-                            Creature* pCrystalHandler = me->SummonCreature(CREATURE_CRYSTAL_HANDLER, CrystalHandlerSpawnPoint, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20*IN_MILLISECONDS);
+                            CreaturePtr pCrystalHandler = me->SummonCreature(CREATURE_CRYSTAL_HANDLER, CrystalHandlerSpawnPoint, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20*IN_MILLISECONDS);
                             pCrystalHandler->GetMotionMaster()->MovePoint(0, AddDestinyPoint);
                             uiCrystalHandlerTimer = urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
                         } else uiCrystalHandlerTimer -= diff;
@@ -169,7 +169,7 @@ public:
                 case PHASE_2:
                     if (uiTimer <= diff)
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             DoCast(target, DUNGEON_MODE(RAND(SPELL_ARCANE_BLAST, SPELL_BLIZZARD, SPELL_FROSTBOLT, SPELL_WRATH_OF_MISERY),
                                                          RAND(H_SPELL_ARCANE_BLAST, H_SPELL_BLIZZARD, H_SPELL_FROSTBOLT, H_SPELL_WRATH_OF_MISERY)));
                         uiTimer = urand(1*IN_MILLISECONDS, 3*IN_MILLISECONDS);
@@ -179,7 +179,7 @@ public:
                     break;
             }
         }
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
             if (instance)
@@ -187,14 +187,14 @@ public:
             lSummons.DespawnAll();
         }
 
-        void KilledUnit(Unit* victim)
+        void KilledUnit(UnitPtr victim)
         {
             if (victim == me)
                 return;
             DoScriptText(SAY_KILL, me);
         }
 
-        void JustSummoned(Creature* summon)
+        void JustSummoned(CreaturePtr summon)
         {
             if (summon->GetEntry() == CREATURE_CRYSTAL_HANDLER)
                 crystalHandlerAmount++;
@@ -221,7 +221,7 @@ public:
             if (!luiCrystals.empty())
             {
                 if (instance)
-                    if (GameObject* temp = instance->instance->GetGameObject(luiCrystals.back()))
+                    if (GameObjectPtr temp = instance->instance->GetGameObject(luiCrystals.back()))
                         temp->SetGoState(GO_STATE_READY);
                 luiCrystals.pop_back();
             }
@@ -236,13 +236,13 @@ public:
             }
         }
 
-        Unit* GetRandomTarget()
+        UnitPtr GetRandomTarget()
         {
             return SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_novosAI(creature);
     }
@@ -261,7 +261,7 @@ public:
 
     struct mob_crystal_handlerAI : public ScriptedAI
     {
-        mob_crystal_handlerAI(Creature* creature) : ScriptedAI(creature)
+        mob_crystal_handlerAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -275,9 +275,9 @@ public:
             uiFlashOfDarknessTimer = 5*IN_MILLISECONDS;
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
-            if (Creature* pNovos = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_NOVOS) : 0))
+            if (CreaturePtr pNovos = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_NOVOS) : 0))
                 CAST_AI(boss_novos::boss_novosAI, pNovos->AI())->RemoveCrystal();
         }
 
@@ -299,13 +299,13 @@ public:
         {
             if (type != POINT_MOTION_TYPE || id != 0)
                 return;
-            if (Creature* pNovos = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_NOVOS) : 0))
-                if (Unit* target = CAST_AI(boss_novos::boss_novosAI, pNovos->AI())->GetRandomTarget())
+            if (CreaturePtr pNovos = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_NOVOS) : 0))
+                if (UnitPtr target = CAST_AI(boss_novos::boss_novosAI, pNovos->AI())->GetRandomTarget())
                     AttackStart(target);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_crystal_handlerAI(creature);
     }
@@ -318,7 +318,7 @@ public:
 
     struct mob_novos_minionAI : public ScriptedAI
     {
-        mob_novos_minionAI(Creature* creature) : ScriptedAI(creature)
+        mob_novos_minionAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -329,16 +329,16 @@ public:
         {
             if (type != POINT_MOTION_TYPE || id !=0)
                 return;
-            if (Creature* Novos = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_NOVOS) : 0))
+            if (CreaturePtr Novos = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance ? instance->GetData64(DATA_NOVOS) : 0))
             {
                 Novos->AI()->DoAction(ACTION_MINION_REACHED);
-                if (Unit* target = CAST_AI(boss_novos::boss_novosAI, Novos->AI())->GetRandomTarget())
+                if (UnitPtr target = CAST_AI(boss_novos::boss_novosAI, Novos->AI())->GetRandomTarget())
                     AttackStart(target);
             }
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_novos_minionAI(creature);
     }
@@ -351,12 +351,12 @@ class achievement_oh_novos : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(Player* /*player*/, Unit* target)
+        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
         {
             if (!target)
                 return false;
 
-            if (Creature* Novos = target->ToCreature())
+            if (CreaturePtr Novos = target->ToCreature())
                 if (Novos->AI()->GetData(DATA_OH_NOVOS))
                     return true;
 

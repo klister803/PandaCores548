@@ -74,7 +74,7 @@ class mob_warp_splinter_treant : public CreatureScript
         }
         struct mob_warp_splinter_treantAI  : public ScriptedAI
         {
-            mob_warp_splinter_treantAI (Creature* creature) : ScriptedAI(creature)
+            mob_warp_splinter_treantAI (CreaturePtr creature) : ScriptedAI(creature)
             {
                 WarpGuid = 0;
             }
@@ -87,9 +87,9 @@ class mob_warp_splinter_treant : public CreatureScript
                 check_Timer = 0;
             }
 
-            void EnterCombat(Unit* /*who*/) {}
+            void EnterCombat(UnitPtr /*who*/) {}
 
-            void MoveInLineOfSight(Unit* /*who*/) {}
+            void MoveInLineOfSight(UnitPtr /*who*/) {}
 
             void UpdateAI(const uint32 diff)
             {
@@ -97,7 +97,7 @@ class mob_warp_splinter_treant : public CreatureScript
                 {
                     if (WarpGuid && check_Timer <= diff)
                     {
-                        if (Unit* Warp = Unit::GetUnit(*me, WarpGuid))
+                        if (UnitPtr Warp = Unit::GetUnit(TO_WORLDOBJECT(me), WarpGuid))
                         {
                             if (me->IsWithinMeleeRange(Warp, 2.5f))
                             {
@@ -119,7 +119,7 @@ class mob_warp_splinter_treant : public CreatureScript
                     DoMeleeAttackIfReady();
             }
         };
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_warp_splinter_treantAI(creature);
         }
@@ -138,7 +138,7 @@ class boss_warp_splinter : public CreatureScript
         }
         struct boss_warp_splinterAI : public ScriptedAI
         {
-            boss_warp_splinterAI(Creature* creature) : ScriptedAI(creature)
+            boss_warp_splinterAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 Treant_Spawn_Pos_X = creature->GetPositionX();
                 Treant_Spawn_Pos_Y = creature->GetPositionY();
@@ -160,17 +160,17 @@ class boss_warp_splinter : public CreatureScript
                 me->SetSpeed(MOVE_RUN, 0.7f, true);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 DoScriptText(SAY_AGGRO, me);
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoScriptText(SAY_DEATH, me);
             }
@@ -185,7 +185,7 @@ class boss_warp_splinter : public CreatureScript
                     float Y = Treant_Spawn_Pos_Y + TREANT_SPAWN_DIST * std::sin(angle);
                     float O = - me->GetAngle(X, Y);
 
-                    if (Creature* pTreant = me->SummonCreature(CREATURE_TREANT, treant_pos[i][0], treant_pos[i][1], treant_pos[i][2], O, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000))
+                    if (CreaturePtr pTreant = me->SummonCreature(CREATURE_TREANT, treant_pos[i][0], treant_pos[i][1], treant_pos[i][2], O, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000))
                         CAST_AI(mob_warp_splinter_treant::mob_warp_splinter_treantAI, pTreant->AI())->WarpGuid = me->GetGUID();
                 }
                 DoScriptText(RAND(SAY_SUMMON_1, SAY_SUMMON_2), me);
@@ -227,7 +227,7 @@ class boss_warp_splinter : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_warp_splinterAI(creature);
         }

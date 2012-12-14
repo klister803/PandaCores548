@@ -36,7 +36,7 @@ enum TotemType
 class Totem : public Minion
 {
     public:
-        Totem(SummonPropertiesEntry const* properties, Unit* owner);
+        Totem(SummonPropertiesEntry const* properties, UnitPtr owner);
         virtual ~Totem() {}
         void Update(uint32 time);
         void InitStats(uint32 duration);

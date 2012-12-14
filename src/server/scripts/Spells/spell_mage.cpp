@@ -64,7 +64,7 @@ class spell_mage_blast_wave : public SpellScriptLoader
 
             void HandleKnockBack(SpellEffIndex effIndex)
             {
-                if (GetCaster()->HasAura(SPELL_MAGE_GLYPH_OF_BLAST_WAVE))
+                if (TO_PLAYER(GetCaster())->HasAura(SPELL_MAGE_GLYPH_OF_BLAST_WAVE))
                     PreventHitDefaultEffect(effIndex);
             }
 
@@ -91,13 +91,13 @@ class spell_mage_cold_snap : public SpellScriptLoader
 
             bool Load()
             {
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
+                return TO_PLAYER(GetCaster())->GetTypeId() == TYPEID_PLAYER;
             }
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
 
-                Player* caster = GetCaster()->ToPlayer();
+                PlayerPtr caster = TO_PLAYER(GetCaster());
                 // immediately finishes the cooldown on Frost spells
                 const SpellCooldowns& cm = caster->GetSpellCooldownMap();
                 for (SpellCooldowns::const_iterator itr = cm.begin(); itr != cm.end();)
@@ -156,7 +156,7 @@ class spell_mage_polymorph_cast_visual : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* target = GetCaster()->FindNearestCreature(NPC_AUROSALIA, 30.0f))
+                if (UnitPtr target = TO_PLAYER(GetCaster())->FindNearestCreature(NPC_AUROSALIA, 30.0f))
                     if (target->GetTypeId() == TYPEID_UNIT)
                         target->CastSpell(target, PolymorhForms[urand(0, 5)], true);
             }
@@ -202,7 +202,7 @@ class spell_mage_summon_water_elemental : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = TO_PLAYER(GetCaster());
                 // Glyph of Eternal Water
                 if (caster->HasAura(SPELL_MAGE_GLYPH_OF_ETERNAL_WATER))
                     caster->CastSpell(caster, SPELL_MAGE_SUMMON_WATER_ELEMENTAL_PERMANENT, true);
@@ -248,7 +248,7 @@ class spell_mage_frost_warding_trigger : public SpellScriptLoader
 
             void Absorb(AuraEffectPtr aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 if (AuraEffectPtr talentAurEff = target->GetAuraEffectOfRankedSpell(SPELL_MAGE_FROST_WARDING_R1, EFFECT_0))
                 {
                     int32 chance = talentAurEff->GetSpellInfo()->Effects[EFFECT_1].CalcValue();
@@ -293,7 +293,7 @@ class spell_mage_incanters_absorbtion_base_AuraScript : public AuraScript
 
         void Trigger(AuraEffectPtr aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
         {
-            Unit* target = GetTarget();
+            UnitPtr target = GetTarget();
 
             if (AuraEffectPtr talentAurEff = target->GetAuraEffectOfRankedSpell(SPELL_MAGE_INCANTERS_ABSORBTION_R1, EFFECT_0))
             {
@@ -369,7 +369,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
                 if (removeMode != AURA_REMOVE_BY_ENEMY_SPELL && removeMode != AURA_REMOVE_BY_EXPIRE)
                     return;
 
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = TO_PLAYER(GetCaster()))
                     caster->CastSpell(GetTarget(), uint32(aurEff->GetAmount()), true, NULL, aurEff);
             }
 

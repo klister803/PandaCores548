@@ -99,14 +99,14 @@ class boss_wase_mari : public CreatureScript
     public:
         boss_wase_mari() : CreatureScript("boss_wase_mari") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_wise_mari_AI(creature);
         }
 
         struct boss_wise_mari_AI : public BossAI
         {
-            boss_wise_mari_AI(Creature* creature) : BossAI(creature, BOSS_WASE_MARI)
+            boss_wise_mari_AI(CreaturePtr creature) : BossAI(creature, BOSS_WASE_MARI)
             {
                 creature->AddUnitState(UNIT_STATE_ROOT | UNIT_STATE_CANNOT_TURN);
             }
@@ -123,7 +123,7 @@ class boss_wase_mari : public CreatureScript
                 for (uint8 i = 0; i < 4; i++)
                     foutainTrigger[i] = 0;
 
-                std::list<Creature*> searcher;
+                std::list<CreaturePtr> searcher;
                 GetCreatureListWithEntryInGrid(searcher, me, CREATURE_FOUTAIN_TRIGGER, 50.0f);
                 for (auto itr : searcher)
                 {
@@ -143,9 +143,9 @@ class boss_wase_mari : public CreatureScript
                 _Reset();
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
-                std::list<Creature*> searcher;
+                std::list<CreaturePtr> searcher;
                 GetCreatureListWithEntryInGrid(searcher, me, CREATURE_FOUTAIN_TRIGGER, 50.0f);
                 uint8 tab = 0;
                 for (auto itr : searcher)
@@ -186,23 +186,23 @@ class boss_wase_mari : public CreatureScript
             {
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 Talk(TEXT_KILL_PLAYER);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 Talk(TEXT_DEATH);
                 _JustDied();
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
             {
 
             }
 
-            void MoveInLineOfSight(Unit* who)
+            void MoveInLineOfSight(UnitPtr who)
             {
                 if(who->GetTypeId() != TYPEID_PLAYER)
                     return;
@@ -244,7 +244,7 @@ class boss_wase_mari : public CreatureScript
 
                             Talk(TEXT_CALL_WATER);
 
-                            Creature* trigger = me->GetCreature(*me, foutainTrigger[++foutainCount]);
+                            CreaturePtr trigger = me->GetCreature(TO_WORLDOBJECT(me), foutainTrigger[++foutainCount]);
                             if (trigger)
                             {
                                 me->CastSpell(trigger, SPELL_CALL_WATER, true);
@@ -272,7 +272,7 @@ class boss_wase_mari : public CreatureScript
                             {
                                 case HYDROLANCE_BOTTOM:
                                     {
-                                        std::list<Creature*> trigger;
+                                        std::list<CreaturePtr> trigger;
                                         me->GetCreatureListWithEntryInGrid(trigger,CREATURE_HYDROLANCE_BOTTOM_TRIGGER, 50.0f);
                                         for (auto itr : trigger)
                                             itr->CastSpell(itr, SPELL_HYDROLANCE_PRECAST, true);
@@ -304,7 +304,7 @@ class boss_wase_mari : public CreatureScript
                             {
                                 case HYDROLANCE_BOTTOM:
                                 {
-                                    std::list<Creature*> trigger;
+                                    std::list<CreaturePtr> trigger;
                                     me->GetCreatureListWithEntryInGrid(trigger,CREATURE_HYDROLANCE_BOTTOM_TRIGGER, 50.0f);
                                     for (auto itr : trigger)
                                         itr->CastSpell(itr->GetPositionX(), itr->GetPositionY(), itr->GetPositionZ(), SPELL_HYDROLANCE_DMG_BOTTOM, true);
@@ -381,14 +381,14 @@ class mob_corrupt_living_water : public CreatureScript
     public:
         mob_corrupt_living_water() : CreatureScript("mob_corrupt_living_water") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_corrupt_living_water_AI(creature);
         }
 
         struct mob_corrupt_living_water_AI : public ScriptedAI
         {
-            mob_corrupt_living_water_AI(Creature* creature) : ScriptedAI(creature)
+            mob_corrupt_living_water_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
 
@@ -397,17 +397,17 @@ class mob_corrupt_living_water : public CreatureScript
             {
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 for (int i = 0; i < 4; i++)
                 {
                     Position pos;
                     me->GetRandomNearPosition(pos, 4.0f);
-                    Creature* droplet = me->SummonCreature(CREATURE_CORRUPT_DROPLET, pos);
+                    CreaturePtr droplet = me->SummonCreature(CREATURE_CORRUPT_DROPLET, pos);
                     if (!droplet)
                         continue;
 
-                    if(Unit* unit = SelectTarget(SELECT_TARGET_RANDOM))
+                    if(UnitPtr unit = SelectTarget(SELECT_TARGET_RANDOM))
                         droplet->Attack(unit, true);
                 }
 

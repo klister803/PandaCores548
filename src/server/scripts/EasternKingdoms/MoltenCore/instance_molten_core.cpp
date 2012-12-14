@@ -50,7 +50,7 @@ class instance_molten_core : public InstanceMapScript
 
         struct instance_molten_core_InstanceMapScript : public InstanceScript
         {
-            instance_molten_core_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_molten_core_InstanceMapScript(MapPtr map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
                 _golemaggTheIncineratorGUID = 0;
@@ -68,7 +68,7 @@ class instance_molten_core : public InstanceMapScript
                 delete _executusSchedule;
             }
 
-            void OnPlayerEnter(Player* /*player*/)
+            void OnPlayerEnter(PlayerPtr /*Player*/)
             {
                 if (_executusSchedule)
                 {
@@ -78,7 +78,7 @@ class instance_molten_core : public InstanceMapScript
                 }
             }
 
-            void OnCreatureCreate(Creature* creature)
+            void OnCreatureCreate(CreaturePtr creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -93,7 +93,7 @@ class instance_molten_core : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectCreate(GameObject* go)
+            void OnGameObjectCreate(GameObjectPtr go)
             {
                 switch (go->GetEntry())
                 {
@@ -178,7 +178,7 @@ class instance_molten_core : public InstanceMapScript
                     instance->SummonCreature(NPC_FLAMEWAKER_ELITE, SummonPositions[7]);
                     instance->SummonCreature(NPC_FLAMEWAKER_ELITE, SummonPositions[8]);
                 }
-                else if (TempSummon* summon = instance->SummonCreature(NPC_MAJORDOMO_EXECUTUS, RagnarosTelePos))
+                else if (TempSummonPtr summon = instance->SummonCreature(NPC_MAJORDOMO_EXECUTUS, RagnarosTelePos))
                         summon->AI()->DoAction(ACTION_START_RAGNAROS_ALT);
             }
 
@@ -251,7 +251,7 @@ class instance_molten_core : public InstanceMapScript
             bool _summonedExecutus;
         };
 
-        InstanceScript* GetInstanceScript(InstanceMap* map) const
+        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
         {
             return new instance_molten_core_InstanceMapScript(map);
         }

@@ -43,7 +43,7 @@ class instance_uldaman : public InstanceMapScript
 
         struct instance_uldaman_InstanceMapScript : public InstanceScript
         {
-            instance_uldaman_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_uldaman_InstanceMapScript(MapPtr map) : InstanceScript(map)
             {
             }
 
@@ -99,7 +99,7 @@ class instance_uldaman : public InstanceMapScript
             uint32 m_auiEncounter[MAX_ENCOUNTER];
             std::string str_data;
 
-            void OnGameObjectCreate(GameObject* go)
+            void OnGameObjectCreate(GameObjectPtr go)
             {
                 switch (go->GetEntry())
                 {
@@ -145,7 +145,7 @@ class instance_uldaman : public InstanceMapScript
                 }
             }
 
-            void SetFrozenState(Creature* creature)
+            void SetFrozenState(CreaturePtr creature)
             {
                 creature->setFaction(35);
                 creature->RemoveAllAuras();
@@ -156,7 +156,7 @@ class instance_uldaman : public InstanceMapScript
 
             void SetDoor(uint64 guid, bool open)
             {
-                GameObject* go = instance->GetGameObject(guid);
+                GameObjectPtr go = instance->GetGameObject(guid);
                 if (!go)
                     return;
 
@@ -165,7 +165,7 @@ class instance_uldaman : public InstanceMapScript
 
             void BlockGO(uint64 guid)
             {
-                GameObject* go = instance->GetGameObject(guid);
+                GameObjectPtr go = instance->GetGameObject(guid);
                 if (!go)
                     return;
 
@@ -176,7 +176,7 @@ class instance_uldaman : public InstanceMapScript
             {
                 for (std::vector<uint64>::const_iterator i = vStoneKeeper.begin(); i != vStoneKeeper.end(); ++i)
                 {
-                    Creature* target = instance->GetCreature(*i);
+                    CreaturePtr target = instance->GetCreature(*i);
                     if (!target || !target->isAlive() || target->getFaction() == 14)
                         continue;
                     target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
@@ -191,13 +191,13 @@ class instance_uldaman : public InstanceMapScript
 
             void ActivateWallMinions()
             {
-                Creature* archaedas = instance->GetCreature(uiArchaedasGUID);
+                CreaturePtr archaedas = instance->GetCreature(uiArchaedasGUID);
                 if (!archaedas)
                     return;
 
                 for (std::vector<uint64>::const_iterator i = vArchaedasWallMinions.begin(); i != vArchaedasWallMinions.end(); ++i)
                 {
-                    Creature* target = instance->GetCreature(*i);
+                    CreaturePtr target = instance->GetCreature(*i);
                     if (!target || !target->isAlive() || target->getFaction() == 14)
                         continue;
                     archaedas->CastSpell(target, SPELL_AWAKEN_VAULT_WALKER, true);
@@ -215,7 +215,7 @@ class instance_uldaman : public InstanceMapScript
                 // first despawn any aggroed wall minions
                 for (std::vector<uint64>::const_iterator i = vArchaedasWallMinions.begin(); i != vArchaedasWallMinions.end(); ++i)
                 {
-                    Creature* target = instance->GetCreature(*i);
+                    CreaturePtr target = instance->GetCreature(*i);
                     if (!target || target->isDead() || target->getFaction() != 14)
                         continue;
                     target->setDeathState(JUST_DIED);
@@ -225,7 +225,7 @@ class instance_uldaman : public InstanceMapScript
                 // Vault Walkers
                 for (std::vector<uint64>::const_iterator i = vVaultWalker.begin(); i != vVaultWalker.end(); ++i)
                 {
-                    Creature* target = instance->GetCreature(*i);
+                    CreaturePtr target = instance->GetCreature(*i);
                     if (!target || target->isDead() || target->getFaction() != 14)
                         continue;
                     target->setDeathState(JUST_DIED);
@@ -235,7 +235,7 @@ class instance_uldaman : public InstanceMapScript
                 // Earthen Guardians
                 for (std::vector<uint64>::const_iterator i = vEarthenGuardian.begin(); i != vEarthenGuardian.end(); ++i)
                 {
-                    Creature* target = instance->GetCreature(*i);
+                    CreaturePtr target = instance->GetCreature(*i);
                     if (!target || target->isDead() || target->getFaction() != 14)
                         continue;
                     target->setDeathState(JUST_DIED);
@@ -245,11 +245,11 @@ class instance_uldaman : public InstanceMapScript
 
             void ActivateArchaedas(uint64 target)
             {
-                Creature* archaedas = instance->GetCreature(uiArchaedasGUID);
+                CreaturePtr archaedas = instance->GetCreature(uiArchaedasGUID);
                 if (!archaedas)
                     return;
 
-                if (Unit::GetUnit(*archaedas, target))
+                if (Unit::GetUnit(TO_WORLDOBJECT(archaedas), target))
                 {
                     archaedas->CastSpell(archaedas, SPELL_ARCHAEDAS_AWAKEN, false);
                     uiWhoWokeuiArchaedasGUID = target;
@@ -258,7 +258,7 @@ class instance_uldaman : public InstanceMapScript
 
             void ActivateIronaya()
             {
-                Creature* ironaya = instance->GetCreature(uiIronayaGUID);
+                CreaturePtr ironaya = instance->GetCreature(uiIronayaGUID);
                 if (!ironaya)
                     return;
 
@@ -272,7 +272,7 @@ class instance_uldaman : public InstanceMapScript
                 // first respawn any aggroed wall minions
                 for (std::vector<uint64>::const_iterator i = vArchaedasWallMinions.begin(); i != vArchaedasWallMinions.end(); ++i)
                 {
-                    Creature* target = instance->GetCreature(*i);
+                    CreaturePtr target = instance->GetCreature(*i);
                     if (target && target->isDead())
                     {
                         target->Respawn();
@@ -284,7 +284,7 @@ class instance_uldaman : public InstanceMapScript
                 // Vault Walkers
                 for (std::vector<uint64>::const_iterator i = vVaultWalker.begin(); i != vVaultWalker.end(); ++i)
                 {
-                    Creature* target = instance->GetCreature(*i);
+                    CreaturePtr target = instance->GetCreature(*i);
                     if (target && target->isDead())
                     {
                         target->Respawn();
@@ -296,7 +296,7 @@ class instance_uldaman : public InstanceMapScript
                 // Earthen Guardians
                 for (std::vector<uint64>::const_iterator i = vEarthenGuardian.begin(); i != vEarthenGuardian.end(); ++i)
                 {
-                    Creature* target = instance->GetCreature(*i);
+                    CreaturePtr target = instance->GetCreature(*i);
                     if (target && target->isDead())
                     {
                         target->Respawn();
@@ -427,7 +427,7 @@ class instance_uldaman : public InstanceMapScript
                 OUT_LOAD_INST_DATA_COMPLETE;
             }
 
-            void OnCreatureCreate(Creature* creature)
+            void OnCreatureCreate(CreaturePtr creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -485,7 +485,7 @@ class instance_uldaman : public InstanceMapScript
             } // end GetData64
         };
 
-        InstanceScript* GetInstanceScript(InstanceMap* map) const
+        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
         {
             return new instance_uldaman_InstanceMapScript(map);
         }

@@ -55,7 +55,7 @@ public:
         if (!*args)
             return false;
 
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (!target)
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -100,7 +100,7 @@ public:
 
     static bool HandleCastBackCommand(ChatHandler* handler, char const* args)
     {
-        Creature* caster = handler->getSelectedCreature();
+        CreaturePtr caster = handler->getSelectedCreature();
         if (!caster)
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -188,7 +188,7 @@ public:
         if (!*args)
             return false;
 
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (!target)
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -219,7 +219,7 @@ public:
 
     static bool HandleCastTargetCommad(ChatHandler* handler, char const* args)
     {
-        Creature* caster = handler->getSelectedCreature();
+        CreaturePtr caster = handler->getSelectedCreature();
         if (!caster)
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -260,7 +260,7 @@ public:
 
     static bool HandleCastDestCommand(ChatHandler* handler, char const* args)
     {
-        Unit* caster = handler->getSelectedUnit();
+        UnitPtr caster = handler->getSelectedUnit();
         if (!caster)
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);

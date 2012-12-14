@@ -266,7 +266,7 @@ public:
             return false;
 
         // Can be NULL at console call
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
 
         std::string namePart = args;
         std::wstring wNamePart;
@@ -561,7 +561,7 @@ public:
             return false;
 
         // can be NULL at console call
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
 
         std::string namePart = args;
         std::wstring wNamePart;
@@ -691,7 +691,7 @@ public:
             return false;
 
         // can be NULL in console call
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
 
         std::string namePart = args;
         std::wstring wNamePart;
@@ -761,7 +761,7 @@ public:
             return false;
 
         // can be NULL at console call
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
 
         std::string namePart = args;
         std::wstring wNamePart;
@@ -968,7 +968,7 @@ public:
             return false;
 
         // can be NULL in console call
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
 
         // title name have single string arg for player name
         char const* targetName = target ? target->GetName() : "NAME";
@@ -1140,7 +1140,7 @@ public:
         int32 limit;
         char* limitStr;
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!*args)
         {
             // NULL only if used from console

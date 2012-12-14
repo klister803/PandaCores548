@@ -55,7 +55,7 @@ class spell_rog_cheat_death : public SpellScriptLoader
             bool Load()
             {
                 absorbChance = GetSpellInfo()->Effects[EFFECT_0].CalcValue();
-                return GetUnitOwner()->ToPlayer();
+                return TO_PLAYER(GetUnitOwner());
             }
 
             void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
@@ -66,7 +66,7 @@ class spell_rog_cheat_death : public SpellScriptLoader
 
             void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
-                Player* target = GetTarget()->ToPlayer();
+                PlayerPtr target = TO_PLAYER(GetTarget());
                 if (dmgInfo.GetDamage() < target->GetHealth() || target->HasSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_COOLDOWN) ||  !roll_chance_i(absorbChance))
                     return;
 
@@ -163,7 +163,7 @@ class spell_rog_preparation : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Player* caster = GetCaster()->ToPlayer();
+                PlayerPtr caster = TO_PLAYER(GetCaster());
 
                 //immediately finishes the cooldown on certain Rogue abilities
                 const SpellCooldowns& cm = caster->GetSpellCooldownMap();
@@ -226,8 +226,8 @@ public:
 
         void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
         {
-            Unit* target = GetTarget();
-            Unit* victim = target->getVictim();
+            UnitPtr target = GetTarget();
+            UnitPtr victim = target->getVictim();
             if (victim && (target->GetHealthPct() > victim->GetHealthPct()))
             {
                 if (!target->HasAura(ROGUE_SPELL_PREY_ON_THE_WEAK))
@@ -275,8 +275,8 @@ class spell_rog_shiv : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
-                if (Unit* unitTarget = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr unitTarget = GetHitUnit())
                     caster->CastSpell(unitTarget, ROGUE_SPELL_SHIV_TRIGGERED, true);
             }
 
@@ -311,7 +311,7 @@ class spell_rog_deadly_poison : public SpellScriptLoader
 
             void HandleBeforeHit()
             {
-                if (Unit* target = GetHitUnit())
+                if (UnitPtr target = GetHitUnit())
                     // Deadly Poison
                     if (constAuraEffectPtr aurEff = target->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_ROGUE, 0x10000, 0x80000, 0, GetCaster()->GetGUID()))
                         _stackAmount = aurEff->GetBase()->GetStackAmount();
@@ -322,12 +322,12 @@ class spell_rog_deadly_poison : public SpellScriptLoader
                 if (_stackAmount < 5)
                     return;
 
-                Player* player = GetCaster()->ToPlayer();
+                PlayerPtr player = TO_PLAYER(GetCaster());
 
-                if (Unit* target = GetHitUnit())
+                if (UnitPtr target = GetHitUnit())
                 {
 
-                    Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                    ItemPtr item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
 
                     if (item == GetCastItem())
                         item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);

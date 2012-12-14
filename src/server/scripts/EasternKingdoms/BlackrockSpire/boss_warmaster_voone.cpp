@@ -45,21 +45,21 @@ class boss_warmaster_voone : public CreatureScript
 public:
     boss_warmaster_voone() : CreatureScript("boss_warmaster_voone") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_warmastervooneAI(creature);
     }
 
     struct boss_warmastervooneAI : public BossAI
     {
-        boss_warmastervooneAI(Creature* creature) : BossAI(creature, DATA_WARMASTER_VOONE) {}
+        boss_warmastervooneAI(CreaturePtr creature) : BossAI(creature, DATA_WARMASTER_VOONE) {}
 
         void Reset()
         {
             _Reset();
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_SNAP_KICK, 8 * IN_MILLISECONDS);
@@ -70,7 +70,7 @@ public:
             events.ScheduleEvent(EVENT_THROW_AXE, 1 * IN_MILLISECONDS);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             _JustDied();
         }

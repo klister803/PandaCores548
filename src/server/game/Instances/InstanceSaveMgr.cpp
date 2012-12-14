@@ -183,11 +183,11 @@ void InstanceSave::SaveToDB()
     std::string data;
     uint32 completedEncounters = 0;
 
-    Map* map = sMapMgr->FindMap(GetMapId(), m_instanceid);
+    MapPtr map = sMapMgr->FindMap(GetMapId(), m_instanceid);
     if (map)
     {
         ASSERT(map->IsDungeon());
-        if (InstanceScript* instanceScript = ((InstanceMap*)map)->GetInstanceScript())
+        if (InstanceScript* instanceScript = TO_INSTANCEMAP(map)->GetInstanceScript())
         {
             data = instanceScript->GetSaveData();
             completedEncounters = instanceScript->GetCompletedEncounterMask();
@@ -508,14 +508,14 @@ void InstanceSaveManager::_ResetSave(InstanceSaveHashMap::iterator &itr)
     InstanceSave::PlayerListType &pList = itr->second->m_playerList;
     while (!pList.empty())
     {
-        Player* player = *(pList.begin());
+        PlayerPtr player = *(pList.begin());
         player->UnbindInstance(itr->second->GetMapId(), itr->second->GetDifficulty(), true);
     }
 
     InstanceSave::GroupListType &gList = itr->second->m_groupList;
     while (!gList.empty())
     {
-        Group* group = *(gList.begin());
+        GroupPtr group = *(gList.begin());
         group->UnbindInstance(itr->second->GetMapId(), itr->second->GetDifficulty(), true);
     }
 
@@ -528,7 +528,7 @@ void InstanceSaveManager::_ResetSave(InstanceSaveHashMap::iterator &itr)
 void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
 {
     sLog->outDebug(LOG_FILTER_MAPS, "InstanceSaveMgr::_ResetInstance %u, %u", mapid, instanceId);
-    Map const* map = sMapMgr->CreateBaseMap(mapid);
+    constMapPtr map = sMapMgr->CreateBaseMap(mapid);
     if (!map->Instanceable())
         return;
 
@@ -538,10 +538,10 @@ void InstanceSaveManager::_ResetInstance(uint32 mapid, uint32 instanceId)
 
     DeleteInstanceFromDB(instanceId);                       // even if save not loaded
 
-    Map* iMap = ((MapInstanced*)map)->FindInstanceMap(instanceId);
+    MapPtr iMap = TO_MAPINSTANCED(NO_CONST(Map,map))->FindInstanceMap(instanceId);
 
     if (iMap && iMap->IsDungeon())
-        ((InstanceMap*)iMap)->Reset(INSTANCE_RESET_RESPAWN_DELAY);
+        TO_INSTANCEMAP(iMap)->Reset(INSTANCE_RESET_RESPAWN_DELAY);
 
     if (iMap)
         iMap->DeleteRespawnTimes();
@@ -622,14 +622,14 @@ void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, Difficulty difficulty, b
     }
 
     // note: this isn't fast but it's meant to be executed very rarely
-    Map const* map = sMapMgr->CreateBaseMap(mapid);          // _not_ include difficulty
-    MapInstanced::InstancedMaps &instMaps = ((MapInstanced*)map)->GetInstancedMaps();
+    constMapPtr map = sMapMgr->CreateBaseMap(mapid);          // _not_ include difficulty
+    MapInstanced::InstancedMaps &instMaps = TO_MAPINSTANCED(NO_CONST(Map,map))->GetInstancedMaps();
     MapInstanced::InstancedMaps::iterator mitr;
     uint32 timeLeft;
 
     for (mitr = instMaps.begin(); mitr != instMaps.end(); ++mitr)
     {
-        Map* map2 = mitr->second;
+        MapPtr map2 = mitr->second;
         if (!map2->IsDungeon())
             continue;
 
@@ -640,10 +640,10 @@ void InstanceSaveManager::_ResetOrWarnAll(uint32 mapid, Difficulty difficulty, b
             else
                 timeLeft = uint32(now - resetTime);
 
-            ((InstanceMap*)map2)->SendResetWarnings(timeLeft);
+            TO_INSTANCEMAP(map2)->SendResetWarnings(timeLeft);
         }
         else
-            ((InstanceMap*)map2)->Reset(INSTANCE_RESET_GLOBAL);
+            TO_INSTANCEMAP(map2)->Reset(INSTANCE_RESET_GLOBAL);
     }
 
     // TODO: delete creature/gameobject respawn times even if the maps are not loaded

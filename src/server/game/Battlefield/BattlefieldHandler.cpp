@@ -402,7 +402,7 @@ void WorldSession::HandleReportPvPAFK(WorldPacket & recvData)
 {
     uint64 playerGuid;
     recvData >> playerGuid;
-    Player* reportedPlayer = ObjectAccessor::FindPlayer(playerGuid);
+    PlayerPtr reportedPlayer = ObjectAccessor::FindPlayer(playerGuid);
 
     if (!reportedPlayer)
     {

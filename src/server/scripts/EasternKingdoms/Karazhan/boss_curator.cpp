@@ -49,14 +49,14 @@ class boss_curator : public CreatureScript
 public:
     boss_curator() : CreatureScript("boss_curator") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_curatorAI (creature);
     }
 
     struct boss_curatorAI : public ScriptedAI
     {
-        boss_curatorAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_curatorAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 AddTimer;
         uint32 HatefulBoltTimer;
@@ -76,17 +76,17 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_ARCANE, true);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_KILL1, SAY_KILL2), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
         }
@@ -132,8 +132,8 @@ public:
                 if (AddTimer <= diff)
                 {
                     //Summon Astral Flare
-                    Creature* AstralFlare = DoSpawnCreature(17096, float(rand()%37), float(rand()%37), 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
-                    Unit* target = NULL;
+                    CreaturePtr AstralFlare = DoSpawnCreature(17096, float(rand()%37), float(rand()%37), 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000);
+                    UnitPtr target = NULL;
                     target = SelectTarget(SELECT_TARGET_RANDOM, 0);
 
                     if (AstralFlare && target)
@@ -185,7 +185,7 @@ public:
                 else
                     HatefulBoltTimer = 15000;
 
-                if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 1))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_TOPAGGRO, 1))
                     DoCast(target, SPELL_HATEFUL_BOLT);
 
             } else HatefulBoltTimer -= diff;

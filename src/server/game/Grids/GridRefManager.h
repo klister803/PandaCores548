@@ -30,8 +30,8 @@ class GridRefManager : public RefManager<GridRefManager<OBJECT>, OBJECT>
     public:
         typedef LinkedListHead::Iterator< GridReference<OBJECT> > iterator;
 
-        GridReference<OBJECT>* getFirst() { return (GridReference<OBJECT>*)RefManager<GridRefManager<OBJECT>, OBJECT>::getFirst(); }
-        GridReference<OBJECT>* getLast() { return (GridReference<OBJECT>*)RefManager<GridRefManager<OBJECT>, OBJECT>::getLast(); }
+        std::shared_ptr<GridReference<OBJECT>> getFirst() { return std::static_pointer_cast<GridReference<OBJECT>>(RefManager<GridRefManager<OBJECT>, OBJECT>::getFirst()); }
+        std::shared_ptr<GridReference<OBJECT>> getLast() { return std::static_pointer_cast<GridReference<OBJECT>>(RefManager<GridRefManager<OBJECT>, OBJECT>::getLast()); }
 
         iterator begin() { return iterator(getFirst()); }
         iterator end() { return iterator(NULL); }

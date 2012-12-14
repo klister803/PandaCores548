@@ -35,15 +35,15 @@ class Bag : public Item
         void AddToWorld();
         void RemoveFromWorld();
 
-        bool Create(uint32 guidlow, uint32 itemid, Player const* owner);
+        bool Create(uint32 guidlow, uint32 itemid, constPlayerPtr owner);
 
         void Clear();
-        void StoreItem(uint8 slot, Item* pItem, bool update);
+        void StoreItem(uint8 slot, ItemPtr pItem, bool update);
         void RemoveItem(uint8 slot, bool update);
 
-        Item* GetItemByPos(uint8 slot) const;
-        uint32 GetItemCount(uint32 item, Item* eItem = NULL) const;
-        uint32 GetItemCountWithLimitCategory(uint32 limitCategory, Item* skipItem = NULL) const;
+        ItemPtr GetItemByPos(uint8 slot) const;
+        uint32 GetItemCount(uint32 item, ItemPtr eItem = NULL) const;
+        uint32 GetItemCountWithLimitCategory(uint32 limitCategory, ItemPtr skipItem = NULL) const;
 
         uint8 GetSlotByItemGUID(uint64 guid) const;
         bool IsEmpty() const;
@@ -58,17 +58,17 @@ class Bag : public Item
         // overwrite virtual Item::DeleteFromDB
         void DeleteFromDB(SQLTransaction& trans);
 
-        void BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) const;
+        void BuildCreateUpdateBlockForPlayer(UpdateData* data, PlayerPtr target) const;
 
     protected:
 
         // Bag Storage space
-        Item* m_bagslot[MAX_BAG_SIZE];
+        ItemPtr m_bagslot[MAX_BAG_SIZE];
 };
 
-inline Item* NewItemOrBag(ItemTemplate const* proto)
+inline ItemPtr NewItemOrBag(ItemTemplate const* proto)
 {
-    return (proto->InventoryType == INVTYPE_BAG) ? new Bag : new Item;
+    return (proto->InventoryType == INVTYPE_BAG) ? BagPtr(new Bag) : ItemPtr(new Item);
 }
 #endif
 

@@ -55,8 +55,8 @@ class Corpse : public WorldObject, public GridObject<Corpse>
         void AddToWorld();
         void RemoveFromWorld();
 
-        bool Create(uint32 guidlow, Map* map);
-        bool Create(uint32 guidlow, Player* owner);
+        bool Create(uint32 guidlow, MapPtr map);
+        bool Create(uint32 guidlow, PlayerPtr owner);
 
         void SaveToDB();
         bool LoadCorpseFromDB(uint32 guid, Field* fields);
@@ -73,8 +73,8 @@ class Corpse : public WorldObject, public GridObject<Corpse>
         GridCoord const& GetGridCoord() const { return _gridCoord; }
         void SetGridCoord(GridCoord const& gridCoord) { _gridCoord = gridCoord; }
 
-        Loot loot;                                          // remove insignia ONLY at BG
-        Player* lootRecipient;
+        LootPtr loot;                                          // remove insignia ONLY at BG
+        PlayerPtr lootRecipient;
         bool lootForBody;
 
         void Say(int32 textId, uint32 language, uint64 TargetGuid) { MonsterSay(textId, language, TargetGuid); }

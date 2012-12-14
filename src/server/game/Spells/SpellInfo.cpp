@@ -410,7 +410,7 @@ bool SpellEffectInfo::IsUnitOwnedAuraEffect() const
     return IsAreaAuraEffect() || Effect == SPELL_EFFECT_APPLY_AURA;
 }
 
-int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const* target) const
+int32 SpellEffectInfo::CalcValue(constUnitPtr caster, int32 const* bp, constUnitPtr target) const
 {
     float basePointsPerLevel = RealPointsPerLevel;
     int32 basePoints = bp ? *bp : BasePoints;
@@ -516,18 +516,18 @@ int32 SpellEffectInfo::CalcBaseValue(int32 value) const
         return value - 1;
 }
 
-float SpellEffectInfo::CalcValueMultiplier(Unit* caster, Spell* spell) const
+float SpellEffectInfo::CalcValueMultiplier(UnitPtr caster, Spell* spell) const
 {
     float multiplier = ValueMultiplier;
-    if (Player* modOwner = (caster ? caster->GetSpellModOwner() : NULL))
+    if (PlayerPtr modOwner = (caster ? caster->GetSpellModOwner() : NULL))
         modOwner->ApplySpellMod(_spellInfo->Id, SPELLMOD_VALUE_MULTIPLIER, multiplier, spell);
     return multiplier;
 }
 
-float SpellEffectInfo::CalcDamageMultiplier(Unit* caster, Spell* spell) const
+float SpellEffectInfo::CalcDamageMultiplier(UnitPtr caster, Spell* spell) const
 {
     float multiplier = DamageMultiplier;
-    if (Player* modOwner = (caster ? caster->GetSpellModOwner() : NULL))
+    if (PlayerPtr modOwner = (caster ? caster->GetSpellModOwner() : NULL))
         modOwner->ApplySpellMod(_spellInfo->Id, SPELLMOD_DAMAGE_MULTIPLIER, multiplier, spell);
     return multiplier;
 }
@@ -537,13 +537,13 @@ bool SpellEffectInfo::HasRadius() const
     return RadiusEntry != NULL;
 }
 
-float SpellEffectInfo::CalcRadius(Unit* caster, Spell* spell) const
+float SpellEffectInfo::CalcRadius(UnitPtr caster, Spell* spell) const
 {
     if (!HasRadius())
         return 0.0f;
 
     float radius = _spellInfo->IsPositive() ? RadiusEntry->radiusFriend : RadiusEntry->radiusHostile;
-    if (Player* modOwner = (caster ? caster->GetSpellModOwner() : NULL))
+    if (PlayerPtr modOwner = (caster ? caster->GetSpellModOwner() : NULL))
         modOwner->ApplySpellMod(_spellInfo->Id, SPELLMOD_RADIUS, radius, spell);
 
     return radius;
@@ -1440,7 +1440,7 @@ SpellCastResult SpellInfo::CheckShapeshift(uint32 form) const
     return SPELL_CAST_OK;
 }
 
-SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 area_id, Player const* player) const
+SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 area_id, constPlayerPtr player) const
 {
     // normal case
     if (AreaGroupId > 0)
@@ -1585,7 +1585,7 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
     return SPELL_CAST_OK;
 }
 
-SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* target, bool implicit) const
+SpellCastResult SpellInfo::CheckTarget(constUnitPtr caster, constWorldObjectPtr target, bool implicit) const
 {
     if (AttributesEx & SPELL_ATTR1_CANT_TARGET_SELF && caster == target)
         return SPELL_FAILED_BAD_TARGETS;
@@ -1594,7 +1594,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
     if (!(AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE) && !caster->canSeeOrDetect(target, implicit))
         return SPELL_FAILED_BAD_TARGETS;
 
-    Unit const* unitTarget = target->ToUnit();
+    constUnitPtr unitTarget = target->ToUnit();
 
     // creature/player specific target checks
     if (unitTarget)
@@ -1617,8 +1617,8 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
             {
                 // Do not allow these spells to target creatures not tapped by us (Banish, Polymorph, many quest spells)
                 if (AttributesEx2 & SPELL_ATTR2_CANT_TARGET_TAPPED)
-                    if (Creature const* targetCreature = unitTarget->ToCreature())
-                        if (targetCreature->hasLootRecipient() && !targetCreature->isTappedBy(caster->ToPlayer()))
+                    if (constCreaturePtr targetCreature = unitTarget->ToCreature())
+                        if (targetCreature->hasLootRecipient() && !targetCreature->isTappedBy(TO_CONST_PLAYER(caster)))
                             return SPELL_FAILED_CANT_CAST_ON_TAPPED;
 
                 if (AttributesCu & SPELL_ATTR0_CU_PICKPOCKET)
@@ -1634,7 +1634,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
                 {
                     if (unitTarget->GetTypeId() == TYPEID_PLAYER)
                     {
-                        Player const* player = unitTarget->ToPlayer();
+                        constPlayerPtr player = TO_CONST_PLAYER(unitTarget);
                         if (!player->GetWeaponForAttack(BASE_ATTACK) || !player->IsUseEquipedWeapon(true))
                             return SPELL_FAILED_TARGET_NO_WEAPONS;
                     }
@@ -1645,13 +1645,13 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
         }
     }
     // corpse specific target checks
-    else if (Corpse const* corpseTarget = target->ToCorpse())
+    else if (constCorpsePtr corpseTarget = TO_CONST_CORPSE(target))
     {
         // cannot target bare bones
         if (corpseTarget->GetType() == CORPSE_BONES)
             return SPELL_FAILED_BAD_TARGETS;
         // we have to use owner for some checks (aura preventing resurrection for example)
-        if (Player* owner = ObjectAccessor::FindPlayer(corpseTarget->GetOwnerGUID()))
+        if (PlayerPtr owner = ObjectAccessor::FindPlayer(corpseTarget->GetOwnerGUID()))
             unitTarget = owner;
         // we're not interested in corpses without owner
         else
@@ -1661,7 +1661,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
     else return SPELL_CAST_OK;
 
     // corpseOwner and unit specific target checks
-    if (AttributesEx3 & SPELL_ATTR3_ONLY_TARGET_PLAYERS && !unitTarget->ToPlayer())
+    if (AttributesEx3 & SPELL_ATTR3_ONLY_TARGET_PLAYERS && !TO_CONST_PLAYER(unitTarget))
        return SPELL_FAILED_TARGET_NOT_PLAYER;
 
     if (!IsAllowingDeadTarget() && !unitTarget->isAlive())
@@ -1688,10 +1688,10 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
     // check GM mode and GM invisibility - only for player casts (npc casts are controlled by AI) and negative spells
     if (unitTarget != caster && (caster->IsControlledByPlayer() || !IsPositive()) && unitTarget->GetTypeId() == TYPEID_PLAYER)
     {
-        if (!unitTarget->ToPlayer()->IsVisible())
+        if (!TO_CONST_PLAYER(unitTarget)->IsVisible())
             return SPELL_FAILED_BM_OR_INVISGOD;
 
-        if (unitTarget->ToPlayer()->isGameMaster())
+        if (TO_CONST_PLAYER(unitTarget)->isGameMaster())
             return SPELL_FAILED_BM_OR_INVISGOD;
     }
 
@@ -1718,7 +1718,7 @@ SpellCastResult SpellInfo::CheckTarget(Unit const* caster, WorldObject const* ta
     return SPELL_CAST_OK;
 }
 
-SpellCastResult SpellInfo::CheckExplicitTarget(Unit const* caster, WorldObject const* target, Item const* itemTarget) const
+SpellCastResult SpellInfo::CheckExplicitTarget(constUnitPtr caster, constWorldObjectPtr target, constItemPtr itemTarget) const
 {
     uint32 neededTargets = GetExplicitTargetMask();
     if (!target)
@@ -1729,7 +1729,7 @@ SpellCastResult SpellInfo::CheckExplicitTarget(Unit const* caster, WorldObject c
         return SPELL_CAST_OK;
     }
 
-    if (Unit const* unitTarget = target->ToUnit())
+    if (constUnitPtr unitTarget = target->ToUnit())
     {
         if (neededTargets & (TARGET_FLAG_UNIT_ENEMY | TARGET_FLAG_UNIT_ALLY | TARGET_FLAG_UNIT_RAID | TARGET_FLAG_UNIT_PARTY | TARGET_FLAG_UNIT_MINIPET | TARGET_FLAG_UNIT_PASSENGER))
         {
@@ -1753,7 +1753,7 @@ SpellCastResult SpellInfo::CheckExplicitTarget(Unit const* caster, WorldObject c
     return SPELL_CAST_OK;
 }
 
-bool SpellInfo::CheckTargetCreatureType(Unit const* target) const
+bool SpellInfo::CheckTargetCreatureType(constUnitPtr target) const
 {
     // Curse of Doom & Exorcism: not find another way to fix spell target check :/
     if (SpellFamilyName == SPELLFAMILY_WARLOCK && Category == 1179)
@@ -2088,7 +2088,7 @@ float SpellInfo::GetMinRange(bool positive) const
     return RangeEntry->minRangeHostile;
 }
 
-float SpellInfo::GetMaxRange(bool positive, Unit* caster, Spell* spell) const
+float SpellInfo::GetMaxRange(bool positive, UnitPtr caster, Spell* spell) const
 {
     if (!RangeEntry)
         return 0.0f;
@@ -2098,7 +2098,7 @@ float SpellInfo::GetMaxRange(bool positive, Unit* caster, Spell* spell) const
     else
         range = RangeEntry->maxRangeHostile;
     if (caster)
-        if (Player* modOwner = caster->GetSpellModOwner())
+        if (PlayerPtr modOwner = caster->GetSpellModOwner())
             modOwner->ApplySpellMod(Id, SPELLMOD_RANGE, range, spell);
     return range;
 }
@@ -2117,7 +2117,7 @@ int32 SpellInfo::GetMaxDuration() const
     return (DurationEntry->Duration[2] == -1) ? -1 : abs(DurationEntry->Duration[2]);
 }
 
-uint32 SpellInfo::CalcCastTime(Unit* caster, Spell* spell) const
+uint32 SpellInfo::CalcCastTime(UnitPtr caster, Spell* spell) const
 {
     int32 castTime = 0;
 
@@ -2175,7 +2175,7 @@ uint32 SpellInfo::GetRecoveryTime() const
     return RecoveryTime > CategoryRecoveryTime ? RecoveryTime : CategoryRecoveryTime;
 }
 
-uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, SpellPowerEntry const* spellPower) const
+uint32 SpellInfo::CalcPowerCost(constUnitPtr caster, SpellSchoolMask schoolMask, SpellPowerEntry const* spellPower) const
 {
     // Spell drain all exist power on cast (Only paladin lay of Hands)
     if (AttributesEx & SPELL_ATTR1_DRAIN_ALL_POWER)
@@ -2225,7 +2225,7 @@ uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, 
     if (AttributesEx4 & SPELL_ATTR4_SPELL_VS_EXTEND_COST)
         powerCost += caster->GetAttackTime(OFF_ATTACK) / 100;
     // Apply cost mod by spell
-    if (Player* modOwner = caster->GetSpellModOwner())
+    if (PlayerPtr modOwner = caster->GetSpellModOwner())
         modOwner->ApplySpellMod(Id, SPELLMOD_COST, powerCost);
 
     if (Attributes & SPELL_ATTR0_LEVEL_DAMAGE_CALCULATION)

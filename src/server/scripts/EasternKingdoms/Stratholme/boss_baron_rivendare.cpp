@@ -83,14 +83,14 @@ class boss_baron_rivendare : public CreatureScript
 public:
     boss_baron_rivendare() : CreatureScript("boss_baron_rivendare") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_baron_rivendareAI (creature);
     }
 
     struct boss_baron_rivendareAI : public ScriptedAI
     {
-        boss_baron_rivendareAI(Creature* creature) : ScriptedAI(creature)
+        boss_baron_rivendareAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = me->GetInstanceScript();
         }
@@ -114,20 +114,20 @@ public:
                 instance->SetData(TYPE_BARON, NOT_STARTED);
         }
 
-        void AttackStart(Unit* who)
+        void AttackStart(UnitPtr who)
         {
             if (instance)//can't use entercombat(), boss' dmg aura sets near players in combat, before entering the room's door
                 instance->SetData(TYPE_BARON, IN_PROGRESS);
             ScriptedAI::AttackStart(who);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
-            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 summoned->AI()->AttackStart(target);
         }
 
-         void JustDied(Unit* /*killer*/)
+         void JustDied(UnitPtr /*killer*/)
          {
              if (instance)
                  instance->SetData(TYPE_BARON, DONE);

@@ -37,14 +37,14 @@ class boss_baroness_anastari : public CreatureScript
 public:
     boss_baroness_anastari() : CreatureScript("boss_baroness_anastari") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_baroness_anastariAI (creature);
     }
 
     struct boss_baroness_anastariAI : public ScriptedAI
     {
-        boss_baroness_anastariAI(Creature* creature) : ScriptedAI(creature)
+        boss_baroness_anastariAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = me->GetInstanceScript();
         }
@@ -64,11 +64,11 @@ public:
             //Possess_Timer = 35000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
-         void JustDied(Unit* /*killer*/)
+         void JustDied(UnitPtr /*killer*/)
          {
              if (instance)
                  instance->SetData(TYPE_BARONESS, IN_PROGRESS);
@@ -112,7 +112,7 @@ public:
             //Cast
               if (rand()%100 < 65)
             {
-            Unit* target = NULL;
+            UnitPtr target = NULL;
             target = SelectUnit(SELECT_TARGET_RANDOM, 0);
             if (target)DoCast(target, SPELL_POSSESS);
             }

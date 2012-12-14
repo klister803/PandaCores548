@@ -95,7 +95,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -132,7 +132,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -181,7 +181,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -232,7 +232,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -270,7 +270,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -296,7 +296,7 @@ public:
 
         char* pfactionid = handler->extractKeyFromLink((char*)args, "Hfaction");
 
-        Creature* target = handler->getSelectedCreature();
+        CreaturePtr target = handler->getSelectedCreature();
         if (!target)
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
@@ -396,7 +396,7 @@ public:
         else
             mark = atoi(pmark);
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (target == NULL)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -432,7 +432,7 @@ public:
         if (tp < 0)
             return false;
 
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -443,21 +443,21 @@ public:
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
             // check online security
-            if (handler->HasLowerSecurity(target->ToPlayer(), 0))
+            if (handler->HasLowerSecurity(TO_PLAYER(target), 0))
                 return false;
-            target->ToPlayer()->SetFreeTalentPoints(tp);
-            target->ToPlayer()->SendTalentsInfoData(false);
+            TO_PLAYER(target)->SetFreeTalentPoints(tp);
+            TO_PLAYER(target)->SendTalentsInfoData(false);
             return true;
         }
         else if (target->ToCreature()->isPet())
         {
-            Unit* owner = target->GetOwner();
-            if (owner && owner->GetTypeId() == TYPEID_PLAYER && ((Pet*)target)->IsPermanentPetFor(owner->ToPlayer()))
+            UnitPtr owner = target->GetOwner();
+            if (owner && owner->GetTypeId() == TYPEID_PLAYER && (TO_PET(target))->IsPermanentPetFor(TO_PLAYER(owner)))
             {
                 // check online security
-                if (handler->HasLowerSecurity(owner->ToPlayer(), 0))
+                if (handler->HasLowerSecurity(TO_PLAYER(owner), 0))
                     return false;
-                owner->ToPlayer()->SendTalentsInfoData(true);
+                TO_PLAYER(owner)->SendTalentsInfoData(true);
                 return true;
             }
         }
@@ -482,7 +482,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -530,7 +530,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -575,7 +575,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -620,7 +620,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -665,7 +665,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -700,7 +700,7 @@ public:
             return false;
         }
 
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (!target)
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -708,7 +708,7 @@ public:
             return false;
         }
 
-        if (Player* player = target->ToPlayer())
+        if (PlayerPtr player = TO_PLAYER(target))
         {
             // check online security
             if (handler->HasLowerSecurity(player, 0))
@@ -950,7 +950,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -1024,7 +1024,7 @@ public:
         if (!*args)
             return false;
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -1086,7 +1086,7 @@ public:
         if (!*args)
             return false;
 
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -1095,7 +1095,7 @@ public:
         }
 
         // check online security
-        if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(target->ToPlayer(), 0))
+        if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(TO_PLAYER(target), 0))
             return false;
 
         char* pField = strtok((char*)args, " ");
@@ -1140,7 +1140,7 @@ public:
         if (!*args)
             return false;
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -1170,7 +1170,7 @@ public:
         if (drunklevel > 100)
             drunklevel = 100;
 
-        if (Player* target = handler->getSelectedPlayer())
+        if (PlayerPtr target = handler->getSelectedPlayer())
             target->SetDrunkValue(drunklevel);
 
         return true;
@@ -1181,7 +1181,7 @@ public:
         if (!*args)
             return false;
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -1283,12 +1283,12 @@ public:
 
         uint16 display_id = (uint16)atoi((char*)args);
 
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (!target)
             target = handler->GetSession()->GetPlayer();
 
         // check online security
-        else if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(target->ToPlayer(), 0))
+        else if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(TO_PLAYER(target), 0))
             return false;
 
         target->SetDisplayId(display_id);
@@ -1304,12 +1304,12 @@ public:
 
         uint32 phasemask = (uint32)atoi((char*)args);
 
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (!target)
             target = handler->GetSession()->GetPlayer();
 
         // check online security
-        else if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(target->ToPlayer(), 0))
+        else if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(TO_PLAYER(target), 0))
             return false;
 
         target->SetPhaseMask(phasemask, true);
@@ -1334,7 +1334,7 @@ public:
         if (!*args)
             return false;
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -1356,7 +1356,7 @@ public:
         if (!*args)
             return false;
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
 
         if (!target)
         {
@@ -1423,7 +1423,7 @@ public:
         if (!power_str || !value_str)
             return false;
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
 
         if (!target)
         {
@@ -1446,12 +1446,12 @@ public:
 //demorph player or unit
     static bool HandleDeMorphCommand(ChatHandler* handler, const char* /*args*/)
     {
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (!target)
             target = handler->GetSession()->GetPlayer();
 
         // check online security
-        else if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(target->ToPlayer(), 0))
+        else if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(TO_PLAYER(target), 0))
             return false;
 
         target->DeMorph();

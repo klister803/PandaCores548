@@ -66,7 +66,7 @@ class spell_dru_prowl : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
                     _player->CastSpell(_player, 768, true);
             }
 
@@ -101,9 +101,9 @@ class spell_dru_eclipse : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         switch (GetSpellInfo()->Id)
                         {
@@ -215,8 +215,8 @@ class spell_dru_glyph_of_starfire : public SpellScriptLoader
 
             void HandleScriptEffect(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
-                if (Unit* unitTarget = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr unitTarget = GetHitUnit())
                     if (constAuraEffectPtr aurEff = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_DRUID, 0x00000002, 0, 0, caster->GetGUID()))
                     {
                         AuraPtr aura = aurEff->GetBase();
@@ -393,9 +393,9 @@ class spell_dru_t10_restoration_4p_bonus : public SpellScriptLoader
                 return GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            void FilterTargets(std::list<WorldObject*>& targets)
+            void FilterTargets(std::list<WorldObjectPtr>& targets)
             {
-                if (!GetCaster()->ToPlayer()->GetGroup())
+                if (!TO_PLAYER(GetCaster())->GetGroup())
                 {
                     targets.clear();
                     targets.push_back(GetCaster());
@@ -403,8 +403,8 @@ class spell_dru_t10_restoration_4p_bonus : public SpellScriptLoader
                 else
                 {
                     targets.remove(GetExplTargetUnit());
-                    std::list<Unit*> tempTargets;
-                    for (std::list<WorldObject*>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
+                    std::list<UnitPtr> tempTargets;
+                    for (std::list<WorldObjectPtr>::const_iterator itr = targets.begin(); itr != targets.end(); ++itr)
                         if ((*itr)->GetTypeId() == TYPEID_PLAYER && GetCaster()->IsInRaidWith((*itr)->ToUnit()))
                             tempTargets.push_back((*itr)->ToUnit());
 
@@ -415,7 +415,7 @@ class spell_dru_t10_restoration_4p_bonus : public SpellScriptLoader
                         return;
                     }
 
-                    Unit* target = Trinity::Containers::SelectRandomContainerElement(tempTargets);
+                    UnitPtr target = Trinity::Containers::SelectRandomContainerElement(tempTargets);
                     targets.clear();
                     targets.push_back(target);
                 }
@@ -442,7 +442,7 @@ class spell_dru_starfall_aoe : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dru_starfall_aoe_SpellScript);
 
-            void FilterTargets(std::list<WorldObject*>& targets)
+            void FilterTargets(std::list<WorldObjectPtr>& targets)
             {
                 targets.remove(GetExplTargetUnit());
             }
@@ -476,7 +476,7 @@ class spell_dru_swift_flight_passive : public SpellScriptLoader
 
             void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
-                if (Player* caster = GetCaster()->ToPlayer())
+                if (PlayerPtr caster = TO_PLAYER(GetCaster()))
                     if (caster->GetSkillValue(SKILL_RIDING) >= 375)
                         amount = 310;
             }
@@ -502,14 +502,14 @@ class spell_dru_starfall_dummy : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dru_starfall_dummy_SpellScript);
 
-            void FilterTargets(std::list<WorldObject*>& targets)
+            void FilterTargets(std::list<WorldObjectPtr>& targets)
             {
                 Trinity::Containers::RandomResizeList(targets, 2);
             }
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 // Shapeshifting into an animal form or mounting cancels the effect
                 if (caster->GetCreatureType() == CREATURE_TYPE_BEAST || caster->IsMounted())
                 {
@@ -565,7 +565,7 @@ class spell_dru_lifebloom : public SpellScriptLoader
                 // final heal
                 int32 stack = GetStackAmount();
                 int32 healAmount = aurEff->GetAmount();
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
                     healAmount = caster->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), healAmount, HEAL, stack);
                     healAmount = GetTarget()->SpellHealingBonusTaken(caster, GetSpellInfo(), healAmount, HEAL, stack);
@@ -583,13 +583,13 @@ class spell_dru_lifebloom : public SpellScriptLoader
 
             void HandleDispel(DispelInfo* dispelInfo)
             {
-                if (Unit* target = GetUnitOwner())
+                if (UnitPtr target = GetUnitOwner())
                 {
                     if (constAuraEffectPtr aurEff = GetEffect(EFFECT_1))
                     {
                         // final heal
                         int32 healAmount = aurEff->GetAmount();
-                        if (Unit* caster = GetCaster())
+                        if (UnitPtr caster = GetCaster())
                         {
                             healAmount = caster->SpellHealingBonusDone(target, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
                             healAmount = target->SpellHealingBonusTaken(caster, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
@@ -630,7 +630,7 @@ class spell_dru_predatory_strikes : public SpellScriptLoader
 
             void UpdateAmount(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Player* target = GetTarget()->ToPlayer())
+                if (PlayerPtr target = TO_PLAYER(GetTarget()))
                     target->UpdateAttackPowerAndDamage();
             }
 
@@ -658,7 +658,7 @@ class spell_dru_savage_roar : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (caster->GetShapeshiftForm() != FORM_CAT)
                     return SPELL_FAILED_ONLY_SHAPESHIFT;
 
@@ -684,7 +684,7 @@ class spell_dru_savage_roar : public SpellScriptLoader
 
             void AfterApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 target->CastSpell(target, DRUID_SAVAGE_ROAR, true, NULL, aurEff, GetCasterGUID());
             }
 
@@ -722,7 +722,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (!caster->IsInFeralForm())
                     return SPELL_FAILED_ONLY_SHAPESHIFT;
 
@@ -748,7 +748,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
             void AfterApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 int32 bp0 = target->CountPctFromMaxHealth(aurEff->GetAmount());
                 target->CastCustomSpell(target, DRUID_SURVIVAL_INSTINCTS, &bp0, NULL, NULL, true);
             }

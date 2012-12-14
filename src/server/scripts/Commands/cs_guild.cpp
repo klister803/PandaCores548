@@ -66,7 +66,7 @@ public:
             return false;
 
         // if not guild name only (in "") then player name
-        Player* target;
+        PlayerPtr target;
         if (!handler->extractPlayerTarget(*args != '"' ? (char*)args : NULL, &target))
             return false;
 
@@ -86,10 +86,9 @@ public:
             return true;
         }
 
-        Guild* guild = new Guild;
+        GuildPtr guild (new Guild);
         if (!guild->Create(target, guildName))
         {
-            delete guild;
             handler->SendSysMessage(LANG_GUILD_NOT_CREATED);
             handler->SetSentErrorMessage(true);
             return false;
@@ -111,7 +110,7 @@ public:
 
         std::string guildName = guildStr;
 
-        Guild* targetGuild = sGuildMgr->GetGuildByName(guildName);
+        GuildPtr targetGuild = sGuildMgr->GetGuildByName(guildName);
         if (!targetGuild)
             return false;
 
@@ -139,7 +138,7 @@ public:
             return false;
 
         std::string guildName = guildStr;
-        Guild* targetGuild = sGuildMgr->GetGuildByName(guildName);
+        GuildPtr targetGuild = sGuildMgr->GetGuildByName(guildName);
         if (!targetGuild)
             return false;
 
@@ -149,7 +148,7 @@ public:
 
     static bool HandleGuildUninviteCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid))
             return false;
@@ -158,7 +157,7 @@ public:
         if (!guildId)
             return false;
 
-        Guild* targetGuild = sGuildMgr->GetGuildById(guildId);
+        GuildPtr targetGuild = sGuildMgr->GetGuildById(guildId);
         if (!targetGuild)
             return false;
 
@@ -174,7 +173,7 @@ public:
         if (!rankStr)
             return false;
 
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string target_name;
         if (!handler->extractPlayerTarget(nameStr, &target, &targetGuid, &target_name))
@@ -184,7 +183,7 @@ public:
         if (!guildId)
             return false;
 
-        Guild* targetGuild = sGuildMgr->GetGuildById(guildId);
+        GuildPtr targetGuild = sGuildMgr->GetGuildById(guildId);
         if (!targetGuild)
             return false;
 

@@ -33,7 +33,7 @@
 
 void WorldSession::SendNameQueryOpcode(uint64 guid)
 {
-    Player* player = ObjectAccessor::FindPlayer(guid);
+    PlayerPtr player = ObjectAccessor::FindPlayer(guid);
     CharacterNameData const* nameData = sWorld->GetCharacterNameData(GUID_LOPART(guid));
 
     WorldPacket data(SMSG_NAME_QUERY_RESPONSE);
@@ -219,7 +219,7 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket& /*recvData*/)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_CORPSE_QUERY");
 
-    Corpse* corpse = GetPlayer()->GetCorpse();
+    CorpsePtr corpse = GetPlayer()->GetCorpse();
 
     if (!corpse)
     {
@@ -258,7 +258,7 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket& /*recvData*/)
             if (corpseMapEntry->IsDungeon() && corpseMapEntry->entrance_map >= 0)
             {
                 // if corpse map have entrance
-                if (Map const* entranceMap = sMapMgr->CreateBaseMap(corpseMapEntry->entrance_map))
+                if (constMapPtr entranceMap = sMapMgr->CreateBaseMap(corpseMapEntry->entrance_map))
                 {
                     mapid = corpseMapEntry->entrance_map;
                     x = corpseMapEntry->entrance_x;

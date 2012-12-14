@@ -129,11 +129,11 @@ void GuildFinderMgr::AddMembershipRequest(uint32 guildGuid, MembershipRequest co
     CharacterDatabase.CommitTransaction(trans);
 
     // Notify the applicant his submittion has been added
-    if (Player* player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(request.GetPlayerGUID(), 0, HIGHGUID_PLAYER)))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(request.GetPlayerGUID(), 0, HIGHGUID_PLAYER)))
         SendMembershipRequestListUpdate(*player);
 
     // Notify the guild master and officers the list changed
-    if (Guild* guild = sGuildMgr->GetGuildById(guildGuid))
+    if (GuildPtr guild = sGuildMgr->GetGuildById(guildGuid))
         SendApplicantListUpdate(*guild);
 }
 
@@ -160,7 +160,7 @@ void GuildFinderMgr::RemoveAllMembershipRequestsFromPlayer(uint32 playerId)
         itr->second.erase(itr2);
 
         // Notify the guild master and officers the list changed
-        if (Guild* guild = sGuildMgr->GetGuildById(itr->first))
+        if (GuildPtr guild = sGuildMgr->GetGuildById(itr->first))
             SendApplicantListUpdate(*guild);
     }
 }
@@ -187,11 +187,11 @@ void GuildFinderMgr::RemoveMembershipRequest(uint32 playerId, uint32 guildId)
     _membershipRequests[guildId].erase(itr);
 
     // Notify the applicant his submittion has been removed
-    if (Player* player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(playerId, 0, HIGHGUID_PLAYER)))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(playerId, 0, HIGHGUID_PLAYER)))
         SendMembershipRequestListUpdate(*player);
 
     // Notify the guild master and officers the list changed
-    if (Guild* guild = sGuildMgr->GetGuildById(guildId))
+    if (GuildPtr guild = sGuildMgr->GetGuildById(guildId))
         SendApplicantListUpdate(*guild);
 }
 
@@ -306,7 +306,7 @@ void GuildFinderMgr::DeleteGuild(uint32 guildId)
         _membershipRequests[guildId].erase(itr);
 
         // Notify the applicant his submition has been removed
-        if (Player* player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(applicant, 0, HIGHGUID_PLAYER)))
+        if (PlayerPtr player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(applicant, 0, HIGHGUID_PLAYER)))
             SendMembershipRequestListUpdate(*player);
     }
 
@@ -314,7 +314,7 @@ void GuildFinderMgr::DeleteGuild(uint32 guildId)
     _guildSettings.erase(guildId);
 
     // Notify the guild master the list changed (even if he's not a GM any more, not sure if needed)
-    if (Guild* guild = sGuildMgr->GetGuildById(guildId))
+    if (GuildPtr guild = sGuildMgr->GetGuildById(guildId))
         SendApplicantListUpdate(*guild);
 }
 
@@ -366,7 +366,7 @@ void GuildFinderMgr::SendApplicantListUpdate(Guild& guild)
     data.FlushBits();
     data.append(dataBuffer);
     data << uint32(time(NULL)); // Unk time
-    if (Player* player = ObjectAccessor::FindPlayer(guild.GetLeaderGUID()))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guild.GetLeaderGUID()))
         player->SendDirectMessage(&data);
     guild.BroadcastPacketToRank(&data, GR_OFFICER);
 }

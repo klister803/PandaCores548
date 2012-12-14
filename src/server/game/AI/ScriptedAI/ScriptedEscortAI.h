@@ -38,15 +38,15 @@ enum eEscortState
 struct npc_escortAI : public ScriptedAI
 {
     public:
-        explicit npc_escortAI(Creature* creature);
+        explicit npc_escortAI(CreaturePtr creature);
         ~npc_escortAI() {}
 
         // CreatureAI functions
-        void AttackStart(Unit* who);
+        void AttackStart(UnitPtr who);
 
-        void MoveInLineOfSight(Unit* who);
+        void MoveInLineOfSight(UnitPtr who);
 
-        void JustDied(Unit*);
+        void JustDied(UnitPtr);
 
         void JustRespawned();
 
@@ -92,10 +92,10 @@ struct npc_escortAI : public ScriptedAI
         uint64 GetEventStarterGUID() { return m_uiPlayerGUID; }
 
     protected:
-        Player* GetPlayerForEscort() { return (Player*)Unit::GetUnit(*me, m_uiPlayerGUID); }
+        PlayerPtr GetPlayerForEscort() { return TO_PLAYER(Unit::GetUnit(TO_WORLDOBJECT(me), m_uiPlayerGUID)); }
 
     private:
-        bool AssistPlayerInCombat(Unit* who);
+        bool AssistPlayerInCombat(UnitPtr who);
         bool IsPlayerOrGroupInRange();
         void FillPointMovementListForCreature();
 

@@ -65,7 +65,7 @@ class boss_doomlord_kazzak : public CreatureScript
 
         struct boss_doomlordkazzakAI : public ScriptedAI
         {
-            boss_doomlordkazzakAI(Creature* creature) : ScriptedAI(creature)
+            boss_doomlordkazzakAI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
 
@@ -87,12 +87,12 @@ class boss_doomlord_kazzak : public CreatureScript
                 Talk(SAY_INTRO);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 Talk(SAY_AGGRO);
             }
 
-            void KilledUnit(Unit* victim)
+            void KilledUnit(UnitPtr victim)
             {
                 // When Kazzak kills a player (not pets/totems), he regens some health
                 if (victim->GetTypeId() != TYPEID_PLAYER)
@@ -103,7 +103,7 @@ class boss_doomlord_kazzak : public CreatureScript
                 Talk(SAY_KILL);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 Talk(SAY_DEATH);
             }
@@ -140,7 +140,7 @@ class boss_doomlord_kazzak : public CreatureScript
                             _events.ScheduleEvent(EVENT_VOID_BOLT, urand(15000, 18000));
                             break;
                         case EVENT_MARK_OF_KAZZAK:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                                 DoCast(target, SPELL_MARK_OF_KAZZAK);
                             _events.ScheduleEvent(EVENT_MARK_OF_KAZZAK, 20000);
                             break;
@@ -150,7 +150,7 @@ class boss_doomlord_kazzak : public CreatureScript
                             _events.ScheduleEvent(EVENT_ENRAGE, 30000);
                             break;
                         case EVENT_TWISTED_REFLECTION:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                                 DoCast(target, SPELL_TWISTED_REFLECTION);
                             _events.ScheduleEvent(EVENT_TWISTED_REFLECTION, 15000);
                             break;
@@ -169,7 +169,7 @@ class boss_doomlord_kazzak : public CreatureScript
             EventMap _events;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_doomlordkazzakAI (creature);
         }
@@ -193,13 +193,13 @@ class spell_mark_of_kazzak : public SpellScriptLoader
 
             void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
             {
-                if (Unit* owner = GetUnitOwner())
+                if (UnitPtr owner = GetUnitOwner())
                     amount = CalculatePct(owner->GetPower(POWER_MANA), 5);
             }
 
             void OnPeriodic(constAuraEffectPtr aurEff)
             {
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
 
                 if (target->GetPower(POWER_MANA) == 0)
                 {

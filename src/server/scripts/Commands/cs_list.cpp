@@ -92,7 +92,7 @@ public:
 
         if (handler->GetSession())
         {
-            Player* player = handler->GetSession()->GetPlayer();
+            PlayerPtr player = handler->GetSession()->GetPlayer();
             result = WorldDatabase.PQuery("SELECT guid, position_x, position_y, position_z, map, (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ FROM creature WHERE id = '%u' ORDER BY order_ ASC LIMIT %u",
                 player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), creatureId, count);
         }
@@ -381,7 +381,7 @@ public:
 
         if (handler->GetSession())
         {
-            Player* player = handler->GetSession()->GetPlayer();
+            PlayerPtr player = handler->GetSession()->GetPlayer();
             result = WorldDatabase.PQuery("SELECT guid, position_x, position_y, position_z, map, id, (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ FROM gameobject WHERE id = '%u' ORDER BY order_ ASC LIMIT %u",
                 player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), gameObjectId, count);
         }
@@ -416,7 +416,7 @@ public:
 
     static bool HandleListAurasCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Unit* unit = handler->getSelectedUnit();
+        UnitPtr unit = handler->getSelectedUnit();
         if (!unit)
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -433,7 +433,7 @@ public:
         {
             bool talent = false;// GetTalentSpellCost(itr->second->GetBase()->GetId()) > 0;
 
-            AuraApplication const* aurApp = itr->second;
+            constAuraApplicationPtr aurApp = itr->second;
             constAuraPtr aura = aurApp->GetBase();
             char const* name = aura->GetSpellInfo()->SpellName;
 

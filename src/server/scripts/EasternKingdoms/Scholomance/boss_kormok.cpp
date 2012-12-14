@@ -34,14 +34,14 @@ class boss_kormok : public CreatureScript
 public:
     boss_kormok() : CreatureScript("boss_kormok") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_kormokAI (creature);
     }
 
     struct boss_kormokAI : public ScriptedAI
     {
-        boss_kormokAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_kormokAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 ShadowVolley_Timer;
         uint32 BoneShield_Timer;
@@ -58,19 +58,19 @@ public:
             Mages = false;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
-        void SummonMinions(Unit* victim)
+        void SummonMinions(UnitPtr victim)
         {
-            if (Creature* SummonedMinion = DoSpawnCreature(16119, float(irand(-7, 7)), float(irand(-7, 7)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120000))
+            if (CreaturePtr SummonedMinion = DoSpawnCreature(16119, float(irand(-7, 7)), float(irand(-7, 7)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120000))
                 SummonedMinion->AI()->AttackStart(victim);
         }
 
-        void SummonMages(Unit* victim)
+        void SummonMages(UnitPtr victim)
         {
-            if (Creature* SummonedMage = DoSpawnCreature(16120, float(irand(-9, 9)), float(irand(-9, 9)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120000))
+            if (CreaturePtr SummonedMage = DoSpawnCreature(16120, float(irand(-9, 9)), float(irand(-9, 9)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120000))
                 SummonedMage->AI()->AttackStart(victim);
         }
 

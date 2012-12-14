@@ -92,7 +92,7 @@ const Point MovementPoint[] =
   {750.23f, 618.35f, 411.09f}
 };
 */
-void AggroAllPlayers(Creature* temp)
+void AggroAllPlayers(CreaturePtr temp)
 {
     Map::PlayerList const &PlList = temp->GetMap()->GetPlayers();
 
@@ -101,7 +101,7 @@ void AggroAllPlayers(Creature* temp)
 
     for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
     {
-        if (Player* player = i->getSource())
+        if (PlayerPtr player = i->getSource())
         {
             if (player->isGameMaster())
                 continue;
@@ -118,16 +118,16 @@ void AggroAllPlayers(Creature* temp)
     }
 }
 
-bool GrandChampionsOutVehicle(Creature* me)
+bool GrandChampionsOutVehicle(CreaturePtr me)
 {
     InstanceScript* instance = me->GetInstanceScript();
 
     if (!instance)
         return false;
 
-    Creature* pGrandChampion1 = Unit::GetCreature(*me, instance->GetData64(DATA_GRAND_CHAMPION_1));
-    Creature* pGrandChampion2 = Unit::GetCreature(*me, instance->GetData64(DATA_GRAND_CHAMPION_2));
-    Creature* pGrandChampion3 = Unit::GetCreature(*me, instance->GetData64(DATA_GRAND_CHAMPION_3));
+    CreaturePtr pGrandChampion1 = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_GRAND_CHAMPION_1));
+    CreaturePtr pGrandChampion2 = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_GRAND_CHAMPION_2));
+    CreaturePtr pGrandChampion3 = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_GRAND_CHAMPION_3));
 
     if (pGrandChampion1 && pGrandChampion2 && pGrandChampion3)
     {
@@ -152,7 +152,7 @@ public:
 
     struct generic_vehicleAI_toc5AI : public npc_escortAI
     {
-        generic_vehicleAI_toc5AI(Creature* creature) : npc_escortAI(creature)
+        generic_vehicleAI_toc5AI(CreaturePtr creature) : npc_escortAI(creature)
         {
             SetDespawnAtEnd(false);
             uiWaypointPath = 0;
@@ -221,7 +221,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoCastSpellShield();
         }
@@ -254,7 +254,7 @@ public:
                 {
                     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                     {
-                        Player* player = itr->getSource();
+                        PlayerPtr player = itr->getSource();
                         if (player && !player->isGameMaster() && me->IsInRange(player, 8.0f, 25.0f, false))
                         {
                             DoResetThreat();
@@ -270,18 +270,18 @@ public:
             //dosen't work at all
             if (uiShieldBreakerTimer <= uiDiff)
             {
-                Vehicle* pVehicle = me->GetVehicleKit();
+                VehiclePtr pVehicle = me->GetVehicleKit();
                 if (!pVehicle)
                     return;
 
-                if (Unit* pPassenger = pVehicle->GetPassenger(SEAT_ID_0))
+                if (UnitPtr pPassenger = pVehicle->GetPassenger(SEAT_ID_0))
                 {
                     Map::PlayerList const& players = me->GetMap()->GetPlayers();
                     if (me->GetMap()->IsDungeon() && !players.isEmpty())
                     {
                         for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                         {
-                            Player* player = itr->getSource();
+                            PlayerPtr player = itr->getSource();
                             if (player && !player->isGameMaster() && me->IsInRange(player, 10.0f, 30.0f, false))
                             {
                                 pPassenger->CastSpell(player, SPELL_SHIELD_BREAKER, true);
@@ -297,7 +297,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new generic_vehicleAI_toc5AI(creature);
     }
@@ -311,7 +311,7 @@ public:
     // Marshal Jacob Alerius && Mokra the Skullcrusher || Warrior
     struct boss_warrior_toc5AI : public ScriptedAI
     {
-        boss_warrior_toc5AI(Creature* creature) : ScriptedAI(creature)
+        boss_warrior_toc5AI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
 
@@ -395,7 +395,7 @@ public:
                 {
                     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                     {
-                        Player* player = itr->getSource();
+                        PlayerPtr player = itr->getSource();
                         if (player && !player->isGameMaster() && me->IsInRange(player, 8.0f, 25.0f, false))
                         {
                             DoResetThreat();
@@ -423,14 +423,14 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_warrior_toc5AI(creature);
     }
@@ -444,7 +444,7 @@ public:
     // Ambrose Boltspark && Eressea Dawnsinger || Mage
     struct boss_mage_toc5AI : public ScriptedAI
     {
-        boss_mage_toc5AI(Creature* creature) : ScriptedAI(creature)
+        boss_mage_toc5AI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
 
@@ -540,7 +540,7 @@ public:
 
             if (uiPolymorphTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_POLYMORPH);
                 uiPolymorphTimer = 8000;
             } else uiPolymorphTimer -= uiDiff;
@@ -562,14 +562,14 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_mage_toc5AI(creature);
     }
@@ -583,7 +583,7 @@ public:
     // Colosos && Runok Wildmane || Shaman
     struct boss_shaman_toc5AI : public ScriptedAI
     {
-        boss_shaman_toc5AI(Creature* creature) : ScriptedAI(creature)
+        boss_shaman_toc5AI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
 
@@ -619,7 +619,7 @@ public:
             uiHexMendingTimer = urand(20000, 25000);
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             DoCast(me, SPELL_EARTH_SHIELD);
             DoCast(who, SPELL_HEX_OF_MENDING);
@@ -672,7 +672,7 @@ public:
 
             if (uiChainLightningTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_CHAIN_LIGHTNING);
 
                 uiChainLightningTimer = 16000;
@@ -684,7 +684,7 @@ public:
 
                 if (!bChance)
                 {
-                    if (Unit* pFriend = DoSelectLowestHpFriendly(40))
+                    if (UnitPtr pFriend = DoSelectLowestHpFriendly(40))
                         DoCast(pFriend, SPELL_HEALING_WAVE);
                 } else
                     DoCast(me, SPELL_HEALING_WAVE);
@@ -709,14 +709,14 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_shaman_toc5AI(creature);
     }
@@ -730,7 +730,7 @@ public:
         // Jaelyne Evensong && Zul'tore || Hunter
     struct boss_hunter_toc5AI : public ScriptedAI
     {
-        boss_hunter_toc5AI(Creature* creature) : ScriptedAI(creature)
+        boss_hunter_toc5AI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
 
@@ -824,7 +824,7 @@ public:
 
             if (uiShootTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 30.0f))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_FARTHEST, 0, 30.0f))
                 {
                     uiTargetGUID = target->GetGUID();
                     DoCast(target, SPELL_SHOOT);
@@ -837,7 +837,7 @@ public:
             if (bShoot && uiMultiShotTimer <= uiDiff)
             {
                 me->InterruptNonMeleeSpells(true);
-                Unit* target = Unit::GetUnit(*me, uiTargetGUID);
+                UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), uiTargetGUID);
 
                 if (target && me->IsInRange(target, 5.0f, 30.0f, false))
                 {
@@ -850,7 +850,7 @@ public:
                     {
                         for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                         {
-                            Player* player = itr->getSource();
+                            PlayerPtr player = itr->getSource();
                             if (player && !player->isGameMaster() && me->IsInRange(player, 5.0f, 30.0f, false))
                             {
                                 DoCast(player, SPELL_MULTI_SHOT);
@@ -865,14 +865,14 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_hunter_toc5AI(creature);
     }
@@ -886,7 +886,7 @@ public:
     // Lana Stouthammer Evensong && Deathstalker Visceri || Rouge
     struct boss_rouge_toc5AI : public ScriptedAI
     {
-        boss_rouge_toc5AI(Creature* creature) : ScriptedAI(creature)
+        boss_rouge_toc5AI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
 
@@ -978,7 +978,7 @@ public:
 
             if (uiPosionBottleTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_POISON_BOTTLE);
                 uiPosionBottleTimer = 19000;
             } else uiPosionBottleTimer -= uiDiff;
@@ -986,14 +986,14 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(BOSS_GRAND_CHAMPIONS, DONE);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_rouge_toc5AI(creature);
     }

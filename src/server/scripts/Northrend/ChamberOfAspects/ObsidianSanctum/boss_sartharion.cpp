@@ -221,14 +221,14 @@ class boss_sartharion : public CreatureScript
 public:
     boss_sartharion() : CreatureScript("boss_sartharion") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_sartharionAI(creature);
     }
 
     struct boss_sartharionAI : public ScriptedAI
     {
-        boss_sartharionAI(Creature* creature) : ScriptedAI(creature)
+        boss_sartharionAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -289,9 +289,9 @@ public:
             // Drakes respawning system
             if (instance)
             {
-                Creature* pTenebron = Unit::GetCreature(*me, instance->GetData64(DATA_TENEBRON));
-                Creature* pShadron = Unit::GetCreature(*me, instance->GetData64(DATA_SHADRON));
-                Creature* pVesperon = Unit::GetCreature(*me, instance->GetData64(DATA_VESPERON));
+                CreaturePtr pTenebron = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_TENEBRON));
+                CreaturePtr pShadron = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_SHADRON));
+                CreaturePtr pVesperon = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_VESPERON));
                 if (pTenebron)
                 {
                     pTenebron->SetHomePosition(3239.07f, 657.235f, 86.8775f, 4.74729f);
@@ -355,7 +355,7 @@ public:
                 instance->SetData(TYPE_SARTHARION_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_SARTHARION_AGGRO, me);
             DoZoneInCombat();
@@ -367,15 +367,15 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_SARTHARION_DEATH, me);
 
             if (instance)
             {
-                Creature* pTenebron = Unit::GetCreature(*me, instance->GetData64(DATA_TENEBRON));
-                Creature* pShadron = Unit::GetCreature(*me, instance->GetData64(DATA_SHADRON));
-                Creature* pVesperon = Unit::GetCreature(*me, instance->GetData64(DATA_VESPERON));
+                CreaturePtr pTenebron = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_TENEBRON));
+                CreaturePtr pShadron = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_SHADRON));
+                CreaturePtr pVesperon = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_VESPERON));
                 if (pTenebron && pTenebron->isAlive())
                     pTenebron->DisappearAndDie();
                 if (pShadron && pShadron->isAlive())
@@ -387,7 +387,7 @@ public:
             }
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SARTHARION_SLAY_1, SAY_SARTHARION_SLAY_2, SAY_SARTHARION_SLAY_3), me);
         }
@@ -420,9 +420,9 @@ public:
             me->ResetLootMode();
             drakeCount = 0;
 
-            Creature* pFetchTene = Unit::GetCreature(*me, instance->GetData64(DATA_TENEBRON));
-            Creature* pFetchShad = Unit::GetCreature(*me, instance->GetData64(DATA_SHADRON));
-            Creature* pFetchVesp = Unit::GetCreature(*me, instance->GetData64(DATA_VESPERON));
+            CreaturePtr pFetchTene = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_TENEBRON));
+            CreaturePtr pFetchShad = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_SHADRON));
+            CreaturePtr pFetchVesp = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_VESPERON));
 
             //if at least one of the dragons are alive and are being called
             bool bCanUseWill = false;
@@ -480,7 +480,7 @@ public:
         {
             if (instance)
             {
-                if (Creature* temp = Unit::GetCreature(*me, instance->GetData64(uiDataId)))
+                if (CreaturePtr temp = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(uiDataId)))
                 {
                     if (temp->isAlive() && !temp->getVictim())
                     {
@@ -519,7 +519,7 @@ public:
 
         void SendFlameTsunami()
         {
-            if (Map* map = me->GetMap())
+            if (MapPtr map = me->GetMap())
                 if (map->IsDungeon())
                 {
                     Map::PlayerList const &PlayerList = map->GetPlayers();
@@ -533,9 +533,9 @@ public:
 
         // Selects a random Fire Cyclone and makes it cast Lava Strike.
         // FIXME: Frequency of the casts reduced to compensate 100% chance of spawning a Lava Blaze add
-        void CastLavaStrikeOnTarget(Unit* target)
+        void CastLavaStrikeOnTarget(UnitPtr target)
         {
-            std::list<Creature*> pFireCyclonesList;
+            std::list<CreaturePtr> pFireCyclonesList;
             Trinity::AllCreaturesOfEntryInRange checker(me, NPC_FIRE_CYCLONE, 200.0f);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(me, pFireCyclonesList, checker);
             me->VisitNearbyObject(200.0f, searcher);
@@ -543,7 +543,7 @@ public:
             if (pFireCyclonesList.empty())
                 return;
 
-            std::list<Creature*>::iterator itr = pFireCyclonesList.begin();
+            std::list<CreaturePtr>::iterator itr = pFireCyclonesList.begin();
             uint32 rnd = rand()%pFireCyclonesList.size();
 
             for (uint32 i = 0; i < rnd; ++i)
@@ -558,9 +558,9 @@ public:
             if (!UpdateVictim())
                 return;
 
-            Unit* pTene = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_TENEBRON) : 0);
-            Unit* pShad = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_SHADRON) : 0);
-            Unit* pVesp = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_VESPERON) : 0);
+            UnitPtr pTene = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_TENEBRON) : 0);
+            UnitPtr pShad = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_SHADRON) : 0);
+            UnitPtr pVesp = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_VESPERON) : 0);
 
             //spell will target dragons, if they are still alive at 35%
             if (!m_bIsBerserk && !HealthAbovePct(35)
@@ -598,9 +598,9 @@ public:
                 {
                     case 0:
                     {
-                        Creature* Right1 = me->SummonCreature(NPC_FLAME_TSUNAMI, FlameRight1Spawn.x, FlameRight1Spawn.y, FlameRight1Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000);
-                        Creature* Right2 = me->SummonCreature(NPC_FLAME_TSUNAMI, FlameRight2Spawn.x, FlameRight2Spawn.y, FlameRight2Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000);
-                        Creature* Right3 = me->SummonCreature(NPC_FLAME_TSUNAMI, FlameRight3Spawn.x, FlameRight3Spawn.y, FlameRight3Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000);
+                        CreaturePtr Right1 = me->SummonCreature(NPC_FLAME_TSUNAMI, FlameRight1Spawn.x, FlameRight1Spawn.y, FlameRight1Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000);
+                        CreaturePtr Right2 = me->SummonCreature(NPC_FLAME_TSUNAMI, FlameRight2Spawn.x, FlameRight2Spawn.y, FlameRight2Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000);
+                        CreaturePtr Right3 = me->SummonCreature(NPC_FLAME_TSUNAMI, FlameRight3Spawn.x, FlameRight3Spawn.y, FlameRight3Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000);
                         Right1->GetMotionMaster()->MovePoint(0, FlameRight1Direction.x, FlameRight1Direction.y, FlameRight1Direction.z);
                         Right2->GetMotionMaster()->MovePoint(0, FlameRight2Direction.x, FlameRight2Direction.y, FlameRight2Direction.z);
                         Right3->GetMotionMaster()->MovePoint(0, FlameRight3Direction.x, FlameRight3Direction.y, FlameRight3Direction.z);
@@ -608,8 +608,8 @@ public:
                     }
                     case 1:
                     {
-                        Creature* Left1 = me->SummonCreature(NPC_FLAME_TSUNAMI, FlameLeft1Spawn.x, FlameLeft1Spawn.y, FlameLeft1Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000);
-                        Creature* Left2 = me->SummonCreature(NPC_FLAME_TSUNAMI, FlameLeft2Spawn.x, FlameLeft2Spawn.y, FlameLeft2Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000);
+                        CreaturePtr Left1 = me->SummonCreature(NPC_FLAME_TSUNAMI, FlameLeft1Spawn.x, FlameLeft1Spawn.y, FlameLeft1Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000);
+                        CreaturePtr Left2 = me->SummonCreature(NPC_FLAME_TSUNAMI, FlameLeft2Spawn.x, FlameLeft2Spawn.y, FlameLeft2Spawn.z, 0, TEMPSUMMON_TIMED_DESPAWN, 12000);
                         Left1->GetMotionMaster()->MovePoint(0, FlameLeft1Direction.x, FlameLeft1Direction.y, FlameLeft1Direction.z);
                         Left2->GetMotionMaster()->MovePoint(0, FlameLeft2Direction.x, FlameLeft2Direction.y, FlameLeft2Direction.z);
                         break;
@@ -652,7 +652,7 @@ public:
             // Lavas Strike
             if (m_uiLavaStrikeTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
                     CastLavaStrikeOnTarget(target);
 
@@ -738,7 +738,7 @@ enum VespText
 //to control each dragons common abilities
 struct dummy_dragonAI : public ScriptedAI
 {
-    dummy_dragonAI(Creature* creature) : ScriptedAI(creature)
+    dummy_dragonAI(CreaturePtr creature) : ScriptedAI(creature)
     {
         instance = creature->GetInstanceScript();
     }
@@ -788,7 +788,7 @@ struct dummy_dragonAI : public ScriptedAI
         {
             me->GetMotionMaster()->Clear();
             me->SetInCombatWithZone();
-            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
+            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
             {
                 me->AddThreat(target, 1.0f);
                 me->Attack(target, true);
@@ -820,7 +820,7 @@ struct dummy_dragonAI : public ScriptedAI
     //used when open portal and spawn mobs in phase
     void DoRaidWhisper(int32 iTextId)
     {
-        Map* map = me->GetMap();
+        MapPtr map = me->GetMap();
 
         if (map && map->IsDungeon())
         {
@@ -843,7 +843,7 @@ struct dummy_dragonAI : public ScriptedAI
 
         //using a grid search here seem to be more efficient than caching all four guids
         //in instance script and calculate range to each.
-        GameObject* pPortal = me->FindNearestGameObject(GO_TWILIGHT_PORTAL, 50.0f);
+        GameObjectPtr pPortal = me->FindNearestGameObject(GO_TWILIGHT_PORTAL, 50.0f);
 
         switch (me->GetEntry())
         {
@@ -877,7 +877,7 @@ struct dummy_dragonAI : public ScriptedAI
                 iTextId = WHISPER_OPEN_PORTAL;
                 if (instance && !instance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
                 {
-                    if (Creature* Acolyte = me->SummonCreature(NPC_ACOLYTE_OF_VESPERON, AcolyteofVesperon.x, AcolyteofVesperon.y, AcolyteofVesperon.z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
+                    if (CreaturePtr Acolyte = me->SummonCreature(NPC_ACOLYTE_OF_VESPERON, AcolyteofVesperon.x, AcolyteofVesperon.y, AcolyteofVesperon.z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
                     {
                         me->InterruptNonMeleeSpells(true);
                         Acolyte->InterruptNonMeleeSpells(true);
@@ -886,7 +886,7 @@ struct dummy_dragonAI : public ScriptedAI
                 }
                 else
                 {
-                    if (Creature* Acolyte = me->SummonCreature(NPC_ACOLYTE_OF_VESPERON, AcolyteofVesperon2.x, AcolyteofVesperon2.y, AcolyteofVesperon2.z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
+                    if (CreaturePtr Acolyte = me->SummonCreature(NPC_ACOLYTE_OF_VESPERON, AcolyteofVesperon2.x, AcolyteofVesperon2.y, AcolyteofVesperon2.z, 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 20000))
                     {
                         me->InterruptNonMeleeSpells(true);
                         Acolyte->InterruptNonMeleeSpells(true);
@@ -909,7 +909,7 @@ struct dummy_dragonAI : public ScriptedAI
         //Refresh respawnTime so time again are set to 30secs?
     }
 
-    void JustDied(Unit* /*killer*/)
+    void JustDied(UnitPtr /*killer*/)
     {
         if (!m_bCanLoot)
             me->SetLootRecipient(NULL);
@@ -930,7 +930,7 @@ struct dummy_dragonAI : public ScriptedAI
                 uiSpellId = SPELL_POWER_OF_SHADRON;
                 if (instance && instance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
                     instance->SetData(TYPE_SHADRON_PREKILLED, 1);
-                if (Creature* pAcolyte = me->FindNearestCreature(NPC_ACOLYTE_OF_SHADRON, 100.0f))
+                if (CreaturePtr pAcolyte = me->FindNearestCreature(NPC_ACOLYTE_OF_SHADRON, 100.0f))
                     pAcolyte->Kill(pAcolyte);
                 break;
             case NPC_VESPERON:
@@ -938,7 +938,7 @@ struct dummy_dragonAI : public ScriptedAI
                 uiSpellId = SPELL_POWER_OF_VESPERON;
                 if (instance && instance->GetData(TYPE_SARTHARION_EVENT) != IN_PROGRESS)
                     instance->SetData(TYPE_VESPERON_PREKILLED, 1);
-                if (Creature* pAcolyte = me->FindNearestCreature(NPC_ACOLYTE_OF_VESPERON, 100.0f))
+                if (CreaturePtr pAcolyte = me->FindNearestCreature(NPC_ACOLYTE_OF_VESPERON, 100.0f))
                     pAcolyte->Kill(pAcolyte);
                 break;
         }
@@ -956,7 +956,7 @@ struct dummy_dragonAI : public ScriptedAI
                 return;
 
             // Twilight Revenge to main boss
-            if (Unit* pSartharion = Unit::GetUnit(*me, instance->GetData64(DATA_SARTHARION)))
+            if (UnitPtr pSartharion = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_SARTHARION)))
                 if (pSartharion->isAlive())
                 {
                     pSartharion->RemoveAurasDueToSpell(uiSpellId);
@@ -993,14 +993,14 @@ class mob_tenebron : public CreatureScript
 public:
     mob_tenebron() : CreatureScript("mob_tenebron") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_tenebronAI(creature);
     }
 
     struct mob_tenebronAI : public dummy_dragonAI
     {
-        mob_tenebronAI(Creature* creature) : dummy_dragonAI(creature) {}
+        mob_tenebronAI(CreaturePtr creature) : dummy_dragonAI(creature) {}
 
         uint32 m_uiShadowBreathTimer;
         uint32 m_uiShadowFissureTimer;
@@ -1017,13 +1017,13 @@ public:
             m_bHasPortalOpen = false;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_TENEBRON_AGGRO, me);
             DoZoneInCombat();
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_TENEBRON_SLAY_1, SAY_TENEBRON_SLAY_2), me);
         }
@@ -1040,7 +1040,7 @@ public:
             // shadow fissure
             if (m_uiShadowFissureTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, RAID_MODE(SPELL_SHADOW_FISSURE, SPELL_SHADOW_FISSURE));
 
                 m_uiShadowFissureTimer = urand(15000, 20000);
@@ -1082,14 +1082,14 @@ class mob_shadron : public CreatureScript
 public:
     mob_shadron() : CreatureScript("mob_shadron") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_shadronAI(creature);
     }
 
     struct mob_shadronAI : public dummy_dragonAI
     {
-        mob_shadronAI(Creature* creature) : dummy_dragonAI(creature) {}
+        mob_shadronAI(CreaturePtr creature) : dummy_dragonAI(creature) {}
 
         uint32 m_uiShadowBreathTimer;
         uint32 m_uiShadowFissureTimer;
@@ -1112,13 +1112,13 @@ public:
             m_bHasPortalOpen = false;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_SHADRON_AGGRO, me);
             DoZoneInCombat();
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SHADRON_SLAY_1, SAY_SHADRON_SLAY_2), me);
         }
@@ -1135,7 +1135,7 @@ public:
             // shadow fissure
             if (m_uiShadowFissureTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, RAID_MODE(SPELL_SHADOW_FISSURE, SPELL_SHADOW_FISSURE_H));
 
                 m_uiShadowFissureTimer = urand(15000, 20000);
@@ -1186,14 +1186,14 @@ class mob_vesperon : public CreatureScript
 public:
     mob_vesperon() : CreatureScript("mob_vesperon") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_vesperonAI(creature);
     }
 
     struct mob_vesperonAI : public dummy_dragonAI
     {
-        mob_vesperonAI(Creature* creature) : dummy_dragonAI(creature) {}
+        mob_vesperonAI(CreaturePtr creature) : dummy_dragonAI(creature) {}
 
         uint32 m_uiShadowBreathTimer;
         uint32 m_uiShadowFissureTimer;
@@ -1210,13 +1210,13 @@ public:
             m_bHasPortalOpen = false;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_VESPERON_AGGRO, me);
             DoZoneInCombat();
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_VESPERON_SLAY_1, SAY_VESPERON_SLAY_2), me);
         }
@@ -1233,7 +1233,7 @@ public:
             // shadow fissure
             if (m_uiShadowFissureTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, RAID_MODE(SPELL_SHADOW_FISSURE, SPELL_SHADOW_FISSURE_H));
 
                 m_uiShadowFissureTimer = urand(15000, 20000);
@@ -1281,14 +1281,14 @@ class mob_acolyte_of_shadron : public CreatureScript
 public:
     mob_acolyte_of_shadron() : CreatureScript("mob_acolyte_of_shadron") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_acolyte_of_shadronAI(creature);
     }
 
     struct mob_acolyte_of_shadronAI : public ScriptedAI
     {
-        mob_acolyte_of_shadronAI(Creature* creature) : ScriptedAI(creature)
+        mob_acolyte_of_shadronAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -1301,17 +1301,17 @@ public:
             uiDespawnTimer = 28000;
             if (instance)
             {
-                Creature* target = NULL;
+                CreaturePtr target = NULL;
                 //if not solo figth, buff main boss, else place debuff on mini-boss. both spells TARGET_SCRIPT
                 if (instance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
                 {
-                    target = Unit::GetCreature((*me), instance->GetData64(DATA_SARTHARION));
+                    target = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_SARTHARION));
                     if (target)
                         target->AddAura(SPELL_GIFT_OF_TWILIGTH_SAR, target);
                 }
                 else
                 {
-                    target = Unit::GetCreature((*me), instance->GetData64(DATA_SHADRON));
+                    target = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_SHADRON));
                     if (target)
                         target->AddAura(SPELL_GIFT_OF_TWILIGTH_SHA, target);
                 }
@@ -1320,18 +1320,18 @@ public:
             me->AddAura(SPELL_TWILIGHT_SHIFT_ENTER, me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
             {
-                Creature* Shadron = instance->instance->GetCreature(instance->GetData64(DATA_SHADRON));
+                CreaturePtr Shadron = instance->instance->GetCreature(instance->GetData64(DATA_SHADRON));
                 if (Shadron)
                 {
                     (CAST_AI(mob_shadron::mob_shadronAI, Shadron->AI()))->m_bHasPortalOpen = false;
                 }
 
-                Creature* pDebuffTarget = NULL;
-                Map* map = me->GetMap();
+                CreaturePtr pDebuffTarget = NULL;
+                MapPtr map = me->GetMap();
                 if (map->IsDungeon())
                 {
                     Map::PlayerList const &PlayerList = map->GetPlayers();
@@ -1391,14 +1391,14 @@ class mob_acolyte_of_vesperon : public CreatureScript
 public:
     mob_acolyte_of_vesperon() : CreatureScript("mob_acolyte_of_vesperon") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_acolyte_of_vesperonAI(creature);
     }
 
     struct mob_acolyte_of_vesperonAI : public ScriptedAI
     {
-        mob_acolyte_of_vesperonAI(Creature* creature) : ScriptedAI(creature)
+        mob_acolyte_of_vesperonAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -1416,21 +1416,21 @@ public:
             DoCast(me, SPELL_TWILIGHT_TORMENT_VESP_ACO);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             me->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP_ACO);
 
             // remove twilight torment on Vesperon
             if (instance)
             {
-                Creature* pVesperon = instance->instance->GetCreature(instance->GetData64(DATA_VESPERON));
+                CreaturePtr pVesperon = instance->instance->GetCreature(instance->GetData64(DATA_VESPERON));
                 if (pVesperon)
                     (CAST_AI(mob_vesperon::mob_vesperonAI, pVesperon->AI()))->m_bHasPortalOpen = false;
 
                 if (pVesperon && pVesperon->isAlive() && pVesperon->HasAura(SPELL_TWILIGHT_TORMENT_VESP))
                     pVesperon->RemoveAurasDueToSpell(SPELL_TWILIGHT_TORMENT_VESP);
 
-                Map* map = me->GetMap();
+                MapPtr map = me->GetMap();
                 if (map->IsDungeon())
                 {
                     Map::PlayerList const &PlayerList = map->GetPlayers();
@@ -1486,14 +1486,14 @@ class mob_twilight_eggs : public CreatureScript
 public:
     mob_twilight_eggs() : CreatureScript("mob_twilight_eggs") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_twilight_eggsAI(creature);
     }
 
     struct mob_twilight_eggsAI : public Scripted_NoMovementAI
     {
-        mob_twilight_eggsAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        mob_twilight_eggsAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -1524,7 +1524,7 @@ public:
             me->DealDamage(me, me->GetHealth());
         }
 
-        void JustSummoned(Creature* who)
+        void JustSummoned(CreaturePtr who)
         {
             who->SetInCombatWithZone();
         }
@@ -1533,7 +1533,7 @@ public:
         {
             if (m_uiHatchEggTimer <= uiDiff)
             {
-                Creature* Tenebron = instance->instance->GetCreature(instance->GetData64(DATA_TENEBRON));
+                CreaturePtr Tenebron = instance->instance->GetCreature(instance->GetData64(DATA_TENEBRON));
                 if (Tenebron)
                     (CAST_AI(mob_tenebron::mob_tenebronAI, Tenebron->AI()))->m_bHasPortalOpen = false;
                 SpawnWhelps();
@@ -1542,8 +1542,8 @@ public:
                 m_uiHatchEggTimer -= uiDiff;
         }
 
-        void AttackStart(Unit* /*who*/) {}
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void AttackStart(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
     };
 
 };
@@ -1556,14 +1556,14 @@ class npc_flame_tsunami : public CreatureScript
 public:
     npc_flame_tsunami() : CreatureScript("npc_flame_tsunami") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_flame_tsunamiAI(creature);
     }
 
     struct npc_flame_tsunamiAI : public ScriptedAI
     {
-        npc_flame_tsunamiAI(Creature* creature) : ScriptedAI(creature)
+        npc_flame_tsunamiAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             me->SetDisplayId(11686);
             me->AddAura(SPELL_FLAME_TSUNAMI, me);
@@ -1593,7 +1593,7 @@ public:
 
             if (TsunamiBuff_timer <= diff)
             {
-                if (Unit* LavaBlaze = GetClosestCreatureWithEntry(me, NPC_LAVA_BLAZE, 10.0f, true))
+                if (UnitPtr LavaBlaze = GetClosestCreatureWithEntry(me, NPC_LAVA_BLAZE, 10.0f, true))
                     LavaBlaze->CastSpell(LavaBlaze, SPELL_FLAME_TSUNAMI_BUFF, true);
                 TsunamiBuff_timer = 1000;
             }else TsunamiBuff_timer -= diff;
@@ -1608,14 +1608,14 @@ class npc_twilight_fissure : public CreatureScript
 public:
     npc_twilight_fissure() : CreatureScript("npc_twilight_fissure") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_twilight_fissureAI(creature);
     }
 
     struct npc_twilight_fissureAI : public Scripted_NoMovementAI
     {
-        npc_twilight_fissureAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        npc_twilight_fissureAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
         {
             Reset();
         }
@@ -1657,14 +1657,14 @@ class mob_twilight_whelp : public CreatureScript
 public:
     mob_twilight_whelp() : CreatureScript("mob_twilight_whelp") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_twilight_whelpAI(creature);
     }
 
     struct mob_twilight_whelpAI : public ScriptedAI
     {
-        mob_twilight_whelpAI(Creature* creature) : ScriptedAI(creature)
+        mob_twilight_whelpAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             Reset();
         }
@@ -1706,12 +1706,12 @@ class achievement_twilight_assist : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(Player* /*player*/, Unit* target)
+        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
         {
             if (!target)
                 return false;
 
-            if (Creature* Sartharion = target->ToCreature())
+            if (CreaturePtr Sartharion = target->ToCreature())
                 if (Sartharion->AI()->GetData(TWILIGHT_ACHIEVEMENTS) >= 1)
                     return true;
 
@@ -1726,12 +1726,12 @@ class achievement_twilight_duo : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(Player* /*player*/, Unit* target)
+        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
         {
             if (!target)
                 return false;
 
-            if (Creature* Sartharion = target->ToCreature())
+            if (CreaturePtr Sartharion = target->ToCreature())
                 if (Sartharion->AI()->GetData(TWILIGHT_ACHIEVEMENTS) >= 2)
                     return true;
 
@@ -1746,12 +1746,12 @@ class achievement_twilight_zone : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(Player* /*player*/, Unit* target)
+        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
         {
             if (!target)
                 return false;
 
-            if (Creature* Sartharion = target->ToCreature())
+            if (CreaturePtr Sartharion = target->ToCreature())
                 if (Sartharion->AI()->GetData(TWILIGHT_ACHIEVEMENTS) == 3)
                     return true;
 

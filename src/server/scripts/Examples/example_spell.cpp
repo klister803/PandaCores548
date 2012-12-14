@@ -117,7 +117,7 @@ class spell_ex_5581 : public SpellScriptLoader
             void HandleDummyLaunchTarget(SpellEffIndex /*effIndex*/)
             {
                 uint64 targetGUID = 0;
-                if (Unit* unitTarget = GetHitUnit())
+                if (UnitPtr unitTarget = GetHitUnit())
                     targetGUID = unitTarget->GetGUID();
                 // we're handling SPELL_EFFECT_DUMMY in effIndex 0 here
                 sLog->outInfo(LOG_FILTER_GENERAL, "Spell %u with SPELL_EFFECT_DUMMY is just launched at it's target: " UI64FMTD "!", GetSpellInfo()->Id, targetGUID);
@@ -132,7 +132,7 @@ class spell_ex_5581 : public SpellScriptLoader
             {
                 sLog->outInfo(LOG_FILTER_GENERAL, "SPELL_EFFECT_DUMMY is hits it's target!");
                 // make caster cast a spell on a unit target of effect
-                if (Unit* target = GetHitUnit())
+                if (UnitPtr target = GetHitUnit())
                     GetCaster()->CastSpell(target, SPELL_TRIGGERED, true);
             }
 
@@ -151,7 +151,7 @@ class spell_ex_5581 : public SpellScriptLoader
                 sLog->outInfo(LOG_FILTER_GENERAL, "Spell just finished hitting target!");
             }
 
-            void FilterTargets(std::list<Unit*>& /*targetList*/)
+            void FilterTargets(std::list<UnitPtr>& /*targetList*/)
             {
                 // usually you want this call for Area Target spells
                 sLog->outInfo(LOG_FILTER_GENERAL, "Spell is about to add targets from targetList to final targets!");
@@ -220,7 +220,7 @@ class spell_ex_66244 : public SpellScriptLoader
             bool Load()
             {
                 // do not load script if aura is casted by player or caster not avalible
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                     if (caster->GetTypeId() == TYPEID_PLAYER)
                         return true;
                 return false;
@@ -243,7 +243,7 @@ class spell_ex_66244 : public SpellScriptLoader
             void HandleAfterEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 sLog->outInfo(LOG_FILTER_GENERAL, "Aura Effect has just been applied on target!");
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 // cast spell on target on aura apply
                 target->CastSpell(target, SPELL_TRIGGERED, true);
             }
@@ -251,8 +251,8 @@ class spell_ex_66244 : public SpellScriptLoader
             void HandleAfterEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 sLog->outInfo(LOG_FILTER_GENERAL, "Aura Effect has just been just removed from target!");
-                Unit* target = GetTarget();
-                Unit* caster = GetCaster();
+                UnitPtr target = GetTarget();
+                UnitPtr caster = GetCaster();
                 // caster may be not avalible (logged out for example)
                 if (!caster)
                     return;
@@ -263,7 +263,7 @@ class spell_ex_66244 : public SpellScriptLoader
             void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
             {
                 sLog->outInfo(LOG_FILTER_GENERAL, "Perioidic Aura Effect is does a tick on target!");
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 // aura targets damage self on tick
                 target->DealDamage(target, 100);
             }
@@ -340,7 +340,7 @@ class spell_ex_66244 : public SpellScriptLoader
             {
             }
 
-            bool DoCheckAreaTarget(Unit* proposedTarget)
+            bool DoCheckAreaTarget(UnitPtr proposedTarget)
             {
             }*/
         };
@@ -401,7 +401,7 @@ class spell_ex_463 : public SpellScriptLoader
         {
             PrepareAuraScript(spell_ex_463AuraScript);
 
-            bool CheckAreaTarget(Unit* target)
+            bool CheckAreaTarget(UnitPtr target)
             {
                 sLog->outInfo(LOG_FILTER_GENERAL, "Area aura checks if unit is a valid target for it!");
                 // in our script we allow only players to be affected

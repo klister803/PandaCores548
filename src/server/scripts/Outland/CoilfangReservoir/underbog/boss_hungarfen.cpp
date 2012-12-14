@@ -34,14 +34,14 @@ class boss_hungarfen : public CreatureScript
 public:
     boss_hungarfen() : CreatureScript("boss_hungarfen") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_hungarfenAI (creature);
     }
 
     struct boss_hungarfenAI : public ScriptedAI
     {
-        boss_hungarfenAI(Creature* creature) : ScriptedAI(creature)
+        boss_hungarfenAI(CreaturePtr creature) : ScriptedAI(creature)
         {
         }
 
@@ -56,7 +56,7 @@ public:
             AcidGeyser_Timer = 10000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
@@ -76,7 +76,7 @@ public:
 
             if (Mushroom_Timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     me->SummonCreature(17990, target->GetPositionX()+(rand()%8), target->GetPositionY()+(rand()%8), target->GetPositionZ(), float(rand()%5), TEMPSUMMON_TIMED_DESPAWN, 22000);
                 else
                     me->SummonCreature(17990, me->GetPositionX()+(rand()%8), me->GetPositionY()+(rand()%8), me->GetPositionZ(), float(rand()%5), TEMPSUMMON_TIMED_DESPAWN, 22000);
@@ -86,7 +86,7 @@ public:
 
             if (AcidGeyser_Timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_ACID_GEYSER);
                 AcidGeyser_Timer = 10000+rand()%7500;
             } else AcidGeyser_Timer -= diff;
@@ -106,14 +106,14 @@ class mob_underbog_mushroom : public CreatureScript
 public:
     mob_underbog_mushroom() : CreatureScript("mob_underbog_mushroom") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_underbog_mushroomAI (creature);
     }
 
     struct mob_underbog_mushroomAI : public ScriptedAI
     {
-        mob_underbog_mushroomAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_underbog_mushroomAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         bool Stop;
         uint32 Grow_Timer;
@@ -129,11 +129,11 @@ public:
             DoCast(me, SPELL_SPORE_CLOUD, true);
         }
 
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
 
-        void AttackStart(Unit* /*who*/) {}
+        void AttackStart(UnitPtr /*who*/) {}
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {

@@ -115,7 +115,7 @@ class boss_janalai : public CreatureScript
 
         struct boss_janalaiAI : public ScriptedAI
         {
-            boss_janalaiAI(Creature* creature) : ScriptedAI(creature)
+            boss_janalaiAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -161,7 +161,7 @@ class boss_janalai : public CreatureScript
                 HatchAllEggs(1);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoScriptText(SAY_DEATH, me);
 
@@ -169,12 +169,12 @@ class boss_janalai : public CreatureScript
                     instance->SetData(DATA_JANALAIEVENT, DONE);
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 if (instance)
                     instance->SetData(DATA_JANALAIEVENT, IN_PROGRESS);
@@ -183,11 +183,11 @@ class boss_janalai : public CreatureScript
         //        DoZoneInCombat();
             }
 
-            void DamageDealt(Unit* target, uint32 &damage, DamageEffectType /*damagetype*/)
+            void DamageDealt(UnitPtr target, uint32 &damage, DamageEffectType /*damagetype*/)
             {
                 if (isFlameBreathing)
                 {
-                    if (!me->HasInArc(M_PI/6, target))
+                    if (!me->HasInArc(M_PI/6, target.get()))
                         damage = 0;
                 }
             }
@@ -195,7 +195,7 @@ class boss_janalai : public CreatureScript
             void FireWall()
             {
                 uint8 WallNum;
-                Creature* wall = NULL;
+                CreaturePtr wall = NULL;
                 for (uint8 i = 0; i < 4; ++i)
                 {
                     if (i == 0 || i == 2)
@@ -222,7 +222,7 @@ class boss_janalai : public CreatureScript
                     dx = float(irand(-area_dx/2, area_dx/2));
                     dy = float(irand(-area_dy/2, area_dy/2));
 
-                    Creature* bomb = DoSpawnCreature(MOB_FIRE_BOMB, dx, dy, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
+                    CreaturePtr bomb = DoSpawnCreature(MOB_FIRE_BOMB, dx, dy, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 15000);
                     if (bomb)
                         FireBombGUIDs[i] = bomb->GetGUID();
                 }
@@ -231,7 +231,7 @@ class boss_janalai : public CreatureScript
 
             bool HatchAllEggs(uint32 action) //1: reset, 2: isHatching all
             {
-                std::list<Creature*> templist;
+                std::list<CreaturePtr> templist;
                 float x, y, z;
                 me->GetPosition(x, y, z);
 
@@ -245,14 +245,14 @@ class boss_janalai : public CreatureScript
 
                     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
 
-                    cell.Visit(pair, cSearcher, *me->GetMap(), *me, me->GetGridActivationRange());
+                    cell.Visit(pair, cSearcher, *me->GetMap(), TO_CONST_WORLDOBJECT(me), me->GetGridActivationRange());
                 }
 
                 //sLog->outError(LOG_FILTER_TSCR, "Eggs %d at middle", templist.size());
                 if (templist.empty())
                     return false;
 
-                for (std::list<Creature*>::const_iterator i = templist.begin(); i != templist.end(); ++i)
+                for (std::list<CreaturePtr>::const_iterator i = templist.begin(); i != templist.end(); ++i)
                 {
                     if (action == 1)
                        (*i)->SetDisplayId(10056);
@@ -264,7 +264,7 @@ class boss_janalai : public CreatureScript
 
             void Boom()
             {
-                std::list<Creature*> templist;
+                std::list<CreaturePtr> templist;
                 float x, y, z;
                 me->GetPosition(x, y, z);
 
@@ -278,9 +278,9 @@ class boss_janalai : public CreatureScript
 
                     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
 
-                    cell.Visit(pair, cSearcher, *me->GetMap(), *me, me->GetGridActivationRange());
+                    cell.Visit(pair, cSearcher, *me->GetMap(), TO_CONST_WORLDOBJECT(me), me->GetGridActivationRange());
                 }
-                for (std::list<Creature*>::const_iterator i = templist.begin(); i != templist.end(); ++i)
+                for (std::list<CreaturePtr>::const_iterator i = templist.begin(); i != templist.end(); ++i)
                 {
                    (*i)->CastSpell(*i, SPELL_FIRE_BOMB_DAMAGE, true);
                    (*i)->RemoveAllAuras();
@@ -291,7 +291,7 @@ class boss_janalai : public CreatureScript
             {
                 if (BombCount < 40)
                 {
-                    if (Unit* FireBomb = Unit::GetUnit(*me, FireBombGUIDs[BombCount]))
+                    if (UnitPtr FireBomb = Unit::GetUnit(TO_WORLDOBJECT(me), FireBombGUIDs[BombCount]))
                     {
                         FireBomb->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                         DoCast(FireBomb, SPELL_FIRE_BOMB_THROW, true);
@@ -376,13 +376,13 @@ class boss_janalai : public CreatureScript
                     BombSequenceTimer = 100;
 
                     //Teleport every Player into the middle
-                    Map* map = me->GetMap();
+                    MapPtr map = me->GetMap();
                     if (!map->IsDungeon())
                         return;
 
                     Map::PlayerList const &PlayerList = map->GetPlayers();
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                        if (Player* i_pl = i->getSource())
+                        if (PlayerPtr i_pl = i->getSource())
                             if (i_pl->isAlive())
                                 DoTeleportPlayer(i_pl, JanalainPos[0][0]-5+rand()%10, JanalainPos[0][1]-5+rand()%10, JanalainPos[0][2], 0);
                     //DoCast(Temp, SPELL_SUMMON_PLAYERS, true) // core bug, spell does not work if too far
@@ -423,7 +423,7 @@ class boss_janalai : public CreatureScript
 
                 if (FireBreathTimer <= diff)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
                         me->AttackStop();
                         me->GetMotionMaster()->Clear();
@@ -436,7 +436,7 @@ class boss_janalai : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_janalaiAI(creature);
         }
@@ -453,26 +453,26 @@ class mob_janalai_firebomb : public CreatureScript
 
         struct mob_janalai_firebombAI : public ScriptedAI
         {
-            mob_janalai_firebombAI(Creature* creature) : ScriptedAI(creature){}
+            mob_janalai_firebombAI(CreaturePtr creature) : ScriptedAI(creature){}
 
             void Reset() {}
 
-            void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
+            void SpellHit(UnitPtr /*caster*/, const SpellInfo* spell)
             {
                 if (spell->Id == SPELL_FIRE_BOMB_THROW)
                     DoCast(me, SPELL_FIRE_BOMB_DUMMY, true);
             }
 
-            void EnterCombat(Unit* /*who*/) {}
+            void EnterCombat(UnitPtr /*who*/) {}
 
-            void AttackStart(Unit* /*who*/) {}
+            void AttackStart(UnitPtr /*who*/) {}
 
-            void MoveInLineOfSight(Unit* /*who*/) {}
+            void MoveInLineOfSight(UnitPtr /*who*/) {}
 
             void UpdateAI(const uint32 /*diff*/) {}
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_janalai_firebombAI(creature);
         }
@@ -489,7 +489,7 @@ class mob_janalai_hatcher : public CreatureScript
 
         struct mob_janalai_hatcherAI : public ScriptedAI
         {
-            mob_janalai_hatcherAI(Creature* creature) : ScriptedAI(creature)
+            mob_janalai_hatcherAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -517,7 +517,7 @@ class mob_janalai_hatcher : public CreatureScript
 
             bool HatchEggs(uint32 num)
             {
-                std::list<Creature*> templist;
+                std::list<CreaturePtr> templist;
                 float x, y, z;
                 me->GetPosition(x, y, z);
 
@@ -531,12 +531,12 @@ class mob_janalai_hatcher : public CreatureScript
 
                     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
 
-                    cell.Visit(pair, cSearcher, *(me->GetMap()), *me, me->GetGridActivationRange());
+                    cell.Visit(pair, cSearcher, *(me->GetMap()), TO_CONST_WORLDOBJECT(me), me->GetGridActivationRange());
                 }
 
                 //sLog->outError(LOG_FILTER_TSCR, "Eggs %d at %d", templist.size(), side);
 
-                for (std::list<Creature*>::const_iterator i = templist.begin(); i != templist.end() && num > 0; ++i)
+                for (std::list<CreaturePtr>::const_iterator i = templist.begin(); i != templist.end() && num > 0; ++i)
                     if ((*i)->GetDisplayId() != 11686)
                     {
                        (*i)->CastSpell(*i, SPELL_HATCH_EGG, false);
@@ -546,9 +546,9 @@ class mob_janalai_hatcher : public CreatureScript
                 return num == 0;   // if num == 0, no more templist
             }
 
-            void EnterCombat(Unit* /*who*/) {}
-            void AttackStart(Unit* /*who*/) {}
-            void MoveInLineOfSight(Unit* /*who*/) {}
+            void EnterCombat(UnitPtr /*who*/) {}
+            void AttackStart(UnitPtr /*who*/) {}
+            void MoveInLineOfSight(UnitPtr /*who*/) {}
             void MovementInform(uint32, uint32)
             {
                 if (waypoint == 5)
@@ -604,7 +604,7 @@ class mob_janalai_hatcher : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_janalai_hatcherAI(creature);
         }
@@ -621,7 +621,7 @@ class mob_janalai_hatchling : public CreatureScript
 
         struct mob_janalai_hatchlingAI : public ScriptedAI
         {
-            mob_janalai_hatchlingAI(Creature* creature) : ScriptedAI(creature)
+            mob_janalai_hatchlingAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -640,7 +640,7 @@ class mob_janalai_hatchling : public CreatureScript
                 me->SetUnitMovementFlags(MOVEMENTFLAG_DISABLE_GRAVITY);
             }
 
-            void EnterCombat(Unit* /*who*/) {/*DoZoneInCombat();*/}
+            void EnterCombat(UnitPtr /*who*/) {/*DoZoneInCombat();*/}
 
             void UpdateAI(const uint32 diff)
             {
@@ -663,7 +663,7 @@ class mob_janalai_hatchling : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_janalai_hatchlingAI(creature);
         }
@@ -674,20 +674,20 @@ class mob_janalai_egg : public CreatureScript
 public:
     mob_janalai_egg(): CreatureScript("mob_janalai_egg") {}
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_janalai_eggAI(creature);
     }
 
     struct mob_janalai_eggAI : public ScriptedAI
     {
-        mob_janalai_eggAI(Creature* creature) : ScriptedAI(creature){}
+        mob_janalai_eggAI(CreaturePtr creature) : ScriptedAI(creature){}
 
         void Reset() {}
 
         void UpdateAI(uint32 const /*diff*/) {}
 
-        void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
+        void SpellHit(UnitPtr /*caster*/, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_HATCH_EGG)
             {

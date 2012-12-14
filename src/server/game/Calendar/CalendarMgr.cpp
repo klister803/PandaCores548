@@ -180,7 +180,7 @@ void CalendarMgr::LoadFromDB()
     */
 }
 
-CalendarEvent* CalendarMgr::CheckPermisions(uint64 eventId, Player* player, uint64 inviteId, CalendarModerationRank minRank)
+CalendarEvent* CalendarMgr::CheckPermisions(uint64 eventId, PlayerPtr player, uint64 inviteId, CalendarModerationRank minRank)
 {
     if (!player)
         return NULL;    // CALENDAR_ERROR_INTERNAL
@@ -540,54 +540,54 @@ bool CalendarMgr::RemovePlayerInvite(uint64 guid, uint64 inviteId)
 
 void CalendarMgr::SendCalendarEvent(CalendarEvent const& calendarEvent, CalendarSendEventType type)
 {
-    if (Player* player = ObjectAccessor::FindPlayer(calendarEvent.GetCreatorGUID()))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(calendarEvent.GetCreatorGUID()))
         player->GetSession()->SendCalendarEvent(calendarEvent, type);
 }
 
 void CalendarMgr::SendCalendarEventInvite(CalendarInvite const& invite, bool pending)
 {
-    if (Player* player = ObjectAccessor::FindPlayer(invite.GetSenderGUID()))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(invite.GetSenderGUID()))
         player->GetSession()->SendCalendarEventInvite(invite, pending);
 }
 
 void CalendarMgr::SendCalendarEventInviteAlert(CalendarEvent const& calendarEvent, CalendarInvite const& invite)
 {
-    if (Player* player = ObjectAccessor::FindPlayer(invite.GetInvitee()))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(invite.GetInvitee()))
         player->GetSession()->SendCalendarEventInviteAlert(calendarEvent, invite);
 }
 
 void CalendarMgr::SendCalendarEventUpdateAlert(uint64 guid, CalendarEvent const& calendarEvent, CalendarSendEventType type)
 {
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
         player->GetSession()->SendCalendarEventUpdateAlert(calendarEvent, type);
 }
 
 void CalendarMgr::SendCalendarEventStatus(uint64 guid, CalendarEvent const& calendarEvent, CalendarInvite const& invite)
 {
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
         player->GetSession()->SendCalendarEventStatus(calendarEvent, invite);
 }
 
 void CalendarMgr::SendCalendarEventRemovedAlert(uint64 guid, CalendarEvent const& calendarEvent)
 {
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
         player->GetSession()->SendCalendarEventRemovedAlert(calendarEvent);
 }
 
 void CalendarMgr::SendCalendarEventInviteRemoveAlert(uint64 guid, CalendarEvent const& calendarEvent, CalendarInviteStatus status)
 {
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
         player->GetSession()->SendCalendarEventInviteRemoveAlert(calendarEvent, status);
 }
 
 void CalendarMgr::SendCalendarEventInviteRemove(uint64 guid, CalendarInvite const& invite, uint32 flags)
 {
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
         player->GetSession()->SendCalendarEventInviteRemove(invite, flags);
 }
 
 void CalendarMgr::SendCalendarEventModeratorStatusAlert(CalendarInvite const& invite)
 {
-    if (Player* player = ObjectAccessor::FindPlayer(invite.GetInvitee()))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(invite.GetInvitee()))
         player->GetSession()->SendCalendarEventModeratorStatusAlert(invite);
 }

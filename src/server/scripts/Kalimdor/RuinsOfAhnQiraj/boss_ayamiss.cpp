@@ -42,7 +42,7 @@ class boss_ayamiss : public CreatureScript
 
         struct boss_ayamissAI : public ScriptedAI
         {
-            boss_ayamissAI(Creature* creature) : ScriptedAI(creature)
+            boss_ayamissAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -92,7 +92,7 @@ class boss_ayamiss : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_ayamissAI (creature);
         }

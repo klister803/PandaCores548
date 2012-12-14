@@ -63,14 +63,14 @@ class boss_skarvald_the_constructor : public CreatureScript
 public:
     boss_skarvald_the_constructor() : CreatureScript("boss_skarvald_the_constructor") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_skarvald_the_constructorAI (creature);
     }
 
     struct boss_skarvald_the_constructorAI : public ScriptedAI
     {
-        boss_skarvald_the_constructorAI(Creature* creature) : ScriptedAI(creature)
+        boss_skarvald_the_constructorAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -94,7 +94,7 @@ public:
             ghost = (me->GetEntry() == MOB_SKARVALD_GHOST);
             if (!ghost && instance)
             {
-                Unit* dalronn = Unit::GetUnit(*me, instance->GetData64(DATA_DALRONN));
+                UnitPtr dalronn = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_DALRONN));
                 if (dalronn && dalronn->isDead())
                     CAST_CRE(dalronn)->Respawn();
 
@@ -102,13 +102,13 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             if (!ghost && instance)
             {
                 DoScriptText(YELL_SKARVALD_AGGRO, me);
 
-                Unit* dalronn = Unit::GetUnit(*me, instance->GetData64(DATA_DALRONN));
+                UnitPtr dalronn = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_DALRONN));
                 if (dalronn && dalronn->isAlive() && !dalronn->getVictim())
                     dalronn->getThreatManager().addThreat(who, 0.0f);
 
@@ -116,11 +116,11 @@ public:
             }
         }
 
-        void JustDied(Unit* killer)
+        void JustDied(UnitPtr killer)
         {
             if (!ghost && instance)
             {
-                Unit* dalronn = Unit::GetUnit(*me, instance->GetData64(DATA_DALRONN));
+                UnitPtr dalronn = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_DALRONN));
                 if (dalronn)
                 {
                     if (dalronn->isDead())
@@ -135,7 +135,7 @@ public:
 
                         me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                         //DoCast(me, SPELL_SUMMON_SKARVALD_GHOST, true);
-                        Creature* temp = me->SummonCreature(MOB_SKARVALD_GHOST, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 5000);
+                        CreaturePtr temp = me->SummonCreature(MOB_SKARVALD_GHOST, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 5000);
                         if (temp)
                         {
                             temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -146,7 +146,7 @@ public:
             }
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             if (!ghost)
             {
@@ -172,7 +172,7 @@ public:
                     if (Check_Timer <= diff)
                     {
                         Check_Timer = 5000;
-                        Unit* dalronn = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_DALRONN) : 0);
+                        UnitPtr dalronn = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_DALRONN) : 0);
                         if (dalronn && dalronn->isDead())
                         {
                             Dalronn_isDead = true;
@@ -215,14 +215,14 @@ class boss_dalronn_the_controller : public CreatureScript
 public:
     boss_dalronn_the_controller() : CreatureScript("boss_dalronn_the_controller") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_dalronn_the_controllerAI (creature);
     }
 
     struct boss_dalronn_the_controllerAI : public ScriptedAI
     {
-        boss_dalronn_the_controllerAI(Creature* creature) : ScriptedAI(creature)
+        boss_dalronn_the_controllerAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -251,7 +251,7 @@ public:
             ghost = me->GetEntry() == MOB_DALRONN_GHOST;
             if (!ghost && instance)
             {
-                Unit* skarvald = Unit::GetUnit(*me, instance->GetData64(DATA_SKARVALD));
+                UnitPtr skarvald = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_SKARVALD));
                 if (skarvald && skarvald->isDead())
                     CAST_CRE(skarvald)->Respawn();
 
@@ -259,11 +259,11 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             if (!ghost && instance)
             {
-                Unit* skarvald = Unit::GetUnit(*me, instance->GetData64(DATA_SKARVALD));
+                UnitPtr skarvald = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_SKARVALD));
                 if (skarvald && skarvald->isAlive() && !skarvald->getVictim())
                     skarvald->getThreatManager().addThreat(who, 0.0f);
 
@@ -274,11 +274,11 @@ public:
             }
         }
 
-        void JustDied(Unit* killer)
+        void JustDied(UnitPtr killer)
         {
             if (!ghost && instance)
             {
-                Unit* skarvald = Unit::GetUnit(*me, instance->GetData64(DATA_SKARVALD));
+                UnitPtr skarvald = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_SKARVALD));
                 if (skarvald)
                 {
                     if (skarvald->isDead())
@@ -294,7 +294,7 @@ public:
 
                         me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
                         //DoCast(me, SPELL_SUMMON_DALRONN_GHOST, true);
-                        Creature* temp = me->SummonCreature(MOB_DALRONN_GHOST, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 5000);
+                        CreaturePtr temp = me->SummonCreature(MOB_DALRONN_GHOST, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_DESPAWN, 5000);
                         if (temp)
                         {
                             temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -305,7 +305,7 @@ public:
             }
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             if (!ghost)
             {
@@ -341,7 +341,7 @@ public:
                     if (Check_Timer <= diff)
                     {
                         Check_Timer = 5000;
-                        Unit* skarvald = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_SKARVALD) : 0);
+                        UnitPtr skarvald = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_SKARVALD) : 0);
                         if (skarvald && skarvald->isDead())
                         {
                             Skarvald_isDead = true;

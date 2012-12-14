@@ -25,22 +25,22 @@ class Aura;
 
 #include "SpellAuras.h"
 
-typedef void(AuraEffect::*pAuraEffectHandler)(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+typedef void(AuraEffect::*pAuraEffectHandler)(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
 
 class AuraEffect : public std::enable_shared_from_this<AuraEffect>
 {
-    friend void Aura::_InitEffects(uint32 effMask, Unit* caster, int32 *baseAmount);
-    friend AuraPtr Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, Unit* caster, int32* baseAmount, Item* castItem, uint64 casterGUID);
+    friend void Aura::_InitEffects(uint32 effMask, UnitPtr caster, int32 *baseAmount);
+    friend AuraPtr Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uint32 effMask, UnitPtr caster, int32* baseAmount, ItemPtr castItem, uint64 casterGUID);
     friend Aura::~Aura();
     private:
-        explicit AuraEffect(AuraPtr base, uint8 effIndex, int32 *baseAmount, Unit* caster);
+        explicit AuraEffect(AuraPtr base, uint8 effIndex, int32 *baseAmount, UnitPtr caster);
     public:
         ~AuraEffect();
-        Unit* GetCaster() const { return GetBase()->GetCaster(); }
+        UnitPtr GetCaster() const { return GetBase()->GetCaster(); }
         uint64 GetCasterGUID() const { return GetBase()->GetCasterGUID(); }
         AuraPtr GetBase() const { return std::const_pointer_cast<Aura>(m_base); }
-        void GetTargetList(std::list<Unit*> & targetList) const;
-        void GetApplicationList(std::list<AuraApplication*> & applicationList) const;
+        void GetTargetList(std::list<UnitPtr> & targetList) const;
+        void GetApplicationList(std::list<AuraApplicationPtr> & applicationList) const;
         SpellModifier* GetSpellModifier() const { return m_spellmod; }
 
         SpellInfo const* GetSpellInfo() const { return m_spellInfo; }
@@ -58,20 +58,20 @@ class AuraEffect : public std::enable_shared_from_this<AuraEffect>
         int32 GetPeriodicTimer() const { return m_periodicTimer; }
         void SetPeriodicTimer(int32 periodicTimer) { m_periodicTimer = periodicTimer; }
 
-        int32 CalculateAmount(Unit* caster);
-        void CalculatePeriodic(Unit* caster, bool resetPeriodicTimer = true, bool load = false);
+        int32 CalculateAmount(UnitPtr caster);
+        void CalculatePeriodic(UnitPtr caster, bool resetPeriodicTimer = true, bool load = false);
         void CalculateSpellMod();
         void ChangeAmount(int32 newAmount, bool mark = true, bool onStackOrReapply = false);
         void RecalculateAmount() { if (!CanBeRecalculated()) return; ChangeAmount(CalculateAmount(GetCaster()), false); }
-        void RecalculateAmount(Unit* caster) { if (!CanBeRecalculated()) return; ChangeAmount(CalculateAmount(caster), false); }
+        void RecalculateAmount(UnitPtr caster) { if (!CanBeRecalculated()) return; ChangeAmount(CalculateAmount(caster), false); }
         bool CanBeRecalculated() const { return m_canBeRecalculated; }
         void SetCanBeRecalculated(bool val) { m_canBeRecalculated = val; }
-        void HandleEffect(AuraApplication * aurApp, uint8 mode, bool apply);
-        void HandleEffect(Unit* target, uint8 mode, bool apply);
-        void ApplySpellMod(Unit* target, bool apply);
+        void HandleEffect(AuraApplicationPtr aurApp, uint8 mode, bool apply);
+        void HandleEffect(UnitPtr target, uint8 mode, bool apply);
+        void ApplySpellMod(UnitPtr target, bool apply);
 
-        void Update(uint32 diff, Unit* caster);
-        void UpdatePeriodic(Unit* caster);
+        void Update(uint32 diff, UnitPtr caster);
+        void UpdatePeriodic(UnitPtr caster);
 
         uint32 GetTickNumber() const { return m_tickNumber; }
         int32 GetTotalTicks() const { return m_amplitude ? (GetBase()->GetMaxDuration() / m_amplitude) : 1;}
@@ -82,15 +82,15 @@ class AuraEffect : public std::enable_shared_from_this<AuraEffect>
         bool IsAffectingSpell(SpellInfo const* spell) const;
         bool HasSpellClassMask() const { return m_spellInfo->Effects[m_effIndex].SpellClassMask; }
 
-        void SendTickImmune(Unit* target, Unit* caster) const;
-        void PeriodicTick(AuraApplication * aurApp, Unit* caster) const;
+        void SendTickImmune(UnitPtr target, UnitPtr caster) const;
+        void PeriodicTick(AuraApplicationPtr aurApp, UnitPtr caster) const;
 
-        void HandleProc(AuraApplication* aurApp, ProcEventInfo& eventInfo);
+        void HandleProc(AuraApplicationPtr aurApp, ProcEventInfo& eventInfo);
 
-        void CleanupTriggeredSpells(Unit* target);
+        void CleanupTriggeredSpells(UnitPtr target);
 
         // add/remove SPELL_AURA_MOD_SHAPESHIFT (36) linked auras
-        void HandleShapeshiftBoosts(Unit* target, bool apply) const;
+        void HandleShapeshiftBoosts(UnitPtr target, bool apply) const;
     private:
         constAuraPtr m_base;
 
@@ -109,199 +109,199 @@ class AuraEffect : public std::enable_shared_from_this<AuraEffect>
         bool m_canBeRecalculated;
         bool m_isPeriodic;
     private:
-        bool IsPeriodicTickCrit(Unit* target, Unit const* caster) const;
+        bool IsPeriodicTickCrit(UnitPtr target, constUnitPtr caster) const;
 
     public:
         // aura effect apply/remove handlers
-        void HandleNULL(AuraApplication const* /*aurApp*/, uint8 /*mode*/, bool /*apply*/) const
+        void HandleNULL(constAuraApplicationPtr /*aurApp*/, uint8 /*mode*/, bool /*apply*/) const
         {
             // not implemented
         }
-        void HandleUnused(AuraApplication const* /*aurApp*/, uint8 /*mode*/, bool /*apply*/) const
+        void HandleUnused(constAuraApplicationPtr /*aurApp*/, uint8 /*mode*/, bool /*apply*/) const
         {
             // useless
         }
-        void HandleNoImmediateEffect(AuraApplication const* /*aurApp*/, uint8 /*mode*/, bool /*apply*/) const
+        void HandleNoImmediateEffect(constAuraApplicationPtr /*aurApp*/, uint8 /*mode*/, bool /*apply*/) const
         {
             // aura type not have immediate effect at add/remove and handled by ID in other code place
         }
         //  visibility & phases
-        void HandleModInvisibilityDetect(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModInvisibility(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModStealth(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModStealthLevel(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModStealthDetect(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleSpiritOfRedemption(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraGhost(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandlePhase(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModInvisibilityDetect(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModInvisibility(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModStealth(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModStealthLevel(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModStealthDetect(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleSpiritOfRedemption(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraGhost(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandlePhase(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  unit model
-        void HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModScale(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraCloneCaster(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModShapeshift(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraTransform(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModScale(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraCloneCaster(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  fight
-        void HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModUnattackable(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModDisarm(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModSilence(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModPacify(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModPacifyAndSilence(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraAllowOnlyAbility(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleFeignDeath(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModUnattackable(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModDisarm(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModSilence(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModPacify(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModPacifyAndSilence(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraAllowOnlyAbility(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  tracking
-        void HandleAuraTrackResources(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraTrackCreatures(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraTrackStealthed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModStalked(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraUntrackable(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraTrackResources(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraTrackCreatures(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraTrackStealthed(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModStalked(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraUntrackable(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  skills & talents
-        void HandleAuraModPetTalentsPoints(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModSkill(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModPetTalentsPoints(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModSkill(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  movement
-        void HandleAuraMounted(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraAllowFlight(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraWaterWalk(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraFeatherFall(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraHover(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleWaterBreathing(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleForceMoveForward(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraMounted(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraAllowFlight(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraWaterWalk(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraFeatherFall(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraHover(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleWaterBreathing(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleForceMoveForward(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  threat
-        void HandleModThreat(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModTotalThreat(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModTaunt(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModThreat(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModTotalThreat(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModTaunt(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  control
-        void HandleModConfuse(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModFear(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModStun(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModRoot(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandlePreventFleeing(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModConfuse(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModFear(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModStun(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModRoot(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandlePreventFleeing(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  charm
-        void HandleModPossess(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModPossessPet(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModCharm(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleCharmConvert(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraControlVehicle(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModPossess(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModPossessPet(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModCharm(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleCharmConvert(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraControlVehicle(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  modify speed
-        void HandleAuraModIncreaseSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModIncreaseMountedSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModIncreaseSwimSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModDecreaseSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModUseNormalSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModIncreaseSpeed(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModIncreaseMountedSpeed(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModIncreaseFlightSpeed(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModIncreaseSwimSpeed(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModDecreaseSpeed(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModUseNormalSpeed(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  immunity
-        void HandleModStateImmunityMask(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModMechanicImmunity(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModEffectImmunity(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModStateImmunity(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModSchoolImmunity(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModDmgImmunity(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModDispelImmunity(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModStateImmunityMask(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModMechanicImmunity(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModEffectImmunity(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModStateImmunity(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModSchoolImmunity(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModDmgImmunity(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModDispelImmunity(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  modify stats
         //   resistance
-        void HandleAuraModResistanceExclusive(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModResistance(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModBaseResistancePCT(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModResistancePercent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModBaseResistance(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModTargetResistance(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModResistanceExclusive(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModResistance(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModBaseResistancePCT(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModResistancePercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModBaseResistance(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModTargetResistance(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //    stat
-        void HandleAuraModStat(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModPercentStat(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModSpellDamagePercentFromStat(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModSpellHealingPercentFromStat(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModSpellDamagePercentFromAttackPower(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModSpellHealingPercentFromAttackPower(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModSpellPowerPercent(AuraApplication const * aurApp, uint8 mode, bool apply) const;
-        void HandleModHealingDone(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModTotalPercentStat(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModResistenceOfStatPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModExpertise(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleOverrideSpellPowerByAttackPower(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleIncreaseHasteFromItemsByPct(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModStat(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModPercentStat(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModSpellDamagePercentFromStat(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModSpellHealingPercentFromStat(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModSpellDamagePercentFromAttackPower(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModSpellHealingPercentFromAttackPower(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModSpellPowerPercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModHealingDone(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModTotalPercentStat(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModResistenceOfStatPercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModExpertise(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleOverrideSpellPowerByAttackPower(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleIncreaseHasteFromItemsByPct(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //   heal and energize
-        void HandleModPowerRegen(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModPowerRegenPCT(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModManaRegen(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModIncreaseHealth(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModIncreaseMaxHealth(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModIncreaseEnergy(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModIncreaseEnergyPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModIncreaseHealthPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraIncreaseBaseHealthPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModPowerRegen(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModPowerRegenPCT(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModManaRegen(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModIncreaseHealth(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModIncreaseMaxHealth(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModIncreaseEnergy(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModIncreaseEnergyPercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModIncreaseHealthPercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraIncreaseBaseHealthPercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //   fight
-        void HandleAuraModParryPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModDodgePercent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModBlockPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModRegenInterrupt(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModWeaponCritPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModHitChance(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModSpellHitChance(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModSpellCritChance(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModSpellCritChanceShool(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModCritPct(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModParryPercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModDodgePercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModBlockPercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModRegenInterrupt(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModWeaponCritPercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModHitChance(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModSpellHitChance(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModSpellCritChance(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModSpellCritChanceShool(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModCritPct(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //   attack speed
-        void HandleModCastingSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModCombatSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModAttackSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModMeleeSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModRangedHaste(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModCastingSpeed(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModMeleeRangedSpeedPct(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModCombatSpeedPct(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModAttackSpeed(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModMeleeSpeedPct(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModRangedHaste(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //   combat rating
-        void HandleModRating(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModRatingFromStat(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModRating(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModRatingFromStat(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //   attack power
-        void HandleAuraModAttackPower(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModRangedAttackPower(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModAttackPowerPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModRangedAttackPowerPercent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModAttackPowerOfArmor(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleOverrideAttackPowerBySpellPower(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModAttackPower(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModRangedAttackPower(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModAttackPowerPercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModRangedAttackPowerPercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModAttackPowerOfArmor(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleOverrideAttackPowerBySpellPower(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //   damage bonus
-        void HandleModDamageDone(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModDamagePercentDone(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModOffhandDamagePercent(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleShieldBlockValue(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModDamageDone(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModDamagePercentDone(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModOffhandDamagePercent(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleShieldBlockValue(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  power cost
-        void HandleModPowerCostPCT(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleModPowerCost(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleArenaPreparation(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleNoReagentUseAura(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraRetainComboPoints(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleModPowerCostPCT(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleModPowerCost(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleArenaPreparation(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleNoReagentUseAura(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraRetainComboPoints(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
         //  others
-        void HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleChannelDeathItem(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleBindSight(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleForceReaction(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraEmpathy(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModFaction(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleComprehendLanguage(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraConvertRune(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraLinked(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraOpenStable(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraModFakeInebriation(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraOverrideSpells(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraSetVehicle(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandlePreventResurrection(AuraApplication const* aurApp, uint8 mode, bool apply) const;
-        void HandleAuraForceWeather(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraDummy(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleChannelDeathItem(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleBindSight(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleForceReaction(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraEmpathy(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModFaction(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleComprehendLanguage(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraConvertRune(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraLinked(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraOpenStable(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModFakeInebriation(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraOverrideSpells(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraSetVehicle(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandlePreventResurrection(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
+        void HandleAuraForceWeather(constAuraApplicationPtr aurApp, uint8 mode, bool apply) const;
 
         // aura effect periodic tick handlers
-        void HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const;
-        void HandlePeriodicTriggerSpellAuraTick(Unit* target, Unit* caster) const;
-        void HandlePeriodicTriggerSpellWithValueAuraTick(Unit* target, Unit* caster) const;
-        void HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const;
-        void HandlePeriodicHealthLeechAuraTick(Unit* target, Unit* caster) const;
-        void HandlePeriodicHealthFunnelAuraTick(Unit* target, Unit* caster) const;
-        void HandlePeriodicHealAurasTick(Unit* target, Unit* caster) const;
-        void HandlePeriodicManaLeechAuraTick(Unit* target, Unit* caster) const;
-        void HandleObsModPowerAuraTick(Unit* target, Unit* caster) const;
-        void HandlePeriodicEnergizeAuraTick(Unit* target, Unit* caster) const;
-        void HandlePeriodicPowerBurnAuraTick(Unit* target, Unit* caster) const;
+        void HandlePeriodicDummyAuraTick(UnitPtr target, UnitPtr caster) const;
+        void HandlePeriodicTriggerSpellAuraTick(UnitPtr target, UnitPtr caster) const;
+        void HandlePeriodicTriggerSpellWithValueAuraTick(UnitPtr target, UnitPtr caster) const;
+        void HandlePeriodicDamageAurasTick(UnitPtr target, UnitPtr caster) const;
+        void HandlePeriodicHealthLeechAuraTick(UnitPtr target, UnitPtr caster) const;
+        void HandlePeriodicHealthFunnelAuraTick(UnitPtr target, UnitPtr caster) const;
+        void HandlePeriodicHealAurasTick(UnitPtr target, UnitPtr caster) const;
+        void HandlePeriodicManaLeechAuraTick(UnitPtr target, UnitPtr caster) const;
+        void HandleObsModPowerAuraTick(UnitPtr target, UnitPtr caster) const;
+        void HandlePeriodicEnergizeAuraTick(UnitPtr target, UnitPtr caster) const;
+        void HandlePeriodicPowerBurnAuraTick(UnitPtr target, UnitPtr caster) const;
 
         // aura effect proc handlers
-        void HandleProcTriggerSpellAuraProc(AuraApplication* aurApp, ProcEventInfo& eventInfo);
-        void HandleProcTriggerSpellWithValueAuraProc(AuraApplication* aurApp, ProcEventInfo& eventInfo);
-        void HandleProcTriggerDamageAuraProc(AuraApplication* aurApp, ProcEventInfo& eventInfo);
-        void HandleRaidProcFromChargeAuraProc(AuraApplication* aurApp, ProcEventInfo& eventInfo);
-        void HandleRaidProcFromChargeWithValueAuraProc(AuraApplication* aurApp, ProcEventInfo& eventInfo);
+        void HandleProcTriggerSpellAuraProc(AuraApplicationPtr aurApp, ProcEventInfo& eventInfo);
+        void HandleProcTriggerSpellWithValueAuraProc(AuraApplicationPtr aurApp, ProcEventInfo& eventInfo);
+        void HandleProcTriggerDamageAuraProc(AuraApplicationPtr aurApp, ProcEventInfo& eventInfo);
+        void HandleRaidProcFromChargeAuraProc(AuraApplicationPtr aurApp, ProcEventInfo& eventInfo);
+        void HandleRaidProcFromChargeWithValueAuraProc(AuraApplicationPtr aurApp, ProcEventInfo& eventInfo);
 };
 
 namespace Trinity

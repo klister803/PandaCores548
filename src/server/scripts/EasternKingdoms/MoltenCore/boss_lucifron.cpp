@@ -49,11 +49,11 @@ class boss_lucifron : public CreatureScript
 
         struct boss_lucifronAI : public BossAI
         {
-            boss_lucifronAI(Creature* creature) : BossAI(creature, BOSS_LUCIFRON)
+            boss_lucifronAI(CreaturePtr creature) : BossAI(creature, BOSS_LUCIFRON)
             {
             }
 
-            void EnterCombat(Unit* victim)
+            void EnterCombat(UnitPtr victim)
             {
                 BossAI::EnterCombat(victim);
                 events.ScheduleEvent(EVENT_IMPENDING_DOOM, 10000);
@@ -96,7 +96,7 @@ class boss_lucifron : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_lucifronAI(creature);
         }

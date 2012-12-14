@@ -109,7 +109,7 @@ class BattlegroundKT : public Battleground
         void Update(uint32 diff);
 
         /* inherited from BattlegroundClass */
-        virtual void AddPlayer(Player *plr);
+        virtual void AddPlayer(PlayerPtr plr);
         virtual void StartingEventCloseDoors();
         virtual void StartingEventOpenDoors();
 
@@ -123,21 +123,21 @@ class BattlegroundKT : public Battleground
         uint8 GetOrbState(Team team)             { return m_OrbState[GetTeamIndexByTeamId(team)]; }
 
         /* Battleground Events */
-        virtual void EventPlayerDroppedOrb(Player *Source);
-        virtual void EventPlayerClickedOnOrb(Player *Source, GameObject* target_obj);
+        virtual void EventPlayerDroppedOrb(PlayerPtr Source);
+        virtual void EventPlayerClickedOnOrb(PlayerPtr Source, GameObjectPtr target_obj);
 
-        void RemovePlayer(Player *plr, ObjectGuid guid);
-        void HandleAreaTrigger(Player *Source, uint32 Trigger);
-        void HandleKillPlayer(Player *player, Player *killer);
+        void RemovePlayer(PlayerPtr plr, ObjectGuid guid);
+        void HandleAreaTrigger(PlayerPtr Source, uint32 Trigger);
+        void HandleKillPlayer(PlayerPtr player, PlayerPtr killer);
         bool SetupBattleGround();
         virtual void Reset();
         void EndBattleGround(Team winner);
-        virtual WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
+        virtual WorldSafeLocsEntry const* GetClosestGraveYard(PlayerPtr player);
         uint32 GetRemainingTimeInMinutes() { return m_EndTimer ? (m_EndTimer-1) / (MINUTE * IN_MILLISECONDS) + 1 : 0; }
 
         void UpdateOrbState(Team team, uint32 value);
         void UpdateTeamScore(Team team);
-        void UpdatePlayerScore(Player *Source, uint32 type, uint32 value);
+        void UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value);
         void SetDroppedOrbGuid(ObjectGuid guid, Team team)  { m_DroppedOrbGuid[GetTeamIndexByTeamId(team)] = guid;}
         void ClearDroppedOrbGuid(Team team)  { m_DroppedOrbGuid[GetTeamIndexByTeamId(team)].Clear();}
         ObjectGuid const& GetDroppedOrbGuid(Team team) const { return m_DroppedOrbGuid[GetTeamIndexByTeamId(team)];}

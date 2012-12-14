@@ -37,14 +37,14 @@ class boss_illucia_barov : public CreatureScript
 public:
     boss_illucia_barov() : CreatureScript("boss_illucia_barov") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_illuciabarovAI (creature);
     }
 
     struct boss_illuciabarovAI : public ScriptedAI
     {
-        boss_illuciabarovAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_illuciabarovAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 CurseOfAgony_Timer;
         uint32 ShadowShock_Timer;
@@ -59,7 +59,7 @@ public:
             Fear_Timer = 30000;
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             InstanceScript* instance = me->GetInstanceScript();
             if (instance)
@@ -71,7 +71,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
@@ -90,7 +90,7 @@ public:
             //ShadowShock_Timer
             if (ShadowShock_Timer <= diff)
             {
-                Unit* target = NULL;
+                UnitPtr target = NULL;
                 target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (target) DoCast(target, SPELL_SHADOWSHOCK);
 

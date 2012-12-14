@@ -498,7 +498,7 @@ struct SpellArea
     bool autocast;                                          // if true then auto applied at area enter, in other case just allowed to cast
 
     // helpers
-    bool IsFitToRequirements(Player const* player, uint32 newZone, uint32 newArea) const;
+    bool IsFitToRequirements(constPlayerPtr player, uint32 newZone, uint32 newArea) const;
 };
 
 typedef std::multimap<uint32, SpellArea> SpellAreaMap;
@@ -611,13 +611,13 @@ class SpellMgr
     // Accessors (const or static functions)
     public:
         // Spell correctness for client using
-        static bool IsSpellValid(SpellInfo const* spellInfo, Player* player = NULL, bool msg = true);
+        static bool IsSpellValid(SpellInfo const* spellInfo, PlayerPtr player = NULL, bool msg = true);
 
         // Spell difficulty
         uint32 GetSpellDifficultyId(uint32 spellId) const;
         void SetSpellDifficultyId(uint32 spellId, uint32 id);
-        uint32 GetSpellIdForDifficulty(uint32 spellId, Unit const* caster) const;
-        SpellInfo const* GetSpellForDifficultyFromSpell(SpellInfo const* spell, Unit const* caster) const;
+        uint32 GetSpellIdForDifficulty(uint32 spellId, constUnitPtr caster) const;
+        SpellInfo const* GetSpellForDifficultyFromSpell(SpellInfo const* spell, constUnitPtr caster) const;
 
         // Spell Ranks table
         SpellChainNode const* GetSpellChainNode(uint32 spell_id) const;

@@ -59,7 +59,7 @@ bool MapSessionFilter::Process(WorldPacket* packet)
     if (opHandle->packetProcessing == PROCESS_THREADUNSAFE)
         return false;
 
-    Player* player = m_pSession->GetPlayer();
+    PlayerPtr player = m_pSession->GetPlayer();
     if (!player)
         return false;
 
@@ -82,7 +82,7 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
         return true;
 
     //no player attached? -> our client! ^^
-    Player* player = m_pSession->GetPlayer();
+    PlayerPtr player = m_pSession->GetPlayer();
     if (!player)
         return true;
 
@@ -169,7 +169,7 @@ std::string WorldSession::GetPlayerName(bool simple /* = true */) const
     std::string name = "[Player: ";
     uint32 guidLow = 0;
 
-    if (Player* player = GetPlayer())
+    if (PlayerPtr player = GetPlayer())
     {
         name.append(player->GetName());
         guidLow = player->GetGUIDLow();
@@ -463,14 +463,14 @@ void WorldSession::LogoutPlayer(bool Save)
         else if (!_player->getAttackers().empty())
         {
             // build set of player who attack _player or who have pet attacking of _player
-            std::set<Player*> aset;
+            std::set<PlayerPtr> aset;
             for (Unit::AttackerSet::const_iterator itr = _player->getAttackers().begin(); itr != _player->getAttackers().end(); ++itr)
             {
-                Unit* owner = (*itr)->GetOwner();           // including player controlled case
+                UnitPtr owner = (*itr)->GetOwner();           // including player controlled case
                 if (owner && owner->GetTypeId() == TYPEID_PLAYER)
-                    aset.insert(owner->ToPlayer());
+                    aset.insert(TO_PLAYER(owner));
                 else if ((*itr)->GetTypeId() == TYPEID_PLAYER)
-                    aset.insert((Player*)(*itr));
+                    aset.insert(TO_PLAYER(*itr));
             }
             // CombatStop() method is removing all attackers from the AttackerSet
             // That is why it must be AFTER building current set of attackers
@@ -483,7 +483,7 @@ void WorldSession::LogoutPlayer(bool Save)
             _player->RepopAtGraveyard();
 
             // give honor to all attackers from set like group case
-            for (std::set<Player*>::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
+            for (std::set<PlayerPtr>::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
                 (*itr)->RewardHonor(_player, aset.size());
 
             // give bg rewards and update counters like kill by first from attackers
@@ -531,7 +531,7 @@ void WorldSession::LogoutPlayer(bool Save)
             HandleMoveWorldportAckOpcode();
 
         ///- If the player is in a guild, update the guild roster and broadcast a logout message to other guild members
-        if (Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
+        if (GuildPtr guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
             guild->HandleMemberLogout(this);
 
         ///- Remove pet
@@ -583,7 +583,7 @@ void WorldSession::LogoutPlayer(bool Save)
         // calls to GetMap in this case may cause crashes
         _player->CleanupsBeforeDelete();
         sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s) Logout Character:[%s] (GUID: %u) Level: %d", GetAccountId(), GetRemoteAddress().c_str(), _player->GetName(), _player->GetGUIDLow(), _player->getLevel());
-        if (Map* _map = _player->FindMap())
+        if (MapPtr _map = _player->FindMap())
             _map->RemovePlayerFromMap(_player, true);
 
         SetPlayer(NULL); //! Pointer already deleted during RemovePlayerFromMap
@@ -1006,7 +1006,7 @@ void WorldSession::HandleAddonRegisteredPrefixesOpcode(WorldPacket& recvPacket)
     _filterAddonMessages = true;
 }
 
-void WorldSession::SetPlayer(Player* player)
+void WorldSession::SetPlayer(PlayerPtr player)
 {
     _player = player;
 

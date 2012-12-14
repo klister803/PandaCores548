@@ -398,7 +398,7 @@ void WorldSession::HandleCalendarEventInvite(WorldPacket& recvData)
     uint32 team = 0;
 
     recvData >> eventId >> inviteId >> name >> status >> rank;
-    if (Player* player = sObjectAccessor->FindPlayerByName(name.c_str()))
+    if (PlayerPtr player = sObjectAccessor->FindPlayerByName(name.c_str()))
     {
         invitee = player->GetGUID();
         team = player->GetTeam();
@@ -625,7 +625,7 @@ void WorldSession::SendCalendarEvent(CalendarEvent const& calendarEvent, Calenda
         if (CalendarInvite* invite = sCalendarMgr->GetInvite(*it))
         {
             uint64 guid = invite->GetInvitee();
-            Player* player = ObjectAccessor::FindPlayer(guid);
+            PlayerPtr player = ObjectAccessor::FindPlayer(guid);
             uint8 level = player ? player->getLevel() : Player::GetLevelFromDB(guid);
 
             data.appendPackGUID(guid);
@@ -657,7 +657,7 @@ void WorldSession::SendCalendarEventInvite(CalendarInvite const& invite, bool pe
     uint64 invitee = invite.GetInvitee();
     uint8 status = invite.GetStatus();
     uint32 statusTime = invite.GetStatusTime();
-    Player* player = ObjectAccessor::FindPlayer(invitee);
+    PlayerPtr player = ObjectAccessor::FindPlayer(invitee);
     uint8 level = player ? player->getLevel() : Player::GetLevelFromDB(invitee);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_EVENT_INVITE [" UI64FMTD "] EventId ["

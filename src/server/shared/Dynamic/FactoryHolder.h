@@ -55,7 +55,7 @@ class Permissible
 {
     public:
         virtual ~Permissible() {}
-        virtual int Permit(const T *) const = 0;
+        virtual int Permit(std::shared_ptr<const T>) const = 0;
 };
 #endif
 

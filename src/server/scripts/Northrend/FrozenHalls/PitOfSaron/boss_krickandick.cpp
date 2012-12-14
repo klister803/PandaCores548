@@ -139,14 +139,14 @@ class boss_ick : public CreatureScript
 
         struct boss_ickAI : public BossAI
         {
-            boss_ickAI(Creature* creature) : BossAI(creature, DATA_ICK), _vehicle(creature->GetVehicleKit())
+            boss_ickAI(CreaturePtr creature) : BossAI(creature, DATA_ICK), _vehicle(creature->GetVehicleKit())
             {
                 ASSERT(_vehicle);
             }
 
             void InitializeAI()
             {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
+                if (!instance || TO_INSTANCEMAP(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
                     me->IsAIEnabled = false;
                 else if (!me->isDead())
                     Reset();
@@ -158,14 +158,14 @@ class boss_ick : public CreatureScript
                 instance->SetBossState(DATA_ICK, NOT_STARTED);
             }
 
-            Creature* GetKrick()
+            CreaturePtr GetKrick()
             {
-                return ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_KRICK));
+                return ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_KRICK));
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
-                if (Creature* krick = GetKrick())
+                if (CreaturePtr krick = GetKrick())
                     DoScriptText(SAY_KRICK_AGGRO, krick);
 
                 events.ScheduleEvent(EVENT_MIGHTY_KICK, 20000);
@@ -182,9 +182,9 @@ class boss_ick : public CreatureScript
                 ScriptedAI::EnterEvadeMode();
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
-                if (Creature* krick = GetKrick())
+                if (CreaturePtr krick = GetKrick())
                 {
                     _vehicle->RemoveAllPassengers();
                     if (krick->AI())
@@ -199,7 +199,7 @@ class boss_ick : public CreatureScript
                 _tempThreat = threat;
             }
 
-            void _ResetThreat(Unit* target)
+            void _ResetThreat(UnitPtr target)
             {
                 DoModifyThreatPercent(target, -100);
                 me->AddThreat(target, _tempThreat);
@@ -226,14 +226,14 @@ class boss_ick : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_TOXIC_WASTE:
-                            if (Creature* krick = GetKrick())
-                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (CreaturePtr krick = GetKrick())
+                                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                     krick->CastSpell(target, SPELL_TOXIC_WASTE, TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE);
                             events.ScheduleEvent(EVENT_TOXIC_WASTE, urand(7000, 10000));
                             break;
                         case EVENT_SHADOW_BOLT:
-                            if (Creature* krick = GetKrick())
-                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                            if (CreaturePtr krick = GetKrick())
+                                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                                     krick->CastSpell(target, SPELL_SHADOW_BOLT, TRIGGERED_IGNORE_CASTER_MOUNTED_OR_ON_VEHICLE);
                             events.ScheduleEvent(EVENT_SHADOW_BOLT, 15000);
                             return;
@@ -247,7 +247,7 @@ class boss_ick : public CreatureScript
                             events.ScheduleEvent(EVENT_SPECIAL, urand(23000, 28000));
                             break;
                         case EVENT_EXPLOSIVE_BARRAGE:
-                            if (Creature* krick = GetKrick())
+                            if (CreaturePtr krick = GetKrick())
                             {
                                 DoScriptText(SAY_KRICK_BARRAGE_1, krick);
                                 DoScriptText(SAY_KRICK_BARRAGE_2, krick);
@@ -257,14 +257,14 @@ class boss_ick : public CreatureScript
                             events.DelayEvents(20000);
                             break;
                         case EVENT_POISON_NOVA:
-                            if (Creature* krick = GetKrick())
+                            if (CreaturePtr krick = GetKrick())
                                 DoScriptText(SAY_KRICK_POISON_NOVA, krick);
 
                             DoScriptText(SAY_ICK_POISON_NOVA, me);
                             DoCast(me, SPELL_POISON_NOVA);
                             break;
                         case EVENT_PURSUIT:
-                            if (Creature* krick = GetKrick())
+                            if (CreaturePtr krick = GetKrick())
                                 DoScriptText(RAND(SAY_KRICK_CHASE_1, SAY_KRICK_CHASE_2, SAY_KRICK_CHASE_3), krick);
                             DoCast(me, SPELL_PURSUIT);
                             break;
@@ -277,11 +277,11 @@ class boss_ick : public CreatureScript
             }
 
         private:
-            Vehicle* _vehicle;
+            VehiclePtr _vehicle;
             float _tempThreat;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_ickAI(creature);
         }
@@ -294,13 +294,13 @@ class boss_krick : public CreatureScript
 
         struct boss_krickAI : public ScriptedAI
         {
-            boss_krickAI(Creature* creature) : ScriptedAI(creature), _instanceScript(creature->GetInstanceScript()), _summons(creature)
+            boss_krickAI(CreaturePtr creature) : ScriptedAI(creature), _instanceScript(creature->GetInstanceScript()), _summons(creature)
             {
             }
 
             void InitializeAI()
             {
-                if (!_instanceScript || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
+                if (!_instanceScript || TO_INSTANCEMAP(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
                     me->IsAIEnabled = false;
                 else if (!me->isDead())
                     Reset();
@@ -317,12 +317,12 @@ class boss_krick : public CreatureScript
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             }
 
-            Creature* GetIck()
+            CreaturePtr GetIck()
             {
-                return ObjectAccessor::GetCreature(*me, _instanceScript->GetData64(DATA_ICK));
+                return ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instanceScript->GetData64(DATA_ICK));
             }
 
-            void KilledUnit(Unit* victim)
+            void KilledUnit(UnitPtr victim)
             {
                 if (victim == me)
                     return;
@@ -330,7 +330,7 @@ class boss_krick : public CreatureScript
                 DoScriptText(RAND(SAY_KRICK_SLAY_1, SAY_KRICK_SLAY_2), me);
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(CreaturePtr summon)
             {
                 _summons.Summon(summon);
                 if (summon->GetEntry() == NPC_EXPLODING_ORB)
@@ -344,7 +344,7 @@ class boss_krick : public CreatureScript
             {
                 if (actionId == ACTION_OUTRO)
                 {
-                    Creature* tyrannusPtr = ObjectAccessor::GetCreature(*me, _instanceScript->GetData64(DATA_TYRANNUS_EVENT));
+                    CreaturePtr tyrannusPtr = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instanceScript->GetData64(DATA_TYRANNUS_EVENT));
                     if (tyrannusPtr)
                         tyrannusPtr->NearTeleportTo(outroPos[1].GetPositionX(), outroPos[1].GetPositionY(), outroPos[1].GetPositionZ(), outroPos[1].GetOrientation());
                     else
@@ -380,10 +380,10 @@ class boss_krick : public CreatureScript
                     {
                         case EVENT_OUTRO_1:
                         {
-                            if (Creature* temp = me->GetCreature(*me, _instanceScript->GetData64(DATA_JAINA_SYLVANAS_1)))
+                            if (CreaturePtr temp = me->GetCreature(TO_WORLDOBJECT(me), _instanceScript->GetData64(DATA_JAINA_SYLVANAS_1)))
                                 temp->DespawnOrUnsummon();
 
-                            Creature* jainaOrSylvanas = NULL;
+                            CreaturePtr jainaOrSylvanas = NULL;
                             if (_instanceScript->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE)
                                 jainaOrSylvanas = me->SummonCreature(NPC_JAINA_PART1, outroPos[2], TEMPSUMMON_MANUAL_DESPAWN);
                             else
@@ -398,7 +398,7 @@ class boss_krick : public CreatureScript
                             break;
                         }
                         case EVENT_OUTRO_2:
-                            if (Creature* jainaOrSylvanas = ObjectAccessor::GetCreature(*me, _outroNpcGUID))
+                            if (CreaturePtr jainaOrSylvanas = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _outroNpcGUID))
                             {
                                 jainaOrSylvanas->SetFacingToObject(me);
                                 me->SetFacingToObject(jainaOrSylvanas);
@@ -414,7 +414,7 @@ class boss_krick : public CreatureScript
                             _events.ScheduleEvent(EVENT_OUTRO_4, 18000);
                             break;
                         case EVENT_OUTRO_4:
-                            if (Creature* jainaOrSylvanas = ObjectAccessor::GetCreature(*me, _outroNpcGUID))
+                            if (CreaturePtr jainaOrSylvanas = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _outroNpcGUID))
                             {
                                 if (_instanceScript->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE)
                                     DoScriptText(SAY_JAYNA_OUTRO_4, jainaOrSylvanas);
@@ -428,7 +428,7 @@ class boss_krick : public CreatureScript
                             _events.ScheduleEvent(EVENT_OUTRO_6, 1000);
                             break;
                         case EVENT_OUTRO_6:
-                            if (Creature* tyrannus = me->GetCreature(*me, _instanceScript->GetData64(DATA_TYRANNUS_EVENT)))
+                            if (CreaturePtr tyrannus = me->GetCreature(TO_WORLDOBJECT(me), _instanceScript->GetData64(DATA_TYRANNUS_EVENT)))
                             {
                                 tyrannus->SetSpeed(MOVE_FLIGHT, 3.5f, true);
                                 tyrannus->GetMotionMaster()->MovePoint(1, outroPos[4]);
@@ -437,7 +437,7 @@ class boss_krick : public CreatureScript
                             _events.ScheduleEvent(EVENT_OUTRO_7, 5000);
                             break;
                         case EVENT_OUTRO_7:
-                            if (Creature* tyrannus = ObjectAccessor::GetCreature(*me, _tyrannusGUID))
+                            if (CreaturePtr tyrannus = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _tyrannusGUID))
                                 DoScriptText(SAY_TYRANNUS_OUTRO_7, tyrannus);
                             _events.ScheduleEvent(EVENT_OUTRO_8, 5000);
                             break;
@@ -452,7 +452,7 @@ class boss_krick : public CreatureScript
                             DoScriptText(SAY_KRICK_OUTRO_8, me);
                             // TODO: Tyrannus starts killing Krick.
                             // there shall be some visual spell effect
-                            if (Creature* tyrannus = ObjectAccessor::GetCreature(*me, _tyrannusGUID))
+                            if (CreaturePtr tyrannus = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _tyrannusGUID))
                                 tyrannus->CastSpell(me, SPELL_NECROMANTIC_POWER, true);  //not sure if it's the right spell :/
                             _events.ScheduleEvent(EVENT_OUTRO_10, 1000);
                             break;
@@ -470,12 +470,12 @@ class boss_krick : public CreatureScript
                             _events.ScheduleEvent(EVENT_OUTRO_12, 3000);
                             break;
                         case EVENT_OUTRO_12:
-                            if (Creature* tyrannus = ObjectAccessor::GetCreature(*me, _tyrannusGUID))
+                            if (CreaturePtr tyrannus = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _tyrannusGUID))
                                 DoScriptText(SAY_TYRANNUS_OUTRO_9, tyrannus);
                             _events.ScheduleEvent(EVENT_OUTRO_13, 2000);
                             break;
                         case EVENT_OUTRO_13:
-                            if (Creature* jainaOrSylvanas = ObjectAccessor::GetCreature(*me, _outroNpcGUID))
+                            if (CreaturePtr jainaOrSylvanas = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _outroNpcGUID))
                             {
                                 if (_instanceScript->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE)
                                     DoScriptText(SAY_JAYNA_OUTRO_10, jainaOrSylvanas);
@@ -484,11 +484,11 @@ class boss_krick : public CreatureScript
                             }
                             // End of OUTRO. for now...
                             _events.ScheduleEvent(EVENT_OUTRO_END, 3000);
-                            if (Creature* tyrannus = ObjectAccessor::GetCreature(*me, _tyrannusGUID))
+                            if (CreaturePtr tyrannus = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _tyrannusGUID))
                                 tyrannus->GetMotionMaster()->MovePoint(0, outroPos[7]);
                             break;
                         case EVENT_OUTRO_END:
-                            if (Creature* tyrannus = ObjectAccessor::GetCreature(*me, _tyrannusGUID))
+                            if (CreaturePtr tyrannus = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _tyrannusGUID))
                                 tyrannus->DespawnOrUnsummon();
 
                             me->DisappearAndDie();
@@ -509,7 +509,7 @@ class boss_krick : public CreatureScript
             uint64 _tyrannusGUID;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_krickAI(creature);
         }
@@ -527,12 +527,12 @@ class spell_krick_explosive_barrage : public SpellScriptLoader
             void HandlePeriodicTick(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                     if (caster->GetTypeId() == TYPEID_UNIT)
                     {
                         Map::PlayerList const &players = caster->GetMap()->GetPlayers();
                         for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                            if (Player* player = itr->getSource())
+                            if (PlayerPtr player = itr->getSource())
                                 if (player->IsWithinDist(caster, 60.0f))    // don't know correct range
                                     caster->CastSpell(player, SPELL_EXPLOSIVE_BARRAGE_SUMMON, true);
                     }
@@ -561,14 +561,14 @@ class spell_ick_explosive_barrage : public SpellScriptLoader
 
             void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                     if (caster->GetTypeId() == TYPEID_UNIT)
                         caster->GetMotionMaster()->MoveIdle();
             }
 
             void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                     if (caster->GetTypeId() == TYPEID_UNIT)
                     {
                         caster->GetMotionMaster()->Clear();
@@ -602,12 +602,12 @@ class spell_exploding_orb_hasty_grow : public SpellScriptLoader
             {
                 if (GetStackAmount() == 15)
                 {
-                    Unit* target = GetTarget(); // store target because aura gets removed
+                    UnitPtr target = GetTarget(); // store target because aura gets removed
                     target->CastSpell(target, SPELL_EXPLOSIVE_BARRAGE_DAMAGE, false);
                     target->RemoveAurasDueToSpell(SPELL_HASTY_GROW);
                     target->RemoveAurasDueToSpell(SPELL_AUTO_GROW);
                     target->RemoveAurasDueToSpell(SPELL_EXPLODING_ORB);
-                    if (Creature* creature = target->ToCreature())
+                    if (CreaturePtr creature = target->ToCreature())
                         creature->DespawnOrUnsummon();
                 }
             }
@@ -638,9 +638,9 @@ class spell_krick_pursuit : public SpellScriptLoader
                 if (GetCaster()->GetTypeId() != TYPEID_UNIT)
                     return;
 
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 CreatureAI* ickAI = caster->ToCreature()->AI();
-                if (Unit* target = ickAI->SelectTarget(SELECT_TARGET_RANDOM, 0, 200.0f, true))
+                if (UnitPtr target = ickAI->SelectTarget(SELECT_TARGET_RANDOM, 0, 200.0f, true))
                 {
                     DoScriptText(SAY_ICK_CHASE_1, caster, target);
                     caster->AddAura(GetSpellInfo()->Id, target);
@@ -662,8 +662,8 @@ class spell_krick_pursuit : public SpellScriptLoader
 
             void HandleExtraEffect(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
-                    if (Creature* creCaster = caster->ToCreature())
+                if (UnitPtr caster = GetCaster())
+                    if (CreaturePtr creCaster = caster->ToCreature())
                         CAST_AI(boss_ick::boss_ickAI, creCaster->AI())->_ResetThreat(GetTarget());
             }
 

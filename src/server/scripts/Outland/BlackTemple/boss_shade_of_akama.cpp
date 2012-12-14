@@ -116,14 +116,14 @@ class mob_ashtongue_channeler : public CreatureScript
 public:
     mob_ashtongue_channeler() : CreatureScript("mob_ashtongue_channeler") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_ashtongue_channelerAI (creature);
     }
 
     struct mob_ashtongue_channelerAI : public ScriptedAI
     {
-        mob_ashtongue_channelerAI(Creature* creature) : ScriptedAI(creature)
+        mob_ashtongue_channelerAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             ShadeGUID = 0;
         }
@@ -131,10 +131,10 @@ public:
         uint64 ShadeGUID;
 
         void Reset() {}
-        void JustDied(Unit* /*killer*/);
-        void EnterCombat(Unit* /*who*/) {}
-        void AttackStart(Unit* /*who*/) {}
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void JustDied(UnitPtr /*killer*/);
+        void EnterCombat(UnitPtr /*who*/) {}
+        void AttackStart(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
         void UpdateAI(const uint32 /*diff*/) {}
     };
 
@@ -145,14 +145,14 @@ class mob_ashtongue_sorcerer : public CreatureScript
 public:
     mob_ashtongue_sorcerer() : CreatureScript("mob_ashtongue_sorcerer") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_ashtongue_sorcererAI (creature);
     }
 
     struct mob_ashtongue_sorcererAI : public ScriptedAI
     {
-        mob_ashtongue_sorcererAI(Creature* creature) : ScriptedAI(creature)
+        mob_ashtongue_sorcererAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             ShadeGUID = 0;
         }
@@ -167,10 +167,10 @@ public:
             CheckTimer = 5000;
         }
 
-        void JustDied(Unit* /*killer*/);
-        void EnterCombat(Unit* /*who*/) {}
-        void AttackStart(Unit* /*who*/) {}
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void JustDied(UnitPtr /*killer*/);
+        void EnterCombat(UnitPtr /*who*/) {}
+        void AttackStart(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
         void UpdateAI(const uint32 diff)
         {
             if (StartBanishing)
@@ -178,7 +178,7 @@ public:
 
             if (CheckTimer <= diff)
             {
-                Creature* Shade = Unit::GetCreature((*me), ShadeGUID);
+                CreaturePtr Shade = Unit::GetCreature(TO_WORLDOBJECT(me), ShadeGUID);
                 if (Shade && Shade->isAlive() && me->isAlive())
                 {
                     if (me->IsWithinDist(Shade, 20, false))
@@ -203,14 +203,14 @@ class boss_shade_of_akama : public CreatureScript
 public:
     boss_shade_of_akama() : CreatureScript("boss_shade_of_akama") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_shade_of_akamaAI (creature);
     }
 
     struct boss_shade_of_akamaAI : public ScriptedAI
     {
-        boss_shade_of_akamaAI(Creature* creature) : ScriptedAI(creature), summons(me)
+        boss_shade_of_akamaAI(CreaturePtr creature) : ScriptedAI(creature), summons(me)
         {
             instance = creature->GetInstanceScript();
             AkamaGUID = instance ? instance->GetData64(DATA_AKAMA_SHADE) : 0;
@@ -250,7 +250,7 @@ public:
             Sorcerers.clear();
             summons.DespawnAll();//despawn all adds
 
-            if (Creature* Akama = Unit::GetCreature(*me, AkamaGUID))
+            if (CreaturePtr Akama = Unit::GetCreature(TO_WORLDOBJECT(me), AkamaGUID))
             {
                 Akama->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);//turn gossip on so players can restart the event
                 if (Akama->isDead())
@@ -282,22 +282,22 @@ public:
 
             reseting = false;
         }
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             summons.DespawnAll();
         }
-        void JustSummoned(Creature* summon)
+        void JustSummoned(CreaturePtr summon)
         {
             if (summon->GetEntry() == CREATURE_DEFENDER || summon->GetEntry() == 23523 || summon->GetEntry() == 23318 || summon->GetEntry() == 23524)
                 summons.Summon(summon);
         }
-        void SummonedCreatureDespawn(Creature* summon)
+        void SummonedCreatureDespawn(CreaturePtr summon)
         {
             if (summon->GetEntry() == CREATURE_DEFENDER || summon->GetEntry() == 23523 || summon->GetEntry() == 23318 || summon->GetEntry() == 23524)
                 summons.Despawn(summon);
         }
 
-        void MoveInLineOfSight(Unit* /*who*/)
+        void MoveInLineOfSight(UnitPtr /*who*/)
         {
             if (!GridSearcherSucceeded)
             {
@@ -307,7 +307,7 @@ public:
                 {
                     for (std::list<uint64>::const_iterator itr = Channelers.begin(); itr != Channelers.end(); ++itr)
                     {
-                        Creature* Channeler = (Unit::GetCreature(*me, *itr));
+                        CreaturePtr Channeler = (Unit::GetCreature(TO_WORLDOBJECT(me), *itr));
                         if (Channeler)
                         {
                             if (Channeler->isDead())
@@ -326,7 +326,7 @@ public:
             }
         }
 
-        void AttackStart(Unit* who)
+        void AttackStart(UnitPtr who)
         {
             if (!who || IsBanished)
                 return;
@@ -359,7 +359,7 @@ public:
             // max of 6 sorcerers can be summoned
             if ((rand()%3 == 0) && (DeathCount > 0) && (SorcererCount < 7))
             {
-                Creature* Sorcerer = me->SummonCreature(CREATURE_SORCERER, X, Y, Z_SPAWN, 0, TEMPSUMMON_DEAD_DESPAWN, 0);
+                CreaturePtr Sorcerer = me->SummonCreature(CREATURE_SORCERER, X, Y, Z_SPAWN, 0, TEMPSUMMON_DEAD_DESPAWN, 0);
                 if (Sorcerer)
                 {
                     CAST_AI(mob_ashtongue_sorcerer::mob_ashtongue_sorcererAI, Sorcerer->AI())->ShadeGUID = me->GetGUID();
@@ -375,12 +375,12 @@ public:
             {
                 for (uint8 i = 0; i < 3; ++i)
                 {
-                    Creature* Spawn = me->SummonCreature(spawnEntries[i], X, Y, Z_SPAWN, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000);
+                    CreaturePtr Spawn = me->SummonCreature(spawnEntries[i], X, Y, Z_SPAWN, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000);
                     if (Spawn)
                     {
                         Spawn->SetWalk(false);
                         Spawn->GetMotionMaster()->MovePoint(0, AGGRO_X, AGGRO_Y, AGGRO_Z);
-                        Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                        UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1);
                         Spawn->AI()->AttackStart(target);
                     }
                 }
@@ -389,12 +389,12 @@ public:
 
         void FindChannelers()
         {
-            std::list<Creature*> ChannelerList;
+            std::list<CreaturePtr> ChannelerList;
             me->GetCreatureListWithEntryInGrid(ChannelerList, CREATURE_CHANNELER, 50.0f);
 
             if (!ChannelerList.empty())
             {
-                for (std::list<Creature*>::const_iterator itr = ChannelerList.begin(); itr != ChannelerList.end(); ++itr)
+                for (std::list<CreaturePtr>::const_iterator itr = ChannelerList.begin(); itr != ChannelerList.end(); ++itr)
                 {
                     CAST_AI(mob_ashtongue_channeler::mob_ashtongue_channelerAI, (*itr)->AI())->ShadeGUID = me->GetGUID();
                     Channelers.push_back((*itr)->GetGUID());
@@ -413,7 +413,7 @@ public:
             }
 
             for (std::list<uint64>::const_iterator itr = Channelers.begin(); itr != Channelers.end(); ++itr)
-                if (Creature* Channeler = (Unit::GetCreature(*me, *itr)))
+                if (CreaturePtr Channeler = (Unit::GetCreature(TO_WORLDOBJECT(me), *itr)))
                     Channeler->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
 
@@ -436,14 +436,14 @@ public:
                 if (DefenderTimer <= diff)
                 {
                     uint32 ran = rand()%2;
-                    Creature* Defender = me->SummonCreature(CREATURE_DEFENDER, SpawnLocations[ran].x, SpawnLocations[ran].y, Z_SPAWN, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000);
+                    CreaturePtr Defender = me->SummonCreature(CREATURE_DEFENDER, SpawnLocations[ran].x, SpawnLocations[ran].y, Z_SPAWN, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 25000);
                     if (Defender)
                     {
                         Defender->SetWalk(false);
                         bool move = true;
                         if (AkamaGUID)
                         {
-                            if (Creature* Akama = Unit::GetCreature(*me, AkamaGUID))
+                            if (CreaturePtr Akama = Unit::GetCreature(TO_WORLDOBJECT(me), AkamaGUID))
                             {
                                 float x, y, z;
                                 Akama->GetPosition(x, y, z);
@@ -468,7 +468,7 @@ public:
                 {
                     if (AkamaGUID)
                     {
-                        Creature* Akama = Unit::GetCreature((*me), AkamaGUID);
+                        CreaturePtr Akama = Unit::GetCreature(TO_WORLDOBJECT(me), AkamaGUID);
                         if (Akama && Akama->isAlive())
                         {
                             IsBanished = false;
@@ -493,7 +493,7 @@ public:
                 {
                     if (AkamaGUID)
                     {
-                        Creature* Akama = Unit::GetCreature((*me), AkamaGUID);
+                        CreaturePtr Akama = Unit::GetCreature(TO_WORLDOBJECT(me), AkamaGUID);
                         if (Akama && Akama->isAlive())
                         {
                             //10 % less health every few seconds.
@@ -529,17 +529,17 @@ public:
 
 };
 
-void mob_ashtongue_channeler::mob_ashtongue_channelerAI::JustDied(Unit* /*killer*/)
+void mob_ashtongue_channeler::mob_ashtongue_channelerAI::JustDied(UnitPtr /*killer*/)
 {
-    Creature* Shade = (Unit::GetCreature((*me), ShadeGUID));
+    CreaturePtr Shade = (Unit::GetCreature(TO_WORLDOBJECT(me), ShadeGUID));
     if (Shade && Shade->isAlive())
         CAST_AI(boss_shade_of_akama::boss_shade_of_akamaAI, Shade->AI())->IncrementDeathCount();
     else sLog->outError(LOG_FILTER_TSCR, "SD2 ERROR: Channeler dead but unable to increment DeathCount for Shade of Akama.");
 }
 
-void mob_ashtongue_sorcerer::mob_ashtongue_sorcererAI::JustDied(Unit* /*killer*/)
+void mob_ashtongue_sorcerer::mob_ashtongue_sorcererAI::JustDied(UnitPtr /*killer*/)
 {
-    Creature* Shade = (Unit::GetCreature((*me), ShadeGUID));
+    CreaturePtr Shade = (Unit::GetCreature(TO_WORLDOBJECT(me), ShadeGUID));
     if (Shade && Shade->isAlive())
         CAST_AI(boss_shade_of_akama::boss_shade_of_akamaAI, Shade->AI())->IncrementDeathCount(me->GetGUID());
     else sLog->outError(LOG_FILTER_TSCR, "SD2 ERROR: Sorcerer dead but unable to increment DeathCount for Shade of Akama.");
@@ -550,7 +550,7 @@ class npc_akama_shade : public CreatureScript
 public:
     npc_akama_shade() : CreatureScript("npc_akama_shade") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF + 1)               //Fight time
@@ -562,7 +562,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (player->isAlive())
         {
@@ -573,14 +573,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_akamaAI (creature);
     }
 
     struct npc_akamaAI : public ScriptedAI
     {
-        npc_akamaAI(Creature* creature) : ScriptedAI(creature), summons(me)
+        npc_akamaAI(CreaturePtr creature) : ScriptedAI(creature), summons(me)
         {
             ShadeHasDied = false;
             StartCombat = false;
@@ -637,20 +637,20 @@ public:
             summons.DespawnAll();
         }
 
-        void JustSummoned(Creature* summon)
+        void JustSummoned(CreaturePtr summon)
         {
             if (summon->GetEntry() == CREATURE_BROKEN)
                 summons.Summon(summon);
         }
-        void SummonedCreatureDespawn(Creature* summon)
+        void SummonedCreatureDespawn(CreaturePtr summon)
         {
             if (summon->GetEntry() == CREATURE_BROKEN)
                 summons.Despawn(summon);
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void BeginEvent(Player* player)
+        void BeginEvent(PlayerPtr player)
         {
             if (!instance)
                 return;
@@ -659,7 +659,7 @@ public:
             if (!ShadeGUID)
                 return;
 
-            Creature* Shade = (Unit::GetCreature((*me), ShadeGUID));
+            CreaturePtr Shade = (Unit::GetCreature(TO_WORLDOBJECT(me), ShadeGUID));
             if (Shade)
             {
                 instance->SetData(DATA_SHADEOFAKAMAEVENT, IN_PROGRESS);
@@ -690,7 +690,7 @@ public:
                     break;
 
                 case 1:
-                    if (Creature* Shade = Unit::GetCreature(*me, ShadeGUID))
+                    if (CreaturePtr Shade = Unit::GetCreature(TO_WORLDOBJECT(me), ShadeGUID))
                     {
                         me->SetTarget(ShadeGUID);
                         DoCast(Shade, SPELL_AKAMA_SOUL_RETRIEVE);
@@ -701,7 +701,7 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
             EventBegun = false;
@@ -715,7 +715,7 @@ public:
             BrokenSummonIndex = 0;
             BrokenList.clear();
             HasYelledOnce = false;
-            Creature* Shade = Unit::GetCreature((*me), ShadeGUID);
+            CreaturePtr Shade = Unit::GetCreature(TO_WORLDOBJECT(me), ShadeGUID);
             if (Shade && Shade->isAlive())
                 CAST_AI(boss_shade_of_akama::boss_shade_of_akamaAI, Shade->AI())->HasKilledAkama = true;
             summons.DespawnAll();
@@ -734,7 +734,7 @@ public:
 
             if (ShadeGUID && !StartCombat)
             {
-                Creature* Shade = (Unit::GetCreature((*me), ShadeGUID));
+                CreaturePtr Shade = (Unit::GetCreature(TO_WORLDOBJECT(me), ShadeGUID));
                 if (Shade && Shade->isAlive())
                 {
                     if (CAST_AI(boss_shade_of_akama::boss_shade_of_akamaAI, Shade->AI())->IsBanished)
@@ -767,7 +767,7 @@ public:
                 {
                     if (ShadeGUID)
                     {
-                        Creature* Shade = Unit::GetCreature((*me), ShadeGUID);
+                        CreaturePtr Shade = Unit::GetCreature(TO_WORLDOBJECT(me), ShadeGUID);
                         if (Shade && !Shade->isAlive())
                         {
                             ShadeHasDied = true;
@@ -795,7 +795,7 @@ public:
                         float y = BrokenCoords[BrokenSummonIndex].y + (1*5);
                         float z = BrokenCoords[BrokenSummonIndex].z;
                         float o = BrokenCoords[BrokenSummonIndex].o;
-                        Creature* Broken = me->SummonCreature(CREATURE_BROKEN, x, y, z, o, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 360000);
+                        CreaturePtr Broken = me->SummonCreature(CREATURE_BROKEN, x, y, z, o, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 360000);
                         if (Broken)
                         {
                             float wx = BrokenWP[BrokenSummonIndex].x + (i*5);
@@ -833,7 +833,7 @@ public:
                         {
                             bool Yelled = false;
                             for (std::list<uint64>::const_iterator itr = BrokenList.begin(); itr != BrokenList.end(); ++itr)
-                                if (Creature* unit = Unit::GetCreature(*me, *itr))
+                                if (CreaturePtr unit = Unit::GetCreature(TO_WORLDOBJECT(me), *itr))
                                 {
                                     if (!Yelled)
                                     {
@@ -850,7 +850,7 @@ public:
                         if (!BrokenList.empty())
                         {
                             for (std::list<uint64>::const_iterator itr = BrokenList.begin(); itr != BrokenList.end(); ++itr)
-                                if (Creature* unit = Unit::GetCreature(*me, *itr))
+                                if (CreaturePtr unit = Unit::GetCreature(TO_WORLDOBJECT(me), *itr))
                                     // This is the incorrect spell, but can't seem to find the right one.
                                     unit->CastSpell(unit, 39656, true);
                         }
@@ -861,7 +861,7 @@ public:
                         if (!BrokenList.empty())
                         {
                             for (std::list<uint64>::const_iterator itr = BrokenList.begin(); itr != BrokenList.end(); ++itr)
-                                if (Creature* unit = Unit::GetCreature((*me), *itr))
+                                if (CreaturePtr unit = Unit::GetCreature(TO_WORLDOBJECT(me), *itr))
                                     unit->MonsterYell(SAY_BROKEN_FREE_02, LANG_UNIVERSAL, 0);
                         }
                         SoulRetrieveTimer = 0;
@@ -875,7 +875,7 @@ public:
 
             if (DestructivePoisonTimer <= diff)
             {
-                Creature* Shade = Unit::GetCreature((*me), ShadeGUID);
+                CreaturePtr Shade = Unit::GetCreature(TO_WORLDOBJECT(me), ShadeGUID);
                 if (Shade && Shade->isAlive())
                     DoCast(Shade, SPELL_DESTRUCTIVE_POISON);
                 DestructivePoisonTimer = 15000;

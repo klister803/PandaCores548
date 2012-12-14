@@ -63,7 +63,7 @@ class npc_sergeant_bly : public CreatureScript
 public:
     npc_sergeant_bly() : CreatureScript("npc_sergeant_bly") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -75,7 +75,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (InstanceScript* instance = creature->GetInstanceScript())
         {
@@ -94,14 +94,14 @@ public:
         return false;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_sergeant_blyAI (creature);
     }
 
     struct npc_sergeant_blyAI : public ScriptedAI
     {
-        npc_sergeant_blyAI(Creature* creature) : ScriptedAI(creature)
+        npc_sergeant_blyAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             postGossipStep = 0;
@@ -133,7 +133,7 @@ public:
                     {
                         case 1:
                             //weegli doesn't fight - he goes & blows up the door
-                            if (Creature* pWeegli = instance->instance->GetCreature(instance->GetData64(ENTRY_WEEGLI)))
+                            if (CreaturePtr pWeegli = instance->instance->GetCreature(instance->GetData64(ENTRY_WEEGLI)))
                                 pWeegli->AI()->DoAction(0);
                             Talk(SAY_1);
                             Text_Timer = 5000;
@@ -144,7 +144,7 @@ public:
                             break;
                         case 3:
                             me->setFaction(FACTION_HOSTILE);
-                            if (Player* target = Player::GetPlayer(*me, PlayerGUID))
+                            if (PlayerPtr target = Player::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID))
                                 AttackStart(target);
 
                             if (instance)
@@ -189,7 +189,7 @@ public:
 
         void switchFactionIfAlive(InstanceScript* instance, uint32 entry)
         {
-           if (Creature* crew = instance->instance->GetCreature(instance->GetData64(entry)))
+           if (CreaturePtr crew = instance->instance->GetCreature(instance->GetData64(entry)))
                if (crew->isAlive())
                    crew->setFaction(FACTION_HOSTILE);
         }
@@ -206,7 +206,7 @@ class go_troll_cage : public GameObjectScript
 public:
     go_troll_cage() : GameObjectScript("go_troll_cage") { }
 
-    bool OnGossipHello(Player* /*player*/, GameObject* go)
+    bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
     {
         if (InstanceScript* instance = go->GetInstanceScript())
         {
@@ -224,7 +224,7 @@ public:
 private:
     void initBlyCrewMember(InstanceScript* instance, uint32 entry, float x, float y, float z)
     {
-        if (Creature* crew = instance->instance->GetCreature(instance->GetData64(entry)))
+        if (CreaturePtr crew = instance->instance->GetCreature(instance->GetData64(entry)))
         {
             crew->SetReactState(REACT_AGGRESSIVE);
             crew->SetWalk(true);
@@ -260,7 +260,7 @@ class npc_weegli_blastfuse : public CreatureScript
 public:
     npc_weegli_blastfuse() : CreatureScript("npc_weegli_blastfuse") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -272,7 +272,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (InstanceScript* instance = creature->GetInstanceScript())
         {
@@ -293,14 +293,14 @@ public:
         return false;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_weegli_blastfuseAI (creature);
     }
 
     struct npc_weegli_blastfuseAI : public ScriptedAI
     {
-        npc_weegli_blastfuseAI(Creature* creature) : ScriptedAI(creature)
+        npc_weegli_blastfuseAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             destroyingDoor=false;
@@ -319,12 +319,12 @@ public:
                 instance->SetData(0, NOT_STARTED);*/
         }
 
-        void AttackStart(Unit* victim)
+        void AttackStart(UnitPtr victim)
         {
             AttackStartCaster(victim, 10);//keep back & toss bombs/shoot
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             /*if (instance)
                 instance->SetData(0, DONE);*/
@@ -412,7 +412,7 @@ class go_shallow_grave : public GameObjectScript
 public:
     go_shallow_grave() : GameObjectScript("go_shallow_grave") { }
 
-    bool OnGossipHello(Player* /*player*/, GameObject* go)
+    bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
     {
         // randomly summon a zombie or dead hero the first time a grave is used
         if (go->GetUseCount() == 0)
@@ -444,9 +444,9 @@ class at_zumrah : public AreaTriggerScript
 public:
     at_zumrah() : AreaTriggerScript("at_zumrah") { }
 
-    bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/)
+    bool OnTrigger(PlayerPtr player, const AreaTriggerEntry* /*at*/)
     {
-        Creature* pZumrah = player->FindNearestCreature(ZUMRAH_ID, 30.0f);
+        CreaturePtr pZumrah = player->FindNearestCreature(ZUMRAH_ID, 30.0f);
 
         if (!pZumrah)
             return false;

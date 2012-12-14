@@ -73,7 +73,7 @@ public:
 
     static bool HandleLearnCommand(ChatHandler* handler, char const* args)
     {
-        Player* targetPlayer = handler->getSelectedPlayer();
+        PlayerPtr targetPlayer = handler->getSelectedPlayer();
 
         if (!targetPlayer)
         {
@@ -193,7 +193,7 @@ public:
     static bool HandleLearnAllMyTalentsCommand(ChatHandler* handler, char const* /*args*/)
     {
         return true;
-        /*Player* player = handler->GetSession()->GetPlayer();
+        /*PlayerPtr player = handler->GetSession()->GetPlayer();
         uint32 classMask = player->getClassMask();
 
         for (uint32 i = 0; i < sTalentStore.GetNumRows(); ++i)
@@ -241,9 +241,9 @@ public:
     static bool HandleLearnAllMyPetTalentsCommand(ChatHandler* handler, char const* /*args*/)
     {
         return true;
-        /*Player* player = handler->GetSession()->GetPlayer();
+        /*PlayerPtr player = handler->GetSession()->GetPlayer();
 
-        Pet* pet = player->GetPet();
+        PetPtr pet = player->GetPet();
         if (!pet)
         {
             handler->SendSysMessage(LANG_NO_PET_FOUND);
@@ -329,7 +329,7 @@ public:
 
     static bool HandleLearnAllDefaultCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         if (!handler->extractPlayerTarget((char*)args, &target))
             return false;
 
@@ -364,7 +364,7 @@ public:
         //  Learns all recipes of specified profession and sets skill to max
         //  Example: .learn all_recipes enchanting
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -417,7 +417,7 @@ public:
         return true;
     }
 
-    static void HandleLearnSkillRecipesHelper(Player* player, uint32 skillId)
+    static void HandleLearnSkillRecipesHelper(PlayerPtr player, uint32 skillId)
     {
         uint32 classmask = player->getClassMask();
 
@@ -464,7 +464,7 @@ public:
         char const* allStr = strtok(NULL, " ");
         bool allRanks = allStr ? (strncmp(allStr, "all", strlen(allStr)) == 0) : false;
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);

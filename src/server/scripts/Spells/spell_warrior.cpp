@@ -53,8 +53,8 @@ class spell_warr_bloodthirst : public SpellScriptLoader
             }
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                    if (UnitPtr target = GetHitUnit())
                         if (GetHitDamage())
                             _player->CastSpell(_player, WARRIOR_SPELL_BLOODTHIRST_HEAL, true);
             }
@@ -89,9 +89,9 @@ class spell_warr_victory_rush : public SpellScriptLoader
             }
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         _player->CastSpell(_player, WARRIOR_SPELL_VICTORY_RUSH_HEAL, true);
                         if (_player->HasAura(WARRIOR_SPELL_VICTORIOUS_STATE))
@@ -130,7 +130,7 @@ class spell_warr_last_stand : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
                     int32 healthModSpellBasePoints0 = int32(caster->CountPctFromMaxHealth(30));
                     caster->CastCustomSpell(caster, WARRIOR_SPELL_LAST_STAND_TRIGGERED, &healthModSpellBasePoints0, NULL, NULL, true, NULL);
@@ -159,7 +159,7 @@ class spell_warr_improved_spell_reflection : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warr_improved_spell_reflection_SpellScript);
 
-            void FilterTargets(std::list<WorldObject*>& unitList)
+            void FilterTargets(std::list<WorldObjectPtr>& unitList)
             {
                 if (GetCaster())
                     unitList.remove(GetCaster());
@@ -203,13 +203,13 @@ public:
 
         void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (Unit* target = GetTarget())
+            if (UnitPtr target = GetTarget())
                 target->CastSpell(target, SPELL_DAMAGE_REDUCTION_AURA, true);
         }
 
         void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            if (Unit* target = GetTarget())
+            if (UnitPtr target = GetTarget())
             {
                 if (target->HasAura(SPELL_DAMAGE_REDUCTION_AURA) && !(target->HasAura(SPELL_BLESSING_OF_SANCTUARY) ||
                     target->HasAura(SPELL_GREATER_BLESSING_OF_SANCTUARY) ||
@@ -259,8 +259,8 @@ class spell_warr_deep_wounds : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
                 int32 damage = GetEffectValue();
-                Unit* caster = GetCaster();
-                if (Unit* target = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr target = GetHitUnit())
                 {
                     // apply percent damage mods
                     damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, SPELL_DIRECT_DAMAGE);
@@ -319,9 +319,9 @@ class spell_warr_charge : public SpellScriptLoader
             }
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         if (_player->HasAura(SPELL_WARBRINGER))
                             _player->CastSpell(target, SPELL_CHARGE_WARBRINGER_STUN, true);
@@ -369,8 +369,8 @@ class spell_warr_execute : public SpellScriptLoader
             }
             void HandleDummy(SpellEffIndex effIndex)
             {
-                Unit* caster = GetCaster();
-                if (Unit* target = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr target = GetHitUnit())
                 {
                     SpellInfo const* spellInfo = GetSpellInfo();
                     int32 rageUsed = std::min<int32>(300 - spellInfo->CalcPowerCost(caster, SpellSchoolMask(spellInfo->SchoolMask), spellInfo->spellPower), caster->GetPower(POWER_RAGE));
@@ -460,7 +460,7 @@ public:
             if (!spellId)
                 return;
 
-            if (Player* target = GetHitPlayer())
+            if (PlayerPtr target = GetHitPlayer())
                 if (target->HasUnitState(UNIT_STATE_CASTING))
                     target->CastSpell(target, spellId, true);
         }

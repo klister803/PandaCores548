@@ -155,9 +155,9 @@ enum
 
 struct ConditionSourceInfo
 {
-    WorldObject* mConditionTargets[MAX_CONDITION_TARGETS]; // an array of targets available for conditions
+    WorldObjectPtr mConditionTargets[MAX_CONDITION_TARGETS]; // an array of targets available for conditions
     Condition* mLastFailedCondition;
-    ConditionSourceInfo(WorldObject* target0, WorldObject* target1 = NULL, WorldObject* target2 = NULL)
+    ConditionSourceInfo(WorldObjectPtr target0, WorldObjectPtr target1 = NULL, WorldObjectPtr target2 = NULL)
     {
         mConditionTargets[0] = target0;
         mConditionTargets[1] = target1;
@@ -228,8 +228,8 @@ class ConditionMgr
         ConditionList GetConditionReferences(uint32 refId);
 
         uint32 GetSearcherTypeMaskForConditionList(ConditionList const& conditions);
-        bool IsObjectMeetToConditions(WorldObject* object, ConditionList const& conditions);
-        bool IsObjectMeetToConditions(WorldObject* object1, WorldObject* object2, ConditionList const& conditions);
+        bool IsObjectMeetToConditions(WorldObjectPtr object, ConditionList const& conditions);
+        bool IsObjectMeetToConditions(WorldObjectPtr object1, WorldObjectPtr object2, ConditionList const& conditions);
         bool IsObjectMeetToConditions(ConditionSourceInfo& sourceInfo, ConditionList const& conditions);
         bool CanHaveSourceGroupSet(ConditionSourceType sourceType) const;
         bool CanHaveSourceIdSet(ConditionSourceType sourceType) const;

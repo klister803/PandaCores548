@@ -73,7 +73,7 @@ public:
     static bool HandleGameObjectActivateCommand(ChatHandler* handler, char const* args)
     {
         uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (*args)
         {
@@ -94,7 +94,7 @@ public:
                 return false;
         }
 
-        GameObject* object = NULL;
+        GameObjectPtr object = NULL;
 
         // by DB guid
         if (GameObjectData const* goData = sObjectMgr->GetGOData(guidLow))
@@ -119,7 +119,7 @@ public:
     static bool HandleGameObjectActivateMapCommand(ChatHandler* handler, const char* args)
     {
         uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (*args)
         {
@@ -140,7 +140,7 @@ public:
                 return false;
         }
 
-        GameObject* obj = NULL;
+        GameObjectPtr obj = NULL;
 
         // by DB guid
         if (GameObjectData const* go_data = sObjectMgr->GetGOData(guidLow))
@@ -200,21 +200,18 @@ public:
             return false;
         }
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
         float x = float(player->GetPositionX());
         float y = float(player->GetPositionY());
         float z = float(player->GetPositionZ());
         float o = float(player->GetOrientation());
-        Map* map = player->GetMap();
+        MapPtr map = player->GetMap();
 
-        GameObject* object = new GameObject;
+        GameObjectPtr object (new GameObject);
         uint32 guidLow = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 
         if (!object->Create(guidLow, objectInfo->entry, map, player->GetPhaseMaskForSpawn(), x, y, z, o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
-        {
-            delete object;
             return false;
-        }
 
         if (spawntimeSecs)
         {
@@ -227,10 +224,7 @@ public:
 
         // this will generate a new guid if the object is in an instance
         if (!object->LoadGameObjectFromDB(guidLow, map))
-        {
-            delete object;
             return false;
-        }
 
         // TODO: is it really necessary to add both the real and DB table guid here ?
         sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
@@ -249,7 +243,7 @@ public:
         if (!id)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         char* spawntime = strtok(NULL, " ");
         uint32 spawntm = 300;
@@ -274,7 +268,7 @@ public:
 
     static bool HandleGameObjectTargetCommand(ChatHandler* handler, char const* args)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
         QueryResult result;
         GameEventMgr::ActiveEvents const& activeEventsList = sGameEventMgr->GetActiveEventList();
 
@@ -371,7 +365,7 @@ public:
             return false;
         }
 
-        GameObject* target = handler->GetSession()->GetPlayer()->GetMap()->GetGameObject(MAKE_NEW_GUID(guidLow, id, HIGHGUID_GAMEOBJECT));
+        GameObjectPtr target = handler->GetSession()->GetPlayer()->GetMap()->GetGameObject(MAKE_NEW_GUID(guidLow, id, HIGHGUID_GAMEOBJECT));
 
         handler->PSendSysMessage(LANG_GAMEOBJECT_DETAIL, guidLow, objectInfo->name.c_str(), guidLow, id, x, y, z, mapId, o, phase);
         player->SetLastTargetedGO(guidLow);
@@ -394,7 +388,7 @@ public:
     static bool HandleGameObjectDeleteCommand(ChatHandler* handler, char const* args)
     {
         uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (*args)
         {
@@ -415,7 +409,7 @@ public:
                 return false;
         }
 
-        GameObject* object = NULL;
+        GameObjectPtr object = NULL;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -431,7 +425,7 @@ public:
         uint64 ownerGuid = object->GetOwnerGUID();
         if (ownerGuid)
         {
-            Unit* owner = ObjectAccessor::GetUnit(*handler->GetSession()->GetPlayer(), ownerGuid);
+            UnitPtr owner = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(handler->GetSession()->GetPlayer()), ownerGuid);
             if (!owner || !IS_PLAYER_GUID(ownerGuid))
             {
                 handler->PSendSysMessage(LANG_COMMAND_DELOBJREFERCREATURE, GUID_LOPART(ownerGuid), object->GetGUIDLow());
@@ -455,7 +449,7 @@ public:
     static bool HandleGameObjectTurnCommand(ChatHandler* handler, char const* args)
     {
         uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (*args)
         {
@@ -476,7 +470,7 @@ public:
                 return false;
         }
 
-        GameObject* object = NULL;
+        GameObjectPtr object = NULL;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -496,7 +490,7 @@ public:
             o = (float)atof(orientation);
         else
         {
-            Player* player = handler->GetSession()->GetPlayer();
+            PlayerPtr player = handler->GetSession()->GetPlayer();
             o = player->GetOrientation();
         }
 
@@ -517,7 +511,7 @@ public:
     static bool HandleGameObjectMoveCommand(ChatHandler* handler, char const* args)
     {
         uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (*args)
         {
@@ -538,7 +532,7 @@ public:
                 return false;
         }
 
-        GameObject* object = NULL;
+        GameObjectPtr object = NULL;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -557,7 +551,7 @@ public:
 
         if (!toX)
         {
-            Player* player = handler->GetSession()->GetPlayer();
+            PlayerPtr player = handler->GetSession()->GetPlayer();
             object->Relocate(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), object->GetOrientation());
             object->DestroyForNearbyPlayers();
             object->UpdateObjectVisibility();
@@ -595,7 +589,7 @@ public:
     static bool HandleGameObjectSetPhaseCommand(ChatHandler* handler, char const* args)
     {
         uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (*args)
         {
@@ -616,7 +610,7 @@ public:
                 return false;
         }
 
-        GameObject* object = NULL;
+        GameObjectPtr object = NULL;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -648,7 +642,7 @@ public:
         float distance = (!*args) ? 10.0f : (float)(atof(args));
         uint32 count = 0;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_GAMEOBJECT_NEAREST);
         stmt->setFloat(0, player->GetPositionX());
@@ -699,7 +693,7 @@ public:
 
         if (!*args)
         {
-            if (WorldObject* object = handler->getSelectedObject())
+            if (WorldObjectPtr object = handler->getSelectedObject())
                 entry = object->GetEntry();
             else
                 entry = atoi((char*)args);
@@ -730,7 +724,7 @@ public:
     static bool HandleGameObjectSetStateCommand(ChatHandler* handler, char const* args)
     {
         uint32 guidLow = 0;
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (*args)
         {
@@ -751,7 +745,7 @@ public:
                 return false;
         }
 
-        GameObject* object = NULL;
+        GameObjectPtr object = NULL;
 
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
             object = handler->GetObjectGlobalyWithGuidOrNearWithDbGuid(guidLow, gameObjectData->id);

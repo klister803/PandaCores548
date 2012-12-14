@@ -35,14 +35,14 @@ class MapManager
     friend class ACE_Singleton<MapManager, ACE_Thread_Mutex>;
 
     public:
-        Map* CreateBaseMap(uint32 mapId);
-        Map* FindBaseNonInstanceMap(uint32 mapId) const;
-        Map* CreateMap(uint32 mapId, Player* player);
-        Map* FindMap(uint32 mapId, uint32 instanceId) const;
+        MapPtr CreateBaseMap(uint32 mapId);
+        MapPtr FindBaseNonInstanceMap(uint32 mapId) const;
+        MapPtr CreateMap(uint32 mapId, PlayerPtr player);
+        MapPtr FindMap(uint32 mapId, uint32 instanceId) const;
 
         uint16 GetAreaFlag(uint32 mapid, float x, float y, float z) const
         {
-            Map const* m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
+            constMapPtr m = const_cast<MapManager*>(this)->CreateBaseMap(mapid);
             return m->GetAreaFlag(x, y, z);
         }
         uint32 GetAreaId(uint32 mapid, float x, float y, float z) const
@@ -78,7 +78,7 @@ class MapManager
             i_timer.Reset();
         }
 
-        //void LoadGrid(int mapid, int instId, float x, float y, const WorldObject* obj, bool no_unload = false);
+        //void LoadGrid(int mapid, int instId, float x, float y, constWorldObjectPtr obj, bool no_unload = false);
         void UnloadAll();
 
         static bool ExistMapAndVMap(uint32 mapid, float x, float y);
@@ -109,13 +109,13 @@ class MapManager
         void LoadTransports();
         void LoadTransportNPCs();
 
-        typedef std::set<Transport*> TransportSet;
+        typedef std::set<TransportPtr> TransportSet;
         TransportSet m_Transports;
 
         typedef std::map<uint32, TransportSet> TransportMap;
         TransportMap m_TransportsByMap;
 
-        bool CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck = false);
+        bool CanPlayerEnter(uint32 mapid, PlayerPtr player, bool loginCheck = false);
         void InitializeVisibilityDistanceInfo();
 
         /* statistics */
@@ -134,7 +134,7 @@ class MapManager
         MapUpdater * GetMapUpdater() { return &m_updater; }
 
     private:
-        typedef UNORDERED_MAP<uint32, Map*> MapMapType;
+        typedef UNORDERED_MAP<uint32, MapPtr> MapMapType;
         typedef std::vector<bool> InstanceIds;
 
         // debugging code, should be deleted some day
@@ -145,7 +145,7 @@ class MapManager
         MapManager();
         ~MapManager();
 
-        Map* FindBaseMap(uint32 mapId) const
+        MapPtr FindBaseMap(uint32 mapId) const
         {
             MapMapType::const_iterator iter = i_maps.find(mapId);
             return (iter == i_maps.end() ? NULL : iter->second);

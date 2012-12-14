@@ -89,7 +89,7 @@ void BattlegroundKT::StartingEventOpenDoors()
     StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, BG_KT_EVENT_START_BATTLE);
 }
 
-void BattlegroundKT::AddPlayer(Player *plr)
+void BattlegroundKT::AddPlayer(PlayerPtr plr)
 {
     Battleground::AddPlayer(plr);
     //create score and add it to map, default values are set in constructor
@@ -98,7 +98,7 @@ void BattlegroundKT::AddPlayer(Player *plr)
     PlayerScores[plr->GetObjectGuid()] = sc;
 }
 
-void BattlegroundKT::EventPlayerDroppedOrb(Player *Source)
+void BattlegroundKT::EventPlayerDroppedOrb(PlayerPtr Source)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
     {
@@ -138,7 +138,7 @@ void BattlegroundKT::EventPlayerDroppedOrb(Player *Source)
 
 }
 
-void BattlegroundKT::EventPlayerClickedOnOrb(Player *Source, GameObject* target_obj)
+void BattlegroundKT::EventPlayerClickedOnOrb(PlayerPtr Source, GameObjectPtr target_obj)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -186,7 +186,7 @@ void BattlegroundKT::EventPlayerClickedOnOrb(Player *Source, GameObject* target_
     Source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 }
 
-void BattlegroundKT::RemovePlayer(Player *plr, ObjectGuid guid)
+void BattlegroundKT::RemovePlayer(PlayerPtr plr, ObjectGuid guid)
 {
     // sometimes flag aura not removed :(
     if (IsAllianceOrbPickedup() && m_OrbKeepers[BG_TEAM_ALLIANCE] == guid)
@@ -219,7 +219,7 @@ void BattlegroundKT::UpdateTeamScore(Team team)
         UpdateWorldState(BG_KT_ORB_POINTS_H, GetTeamScore(team));
 }
 
-void BattlegroundKT::HandleAreaTrigger(Player *Source, uint32 Trigger)
+void BattlegroundKT::HandleAreaTrigger(PlayerPtr Source, uint32 Trigger)
 {
     // this is wrong way to implement these things. On official it done by gameobject spell cast.
     if (GetStatus() != STATUS_IN_PROGRESS)
@@ -316,7 +316,7 @@ void BattlegroundKT::EndBattleGround(Team winner)
     Battleground::EndBattleground(winner);
 }
 
-void BattlegroundKT::HandleKillPlayer(Player *player, Player *killer)
+void BattlegroundKT::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -327,7 +327,7 @@ void BattlegroundKT::HandleKillPlayer(Player *player, Player *killer)
 }
 
 
-void BattlegroundKT::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
+void BattlegroundKT::UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value)
 {
 
     BattlegroundScoreMap::iterator itr = PlayerScores.find(Source->GetObjectGuid());
@@ -345,7 +345,7 @@ void BattlegroundKT::UpdatePlayerScore(Player *Source, uint32 type, uint32 value
     }
 }
 
-WorldSafeLocsEntry const* BattlegroundKT::GetClosestGraveYard(Player* player)
+WorldSafeLocsEntry const* BattlegroundKT::GetClosestGraveYard(PlayerPtr player)
 {
     //if status in progress, it returns main graveyards with spiritguides
     //else it will return the graveyard in the flagroom - this is especially good

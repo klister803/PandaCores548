@@ -165,8 +165,8 @@ struct CalendarAction
         void SetAction(CalendarActionData data) { _action = data; }
         CalendarActionData GetAction() const { return _action; }
 
-        void SetPlayer(Player* player) { ASSERT(player); _player = player; }
-        Player* GetPlayer() const { return _player; }
+        void SetPlayer(PlayerPtr player) { ASSERT(player); _player = player; }
+        PlayerPtr GetPlayer() const { return _player; }
 
         void SetInviteId(uint64 id) { _inviteId = id; }
         uint64 GetInviteId() const { return _inviteId; }
@@ -181,7 +181,7 @@ struct CalendarAction
 
     private:
         CalendarActionData _action;
-        Player* _player;
+        PlayerPtr _player;
         uint64 _inviteId;
         uint32 _data;
 };

@@ -42,14 +42,14 @@ class boss_amnennar_the_coldbringer : public CreatureScript
 public:
     boss_amnennar_the_coldbringer() : CreatureScript("boss_amnennar_the_coldbringer") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_amnennar_the_coldbringerAI (creature);
     }
 
     struct boss_amnennar_the_coldbringerAI : public ScriptedAI
     {
-        boss_amnennar_the_coldbringerAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_amnennar_the_coldbringerAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 AmnenarsWrath_Timer;
         uint32 FrostBolt_Timer;
@@ -68,12 +68,12 @@ public:
             Hp = false;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(SAY_KILL, me);
         }

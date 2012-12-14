@@ -96,7 +96,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void InitTop();
     public:
 
-        explicit MotionMaster(Unit* unit) : _expList(NULL), _top(-1), _owner(unit), _cleanFlag(MMCF_NONE)
+        explicit MotionMaster(UnitPtr unit) : _expList(NULL), _top(-1), _owner(unit), _cleanFlag(MMCF_NONE)
         {
             for (uint8 i = 0; i < MAX_MOTION_SLOT; ++i)
             {
@@ -148,10 +148,10 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MoveIdle();
         void MoveTargetedHome();
         void MoveRandom(float spawndist = 0.0f);
-        void MoveFollow(Unit* target, float dist, float angle, MovementSlot slot = MOTION_SLOT_ACTIVE);
-        void MoveChase(Unit* target, float dist = 0.0f, float angle = 0.0f);
+        void MoveFollow(UnitPtr target, float dist, float angle, MovementSlot slot = MOTION_SLOT_ACTIVE);
+        void MoveChase(UnitPtr target, float dist = 0.0f, float angle = 0.0f);
         void MoveConfused();
-        void MoveFleeing(Unit* enemy, uint32 time = 0);
+        void MoveFleeing(UnitPtr enemy, uint32 time = 0);
         void MovePoint(uint32 id, const Position &pos)
             { MovePoint(id, pos.m_positionX, pos.m_positionY, pos.m_positionZ); }
         void MovePoint(uint32 id, float x, float y, float z);
@@ -192,7 +192,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         ExpireList* _expList;
         _Ty Impl[MAX_MOTION_SLOT];
         int _top;
-        Unit* _owner;
+        UnitPtr _owner;
         bool _needInit[MAX_MOTION_SLOT];
         uint8 _cleanFlag;
 };

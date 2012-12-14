@@ -12,7 +12,7 @@ class instance_stormstout_brewery : public InstanceMapScript
 public:
     instance_stormstout_brewery() : InstanceMapScript("instance_stormstout_brewery", 961) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_stormstout_brewery_InstanceMapScript(map);
     }
@@ -23,7 +23,7 @@ public:
         uint64 hoptallusGuid;
         uint64 yanzhuGuid;
 
-        instance_stormstout_brewery_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_stormstout_brewery_InstanceMapScript(MapPtr map) : InstanceScript(map)
         {}
 
         void Initialize()
@@ -33,7 +33,7 @@ public:
             yanzhuGuid      = 0;
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -49,7 +49,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {

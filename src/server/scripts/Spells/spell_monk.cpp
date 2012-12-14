@@ -77,9 +77,9 @@ class spell_monk_spear_hand_strike : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         if (target->isInFront(_player))
                         {
@@ -121,17 +121,17 @@ class spell_monk_tigereye_brew : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
-                        AuraApplication* aura = _player->GetAuraApplication(SPELL_MONK_TIGEREYE_BREW_STACKS, _player->GetGUID());
+                        AuraApplicationPtr aura = _player->GetAuraApplication(SPELL_MONK_TIGEREYE_BREW_STACKS, _player->GetGUID());
 
                         if (aura)
                         {
                             int32 stackAmount = aura->GetBase()->GetStackAmount() * 2;
 
-                            AuraApplication* tigereyeBrew = _player->GetAuraApplication(SPELL_MONK_TIGEREYE_BREW, _player->GetGUID());
+                            AuraApplicationPtr tigereyeBrew = _player->GetAuraApplication(SPELL_MONK_TIGEREYE_BREW, _player->GetGUID());
                             if (tigereyeBrew)
                                 tigereyeBrew->GetBase()->GetEffect(0)->ChangeAmount(stackAmount);
 
@@ -172,8 +172,8 @@ class spell_monk_tigers_lust : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                    if (UnitPtr target = GetHitUnit())
                         target->RemoveMovementImpairingAuras();
             }
 
@@ -208,9 +208,9 @@ class spell_monk_flying_serpent_kick : public SpellScriptLoader
 
             void HandleOnCast()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Player* _player = caster->ToPlayer())
+                    if (PlayerPtr _player = TO_PLAYER(caster))
                     {
                         if (_player->HasAura(SPELL_MONK_FLYING_SERPENT_KICK))
                             _player->RemoveAura(SPELL_MONK_FLYING_SERPENT_KICK);
@@ -244,11 +244,11 @@ class spell_monk_chi_torpedo : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Player* _player = caster->ToPlayer())
+                    if (PlayerPtr _player = TO_PLAYER(caster))
                     {
-                        std::list<Unit*> tempUnitMap;
+                        std::list<UnitPtr> tempUnitMap;
                         _player->GetAttackableUnitListInRange(_player, tempUnitMap, 20.0f);
 
                         for (auto itr : tempUnitMap)
@@ -287,11 +287,11 @@ class spell_monk_purifying_brew : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Player* _player = caster->ToPlayer())
+                    if (PlayerPtr _player = TO_PLAYER(caster))
                     {
-                        AuraApplication* staggerAmount = _player->GetAuraApplication(SPELL_MONK_LIGHT_STAGGER);
+                        AuraApplicationPtr staggerAmount = _player->GetAuraApplication(SPELL_MONK_LIGHT_STAGGER);
 
                         if (!staggerAmount)
                             staggerAmount = _player->GetAuraApplication(SPELL_MONK_MODERATE_STAGGER);
@@ -328,11 +328,11 @@ class spell_monk_clash : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Player* _player = caster->ToPlayer())
+                    if (PlayerPtr _player = TO_PLAYER(caster))
                     {
-                        if (Unit* target = GetHitUnit())
+                        if (UnitPtr target = GetHitUnit())
                         {
                             int32 basePoint = 2;
                             _player->CastCustomSpell(target, SPELL_MONK_CLASH_CHARGE, &basePoint, NULL, NULL, true);
@@ -366,11 +366,11 @@ class spell_monk_keg_smash : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Player* _player = caster->ToPlayer())
+                    if (PlayerPtr _player = TO_PLAYER(caster))
                     {
-                        if (Unit* target = GetHitUnit())
+                        if (UnitPtr target = GetHitUnit())
                         {
                             _player->CastSpell(target, SPELL_MONK_KEG_SMASH_VISUAL, true);
                             _player->CastSpell(target, SPELL_MONK_WEAKENED_BLOWS, true);
@@ -409,16 +409,16 @@ class spell_monk_elusive_brew : public SpellScriptLoader
             {
                 int32 stackAmount = 0;
 
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Player* _player = caster->ToPlayer())
+                    if (PlayerPtr _player = TO_PLAYER(caster))
                     {
-                        if (AuraApplication* brewStacks = _player->GetAuraApplication(SPELL_MONK_ELUSIVE_BREW_STACKS))
+                        if (AuraApplicationPtr brewStacks = _player->GetAuraApplication(SPELL_MONK_ELUSIVE_BREW_STACKS))
                             stackAmount = brewStacks->GetBase()->GetStackAmount();
 
                         _player->AddAura(SPELL_MONK_ELUSIVE_BREW, _player);
 
-                        if (AuraApplication* aura = _player->GetAuraApplication(SPELL_MONK_ELUSIVE_BREW))
+                        if (AuraApplicationPtr aura = _player->GetAuraApplication(SPELL_MONK_ELUSIVE_BREW))
                         {
                             AuraPtr elusiveBrew = aura->GetBase();
                             int32 maxDuration = elusiveBrew->GetMaxDuration();
@@ -458,11 +458,11 @@ class spell_monk_breath_of_fire : public SpellScriptLoader
 
             void HandleAfterHit()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Player* _player = caster->ToPlayer())
+                    if (PlayerPtr _player = TO_PLAYER(caster))
                     {
-                        if (Unit* target = GetHitUnit())
+                        if (UnitPtr target = GetHitUnit())
                         {
                             // if Dizzying Haze is on the target, they will burn for an additionnal damage over 8s
                             if (target->HasAura(SPELL_MONK_DIZZYING_HAZE))
@@ -502,15 +502,15 @@ class spell_monk_soothing_mist : public SpellScriptLoader
 
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
-                    if (Unit* target = GetTarget())
+                if (UnitPtr caster = GetCaster())
+                    if (UnitPtr target = GetTarget())
                         target->CastSpell(target, SPELL_MONK_SOOTHING_MIST_VISUAL, true);
             }
 
             void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
             {
-                if (Unit* caster = GetCaster())
-                    if (Unit* target = GetTarget())
+                if (UnitPtr caster = GetCaster())
+                    if (UnitPtr target = GetTarget())
                         // 25% to give 1 chi per tick
                         if (roll_chance_i(25))
                             caster->CastSpell(caster, SPELL_MONK_SOOTHING_MIST_ENERGIZE, true);
@@ -518,8 +518,8 @@ class spell_monk_soothing_mist : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
-                    if (Unit* target = GetTarget())
+                if (UnitPtr caster = GetCaster())
+                    if (UnitPtr target = GetTarget())
                         if (target->HasAura(SPELL_MONK_SOOTHING_MIST_VISUAL))
                             target->RemoveAura(SPELL_MONK_SOOTHING_MIST_VISUAL);
             }
@@ -555,7 +555,7 @@ class spell_monk_disable : public SpellScriptLoader
                 snaredOnHit = false;
 
                 if (GetCaster())
-                    if (Unit* target = GetCaster()->getVictim())
+                    if (UnitPtr target = GetCaster()->getVictim())
                         if (target->HasAuraType(SPELL_AURA_MOD_DECREASE_SPEED))
                             snaredOnHit = true;
 
@@ -564,9 +564,9 @@ class spell_monk_disable : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
-                    if (Player* _player = caster->ToPlayer())
-                        if (Unit* target = GetHitUnit())
+                if (UnitPtr caster = GetCaster())
+                    if (PlayerPtr _player = TO_PLAYER(caster))
+                        if (UnitPtr target = GetHitUnit())
                             if (snaredOnHit)
                                 _player->CastSpell(target, SPELL_MONK_DISABLE_ROOT, true);
             }
@@ -603,9 +603,9 @@ class spell_monk_zen_pilgrimage : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Player* _player = caster->ToPlayer())
+                    if (PlayerPtr _player = TO_PLAYER(caster))
                     {
                         if (GetSpellInfo()->Id == SPELL_MONK_ZEN_PILGRIMAGE)
                         {
@@ -645,13 +645,13 @@ class spell_monk_blackout_kick : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         // Second effect by spec : Instant heal or DoT
-                        if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_WINDWALKER
-                            && caster->ToPlayer()->HasAura(128595))
+                        if (caster->GetTypeId() == TYPEID_PLAYER && TO_PLAYER(caster)->GetSpecializationId(TO_PLAYER(caster)->GetActiveSpec()) == SPEC_MONK_WINDWALKER
+                            && TO_PLAYER(caster)->HasAura(128595))
                         {
                             // If behind : 20% damage on DoT
                             if (target->isInBack(caster))
@@ -668,10 +668,10 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                         }
                         // +25% / +50% of the auto-attacks on heal nearby targets
                         // TODO : Buff the Jade Serpent Statue too
-                        else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_MISTWEAVER)
+                        else if (caster->GetTypeId() == TYPEID_PLAYER && TO_PLAYER(caster)->GetSpecializationId(TO_PLAYER(caster)->GetActiveSpec()) == SPEC_MONK_MISTWEAVER)
                             caster->CastSpell(caster, SPELL_MONK_SERPENTS_ZEAL, true);
                         // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
-                        else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
+                        else if (caster->GetTypeId() == TYPEID_PLAYER && TO_PLAYER(caster)->GetSpecializationId(TO_PLAYER(caster)->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
                             caster->CastSpell(caster, SPELL_MONK_SHUFFLE, true);
                     }
                 }
@@ -701,7 +701,7 @@ class spell_monk_provoke : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                Unit* target = GetExplTargetUnit();
+                UnitPtr target = GetExplTargetUnit();
                 if (!target)
                     return SPELL_FAILED_NO_VALID_TARGETS;
                 else if (target->GetTypeId() == TYPEID_PLAYER)
@@ -713,9 +713,9 @@ class spell_monk_provoke : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                     if (caster->getClass() == CLASS_MONK && caster->GetTypeId() == TYPEID_PLAYER)
-                        if (Unit* target = GetHitUnit())
+                        if (UnitPtr target = GetHitUnit())
                             caster->CastSpell(target, SPELL_MONK_PROVOKE, true);
             }
 
@@ -744,13 +744,13 @@ class spell_monk_paralysis : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         if (target->isInBack(caster))
                         {
-                            if (AuraApplication* aura = target->GetAuraApplication(115078))
+                            if (AuraApplicationPtr aura = target->GetAuraApplication(115078))
                             {
                                 AuraPtr Paralysis = aura->GetBase();
                                 int32 maxDuration = Paralysis->GetMaxDuration();
@@ -845,7 +845,7 @@ class spell_monk_fortifying_brew : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (caster && caster->GetTypeId() == TYPEID_PLAYER)
                     caster->CastSpell(caster, SPELL_MONK_FORTIFYING_BREW, true);
             }
@@ -874,13 +874,13 @@ class spell_monk_legacy_of_the_emperor : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (caster && caster->GetTypeId() == TYPEID_PLAYER)
                 {
                     caster->CastSpell(caster, SPELL_MONK_LEGACY_OF_THE_EMPEROR, true);
 
-                    std::list<Unit*> memberList;
-                    Player* plr = caster->ToPlayer();
+                    std::list<UnitPtr> memberList;
+                    PlayerPtr plr = TO_PLAYER(caster);
                     plr->GetPartyMembers(memberList);
 
                     for (auto itr : memberList)
@@ -923,7 +923,7 @@ class spell_monk_roll : public SpellScriptLoader
                 if (!aur)
                     return;
 
-                AuraApplication* app =  aur->GetApplicationOfTarget(GetCaster()->GetGUID());
+                AuraApplicationPtr app =  aur->GetApplicationOfTarget(GetCaster()->GetGUID());
                 if (!app)
                     return;
 
@@ -932,7 +932,7 @@ class spell_monk_roll : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (!caster || caster->GetTypeId() != TYPEID_PLAYER)
                     return;
 

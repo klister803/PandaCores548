@@ -61,14 +61,14 @@ class boss_gruul : public CreatureScript
 public:
     boss_gruul() : CreatureScript("boss_gruul") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_gruulAI (creature);
     }
 
     struct boss_gruulAI : public ScriptedAI
     {
-        boss_gruulAI(Creature* creature) : ScriptedAI(creature)
+        boss_gruulAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -98,7 +98,7 @@ public:
                 instance->SetData(DATA_GRUULEVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -106,12 +106,12 @@ public:
                 instance->SetData(DATA_GRUULEVENT, IN_PROGRESS);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -122,7 +122,7 @@ public:
             }
         }
 
-        void SpellHitTarget(Unit* target, const SpellInfo* pSpell)
+        void SpellHitTarget(UnitPtr target, const SpellInfo* pSpell)
         {
             //This to emulate effect1 (77) of SPELL_GROUND_SLAM, knock back to any direction
             //It's initially wrong, since this will cause fall damage, which is by comments, not intended.
@@ -199,7 +199,7 @@ public:
                 // Hurtful Strike
                 if (m_uiHurtfulStrike_Timer <= uiDiff)
                 {
-                    Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 1);
+                    UnitPtr target = SelectTarget(SELECT_TARGET_TOPAGGRO, 1);
 
                     if (target && me->IsWithinMeleeRange(me->getVictim()))
                         DoCast(target, SPELL_HURTFUL_STRIKE);
@@ -223,7 +223,7 @@ public:
                 // Cave In
                 if (m_uiCaveIn_Timer <= uiDiff)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_CAVE_IN);
 
                     if (m_uiCaveIn_StaticTimer >= 4000)
@@ -275,10 +275,10 @@ class spell_gruul_shatter : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* target = GetHitUnit())
+                if (UnitPtr target = GetHitUnit())
                 {
                     target->RemoveAurasDueToSpell(SPELL_STONED);
-                    target->CastSpell((Unit*)NULL, SPELL_SHATTER_EFFECT, true);
+                    target->CastSpell(NULLUNIT, SPELL_SHATTER_EFFECT, true);
                 }
             }
 

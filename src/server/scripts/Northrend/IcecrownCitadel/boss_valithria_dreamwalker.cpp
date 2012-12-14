@@ -168,29 +168,29 @@ class RisenArchmageCheck
 {
     public:
         // look for all permanently spawned Risen Archmages that are not yet in combat
-        bool operator()(Creature* creature)
+        bool operator()(CreaturePtr creature)
         {
             return creature->isAlive() && creature->GetEntry() == NPC_RISEN_ARCHMAGE &&
                 creature->GetDBTableGUIDLow() && !creature->isInCombat();
         }
 };
 
-struct ManaVoidSelector : public std::unary_function<Unit*, bool>
+struct ManaVoidSelector : public std::unary_function<UnitPtr, bool>
 {
-        explicit ManaVoidSelector(WorldObject const* source) : _source(source) { }
+        explicit ManaVoidSelector(constWorldObjectPtr source) : _source(source) { }
 
-        bool operator()(Unit* unit) const
+        bool operator()(UnitPtr unit) const
         {
             return unit->getPowerType() == POWER_MANA && _source->GetDistance(unit) > 15.0f;
         }
 
-        WorldObject const* _source;
+        constWorldObjectPtr _source;
 };
 
 class DelayedCastEvent : public BasicEvent
 {
     public:
-        DelayedCastEvent(Creature* trigger, uint32 spellId, uint64 originalCaster, uint32 despawnTime) : _trigger(trigger), _originalCaster(originalCaster), _spellId(spellId), _despawnTime(despawnTime)
+        DelayedCastEvent(CreaturePtr trigger, uint32 spellId, uint64 originalCaster, uint32 despawnTime) : _trigger(trigger), _originalCaster(originalCaster), _spellId(spellId), _despawnTime(despawnTime)
         {
         }
 
@@ -203,7 +203,7 @@ class DelayedCastEvent : public BasicEvent
         }
 
     private:
-        Creature* _trigger;
+        CreaturePtr _trigger;
         uint64 _originalCaster;
         uint32 _spellId;
         uint32 _despawnTime;
@@ -212,7 +212,7 @@ class DelayedCastEvent : public BasicEvent
 class AuraRemoveEvent : public BasicEvent
 {
     public:
-        AuraRemoveEvent(Creature* trigger, uint32 spellId) : _trigger(trigger), _spellId(spellId)
+        AuraRemoveEvent(CreaturePtr trigger, uint32 spellId) : _trigger(trigger), _spellId(spellId)
         {
         }
 
@@ -223,14 +223,14 @@ class AuraRemoveEvent : public BasicEvent
         }
 
     private:
-        Creature* _trigger;
+        CreaturePtr _trigger;
         uint32 _spellId;
 };
 
 class ValithriaDespawner : public BasicEvent
 {
     public:
-        explicit ValithriaDespawner(Creature* creature) : _creature(creature)
+        explicit ValithriaDespawner(CreaturePtr creature) : _creature(creature)
         {
         }
 
@@ -241,7 +241,7 @@ class ValithriaDespawner : public BasicEvent
             return true;
         }
 
-        void operator()(Creature* creature) const
+        void operator()(CreaturePtr creature) const
         {
             switch (creature->GetEntry())
             {
@@ -284,7 +284,7 @@ class ValithriaDespawner : public BasicEvent
         }
 
     private:
-        Creature* _creature;
+        CreaturePtr _creature;
 };
 
 class boss_valithria_dreamwalker : public CreatureScript
@@ -294,7 +294,7 @@ class boss_valithria_dreamwalker : public CreatureScript
 
         struct boss_valithria_dreamwalkerAI : public ScriptedAI
         {
-            boss_valithria_dreamwalkerAI(Creature* creature) : ScriptedAI(creature),
+            boss_valithria_dreamwalkerAI(CreaturePtr creature) : ScriptedAI(creature),
                 _instance(creature->GetInstanceScript()), _portalCount(RAID_MODE<uint32>(3, 8, 3, 8))
             {
             }
@@ -328,7 +328,7 @@ class boss_valithria_dreamwalker : public CreatureScript
                 NextSummonSpeedPct = 70;
             }
 
-            void AttackStart(Unit* /*target*/)
+            void AttackStart(UnitPtr /*target*/)
             {
             }
 
@@ -348,11 +348,11 @@ class boss_valithria_dreamwalker : public CreatureScript
                 }
             }
 
-            void HealReceived(Unit* /*healer*/, uint32& heal)
+            void HealReceived(UnitPtr /*healer*/, uint32& heal)
             {
                 if (me->HealthAbovePctHealed(NextSummonSpeedPct, heal))
                 {
-                    if (Creature* lichKing = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_VALITHRIA_LICH_KING)))
+                    if (CreaturePtr lichKing = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_VALITHRIA_LICH_KING)))
                         lichKing->AI()->DoAction(ACTION_NEXT_SUMMON_SPEED);
 
                     NextSummonSpeedPct += 20;
@@ -368,7 +368,7 @@ class boss_valithria_dreamwalker : public CreatureScript
                     DoCast(me, SPELL_ACHIEVEMENT_CHECK);
                     DoCastAOE(SPELL_DREAMWALKERS_RAGE);
                     _events.ScheduleEvent(EVENT_DREAM_SLIP, 3500);
-                    if (Creature* lichKing = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_VALITHRIA_LICH_KING)))
+                    if (CreaturePtr lichKing = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_VALITHRIA_LICH_KING)))
                         lichKing->AI()->EnterEvadeMode();
                 }
                 else if (!_over75PercentTalkDone && me->HealthAbovePctHealed(75, heal))
@@ -377,11 +377,11 @@ class boss_valithria_dreamwalker : public CreatureScript
                     Talk(SAY_VALITHRIA_75_PERCENT);
                 }
                 else if (_instance->GetBossState(DATA_VALITHRIA_DREAMWALKER) == NOT_STARTED)
-                    if (Creature* archmage = me->FindNearestCreature(NPC_RISEN_ARCHMAGE, 30.0f))
+                    if (CreaturePtr archmage = me->FindNearestCreature(NPC_RISEN_ARCHMAGE, 30.0f))
                         archmage->AI()->DoZoneInCombat();   // call EnterCombat on one of them, that will make it all start
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage)
+            void DamageTaken(UnitPtr attacker, uint32& damage)
             {
                 CheckPlayerDamage(attacker, damage);
 
@@ -401,14 +401,14 @@ class boss_valithria_dreamwalker : public CreatureScript
                             _justDied = true;
                             Talk(SAY_VALITHRIA_DEATH);
                             _instance->SendEncounterUnit(ENCOUNTER_FRAME_DISENGAGE, me);
-                            if (Creature* trigger = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_VALITHRIA_TRIGGER)))
+                            if (CreaturePtr trigger = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_VALITHRIA_TRIGGER)))
                                 trigger->AI()->DoAction(ACTION_DEATH);
                         }
                     }
                 }
             }
 
-            void SpellHit(Unit* /*caster*/, SpellInfo const* spell)
+            void SpellHit(UnitPtr /*caster*/, SpellInfo const* spell)
             {
                 if (spell->Id == SPELL_DREAM_SLIP)
                 {
@@ -418,15 +418,15 @@ class boss_valithria_dreamwalker : public CreatureScript
                     me->SetDisplayId(11686);
                     me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                     me->DespawnOrUnsummon(4000);
-                    //if (Creature* lichKing = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_VALITHRIA_LICH_KING)))
+                    //if (CreaturePtr lichKing = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_VALITHRIA_LICH_KING)))
                         //lichKing->CastSpell(lichKing, SPELL_SPAWN_CHEST, false);
 
-                    if (Creature* trigger = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_VALITHRIA_TRIGGER)))
+                    if (CreaturePtr trigger = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_VALITHRIA_TRIGGER)))
                         me->Kill(trigger);
                 }
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(CreaturePtr summon)
             {
                 if (summon->GetEntry() == NPC_DREAM_PORTAL_PRE_EFFECT)
                 {
@@ -440,7 +440,7 @@ class boss_valithria_dreamwalker : public CreatureScript
                 }
             }
 
-            void SummonedCreatureDespawn(Creature* summon)
+            void SummonedCreatureDespawn(CreaturePtr summon)
             {
                 if (summon->GetEntry() == NPC_DREAM_PORTAL || summon->GetEntry() == NPC_NIGHTMARE_PORTAL)
                     if (summon->AI()->GetData(MISSED_PORTALS))
@@ -509,7 +509,7 @@ class boss_valithria_dreamwalker : public CreatureScript
             bool _done;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetIcecrownCitadelAI<boss_valithria_dreamwalkerAI>(creature);
         }
@@ -522,7 +522,7 @@ class npc_green_dragon_combat_trigger : public CreatureScript
 
         struct npc_green_dragon_combat_triggerAI : public BossAI
         {
-            npc_green_dragon_combat_triggerAI(Creature* creature) : BossAI(creature, DATA_VALITHRIA_DREAMWALKER)
+            npc_green_dragon_combat_triggerAI(CreaturePtr creature) : BossAI(creature, DATA_VALITHRIA_DREAMWALKER)
             {
             }
 
@@ -532,9 +532,9 @@ class npc_green_dragon_combat_trigger : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
             }
 
-            void EnterCombat(Unit* target)
+            void EnterCombat(UnitPtr target)
             {
-                if (!instance->CheckRequiredBosses(DATA_VALITHRIA_DREAMWALKER, target->ToPlayer()))
+                if (!instance->CheckRequiredBosses(DATA_VALITHRIA_DREAMWALKER, TO_PLAYER(target)))
                 {
                     EnterEvadeMode();
                     instance->DoCastSpellOnPlayers(LIGHT_S_HAMMER_TELEPORT);
@@ -544,17 +544,17 @@ class npc_green_dragon_combat_trigger : public CreatureScript
                 me->setActive(true);
                 DoZoneInCombat();
                 instance->SetBossState(DATA_VALITHRIA_DREAMWALKER, IN_PROGRESS);
-                if (Creature* valithria = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_VALITHRIA_DREAMWALKER)))
+                if (CreaturePtr valithria = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_VALITHRIA_DREAMWALKER)))
                     valithria->AI()->DoAction(ACTION_ENTER_COMBAT);
             }
 
-            void AttackStart(Unit* target)
+            void AttackStart(UnitPtr target)
             {
                 if (target->GetTypeId() == TYPEID_PLAYER)
                     BossAI::AttackStart(target);
             }
 
-            bool CanAIAttack(Unit const* target) const
+            bool CanAIAttack(constUnitPtr target) const
             {
                 return target->GetTypeId() == TYPEID_PLAYER;
             }
@@ -584,7 +584,7 @@ class npc_green_dragon_combat_trigger : public CreatureScript
                 const Map::PlayerList &PlayerList = instance->instance->GetPlayers();
                 if (!PlayerList.isEmpty())
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                        if (Player* player = i->getSource())
+                        if (PlayerPtr player = i->getSource())
                             if (player->isAlive())
                                 wipe = false;
 
@@ -596,7 +596,7 @@ class npc_green_dragon_combat_trigger : public CreatureScript
             bool _evadeCheck;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetIcecrownCitadelAI<npc_green_dragon_combat_triggerAI>(creature);
         }
@@ -609,7 +609,7 @@ class npc_the_lich_king_controller : public CreatureScript
 
         struct npc_the_lich_king_controllerAI : public ScriptedAI
         {
-            npc_the_lich_king_controllerAI(Creature* creature) : ScriptedAI(creature),
+            npc_the_lich_king_controllerAI(CreaturePtr creature) : ScriptedAI(creature),
                 _instance(creature->GetInstanceScript())
             {
             }
@@ -633,18 +633,18 @@ class npc_the_lich_king_controller : public CreatureScript
                 me->setActive(false);
             }
 
-            void EnterCombat(Unit* /*target*/)
+            void EnterCombat(UnitPtr /*target*/)
             {
                 Talk(SAY_LICH_KING_INTRO);
                 me->setActive(true);
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(CreaturePtr summon)
             {
                 // must not be in dream phase
                 summon->SetPhaseMask((summon->GetPhaseMask() & ~0x10), true);
                 if (summon->GetEntry() != NPC_SUPPRESSER)
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                         summon->AI()->AttackStart(target);
             }
 
@@ -701,8 +701,8 @@ class npc_the_lich_king_controller : public CreatureScript
                 {
                     uint8 RandPosition = urand(0, Is25ManRaid() ? 3: 1);
 
-                    if (TempSummon* temp = me->GetMap()->SummonCreature(NextSummonId, AddSpawnPos[RandPosition], NULL, 60000))
-                        if (Creature* Valithria = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_VALITHRIA_DREAMWALKER)))
+                    if (TempSummonPtr temp = me->GetMap()->SummonCreature(NextSummonId, AddSpawnPos[RandPosition], NULL, 60000))
+                        if (CreaturePtr Valithria = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_VALITHRIA_DREAMWALKER)))
                             temp->AI()->AttackStart(Valithria);
                 }
                 else if (NextSummonId) // Suppressers (2 * 3 invocations à des spawns aléatoires)
@@ -713,8 +713,8 @@ class npc_the_lich_king_controller : public CreatureScript
 
                         for (uint8 y = 0; i < 3; i++)
                         {
-                            if (TempSummon* temp = me->GetMap()->SummonCreature(NextSummonId, AddSpawnPos[RandPosition], NULL, 60000))
-                                if (Creature* Valithria = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_VALITHRIA_DREAMWALKER)))
+                            if (TempSummonPtr temp = me->GetMap()->SummonCreature(NextSummonId, AddSpawnPos[RandPosition], NULL, 60000))
+                                if (CreaturePtr Valithria = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_VALITHRIA_DREAMWALKER)))
                                     temp->AI()->AttackStart(Valithria);
                         }
                     }
@@ -729,7 +729,7 @@ class npc_the_lich_king_controller : public CreatureScript
             uint32 BaseSummonTimer;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new npc_the_lich_king_controllerAI(creature);
         }
@@ -742,12 +742,12 @@ class npc_risen_archmage : public CreatureScript
 
         struct npc_risen_archmageAI : public ScriptedAI
         {
-            npc_risen_archmageAI(Creature* creature) : ScriptedAI(creature),
+            npc_risen_archmageAI(CreaturePtr creature) : ScriptedAI(creature),
                 _instance(creature->GetInstanceScript())
             {
             }
 
-            bool CanAIAttack(Unit const* target) const
+            bool CanAIAttack(constUnitPtr target) const
             {
                 return target->GetEntry() != NPC_VALITHRIA_DREAMWALKER;
             }
@@ -761,22 +761,22 @@ class npc_risen_archmage : public CreatureScript
                 _canCallEnterCombat = true;
             }
 
-            void EnterCombat(Unit* /*target*/)
+            void EnterCombat(UnitPtr /*target*/)
             {
                 me->FinishSpell(CURRENT_CHANNELED_SPELL, false);
                 if (me->GetDBTableGUIDLow() && _canCallEnterCombat)
                 {
-                    std::list<Creature*> archmages;
+                    std::list<CreaturePtr> archmages;
                     RisenArchmageCheck check;
                     Trinity::CreatureListSearcher<RisenArchmageCheck> searcher(me, archmages, check);
                     me->VisitNearbyGridObject(100.0f, searcher);
-                    for (std::list<Creature*>::iterator itr = archmages.begin(); itr != archmages.end(); ++itr)
+                    for (std::list<CreaturePtr>::iterator itr = archmages.begin(); itr != archmages.end(); ++itr)
                         (*itr)->AI()->DoAction(ACTION_ENTER_COMBAT);
 
-                    if (Creature* lichKing = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_VALITHRIA_LICH_KING)))
+                    if (CreaturePtr lichKing = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_VALITHRIA_LICH_KING)))
                         lichKing->AI()->DoZoneInCombat();
 
-                    if (Creature* trigger = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_VALITHRIA_TRIGGER)))
+                    if (CreaturePtr trigger = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_VALITHRIA_TRIGGER)))
                         trigger->AI()->DoZoneInCombat();
                 }
             }
@@ -791,7 +791,7 @@ class npc_risen_archmage : public CreatureScript
                 _canCallEnterCombat = true;
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(CreaturePtr summon)
             {
                 if (summon->GetEntry() == NPC_COLUMN_OF_FROST)
                     summon->m_Events.AddEvent(new DelayedCastEvent(summon, SPELL_COLUMN_OF_FROST_DAMAGE, 0, 8000), summon->m_Events.CalculateTime(2000));
@@ -823,12 +823,12 @@ class npc_risen_archmage : public CreatureScript
                             _events.ScheduleEvent(EVENT_FROSTBOLT_VOLLEY, urand(8000, 15000));
                             break;
                         case EVENT_MANA_VOID:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, ManaVoidSelector(me)))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, ManaVoidSelector(me)))
                                 DoCast(target, SPELL_MANA_VOID);
                             _events.ScheduleEvent(EVENT_MANA_VOID, urand(20000, 25000));
                             break;
                         case EVENT_COLUMN_OF_FROST:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, -10.0f, true))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, -10.0f, true))
                                 DoCast(target, SPELL_COLUMN_OF_FROST);
                             _events.ScheduleEvent(EVENT_COLUMN_OF_FROST, urand(15000, 25000));
                             break;
@@ -846,7 +846,7 @@ class npc_risen_archmage : public CreatureScript
             bool _canCallEnterCombat;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetIcecrownCitadelAI<npc_risen_archmageAI>(creature);
         }
@@ -859,7 +859,7 @@ class npc_blazing_skeleton : public CreatureScript
 
         struct npc_blazing_skeletonAI : public ScriptedAI
         {
-            npc_blazing_skeletonAI(Creature* creature) : ScriptedAI(creature)
+            npc_blazing_skeletonAI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
 
@@ -905,7 +905,7 @@ class npc_blazing_skeleton : public CreatureScript
             EventMap _events;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetIcecrownCitadelAI<npc_blazing_skeletonAI>(creature);
         }
@@ -918,7 +918,7 @@ class npc_suppresser : public CreatureScript
 
         struct npc_suppresserAI : public ScriptedAI
         {
-            npc_suppresserAI(Creature* creature) : ScriptedAI(creature),
+            npc_suppresserAI(CreaturePtr creature) : ScriptedAI(creature),
                 _instance(creature->GetInstanceScript())
             {
             }
@@ -930,9 +930,9 @@ class npc_suppresser : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
             }
 
-            void IsSummonedBy(Unit* /*summoner*/)
+            void IsSummonedBy(UnitPtr /*summoner*/)
             {
-                if (Creature* valithria = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_VALITHRIA_DREAMWALKER)))
+                if (CreaturePtr valithria = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_VALITHRIA_DREAMWALKER)))
                     AttackStart(valithria);
             }
 
@@ -952,7 +952,7 @@ class npc_suppresser : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_SUPPRESSION:
-                            if (Creature* valithria = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_VALITHRIA_DREAMWALKER)))
+                            if (CreaturePtr valithria = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_VALITHRIA_DREAMWALKER)))
                                 DoCast(valithria, SPELL_SUPPRESSION);
                             _events.ScheduleEvent(EVENT_SUPPRESSION, 5000);
                             break;
@@ -962,7 +962,7 @@ class npc_suppresser : public CreatureScript
                 }
 
                 // this creature has REACT_PASSIVE so it does not always have victim here
-                if (Unit* victim = me->getVictim())
+                if (UnitPtr victim = me->getVictim())
                     if (victim->GetEntry() != NPC_VALITHRIA_DREAMWALKER)
                         DoMeleeAttackIfReady();
             }
@@ -972,7 +972,7 @@ class npc_suppresser : public CreatureScript
             InstanceScript* const _instance;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetIcecrownCitadelAI<npc_suppresserAI>(creature);
         }
@@ -985,11 +985,11 @@ class npc_blistering_zombie : public CreatureScript
 
         struct npc_blistering_zombieAI : public ScriptedAI
         {
-            npc_blistering_zombieAI(Creature* creature) : ScriptedAI(creature)
+            npc_blistering_zombieAI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoCast(me, SPELL_ACID_BURST, true);
             }
@@ -1003,7 +1003,7 @@ class npc_blistering_zombie : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetIcecrownCitadelAI<npc_blistering_zombieAI>(creature);
         }
@@ -1016,7 +1016,7 @@ class npc_gluttonous_abomination : public CreatureScript
 
         struct npc_gluttonous_abominationAI : public ScriptedAI
         {
-            npc_gluttonous_abominationAI(Creature* creature) : ScriptedAI(creature)
+            npc_gluttonous_abominationAI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
 
@@ -1026,7 +1026,7 @@ class npc_gluttonous_abomination : public CreatureScript
                 _events.ScheduleEvent(EVENT_GUT_SPRAY, urand(10000, 13000));
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoCast(me, SPELL_ROT_WORM_SPAWNER, true);
             }
@@ -1061,7 +1061,7 @@ class npc_gluttonous_abomination : public CreatureScript
             EventMap _events;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetIcecrownCitadelAI<npc_gluttonous_abominationAI>(creature);
         }
@@ -1074,7 +1074,7 @@ class npc_dream_portal : public CreatureScript
 
         struct npc_dream_portalAI : public CreatureAI
         {
-            npc_dream_portalAI(Creature* creature) : CreatureAI(creature),
+            npc_dream_portalAI(CreaturePtr creature) : CreatureAI(creature),
                 _used(false)
             {
             }
@@ -1099,7 +1099,7 @@ class npc_dream_portal : public CreatureScript
             bool _used;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetIcecrownCitadelAI<npc_dream_portalAI>(creature);
         }
@@ -1112,7 +1112,7 @@ class npc_dream_cloud : public CreatureScript
 
         struct npc_dream_cloudAI : public ScriptedAI
         {
-            npc_dream_cloudAI(Creature* creature) : ScriptedAI(creature),
+            npc_dream_cloudAI(CreaturePtr creature) : ScriptedAI(creature),
                 _instance(creature->GetInstanceScript())
             {
             }
@@ -1139,7 +1139,7 @@ class npc_dream_cloud : public CreatureScript
                     {
                         case EVENT_CHECK_PLAYER:
                         {
-                            Player* player = NULL;
+                            PlayerPtr player = NULL;
                             Trinity::AnyPlayerInObjectRangeCheck check(me, 5.0f);
                             Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, player, check);
                             me->VisitNearbyWorldObject(7.5f, searcher);
@@ -1163,7 +1163,7 @@ class npc_dream_cloud : public CreatureScript
             InstanceScript* _instance;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetIcecrownCitadelAI<npc_dream_cloudAI>(creature);
         }
@@ -1253,13 +1253,13 @@ class spell_dreamwalker_summoner : public SpellScriptLoader
                 return true;
             }
 
-            void FilterTargets(std::list<WorldObject*>& targets)
+            void FilterTargets(std::list<WorldObjectPtr>& targets)
             {
                 targets.remove_if (Trinity::UnitAuraCheck(true, SPELL_RECENTLY_SPAWNED));
                 if (targets.empty())
                     return;
 
-                WorldObject* target = Trinity::Containers::SelectRandomContainerElement(targets);
+                WorldObjectPtr target = Trinity::Containers::SelectRandomContainerElement(targets);
                 targets.clear();
                 targets.push_back(target);
             }
@@ -1298,11 +1298,11 @@ class spell_dreamwalker_summon_suppresser : public SpellScriptLoader
             void PeriodicTick(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (!caster)
                     return;
 
-                std::list<Creature*> summoners;
+                std::list<CreaturePtr> summoners;
                 GetCreatureListWithEntryInGrid(summoners, caster, NPC_WORLD_TRIGGER, 100.0f);
                 summoners.remove_if (Trinity::UnitAuraCheck(true, SPELL_RECENTLY_SPAWNED));
                 Trinity::Containers::RandomResizeList(summoners, 2);
@@ -1478,7 +1478,7 @@ class spell_dreamwalker_twisted_nightmares : public SpellScriptLoader
                 //    return;
 
                 if (InstanceScript* instance = GetHitUnit()->GetInstanceScript())
-                    GetHitUnit()->CastSpell((Unit*)NULL, GetSpellInfo()->Effects[effIndex].TriggerSpell, true, NULL, NULL, instance->GetData64(DATA_VALITHRIA_DREAMWALKER));
+                    GetHitUnit()->CastSpell(NULLUNIT, GetSpellInfo()->Effects[effIndex].TriggerSpell, true, NULL, NULL, instance->GetData64(DATA_VALITHRIA_DREAMWALKER));
             }
 
             void Register()
@@ -1498,7 +1498,7 @@ class achievement_portal_jockey : public AchievementCriteriaScript
     public:
         achievement_portal_jockey() : AchievementCriteriaScript("achievement_portal_jockey") { }
 
-        bool OnCheck(Player* /*source*/, Unit* target)
+        bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
         {
             return target && !target->GetAI()->GetData(MISSED_PORTALS);
         }

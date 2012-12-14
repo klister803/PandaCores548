@@ -74,7 +74,7 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         // "id" or number or [name] Shift-click form |color|Hcreature_entry:creature_id|h[name]|h|r
         char* param1 = handler->extractKeyFromLink((char*)args, "Hcreature");
@@ -136,7 +136,7 @@ public:
         uint32 id = fields[6].GetUInt32();
 
         // if creature is in same map with caster go at its current location
-        if (Creature* creature = sObjectAccessor->GetCreature(*player, MAKE_NEW_GUID(guid, id, HIGHGUID_UNIT)))
+        if (CreaturePtr creature = sObjectAccessor->GetCreature(TO_CONST_WORLDOBJECT(player), MAKE_NEW_GUID(guid, id, HIGHGUID_UNIT)))
         {
             x = creature->GetPositionX();
             y = creature->GetPositionY();
@@ -167,7 +167,7 @@ public:
 
     static bool HandleGoGraveyardCommand(ChatHandler* handler, char const* args)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (!*args)
             return false;
@@ -216,7 +216,7 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         char* gridX = strtok((char*)args, " ");
         char* gridY = strtok(NULL, " ");
@@ -248,7 +248,7 @@ public:
         else
             player->SaveRecallPosition();
 
-        Map const* map = sMapMgr->CreateBaseMap(mapId);
+        constMapPtr map = sMapMgr->CreateBaseMap(mapId);
         float z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
 
         player->TeleportTo(mapId, x, y, z, player->GetOrientation());
@@ -261,7 +261,7 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
         char* id = handler->extractKeyFromLink((char*)args, "Hgameobject");
@@ -314,7 +314,7 @@ public:
 
     static bool HandleGoTaxinodeCommand(ChatHandler* handler, char const* args)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (!*args)
             return false;
@@ -359,7 +359,7 @@ public:
 
     static bool HandleGoTriggerCommand(ChatHandler* handler, char const* args)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (!*args)
             return false;
@@ -408,7 +408,7 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         char* zoneX = strtok((char*)args, " ");
         char* zoneY = strtok(NULL, " ");
@@ -440,7 +440,7 @@ public:
         // update to parent zone if exist (client map show only zones without parents)
         AreaTableEntry const* zoneEntry = areaEntry->zone ? GetAreaEntryByAreaID(areaEntry->zone) : areaEntry;
 
-        Map const* map = sMapMgr->CreateBaseMap(zoneEntry->mapid);
+        constMapPtr map = sMapMgr->CreateBaseMap(zoneEntry->mapid);
 
         if (map->Instanceable())
         {
@@ -480,7 +480,7 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         char* goX = strtok((char*)args, " ");
         char* goY = strtok(NULL, " ");
@@ -515,7 +515,7 @@ public:
                 handler->SetSentErrorMessage(true);
                 return false;
             }
-            Map const* map = sMapMgr->CreateBaseMap(mapId);
+            constMapPtr map = sMapMgr->CreateBaseMap(mapId);
             z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
         }
 
@@ -553,7 +553,7 @@ public:
             return true;
         }
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
         if (player->isInFlight())
         {
             player->GetMotionMaster()->MovementExpired();

@@ -25,14 +25,14 @@ class instance_eye_of_eternity : public InstanceMapScript
 public:
     instance_eye_of_eternity() : InstanceMapScript("instance_eye_of_eternity", 616) {}
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_eye_of_eternity_InstanceMapScript(map);
     }
 
     struct instance_eye_of_eternity_InstanceMapScript : public InstanceScript
     {
-        instance_eye_of_eternity_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_eye_of_eternity_InstanceMapScript(MapPtr map) : InstanceScript(map)
         {
             SetBossNumber(MAX_ENCOUNTER);
 
@@ -56,7 +56,7 @@ public:
                 {
                     for (std::list<uint64>::const_iterator itr_trigger = portalTriggers.begin(); itr_trigger != portalTriggers.end(); ++itr_trigger)
                     {
-                        if (Creature* trigger = instance->GetCreature(*itr_trigger))
+                        if (CreaturePtr trigger = instance->GetCreature(*itr_trigger))
                         {
                             // just in case
                             trigger->RemoveAllAuras();
@@ -67,21 +67,21 @@ public:
                     SpawnGameObject(GO_FOCUSING_IRIS, focusingIrisPosition);
                     SpawnGameObject(GO_EXIT_PORTAL, exitPortalPosition);
 
-                    if (GameObject* platform = instance->GetGameObject(platformGUID))
+                    if (GameObjectPtr platform = instance->GetGameObject(platformGUID))
                         platform->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED);
                 }
                 else if (state == DONE)
                 {
-                    if (Creature* malygos = instance->GetCreature(malygosGUID))
+                    if (CreaturePtr malygos = instance->GetCreature(malygosGUID))
                         malygos->SummonCreature(NPC_ALEXSTRASZA, 829.0679f, 1244.77f, 279.7453f, 2.32f);
 
                     SpawnGameObject(GO_EXIT_PORTAL, exitPortalPosition);
 
                     // we make the platform appear again because at the moment we don't support looting using a vehicle
-                    if (GameObject* platform = instance->GetGameObject(platformGUID))
+                    if (GameObjectPtr platform = instance->GetGameObject(platformGUID))
                         platform->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED);
 
-                    if (GameObject* chest = instance->GetGameObject(chestGUID))
+                    if (GameObjectPtr chest = instance->GetGameObject(chestGUID))
                         chest->SetRespawnTime(7*DAY);
                 }
             }
@@ -92,19 +92,16 @@ public:
         // There is no other way afaik...
         void SpawnGameObject(uint32 entry, Position& pos)
         {
-            GameObject* go = new GameObject;
+            GameObjectPtr go (new GameObject);
             if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), entry, instance,
                 PHASEMASK_NORMAL, pos.GetPositionX(), pos.GetPositionY(), pos.GetPositionZ(), pos.GetOrientation(),
                 0, 0, 0, 0, 120, GO_STATE_READY))
-            {
-                delete go;
                 return;
-            }
 
             instance->AddToMap(go);
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {
@@ -125,7 +122,7 @@ public:
             }
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -141,43 +138,43 @@ public:
             }
         }
 
-        void ProcessEvent(WorldObject* obj, uint32 eventId)
+        void ProcessEvent(WorldObjectPtr obj, uint32 eventId)
         {
             if (eventId == EVENT_FOCUSING_IRIS)
             {
-                if (GameObject* go = obj->ToGameObject())
+                if (GameObjectPtr go = obj->ToGameObject())
                     go->Delete(); // this is not the best way.
 
-                if (Creature* malygos = instance->GetCreature(malygosGUID))
+                if (CreaturePtr malygos = instance->GetCreature(malygosGUID))
                     malygos->GetMotionMaster()->MovePoint(4, 770.10f, 1275.33f, 267.23f); // MOVE_INIT_PHASE_ONE
 
-                if (GameObject* exitPortal = instance->GetGameObject(exitPortalGUID))
+                if (GameObjectPtr exitPortal = instance->GetGameObject(exitPortalGUID))
                     exitPortal->Delete();
             }
         }
 
         void VortexHandling()
         {
-            if (Creature* malygos = instance->GetCreature(malygosGUID))
+            if (CreaturePtr malygos = instance->GetCreature(malygosGUID))
             {
-                std::list<HostileReference*> m_threatlist = malygos->getThreatManager().getThreatList();
+                std::list<HostileReferencePtr> m_threatlist = malygos->getThreatManager().getThreatList();
                 for (std::list<uint64>::const_iterator itr_vortex = vortexTriggers.begin(); itr_vortex != vortexTriggers.end(); ++itr_vortex)
                 {
                     if (m_threatlist.empty())
                         return;
 
                     uint8 counter = 0;
-                    if (Creature* trigger = instance->GetCreature(*itr_vortex))
+                    if (CreaturePtr trigger = instance->GetCreature(*itr_vortex))
                     {
                         // each trigger have to cast the spell to 5 players.
-                        for (std::list<HostileReference*>::const_iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
+                        for (std::list<HostileReferencePtr>::const_iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
                         {
                             if (counter >= 5)
                                 break;
 
-                            if (Unit* target = (*itr)->getTarget())
+                            if (UnitPtr target = (*itr)->getTarget())
                             {
-                                Player* player = target->ToPlayer();
+                                PlayerPtr player = TO_PLAYER(target);
 
                                 if (!player || player->isGameMaster() || player->HasAura(SPELL_VORTEX_4))
                                     continue;
@@ -199,7 +196,7 @@ public:
             {
                 if (next)
                 {
-                    if (Creature* trigger = instance->GetCreature(*itr_trigger))
+                    if (CreaturePtr trigger = instance->GetCreature(*itr_trigger))
                     {
                         lastPortalGUID = trigger->GetGUID();
                         trigger->CastSpell(trigger, SPELL_PORTAL_OPENED, true);

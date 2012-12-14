@@ -68,7 +68,7 @@ public:
         if (!channelStr || !argStr)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
         Channel* channcel = NULL;
 
         if (ChannelMgr* cMgr = channelMgr(player->GetTeam()))

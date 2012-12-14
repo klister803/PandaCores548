@@ -355,7 +355,7 @@ public:
 
         if (!exp)
         {
-            Player* player = handler->getSelectedPlayer();
+            PlayerPtr player = handler->getSelectedPlayer();
             if (!player)
                 return false;
 

@@ -72,7 +72,7 @@ class Weather
         bool ReGenerate();
         bool UpdateWeather();
 
-        void SendWeatherUpdateToPlayer(Player* player);
+        void SendWeatherUpdateToPlayer(PlayerPtr player);
         void SetWeather(WeatherType type, float grade);
 
         /// For which zone is this weather?

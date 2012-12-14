@@ -90,7 +90,7 @@ public:
 
     struct boss_anub_arakAI : public ScriptedAI
     {
-        boss_anub_arakAI(Creature* creature) : ScriptedAI(creature), Summons(me)
+        boss_anub_arakAI(CreaturePtr creature) : ScriptedAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -142,12 +142,12 @@ public:
             }
         }
 
-        Creature* DoSummonImpaleTarget(Unit* target)
+        CreaturePtr DoSummonImpaleTarget(UnitPtr target)
         {
             Position targetPos;
             target->GetPosition(&targetPos);
 
-            if (TempSummon* impaleTarget = me->SummonCreature(CREATURE_IMPALE_TARGET, targetPos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 6*IN_MILLISECONDS))
+            if (TempSummonPtr impaleTarget = me->SummonCreature(CREATURE_IMPALE_TARGET, targetPos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 6*IN_MILLISECONDS))
             {
                 ImpaleTarget = impaleTarget->GetGUID();
                 impaleTarget->SetReactState(REACT_PASSIVE);
@@ -159,7 +159,7 @@ public:
             return NULL;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             DelayTimer = 0;
@@ -190,16 +190,16 @@ public:
                     switch (ImpalePhase)
                     {
                     case IMPALE_PHASE_TARGET:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                         {
-                            if (Creature* impaleTarget = DoSummonImpaleTarget(target))
+                            if (CreaturePtr impaleTarget = DoSummonImpaleTarget(target))
                                 impaleTarget->CastSpell(impaleTarget, SPELL_IMPALE_SHAKEGROUND, true);
                             ImpaleTimer = 3*IN_MILLISECONDS;
                             ImpalePhase = IMPALE_PHASE_ATTACK;
                         }
                         break;
                     case IMPALE_PHASE_ATTACK:
-                        if (Creature* impaleTarget = Unit::GetCreature(*me, ImpaleTarget))
+                        if (CreaturePtr impaleTarget = Unit::GetCreature(TO_WORLDOBJECT(me), ImpaleTarget))
                         {
                             impaleTarget->CastSpell(impaleTarget, SPELL_IMPALE_SPIKE, false);
                             impaleTarget->RemoveAurasDueToSpell(SPELL_IMPALE_SHAKEGROUND);
@@ -208,7 +208,7 @@ public:
                         ImpaleTimer = 1*IN_MILLISECONDS;
                         break;
                     case IMPALE_PHASE_DMG:
-                        if (Creature* impaleTarget = Unit::GetCreature(*me, ImpaleTarget))
+                        if (CreaturePtr impaleTarget = Unit::GetCreature(TO_WORLDOBJECT(me), ImpaleTarget))
                             me->CastSpell(impaleTarget, SPELL_IMPALE_DMG, true);
                         ImpalePhase = IMPALE_PHASE_TARGET;
                         ImpaleTimer = 9*IN_MILLISECONDS;
@@ -220,7 +220,7 @@ public:
                 {
                     for (uint8 i = 0; i < 2; ++i)
                     {
-                        if (Creature* Guardian = me->SummonCreature(CREATURE_GUARDIAN, SpawnPointGuardian[i], TEMPSUMMON_CORPSE_DESPAWN, 0))
+                        if (CreaturePtr Guardian = me->SummonCreature(CREATURE_GUARDIAN, SpawnPointGuardian[i], TEMPSUMMON_CORPSE_DESPAWN, 0))
                         {
                             Guardian->AddThreat(me->getVictim(), 0.0f);
                             DoZoneInCombat(Guardian);
@@ -237,7 +237,7 @@ public:
                         {
                             for (uint8 i = 0; i < 2; ++i)
                             {
-                                if (Creature* Venomancer = me->SummonCreature(CREATURE_VENOMANCER, SpawnPoint[i], TEMPSUMMON_CORPSE_DESPAWN, 0))
+                                if (CreaturePtr Venomancer = me->SummonCreature(CREATURE_VENOMANCER, SpawnPoint[i], TEMPSUMMON_CORPSE_DESPAWN, 0))
                                 {
                                     Venomancer->AddThreat(me->getVictim(), 0.0f);
                                     DoZoneInCombat(Venomancer);
@@ -256,7 +256,7 @@ public:
                         {
                             for (uint8 i = 0; i < 2; ++i)
                             {
-                                if (Creature* Datter = me->SummonCreature(CREATURE_DATTER, SpawnPoint[i], TEMPSUMMON_CORPSE_DESPAWN, 0))
+                                if (CreaturePtr Datter = me->SummonCreature(CREATURE_DATTER, SpawnPoint[i], TEMPSUMMON_CORPSE_DESPAWN, 0))
                                 {
                                     Datter->AddThreat(me->getVictim(), 0.0f);
                                     DoZoneInCombat(Datter);
@@ -323,9 +323,9 @@ public:
 
                 if (PoundTimer <= diff)
                 {
-                    if (Unit* target = me->getVictim())
+                    if (UnitPtr target = me->getVictim())
                     {
-                        if (Creature* pImpaleTarget = DoSummonImpaleTarget(target))
+                        if (CreaturePtr pImpaleTarget = DoSummonImpaleTarget(target))
                             me->CastSpell(pImpaleTarget, SPELL_POUND, false);
                     }
                     PoundTimer = 16500;
@@ -336,7 +336,7 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
             Summons.DespawnAll();
@@ -344,20 +344,20 @@ public:
                 instance->SetData(DATA_ANUBARAK_EVENT, DONE);
         }
 
-        void KilledUnit(Unit* victim)
+        void KilledUnit(UnitPtr victim)
         {
             if (victim == me)
                 return;
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3), me);
         }
 
-        void JustSummoned(Creature* summon)
+        void JustSummoned(CreaturePtr summon)
         {
             Summons.Summon(summon);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_anub_arakAI(creature);
     }

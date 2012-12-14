@@ -266,7 +266,7 @@ SpellScript::ObjectAreaTargetSelectHandler::ObjectAreaTargetSelectHandler(SpellO
     pObjectAreaTargetSelectHandlerScript = _pObjectAreaTargetSelectHandlerScript;
 }
 
-void SpellScript::ObjectAreaTargetSelectHandler::Call(SpellScript* spellScript, std::list<WorldObject*>& targets)
+void SpellScript::ObjectAreaTargetSelectHandler::Call(SpellScript* spellScript, std::list<WorldObjectPtr>& targets)
 {
     (spellScript->*pObjectAreaTargetSelectHandlerScript)(targets);
 }
@@ -277,7 +277,7 @@ SpellScript::ObjectTargetSelectHandler::ObjectTargetSelectHandler(SpellObjectTar
     pObjectTargetSelectHandlerScript = _pObjectTargetSelectHandlerScript;
 }
 
-void SpellScript::ObjectTargetSelectHandler::Call(SpellScript* spellScript, WorldObject*& target)
+void SpellScript::ObjectTargetSelectHandler::Call(SpellScript* spellScript, WorldObjectPtr& target)
 {
     (spellScript->*pObjectTargetSelectHandlerScript)(target);
 }
@@ -363,12 +363,12 @@ bool SpellScript::IsInEffectHook() const
     return (m_currentScriptState >= SPELL_SCRIPT_HOOK_EFFECT_LAUNCH && m_currentScriptState <= SPELL_SCRIPT_HOOK_EFFECT_HIT_TARGET);
 }
 
-Unit* SpellScript::GetCaster()
+UnitPtr SpellScript::GetCaster()
 {
      return m_spell->GetCaster();
 }
 
-Unit* SpellScript::GetOriginalCaster()
+UnitPtr SpellScript::GetOriginalCaster()
 {
      return m_spell->GetOriginalCaster();
 }
@@ -390,27 +390,27 @@ void SpellScript::SetExplTargetDest(WorldLocation& loc)
     m_spell->m_targets.SetDst(loc);
 }
 
-WorldObject* SpellScript::GetExplTargetWorldObject()
+WorldObjectPtr SpellScript::GetExplTargetWorldObject()
 {
     return m_spell->m_targets.GetObjectTarget();
 }
 
-Unit* SpellScript::GetExplTargetUnit()
+UnitPtr SpellScript::GetExplTargetUnit()
 {
     return m_spell->m_targets.GetUnitTarget();
 }
 
-GameObject* SpellScript::GetExplTargetGObj()
+GameObjectPtr SpellScript::GetExplTargetGObj()
 {
     return m_spell->m_targets.GetGOTarget();
 }
 
-Item* SpellScript::GetExplTargetItem()
+ItemPtr SpellScript::GetExplTargetItem()
 {
     return m_spell->m_targets.GetItemTarget();
 }
 
-Unit* SpellScript::GetHitUnit()
+UnitPtr SpellScript::GetHitUnit()
 {
     if (!IsInTargetHook())
     {
@@ -420,7 +420,7 @@ Unit* SpellScript::GetHitUnit()
     return m_spell->unitTarget;
 }
 
-Creature* SpellScript::GetHitCreature()
+CreaturePtr SpellScript::GetHitCreature()
 {
     if (!IsInTargetHook())
     {
@@ -433,7 +433,7 @@ Creature* SpellScript::GetHitCreature()
         return NULL;
 }
 
-Player* SpellScript::GetHitPlayer()
+PlayerPtr SpellScript::GetHitPlayer()
 {
     if (!IsInTargetHook())
     {
@@ -441,12 +441,12 @@ Player* SpellScript::GetHitPlayer()
         return NULL;
     }
     if (m_spell->unitTarget)
-        return m_spell->unitTarget->ToPlayer();
+        return TO_PLAYER(m_spell->unitTarget);
     else
         return NULL;
 }
 
-Item* SpellScript::GetHitItem()
+ItemPtr SpellScript::GetHitItem()
 {
     if (!IsInTargetHook())
     {
@@ -456,7 +456,7 @@ Item* SpellScript::GetHitItem()
     return m_spell->itemTarget;
 }
 
-GameObject* SpellScript::GetHitGObj()
+GameObjectPtr SpellScript::GetHitGObj()
 {
     if (!IsInTargetHook())
     {
@@ -572,7 +572,7 @@ int32 SpellScript::GetEffectValue()
     return m_spell->damage;
 }
 
-Item* SpellScript::GetCastItem()
+ItemPtr SpellScript::GetCastItem()
 {
     return m_spell->m_CastItem;
 }
@@ -683,7 +683,7 @@ AuraScript::CheckAreaTargetHandler::CheckAreaTargetHandler(AuraCheckAreaTargetFn
     pHandlerScript = _pHandlerScript;
 }
 
-bool AuraScript::CheckAreaTargetHandler::Call(AuraScript* auraScript, Unit* _target)
+bool AuraScript::CheckAreaTargetHandler::Call(AuraScript* auraScript, UnitPtr _target)
 {
     return (auraScript->*pHandlerScript)(_target);
 }
@@ -823,7 +823,7 @@ bool AuraScript::_Load(AuraPtr aura)
     return load;
 }
 
-void AuraScript::_PrepareScriptCall(AuraScriptHookType hookType, AuraApplication const* aurApp)
+void AuraScript::_PrepareScriptCall(AuraScriptHookType hookType, constAuraApplicationPtr aurApp)
 {
     m_scriptStates.push(ScriptStateStore(m_currentScriptState, m_auraApplication, m_defaultActionPrevented));
     m_currentScriptState = hookType;
@@ -886,22 +886,22 @@ uint64 AuraScript::GetCasterGUID() const
     return m_aura->GetCasterGUID();
 }
 
-Unit* AuraScript::GetCaster() const
+UnitPtr AuraScript::GetCaster() const
 {
     return m_aura->GetCaster();
 }
 
-WorldObject* AuraScript::GetOwner() const
+WorldObjectPtr AuraScript::GetOwner() const
 {
     return m_aura->GetOwner();
 }
 
-Unit* AuraScript::GetUnitOwner() const
+UnitPtr AuraScript::GetUnitOwner() const
 {
     return m_aura->GetUnitOwner();
 }
 
-DynamicObject* AuraScript::GetDynobjOwner() const
+DynamicObjectPtr AuraScript::GetDynobjOwner() const
 {
     return m_aura->GetDynobjOwner();
 }
@@ -1031,7 +1031,7 @@ bool AuraScript::HasEffectType(AuraType type) const
     return m_aura->HasEffectType(type);
 }
 
-Unit* AuraScript::GetTarget() const
+UnitPtr AuraScript::GetTarget() const
 {
     switch (m_currentScriptState)
     {
@@ -1052,7 +1052,7 @@ Unit* AuraScript::GetTarget() const
     return NULL;
 }
 
-AuraApplication const* AuraScript::GetTargetApplication() const
+constAuraApplicationPtr AuraScript::GetTargetApplication() const
 {
     return m_auraApplication;
 }

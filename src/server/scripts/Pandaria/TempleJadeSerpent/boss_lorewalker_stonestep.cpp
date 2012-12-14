@@ -112,14 +112,14 @@ class boss_lorewalker_stonestep : public CreatureScript
     public:
         boss_lorewalker_stonestep() : CreatureScript("boss_lorewalker_stonestep") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_lorewalker_stonestep_AI(creature);
         }
 
         struct boss_lorewalker_stonestep_AI : public BossAI
         {
-            boss_lorewalker_stonestep_AI(Creature* creature) : BossAI(creature, BOSS_LOREWALKER_STONESTEP)
+            boss_lorewalker_stonestep_AI(CreaturePtr creature) : BossAI(creature, BOSS_LOREWALKER_STONESTEP)
             {
                 event_go = false;
             }
@@ -150,20 +150,20 @@ class boss_lorewalker_stonestep : public CreatureScript
                 }
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 _JustDied();
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
             {
             }
 
-            void MoveInLineOfSight(Unit* who)
+            void MoveInLineOfSight(UnitPtr who)
             {
                 // If Lorewalker stonestep sees a player, launch the speech.
                 if (!event_go && who->GetTypeId() == TYPEID_PLAYER)
@@ -252,7 +252,7 @@ class boss_lorewalker_stonestep : public CreatureScript
                                 Talk(EVENT_TALK_STRIFE_3); //419680784
                                 me->SetFacingTo(1.239f);
                                 events.ScheduleEvent(EVENT_STRIFE_4, 6014);
-                                TempSummon* temp = me->SummonCreature(CREATURE_OSONG, 842.752f, -2468.911f, 174.959f);
+                                TempSummonPtr temp = me->SummonCreature(CREATURE_OSONG, 842.752f, -2468.911f, 174.959f);
                                 if (!temp)
                                     break;
                                 temp->setFaction(14);
@@ -280,14 +280,14 @@ class mob_sun : public CreatureScript
     public:
         mob_sun() : CreatureScript("mob_sun") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_sun_AI(creature);
         }
 
         struct mob_sun_AI : public BossAI
         {
-            mob_sun_AI(Creature* creature) : BossAI(creature, BOSS_SUN)
+            mob_sun_AI(CreaturePtr creature) : BossAI(creature, BOSS_SUN)
             {
                 me->CastSpell(me, SPELL_SUN, false);
                 me->CastSpell(me, SPELL_GROW_LOW, false);
@@ -306,7 +306,7 @@ class mob_sun : public CreatureScript
                 }
             }
 
-            void JustDied(Unit* killer)
+            void JustDied(UnitPtr killer)
             {
                 me->GetInstanceScript()->SetData(TYPE_NUMBER_SUN_DEFEATED, 1);
             }
@@ -320,7 +320,7 @@ class mob_sun : public CreatureScript
                     switch (eventId)
                     {
                     case 1:
-                        Unit* target = SelectTarget(SELECT_TARGET_RANDOM);
+                        UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM);
                         if (target != nullptr)
                             me->CastSpell(target, SPELL_SUNFIRE_RAYS, true);
                         events.ScheduleEvent(1, 5000);
@@ -336,14 +336,14 @@ class mob_zao : public CreatureScript
     public:
         mob_zao() : CreatureScript("mob_zao") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_zao_AI(creature);
         }
 
         struct mob_zao_AI : public BossAI
         {
-            mob_zao_AI(Creature* creature) : BossAI(creature, BOSS_ZAO_SUNSEEKER)
+            mob_zao_AI(CreaturePtr creature) : BossAI(creature, BOSS_ZAO_SUNSEEKER)
             {
                 isCorrupted = false;
                 me->AddUnitState(UNIT_STATE_ROOT);
@@ -352,7 +352,7 @@ class mob_zao : public CreatureScript
 
             bool isCorrupted;
 
-            void DamageTaken(Unit* attacker, uint32&)
+            void DamageTaken(UnitPtr attacker, uint32&)
             {
                 if (attacker->ToCreature()
                     && (attacker->ToCreature()->GetEntry() == CREATURE_HAUNTING_SHA_1
@@ -384,7 +384,7 @@ class mob_zao : public CreatureScript
             {
                 if (suns.empty())
                 {
-                    std::list<Creature*> searcher;
+                    std::list<CreaturePtr> searcher;
                     GetCreatureListWithEntryInGrid(searcher, me, CREATURE_SUN, 50.0f);
                     for (auto itr : searcher)
                     {
@@ -414,7 +414,7 @@ class mob_zao : public CreatureScript
                     case EVENT_ZAO_ATTACK:
                         if (isCorrupted)
                         {
-                            Unit* target = SelectTarget(SELECT_TARGET_RANDOM);
+                            UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM);
                             if (target != nullptr)
                                 me->CastSpell(target, SPELL_HELLFIRE_ARROW, true);
                             events.ScheduleEvent(EVENT_ZAO_ATTACK, 3000);
@@ -425,7 +425,7 @@ class mob_zao : public CreatureScript
                             {
                                 uint32 rand = urand(0, suns.size());
                                 uint64 guid_target = 0;
-                                Creature* target = nullptr;
+                                CreaturePtr target = nullptr;
                                 for (auto guid : suns)
                                 {
                                     if (rand == 0)
@@ -455,20 +455,20 @@ class mob_haunting_sha : public CreatureScript
     public:
         mob_haunting_sha() : CreatureScript("mob_haunting_sha") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_haunting_sha_AI(creature);
         }
 
         struct mob_haunting_sha_AI : public BossAI
         {
-            mob_haunting_sha_AI(Creature* creature) : BossAI(creature, BOSS_ZAO_SUNSEEKER)
+            mob_haunting_sha_AI(CreaturePtr creature) : BossAI(creature, BOSS_ZAO_SUNSEEKER)
             {
                 me->setFaction(14);
                 me->CastSpell(me, SPELL_EXTRACT_SHA, false);
             }
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 events.ScheduleEvent(1, 1000);
             }
@@ -481,7 +481,7 @@ class mob_haunting_sha : public CreatureScript
                 uint64 guid = me->GetInstanceScript()->GetData64(CREATURE_ZAO_SUNSEEKER);
                 if (guid != 0)
                 {
-                    Creature* zao = me->GetMap()->GetCreature(guid);
+                    CreaturePtr zao = me->GetMap()->GetCreature(guid);
                     if(!zao)
                         return;
 
@@ -500,7 +500,7 @@ class mob_haunting_sha : public CreatureScript
                     {
                         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                         {
-                            Player* plr = i->getSource();
+                            PlayerPtr plr = i->getSource();
                             if( !plr)
                                 continue;
                             me->getThreatManager().addThreat(plr, 1.0f);
@@ -534,14 +534,14 @@ class mob_strife : public CreatureScript
     public:
         mob_strife() : CreatureScript("mob_strife") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_strife_AI(creature);
         }
 
         struct mob_strife_AI : public BossAI
         {
-            mob_strife_AI(Creature* creature) : BossAI(creature, BOSS_STRIFE)
+            mob_strife_AI(CreaturePtr creature) : BossAI(creature, BOSS_STRIFE)
             {
                 me->setFaction(14);
                 timer_intensity = TIMER_INTENSITY;
@@ -554,13 +554,13 @@ class mob_strife : public CreatureScript
             int32 countIntensity;
             bool hasBeenHit;
 
-            void DamageTaken(Unit* unit, uint32&)
+            void DamageTaken(UnitPtr unit, uint32&)
             {
                 timer_dissipation = TIMER_DISSIPATION;
                 hasBeenHit = true;
             }
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 events.ScheduleEvent(1, 1000);
             }
@@ -631,14 +631,14 @@ class mob_peril : public CreatureScript
     public:
         mob_peril() : CreatureScript("mob_peril") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_peril_AI(creature);
         }
 
         struct mob_peril_AI : public BossAI
         {
-            mob_peril_AI(Creature* creature) : BossAI(creature, BOSS_PERIL)
+            mob_peril_AI(CreaturePtr creature) : BossAI(creature, BOSS_PERIL)
             {
                 me->setFaction(14);
                 timer_intensity = TIMER_INTENSITY;
@@ -651,13 +651,13 @@ class mob_peril : public CreatureScript
             int32 countIntensity;
             bool hasBeenHit;
 
-            void DamageTaken(Unit* unit, uint32&)
+            void DamageTaken(UnitPtr unit, uint32&)
             {
                 timer_dissipation = TIMER_DISSIPATION;
                 hasBeenHit = true;
             }
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 events.ScheduleEvent(1, 1000);
             }
@@ -728,19 +728,19 @@ class mob_nodding_tiger: public CreatureScript
     public:
         mob_nodding_tiger() : CreatureScript("mob_nodding_tiger") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_nodding_tiger_AI(creature);
         }
 
         struct mob_nodding_tiger_AI : public ScriptedAI
         {
-            mob_nodding_tiger_AI(Creature* creature) : ScriptedAI(creature)
+            mob_nodding_tiger_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
             EventMap events;
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 events.ScheduleEvent(1, 2000);
             }
@@ -772,19 +772,19 @@ class mob_golden_beetle: public CreatureScript
     public:
         mob_golden_beetle() : CreatureScript("mob_golden_beetle") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_golden_beetle_AI(creature);
         }
 
         struct mob_golden_beetle_AI : public ScriptedAI
         {
-            mob_golden_beetle_AI(Creature* creature) : ScriptedAI(creature)
+            mob_golden_beetle_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
             EventMap events;
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 events.ScheduleEvent(1, 2000);
                 events.ScheduleEvent(2, 4000);
@@ -826,19 +826,19 @@ class mob_jiang_xiang: public CreatureScript
     public:
         mob_jiang_xiang() : CreatureScript("mob_jiang_xiang") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_jiang_xiang_AI(creature);
         }
 
         struct mob_jiang_xiang_AI : public ScriptedAI
         {
-            mob_jiang_xiang_AI(Creature* creature) : ScriptedAI(creature)
+            mob_jiang_xiang_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
             EventMap events;
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 events.ScheduleEvent(1, 2000);
                 events.ScheduleEvent(2, 4000);
@@ -875,19 +875,19 @@ class mob_songbird_queen: public CreatureScript
     public:
         mob_songbird_queen() : CreatureScript("mob_songbird_queen") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_songbird_queen_AI(creature);
         }
 
         struct mob_songbird_queen_AI : public ScriptedAI
         {
-            mob_songbird_queen_AI(Creature* creature) : ScriptedAI(creature)
+            mob_songbird_queen_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
             EventMap events;
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 events.ScheduleEvent(1, 2000);
             }
@@ -919,7 +919,7 @@ class mob_talking_fish: public CreatureScript
     public:
         mob_talking_fish() : CreatureScript("mob_talking_fish") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_talking_fish_AI(creature);
         }
@@ -934,12 +934,12 @@ class mob_talking_fish: public CreatureScript
 
         struct mob_talking_fish_AI : public ScriptedAI
         {
-            mob_talking_fish_AI(Creature* creature) : ScriptedAI(creature)
+            mob_talking_fish_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
             EventMap events;
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 Talk(TALK_0 + urand(0, 3));
                 events.ScheduleEvent(1, 2000);

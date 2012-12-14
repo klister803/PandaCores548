@@ -73,14 +73,14 @@ class npc_manaforge_control_console : public CreatureScript
 public:
     npc_manaforge_control_console() : CreatureScript("npc_manaforge_control_console") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_manaforge_control_consoleAI (creature);
     }
 
     struct npc_manaforge_control_consoleAI : public ScriptedAI
     {
-        npc_manaforge_control_consoleAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_manaforge_control_consoleAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 Event_Timer;
         uint32 Wave_Timer;
@@ -88,7 +88,7 @@ public:
         bool Wave;
         uint64 someplayer;
         uint64 goConsole;
-        Creature* add;
+        CreaturePtr add;
 
         void Reset()
         {
@@ -101,9 +101,9 @@ public:
             add = NULL;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        /*void SpellHit(Unit* caster, const SpellInfo* spell)
+        /*void SpellHit(UnitPtr caster, const SpellInfo* spell)
         {
             //we have no way of telling the Creature was hit by spell -> got aura applied after 10-12 seconds
             //then no way for the mobs to actually stop the shutdown as intended.
@@ -111,13 +111,13 @@ public:
                 DoSay("Silence! I kill you!", LANG_UNIVERSAL, NULL);
         }*/
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(EMOTE_ABORT, me);
 
             if (someplayer)
             {
-                Unit* p = Unit::GetUnit(*me, someplayer);
+                UnitPtr p = Unit::GetUnit(TO_WORLDOBJECT(me), someplayer);
                 if (p && p->GetTypeId() == TYPEID_PLAYER)
                 {
                     switch (me->GetEntry())
@@ -144,12 +144,12 @@ public:
 
             if (goConsole)
             {
-                if (GameObject* go = GameObject::GetGameObject(*me, goConsole))
+                if (GameObjectPtr go = GameObject::GetGameObject(*me, goConsole))
                     go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
             }
         }
 
-        void DoWaveSpawnForCreature(Creature* creature)
+        void DoWaveSpawnForCreature(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -203,7 +203,7 @@ public:
                     break;
             }
         }
-        void DoFinalSpawnForCreature(Creature* creature)
+        void DoFinalSpawnForCreature(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -245,7 +245,7 @@ public:
                     case 1:
                         if (someplayer)
                         {
-                            Unit* u = Unit::GetUnit(*me, someplayer);
+                            UnitPtr u = Unit::GetUnit(TO_WORLDOBJECT(me), someplayer);
                             if (u && u->GetTypeId() == TYPEID_PLAYER) DoScriptText(EMOTE_START, me, u);
                         }
                         Event_Timer = 60000;
@@ -273,14 +273,14 @@ public:
                         DoScriptText(EMOTE_COMPLETE, me);
                         if (someplayer)
                         {
-                            Unit* u = Unit::GetUnit(*me, someplayer);
+                            UnitPtr u = Unit::GetUnit(TO_WORLDOBJECT(me), someplayer);
                             if (u && u->GetTypeId() == TYPEID_PLAYER)
                                 CAST_PLR(u)->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
                             DoCast(me, SPELL_DISABLE_VISUAL);
                         }
                         if (goConsole)
                         {
-                            if (GameObject* go = GameObject::GetGameObject(*me, goConsole))
+                            if (GameObjectPtr go = GameObject::GetGameObject(*me, goConsole))
                                 go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
                         }
                         ++Phase;
@@ -309,7 +309,7 @@ class go_manaforge_control_console : public GameObjectScript
 public:
     go_manaforge_control_console() : GameObjectScript("go_manaforge_control_console") { }
 
-    bool OnGossipHello(Player* player, GameObject* go)
+    bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
     {
         if (go->GetGoType() == GAMEOBJECT_TYPE_QUESTGIVER)
         {
@@ -317,7 +317,7 @@ public:
             player->SendPreparedQuest(go->GetGUID());
         }
 
-        Creature* manaforge = NULL;
+        CreaturePtr manaforge = NULL;
 
         switch (go->GetAreaId())
         {
@@ -389,14 +389,14 @@ class npc_commander_dawnforge : public CreatureScript
 public:
     npc_commander_dawnforge() : CreatureScript("npc_commander_dawnforge") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_commander_dawnforgeAI(creature);
     }
 
     struct npc_commander_dawnforgeAI : public ScriptedAI
     {
-        npc_commander_dawnforgeAI(Creature* creature) : ScriptedAI(creature) { Reset(); }
+        npc_commander_dawnforgeAI(CreaturePtr creature) : ScriptedAI(creature) { Reset(); }
 
         uint64 PlayerGUID;
         uint64 ardonisGUID;
@@ -422,9 +422,9 @@ public:
             isEvent = false;
         }
 
-        void EnterCombat(Unit* /*who*/) { }
+        void EnterCombat(UnitPtr /*who*/) { }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             pathaleonGUID = summoned->GetGUID();
         }
@@ -432,9 +432,9 @@ public:
         // Emote Ardonis and Pathaleon
         void Turn_to_Pathaleons_Image()
         {
-            Creature* ardonis = Unit::GetCreature(*me, ardonisGUID);
-            Creature* pathaleon = Unit::GetCreature(*me, pathaleonGUID);
-            Player* player = Unit::GetPlayer(*me, PlayerGUID);
+            CreaturePtr ardonis = Unit::GetCreature(TO_WORLDOBJECT(me), ardonisGUID);
+            CreaturePtr pathaleon = Unit::GetCreature(TO_WORLDOBJECT(me), pathaleonGUID);
+            PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID);
 
             if (!ardonis || !pathaleon || !player)
                 return;
@@ -458,9 +458,9 @@ public:
         //Set them back to each other
         void Turn_to_eachother()
         {
-            if (Unit* ardonis = Unit::GetUnit(*me, ardonisGUID))
+            if (UnitPtr ardonis = Unit::GetUnit(TO_WORLDOBJECT(me), ardonisGUID))
             {
-                Player* player = Unit::GetPlayer(*me, PlayerGUID);
+                PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID);
 
                 if (!player)
                     return;
@@ -481,11 +481,11 @@ public:
             }
         }
 
-        bool CanStartEvent(Player* player)
+        bool CanStartEvent(PlayerPtr player)
         {
             if (!isEvent)
             {
-                Creature* ardonis = me->FindNearestCreature(CreatureEntry[0], 10.0f);
+                CreaturePtr ardonis = me->FindNearestCreature(CreatureEntry[0], 10.0f);
                 if (!ardonis)
                     return false;
 
@@ -515,9 +515,9 @@ public:
                 return;
             }
 
-            Unit* ardonis = Unit::GetUnit(*me, ardonisGUID);
-            Unit* pathaleon = Unit::GetUnit(*me, pathaleonGUID);
-            Player* player = Unit::GetPlayer(*me, PlayerGUID);
+            UnitPtr ardonis = Unit::GetUnit(TO_WORLDOBJECT(me), ardonisGUID);
+            UnitPtr pathaleon = Unit::GetUnit(TO_WORLDOBJECT(me), pathaleonGUID);
+            PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID);
 
             if (!ardonis || !player)
             {
@@ -640,7 +640,7 @@ class at_commander_dawnforge : public AreaTriggerScript
 public:
     at_commander_dawnforge() : AreaTriggerScript("at_commander_dawnforge") { }
 
-    bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/)
+    bool OnTrigger(PlayerPtr player, const AreaTriggerEntry* /*at*/)
     {
         //if player lost aura or not have at all, we should not try start event.
         if (!player->HasAura(SPELL_SUNFURY_DISGUISE))
@@ -648,7 +648,7 @@ public:
 
         if (player->isAlive() && player->GetQuestStatus(QUEST_INFO_GATHERING) == QUEST_STATUS_INCOMPLETE)
         {
-            Creature* Dawnforge = player->FindNearestCreature(CreatureEntry[1], 30.0f);
+            CreaturePtr Dawnforge = player->FindNearestCreature(CreatureEntry[1], 30.0f);
             if (!Dawnforge)
                 return false;
 
@@ -679,7 +679,7 @@ class npc_professor_dabiri : public CreatureScript
 public:
     npc_professor_dabiri() : CreatureScript("npc_professor_dabiri") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_DIMENSIUS)
             DoScriptText(WHISPER_DABIRI, creature, player);
@@ -687,7 +687,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -699,7 +699,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -739,21 +739,21 @@ class mob_phase_hunter : public CreatureScript
 public:
     mob_phase_hunter() : CreatureScript("mob_phase_hunter") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_phase_hunterAI (creature);
     }
 
     struct mob_phase_hunterAI : public ScriptedAI
     {
-        mob_phase_hunterAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_phase_hunterAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         bool Weak;
         bool Materialize;
         bool Drained;
         uint8 WeakPercent;
 
-        Player* player;
+        PlayerPtr player;
         uint64 PlayerGUID;
 
         uint32 ManaBurnTimer;
@@ -773,13 +773,13 @@ public:
                 me->UpdateEntry(NPC_PHASE_HUNTER_ENTRY);
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             if (who->GetTypeId() == TYPEID_PLAYER)
                 PlayerGUID = who->GetGUID();
         }
 
-        //void SpellHit(Unit* /*caster*/, const SpellInfo* /*spell*/)
+        //void SpellHit(UnitPtr /*caster*/, const SpellInfo* /*spell*/)
         //{
         //    DoCast(me, SPELL_DE_MATERIALIZE);
         //}
@@ -801,12 +801,12 @@ public:
             // some code to cast spell Mana Burn on random target which has mana
             if (ManaBurnTimer <= diff)
             {
-                std::list<HostileReference*> AggroList = me->getThreatManager().getThreatList();
-                std::list<Unit*> UnitsWithMana;
+                std::list<HostileReferencePtr> AggroList = me->getThreatManager().getThreatList();
+                std::list<UnitPtr> UnitsWithMana;
 
-                for (std::list<HostileReference*>::const_iterator itr = AggroList.begin(); itr != AggroList.end(); ++itr)
+                for (std::list<HostileReferencePtr>::const_iterator itr = AggroList.begin(); itr != AggroList.end(); ++itr)
                 {
-                    if (Unit* unit = Unit::GetUnit(*me, (*itr)->getUnitGuid()))
+                    if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid()))
                     {
                         if (unit->GetCreateMana() > 0)
                             UnitsWithMana.push_back(unit);
@@ -821,7 +821,7 @@ public:
                     ManaBurnTimer = 3500;
             } else ManaBurnTimer -= diff;
 
-            if (Player* player = Unit::GetPlayer(*me, PlayerGUID)) // start: support for quest 10190
+            if (PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID)) // start: support for quest 10190
             {
                 if (!Weak && HealthBelowPct(WeakPercent)
                     && player->GetQuestStatus(QUEST_RECHARGING_THE_BATTERIES) == QUEST_STATUS_INCOMPLETE)
@@ -865,7 +865,7 @@ class npc_bessy : public CreatureScript
 public:
     npc_bessy() : CreatureScript("npc_bessy") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
     {
         if (quest->GetQuestId() == Q_ALMABTRIEB)
         {
@@ -876,24 +876,24 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_bessyAI(creature);
     }
 
     struct npc_bessyAI : public npc_escortAI
     {
-        npc_bessyAI(Creature* creature) : npc_escortAI(creature) {}
+        npc_bessyAI(CreaturePtr creature) : npc_escortAI(creature) {}
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
-            if (Player* player = GetPlayerForEscort())
+            if (PlayerPtr player = GetPlayerForEscort())
                 player->FailQuest(Q_ALMABTRIEB);
         }
 
         void WaypointReached(uint32 waypointId)
         {
-            Player* player = GetPlayerForEscort();
+            PlayerPtr player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -920,7 +920,7 @@ public:
             }
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->AI()->AttackStart(me);
         }
@@ -947,14 +947,14 @@ class npc_maxx_a_million_escort : public CreatureScript
 public:
     npc_maxx_a_million_escort() : CreatureScript("npc_maxx_a_million_escort") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_maxx_a_million_escortAI(creature);
     }
 
     struct npc_maxx_a_million_escortAI : public npc_escortAI
     {
-        npc_maxx_a_million_escortAI(Creature* creature) : npc_escortAI(creature) {}
+        npc_maxx_a_million_escortAI(CreaturePtr creature) : npc_escortAI(creature) {}
 
         bool bTake;
         uint32 uiTakeTimer;
@@ -967,7 +967,7 @@ public:
 
         void WaypointReached(uint32 waypointId)
         {
-            Player* player = GetPlayerForEscort();
+            PlayerPtr player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -991,9 +991,9 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
-            if (Player* player = GetPlayerForEscort())
+            if (PlayerPtr player = GetPlayerForEscort())
                 player->FailQuest(QUEST_MARK_V_IS_ALIVE);
         }
 
@@ -1006,7 +1006,7 @@ public:
                 if (uiTakeTimer < uiDiff)
                 {
                     me->HandleEmoteCommand(EMOTE_STATE_NONE);
-                    if (GameObject* go = GetClosestGameObjectWithEntry(me, GO_DRAENEI_MACHINE, INTERACTION_DISTANCE))
+                    if (GameObjectPtr go = GetClosestGameObjectWithEntry(me, GO_DRAENEI_MACHINE, INTERACTION_DISTANCE))
                     {
                         SetEscortPaused(false);
                         bTake=false;
@@ -1021,7 +1021,7 @@ public:
         }
     };
 
-    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, const Quest* quest)
     {
         if (quest->GetQuestId() == QUEST_MARK_V_IS_ALIVE)
         {
@@ -1050,9 +1050,9 @@ class go_captain_tyralius_prison : public GameObjectScript
     public:
         go_captain_tyralius_prison() : GameObjectScript("go_captain_tyralius_prison") { }
 
-        bool OnGossipHello(Player* player, GameObject* go)
+        bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
         {
-            if (Creature* tyralius = go->FindNearestCreature(NPC_CAPTAIN_TYRALIUS, 1.0f))
+            if (CreaturePtr tyralius = go->FindNearestCreature(NPC_CAPTAIN_TYRALIUS, 1.0f))
             {
                 go->UseDoorOrButton();
 

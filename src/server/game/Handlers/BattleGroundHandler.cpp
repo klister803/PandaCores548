@@ -41,7 +41,7 @@ void WorldSession::HandleBattlemasterHelloOpcode(WorldPacket & recvData)
     recvData >> guid;
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_BATTLEMASTER_HELLO Message from (GUID: %u TypeId:%u)", GUID_LOPART(guid), GuidHigh2TypeId(GUID_HIPART(guid)));
 
-    Creature* unit = GetPlayer()->GetMap()->GetCreature(guid);
+    CreaturePtr unit = GetPlayer()->GetMap()->GetCreature(guid);
     if (!unit)
         return;
 
@@ -77,7 +77,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
     uint32 instanceId = 0;
     uint8 joinAsGroup = 0;
     bool isPremade = false;
-    Group* grp = NULL;
+    GroupPtr grp = NULL;
 
     recvData >> instanceId;                                 // battleground type id (DBC id)
     recvData.read_skip<uint32>();
@@ -240,9 +240,9 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
             avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
         }
 
-        for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+        for (GroupReferencePtr itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
         {
-            Player* member = itr->getSource();
+            PlayerPtr member = itr->getSource();
             if (!member)
                 continue;   // this should never happen
 
@@ -282,8 +282,8 @@ void WorldSession::HandleBattlegroundPlayerPositionsOpcode(WorldPacket& /*recvDa
         return;
 
     uint32 flagCarrierCount = 0;
-    Player* allianceFlagCarrier = NULL;
-    Player* hordeFlagCarrier = NULL;
+    PlayerPtr allianceFlagCarrier = NULL;
+    PlayerPtr hordeFlagCarrier = NULL;
 
     if (uint64 guid = bg->GetFlagPickerGUID(BG_TEAM_ALLIANCE))
     {
@@ -665,7 +665,7 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recvData)
 
     GroupJoinBattlegroundResult err = ERR_BATTLEGROUND_NONE;
 
-     Group* grp = _player->GetGroup();
+     GroupPtr grp = _player->GetGroup();
      // no group found, error
      if (!grp)
          return;
@@ -703,9 +703,9 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recvData)
         avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
     }
 
-    for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+    for (GroupReferencePtr itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
     {
-        Player* member = itr->getSource();
+        PlayerPtr member = itr->getSource();
         if (!member)
             continue;
 

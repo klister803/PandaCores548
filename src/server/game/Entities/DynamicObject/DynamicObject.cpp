@@ -51,7 +51,7 @@ void DynamicObject::AddToWorld()
     ///- Register the dynamicObject for guid lookup and for caster
     if (!IsInWorld())
     {
-        sObjectAccessor->AddObject(this);
+        sObjectAccessor->AddObject(THIS_DYNAMICOBJECT);
         WorldObject::AddToWorld();
         BindToCaster();
     }
@@ -74,11 +74,11 @@ void DynamicObject::RemoveFromWorld()
 
         UnbindFromCaster();
         WorldObject::RemoveFromWorld();
-        sObjectAccessor->RemoveObject(this);
+        sObjectAccessor->RemoveObject(THIS_DYNAMICOBJECT);
     }
 }
 
-bool DynamicObject::CreateDynamicObject(uint32 guidlow, Unit* caster, uint32 spellId, Position const& pos, float radius, DynamicObjectType type)
+bool DynamicObject::CreateDynamicObject(uint32 guidlow, UnitPtr caster, uint32 spellId, Position const& pos, float radius, DynamicObjectType type)
 {
     SetMap(caster->GetMap());
     Relocate(pos);
@@ -115,7 +115,7 @@ bool DynamicObject::CreateDynamicObject(uint32 guidlow, Unit* caster, uint32 spe
     if (IsWorldObject())
         setActive(true);    //must before add to map to be put in world container
 
-    if (!GetMap()->AddToMap(this))
+    if (!GetMap()->AddToMap(THIS_DYNAMICOBJECT))
         return false;
 
     return true;
@@ -132,7 +132,7 @@ void DynamicObject::Update(uint32 p_time)
     if (_aura)
     {
         if (!_aura->IsRemoved())
-            _aura->UpdateOwner(p_time, this);
+            _aura->UpdateOwner(p_time, THIS_DYNAMICOBJECT);
 
         // _aura may be set to null in Aura::UpdateOwner call
         if (_aura && (_aura->IsRemoved() || _aura->IsExpired()))
@@ -149,7 +149,7 @@ void DynamicObject::Update(uint32 p_time)
     if (expired)
         Remove();
     else
-        sScriptMgr->OnDynamicObjectUpdate(this, p_time);
+        sScriptMgr->OnDynamicObjectUpdate(THIS_DYNAMICOBJECT, p_time);
 }
 
 void DynamicObject::Remove()
@@ -200,18 +200,18 @@ void DynamicObject::RemoveAura()
 
 void DynamicObject::SetCasterViewpoint()
 {
-    if (Player* caster = _caster->ToPlayer())
+    if (PlayerPtr caster = TO_PLAYER(_caster))
     {
-        caster->SetViewpoint(this, true);
+        caster->SetViewpoint(THIS_DYNAMICOBJECT, true);
         _isViewpoint = true;
     }
 }
 
 void DynamicObject::RemoveCasterViewpoint()
 {
-    if (Player* caster = _caster->ToPlayer())
+    if (PlayerPtr caster = TO_PLAYER(_caster))
     {
-        caster->SetViewpoint(this, false);
+        caster->SetViewpoint(THIS_DYNAMICOBJECT, false);
         _isViewpoint = false;
     }
 }
@@ -219,15 +219,15 @@ void DynamicObject::RemoveCasterViewpoint()
 void DynamicObject::BindToCaster()
 {
     ASSERT(!_caster);
-    _caster = ObjectAccessor::GetUnit(*this, GetCasterGUID());
+    _caster = ObjectAccessor::GetUnit(THIS_CONST_WORLDOBJECT, GetCasterGUID());
     ASSERT(_caster);
     ASSERT(_caster->GetMap() == GetMap());
-    _caster->_RegisterDynObject(this);
+    _caster->_RegisterDynObject(THIS_DYNAMICOBJECT);
 }
 
 void DynamicObject::UnbindFromCaster()
 {
     ASSERT(_caster);
-    _caster->_UnregisterDynObject(this);
+    _caster->_UnregisterDynObject(THIS_DYNAMICOBJECT);
     _caster = NULL;
 }

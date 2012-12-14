@@ -90,14 +90,14 @@ class boss_four_horsemen : public CreatureScript
 public:
     boss_four_horsemen() : CreatureScript("boss_four_horsemen") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_four_horsemenAI (creature);
     }
 
     struct boss_four_horsemenAI : public BossAI
     {
-        boss_four_horsemenAI(Creature* creature) : BossAI(creature, BOSS_HORSEMEN)
+        boss_four_horsemenAI(CreaturePtr creature) : BossAI(creature, BOSS_HORSEMEN)
         {
             id = Horsemen(0);
             for (uint8 i = 0; i < 4; ++i)
@@ -140,15 +140,15 @@ public:
             _Reset();
         }
 
-        bool DoEncounteraction(Unit* who, bool attack, bool reset, bool checkAllDead)
+        bool DoEncounteraction(UnitPtr who, bool attack, bool reset, bool checkAllDead)
         {
             if (!instance)
                 return false;
 
-            Creature* Thane = Unit::GetCreature(*me, instance->GetData64(DATA_THANE));
-            Creature* Lady = Unit::GetCreature(*me, instance->GetData64(DATA_LADY));
-            Creature* Baron = Unit::GetCreature(*me, instance->GetData64(DATA_BARON));
-            Creature* Sir = Unit::GetCreature(*me, instance->GetData64(DATA_SIR));
+            CreaturePtr Thane = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_THANE));
+            CreaturePtr Lady = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_LADY));
+            CreaturePtr Baron = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_BARON));
+            CreaturePtr Sir = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_SIR));
 
             if (Thane && Lady && Baron && Sir)
             {
@@ -233,7 +233,7 @@ public:
                 movementCompleted = true;
                 me->SetReactState(REACT_AGGRESSIVE);
 
-                Unit* eventStarter = Unit::GetUnit(*me, uiEventStarterGUID);
+                UnitPtr eventStarter = Unit::GetUnit(TO_WORLDOBJECT(me), uiEventStarterGUID);
 
                 if (eventStarter && me->IsValidAttackTarget(eventStarter))
                     AttackStart(eventStarter);
@@ -257,7 +257,7 @@ public:
         }
 
         // switch to "who" if nearer than current target.
-        void SelectNearestTarget(Unit* who)
+        void SelectNearestTarget(UnitPtr who)
         {
             if (me->getVictim() && me->GetDistanceOrder(who, me->getVictim()) && me->IsValidAttackTarget(who))
             {
@@ -266,14 +266,14 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             BossAI::MoveInLineOfSight(who);
             if (caster)
                 SelectNearestTarget(who);
         }
 
-        void AttackStart(Unit* who)
+        void AttackStart(UnitPtr who)
         {
             if (!movementCompleted && !movementStarted)
             {
@@ -292,7 +292,7 @@ public:
             }
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             if (!(rand()%5))
             {
@@ -303,7 +303,7 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             events.Reset();
             summons.DespawnAll();
@@ -324,7 +324,7 @@ public:
             DoScriptText(SAY_DEATH[id], me);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
 
@@ -370,7 +370,7 @@ public:
 
                         if (caster)
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f))
                                 DoCast(target, SPELL_PRIMARY(id));
                         }
                         else
@@ -415,7 +415,7 @@ class spell_four_horsemen_mark : public SpellScriptLoader
 
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
                     int32 damage;
                     switch (GetStackAmount())
