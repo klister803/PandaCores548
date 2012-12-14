@@ -1,6 +1,8 @@
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 
+
+
 class mob_tushui_trainee : public CreatureScript
 {
     public:
@@ -8,7 +10,7 @@ class mob_tushui_trainee : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new mob_tushui_trainee(creature);
+            return new mob_tushui_trainee_AI(creature);
         }
 
         struct mob_tushui_trainee_AI : public ScriptedAI
@@ -40,7 +42,8 @@ class mob_tushui_trainee : public CreatureScript
                 
                 if(me->GetHealthPct() < 0.20)
                 {
-                    me->getVictim()->KilledMonsterCredit(me->getEntry(), 0);
+                    if (Player* plr = me->getVictim()->ToPlayer())
+                        plr->KilledMonsterCredit(me->GetEntry(), 0);
                     me->CombatStop();
                     me->SetHealth(me->GetMaxHealth());
                     me->setFaction(14);
