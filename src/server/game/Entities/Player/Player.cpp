@@ -3235,6 +3235,32 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate)
     SetUInt32Value(PLAYER_XP, newXP);
 }
 
+// Give xp when gathering herbalism and mininh
+// Formulas found here : http://www.wowwiki.com/Formulas:Gather_XP
+void Player::GiveGatheringXP()
+{
+    uint32 level = getLevel();
+    uint32 gain = 0;
+
+    if (level >= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
+        return;
+
+    if (level < 50)
+        gain = 12.76f * level;
+    else if (level > 49 && level < 60)
+        gain = 25 * level - 550;
+    else if (level > 59 && level < 70)
+        gain = 20 * level - 200;
+    else if (level > 69 && level < 80)
+        gain = 100 * level - 6600;
+    else if (level > 79 && level < 85)
+        gain = 750 * level - 58250;
+    else if (level > 84 && level < 90)
+        gain = 1720 * level - 138800; // (7400 - 14280),  Guessed, TODO : find blizzlike formula (7400 - 14280)
+
+    GiveXP(gain, nullptr);
+}
+
 // Update player to next level
 // Current player experience not update (must be update by caller)
 void Player::GiveLevel(uint8 level)

@@ -2135,6 +2135,12 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
                 player->UpdateGatherSkill(skillId, pureSkillValue, reqSkillValue);
             }
         }
+
+        // Update player XP
+        // Patch 4.0.1 (2010-10-12): Gathering herbs and Mining will give XP
+        if (skillId == SKILL_MINING || skillId == SKILL_HERBALISM)
+            player->GiveGatheringXP();
+
     }
     ExecuteLogEffectOpenLock(effIndex, gameObjTarget ? (Object*)gameObjTarget : (Object*)itemTarget);
 }
