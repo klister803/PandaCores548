@@ -3120,6 +3120,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 6262: // Health Stone
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL_PCT;
+                spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+                break;
             case 31230: // Cheat Death
             case 114556 : // Purgatory
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
