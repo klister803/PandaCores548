@@ -869,6 +869,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_ignoreMovementCount = 0;
 
+    m_groupUpdateDelay = 5000;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 }
 
@@ -1851,7 +1853,14 @@ void Player::Update(uint32 p_time)
     }
 
     // group update
-    SendUpdateToOutOfRangeGroupMembers();
+    // Avoid spam of SMSG_PARTY_MEMBER_STAT
+    if (m_groupUpdateDelay < p_time)
+    {
+        SendUpdateToOutOfRangeGroupMembers();
+        m_groupUpdateDelay = 5000;
+    }
+    else
+        m_groupUpdateDelay -= p_time;
 
     Pet* pet = GetPet();
     if (pet && !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityRange()) && !pet->isPossessed())
@@ -3224,6 +3233,32 @@ void Player::GiveXP(uint32 xp, Unit* victim, float group_rate)
     }
 
     SetUInt32Value(PLAYER_XP, newXP);
+}
+
+// Give xp when gathering herbalism and mininh
+// Formulas found here : http://www.wowwiki.com/Formulas:Gather_XP
+void Player::GiveGatheringXP()
+{
+    uint32 level = getLevel();
+    uint32 gain = 0;
+
+    if (level >= sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL))
+        return;
+
+    if (level < 50)
+        gain = 12.76f * level;
+    else if (level > 49 && level < 60)
+        gain = 25 * level - 550;
+    else if (level > 59 && level < 70)
+        gain = 20 * level - 200;
+    else if (level > 69 && level < 80)
+        gain = 100 * level - 6600;
+    else if (level > 79 && level < 85)
+        gain = 750 * level - 58250;
+    else if (level > 84 && level < 90)
+        gain = 1720 * level - 138800; // (7400 - 14280),  Guessed, TODO : find blizzlike formula (7400 - 14280)
+
+    GiveXP(gain, nullptr);
 }
 
 // Update player to next level

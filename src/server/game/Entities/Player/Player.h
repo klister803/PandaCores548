@@ -1259,6 +1259,7 @@ class Player : public Unit, public GridObject<Player>
         void SetPvPDeath(bool on) { if (on) m_ExtraFlags |= PLAYER_EXTRA_PVP_DEATH; else m_ExtraFlags &= ~PLAYER_EXTRA_PVP_DEATH; }
 
         void GiveXP(uint32 xp, Unit* victim, float group_rate=1.0f);
+        void GiveGatheringXP();
         void GiveLevel(uint8 level);
 
         void InitStatsForLevel(bool reapplyMods = false);
@@ -3059,6 +3060,8 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 m_knockBackTimer;
         uint8  m_ignoreMovementCount;
+
+        uint32 m_groupUpdateDelay;
 };
 
 void AddItemsSetItem(Player*player, Item* item);
