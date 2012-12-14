@@ -79,7 +79,7 @@ public:
             //Immolate_Timer
             if (Immolate_Timer <= diff)
             {
-                UnitPtr target = NULL;
+                UnitPtr target = nullptr;
                 target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (target) DoCast(target, SPELL_IMMOLATE);
 

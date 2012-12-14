@@ -424,7 +424,7 @@ void hyjalAI::EnterEvadeMode()
     if (me->isAlive())
         me->GetMotionMaster()->MoveTargetedHome();
 
-    me->SetLootRecipient(NULL);
+    me->SetLootRecipient(nullptr);
 }
 
 void hyjalAI::EnterCombat(UnitPtr /*who*/)
@@ -454,7 +454,7 @@ void hyjalAI::SummonCreature(uint32 entry, float Base[4][3])
     {
         SpawnLoc[i] = Base[random][i];
     }
-    CreaturePtr creature = NULL;
+    CreaturePtr creature = nullptr;
     switch (entry)
     {
             case 17906:    //GARGOYLE
@@ -897,7 +897,7 @@ void hyjalAI::UpdateAI(const uint32 diff)
                 if (me->IsNonMeleeSpellCasted(false))
                     me->InterruptNonMeleeSpells(false);
 
-                UnitPtr target = NULL;
+                UnitPtr target = nullptr;
 
                 switch (Spells[i].TargetType)
                 {

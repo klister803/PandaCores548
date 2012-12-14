@@ -157,7 +157,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
             {
                 if (time_t timeReset = sInstanceSaveMgr->GetResetTimeFor(mEntry->MapID, diff))
                 {
-                    uint32 timeleft = uint32(timeReset - time(NULL));
+                    uint32 timeleft = uint32(timeReset - time(nullptr));
                     GetPlayer()->SendInstanceResetWarning(mEntry->MapID, diff, timeleft);
                 }
             }
@@ -264,7 +264,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
     UnitPtr mover = _player->m_mover;
 
-    ASSERT(mover != NULL);                      // there must always be a mover
+    ASSERT(mover != nullptr);                      // there must always be a mover
 
     PlayerPtr plrMover = TO_PLAYER(mover);
 
@@ -351,7 +351,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
                 if (!foundNewTransport)
                 {
-                    plrMover->m_transport = NULL;
+                    plrMover->m_transport = nullptr;
                     movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
                     movementInfo.t_time = 0;
                     movementInfo.t_seat = -1;
@@ -369,7 +369,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     else if (plrMover && plrMover->GetTransport())                // if we were on a transport, leave
     {
         plrMover->m_transport->RemovePassenger(plrMover);
-        plrMover->m_transport = NULL;
+        plrMover->m_transport = nullptr;
         movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         movementInfo.t_time = 0;
         movementInfo.t_seat = -1;
@@ -631,7 +631,7 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
     uint32 bitcounterLoop = 0;
 
     MovementStatusElements* sequence = GetMovementStatusElementsSequence(data.GetOpcode());
-    if (sequence == NULL)
+    if (sequence == nullptr)
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSession::ReadMovementInfo: No movement sequence found for opcode 0x%04X", uint32(data.GetOpcode()));
         return;

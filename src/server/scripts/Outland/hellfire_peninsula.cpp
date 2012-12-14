@@ -170,7 +170,7 @@ public:
 
         void Reset()
         {
-            pRyga = NULL;
+            pRyga = nullptr;
             DoCast(me, SPELL_ANCESTRAL_WOLF_BUFF, true);
         }
 

@@ -208,7 +208,7 @@ public:
 
             Summons.DespawnAll();
             me->SetSpeed(MOVE_FLIGHT, 3.0f);
-            if ((Unit::GetCreature(TO_WORLDOBJECT(me), m_uiGraufGUID) == NULL) && !me->IsMounted())
+            if ((Unit::GetCreature(TO_WORLDOBJECT(me), m_uiGraufGUID) == nullptr) && !me->IsMounted())
                  me->SummonCreature(CREATURE_GRAUF, Location[0].GetPositionX(), Location[0].GetPositionY(), Location[0].GetPositionZ(), 3.0f);
             if (instance)
             {
@@ -264,7 +264,7 @@ public:
                         summoned->AI()->AttackStart(target);
                     break;
                 case CREATURE_TRIGGER:
-                    summoned->CastSpell(NULLUNIT, SPELL_FREEZING_CLOUD, true);
+                    summoned->CastSpell(std::shared_ptr<Unit>(), SPELL_FREEZING_CLOUD, true);
                     summoned->DespawnOrUnsummon(10*IN_MILLISECONDS);
                     break;
             }

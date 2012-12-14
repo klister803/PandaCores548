@@ -37,39 +37,39 @@ public:
     {
         static ChatCommand pdumpCommandTable[] =
         {
-            { "load",           SEC_ADMINISTRATOR,  true,  &HandlePDumpLoadCommand,                 "", NULL },
-            { "write",          SEC_ADMINISTRATOR,  true,  &HandlePDumpWriteCommand,                "", NULL },
-            { NULL,             0,                  false, NULL,                                    "", NULL }
+            { "load",           SEC_ADMINISTRATOR,  true,  &HandlePDumpLoadCommand,                 "", nullptr },
+            { "write",          SEC_ADMINISTRATOR,  true,  &HandlePDumpWriteCommand,                "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                    "", nullptr }
         };
         static ChatCommand characterDeletedCommandTable[] =
         {
-            { "delete",         SEC_CONSOLE,        true,  &HandleCharacterDeletedDeleteCommand,   "", NULL },
-            { "list",           SEC_ADMINISTRATOR,  true,  &HandleCharacterDeletedListCommand,     "", NULL },
-            { "restore",        SEC_ADMINISTRATOR,  true,  &HandleCharacterDeletedRestoreCommand,  "", NULL },
-            { "old",            SEC_CONSOLE,        true,  &HandleCharacterDeletedOldCommand,      "", NULL },
-            { NULL,             0,                  false, NULL,                                   "", NULL }
+            { "delete",         SEC_CONSOLE,        true,  &HandleCharacterDeletedDeleteCommand,   "", nullptr },
+            { "list",           SEC_ADMINISTRATOR,  true,  &HandleCharacterDeletedListCommand,     "", nullptr },
+            { "restore",        SEC_ADMINISTRATOR,  true,  &HandleCharacterDeletedRestoreCommand,  "", nullptr },
+            { "old",            SEC_CONSOLE,        true,  &HandleCharacterDeletedOldCommand,      "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                   "", nullptr }
         };
 
         static ChatCommand characterCommandTable[] =
         {
-            { "customize",      SEC_GAMEMASTER,     true,  &HandleCharacterCustomizeCommand,       "", NULL },
-            { "changefaction",  SEC_GAMEMASTER,     true,  &HandleCharacterChangeFactionCommand,   "", NULL },
-            { "changerace",     SEC_GAMEMASTER,     true,  &HandleCharacterChangeRaceCommand,      "", NULL },
-            { "deleted",        SEC_GAMEMASTER,     true,  NULL,                                   "", characterDeletedCommandTable },
-            { "erase",          SEC_CONSOLE,        true,  &HandleCharacterEraseCommand,           "", NULL },
-            { "level",          SEC_ADMINISTRATOR,  true,  &HandleCharacterLevelCommand,           "", NULL },
-            { "rename",         SEC_GAMEMASTER,     true,  &HandleCharacterRenameCommand,          "", NULL },
-            { "reputation",     SEC_GAMEMASTER,     true,  &HandleCharacterReputationCommand,      "", NULL },
-            { "titles",         SEC_GAMEMASTER,     true,  &HandleCharacterTitlesCommand,          "", NULL },
-            { NULL,             0,                  false, NULL,                                   "", NULL }
+            { "customize",      SEC_GAMEMASTER,     true,  &HandleCharacterCustomizeCommand,       "", nullptr },
+            { "changefaction",  SEC_GAMEMASTER,     true,  &HandleCharacterChangeFactionCommand,   "", nullptr },
+            { "changerace",     SEC_GAMEMASTER,     true,  &HandleCharacterChangeRaceCommand,      "", nullptr },
+            { "deleted",        SEC_GAMEMASTER,     true,  nullptr,                                   "", characterDeletedCommandTable },
+            { "erase",          SEC_CONSOLE,        true,  &HandleCharacterEraseCommand,           "", nullptr },
+            { "level",          SEC_ADMINISTRATOR,  true,  &HandleCharacterLevelCommand,           "", nullptr },
+            { "rename",         SEC_GAMEMASTER,     true,  &HandleCharacterRenameCommand,          "", nullptr },
+            { "reputation",     SEC_GAMEMASTER,     true,  &HandleCharacterReputationCommand,      "", nullptr },
+            { "titles",         SEC_GAMEMASTER,     true,  &HandleCharacterTitlesCommand,          "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                   "", nullptr }
         };
 
         static ChatCommand commandTable[] =
         {
-            { "character",      SEC_GAMEMASTER,     true,  NULL,                                   "", characterCommandTable },
-            { "levelup",        SEC_ADMINISTRATOR,  false, &HandleLevelUpCommand,                  "", NULL },
-            { "pdump",          SEC_ADMINISTRATOR,  true,  NULL,                                   "", pdumpCommandTable },
-            { NULL,             0,                  false, NULL,                                   "", NULL }
+            { "character",      SEC_GAMEMASTER,     true,  nullptr,                                   "", characterCommandTable },
+            { "levelup",        SEC_ADMINISTRATOR,  false, &HandleLevelUpCommand,                  "", nullptr },
+            { "pdump",          SEC_ADMINISTRATOR,  true,  nullptr,                                   "", pdumpCommandTable },
+            { nullptr,             0,                  false, nullptr,                                   "", nullptr }
         };
         return commandTable;
     }
@@ -318,7 +318,7 @@ public:
         else
         {
             // check offline security
-            if (handler->HasLowerSecurity(NULL, targetGuid))
+            if (handler->HasLowerSecurity(nullptr, targetGuid))
                 return false;
 
             std::string oldNameLink = handler->playerLink(targetName);
@@ -345,7 +345,7 @@ public:
         if (isalpha(levelStr[0]))
         {
             nameStr = levelStr;
-            levelStr = NULL;                                    // current level will used
+            levelStr = nullptr;                                    // current level will used
         }
 
         PlayerPtr target;
@@ -364,7 +364,7 @@ public:
             newlevel = STRONG_MAX_LEVEL;
 
         HandleCharacterLevel(target, targetGuid, oldlevel, newlevel, handler);
-        if (!handler->GetSession() || handler->GetSession()->GetPlayer() != target)      // including player == NULL
+        if (!handler->GetSession() || handler->GetSession()->GetPlayer() != target)      // including player == nullptr
         {
             std::string nameLink = handler->playerLink(targetName);
             handler->PSendSysMessage(LANG_YOU_CHANGE_LVL, nameLink.c_str(), newlevel);
@@ -719,7 +719,7 @@ public:
         if (levelStr && isalpha(levelStr[0]))
         {
             nameStr = levelStr;
-            levelStr = NULL;                                    // current level will used
+            levelStr = nullptr;                                    // current level will used
         }
 
         PlayerPtr target;
@@ -740,7 +740,7 @@ public:
 
         HandleCharacterLevel(target, targetGuid, oldlevel, newlevel, handler);
 
-        if (!handler->GetSession() || handler->GetSession()->GetPlayer() != target)      // including chr == NULL
+        if (!handler->GetSession() || handler->GetSession()->GetPlayer() != target)      // including chr == nullptr
         {
             std::string nameLink = handler->playerLink(targetName);
             handler->PSendSysMessage(LANG_YOU_CHANGE_LVL, nameLink.c_str(), newlevel);
@@ -758,7 +758,7 @@ public:
         if (!fileStr)
             return false;
 
-        char* accountStr = strtok(NULL, " ");
+        char* accountStr = strtok(nullptr, " ");
         if (!accountStr)
             return false;
 
@@ -789,8 +789,8 @@ public:
             return false;
         }
 
-        char* guidStr = NULL;
-        char* nameStr = strtok(NULL, " ");
+        char* guidStr = nullptr;
+        char* nameStr = strtok(nullptr, " ");
 
         std::string name;
         if (nameStr)
@@ -811,7 +811,7 @@ public:
                 return false;
             }
 
-            guidStr = strtok(NULL, " ");
+            guidStr = strtok(nullptr, " ");
         }
 
         uint32 guid = 0;
@@ -866,7 +866,7 @@ public:
             return false;
 
         char* fileStr = strtok((char*)args, " ");
-        char* playerStr = strtok(NULL, " ");
+        char* playerStr = strtok(nullptr, " ");
 
         if (!fileStr || !playerStr)
             return false;

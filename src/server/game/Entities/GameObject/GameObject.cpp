@@ -34,7 +34,7 @@
 #include "DynamicTree.h"
 #include "SpellAuraEffects.h"
 
-GameObject::GameObject() : WorldObject(false), m_model(NULL), m_goValue(new GameObjectValue), m_AI(NULL)
+GameObject::GameObject() : WorldObject(false), m_model(nullptr), m_goValue(new GameObjectValue), m_AI(nullptr)
 {
     m_objectType |= TYPEMASK_GAMEOBJECT;
     m_objectTypeId = TYPEID_GAMEOBJECT;
@@ -49,9 +49,9 @@ GameObject::GameObject() : WorldObject(false), m_model(NULL), m_goValue(new Game
     m_usetimes = 0;
     m_spellId = 0;
     m_cooldownTime = 0;
-    m_goInfo = NULL;
-    m_ritualOwner = NULL;
-    m_goData = NULL;
+    m_goInfo = nullptr;
+    m_ritualOwner = nullptr;
+    m_goData = nullptr;
 
     m_DBTableGuid = 0;
     m_rotation = 0;
@@ -290,11 +290,11 @@ void GameObject::Update(uint32 diff)
                     GameObjectTemplate const* goInfo = GetGOInfo();
                     // Bombs
                     if (goInfo->trap.type == 2)
-                        m_cooldownTime = time(NULL) + 10;   // Hardcoded tooltip value
+                        m_cooldownTime = time(nullptr) + 10;   // Hardcoded tooltip value
                     else if (UnitPtr owner = GetOwner())
                     {
                         if (owner->isInCombat())
-                            m_cooldownTime = time(NULL) + 1;
+                            m_cooldownTime = time(nullptr) + 1;
                     }
                     m_lootState = GO_READY;
                     break;
@@ -302,7 +302,7 @@ void GameObject::Update(uint32 diff)
                 case GAMEOBJECT_TYPE_FISHINGNODE:
                 {
                     // fishing code (bobber ready)
-                    if (time(NULL) > m_respawnTime - FISHING_BOBBER_READY_TIME)
+                    if (time(nullptr) > m_respawnTime - FISHING_BOBBER_READY_TIME)
                     {
                         // splash bobber (bobber ready now)
                         UnitPtr caster = GetOwner();
@@ -334,7 +334,7 @@ void GameObject::Update(uint32 diff)
         {
             if (m_respawnTime > 0)                          // timer on
             {
-                time_t now = time(NULL);
+                time_t now = time(nullptr);
                 if (m_respawnTime <= now)            // timer expired
                 {
                     uint64 dbtableHighGuid = MAKE_NEW_GUID(m_DBTableGuid, GetEntry(), HIGHGUID_GAMEOBJECT);
@@ -400,20 +400,20 @@ void GameObject::Update(uint32 diff)
                 GameObjectTemplate const* goInfo = GetGOInfo();
                 if (goInfo->type == GAMEOBJECT_TYPE_TRAP)
                 {
-                    if (m_cooldownTime >= time(NULL))
+                    if (m_cooldownTime >= time(nullptr))
                         return;
 
                     // Type 2 - Bomb (will go away after casting it's spell)
                     if (goInfo->trap.type == 2)
                     {
                         if (goInfo->trap.spellId)
-                            CastSpell(NULL, goInfo->trap.spellId);  // FIXME: null target won't work for target type 1
+                            CastSpell(nullptr, goInfo->trap.spellId);  // FIXME: null target won't work for target type 1
                         SetLootState(GO_JUST_DEACTIVATED);
                         break;
                     }
                     // Type 0 and 1 - trap (type 0 will not get removed after casting a spell)
                     UnitPtr owner = GetOwner();
-                    UnitPtr ok = NULL;                            // pointer to appropriate target if found any
+                    UnitPtr ok = nullptr;                            // pointer to appropriate target if found any
 
                     bool IsBattlegroundTrap = false;
                     //FIXME: THIS_GAMEOBJECT is activation radius (in different casting radius that must be selected from spell data)
@@ -449,7 +449,7 @@ void GameObject::Update(uint32 diff)
                     {
                         // environmental damage spells already have around enemies targeting but THIS_GAMEOBJECT not help in case not existed GO casting support
                         // affect only players
-                        PlayerPtr player = NULL;
+                        PlayerPtr player = nullptr;
                         Trinity::AnyPlayerInObjectRangeCheck checker(TO_CONST_WORLDOBJECT(THIS_GAMEOBJECT), radius);
                         Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(TO_CONST_WORLDOBJECT(THIS_GAMEOBJECT), player, checker);
                         VisitNearbyWorldObject(radius, searcher);
@@ -462,7 +462,7 @@ void GameObject::Update(uint32 diff)
                         if (goInfo->trap.spellId)
                             CastSpell(ok, goInfo->trap.spellId);
 
-                        m_cooldownTime = time(NULL) + (goInfo->trap.cooldown ? goInfo->trap.cooldown :  uint32(4));   // template or 4 seconds
+                        m_cooldownTime = time(nullptr) + (goInfo->trap.cooldown ? goInfo->trap.cooldown :  uint32(4));   // template or 4 seconds
 
                         if (goInfo->trap.type == 1)
                             SetLootState(GO_JUST_DEACTIVATED);
@@ -494,11 +494,11 @@ void GameObject::Update(uint32 diff)
             {
                 case GAMEOBJECT_TYPE_DOOR:
                 case GAMEOBJECT_TYPE_BUTTON:
-                    if (GetGOInfo()->GetAutoCloseTime() && (m_cooldownTime < time(NULL)))
+                    if (GetGOInfo()->GetAutoCloseTime() && (m_cooldownTime < time(nullptr)))
                         ResetDoorOrButton();
                     break;
                 case GAMEOBJECT_TYPE_GOOBER:
-                    if (m_cooldownTime < time(NULL))
+                    if (m_cooldownTime < time(nullptr))
                     {
                         RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
 
@@ -580,7 +580,7 @@ void GameObject::Update(uint32 diff)
                 return;
             }
 
-            m_respawnTime = time(NULL) + m_respawnDelayTime;
+            m_respawnTime = time(nullptr) + m_respawnDelayTime;
 
             // if option not set then object will be saved at grid unload
             if (sWorld->getBoolConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
@@ -766,7 +766,7 @@ bool GameObject::LoadGameObjectFromDB(uint32 guid, MapPtr map, bool addToMap)
             m_respawnTime = GetMap()->GetGORespawnTime(m_DBTableGuid);
 
             // ready to respawn
-            if (m_respawnTime && m_respawnTime <= time(NULL))
+            if (m_respawnTime && m_respawnTime <= time(nullptr))
             {
                 m_respawnTime = 0;
                 GetMap()->RemoveGORespawnTime(m_DBTableGuid);
@@ -873,7 +873,7 @@ UnitPtr GameObject::GetOwner() const
 
 void GameObject::SaveRespawnTime()
 {
-    if (m_goData && m_goData->dbData && m_respawnTime > time(NULL) && m_spawnedByDefault)
+    if (m_goData && m_goData->dbData && m_respawnTime > time(nullptr) && m_spawnedByDefault)
         GetMap()->SaveGORespawnTime(m_DBTableGuid, m_respawnTime);
 }
 
@@ -918,7 +918,7 @@ void GameObject::Respawn()
 {
     if (m_spawnedByDefault && m_respawnTime > 0)
     {
-        m_respawnTime = time(NULL);
+        m_respawnTime = time(nullptr);
         GetMap()->RemoveGORespawnTime(m_DBTableGuid);
     }
 }
@@ -980,7 +980,7 @@ void GameObject::TriggeringLinkedGameObject(uint32 trapEntry, UnitPtr target)
     float range = float(target->GetSpellMaxRangeForTarget(GetOwner(), trapSpell));
 
     // search nearest linked GO
-    GameObjectPtr trapGO = NULL;
+    GameObjectPtr trapGO = nullptr;
     {
         // using original GO distance
         CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
@@ -1000,7 +1000,7 @@ void GameObject::TriggeringLinkedGameObject(uint32 trapEntry, UnitPtr target)
 
 GameObjectPtr GameObject::LookupFishingHoleAround(float range)
 {
-    GameObjectPtr ok = NULL;
+    GameObjectPtr ok = nullptr;
 
     CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
@@ -1023,7 +1023,7 @@ void GameObject::ResetDoorOrButton()
     m_cooldownTime = 0;
 }
 
-void GameObject::UseDoorOrButton(uint32 time_to_restore, bool alternative /* = false */, UnitPtr user /*=NULL*/)
+void GameObject::UseDoorOrButton(uint32 time_to_restore, bool alternative /* = false */, UnitPtr user /*=nullptr*/)
 {
     if (m_lootState != GO_READY)
         return;
@@ -1034,7 +1034,7 @@ void GameObject::UseDoorOrButton(uint32 time_to_restore, bool alternative /* = f
     SwitchDoorOrButton(true, alternative);
     SetLootState(GO_ACTIVATED, user);
 
-    m_cooldownTime = time(NULL) + time_to_restore;
+    m_cooldownTime = time(nullptr) + time_to_restore;
 }
 
 void GameObject::SetGoArtKit(uint8 kit)
@@ -1047,7 +1047,7 @@ void GameObject::SetGoArtKit(uint8 kit)
 
 void GameObject::SetGoArtKit(uint8 artkit, GameObjectPtr go, uint32 lowguid)
 {
-    const GameObjectData* data = NULL;
+    const GameObjectData* data = nullptr;
     if (go)
     {
         go->SetGoArtKit(artkit);
@@ -1126,7 +1126,7 @@ void GameObject::Use(UnitPtr user)
                 if (goInfo->trap.spellId)
                     CastSpell(user, goInfo->trap.spellId);
 
-                m_cooldownTime = time(NULL) + (goInfo->trap.cooldown ? goInfo->trap.cooldown :  uint32(4));   // template or 4 seconds
+                m_cooldownTime = time(nullptr) + (goInfo->trap.cooldown ? goInfo->trap.cooldown :  uint32(4));   // template or 4 seconds
 
                 if (goInfo->trap.type == 1)         // Deactivate after trigger
                     SetLootState(GO_JUST_DEACTIVATED);
@@ -1277,11 +1277,11 @@ void GameObject::Use(UnitPtr user)
             else
                 SetGoState(GO_STATE_ACTIVE);
 
-            m_cooldownTime = time(NULL) + info->GetAutoCloseTime();
+            m_cooldownTime = time(nullptr) + info->GetAutoCloseTime();
 
             // cast THIS_GAMEOBJECT spell later if provided
             spellId = info->goober.spellId;
-            spellCaster = NULL;
+            spellCaster = nullptr;
 
             break;
         }
@@ -1470,7 +1470,7 @@ void GameObject::Use(UnitPtr user)
                 else
                 {
                     // reset ritual for THIS_GAMEOBJECT GO
-                    m_ritualOwner = NULL;
+                    m_ritualOwner = nullptr;
                     m_unique_users.clear();
                     m_usetimes = 0;
                 }
@@ -1797,7 +1797,7 @@ void GameObject::UpdateRotationFields(float rotation2 /*=0.0f*/, float rotation3
     SetFloatValue(GAMEOBJECT_PARENTROTATION+3, rotation3);
 }
 
-void GameObject::ModifyHealth(int32 change, UnitPtr attackerOrHealer /*= NULL*/, uint32 spellId /*= 0*/)
+void GameObject::ModifyHealth(int32 change, UnitPtr attackerOrHealer /*= nullptr*/, uint32 spellId /*= 0*/)
 {
     if (!GetGOValue()->Building.MaxHealth || !change)
         return;
@@ -1846,7 +1846,7 @@ void GameObject::ModifyHealth(int32 change, UnitPtr attackerOrHealer /*= NULL*/,
     SetDestructibleState(newState, player, false);
 }
 
-void GameObject::SetDestructibleState(GameObjectDestructibleState state, PlayerPtr eventInvoker /*= NULL*/, bool setHealth /*= false*/)
+void GameObject::SetDestructibleState(GameObjectDestructibleState state, PlayerPtr eventInvoker /*= nullptr*/, bool setHealth /*= false*/)
 {
     // the user calling THIS_GAMEOBJECT must know he is already operating on destructible gameobject
     ASSERT(GetGoType() == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING);
@@ -2019,14 +2019,14 @@ void GameObject::UpdateModel()
 PlayerPtr GameObject::GetLootRecipient() const
 {
     if (!m_lootRecipient)
-        return NULL;
+        return nullptr;
     return ObjectAccessor::FindPlayer(m_lootRecipient);
 }
 
 GroupPtr GameObject::GetLootRecipientGroup() const
 {
     if (!m_lootRecipientGroup)
-        return NULL;
+        return nullptr;
     return sGroupMgr->GetGroupByGUID(m_lootRecipientGroup);
 }
 
@@ -2034,7 +2034,7 @@ void GameObject::SetLootRecipient(UnitPtr unit)
 {
     // set the player whose group should receive the right
     // to loot the creature after it dies
-    // should be set to NULL after the loot disappears
+    // should be set to nullptr after the loot disappears
 
     if (!unit)
     {

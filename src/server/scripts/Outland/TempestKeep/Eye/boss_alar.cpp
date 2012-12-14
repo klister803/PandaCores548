@@ -197,7 +197,7 @@ class boss_alar : public CreatureScript
                 {
                     me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
                     me->SetDisplayId(11686);
-                    //me->SendUpdateObjectToAllExcept(NULL);
+                    //me->SendUpdateObjectToAllExcept(nullptr);
                 }
             }
 
@@ -437,7 +437,7 @@ class boss_alar : public CreatureScript
                     }
                     else
                     {
-                        UnitPtr target = NULL;
+                        UnitPtr target = nullptr;
                         target = me->SelectNearestTargetInAttackDistance(5);
                         if (target)
                             me->AI()->AttackStart(target);
@@ -521,7 +521,7 @@ class mob_ember_of_alar : public CreatureScript
 
                 if (toDie)
                 {
-                    me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                     //me->SetVisibility(VISIBILITY_OFF);
                 }
 

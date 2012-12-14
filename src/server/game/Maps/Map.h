@@ -434,7 +434,7 @@ class Map : public GridRefManager<NGridType>, public std::enable_shared_from_thi
         MapInstanced* ToMapInstanced(){ if (Instanceable())  return reinterpret_cast<MapInstanced*>(this); else return NULL;  }
         const MapInstanced* ToMapInstanced() const { if (Instanceable())  return (const MapInstanced*)((MapInstanced*)this); else return NULL;  }
 
-        InstanceMapPtr ToInstanceMap(){ return IsDungeon() ? THIS_INSTANCEMAP : NULLINSTANCEMAP;  }
+        InstanceMapPtr ToInstanceMap(){ return IsDungeon() ? THIS_INSTANCEMAP : nullptr;  }
         constInstanceMapPtr ToInstanceMap() const { if (IsDungeon())  return THIS_CONST_INSTANCEMAP; else return NULL;  }
         float GetWaterOrGroundLevel(float x, float y, float z, float* ground = NULL, bool swim = false) const;
         float GetHeight(uint32 phasemask, float x, float y, float z, bool vmap = true, float maxSearchDist = DEFAULT_HEIGHT_SEARCH) const;

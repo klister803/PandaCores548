@@ -979,7 +979,7 @@ public:
             npc_escortAI::UpdateAI(diff);
 
             if (!HasEscortState(STATE_ESCORT_ESCORTING))
-                Start(false, true, 0, NULL, false, true);
+                Start(false, true, 0, nullptr, false, true);
             else
             {
                 if (infernoTimer <= diff)
@@ -1534,7 +1534,7 @@ class spell_auto_repair : public SpellScriptLoader
                 if (!vehicle)
                     return;
 
-                PlayerPtr driver = vehicle->GetPassenger(0) ? TO_PLAYER(vehicle->GetPassenger(0)) : NULL;
+                PlayerPtr driver = vehicle->GetPassenger(0) ? TO_PLAYER(vehicle->GetPassenger(0)) : nullptr;
                 if (!driver)
                     return;
 
@@ -1661,7 +1661,7 @@ class spell_pursue : public SpellScriptLoader
 
             bool Load()
             {
-                _target = NULL;
+                _target = nullptr;
                 return true;
             }
 
@@ -1741,11 +1741,11 @@ class spell_vehicle_throw_passenger : public SpellScriptLoader
                         {
                             // use 99 because it is 3d search
                             std::list<WorldObjectPtr> targetList;
-                            Trinity::WorldObjectSpellAreaTargetCheck check(99, GetExplTargetDest(), GetCaster(), GetCaster(), GetSpellInfo(), TARGET_CHECK_DEFAULT, NULL);
+                            Trinity::WorldObjectSpellAreaTargetCheck check(99, GetExplTargetDest(), GetCaster(), GetCaster(), GetSpellInfo(), TARGET_CHECK_DEFAULT, nullptr);
                             Trinity::WorldObjectListSearcher<Trinity::WorldObjectSpellAreaTargetCheck> searcher(GetCaster(), targetList, check);
                             GetCaster()->GetMap()->VisitAll(GetCaster()->m_positionX, GetCaster()->m_positionY, 99, searcher);
                             float minDist = 99 * 99;
-                            UnitPtr target = NULL;
+                            UnitPtr target = nullptr;
                             for (std::list<WorldObjectPtr>::iterator itr = targetList.begin(); itr != targetList.end(); ++itr)
                             {
                                 if (UnitPtr unit = (*itr)->ToUnit())

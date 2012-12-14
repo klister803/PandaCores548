@@ -83,7 +83,7 @@ public:
 
         void Despawn()
         {
-            me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
             me->RemoveCorpse();
         }
 
@@ -201,7 +201,7 @@ public:
             {
                 CreaturePtr Teron = (Unit::GetCreature(TO_WORLDOBJECT(me), TeronGUID));
                 if (!Teron || !Teron->isAlive() || Teron->IsInEvadeMode())
-                    me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
 
                 CheckTeronTimer = 5000;
             } else CheckTeronTimer -= diff;
@@ -344,7 +344,7 @@ public:
             /**    WHAT IS FULLY NECESSARY FOR GOREFIEND TO BE 100% COMPLETE    *****/
             /************************************************************************/
 
-            UnitPtr Ghost = NULL;
+            UnitPtr Ghost = nullptr;
             if (GhostGUID)
                 Ghost = Unit::GetUnit(TO_WORLDOBJECT(me), GhostGUID);
             if (Ghost && Ghost->isAlive() && Ghost->HasAura(SPELL_SHADOW_OF_DEATH))
@@ -355,12 +355,12 @@ public:
                 if (control)
                 {
                     CAST_PLR(Ghost)->Possess(control);
-                    Ghost->DealDamage(Ghost, Ghost->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL,
+                    Ghost->DealDamage(Ghost, Ghost->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr,
                 false);
                 }*/
                 for (uint8 i = 0; i < 4; ++i)
                 {
-                    CreaturePtr Construct = NULL;
+                    CreaturePtr Construct = nullptr;
                     float X = CalculateRandomLocation(Ghost->GetPositionX(), 10);
                     float Y = CalculateRandomLocation(Ghost->GetPositionY(), 10);
                     Construct = me->SummonCreature(CREATURE_SHADOWY_CONSTRUCT, X, Y, Ghost->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 45000);
@@ -416,7 +416,7 @@ public:
 
                 for (uint8 i = 0; i < 2; ++i)
                 {
-                    CreaturePtr Shadow = NULL;
+                    CreaturePtr Shadow = nullptr;
                     float X = CalculateRandomLocation(me->GetPositionX(), 10);
                     Shadow = me->SummonCreature(CREATURE_SHADOWY_CONSTRUCT, X, me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 0);
                     if (Shadow)

@@ -56,7 +56,7 @@ public:
 
         if (GroupPtr group = player->GetGroup())
         {
-            for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             {
                 PlayerPtr pGroupie = itr->getSource();
                 if (!pGroupie)

@@ -31,7 +31,7 @@ void Logger::Create(std::string const& _name, LogFilterType _type, LogLevel _lev
 Logger::~Logger()
 {
     for (AppenderMap::iterator it = appenders.begin(); it != appenders.end(); ++it)
-        it->second = NULL;
+        it->second = nullptr;
     appenders.clear();
 }
 
@@ -60,7 +60,7 @@ void Logger::delAppender(uint8 id)
     AppenderMap::iterator it = appenders.find(id);
     if (it != appenders.end())
     {
-        it->second = NULL;
+        it->second = nullptr;
         appenders.erase(it);
     }
 }

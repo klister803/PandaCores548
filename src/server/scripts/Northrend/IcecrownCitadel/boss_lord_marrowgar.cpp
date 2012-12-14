@@ -217,7 +217,7 @@ class boss_lord_marrowgar : public CreatureScript
                         case EVENT_BONE_STORM_BEGIN:
                             {
                                 AuraPtr pStorm = me->GetAura(SPELL_BONE_STORM);
-                                if (pStorm != NULLAURA)
+                                if (pStorm != nullptr)
                                     pStorm->SetDuration(1 * HOUR * IN_MILLISECONDS);
 
                                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);

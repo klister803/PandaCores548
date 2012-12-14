@@ -628,7 +628,7 @@ public:
         {
             Timer[EVENT_TALK_SEQUENCE] = Conversation[count].timer;
 
-            CreaturePtr creature = NULL;
+            CreaturePtr creature = nullptr;
             if (Conversation[count].creature == ILLIDAN_STORMRAGE)
                 creature = me;
             else if (Conversation[count].creature == AKAMA)
@@ -1649,7 +1649,7 @@ public:
 
         void HandleChannelSequence()
         {
-            UnitPtr Channel = NULL, Spirit[2] = { NULLUNIT, NULLUNIT };
+            UnitPtr Channel = nullptr, Spirit[2] = { nullptr, nullptr };
             if (ChannelCount <= 5)
             {
                 Channel = Unit::GetUnit(TO_WORLDOBJECT(me), ChannelGUID);
@@ -2013,7 +2013,7 @@ void boss_illidan_stormrage::boss_illidan_stormrageAI::HandleTalkSequence()
         }
         break;
     case 21: // Kill ourself.
-        me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+        me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
         break;
     default:
         break;
@@ -2086,7 +2086,7 @@ public:
             if (DespawnTimer)
             {
                 if (DespawnTimer <= diff)
-                    me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                 else DespawnTimer -= diff;
             }
 

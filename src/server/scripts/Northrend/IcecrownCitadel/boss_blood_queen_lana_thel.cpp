@@ -145,7 +145,7 @@ class boss_blood_queen_lana_thel : public CreatureScript
                 events.ScheduleEvent(EVENT_AIR_PHASE, 124000 + uint32(Is25ManRaid() ? 3000 : 0));
                 instance->DoRemoveAurasDueToSpellOnPlayers(SPELL_UNCONTROLLABLE_FRENZY);
                 me->SetSpeed(MOVE_FLIGHT, 0.642857f, true);
-                _offtank = NULL;
+                _offtank = nullptr;
                 _vampires.clear();
                 _creditBloodQuickening = false;
                 me->RemoveAurasDueToSpell(SPELL_PRESENCE_OF_THE_DARKFALLEN);
@@ -337,7 +337,7 @@ class boss_blood_queen_lana_thel : public CreatureScript
                         }
                         case EVENT_BLOOD_MIRROR:
                         {
-                            // victim can be NULL when this is processed in the same update tick as EVENT_AIR_PHASE
+                            // victim can be nullptr when this is processed in the same update tick as EVENT_AIR_PHASE
                             if (me->getVictim())
                             {
                                 PlayerPtr newOfftank = SelectRandomTarget(true);
@@ -435,13 +435,13 @@ class boss_blood_queen_lana_thel : public CreatureScript
 
         private:
             // offtank for this encounter is the player standing closest to main tank
-            PlayerPtr SelectRandomTarget(bool includeOfftank, std::list<PlayerPtr>* targetList = NULL)
+            PlayerPtr SelectRandomTarget(bool includeOfftank, std::list<PlayerPtr>* targetList = nullptr)
             {
                 std::list<HostileReferencePtr> const& threatlist = me->getThreatManager().getThreatList();
                 std::list<PlayerPtr> tempTargets;
 
                 if (threatlist.empty())
-                    return NULL;
+                    return nullptr;
 
                 for (std::list<HostileReferencePtr>::const_iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
                     if (UnitPtr refTarget = (*itr)->getTarget())
@@ -449,12 +449,12 @@ class boss_blood_queen_lana_thel : public CreatureScript
                             tempTargets.push_back(TO_PLAYER(refTarget));
 
                 if (tempTargets.empty())
-                    return NULL;
+                    return nullptr;
 
                 if (targetList)
                 {
                     *targetList = tempTargets;
-                    return NULL;
+                    return nullptr;
                 }
 
                 if (includeOfftank)
@@ -531,7 +531,7 @@ class spell_blood_queen_vampiric_bite : public SpellScriptLoader
                     if (GetCaster()->GetMap()->Is25ManRaid())
                     {
                         AuraPtr aura = GetCaster()->GetAura(SPELL_GUSHING_WOUND);
-                        if (aura != NULLAURA)
+                        if (aura != nullptr)
                         {
                             if (aura->GetStackAmount() == 3)
                             {

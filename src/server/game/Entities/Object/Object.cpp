@@ -3214,7 +3214,7 @@ struct WorldObjectChangeAccumulator
     WorldObjectChangeAccumulator(WorldObjectPtr& obj, UpdateDataMapType& d) : i_updateDatas(d), i_object(obj) {}
     void Visit(std::shared_ptr<PlayerMapType>& m)
     {
-        PlayerPtr source = NULLPLAYER;
+        PlayerPtr source = nullptr;
         for (GridRefManager<Player>::iterator iter = m->begin(); iter != m->end(); ++iter)
         {
             source = iter->getSource();
@@ -3232,7 +3232,7 @@ struct WorldObjectChangeAccumulator
 
     void Visit(std::shared_ptr<CreatureMapType>& m)
     {
-        CreaturePtr source = NULLCREATURE;
+        CreaturePtr source = nullptr;
         for (GridRefManager<Creature>::iterator iter = m->begin(); iter != m->end(); ++iter)
         {
             source = iter->getSource();
@@ -3247,7 +3247,7 @@ struct WorldObjectChangeAccumulator
 
     void Visit(std::shared_ptr<DynamicObjectMapType>& m)
     {
-        DynamicObjectPtr source = NULLDYNAMICOBJECT;
+        DynamicObjectPtr source = nullptr;
         for (GridRefManager<DynamicObject>::iterator iter = m->begin(); iter != m->end(); ++iter)
         {
             source = iter->getSource();

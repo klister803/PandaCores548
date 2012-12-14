@@ -30,7 +30,7 @@ ChannelMgr* channelMgr(uint32 team)
     if (team == HORDE)
         return ACE_Singleton<HordeChannelMgr, ACE_Null_Mutex>::instance();
 
-    return NULL;
+    return nullptr;
 }
 
 ChannelMgr::~ChannelMgr()
@@ -74,7 +74,7 @@ Channel* ChannelMgr::GetChannel(std::string name, PlayerPtr p, bool pkt)
             p->GetSession()->SendPacket(&data);
         }
 
-        return NULL;
+        return nullptr;
     }
     else
         return i->second;

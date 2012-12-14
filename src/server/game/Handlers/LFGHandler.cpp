@@ -101,7 +101,7 @@ void WorldSession::HandleLfgJoinOpcode(WorldPacket& recvData)
     const LFGDungeonEntry* entry = sLFGDungeonStore.LookupEntry(*newDungeons.begin() & 0xFFFFFF);
     uint8 type = LFG_TYPE_DUNGEON;
     uint8 maxGroupSize = 5;
-    if (entry != NULL)
+    if (entry != nullptr)
         type = entry->difficulty == RAID_TOOL_DIFFICULTY ? LFG_TYPE_RAID : entry->isScenario() ? LFG_TYPE_SCENARIO : LFG_TYPE_DUNGEON;
     if (type == LFG_TYPE_RAID)
         maxGroupSize = 25;
@@ -254,7 +254,7 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
     {
         data << uint32(*it);                               // Dungeon Entry (id + type)
         LfgReward const* reward = sLFGMgr->GetRandomDungeonReward(*it, level);
-        Quest const* qRew = NULL;
+        Quest const* qRew = nullptr;
         uint8 done = 0;
         if (reward)
         {
@@ -285,7 +285,7 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
             data << uint8(qRew->GetRewItemsCount() + qRew->GetRewCurrencyCount());
             if (qRew->GetRewItemsCount())
             {
-                ItemTemplate const* iProto = NULL;
+                ItemTemplate const* iProto = nullptr;
                 for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
                 {
                     if (!qRew->RewardItemId[i])
@@ -301,7 +301,7 @@ void WorldSession::HandleLfgPlayerLockInfoRequestOpcode(WorldPacket& /*recvData*
             }
             if (qRew->GetRewCurrencyCount())
             {
-                CurrencyTypesEntry const* iCurrencyType = NULL;
+                CurrencyTypesEntry const* iCurrencyType = nullptr;
 
                 for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
                 {
@@ -351,7 +351,7 @@ void WorldSession::HandleLfgPartyLockInfoRequestOpcode(WorldPacket&  /*recvData*
 
     // Get the locked dungeons of the other party members
     LfgLockPartyMap lockMap;
-    for (GroupReferencePtr itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+    for (GroupReferencePtr itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         PlayerPtr plrg = itr->getSource();
         if (!plrg)
@@ -741,7 +741,7 @@ void WorldSession::SendLfgPlayerReward(uint32 rdungeonEntry, uint32 sdungeonEntr
     data << uint8(itemNum);
     if (itemNum)
     {
-        ItemTemplate const* iProto = NULL;
+        ItemTemplate const* iProto = nullptr;
         for (uint8 i = 0; i < QUEST_REWARDS_COUNT; ++i)
         {
             if (!qRew->RewardItemId[i])
@@ -765,7 +765,7 @@ void WorldSession::SendLfgBootPlayer(const LfgPlayerBoot* pBoot)
     LfgAnswer playerVote = pBoot->votes.find(guid)->second;
     uint8 votesNum = 0;
     uint8 agreeNum = 0;
-    uint32 secsleft = uint8((pBoot->cancelTime - time(NULL)) / 1000);
+    uint32 secsleft = uint8((pBoot->cancelTime - time(nullptr)) / 1000);
     for (LfgAnswerMap::const_iterator it = pBoot->votes.begin(); it != pBoot->votes.end(); ++it)
     {
         if (it->second != LFG_ANSWER_PENDING)
@@ -807,7 +807,7 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal* p
     uint32 dungeonId = pProp->dungeonId;
     bool isSameDungeon = false;
     bool isContinue = false;
-    GroupPtr grp = dLowGuid ? sGroupMgr->GetGroupByGUID(dLowGuid) : NULL;
+    GroupPtr grp = dLowGuid ? sGroupMgr->GetGroupByGUID(dLowGuid) : nullptr;
     uint32 completedEncounters = 0;
     if (grp)
     {
@@ -833,7 +833,7 @@ void WorldSession::SendLfgUpdateProposal(uint32 proposalId, const LfgProposal* p
         // Select a player inside to be get completed encounters from
         if (grp)
         {
-            for (GroupReferencePtr itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+            for (GroupReferencePtr itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
             {
                 PlayerPtr groupMember = itr->getSource();
                 if (groupMember && groupMember->GetMapId() == uint32(dungeon->map))

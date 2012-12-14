@@ -630,7 +630,7 @@ public:
     CreatureAI* GetAI(CreaturePtr creature) const
     {
         DoScriptText(SAY_DWARF_OUCH, creature);
-        return NULL;
+        return nullptr;
     }
 
     bool OnGossipHello(PlayerPtr player, CreaturePtr creature)

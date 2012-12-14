@@ -120,7 +120,7 @@ class spell_capacitus_polarity_shift : public SpellScriptLoader
                 UnitPtr target = GetHitUnit();
                 UnitPtr caster = GetCaster();
 
-                target->CastSpell(target, roll_chance_i(50) ? SPELL_POSITIVE_POLARITY : SPELL_NEGATIVE_POLARITY, true, NULL, NULL, caster->GetGUID());
+                target->CastSpell(target, roll_chance_i(50) ? SPELL_POSITIVE_POLARITY : SPELL_NEGATIVE_POLARITY, true, nullptr, nullptr, caster->GetGUID());
             }
 
             void Register()

@@ -36,45 +36,45 @@ public:
     {
         static ChatCommand modifyspeedCommandTable[] =
         {
-            { "fly",            SEC_MODERATOR,      false, &HandleModifyFlyCommand,           "", NULL },
-            { "all",            SEC_MODERATOR,      false, &HandleModifyASpeedCommand,        "", NULL },
-            { "walk",           SEC_MODERATOR,      false, &HandleModifySpeedCommand,         "", NULL },
-            { "backwalk",       SEC_MODERATOR,      false, &HandleModifyBWalkCommand,         "", NULL },
-            { "swim",           SEC_MODERATOR,      false, &HandleModifySwimCommand,          "", NULL },
-            { "",               SEC_MODERATOR,      false, &HandleModifyASpeedCommand,        "", NULL },
-            { NULL,             0,                  false, NULL,                              "", NULL }
+            { "fly",            SEC_MODERATOR,      false, &HandleModifyFlyCommand,           "", nullptr },
+            { "all",            SEC_MODERATOR,      false, &HandleModifyASpeedCommand,        "", nullptr },
+            { "walk",           SEC_MODERATOR,      false, &HandleModifySpeedCommand,         "", nullptr },
+            { "backwalk",       SEC_MODERATOR,      false, &HandleModifyBWalkCommand,         "", nullptr },
+            { "swim",           SEC_MODERATOR,      false, &HandleModifySwimCommand,          "", nullptr },
+            { "",               SEC_MODERATOR,      false, &HandleModifyASpeedCommand,        "", nullptr },
+            { nullptr,             0,                  false, nullptr,                              "", nullptr }
         };
         static ChatCommand modifyCommandTable[] =
         {
-            { "hp",             SEC_MODERATOR,      false, &HandleModifyHPCommand,            "", NULL },
-            { "mana",           SEC_MODERATOR,      false, &HandleModifyManaCommand,          "", NULL },
-            { "rage",           SEC_MODERATOR,      false, &HandleModifyRageCommand,          "", NULL },
-            { "runicpower",     SEC_MODERATOR,      false, &HandleModifyRunicPowerCommand,    "", NULL },
-            { "energy",         SEC_MODERATOR,      false, &HandleModifyEnergyCommand,        "", NULL },
-            { "money",          SEC_MODERATOR,      false, &HandleModifyMoneyCommand,         "", NULL },
-            { "scale",          SEC_MODERATOR,      false, &HandleModifyScaleCommand,         "", NULL },
-            { "bit",            SEC_MODERATOR,      false, &HandleModifyBitCommand,           "", NULL },
-            { "faction",        SEC_MODERATOR,      false, &HandleModifyFactionCommand,       "", NULL },
-            { "spell",          SEC_MODERATOR,      false, &HandleModifySpellCommand,         "", NULL },
-            { "talentpoints",   SEC_MODERATOR,      false, &HandleModifyTalentCommand,        "", NULL },
-            { "mount",          SEC_MODERATOR,      false, &HandleModifyMountCommand,         "", NULL },
-            { "honor",          SEC_MODERATOR,      false, &HandleModifyHonorCommand,         "", NULL },
-            { "reputation",     SEC_GAMEMASTER,     false, &HandleModifyRepCommand,           "", NULL },
-            { "arenapoints",    SEC_MODERATOR,      false, &HandleModifyArenaCommand,         "", NULL },
-            { "drunk",          SEC_MODERATOR,      false, &HandleModifyDrunkCommand,         "", NULL },
-            { "standstate",     SEC_GAMEMASTER,     false, &HandleModifyStandStateCommand,    "", NULL },
-            { "phase",          SEC_ADMINISTRATOR,  false, &HandleModifyPhaseCommand,         "", NULL },
-            { "gender",         SEC_GAMEMASTER,     false, &HandleModifyGenderCommand,        "", NULL },
-            { "power",          SEC_GAMEMASTER,     false, &HandleModifyPowerCommand,         "", NULL },
-            { "speed",          SEC_MODERATOR,      false, NULL,           "", modifyspeedCommandTable },
-            { NULL,             0,                  false, NULL,                                           "", NULL }
+            { "hp",             SEC_MODERATOR,      false, &HandleModifyHPCommand,            "", nullptr },
+            { "mana",           SEC_MODERATOR,      false, &HandleModifyManaCommand,          "", nullptr },
+            { "rage",           SEC_MODERATOR,      false, &HandleModifyRageCommand,          "", nullptr },
+            { "runicpower",     SEC_MODERATOR,      false, &HandleModifyRunicPowerCommand,    "", nullptr },
+            { "energy",         SEC_MODERATOR,      false, &HandleModifyEnergyCommand,        "", nullptr },
+            { "money",          SEC_MODERATOR,      false, &HandleModifyMoneyCommand,         "", nullptr },
+            { "scale",          SEC_MODERATOR,      false, &HandleModifyScaleCommand,         "", nullptr },
+            { "bit",            SEC_MODERATOR,      false, &HandleModifyBitCommand,           "", nullptr },
+            { "faction",        SEC_MODERATOR,      false, &HandleModifyFactionCommand,       "", nullptr },
+            { "spell",          SEC_MODERATOR,      false, &HandleModifySpellCommand,         "", nullptr },
+            { "talentpoints",   SEC_MODERATOR,      false, &HandleModifyTalentCommand,        "", nullptr },
+            { "mount",          SEC_MODERATOR,      false, &HandleModifyMountCommand,         "", nullptr },
+            { "honor",          SEC_MODERATOR,      false, &HandleModifyHonorCommand,         "", nullptr },
+            { "reputation",     SEC_GAMEMASTER,     false, &HandleModifyRepCommand,           "", nullptr },
+            { "arenapoints",    SEC_MODERATOR,      false, &HandleModifyArenaCommand,         "", nullptr },
+            { "drunk",          SEC_MODERATOR,      false, &HandleModifyDrunkCommand,         "", nullptr },
+            { "standstate",     SEC_GAMEMASTER,     false, &HandleModifyStandStateCommand,    "", nullptr },
+            { "phase",          SEC_ADMINISTRATOR,  false, &HandleModifyPhaseCommand,         "", nullptr },
+            { "gender",         SEC_GAMEMASTER,     false, &HandleModifyGenderCommand,        "", nullptr },
+            { "power",          SEC_GAMEMASTER,     false, &HandleModifyPowerCommand,         "", nullptr },
+            { "speed",          SEC_MODERATOR,      false, nullptr,           "", modifyspeedCommandTable },
+            { nullptr,             0,                  false, nullptr,                                           "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "morph",          SEC_GAMEMASTER,     false, &HandleModifyMorphCommand,          "", NULL },
-            { "demorph",        SEC_GAMEMASTER,     false, &HandleDeMorphCommand,              "", NULL },
-            { "modify",         SEC_MODERATOR,      false, NULL,                 "", modifyCommandTable },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "morph",          SEC_GAMEMASTER,     false, &HandleModifyMorphCommand,          "", nullptr },
+            { "demorph",        SEC_GAMEMASTER,     false, &HandleDeMorphCommand,              "", nullptr },
+            { "modify",         SEC_MODERATOR,      false, nullptr,                 "", modifyCommandTable },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
         return commandTable;
     }
@@ -164,7 +164,7 @@ public:
         // if (!pmana)
         //     return false;
 
-        // char* pmanaMax = strtok(NULL, " ");
+        // char* pmanaMax = strtok(nullptr, " ");
         // if (!pmanaMax)
         //     return false;
 
@@ -215,7 +215,7 @@ public:
         // if (!pmana)
         //     return false;
 
-        // char* pmanaMax = strtok(NULL, " ");
+        // char* pmanaMax = strtok(nullptr, " ");
         // if (!pmanaMax)
         //     return false;
 
@@ -327,13 +327,13 @@ public:
         uint32 factionid = atoi(pfactionid);
         uint32 flag;
 
-        char *pflag = strtok(NULL, " ");
+        char *pflag = strtok(nullptr, " ");
         if (!pflag)
             flag = target->GetUInt32Value(UNIT_FIELD_FLAGS);
         else
             flag = atoi(pflag);
 
-        char* pnpcflag = strtok(NULL, " ");
+        char* pnpcflag = strtok(nullptr, " ");
 
         uint32 npcflag;
         if (!pnpcflag)
@@ -341,7 +341,7 @@ public:
         else
             npcflag = atoi(pnpcflag);
 
-        char* pdyflag = strtok(NULL, " ");
+        char* pdyflag = strtok(nullptr, " ");
 
         uint32  dyflag;
         if (!pdyflag)
@@ -376,17 +376,17 @@ public:
         if (!pspellflatid)
             return false;
 
-        char* pop = strtok(NULL, " ");
+        char* pop = strtok(nullptr, " ");
         if (!pop)
             return false;
 
-        char* pval = strtok(NULL, " ");
+        char* pval = strtok(nullptr, " ");
         if (!pval)
             return false;
 
         uint16 mark;
 
-        char* pmark = strtok(NULL, " ");
+        char* pmark = strtok(nullptr, " ");
 
         uint8 spellflatid = atoi(pspellflatid);
         uint8 op   = atoi(pop);
@@ -397,7 +397,7 @@ public:
             mark = atoi(pmark);
 
         PlayerPtr target = handler->getSelectedPlayer();
-        if (target == NULL)
+        if (target == nullptr)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
             handler->SetSentErrorMessage(true);
@@ -1102,7 +1102,7 @@ public:
         if (!pField)
             return false;
 
-        char* pBit = strtok(NULL, " ");
+        char* pBit = strtok(nullptr, " ");
         if (!pBit)
             return false;
 
@@ -1200,7 +1200,7 @@ public:
         uint32 factionId = atoi(factionTxt);
 
         int32 amount = 0;
-        char *rankTxt = strtok(NULL, " ");
+        char *rankTxt = strtok(nullptr, " ");
         if (!factionTxt || !rankTxt)
             return false;
 
@@ -1229,7 +1229,7 @@ public:
 
                 if (wrank.substr(0, wrankStr.size()) == wrankStr)
                 {
-                    char *deltaTxt = strtok(NULL, " ");
+                    char *deltaTxt = strtok(nullptr, " ");
                     if (deltaTxt)
                     {
                         int32 delta = atoi(deltaTxt);
@@ -1418,7 +1418,7 @@ public:
             return false;
 
         char* power_str = strtok((char*)args, " ");
-        char* value_str = strtok(NULL, " ");
+        char* value_str = strtok(nullptr, " ");
 
         if (!power_str || !value_str)
             return false;

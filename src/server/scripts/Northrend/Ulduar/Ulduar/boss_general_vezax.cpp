@@ -264,7 +264,7 @@ class boss_general_vezax : public CreatureScript
 
             /*  Player Range Check
                 Purpose: If there are playersMin people within rangeMin, rangeMax: return a random players in that range.
-                If not, return NULL and allow other target selection
+                If not, return nullptr and allow other target selection
             */
             UnitPtr CheckPlayersInRange(uint8 playersMin, float rangeMin, float rangeMax)
             {
@@ -286,16 +286,16 @@ class boss_general_vezax : public CreatureScript
                     }
 
                     if (PlayerList.empty())
-                        return NULL;
+                        return nullptr;
 
                     size_t size = PlayerList.size();
                     if (size < playersMin)
-                        return NULL;
+                        return nullptr;
 
                     return Trinity::Containers::SelectRandomContainerElement(PlayerList);
                 }
 
-                return NULL;
+                return nullptr;
             }
         };
 
@@ -487,8 +487,8 @@ class spell_general_vezax_saronite_vapors : public SpellScriptLoader
                 {
                     int32 mana = int32(aurEff->GetAmount() * pow(2.0f, GetStackAmount())); // mana restore - bp * 2^stackamount
                     int32 damage = mana * 2;
-                    caster->CastCustomSpell(GetTarget(), SPELL_SARONITE_VAPORS_ENERGIZE, &mana, NULL, NULL, true);
-                    caster->CastCustomSpell(GetTarget(), SPELL_SARONITE_VAPORS_DAMAGE, &damage, NULL, NULL, true);
+                    caster->CastCustomSpell(GetTarget(), SPELL_SARONITE_VAPORS_ENERGIZE, &mana, nullptr, nullptr, true);
+                    caster->CastCustomSpell(GetTarget(), SPELL_SARONITE_VAPORS_DAMAGE, &damage, nullptr, nullptr, true);
                 }
             }
 

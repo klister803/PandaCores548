@@ -71,7 +71,7 @@ class spell_rog_cheat_death : public SpellScriptLoader
                     return;
 
                 target->CastSpell(target, ROGUE_SPELL_CHEAT_DEATH_COOLDOWN, true);
-                target->AddSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_COOLDOWN, 0, time(NULL) + 60);
+                target->AddSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_COOLDOWN, 0, time(nullptr) + 60);
 
                 uint32 health10 = target->CountPctFromMaxHealth(10);
 

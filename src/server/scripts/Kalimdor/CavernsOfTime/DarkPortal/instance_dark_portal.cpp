@@ -182,7 +182,7 @@ public:
                         {
                             if (pMedivh->isAlive())
                             {
-                                pMedivh->DealDamage(pMedivh, pMedivh->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                                pMedivh->DealDamage(pMedivh, pMedivh->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                                 m_auiEncounter[0] = FAIL;
                                 m_auiEncounter[1] = NOT_STARTED;
                             }
@@ -279,7 +279,7 @@ public:
                 return summon;
 
             sLog->outDebug(LOG_FILTER_TSCR, "Instance Dark Portal: What just happened there? No boss, no loot, no fun...");
-            return NULL;
+            return nullptr;
         }
 
         void DoSpawnPortal()

@@ -181,7 +181,7 @@ public:
         UnitPtr CalculateHatefulStrikeTarget()
         {
             uint32 health = 0;
-            UnitPtr target = NULL;
+            UnitPtr target = nullptr;
 
             std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager().getThreatList();
             std::list<HostileReferencePtr>::const_iterator i = m_threatlist.begin();

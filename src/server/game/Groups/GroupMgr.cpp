@@ -35,7 +35,7 @@ uint32 GroupMgr::GenerateNewGroupDbStoreId()
 
     for (uint32 i = ++NextGroupDbStoreId; i < 0xFFFFFFFF; ++i)
     {
-        if ((i < GroupDbStore.size() && GroupDbStore[i] == NULL) || i >= GroupDbStore.size())
+        if ((i < GroupDbStore.size() && GroupDbStore[i] == nullptr) || i >= GroupDbStore.size())
         {
             NextGroupDbStoreId = i;
             break;
@@ -67,7 +67,7 @@ void GroupMgr::FreeGroupDbStoreId(GroupPtr group)
     if (storageId < NextGroupDbStoreId)
         NextGroupDbStoreId = storageId;
 
-    GroupDbStore[storageId] = NULL;
+    GroupDbStore[storageId] = nullptr;
 }
 
 GroupPtr GroupMgr::GetGroupByDbStoreId(uint32 storageId) const
@@ -75,7 +75,7 @@ GroupPtr GroupMgr::GetGroupByDbStoreId(uint32 storageId) const
     if (storageId < GroupDbStore.size())
         return GroupDbStore[storageId];
 
-    return NULL;
+    return nullptr;
 }
 
 uint32 GroupMgr::GenerateGroupId()
@@ -94,7 +94,7 @@ GroupPtr GroupMgr::GetGroupByGUID(uint32 groupId) const
     if (itr != GroupStore.end())
         return itr->second;
 
-    return NULL;
+    return nullptr;
 }
 
 void GroupMgr::AddGroup(GroupPtr group)
@@ -206,7 +206,7 @@ void GroupMgr::LoadGroups()
         {
             Field* fields = result->Fetch();
             GroupPtr group = GetGroupByDbStoreId(fields[0].GetUInt32());
-            // group will never be NULL (we have run consistency sql's before loading)
+            // group will never be nullptr (we have run consistency sql's before loading)
 
             MapEntry const* mapEntry = sMapStore.LookupEntry(fields[1].GetUInt16());
             if (!mapEntry || !mapEntry->IsDungeon())

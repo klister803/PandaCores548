@@ -38,16 +38,16 @@ template <class TO, class FROM> class Reference : public LinkedListElement
         // Tell our refFrom (source) object, that the link is cut (Target destroyed)
         virtual void sourceObjectDestroyLink() = 0;
     public:
-        Reference() { iRefTo = NULL; iRefFrom = NULL; }
+        Reference() { iRefTo = nullptr; iRefFrom = nullptr; }
         virtual ~Reference() {}
 
         // Create new link
         void link(std::shared_ptr<TO> toObj, std::shared_ptr<FROM> fromObj)
         {
-            assert(fromObj);                                // fromObj MUST not be NULL
+            assert(fromObj);                                // fromObj MUST not be nullptr
             if (isValid())
                 unlink();
-            if (toObj != NULL)
+            if (toObj != nullptr)
             {
                 iRefTo = toObj;
                 iRefFrom = fromObj;
@@ -61,8 +61,8 @@ template <class TO, class FROM> class Reference : public LinkedListElement
         { 
             targetObjectDestroyLink();
             delink();
-            iRefTo = NULL;
-            iRefFrom = NULL;
+            iRefTo = nullptr;
+            iRefFrom = nullptr;
         }
 
         // Link is invalid due to destruction of referenced target object. Call comes from the refTo object
@@ -71,12 +71,12 @@ template <class TO, class FROM> class Reference : public LinkedListElement
         {
             sourceObjectDestroyLink();
             delink();
-            iRefTo = NULL;
+            iRefTo = nullptr;
         }
 
         bool isValid() const                                // Only check the iRefTo
         {
-            return iRefTo != NULL;
+            return iRefTo != nullptr;
         }
 
         std::shared_ptr<Reference<TO, FROM>> next()       { return std::static_pointer_cast<Reference<TO,FROM>>(LinkedListElement::next()); }

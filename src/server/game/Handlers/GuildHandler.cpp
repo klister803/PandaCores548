@@ -37,7 +37,7 @@ inline GuildPtr _GetPlayerGuild(WorldSession* session, bool sendError = false)
             return guild;
     if (sendError)
         Guild::SendCommandResult(session, GUILD_CREATE_S, ERR_GUILD_PLAYER_NOT_IN_GUILD);
-    return NULL;
+    return nullptr;
 }
 
 void WorldSession::HandleGuildQueryOpcode(WorldPacket& recvPacket)
@@ -578,7 +578,7 @@ void WorldSession::HandleGuildBankSwapItems(WorldPacket & recvData)
         // Player <-> Bank
         // Allow to work with inventory only
         if (!Player::IsInventoryPos(playerBag, playerSlotId) && !(playerBag == NULL_BAG && playerSlotId == NULL_SLOT))
-            GetPlayer()->SendEquipError(EQUIP_ERR_INTERNAL_BAG_ERROR, NULL);
+            GetPlayer()->SendEquipError(EQUIP_ERR_INTERNAL_BAG_ERROR, nullptr);
         else
             guild->SwapItemsWithInventory(GetPlayer(), toChar, tabId, slotId, playerBag, playerSlotId, splitedAmount);
     }
@@ -818,7 +818,7 @@ void WorldSession::HandleGuildRewardsQueryOpcode(WorldPacket& recvPacket)
             dataBuffer << int32(rewards[i].Racemask);
         }
         data.append(dataBuffer);
-        data << uint32(time(NULL));
+        data << uint32(time(nullptr));
         SendPacket(&data);
     }
 }

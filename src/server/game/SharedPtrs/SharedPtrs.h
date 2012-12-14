@@ -47,9 +47,6 @@ class Map;
 # define WeatherPtr std::shared_ptr<Weather>
 # define constWeatherPtr std::shared_ptr<const Weather>
 
-# define NULLGROUP GroupPtr()
-# define NULLINSTANCEMAP InstanceMapPtr()
-
 # define TO_GROUP(y) CAST(Group,y)
 # define TO_CONST_GROUP(y) CAST(const Group,y)
 # define TO_MAP(y) CAST(Map,y)
@@ -142,22 +139,6 @@ class Map;
 # define VehiclePtr std::shared_ptr<Vehicle>
 # define constVehiclePtr std::shared_ptr<const Vehicle>
 
-# define NULLOBJECT ObjectPtr()
-# define NULLWORLDOBJECT WorldObjectPtr()
-# define NULLUNIT UnitPtr()
-# define NULLCREATURE CreaturePtr()
-# define NULLTEMPSUMMON TempSummonPtr()
-# define NULLPLAYER PlayerPtr()
-# define NULLDYNAMICOBJECT DynamicObjectPtr()
-# define NULLPET PetPtr()
-# define NULLGAMEOBJECT GameObjectPtr()
-# define NULLGUARDIAN GuardianPtr()
-# define NULLMINION MinionPtr()
-# define NULLPUPPET PuppetPtr()
-# define NULLCORPSE CorpsePtr()
-# define NULLTOTEM TotemPtr()
-# define NULLITEM ItemPtr()
-
 # define TO_WORLDOBJECT(y) CAST(WorldObject,y)
 # define TO_CONST_WORLDOBJECT(y) CAST(const WorldObject,y)
 # define TO_UNIT(y) CAST(Unit,y)
@@ -236,10 +217,6 @@ class Map;
 # define constAuraApplicationPtr std::shared_ptr<const AuraApplication>
 
 # define TO_UNITAURA(y) CAST(UnitAura,y)
-
-# define NULLAURA AuraPtr()
-# define NULLAURA_EFFECT AuraEffectPtr()
-# define NULLAURA_APPLICATION AuraApplicationPtr()
 /*
 ** End of spells and auras shared_ptr
 */

@@ -184,7 +184,7 @@ public:
             {
                 for (uint8 i = 0; i < 5; ++i)
                 {
-                    CreaturePtr Portal = NULL;
+                    CreaturePtr Portal = nullptr;
                     Portal = me->SummonCreature(MOB_VOID_PORTAL, VoidPortalCoords[i][0], VoidPortalCoords[i][1], VoidPortalCoords[i][2], 0, TEMPSUMMON_CORPSE_DESPAWN, 3000000);
                     if (Portal)
                     {
@@ -205,7 +205,7 @@ public:
                 {
                     UnitPtr Portal = Unit::GetUnit(TO_WORLDOBJECT(me), PortalsGuid[i]);
                     if (Portal && Portal->isAlive())
-                        Portal->DealDamage(Portal, Portal->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        Portal->DealDamage(Portal, Portal->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                     PortalsGuid[i] = 0;
                 }
                 sumportals = false;

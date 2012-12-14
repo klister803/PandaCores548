@@ -122,7 +122,7 @@ public:
         void Reset()
         {
             if (!encounterActionReset)
-                DoEncounteraction(NULL, false, true, false);
+                DoEncounteraction(nullptr, false, true, false);
 
             if (instance)
                 instance->SetData(DATA_HORSEMEN0 + id, NOT_STARTED);
@@ -311,7 +311,7 @@ public:
             if (instance)
                 instance->SetData(DATA_HORSEMEN0 + id, DONE);
 
-            if (instance && DoEncounteraction(NULL, false, false, true))
+            if (instance && DoEncounteraction(nullptr, false, false, true))
             {
                 instance->SetBossState(BOSS_HORSEMEN, DONE);
                 instance->SaveToDB();

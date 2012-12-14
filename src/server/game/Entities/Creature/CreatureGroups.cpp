@@ -156,10 +156,10 @@ void CreatureGroup::AddMember(CreaturePtr member)
 void CreatureGroup::RemoveMember(CreaturePtr member)
 {
     if (m_leader == member)
-        m_leader = NULL;
+        m_leader = nullptr;
 
     m_members.erase(member);
-    member->SetFormation(NULL);
+    member->SetFormation(nullptr);
 }
 
 void CreatureGroup::MemberAttackStart(CreaturePtr member, UnitPtr target)

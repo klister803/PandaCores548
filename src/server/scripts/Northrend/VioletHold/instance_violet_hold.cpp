@@ -316,13 +316,13 @@ public:
             switch (type)
             {
                 case DATA_1ST_BOSS_EVENT:
-                    UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, CREATURE_EREKEM, NULL);
+                    UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, CREATURE_EREKEM, nullptr);
                     m_auiEncounter[0] = data;
                     if (data == DONE)
                         SaveToDB();
                     break;
                 case DATA_2ND_BOSS_EVENT:
-                    UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, CREATURE_MORAGG, NULL);
+                    UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, CREATURE_MORAGG, nullptr);
                     m_auiEncounter[1] = data;
                     if (data == DONE)
                         SaveToDB();
@@ -478,7 +478,7 @@ public:
 
         void StartBossEncounter(uint8 uiBoss, bool bForceRespawn = true)
         {
-            CreaturePtr pBoss = NULL;
+            CreaturePtr pBoss = nullptr;
 
             switch (uiBoss)
             {

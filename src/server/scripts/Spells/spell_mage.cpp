@@ -257,7 +257,7 @@ class spell_mage_frost_warding_trigger : public SpellScriptLoader
                     {
                         int32 bp = dmgInfo.GetDamage();
                         dmgInfo.AbsorbDamage(bp);
-                        target->CastCustomSpell(target, SPELL_MAGE_FROST_WARDING_TRIGGERED, &bp, NULL, NULL, true, NULL, aurEff);
+                        target->CastCustomSpell(target, SPELL_MAGE_FROST_WARDING_TRIGGERED, &bp, nullptr, nullptr, true, nullptr, aurEff);
                         absorbAmount = 0;
                         PreventDefaultAction();
                     }
@@ -298,7 +298,7 @@ class spell_mage_incanters_absorbtion_base_AuraScript : public AuraScript
             if (AuraEffectPtr talentAurEff = target->GetAuraEffectOfRankedSpell(SPELL_MAGE_INCANTERS_ABSORBTION_R1, EFFECT_0))
             {
                 int32 bp = CalculatePct(absorbAmount, talentAurEff->GetAmount());
-                target->CastCustomSpell(target, SPELL_MAGE_INCANTERS_ABSORBTION_TRIGGERED, &bp, NULL, NULL, true, NULL, aurEff);
+                target->CastCustomSpell(target, SPELL_MAGE_INCANTERS_ABSORBTION_TRIGGERED, &bp, nullptr, nullptr, true, nullptr, aurEff);
             }
         }
 };
@@ -370,7 +370,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
                     return;
 
                 if (UnitPtr caster = TO_PLAYER(GetCaster()))
-                    caster->CastSpell(GetTarget(), uint32(aurEff->GetAmount()), true, NULL, aurEff);
+                    caster->CastSpell(GetTarget(), uint32(aurEff->GetAmount()), true, nullptr, aurEff);
             }
 
             void Register()

@@ -2797,7 +2797,7 @@ void Spell::DoTriggersOnSpellHit(UnitPtr unit, uint32 effMask)
                 if (i->triggeredSpell->GetDuration() == -1)
                 {
                     AuraPtr triggeredAur = unit->GetAura(i->triggeredSpell->Id, m_caster->GetGUID());
-                    if (triggeredAur != NULLAURA)
+                    if (triggeredAur != nullptr)
                     {
                         // get duration from aura-only once
                         if (!_duration)

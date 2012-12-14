@@ -1388,7 +1388,7 @@ ACE_WIN32_Asynch_Read_File::readv (ACE_Message_Block &message_block,
   int initiate_result = ::ReadFileScatter (result->handle (),
                                            buffer_pointers,
                                            dword_bytes_to_read,
-                                           0, // reserved, must be NULL
+                                           0, // reserved, must be nullptr
                                            result);
 
   if (0 != initiate_result)
@@ -1793,7 +1793,7 @@ ACE_WIN32_Asynch_Write_File::writev (ACE_Message_Block &message_block,
   int initiate_result = ::WriteFileGather (result->handle (),
                                            buffer_pointers,
                                            dword_bytes_to_write,
-                                           0, // reserved, must be NULL
+                                           0, // reserved, must be nullptr
                                            result);
 
   if (0 != initiate_result)

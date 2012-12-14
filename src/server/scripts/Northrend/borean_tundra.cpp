@@ -649,7 +649,7 @@ public:
                         break;
                     case 7:
                     {
-                        GameObjectPtr go_caribou = NULL;
+                        GameObjectPtr go_caribou = nullptr;
                         for (uint8 i = 0; i < CaribouTrapsNum; ++i)
                         {
                             go_caribou = me->FindNearestGameObject(CaribouTraps[i], 5.0f);
@@ -907,7 +907,7 @@ public:
                 if (PlayerPtr pHarpooner = Unit::GetPlayer(TO_WORLDOBJECT(me), HarpoonerGUID))
                 {
                     EnterEvadeMode();
-                    StartFollow(pHarpooner, 35, NULL);
+                    StartFollow(pHarpooner, 35, nullptr);
 
                     DoCast(me, SPELL_SUBDUED, true);
                     pHarpooner->CastSpell(pHarpooner, SPELL_DRAKE_HATCHLING_SUBDUED, true);
@@ -1627,7 +1627,7 @@ public:
             {
                 EnterEvadeMode(); //We make sure that the npc is not attacking the player!
                 me->SetReactState(REACT_PASSIVE);
-                StartFollow(TO_PLAYER(pCaster), 0, NULL);
+                StartFollow(TO_PLAYER(pCaster), 0, nullptr);
                 me->UpdateEntry(NPC_CAPTURED_BERLY_SORCERER, TEAM_NEUTRAL);
                 DoCast(me, SPELL_COSMETIC_ENSLAVE_CHAINS_SELF, true);
 
@@ -2024,7 +2024,7 @@ public:
             uiTimer = 1500;
             bStarted = false;
 
-            GameObjectPtr pTrap = NULL;
+            GameObjectPtr pTrap = nullptr;
             for (uint8 i = 0; i < MammothTrapsNum; ++i)
             {
                 pTrap = me->FindNearestGameObject(MammothTraps[i], 11.0f);
@@ -2064,7 +2064,7 @@ public:
 
             me->DisappearAndDie();
 
-            GameObjectPtr pTrap = NULL;
+            GameObjectPtr pTrap = nullptr;
             for (uint8 i = 0; i < MammothTrapsNum; ++i)
             {
                 pTrap = me->FindNearestGameObject(MammothTraps[i], 11.0f);

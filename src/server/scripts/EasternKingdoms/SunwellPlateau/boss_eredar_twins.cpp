@@ -231,7 +231,7 @@ public:
             {
                 if (instance)
                 {
-                    UnitPtr Temp = NULL;
+                    UnitPtr Temp = nullptr;
                     Temp = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_ALYTHESS));
                     if (Temp && Temp->isDead())
                     {
@@ -253,7 +253,7 @@ public:
                     if (!me->IsNonMeleeSpellCasted(false))
                     {
                         me->InterruptSpell(CURRENT_GENERIC_SPELL);
-                        UnitPtr target = NULL;
+                        UnitPtr target = nullptr;
                         target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                         if (target)
                             DoCast(target, SPELL_CONFLAGRATION);
@@ -267,7 +267,7 @@ public:
                 {
                     if (!me->IsNonMeleeSpellCasted(false))
                     {
-                        UnitPtr target = NULL;
+                        UnitPtr target = nullptr;
                         target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                         if (target)
                             DoCast(target, SPELL_SHADOW_NOVA);
@@ -287,7 +287,7 @@ public:
             {
                 if (!me->IsNonMeleeSpellCasted(false))
                 {
-                    UnitPtr target = NULL;
+                    UnitPtr target = nullptr;
                     target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (target)
                         DoCast(target, SPELL_CONFOUNDING_BLOW);
@@ -297,8 +297,8 @@ public:
 
             if (ShadowimageTimer <= diff)
             {
-                UnitPtr target = NULL;
-                CreaturePtr temp = NULL;
+                UnitPtr target = nullptr;
+                CreaturePtr temp = nullptr;
                 for (uint8 i = 0; i<3; ++i)
                 {
                     target = SelectTarget(SELECT_TARGET_RANDOM, 0);
@@ -567,7 +567,7 @@ public:
             {
                 if (instance)
                 {
-                    UnitPtr Temp = NULL;
+                    UnitPtr Temp = nullptr;
                     Temp = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_SACROLASH));
                     if (Temp && Temp->isDead())
                     {
@@ -601,7 +601,7 @@ public:
                 {
                     if (!me->IsNonMeleeSpellCasted(false))
                     {
-                        UnitPtr target = NULL;
+                        UnitPtr target = nullptr;
                         target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                         if (target)
                             DoCast(target, SPELL_SHADOW_NOVA);
@@ -616,7 +616,7 @@ public:
                     if (!me->IsNonMeleeSpellCasted(false))
                     {
                         me->InterruptSpell(CURRENT_GENERIC_SPELL);
-                        UnitPtr target = NULL;
+                        UnitPtr target = nullptr;
                         target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                         if (target)
                             DoCast(target, SPELL_CONFLAGRATION);

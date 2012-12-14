@@ -30,7 +30,7 @@ inline void ValidateAndSetOpcode(uint16 /*opcode*/, char const* /*name*/, Sessio
 template<>
 void ValidateAndSetOpcode<true, true>(uint16 opcode, char const* name, SessionStatus status, PacketProcessing processing, pOpcodeHandler handler)
 {
-    if (opcodeTable[opcode] != NULL)
+    if (opcodeTable[opcode] != nullptr)
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "Tried to override handler of %s with %s (opcode %u)", opcodeTable[opcode]->name, name, opcode);
         return;

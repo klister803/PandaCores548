@@ -81,7 +81,7 @@ uint32 OPvPCapturePointNA::GetControllingFaction() const
 
 void OPvPCapturePointNA::SpawnNPCsForTeam(uint32 team)
 {
-    const creature_type * creatures = NULL;
+    const creature_type * creatures = nullptr;
     if (team == ALLIANCE)
         creatures=AllianceControlNPCs;
     else if (team == HORDE)
@@ -100,7 +100,7 @@ void OPvPCapturePointNA::DeSpawnNPCs()
 
 void OPvPCapturePointNA::SpawnGOsForTeam(uint32 team)
 {
-    const go_type * gos = NULL;
+    const go_type * gos = nullptr;
     if (team == ALLIANCE)
         gos=AllianceControlGOs;
     else if (team == HORDE)
@@ -410,7 +410,7 @@ int32 OPvPCapturePointNA::HandleOpenGo(PlayerPtr player, uint64 guid)
     int32 retval = OPvPCapturePoint::HandleOpenGo(player, guid);
     if (retval >= 0)
     {
-        const go_type * gos = NULL;
+        const go_type * gos = nullptr;
         if (m_ControllingFaction == ALLIANCE)
             gos=AllianceControlGOs;
         else if (m_ControllingFaction == HORDE)

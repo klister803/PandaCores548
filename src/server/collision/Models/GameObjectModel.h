@@ -46,7 +46,7 @@ class GameObjectModel /*, public Intersectable*/
     float iScale;
     VMAP::WorldModel* iModel;
 
-    GameObjectModel() : phasemask(0), iModel(NULL) {}
+    GameObjectModel() : phasemask(0), iModel(nullptr) {}
     bool initialize(constGameObjectPtr go, const GameObjectDisplayInfoEntry& info);
 
 public:

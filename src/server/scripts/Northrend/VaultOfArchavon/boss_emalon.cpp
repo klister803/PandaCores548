@@ -90,7 +90,7 @@ class boss_emalon : public CreatureScript
             {
                 BossAI::JustSummoned(summoned);
 
-                // AttackStart has NULL-check for victim
+                // AttackStart has nullptr-check for victim
                 if (summoned->AI())
                     summoned->AI()->AttackStart(me->getVictim());
             }

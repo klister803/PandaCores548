@@ -384,24 +384,24 @@ class player_overlord_brandAI : public PlayerAI
     public:
         player_overlord_brandAI(PlayerPtr player) : PlayerAI(player)
         {
-            tyrannus = NULL;
+            tyrannus = nullptr;
         }
 
         void SetGUID(uint64 guid, int32 /*type*/)
         {
             tyrannus = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), guid);
-            me->IsAIEnabled = tyrannus != NULL;
+            me->IsAIEnabled = tyrannus != nullptr;
         }
 
         void DamageDealt(UnitPtr /*victim*/, uint32& damage, DamageEffectType /*damageType*/)
         {
             if (tyrannus->getVictim())
-                me->CastCustomSpell(SPELL_OVERLORD_BRAND_DAMAGE, SPELLVALUE_BASE_POINT0, damage, tyrannus->getVictim(), true, NULL, NULL, tyrannus->GetGUID());
+                me->CastCustomSpell(SPELL_OVERLORD_BRAND_DAMAGE, SPELLVALUE_BASE_POINT0, damage, tyrannus->getVictim(), true, nullptr, nullptr, tyrannus->GetGUID());
         }
 
         void HealDone(UnitPtr /*target*/, uint32& addHealth)
         {
-            me->CastCustomSpell(SPELL_OVERLORD_BRAND_HEAL, SPELLVALUE_BASE_POINT0, int32(addHealth*5.5f), tyrannus, true, NULL, NULL, tyrannus->GetGUID());
+            me->CastCustomSpell(SPELL_OVERLORD_BRAND_HEAL, SPELLVALUE_BASE_POINT0, int32(addHealth*5.5f), tyrannus, true, nullptr, nullptr, tyrannus->GetGUID());
         }
 
         void UpdateAI(const uint32 /*diff*/) { }

@@ -309,7 +309,7 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
     else
     {
         PlayerPtr bad = sObjectAccessor->FindPlayerByName(badname);
-        if (bad == NULL || !IsOn(bad->GetGUID()))
+        if (bad == nullptr || !IsOn(bad->GetGUID()))
         {
             WorldPacket data;
             MakePlayerNotFound(&data, badname);
@@ -377,7 +377,7 @@ void Channel::UnBan(uint64 good, const char *badname)
     else
     {
         PlayerPtr bad = sObjectAccessor->FindPlayerByName(badname);
-        if (bad == NULL || !IsBanned(bad->GetGUID()))
+        if (bad == nullptr || !IsBanned(bad->GetGUID()))
         {
             WorldPacket data;
             MakePlayerNotFound(&data, badname);
@@ -528,7 +528,7 @@ void Channel::SetOwner(uint64 p, const char *newname)
     }
 
     PlayerPtr newp = sObjectAccessor->FindPlayerByName(newname);
-    if (newp == NULL || !IsOn(newp->GetGUID()))
+    if (newp == nullptr || !IsOn(newp->GetGUID()))
     {
         WorldPacket data;
         MakePlayerNotFound(&data, newname);

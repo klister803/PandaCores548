@@ -197,7 +197,7 @@ class spell_krystallus_shatter : public SpellScriptLoader
                 if (UnitPtr target = GetHitUnit())
                 {
                     target->RemoveAurasDueToSpell(SPELL_STONED);
-                    target->CastSpell(NULLUNIT, SPELL_SHATTER_EFFECT, true);
+                    target->CastSpell(std::shared_ptr<Unit>(), SPELL_SHATTER_EFFECT, true);
                 }
             }
 

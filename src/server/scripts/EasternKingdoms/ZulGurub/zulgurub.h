@@ -60,7 +60,7 @@ CreatureAI* GetZulGurubCitadelAI(CreaturePtr creature)
         if (instance->GetInstanceScript())
             if (instance->GetScriptId() == sObjectMgr->GetScriptId(ZGScriptName))
                 return new AI(creature);
-    return NULL;
+    return nullptr;
 }
 
 #endif

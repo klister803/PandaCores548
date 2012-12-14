@@ -277,7 +277,7 @@ public:
         GameObjectPtr GetOrb(int32 index)
         {
             if (!instance)
-                return NULL;
+                return nullptr;
 
             switch (index)
             {
@@ -291,7 +291,7 @@ public:
                     return instance->instance->GetGameObject(instance->GetData64(DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_4));
             }
 
-            return NULL;
+            return nullptr;
         }
 
         void ResetOrbs()
@@ -742,7 +742,7 @@ public:
                         case TIMER_LEGION_LIGHTNING:
                             if (!me->IsNonMeleeSpellCasted(false))
                             {
-                                UnitPtr pRandomPlayer = NULL;
+                                UnitPtr pRandomPlayer = nullptr;
 
                                 me->RemoveAurasDueToSpell(SPELL_SOUL_FLAY);
                                 for (uint8 z = 0; z < 6; ++z)
@@ -838,7 +838,7 @@ public:
                             TimerIsDeactivated[TIMER_ORBS_EMPOWER] = true;
                             break;
                         case TIMER_ARMAGEDDON: //Phase 4
-                            UnitPtr target = NULL;
+                            UnitPtr target = nullptr;
                             for (uint8 z = 0; z < 6; ++z)
                             {
                                 target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);

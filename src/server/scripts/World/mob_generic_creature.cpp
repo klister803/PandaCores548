@@ -96,7 +96,7 @@ public:
                 if (me->isAttackReady() && !me->IsNonMeleeSpellCasted(false))
                 {
                     bool Healing = false;
-                    SpellInfo const* info = NULL;
+                    SpellInfo const* info = nullptr;
 
                     //Select a healing spell if less than 30% hp
                     if (HealthBelowPct(30))
@@ -127,7 +127,7 @@ public:
                 if (!me->IsNonMeleeSpellCasted(false))
                 {
                     bool Healing = false;
-                    SpellInfo const* info = NULL;
+                    SpellInfo const* info = nullptr;
 
                     //Select a healing spell if less than 30% hp ONLY 33% of the time
                     if (HealthBelowPct(30) && rand() % 3 == 0)
@@ -178,7 +178,7 @@ public:
     {
         trigger_periodicAI(CreaturePtr creature) : NullCreatureAI(creature)
         {
-            spell = me->m_spells[0] ? sSpellMgr->GetSpellInfo(me->m_spells[0]) : NULL;
+            spell = me->m_spells[0] ? sSpellMgr->GetSpellInfo(me->m_spells[0]) : nullptr;
             interval = me->GetAttackTime(BASE_ATTACK);
             timer = interval;
         }

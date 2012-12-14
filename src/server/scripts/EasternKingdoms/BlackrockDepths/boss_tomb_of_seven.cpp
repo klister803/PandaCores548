@@ -190,7 +190,7 @@ public:
             me->LoadCreaturesAddon();
             if (me->isAlive())
                 me->GetMotionMaster()->MoveTargetedHome();
-            me->SetLootRecipient(NULL);
+            me->SetLootRecipient(nullptr);
             if (instance)
                 instance->SetData64(DATA_EVENSTARTER, 0);
         }

@@ -781,7 +781,7 @@ public:
             {
                 if (currentPhase<5&&currentPhase >= 0)
                 {
-                   CreaturePtr pNext = NULL;
+                   CreaturePtr pNext = nullptr;
                    switch (currentPhase)
                    {
                         case PHASE_FRENZIED_WORGEN: pNext = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_MOB_FRENZIED_WORGEN) : 0); break;
@@ -812,7 +812,7 @@ public:
                 return;
             if (id > 4)
                 return;
-            CreaturePtr pNext = NULL;
+            CreaturePtr pNext = nullptr;
             switch (id)
             {
                 case PHASE_FRENZIED_WORGEN: pNext = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_MOB_FRENZIED_WORGEN) : 0); break;

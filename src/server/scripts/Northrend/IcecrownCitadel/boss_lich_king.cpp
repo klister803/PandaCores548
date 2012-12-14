@@ -478,7 +478,7 @@ class VileSpiritActivateEvent : public BasicEvent
         {
             _owner->SetReactState(REACT_AGGRESSIVE);
             _owner->CastSpell(_owner, SPELL_VILE_SPIRIT_MOVE_SEARCH, true);
-            _owner->CastSpell(NULLUNIT, SPELL_VILE_SPIRIT_DAMAGE_SEARCH, true);
+            _owner->CastSpell(std::shared_ptr<Unit>(), SPELL_VILE_SPIRIT_DAMAGE_SEARCH, true);
             return true;
         }
 
@@ -746,7 +746,7 @@ class boss_the_lich_king : public CreatureScript
                     case NPC_FROSTMOURNE_TRIGGER:
                     {
                         summons.Summon(summon);
-                        summon->CastSpell(NULLUNIT, SPELL_BROKEN_FROSTMOURNE, true);
+                        summon->CastSpell(std::shared_ptr<Unit>(), SPELL_BROKEN_FROSTMOURNE, true);
 
                         SendLightOverride(LIGHT_SOULSTORM, 10000);
                         SendWeather(WEATHER_STATE_BLACKSNOW);
@@ -1035,7 +1035,7 @@ class boss_the_lich_king : public CreatureScript
                             events.ScheduleEvent(EVENT_HARVEST_SOUL, 95000, 0, PHASE_THREE);
                             break;
                         case EVENT_FROSTMOURNE:
-                            if (TempSummonPtr terenas = me->GetMap()->SummonCreature(NPC_TERENAS_MENETHIL_FROSTMOURNE, TerenasSpawn, NULL, 60000))
+                            if (TempSummonPtr terenas = me->GetMap()->SummonCreature(NPC_TERENAS_MENETHIL_FROSTMOURNE, TerenasSpawn, nullptr, 60000))
                                 terenas->AI()->DoAction(ACTION_FROSTMOURNE_INTRO);
                             break;
                         case EVENT_HARVEST_SOULS:
@@ -1070,7 +1070,7 @@ class boss_the_lich_king : public CreatureScript
                             break;
                         }
                         case EVENT_FROSTMOURNE_HEROIC:
-                            if (TempSummonPtr terenas = me->GetMap()->SummonCreature(NPC_TERENAS_MENETHIL_FROSTMOURNE_H, TerenasSpawnHeroic, NULL, 60000))
+                            if (TempSummonPtr terenas = me->GetMap()->SummonCreature(NPC_TERENAS_MENETHIL_FROSTMOURNE_H, TerenasSpawnHeroic, nullptr, 60000))
                             {
                                 terenas->AI()->DoAction(ACTION_FROSTMOURNE_INTRO);
                                 std::list<CreaturePtr> triggers;
@@ -1776,7 +1776,7 @@ class npc_strangulate_vehicle : public CreatureScript
                             {
                                 if (UnitPtr summoner = summ->GetSummoner())
                                 {
-                                    summoner->CastSpell(NULLUNIT, SPELL_HARVEST_SOUL_VISUAL, true);
+                                    summoner->CastSpell(std::shared_ptr<Unit>(), SPELL_HARVEST_SOUL_VISUAL, true);
                                     summoner->ExitVehicle(summoner.get());
                                     if (!IsHeroic())
                                         summoner->CastSpell(summoner, SPELL_HARVEST_SOUL_TELEPORT, true);
@@ -1848,7 +1848,7 @@ class npc_terenas_menethil : public CreatureScript
                         me->setActive(true);
 
                         if (!IsHeroic())
-                            if (TempSummonPtr SpiritWarden = me->GetMap()->SummonCreature(NPC_SPIRIT_WARDEN, SpiritWardenSpawn, NULL, 60000))
+                            if (TempSummonPtr SpiritWarden = me->GetMap()->SummonCreature(NPC_SPIRIT_WARDEN, SpiritWardenSpawn, nullptr, 60000))
                                 SpiritWarden->AI()->AttackStart(me);
 
                         MustCast = false;
@@ -1869,7 +1869,7 @@ class npc_terenas_menethil : public CreatureScript
                         }
                         break;
                     case ACTION_TELEPORT_BACK:
-                        me->CastSpell(NULLUNIT, SPELL_RESTORE_SOUL, TRIGGERED_NONE);
+                        me->CastSpell(std::shared_ptr<Unit>(), SPELL_RESTORE_SOUL, TRIGGERED_NONE);
                         _events.ScheduleEvent(EVENT_TELEPORT_BACK, 2000);
                         me->DespawnOrUnsummon(3000);
                         break;
@@ -1900,7 +1900,7 @@ class npc_terenas_menethil : public CreatureScript
                         _events.ScheduleEvent(EVENT_TELEPORT_BACK, 1000);
                         if (CreaturePtr warden = me->FindNearestCreature(NPC_SPIRIT_WARDEN, 20.0f))
                         {
-                            warden->CastSpell(NULLUNIT, SPELL_DESTROY_SOUL, TRIGGERED_NONE);
+                            warden->CastSpell(std::shared_ptr<Unit>(), SPELL_DESTROY_SOUL, TRIGGERED_NONE);
                             warden->DespawnOrUnsummon(2000);
                         }
 
@@ -1974,7 +1974,7 @@ class npc_terenas_menethil : public CreatureScript
                         case EVENT_DESTROY_SOUL:
                             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             if (CreaturePtr warden = me->FindNearestCreature(NPC_SPIRIT_WARDEN, 20.0f))
-                                warden->CastSpell(NULLUNIT, SPELL_DESTROY_SOUL, TRIGGERED_NONE);
+                                warden->CastSpell(std::shared_ptr<Unit>(), SPELL_DESTROY_SOUL, TRIGGERED_NONE);
                             DoCast(SPELL_TERENAS_LOSES_INSIDE);
                             _events.ScheduleEvent(EVENT_TELEPORT_BACK, 1000);
                             break;
@@ -2344,7 +2344,7 @@ class spell_the_lich_king_necrotic_plague : public SpellScriptLoader
                 CustomSpellValues values;
                 //values.AddSpellMod(SPELLVALUE_AURA_STACK, 2);
                 values.AddSpellMod(SPELLVALUE_MAX_TARGETS, 1);
-                GetTarget()->CastCustomSpell(SPELL_NECROTIC_PLAGUE_JUMP, values, NULL, true, NULL, NULL, GetCasterGUID());
+                GetTarget()->CastCustomSpell(SPELL_NECROTIC_PLAGUE_JUMP, values, nullptr, true, nullptr, nullptr, GetCasterGUID());
                 if (UnitPtr caster = GetCaster())
                     caster->CastSpell(caster, SPELL_PLAGUE_SIPHON, true);
             }
@@ -2436,7 +2436,7 @@ class spell_the_lich_king_necrotic_plague_jump : public SpellScriptLoader
 
                 CustomSpellValues values;
                 values.AddSpellMod(SPELLVALUE_AURA_STACK, GetStackAmount());
-                GetTarget()->CastCustomSpell(SPELL_NECROTIC_PLAGUE_JUMP, values, NULL, true, NULL, NULL, GetCasterGUID());
+                GetTarget()->CastCustomSpell(SPELL_NECROTIC_PLAGUE_JUMP, values, nullptr, true, nullptr, nullptr, GetCasterGUID());
                 if (UnitPtr caster = GetCaster())
                     caster->CastSpell(caster, SPELL_PLAGUE_SIPHON, true);
             }
@@ -2455,7 +2455,7 @@ class spell_the_lich_king_necrotic_plague_jump : public SpellScriptLoader
                 CustomSpellValues values;
                 values.AddSpellMod(SPELLVALUE_AURA_STACK, GetStackAmount());
                 values.AddSpellMod(SPELLVALUE_BASE_POINT1, AURA_REMOVE_BY_ENEMY_SPELL); // add as marker (spell has no effect 1)
-                GetTarget()->CastCustomSpell(SPELL_NECROTIC_PLAGUE_JUMP, values, NULL, true, NULL, NULL, GetCasterGUID());
+                GetTarget()->CastCustomSpell(SPELL_NECROTIC_PLAGUE_JUMP, values, nullptr, true, nullptr, nullptr, GetCasterGUID());
                 if (UnitPtr caster = GetCaster())
                     caster->CastSpell(caster, SPELL_PLAGUE_SIPHON, true);
 
@@ -2525,7 +2525,7 @@ class spell_the_lich_king_shadow_trap_periodic : public SpellScriptLoader
                 if (targets.empty())
                     return;
 
-                GetCaster()->CastSpell(NULLUNIT, SPELL_SHADOW_TRAP_KNOCKBACK, true);
+                GetCaster()->CastSpell(std::shared_ptr<Unit>(), SPELL_SHADOW_TRAP_KNOCKBACK, true);
             }
 
             void Register()
@@ -2551,7 +2551,7 @@ class spell_the_lich_king_quake : public SpellScriptLoader
 
             bool Load()
             {
-                return GetCaster()->GetInstanceScript() != NULL;
+                return GetCaster()->GetInstanceScript() != nullptr;
             }
 
             void FilterTargets(std::list<WorldObjectPtr>& targets)
@@ -2808,7 +2808,7 @@ class spell_the_lich_king_valkyr_target_search : public SpellScriptLoader
 
             bool Load()
             {
-                _target = NULL;
+                _target = nullptr;
                 return true;
             }
 
@@ -2965,7 +2965,7 @@ class spell_the_lich_king_vile_spirits : public SpellScriptLoader
             void OnPeriodic(constAuraEffectPtr aurEff)
             {
                 if (_is25Man || ((aurEff->GetTickNumber() - 1) % 5))
-                    GetTarget()->CastSpell(NULLUNIT, GetSpellInfo()->Effects[aurEff->GetEffIndex()].TriggerSpell, true, NULL, aurEff, GetCasterGUID());
+                    GetTarget()->CastSpell(std::shared_ptr<Unit>(), GetSpellInfo()->Effects[aurEff->GetEffIndex()].TriggerSpell, true, nullptr, aurEff, GetCasterGUID());
             }
 
             void Register()
@@ -3020,7 +3020,7 @@ class spell_the_lich_king_vile_spirit_move_target_search : public SpellScriptLoa
 
             bool Load()
             {
-                _target = NULL;
+                _target = nullptr;
                 return GetCaster()->GetTypeId() == TYPEID_UNIT;
             }
 
@@ -3082,7 +3082,7 @@ class spell_the_lich_king_vile_spirit_damage_target_search : public SpellScriptL
                 if (TempSummonPtr summon = GetCaster()->ToTempSummon())
                     if (UnitPtr summoner = summon->GetSummoner())
                         summoner->GetAI()->SetData(DATA_VILE, 1);
-                GetCaster()->CastSpell(NULLUNIT, SPELL_SPIRIT_BURST, true);
+                GetCaster()->CastSpell(std::shared_ptr<Unit>(), SPELL_SPIRIT_BURST, true);
                 GetCaster()->ToCreature()->DespawnOrUnsummon(3000);
                 GetCaster()->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             }
@@ -3112,14 +3112,14 @@ class spell_the_lich_king_harvest_soul : public SpellScriptLoader
 
             bool Load()
             {
-                return GetOwner()->GetInstanceScript() != NULL;
+                return GetOwner()->GetInstanceScript() != nullptr;
             }
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 // m_originalCaster to allow stacking from different casters, meh
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH)
-                    GetTarget()->CastSpell(NULLUNIT, SPELL_HARVESTED_SOUL, true, NULL, NULL, GetTarget()->GetInstanceScript()->GetData64(DATA_THE_LICH_KING));
+                    GetTarget()->CastSpell(std::shared_ptr<Unit>(), SPELL_HARVESTED_SOUL, true, nullptr, nullptr, GetTarget()->GetInstanceScript()->GetData64(DATA_THE_LICH_KING));
             }
 
             void Register()
@@ -3185,7 +3185,7 @@ class spell_the_lich_king_soul_rip : public SpellScriptLoader
                 PreventDefaultAction();
                 // shouldn't be needed, this is channeled
                 if (UnitPtr caster = GetCaster())
-                    caster->CastCustomSpell(SPELL_SOUL_RIP_DAMAGE, SPELLVALUE_BASE_POINT0, 5000 * aurEff->GetTickNumber(), GetTarget(), true, NULL, aurEff, GetCasterGUID());
+                    caster->CastCustomSpell(SPELL_SOUL_RIP_DAMAGE, SPELLVALUE_BASE_POINT0, 5000 * aurEff->GetTickNumber(), GetTarget(), true, nullptr, aurEff, GetCasterGUID());
             }
 
             void Register()
@@ -3268,7 +3268,7 @@ class spell_the_lich_king_restore_soul : public SpellScriptLoader
             bool Load()
             {
                 _instance = GetCaster()->GetInstanceScript();
-                return _instance != NULL;
+                return _instance != nullptr;
             }
 
             void HandleScript(SpellEffIndex /*effIndex*/)
@@ -3311,14 +3311,14 @@ class spell_the_lich_king_in_frostmourne_room : public SpellScriptLoader
 
             bool Load()
             {
-                return GetOwner()->GetInstanceScript() != NULL;
+                return GetOwner()->GetInstanceScript() != nullptr;
             }
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 // m_originalCaster to allow stacking from different casters, meh
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_DEATH)
-                    GetTarget()->CastSpell(NULLUNIT, SPELL_HARVESTED_SOUL, true, NULL, NULL, GetTarget()->GetInstanceScript()->GetData64(DATA_THE_LICH_KING));
+                    GetTarget()->CastSpell(std::shared_ptr<Unit>(), SPELL_HARVESTED_SOUL, true, nullptr, nullptr, GetTarget()->GetInstanceScript()->GetData64(DATA_THE_LICH_KING));
             }
 
             void Register()
@@ -3345,7 +3345,7 @@ class spell_the_lich_king_summon_spirit_bomb : public SpellScriptLoader
             void HandleScript(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                GetHitUnit()->CastSpell(NULLUNIT, uint32(GetEffectValue()), true);
+                GetHitUnit()->CastSpell(std::shared_ptr<Unit>(), uint32(GetEffectValue()), true);
             }
 
             void Register()
@@ -3408,7 +3408,7 @@ class spell_the_lich_king_jump : public SpellScriptLoader
             {
                 PreventHitDefaultEffect(effIndex);
                 GetHitUnit()->RemoveAurasDueToSpell(SPELL_RAISE_DEAD);
-                GetHitUnit()->CastSpell(NULLUNIT, SPELL_JUMP_2, true);
+                GetHitUnit()->CastSpell(std::shared_ptr<Unit>(), SPELL_JUMP_2, true);
                 if (CreaturePtr creature = GetHitCreature())
                     creature->AI()->DoAction(ACTION_BREAK_FROSTMOURNE);
             }

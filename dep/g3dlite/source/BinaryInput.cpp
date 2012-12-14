@@ -143,7 +143,7 @@ void BinaryInput::loadIntoMemory(int64 startPosition, int64 minLength) {
         m_bufferLength = minLength;
         debugAssert(m_freeBuffer);
         m_buffer = (uint8*)System::realloc(m_buffer, m_bufferLength);
-        if (m_buffer == NULL) {
+        if (m_buffer == nullptr) {
             throw "Tried to read a larger memory chunk than could fit in memory. (2)";
         }
     }
@@ -159,7 +159,7 @@ void BinaryInput::loadIntoMemory(int64 startPosition, int64 minLength) {
         ret = fread(m_buffer, 1, toRead, file);
         debugAssert(ret == toRead);
         fclose(file);
-        file = NULL;
+        file = nullptr;
     
 #   else
         FILE* file = fopen(m_filename.c_str(), "rb");
@@ -170,7 +170,7 @@ void BinaryInput::loadIntoMemory(int64 startPosition, int64 minLength) {
         ret = fread(m_buffer, 1, toRead, file);
         debugAssert((size_t)ret == (size_t)toRead);
         fclose(file);
-        file = NULL;
+        file = nullptr;
 #   endif
 
     m_pos = absPos - m_alreadyRead;
@@ -265,7 +265,7 @@ BinaryInput::BinaryInput(
     m_alreadyRead(0),
     m_length(0),
     m_bufferLength(0),
-    m_buffer(NULL),
+    m_buffer(nullptr),
     m_pos(0),
     m_freeBuffer(true) {
 
@@ -282,7 +282,7 @@ BinaryInput::BinaryInput(
 //        zipRead(filename, v, s);
 
         std::string internalFile = m_filename.substr(zipfile.length() + 1);
-        struct zip* z = zip_open(zipfile.c_str(), ZIP_CHECKCONS, NULL);
+        struct zip* z = zip_open(zipfile.c_str(), ZIP_CHECKCONS, nullptr);
         {
             struct zip_stat info;
             zip_stat_init( &info );    // TODO: Docs unclear if zip_stat_init is required.
@@ -332,14 +332,14 @@ BinaryInput::BinaryInput(
 
     debugAssert(m_freeBuffer);
     m_buffer = (uint8*)System::alignedMalloc(m_bufferLength, 16);
-    if (m_buffer == NULL) {
+    if (m_buffer == nullptr) {
         if (compressed) {
             throw "Not enough memory to load compressed file. (1)";
         }
         
         // Try to allocate a small array; not much memory is available.
         // Give up if we can't allocate even 1k.
-        while ((m_buffer == NULL) && (m_bufferLength > 1024)) {
+        while ((m_buffer == nullptr) && (m_bufferLength > 1024)) {
             m_bufferLength /= 2;
             m_buffer = (uint8*)System::alignedMalloc(m_bufferLength, 16);
         }
@@ -348,7 +348,7 @@ BinaryInput::BinaryInput(
     
     fread(m_buffer, m_bufferLength, sizeof(int8), file);
     fclose(file);
-    file = NULL;
+    file = nullptr;
 
     if (compressed) {
         if (m_bufferLength != m_length) {
@@ -403,7 +403,7 @@ BinaryInput::~BinaryInput() {
     if (m_freeBuffer) {
         System::alignedFree(m_buffer);
     }
-    m_buffer = NULL;
+    m_buffer = nullptr;
 }
 
 
@@ -434,7 +434,7 @@ std::string BinaryInput::readString(int64 n) {
     debugAssertM((m_pos + n) <= m_length, "Read past end of file");
     
     char *s = (char*)System::alignedMalloc(n + 1, 16);
-    assert(s != NULL);
+    assert(s != nullptr);
 
     memcpy(s, m_buffer + m_pos, n);
     // There may not be a null, so make sure
@@ -443,7 +443,7 @@ std::string BinaryInput::readString(int64 n) {
 
     std::string out = s;
     System::alignedFree(s);
-    s = NULL;
+    s = nullptr;
 
     m_pos += n;
 
@@ -471,7 +471,7 @@ std::string BinaryInput::readString() {
         }
     }
 
-    // Consume NULL
+    // Consume nullptr
     ++n;
 
     return readString(n);

@@ -115,7 +115,7 @@ public:
                         //Cast Hateful strike on the player with the highest
                         //amount of HP within melee distance
                         uint32 MostHP = 0;
-                        UnitPtr pMostHPTarget = NULL;
+                        UnitPtr pMostHPTarget = nullptr;
                         std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin();
                         for (; i != me->getThreatManager().getThreatList().end(); ++i)
                         {

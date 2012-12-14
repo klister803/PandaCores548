@@ -160,7 +160,7 @@ class boss_omor_the_unscarred : public CreatureScript
                 else
                     if (OrbitalStrike_Timer <= diff)
                     {
-                        UnitPtr temp = NULL;
+                        UnitPtr temp = nullptr;
                         if (me->IsWithinMeleeRange(me->getVictim()))
                             temp = me->getVictim();
                         else temp = SelectTarget(SELECT_TARGET_RANDOM, 0);

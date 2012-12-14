@@ -35,22 +35,22 @@ public:
     {
         static ChatCommand honorAddCommandTable[] =
         {
-            { "kill",           SEC_GAMEMASTER,     false, &HandleHonorAddKillCommand,         "", NULL },
-            { "",               SEC_GAMEMASTER,     false, &HandleHonorAddCommand,             "", NULL },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "kill",           SEC_GAMEMASTER,     false, &HandleHonorAddKillCommand,         "", nullptr },
+            { "",               SEC_GAMEMASTER,     false, &HandleHonorAddCommand,             "", nullptr },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
 
         static ChatCommand honorCommandTable[] =
         {
-            { "add",            SEC_GAMEMASTER,     false, NULL,               "", honorAddCommandTable },
-            { "update",         SEC_GAMEMASTER,     false, &HandleHonorUpdateCommand,          "", NULL },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "add",            SEC_GAMEMASTER,     false, nullptr,               "", honorAddCommandTable },
+            { "update",         SEC_GAMEMASTER,     false, &HandleHonorUpdateCommand,          "", nullptr },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
 
         static ChatCommand commandTable[] =
         {
-            { "honor",          SEC_GAMEMASTER,     false, NULL,                  "", honorCommandTable },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "honor",          SEC_GAMEMASTER,     false, nullptr,                  "", honorCommandTable },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
         return commandTable;
     }
@@ -73,7 +73,7 @@ public:
             return false;
 
         uint32 amount = (uint32)atoi(args);
-        target->RewardHonor(NULL, 1, amount);
+        target->RewardHonor(nullptr, 1, amount);
         return true;
     }
 

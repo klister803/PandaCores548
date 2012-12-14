@@ -201,7 +201,7 @@ public:
             }
 
             if (uiType <= 3)
-                Start(false, true, 0, NULL);
+                Start(false, true, 0, nullptr);
         }
 
         void WaypointReached(uint32 waypointId)

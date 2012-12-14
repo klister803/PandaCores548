@@ -724,7 +724,7 @@ public:
     {
         npc_korrak_bloodragerAI(CreaturePtr creature) : npc_escortAI(creature)
         {
-            Start(true, true, 0, NULL);
+            Start(true, true, 0, nullptr);
             SetDespawnAtEnd(false);
         }
 
@@ -917,7 +917,7 @@ public:
         {
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
             me->SetReactState(REACT_PASSIVE);
-            Start(true, true, 0, NULL);
+            Start(true, true, 0, nullptr);
             SetDespawnAtEnd(false);
         }
 

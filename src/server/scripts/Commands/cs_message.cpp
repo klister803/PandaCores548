@@ -35,25 +35,25 @@ public:
     {
         static ChatCommand channelSetCommandTable[] =
         {
-            { "ownership",      SEC_ADMINISTRATOR,  false,  &HandleChannelSetOwnership,         "", NULL },
-            { NULL,             0,                  false,  NULL,                               "", NULL }
+            { "ownership",      SEC_ADMINISTRATOR,  false,  &HandleChannelSetOwnership,         "", nullptr },
+            { nullptr,             0,                  false,  nullptr,                               "", nullptr }
         };
         static ChatCommand channelCommandTable[] =
         {
-            { "set",            SEC_ADMINISTRATOR,  true,   NULL,                               "", channelSetCommandTable },
-            { NULL,             0,                  false,  NULL,                               "", NULL }
+            { "set",            SEC_ADMINISTRATOR,  true,   nullptr,                               "", channelSetCommandTable },
+            { nullptr,             0,                  false,  nullptr,                               "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "channel",        SEC_ADMINISTRATOR,  true,   NULL,                               "", channelCommandTable  },
-            { "nameannounce",   SEC_MODERATOR,      true,   &HandleNameAnnounceCommand,         "", NULL },
-            { "gmnameannounce", SEC_MODERATOR,      true,   &HandleGMNameAnnounceCommand,       "", NULL },
-            { "announce",       SEC_MODERATOR,      true,   &HandleAnnounceCommand,             "", NULL },
-            { "gmannounce",     SEC_MODERATOR,      true,   &HandleGMAnnounceCommand,           "", NULL },
-            { "notify",         SEC_MODERATOR,      true,   &HandleNotifyCommand,               "", NULL },
-            { "gmnotify",       SEC_MODERATOR,      true,   &HandleGMNotifyCommand,             "", NULL },
-            { "whispers",       SEC_MODERATOR,      false,  &HandleWhispersCommand,             "", NULL },
-            { NULL,             0,                  false,  NULL,                               "", NULL }
+            { "channel",        SEC_ADMINISTRATOR,  true,   nullptr,                               "", channelCommandTable  },
+            { "nameannounce",   SEC_MODERATOR,      true,   &HandleNameAnnounceCommand,         "", nullptr },
+            { "gmnameannounce", SEC_MODERATOR,      true,   &HandleGMNameAnnounceCommand,       "", nullptr },
+            { "announce",       SEC_MODERATOR,      true,   &HandleAnnounceCommand,             "", nullptr },
+            { "gmannounce",     SEC_MODERATOR,      true,   &HandleGMAnnounceCommand,           "", nullptr },
+            { "notify",         SEC_MODERATOR,      true,   &HandleNotifyCommand,               "", nullptr },
+            { "gmnotify",       SEC_MODERATOR,      true,   &HandleGMNotifyCommand,             "", nullptr },
+            { "whispers",       SEC_MODERATOR,      false,  &HandleWhispersCommand,             "", nullptr },
+            { nullptr,             0,                  false,  nullptr,                               "", nullptr }
         };
         return commandTable;
     }
@@ -63,13 +63,13 @@ public:
         if (!*args)
             return false;
         char const* channelStr = strtok((char*)args, " ");
-        char const* argStr = strtok(NULL, "");
+        char const* argStr = strtok(nullptr, "");
 
         if (!channelStr || !argStr)
             return false;
 
         PlayerPtr player = handler->GetSession()->GetPlayer();
-        Channel* channcel = NULL;
+        Channel* channcel = nullptr;
 
         if (ChannelMgr* cMgr = channelMgr(player->GetTeam()))
             channcel = cMgr->GetChannel(channelStr, player);

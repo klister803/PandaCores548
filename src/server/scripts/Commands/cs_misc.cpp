@@ -39,81 +39,81 @@ public:
     {
         static ChatCommand groupCommandTable[] =
         {
-            { "leader",         SEC_ADMINISTRATOR,          false,  &HandleGroupLeaderCommand,          "", NULL },
-            { "disband",        SEC_ADMINISTRATOR,          false,  &HandleGroupDisbandCommand,         "", NULL },
-            { "remove",         SEC_ADMINISTRATOR,          false,  &HandleGroupRemoveCommand,          "", NULL },
-            { NULL,             0,                          false,  NULL,                               "", NULL }
+            { "leader",         SEC_ADMINISTRATOR,          false,  &HandleGroupLeaderCommand,          "", nullptr },
+            { "disband",        SEC_ADMINISTRATOR,          false,  &HandleGroupDisbandCommand,         "", nullptr },
+            { "remove",         SEC_ADMINISTRATOR,          false,  &HandleGroupRemoveCommand,          "", nullptr },
+            { nullptr,             0,                          false,  nullptr,                               "", nullptr }
         };
         static ChatCommand petCommandTable[] =
         {
-            { "create",             SEC_GAMEMASTER,         false, &HandleCreatePetCommand,             "", NULL },
-            { "learn",              SEC_GAMEMASTER,         false, &HandlePetLearnCommand,              "", NULL },
-            { "unlearn",            SEC_GAMEMASTER,         false, &HandlePetUnlearnCommand,            "", NULL },
-            { NULL,                 0,                      false, NULL,                                "", NULL }
+            { "create",             SEC_GAMEMASTER,         false, &HandleCreatePetCommand,             "", nullptr },
+            { "learn",              SEC_GAMEMASTER,         false, &HandlePetLearnCommand,              "", nullptr },
+            { "unlearn",            SEC_GAMEMASTER,         false, &HandlePetUnlearnCommand,            "", nullptr },
+            { nullptr,                 0,                      false, nullptr,                                "", nullptr }
         };
         static ChatCommand sendCommandTable[] =
         {
-            { "items",              SEC_ADMINISTRATOR,      true,  &HandleSendItemsCommand,             "", NULL },
-            { "mail",               SEC_MODERATOR,          true,  &HandleSendMailCommand,              "", NULL },
-            { "message",            SEC_ADMINISTRATOR,      true,  &HandleSendMessageCommand,           "", NULL },
-            { "money",              SEC_ADMINISTRATOR,      true,  &HandleSendMoneyCommand,             "", NULL },
-            { NULL,                 0,                      false, NULL,                                "", NULL }
+            { "items",              SEC_ADMINISTRATOR,      true,  &HandleSendItemsCommand,             "", nullptr },
+            { "mail",               SEC_MODERATOR,          true,  &HandleSendMailCommand,              "", nullptr },
+            { "message",            SEC_ADMINISTRATOR,      true,  &HandleSendMessageCommand,           "", nullptr },
+            { "money",              SEC_ADMINISTRATOR,      true,  &HandleSendMoneyCommand,             "", nullptr },
+            { nullptr,                 0,                      false, nullptr,                                "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "dev",                SEC_ADMINISTRATOR,      false, &HandleDevCommand,                   "", NULL },
-            { "gps",                SEC_ADMINISTRATOR,      false, &HandleGPSCommand,                   "", NULL },
-            { "aura",               SEC_ADMINISTRATOR,      false, &HandleAuraCommand,                  "", NULL },
-            { "unaura",             SEC_ADMINISTRATOR,      false, &HandleUnAuraCommand,                "", NULL },
-            { "appear",             SEC_MODERATOR,          false, &HandleAppearCommand,                "", NULL },
-            { "summon",             SEC_MODERATOR,          false, &HandleSummonCommand,                "", NULL },
-            { "groupsummon",        SEC_MODERATOR,          false, &HandleGroupSummonCommand,           "", NULL },
-            { "commands",           SEC_PLAYER,             true,  &HandleCommandsCommand,              "", NULL },
-            { "die",                SEC_ADMINISTRATOR,      false, &HandleDieCommand,                   "", NULL },
-            { "revive",             SEC_ADMINISTRATOR,      true,  &HandleReviveCommand,                "", NULL },
-            { "dismount",           SEC_PLAYER,             false, &HandleDismountCommand,              "", NULL },
-            { "guid",               SEC_GAMEMASTER,         false, &HandleGUIDCommand,                  "", NULL },
-            { "help",               SEC_PLAYER,             true,  &HandleHelpCommand,                  "", NULL },
-            { "itemmove",           SEC_GAMEMASTER,         false, &HandleItemMoveCommand,              "", NULL },
-            { "cooldown",           SEC_ADMINISTRATOR,      false, &HandleCooldownCommand,              "", NULL },
-            { "distance",           SEC_ADMINISTRATOR,      false, &HandleGetDistanceCommand,           "", NULL },
-            { "recall",             SEC_MODERATOR,          false, &HandleRecallCommand,                "", NULL },
-            { "save",               SEC_PLAYER,             false, &HandleSaveCommand,                  "", NULL },
-            { "saveall",            SEC_MODERATOR,          true,  &HandleSaveAllCommand,               "", NULL },
-            { "kick",               SEC_GAMEMASTER,         true,  &HandleKickPlayerCommand,            "", NULL },
-            { "start",              SEC_PLAYER,             false, &HandleStartCommand,                 "", NULL },
-            { "linkgrave",          SEC_ADMINISTRATOR,      false, &HandleLinkGraveCommand,             "", NULL },
-            { "neargrave",          SEC_ADMINISTRATOR,      false, &HandleNearGraveCommand,             "", NULL },
-            { "showarea",           SEC_ADMINISTRATOR,      false, &HandleShowAreaCommand,              "", NULL },
-            { "hidearea",           SEC_ADMINISTRATOR,      false, &HandleHideAreaCommand,              "", NULL },
-            { "additem",            SEC_ADMINISTRATOR,      false, &HandleAddItemCommand,               "", NULL },
-            { "additemset",         SEC_ADMINISTRATOR,      false, &HandleAddItemSetCommand,            "", NULL },
-            { "bank",               SEC_ADMINISTRATOR,      false, &HandleBankCommand,                  "", NULL },
-            { "wchange",            SEC_ADMINISTRATOR,      false, &HandleChangeWeather,                "", NULL },
-            { "setskill",           SEC_ADMINISTRATOR,      false, &HandleSetSkillCommand,              "", NULL },
-            { "pinfo",              SEC_GAMEMASTER,         true,  &HandlePInfoCommand,                 "", NULL },
-            { "respawn",            SEC_ADMINISTRATOR,      false, &HandleRespawnCommand,               "", NULL },
-            { "send",               SEC_MODERATOR,          true,  NULL,                                "", sendCommandTable },
-            { "pet",                SEC_GAMEMASTER,         false, NULL,                                "", petCommandTable },
-            { "mute",               SEC_MODERATOR,          true,  &HandleMuteCommand,                  "", NULL },
-            { "unmute",             SEC_MODERATOR,          true,  &HandleUnmuteCommand,                "", NULL },
-            { "movegens",           SEC_ADMINISTRATOR,      false, &HandleMovegensCommand,              "", NULL },
-            { "cometome",           SEC_ADMINISTRATOR,      false, &HandleComeToMeCommand,              "", NULL },
-            { "damage",             SEC_ADMINISTRATOR,      false, &HandleDamageCommand,                "", NULL },
-            { "combatstop",         SEC_GAMEMASTER,         true,  &HandleCombatStopCommand,            "", NULL },
-            { "flusharenapoints",   SEC_ADMINISTRATOR,      false, &HandleFlushArenaPointsCommand,      "", NULL },
-            { "repairitems",        SEC_GAMEMASTER,         true,  &HandleRepairitemsCommand,           "", NULL },
-            { "freeze",             SEC_MODERATOR,          false, &HandleFreezeCommand,                "", NULL },
-            { "unfreeze",           SEC_MODERATOR,          false, &HandleUnFreezeCommand,              "", NULL },
-            { "listfreeze",         SEC_MODERATOR,          false, &HandleListFreezeCommand,            "", NULL },
-            { "group",              SEC_ADMINISTRATOR,      false, NULL,                                "", groupCommandTable },
-            { "possess",            SEC_ADMINISTRATOR,      false, HandlePossessCommand,                "", NULL },
-            { "unpossess",          SEC_ADMINISTRATOR,      false, HandleUnPossessCommand,              "", NULL },
-            { "bindsight",          SEC_ADMINISTRATOR,      false, HandleBindSightCommand,              "", NULL },
-            { "unbindsight",        SEC_ADMINISTRATOR,      false, HandleUnbindSightCommand,            "", NULL },
-            { "playall",            SEC_GAMEMASTER,         false, HandlePlayAllCommand,                "", NULL },
-            { "selectfaction",      SEC_ADMINISTRATOR,      false, HandleSelectFactionCommand,          "", NULL },
-            { NULL,                 0,                      false, NULL,                                "", NULL }
+            { "dev",                SEC_ADMINISTRATOR,      false, &HandleDevCommand,                   "", nullptr },
+            { "gps",                SEC_ADMINISTRATOR,      false, &HandleGPSCommand,                   "", nullptr },
+            { "aura",               SEC_ADMINISTRATOR,      false, &HandleAuraCommand,                  "", nullptr },
+            { "unaura",             SEC_ADMINISTRATOR,      false, &HandleUnAuraCommand,                "", nullptr },
+            { "appear",             SEC_MODERATOR,          false, &HandleAppearCommand,                "", nullptr },
+            { "summon",             SEC_MODERATOR,          false, &HandleSummonCommand,                "", nullptr },
+            { "groupsummon",        SEC_MODERATOR,          false, &HandleGroupSummonCommand,           "", nullptr },
+            { "commands",           SEC_PLAYER,             true,  &HandleCommandsCommand,              "", nullptr },
+            { "die",                SEC_ADMINISTRATOR,      false, &HandleDieCommand,                   "", nullptr },
+            { "revive",             SEC_ADMINISTRATOR,      true,  &HandleReviveCommand,                "", nullptr },
+            { "dismount",           SEC_PLAYER,             false, &HandleDismountCommand,              "", nullptr },
+            { "guid",               SEC_GAMEMASTER,         false, &HandleGUIDCommand,                  "", nullptr },
+            { "help",               SEC_PLAYER,             true,  &HandleHelpCommand,                  "", nullptr },
+            { "itemmove",           SEC_GAMEMASTER,         false, &HandleItemMoveCommand,              "", nullptr },
+            { "cooldown",           SEC_ADMINISTRATOR,      false, &HandleCooldownCommand,              "", nullptr },
+            { "distance",           SEC_ADMINISTRATOR,      false, &HandleGetDistanceCommand,           "", nullptr },
+            { "recall",             SEC_MODERATOR,          false, &HandleRecallCommand,                "", nullptr },
+            { "save",               SEC_PLAYER,             false, &HandleSaveCommand,                  "", nullptr },
+            { "saveall",            SEC_MODERATOR,          true,  &HandleSaveAllCommand,               "", nullptr },
+            { "kick",               SEC_GAMEMASTER,         true,  &HandleKickPlayerCommand,            "", nullptr },
+            { "start",              SEC_PLAYER,             false, &HandleStartCommand,                 "", nullptr },
+            { "linkgrave",          SEC_ADMINISTRATOR,      false, &HandleLinkGraveCommand,             "", nullptr },
+            { "neargrave",          SEC_ADMINISTRATOR,      false, &HandleNearGraveCommand,             "", nullptr },
+            { "showarea",           SEC_ADMINISTRATOR,      false, &HandleShowAreaCommand,              "", nullptr },
+            { "hidearea",           SEC_ADMINISTRATOR,      false, &HandleHideAreaCommand,              "", nullptr },
+            { "additem",            SEC_ADMINISTRATOR,      false, &HandleAddItemCommand,               "", nullptr },
+            { "additemset",         SEC_ADMINISTRATOR,      false, &HandleAddItemSetCommand,            "", nullptr },
+            { "bank",               SEC_ADMINISTRATOR,      false, &HandleBankCommand,                  "", nullptr },
+            { "wchange",            SEC_ADMINISTRATOR,      false, &HandleChangeWeather,                "", nullptr },
+            { "setskill",           SEC_ADMINISTRATOR,      false, &HandleSetSkillCommand,              "", nullptr },
+            { "pinfo",              SEC_GAMEMASTER,         true,  &HandlePInfoCommand,                 "", nullptr },
+            { "respawn",            SEC_ADMINISTRATOR,      false, &HandleRespawnCommand,               "", nullptr },
+            { "send",               SEC_MODERATOR,          true,  nullptr,                                "", sendCommandTable },
+            { "pet",                SEC_GAMEMASTER,         false, nullptr,                                "", petCommandTable },
+            { "mute",               SEC_MODERATOR,          true,  &HandleMuteCommand,                  "", nullptr },
+            { "unmute",             SEC_MODERATOR,          true,  &HandleUnmuteCommand,                "", nullptr },
+            { "movegens",           SEC_ADMINISTRATOR,      false, &HandleMovegensCommand,              "", nullptr },
+            { "cometome",           SEC_ADMINISTRATOR,      false, &HandleComeToMeCommand,              "", nullptr },
+            { "damage",             SEC_ADMINISTRATOR,      false, &HandleDamageCommand,                "", nullptr },
+            { "combatstop",         SEC_GAMEMASTER,         true,  &HandleCombatStopCommand,            "", nullptr },
+            { "flusharenapoints",   SEC_ADMINISTRATOR,      false, &HandleFlushArenaPointsCommand,      "", nullptr },
+            { "repairitems",        SEC_GAMEMASTER,         true,  &HandleRepairitemsCommand,           "", nullptr },
+            { "freeze",             SEC_MODERATOR,          false, &HandleFreezeCommand,                "", nullptr },
+            { "unfreeze",           SEC_MODERATOR,          false, &HandleUnFreezeCommand,              "", nullptr },
+            { "listfreeze",         SEC_MODERATOR,          false, &HandleListFreezeCommand,            "", nullptr },
+            { "group",              SEC_ADMINISTRATOR,      false, nullptr,                                "", groupCommandTable },
+            { "possess",            SEC_ADMINISTRATOR,      false, HandlePossessCommand,                "", nullptr },
+            { "unpossess",          SEC_ADMINISTRATOR,      false, HandleUnPossessCommand,              "", nullptr },
+            { "bindsight",          SEC_ADMINISTRATOR,      false, HandleBindSightCommand,              "", nullptr },
+            { "unbindsight",        SEC_ADMINISTRATOR,      false, HandleUnbindSightCommand,            "", nullptr },
+            { "playall",            SEC_GAMEMASTER,         false, HandlePlayAllCommand,                "", nullptr },
+            { "selectfaction",      SEC_ADMINISTRATOR,      false, HandleSelectFactionCommand,          "", nullptr },
+            { nullptr,                 0,                      false, nullptr,                                "", nullptr }
         };
         return commandTable;
     }
@@ -152,7 +152,7 @@ public:
 
     static bool HandleGPSCommand(ChatHandler* handler, char const* args)
     {
-        WorldObjectPtr object = NULL;
+        WorldObjectPtr object = nullptr;
         if (*args)
         {
             uint64 guid = handler->extractGuidFromLink((char*)args);
@@ -358,7 +358,7 @@ public:
                 {
                     GroupPtr group = _player->GetGroup();
                     // if no bind exists, create a solo bind
-                    InstanceGroupBind* gBind = group ? group->GetBoundInstance(target) : NULL;                // if no bind exists, create a solo bind
+                    InstanceGroupBind* gBind = group ? group->GetBoundInstance(target) : nullptr;                // if no bind exists, create a solo bind
                     if (!gBind)
                         if (InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(target->GetInstanceId()))
                             _player->BindToInstance(save, !save->CanReset());
@@ -392,7 +392,7 @@ public:
         else
         {
             // check offline security
-            if (handler->HasLowerSecurity(NULL, targetGuid))
+            if (handler->HasLowerSecurity(nullptr, targetGuid))
                 return false;
 
             std::string nameLink = handler->playerLink(targetName);
@@ -516,7 +516,7 @@ public:
         else
         {
             // check offline security
-            if (handler->HasLowerSecurity(NULL, targetGuid))
+            if (handler->HasLowerSecurity(nullptr, targetGuid))
                 return false;
 
             std::string nameLink = handler->playerLink(targetName);
@@ -571,7 +571,7 @@ public:
             return false;
         }
 
-        for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+        for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             PlayerPtr player = itr->getSource();
 
@@ -655,7 +655,7 @@ public:
             if (sWorld->getBoolConfig(CONFIG_DIE_COMMAND_MODE))
                 handler->GetSession()->GetPlayer()->Kill(target);
             else
-                handler->GetSession()->GetPlayer()->DealDamage(target, target->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                handler->GetSession()->GetPlayer()->DealDamage(target, target->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
         }
 
         return true;
@@ -746,7 +746,7 @@ public:
         if (!param1)
             return false;
 
-        char const* param2 = strtok(NULL, " ");
+        char const* param2 = strtok(nullptr, " ");
         if (!param2)
             return false;
 
@@ -809,7 +809,7 @@ public:
 
     static bool HandleGetDistanceCommand(ChatHandler* handler, char const* args)
     {
-        WorldObjectPtr obj = NULL;
+        WorldObjectPtr obj = nullptr;
 
         if (*args)
         {
@@ -902,9 +902,9 @@ public:
     // kick player
     static bool HandleKickPlayerCommand(ChatHandler* handler, char const* args)
     {
-        PlayerPtr target = NULL;
+        PlayerPtr target = nullptr;
         std::string playerName;
-        if (!handler->extractPlayerTarget((char*)args, &target, NULL, &playerName))
+        if (!handler->extractPlayerTarget((char*)args, &target, nullptr, &playerName))
             return false;
 
         if (handler->GetSession() && target == handler->GetSession()->GetPlayer())
@@ -971,7 +971,7 @@ public:
 
         uint32 team;
 
-        char* px2 = strtok(NULL, " ");
+        char* px2 = strtok(nullptr, " ");
 
         if (!px2)
             team = 0;
@@ -1178,12 +1178,12 @@ public:
             itemId = uint32(atol(id));
         }
 
-        char const* ccount = strtok(NULL, " ");
+        char const* ccount = strtok(nullptr, " ");
 
         int32 count = 1;
 
         if (ccount)
-            count = strtol(ccount, NULL, 10);
+            count = strtol(ccount, nullptr, 10);
 
         if (count == 0)
             count = 1;
@@ -1297,7 +1297,7 @@ public:
                 }
                 else
                 {
-                    player->SendEquipError(msg, NULL, NULL, itr->second.ItemId);
+                    player->SendEquipError(msg, nullptr, nullptr, itr->second.ItemId);
                     handler->PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itr->second.ItemId, 1);
                 }
             }
@@ -1334,7 +1334,7 @@ public:
 
         // *Change the weather of a cell
         char const* px = strtok((char*)args, " ");
-        char const* py = strtok(NULL, " ");
+        char const* py = strtok(nullptr, " ");
 
         if (!px || !py)
             return false;
@@ -1368,11 +1368,11 @@ public:
         if (!skillStr)
             return false;
 
-        char const* levelStr = strtok(NULL, " ");
+        char const* levelStr = strtok(nullptr, " ");
         if (!levelStr)
             return false;
 
-        char const* maxPureSkill = strtok(NULL, " ");
+        char const* maxPureSkill = strtok(nullptr, " ");
 
         int32 skill = atoi(skillStr);
         if (skill <= 0)
@@ -1472,7 +1472,7 @@ public:
         else
         {
             // check offline security
-            if (handler->HasLowerSecurity(NULL, targetGuid))
+            if (handler->HasLowerSecurity(nullptr, targetGuid))
                 return false;
 
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PINFO);
@@ -1572,10 +1572,10 @@ public:
         }
 
         if (muteTime > 0)
-            handler->PSendSysMessage(LANG_PINFO_MUTE, secsToTimeString(muteTime - time(NULL), true).c_str());
+            handler->PSendSysMessage(LANG_PINFO_MUTE, secsToTimeString(muteTime - time(nullptr), true).c_str());
 
         if (banTime >= 0)
-            handler->PSendSysMessage(LANG_PINFO_BAN, banTime > 0 ? secsToTimeString(banTime - time(NULL), true).c_str() : "permanently", bannedby.c_str(), banreason.c_str());
+            handler->PSendSysMessage(LANG_PINFO_BAN, banTime > 0 ? secsToTimeString(banTime - time(nullptr), true).c_str() : "permanently", bannedby.c_str(), banreason.c_str());
 
         std::string raceStr, ClassStr;
         switch (race)
@@ -1741,9 +1741,9 @@ public:
         if (!delayStr)
             return false;
 
-        char const* muteReason = strtok(NULL, "\r");
+        char const* muteReason = strtok(nullptr, "\r");
         std::string muteReasonStr = "No reason";
-        if (muteReason != NULL)
+        if (muteReason != nullptr)
             muteReasonStr = muteReason;
 
         PlayerPtr target;
@@ -1770,7 +1770,7 @@ public:
         if (target)
         {
             // Target is online, mute will be in effect right away.
-            int64 muteTime = time(NULL) + notSpeakTime * MINUTE;
+            int64 muteTime = time(nullptr) + notSpeakTime * MINUTE;
             target->GetSession()->m_muteTime = muteTime;
             stmt->setInt64(0, muteTime);
             ChatHandler(target).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notSpeakTime, muteReasonStr.c_str());
@@ -1883,7 +1883,7 @@ public:
                     break;
                 case CHASE_MOTION_TYPE:
                 {
-                    UnitPtr target = NULL;
+                    UnitPtr target = nullptr;
                     if (unit->GetTypeId() == TYPEID_PLAYER)
                         target = static_cast<ChaseMovementGenerator<Player> const*>(movementGenerator)->GetTarget();
                     else
@@ -1899,7 +1899,7 @@ public:
                 }
                 case FOLLOW_MOTION_TYPE:
                 {
-                    UnitPtr target = NULL;
+                    UnitPtr target = nullptr;
                     if (unit->GetTypeId() == TYPEID_PLAYER)
                         target = static_cast<FollowMovementGenerator<Player> const*>(movementGenerator)->GetTarget();
                     else
@@ -2003,12 +2003,12 @@ public:
 
         uint32 damage = damage_int;
 
-        char* schoolStr = strtok((char*)NULL, " ");
+        char* schoolStr = strtok((char*)nullptr, " ");
 
         // flat melee damage without resistence/etc reduction
         if (!schoolStr)
         {
-            handler->GetSession()->GetPlayer()->DealDamage(target, damage, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            handler->GetSession()->GetPlayer()->DealDamage(target, damage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
             if (target != handler->GetSession()->GetPlayer())
                 handler->GetSession()->GetPlayer()->SendAttackStateUpdate (HITINFO_AFFECTS_VICTIM, target, 1, SPELL_SCHOOL_MASK_NORMAL, damage, 0, 0, VICTIMSTATE_HIT, 0);
             return true;
@@ -2021,9 +2021,9 @@ public:
         SpellSchoolMask schoolmask = SpellSchoolMask(1 << school);
 
         if (Unit::IsDamageReducedByArmor(schoolmask))
-            damage = handler->GetSession()->GetPlayer()->CalcArmorReducedDamage(target, damage, NULL, BASE_ATTACK);
+            damage = handler->GetSession()->GetPlayer()->CalcArmorReducedDamage(target, damage, nullptr, BASE_ATTACK);
 
-        char* spellStr = strtok((char*)NULL, " ");
+        char* spellStr = strtok((char*)nullptr, " ");
 
         // melee damage by specific school
         if (!spellStr)
@@ -2039,7 +2039,7 @@ public:
             damage -= absorb + resist;
 
             handler->GetSession()->GetPlayer()->DealDamageMods(target, damage, &absorb);
-            handler->GetSession()->GetPlayer()->DealDamage(target, damage, NULL, DIRECT_DAMAGE, schoolmask, NULL, false);
+            handler->GetSession()->GetPlayer()->DealDamage(target, damage, nullptr, DIRECT_DAMAGE, schoolmask, nullptr, false);
             handler->GetSession()->GetPlayer()->SendAttackStateUpdate (HITINFO_AFFECTS_VICTIM, target, 1, schoolmask, damage, absorb, resist, VICTIMSTATE_HIT, 0);
             return true;
         }
@@ -2057,7 +2057,7 @@ public:
 
     static bool HandleCombatStopCommand(ChatHandler* handler, char const* args)
     {
-        PlayerPtr target = NULL;
+        PlayerPtr target = nullptr;
 
         if (args && strlen(args) > 0)
         {
@@ -2121,7 +2121,7 @@ public:
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
             return false;
 
-        char* tail1 = strtok(NULL, "");
+        char* tail1 = strtok(nullptr, "");
         if (!tail1)
             return false;
 
@@ -2129,7 +2129,7 @@ public:
         if (!msgSubject)
             return false;
 
-        char* tail2 = strtok(NULL, "");
+        char* tail2 = strtok(nullptr, "");
         if (!tail2)
             return false;
 
@@ -2165,7 +2165,7 @@ public:
         if (!handler->extractPlayerTarget((char*)args, &receiver, &receiverGuid, &receiverName))
             return false;
 
-        char* tail1 = strtok(NULL, "");
+        char* tail1 = strtok(nullptr, "");
         if (!tail1)
             return false;
 
@@ -2173,7 +2173,7 @@ public:
         if (!msgSubject)
             return false;
 
-        char* tail2 = strtok(NULL, "");
+        char* tail2 = strtok(nullptr, "");
         if (!tail2)
             return false;
 
@@ -2191,17 +2191,17 @@ public:
         ItemPairs items;
 
         // get all tail string
-        char* tail = strtok(NULL, "");
+        char* tail = strtok(nullptr, "");
 
         // get from tail next item str
         while (char* itemStr = strtok(tail, " "))
         {
             // and get new tail
-            tail = strtok(NULL, "");
+            tail = strtok(nullptr, "");
 
             // parse item str
             char const* itemIdStr = strtok(itemStr, ":");
-            char const* itemCountStr = strtok(NULL, " ");
+            char const* itemCountStr = strtok(nullptr, " ");
 
             uint32 itemId = atoi(itemIdStr);
             if (!itemId)
@@ -2274,7 +2274,7 @@ public:
         if (!handler->extractPlayerTarget((char*)args, &receiver, &receiverGuid, &receiverName))
             return false;
 
-        char* tail1 = strtok(NULL, "");
+        char* tail1 = strtok(nullptr, "");
         if (!tail1)
             return false;
 
@@ -2282,7 +2282,7 @@ public:
         if (!msgSubject)
             return false;
 
-        char* tail2 = strtok(NULL, "");
+        char* tail2 = strtok(nullptr, "");
         if (!tail2)
             return false;
 
@@ -2290,7 +2290,7 @@ public:
         if (!msgText)
             return false;
 
-        char* moneyStr = strtok(NULL, "");
+        char* moneyStr = strtok(nullptr, "");
         int32 money = moneyStr ? atoi(moneyStr) : 0;
         if (money <= 0)
             return false;
@@ -2322,7 +2322,7 @@ public:
         if (!handler->extractPlayerTarget((char*)args, &player))
             return false;
 
-        char* msgStr = strtok(NULL, "");
+        char* msgStr = strtok(nullptr, "");
         if (!msgStr)
             return false;
 
@@ -2647,8 +2647,8 @@ public:
 
     static bool HandleGroupLeaderCommand(ChatHandler* handler, char const* args)
     {
-        PlayerPtr player = NULL;
-        GroupPtr group = NULL;
+        PlayerPtr player = nullptr;
+        GroupPtr group = nullptr;
         uint64 guid = 0;
         char* nameStr = strtok((char*)args, " ");
 
@@ -2664,8 +2664,8 @@ public:
 
     static bool HandleGroupDisbandCommand(ChatHandler* handler, char const* args)
     {
-        PlayerPtr player = NULL;
-        GroupPtr group = NULL;
+        PlayerPtr player = nullptr;
+        GroupPtr group = nullptr;
         uint64 guid = 0;
         char* nameStr = strtok((char*)args, " ");
 
@@ -2678,8 +2678,8 @@ public:
 
     static bool HandleGroupRemoveCommand(ChatHandler* handler, char const* args)
     {
-        PlayerPtr player = NULL;
-        GroupPtr group = NULL;
+        PlayerPtr player = nullptr;
+        GroupPtr group = nullptr;
         uint64 guid = 0;
         char* nameStr = strtok((char*)args, " ");
 

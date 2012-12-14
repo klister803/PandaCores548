@@ -36,22 +36,22 @@ public:
 
         static ChatCommand cheatCommandTable[] =
         {
-            { "god", SEC_GAMEMASTER, false, &HandleGodModeCheatCommand, "", NULL },
-            { "casttime", SEC_GAMEMASTER, false, &HandleCasttimeCheatCommand, "", NULL },
-            { "cooldown", SEC_GAMEMASTER, false, &HandleCoolDownCheatCommand, "", NULL },
-            { "power", SEC_GAMEMASTER, false, &HandlePowerCheatCommand, "", NULL },
-            { "waterwalk", SEC_GAMEMASTER, false, &HandleWaterWalkCheatCommand, "", NULL },
-            { "status", SEC_GAMEMASTER,     false, &HandleCheatStatusCommand, "", NULL },
-            { "taxi", SEC_GAMEMASTER, false, &HandleTaxiCheatCommand, "", NULL },
-            { "explore", SEC_GAMEMASTER, false, &HandleExploreCheatCommand, "", NULL },
-            { NULL, 0, false, NULL, "", NULL }
+            { "god", SEC_GAMEMASTER, false, &HandleGodModeCheatCommand, "", nullptr },
+            { "casttime", SEC_GAMEMASTER, false, &HandleCasttimeCheatCommand, "", nullptr },
+            { "cooldown", SEC_GAMEMASTER, false, &HandleCoolDownCheatCommand, "", nullptr },
+            { "power", SEC_GAMEMASTER, false, &HandlePowerCheatCommand, "", nullptr },
+            { "waterwalk", SEC_GAMEMASTER, false, &HandleWaterWalkCheatCommand, "", nullptr },
+            { "status", SEC_GAMEMASTER,     false, &HandleCheatStatusCommand, "", nullptr },
+            { "taxi", SEC_GAMEMASTER, false, &HandleTaxiCheatCommand, "", nullptr },
+            { "explore", SEC_GAMEMASTER, false, &HandleExploreCheatCommand, "", nullptr },
+            { nullptr, 0, false, nullptr, "", nullptr }
 
         };
 
         static ChatCommand commandTable[] =
         {
-            { "cheat", SEC_GAMEMASTER, false, NULL, "", cheatCommandTable },
-            { NULL, 0, false, NULL, "", NULL }
+            { "cheat", SEC_GAMEMASTER, false, nullptr, "", cheatCommandTable },
+            { nullptr, 0, false, nullptr, "", nullptr }
         };
         return commandTable;
     }
@@ -258,7 +258,7 @@ public:
         int flag = atoi((char*)args);
 
         PlayerPtr chr = handler->getSelectedPlayer();
-        if (chr == NULL)
+        if (chr == nullptr)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
             handler->SetSentErrorMessage(true);

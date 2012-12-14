@@ -35,16 +35,16 @@ public:
     {
         static ChatCommand questCommandTable[] =
         {
-            { "add",            SEC_ADMINISTRATOR,  false, &HandleQuestAdd,                    "", NULL },
-            { "complete",       SEC_ADMINISTRATOR,  false, &HandleQuestComplete,               "", NULL },
-            { "remove",         SEC_ADMINISTRATOR,  false, &HandleQuestRemove,                 "", NULL },
-            { "reward",         SEC_ADMINISTRATOR,  false, &HandleQuestReward,                 "", NULL },
-            { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
+            { "add",            SEC_ADMINISTRATOR,  false, &HandleQuestAdd,                    "", nullptr },
+            { "complete",       SEC_ADMINISTRATOR,  false, &HandleQuestComplete,               "", nullptr },
+            { "remove",         SEC_ADMINISTRATOR,  false, &HandleQuestRemove,                 "", nullptr },
+            { "reward",         SEC_ADMINISTRATOR,  false, &HandleQuestReward,                 "", nullptr },
+            { nullptr,             SEC_PLAYER,         false, nullptr,                               "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "quest",          SEC_ADMINISTRATOR,  false, NULL,                  "", questCommandTable },
-            { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
+            { "quest",          SEC_ADMINISTRATOR,  false, nullptr,                  "", questCommandTable },
+            { nullptr,             SEC_PLAYER,         false, nullptr,                               "", nullptr }
         };
         return commandTable;
     }
@@ -90,7 +90,7 @@ public:
         // ok, normal (creature/GO starting) quest
         if (player->CanAddQuest(quest, true))
         {
-            player->AddQuest(quest, NULL);
+            player->AddQuest(quest, nullptr);
 
             if (player->CanCompleteQuest(entry))
                 player->CompleteQuest(entry);

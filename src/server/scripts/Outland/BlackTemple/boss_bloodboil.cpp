@@ -186,7 +186,7 @@ public:
 
         void RevertThreatOnTarget(uint64 guid)
         {
-            UnitPtr unit = NULL;
+            UnitPtr unit = nullptr;
             unit = Unit::GetUnit(TO_WORLDOBJECT(me), guid);
             if (unit)
             {

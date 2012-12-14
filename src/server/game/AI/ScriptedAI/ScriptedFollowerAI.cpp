@@ -24,7 +24,7 @@ FollowerAI::FollowerAI(CreaturePtr creature) : ScriptedAI(creature),
     m_uiLeaderGUID(0),
     m_uiUpdateFollowTimer(2500),
     m_uiFollowState(STATE_FOLLOW_NONE),
-    m_pQuestForFollow(NULL)
+    m_pQuestForFollow(nullptr)
 {}
 
 void FollowerAI::AttackStart(UnitPtr who)
@@ -126,7 +126,7 @@ void FollowerAI::JustDied(UnitPtr /*pKiller*/)
     {
         if (GroupPtr group = player->GetGroup())
         {
-            for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
+            for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != nullptr; groupRef = groupRef->next())
             {
                 if (PlayerPtr member = groupRef->getSource())
                 {
@@ -161,7 +161,7 @@ void FollowerAI::EnterEvadeMode()
     me->RemoveAllAuras();
     me->DeleteThreatList();
     me->CombatStop(true);
-    me->SetLootRecipient(NULL);
+    me->SetLootRecipient(nullptr);
 
     if (HasFollowState(STATE_FOLLOW_INPROGRESS))
     {
@@ -211,7 +211,7 @@ void FollowerAI::UpdateAI(const uint32 uiDiff)
 
                 if (GroupPtr group = player->GetGroup())
                 {
-                    for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
+                    for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != nullptr; groupRef = groupRef->next())
                     {
                         PlayerPtr member = groupRef->getSource();
 
@@ -318,7 +318,7 @@ PlayerPtr FollowerAI::GetLeaderForFollower()
         {
             if (GroupPtr group = player->GetGroup())
             {
-                for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != NULL; groupRef = groupRef->next())
+                for (GroupReferencePtr groupRef = group->GetFirstMember(); groupRef != nullptr; groupRef = groupRef->next())
                 {
                     PlayerPtr member = groupRef->getSource();
 
@@ -334,7 +334,7 @@ PlayerPtr FollowerAI::GetLeaderForFollower()
     }
 
     sLog->outDebug(LOG_FILTER_TSCR, "FollowerAI GetLeader can not find suitable leader.");
-    return NULL;
+    return nullptr;
 }
 
 void FollowerAI::SetFollowComplete(bool bWithEndEvent)

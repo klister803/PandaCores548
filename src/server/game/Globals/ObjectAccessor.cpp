@@ -60,7 +60,7 @@ WorldObjectPtr ObjectAccessor::GetWorldObject(constWorldObjectPtr& p, uint64 gui
         case HIGHGUID_PET:           return GetPet(p, guid);
         case HIGHGUID_DYNAMICOBJECT: return GetDynamicObject(p, guid);
         case HIGHGUID_CORPSE:        return GetCorpse(p, guid);
-        default:                     return NULL;
+        default:                     return nullptr;
     }
 }
 
@@ -99,47 +99,47 @@ ObjectPtr ObjectAccessor::GetObjectByTypeMask(constWorldObjectPtr& p, uint64 gui
             break;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 CorpsePtr ObjectAccessor::GetCorpse(constWorldObjectPtr& u, uint64 guid)
 {
-    return GetObjectInMap(guid, u->GetMap(), (Corpse*)NULL);
+    return GetObjectInMap(guid, u->GetMap(), (Corpse*)nullptr);
 }
 
 GameObjectPtr ObjectAccessor::GetGameObject(constWorldObjectPtr& u, uint64 guid)
 {
-    return TO_GAMEOBJECT(GetObjectInMap(guid, u->GetMap(), (GameObject*)NULL));
+    return TO_GAMEOBJECT(GetObjectInMap(guid, u->GetMap(), (GameObject*)nullptr));
 }
 
 DynamicObjectPtr ObjectAccessor::GetDynamicObject(constWorldObjectPtr& u, uint64 guid)
 {
-    return TO_DYNAMICOBJECT(GetObjectInMap(guid, u->GetMap(), (DynamicObject*)NULL));
+    return TO_DYNAMICOBJECT(GetObjectInMap(guid, u->GetMap(), (DynamicObject*)nullptr));
 }
 
 UnitPtr ObjectAccessor::GetUnit(constWorldObjectPtr& u, uint64 guid)
 {
-    return GetObjectInMap(guid, u->GetMap(), (Unit*)NULL);
+    return GetObjectInMap(guid, u->GetMap(), (Unit*)nullptr);
 }
 
 CreaturePtr ObjectAccessor::GetCreature(constWorldObjectPtr& u, uint64 guid)
 {
-    return GetObjectInMap(guid, u->GetMap(), (Creature*)NULL);
+    return GetObjectInMap(guid, u->GetMap(), (Creature*)nullptr);
 }
 
 PetPtr ObjectAccessor::GetPet(constWorldObjectPtr& u, uint64 guid)
 {
-    return GetObjectInMap(guid, u->GetMap(), (Pet*)NULL);
+    return GetObjectInMap(guid, u->GetMap(), (Pet*)nullptr);
 }
 
 PlayerPtr ObjectAccessor::GetPlayer(constWorldObjectPtr& u, uint64 guid)
 {
-    return GetObjectInMap(guid, u->GetMap(), (Player*)NULL);
+    return GetObjectInMap(guid, u->GetMap(), (Player*)nullptr);
 }
 
 TransportPtr ObjectAccessor::GetTransport(constWorldObjectPtr& u, uint64 guid)
 {
-    return GetObjectInMap(guid, u->GetMap(), (Transport*)NULL);
+    return GetObjectInMap(guid, u->GetMap(), (Transport*)nullptr);
 }
 
 CreaturePtr ObjectAccessor::GetCreatureOrPetOrVehicle(constWorldObjectPtr& u, uint64 guid)
@@ -150,22 +150,22 @@ CreaturePtr ObjectAccessor::GetCreatureOrPetOrVehicle(constWorldObjectPtr& u, ui
     if (IS_CRE_OR_VEH_GUID(guid))
         return GetCreature(u, guid);
 
-    return NULL;
+    return nullptr;
 }
 
 PetPtr ObjectAccessor::FindPet(uint64 guid)
 {
-    return GetObjectInWorld(guid, (Pet*)NULL);
+    return GetObjectInWorld(guid, (Pet*)nullptr);
 }
 
 PlayerPtr ObjectAccessor::FindPlayer(uint64 guid)
 {
-    return GetObjectInWorld(guid, (Player*)NULL);
+    return GetObjectInWorld(guid, (Player*)nullptr);
 }
 
 UnitPtr ObjectAccessor::FindUnit(uint64 guid)
 {
-    return GetObjectInWorld(guid, (Unit*)NULL);
+    return GetObjectInWorld(guid, (Unit*)nullptr);
 }
 
 PlayerPtr ObjectAccessor::FindPlayerByName(const char* name)
@@ -184,7 +184,7 @@ PlayerPtr ObjectAccessor::FindPlayerByName(const char* name)
             return iter->second;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void ObjectAccessor::SaveAllPlayers()
@@ -201,7 +201,7 @@ CorpsePtr ObjectAccessor::GetCorpseForPlayerGUID(uint64 guid)
 
     Player2CorpsesMapType::iterator iter = i_player2corpse.find(guid);
     if (iter == i_player2corpse.end())
-        return NULL;
+        return nullptr;
 
     ASSERT(iter->second->GetType() != CORPSE_BONES);
 
@@ -292,12 +292,12 @@ CorpsePtr ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insign
     {
         //in fact this function is called from several places
         //even when player doesn't have a corpse, not an error
-        return NULL;
+        return nullptr;
     }
 
     sLog->outDebug(LOG_FILTER_GENERAL, "Deleting Corpse and spawned bones.");
 
-    // Map can be NULL
+    // Map can be nullptr
     MapPtr map = corpse->FindMap();
 
     // remove corpse from player_guid -> corpse map and from current map
@@ -308,7 +308,7 @@ CorpsePtr ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insign
     corpse->DeleteFromDB(trans);
     CharacterDatabase.CommitTransaction(trans);
 
-    CorpsePtr bones = NULL;
+    CorpsePtr bones = nullptr;
     // create the bones only if the map and the grid is loaded at the corpse's location
     // ignore bones creating option in case insignia
 
@@ -349,7 +349,7 @@ CorpsePtr ObjectAccessor::ConvertCorpseForPlayer(uint64 player_guid, bool insign
 
 void ObjectAccessor::RemoveOldCorpses()
 {
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     Player2CorpsesMapType::iterator next;
     for (Player2CorpsesMapType::iterator itr = i_player2corpse.begin(); itr != i_player2corpse.end(); itr = next)
     {

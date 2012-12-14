@@ -617,7 +617,7 @@ inline void UnitAI::DoCastAOE(uint32 spellId, bool triggered)
     if (!triggered && me->HasUnitState(UNIT_STATE_CASTING))
         return;
 
-    me->CastSpell(NULLUNIT, spellId, triggered);
+    me->CastSpell(std::shared_ptr<Unit>(), spellId, triggered);
 }
 
 inline CreaturePtr CreatureAI::DoSummon(uint32 entry, const Position& pos, uint32 despawnTime, TempSummonType summonType)

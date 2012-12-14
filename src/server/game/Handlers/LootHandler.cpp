@@ -36,7 +36,7 @@ void WorldSession::HandleAutostoreLootItemOpcode(WorldPacket & recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_AUTOSTORE_LOOT_ITEM");
     PlayerPtr player = GetPlayer();
     uint64 lguid = player->GetLootGUID();
-    LootPtr loot = NULL;
+    LootPtr loot = nullptr;
     uint8 lootSlot = 0;
 
     uint32 count = recvData.ReadBits(25);
@@ -129,7 +129,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
     if (!guid)
         return;
 
-    LootPtr loot = NULL;
+    LootPtr loot = nullptr;
     bool shareMoney = true;
 
     switch (GUID_HIPART(guid))
@@ -189,7 +189,7 @@ void WorldSession::HandleLootMoneyOpcode(WorldPacket& /*recvData*/)
             GroupPtr group = player->GetGroup();
 
             std::vector<PlayerPtr> playersNear;
-            for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             {
                 PlayerPtr member = itr->getSource();
                 if (!member)
@@ -480,7 +480,7 @@ void WorldSession::DoLootRelease(uint64 lguid)
                     if (group->GetLootMethod() != MASTER_LOOT)
                     {
                         loot->roundRobinPlayer = 0;
-                        group->SendLooter(creature, NULL);
+                        group->SendLooter(creature, nullptr);
 
                         // force update of dynamic flags, otherwise other group's players still not able to loot.
                         creature->ForceValuesUpdateAtIndex(UNIT_DYNAMIC_FLAGS);
@@ -527,7 +527,7 @@ void WorldSession::HandleLootMasterAskForRoll(WorldPacket& recvData)
         return;
     }
 
-    LootPtr loot = NULL;
+    LootPtr loot = nullptr;
 
     if (IS_CRE_OR_VEH_GUID(GetPlayer()->GetLootGUID()))
     {
@@ -633,7 +633,7 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
     {
         ObjectGuid lootguid = guids[i];
         uint8 slotid = types[i];
-        LootPtr loot = NULL;
+        LootPtr loot = nullptr;
 
         if (IS_CRE_OR_VEH_GUID(GetPlayer()->GetLootGUID()))
         {
@@ -669,9 +669,9 @@ void WorldSession::HandleLootMasterGiveOpcode(WorldPacket& recvData)
             msg = EQUIP_ERR_CANT_EQUIP_EVER;
         if (msg != EQUIP_ERR_OK)
         {
-            target->SendEquipError(msg, NULL, NULL, item.itemid);
+            target->SendEquipError(msg, nullptr, nullptr, item.itemid);
             // send duplicate of error massage to master looter
-            _player->SendEquipError(msg, NULL, NULL, item.itemid);
+            _player->SendEquipError(msg, nullptr, nullptr, item.itemid);
             return;
         }
 

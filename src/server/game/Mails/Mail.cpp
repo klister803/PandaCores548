@@ -168,7 +168,7 @@ void MailDraft::SendReturnToSender(uint32 sender_acc, uint32 sender_guid, uint32
 
 void MailDraft::SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, MailSender const& sender, MailCheckMask checked, uint32 deliver_delay)
 {
-    PlayerPtr pReceiver = receiver.GetPlayer();               // can be NULL
+    PlayerPtr pReceiver = receiver.GetPlayer();               // can be nullptr
     PlayerPtr pSender = sObjectMgr->GetPlayerByLowGUID(sender.GetSenderId());
 
     if (pReceiver)
@@ -176,7 +176,7 @@ void MailDraft::SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, 
 
     uint32 mailId = sObjectMgr->GenerateMailID();
 
-    time_t deliver_time = time(NULL) + deliver_delay;
+    time_t deliver_time = time(nullptr) + deliver_delay;
 
     //expire time if COD 3 days, if no COD 30 days, if auction sale pending 1 hour
     uint32 expire_delay;
@@ -265,13 +265,13 @@ void MailDraft::SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, 
         }
         else if (!m_items.empty())
         {
-            SQLTransaction temp = SQLTransaction(NULL);
+            SQLTransaction temp = SQLTransaction(nullptr);
             deleteIncludedItems(temp);
         }
     }
     else if (!m_items.empty())
     {
-        SQLTransaction temp = SQLTransaction(NULL);
+        SQLTransaction temp = SQLTransaction(nullptr);
         deleteIncludedItems(temp);
     }
 }

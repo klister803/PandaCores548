@@ -194,7 +194,7 @@ class spell_gen_cannibalize : public SpellScriptLoader
             {
                 UnitPtr caster = GetCaster();
                 float max_range = GetSpellInfo()->GetMaxRange(false);
-                WorldObjectPtr result = NULL;
+                WorldObjectPtr result = nullptr;
                 // search for nearby enemy corpse in range
                 Trinity::AnyDeadUnitSpellTargetInRangeCheck check(caster, max_range, GetSpellInfo(), TARGET_CHECK_ENEMY);
                 Trinity::WorldObjectSearcher<Trinity::AnyDeadUnitSpellTargetInRangeCheck> searcher(caster, result, check);
@@ -464,7 +464,7 @@ class spell_gen_elune_candle : public SpellScriptLoader
                 else
                     spellId = SPELL_ELUNE_CANDLE_NORMAL;
 
-                GetCaster()->CastSpell(GetHitUnit(), spellId, true, NULL);
+                GetCaster()->CastSpell(GetHitUnit(), spellId, true, nullptr);
             }
 
             void Register()
@@ -539,7 +539,7 @@ class spell_gen_trick : public SpellScriptLoader
                             break;
                     }
 
-                    caster->CastSpell(target, spellId, true, NULL);
+                    caster->CastSpell(target, spellId, true, nullptr);
                 }
             }
 
@@ -584,8 +584,8 @@ class spell_gen_trick_or_treat : public SpellScriptLoader
                 UnitPtr caster = GetCaster();
                 if (PlayerPtr target = GetHitPlayer())
                 {
-                    caster->CastSpell(target, roll_chance_i(50) ? SPELL_TRICK : SPELL_TREAT, true, NULL);
-                    caster->CastSpell(target, SPELL_TRICKED_OR_TREATED, true, NULL);
+                    caster->CastSpell(target, roll_chance_i(50) ? SPELL_TRICK : SPELL_TREAT, true, nullptr);
+                    caster->CastSpell(target, SPELL_TRICKED_OR_TREATED, true, nullptr);
                 }
             }
 
@@ -1142,7 +1142,7 @@ class spell_gen_seaforium_blast : public SpellScriptLoader
 
             void AchievementCredit(SpellEffIndex /*effIndex*/)
             {
-                // but in effect handling OriginalCaster can become NULL
+                // but in effect handling OriginalCaster can become nullptr
                 if (UnitPtr originalCaster = GetOriginalCaster())
                     if (GameObjectPtr go = GetHitGObj())
                         if (go->GetGOInfo()->type == GAMEOBJECT_TYPE_DESTRUCTIBLE_BUILDING)
@@ -1183,7 +1183,7 @@ class spell_gen_turkey_marker : public SpellScriptLoader
 
                 // on stack 15 cast the achievement crediting spell
                 if (GetStackAmount() >= 15)
-                    target->CastSpell(target, SPELL_TURKEY_VENGEANCE, true, NULL, aurEff, GetCasterGUID());
+                    target->CastSpell(target, SPELL_TURKEY_VENGEANCE, true, nullptr, aurEff, GetCasterGUID());
             }
 
             void OnPeriodic(constAuraEffectPtr /*aurEff*/)
@@ -1624,7 +1624,7 @@ class spell_gen_dummy_trigger : public SpellScriptLoader
                 if (UnitPtr target = GetHitUnit())
                     if (SpellInfo const* triggeredByAuraSpell = GetTriggeringSpell())
                         if (triggeredByAuraSpell->Id == SPELL_PERSISTANT_SHIELD_TRIGGERED)
-                            caster->CastCustomSpell(target, SPELL_PERSISTANT_SHIELD_TRIGGERED, &damage, NULL, NULL, true);
+                            caster->CastCustomSpell(target, SPELL_PERSISTANT_SHIELD_TRIGGERED, &damage, nullptr, nullptr, true);
             }
 
             void Register()
@@ -2141,7 +2141,7 @@ class spell_gen_defend : public SpellScriptLoader
                     for (uint8 i = 0; i < GetSpellInfo()->StackAmount; ++i)
                         target->RemoveAurasDueToSpell(SPELL_VISUAL_SHIELD_1 + i);
 
-                    target->CastSpell(target, SPELL_VISUAL_SHIELD_1 + GetAura()->GetStackAmount() - 1, true, NULL, aurEff);
+                    target->CastSpell(target, SPELL_VISUAL_SHIELD_1 + GetAura()->GetStackAmount() - 1, true, nullptr, aurEff);
                 }
                 else
                     GetTarget()->RemoveAurasDueToSpell(GetId());
@@ -2602,7 +2602,7 @@ class spell_gen_chaos_blast : public SpellScriptLoader
                 int32 basepoints0 = 100;
                 UnitPtr caster = GetCaster();
                 if (UnitPtr target = GetHitUnit())
-                    caster->CastCustomSpell(target, SPELL_CHAOS_BLAST, &basepoints0, NULL, NULL, true);
+                    caster->CastCustomSpell(target, SPELL_CHAOS_BLAST, &basepoints0, nullptr, nullptr, true);
             }
 
             void Register()
@@ -2895,7 +2895,7 @@ class spell_gen_lifebloom : public SpellScriptLoader
                     return;
 
                 // final heal
-                GetTarget()->CastSpell(GetTarget(), _spellId, true, NULL, aurEff, GetCasterGUID());
+                GetTarget()->CastSpell(GetTarget(), _spellId, true, nullptr, aurEff, GetCasterGUID());
             }
 
             void Register()
@@ -2953,7 +2953,7 @@ class spell_gen_summon_elemental : public SpellScriptLoader
                 if (GetCaster())
                     if (UnitPtr owner = GetCaster()->GetOwner())
                         if (owner->GetTypeId() == TYPEID_PLAYER) // todo: this check is maybe wrong
-                            TO_PLAYER(owner)->RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
+                            TO_PLAYER(owner)->RemovePet(nullptr, PET_SAVE_NOT_IN_SLOT, true);
             }
 
             void Register()

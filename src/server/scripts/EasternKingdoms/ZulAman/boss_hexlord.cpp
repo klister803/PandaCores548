@@ -312,7 +312,7 @@ class boss_hexlord_malacrass : public CreatureScript
                 {
                     UnitPtr Temp = Unit::GetUnit(TO_WORLDOBJECT(me), AddGUID[i]);
                     if (Temp && Temp->isAlive())
-                        Temp->DealDamage(Temp, Temp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        Temp->DealDamage(Temp, Temp->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                 }
             }
 
@@ -448,7 +448,7 @@ class boss_hexlord_malacrass : public CreatureScript
             void UseAbility()
             {
                 uint8 random = urand(0, 2);
-                UnitPtr target = NULL;
+                UnitPtr target = nullptr;
                 switch (PlayerAbility[PlayerClass][random].target)
                 {
                     case ABILITY_TARGET_SELF:
@@ -962,7 +962,7 @@ class spell_hexlord_unstable_affliction : public SpellScriptLoader
             void HandleDispel(DispelInfo* dispelInfo)
             {
                 if (UnitPtr caster = GetCaster())
-                    caster->CastSpell(dispelInfo->GetDispeller(), SPELL_WL_UNSTABLE_AFFL_DISPEL, true, NULL, GetEffect(EFFECT_0));
+                    caster->CastSpell(dispelInfo->GetDispeller(), SPELL_WL_UNSTABLE_AFFL_DISPEL, true, nullptr, GetEffect(EFFECT_0));
             }
 
             void Register()

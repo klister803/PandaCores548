@@ -273,7 +273,7 @@ public:
                 }
                 me->SetVisible(false);
                 me->SetDisableGravity(false);
-                me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                 me->RemoveCorpse();
             }
         }
@@ -396,7 +396,7 @@ public:
                             player->KilledMonsterCredit(23209, 0);
                     }
                     PoisonTimer = 0;
-                    me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                 } else PoisonTimer -= diff;
             }
         }
@@ -450,7 +450,7 @@ public:
         if (action == GOSSIP_ACTION_INFO_DEF+1)
         {
             ItemPosCountVec dest;
-            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 30658, 1, NULL);
+            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 30658, 1, nullptr);
             if (msg == EQUIP_ERR_OK)
             {
                 player->StoreNewItem(dest, 30658, 1, true);
@@ -460,7 +460,7 @@ public:
         if (action == GOSSIP_ACTION_INFO_DEF+2)
         {
             ItemPosCountVec dest;
-            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 30659, 1, NULL);
+            uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, 30659, 1, nullptr);
             if (msg == EQUIP_ERR_OK)
             {
                 player->StoreNewItem(dest, 30659, 1, true);
@@ -1656,7 +1656,7 @@ void npc_lord_illidan_stormrage::npc_lord_illidan_stormrageAI::SummonNextWave()
 
     for (uint8 i = 0; i < count; ++i)
     {
-        CreaturePtr Spawn = NULL;
+        CreaturePtr Spawn = nullptr;
         float X = SpawnLocation[locIndex + i].x;
         float Y = SpawnLocation[locIndex + i].y;
         float Z = SpawnLocation[locIndex + i].z;
@@ -1835,8 +1835,8 @@ public:
             }
 
             // Spawn Soul on Kill ALWAYS!
-            CreaturePtr Summoned = NULL;
-            UnitPtr totemOspirits = NULL;
+            CreaturePtr Summoned = nullptr;
+            UnitPtr totemOspirits = nullptr;
 
             if (entry != 0)
                 Summoned = DoSpawnCreature(entry, 0, 0, 1, 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 5000);

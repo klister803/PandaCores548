@@ -382,7 +382,7 @@ WorldLocation const* SpellScript::GetExplTargetDest()
 {
     if (m_spell->m_targets.HasDst())
         return m_spell->m_targets.GetDstPos();
-    return NULL;
+    return nullptr;
 }
 
 void SpellScript::SetExplTargetDest(WorldLocation& loc)
@@ -415,7 +415,7 @@ UnitPtr SpellScript::GetHitUnit()
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitUnit was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return NULL;
+        return nullptr;
     }
     return m_spell->unitTarget;
 }
@@ -425,12 +425,12 @@ CreaturePtr SpellScript::GetHitCreature()
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitCreature was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return NULL;
+        return nullptr;
     }
     if (m_spell->unitTarget)
         return m_spell->unitTarget->ToCreature();
     else
-        return NULL;
+        return nullptr;
 }
 
 PlayerPtr SpellScript::GetHitPlayer()
@@ -438,12 +438,12 @@ PlayerPtr SpellScript::GetHitPlayer()
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitPlayer was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return NULL;
+        return nullptr;
     }
     if (m_spell->unitTarget)
         return TO_PLAYER(m_spell->unitTarget);
     else
-        return NULL;
+        return nullptr;
 }
 
 ItemPtr SpellScript::GetHitItem()
@@ -451,7 +451,7 @@ ItemPtr SpellScript::GetHitItem()
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitItem was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return NULL;
+        return nullptr;
     }
     return m_spell->itemTarget;
 }
@@ -461,7 +461,7 @@ GameObjectPtr SpellScript::GetHitGObj()
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitGObj was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return NULL;
+        return nullptr;
     }
     return m_spell->gameObjTarget;
 }
@@ -471,7 +471,7 @@ WorldLocation* SpellScript::GetHitDest()
     if (!IsInEffectHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitGObj was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return NULL;
+        return nullptr;
     }
     return m_spell->destTarget;
 }
@@ -521,12 +521,12 @@ AuraPtr SpellScript::GetHitAura()
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitAura was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return NULL;
+        return nullptr;
     }
     if (!m_spell->m_spellAura)
-        return NULLAURA;
+        return nullptr;
     if (m_spell->m_spellAura->IsRemoved())
-        return NULLAURA;
+        return nullptr;
     return m_spell->m_spellAura;
 }
 
@@ -817,7 +817,7 @@ void AuraScript::EffectManaShieldHandler::Call(AuraScript* auraScript, AuraEffec
 bool AuraScript::_Load(AuraPtr aura)
 {
     m_aura = aura;
-    _PrepareScriptCall((AuraScriptHookType)SPELL_SCRIPT_STATE_LOADING, NULL);
+    _PrepareScriptCall((AuraScriptHookType)SPELL_SCRIPT_STATE_LOADING, nullptr);
     bool load = Load();
     _FinishScriptCall();
     return load;
@@ -1049,7 +1049,7 @@ UnitPtr AuraScript::GetTarget() const
             sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u` AuraScript::GetTarget called in a hook in which the call won't have effect!", m_scriptName->c_str(), m_scriptSpellId);
     }
 
-    return NULL;
+    return nullptr;
 }
 
 constAuraApplicationPtr AuraScript::GetTargetApplication() const

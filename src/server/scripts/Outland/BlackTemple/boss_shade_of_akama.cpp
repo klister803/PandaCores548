@@ -497,7 +497,7 @@ public:
                         if (Akama && Akama->isAlive())
                         {
                             //10 % less health every few seconds.
-                            me->DealDamage(Akama, Akama->GetMaxHealth()/10, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                            me->DealDamage(Akama, Akama->GetMaxHealth()/10, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                             ReduceHealthTimer = 12000;
                         }
                     }

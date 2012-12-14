@@ -38,34 +38,34 @@ public:
     {
         static ChatCommand gobjectAddCommandTable[] =
         {
-            { "temp",           SEC_GAMEMASTER,     false, &HandleGameObjectAddTempCommand,   "", NULL },
-            { "",               SEC_GAMEMASTER,     false, &HandleGameObjectAddCommand,       "", NULL },
-            { NULL,             0,                  false, NULL,                              "", NULL }
+            { "temp",           SEC_GAMEMASTER,     false, &HandleGameObjectAddTempCommand,   "", nullptr },
+            { "",               SEC_GAMEMASTER,     false, &HandleGameObjectAddCommand,       "", nullptr },
+            { nullptr,             0,                  false, nullptr,                              "", nullptr }
         };
         static ChatCommand gobjectSetCommandTable[] =
         {
-            { "phase",          SEC_GAMEMASTER,     false, &HandleGameObjectSetPhaseCommand,  "", NULL },
-            { "state",          SEC_GAMEMASTER,     false, &HandleGameObjectSetStateCommand,  "", NULL },
-            { NULL,             0,                  false, NULL,                              "", NULL }
+            { "phase",          SEC_GAMEMASTER,     false, &HandleGameObjectSetPhaseCommand,  "", nullptr },
+            { "state",          SEC_GAMEMASTER,     false, &HandleGameObjectSetStateCommand,  "", nullptr },
+            { nullptr,             0,                  false, nullptr,                              "", nullptr }
         };
         static ChatCommand gobjectCommandTable[] =
         {
-            { "activate",       SEC_GAMEMASTER,     false, &HandleGameObjectActivateCommand,  "", NULL },
-            { "map_activate",   SEC_GAMEMASTER,     false, &HandleGameObjectActivateMapCommand, "", NULL },
-            { "delete",         SEC_GAMEMASTER,     false, &HandleGameObjectDeleteCommand,    "", NULL },
-            { "info",           SEC_GAMEMASTER,     false, &HandleGameObjectInfoCommand,      "", NULL },
-            { "move",           SEC_GAMEMASTER,     false, &HandleGameObjectMoveCommand,      "", NULL },
-            { "near",           SEC_GAMEMASTER,     false, &HandleGameObjectNearCommand,      "", NULL },
-            { "target",         SEC_GAMEMASTER,     false, &HandleGameObjectTargetCommand,    "", NULL },
-            { "turn",           SEC_GAMEMASTER,     false, &HandleGameObjectTurnCommand,      "", NULL },
-            { "add",            SEC_GAMEMASTER,     false, NULL,            "", gobjectAddCommandTable },
-            { "set",            SEC_GAMEMASTER,     false, NULL,            "", gobjectSetCommandTable },
-            { NULL,             0,                  false, NULL,                              "", NULL }
+            { "activate",       SEC_GAMEMASTER,     false, &HandleGameObjectActivateCommand,  "", nullptr },
+            { "map_activate",   SEC_GAMEMASTER,     false, &HandleGameObjectActivateMapCommand, "", nullptr },
+            { "delete",         SEC_GAMEMASTER,     false, &HandleGameObjectDeleteCommand,    "", nullptr },
+            { "info",           SEC_GAMEMASTER,     false, &HandleGameObjectInfoCommand,      "", nullptr },
+            { "move",           SEC_GAMEMASTER,     false, &HandleGameObjectMoveCommand,      "", nullptr },
+            { "near",           SEC_GAMEMASTER,     false, &HandleGameObjectNearCommand,      "", nullptr },
+            { "target",         SEC_GAMEMASTER,     false, &HandleGameObjectTargetCommand,    "", nullptr },
+            { "turn",           SEC_GAMEMASTER,     false, &HandleGameObjectTurnCommand,      "", nullptr },
+            { "add",            SEC_GAMEMASTER,     false, nullptr,            "", gobjectAddCommandTable },
+            { "set",            SEC_GAMEMASTER,     false, nullptr,            "", gobjectSetCommandTable },
+            { nullptr,             0,                  false, nullptr,                              "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "gobject",        SEC_GAMEMASTER,     false, NULL,                "", gobjectCommandTable },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "gobject",        SEC_GAMEMASTER,     false, nullptr,                "", gobjectCommandTable },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
         return commandTable;
     }
@@ -94,7 +94,7 @@ public:
                 return false;
         }
 
-        GameObjectPtr object = NULL;
+        GameObjectPtr object = nullptr;
 
         // by DB guid
         if (GameObjectData const* goData = sObjectMgr->GetGOData(guidLow))
@@ -140,7 +140,7 @@ public:
                 return false;
         }
 
-        GameObjectPtr obj = NULL;
+        GameObjectPtr obj = nullptr;
 
         // by DB guid
         if (GameObjectData const* go_data = sObjectMgr->GetGOData(guidLow))
@@ -180,7 +180,7 @@ public:
         if (!objectId)
             return false;
 
-        char* spawntimeSecs = strtok(NULL, " ");
+        char* spawntimeSecs = strtok(nullptr, " ");
 
         const GameObjectTemplate* objectInfo = sObjectMgr->GetGameObjectTemplate(objectId);
 
@@ -245,7 +245,7 @@ public:
 
         PlayerPtr player = handler->GetSession()->GetPlayer();
 
-        char* spawntime = strtok(NULL, " ");
+        char* spawntime = strtok(nullptr, " ");
         uint32 spawntm = 300;
 
         if (spawntime)
@@ -297,7 +297,7 @@ public:
         else
         {
             std::ostringstream eventFilter;
-            eventFilter << " AND (eventEntry IS NULL ";
+            eventFilter << " AND (eventEntry IS nullptr ";
             bool initString = true;
 
             for (GameEventMgr::ActiveEvents::const_iterator itr = activeEventsList.begin(); itr != activeEventsList.end(); ++itr)
@@ -372,7 +372,7 @@ public:
 
         if (target)
         {
-            int32 curRespawnDelay = int32(target->GetRespawnTimeEx() - time(NULL));
+            int32 curRespawnDelay = int32(target->GetRespawnTimeEx() - time(nullptr));
             if (curRespawnDelay < 0)
                 curRespawnDelay = 0;
 
@@ -409,7 +409,7 @@ public:
                 return false;
         }
 
-        GameObjectPtr object = NULL;
+        GameObjectPtr object = nullptr;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -470,7 +470,7 @@ public:
                 return false;
         }
 
-        GameObjectPtr object = NULL;
+        GameObjectPtr object = nullptr;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -483,7 +483,7 @@ public:
             return false;
         }
 
-        char* orientation = strtok(NULL, " ");
+        char* orientation = strtok(nullptr, " ");
         float o;
 
         if (orientation)
@@ -532,7 +532,7 @@ public:
                 return false;
         }
 
-        GameObjectPtr object = NULL;
+        GameObjectPtr object = nullptr;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -545,9 +545,9 @@ public:
             return false;
         }
 
-        char* toX = strtok(NULL, " ");
-        char* toY = strtok(NULL, " ");
-        char* toZ = strtok(NULL, " ");
+        char* toX = strtok(nullptr, " ");
+        char* toY = strtok(nullptr, " ");
+        char* toZ = strtok(nullptr, " ");
 
         if (!toX)
         {
@@ -610,7 +610,7 @@ public:
                 return false;
         }
 
-        GameObjectPtr object = NULL;
+        GameObjectPtr object = nullptr;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -623,7 +623,7 @@ public:
             return false;
         }
 
-        char* phase = strtok (NULL, " ");
+        char* phase = strtok (nullptr, " ");
         uint32 phaseMask = phase ? atoi(phase) : 0;
         if (phaseMask == 0)
         {
@@ -745,7 +745,7 @@ public:
                 return false;
         }
 
-        GameObjectPtr object = NULL;
+        GameObjectPtr object = nullptr;
 
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
             object = handler->GetObjectGlobalyWithGuidOrNearWithDbGuid(guidLow, gameObjectData->id);
@@ -757,7 +757,7 @@ public:
             return false;
         }
 
-        char* type = strtok(NULL, " ");
+        char* type = strtok(nullptr, " ");
         if (!type)
             return false;
 
@@ -771,7 +771,7 @@ public:
             return true;
         }
 
-        char* state = strtok(NULL, " ");
+        char* state = strtok(nullptr, " ");
         if (!state)
             return false;
 

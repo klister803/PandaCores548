@@ -79,11 +79,11 @@ bool CheckAllBossDied(InstanceScript* instance, CreaturePtr me)
     uint64 OlmGUID = 0;
     uint64 KroshGUID = 0;
 
-    CreaturePtr Maulgar = NULL;
-    CreaturePtr Kiggler = NULL;
-    CreaturePtr Blindeye = NULL;
-    CreaturePtr Olm = NULL;
-    CreaturePtr Krosh = NULL;
+    CreaturePtr Maulgar = nullptr;
+    CreaturePtr Kiggler = nullptr;
+    CreaturePtr Blindeye = nullptr;
+    CreaturePtr Olm = nullptr;
+    CreaturePtr Krosh = nullptr;
 
     MaulgarGUID = instance->GetData64(DATA_MAULGAR);
     KigglerGUID = instance->GetData64(DATA_KIGGLERTHECRAZED);
@@ -150,7 +150,7 @@ public:
 
             Phase2 = false;
 
-            CreaturePtr creature = NULL;
+            CreaturePtr creature = nullptr;
             for (uint8 i = 0; i < 4; ++i)
             {
                 if (Council[i])
@@ -281,7 +281,7 @@ public:
                 //Charging_Timer
                 if (Charging_Timer <= diff)
                 {
-                    UnitPtr target = NULL;
+                    UnitPtr target = nullptr;
                     target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (target)
                     {
@@ -368,7 +368,7 @@ public:
         {
             if (instance)
             {
-                CreaturePtr Maulgar = NULL;
+                CreaturePtr Maulgar = nullptr;
                 Maulgar = (Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAR)));
 
                 if (Maulgar)
@@ -420,7 +420,7 @@ public:
             //DeathCoil Timer /need correct timer
             if (DeathCoil_Timer <= diff)
             {
-                UnitPtr target = NULL;
+                UnitPtr target = nullptr;
                 target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (target)
                     DoCast(target, SPELL_DEATH_COIL);
@@ -483,7 +483,7 @@ public:
         {
             if (instance)
             {
-                CreaturePtr Maulgar = NULL;
+                CreaturePtr Maulgar = nullptr;
                 Maulgar = (Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAR)));
 
                 if (Maulgar)
@@ -603,7 +603,7 @@ public:
         {
             if (instance)
             {
-                CreaturePtr Maulgar = NULL;
+                CreaturePtr Maulgar = nullptr;
                 Maulgar = (Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAR)));
 
                 if (Maulgar)
@@ -713,7 +713,7 @@ public:
         {
             if (instance)
             {
-                CreaturePtr Maulgar = NULL;
+                CreaturePtr Maulgar = nullptr;
                 Maulgar = (Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAR)));
 
                 if (Maulgar)
@@ -766,7 +766,7 @@ public:
             //BlastWave_Timer
             if (BlastWave_Timer <= diff)
             {
-                UnitPtr target = NULL;
+                UnitPtr target = nullptr;
                 std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
                 std::vector<UnitPtr> target_list;
                 for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
@@ -775,7 +775,7 @@ public:
                                                                 //15 yard radius minimum
                     if (target && target->IsWithinDist(me, 15, false))
                         target_list.push_back(target);
-                    target = NULL;
+                    target = nullptr;
                 }
                 if (!target_list.empty())
                     target = *(target_list.begin()+rand()%target_list.size());

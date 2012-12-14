@@ -450,7 +450,7 @@ class boss_hodir : public CreatureScript
                         if (UnitPtr target = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(me), (*itr)->getUnitGuid()))
                         {
                             AuraPtr BitingColdAura = target->GetAura(SPELL_BITING_COLD_TRIGGERED);
-                            if (BitingColdAura != NULLAURA)
+                            if (BitingColdAura != nullptr)
                                 if ((target->GetTypeId() == TYPEID_PLAYER) && (BitingColdAura->GetStackAmount() > 2))
                                     me->AI()->SetData(DATA_GETTING_COLD_IN_HERE, 0);
                         }
@@ -981,7 +981,7 @@ public:
                 return;
 
             int32 damage = int32(200 * pow(2.0f, GetStackAmount()));
-            caster->CastCustomSpell(caster, SPELL_BITING_COLD_DAMAGE, &damage, NULL, NULL, true);
+            caster->CastCustomSpell(caster, SPELL_BITING_COLD_DAMAGE, &damage, nullptr, nullptr, true);
 
             if (caster->isMoving())
                 caster->RemoveAuraFromStack(SPELL_BITING_COLD_TRIGGERED);

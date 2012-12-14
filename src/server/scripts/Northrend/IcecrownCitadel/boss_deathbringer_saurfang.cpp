@@ -563,7 +563,7 @@ class boss_deathbringer_saurfang : public CreatureScript
                             DoCast(target, SPELL_MARK_OF_THE_FALLEN_CHAMPION);
                             me->SetPower(POWER_ENERGY, 0);
                             AuraPtr bloodPower = me->GetAura(SPELL_BLOOD_POWER);
-                            if (bloodPower != NULLAURA)
+                            if (bloodPower != nullptr)
                                 bloodPower->RecalculateAmountOfEffects();
                         }
                         break;
@@ -1062,7 +1062,7 @@ class spell_deathbringer_blood_link : public SpellScriptLoader
             {
                 GetHitUnit()->CastCustomSpell(SPELL_BLOOD_LINK_POWER, SPELLVALUE_BASE_POINT0, GetEffectValue(), GetHitUnit(), true);
                 AuraPtr bloodPower = GetHitUnit()->GetAura(SPELL_BLOOD_POWER);
-                if (bloodPower != NULLAURA)
+                if (bloodPower != nullptr)
                     bloodPower->RecalculateAmountOfEffects();
                 PreventHitDefaultEffect(EFFECT_0);
             }
@@ -1127,7 +1127,7 @@ class spell_deathbringer_blood_power : public SpellScriptLoader
             void ModAuraValue()
             {
                 AuraPtr aura = GetHitAura();
-                if (aura != NULLAURA)
+                if (aura != nullptr)
                     aura->RecalculateAmountOfEffects();
             }
 
@@ -1254,7 +1254,7 @@ class spell_deathbringer_blood_nova_targeting : public SpellScriptLoader
             bool Load()
             {
                 // initialize variable
-                target = NULL;
+                target = nullptr;
                 return true;
             }
 

@@ -251,7 +251,7 @@ CreatureAI* GetUlduarAI(CreaturePtr creature)
             if (instance->GetScriptId() == sObjectMgr->GetScriptId(UlduarScriptName))
                 return new AI(creature);
 
-    return NULL;
+    return nullptr;
 }
 
 template<class AI>
@@ -262,7 +262,7 @@ GameObjectAI* GetUlduarAI(GameObjectPtr go)
             if (instance->GetScriptId() == sObjectMgr->GetScriptId(UlduarScriptName))
                 return new AI(go);
 
-    return NULL;
+    return nullptr;
 }
 
 class PlayerOrPetCheck

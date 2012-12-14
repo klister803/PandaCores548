@@ -262,7 +262,7 @@ class boss_steelbreaker : public CreatureScript
                     instance->SetBossState(BOSS_BRUNDIR, DONE);
                 }
                 else
-                    me->SetLootRecipient(NULL);
+                    me->SetLootRecipient(nullptr);
 
                 if (CreaturePtr Brundir = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_BRUNDIR)))
                     if (Brundir->isAlive())
@@ -391,7 +391,7 @@ class boss_runemaster_molgeim : public CreatureScript
                     instance->SetBossState(BOSS_BRUNDIR, DONE);
                 }
                 else
-                    me->SetLootRecipient(NULL);
+                    me->SetLootRecipient(nullptr);
 
                 if (CreaturePtr Brundir = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_BRUNDIR)))
                     if (Brundir->isAlive())
@@ -428,7 +428,7 @@ class boss_runemaster_molgeim : public CreatureScript
                             break;
                         case EVENT_RUNE_OF_POWER:
                         {
-                            UnitPtr target = NULL;
+                            UnitPtr target = nullptr;
                             switch (urand(0, 2))
                             {
                                 case 0:
@@ -637,7 +637,7 @@ class boss_stormcaller_brundir : public CreatureScript
                     instance->SetBossState(BOSS_BRUNDIR, DONE);
                 }
                 else
-                    me->SetLootRecipient(NULL);
+                    me->SetLootRecipient(nullptr);
 
             if (CreaturePtr Molgeim = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_MOLGEIM)))
                 if (Molgeim->isAlive())

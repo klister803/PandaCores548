@@ -129,11 +129,11 @@ void Totem::UnSummon(uint32 msTime)
         owner->SendAutoRepeatCancel(THIS_UNIT);
 
         if (SpellInfo const* spell = sSpellMgr->GetSpellInfo(GetUInt32Value(UNIT_CREATED_BY_SPELL)))
-            owner->SendCooldownEvent(spell, 0, NULL, false);
+            owner->SendCooldownEvent(spell, 0, nullptr, false);
 
         if (GroupPtr group = owner->GetGroup())
         {
-            for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             {
                 PlayerPtr target = itr->getSource();
                 if (target && group->SameSubGroup(owner, target))

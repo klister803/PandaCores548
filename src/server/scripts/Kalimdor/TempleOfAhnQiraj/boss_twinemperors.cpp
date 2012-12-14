@@ -101,7 +101,7 @@ struct boss_twinemperorsAI : public ScriptedAI
         if (instance)
             return Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(IAmVeklor() ? DATA_VEKNILASH : DATA_VEKLOR));
         else
-            return NULL;
+            return nullptr;
     }
 
     void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
@@ -313,9 +313,9 @@ struct boss_twinemperorsAI : public ScriptedAI
         me->GetCreatureListWithEntryInGrid(lUnitList, 15317, 150.0f);
 
         if (lUnitList.empty())
-            return NULL;
+            return nullptr;
 
-        CreaturePtr nearb = NULL;
+        CreaturePtr nearb = nullptr;
 
         for (std::list<CreaturePtr>::const_iterator iter = lUnitList.begin(); iter != lUnitList.end(); ++iter)
         {
@@ -540,7 +540,7 @@ public:
             //Blizzard_Timer
             if (Blizzard_Timer <= diff)
             {
-                UnitPtr target = NULL;
+                UnitPtr target = nullptr;
                 target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45, true);
                 if (target)
                     DoCast(target, SPELL_BLIZZARD);
@@ -550,7 +550,7 @@ public:
             if (ArcaneBurst_Timer <= diff)
             {
                 UnitPtr mvic;
-                if ((mvic=SelectTarget(SELECT_TARGET_NEAREST, 0, NOMINAL_MELEE_RANGE, true)) != NULL)
+                if ((mvic=SelectTarget(SELECT_TARGET_NEAREST, 0, NOMINAL_MELEE_RANGE, true)) != nullptr)
                 {
                     DoCast(mvic, SPELL_ARCANEBURST);
                     ArcaneBurst_Timer = 5000;

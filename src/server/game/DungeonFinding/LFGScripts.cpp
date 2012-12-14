@@ -74,7 +74,7 @@ void LFGGroupScript::OnAddMember(GroupPtr group, uint64 guid)
 
     sLog->outDebug(LOG_FILTER_LFG, "LFGScripts::OnAddMember [" UI64FMTD "]: added [" UI64FMTD "]", gguid, guid);
     LfgUpdateData updateData = LfgUpdateData(LFG_UPDATETYPE_CLEAR_LOCK_LIST);
-    for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+    for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
         if (PlayerPtr plrg = itr->getSource())
         {
@@ -85,7 +85,7 @@ void LFGGroupScript::OnAddMember(GroupPtr group, uint64 guid)
 
     // TODO - if group is queued and new player is added convert to rolecheck without notify the current players queued
     if (sLFGMgr->GetState(gguid) == LFG_STATE_QUEUED)
-        sLFGMgr->Leave(NULL, group);
+        sLFGMgr->Leave(nullptr, group);
 
     if (sLFGMgr->GetState(guid) == LFG_STATE_QUEUED)
         if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
@@ -102,7 +102,7 @@ void LFGGroupScript::OnRemoveMember(GroupPtr group, uint64 guid, RemoveMethod me
     if (sLFGMgr->GetState(gguid) == LFG_STATE_QUEUED)
     {
         // TODO - Do not remove, just remove the one leaving and rejoin queue with all other data
-        sLFGMgr->Leave(NULL, group);
+        sLFGMgr->Leave(nullptr, group);
     }
 
     if (!group->isLFGGroup())
@@ -176,5 +176,5 @@ void LFGGroupScript::OnInviteMember(GroupPtr group, uint64 guid)
         return;
 
     sLog->outDebug(LOG_FILTER_LFG, "LFGScripts::OnInviteMember [" UI64FMTD "]: invite [" UI64FMTD "] leader [" UI64FMTD "]", gguid, guid, group->GetLeaderGUID());
-    sLFGMgr->Leave(NULL, group);
+    sLFGMgr->Leave(nullptr, group);
 }

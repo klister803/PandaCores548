@@ -141,7 +141,7 @@ public:
                 RAdvisors[1] = instance->GetData64(DATA_TIDALVESS);
                 RAdvisors[2] = instance->GetData64(DATA_CARIBDIS);
                 //Respawn of the 3 Advisors
-                CreaturePtr pAdvisor = NULL;
+                CreaturePtr pAdvisor = nullptr;
                 for (int i=0; i<MAX_ADVISORS; ++i)
                     if (RAdvisors[i])
                     {
@@ -346,7 +346,7 @@ public:
             CreaturePtr Pet = Unit::GetCreature(TO_WORLDOBJECT(me), SummonedPet);
             if (Pet && Pet->isAlive())
             {
-                Pet->DealDamage(Pet, Pet->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                Pet->DealDamage(Pet, Pet->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
             }
 
             SummonedPet = 0;
@@ -359,7 +359,7 @@ public:
         {
             if (instance)
             {
-                CreaturePtr Karathress = NULL;
+                CreaturePtr Karathress = nullptr;
                 Karathress = (Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_KARATHRESS)));
 
                 if (Karathress)
@@ -499,7 +499,7 @@ public:
         {
             if (instance)
             {
-                CreaturePtr Karathress = NULL;
+                CreaturePtr Karathress = nullptr;
                 Karathress = (Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_KARATHRESS)));
 
                 if (Karathress)
@@ -626,7 +626,7 @@ public:
         {
             if (instance)
             {
-                CreaturePtr Karathress = NULL;
+                CreaturePtr Karathress = nullptr;
                 Karathress = (Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_KARATHRESS)));
 
                 if (Karathress)
@@ -708,9 +708,9 @@ public:
             if (Heal_Timer <= diff)
             {
                 // It can be cast on any of the mobs
-                UnitPtr unit = NULL;
+                UnitPtr unit = nullptr;
 
-                while (unit == NULL || !unit->isAlive())
+                while (unit == nullptr || !unit->isAlive())
                 {
                     unit = selectAdvisorUnit();
                 }
@@ -725,7 +725,7 @@ public:
 
         UnitPtr selectAdvisorUnit()
         {
-            UnitPtr unit = NULL;
+            UnitPtr unit = nullptr;
             if (instance)
             {
                 switch (rand()%4)

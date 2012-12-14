@@ -148,7 +148,7 @@ public:
                     AttackStart(owner);
                 } else if (owner && owner->isDead())
                 {
-                    me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                     return;
                 }
             }
@@ -322,7 +322,7 @@ public:
 
                 if (instance && instance->GetData64(DATA_LEOTHERAS_EVENT_STARTER))
                 {
-                    UnitPtr victim = NULL;
+                    UnitPtr victim = nullptr;
                     victim = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_LEOTHERAS_EVENT_STARTER));
                     if (victim)
                         me->getThreatManager().addThreat(victim, 1);
@@ -518,7 +518,7 @@ public:
                     {
                         //DoCast(me->getVictim(), SPELL_CHAOS_BLAST, true);
                         int damage = 100;
-                        me->CastCustomSpell(me->getVictim(), SPELL_CHAOS_BLAST, &damage, NULL, NULL, false, NULL, NULL, me->GetGUID());
+                        me->CastCustomSpell(me->getVictim(), SPELL_CHAOS_BLAST, &damage, nullptr, nullptr, false, nullptr, nullptr, me->GetGUID());
                     }
                     ChaosBlast_Timer = 3000;
                 } else ChaosBlast_Timer -= diff;
@@ -584,7 +584,7 @@ public:
                 //at this point he divides himself in two parts
                 CastConsumingMadness();
                 DespawnDemon();
-                CreaturePtr Copy = NULL;
+                CreaturePtr Copy = nullptr;
                 Copy = DoSpawnCreature(DEMON_FORM, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 6000);
                 if (Copy)
                  {
@@ -669,7 +669,7 @@ public:
                 {
                     //DoCast(me->getVictim(), SPELL_CHAOS_BLAST, true);
                     int damage = 100;
-                    me->CastCustomSpell(me->getVictim(), SPELL_CHAOS_BLAST, &damage, NULL, NULL, false, NULL, NULL, me->GetGUID());
+                    me->CastCustomSpell(me->getVictim(), SPELL_CHAOS_BLAST, &damage, nullptr, nullptr, false, nullptr, nullptr, me->GetGUID());
                     ChaosBlast_Timer = 3000;
                 }
              } else ChaosBlast_Timer -= diff;
@@ -756,7 +756,7 @@ public:
 
                 if (!me->isInCombat() && instance->GetData64(DATA_LEOTHERAS_EVENT_STARTER))
                 {
-                    UnitPtr victim = NULL;
+                    UnitPtr victim = nullptr;
                     victim = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_LEOTHERAS_EVENT_STARTER));
                     if (victim)
                         AttackStart(victim);
@@ -777,7 +777,7 @@ public:
 
             if (Mindblast_Timer <= diff)
             {
-                UnitPtr target = NULL;
+                UnitPtr target = nullptr;
                 target = SelectTarget(SELECT_TARGET_RANDOM, 0);
 
                 if (target)DoCast(target, SPELL_MINDBLAST);

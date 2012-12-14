@@ -462,7 +462,7 @@ class boss_freya : public CreatureScript
 
                 // For achievement check
                 AuraPtr aura = me->GetAura(SPELL_ATTUNED_TO_NATURE);
-                if (aura != NULLAURA)
+                if (aura != nullptr)
                     attunedToNature = aura->GetStackAmount();
                 else
                     attunedToNature = 0;
@@ -601,7 +601,7 @@ class boss_freya : public CreatureScript
                     /* 25N */    {62952, 62954, 62956, 62958}
                 };
 
-                me->CastSpell(NULLUNIT, summonSpell[me->GetMap()->GetDifficulty()][elderCount], true);
+                me->CastSpell(std::shared_ptr<Unit>(), summonSpell[me->GetMap()->GetDifficulty()][elderCount], true);
 
                 DoScriptText(SAY_DEATH, me);
                 me->SetReactState(REACT_PASSIVE);
@@ -764,7 +764,7 @@ class boss_elder_brightleaf : public CreatureScript
                             me->RemoveAurasDueToSpell(SPELL_FLUX_AURA);
                             me->AddAura(SPELL_FLUX_AURA, me);
                             AuraPtr Flux = me->GetAura(SPELL_FLUX_AURA);
-                            if (Flux != NULLAURA)
+                            if (Flux != nullptr)
                                 Flux->SetStackAmount(urand(1, 8));
                             events.ScheduleEvent(EVENT_FLUX, 7500);
                             break;
@@ -862,7 +862,7 @@ class boss_elder_stonebark : public CreatureScript
                 if (me->HasAura(SPELL_PETRIFIED_BARK))
                 {
                     int32 reflect = damage;
-                    who->CastCustomSpell(who, SPELL_PETRIFIED_BARK_DMG, &reflect, NULL, NULL, true);
+                    who->CastCustomSpell(who, SPELL_PETRIFIED_BARK_DMG, &reflect, nullptr, nullptr, true);
                     damage = 0;
                 }
             }

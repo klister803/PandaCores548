@@ -192,7 +192,7 @@ public:
                         sLog->outError(LOG_FILTER_TSCR, "npc_unworthy_initiateAI: unable to find anchor!");
 
                     float dist = 99.0f;
-                    GameObjectPtr prison = NULL;
+                    GameObjectPtr prison = nullptr;
 
                     for (uint8 i = 0; i < 12; ++i)
                     {

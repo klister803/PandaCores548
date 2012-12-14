@@ -37,17 +37,17 @@ public:
     {
         static ChatCommand guildCommandTable[] =
         {
-            { "create",         SEC_GAMEMASTER,     true,  &HandleGuildCreateCommand,           "", NULL },
-            { "delete",         SEC_GAMEMASTER,     true,  &HandleGuildDeleteCommand,           "", NULL },
-            { "invite",         SEC_GAMEMASTER,     true,  &HandleGuildInviteCommand,           "", NULL },
-            { "uninvite",       SEC_GAMEMASTER,     true,  &HandleGuildUninviteCommand,         "", NULL },
-            { "rank",           SEC_GAMEMASTER,     true,  &HandleGuildRankCommand,             "", NULL },
-            { NULL,             0,                  false, NULL,                                "", NULL }
+            { "create",         SEC_GAMEMASTER,     true,  &HandleGuildCreateCommand,           "", nullptr },
+            { "delete",         SEC_GAMEMASTER,     true,  &HandleGuildDeleteCommand,           "", nullptr },
+            { "invite",         SEC_GAMEMASTER,     true,  &HandleGuildInviteCommand,           "", nullptr },
+            { "uninvite",       SEC_GAMEMASTER,     true,  &HandleGuildUninviteCommand,         "", nullptr },
+            { "rank",           SEC_GAMEMASTER,     true,  &HandleGuildRankCommand,             "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "guild",          SEC_ADMINISTRATOR,  true, NULL,                                 "", guildCommandTable },
-            { NULL,             0,                  false, NULL,                                "", NULL }
+            { "guild",          SEC_ADMINISTRATOR,  true, nullptr,                                 "", guildCommandTable },
+            { nullptr,             0,                  false, nullptr,                                "", nullptr }
         };
         return commandTable;
     }
@@ -67,10 +67,10 @@ public:
 
         // if not guild name only (in "") then player name
         PlayerPtr target;
-        if (!handler->extractPlayerTarget(*args != '"' ? (char*)args : NULL, &target))
+        if (!handler->extractPlayerTarget(*args != '"' ? (char*)args : nullptr, &target))
             return false;
 
-        char* tailStr = *args != '"' ? strtok(NULL, "") : (char*)args;
+        char* tailStr = *args != '"' ? strtok(nullptr, "") : (char*)args;
         if (!tailStr)
             return false;
 
@@ -126,10 +126,10 @@ public:
 
         // if not guild name only (in "") then player name
         uint64 targetGuid;
-        if (!handler->extractPlayerTarget(*args != '"' ? (char*)args : NULL, NULL, &targetGuid))
+        if (!handler->extractPlayerTarget(*args != '"' ? (char*)args : nullptr, nullptr, &targetGuid))
             return false;
 
-        char* tailStr = *args != '"' ? strtok(NULL, "") : (char*)args;
+        char* tailStr = *args != '"' ? strtok(nullptr, "") : (char*)args;
         if (!tailStr)
             return false;
 

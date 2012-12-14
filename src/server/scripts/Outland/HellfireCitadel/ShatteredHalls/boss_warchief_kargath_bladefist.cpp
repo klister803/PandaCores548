@@ -171,7 +171,7 @@ class boss_warchief_kargath_bladefist : public CreatureScript
                     if (temp && temp->isAlive())
                     {
                         (*temp).GetMotionMaster()->Clear(true);
-                        me->DealDamage(temp, temp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        me->DealDamage(temp, temp->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                         CAST_CRE(temp)->RemoveCorpse();
                     }
                 }
@@ -183,7 +183,7 @@ class boss_warchief_kargath_bladefist : public CreatureScript
                     if (temp && temp->isAlive())
                     {
                         (*temp).GetMotionMaster()->Clear(true);
-                        me->DealDamage(temp, temp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        me->DealDamage(temp, temp->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                         CAST_CRE(temp)->RemoveCorpse();
                     }
                 }

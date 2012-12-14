@@ -170,7 +170,7 @@ public:
             victimGUID = guid;
             if (me->m_spells[0] && victimGUID)
                 if (UnitPtr victim = Unit::GetUnit(TO_WORLDOBJECT(me), victimGUID))
-                    victim->CastSpell(victim, me->m_spells[0], true, NULL, NULL, me->GetGUID());
+                    victim->CastSpell(victim, me->m_spells[0], true, nullptr, nullptr, me->GetGUID());
         }
 
         void JustDied(UnitPtr /*killer*/)

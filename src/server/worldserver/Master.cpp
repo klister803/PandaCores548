@@ -179,7 +179,7 @@ int Master::Run()
     ACE_Based::Thread world_thread(new WorldRunnable);
     world_thread.setPriority(ACE_Based::Highest);
 
-    ACE_Based::Thread* cliThread = NULL;
+    ACE_Based::Thread* cliThread = nullptr;
 
 #ifdef _WIN32
     if (ConfigMgr::GetBoolDefault("Console.Enable", true) && (m_ServiceStatus == -1)/* need disable console in service mode*/)
@@ -235,7 +235,7 @@ int Master::Run()
     }
     #endif
     //Start soap serving thread
-    ACE_Based::Thread* soap_thread = NULL;
+    ACE_Based::Thread* soap_thread = nullptr;
 
     if (ConfigMgr::GetBoolDefault("SOAP.Enabled", false))
     {

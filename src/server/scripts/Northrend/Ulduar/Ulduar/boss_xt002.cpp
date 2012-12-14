@@ -362,7 +362,7 @@ class boss_xt002 : public CreatureScript
                 me->AttackStop();
                 me->SetReactState(REACT_PASSIVE);
 
-                UnitPtr heart = me->GetVehicleKit() ? me->GetVehicleKit()->GetPassenger(HEART_VEHICLE_SEAT_NORMAL) : NULL;
+                UnitPtr heart = me->GetVehicleKit() ? me->GetVehicleKit()->GetPassenger(HEART_VEHICLE_SEAT_NORMAL) : nullptr;
                 if (heart)
                 {
                     heart->CastSpell(heart, SPELL_HEART_OVERLOAD, false);
@@ -399,7 +399,7 @@ class boss_xt002 : public CreatureScript
                 events.RescheduleEvent(EVENT_GRAVITY_BOMB, TIMER_GRAVITY_BOMB);
                 events.RescheduleEvent(EVENT_TYMPANIC_TANTRUM, urand(TIMER_TYMPANIC_TANTRUM_MIN, TIMER_TYMPANIC_TANTRUM_MAX));
 
-                UnitPtr heart = me->GetVehicleKit() ? me->GetVehicleKit()->GetPassenger(HEART_VEHICLE_SEAT_EXPOSED) : NULL;
+                UnitPtr heart = me->GetVehicleKit() ? me->GetVehicleKit()->GetPassenger(HEART_VEHICLE_SEAT_EXPOSED) : nullptr;
                 if (!heart)
                     return;
 
@@ -451,7 +451,7 @@ class mob_xt002_heart : public CreatureScript
 
             void JustDied(UnitPtr /*killer*/)
             {
-                CreaturePtr xt002 = _instance ? me->GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(BOSS_XT002)) : NULL;
+                CreaturePtr xt002 = _instance ? me->GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(BOSS_XT002)) : nullptr;
                 if (!xt002 || !xt002->AI())
                     return;
 
@@ -679,7 +679,7 @@ class mob_boombot : public CreatureScript
                     data << uint32(SPELL_BOOM);
                     me->SendMessageToSet(&data, false);
 
-                    me->DealDamage(me, me->GetHealth(), NULL, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    me->DealDamage(me, me->GetHealth(), nullptr, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
 
                     damage = 0;
 
@@ -920,7 +920,7 @@ class spell_xt002_heart_overload_periodic : public SpellScriptLoader
                             {
                                 uint8 a = urand(0, 4);
                                 uint32 spellId = spells[a];
-                                toyPile->CastSpell(toyPile, spellId, true, NULL, NULL, instance->GetData64(BOSS_XT002));
+                                toyPile->CastSpell(toyPile, spellId, true, nullptr, nullptr, instance->GetData64(BOSS_XT002));
                             }
                         }
                     }

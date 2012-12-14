@@ -25,13 +25,13 @@
 #include "Chat.h"
 #include "World.h"
 
-inline float GetAge(uint64 t) { return float(time(NULL) - t) / DAY; }
+inline float GetAge(uint64 t) { return float(time(nullptr) - t) / DAY; }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // GM ticket
 GmTicket::GmTicket() { }
 
-GmTicket::GmTicket(PlayerPtr player, WorldPacket& recvData) : _createTime(time(NULL)), _lastModifiedTime(time(NULL)), _closedBy(0), _assignedTo(0), _completed(false), _escalatedStatus(TICKET_UNASSIGNED)
+GmTicket::GmTicket(PlayerPtr player, WorldPacket& recvData) : _createTime(time(nullptr)), _lastModifiedTime(time(nullptr)), _closedBy(0), _assignedTo(0), _completed(false), _escalatedStatus(TICKET_UNASSIGNED)
 {
     _id = sTicketMgr->GenerateTicketId();
     _playerName = player->GetName();
@@ -175,7 +175,7 @@ void GmTicket::SendResponse(WorldSession* session) const
 
 std::string GmTicket::FormatMessageString(ChatHandler& handler, bool detailed) const
 {
-    time_t curTime = time(NULL);
+    time_t curTime = time(nullptr);
 
     std::stringstream ss;
     ss << handler.PGetParseString(LANG_COMMAND_TICKETLISTGUID, _id);
@@ -233,7 +233,7 @@ void GmTicket::TeleportTo(PlayerPtr player) const
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
 // Ticket manager
-TicketMgr::TicketMgr() : _status(true), _lastTicketId(0), _lastSurveyId(0), _openTicketCount(0), _lastChange(time(NULL)) { }
+TicketMgr::TicketMgr() : _status(true), _lastTicketId(0), _lastSurveyId(0), _openTicketCount(0), _lastChange(time(nullptr)) { }
 
 TicketMgr::~TicketMgr()
 {
@@ -320,7 +320,7 @@ void TicketMgr::AddTicket(GmTicket* ticket)
     _ticketList[ticket->GetId()] = ticket;
     if (!ticket->IsClosed())
         ++_openTicketCount;
-    SQLTransaction trans = SQLTransaction(NULL);
+    SQLTransaction trans = SQLTransaction(nullptr);
     ticket->SaveToDB(trans);
 }
 
@@ -328,7 +328,7 @@ void TicketMgr::CloseTicket(uint32 ticketId, int64 source)
 {
     if (GmTicket* ticket = GetTicket(ticketId))
     {
-        SQLTransaction trans = SQLTransaction(NULL);
+        SQLTransaction trans = SQLTransaction(nullptr);
         ticket->SetClosedBy(source);
         if (source)
             --_openTicketCount;

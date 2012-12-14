@@ -1085,7 +1085,7 @@ class npc_crok_scourgebane : public CreatureScript
                 if (!_wipeCheckTimer)
                 {
                     _wipeCheckTimer = 1000;
-                    PlayerPtr player = NULL;
+                    PlayerPtr player = nullptr;
                     Trinity::AnyPlayerInObjectRangeCheck check(me, 60.0f);
                     Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, player, check);
                     me->VisitNearbyWorldObject(60.0f, searcher);
@@ -1405,7 +1405,7 @@ class npc_captain_arnath : public CreatureScript
         private:
             CreaturePtr FindFriendlyCreature() const
             {
-                CreaturePtr target = NULL;
+                CreaturePtr target = nullptr;
                 Trinity::MostHPMissingInRange u_check(me, 60.0f, 0);
                 Trinity::CreatureLastSearcher<Trinity::MostHPMissingInRange> searcher(me, target, u_check);
                 me->VisitNearbyGridObject(60.0f, searcher);

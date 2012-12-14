@@ -218,7 +218,7 @@ public:
             //BurningAdrenalineCaster_Timer
             if (BurningAdrenalineCaster_Timer <= diff)
             {
-                UnitPtr target = NULL;
+                UnitPtr target = nullptr;
 
                 uint8 i = 0;
                 while (i < 3)   // max 3 tries to get a random target with power_mana

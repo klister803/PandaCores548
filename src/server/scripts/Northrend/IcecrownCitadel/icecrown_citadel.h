@@ -687,7 +687,7 @@ CreatureAI* GetIcecrownCitadelAI(CreaturePtr creature)
         if (instance->GetInstanceScript())
             if (instance->GetScriptId() == sObjectMgr->GetScriptId(ICCScriptName))
                 return new AI(creature);
-    return NULL;
+    return nullptr;
 }
 
 void CheckPlayerDamage(UnitPtr pUnit, uint32 & damage);

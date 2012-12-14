@@ -33,17 +33,17 @@ class LinkedListElement : public std::enable_shared_from_this<LinkedListElement>
         std::shared_ptr<LinkedListElement> iNext;
         std::shared_ptr<LinkedListElement> iPrev;
     public:
-        LinkedListElement(): iNext(NULL), iPrev(NULL) {}
+        LinkedListElement(): iNext(nullptr), iPrev(nullptr) {}
         ~LinkedListElement() { delink(); }
 
-        bool hasNext() const { return(iNext && iNext->iNext != NULL); }
-        bool hasPrev() const { return(iPrev && iPrev->iPrev != NULL); }
-        bool isInList() const { return(iNext != NULL && iPrev != NULL); }
+        bool hasNext() const { return(iNext && iNext->iNext != nullptr); }
+        bool hasPrev() const { return(iPrev && iPrev->iPrev != nullptr); }
+        bool isInList() const { return(iNext != nullptr && iPrev != nullptr); }
 
-        std::shared_ptr<LinkedListElement> next()       { return hasNext() ? iNext : NULL; }
-        std::shared_ptr<const LinkedListElement> next() const { return hasNext() ? iNext : NULL; }
-        std::shared_ptr<LinkedListElement> prev()       { return hasPrev() ? iPrev : NULL; }
-        std::shared_ptr<const LinkedListElement> prev() const { return hasPrev() ? iPrev : NULL; }
+        std::shared_ptr<LinkedListElement> next()       { return hasNext() ? iNext : nullptr; }
+        std::shared_ptr<const LinkedListElement> next() const { return hasNext() ? iNext : nullptr; }
+        std::shared_ptr<LinkedListElement> prev()       { return hasPrev() ? iPrev : nullptr; }
+        std::shared_ptr<const LinkedListElement> prev() const { return hasPrev() ? iPrev : nullptr; }
 
         std::shared_ptr<LinkedListElement> nocheck_next()       { return iNext; }
         std::shared_ptr<const LinkedListElement> nocheck_next() const { return iNext; }
@@ -54,7 +54,7 @@ class LinkedListElement : public std::enable_shared_from_this<LinkedListElement>
         {
             if (isInList())
             {
-                iNext->iPrev = iPrev; iPrev->iNext = iNext; iNext = NULL; iPrev = NULL;
+                iNext->iPrev = iPrev; iPrev->iNext = iNext; iNext = nullptr; iPrev = nullptr;
             }
         }
 
@@ -94,11 +94,11 @@ class LinkedListHead
 
         bool isEmpty() const { return(!iFirst->iNext->isInList()); }
 
-        std::shared_ptr<LinkedListElement> getFirst()       { return(isEmpty() ? NULL : iFirst->iNext); }
-        std::shared_ptr<const LinkedListElement> getFirst() const { return(isEmpty() ? NULL : iFirst->iNext); }
+        std::shared_ptr<LinkedListElement> getFirst()       { return(isEmpty() ? nullptr : iFirst->iNext); }
+        std::shared_ptr<const LinkedListElement> getFirst() const { return(isEmpty() ? nullptr : iFirst->iNext); }
 
-        std::shared_ptr<LinkedListElement> getLast() { return(isEmpty() ? NULL : iLast->iPrev); }
-        std::shared_ptr<const LinkedListElement> getLast() const  { return(isEmpty() ? NULL : iLast->iPrev); }
+        std::shared_ptr<LinkedListElement> getLast() { return(isEmpty() ? nullptr : iLast->iPrev); }
+        std::shared_ptr<const LinkedListElement> getLast() const  { return(isEmpty() ? nullptr : iLast->iPrev); }
 
         void insertFirst(std::shared_ptr<LinkedListElement> pElem)
         {

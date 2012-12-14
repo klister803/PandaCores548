@@ -65,7 +65,7 @@ public:
                 }
             }
             sLog->outDebug(LOG_FILTER_TSCR, "Instance Razorfen Kraul: GetPlayerInMap, but PlayerList is empty!");
-            return NULL;
+            return nullptr;
         }
 
         void OnGameObjectCreate(GameObjectPtr go)

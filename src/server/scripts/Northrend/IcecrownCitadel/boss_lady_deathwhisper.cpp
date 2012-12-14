@@ -328,7 +328,7 @@ class boss_lady_deathwhisper : public CreatureScript
                         {
                             if (GroupPtr group = owner->GetGroup())
                             {
-                                for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+                                for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
                                     if (PlayerPtr member = itr->getSource())
                                         member->KilledMonsterCredit(NPC_DARNAVAN_CREDIT, 0);
                             }
@@ -395,7 +395,7 @@ class boss_lady_deathwhisper : public CreatureScript
                 else
                     summons.Summon(summon);
 
-                UnitPtr target = NULL;
+                UnitPtr target = nullptr;
                 if (summon->GetEntry() == NPC_VENGEFUL_SHADE)
                 {
                     target = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(me), _nextVengefulShadeTargetGUID);   // Vengeful Shade
@@ -404,7 +404,7 @@ class boss_lady_deathwhisper : public CreatureScript
                 else
                     target = SelectTarget(SELECT_TARGET_RANDOM);                        // Wave adds
 
-                summon->AI()->AttackStart(target);                                      // CAN be NULL
+                summon->AI()->AttackStart(target);                                      // CAN be nullptr
                 if (summon->GetEntry() == NPC_REANIMATED_FANATIC)
                     summon->CastSpell(summon, SPELL_FANATIC_S_DETERMINATION, true);
                 else if (summon->GetEntry() == NPC_REANIMATED_ADHERENT)
@@ -922,7 +922,7 @@ class npc_darnavan : public CreatureScript
                 {
                     if (GroupPtr group = owner->GetGroup())
                     {
-                        for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+                        for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
                             if (PlayerPtr member = itr->getSource())
                                 member->FailQuest(QUEST_DEPROGRAMMING);
                     }

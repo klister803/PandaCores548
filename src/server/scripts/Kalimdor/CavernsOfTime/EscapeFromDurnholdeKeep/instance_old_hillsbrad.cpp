@@ -86,7 +86,7 @@ public:
             }
 
             sLog->outDebug(LOG_FILTER_TSCR, "Instance Old Hillsbrad: GetPlayerInMap, but PlayerList is empty!");
-            return NULL;
+            return nullptr;
         }
 
         void UpdateQuestCredit()

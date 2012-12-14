@@ -162,7 +162,7 @@ template<>
 bool RandomMovementGenerator<Creature>::GetResetPosition(CreaturePtr& creature, float& x, float& y, float& z)
 {
     float radius;
-    creature->GetRespawnPosition(x, y, z, NULL, &radius);
+    creature->GetRespawnPosition(x, y, z, nullptr, &radius);
 
     // use current if in range
     if (creature->IsWithinDist2d(x,y,radius))

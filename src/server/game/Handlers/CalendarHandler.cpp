@@ -50,7 +50,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
     uint64 guid = _player->GetGUID();
     sLog->outDebug(LOG_FILTER_NETWORKIO, "CMSG_CALENDAR_GET_CALENDAR [" UI64FMTD "]", guid);
 
-    time_t cur_time = time_t(time(NULL));
+    time_t cur_time = time_t(time(nullptr));
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_SEND_CALENDAR [" UI64FMTD "]", guid);
     WorldPacket data(SMSG_CALENDAR_SEND_CALENDAR, 1000);   // Impossible to get the correct size without doing a double iteration of some elements
@@ -60,7 +60,7 @@ void WorldSession::HandleCalendarGetCalendar(WorldPacket& /*recvData*/)
     for (CalendarInviteIdList::const_iterator it = invites.begin(); it != invites.end(); ++it)
     {
         CalendarInvite* invite = sCalendarMgr->GetInvite(*it);
-        CalendarEvent* calendarEvent = invite ? sCalendarMgr->GetEvent(invite->GetEventId()) : NULL;
+        CalendarEvent* calendarEvent = invite ? sCalendarMgr->GetEvent(invite->GetEventId()) : nullptr;
 
         if (calendarEvent)
         {
@@ -843,7 +843,7 @@ void WorldSession::SendCalendarClearPendingAction()
     SendPacket(&data);
 }
 
-void WorldSession::SendCalendarCommandResult(CalendarError err, char const* param /*= NULL*/)
+void WorldSession::SendCalendarCommandResult(CalendarError err, char const* param /*= nullptr*/)
 {
     uint64 guid = _player->GetGUID();
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_COMMAND_RESULT [" UI64FMTD "] Value: %u", guid, err);
@@ -871,7 +871,7 @@ void WorldSession::SendCalendarCommandResult(CalendarError err, char const* para
 void WorldSession::SendCalendarRaidLockout(InstanceSave const* save, bool add)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "%s", add ? "SMSG_CALENDAR_RAID_LOCKOUT_ADDED" : "SMSG_CALENDAR_RAID_LOCKOUT_REMOVED");
-    time_t currTime = time(NULL);
+    time_t currTime = time(nullptr);
 
     WorldPacket data(SMSG_CALENDAR_RAID_LOCKOUT_REMOVED, (add ? 4 : 0) + 4 + 4 + 4 + 8);
     if (add)
@@ -896,7 +896,7 @@ void WorldSession::SendCalendarRaidLockoutUpdated(InstanceSave const* save)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "SMSG_CALENDAR_RAID_LOCKOUT_UPDATED [" UI64FMTD
         "] Map: %u, Difficulty %u", guid, save->GetMapId(), save->GetDifficulty());
 
-    time_t cur_time = time_t(time(NULL));
+    time_t cur_time = time_t(time(nullptr));
 
     WorldPacket data(SMSG_CALENDAR_RAID_LOCKOUT_UPDATED, 4 + 4 + 4 + 4 + 8);
     data << secsToTimeBitFields(cur_time);

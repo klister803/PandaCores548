@@ -71,7 +71,7 @@ class LootTemplate::LootGroup                               // A set of loot def
         LootStoreItemList ExplicitlyChanced;                // Entries with chances defined in DB
         LootStoreItemList EqualChanced;                     // Zero chances - every entry takes the same chance
 
-        LootStoreItem const* Roll() const;                 // Rolls an item from the group, returns NULL if all miss their chances
+        LootStoreItem const* Roll() const;                 // Rolls an item from the group, returns nullptr if all miss their chances
 };
 
 //Remove all data and free all memory
@@ -190,7 +190,7 @@ LootTemplate const* LootStore::GetLootFor(uint32 loot_id) const
     LootTemplateMap::const_iterator tab = m_LootTemplates.find(loot_id);
 
     if (tab == m_LootTemplates.end())
-        return NULL;
+        return nullptr;
 
     return tab->second;
 }
@@ -200,7 +200,7 @@ LootTemplate* LootStore::GetLootForConditionFill(uint32 loot_id)
     LootTemplateMap::iterator tab = m_LootTemplates.find(loot_id);
 
     if (tab == m_LootTemplates.end())
-        return NULL;
+        return nullptr;
 
     return tab->second;
 }
@@ -424,7 +424,7 @@ bool Loot::FillLoot(uint32 lootId, LootStore const& store, PlayerPtr lootOwner, 
     {
         roundRobinPlayer = lootOwner->GetGUID();
 
-        for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+        for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             if (PlayerPtr player = itr->getSource())   // should actually be looted object instead of lootOwner but looter has to be really close so doesnt really matter
                 FillNotNormalLootFor(player, player->IsAtGroupRewardDistance(lootOwner));
 
@@ -464,7 +464,7 @@ void Loot::FillNotNormalLootFor(PlayerPtr player, bool presentAtLooting)
 
     // Process currency items
     uint32 max_slot = GetMaxSlotInLootFor(player);
-    LootItem const* item = NULL;
+    LootItem const* item = nullptr;
     uint32 itemsSize = uint32(items.size());
     for (uint32 i = 0; i < max_slot; ++i)
     {
@@ -496,7 +496,7 @@ QuestItemList* Loot::FillFFALoot(PlayerPtr player)
     if (ql->empty())
     {
         delete ql;
-        return NULL;
+        return nullptr;
     }
 
     PlayerFFAItems[player->GetGUIDLow()] = ql;
@@ -506,7 +506,7 @@ QuestItemList* Loot::FillFFALoot(PlayerPtr player)
 QuestItemList* Loot::FillQuestLoot(PlayerPtr player)
 {
     if (items.size() == MAX_NR_LOOT_ITEMS)
-        return NULL;
+        return nullptr;
 
     QuestItemList* ql = new QuestItemList();
 
@@ -534,7 +534,7 @@ QuestItemList* Loot::FillQuestLoot(PlayerPtr player)
     if (ql->empty())
     {
         delete ql;
-        return NULL;
+        return nullptr;
     }
 
     PlayerQuestItems[player->GetGUIDLow()] = ql;
@@ -566,7 +566,7 @@ QuestItemList* Loot::FillNonQuestNonFFAConditionalLoot(PlayerPtr player, bool pr
     if (ql->empty())
     {
         delete ql;
-        return NULL;
+        return nullptr;
     }
 
     PlayerNonQuestNonFFAConditionalItems[player->GetGUIDLow()] = ql;
@@ -655,7 +655,7 @@ void Loot::generateMoneyLoot(uint32 minAmount, uint32 maxAmount)
 
 LootItem* Loot::LootItemInSlot(uint32 lootSlot, PlayerPtr player, QuestItem* *qitem, QuestItem* *ffaitem, QuestItem* *conditem)
 {
-    LootItem* item = NULL;
+    LootItem* item = nullptr;
     bool is_looted = true;
     if (lootSlot >= items.size())
     {
@@ -711,7 +711,7 @@ LootItem* Loot::LootItemInSlot(uint32 lootSlot, PlayerPtr player, QuestItem* *qi
     }
 
     if (is_looted)
-        return NULL;
+        return nullptr;
 
     return item;
 }
@@ -1119,7 +1119,7 @@ void LootTemplate::LootGroup::AddEntry(LootStoreItem& item)
         EqualChanced.push_back(item);
 }
 
-// Rolls an item from the group, returns NULL if all miss their chances
+// Rolls an item from the group, returns nullptr if all miss their chances
 LootStoreItem const* LootTemplate::LootGroup::Roll() const
 {
     if (!ExplicitlyChanced.empty())                             // First explicitly chanced entries are checked
@@ -1139,7 +1139,7 @@ LootStoreItem const* LootTemplate::LootGroup::Roll() const
     if (!EqualChanced.empty())                              // If nothing selected yet - an item is taken from equal-chanced part
         return &EqualChanced[irand(0, EqualChanced.size()-1)];
 
-    return NULL;                                            // Empty drop from the group
+    return nullptr;                                            // Empty drop from the group
 }
 
 // True if group includes at least 1 quest drop entry
@@ -1193,7 +1193,7 @@ void LootTemplate::LootGroup::Process(Loot& loot, uint16 lootMode) const
         if (uiAttemptCount == uiMaxAttempts)             // already tried rolling too many times, just abort
             return;
 
-        LootStoreItem* item = NULL;
+        LootStoreItem* item = nullptr;
 
         // begin rolling (normally called via Roll())
         LootStoreItemList::iterator itr;
@@ -1219,7 +1219,7 @@ void LootTemplate::LootGroup::Process(Loot& loot, uint16 lootMode) const
                 }
             }
         }
-        if (item == NULL && !EqualPossibleDrops.empty()) // If nothing selected yet - an item is taken from equal-chanced part
+        if (item == nullptr && !EqualPossibleDrops.empty()) // If nothing selected yet - an item is taken from equal-chanced part
         {
             itemSource = 2;
             itr = EqualPossibleDrops.begin();
@@ -1230,7 +1230,7 @@ void LootTemplate::LootGroup::Process(Loot& loot, uint16 lootMode) const
 
         ++uiAttemptCount;
 
-        if (item != NULL && item->lootmode & lootMode)   // only add this item if roll succeeds and the mode matches
+        if (item != nullptr && item->lootmode & lootMode)   // only add this item if roll succeeds and the mode matches
         {
             bool duplicate = false;
             if (ItemTemplate const* _proto = sObjectMgr->GetItemTemplate(item->itemid))

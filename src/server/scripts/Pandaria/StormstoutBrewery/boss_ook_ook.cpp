@@ -106,7 +106,7 @@ class npc_barrel : public CreatureScript
 
             bool CheckIfAgainstUnit()
             {
-                if (me->SelectNearbyTarget(NULL, 1.0f))
+                if (me->SelectNearbyTarget(nullptr, 1.0f))
                     return true;
 
                 return false;
@@ -179,7 +179,7 @@ class spell_ook_ook_barrel : public SpellScriptLoader
 
             bool CheckIfAgainstUnit(UnitPtr caster)
             {
-                if (caster->SelectNearbyTarget(NULL, 1.0f))
+                if (caster->SelectNearbyTarget(nullptr, 1.0f))
                     return true;
 
                 return false;

@@ -123,7 +123,7 @@ class spell_mastery_blood_shield : public SpellScriptLoader
 
                                 int32 bp = int32(GetHitHeal() * Mastery);
 
-                                caster->CastCustomSpell(target, MASTERY_SPELL_BLOOD_SHIELD, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(target, MASTERY_SPELL_BLOOD_SHIELD, &bp, nullptr, nullptr, true);
                             }
                         }
                     }
@@ -181,7 +181,7 @@ class spell_mastery_ignite : public SpellScriptLoader
                                 int32 bp = int32(GetHitDamage() * value / 100 / 2);
                                 bp += target->GetRemainingPeriodicAmount(caster->GetGUID(), MASTERY_SPELL_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
 
-                                caster->CastCustomSpell(target, MASTERY_SPELL_IGNITE, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(target, MASTERY_SPELL_IGNITE, &bp, nullptr, nullptr, true);
                             }
                         }
                     }
@@ -238,7 +238,7 @@ class spell_mastery_hand_of_light : public SpellScriptLoader
 
                                 int32 bp = int32(GetHitDamage() * value / 100);
 
-                                caster->CastCustomSpell(target, MASTERY_SPELL_HAND_OF_LIGHT, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(target, MASTERY_SPELL_HAND_OF_LIGHT, &bp, nullptr, nullptr, true);
                             }
                         }
                     }

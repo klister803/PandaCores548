@@ -246,7 +246,7 @@ class boss_ignis : public CreatureScript
                             if (UnitPtr slagPotTarget = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(me), _slagPotGUID))
                             {
                                 slagPotTarget->ExitVehicle();
-                                slagPotTarget = NULL;
+                                slagPotTarget = nullptr;
                                 _slagPotGUID = 0;
                                 events.CancelEvent(EVENT_END_POT);
                             }
@@ -327,7 +327,7 @@ class npc_iron_construct : public CreatureScript
                     return;
 
                 AuraPtr aur = me->GetAura(SPELL_HEAT);
-                if (aur != NULLAURA)
+                if (aur != nullptr)
                 {
                     if (aur->GetStackAmount() >= 10)
                     {

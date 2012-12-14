@@ -302,7 +302,7 @@ public:
                     }
                     else if (value == DONE)
                     {
-                        time_t now = time(NULL);
+                        time_t now = time(nullptr);
 
                         if (minHorsemenDiedTime == 0)
                             minHorsemenDiedTime = now;
@@ -393,7 +393,7 @@ public:
                     if (GameObjectPtr pHeiganEruption = instance->GetGameObject(*itr))
                     {
                         pHeiganEruption->SendCustomAnim(pHeiganEruption->GetGoAnimProgress());
-                        pHeiganEruption->CastSpell(NULL, SPELL_ERUPTION);
+                        pHeiganEruption->CastSpell(nullptr, SPELL_ERUPTION);
                     }
                 }
             }
@@ -414,7 +414,7 @@ public:
             return true;
         }
 
-        bool CheckAchievementCriteriaMeet(uint32 criteria_id, constPlayerPtr /*source*/, constUnitPtr /*target = NULL*/, uint32 /*miscvalue1 = 0*/)
+        bool CheckAchievementCriteriaMeet(uint32 criteria_id, constPlayerPtr /*source*/, constUnitPtr /*target = nullptr*/, uint32 /*miscvalue1 = 0*/)
         {
             switch (criteria_id)
             {

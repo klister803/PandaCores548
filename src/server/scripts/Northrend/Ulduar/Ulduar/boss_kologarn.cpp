@@ -333,7 +333,7 @@ class spell_ulduar_rubble_summon : public SpellScriptLoader
                 uint64 originalCaster = caster->GetInstanceScript() ? caster->GetInstanceScript()->GetData64(BOSS_KOLOGARN) : 0;
                 uint32 spellId = GetEffectValue();
                 for (uint8 i = 0; i < 5; ++i)
-                    caster->CastSpell(caster, spellId, true, NULL, NULL, originalCaster);
+                    caster->CastSpell(caster, spellId, true, nullptr, nullptr, originalCaster);
             }
 
             void Register()
@@ -566,7 +566,7 @@ class spell_ulduar_stone_grip : public SpellScriptLoader
                 if (GetOwner()->GetTypeId() != TYPEID_UNIT)
                     return;
 
-                PlayerPtr caster = GetCaster() ? TO_PLAYER(GetCaster()) : NULL;
+                PlayerPtr caster = GetCaster() ? TO_PLAYER(GetCaster()) : nullptr;
                 if (!caster || !caster->IsOnVehicle(GetOwner()->ToUnit()))
                     return;
 

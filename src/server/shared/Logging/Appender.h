@@ -110,7 +110,7 @@ struct LogMessage
         , type(_type)
         , text(_text)
     {
-        mtime = time(NULL);
+        mtime = time(nullptr);
     }
 
     static std::string getTimeStr(time_t time);

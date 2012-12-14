@@ -164,7 +164,7 @@ class achievement_arena_kills : public AchievementCriteriaScript
 
         bool OnCheck(PlayerPtr source, UnitPtr /*target*/)
         {
-            // this checks GetBattleground() for NULL already
+            // this checks GetBattleground() for nullptr already
             if (!source->InArena())
                 return false;
 

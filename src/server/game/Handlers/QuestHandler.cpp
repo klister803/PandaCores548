@@ -161,7 +161,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
             {
                 if (GroupPtr group = _player->GetGroup())
                 {
-                    for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+                    for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
                     {
                         PlayerPtr player = itr->getSource();
 
@@ -497,7 +497,7 @@ void WorldSession::HandleQuestConfirmAccept(WorldPacket& recvData)
         }
 
         if (_player->CanAddQuest(quest, true))
-            _player->AddQuest(quest, NULL);                // NULL, this prevent DB script from duplicate running
+            _player->AddQuest(quest, nullptr);                // nullptr, this prevent DB script from duplicate running
 
         _player->SetDivider(0);
     }
@@ -576,7 +576,7 @@ void WorldSession::HandlePushQuestToParty(WorldPacket& recvPacket)
     {
         if (GroupPtr group = _player->GetGroup())
         {
-            for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+            for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
             {
                 PlayerPtr player = itr->getSource();
 

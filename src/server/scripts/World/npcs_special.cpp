@@ -127,7 +127,7 @@ public:
     {
         npc_air_force_botsAI(CreaturePtr creature) : ScriptedAI(creature)
         {
-            SpawnAssoc = NULL;
+            SpawnAssoc = nullptr;
             SpawnedGUID = 0;
 
             // find the correct spawnhandling
@@ -151,7 +151,7 @@ public:
                 if (!spawnedTemplate)
                 {
                     sLog->outError(LOG_FILTER_SQL, "TCSR: Creature template entry %u does not exist in DB, which is required by npc_air_force_bots", SpawnAssoc->spawnedCreatureEntry);
-                    SpawnAssoc = NULL;
+                    SpawnAssoc = nullptr;
                     return;
                 }
             }
@@ -171,7 +171,7 @@ public:
             else
             {
                 sLog->outError(LOG_FILTER_SQL, "TCSR: npc_air_force_bots: wasn't able to spawn Creature %u", SpawnAssoc->spawnedCreatureEntry);
-                SpawnAssoc = NULL;
+                SpawnAssoc = nullptr;
             }
 
             return summoned;
@@ -184,7 +184,7 @@ public:
             if (creature && creature->isAlive())
                 return creature;
 
-            return NULL;
+            return nullptr;
         }
 
         void MoveInLineOfSight(UnitPtr who)
@@ -200,7 +200,7 @@ public:
                 if (!playerTarget)
                     return;
 
-                CreaturePtr lastSpawnedGuard = SpawnedGUID == 0 ? NULL : GetSummonedGuard();
+                CreaturePtr lastSpawnedGuard = SpawnedGUID == 0 ? nullptr : GetSummonedGuard();
 
                 // prevent calling Unit::GetUnit at next MoveInLineOfSight call - speedup
                 if (!lastSpawnedGuard)
@@ -724,7 +724,7 @@ public:
         void Reset()
         {
             DoctorGUID = 0;
-            Coord = NULL;
+            Coord = nullptr;
 
             //no select
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -1330,8 +1330,8 @@ public:
 
                         // Cast spells that teach dual spec
                         // Both are also ImplicitTarget self and must be cast by player
-                        player->CastSpell(player, 63680, true, NULL, NULL, player->GetGUID());
-                        player->CastSpell(player, 63624, true, NULL, NULL, player->GetGUID());
+                        player->CastSpell(player, 63680, true, nullptr, nullptr, player->GetGUID());
+                        player->CastSpell(player, 63624, true, nullptr, nullptr, player->GetGUID());
 
                         // Should show another Gossip text with "Congratulations..."
                         player->PlayerTalkClass->SendCloseGossip();
@@ -1460,42 +1460,42 @@ public:
                 break;
             case GOSSIP_SENDER_MAIN + 1:
                 creature->CastSpell(player, SPELL_DMG, false);
-                player->AddSpellCooldown(SPELL_DMG, 0, time(NULL) + 7200);
+                player->AddSpellCooldown(SPELL_DMG, 0, time(nullptr) + 7200);
                 SendAction(player, creature, action);
                 break;
             case GOSSIP_SENDER_MAIN + 2:
                 creature->CastSpell(player, SPELL_RES, false);
-                player->AddSpellCooldown(SPELL_RES, 0, time(NULL) + 7200);
+                player->AddSpellCooldown(SPELL_RES, 0, time(nullptr) + 7200);
                 SendAction(player, creature, action);
                 break;
             case GOSSIP_SENDER_MAIN + 3:
                 creature->CastSpell(player, SPELL_ARM, false);
-                player->AddSpellCooldown(SPELL_ARM, 0, time(NULL) + 7200);
+                player->AddSpellCooldown(SPELL_ARM, 0, time(nullptr) + 7200);
                 SendAction(player, creature, action);
                 break;
             case GOSSIP_SENDER_MAIN + 4:
                 creature->CastSpell(player, SPELL_SPI, false);
-                player->AddSpellCooldown(SPELL_SPI, 0, time(NULL) + 7200);
+                player->AddSpellCooldown(SPELL_SPI, 0, time(nullptr) + 7200);
                 SendAction(player, creature, action);
                 break;
             case GOSSIP_SENDER_MAIN + 5:
                 creature->CastSpell(player, SPELL_INT, false);
-                player->AddSpellCooldown(SPELL_INT, 0, time(NULL) + 7200);
+                player->AddSpellCooldown(SPELL_INT, 0, time(nullptr) + 7200);
                 SendAction(player, creature, action);
                 break;
             case GOSSIP_SENDER_MAIN + 6:
                 creature->CastSpell(player, SPELL_STM, false);
-                player->AddSpellCooldown(SPELL_STM, 0, time(NULL) + 7200);
+                player->AddSpellCooldown(SPELL_STM, 0, time(nullptr) + 7200);
                 SendAction(player, creature, action);
                 break;
             case GOSSIP_SENDER_MAIN + 7:
                 creature->CastSpell(player, SPELL_STR, false);
-                player->AddSpellCooldown(SPELL_STR, 0, time(NULL) + 7200);
+                player->AddSpellCooldown(SPELL_STR, 0, time(nullptr) + 7200);
                 SendAction(player, creature, action);
                 break;
             case GOSSIP_SENDER_MAIN + 8:
                 creature->CastSpell(player, SPELL_AGI, false);
-                player->AddSpellCooldown(SPELL_AGI, 0, time(NULL) + 7200);
+                player->AddSpellCooldown(SPELL_AGI, 0, time(nullptr) + 7200);
                 SendAction(player, creature, action);
                 break;
         }
@@ -1884,7 +1884,7 @@ public:
             if (!owner)
                 return;
             // Inherit Master's Threat List (not yet implemented)
-            owner->CastSpell(NULLUNIT, 58838, true);
+            owner->CastSpell(std::shared_ptr<Unit>(), 58838, true);
             // here mirror image casts on summoner spell (not present in client dbc) 49866
             // here should be auras (not present in client dbc): 35657, 35658, 35659, 35660 selfcasted by mirror images (stats related?)
             // Clone Me!
@@ -2730,7 +2730,7 @@ public:
 
         GameObjectPtr FindNearestLauncher()
         {
-            GameObjectPtr launcher = NULL;
+            GameObjectPtr launcher = nullptr;
 
             if (isCluster())
             {

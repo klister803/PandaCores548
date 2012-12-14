@@ -297,7 +297,7 @@ class boss_zuljin : public CreatureScript
 
             void SpawnAdds()
             {
-                CreaturePtr creature = NULL;
+                CreaturePtr creature = nullptr;
                 for (uint8 i = 0; i < 4; ++i)
                 {
                     creature = me->SummonCreature(SpiritInfo[i].entry, SpiritInfo[i].x, SpiritInfo[i].y, SpiritInfo[i].z, SpiritInfo[i].orient, TEMPSUMMON_DEAD_DESPAWN, 0);

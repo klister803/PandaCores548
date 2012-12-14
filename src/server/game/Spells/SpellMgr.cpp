@@ -475,7 +475,7 @@ uint32 SpellMgr::GetSpellIdForDifficulty(uint32 spellId, constUnitPtr caster) co
 
     if (difficultyEntry->SpellID[mode] <= 0 && mode > HEROIC_DIFFICULTY)
     {
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellMgr::GetSpellIdForDifficulty: spell %u mode %u spell is NULL, using mode %u", spellId, mode, mode - 2);
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellMgr::GetSpellIdForDifficulty: spell %u mode %u spell is nullptr, using mode %u", spellId, mode, mode - 2);
     mode -= 2;
     }
 
@@ -502,7 +502,7 @@ SpellChainNode const* SpellMgr::GetSpellChainNode(uint32 spell_id) const
 {
     SpellChainMap::const_iterator itr = mSpellChains.find(spell_id);
     if (itr == mSpellChains.end())
-        return NULL;
+        return nullptr;
 
     return &itr->second;
 }
@@ -603,7 +603,7 @@ SpellLearnSkillNode const* SpellMgr::GetSpellLearnSkill(uint32 spell_id) const
     if (itr != mSpellLearnSkills.end())
         return &itr->second;
     else
-        return NULL;
+        return nullptr;
 }
 
 SpellLearnSpellMapBounds SpellMgr::GetSpellLearnSpellMapBounds(uint32 spell_id) const
@@ -630,7 +630,7 @@ SpellTargetPosition const* SpellMgr::GetSpellTargetPosition(uint32 spell_id) con
     SpellTargetPositionMap::const_iterator itr = mSpellTargetPositions.find(spell_id);
     if (itr != mSpellTargetPositions.end())
         return &itr->second;
-    return NULL;
+    return nullptr;
 }
 
 SpellSpellGroupMapBounds SpellMgr::GetSpellSpellGroupMapBounds(uint32 spell_id) const
@@ -764,7 +764,7 @@ SpellProcEventEntry const* SpellMgr::GetSpellProcEvent(uint32 spellId) const
     SpellProcEventMap::const_iterator itr = mSpellProcEventMap.find(spellId);
     if (itr != mSpellProcEventMap.end())
         return &itr->second;
-    return NULL;
+    return nullptr;
 }
 
 bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellProcEvent, uint32 EventProcFlag, SpellInfo const* procSpell, uint32 procFlags, uint32 procExtra, bool active)
@@ -830,7 +830,7 @@ bool SpellMgr::IsSpellProcEventCanTriggeredBy(SpellProcEventEntry const* spellPr
         procEvent_procEx = spellProcEvent->procEx;
 
         // For melee triggers
-        if (procSpell == NULL)
+        if (procSpell == nullptr)
         {
             // Check (if set) for school (melee attack have Normal school)
             if (spellProcEvent->schoolMask && (spellProcEvent->schoolMask & SPELL_SCHOOL_MASK_NORMAL) == 0)
@@ -901,7 +901,7 @@ SpellProcEntry const* SpellMgr::GetSpellProcEntry(uint32 spellId) const
     SpellProcMap::const_iterator itr = mSpellProcMap.find(spellId);
     if (itr != mSpellProcMap.end())
         return &itr->second;
-    return NULL;
+    return nullptr;
 }
 
 bool SpellMgr::CanSpellTriggerProcOnEvent(SpellProcEntry const& procEntry, ProcEventInfo& eventInfo)
@@ -982,7 +982,7 @@ SpellBonusEntry const* SpellMgr::GetSpellBonusData(uint32 spellId) const
         if (itr2 != mSpellBonusMap.end())
             return &itr2->second;
     }
-    return NULL;
+    return nullptr;
 }
 
 SpellThreatEntry const* SpellMgr::GetSpellThreatEntry(uint32 spellID) const
@@ -997,7 +997,7 @@ SpellThreatEntry const* SpellMgr::GetSpellThreatEntry(uint32 spellID) const
         if (itr != mSpellThreatMap.end())
             return &itr->second;
     }
-    return NULL;
+    return nullptr;
 }
 
 SkillLineAbilityMapBounds SpellMgr::GetSkillLineAbilityMapBounds(uint32 spell_id) const
@@ -1011,7 +1011,7 @@ PetAura const* SpellMgr::GetPetAura(uint32 spell_id, uint8 eff)
     if (itr != mSpellPetAuraMap.end())
         return &itr->second;
     else
-        return NULL;
+        return nullptr;
 }
 
 SpellEnchantProcEntry const* SpellMgr::GetSpellEnchantProcEvent(uint32 enchId) const
@@ -1019,7 +1019,7 @@ SpellEnchantProcEntry const* SpellMgr::GetSpellEnchantProcEvent(uint32 enchId) c
     SpellEnchantProcEventMap::const_iterator itr = mSpellEnchantProcEventMap.find(enchId);
     if (itr != mSpellEnchantProcEventMap.end())
         return &itr->second;
-    return NULL;
+    return nullptr;
 }
 
 bool SpellMgr::IsArenaAllowedEnchancment(uint32 ench_id) const
@@ -1030,7 +1030,7 @@ bool SpellMgr::IsArenaAllowedEnchancment(uint32 ench_id) const
 const std::vector<int32>* SpellMgr::GetSpellLinked(int32 spell_id) const
 {
     SpellLinkedMap::const_iterator itr = mSpellLinkedMap.find(spell_id);
-    return itr != mSpellLinkedMap.end() ? &(itr->second) : NULL;
+    return itr != mSpellLinkedMap.end() ? &(itr->second) : nullptr;
 }
 
 PetLevelupSpellSet const* SpellMgr::GetPetLevelupSpellList(uint32 petFamily) const
@@ -1039,7 +1039,7 @@ PetLevelupSpellSet const* SpellMgr::GetPetLevelupSpellList(uint32 petFamily) con
     if (itr != mPetLevelupSpellMap.end())
         return &itr->second;
     else
-        return NULL;
+        return nullptr;
 }
 
 PetDefaultSpellsEntry const* SpellMgr::GetPetDefaultSpellsEntry(int32 id) const
@@ -1047,7 +1047,7 @@ PetDefaultSpellsEntry const* SpellMgr::GetPetDefaultSpellsEntry(int32 id) const
     PetDefaultSpellsMap::const_iterator itr = mPetDefaultSpellsMap.find(id);
     if (itr != mPetDefaultSpellsMap.end())
         return &itr->second;
-    return NULL;
+    return nullptr;
 }
 
 SpellAreaMapBounds SpellMgr::GetSpellAreaMapBounds(uint32 spell_id) const
@@ -1200,7 +1200,7 @@ void SpellMgr::LoadSpellRanks()
         for(int difficulty = 0; difficulty < MAX_DIFFICULTY; difficulty++)
         {
             if(mSpellInfoMap[difficulty][itr->first])
-                mSpellInfoMap[difficulty][itr->first]->ChainEntry = NULL;
+                mSpellInfoMap[difficulty][itr->first]->ChainEntry = nullptr;
         }
     }
     mSpellChains.clear();
@@ -1298,7 +1298,7 @@ void SpellMgr::LoadSpellRanks()
             ++itr;
             if (itr == rankChain.end())
             {
-                mSpellChains[addedSpell].next = NULL;
+                mSpellChains[addedSpell].next = nullptr;
                 break;
             }
             else
@@ -2317,7 +2317,7 @@ bool LoadPetDefaultSpells_helper(CreatureTemplate const* cInfo, PetDefaultSpells
         return false;
 
     // remove duplicates with levelupSpells if any
-    if (PetLevelupSpellSet const* levelupSpells = cInfo->family ? sSpellMgr->GetPetLevelupSpellList(cInfo->family) : NULL)
+    if (PetLevelupSpellSet const* levelupSpells = cInfo->family ? sSpellMgr->GetPetLevelupSpellList(cInfo->family) : nullptr)
     {
         for (uint8 j = 0; j < MAX_CREATURE_SPELL_DATA_SLOT; ++j)
         {
@@ -2726,7 +2726,7 @@ void SpellMgr::LoadSpellInfoStore()
 
     UnloadSpellInfoStore();
     for(int difficulty = 0; difficulty < MAX_DIFFICULTY; difficulty++)
-        mSpellInfoMap[difficulty].resize(sSpellStore.GetNumRows(), NULL);
+        mSpellInfoMap[difficulty].resize(sSpellStore.GetNumRows(), nullptr);
 
     for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
     {
@@ -2811,7 +2811,7 @@ void SpellMgr::LoadSpellCustomAttr()
 {
     uint32 oldMSTime = getMSTime();
 
-    SpellInfo* spellInfo = NULL;
+    SpellInfo* spellInfo = nullptr;
     for (uint32 i = 0; i < GetSpellInfoStoreSize(); ++i)
     {
         for(int difficulty = 0; difficulty < MAX_DIFFICULTY; difficulty++)
@@ -3419,7 +3419,7 @@ void SpellMgr::LoadDbcDataCorrections()
 {
     uint32 oldMSTime = getMSTime();
 
-    /*SpellEntry* spellInfo = NULL;
+    /*SpellEntry* spellInfo = nullptr;
     for (uint32 i = 0; i < sSpellStore.GetNumRows(); ++i)
     {
     spellInfo = (SpellEntry*)sSpellStore.LookupEntry(i);
@@ -4086,7 +4086,7 @@ const SpellInfo* SpellMgr::GetSpellInfo(uint32 spellId, Difficulty difficulty) c
         return mSpellInfoMap[NONE_DIFFICULTY][spellId];
     }
 
-    return NULL;
+    return nullptr;
 }
 
 void SpellMgr::LoadSpellPowerInfo()

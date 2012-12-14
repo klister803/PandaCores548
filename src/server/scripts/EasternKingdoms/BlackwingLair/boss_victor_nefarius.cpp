@@ -300,8 +300,8 @@ public:
                 {
                     //Spawn 2 random types of creatures at the 2 locations
                     uint32 CreatureID;
-                    CreaturePtr Spawned = NULL;
-                    UnitPtr target = NULL;
+                    CreaturePtr Spawned = nullptr;
+                    UnitPtr target = nullptr;
 
                     //1 in 3 chance it will be a chromatic
                     if (urand(0, 2) == 0)

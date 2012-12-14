@@ -177,8 +177,8 @@ class Aura : public std::enable_shared_from_this<Aura>
         // Helpers for targets
         ApplicationMap const & GetApplicationMap() {return m_applications;}
         void GetApplicationList(std::list<AuraApplicationPtr> & applicationList) const;
-        const AuraApplicationPtr GetApplicationOfTarget (uint64 guid) const { ApplicationMap::const_iterator itr = m_applications.find(guid); if (itr != m_applications.end()) return itr->second; return NULLAURA_APPLICATION; }
-        AuraApplicationPtr GetApplicationOfTarget (uint64 guid) { ApplicationMap::iterator itr = m_applications.find(guid); if (itr != m_applications.end()) return itr->second; return NULLAURA_APPLICATION; }
+        const AuraApplicationPtr GetApplicationOfTarget (uint64 guid) const { ApplicationMap::const_iterator itr = m_applications.find(guid); if (itr != m_applications.end()) return itr->second; return nullptr; }
+        AuraApplicationPtr GetApplicationOfTarget (uint64 guid) { ApplicationMap::iterator itr = m_applications.find(guid); if (itr != m_applications.end()) return itr->second; return nullptr; }
         bool IsAppliedOnTarget(uint64 guid) const { return m_applications.find(guid) != m_applications.end(); }
 
         void SetNeedClientUpdateForTargets() const;

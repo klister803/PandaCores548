@@ -56,7 +56,7 @@ void MotionMaster::InitDefault()
     if (_owner->GetTypeId() == TYPEID_UNIT)
     {
         MovementGenerator* movement = FactorySelector::selectMovementGenerator(_owner->ToCreature());
-        Mutate(movement == NULL ? &si_idleMovement : movement, MOTION_SLOT_IDLE);
+        Mutate(movement == nullptr ? &si_idleMovement : movement, MOTION_SLOT_IDLE);
     }
     else
     {
@@ -103,7 +103,7 @@ void MotionMaster::UpdateMotion(uint32 diff)
         }
 
         delete _expList;
-        _expList = NULL;
+        _expList = nullptr;
 
         if (empty())
             Initialize();
@@ -528,7 +528,7 @@ void MotionMaster::Mutate(MovementGenerator *m, MovementSlot slot)
 {
     if (MovementGenerator *curr = Impl[slot])
     {
-        Impl[slot] = NULL; // in case a new one is generated in this slot during directdelete
+        Impl[slot] = nullptr; // in case a new one is generated in this slot during directdelete
         if (_top == slot && (_cleanFlag & MMCF_UPDATE))
             DelayedDelete(curr);
         else

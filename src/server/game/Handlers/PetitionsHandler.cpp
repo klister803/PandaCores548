@@ -183,7 +183,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(charterid);
     if (!pProto)
     {
-        _player->SendBuyError(BUY_ERR_CANT_FIND_ITEM, NULL, charterid, 0);
+        _player->SendBuyError(BUY_ERR_CANT_FIND_ITEM, nullptr, charterid, 0);
         return;
     }
 
@@ -197,7 +197,7 @@ void WorldSession::HandlePetitionBuyOpcode(WorldPacket & recvData)
     InventoryResult msg = _player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, charterid, pProto->BuyCount);
     if (msg != EQUIP_ERR_OK)
     {
-        _player->SendEquipError(msg, NULL, NULL, charterid);
+        _player->SendEquipError(msg, nullptr, nullptr, charterid);
         return;
     }
 
@@ -285,7 +285,7 @@ void WorldSession::HandlePetitionShowSignOpcode(WorldPacket& recvData)
 
     result = CharacterDatabase.Query(stmt);
 
-    // result == NULL also correct in case no sign yet
+    // result == nullptr also correct in case no sign yet
     if (result)
         signs = uint8(result->GetRowCount());
 
@@ -710,7 +710,7 @@ void WorldSession::HandleOfferPetitionOpcode(WorldPacket & recvData)
 
     result = CharacterDatabase.Query(stmt);
 
-    // result == NULL also correct charter without signs
+    // result == nullptr also correct charter without signs
     if (result)
         signs = uint8(result->GetRowCount());
 

@@ -19,29 +19,29 @@
 
 DROP TABLE IF EXISTS `calendar_events`;
 CREATE TABLE IF NOT EXISTS `calendar_events` (
-  `id` int(11) unsigned NOT NULL DEFAULT '0',
-  `creator` int(11) unsigned NOT NULL DEFAULT '0',
-  `title` varchar(255) NOT NULL DEFAULT '',
-  `description` varchar(255) NOT NULL DEFAULT '',
-  `type` tinyint(1) unsigned NOT NULL DEFAULT '4',
-  `dungeon` tinyint(3) NOT NULL DEFAULT '-1',
-  `eventtime` int(10) unsigned NOT NULL DEFAULT '0',
-  `flags` int(10) unsigned NOT NULL DEFAULT '0',
-  `repeatable` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `time2` int(10) unsigned NOT NULL DEFAULT '0',
+  `id` int(11) unsigned NOT nullptr DEFAULT '0',
+  `creator` int(11) unsigned NOT nullptr DEFAULT '0',
+  `title` varchar(255) NOT nullptr DEFAULT '',
+  `description` varchar(255) NOT nullptr DEFAULT '',
+  `type` tinyint(1) unsigned NOT nullptr DEFAULT '4',
+  `dungeon` tinyint(3) NOT nullptr DEFAULT '-1',
+  `eventtime` int(10) unsigned NOT nullptr DEFAULT '0',
+  `flags` int(10) unsigned NOT nullptr DEFAULT '0',
+  `repeatable` tinyint(1) unsigned NOT nullptr DEFAULT '0',
+  `time2` int(10) unsigned NOT nullptr DEFAULT '0',
   PRIMARY KEY (`id`)
 );
 
 DROP TABLE IF EXISTS `calendar_invites`;
 CREATE TABLE IF NOT EXISTS `calendar_invites` (
-  `id` int(11) unsigned NOT NULL DEFAULT '0',
-  `event` int(11) unsigned NOT NULL DEFAULT '0',
-  `invitee` int(11) unsigned NOT NULL DEFAULT '0',
-  `sender` int(11) unsigned NOT NULL DEFAULT '0',
-  `status` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `statustime` int(10) unsigned NOT NULL DEFAULT '0',
-  `rank` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  `text` varchar(255) NOT NULL DEFAULT '',
+  `id` int(11) unsigned NOT nullptr DEFAULT '0',
+  `event` int(11) unsigned NOT nullptr DEFAULT '0',
+  `invitee` int(11) unsigned NOT nullptr DEFAULT '0',
+  `sender` int(11) unsigned NOT nullptr DEFAULT '0',
+  `status` tinyint(1) unsigned NOT nullptr DEFAULT '0',
+  `statustime` int(10) unsigned NOT nullptr DEFAULT '0',
+  `rank` tinyint(1) unsigned NOT nullptr DEFAULT '0',
+  `text` varchar(255) NOT nullptr DEFAULT '',
   PRIMARY KEY (`id`)
 );
 */
@@ -100,7 +100,7 @@ CalendarInvite* CalendarMgr::GetInvite(uint64 inviteId)
         return &(itr->second);
 
     sLog->outError(LOG_FILTER_CALENDAR, "CalendarMgr::GetInvite: [" UI64FMTD "] not found!", inviteId);
-    return NULL;
+    return nullptr;
 }
 
 CalendarEvent* CalendarMgr::GetEvent(uint64 eventId)
@@ -110,7 +110,7 @@ CalendarEvent* CalendarMgr::GetEvent(uint64 eventId)
         return &(itr->second);
 
     sLog->outError(LOG_FILTER_CALENDAR, "CalendarMgr::GetEvent: [" UI64FMTD "] not found!", eventId);
-    return NULL;
+    return nullptr;
 }
 
 uint64 CalendarMgr::GetFreeEventId()
@@ -183,38 +183,38 @@ void CalendarMgr::LoadFromDB()
 CalendarEvent* CalendarMgr::CheckPermisions(uint64 eventId, PlayerPtr player, uint64 inviteId, CalendarModerationRank minRank)
 {
     if (!player)
-        return NULL;    // CALENDAR_ERROR_INTERNAL
+        return nullptr;    // CALENDAR_ERROR_INTERNAL
 
     CalendarEvent* calendarEvent = GetEvent(eventId);
     if (!calendarEvent)
     {
         player->GetSession()->SendCalendarCommandResult(CALENDAR_ERROR_EVENT_INVALID);
-        return NULL;
+        return nullptr;
     }
 
     CalendarInvite* invite = GetInvite(inviteId);
     if (!invite)
     {
         player->GetSession()->SendCalendarCommandResult(CALENDAR_ERROR_NO_INVITE);
-        return NULL;
+        return nullptr;
     }
 
     if (!calendarEvent->HasInvite(inviteId))
     {
         player->GetSession()->SendCalendarCommandResult(CALENDAR_ERROR_NOT_INVITED);
-        return NULL;
+        return nullptr;
     }
 
     if (invite->GetEventId() != calendarEvent->GetEventId() || invite->GetInvitee() != player->GetGUID())
     {
         player->GetSession()->SendCalendarCommandResult(CALENDAR_ERROR_INTERNAL);
-        return NULL;
+        return nullptr;
     }
 
     if (invite->GetRank() < minRank)
     {
         player->GetSession()->SendCalendarCommandResult(CALENDAR_ERROR_PERMISSIONS);
-        return NULL;
+        return nullptr;
     }
 
     return calendarEvent;
@@ -355,7 +355,7 @@ void CalendarMgr::AddAction(CalendarAction const& action)
 
             CalendarInvite newInvite(GetFreeInviteId());
             newInvite.SetStatus(status);
-            newInvite.SetStatusTime(uint32(time(NULL)));
+            newInvite.SetStatusTime(uint32(time(nullptr)));
             newInvite.SetEventId(eventId);
             newInvite.SetInvitee(action.GetPlayer()->GetGUID());
             newInvite.SetSenderGUID(action.GetPlayer()->GetGUID());
@@ -370,7 +370,7 @@ void CalendarMgr::AddAction(CalendarAction const& action)
             uint64 eventId = action.Invite.GetEventId();
             uint64 inviteId = action.Invite.GetInviteId();
 
-            CalendarEvent* calendarEvent = NULL;
+            CalendarEvent* calendarEvent = nullptr;
             if (action.GetInviteId() != action.Invite.GetInviteId())
                 calendarEvent = CheckPermisions(eventId, action.GetPlayer(), action.GetInviteId(), CALENDAR_RANK_MODERATOR);
             else
@@ -390,7 +390,7 @@ void CalendarMgr::AddAction(CalendarAction const& action)
             uint64 eventId = action.Invite.GetEventId();
             uint64 inviteId = action.Invite.GetInviteId();
 
-            CalendarEvent* calendarEvent = NULL;
+            CalendarEvent* calendarEvent = nullptr;
             if (action.GetInviteId() != action.Invite.GetInviteId())
                 calendarEvent = CheckPermisions(eventId, action.GetPlayer(), action.GetInviteId(), CALENDAR_RANK_OWNER);
             else

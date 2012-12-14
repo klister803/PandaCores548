@@ -182,7 +182,7 @@ public:
         {
             timer = 0;
             phase = 0;
-            Passenger = NULL;
+            Passenger = nullptr;
             me->SetWalk(true);
         }
 

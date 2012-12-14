@@ -602,7 +602,7 @@ public:
                     if (PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID))
                         CAST_PLR(player)->CompleteQuest(QUEST_POWERING_OUR_DEFENSES);
 
-                me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                 me->RemoveCorpse();
             } else EndTimer -= diff;
 

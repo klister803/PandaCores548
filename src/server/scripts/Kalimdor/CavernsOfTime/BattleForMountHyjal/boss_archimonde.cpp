@@ -571,7 +571,7 @@ public:
                 } else SummonWispTimer -= diff;
 
                 if (WispCount >= 30)
-                    me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
             }
 
             if (Enraged)

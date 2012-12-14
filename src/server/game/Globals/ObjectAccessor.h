@@ -122,9 +122,9 @@ class ObjectAccessor
         static PlayerPtr GetObjectInWorld(uint64 guid, Player* /*typeSpecifier*/)
         {
             PlayerPtr player = HashMapHolder<Player>::Find(guid);
-            if (player != NULLPLAYER && player->IsInWorld())
+            if (player != nullptr && player->IsInWorld())
                 return player;
-            return NULLPLAYER;
+            return nullptr;
         }
 
         static UnitPtr GetObjectInWorld(uint64 guid, Unit* /*typeSpecifier*/)

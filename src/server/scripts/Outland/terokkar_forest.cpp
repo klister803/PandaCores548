@@ -99,7 +99,7 @@ public:
             {
                 if (GroupPtr group = CAST_PLR(done_by)->GetGroup())
                 {
-                    for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+                    for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
                     {
                         PlayerPtr groupie = itr->getSource();
                         if (groupie &&

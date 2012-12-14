@@ -37,23 +37,23 @@ public:
     {
         static ChatCommand goCommandTable[] =
         {
-            { "creature",       SEC_MODERATOR,      false, &HandleGoCreatureCommand,          "", NULL },
-            { "graveyard",      SEC_MODERATOR,      false, &HandleGoGraveyardCommand,         "", NULL },
-            { "grid",           SEC_MODERATOR,      false, &HandleGoGridCommand,              "", NULL },
-            { "object",         SEC_MODERATOR,      false, &HandleGoObjectCommand,            "", NULL },
-            { "taxinode",       SEC_MODERATOR,      false, &HandleGoTaxinodeCommand,          "", NULL },
-            { "trigger",        SEC_MODERATOR,      false, &HandleGoTriggerCommand,           "", NULL },
-            { "zonexy",         SEC_MODERATOR,      false, &HandleGoZoneXYCommand,            "", NULL },
-            { "xyz",            SEC_MODERATOR,      false, &HandleGoXYZCommand,               "", NULL },
-            { "ticket",         SEC_MODERATOR,      false, &HandleGoTicketCommand,            "", NULL },
-            { "",               SEC_MODERATOR,      false, &HandleGoXYZCommand,               "", NULL },
-            { NULL,             0,                  false, NULL,                              "", NULL }
+            { "creature",       SEC_MODERATOR,      false, &HandleGoCreatureCommand,          "", nullptr },
+            { "graveyard",      SEC_MODERATOR,      false, &HandleGoGraveyardCommand,         "", nullptr },
+            { "grid",           SEC_MODERATOR,      false, &HandleGoGridCommand,              "", nullptr },
+            { "object",         SEC_MODERATOR,      false, &HandleGoObjectCommand,            "", nullptr },
+            { "taxinode",       SEC_MODERATOR,      false, &HandleGoTaxinodeCommand,          "", nullptr },
+            { "trigger",        SEC_MODERATOR,      false, &HandleGoTriggerCommand,           "", nullptr },
+            { "zonexy",         SEC_MODERATOR,      false, &HandleGoZoneXYCommand,            "", nullptr },
+            { "xyz",            SEC_MODERATOR,      false, &HandleGoXYZCommand,               "", nullptr },
+            { "ticket",         SEC_MODERATOR,      false, &HandleGoTicketCommand,            "", nullptr },
+            { "",               SEC_MODERATOR,      false, &HandleGoXYZCommand,               "", nullptr },
+            { nullptr,             0,                  false, nullptr,                              "", nullptr }
         };
 
         static ChatCommand commandTable[] =
         {
-            { "go",             SEC_MODERATOR,      false, NULL,                     "", goCommandTable },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "go",             SEC_MODERATOR,      false, nullptr,                     "", goCommandTable },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
         return commandTable;
     }
@@ -88,7 +88,7 @@ public:
         {
             // Get the "creature_template.entry"
             // number or [name] Shift-click form |color|Hcreature_entry:creature_id|h[name]|h|r
-            char* tail = strtok(NULL, "");
+            char* tail = strtok(nullptr, "");
             if (!tail)
                 return false;
             char* id = handler->extractKeyFromLink(tail, "Hcreature_entry");
@@ -219,8 +219,8 @@ public:
         PlayerPtr player = handler->GetSession()->GetPlayer();
 
         char* gridX = strtok((char*)args, " ");
-        char* gridY = strtok(NULL, " ");
-        char* id = strtok(NULL, " ");
+        char* gridY = strtok(nullptr, " ");
+        char* id = strtok(nullptr, " ");
 
         if (!gridX || !gridY)
             return false;
@@ -411,8 +411,8 @@ public:
         PlayerPtr player = handler->GetSession()->GetPlayer();
 
         char* zoneX = strtok((char*)args, " ");
-        char* zoneY = strtok(NULL, " ");
-        char* tail = strtok(NULL, "");
+        char* zoneY = strtok(nullptr, " ");
+        char* tail = strtok(nullptr, "");
 
         char* id = handler->extractKeyFromLink(tail, "Harea");       // string or [name] Shift-click form |color|Harea:area_id|h[name]|h|r
 
@@ -483,10 +483,10 @@ public:
         PlayerPtr player = handler->GetSession()->GetPlayer();
 
         char* goX = strtok((char*)args, " ");
-        char* goY = strtok(NULL, " ");
-        char* goZ = strtok(NULL, " ");
-        char* id = strtok(NULL, " ");
-        char* port = strtok(NULL, " ");
+        char* goY = strtok(nullptr, " ");
+        char* goZ = strtok(nullptr, " ");
+        char* id = strtok(nullptr, " ");
+        char* port = strtok(nullptr, " ");
 
         if (!goX || !goY)
             return false;

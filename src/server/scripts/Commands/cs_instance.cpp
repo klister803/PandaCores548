@@ -38,17 +38,17 @@ public:
     {
         static ChatCommand instanceCommandTable[] =
         {
-            { "listbinds",      SEC_ADMINISTRATOR,  false,  &HandleInstanceListBindsCommand,    "", NULL },
-            { "unbind",         SEC_ADMINISTRATOR,  false,  &HandleInstanceUnbindCommand,       "", NULL },
-            { "stats",          SEC_ADMINISTRATOR,  true,   &HandleInstanceStatsCommand,        "", NULL },
-            { "savedata",       SEC_ADMINISTRATOR,  false,  &HandleInstanceSaveDataCommand,     "", NULL },
-            { NULL,             0,                  false,  NULL,                               "", NULL }
+            { "listbinds",      SEC_ADMINISTRATOR,  false,  &HandleInstanceListBindsCommand,    "", nullptr },
+            { "unbind",         SEC_ADMINISTRATOR,  false,  &HandleInstanceUnbindCommand,       "", nullptr },
+            { "stats",          SEC_ADMINISTRATOR,  true,   &HandleInstanceStatsCommand,        "", nullptr },
+            { "savedata",       SEC_ADMINISTRATOR,  false,  &HandleInstanceSaveDataCommand,     "", nullptr },
+            { nullptr,             0,                  false,  nullptr,                               "", nullptr }
         };
 
         static ChatCommand commandTable[] =
         {
-            { "instance",       SEC_ADMINISTRATOR,  true,   NULL,                               "", instanceCommandTable },
-            { NULL,             0,                  false,  NULL,                               "", NULL }
+            { "instance",       SEC_ADMINISTRATOR,  true,   nullptr,                               "", instanceCommandTable },
+            { nullptr,             0,                  false,  nullptr,                               "", nullptr }
         };
 
         return commandTable;
@@ -79,7 +79,7 @@ public:
             for (Player::BoundInstancesMap::const_iterator itr = binds.begin(); itr != binds.end(); ++itr)
             {
                 InstanceSave* save = itr->second.save;
-                std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
+                std::string timeleft = GetTimeString(save->GetResetTime() - time(nullptr));
                 handler->PSendSysMessage("map: %d inst: %d perm: %s diff: %d canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty(), save->CanReset() ? "yes" : "no", timeleft.c_str());
                 counter++;
             }
@@ -95,7 +95,7 @@ public:
                 for (Group::BoundInstancesMap::const_iterator itr = binds.begin(); itr != binds.end(); ++itr)
                 {
                     InstanceSave* save = itr->second.save;
-                    std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
+                    std::string timeleft = GetTimeString(save->GetResetTime() - time(nullptr));
                     handler->PSendSysMessage("map: %d inst: %d perm: %s diff: %d canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty(), save->CanReset() ? "yes" : "no", timeleft.c_str());
                     counter++;
                 }
@@ -116,7 +116,7 @@ public:
             player = handler->GetSession()->GetPlayer();
 
         char* map = strtok((char*)args, " ");
-        char* pDiff = strtok(NULL, " ");
+        char* pDiff = strtok(nullptr, " ");
         int8 diff = -1;
         if (pDiff)
             diff = atoi(pDiff);
@@ -138,7 +138,7 @@ public:
                 InstanceSave* save = itr->second.save;
                 if (itr->first != player->GetMapId() && (!MapId || MapId == itr->first) && (diff == -1 || diff == save->GetDifficulty()))
                 {
-                    std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
+                    std::string timeleft = GetTimeString(save->GetResetTime() - time(nullptr));
                     handler->PSendSysMessage("unbinding map: %d inst: %d perm: %s diff: %d canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no", save->GetDifficulty(), save->CanReset() ? "yes" : "no", timeleft.c_str());
                     player->UnbindInstance(itr, Difficulty(i));
                     counter++;

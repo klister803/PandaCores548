@@ -464,7 +464,7 @@ public:
                  else
                  {
                      uint32 spell = 0;
-                     GameObjectPtr pAltar = NULL;
+                     GameObjectPtr pAltar = nullptr;
                      if (toActivate == uiSladRanStatue)
                      {
                          spell = 57071;

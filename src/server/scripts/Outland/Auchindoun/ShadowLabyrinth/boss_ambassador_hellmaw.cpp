@@ -120,7 +120,7 @@ public:
                 if (instance->GetData(TYPE_HELLMAW) != FAIL)
                 {
                     DoScriptText(SAY_INTRO, me);
-                    Start(true, false, 0, NULL, false, true);
+                    Start(true, false, 0, nullptr, false, true);
                 }
 
                 instance->SetData(TYPE_HELLMAW, IN_PROGRESS);

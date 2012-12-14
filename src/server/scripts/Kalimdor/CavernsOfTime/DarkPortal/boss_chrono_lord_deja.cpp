@@ -89,7 +89,7 @@ public:
                 if (me->IsWithinDistInMap(who, 20.0f))
                 {
                     DoScriptText(SAY_BANISH, me);
-                    me->DealDamage(who, who->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    me->DealDamage(who, who->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                 }
             }
 

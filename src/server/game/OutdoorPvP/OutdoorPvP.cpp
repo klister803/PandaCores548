@@ -30,7 +30,7 @@
 #include "CellImpl.h"
 
 OPvPCapturePoint::OPvPCapturePoint(OutdoorPvP* pvp) :
-m_capturePointGUID(0), m_capturePoint(NULL), m_maxValue(0.0f), m_minValue(0.0f), m_maxSpeed(0),
+m_capturePointGUID(0), m_capturePoint(nullptr), m_maxValue(0.0f), m_minValue(0.0f), m_maxSpeed(0),
 m_value(0), m_team(TEAM_NEUTRAL), m_OldState(OBJECTIVESTATE_NEUTRAL),
 m_State(OBJECTIVESTATE_NEUTRAL), m_neutralValuePct(0), m_PvP(pvp)
 {
@@ -436,7 +436,7 @@ void OutdoorPvP::HandleKill(PlayerPtr killer, UnitPtr killed)
 {
     if (GroupPtr group = killer->GetGroup())
     {
-        for (GroupReferencePtr itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+        for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
             PlayerPtr groupGuy = itr->getSource();
 
@@ -610,5 +610,5 @@ void OutdoorPvP::OnGameObjectRemove(GameObjectPtr go)
         return;
 
     if (OPvPCapturePoint *cp = GetCapturePoint(go->GetDBTableGUIDLow()))
-        cp->m_capturePoint = NULL;
+        cp->m_capturePoint = nullptr;
 }

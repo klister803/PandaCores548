@@ -139,7 +139,7 @@ public:
             }
 
             sLog->outDebug(LOG_FILTER_TSCR, "Instance Black Temple: GetPlayerInMap, but PlayerList is empty!");
-            return NULL;
+            return nullptr;
         }
 
         void OnCreatureCreate(CreaturePtr creature)

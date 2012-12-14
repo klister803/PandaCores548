@@ -126,7 +126,7 @@ bool BattlegroundQueue::SelectionPool::AddGroup(GroupQueueInfo* ginfo, uint32 de
 /***               BATTLEGROUND QUEUES                 ***/
 /*********************************************************/
 
-// add group or player (grp == NULL) to bg queue with the given leader and bg specifications
+// add group or player (grp == nullptr) to bg queue with the given leader and bg specifications
 GroupQueueInfo* BattlegroundQueue::AddGroup(PlayerPtr leader, GroupPtr grp, BattlegroundTypeId BgTypeId, PvPDifficultyEntry const*  bracketEntry, uint8 ArenaType, bool isRated, bool isPremade, uint32 ArenaRating, uint32 MatchmakerRating, uint32 arenateamid)
 {
     BattlegroundBracketId bracketId = bracketEntry->GetBracketId();
@@ -171,7 +171,7 @@ GroupQueueInfo* BattlegroundQueue::AddGroup(PlayerPtr leader, GroupPtr grp, Batt
         //ACE_Guard<ACE_Recursive_Thread_Mutex> guard(m_Lock);
         if (grp)
         {
-            for (GroupReferencePtr itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+            for (GroupReferencePtr itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
             {
                 PlayerPtr member = itr->getSource();
                 if (!member)
@@ -883,8 +883,8 @@ void BattlegroundQueue::BattlegroundQueueUpdate(uint32 /*diff*/, BattlegroundTyp
         // 0 is on (automatic update call) and we must set it to team's with longest wait time
         if (!arenaRating)
         {
-            GroupQueueInfo* front1 = NULL;
-            GroupQueueInfo* front2 = NULL;
+            GroupQueueInfo* front1 = nullptr;
+            GroupQueueInfo* front2 = nullptr;
             if (!m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].empty())
             {
                 front1 = m_QueuedGroups[bracket_id][BG_QUEUE_PREMADE_ALLIANCE].front();
@@ -1052,7 +1052,7 @@ bool BGQueueRemoveEvent::Execute(uint64 /*e_time*/, uint32 /*p_time*/)
 
     Battleground* bg = sBattlegroundMgr->GetBattleground(m_BgInstanceGUID, m_BgTypeId);
     //battleground can be deleted already when we are removing queue info
-    //bg pointer can be NULL! so use it carefully!
+    //bg pointer can be nullptr! so use it carefully!
 
     uint32 queueSlot = player->GetBattlegroundQueueIndex(m_BgQueueTypeId);
     if (queueSlot < PLAYER_MAX_BATTLEGROUND_QUEUES)         // player is in queue, or in Battleground

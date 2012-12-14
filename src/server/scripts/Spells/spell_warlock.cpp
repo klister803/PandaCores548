@@ -69,7 +69,7 @@ class spell_warl_fear : public SpellScriptLoader
                         if (_player->HasAura(WARLOCK_GLYPH_OF_FEAR))
                         {
                             _player->CastSpell(target, WARLOCK_GLYPH_OF_FEAR_EFFECT, true);
-                            _player->AddSpellCooldown(5782, 0, time(NULL) + 5);
+                            _player->AddSpellCooldown(5782, 0, time(nullptr) + 5);
                         }
                         else
                             _player->CastSpell(target, WARLOCK_FEAR_EFFECT, true);
@@ -178,7 +178,7 @@ class spell_warl_demonic_empowerment : public SpellScriptLoader
                         {
                             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER);
                             int32 hp = int32(targetCreature->CountPctFromMaxHealth(GetCaster()->CalculateSpellDamage(targetCreature, spellInfo, 0)));
-                            targetCreature->CastCustomSpell(targetCreature, WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER, &hp, NULL, NULL, true);
+                            targetCreature->CastCustomSpell(targetCreature, WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER, &hp, nullptr, nullptr, true);
                             //unitTarget->CastSpell(unitTarget, 54441, true);
                             break;
                         }
@@ -233,7 +233,7 @@ class spell_warl_create_healthstone : public SpellScriptLoader
                 {
                     uint8 spellRank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
                     ItemPosCountVec dest;
-                    InventoryResult msg = caster->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, iTypes[spellRank - 1][0], 1, NULL);
+                    InventoryResult msg = caster->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, iTypes[spellRank - 1][0], 1, nullptr);
                     if (msg != EQUIP_ERR_OK)
                         return SPELL_FAILED_TOO_MANY_OF_ITEM;
                 }
@@ -431,7 +431,7 @@ enum LifeTap
                     if (constAuraEffectPtr aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_WARLOCK, ICON_ID_IMPROVED_LIFE_TAP, 0))
                         AddPct(mana, aurEff->GetAmount());
 
-                    caster->CastCustomSpell(target, SPELL_LIFE_TAP_ENERGIZE, &mana, NULL, NULL, false);
+                    caster->CastCustomSpell(target, SPELL_LIFE_TAP_ENERGIZE, &mana, nullptr, nullptr, false);
 
                     // Mana Feed
                     int32 manaFeedVal = 0;
@@ -441,7 +441,7 @@ enum LifeTap
                     if (manaFeedVal > 0)
                     {
                         ApplyPct(manaFeedVal, mana);
-                        caster->CastCustomSpell(caster, SPELL_LIFE_TAP_ENERGIZE_2, &manaFeedVal, NULL, NULL, true, NULL);
+                        caster->CastCustomSpell(caster, SPELL_LIFE_TAP_ENERGIZE_2, &manaFeedVal, nullptr, nullptr, true, nullptr);
                     }
                 }
             }
@@ -504,7 +504,7 @@ public:
                     multiplier += int32(aurEff->GetAmount() / 100);
 
                 mana = int32(damage * multiplier);
-                caster->CastCustomSpell(caster, 31818, &mana, NULL, NULL, false);
+                caster->CastCustomSpell(caster, 31818, &mana, nullptr, nullptr, false);
 
                 // Mana Feed
                 int32 manaFeedVal = 0;
@@ -514,7 +514,7 @@ public:
                 if (manaFeedVal > 0)
                 {
                     manaFeedVal = int32(mana * manaFeedVal / 100);
-                    caster->CastCustomSpell(caster, 32553, &manaFeedVal, NULL, NULL, true, NULL);
+                    caster->CastCustomSpell(caster, 32553, &manaFeedVal, nullptr, nullptr, true, nullptr);
                 }
             }
         }
@@ -654,7 +654,7 @@ class spell_warl_haunt : public SpellScriptLoader
                 if (UnitPtr caster = GetCaster())
                 {
                     int32 amount = aurEff->GetAmount();
-                    GetTarget()->CastCustomSpell(caster, WARLOCK_HAUNT_HEAL, &amount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
+                    GetTarget()->CastCustomSpell(caster, WARLOCK_HAUNT_HEAL, &amount, nullptr, nullptr, true, nullptr, aurEff, GetCasterGUID());
                 }
             }
 
@@ -698,7 +698,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
                     {
                         int32 damage = aurEff->GetAmount() * 9;
                         // backfire damage and silence
-                        caster->CastCustomSpell(dispelInfo->GetDispeller(), WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, NULL, NULL, true, NULL, aurEff);
+                        caster->CastCustomSpell(dispelInfo->GetDispeller(), WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, nullptr, nullptr, true, nullptr, aurEff);
                     }
             }
 
@@ -745,7 +745,7 @@ class spell_warl_curse_of_doom : public SpellScriptLoader
                     return;
 
                 if (TO_PLAYER(GetCaster())->isHonorOrXPTarget(GetTarget()))
-                    GetCaster()->CastSpell(GetTarget(), WARLOCK_CURSE_OF_DOOM_EFFECT, true, NULL, aurEff);
+                    GetCaster()->CastSpell(GetTarget(), WARLOCK_CURSE_OF_DOOM_EFFECT, true, nullptr, aurEff);
             }
 
             void Register()

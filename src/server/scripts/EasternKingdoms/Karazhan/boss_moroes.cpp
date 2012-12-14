@@ -153,7 +153,7 @@ public:
             DeSpawnAdds();
             if (isAddlistEmpty())
             {
-                CreaturePtr creature = NULL;
+                CreaturePtr creature = nullptr;
                 std::vector<uint32> AddList;
 
                 for (uint8 i = 0; i < 6; ++i)
@@ -201,7 +201,7 @@ public:
         {
             for (uint8 i = 0; i < 4; ++i)
             {
-                CreaturePtr Temp = NULL;
+                CreaturePtr Temp = nullptr;
                 if (AddGUID[i])
                 {
                     CreaturePtr temp = Creature::GetCreature(TO_WORLDOBJECT(me), AddGUID[i]);

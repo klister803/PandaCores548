@@ -354,7 +354,7 @@ public:
     {
         npc_black_knight_skeletal_gryphonAI(CreaturePtr creature) : npc_escortAI(creature)
         {
-            Start(false, true, 0, NULL);
+            Start(false, true, 0, nullptr);
         }
 
         void WaypointReached(uint32 /*waypointId*/)

@@ -729,7 +729,7 @@ class spell_powering_up : public SpellScriptLoader
                 if (UnitPtr target = GetTarget())
                 {
                     AuraPtr pAura = target->GetAura(GetId());
-                    if (pAura != NULLAURA)
+                    if (pAura != nullptr)
                     {
                         if (pAura->GetStackAmount() == 100)
                         {

@@ -37,7 +37,7 @@ void logLazyPrintf(const char* fmt, ...) {
     va_end(arg_list);
 }
 
-Log* Log::commonLog = NULL;
+Log* Log::commonLog = nullptr;
 
 Log::Log(const std::string& filename, int stripFromStackBottom) :
     stripFromStackBottom(stripFromStackBottom) {
@@ -46,7 +46,7 @@ Log::Log(const std::string& filename, int stripFromStackBottom) :
 
     logFile = FileSystem::fopen(filename.c_str(), "w");
 
-    if (logFile == NULL) {
+    if (logFile == nullptr) {
         std::string drive, base, ext;
         Array<std::string> path;
         parseFilename(filename, drive, path, base, ext);
@@ -63,7 +63,7 @@ Log::Log(const std::string& filename, int stripFromStackBottom) :
     }
 
     // Use a large buffer (although we flush in logPrintf)
-    setvbuf(logFile, NULL, _IOFBF, 2048);
+    setvbuf(logFile, nullptr, _IOFBF, 2048);
 
     fprintf(logFile, "Application Log\n");
     time_t t;
@@ -71,7 +71,7 @@ Log::Log(const std::string& filename, int stripFromStackBottom) :
     fprintf(logFile, "Start: %s\n", ctime(&t));
     fflush(logFile);
 
-    if (commonLog == NULL) {
+    if (commonLog == nullptr) {
         commonLog = this;
     }
 }
@@ -83,7 +83,7 @@ Log::~Log() {
 
     // Make sure we don't leave a dangling pointer
     if (Log::commonLog == this) {
-        Log::commonLog = NULL;
+        Log::commonLog = nullptr;
     }
 
     fclose(logFile);
@@ -96,7 +96,7 @@ FILE* Log::getFile() const {
 
 
 Log* Log::common() {
-    if (commonLog == NULL) {
+    if (commonLog == nullptr) {
         commonLog = new Log();
     }
     return commonLog;

@@ -64,7 +64,7 @@ public:
         {
             if (FlyBackTimer <= diff)
             {
-                PlayerPtr player = NULL;
+                PlayerPtr player = nullptr;
                 if (me->isSummon())
                     if (UnitPtr summoner = me->ToTempSummon()->GetSummoner())
                         if (summoner->GetTypeId() == TYPEID_PLAYER)

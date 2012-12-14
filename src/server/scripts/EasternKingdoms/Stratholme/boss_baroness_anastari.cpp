@@ -112,7 +112,7 @@ public:
             //Cast
               if (rand()%100 < 65)
             {
-            UnitPtr target = NULL;
+            UnitPtr target = nullptr;
             target = SelectUnit(SELECT_TARGET_RANDOM, 0);
             if (target)DoCast(target, SPELL_POSSESS);
             }

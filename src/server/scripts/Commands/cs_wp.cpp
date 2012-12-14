@@ -36,24 +36,24 @@ public:
     {
         static ChatCommand wpCommandTable[] =
         {
-            { "add",            SEC_GAMEMASTER,     false, &HandleWpAddCommand,                "", NULL },
-            { "event",          SEC_GAMEMASTER,     false, &HandleWpEventCommand,              "", NULL },
-            { "load",           SEC_GAMEMASTER,     false, &HandleWpLoadCommand,               "", NULL },
-            { "modify",         SEC_GAMEMASTER,     false, &HandleWpModifyCommand,             "", NULL },
-            { "unload",         SEC_GAMEMASTER,     false, &HandleWpUnLoadCommand,             "", NULL },
-            { "reload",         SEC_ADMINISTRATOR,  false, &HandleWpReloadCommand,             "", NULL },
-            { "show",           SEC_GAMEMASTER,     false, &HandleWpShowCommand,               "", NULL },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "add",            SEC_GAMEMASTER,     false, &HandleWpAddCommand,                "", nullptr },
+            { "event",          SEC_GAMEMASTER,     false, &HandleWpEventCommand,              "", nullptr },
+            { "load",           SEC_GAMEMASTER,     false, &HandleWpLoadCommand,               "", nullptr },
+            { "modify",         SEC_GAMEMASTER,     false, &HandleWpModifyCommand,             "", nullptr },
+            { "unload",         SEC_GAMEMASTER,     false, &HandleWpUnLoadCommand,             "", nullptr },
+            { "reload",         SEC_ADMINISTRATOR,  false, &HandleWpReloadCommand,             "", nullptr },
+            { "show",           SEC_GAMEMASTER,     false, &HandleWpShowCommand,               "", nullptr },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
         static ChatCommand scriptWpCommandTable[] =
         {
-            { "add",            SEC_GAMEMASTER,     false, &HandleScriptWpAddCommand,          "", NULL },
+            { "add",            SEC_GAMEMASTER,     false, &HandleScriptWpAddCommand,          "", nullptr },
         };
         static ChatCommand commandTable[] =
         {
-            { "wp",             SEC_GAMEMASTER,     false, NULL,               "",       wpCommandTable },
-            { "script_wp",      SEC_GAMEMASTER,     false, NULL,               "", scriptWpCommandTable },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "wp",             SEC_GAMEMASTER,     false, nullptr,               "",       wpCommandTable },
+            { "script_wp",      SEC_GAMEMASTER,     false, nullptr,               "", scriptWpCommandTable },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
         return commandTable;
     }
@@ -74,14 +74,14 @@ public:
     * -> adds a waypoint to the currently selected creature
     *
     *
-    * @param args if the user did not provide a GUID, it is NULL
+    * @param args if the user did not provide a GUID, it is nullptr
     *
     * @return true - command did succeed, false - something went wrong
     */
     static bool HandleWpAddCommand(ChatHandler* handler, const char* args)
     {
         // optional
-        char* path_number = NULL;
+        char* path_number = nullptr;
         uint32 pathid = 0;
 
         if (*args)
@@ -147,7 +147,7 @@ public:
             return false;
 
         // optional
-        char* path_number = NULL;
+        char* path_number = nullptr;
 
         if (*args)
             path_number = strtok((char*)args, " ");
@@ -293,7 +293,7 @@ public:
         if ((show != "add") && (show != "mod") && (show != "del") && (show != "listid"))
             return false;
 
-        char* arg_id = strtok(NULL, " ");
+        char* arg_id = strtok(nullptr, " ");
         uint32 id = 0;
 
         if (show == "add")
@@ -427,7 +427,7 @@ public:
                 return true;
             }
 
-            char* arg_2 = strtok(NULL, " ");
+            char* arg_2 = strtok(nullptr, " ");
 
             if (!arg_2)
             {
@@ -447,7 +447,7 @@ public:
 
             char* arg_3;
             std::string arg_str_2 = arg_2;
-            arg_3 = strtok(NULL, " ");
+            arg_3 = strtok(nullptr, " ");
 
             if (!arg_3)
             {
@@ -571,7 +571,7 @@ public:
         }
 
         // Next arg is: <PATHID> <WPNUM> <ARGUMENT>
-        char* arg_str = NULL;
+        char* arg_str = nullptr;
 
         // Did user provide a GUID
         // or did the user select a creature?
@@ -634,10 +634,10 @@ public:
 
         // We have the waypoint number and the GUID of the "master npc"
         // Text is enclosed in "<>", all other arguments not
-        arg_str = strtok((char*)NULL, " ");
+        arg_str = strtok((char*)nullptr, " ");
 
         // Check for argument
-        if (show != "del" && show != "move" && arg_str == NULL)
+        if (show != "del" && show != "move" && arg_str == nullptr)
         {
             handler->PSendSysMessage(LANG_WAYPOINT_ARGUMENTREQ, show_str);
             return false;
@@ -698,7 +698,7 @@ public:
                     if (!wpCreature2->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), VISUAL_WAYPOINT, 0, 0, chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), chr->GetOrientation()))
                     {
                         handler->PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, VISUAL_WAYPOINT);
-                        wpCreature2 = NULL;
+                        wpCreature2 = nullptr;
                         return false;
                     }
 
@@ -708,7 +708,7 @@ public:
                     if (!wpCreature2->LoadCreatureFromDB(wpCreature2->GetDBTableGUIDLow(), map))
                     {
                         handler->PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, VISUAL_WAYPOINT);
-                        wpCreature2 = NULL;
+                        wpCreature2 = nullptr;
                         return false;
                     }
                     //sMapMgr->GetMap(npcCreature->GetMapId())->Add(wpCreature2);
@@ -734,7 +734,7 @@ public:
         if (text == 0)
         {
             // show_str check for present in list of correct values, no sql injection possible
-            WorldDatabase.PExecute("UPDATE waypoint_data SET %s=NULL WHERE id='%u' AND point='%u'", show_str, pathid, point); // Query can't be a prepared statement
+            WorldDatabase.PExecute("UPDATE waypoint_data SET %s=nullptr WHERE id='%u' AND point='%u'", show_str, pathid, point); // Query can't be a prepared statement
         }
         else
         {
@@ -759,7 +759,7 @@ public:
             return false;
 
         // second arg: GUID (optional, if a creature is selected)
-        char* guid_str = strtok((char*)NULL, " ");
+        char* guid_str = strtok((char*)nullptr, " ");
 
         uint32 pathid = 0;
         CreaturePtr target = handler->getSelectedCreature();
@@ -1109,7 +1109,7 @@ public:
     static bool HandleScriptWpAddCommand(ChatHandler* handler, const char* args)
     {
         // optional
-        char* c_entry = NULL;
+        char* c_entry = nullptr;
         uint32 entry = 0;
         uint32 oldMax = 0;
         uint32 waitTime = 0;
@@ -1118,7 +1118,7 @@ public:
         {
             c_entry = strtok((char*)args, " ");
             
-            if (char* arg_waitTime = strtok(NULL, " "))
+            if (char* arg_waitTime = strtok(nullptr, " "))
                 waitTime = atoi(arg_waitTime);
         }
 

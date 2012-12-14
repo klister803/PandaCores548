@@ -144,12 +144,12 @@ public:
 
             //float ShortestDistance = 0;
             CrystalGUID = 0;
-            UnitPtr pCrystal = NULL;
-            UnitPtr CrystalChosen = NULL;
+            UnitPtr pCrystal = nullptr;
+            UnitPtr CrystalChosen = nullptr;
             //for (uint8 i =  0; i < CRYSTALS_NUMBER; ++i)
             for (std::list<uint64>::const_iterator itr = Crystals.begin(); itr != Crystals.end(); ++itr)
             {
-                pCrystal = NULL;
+                pCrystal = nullptr;
                 //pCrystal = Unit::GetUnit(TO_WORLDOBJECT(me), FelCrystals[i]);
                 pCrystal = Unit::GetUnit(TO_WORLDOBJECT(me), *itr);
                 if (pCrystal && pCrystal->isAlive())

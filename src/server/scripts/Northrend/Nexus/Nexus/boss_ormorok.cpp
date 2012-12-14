@@ -182,7 +182,7 @@ public:
                 CreaturePtr Crystalline_Tangler = me->SummonCreature(MOB_CRYSTALLINE_TANGLER, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000);
                 if (Crystalline_Tangler)
                 {
-                    UnitPtr target = NULL;
+                    UnitPtr target = nullptr;
                     uint8 Healer = 0;
                     for (uint8 j = 1; j <= 4; j++)
                     {

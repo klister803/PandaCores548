@@ -59,7 +59,7 @@ void OutdoorPvPMgr::InitOutdoorPvP()
 
         typeId = fields[0].GetUInt8();
 
-        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_OUTDOORPVP, typeId, NULL))
+        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_OUTDOORPVP, typeId, nullptr))
             continue;
 
         if (typeId >= MAX_OUTDOORPVP_TYPES)
@@ -91,7 +91,7 @@ void OutdoorPvPMgr::InitOutdoorPvP()
         pvp = sScriptMgr->CreateOutdoorPvP(iter->second);
         if (!pvp)
         {
-            sLog->outError(LOG_FILTER_OUTDOORPVP, "Could not initialize OutdoorPvP object for type ID %u; got NULL pointer from script.", uint32(i));
+            sLog->outError(LOG_FILTER_OUTDOORPVP, "Could not initialize OutdoorPvP object for type ID %u; got nullptr pointer from script.", uint32(i));
             continue;
         }
 
@@ -146,7 +146,7 @@ OutdoorPvP* OutdoorPvPMgr::GetOutdoorPvPToZoneId(uint32 zoneid)
     if (itr == m_OutdoorPvPMap.end())
     {
         // no handle for this zone, return
-        return NULL;
+        return nullptr;
     }
     return itr->second;
 }
@@ -178,7 +178,7 @@ ZoneScript* OutdoorPvPMgr::GetZoneScript(uint32 zoneId)
     if (itr != m_OutdoorPvPMap.end())
         return itr->second;
     else
-        return NULL;
+        return nullptr;
 }
 
 bool OutdoorPvPMgr::HandleOpenGo(PlayerPtr player, uint64 guid)

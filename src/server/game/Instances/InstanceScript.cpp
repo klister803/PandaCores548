@@ -229,7 +229,7 @@ bool InstanceScript::SetBossState(uint32 id, EncounterState state)
 std::string InstanceScript::LoadBossState(const char * data)
 {
     if (!data)
-        return NULL;
+        return nullptr;
     std::istringstream loadStream(data);
     uint32 buff;
     uint32 bossId = 0;
@@ -321,7 +321,7 @@ void InstanceScript::DoSendNotifyToInstance(char const* format, ...)
 }
 
 // Update Achievement Criteria for all players in instance
-void InstanceScript::DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, UnitPtr unit /*= NULL*/)
+void InstanceScript::DoUpdateAchievementCriteria(AchievementCriteriaTypes type, uint32 miscValue1 /*= 0*/, uint32 miscValue2 /*= 0*/, UnitPtr unit /*= nullptr*/)
 {
     Map::PlayerList const &PlayerList = instance->GetPlayers();
 
@@ -382,14 +382,14 @@ void InstanceScript::DoCastSpellOnPlayers(uint32 spell)
                 player->CastSpell(player, spell, true);
 }
 
-bool InstanceScript::CheckAchievementCriteriaMeet(uint32 criteria_id, constPlayerPtr /*source*/, constUnitPtr /*target*/ /*= NULL*/, uint32 /*miscvalue1*/ /*= 0*/)
+bool InstanceScript::CheckAchievementCriteriaMeet(uint32 criteria_id, constPlayerPtr /*source*/, constUnitPtr /*target*/ /*= nullptr*/, uint32 /*miscvalue1*/ /*= 0*/)
 {
     sLog->outError(LOG_FILTER_GENERAL, "Achievement system call InstanceScript::CheckAchievementCriteriaMeet but instance script for map %u not have implementation for achievement criteria %u",
         instance->GetId(), criteria_id);
     return false;
 }
 
-void InstanceScript::SendEncounterUnit(uint32 type, UnitPtr unit /*= NULL*/, uint8 param1 /*= 0*/, uint8 param2 /*= 0*/)
+void InstanceScript::SendEncounterUnit(uint32 type, UnitPtr unit /*= nullptr*/, uint8 param1 /*= 0*/, uint8 param2 /*= 0*/)
 {
     // size of this packet is at most 15 (usually less)
     WorldPacket data(SMSG_UPDATE_INSTANCE_ENCOUNTER_UNIT, 15);

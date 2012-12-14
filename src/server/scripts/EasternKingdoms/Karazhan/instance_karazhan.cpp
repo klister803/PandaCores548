@@ -142,7 +142,7 @@ public:
                 case TYPE_OPERA:
                     m_auiEncounter[4] = uiData;
                     if (uiData == DONE)
-                        UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, 16812, NULL);
+                        UpdateEncounterState(ENCOUNTER_CREDIT_KILL_CREATURE, 16812, nullptr);
                     break;
                 case TYPE_CURATOR:              m_auiEncounter[5] = uiData; break;
                 case TYPE_ARAN:                 m_auiEncounter[6] = uiData; break;

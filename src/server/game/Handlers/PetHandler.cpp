@@ -91,7 +91,7 @@ void WorldSession::HandlePetAction(WorldPacket & recvData)
 
     if (!pet->isAlive())
     {
-        SpellInfo const* spell = (flag == ACT_ENABLED || flag == ACT_PASSIVE) ? sSpellMgr->GetSpellInfo(spellid) : NULL;
+        SpellInfo const* spell = (flag == ACT_ENABLED || flag == ACT_PASSIVE) ? sSpellMgr->GetSpellInfo(spellid) : nullptr;
         if (!spell)
             return;
         if (!(spell->Attributes & SPELL_ATTR0_CASTABLE_WHILE_DEAD))
@@ -301,7 +301,7 @@ void WorldSession::HandlePetActionHelper(UnitPtr pet, uint64 guid1, uint16 spell
         case ACT_PASSIVE:                                   // 0x01
         case ACT_ENABLED:                                   // 0xC1    spell
         {
-            UnitPtr unit_target = NULL;
+            UnitPtr unit_target = nullptr;
 
             if (guid2)
                 unit_target = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(_player), guid2);
@@ -628,13 +628,13 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
     PetNameInvalidReason res = ObjectMgr::CheckPetName(name);
     if (res != PET_NAME_SUCCESS)
     {
-        SendPetNameInvalid(res, name, NULL);
+        SendPetNameInvalid(res, name, nullptr);
         return;
     }
 
     if (sObjectMgr->IsReservedName(name))
     {
-        SendPetNameInvalid(PET_NAME_RESERVED, name, NULL);
+        SendPetNameInvalid(PET_NAME_RESERVED, name, nullptr);
         return;
     }
 
@@ -686,7 +686,7 @@ void WorldSession::HandlePetRename(WorldPacket & recvData)
 
     CharacterDatabase.CommitTransaction(trans);
 
-    pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(NULL))); // cast can't be helped
+    pet->SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(nullptr))); // cast can't be helped
 }
 
 void WorldSession::HandlePetAbandon(WorldPacket & recvData)
@@ -809,7 +809,7 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     if (caster->m_movedPlayer)
         result = spell->CheckPetCast(caster->m_movedPlayer->GetSelectedUnit());
     else
-        result = spell->CheckPetCast(NULL);
+        result = spell->CheckPetCast(nullptr);
     if (result == SPELL_CAST_OK)
     {
         if (caster->GetTypeId() == TYPEID_UNIT)

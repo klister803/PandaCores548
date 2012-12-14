@@ -590,7 +590,7 @@ public:
                         if (instance)
                             instance->HandleGameObject(instance->GetData64(DATA_GO_SKY_FLOOR), true);
                         if (CreaturePtr temp = Unit::GetCreature(TO_WORLDOBJECT(me), uiControllerGUID))
-                            temp->DealDamage(temp, temp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                            temp->DealDamage(temp, temp->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                         bIsBattle = true;
                         SetEscortPaused(false);
                         JumpToNextStep(6500);

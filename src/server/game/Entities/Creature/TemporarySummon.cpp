@@ -32,7 +32,7 @@ m_timer(0), m_lifetime(0)
 
 UnitPtr TempSummon::GetSummoner() const
 {
-    return m_summonerGUID ? ObjectAccessor::GetUnit(THIS_CONST_WORLDOBJECT, m_summonerGUID) : NULL;
+    return m_summonerGUID ? ObjectAccessor::GetUnit(THIS_CONST_WORLDOBJECT, m_summonerGUID) : nullptr;
 }
 
 void TempSummon::Update(uint32 diff)
@@ -380,6 +380,6 @@ void Puppet::RemoveFromWorld()
     if (!IsInWorld())
         return;
 
-    RemoveCharmedBy(NULL);
+    RemoveCharmedBy(nullptr);
     Minion::RemoveFromWorld();
 }

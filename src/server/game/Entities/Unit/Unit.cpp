@@ -3122,13 +3122,13 @@ AuraPtr Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uin
 
         // find current aura from spell and change it's stackamount, or refresh it's duration
         AuraPtr foundAura = GetOwnedAura(newAura->Id, casterGUID, (newAura->AttributesCu & SPELL_ATTR0_CU_ENCHANT_PROC) ? castItemGUID : 0, 0);
-        if (foundAura != NULLAURA)
+        if (foundAura != nullptr)
         {
             // effect masks do not match
             // extremely rare case
             // let's just recreate aura
             if (effMask != foundAura->GetEffectMask())
-                return NULLAURA;
+                return nullptr;
 
             // update basepoints with new values - effect amount will be recalculated in ModStackAmount
             for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
@@ -3159,7 +3159,7 @@ AuraPtr Unit::_TryStackingOrRefreshingExistingAura(SpellInfo const* newAura, uin
         }
     }
 
-    return NULLAURA;
+    return nullptr;
 }
 
 void Unit::_AddAura(UnitAuraPtr aura, UnitPtr caster)
@@ -3212,7 +3212,7 @@ AuraApplicationPtr Unit::_CreateAuraApplication(AuraPtr aura, uint32 effMask)
     // ghost spell check, allow apply any auras at player loading in ghost mode (will be cleanup after load)
     if (!isAlive() && !aurSpellInfo->IsDeathPersistent() &&
         (GetTypeId() != TYPEID_PLAYER || !THIS_PLAYER->GetSession()->PlayerLoading()))
-        return NULLAURA_APPLICATION;
+        return nullptr;
 
     UnitPtr caster = aura->GetCaster();
 
@@ -3469,7 +3469,7 @@ AuraPtr Unit::GetOwnedAura(uint32 spellId, uint64 casterGUID, uint64 itemCasterG
     for (AuraMap::const_iterator itr = m_ownedAuras.lower_bound(spellId); itr != m_ownedAuras.upper_bound(spellId); ++itr)
         if (((itr->second->GetEffectMask() & reqEffMask) == reqEffMask) && (!casterGUID || itr->second->GetCasterGUID() == casterGUID) && (!itemCasterGUID || itr->second->GetCastItemGUID() == itemCasterGUID) && (!except || except != itr->second))
             return itr->second;
-    return NULLAURA;
+    return nullptr;
 }
 
 void Unit::RemoveAura(AuraApplicationMap::iterator &i, AuraRemoveMode mode)
@@ -3634,7 +3634,7 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, UnitP
             uint32 dur = std::min(2u * MINUTE * IN_MILLISECONDS, uint32(aura->GetDuration()));
 
             AuraPtr oldAura = stealer->GetAura(aura->GetId(), aura->GetCasterGUID());
-            if (oldAura != NULLAURA)
+            if (oldAura != nullptr)
             {
                 if (stealCharge)
                     oldAura->ModCharges(1);
@@ -3649,7 +3649,7 @@ void Unit::RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, UnitP
                     aura->UnregisterSingleTarget();
 
                 AuraPtr newAura = Aura::TryRefreshStackOrCreate(aura->GetSpellInfo(), effMask, stealer, NULL, aura->GetSpellInfo()->spellPower, &baseDamage[0], NULL, aura->GetCasterGUID());
-                if (newAura != NULLAURA)
+                if (newAura != nullptr)
                 {
                     // created aura must not be single target aura,, so stealer won't loose it on recast
                     if (newAura->IsSingleTarget())
@@ -4057,13 +4057,13 @@ AuraApplicationPtr Unit::GetAuraApplication(uint32 spellId, uint64 casterGUID, u
         if (((aura->GetEffectMask() & reqEffMask) == reqEffMask) && (!casterGUID || aura->GetCasterGUID() == casterGUID) && (!itemCasterGUID || aura->GetCastItemGUID() == itemCasterGUID) && (!except || except != itr->second))
             return itr->second;
     }
-    return NULLAURA_APPLICATION;
+    return nullptr;
 }
 
 AuraPtr Unit::GetAura(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint32 reqEffMask) const
 {
     AuraApplicationPtr aurApp = GetAuraApplication(spellId, casterGUID, itemCasterGUID, reqEffMask);
-    return aurApp ? aurApp->GetBase() : NULLAURA;
+    return aurApp ? aurApp->GetBase() : nullptr;
 }
 
 AuraApplicationPtr Unit::GetAuraApplicationOfRankedSpell(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint32 reqEffMask, AuraApplicationPtr except) const
@@ -4081,7 +4081,7 @@ AuraApplicationPtr Unit::GetAuraApplicationOfRankedSpell(uint32 spellId, uint64 
 AuraPtr Unit::GetAuraOfRankedSpell(uint32 spellId, uint64 casterGUID, uint64 itemCasterGUID, uint32 reqEffMask) const
 {
     AuraApplicationPtr aurApp = GetAuraApplicationOfRankedSpell(spellId, casterGUID, itemCasterGUID, reqEffMask);
-    return aurApp ? aurApp->GetBase() : NULLAURA;
+    return aurApp ? aurApp->GetBase() : nullptr;
 }
 
 void Unit::GetDispellableAuraList(UnitPtr caster, uint32 dispelMask, DispelChargesList& dispelList)
@@ -6440,7 +6440,7 @@ bool Unit::HandleDummyAuraProc(UnitPtr victim, uint32 damage, AuraEffectPtr trig
                     // "refresh your Slice and Dice duration to its 5 combo point maximum"
                     // lookup Slice and Dice
                     AuraPtr aur = GetAura(5171);
-                    if (aur != NULLAURA)
+                    if (aur != nullptr)
                     {
                         aur->SetDuration(aur->GetSpellInfo()->GetMaxDuration(), true);
                         return true;
@@ -6615,7 +6615,7 @@ bool Unit::HandleDummyAuraProc(UnitPtr victim, uint32 damage, AuraEffectPtr trig
 
                     // On target with 5 stacks of Censure direct damage is done
                     AuraPtr aur = victim->GetAura(triggered_spell_id, GetGUID());
-                    if (aur != NULLAURA)
+                    if (aur != nullptr)
                     {
                         if (aur->GetStackAmount() == 5)
                         {
@@ -11772,7 +11772,7 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
         if (dVal < 0)
         {
             AuraPtr tigereyeBrew = THIS_UNIT->GetAura(123980);
-            if (tigereyeBrew != NULLAURA)
+            if (tigereyeBrew != nullptr)
                 tigereyeBrew->SetScriptData(0, -dVal);
         }
 
@@ -15132,7 +15132,7 @@ bool Unit::HandleAuraRaidProcFromChargeWithValue(AuraEffectPtr triggeredByAura)
             {
                 CastCustomSpell(target, spellProto->Id, &heal, NULL, NULL, true, NULL, triggeredByAura, caster_guid);
                 AuraPtr aura = target->GetAura(spellProto->Id, caster->GetGUID());
-                if (aura != NULLAURA)
+                if (aura != nullptr)
                     aura->SetCharges(jumps);
             }
         }
@@ -15184,7 +15184,7 @@ bool Unit::HandleAuraRaidProcFromCharge(AuraEffectPtr triggeredByAura)
             {
                 CastSpell(target, spellProto, true, NULL, triggeredByAura, caster_guid);
                 AuraPtr aura = target->GetAura(spellProto->Id, caster->GetGUID());
-                if (aura != NULLAURA)
+                if (aura != nullptr)
                     aura->SetCharges(jumps);
             }
         }
@@ -16199,14 +16199,14 @@ void Unit::GetPartyMembers(std::list<UnitPtr> &TagUnitMap)
 AuraPtr Unit::AddAura(uint32 spellId, UnitPtr target)
 {
     if (!target)
-        return NULLAURA;
+        return nullptr;
 
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId);
     if (!spellInfo)
-        return NULLAURA;
+        return nullptr;
 
     if (!target->isAlive() && !(spellInfo->Attributes & SPELL_ATTR0_PASSIVE) && !(spellInfo->AttributesEx2 & SPELL_ATTR2_CAN_TARGET_DEAD))
-        return NULLAURA;
+        return nullptr;
 
     return AddAura(spellInfo, MAX_EFFECT_MASK, target);
 }
@@ -16214,10 +16214,10 @@ AuraPtr Unit::AddAura(uint32 spellId, UnitPtr target)
 AuraPtr Unit::AddAura(SpellInfo const* spellInfo, uint32 effMask, UnitPtr target)
 {
     if (!spellInfo)
-        return NULLAURA;
+        return nullptr;
 
     if (target->IsImmunedToSpell(spellInfo))
-        return NULLAURA;
+        return nullptr;
 
     for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
@@ -16228,12 +16228,12 @@ AuraPtr Unit::AddAura(SpellInfo const* spellInfo, uint32 effMask, UnitPtr target
     }
 
     AuraPtr aura = Aura::TryRefreshStackOrCreate(spellInfo, effMask, target, THIS_UNIT, spellInfo->spellPower);
-    if (aura != NULLAURA)
+    if (aura != nullptr)
     {
         aura->ApplyForTargets();
         return aura;
     }
-    return NULLAURA;
+    return nullptr;
 }
 
 void Unit::SetAuraStack(uint32 spellId, UnitPtr target, uint32 stack)

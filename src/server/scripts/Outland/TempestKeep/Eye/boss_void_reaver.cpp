@@ -119,7 +119,7 @@ class boss_void_reaver : public CreatureScript
                 // Arcane Orb
                 if (ArcaneOrb_Timer <= diff)
                 {
-                    UnitPtr target = NULL;
+                    UnitPtr target = nullptr;
                     std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
                     std::vector<UnitPtr> target_list;
                     for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
@@ -130,7 +130,7 @@ class boss_void_reaver : public CreatureScript
                         // exclude pets & totems, 18 yard radius minimum
                         if (target->GetTypeId() == TYPEID_PLAYER && target->isAlive() && !target->IsWithinDist(me, 18, false))
                             target_list.push_back(target);
-                        target = NULL;
+                        target = nullptr;
                     }
 
                     if (!target_list.empty())
@@ -139,7 +139,7 @@ class boss_void_reaver : public CreatureScript
                         target = me->getVictim();
 
                     if (target)
-                        me->CastSpell(target, SPELL_ARCANE_ORB, false, NULL, NULL, 0);
+                        me->CastSpell(target, SPELL_ARCANE_ORB, false, nullptr, nullptr, 0);
                     ArcaneOrb_Timer = 3000;
                 }
                 else

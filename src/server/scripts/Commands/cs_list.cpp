@@ -37,16 +37,16 @@ public:
     {
         static ChatCommand listCommandTable[] =
         {
-            { "creature",       SEC_ADMINISTRATOR,  true,  &HandleListCreatureCommand,          "", NULL },
-            { "item",           SEC_ADMINISTRATOR,  true,  &HandleListItemCommand,              "", NULL },
-            { "object",         SEC_ADMINISTRATOR,  true,  &HandleListObjectCommand,            "", NULL },
-            { "auras",          SEC_ADMINISTRATOR,  false, &HandleListAurasCommand,             "", NULL },
-            { NULL,             0,                  false, NULL,                                "", NULL }
+            { "creature",       SEC_ADMINISTRATOR,  true,  &HandleListCreatureCommand,          "", nullptr },
+            { "item",           SEC_ADMINISTRATOR,  true,  &HandleListItemCommand,              "", nullptr },
+            { "object",         SEC_ADMINISTRATOR,  true,  &HandleListObjectCommand,            "", nullptr },
+            { "auras",          SEC_ADMINISTRATOR,  false, &HandleListAurasCommand,             "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "list",          SEC_ADMINISTRATOR,   true, NULL,                                 "", listCommandTable },
-            { NULL,            0,                   false, NULL,                                "", NULL }
+            { "list",          SEC_ADMINISTRATOR,   true, nullptr,                                 "", listCommandTable },
+            { nullptr,            0,                   false, nullptr,                                "", nullptr }
         };
         return commandTable;
     }
@@ -77,7 +77,7 @@ public:
             return false;
         }
 
-        char* countStr = strtok(NULL, " ");
+        char* countStr = strtok(nullptr, " ");
         uint32 count = countStr ? atol(countStr) : 10;
 
         if (count == 0)
@@ -149,7 +149,7 @@ public:
             return false;
         }
 
-        char* countStr = strtok(NULL, " ");
+        char* countStr = strtok(nullptr, " ");
         uint32 count = countStr ? atol(countStr) : 10;
 
         if (count == 0)
@@ -224,7 +224,7 @@ public:
             result = CharacterDatabase.Query(stmt);
         }
         else
-            result = PreparedQueryResult(NULL);
+            result = PreparedQueryResult(nullptr);
 
         if (result)
         {
@@ -271,7 +271,7 @@ public:
             result = CharacterDatabase.Query(stmt);
         }
         else
-            result = PreparedQueryResult(NULL);
+            result = PreparedQueryResult(nullptr);
 
         if (result)
         {
@@ -366,7 +366,7 @@ public:
             return false;
         }
 
-        char* countStr = strtok(NULL, " ");
+        char* countStr = strtok(nullptr, " ");
         uint32 count = countStr ? atol(countStr) : 10;
 
         if (count == 0)

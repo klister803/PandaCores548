@@ -110,7 +110,7 @@ public:
     struct netherspite_infernalAI : public ScriptedAI
     {
         netherspite_infernalAI(CreaturePtr creature) : ScriptedAI(creature),
-            HellfireTimer(0), CleanupTimer(0), malchezaar(0), point(NULL) {}
+            HellfireTimer(0), CleanupTimer(0), malchezaar(0), point(nullptr) {}
 
         uint32 HellfireTimer;
         uint32 CleanupTimer;
@@ -358,7 +358,7 @@ public:
 
         void SummonInfernal(const uint32 /*diff*/)
         {
-            InfernalPoint *point = NULL;
+            InfernalPoint *point = nullptr;
             Position pos;
             if ((me->GetMapId() != 532) || positions.empty())
                 me->GetRandomNearPosition(pos, 60);
@@ -541,7 +541,7 @@ public:
             {
                 if (SWPainTimer <= diff)
                 {
-                    UnitPtr target = NULL;
+                    UnitPtr target = nullptr;
                     if (phase == 1)
                         target = me->getVictim();        // the tank
                     else                                          // anyone but the tank

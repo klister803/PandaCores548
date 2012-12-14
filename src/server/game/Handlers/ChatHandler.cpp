@@ -218,7 +218,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
 
             if (!sender->CanSpeak())
             {
-                std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
+                std::string timeStr = secsToTimeString(m_muteTime - time(nullptr));
                 SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING), timeStr.c_str());
                 recvData.rfinish(); // Prevent warnings
                 return;
@@ -367,7 +367,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, group);
 
             WorldPacket data;
-            ChatHandler::FillMessageData(&data, this, uint8(type), lang, NULL, 0, msg.c_str(), NULL);
+            ChatHandler::FillMessageData(&data, this, uint8(type), lang, nullptr, 0, msg.c_str(), nullptr);
             group->BroadcastPacket(&data, false, group->GetMemberGroup(GetPlayer()->GetGUID()));
         } break;
         case CHAT_MSG_GUILD:
@@ -412,7 +412,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, group);
 
             WorldPacket data;
-            ChatHandler::FillMessageData(&data, this, uint8(type), lang, "", 0, msg.c_str(), NULL);
+            ChatHandler::FillMessageData(&data, this, uint8(type), lang, "", 0, msg.c_str(), nullptr);
             group->BroadcastPacket(&data, false);
         } break;
         case CHAT_MSG_RAID_WARNING:
@@ -425,7 +425,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
 
             WorldPacket data;
             //in battleground, raid warning is sent only to players in battleground - code is ok
-            ChatHandler::FillMessageData(&data, this, CHAT_MSG_RAID_WARNING, lang, "", 0, msg.c_str(), NULL);
+            ChatHandler::FillMessageData(&data, this, CHAT_MSG_RAID_WARNING, lang, "", 0, msg.c_str(), nullptr);
             group->BroadcastPacket(&data, false);
         } break;
         case CHAT_MSG_BATTLEGROUND:
@@ -442,7 +442,7 @@ void WorldSession::HandleMessagechatOpcode(WorldPacket& recvData)
             sScriptMgr->OnPlayerChat(GetPlayer(), type, lang, msg, group);
 
             WorldPacket data;
-            ChatHandler::FillMessageData(&data, this, uint8(type), lang, "", 0, msg.c_str(), NULL);
+            ChatHandler::FillMessageData(&data, this, uint8(type), lang, "", 0, msg.c_str(), nullptr);
             group->BroadcastPacket(&data, false);
         } break;
         case CHAT_MSG_CHANNEL:
@@ -602,7 +602,7 @@ void WorldSession::HandleAddonMessagechatOpcode(WorldPacket& recvData)
                 return;
 
             WorldPacket data;
-            ChatHandler::FillMessageData(&data, this, type, LANG_ADDON, "", 0, message.c_str(), NULL);
+            ChatHandler::FillMessageData(&data, this, type, LANG_ADDON, "", 0, message.c_str(), nullptr);
             group->BroadcastAddonMessagePacket(&data, prefix, false);
             break;
         }
@@ -635,7 +635,7 @@ void WorldSession::HandleAddonMessagechatOpcode(WorldPacket& recvData)
                 break;
 
             WorldPacket data;
-            ChatHandler::FillMessageData(&data, this, type, LANG_ADDON, "", 0, message.c_str(), NULL, prefix.c_str());
+            ChatHandler::FillMessageData(&data, this, type, LANG_ADDON, "", 0, message.c_str(), nullptr, prefix.c_str());
             group->BroadcastAddonMessagePacket(&data, prefix, true, -1, group->GetMemberGroup(sender->GetGUID()));
             break;
         }
@@ -668,7 +668,7 @@ namespace Trinity
 
             void operator()(WorldPacket& data, LocaleConstant loc_idx)
             {
-                char const* nam = i_target ? i_target->GetNameForLocaleIdx(loc_idx) : NULL;
+                char const* nam = i_target ? i_target->GetNameForLocaleIdx(loc_idx) : nullptr;
                 uint32 namlen = (nam ? strlen(nam) : 0) + 1;
 
                 data.Initialize(SMSG_TEXT_EMOTE, (20+namlen));
@@ -697,7 +697,7 @@ void WorldSession::HandleTextEmoteOpcode(WorldPacket & recvData)
 
     if (!GetPlayer()->CanSpeak())
     {
-        std::string timeStr = secsToTimeString(m_muteTime - time(NULL));
+        std::string timeStr = secsToTimeString(m_muteTime - time(nullptr));
         SendNotification(GetTrinityString(LANG_WAIT_BEFORE_SPEAKING), timeStr.c_str());
         return;
     }
@@ -781,7 +781,7 @@ void WorldSession::HandleChatIgnoredOpcode(WorldPacket& recvData)
         return;
 
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, this, CHAT_MSG_IGNORED, LANG_UNIVERSAL, NULL, GetPlayer()->GetGUID(), GetPlayer()->GetName(), NULL);
+    ChatHandler::FillMessageData(&data, this, CHAT_MSG_IGNORED, LANG_UNIVERSAL, nullptr, GetPlayer()->GetGUID(), GetPlayer()->GetName(), nullptr);
     player->GetSession()->SendPacket(&data);
 }
 

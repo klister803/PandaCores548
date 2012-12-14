@@ -128,7 +128,7 @@ public:
 
         void EnterCombat(UnitPtr /*who*/)
         {
-            DoScriptText(SAY_AGGRO1, me, NULL);
+            DoScriptText(SAY_AGGRO1, me, nullptr);
         }
 
         void JustSummoned(CreaturePtr summoned)

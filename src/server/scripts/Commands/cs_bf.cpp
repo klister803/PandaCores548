@@ -35,17 +35,17 @@ public:
     {
         static ChatCommand battlefieldcommandTable[] =
         {
-            { "start",          SEC_ADMINISTRATOR,  false, &HandleBattlefieldStart,            "", NULL },
-            { "stop",           SEC_ADMINISTRATOR,  false, &HandleBattlefieldEnd,              "", NULL },
-            { "switch",         SEC_ADMINISTRATOR,  false, &HandleBattlefieldSwitch,           "", NULL },
-            { "timer",          SEC_ADMINISTRATOR,  false, &HandleBattlefieldTimer,            "", NULL },
-            { "enable",         SEC_ADMINISTRATOR,  false, &HandleBattlefieldEnable,           "", NULL },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "start",          SEC_ADMINISTRATOR,  false, &HandleBattlefieldStart,            "", nullptr },
+            { "stop",           SEC_ADMINISTRATOR,  false, &HandleBattlefieldEnd,              "", nullptr },
+            { "switch",         SEC_ADMINISTRATOR,  false, &HandleBattlefieldSwitch,           "", nullptr },
+            { "timer",          SEC_ADMINISTRATOR,  false, &HandleBattlefieldTimer,            "", nullptr },
+            { "enable",         SEC_ADMINISTRATOR,  false, &HandleBattlefieldEnable,           "", nullptr },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "bf",             SEC_ADMINISTRATOR,  false, NULL,            "", battlefieldcommandTable },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "bf",             SEC_ADMINISTRATOR,  false, nullptr,            "", battlefieldcommandTable },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
         return commandTable;
     }
@@ -152,7 +152,7 @@ public:
         char* battleid_str = strtok((char*)args, " ");
         if (!battleid_str)
             return false;
-        char* time_str = strtok(NULL, " ");
+        char* time_str = strtok(nullptr, " ");
         if (!time_str)
             return false;
 

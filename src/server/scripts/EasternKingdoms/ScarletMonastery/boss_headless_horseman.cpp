@@ -525,11 +525,11 @@ public:
         {
             MapPtr map = me->GetMap();
             if (!map->IsDungeon())
-                return NULL;
+                return nullptr;
 
             Map::PlayerList const &PlayerList = map->GetPlayers();
             if (PlayerList.isEmpty())
-                return NULL;
+                return nullptr;
 
             std::list<PlayerPtr> temp;
             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
@@ -543,7 +543,7 @@ public:
                 advance(j, rand()%temp.size());
                 return (*j);
             }
-            return NULL;
+            return nullptr;
         }
 
         void SpellHitTarget(UnitPtr unit, const SpellInfo* spell)

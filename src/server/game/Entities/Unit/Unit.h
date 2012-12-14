@@ -1621,16 +1621,16 @@ class Unit : public WorldObject
         void EnergizeBySpell(UnitPtr victim, uint32 SpellID, int32 Damage, Powers powertype);
         uint32 SpellNonMeleeDamageLog(UnitPtr victim, uint32 spellID, uint32 damage);
 
-        void CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags = TRIGGERED_NONE, ItemPtr castItem = NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
-        void CastSpell(UnitPtr victim, uint32 spellId, bool triggered, ItemPtr castItem = NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
-        void CastSpell(UnitPtr victim, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, ItemPtr castItem = NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
-        void CastSpell(UnitPtr victim, SpellInfo const* spellInfo, bool triggered, ItemPtr castItem= NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
-        void CastSpell(UnitPtr victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags = TRIGGERED_NONE, ItemPtr castItem= NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
-        void CastSpell(float x, float y, float z, uint32 spellId, bool triggered, ItemPtr castItem = NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
-        void CastCustomSpell(UnitPtr Victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, ItemPtr castItem= NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
-        void CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, UnitPtr Victim = NULL, bool triggered = true, ItemPtr castItem = NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
-        void CastCustomSpell(uint32 spellId, CustomSpellValues const &value, UnitPtr Victim = NULL, bool triggered = true, ItemPtr castItem = NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
-        void CastSpell(GameObjectPtr go, uint32 spellId, bool triggered, ItemPtr castItem = NULL, AuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
+        void CastSpell(SpellCastTargets const& targets, SpellInfo const* spellInfo, CustomSpellValues const* value, TriggerCastFlags triggerFlags = TRIGGERED_NONE, ItemPtr castItem = NULL, constAuraEffectPtr triggeredByAura = nullptr, uint64 originalCaster = 0);
+        void CastSpell(UnitPtr victim, uint32 spellId, bool triggered, ItemPtr castItem = NULL, constAuraEffectPtr triggeredByAura = nullptr, uint64 originalCaster = 0);
+        void CastSpell(UnitPtr victim, uint32 spellId, TriggerCastFlags triggerFlags = TRIGGERED_NONE, ItemPtr castItem = NULL, constAuraEffectPtr triggeredByAura = nullptr, uint64 originalCaster = 0);
+        void CastSpell(UnitPtr victim, SpellInfo const* spellInfo, bool triggered, ItemPtr castItem= NULL, constAuraEffectPtr triggeredByAura = nullptr, uint64 originalCaster = 0);
+        void CastSpell(UnitPtr victim, SpellInfo const* spellInfo, TriggerCastFlags triggerFlags = TRIGGERED_NONE, ItemPtr castItem= NULL, constAuraEffectPtr triggeredByAura = nullptr, uint64 originalCaster = 0);
+        void CastSpell(float x, float y, float z, uint32 spellId, bool triggered, ItemPtr castItem = NULL, constAuraEffectPtr triggeredByAura = nullptr, uint64 originalCaster = 0);
+        void CastCustomSpell(UnitPtr Victim, uint32 spellId, int32 const* bp0, int32 const* bp1, int32 const* bp2, bool triggered, ItemPtr castItem= NULL, constAuraEffectPtr triggeredByAura = nullptr, uint64 originalCaster = 0);
+        void CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, UnitPtr Victim = NULL, bool triggered = true, ItemPtr castItem = NULL, constAuraEffectPtr triggeredByAura = nullptr, uint64 originalCaster = 0);
+        void CastCustomSpell(uint32 spellId, CustomSpellValues const &value, UnitPtr Victim = NULL, bool triggered = true, ItemPtr castItem = NULL, constAuraEffectPtr triggeredByAura = nullptr, uint64 originalCaster = 0);
+        void CastSpell(GameObjectPtr go, uint32 spellId, bool triggered, ItemPtr castItem = NULL, AuraEffectPtr triggeredByAura = nullptr, uint64 originalCaster = 0);
         AuraPtr AddAura(uint32 spellId, UnitPtr target);
         AuraPtr AddAura(SpellInfo const* spellInfo, uint32 effMask, UnitPtr target);
         void SetAuraStack(uint32 spellId, UnitPtr target, uint32 stack);
@@ -1805,7 +1805,7 @@ class Unit : public WorldObject
         void RemoveOwnedAura(uint32 spellId, uint64 casterGUID = 0, uint32 reqEffMask = 0, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
         void RemoveOwnedAura(AuraPtr aura, AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
 
-        AuraPtr GetOwnedAura(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0, AuraPtr except = NULLAURA) const;
+        AuraPtr GetOwnedAura(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0, AuraPtr except = nullptr) const;
 
         // m_appliedAuras container management
         AuraApplicationMap      & GetAppliedAuras()       { return m_appliedAuras; }
@@ -1821,7 +1821,7 @@ class Unit : public WorldObject
         void RemoveAurasDueToSpellByDispel(uint32 spellId, uint32 dispellerSpellId, uint64 casterGUID, UnitPtr dispeller, uint8 chargesRemoved = 1);
         void RemoveAurasDueToSpellBySteal(uint32 spellId, uint64 casterGUID, UnitPtr stealer);
         void RemoveAurasDueToItemSpell(ItemPtr castItem, uint32 spellId);
-        void RemoveAurasByType(AuraType auraType, uint64 casterGUID = 0, AuraPtr except = NULLAURA, bool negative = true, bool positive = true);
+        void RemoveAurasByType(AuraType auraType, uint64 casterGUID = 0, AuraPtr except = nullptr, bool negative = true, bool positive = true);
         void RemoveNotOwnSingleTargetAuras(uint32 newPhase = 0x0);
         void RemoveAurasWithInterruptFlags(uint32 flag, uint32 except = 0);
         void RemoveAurasWithAttribute(uint32 flags);
@@ -1850,10 +1850,10 @@ class Unit : public WorldObject
         AuraEffectPtr GetAuraEffect(AuraType type, SpellFamilyNames family, uint32 familyFlag1, uint32 familyFlag2, uint32 familyFlag3, uint64 casterGUID =0);
         inline AuraEffectPtr GetDummyAuraEffect(SpellFamilyNames name, uint32 iconId, uint32 effIndex) const { return GetAuraEffect(SPELL_AURA_DUMMY, name, iconId, effIndex);}
 
-        AuraApplicationPtr GetAuraApplication(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0, AuraApplicationPtr except = NULLAURA_APPLICATION) const;
+        AuraApplicationPtr GetAuraApplication(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0, AuraApplicationPtr except = nullptr) const;
         AuraPtr GetAura(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0) const;
 
-        AuraApplicationPtr GetAuraApplicationOfRankedSpell(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0, AuraApplicationPtr except = NULLAURA_APPLICATION) const;
+        AuraApplicationPtr GetAuraApplicationOfRankedSpell(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0, AuraApplicationPtr except = nullptr) const;
         AuraPtr GetAuraOfRankedSpell(uint32 spellId, uint64 casterGUID = 0, uint64 itemCasterGUID = 0, uint32 reqEffMask = 0) const;
 
         void GetDispellableAuraList(UnitPtr caster, uint32 dispelMask, DispelChargesList& dispelList);
@@ -1881,7 +1881,7 @@ class Unit : public WorldObject
 
         int32 GetTotalAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const;
         float GetTotalAuraMultiplierByMiscMask(AuraType auratype, uint32 misc_mask) const;
-        int32 GetMaxPositiveAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask, constAuraEffectPtr except = NULLAURA_EFFECT) const;
+        int32 GetMaxPositiveAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask, constAuraEffectPtr except = nullptr) const;
         int32 GetMaxNegativeAuraModifierByMiscMask(AuraType auratype, uint32 misc_mask) const;
 
         int32 GetTotalAuraModifierByMiscValue(AuraType auratype, int32 misc_value) const;
@@ -2027,7 +2027,7 @@ class Unit : public WorldObject
             VisibleAuraMap::iterator itr = m_visibleAuras.find(slot);
             if (itr != m_visibleAuras.end())
                 return itr->second;
-            return NULLAURA_APPLICATION;
+            return nullptr;
         }
         void SetVisibleAura(uint8 slot, AuraApplicationPtr aur){ m_visibleAuras[slot]=aur; UpdateAuraForGroup(slot);}
         void RemoveVisibleAura(uint8 slot){ m_visibleAuras.erase(slot); UpdateAuraForGroup(slot);}
@@ -2236,7 +2236,7 @@ class Unit : public WorldObject
 
         // Should only be called by AuraEffect::HandleAuraControlVehicle(constAuraApplicationPtr auraApp, uint8 mode, bool apply) const;
         void _ExitVehicle(const Position* exitPosition = NULL);
-        void _EnterVehicle(VehiclePtr vehicle, int8 seatId, constAuraApplicationPtr aurApp = NULLAURA_APPLICATION);
+        void _EnterVehicle(VehiclePtr vehicle, int8 seatId, constAuraApplicationPtr aurApp = nullptr);
 
         void BuildMovementPacket(ByteBuffer *data) const;
 
@@ -2260,8 +2260,8 @@ class Unit : public WorldObject
         Totem* ToTotem() { if (isTotem()) return reinterpret_cast<Totem*>(this); else return NULL; }
         Totem const* ToTotem() const { if (isTotem()) return reinterpret_cast<Totem const*>(this); else return NULL; }
 
-        TempSummonPtr ToTempSummon() { if (isSummon()) return TO_TEMPSUMMON(shared_from_this()); else return NULLTEMPSUMMON; }
-        constTempSummonPtr ToTempSummon() const { if (isSummon()) return TO_CONST_TEMPSUMMON(shared_from_this()); else return NULLTEMPSUMMON; }
+        TempSummonPtr ToTempSummon() { if (isSummon()) return TO_TEMPSUMMON(shared_from_this()); else return nullptr; }
+        constTempSummonPtr ToTempSummon() const { if (isSummon()) return TO_CONST_TEMPSUMMON(shared_from_this()); else return nullptr; }
 
         void SetTarget(uint64 guid)
         {

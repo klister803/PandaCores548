@@ -570,7 +570,7 @@ public:
                 }
                 me->setFaction(1194);
                 Done = true;
-                DoScriptText(SAY_GIVEUP, me, NULL);
+                DoScriptText(SAY_GIVEUP, me, nullptr);
                 me->DeleteThreatList();
                 me->CombatStop();
                 me->GetMotionMaster()->MoveTargetedHome();

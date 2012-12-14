@@ -4987,10 +4987,10 @@ void AuraEffect::HandleAuraDummy(constAuraApplicationPtr aurApp, uint8 mode, boo
                     // set 3 stacks and 3 charges (to make all auras not disappear at once)
                     AuraPtr owner_aura = target->GetAura(34027, GetCasterGUID());
                     AuraPtr pet_aura  = pet->GetAura(58914, GetCasterGUID());
-                    if (owner_aura != NULLAURA)
+                    if (owner_aura != nullptr)
                     {
                         owner_aura->SetStackAmount(owner_aura->GetSpellInfo()->StackAmount);
-                        if (pet_aura != NULLAURA)
+                        if (pet_aura != nullptr)
                         {
                             pet_aura->SetCharges(0);
                             pet_aura->SetStackAmount(owner_aura->GetSpellInfo()->StackAmount);
@@ -5049,7 +5049,7 @@ void AuraEffect::HandleAuraDummy(constAuraApplicationPtr aurApp, uint8 mode, boo
                 case 71563:
                     {
                         AuraPtr newAura = target->AddAura(71564, target);
-                        if (newAura != NULLAURA)
+                        if (newAura != nullptr)
                             newAura->SetStackAmount(newAura->GetSpellInfo()->StackAmount);
                     }
                     break;
@@ -5138,7 +5138,7 @@ void AuraEffect::HandleAuraDummy(constAuraApplicationPtr aurApp, uint8 mode, boo
                             break;
                         case 52172:  // Coyote Spirit Despawn Aura
                         case 60244:  // Blood Parrot Despawn Aura
-                            target->CastSpell(NULLUNIT, GetAmount(), true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
+                            target->CastSpell(std::shared_ptr<Unit>(), GetAmount(), true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
                             break;
                         case 58600: // Restricted Flight Area
                         case 58730: // Restricted Flight Area
@@ -5398,7 +5398,7 @@ void AuraEffect::HandleAuraDummy(constAuraApplicationPtr aurApp, uint8 mode, boo
                     if (apply)
                     {
                         AuraPtr newAura = target->AddAura(88611, target);
-                        if (newAura != NULLAURA)
+                        if (newAura != nullptr)
                         {
                             newAura->SetMaxDuration(GetBase()->GetDuration());
                             newAura->SetDuration(GetBase()->GetDuration());
@@ -5674,7 +5674,7 @@ void AuraEffect::HandleAuraLinked(constAuraApplicationPtr aurApp, uint8 mode, bo
         uint64 casterGUID = triggeredSpellInfo->NeedsToBeTriggeredByCaster() ? GetCasterGUID() : target->GetGUID();
         // change the stack amount to be equal to stack amount of our aura
         AuraPtr triggeredAura = target->GetAura(triggeredSpellId, casterGUID);
-        if (triggeredAura != NULLAURA)
+        if (triggeredAura != nullptr)
             triggeredAura->ModStackAmount(GetBase()->GetStackAmount() - triggeredAura->GetStackAmount());
     }
 }
@@ -5834,7 +5834,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(UnitPtr target, UnitPtr caster) con
                 }
                 case 62292: // Blaze (Pool of Tar)
                     // should we use custom damage?
-                    target->CastSpell(NULLUNIT, m_spellInfo->Effects[m_effIndex].TriggerSpell, true);
+                    target->CastSpell(std::shared_ptr<Unit>(), m_spellInfo->Effects[m_effIndex].TriggerSpell, true);
                     break;
                 case 62399: // Overload Circuit
                     if (target->GetMap()->IsDungeon() && int(target->GetAppliedAuras().count(62399)) >= (target->GetMap()->IsHeroic() ? 4 : 2))
@@ -5858,7 +5858,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(UnitPtr target, UnitPtr caster) con
             // Mirror Image
             if (GetId() == 55342)
                 // Set name of summons to name of caster
-                target->CastSpell(NULLUNIT, m_spellInfo->Effects[m_effIndex].TriggerSpell, true);
+                target->CastSpell(std::shared_ptr<Unit>(), m_spellInfo->Effects[m_effIndex].TriggerSpell, true);
             break;
         }
         case SPELLFAMILY_DRUID:
@@ -6968,7 +6968,7 @@ void AuraEffect::HandleRaidProcFromChargeAuraProc(AuraApplicationPtr aurApp, Pro
             {
                 target->CastSpell(triggerTarget, GetSpellInfo(), true, NULL, CONST_CAST(AuraEffect, shared_from_this()), GetCasterGUID());
                 AuraPtr aura = triggerTarget->GetAura(GetId(), GetCasterGUID());
-                if (aura != NULLAURA)
+                if (aura != nullptr)
                     aura->SetCharges(jumps);
             }
         }
@@ -7010,7 +7010,7 @@ void AuraEffect::HandleRaidProcFromChargeWithValueAuraProc(AuraApplicationPtr au
             {
                 target->CastCustomSpell(triggerTarget, GetId(), &value, NULL, NULL, true, NULL, CONST_CAST(AuraEffect, shared_from_this()), GetCasterGUID());
                 AuraPtr aura = triggerTarget->GetAura(GetId(), GetCasterGUID());
-                if (aura != NULLAURA)
+                if (aura != nullptr)
                     aura->SetCharges(jumps);
             }
         }

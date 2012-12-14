@@ -136,7 +136,7 @@ public:
             }
 
             sLog->outDebug(LOG_FILTER_TSCR, "Instance Sunwell Plateau: GetPlayerInMap, but PlayerList is empty!");
-            return NULL;
+            return nullptr;
         }
 
         void OnCreatureCreate(CreaturePtr creature)

@@ -1052,7 +1052,7 @@ void Spell::EffectTriggerRitualOfSummoning(SpellEffIndex effIndex)
 
     finish();
 
-    m_caster->CastSpell(NULLUNIT, spellInfo, false);
+    m_caster->CastSpell(std::shared_ptr<Unit>(), spellInfo, false);
 }
 
 void Spell::EffectJump(SpellEffIndex effIndex)
@@ -1854,7 +1854,7 @@ void Spell::EffectPersistentAA(SpellEffIndex effIndex)
         }
 
         AuraPtr aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]);
-        if (aura != NULLAURA)
+        if (aura != nullptr)
         {
             m_spellAura = aura;
             m_spellAura->_RegisterForTargets();
@@ -3216,7 +3216,7 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                     m_caster->CastSpell(unitTarget, 58567, true);
 
                 AuraPtr aur = unitTarget->GetAura(58567, m_caster->GetGUID());
-                if (aur != NULLAURA)
+                if (aur != nullptr)
                 {
                     if (int32 num = (needCast ? 0 : 1))
                         aur->ModStackAmount(num);
@@ -3554,7 +3554,7 @@ void Spell::EffectSummonObjectWild(SpellEffIndex effIndex)
         }
         else
         {
-            linkedGO = NULLGAMEOBJECT;
+            linkedGO = nullptr;
             return;
         }
     }
@@ -4087,7 +4087,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
 
                     // proc a spellcast
                     AuraPtr chargesAura = m_caster->GetAura(59907);
-                    if (chargesAura != NULLAURA)
+                    if (chargesAura != nullptr)
                     {
                         m_caster->CastSpell(unitTarget, spell_heal, true, NULL, NULL, m_caster->ToTempSummon()->GetSummonerGUID());
                         if (chargesAura->ModCharges(-1))
@@ -5531,7 +5531,7 @@ void Spell::EffectTransmitted(SpellEffIndex effIndex)
         }
         else
         {
-            linkedGO = NULLGAMEOBJECT;
+            linkedGO = nullptr;
             return;
         }
     }

@@ -133,7 +133,7 @@ class spell_warr_last_stand : public SpellScriptLoader
                 if (UnitPtr caster = GetCaster())
                 {
                     int32 healthModSpellBasePoints0 = int32(caster->CountPctFromMaxHealth(30));
-                    caster->CastCustomSpell(caster, WARRIOR_SPELL_LAST_STAND_TRIGGERED, &healthModSpellBasePoints0, NULL, NULL, true, NULL);
+                    caster->CastCustomSpell(caster, WARRIOR_SPELL_LAST_STAND_TRIGGERED, &healthModSpellBasePoints0, nullptr, nullptr, true, nullptr);
                 }
             }
 
@@ -278,7 +278,7 @@ class spell_warr_deep_wounds : public SpellScriptLoader
 
                     damage = damage / ticks;
 
-                    caster->CastCustomSpell(target, SPELL_DEEP_WOUNDS_RANK_PERIODIC, &damage, NULL, NULL, true);
+                    caster->CastCustomSpell(target, SPELL_DEEP_WOUNDS_RANK_PERIODIC, &damage, nullptr, nullptr, true);
                 }
             }
 

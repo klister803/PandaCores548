@@ -331,7 +331,7 @@ class boss_professor_putricide : public CreatureScript
                         me->SetSpeed(MOVE_RUN, _baseSpeed, true);
                         DoAction(ACTION_FESTERGUT_GAS);
                         if (CreaturePtr festergut = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_FESTERGUT)))
-                            festergut->CastSpell(festergut, SPELL_GASEOUS_BLIGHT_LARGE, false, NULL, NULL, festergut->GetGUID());
+                            festergut->CastSpell(festergut, SPELL_GASEOUS_BLIGHT_LARGE, false, nullptr, nullptr, festergut->GetGUID());
                         break;
                     case POINT_ROTFACE:
                         instance->SetBossState(DATA_ROTFACE, IN_PROGRESS);   // needed here for delayed gate close
@@ -451,7 +451,7 @@ class boss_professor_putricide : public CreatureScript
                     case ACTION_ROTFACE_OOZE:
                         Talk(SAY_ROTFACE_OOZE_FLOOD);
                         /*if (CreaturePtr dummy = Unit::GetCreature(TO_WORLDOBJECT(me), _oozeFloodDummyGUIDs[_oozeFloodStage]))
-                            dummy->CastSpell(dummy, oozeFloodSpells[_oozeFloodStage], true, NULL, NULL, me->GetGUID()); // cast from self for LoS (with prof's GUID for logs)*/
+                            dummy->CastSpell(dummy, oozeFloodSpells[_oozeFloodStage], true, nullptr, nullptr, me->GetGUID()); // cast from self for LoS (with prof's GUID for logs)*/
                         if (CreaturePtr dummy1 = Unit::GetCreature(TO_WORLDOBJECT(me), _oozeFloodDummyUpperGUIDs[_oozeFloodStage * 2])) // 0 2 4 6
                             dummy1->CastSpell(dummy1, 69783);
                         if (CreaturePtr dummy2 = Unit::GetCreature(TO_WORLDOBJECT(me), _oozeFloodDummyUpperGUIDs[(_oozeFloodStage * 2) + 1])) // 1 3 5 7
@@ -597,7 +597,7 @@ class boss_professor_putricide : public CreatureScript
                                     if (player->GetExactDist2d(rotface->GetPositionX(), rotface->GetPositionY()) > minDist)
                                         RangedCount++;
                             
-                            UnitPtr  pTarget = NULL;
+                            UnitPtr  pTarget = nullptr;
 
                             if (RangedCount >= minRangedCount)
                                 pTarget = rotface->AI()->SelectTarget(SELECT_TARGET_RANDOM, 1, minDist, true);
@@ -835,7 +835,7 @@ class spell_putricide_ooze_channel : public SpellScriptLoader
             // this will let use safely use ToCreature() casts in entire script
             bool Load()
             {
-                _target = NULL;
+                _target = nullptr;
                 return GetCaster()->GetTypeId() == TYPEID_UNIT;
             }
 
@@ -903,7 +903,7 @@ class spell_putricide_slime_puddle : public SpellScriptLoader
                     int32 radiusMod = 200; // The SPELLVALUE_RADIUS_MOD divide it by 10000, so 200 = 0.02%
 
                     AuraPtr size = caster->GetAura(70347);
-                    if (size != NULLAURA)
+                    if (size != nullptr)
                         radiusMod *= (1 + (size->GetStackAmount() * 0.2));
 
                     uint32 triggerSpellId = GetSpellInfo()->Effects[aurEff->GetEffIndex()].TriggerSpell;
@@ -967,7 +967,7 @@ class spell_putricide_unstable_experiment : public SpellScriptLoader
                     return;
 
                 uint32 stage = GetCaster()->ToCreature()->AI()->GetData(DATA_EXPERIMENT_STAGE);
-                CreaturePtr target = NULL;
+                CreaturePtr target = nullptr;
                 std::list<CreaturePtr> creList;
                 GetCreatureListWithEntryInGrid(creList, GetCaster(), NPC_ABOMINATION_WING_MAD_SCIENTIST_STALKER, 100.0f);
                 // 2 of them are spawned at green place - weird trick blizz
@@ -980,7 +980,7 @@ class spell_putricide_unstable_experiment : public SpellScriptLoader
                         break;
                 }
 
-                GetCaster()->CastSpell(target, uint32(GetSpellInfo()->Effects[stage].CalcValue()), true, NULL, NULL, GetCaster()->GetGUID());
+                GetCaster()->CastSpell(target, uint32(GetSpellInfo()->Effects[stage].CalcValue()), true, nullptr, nullptr, GetCaster()->GetGUID());
             }
 
             void Register()
@@ -1015,7 +1015,7 @@ class spell_putricide_ooze_summon : public SpellScriptLoader
                     z = GetTarget()->GetMap()->GetHeight(x, y, z, true, 25.0f);
                     x += 10.0f * cosf(caster->GetOrientation());
                     y += 10.0f * sinf(caster->GetOrientation());
-                    caster->CastSpell(x, y, z, triggerSpellId, true, NULL, NULL, GetCasterGUID());
+                    caster->CastSpell(x, y, z, triggerSpellId, true, nullptr, nullptr, GetCasterGUID());
                 }
             }
 
@@ -1080,7 +1080,7 @@ class spell_putricide_choking_gas_bomb : public SpellScriptLoader
                         continue;
 
                     uint32 spellId = uint32(GetSpellInfo()->Effects[i].CalcValue());
-                    GetCaster()->CastSpell(GetCaster(), spellId, true, NULL, NULL, GetCaster()->GetGUID());
+                    GetCaster()->CastSpell(GetCaster(), spellId, true, nullptr, nullptr, GetCaster()->GetGUID());
                 }
             }
 
@@ -1131,10 +1131,10 @@ class spell_putricide_unbound_plague : public SpellScriptLoader
                     if (CreaturePtr professor = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(GetCaster()), instance->GetData64(DATA_PROFESSOR_PUTRICIDE)))
                     {
                         AuraPtr oldPlague = GetCaster()->GetAura(plagueId, professor->GetGUID());
-                        if (oldPlague != NULLAURA)
+                        if (oldPlague != nullptr)
                         {
                             AuraPtr newPlague = professor->AddAura(plagueId, GetHitUnit());
-                            if (newPlague != NULLAURA)
+                            if (newPlague != nullptr)
                             {
                                 newPlague->SetMaxDuration(oldPlague->GetDuration());
                                 newPlague->SetDuration(oldPlague->GetDuration());
@@ -1189,7 +1189,7 @@ class spell_putricide_eat_ooze : public SpellScriptLoader
                         return;
 
                 AuraPtr grow = target->GetAura(uint32(GetEffectValue()));
-                if (grow != NULLAURA)
+                if (grow != nullptr)
                 {
                     if (grow->GetStackAmount() < 4)
                     {
@@ -1242,13 +1242,13 @@ class spell_putricide_mutated_plague : public SpellScriptLoader
                 damage *= int32(pow(multiplier, GetStackAmount()));
                 damage = int32(damage * 1.5f);
 
-                GetTarget()->CastCustomSpell(triggerSpell, SPELLVALUE_BASE_POINT0, damage, GetTarget(), true, NULL, aurEff, GetCasterGUID());
+                GetTarget()->CastCustomSpell(triggerSpell, SPELLVALUE_BASE_POINT0, damage, GetTarget(), true, nullptr, aurEff, GetCasterGUID());
             }
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 uint32 healSpell = uint32(GetSpellInfo()->Effects[EFFECT_0].CalcValue());
-                GetTarget()->CastSpell(GetTarget(), healSpell, true, NULL, NULL, GetCasterGUID());
+                GetTarget()->CastSpell(GetTarget(), healSpell, true, nullptr, nullptr, GetCasterGUID());
             }
 
             void Register()

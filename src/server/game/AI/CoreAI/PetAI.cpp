@@ -254,7 +254,7 @@ void PetAI::UpdateAI(const uint32 diff)
 void PetAI::UpdateAllies()
 {
     UnitPtr owner = me->GetCharmerOrOwner();
-    GroupPtr group = NULLGROUP;
+    GroupPtr group = nullptr;
 
     m_updateAlliesTimer = 10*IN_MILLISECONDS;                //update friendly targets every 10 seconds, lesser checks increase performance
 

@@ -35,19 +35,19 @@ public:
     {
         static ChatCommand resetCommandTable[] =
         {
-            { "achievements",   SEC_ADMINISTRATOR,  true,  &HandleResetAchievementsCommand,     "", NULL },
-            { "honor",          SEC_ADMINISTRATOR,  true,  &HandleResetHonorCommand,            "", NULL },
-            { "level",          SEC_ADMINISTRATOR,  true,  &HandleResetLevelCommand,            "", NULL },
-            { "spells",         SEC_ADMINISTRATOR,  true,  &HandleResetSpellsCommand,           "", NULL },
-            { "stats",          SEC_ADMINISTRATOR,  true,  &HandleResetStatsCommand,            "", NULL },
-            { "talents",        SEC_ADMINISTRATOR,  true,  &HandleResetTalentsCommand,          "", NULL },
-            { "all",            SEC_ADMINISTRATOR,  true,  &HandleResetAllCommand,              "", NULL },
-            { NULL,             0,                  false, NULL,                                "", NULL }
+            { "achievements",   SEC_ADMINISTRATOR,  true,  &HandleResetAchievementsCommand,     "", nullptr },
+            { "honor",          SEC_ADMINISTRATOR,  true,  &HandleResetHonorCommand,            "", nullptr },
+            { "level",          SEC_ADMINISTRATOR,  true,  &HandleResetLevelCommand,            "", nullptr },
+            { "spells",         SEC_ADMINISTRATOR,  true,  &HandleResetSpellsCommand,           "", nullptr },
+            { "stats",          SEC_ADMINISTRATOR,  true,  &HandleResetStatsCommand,            "", nullptr },
+            { "talents",        SEC_ADMINISTRATOR,  true,  &HandleResetTalentsCommand,          "", nullptr },
+            { "all",            SEC_ADMINISTRATOR,  true,  &HandleResetAllCommand,              "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "reset",          SEC_ADMINISTRATOR,  true, NULL,                                 "", resetCommandTable },
-            { NULL,             0,                  false, NULL,                                "", NULL }
+            { "reset",          SEC_ADMINISTRATOR,  true, nullptr,                                 "", resetCommandTable },
+            { nullptr,             0,                  false, nullptr,                                "", nullptr }
         };
         return commandTable;
     }

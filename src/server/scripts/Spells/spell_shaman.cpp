@@ -447,7 +447,7 @@ public:
             int32 basePoints = caster->CalculateSpellDamage(target, GetSpellInfo(), 0);
             uint32 damage = usedCharges * caster->SpellDamageBonusDone(target, GetSpellInfo(), basePoints, SPELL_DIRECT_DAMAGE);
 
-            caster->CastCustomSpell(SPELL_SHA_FULMINATION_TRIGGERED, SPELLVALUE_BASE_POINT0, damage, target, true, NULL, fulminationAura);
+            caster->CastCustomSpell(SPELL_SHA_FULMINATION_TRIGGERED, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, fulminationAura);
             lightningShield->SetCharges(lsCharges - usedCharges);
         }
 
@@ -983,7 +983,7 @@ class spell_sha_ancestral_awakening_proc : public SpellScriptLoader
             {
                 int32 damage = GetEffectValue();
                 if (GetCaster() && GetHitUnit())
-                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, NULL, NULL, true);
+                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, nullptr, nullptr, true);
             }
 
             void Register()

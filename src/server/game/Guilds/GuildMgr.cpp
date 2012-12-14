@@ -60,7 +60,7 @@ GuildPtr GuildMgr::GetGuildById(uint32 guildId) const
     if (itr != GuildStore.end())
         return itr->second;
 
-    return NULL;
+    return nullptr;
 }
 
 GuildPtr GuildMgr::GetGuildByGuid(uint64 guid) const
@@ -71,7 +71,7 @@ GuildPtr GuildMgr::GetGuildByGuid(uint64 guid) const
         if (uint32 guildId = GUID_LOPART(guid))
             return GetGuildById(guildId);
 
-    return NULL;
+    return nullptr;
 }
 
 GuildPtr GuildMgr::GetGuildByName(const std::string& guildName) const
@@ -85,7 +85,7 @@ GuildPtr GuildMgr::GetGuildByName(const std::string& guildName) const
         if (search == gname)
             return itr->second;
     }
-    return NULL;
+    return nullptr;
 }
 
 std::string GuildMgr::GetGuildNameById(uint32 guildId) const
@@ -102,7 +102,7 @@ GuildPtr GuildMgr::GetGuildByLeader(uint64 guid) const
         if (itr->second->GetLeaderGUID() == guid)
             return itr->second;
 
-    return NULL;
+    return nullptr;
 }
 
 uint32 GuildMgr::GetXPForGuildLevel(uint8 level) const
@@ -172,7 +172,7 @@ void GuildMgr::LoadGuilds()
         uint32 oldMSTime = getMSTime();
 
         // Delete orphaned guild rank entries before loading the valid ones
-        CharacterDatabase.DirectExecute("DELETE gr FROM guild_rank gr LEFT JOIN guild g ON gr.guildId = g.guildId WHERE g.guildId IS NULL");
+        CharacterDatabase.DirectExecute("DELETE gr FROM guild_rank gr LEFT JOIN guild g ON gr.guildId = g.guildId WHERE g.guildId IS nullptr");
 
         //                                                         0    1      2       3                4
         QueryResult result = CharacterDatabase.Query("SELECT guildid, rid, rname, rights, BankMoneyPerDay FROM guild_rank ORDER BY guildid ASC, rid ASC");
@@ -206,7 +206,7 @@ void GuildMgr::LoadGuilds()
         uint32 oldMSTime = getMSTime();
 
         // Delete orphaned guild member entries before loading the valid ones
-        CharacterDatabase.DirectExecute("DELETE gm FROM guild_member gm LEFT JOIN guild g ON gm.guildId = g.guildId WHERE g.guildId IS NULL");
+        CharacterDatabase.DirectExecute("DELETE gm FROM guild_member gm LEFT JOIN guild g ON gm.guildId = g.guildId WHERE g.guildId IS nullptr");
 
                                                      //          0        1        2     3      4        5                   6
         QueryResult result = CharacterDatabase.Query("SELECT gm.guildid, gm.guid, rank, pnote, offnote, BankResetTimeMoney, BankRemMoney, "
@@ -250,7 +250,7 @@ void GuildMgr::LoadGuilds()
         uint32 oldMSTime = getMSTime();
 
         // Delete orphaned guild bank right entries before loading the valid ones
-        CharacterDatabase.DirectExecute("DELETE gbr FROM guild_bank_right gbr LEFT JOIN guild g ON gbr.guildId = g.guildId WHERE g.guildId IS NULL");
+        CharacterDatabase.DirectExecute("DELETE gbr FROM guild_bank_right gbr LEFT JOIN guild g ON gbr.guildId = g.guildId WHERE g.guildId IS nullptr");
 
                                                      //       0        1      2    3        4
         QueryResult result = CharacterDatabase.Query("SELECT guildid, TabId, rid, gbright, SlotPerDay FROM guild_bank_right ORDER BY guildid ASC, TabId ASC");
@@ -351,7 +351,7 @@ void GuildMgr::LoadGuilds()
         uint32 oldMSTime = getMSTime();
 
         // Delete orphaned guild bank tab entries before loading the valid ones
-        CharacterDatabase.DirectExecute("DELETE gbt FROM guild_bank_tab gbt LEFT JOIN guild g ON gbt.guildId = g.guildId WHERE g.guildId IS NULL");
+        CharacterDatabase.DirectExecute("DELETE gbt FROM guild_bank_tab gbt LEFT JOIN guild g ON gbt.guildId = g.guildId WHERE g.guildId IS nullptr");
 
                                                      //         0        1      2        3        4
         QueryResult result = CharacterDatabase.Query("SELECT guildid, TabId, TabName, TabIcon, TabText FROM guild_bank_tab ORDER BY guildid ASC, TabId ASC");
@@ -385,7 +385,7 @@ void GuildMgr::LoadGuilds()
         uint32 oldMSTime = getMSTime();
 
         // Delete orphan guild bank items
-        CharacterDatabase.DirectExecute("DELETE gbi FROM guild_bank_item gbi LEFT JOIN guild g ON gbi.guildId = g.guildId WHERE g.guildId IS NULL");
+        CharacterDatabase.DirectExecute("DELETE gbi FROM guild_bank_item gbi LEFT JOIN guild g ON gbi.guildId = g.guildId WHERE g.guildId IS nullptr");
 
                                                      //          0            1                2      3         4        5      6             7                 8           9           10
         QueryResult result = CharacterDatabase.Query("SELECT creatorGuid, giftCreatorGuid, count, duration, charges, flags, enchantments, randomPropertyId, durability, playedTime, text, "

@@ -98,7 +98,7 @@ public:
             Wave = false;
             someplayer = 0;
             goConsole = 0;
-            add = NULL;
+            add = nullptr;
         }
 
         void EnterCombat(UnitPtr /*who*/) {}
@@ -108,7 +108,7 @@ public:
             //we have no way of telling the Creature was hit by spell -> got aura applied after 10-12 seconds
             //then no way for the mobs to actually stop the shutdown as intended.
             if (spell->Id == SPELL_INTERRUPT_1)
-                DoSay("Silence! I kill you!", LANG_UNIVERSAL, NULL);
+                DoSay("Silence! I kill you!", LANG_UNIVERSAL, nullptr);
         }*/
 
         void JustDied(UnitPtr /*killer*/)
@@ -317,7 +317,7 @@ public:
             player->SendPreparedQuest(go->GetGUID());
         }
 
-        CreaturePtr manaforge = NULL;
+        CreaturePtr manaforge = nullptr;
 
         switch (go->GetAreaId())
         {

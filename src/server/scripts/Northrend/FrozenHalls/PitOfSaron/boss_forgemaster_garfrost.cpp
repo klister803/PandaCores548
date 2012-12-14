@@ -182,7 +182,7 @@ class boss_garfrost : public CreatureScript
                 if (spell->Id == SPELL_PERMAFROST_HELPER)
                 {
                     AuraPtr aura = target->GetAura(SPELL_PERMAFROST_HELPER);
-                    if (aura != NULLAURA)
+                    if (aura != nullptr)
                         _permafrostStack = std::max<uint32>(_permafrostStack, aura->GetStackAmount());
                 }
             }

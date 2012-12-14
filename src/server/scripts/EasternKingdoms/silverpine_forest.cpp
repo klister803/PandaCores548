@@ -102,7 +102,7 @@ public:
                         DoScriptText(SAY_QUINN, Quinn);
                     break;
                 case 26:
-                    DoScriptText(SAY_ON_BYE, me, NULL);
+                    DoScriptText(SAY_ON_BYE, me, nullptr);
                     break;
             }
         }

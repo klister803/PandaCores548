@@ -912,7 +912,7 @@ struct dummy_dragonAI : public ScriptedAI
     void JustDied(UnitPtr /*killer*/)
     {
         if (!m_bCanLoot)
-            me->SetLootRecipient(NULL);
+            me->SetLootRecipient(nullptr);
 
         int32 iTextId = 0;
         uint32 uiSpellId = 0;
@@ -1301,7 +1301,7 @@ public:
             uiDespawnTimer = 28000;
             if (instance)
             {
-                CreaturePtr target = NULL;
+                CreaturePtr target = nullptr;
                 //if not solo figth, buff main boss, else place debuff on mini-boss. both spells TARGET_SCRIPT
                 if (instance->GetData(TYPE_SARTHARION_EVENT) == IN_PROGRESS)
                 {
@@ -1330,7 +1330,7 @@ public:
                     (CAST_AI(mob_shadron::mob_shadronAI, Shadron->AI()))->m_bHasPortalOpen = false;
                 }
 
-                CreaturePtr pDebuffTarget = NULL;
+                CreaturePtr pDebuffTarget = nullptr;
                 MapPtr map = me->GetMap();
                 if (map->IsDungeon())
                 {

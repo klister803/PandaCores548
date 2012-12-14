@@ -212,7 +212,7 @@ public:
                         if (uiVanishTimer <= diff)
                         {
                             //Count alive players
-                            UnitPtr target = NULL;
+                            UnitPtr target = nullptr;
                             std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
                             std::vector<UnitPtr> target_list;
                             for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
@@ -221,7 +221,7 @@ public:
                                 // exclude pets & totems
                                 if (target && target->GetTypeId() == TYPEID_PLAYER && target->isAlive())
                                     target_list.push_back(target);
-                                target = NULL;
+                                target = nullptr;
                             }
                             //He only vanishes if there are 3 or more alive players
                             if (target_list.size() > 2)
@@ -307,7 +307,7 @@ public:
         UnitPtr GetEmbraceTarget()
         {
             if (!uiEmbraceTarget)
-                return NULL;
+                return nullptr;
 
             return Unit::GetUnit(TO_WORLDOBJECT(me), uiEmbraceTarget);
         }

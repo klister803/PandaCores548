@@ -359,7 +359,7 @@ class npc_big_ooze : public CreatureScript
                                 break;
 
                             AuraPtr unstable = me->GetAura(SPELL_UNSTABLE_OOZE);
-                            if (unstable != NULLAURA)
+                            if (unstable != nullptr)
                             {
                                 uint8 stack = uint8(unstable->GetStackAmount());
 
@@ -772,10 +772,10 @@ class spell_rotface_large_ooze_combine : public SpellScriptLoader
                     return;
 
                 AuraPtr unstable = GetCaster()->GetAura(SPELL_UNSTABLE_OOZE);
-                if (unstable != NULLAURA)
+                if (unstable != nullptr)
                 {
                     AuraPtr targetAura = GetHitCreature()->GetAura(SPELL_UNSTABLE_OOZE);
-                    if (targetAura != NULLAURA)
+                    if (targetAura != nullptr)
                         unstable->ModStackAmount(targetAura->GetStackAmount());
                     else
                         unstable->ModStackAmount(1);
@@ -816,7 +816,7 @@ class spell_rotface_large_ooze_buff_combine : public SpellScriptLoader
                     return;
 
                 AuraPtr unstable = GetCaster()->GetAura(SPELL_UNSTABLE_OOZE);
-                if (unstable != NULLAURA)
+                if (unstable != nullptr)
                 {
                     uint8 newStack = uint8(unstable->GetStackAmount()+1);
                     unstable->SetStackAmount(newStack);

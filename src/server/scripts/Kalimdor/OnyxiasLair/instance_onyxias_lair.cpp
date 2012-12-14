@@ -120,7 +120,7 @@ public:
                 //THIS GOB IS A TRAP - What shall i do? =(
                 //Cast it spell? Copyed Heigan method
                 pFloorEruption->SendCustomAnim(pFloorEruption->GetGoAnimProgress());
-                pFloorEruption->CastSpell(NULL, Difficulty(instance->GetSpawnMode()) == MAN10_DIFFICULTY ? 17731 : 69294); //pFloorEruption->GetGOInfo()->trap.spellId
+                pFloorEruption->CastSpell(nullptr, Difficulty(instance->GetSpawnMode()) == MAN10_DIFFICULTY ? 17731 : 69294); //pFloorEruption->GetGOInfo()->trap.spellId
 
                 //Get all immediatly nearby floors
                 std::list<GameObjectPtr> nearFloorList;
@@ -241,7 +241,7 @@ public:
             }
         }
 
-        bool CheckAchievementCriteriaMeet(uint32 criteria_id, constPlayerPtr /*source*/, constUnitPtr /*target*/ = NULL, uint32 /*miscvalue1*/ = 0)
+        bool CheckAchievementCriteriaMeet(uint32 criteria_id, constPlayerPtr /*source*/, constUnitPtr /*target*/ = nullptr, uint32 /*miscvalue1*/ = 0)
         {
             switch (criteria_id)
             {

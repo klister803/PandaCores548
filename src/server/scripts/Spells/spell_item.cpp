@@ -108,7 +108,7 @@ class spell_item_deviate_fish : public SpellScriptLoader
             {
                 UnitPtr caster = GetCaster();
                 uint32 spellId = urand(SPELL_SLEEPY, SPELL_HEALTHY_SPIRIT);
-                caster->CastSpell(caster, spellId, true, NULL);
+                caster->CastSpell(caster, spellId, true, nullptr);
             }
 
             void Register()
@@ -178,7 +178,7 @@ class spell_item_flask_of_the_north : public SpellScriptLoader
                         break;
                 }
 
-                caster->CastSpell(caster, possibleSpells[irand(0, (possibleSpells.size() - 1))], true, NULL);
+                caster->CastSpell(caster, possibleSpells[irand(0, (possibleSpells.size() - 1))], true, nullptr);
             }
 
             void Register()
@@ -223,9 +223,9 @@ class spell_item_gnomish_death_ray : public SpellScriptLoader
                 if (UnitPtr target = GetHitUnit())
                 {
                     if (urand(0, 99) < 15)
-                        caster->CastSpell(caster, SPELL_GNOMISH_DEATH_RAY_SELF, true, NULL);    // failure
+                        caster->CastSpell(caster, SPELL_GNOMISH_DEATH_RAY_SELF, true, nullptr);    // failure
                     else
-                        caster->CastSpell(target, SPELL_GNOMISH_DEATH_RAY_TARGET, true, NULL);
+                        caster->CastSpell(target, SPELL_GNOMISH_DEATH_RAY_TARGET, true, nullptr);
                 }
             }
 
@@ -284,7 +284,7 @@ class spell_item_make_a_wish : public SpellScriptLoader
                     case 3: spellId = SPELL_SUMMON_FURIOUS_MR_PINCHY; break;
                     case 4: spellId = SPELL_TINY_MAGICAL_CRAWDAD; break;
                 }
-                caster->CastSpell(caster, spellId, true, NULL);
+                caster->CastSpell(caster, spellId, true, nullptr);
             }
 
             void Register()
@@ -391,7 +391,7 @@ class spell_item_net_o_matic : public SpellScriptLoader
                     else if (roll < 4)                       // 2% for 20 sec root, charge to target (off-like chance unknown)
                         spellId = SPELL_NET_O_MATIC_TRIGGERED2;
 
-                    GetCaster()->CastSpell(target, spellId, true, NULL);
+                    GetCaster()->CastSpell(target, spellId, true, nullptr);
                 }
             }
 
@@ -447,7 +447,7 @@ class spell_item_noggenfogger_elixir : public SpellScriptLoader
                     case 2: spellId = SPELL_NOGGENFOGGER_ELIXIR_TRIGGERED2; break;
                 }
 
-                caster->CastSpell(caster, spellId, true, NULL);
+                caster->CastSpell(caster, spellId, true, nullptr);
             }
 
             void Register()
@@ -505,7 +505,7 @@ class spell_item_savory_deviate_delight : public SpellScriptLoader
                     // Yaaarrrr - pirate
                     case 2: spellId = (caster->getGender() == GENDER_MALE ? SPELL_YAAARRRR_MALE : SPELL_YAAARRRR_FEMALE); break;
                 }
-                caster->CastSpell(caster, spellId, true, NULL);
+                caster->CastSpell(caster, spellId, true, nullptr);
             }
 
             void Register()
@@ -629,7 +629,7 @@ class spell_item_underbelly_elixir : public SpellScriptLoader
                     case 1: spellId = SPELL_UNDERBELLY_ELIXIR_TRIGGERED1; break;
                     case 2: spellId = SPELL_UNDERBELLY_ELIXIR_TRIGGERED2; break;
                 }
-                caster->CastSpell(caster, spellId, true, NULL);
+                caster->CastSpell(caster, spellId, true, nullptr);
             }
 
             void Register()
@@ -1140,7 +1140,7 @@ class spell_item_purify_helboar_meat : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
                 UnitPtr caster = GetCaster();
-                caster->CastSpell(caster, roll_chance_i(50) ? SPELL_SUMMON_PURIFIED_HELBOAR_MEAT : SPELL_SUMMON_TOXIC_HELBOAR_MEAT, true, NULL);
+                caster->CastSpell(caster, roll_chance_i(50) ? SPELL_SUMMON_PURIFIED_HELBOAR_MEAT : SPELL_SUMMON_TOXIC_HELBOAR_MEAT, true, nullptr);
             }
 
             void Register()
@@ -1181,7 +1181,7 @@ class spell_item_crystal_prison_dummy_dnd : public SpellScriptLoader
                 if (CreaturePtr target = GetHitCreature())
                     if (target->isDead() && !target->isPet())
                     {
-                        GetCaster()->SummonGameObject(OBJECT_IMPRISONED_DOOMGUARD, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation(), 0, 0, 0, 0, uint32(target->GetRespawnTime()-time(NULL)));
+                        GetCaster()->SummonGameObject(OBJECT_IMPRISONED_DOOMGUARD, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation(), 0, 0, 0, 0, uint32(target->GetRespawnTime()-time(nullptr)));
                         target->DespawnOrUnsummon();
                     }
             }
@@ -1494,7 +1494,7 @@ class spell_item_complete_raptor_capture : public SpellScriptLoader
                     GetHitCreature()->DespawnOrUnsummon();
 
                     //cast spell Raptor Capture Credit
-                    caster->CastSpell(caster, SPELL_RAPTOR_CAPTURE_CREDIT, true, NULL);
+                    caster->CastSpell(caster, SPELL_RAPTOR_CAPTURE_CREDIT, true, nullptr);
                 }
             }
 
@@ -1745,7 +1745,7 @@ class spell_item_rocket_boots : public SpellScriptLoader
                     bg->EventPlayerDroppedFlag(caster);
 
                 caster->RemoveSpellCooldown(SPELL_ROCKET_BOOTS_PROC);
-                caster->CastSpell(caster, SPELL_ROCKET_BOOTS_PROC, true, NULL);
+                caster->CastSpell(caster, SPELL_ROCKET_BOOTS_PROC, true, nullptr);
             }
 
             SpellCastResult CheckCast()

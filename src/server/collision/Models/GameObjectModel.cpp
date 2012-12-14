@@ -150,13 +150,13 @@ GameObjectModel* GameObjectModel::Create(constGameObjectPtr go)
 {
     const GameObjectDisplayInfoEntry* info = sGameObjectDisplayInfoStore.LookupEntry(go->GetDisplayId());
     if (!info)
-        return NULL;
+        return nullptr;
 
     GameObjectModel* mdl = new GameObjectModel();
     if (!mdl->initialize(go, *info))
     {
         delete mdl;
-        return NULL;
+        return nullptr;
     }
 
     return mdl;

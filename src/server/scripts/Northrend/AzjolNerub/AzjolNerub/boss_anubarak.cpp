@@ -156,7 +156,7 @@ public:
                 return impaleTarget;
             }
 
-            return NULL;
+            return nullptr;
         }
 
         void EnterCombat(UnitPtr /*who*/)

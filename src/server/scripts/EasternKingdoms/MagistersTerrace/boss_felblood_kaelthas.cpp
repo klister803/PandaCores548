@@ -432,7 +432,7 @@ public:
 
                                 for (uint8 i = 0; i < 3; ++i)
                                 {
-                                    UnitPtr target = NULL;
+                                    UnitPtr target = nullptr;
                                     target = SelectTarget(SELECT_TARGET_RANDOM, 0);
 
                                     CreaturePtr Orb = DoSpawnCreature(CREATURE_ARCANE_SPHERE, 5, 5, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 30000);
@@ -618,7 +618,7 @@ public:
             {
                 //spell Burn should possible do this, but it doesn't, so do this for now.
                 uint16 dmg = urand(1650, 2050);
-                me->DealDamage(me, dmg, 0, DOT, SPELL_SCHOOL_MASK_FIRE, NULL, false);
+                me->DealDamage(me, dmg, 0, DOT, SPELL_SCHOOL_MASK_FIRE, nullptr, false);
                 BurnTimer += 2000;
             } BurnTimer -= diff;
 

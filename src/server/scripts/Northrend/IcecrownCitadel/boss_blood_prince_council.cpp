@@ -902,7 +902,7 @@ class boss_prince_valanar_icc : public CreatureScript
                 {
                     case NPC_KINETIC_BOMB_TARGET:
                         summon->SetReactState(REACT_PASSIVE);
-                        summon->CastSpell(summon, SPELL_KINETIC_BOMB, true, NULL, NULL, me->GetGUID());
+                        summon->CastSpell(summon, SPELL_KINETIC_BOMB, true, nullptr, nullptr, me->GetGUID());
                         break;
                     case NPC_KINETIC_BOMB:
                     {
@@ -1505,7 +1505,7 @@ class spell_taldaram_ball_of_inferno_flame : public SpellScriptLoader
             void ModAuraStack()
             {
                 AuraPtr aur = GetHitAura();
-                if (aur != NULLAURA)
+                if (aur != nullptr)
                     aur->SetStackAmount(uint8(GetSpellInfo()->StackAmount));
             }
 
@@ -1648,7 +1648,7 @@ class spell_blood_council_shadow_prison : public SpellScriptLoader
                 }
 
                 if (GetTarget()->isMoving())
-                    GetTarget()->CastSpell(GetTarget(), SPELL_SHADOW_PRISON_DAMAGE, true, NULL, aurEff);
+                    GetTarget()->CastSpell(GetTarget(), SPELL_SHADOW_PRISON_DAMAGE, true, nullptr, aurEff);
             }
 
             void Register()
@@ -1680,7 +1680,7 @@ class spell_blood_council_shadow_prison_damage : public SpellScriptLoader
             void AddExtraDamage()
             {
                 AuraPtr aur = GetHitUnit()->GetAura(GetSpellInfo()->Id);
-                if (aur != NULLAURA)
+                if (aur != nullptr)
                     if (constAuraEffectPtr eff = aur->GetEffect(EFFECT_1))
                         SetHitDamage(GetHitDamage() + eff->GetAmount());
             }

@@ -317,7 +317,7 @@ void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)
 
 UnitPtr ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 minHPDiff)
 {
-    UnitPtr unit = NULLUNIT;
+    UnitPtr unit = nullptr;
     Trinity::MostHPMissingInRange u_check(me, range, minHPDiff);
     Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(me, unit, u_check);
     me->VisitNearbyObject(range, searcher);
@@ -345,7 +345,7 @@ std::list<CreaturePtr> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32
 
 PlayerPtr ScriptedAI::GetPlayerAtMinimumRange(float minimumRange)
 {
-    PlayerPtr player = NULLPLAYER;
+    PlayerPtr player = nullptr;
 
     CellCoord pair(Trinity::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
     Cell cell(pair);

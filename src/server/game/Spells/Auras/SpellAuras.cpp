@@ -39,7 +39,7 @@
 
 AuraApplication::AuraApplication(UnitPtr target, UnitPtr caster, AuraPtr aura, uint32 effMask):
 _target(target), _base(aura), _removeMode(AURA_REMOVE_NONE), _slot(MAX_AURAS),
-_flags(AFLAG_NONE), _effectsToApply(effMask), _needClientUpdate(false), _effectMask(NULL)
+_flags(AFLAG_NONE), _effectsToApply(effMask), _needClientUpdate(false), _effectMask(0)
 {
     ASSERT(GetTarget() && GetBase());
 
@@ -222,7 +222,7 @@ void AuraApplication::BuildUpdatePacket(ByteBuffer& data, bool remove) const
         data << uint8(0);
         for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
         {
-            if (constAuraEffectPtr eff = aura->GetEffect(i)) // NULL if effect flag not set
+            if (constAuraEffectPtr eff = aura->GetEffect(i)) // nullptr if effect flag not set
             {
                 data << float(eff->GetAmount());
                 EffectMask |= 1 << i;
@@ -275,7 +275,7 @@ uint32 Aura::BuildEffectMaskForOwner(SpellInfo const* spellProto, uint32 avalibl
     return effMask & avalibleEffectMask;
 }
 
-AuraPtr Aura::TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEffMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32* baseAmount /*= NULL*/, ItemPtr castItem /*= NULL*/, uint64 casterGUID /*= 0*/, bool* refresh /*= NULL*/)
+AuraPtr Aura::TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEffMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32* baseAmount /*= nullptr*/, ItemPtr castItem /*= nullptr*/, uint64 casterGUID /*= 0*/, bool* refresh /*= nullptr*/)
 {
     ASSERT(spellproto);
     ASSERT(owner);
@@ -285,15 +285,15 @@ AuraPtr Aura::TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEff
         *refresh = false;
     uint32 effMask = Aura::BuildEffectMaskForOwner(spellproto, tryEffMask, owner);
     if (!effMask)
-        return NULLAURA;
+        return nullptr;
 
     AuraPtr foundAura = owner->ToUnit()->_TryStackingOrRefreshingExistingAura(spellproto, effMask, caster, baseAmount, castItem, casterGUID);
-    if (foundAura != NULLAURA)
+    if (foundAura != nullptr)
     {
         // we've here aura, which script triggered removal after modding stack amount
         // check the state here, so we won't create new Aura object
         if (foundAura->IsRemoved())
-            return NULL;
+            return nullptr;
 
         if (refresh)
             *refresh = true;
@@ -303,7 +303,7 @@ AuraPtr Aura::TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEff
         return Create(spellproto, effMask, owner, caster, spellPowerData, baseAmount, castItem, casterGUID);
 }
 
-AuraPtr Aura::TryCreate(SpellInfo const* spellproto, uint32 tryEffMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32* baseAmount /*= NULL*/, ItemPtr castItem /*= NULL*/, uint64 casterGUID /*= 0*/)
+AuraPtr Aura::TryCreate(SpellInfo const* spellproto, uint32 tryEffMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32* baseAmount /*= nullptr*/, ItemPtr castItem /*= nullptr*/, uint64 casterGUID /*= 0*/)
 {
     ASSERT(spellproto);
     ASSERT(owner);
@@ -311,7 +311,7 @@ AuraPtr Aura::TryCreate(SpellInfo const* spellproto, uint32 tryEffMask, WorldObj
     ASSERT(tryEffMask <= MAX_EFFECT_MASK);
     uint32 effMask = Aura::BuildEffectMaskForOwner(spellproto, tryEffMask, owner);
     if (!effMask)
-        return NULLAURA;
+        return nullptr;
     return Create(spellproto, effMask, owner, caster, spellPowerData, baseAmount, castItem, casterGUID);
 }
 
@@ -338,9 +338,9 @@ AuraPtr Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObjectPtr
         if (!owner->IsInWorld() || TO_UNIT(owner)->IsDuringRemoveFromWorld())
             // owner not in world so don't allow to own not self casted single target auras
             if (casterGUID != owner->GetGUID() && spellproto->IsSingleTarget())
-                return NULL;
+                return nullptr;
 
-    AuraPtr aura = NULLAURA;
+    AuraPtr aura = nullptr;
     switch (owner->GetTypeId())
     {
         case TYPEID_UNIT:
@@ -362,17 +362,17 @@ AuraPtr Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObjectPtr
             break;
         default:
             ASSERT(false);
-            return NULL;
+            return nullptr;
     }
     // aura can be removed in Unit::_AddAura call
     if (aura->IsRemoved())
-        return NULLAURA;
+        return nullptr;
     return aura;
 }
 
 Aura::Aura(SpellInfo const* spellproto, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, ItemPtr castItem, uint64 casterGUID) :
 m_spellInfo(spellproto), m_casterGuid(casterGUID ? casterGUID : caster->GetGUID()),
-m_castItemGuid(castItem ? castItem->GetGUID() : 0), m_applyTime(time(NULL)),
+m_castItemGuid(castItem ? castItem->GetGUID() : 0), m_applyTime(time(nullptr)),
 m_owner(owner), m_timeCla(0), m_updateTargetMapInterval(0),
 m_casterLevel(caster ? caster->getLevel() : m_spellInfo->SpellLevel), m_procCharges(0), m_stackAmount(1),
 m_isRemoved(false), m_isSingleTarget(false), m_isUsingCharges(false)
@@ -394,14 +394,14 @@ void Aura::_InitEffects(uint32 effMask, UnitPtr caster, int32 *baseAmount)
     {
         if (effMask & (uint8(1) << i))
         {
-            m_effects[i] = AuraEffectPtr(new AuraEffect(shared_from_this(), i, baseAmount ? baseAmount + i : NULL, caster));
+            m_effects[i] = AuraEffectPtr(new AuraEffect(shared_from_this(), i, baseAmount ? baseAmount + i : nullptr, caster));
 
             m_effects[i]->CalculatePeriodic(caster, true, false);
             m_effects[i]->SetAmount(m_effects[i]->CalculateAmount(caster));
             m_effects[i]->CalculateSpellMod();
         }
         else
-            m_effects[i] = NULL;
+            m_effects[i] = nullptr;
     }
 }
 
@@ -449,8 +449,8 @@ void Aura::_ApplyForTarget(UnitPtr target, UnitPtr caster, AuraApplicationPtr au
     {
         if (m_spellInfo->Attributes & SPELL_ATTR0_DISABLED_WHILE_ACTIVE)
         {
-            ItemPtr castItem = m_castItemGuid ? TO_PLAYER(caster)->GetItemByGuid(m_castItemGuid) : NULL;
-            TO_PLAYER(caster)->AddSpellAndCategoryCooldowns(m_spellInfo, castItem ? castItem->GetEntry() : 0, NULL, true);
+            ItemPtr castItem = m_castItemGuid ? TO_PLAYER(caster)->GetItemByGuid(m_castItemGuid) : nullptr;
+            TO_PLAYER(caster)->AddSpellAndCategoryCooldowns(m_spellInfo, castItem ? castItem->GetEntry() : 0, nullptr, true);
         }
     }
 }
@@ -667,8 +667,8 @@ void Aura::UpdateOwner(uint32 diff, WorldObjectPtr owner)
     UnitPtr caster = GetCaster();
     // Apply spellmods for channeled auras
     // used for example when triggered spell of spell:10 is modded
-    Spell* modSpell = NULL;
-    PlayerPtr modOwner = NULL;
+    Spell* modSpell = nullptr;
+    PlayerPtr modOwner = nullptr;
     if (caster)
     {
         modOwner = caster->GetSpellModOwner();
@@ -716,7 +716,7 @@ void Aura::Update(uint32 diff, UnitPtr caster)
             {
                 if (!m_spellPowerData)
                 {
-                    printf("Probleme dans l'aura %u, m_spellPowerData NULL", this->GetId());
+                    printf("Probleme dans l'aura %u, m_spellPowerData nullptr", this->GetId());
                     return;
                 }
 
@@ -753,7 +753,7 @@ void Aura::Update(uint32 diff, UnitPtr caster)
 
 int32 Aura::CalcMaxDuration(UnitPtr caster) const
 {
-    PlayerPtr modOwner = NULL;
+    PlayerPtr modOwner = nullptr;
     int32 maxDuration;
 
     if (caster)
@@ -1000,7 +1000,7 @@ void Aura::UnregisterSingleTarget()
     UnitPtr caster = GetCaster();
     // TODO: find a better way to do this.
     if (!caster)
-        caster = ObjectAccessor::GetObjectInOrOutOfWorld(GetCasterGUID(), (Unit*)NULL);
+        caster = ObjectAccessor::GetObjectInOrOutOfWorld(GetCasterGUID(), (Unit*)nullptr);
     ASSERT(caster);
     caster->GetSingleCastAuras().remove(shared_from_this());
     SetIsSingleTarget(false);
@@ -1141,7 +1141,7 @@ void Aura::HandleAuraSpecificMods(constAuraApplicationPtr aurApp, UnitPtr caster
                     if (*itr < 0)
                         target->RemoveAurasDueToSpell(-(*itr));
                     else if (removeMode != AURA_REMOVE_BY_DEATH)
-                        target->CastSpell(target, *itr, true, NULL, NULL, GetCasterGUID());
+                        target->CastSpell(target, *itr, true, nullptr, nullptr, GetCasterGUID());
                 }
             }
             if (std::vector<int32> const* spellTriggered = sSpellMgr->GetSpellLinked(GetId() + SPELL_LINK_AURA))
@@ -1165,7 +1165,7 @@ void Aura::HandleAuraSpecificMods(constAuraApplicationPtr aurApp, UnitPtr caster
                 if (*itr > 0)
                 {
                     AuraPtr triggeredAura = target->GetAura(*itr, GetCasterGUID());
-                    if (triggeredAura != NULLAURA)
+                    if (triggeredAura != nullptr)
                         triggeredAura->ModStackAmount(GetStackAmount() - triggeredAura->GetStackAmount());
                 }
         }
@@ -1207,7 +1207,7 @@ void Aura::HandleAuraSpecificMods(constAuraApplicationPtr aurApp, UnitPtr caster
                     if (caster->HasAura(64760))
                     {
                         int32 heal = GetEffect(EFFECT_0)->GetAmount();
-                        caster->CastCustomSpell(target, 64801, &heal, NULL, NULL, true, NULL, GetEffect(EFFECT_0));
+                        caster->CastCustomSpell(target, 64801, &heal, nullptr, nullptr, true, nullptr, GetEffect(EFFECT_0));
                     }
                 }
                 break;
@@ -1265,8 +1265,8 @@ void Aura::HandleAuraSpecificMods(constAuraApplicationPtr aurApp, UnitPtr caster
                         int32 basepoints0 = aurEff->GetAmount() * GetEffect(0)->GetTotalTicks() * int32(damage) / 100;
                         int32 heal = int32(CalculatePct(basepoints0, 15));
 
-                        caster->CastCustomSpell(target, 63675, &basepoints0, NULL, NULL, true, NULL, GetEffect(0));
-                        caster->CastCustomSpell(caster, 75999, &heal, NULL, NULL, true, NULL, GetEffect(0));
+                        caster->CastCustomSpell(target, 63675, &basepoints0, nullptr, nullptr, true, nullptr, GetEffect(0));
+                        caster->CastCustomSpell(caster, 75999, &heal, nullptr, nullptr, true, nullptr, GetEffect(0));
                     }
                 }
                 // Power Word: Shield
@@ -1277,7 +1277,7 @@ void Aura::HandleAuraSpecificMods(constAuraApplicationPtr aurApp, UnitPtr caster
                     {
                         // instantly heal m_amount% of the absorb-value
                         int32 heal = glyph->GetAmount() * GetEffect(0)->GetAmount()/100;
-                        caster->CastCustomSpell(GetUnitOwner(), 56160, &heal, NULL, NULL, true, 0, GetEffect(0));
+                        caster->CastCustomSpell(GetUnitOwner(), 56160, &heal, nullptr, nullptr, true, 0, GetEffect(0));
                     }
                 }
                 break;
@@ -1311,7 +1311,7 @@ void Aura::HandleAuraSpecificMods(constAuraApplicationPtr aurApp, UnitPtr caster
                             {
                                 int32 remainingDamage = aurEff->GetAmount() * (aurEff->GetTotalTicks() - aurEff->GetTickNumber());
                                 if (remainingDamage > 0)
-                                    caster->CastCustomSpell(caster, 72373, NULL, &remainingDamage, NULL, true);
+                                    caster->CastCustomSpell(caster, 72373, nullptr, &remainingDamage, nullptr, true);
                             }
                         }
                         break;
@@ -1323,7 +1323,7 @@ void Aura::HandleAuraSpecificMods(constAuraApplicationPtr aurApp, UnitPtr caster
                     case 66: // Invisibility
                         if (removeMode != AURA_REMOVE_BY_EXPIRE)
                             break;
-                        target->CastSpell(target, 32612, true, NULL, GetEffect(1));
+                        target->CastSpell(target, 32612, true, nullptr, GetEffect(1));
                         target->CombatStop();
                         break;
                     default:
@@ -1337,7 +1337,7 @@ void Aura::HandleAuraSpecificMods(constAuraApplicationPtr aurApp, UnitPtr caster
                     // Shattered Barrier
                     if (AuraEffectPtr dummy = caster->GetDummyAuraEffect(SPELLFAMILY_MAGE, 3260, 0))
                         if (roll_chance_i(dummy->GetSpellInfo()->ProcChance))
-                            caster->CastSpell(target, 55080, true, NULL, GetEffect(0));
+                            caster->CastSpell(target, 55080, true, nullptr, GetEffect(0));
                 }
                 break;
             case SPELLFAMILY_WARLOCK:
@@ -1381,7 +1381,7 @@ void Aura::HandleAuraSpecificMods(constAuraApplicationPtr aurApp, UnitPtr caster
                                      break;
                             }
                             else    //and if needed
-                                TO_PLAYER(caster)->AddSpellCooldown(aura->GetId(), 0, uint32(time(NULL) + 12));
+                                TO_PLAYER(caster)->AddSpellCooldown(aura->GetId(), 0, uint32(time(nullptr) + 12));
 
                         }
                         // effect on caster
@@ -1389,7 +1389,7 @@ void Aura::HandleAuraSpecificMods(constAuraApplicationPtr aurApp, UnitPtr caster
                         {
                             float multiplier = float(aurEff->GetAmount());
                             int32 basepoints0 = int32(CalculatePct(caster->GetMaxPower(POWER_MANA), multiplier));
-                            caster->CastCustomSpell(caster, 47755, &basepoints0, NULL, NULL, true);
+                            caster->CastCustomSpell(caster, 47755, &basepoints0, nullptr, nullptr, true);
                         }
                     }
                 }
@@ -1466,7 +1466,7 @@ void Aura::HandleAuraSpecificMods(constAuraApplicationPtr aurApp, UnitPtr caster
                     else
                     {
                         int32 basepoints0 = aurEff->GetAmount();
-                        target->CastCustomSpell(target, 31665, &basepoints0, NULL, NULL, true);
+                        target->CastCustomSpell(target, 31665, &basepoints0, nullptr, nullptr, true);
                     }
                 }
                 break;
@@ -1663,7 +1663,7 @@ bool Aura::CanStackWith(constAuraPtr existingAura) const
 
     if (isVehicleAura1 && isVehicleAura2)
     {
-        VehiclePtr veh = NULL;
+        VehiclePtr veh = nullptr;
         if (GetOwner()->ToUnit())
             veh = GetOwner()->ToUnit()->GetVehicleKit();
 
@@ -1696,7 +1696,7 @@ bool Aura::IsProcOnCooldown() const
 {
     /*if (m_procCooldown)
     {
-        if (m_procCooldown > time(NULL))
+        if (m_procCooldown > time(nullptr))
             return true;
     }*/
     return false;
@@ -1704,7 +1704,7 @@ bool Aura::IsProcOnCooldown() const
 
 void Aura::AddProcCooldown(uint32 /*msec*/)
 {
-    //m_procCooldown = time(NULL) + msec;
+    //m_procCooldown = time(nullptr) + msec;
 }
 
 void Aura::PrepareProcToTrigger()
@@ -1768,7 +1768,7 @@ bool Aura::IsProcTriggeredOnEvent(AuraApplicationPtr aurApp, ProcEventInfo& even
             if (eventInfo.GetDamageInfo())
             {
                 WeaponAttackType attType = eventInfo.GetDamageInfo()->GetAttackType();
-                ItemPtr item = NULL;
+                ItemPtr item = nullptr;
                 if (attType == BASE_ATTACK)
                     item = TO_PLAYER(target)->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
                 else if (attType == OFF_ATTACK)

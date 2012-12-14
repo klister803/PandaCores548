@@ -53,7 +53,7 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
 
 
     PlayerPtr caster = GetPlayer();
-    UnitPtr unitTarget = NULL;
+    UnitPtr unitTarget = nullptr;
 
     unitTarget = sObjectAccessor->GetUnit(TO_CONST_WORLDOBJECT(caster), guid);
 
@@ -155,7 +155,7 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Player 1 is: %u (%s)", player->GetGUIDLow(), player->GetName());
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Player 2 is: %u (%s)", plTarget->GetGUIDLow(), plTarget->GetName());
 
-    time_t now = time(NULL);
+    time_t now = time(nullptr);
     player->duel->startTimer = now;
     plTarget->duel->startTimer = now;
 

@@ -125,14 +125,14 @@ public:
             {
                 if (Teleport_Timer <= diff)
                 {
-                    UnitPtr target = NULL;
+                    UnitPtr target = nullptr;
                     target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (target && target->GetTypeId() == TYPEID_PLAYER)
                     {
                         if (DoGetThreat(target))
                             DoModifyThreatPercent(target, -100);
 
-                        CreaturePtr Summoned = NULL;
+                        CreaturePtr Summoned = nullptr;
                         switch (rand()%6)
                         {
                             case 0:

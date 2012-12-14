@@ -383,7 +383,7 @@ class boss_krick : public CreatureScript
                             if (CreaturePtr temp = me->GetCreature(TO_WORLDOBJECT(me), _instanceScript->GetData64(DATA_JAINA_SYLVANAS_1)))
                                 temp->DespawnOrUnsummon();
 
-                            CreaturePtr jainaOrSylvanas = NULL;
+                            CreaturePtr jainaOrSylvanas = nullptr;
                             if (_instanceScript->GetData(DATA_TEAM_IN_INSTANCE) == ALLIANCE)
                                 jainaOrSylvanas = me->SummonCreature(NPC_JAINA_PART1, outroPos[2], TEMPSUMMON_MANUAL_DESPAWN);
                             else

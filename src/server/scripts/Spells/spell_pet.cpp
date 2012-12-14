@@ -1521,7 +1521,7 @@ public:
                 float mod = 0.7f;
 
                 // Ravenous Dead
-                constAuraEffectPtr aurEff = NULL;
+                constAuraEffectPtr aurEff = nullptr;
                 // Check just if owner has Ravenous Dead since it's effect is not an aura
                 aurEff = owner->GetAuraEffect(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, SPELLFAMILY_DEATHKNIGHT, 3010, 0);
                 if (aurEff)

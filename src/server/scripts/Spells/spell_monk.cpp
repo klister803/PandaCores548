@@ -84,7 +84,7 @@ class spell_monk_spear_hand_strike : public SpellScriptLoader
                         if (target->isInFront(_player))
                         {
                             _player->CastSpell(target, SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE, true);
-                            _player->AddSpellCooldown(116705, 0, time(NULL) + 15);
+                            _player->AddSpellCooldown(116705, 0, time(nullptr) + 15);
                         }
                     }
                 }
@@ -335,7 +335,7 @@ class spell_monk_clash : public SpellScriptLoader
                         if (UnitPtr target = GetHitUnit())
                         {
                             int32 basePoint = 2;
-                            _player->CastCustomSpell(target, SPELL_MONK_CLASH_CHARGE, &basePoint, NULL, NULL, true);
+                            _player->CastCustomSpell(target, SPELL_MONK_CLASH_CHARGE, &basePoint, nullptr, nullptr, true);
                             target->CastSpell(_player, SPELL_MONK_CLASH_CHARGE, true);
                         }
                     }
@@ -376,7 +376,7 @@ class spell_monk_keg_smash : public SpellScriptLoader
                             _player->CastSpell(target, SPELL_MONK_WEAKENED_BLOWS, true);
                             _player->CastSpell(_player, SPELL_MONK_KEG_SMASH_ENERGIZE, true);
                             // Prevent to receive 2 CHI more than once time per cast
-                            _player->AddSpellCooldown(SPELL_MONK_KEG_SMASH_ENERGIZE, 0, time(NULL) + 1);
+                            _player->AddSpellCooldown(SPELL_MONK_KEG_SMASH_ENERGIZE, 0, time(nullptr) + 1);
                             _player->CastSpell(target, SPELL_MONK_DIZZYING_HAZE, true);
                         }
                     }
@@ -657,13 +657,13 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                             if (target->isInBack(caster))
                             {
                                 int32 bp = int32(GetHitDamage() * 0.2f) / 4;
-                                caster->CastCustomSpell(target, SPELL_MONK_BLACKOUT_KICK_DOT, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(target, SPELL_MONK_BLACKOUT_KICK_DOT, &bp, nullptr, nullptr, true);
                             }
                             // else : 20% damage on instant heal
                             else
                             {
                                 int32 bp = int32(GetHitDamage() * 0.2f);
-                                caster->CastCustomSpell(caster, SPELL_MONK_BLACKOUT_KICK_HEAL, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(caster, SPELL_MONK_BLACKOUT_KICK_HEAL, &bp, nullptr, nullptr, true);
                             }
                         }
                         // +25% / +50% of the auto-attacks on heal nearby targets

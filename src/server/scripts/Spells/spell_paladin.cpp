@@ -150,8 +150,8 @@ class spell_pal_judgment : public SpellScriptLoader
 //                        : float(defenseSkillValue) / float(reqDefForMaxHeal);
 //
 //                    int32 healAmount = int32(victim->CountPctFromMaxHealth(uint32(healPct * pctFromDefense)));
-//                    victim->CastCustomSpell(victim, PAL_SPELL_ARDENT_DEFENDER_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff);
-//                    victim->ToPlayer()->AddSpellCooldown(PAL_SPELL_ARDENT_DEFENDER_HEAL, 0, time(NULL) + 120);
+//                    victim->CastCustomSpell(victim, PAL_SPELL_ARDENT_DEFENDER_HEAL, &healAmount, nullptr, nullptr, true, nullptr, aurEff);
+//                    victim->ToPlayer()->AddSpellCooldown(PAL_SPELL_ARDENT_DEFENDER_HEAL, 0, time(nullptr) + 120);
 //                }
 //                else if (remainingHealth < int32(allowedHealth))
 //                {
@@ -380,12 +380,12 @@ class spell_pal_holy_shock : public SpellScriptLoader
                         if (caster->IsFriendlyTo(unitTarget))
                         {
                             caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PALADIN_SPELL_HOLY_SHOCK_R1_HEALING, rank), true, 0);
-                            TO_PLAYER(caster)->AddSpellCooldown(PALADIN_SPELL_HOLY_SHOCK_R1, 0, time(NULL) + 6);
+                            TO_PLAYER(caster)->AddSpellCooldown(PALADIN_SPELL_HOLY_SHOCK_R1, 0, time(nullptr) + 6);
                         }
                         else
                         {
                             caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PALADIN_SPELL_HOLY_SHOCK_R1_DAMAGE, rank), true, 0);
-                            TO_PLAYER(caster)->AddSpellCooldown(PALADIN_SPELL_HOLY_SHOCK_R1, 0, time(NULL) + 6);
+                            TO_PLAYER(caster)->AddSpellCooldown(PALADIN_SPELL_HOLY_SHOCK_R1, 0, time(nullptr) + 6);
                         }
                     }
                 }
@@ -436,7 +436,7 @@ class spell_pal_judgement_of_command : public SpellScriptLoader
             {
                 if (UnitPtr unitTarget = GetHitUnit())
                     if (SpellInfo const* spell_proto = sSpellMgr->GetSpellInfo(GetEffectValue()))
-                        GetCaster()->CastSpell(unitTarget, spell_proto, true, NULL);
+                        GetCaster()->CastSpell(unitTarget, spell_proto, true, nullptr);
             }
 
             void Register()
@@ -521,7 +521,7 @@ class spell_pal_divine_storm_dummy : public SpellScriptLoader
                     return;
 
                 int32 heal = GetEffectValue() / _targetCount;
-                GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_DIVINE_STORM_HEAL, &heal, NULL, NULL, true);
+                GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_DIVINE_STORM_HEAL, &heal, nullptr, nullptr, true);
             }
         private:
             uint32 _targetCount;

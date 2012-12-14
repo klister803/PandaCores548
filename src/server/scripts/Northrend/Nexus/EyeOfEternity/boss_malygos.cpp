@@ -612,7 +612,7 @@ public:
             }
 
             // is a player falling from a vehicle?
-            return NULL;
+            return nullptr;
         }
 
         void JustDied(UnitPtr /*killer*/)

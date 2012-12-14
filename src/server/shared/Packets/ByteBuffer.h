@@ -77,7 +77,7 @@ class ByteBufferSourceException : public ByteBufferException
             ACE_Stack_Trace trace;
 
             sLog->outError(LOG_FILTER_GENERAL, "Attempted to put a %s in ByteBuffer (pos: " SIZEFMTD " size: " SIZEFMTD ")\n[Stack trace: %s]",
-                (ValueSize > 0 ? "NULL-pointer" : "zero-sized value"), Pos, Size, trace.c_str());
+                (ValueSize > 0 ? "nullptr-pointer" : "zero-sized value"), Pos, Size, trace.c_str());
         }
 };
 

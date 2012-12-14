@@ -43,7 +43,7 @@ void AddItemsSetItem(PlayerPtr player, ItemPtr item)
     if (set->required_skill_id && player->GetSkillValue(set->required_skill_id) < set->required_skill_value)
         return;
 
-    ItemSetEffect* eff = NULL;
+    ItemSetEffect* eff = nullptr;
 
     for (size_t x = 0; x < player->ItemSetEff.size(); ++x)
     {
@@ -101,7 +101,7 @@ void AddItemsSetItem(PlayerPtr player, ItemPtr item)
                 }
 
                 // spell casted only if fit form requirement, in other case will casted at form change
-                player->ApplyEquipSpell(spellInfo, NULL, true);
+                player->ApplyEquipSpell(spellInfo, nullptr, true);
                 eff->spells[y] = spellInfo;
                 break;
             }
@@ -121,7 +121,7 @@ void RemoveItemsSetItem(PlayerPtr player, ItemTemplate const* proto)
         return;
     }
 
-    ItemSetEffect* eff = NULL;
+    ItemSetEffect* eff = nullptr;
     size_t setindex = 0;
     for (; setindex < player->ItemSetEff.size(); setindex++)
     {
@@ -152,8 +152,8 @@ void RemoveItemsSetItem(PlayerPtr player, ItemTemplate const* proto)
             if (eff->spells[z] && eff->spells[z]->Id == set->spells[x])
             {
                 // spell can be not active if not fit form requirement
-                player->ApplyEquipSpell(eff->spells[z], NULL, false);
-                eff->spells[z]=NULL;
+                player->ApplyEquipSpell(eff->spells[z], nullptr, false);
+                eff->spells[z]=nullptr;
                 break;
             }
         }
@@ -163,7 +163,7 @@ void RemoveItemsSetItem(PlayerPtr player, ItemTemplate const* proto)
     {
         ASSERT(eff == player->ItemSetEff[setindex]);
         delete eff;
-        player->ItemSetEff[setindex] = NULL;
+        player->ItemSetEff[setindex] = nullptr;
     }
 }
 
@@ -247,10 +247,10 @@ Item::Item()
     m_slot = 0;
     uState = ITEM_NEW;
     uQueuePos = -1;
-    m_container = NULL;
+    m_container = nullptr;
     m_lootGenerated = false;
     mb_in_trade = false;
-    m_lastPlayedTimeUpdate = time(NULL);
+    m_lastPlayedTimeUpdate = time(nullptr);
 
     m_refundRecipient = 0;
     m_paidMoney = 0;
@@ -686,7 +686,7 @@ void Item::AddToUpdateQueueOf(PlayerPtr player)
     if (IsInUpdateQueue())
         return;
 
-    ASSERT(player != NULL);
+    ASSERT(player != nullptr);
 
     if (player->GetGUID() != GetOwnerGUID())
     {
@@ -706,7 +706,7 @@ void Item::RemoveFromUpdateQueueOf(PlayerPtr player)
     if (!IsInUpdateQueue())
         return;
 
-    ASSERT(player != NULL)
+    ASSERT(player != nullptr)
 
     if (player->GetGUID() != GetOwnerGUID())
     {
@@ -717,7 +717,7 @@ void Item::RemoveFromUpdateQueueOf(PlayerPtr player)
     if (player->m_itemUpdateQueueBlocked)
         return;
 
-    player->m_itemUpdateQueue[uQueuePos] = NULL;
+    player->m_itemUpdateQueue[uQueuePos] = nullptr;
     uQueuePos = -1;
 }
 
@@ -1018,7 +1018,7 @@ void Item::SendTimeUpdate(PlayerPtr owner)
 ItemPtr Item::CreateItem(uint32 item, uint32 count, constPlayerPtr player)
 {
     if (count < 1)
-        return NULL;                                        //don't create item at zero count
+        return nullptr;                                        //don't create item at zero count
 
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item);
     if (pProto)
@@ -1037,20 +1037,20 @@ ItemPtr Item::CreateItem(uint32 item, uint32 count, constPlayerPtr player)
     }
     else
         ASSERT(false);
-    return NULL;
+    return nullptr;
 }
 
 ItemPtr Item::CloneItem(uint32 count, constPlayerPtr player) const
 {
     ItemPtr newItem = CreateItem(GetEntry(), count, player);
     if (!newItem)
-        return NULL;
+        return nullptr;
 
     newItem->SetUInt32Value(ITEM_FIELD_CREATOR,      GetUInt32Value(ITEM_FIELD_CREATOR));
     newItem->SetUInt32Value(ITEM_FIELD_GIFTCREATOR,  GetUInt32Value(ITEM_FIELD_GIFTCREATOR));
     newItem->SetUInt32Value(ITEM_FIELD_FLAGS,        GetUInt32Value(ITEM_FIELD_FLAGS));
     newItem->SetUInt32Value(ITEM_FIELD_DURATION,     GetUInt32Value(ITEM_FIELD_DURATION));
-    // player CAN be NULL in which case we must not update random properties because that accesses player's item update queue
+    // player CAN be nullptr in which case we must not update random properties because that accesses player's item update queue
     if (player)
         newItem->SetItemRandomProperties(GetItemRandomPropertyId());
     return newItem;
@@ -1113,7 +1113,7 @@ void Item::DeleteRefundDataFromDB(SQLTransaction* trans)
     }
 }
 
-void Item::SetNotRefundable(PlayerPtr owner, bool changestate /*=true*/, SQLTransaction* trans /*=NULL*/)
+void Item::SetNotRefundable(PlayerPtr owner, bool changestate /*=true*/, SQLTransaction* trans /*=nullptr*/)
 {
     if (!HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE))
         return;
@@ -1140,7 +1140,7 @@ void Item::UpdatePlayedTime(PlayerPtr owner)
     // Get current played time
     uint32 current_playtime = GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME);
     // Calculate time elapsed since last played time update
-    time_t curtime = time(NULL);
+    time_t curtime = time(nullptr);
     uint32 elapsed = uint32(curtime - m_lastPlayedTimeUpdate);
     uint32 new_playtime = current_playtime + elapsed;
     // Check if the refund timer has expired yet
@@ -1161,7 +1161,7 @@ void Item::UpdatePlayedTime(PlayerPtr owner)
 
 uint32 Item::GetPlayedTime()
 {
-    time_t curtime = time(NULL);
+    time_t curtime = time(nullptr);
     uint32 elapsed = uint32(curtime - m_lastPlayedTimeUpdate);
     return GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME) + elapsed;
 }

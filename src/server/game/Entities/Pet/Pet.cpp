@@ -33,10 +33,10 @@
 
 #define PET_XP_FACTOR 0.05f
 
-Pet::Pet(PlayerPtr owner, PetType type) : Guardian(NULL, owner, true),
+Pet::Pet(PlayerPtr owner, PetType type) : Guardian(nullptr, owner, true),
 m_removed(false), m_owner(owner),
 m_petType(type), m_duration(0), m_specialization(0),
-m_auraRaidUpdateMask(0), m_loading(false), m_declinedname(NULL)
+m_auraRaidUpdateMask(0), m_loading(false), m_declinedname(nullptr)
 {
     m_unitTypeMask |= UNIT_MASK_PET;
     if (type == HUNTER_PET)
@@ -232,7 +232,7 @@ bool Pet::LoadPetFromDB(PlayerPtr owner, uint32 petentry, uint32 petnumber, bool
             break;
     }
 
-    SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(NULL))); // cast can't be helped here
+    SetUInt32Value(UNIT_FIELD_PET_NAME_TIMESTAMP, uint32(time(nullptr))); // cast can't be helped here
     SetCreatorGUID(owner->GetGUID());
 
     InitStatsForLevel(petlevel);
@@ -300,7 +300,7 @@ bool Pet::LoadPetFromDB(PlayerPtr owner, uint32 petentry, uint32 petnumber, bool
     owner->SetMinion(THIS_PET, true);
     map->AddToMap(THIS_CREATURE);
 
-    uint32 timediff = uint32(time(NULL) - fields[13].GetUInt32());
+    uint32 timediff = uint32(time(nullptr) - fields[13].GetUInt32());
     _LoadAuras(timediff);
 
     // load action bar, if data broken will fill later by default spells.
@@ -455,7 +455,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
         };
 
         ss  << "', "
-            << time(NULL) << ','
+            << time(nullptr) << ','
             << GetUInt32Value(UNIT_CREATED_BY_SPELL) << ','
             << uint32(getPetType()) << ','
             << GetSpecializationId()
@@ -531,7 +531,7 @@ void Pet::Update(uint32 diff)
     {
         case CORPSE:
         {
-            if (getPetType() != HUNTER_PET || m_corpseRemoveTime <= time(NULL))
+            if (getPetType() != HUNTER_PET || m_corpseRemoveTime <= time(nullptr))
             {
                 Remove(PET_SAVE_NOT_IN_SLOT);               //hunters' pets never get removed because of death, NEVER!
                 return;
@@ -1053,7 +1053,7 @@ void Pet::_LoadSpellCooldowns()
 
     if (result)
     {
-        time_t curTime = time(NULL);
+        time_t curTime = time(nullptr);
 
         WorldPacket data(SMSG_SPELL_COOLDOWN, size_t(8+1+result->GetRowCount()*8));
         data << GetGUID();
@@ -1096,7 +1096,7 @@ void Pet::_SaveSpellCooldowns(SQLTransaction& trans)
     stmt->setUInt32(0, m_charmInfo->GetPetNumber());
     trans->Append(stmt);
 
-    time_t curTime = time(NULL);
+    time_t curTime = time(nullptr);
 
     // remove oudated and save active
     for (CreatureSpellCooldowns::iterator itr = m_CreatureSpellCooldowns.begin(); itr != m_CreatureSpellCooldowns.end();)
@@ -1219,7 +1219,7 @@ void Pet::_LoadAuras(uint32 timediff)
             Field* fields = result->Fetch();
             uint8 slot = fields[0].GetUInt8();
             uint64 caster_guid = fields[1].GetUInt64();
-            // NULL guid stored - pet is the caster of the spell - see Pet::_SaveAuras
+            // nullptr guid stored - pet is the caster of the spell - see Pet::_SaveAuras
             if (!caster_guid)
                 caster_guid = GetGUID();
             uint32 spellid = fields[2].GetUInt32();
@@ -1264,8 +1264,8 @@ void Pet::_LoadAuras(uint32 timediff)
                 }
             }
 
-            AuraPtr aura = Aura::TryCreate(spellInfo, effmask, THIS_PET, NULL, spellInfo->spellPower, &baseDamage[0], NULL, caster_guid);
-            if (aura != NULLAURA)
+            AuraPtr aura = Aura::TryCreate(spellInfo, effmask, THIS_PET, nullptr, spellInfo->spellPower, &baseDamage[0], nullptr, caster_guid);
+            if (aura != nullptr)
             {
                 if (!aura->CanBeSaved())
                 {
@@ -1482,7 +1482,7 @@ void Pet::InitLevelupSpellsForLevel()
 {
     uint8 level = getLevel();
 
-    if (PetLevelupSpellSet const* levelupSpells = GetCreatureTemplate()->family ? sSpellMgr->GetPetLevelupSpellList(GetCreatureTemplate()->family) : NULL)
+    if (PetLevelupSpellSet const* levelupSpells = GetCreatureTemplate()->family ? sSpellMgr->GetPetLevelupSpellList(GetCreatureTemplate()->family) : nullptr)
     {
         // PetLevelupSpellSet ordered by levels, process in reversed order
         for (PetLevelupSpellSet::const_reverse_iterator itr = levelupSpells->rbegin(); itr != levelupSpells->rend(); ++itr)
@@ -1748,7 +1748,7 @@ void Pet::CastPetAura(PetAura const* aura)
     if (auraId == 35696)                                      // Demonic Knowledge
     {
         int32 basePoints = CalculatePct(aura->GetDamage(), GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT));
-        CastCustomSpell(THIS_PET, auraId, &basePoints, NULL, NULL, true);
+        CastCustomSpell(THIS_PET, auraId, &basePoints, nullptr, nullptr, true);
     }
     else
         CastSpell(THIS_PET, auraId, true);
