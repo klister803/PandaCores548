@@ -3058,6 +3058,8 @@ class Player : public Unit, public GridObject<Player>
 
         uint32 m_knockBackTimer;
         uint8  m_ignoreMovementCount;
+
+        uint32 m_groupUpdateDelay;
 };
 
 void AddItemsSetItem(Player*player, Item* item);

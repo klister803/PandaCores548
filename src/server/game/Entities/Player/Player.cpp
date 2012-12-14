@@ -864,6 +864,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_ignoreMovementCount = 0;
 
+    m_groupUpdateDelay = 5000;
+
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
 }
 
@@ -1846,7 +1848,14 @@ void Player::Update(uint32 p_time)
     }
 
     // group update
-    SendUpdateToOutOfRangeGroupMembers();
+    // Avoid spam of SMSG_PARTY_MEMBER_STAT
+    if (m_groupUpdateDelay < p_time)
+    {
+        SendUpdateToOutOfRangeGroupMembers();
+        m_groupUpdateDelay = 5000;
+    }
+    else
+        m_groupUpdateDelay -= p_time;
 
     Pet* pet = GetPet();
     if (pet && !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityRange()) && !pet->isPossessed())
