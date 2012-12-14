@@ -3176,7 +3176,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 124040: // Chi Torpedo : Damage
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(9);
                 break;
-            case 115008: // Cho Torpedo
+            case 115008: // Chi Torpedo
                 spellInfo->OverrideSpellList.push_back(121828); // Override List with Chi Torpedo - Talent
                 break;
             case 109132: // Roll
