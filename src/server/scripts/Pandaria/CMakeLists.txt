@@ -24,6 +24,8 @@ set(scripts_STAT_SRCS
   Pandaria/StormstoutBrewery/instance_stormstout_brewery.cpp
   Pandaria/StormstoutBrewery/stormstout_brewery.cpp
   Pandaria/StormstoutBrewery/stormstout_brewery.h
+
+  Pandaria/WanderingIsland/wanderingisland.cpp
 )
 
 message("  -> Prepared: Pandaria")

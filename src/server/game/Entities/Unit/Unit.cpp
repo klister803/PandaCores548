@@ -548,6 +548,31 @@ void Unit::DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb)
 uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
     // Custom MoP Script
+    // Cheat Death : An attack that would otherwise be fatal will instead reduce you to no less than 10% of your maximum health
+    if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_ROGUE && damage != 0)
+    {
+        // Has talent Cheat Death and hasn't Cooldown for it
+        if (victim->HasAura(31230) && !victim->ToPlayer()->HasSpellCooldown(45182))
+        {
+            if (victim->GetHealthPct() < 10.0f && damage > victim->GetHealth())
+            {
+                // Reduce all damage taken by 80% for 3sec
+                victim->CastSpell(victim, 45182, true);
+                // This effect cannot occur more than once per 90sec
+                victim->ToPlayer()->AddSpellCooldown(45182, 0, time(NULL) + 90);
+                return 0;
+            }
+            else if (victim->GetHealthPct() > 10.0f && damage > victim->GetHealth())
+            {
+                victim->SetHealth(int32(victim->GetMaxHealth() * 0.1f));
+                // Reduce all damage taken by 80% for 3sec
+                victim->CastSpell(victim, 45182, true);
+                // This effect cannot occur more than once per 90sec
+                victim->ToPlayer()->AddSpellCooldown(45182, 0, time(NULL) + 90);
+                return 0;
+            }
+        }
+    }
     // Purgatory : fight on through damage that would kill mere mortals
     if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_DEATH_KNIGHT && damage != 0)
     {
@@ -9789,7 +9814,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             // Ice Lance
             if (spellProto->SpellIconID == 186)
                 if (victim->HasAuraState(AURA_STATE_FROZEN, spellProto, this))
-                    DoneTotalMod *= 2.0f;
+                    DoneTotalMod *= 4.0f;
 
             // Torment the weak
             if (spellProto->GetSchoolMask() & SPELL_SCHOOL_MASK_ARCANE)
@@ -9943,24 +9968,6 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     // from positive and negative SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN
     // multiplicative bonus, for example Dispersion + Shadowform (0.10*0.85=0.085)
     TakenTotalMod *= GetTotalAuraMultiplierByMiscMask(SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN, spellProto->GetSchoolMask());
-
-    //.. taken pct: dummy auras
-    AuraEffectList const& mDummyAuras = GetAuraEffectsByType(SPELL_AURA_DUMMY);
-    for (AuraEffectList::const_iterator i = mDummyAuras.begin(); i != mDummyAuras.end(); ++i)
-    {
-        switch ((*i)->GetSpellInfo()->SpellIconID)
-        {
-            // Cheat Death
-            case 2109:
-                if ((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL)
-                {
-                    if (GetTypeId() != TYPEID_PLAYER)
-                        continue;
-                    AddPct(TakenTotalMod, (*i)->GetAmount());
-                }
-                break;
-        }
-    }
 
     // From caster spells
     AuraEffectList const& mOwnerTaken = GetAuraEffectsByType(SPELL_AURA_MOD_DAMAGE_FROM_CASTER);
@@ -10151,12 +10158,10 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                     switch ((*i)->GetMiscValue())
                     {
                         // Shatter
-                        case  911: modChance+= 16;
-                        case  910: modChance+= 17;
-                        case  849: modChance+= 17;
+                        case  911:
                             if (!victim->HasAuraState(AURA_STATE_FROZEN, spellProto, this))
                                 break;
-                            crit_chance+=modChance;
+                            crit_chance*=2;
                             break;
                         case 7917: // Glyph of Shadowburn
                             if (victim->HasAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, spellProto, this))
@@ -16858,6 +16863,7 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
 }
 
 uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
+    // TODO FIND for Pandaren horde/alliance
 {
     switch (getRace())
     {

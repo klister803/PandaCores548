@@ -220,8 +220,9 @@ class Quest
         uint32 GetMaxLevel() const { return MaxLevel; }
         int32 GetQuestLevel() const { return Level; }
         uint32 GetType() const { return Type; }
-        uint32 GetRequiredClasses() const { return RequiredClasses; }
-        uint32 GetRequiredRaces() const { return RequiredRaces; }
+        int8   GetRequiredTeam() const { return RequiredTeam; }
+        int32  GetRequiredClasses() const { return RequiredClasses; }
+        int32  GetRequiredRaces() const { return RequiredRaces; }
         uint32 GetRequiredSkill() const { return RequiredSkillId; }
         uint32 GetRequiredSkillValue() const { return RequiredSkillPoints; }
         uint32 GetRepObjectiveFaction() const { return RequiredFactionId1; }
@@ -354,8 +355,9 @@ class Quest
         uint32 MaxLevel;
         int32  Level;
         uint32 Type;
-        uint32 RequiredClasses;
-        uint32 RequiredRaces;
+        int8   RequiredTeam;
+        int32  RequiredClasses;
+        int32  RequiredRaces;
         uint32 RequiredSkillId;
         uint32 RequiredSkillPoints;
         uint32 RequiredFactionId1;

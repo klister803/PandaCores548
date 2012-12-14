@@ -29,71 +29,7 @@ enum RogueSpells
 {
     ROGUE_SPELL_SHIV_TRIGGERED                   = 5940,
     ROGUE_SPELL_GLYPH_OF_PREPARATION             = 56819,
-    ROGUE_SPELL_PREY_ON_THE_WEAK                 = 58670,
-    ROGUE_SPELL_CHEAT_DEATH_COOLDOWN             = 31231,
-};
-
-// Cheat Death
-class spell_rog_cheat_death : public SpellScriptLoader
-{
-    public:
-        spell_rog_cheat_death() : SpellScriptLoader("spell_rog_cheat_death") { }
-
-        class spell_rog_cheat_death_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_rog_cheat_death_AuraScript);
-
-            uint32 absorbChance;
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(ROGUE_SPELL_CHEAT_DEATH_COOLDOWN))
-                    return false;
-                return true;
-            }
-
-            bool Load()
-            {
-                absorbChance = GetSpellInfo()->Effects[EFFECT_0].CalcValue();
-                return GetUnitOwner()->ToPlayer();
-            }
-
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                // Set absorbtion amount to unlimited
-                amount = -1;
-            }
-
-            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
-            {
-                Player* target = GetTarget()->ToPlayer();
-                if (dmgInfo.GetDamage() < target->GetHealth() || target->HasSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_COOLDOWN) ||  !roll_chance_i(absorbChance))
-                    return;
-
-                target->CastSpell(target, ROGUE_SPELL_CHEAT_DEATH_COOLDOWN, true);
-                target->AddSpellCooldown(ROGUE_SPELL_CHEAT_DEATH_COOLDOWN, 0, time(NULL) + 60);
-
-                uint32 health10 = target->CountPctFromMaxHealth(10);
-
-                // hp > 10% - absorb hp till 10%
-                if (target->GetHealth() > health10)
-                    absorbAmount = dmgInfo.GetDamage() - target->GetHealth() + health10;
-                // hp lower than 10% - absorb everything
-                else
-                    absorbAmount = dmgInfo.GetDamage();
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_rog_cheat_death_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-                OnEffectAbsorb += AuraEffectAbsorbFn(spell_rog_cheat_death_AuraScript::Absorb, EFFECT_0);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_rog_cheat_death_AuraScript();
-        }
+    ROGUE_SPELL_PREY_ON_THE_WEAK                 = 58670
 };
 
 // 31130 - Nerves of Steel
@@ -419,7 +355,6 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
-    new spell_rog_cheat_death();
     new spell_rog_nerves_of_steel();
     new spell_rog_preparation();
     new spell_rog_prey_on_the_weak();

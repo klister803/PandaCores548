@@ -44,6 +44,181 @@ enum MageSpells
     SPELL_MAGE_SUMMON_WATER_ELEMENTAL_PERMANENT  = 70908,
     SPELL_MAGE_SUMMON_WATER_ELEMENTAL_TEMPORARY  = 70907,
     SPELL_MAGE_GLYPH_OF_BLAST_WAVE               = 62126,
+    SPELL_MAGE_ALTER_TIME_OVERRIDED              = 127140,
+    SPELL_MAGE_ALTER_TIME                        = 110909,
+    SPELL_MAGE_TEMPORAL_DISPLACEMENT             = 80354,
+    HUNTER_SPELL_INSANITY                        = 95809,
+    SPELL_SHAMAN_SATED                           = 57724,
+    SPELL_SHAMAN_EXHAUSTED                       = 57723
+};
+
+// Time Warp - 80353
+class spell_mage_time_warp : public SpellScriptLoader
+{
+    public:
+        spell_mage_time_warp() : SpellScriptLoader("spell_mage_time_warp") { }
+
+        class spell_mage_time_warp_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_time_warp_SpellScript);
+
+            void RemoveInvalidTargets(std::list<WorldObject*>& targets)
+            {
+                targets.remove_if(Trinity::UnitAuraCheck(true, HUNTER_SPELL_INSANITY));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_EXHAUSTED));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_SATED));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
+            }
+
+            void ApplyDebuff()
+            {
+                if (Unit* target = GetHitUnit())
+                    target->CastSpell(target, SPELL_MAGE_TEMPORAL_DISPLACEMENT, true);
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mage_time_warp_SpellScript::RemoveInvalidTargets, EFFECT_0, TARGET_UNIT_CASTER_AREA_RAID);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mage_time_warp_SpellScript::RemoveInvalidTargets, EFFECT_1, TARGET_UNIT_CASTER_AREA_RAID);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mage_time_warp_SpellScript::RemoveInvalidTargets, EFFECT_2, TARGET_UNIT_CASTER_AREA_RAID);
+                AfterHit += SpellHitFn(spell_mage_time_warp_SpellScript::ApplyDebuff);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_time_warp_SpellScript();
+        }
+};
+
+// Alter Time - 127140 (overrided)
+class spell_mage_alter_time_overrided : public SpellScriptLoader
+{
+    public:
+        spell_mage_alter_time_overrided() : SpellScriptLoader("spell_mage_alter_time_overrided") { }
+
+        class spell_mage_alter_time_overrided_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_alter_time_overrided_SpellScript);
+
+            bool Validate(SpellInfo const* /*spellEntry*/)
+            {
+                if (!sSpellMgr->GetSpellInfo(SPELL_MAGE_ALTER_TIME_OVERRIDED))
+                    return false;
+                return true;
+            }
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(SPELL_MAGE_ALTER_TIME))
+                        _player->RemoveAura(SPELL_MAGE_ALTER_TIME);
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_mage_alter_time_overrided_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_alter_time_overrided_SpellScript();
+        }
+};
+
+struct auraData
+{
+    auraData(uint32 id, int32 duration) : m_id(id), m_duration(duration) {}
+    uint32 m_id;
+    int32 m_duration;
+};
+
+// Alter Time - 110909
+class spell_mage_alter_time : public SpellScriptLoader
+{
+    public:
+        spell_mage_alter_time() : SpellScriptLoader("spell_mage_alter_time") { }
+
+        class spell_mage_alter_time_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_alter_time_AuraScript);
+
+            int32 mana;
+            int32 health;
+            float posX;
+            float posY;
+            float posZ;
+            float orientation;
+            uint32 map;
+            std::set<auraData*> auras;
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                {
+                    posX = _player->GetPositionX();
+                    posY = _player->GetPositionY();
+                    posZ = _player->GetPositionZ();
+                    orientation = _player->GetOrientation();
+                    map = _player->GetMapId();
+                    Unit::AuraApplicationMap const& appliedAuras = _player->GetAppliedAuras();
+                    for (Unit::AuraApplicationMap::const_iterator itr = appliedAuras.begin(); itr != appliedAuras.end(); ++itr)
+                    {
+                        if (AuraPtr aura = itr->second->GetBase())
+                        {
+                            SpellInfo const* auraInfo = aura->GetSpellInfo();
+
+                            if (auraInfo->Attributes & SPELL_ATTR0_HIDDEN_CLIENTSIDE)
+                                continue;
+
+                            if (auraInfo->Id == SPELL_MAGE_ALTER_TIME)
+                                continue;
+
+                            auras.insert(new auraData(auraInfo->Id, aura->GetDuration()));
+                        }
+                    }
+                    mana = _player->GetPower(POWER_MANA);
+                    health = _player->GetHealth();
+                }
+            }
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                {
+                    for (auto itr : auras)
+                    {
+                        AuraPtr aura = !_player->HasAura(itr->m_id) ? _player->AddAura(itr->m_id, _player) : _player->GetAura(itr->m_id);
+                        if (aura)
+                        {
+                            aura->SetDuration(itr->m_duration);
+                            aura->SetNeedClientUpdateForTargets();
+                        }
+
+                        delete itr;
+                    }
+
+                    auras.clear();
+
+                    _player->SetPower(POWER_MANA, mana);
+                    _player->SetHealth(health);
+                    if (map && posX && posY && posZ && orientation)
+                        _player->TeleportTo(map, posX, posY, posZ, orientation);
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_mage_alter_time_AuraScript::OnApply, EFFECT_0, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_mage_alter_time_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_OVERRIDE_ACTIONBAR_SPELLS, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_alter_time_AuraScript();
+        }
 };
 
 class spell_mage_blast_wave : public SpellScriptLoader
@@ -387,6 +562,9 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_time_warp();
+    new spell_mage_alter_time_overrided();
+    new spell_mage_alter_time();
     new spell_mage_blast_wave();
     new spell_mage_cold_snap();
     new spell_mage_frost_warding_trigger();
