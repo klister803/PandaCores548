@@ -508,6 +508,10 @@ void PetAI::MovementInform(uint32 moveType, uint32 data)
 
 bool PetAI::CanAttack(Unit* target)
 {
+    // CrashFix
+    if (!me->GetCharmInfo())
+        return false;
+
     // Evaluates wether a pet can attack a specific
     // target based on CommandState, ReactState and other flags
 
