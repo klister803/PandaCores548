@@ -467,6 +467,16 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     // Custom MoP Script
+    // Alter Time - 108978 and Alter Time (overrided) - 127140
+    if (spellInfo->Id == 108978 && _player->HasAura(110909))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(127140);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
     // Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
     if (spellInfo->Id == 126892 && _player->HasAura(126896))
     {
