@@ -625,6 +625,8 @@ void AddSC_outdoorpvp_zm();
 // player
 void AddSC_chat_log();
 
+//
+void AddSC_WanderingIsland();
 #endif
 
 void AddScripts()
@@ -1266,6 +1268,7 @@ void AddPandarieScripts()
     AddSC_boss_trial_of_the_king();
     AddSC_boss_gekkan();
     AddSC_boss_xin_the_weaponmaster();
+    AddSC_WanderingIsland();
 #endif
 }
 
