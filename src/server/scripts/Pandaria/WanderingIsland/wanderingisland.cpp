@@ -16,7 +16,7 @@ class mob_tushui_trainee : public CreatureScript
             mob_tushui_trainee_AI(Creature* creature) : ScriptedAI(creature)
             {
                 me->SetReactState(REACT_DEFENSIVE);
-                me->setFaction(2068);
+                me->setFaction(2357);
             }
             
             EventMap events;
