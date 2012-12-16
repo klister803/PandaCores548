@@ -3120,6 +3120,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 7384: // Overpower
+                spellInfo->AttributesEx |= SPELL_ATTR1_ENABLE_AT_DODGE;
+                break;
             case 114695: // Pursuit of Justice
                 spellInfo->Effects[0].BasePoints = 0;
                 break;
