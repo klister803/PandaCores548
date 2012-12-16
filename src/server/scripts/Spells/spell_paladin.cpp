@@ -47,6 +47,68 @@ enum PaladinSpells
     SPELL_FORBEARANCE                            = 25771,
     SPELL_AVENGING_WRATH_MARKER                  = 61987,
     SPELL_IMMUNE_SHIELD_MARKER                   = 61988,
+    PALADIN_SPELL_WORD_OF_GLORY                  = 85673,
+    PALADIN_SPELL_WORD_OF_GLORY_HEAL             = 130551,
+    PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY         = 54936,
+    PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE  = 115522
+};
+
+// Word of Glory - 85673
+class spell_pal_word_of_glory : public SpellScriptLoader
+{
+    public:
+        spell_pal_word_of_glory() : SpellScriptLoader("spell_pal_word_of_glory") { }
+
+        class spell_pal_word_of_glory_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_word_of_glory_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(PALADIN_SPELL_WORD_OF_GLORY))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if ((unitTarget->GetTypeId() != TYPEID_PLAYER && !unitTarget->isPet()) || unitTarget->IsHostileTo(_player))
+                            unitTarget = _player;
+
+                        int32 holyPower = _player->GetPower(POWER_HOLY_POWER) > 3 ? 3 : _player->GetPower(POWER_HOLY_POWER);
+
+                        _player->CastSpell(unitTarget, PALADIN_SPELL_WORD_OF_GLORY_HEAL, true);
+
+                        if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY))
+                        {
+                            AuraPtr aura = _player->AddAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE, _player);
+
+                            if (aura)
+                            {
+                                aura->GetEffect(0)->ChangeAmount(aura->GetEffect(0)->GetAmount() * holyPower);
+                                aura->SetNeedClientUpdateForTargets();
+                            }
+                        }
+
+                        _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) - holyPower);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_word_of_glory_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_word_of_glory_SpellScript();
+        }
 };
 
 // Judgment - 20271
@@ -664,6 +726,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_word_of_glory();
     new spell_pal_judgment();
     //new spell_pal_ardent_defender();
     new spell_pal_blessing_of_faith();
