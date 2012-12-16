@@ -29,6 +29,7 @@
 #include "Group.h"
 #include "SmartAI.h"
 #include "ScriptMgr.h"
+#include "SpellAuraEffects.h"
 
 SmartAI::SmartAI(CreaturePtr c) : CreatureAI(c)
 {

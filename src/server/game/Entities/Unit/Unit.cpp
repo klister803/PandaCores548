@@ -60,6 +60,7 @@
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
 #include <math.h>
+#include "ClassFactory.h"
 
 float baseMoveSpeed[MAX_MOVE_TYPE] =
 {
@@ -166,12 +167,12 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     , m_AutoRepeatFirstCast(false)
     , m_procDeep(0)
     , m_removedAurasCount(0)
-    , i_motionMaster(THIS_UNIT)
-    , m_ThreatManager(THIS_UNIT)
+    , i_motionMaster(nullptr)
+    , m_ThreatManager(nullptr)
     , m_vehicle(nullptr)
     , m_vehicleKit(nullptr)
     , m_unitTypeMask(UNIT_MASK_NONE)
-    , m_HostileRefManager(THIS_UNIT)
+    , m_HostileRefManager(nullptr)
 
 
 {
@@ -3216,7 +3217,7 @@ AuraApplicationPtr Unit::_CreateAuraApplication(AuraPtr aura, uint32 effMask)
 
     UnitPtr caster = aura->GetCaster();
 
-    AuraApplicationPtr aurApp (new AuraApplication(THIS_UNIT, caster, AuraPtr(aura), effMask));
+    AuraApplicationPtr aurApp = ClassFactory::ConstructAuraApplication(THIS_UNIT, caster, AuraPtr(aura), effMask);
     m_appliedAuras.insert(AuraApplicationMap::value_type(aurId, aurApp));
 
     if (aurSpellInfo->AuraInterruptFlags)
@@ -3343,10 +3344,10 @@ void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMo
     ASSERT(!aurApp->GetEffectMask());
 
     // Remove totem at next update if totem loses its aura
-    if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE && GetTypeId() == TYPEID_UNIT && ToCreature()->isTotem()&& ToTotem()->GetSummonerGUID() == aura->GetCasterGUID())
+    if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE && GetTypeId() == TYPEID_UNIT && ToCreature()->isTotem()&& THIS_TOTEM->GetSummonerGUID() == aura->GetCasterGUID())
     {
-        if (ToTotem()->GetSpell() == aura->GetId() && ToTotem()->GetTotemType() == TOTEM_PASSIVE)
-            ToTotem()->setDeathState(JUST_DIED);
+        if (THIS_TOTEM->GetSpell() == aura->GetId() && THIS_TOTEM->GetTotemType() == TOTEM_PASSIVE)
+            THIS_TOTEM->setDeathState(JUST_DIED);
     }
 
     // Remove aurastates only if were not found
@@ -8980,7 +8981,7 @@ void Unit::SetMinion(MinionPtr minion, bool apply)
         else if (minion->isTotem())
         {
             // All summoned by totem minions must disappear when it is removed.
-        if (SpellInfo const* spInfo = sSpellMgr->GetSpellInfo(minion->ToTotem()->GetSpell()))
+        if (SpellInfo const* spInfo = sSpellMgr->GetSpellInfo(TO_TOTEM(minion)->GetSpell()))
             for (int i = 0; i < MAX_SPELL_EFFECTS; ++i)
             {
                 if (spInfo->Effects[i].Effect != SPELL_EFFECT_SUMMON)
@@ -14941,7 +14942,7 @@ PetPtr Unit::CreateTamedPetFrom(CreaturePtr creatureTarget, uint32 spell_id)
     if (GetTypeId() != TYPEID_PLAYER)
         return nullptr;
 
-    PetPtr pet (new Pet(THIS_PLAYER, HUNTER_PET));
+    PetPtr pet = ClassFactory::ConstructPet(THIS_PLAYER, HUNTER_PET);
 
     if (!pet->CreateBaseAtCreature(creatureTarget))
     {
@@ -14964,7 +14965,7 @@ PetPtr Unit::CreateTamedPetFrom(uint32 creatureEntry, uint32 spell_id)
     if (!creatureInfo)
         return nullptr;
 
-    PetPtr pet (new Pet(THIS_PLAYER, HUNTER_PET));
+    PetPtr pet = ClassFactory::ConstructPet(THIS_PLAYER, HUNTER_PET);
 
     if (!pet->CreateBaseAtCreatureInfo(creatureInfo, THIS_UNIT) || !InitTamedPet(pet, getLevel(), spell_id))
     {

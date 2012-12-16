@@ -36,51 +36,12 @@
 #include "ScriptMgr.h"
 #include "SpellScript.h"
 #include "Vehicle.h"
+#include "ClassFactory.h"
 
 AuraApplication::AuraApplication(UnitPtr target, UnitPtr caster, AuraPtr aura, uint32 effMask):
 _target(target), _base(aura), _removeMode(AURA_REMOVE_NONE), _slot(MAX_AURAS),
 _flags(AFLAG_NONE), _effectsToApply(effMask), _needClientUpdate(false), _effectMask(0)
 {
-    ASSERT(GetTarget() && GetBase());
-
-    if (GetBase()->CanBeSentToClient())
-    {
-        // Try find slot for aura
-        uint8 slot = MAX_AURAS;
-        // Lookup for auras already applied from spell
-        if (AuraApplicationPtr foundAura = GetTarget()->GetAuraApplication(GetBase()->GetId(), GetBase()->GetCasterGUID(), GetBase()->GetCastItemGUID()))
-        {
-            // allow use single slot only by auras from same caster
-            slot = foundAura->GetSlot();
-        }
-        else
-        {
-            Unit::VisibleAuraMap const* visibleAuras = GetTarget()->GetVisibleAuras();
-            // lookup for free slots in units visibleAuras
-            Unit::VisibleAuraMap::const_iterator itr = visibleAuras->find(0);
-            for (uint32 freeSlot = 0; freeSlot < MAX_AURAS; ++itr, ++freeSlot)
-            {
-                if (itr == visibleAuras->end() || itr->first != freeSlot)
-                {
-                    slot = freeSlot;
-                    break;
-                }
-            }
-        }
-
-        // Register Visible Aura
-        if (slot < MAX_AURAS)
-        {
-            _slot = slot;
-            GetTarget()->SetVisibleAura(slot, shared_from_this());
-            SetNeedClientUpdate();
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Aura: %u Effect: %d put to unit visible auras slot: %u", GetBase()->GetId(), GetEffectMask(), slot);
-        }
-        else
-            sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "Aura: %u Effect: %d could not find empty unit visible slot", GetBase()->GetId(), GetEffectMask());
-    }
-
-    _InitFlags(caster, effMask);
 }
 
 void AuraApplication::_Remove()
@@ -345,20 +306,10 @@ AuraPtr Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObjectPtr
     {
         case TYPEID_UNIT:
         case TYPEID_PLAYER:
-            aura = AuraPtr(new UnitAura(spellproto, effMask, owner, caster, spellPowerData, baseAmount, castItem, casterGUID));
-            aura->GetUnitOwner()->_AddAura(TO_UNITAURA(aura), caster);
-            aura->LoadScripts();
-            aura->_InitEffects(effMask, caster, baseAmount);
+            aura = ClassFactory::ConstructUnitAura(spellproto, effMask, owner, caster, spellPowerData, baseAmount, castItem, casterGUID);
             break;
         case TYPEID_DYNAMICOBJECT:
-            aura = AuraPtr(new DynObjAura(spellproto, effMask, owner, caster, spellPowerData, baseAmount, castItem, casterGUID));
-            aura->GetDynobjOwner()->SetAura(aura);
-            aura->_InitEffects(effMask, caster, baseAmount);
-            
-            aura->LoadScripts();
-            ASSERT(aura->GetDynobjOwner());
-            ASSERT(aura->GetDynobjOwner()->IsInWorld());
-            ASSERT(aura->GetDynobjOwner()->GetMap() == aura->GetCaster()->GetMap());
+            aura = ClassFactory::ConstructDynAura(spellproto, effMask, owner, caster, spellPowerData, baseAmount, castItem, casterGUID);
             break;
         default:
             ASSERT(false);

@@ -35,17 +35,21 @@ class Aura;
 class DynamicObject;
 class AuraScript;
 class ProcInfo;
+class ClassFactory;
 
 // update aura target map every 500 ms instead of every update - reduce amount of grid searcher calls
 #define UPDATE_TARGET_MAP_INTERVAL 500
 
 class AuraApplication : public std::enable_shared_from_this<AuraApplication>
 {
+    friend class ClassFactory;
     friend void Unit::_ApplyAura(AuraApplicationPtr aurApp, uint32 effMask);
     friend void Unit::_UnapplyAura(AuraApplicationMap::iterator &i, AuraRemoveMode removeMode);
     friend void Unit::_ApplyAuraEffect(AuraPtr aura, uint32 effIndex);
     friend void Unit::RemoveAura(AuraApplicationPtr aurApp, AuraRemoveMode mode);
     friend AuraApplicationPtr Unit::_CreateAuraApplication(AuraPtr aura, uint32 effMask);
+    protected:
+        explicit AuraApplication(UnitPtr target, UnitPtr caster, AuraPtr base, uint32 effMask);
     private:
         UnitPtr const _target;
         constAuraPtr _base;
@@ -55,16 +59,16 @@ class AuraApplication : public std::enable_shared_from_this<AuraApplication>
         uint32 _effectMask;
         uint32 _effectsToApply;                         // Used only at spell hit to determine which effect should be applied
         bool _needClientUpdate:1;
-
-        explicit AuraApplication(UnitPtr target, UnitPtr caster, AuraPtr base, uint32 effMask);
+        
         void _Remove();
-    private:
         void _InitFlags(UnitPtr caster, uint32 effMask);
         void _HandleEffect(uint8 effIndex, bool apply);
     public:
 
         UnitPtr GetTarget() const { return _target; }
         AuraPtr GetBase() const { return std::const_pointer_cast<Aura>(_base); }
+
+        void SetSlot(uint8 slot) { _slot = slot; }
 
         uint8 GetSlot() const { return _slot; }
         uint8 GetFlags() const { return _flags; }
@@ -254,6 +258,7 @@ class Aura : public std::enable_shared_from_this<Aura>
 
 class UnitAura : public Aura
 {
+    friend class ClassFactory;
     friend AuraPtr Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32 *baseAmount, ItemPtr castItem, uint64 casterGUID);
     protected:
         explicit UnitAura(SpellInfo const* spellproto, uint32 effMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32 *baseAmount, ItemPtr castItem, uint64 casterGUID);
@@ -275,6 +280,7 @@ class UnitAura : public Aura
 
 class DynObjAura : public Aura
 {
+    friend class ClassFactory;
     friend AuraPtr Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32 *baseAmount, ItemPtr castItem, uint64 casterGUID);
     protected:
         explicit DynObjAura(SpellInfo const* spellproto, uint32 effMask, WorldObjectPtr owner, UnitPtr caster, SpellPowerEntry const* spellPowerData, int32 *baseAmount, ItemPtr castItem, uint64 casterGUID);

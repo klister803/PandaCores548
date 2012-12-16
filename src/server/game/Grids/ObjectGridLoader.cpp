@@ -27,6 +27,7 @@
 #include "World.h"
 #include "CellImpl.h"
 #include "CreatureAI.h"
+#include "ClassFactory.h"
 
 void ObjectGridEvacuator::Visit(std::shared_ptr<CreatureMapType> &m)
 {
@@ -92,7 +93,7 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, std::shared_ptr<Gr
 {
     for (CellGuidSet::const_iterator i_guid = guid_set.begin(); i_guid != guid_set.end(); ++i_guid)
     {
-        std::shared_ptr<T> obj (new T);
+        std::shared_ptr<T> obj = ClassFactory::ConstructClass<T>();
         uint32 guid = *i_guid;
         //sLog->outInfo(LOG_FILTER_GENERAL, "DEBUG: LoadHelper from table: %s for (guid: %u) Loading", table, guid);
         if (!obj->LoadFromDB(guid, map))

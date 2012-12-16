@@ -36,6 +36,7 @@
 #include "Util.h"
 #include "Guild.h"
 #include "GuildMgr.h"
+#include "ClassFactory.h"
 
 namespace Trinity
 {
@@ -1612,7 +1613,7 @@ CreaturePtr Battleground::AddCreature(uint32 entry, uint32 type, uint32 teamval,
     if (!map)
         return nullptr;
 
-    CreaturePtr creature (new Creature);
+    CreaturePtr creature = ClassFactory::ConstructCreature();
     if (!creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, PHASEMASK_NORMAL, entry, 0, teamval, x, y, z, o))
     {
         sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground::AddCreature: cannot create creature (entry: %u) for BG (map: %u, instance id: %u)!",

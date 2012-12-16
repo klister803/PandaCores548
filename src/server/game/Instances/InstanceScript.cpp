@@ -25,6 +25,7 @@
 #include "CreatureAI.h"
 #include "Log.h"
 #include "LFGMgr.h"
+#include "SpellAuraEffects.h"
 
 void InstanceScript::SaveToDB()
 {

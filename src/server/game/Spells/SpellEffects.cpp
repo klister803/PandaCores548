@@ -5320,7 +5320,7 @@ void Spell::EffectDestroyAllTotems(SpellEffIndex /*effIndex*/)
                 mana += spellInfo->ManaCost;
                 mana += int32(CalculatePct(m_caster->GetCreateMana(), spellInfo->ManaCostPercentage));
             }
-            totem->ToTotem()->UnSummon();
+            TO_TOTEM(totem)->UnSummon();
         }
     }
     ApplyPct(mana, damage);
@@ -5965,7 +5965,7 @@ void Spell::SummonGuardian(uint32 i, uint32 entry, SummonPropertiesEntry const* 
         return;
 
     if (caster->isTotem())
-        caster = caster->ToTotem()->GetOwner();
+        caster = TO_TOTEM(caster)->GetOwner();
 
     // in another case summon new
     uint8 level = caster->getLevel();

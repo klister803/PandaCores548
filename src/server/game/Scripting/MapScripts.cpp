@@ -29,6 +29,7 @@
 #include "ObjectMgr.h"
 #include "MapRefManager.h"
 #include "ScriptMgr.h"
+#include "SpellAuraEffects.h"
 
 /// Put scripts in the execution queue
 void Map::ScriptsStart(ScriptMapMap const& scripts, uint32 id, ObjectPtr source, ObjectPtr target)

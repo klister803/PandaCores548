@@ -29,6 +29,7 @@
 #include "TargetedMovementGenerator.h"
 #include "WeatherMgr.h"
 #include "ace/INET_Addr.h"
+#include "../SharedPtrs/ClassFactory.h"
 
 class misc_commandscript : public CommandScript
 {
@@ -2375,7 +2376,7 @@ public:
         }
 
         // Everything looks OK, create new pet
-        PetPtr pet (new Pet(player, HUNTER_PET));
+        PetPtr pet = ClassFactory::ConstructPet(player, HUNTER_PET);
         if (!pet->CreateBaseAtCreature(creatureTarget))
         {
             handler->PSendSysMessage("Error 1");

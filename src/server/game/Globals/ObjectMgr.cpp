@@ -47,6 +47,7 @@
 #include "PoolMgr.h"
 #include "DB2Structure.h"
 #include "DB2Stores.h"
+#include "ClassFactory.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -1638,7 +1639,7 @@ bool ObjectMgr::MoveCreData(uint32 guid, uint32 mapId, Position pos)
         // We use spawn coords to spawn
         if (!map->Instanceable() && map->IsGridLoaded(data.posX, data.posY))
         {
-            CreaturePtr creature (new Creature);
+            CreaturePtr creature = ClassFactory::ConstructCreature();
             if (!creature->LoadCreatureFromDB(guid, map))
             {
                 sLog->outError(LOG_FILTER_GENERAL, "AddCreature: cannot add creature entry %u to map", guid);
@@ -1689,7 +1690,7 @@ uint32 ObjectMgr::AddCreData(uint32 entry, uint32 /*team*/, uint32 mapId, float 
         // We use spawn coords to spawn
         if (!map->Instanceable() && !map->IsRemovalGrid(x, y))
         {
-            CreaturePtr creature (new Creature);
+            CreaturePtr creature = ClassFactory::ConstructCreature();
             if (!creature->LoadCreatureFromDB(guid, map))
             {
                 sLog->outError(LOG_FILTER_GENERAL, "AddCreature: cannot add creature entry %u to map", entry);

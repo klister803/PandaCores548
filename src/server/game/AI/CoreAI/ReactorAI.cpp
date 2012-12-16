@@ -22,6 +22,7 @@
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "CreatureAIImpl.h"
+#include "SpellAuraEffects.h"
 
 #define REACTOR_VISIBLE_RANGE (26.46f)
 

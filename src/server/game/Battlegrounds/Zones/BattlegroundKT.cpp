@@ -26,6 +26,7 @@
 #include "WorldPacket.h"
 #include "Language.h"
 #include "MapManager.h"
+#include "SpellAuraEffects.h"
 
 BattlegroundKT::BattlegroundKT()
 {

@@ -12,6 +12,7 @@ EndScriptData */
 #include "ScriptedCreature.h"
 #include "ScriptedEscortAI.h"
 #include "Group.h"
+#include "SpellAuraEffects.h"
 
 enum ePoints
 {

@@ -201,6 +201,8 @@ class Map;
 # define THIS_CONST_BAG TO_CONST_BAG(((std::enable_shared_from_this<Bag>*)this)->shared_from_this())
 # define THIS_CONST_TRANSPORT TO_CONST_TRANSPORT(((std::enable_shared_from_this<Transport>*)this)->shared_from_this())
 # define THIS_CONST_PET TO_CONST_PET(((std::enable_shared_from_this<Pet>*)this)->shared_from_this())
+# define THIS_CONST_TOTEM TO_CONST_TOTEM(((std::enable_shared_from_this<const Totem>*)this)->shared_from_this())
+# define THIS_CONST_TEMPSUMMON TO_CONST_TEMPSUMMON(((std::enable_shared_from_this<TempSummon>*)this)->shared_from_this())
 /*
 ** End of Objects, WorldObjects, Units, etc
 */

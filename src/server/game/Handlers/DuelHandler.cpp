@@ -28,6 +28,7 @@
 #include "GameObject.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
+#include "SpellAuraEffects.h"
 
 void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
 {

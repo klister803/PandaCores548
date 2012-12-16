@@ -21,6 +21,7 @@
 #include "SpellInfo.h"
 #include "Vehicle.h"
 #include "ObjectAccessor.h"
+#include "SpellAuraEffects.h"
 
 int AggressorAI::Permissible(constCreaturePtr    creature)
 {

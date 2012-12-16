@@ -51,6 +51,7 @@
 #include "Group.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
+#include "ClassFactory.h"
 
 uint32 GuidHigh2TypeId(uint32 guid_hi)
 {
@@ -2535,19 +2536,19 @@ TempSummonPtr Map::SummonCreature(uint32 entry, Position const& pos, SummonPrope
     switch (mask)
     {
         case UNIT_MASK_SUMMON:
-            summon = TempSummonPtr(new TempSummon(properties, summoner, false));
+            summon = ClassFactory::ConstructTempSummon(properties, summoner, false);
             break;
         case UNIT_MASK_GUARDIAN:
-            summon = GuardianPtr(new Guardian(properties, summoner, false));
+            summon = ClassFactory::ConstructGuardian(properties, summoner, false);
             break;
         case UNIT_MASK_PUPPET:
-            summon = PuppetPtr(new Puppet(properties, summoner));
+            summon = ClassFactory::ConstructPuppet(properties, summoner);
             break;
         case UNIT_MASK_TOTEM:
-            summon = TotemPtr(new Totem(properties, summoner));
+            summon = ClassFactory::ConstructTotem(properties, summoner);
             break;
         case UNIT_MASK_MINION:
-            summon = MinionPtr(new Minion(properties, summoner, false));
+            summon = ClassFactory::ConstructMinion(properties, summoner, false);
             break;
         default:
             return nullptr;
@@ -2615,7 +2616,7 @@ TempSummonPtr WorldObject::SummonCreature(uint32 entry, const Position &pos, Tem
 
 PetPtr Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration)
 {
-    PetPtr pet (new Pet(THIS_PLAYER, petType));
+    PetPtr pet = ClassFactory::ConstructPet(THIS_PLAYER, petType);
 
     if (petType == SUMMON_PET && pet->LoadPetFromDB(THIS_PLAYER, entry))
     {

@@ -78,6 +78,7 @@
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
 #include "BattlefieldMgr.h"
+#include "ClassFactory.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -18438,7 +18439,7 @@ void Player::LoadPet()
     // just not added to the map
     if (IsInWorld())
     {
-        PetPtr pet (new Pet(THIS_PLAYER));
+        PetPtr pet = ClassFactory::ConstructPet(THIS_PLAYER);
         pet->LoadPetFromDB(THIS_PLAYER, 0, 0, true);
     }
 }
@@ -25094,7 +25095,7 @@ void Player::ResummonPetTemporaryUnSummonedIfAny()
     if (GetPetGUID())
         return;
 
-    PetPtr NewPet (new Pet(THIS_PLAYER));
+    PetPtr NewPet = ClassFactory::ConstructPet(THIS_PLAYER);
     NewPet->LoadPetFromDB(THIS_PLAYER, 0, m_temporaryUnsummonedPetNumber, true);
 
     m_temporaryUnsummonedPetNumber = 0;

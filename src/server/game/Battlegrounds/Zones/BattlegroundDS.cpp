@@ -23,6 +23,7 @@
 #include "Object.h"
 #include "ObjectMgr.h"
 #include "WorldPacket.h"
+#include "SpellAuraEffects.h"
 
 BattlegroundDS::BattlegroundDS()
 {

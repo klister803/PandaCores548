@@ -25,6 +25,7 @@
 #include "WorldSession.h"
 #include "ObjectAccessor.h"
 #include "UpdateMask.h"
+#include "SpellAuraEffects.h"
 
 void WorldSession::HandleSetSpecialization(WorldPacket& recvData)
 {

@@ -45,6 +45,8 @@
 #include "AccountMgr.h"
 #include "DBCStores.h"
 #include "LFGMgr.h"
+#include "SpellAuraEffects.h"
+#include "ClassFactory.h"
 
 class LoginQueryHolder : public SQLQueryHolder
 {
@@ -642,7 +644,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                 sLog->outDebug(LOG_FILTER_NETWORKIO, "Character creation %s (account %u) has unhandled tail data: [%u]", createInfo->Name.c_str(), GetAccountId(), unk);
             }
 
-            PlayerPtr newChar(new Player(this));
+            PlayerPtr newChar = ClassFactory::ConstructPlayer(this);
             newChar->GetMotionMaster()->Initialize();
             if (!newChar->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_PLAYER), createInfo))
             {
@@ -828,7 +830,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
 {
     uint64 playerGuid = holder->GetGuid();
 
-    PlayerPtr pCurrChar (new Player(this));
+    PlayerPtr pCurrChar = ClassFactory::ConstructPlayer(this);
      // for send server info and strings (config)
     ChatHandler chH = ChatHandler(pCurrChar);
 

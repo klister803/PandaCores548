@@ -1276,6 +1276,13 @@ class Unit : public WorldObject
 
         virtual ~Unit();
 
+        void InitializeUnit()
+        {
+            i_motionMaster = MotionMaster(THIS_UNIT);
+            m_ThreatManager = ThreatManager(THIS_UNIT);
+            m_HostileRefManager = HostileRefManager(THIS_UNIT);
+        }
+
         UnitAI* GetAI() { return i_AI; }
         void SetAI(UnitAI* newAI) { i_AI = newAI; }
 
@@ -2254,14 +2261,8 @@ class Unit : public WorldObject
         virtual bool isBeingLoaded() const { return false;}
         bool IsDuringRemoveFromWorld() const {return m_duringRemoveFromWorld;}
 
-        /*PetPtr ToPet() { if (isPet()) return TO_PET(shared_from_this()); else return NULLPET; }
-        constPetPtr ToPet() const { if (isPet()) return TO_CONST_PET(shared_from_this()); else return NULLPET; }*/
-
-        Totem* ToTotem() { if (isTotem()) return reinterpret_cast<Totem*>(this); else return nullptr; }
-        Totem const* ToTotem() const { if (isTotem()) return reinterpret_cast<Totem const*>(this); else return nullptr; }
-
-        TempSummonPtr ToTempSummon() { if (isSummon()) return TO_TEMPSUMMON(shared_from_this()); else return nullptr; }
-        constTempSummonPtr ToTempSummon() const { if (isSummon()) return TO_CONST_TEMPSUMMON(shared_from_this()); else return nullptr; }
+        TempSummonPtr ToTempSummon() { if (isSummon()) return THIS_TEMPSUMMON; else return nullptr; }
+        constTempSummonPtr ToTempSummon() const { if (isSummon()) return THIS_CONST_TEMPSUMMON; else return nullptr; }
 
         void SetTarget(uint64 guid)
         {

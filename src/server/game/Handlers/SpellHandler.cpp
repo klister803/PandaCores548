@@ -596,7 +596,7 @@ void WorldSession::HandleTotemDestroyed(WorldPacket& recvPacket)
 
     CreaturePtr totem = GetPlayer()->GetMap()->GetCreature(_player->m_SummonSlot[slotId]);
     if (totem && totem->isTotem())
-        totem->ToTotem()->UnSummon();
+        TO_TOTEM(totem)->UnSummon();
 }
 
 void WorldSession::HandleSelfResOpcode(WorldPacket& /*recvData*/)

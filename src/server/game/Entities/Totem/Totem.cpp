@@ -24,6 +24,7 @@
 #include "ObjectMgr.h"
 #include "SpellMgr.h"
 #include "SpellInfo.h"
+#include "SpellAuraEffects.h"
 
 Totem::Totem(SummonPropertiesEntry const* properties, UnitPtr owner) : Minion(properties, owner, false)
 {

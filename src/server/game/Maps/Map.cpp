@@ -33,6 +33,7 @@
 #include "LFGMgr.h"
 #include "DynamicTree.h"
 #include "Vehicle.h"
+#include "SpellAuraEffects.h"
 
 union u_map_magic
 {
@@ -211,21 +212,7 @@ m_VisibilityNotifyPeriod(DEFAULT_VISIBILITY_NOTIFY_PERIOD),
 m_activeNonPlayersIter(m_activeNonPlayers.end()), i_gridExpiry(expiry),
 i_scriptLock(false)
 {
-    m_parentMap = (_parent ? _parent : THIS_MAP);
-    for (unsigned int idx=0; idx < MAX_NUMBER_OF_GRIDS; ++idx)
-    {
-        for (unsigned int j=0; j < MAX_NUMBER_OF_GRIDS; ++j)
-        {
-            //z code
-            GridMaps[idx][j] =nullptr;
-            setNGrid(nullptr, idx, j);
-        }
-    }
-
-    //lets initialize visibility distance for map
-    Map::InitVisibilityDistance();
-
-    sScriptMgr->OnCreateMap(THIS_MAP);
+    
 }
 
 void Map::InitVisibilityDistance()
@@ -2280,12 +2267,6 @@ InstanceMap::InstanceMap(uint32 id, time_t expiry, uint32 InstanceId, uint8 Spaw
     m_resetAfterUnload(false), m_unloadWhenEmpty(false),
     i_data(nullptr), i_script_id(0)
 {
-    //lets initialize visibility distance for dungeons
-    InstanceMap::InitVisibilityDistance();
-
-    // the timer is started by default, and stopped when the first player joins
-    // this make sure it gets unloaded if for some reason no player joins
-    m_unloadTimer = std::max(sWorld->getIntConfig(CONFIG_INSTANCE_UNLOAD_DELAY), (uint32)MIN_UNLOAD_DELAY);
 }
 
 InstanceMap::~InstanceMap()

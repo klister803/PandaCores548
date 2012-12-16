@@ -34,6 +34,7 @@
 #include "Vehicle.h"
 #include "ScriptedGossip.h"
 #include "CreatureTextMgr.h"
+#include "SpellAuraEffects.h"
 
 class TrinityStringTextBuilder
 {

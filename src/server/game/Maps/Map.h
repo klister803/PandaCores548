@@ -37,6 +37,7 @@
 #include <bitset>
 #include <list>
 
+class ClassFactory;
 class Unit;
 class WorldPacket;
 class InstanceScript;
@@ -236,9 +237,12 @@ typedef std::map<uint32/*leaderDBGUID*/, CreatureGroup*>        CreatureGroupHol
 
 class Map : public GridRefManager<NGridType>, public std::enable_shared_from_this<Map>
 {
+    friend class ClassFactory;
     friend class MapReference;
+
+    protected:
+        explicit Map(uint32 id, time_t t, uint32 InstanceId, uint8 SpawnMode, MapPtr _parent = nullptr);
     public:
-        Map(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, MapPtr _parent = nullptr);
         virtual ~Map();
 
         MapEntry const* GetEntry() const { return i_mapEntry; }
@@ -431,9 +435,6 @@ class Map : public GridRefManager<NGridType>, public std::enable_shared_from_thi
         GameObjectPtr GetGameObject(uint64 guid);
         DynamicObjectPtr GetDynamicObject(uint64 guid);
 
-        MapInstanced* ToMapInstanced(){ if (Instanceable())  return reinterpret_cast<MapInstanced*>(this); else return nullptr;  }
-        const MapInstanced* ToMapInstanced() const { if (Instanceable())  return (const MapInstanced*)((MapInstanced*)this); else return nullptr;  }
-
         InstanceMapPtr ToInstanceMap(){ return IsDungeon() ? THIS_INSTANCEMAP : nullptr;  }
         constInstanceMapPtr ToInstanceMap() const { if (IsDungeon())  return THIS_CONST_INSTANCEMAP; else return nullptr;  }
         float GetWaterOrGroundLevel(float x, float y, float z, float* ground = nullptr, bool swim = false) const;
@@ -622,8 +623,10 @@ enum InstanceResetMethod
 
 class InstanceMap : public Map
 {
+    friend class ClassFactory;
+    protected:
+        explicit InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, MapPtr _parent);
     public:
-        InstanceMap(uint32 id, time_t, uint32 InstanceId, uint8 SpawnMode, MapPtr _parent);
         ~InstanceMap();
         bool AddPlayerToMap(PlayerPtr);
         void RemovePlayerFromMap(PlayerPtr, bool);

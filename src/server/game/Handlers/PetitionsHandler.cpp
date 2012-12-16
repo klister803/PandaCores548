@@ -30,6 +30,7 @@
 #include "ArenaTeam.h"
 #include "GossipDef.h"
 #include "SocialMgr.h"
+#include "ClassFactory.h"
 
 #define CHARTER_DISPLAY_ID 16161
 
@@ -821,7 +822,7 @@ void WorldSession::HandleTurnInPetitionOpcode(WorldPacket & recvData)
     _player->DestroyItem(item->GetBagSlot(), item->GetSlot(), true);
 
     // Create guild
-    GuildPtr guild (new Guild);
+    GuildPtr guild = ClassFactory::ConstructGuild();
 
     if (!guild->Create(_player, name))
     {

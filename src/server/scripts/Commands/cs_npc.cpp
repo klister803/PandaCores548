@@ -29,6 +29,7 @@ EndScriptData */
 #include "CreatureGroups.h"
 #include "TargetedMovementGenerator.h"                      // for HandleNpcUnFollowCommand
 #include "CreatureAI.h"
+#include "../SharedPtrs/ClassFactory.h"
 
 class npc_commandscript : public CommandScript
 {
@@ -151,7 +152,7 @@ public:
             return true;
         }
 
-        CreaturePtr creature (new Creature());
+        CreaturePtr creature = ClassFactory::ConstructCreature();
 
         if (!creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, (uint32)teamval, x, y, z, o))
             return false;

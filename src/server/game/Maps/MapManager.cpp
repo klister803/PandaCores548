@@ -33,6 +33,7 @@
 #include "Language.h"
 #include "WorldPacket.h"
 #include "Group.h"
+#include "ClassFactory.h"
 
 extern GridState* si_GridStates[];                          // debugging code, should be deleted some day
 
@@ -105,11 +106,11 @@ MapPtr MapManager::CreateBaseMap(uint32 id)
         const MapEntry* entry = sMapStore.LookupEntry(id);
         if (entry && entry->Instanceable())
         {
-            map = MapPtr(new MapInstanced(id, i_gridCleanUpDelay));
+            map = ClassFactory::ConstructMapInstanced(id, i_gridCleanUpDelay);
         }
         else
         {
-            map = MapPtr(new Map(id, i_gridCleanUpDelay, 0, NONE_DIFFICULTY));
+            map = ClassFactory::ConstructMap(id, i_gridCleanUpDelay, 0, NONE_DIFFICULTY);
             map->LoadRespawnTimes();
         }
         i_maps[id] = map;

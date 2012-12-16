@@ -27,6 +27,7 @@
 #include "Player.h"
 #include "World.h"
 #include "WorldPacket.h"
+#include "SpellAuraEffects.h"
 
 // these variables aren't used outside of this file, so declare them only here
 enum BG_WSG_Rewards

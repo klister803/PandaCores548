@@ -27,6 +27,7 @@ EndScriptData */
 #include "Guild.h"
 #include "GuildMgr.h"
 #include "ObjectAccessor.h"
+#include "../SharedPtrs/ClassFactory.h"
 
 class guild_commandscript : public CommandScript
 {
@@ -86,7 +87,7 @@ public:
             return true;
         }
 
-        GuildPtr guild (new Guild);
+        GuildPtr guild = ClassFactory::ConstructGuild();
         if (!guild->Create(target, guildName))
         {
             handler->SendSysMessage(LANG_GUILD_NOT_CREATED);

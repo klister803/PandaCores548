@@ -24,6 +24,7 @@
 #include "InstanceSaveMgr.h"
 #include "World.h"
 #include "Group.h"
+#include "ClassFactory.h"
 
 MapInstanced::MapInstanced(uint32 id, time_t expiry) : Map(id, expiry, 0, REGULAR_DIFFICULTY)
 {
@@ -207,7 +208,7 @@ InstanceMapPtr MapInstanced::CreateInstance(uint32 InstanceId, InstanceSave* sav
 
     sLog->outDebug(LOG_FILTER_MAPS, "MapInstanced::CreateInstance: %s map instance %d for %d created with difficulty %s", save?"":"new ", InstanceId, GetId(), difficulty?"heroic":"normal");
 
-    InstanceMapPtr map (new InstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty, THIS_MAPINSTANCED));
+    InstanceMapPtr map = ClassFactory::ConstructInstanceMap(GetId(), GetGridExpiry(), InstanceId, difficulty, THIS_MAPINSTANCED);
     ASSERT(map->IsDungeon());
 
     map->LoadRespawnTimes();
@@ -235,7 +236,7 @@ BattlegroundMapPtr MapInstanced::CreateBattleground(uint32 InstanceId, Battlegro
     else
         spawnMode = REGULAR_DIFFICULTY;
 
-    BattlegroundMapPtr map (new BattlegroundMap(GetId(), GetGridExpiry(), InstanceId, THIS_MAP, spawnMode));
+    BattlegroundMapPtr map = ClassFactory::ConstructBattlegroundMap(GetId(), GetGridExpiry(), InstanceId, THIS_MAP, spawnMode);
     ASSERT(map->IsBattlegroundOrArena());
     map->SetBG(bg);
     bg->SetBgMap(map);

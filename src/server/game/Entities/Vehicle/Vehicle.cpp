@@ -29,6 +29,7 @@
 #include "SpellMgr.h"
 #include "SpellInfo.h"
 #include "MoveSplineInit.h"
+#include "SpellAuraEffects.h"
 
 Vehicle::Vehicle(UnitPtr unit, VehicleEntry const* vehInfo, uint32 creatureEntry) : _me(unit), _vehicleInfo(vehInfo), _usableSeatNum(0), _creatureEntry(creatureEntry)
 {

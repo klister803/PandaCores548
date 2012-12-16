@@ -26,6 +26,7 @@
 #include "MapReference.h"
 #include "Player.h"
 #include "CreatureTextMgr.h"
+#include "SpellAuraEffects.h"
 
 //Disable CreatureAI when charmed
 void CreatureAI::OnCharmed(bool /*apply*/)

@@ -25,7 +25,7 @@
 #include "GameObject.h"
 #include "Miscellaneous/Language.h"
 #include "Player.h"
-#include "SpellAuras.h"
+#include "SpellAuraEffects.h"
 
 BattlegroundAV::BattlegroundAV()
 {

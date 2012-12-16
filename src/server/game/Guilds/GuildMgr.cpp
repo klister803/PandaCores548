@@ -17,6 +17,7 @@
 
 #include "Common.h"
 #include "GuildMgr.h"
+#include "ClassFactory.h"
 
 GuildMgr::GuildMgr()
 {
@@ -150,7 +151,7 @@ void GuildMgr::LoadGuilds()
             do
             {
                 Field* fields = result->Fetch();
-                GuildPtr guild (new Guild());
+                GuildPtr guild = ClassFactory::ConstructGuild();
 
                 if (!guild->LoadFromDB(fields))
                 {

@@ -1050,7 +1050,7 @@ InventoryResult Guild::BankMoveItemData::CanStore(ItemPtr pItem, bool swap)
 ///////////////////////////////////////////////////////////////////////////////
 // Guild
 Guild::Guild() : m_id(0), m_leaderGuid(0), m_createdDate(0), m_accountsNumber(0), m_bankMoney(0), m_eventLog(nullptr),
-    m_achievementMgr(THIS_GUILD), _level(1), _experience(0), _todayExperience(0), _newsLog(THIS_GUILD)
+    m_achievementMgr(nullptr), _level(1), _experience(0), _todayExperience(0), _newsLog(nullptr)
 {
     memset(&m_bankEventLog, 0, (GUILD_BANK_MAX_TABS + 1) * sizeof(LogHolder*));
 }

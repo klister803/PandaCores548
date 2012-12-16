@@ -36,6 +36,8 @@
 #include "ScriptMgr.h"
 #include "CreatureAI.h"
 #include "SpellInfo.h"
+#include "SpellAuraEffects.h"
+#include "ClassFactory.h"
 
 enum StableResultCode
 {
@@ -754,7 +756,7 @@ void WorldSession::HandleUnstablePetCallback(PreparedQueryResult result, uint32 
     if (pet)
         _player->RemovePet(pet, PET_SAVE_AS_DELETED);
 
-    PetPtr newPet (new Pet(_player, HUNTER_PET));
+    PetPtr newPet = ClassFactory::ConstructPet(_player, HUNTER_PET);
     if (!newPet->LoadPetFromDB(_player, petEntry, petId))
     {
         newPet = nullptr;
@@ -885,7 +887,7 @@ void WorldSession::HandleStableSwapPetCallback(PreparedQueryResult result, uint3
     _player->RemovePet(pet, pet->isAlive() ? PetSaveMode(slot) : PET_SAVE_AS_DELETED);
 
     // summon unstabled pet
-    PetPtr newPet (new Pet(_player));
+    PetPtr newPet = ClassFactory::ConstructPet(_player);
     if (!newPet->LoadPetFromDB(_player, petEntry, petId))
         SendStableResult(STABLE_ERR_STABLE);
     else

@@ -29,6 +29,7 @@
 #include "BattlegroundMgr.h"
 #include "UnitAI.h"
 #include "GameObjectAI.h"
+#include "ClassFactory.h"
 
 bool GameEventMgr::CheckOneGameEvent(uint16 entry) const
 {
@@ -1204,7 +1205,7 @@ void GameEventMgr::GameEventSpawn(int16 event_id)
             // We use spawn coords to spawn
             if (!map->Instanceable() && map->IsGridLoaded(data->posX, data->posY))
             {
-                CreaturePtr creature (new Creature);
+                CreaturePtr creature = ClassFactory::ConstructCreature();
                 //sLog->outDebug(LOG_FILTER_GENERAL, "Spawning creature %u", *itr);
                 creature->LoadCreatureFromDB(*itr, map);
             }

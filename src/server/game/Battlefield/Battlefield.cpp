@@ -31,6 +31,8 @@
 #include "CellImpl.h"
 #include "CreatureTextMgr.h"
 #include "GroupMgr.h"
+#include "SpellAuraEffects.h"
+#include "ClassFactory.h"
 
 Battlefield::Battlefield()
 {
@@ -815,7 +817,7 @@ CreaturePtr Battlefield::SpawnCreature(uint32 entry, float x, float y, float z, 
         return 0;
     }
 
-    CreaturePtr creature (new Creature);
+    CreaturePtr creature = ClassFactory::ConstructCreature();
     if (!creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, PHASEMASK_NORMAL, entry, 0, team, x, y, z, o))
     {
         sLog->outError(LOG_FILTER_BATTLEFIELD, "Battlefield::SpawnCreature: Can't create creature entry: %u", entry);

@@ -27,6 +27,7 @@
 #include "LFGMgr.h"
 #include "ScriptMgr.h"
 #include "ObjectAccessor.h"
+#include "SpellAuraEffects.h"
 
 LFGPlayerScript::LFGPlayerScript() : PlayerScript("LFGPlayerScript")
 {

@@ -23,6 +23,7 @@
 #include "GameObject.h"
 #include "ObjectMgr.h"
 #include "WorldPacket.h"
+#include "SpellAuraEffects.h"
 
 BattlegroundSA::BattlegroundSA()
 {

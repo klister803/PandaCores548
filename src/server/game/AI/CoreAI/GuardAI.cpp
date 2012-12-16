@@ -22,6 +22,7 @@
 #include "ObjectAccessor.h"
 #include "World.h"
 #include "CreatureAIImpl.h"
+#include "SpellAuraEffects.h"
 
 int GuardAI::Permissible(constCreaturePtr creature)
 {

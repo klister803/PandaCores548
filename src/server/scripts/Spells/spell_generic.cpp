@@ -33,6 +33,7 @@
 #include "InstanceScript.h"
 #include "Group.h"
 #include "LFGMgr.h"
+#include "../SharedPtrs/ClassFactory.h"
 
 class spell_gen_absorb0_hitlimit1 : public SpellScriptLoader
 {
@@ -295,7 +296,7 @@ class spell_gen_pet_summoned : public SpellScriptLoader
                 if (player->GetLastPetNumber())
                 {
                     PetType newPetType = (player->getClass() == CLASS_HUNTER) ? HUNTER_PET : SUMMON_PET;
-                    PetPtr newPet (new Pet(player, newPetType));
+                    PetPtr newPet = ClassFactory::ConstructPet(player, newPetType);
                     if (newPet)
                     {
                         if (newPet->LoadPetFromDB(player, 0, player->GetLastPetNumber(), true))

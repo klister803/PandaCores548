@@ -26,6 +26,7 @@ EndScriptData */
 #include "ObjectMgr.h"
 #include "WaypointManager.h"
 #include "Chat.h"
+#include "../SharedPtrs/ClassFactory.h"
 
 class wp_commandscript : public CommandScript
 {
@@ -694,7 +695,7 @@ public:
                         wpCreature->AddObjectToRemoveList();
                     }
                     // re-create
-                    CreaturePtr wpCreature2 (new Creature);
+                    CreaturePtr wpCreature2 = ClassFactory::ConstructCreature();
                     if (!wpCreature2->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), VISUAL_WAYPOINT, 0, 0, chr->GetPositionX(), chr->GetPositionY(), chr->GetPositionZ(), chr->GetOrientation()))
                     {
                         handler->PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, VISUAL_WAYPOINT);
@@ -916,7 +917,7 @@ public:
                 MapPtr map = chr->GetMap();
                 float o = chr->GetOrientation();
 
-                CreaturePtr wpCreature (new Creature);
+                CreaturePtr wpCreature = ClassFactory::ConstructCreature();
                 if (!wpCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, 0, x, y, z, o))
                 {
                     handler->PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, id);
@@ -978,7 +979,7 @@ public:
             float o = chr->GetOrientation();
             MapPtr map = chr->GetMap();
 
-            CreaturePtr creature (new Creature);
+            CreaturePtr creature = ClassFactory::ConstructCreature();
             if (!creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, 0, x, y, z, o))
             {
                 handler->PSendSysMessage(LANG_WAYPOINT_VP_NOTCREATED, id);
@@ -1025,7 +1026,7 @@ public:
             PlayerPtr chr = handler->GetSession()->GetPlayer();
             MapPtr map = chr->GetMap();
 
-            CreaturePtr creature (new Creature);
+            CreaturePtr creature = ClassFactory::ConstructCreature();
             if (!creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, chr->GetPhaseMaskForSpawn(), id, 0, 0, x, y, z, o))
             {
                 handler->PSendSysMessage(LANG_WAYPOINT_NOTCREATED, id);

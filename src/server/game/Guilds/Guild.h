@@ -27,6 +27,7 @@
 #include "DBCStore.h"
 
 class Item;
+class ClassFactory;
 
 enum GuildMisc
 {
@@ -679,12 +680,20 @@ private:
     typedef std::vector<RankInfo> Ranks;
     typedef std::vector<BankTab*> BankTabs;
 
+    friend class ClassFactory;
+protected:
+    Guild();
 public:
     static void SendCommandResult(WorldSession* session, GuildCommandType type, GuildCommandError errCode, const std::string& param = "");
     static void SendSaveEmblemResult(WorldSession* session, GuildEmblemError errCode);
 
-    Guild();
     ~Guild();
+
+    void InitializeGuild()
+    {
+        m_achievementMgr = AchievementMgr<Guild>(THIS_GUILD);
+        _newsLog = GuildNewsLog(THIS_GUILD);
+    }
 
     bool Create(PlayerPtr pLeader, const std::string& name);
     void Disband();

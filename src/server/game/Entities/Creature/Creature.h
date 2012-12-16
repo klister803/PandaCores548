@@ -31,11 +31,13 @@
 
 class SpellInfo;
 
+class ClassFactory;
 class CreatureAI;
 class Quest;
 class Player;
 class WorldSession;
 class CreatureGroup;
+class TempSummon;
 
 enum CreatureFlagsExtra
 {
@@ -440,9 +442,11 @@ private:
 
 class Creature : public Unit, public GridObject<Creature>, public MapCreature
 {
+    friend class ClassFactory;
+    protected:
+        explicit Creature(bool isWorldObject = false);
     public:
 
-        explicit Creature(bool isWorldObject = false);
         virtual ~Creature();
 
         void AddToWorld();

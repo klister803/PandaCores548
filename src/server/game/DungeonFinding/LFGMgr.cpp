@@ -28,6 +28,7 @@
 #include "LFGScripts.h"
 #include "LFGGroupData.h"
 #include "LFGPlayerData.h"
+#include "SpellAuraEffects.h"
 
 #include "Group.h"
 #include "Player.h"

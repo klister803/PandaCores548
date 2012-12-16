@@ -21,10 +21,14 @@
 
 #include "Creature.h"
 
+class ClassFactory;
+
 class TempSummon : public Creature
 {
-    public:
+    friend class ClassFactory;
+    protected:
         explicit TempSummon(SummonPropertiesEntry const* properties, UnitPtr owner, bool isWorldObject);
+    public:
         virtual ~TempSummon() {}
         void Update(uint32 time);
         virtual void InitStats(uint32 lifetime);
@@ -48,8 +52,10 @@ class TempSummon : public Creature
 
 class Minion : public TempSummon
 {
+    friend class ClassFactory;
+    protected:
+        explicit Minion(SummonPropertiesEntry const* properties, UnitPtr owner, bool isWorldObject);
     public:
-        Minion(SummonPropertiesEntry const* properties, UnitPtr owner, bool isWorldObject);
         void InitStats(uint32 duration);
         void RemoveFromWorld();
         UnitPtr GetOwner() { return m_owner; }
@@ -64,8 +70,11 @@ class Minion : public TempSummon
 
 class Guardian : public Minion
 {
+
+    friend class ClassFactory;
+    protected:
+        explicit Guardian(SummonPropertiesEntry const* properties, UnitPtr owner, bool isWorldObject);
     public:
-        Guardian(SummonPropertiesEntry const* properties, UnitPtr owner, bool isWorldObject);
         void InitStats(uint32 duration);
         bool InitStatsForLevel(uint8 level);
         void InitSummon();
@@ -88,8 +97,10 @@ class Guardian : public Minion
 
 class Puppet : public Minion
 {
+    friend class ClassFactory;
+    protected:
+        explicit Puppet(SummonPropertiesEntry const* properties, UnitPtr owner);
     public:
-        Puppet(SummonPropertiesEntry const* properties, UnitPtr owner);
         void InitStats(uint32 duration);
         void InitSummon();
         void Update(uint32 time);

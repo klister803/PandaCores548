@@ -31,6 +31,7 @@ EndScriptData */
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "GossipDef.h"
+#include "../SharedPtrs/ClassFactory.h"
 
 #include <fstream>
 
@@ -955,7 +956,7 @@ public:
         if (!ve)
             return false;
 
-        CreaturePtr v (new Creature);
+        CreaturePtr v = ClassFactory::ConstructCreature();
 
         MapPtr map = handler->GetSession()->GetPlayer()->GetMap();
 

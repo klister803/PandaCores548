@@ -34,6 +34,7 @@
 #include "MapManager.h"
 #include "Player.h"
 #include "Util.h"
+#include "SpellAuraEffects.h"
 
 #if PLATFORM != PLATFORM_WINDOWS
 #include <readline/readline.h>

@@ -22,6 +22,7 @@
 #include "DBCStores.h"
 #include "ObjectAccessor.h"
 #include "SpellMgr.h"
+#include "SpellAuraEffects.h"
 
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
@@ -51,14 +52,14 @@ void TotemAI::EnterEvadeMode()
 
 void TotemAI::UpdateAI(uint32 const /*diff*/)
 {
-    if (me->ToTotem()->GetTotemType() != TOTEM_ACTIVE)
+    if (TO_TOTEM(me)->GetTotemType() != TOTEM_ACTIVE)
         return;
 
     if (!me->isAlive() || me->IsNonMeleeSpellCasted(false))
         return;
 
     // Search spell
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(me->ToTotem()->GetSpell());
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(TO_TOTEM(me)->GetSpell());
     if (!spellInfo)
         return;
 
@@ -89,7 +90,7 @@ void TotemAI::UpdateAI(uint32 const /*diff*/)
 
         // attack
         me->SetInFront(victim);                         // client change orientation by self
-        me->CastSpell(victim, me->ToTotem()->GetSpell(), false);
+        me->CastSpell(victim, TO_TOTEM(me)->GetSpell(), false);
     }
     else
         i_victimGuid = 0;

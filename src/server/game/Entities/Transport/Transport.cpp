@@ -26,6 +26,7 @@
 #include "DBCStores.h"
 #include "World.h"
 #include "GameObjectAI.h"
+#include "ClassFactory.h"
 
 void MapManager::LoadTransports()
 {
@@ -660,7 +661,7 @@ void Transport::BuildStopMovePacket(constMapPtr targetMap)
 CreaturePtr Transport::AddNPCPassengerCreature(uint32 tguid, uint32 entry, float x, float y, float z, float o, uint32 anim)
 {
     MapPtr map = GetMap();
-    CreaturePtr pCreature (new Creature);
+    CreaturePtr pCreature = ClassFactory::ConstructCreature();
 
     if (!pCreature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, GetPhaseMask(), entry, 0, GetGOInfo()->faction, 0, 0, 0, 0))
         return nullptr;
@@ -706,7 +707,7 @@ uint32 Transport::AddNPCPassenger(uint32 tguid, uint32 entry, float x, float y, 
 {
     MapPtr map = GetMap();
     //make it world object so it will not be unloaded with grid
-    CreaturePtr creature (new Creature(true));
+    CreaturePtr creature = ClassFactory::ConstructCreature(true);
 
     if (!creature->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_UNIT), map, GetPhaseMask(), entry, 0, GetGOInfo()->faction, 0, 0, 0, 0))
     {

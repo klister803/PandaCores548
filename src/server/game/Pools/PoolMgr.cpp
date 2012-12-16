@@ -21,6 +21,7 @@
 #include "ObjectMgr.h"
 #include "Log.h"
 #include "MapManager.h"
+#include "ClassFactory.h"
 
 ////////////////////////////////////////////////////////////
 // template class ActivePoolData
@@ -364,7 +365,7 @@ void PoolGroup<Creature>::Spawn1Object(PoolObject* obj)
         // We use spawn coords to spawn
         if (!map->Instanceable() && map->IsGridLoaded(data->posX, data->posY))
         {
-            CreaturePtr creature (new Creature);
+            CreaturePtr creature = ClassFactory::ConstructCreature();
             //sLog->outDebug(LOG_FILTER_POOLSYS, "Spawning creature %u", guid);
             if (!creature->LoadCreatureFromDB(obj->guid, map))
                 return;

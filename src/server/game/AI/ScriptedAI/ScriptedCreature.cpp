@@ -14,6 +14,7 @@
 #include "CellImpl.h"
 #include "ObjectMgr.h"
 #include "TemporarySummon.h"
+#include "SpellAuraEffects.h"
 
 // Spell summary for ScriptedAI::SelectSpell
 struct TSpellSummary

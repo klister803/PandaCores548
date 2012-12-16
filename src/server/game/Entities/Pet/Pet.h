@@ -23,6 +23,8 @@
 #include "Unit.h"
 #include "TemporarySummon.h"
 
+class ClassFactory;
+
 enum PetType
 {
     SUMMON_PET              = 0,
@@ -111,8 +113,10 @@ class Player;
 
 class Pet : public Guardian
 {
-    public:
+    friend class ClassFactory;
+    protected:
         explicit Pet(PlayerPtr owner, PetType type = MAX_PET_TYPE);
+    public:
         virtual ~Pet();
 
         void AddToWorld();
