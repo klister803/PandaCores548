@@ -13440,6 +13440,8 @@ void Unit::SetPower(Powers power, int32 val)
                     aura2->GetEffect(0)->ChangeAmount(AddValue);
             }
         }
+        else if (_player->HasAura(114695))
+            _player->RemoveAura(114695);
     }
 
     // group update
