@@ -5909,13 +5909,6 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
         }
         case SPELLFAMILY_HUNTER:
         {
-            // Explosive Shot
-            if (GetSpellInfo()->SpellFamilyFlags[1] & 0x80000000)
-            {
-                if (caster)
-                    caster->CastCustomSpell(53352, SPELLVALUE_BASE_POINT0, m_amount, target, true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
-                break;
-            }
             switch (GetSpellInfo()->Id)
             {
                 // Feeding Frenzy Rank 1
