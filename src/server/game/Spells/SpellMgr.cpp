@@ -2638,6 +2638,10 @@ void SpellMgr::LoadSpellClassInfo()
         if(!classEntry)
             continue;
 
+        // Death Gate : Waiting for start zone debug
+        if (ClassID == CLASS_DEATH_KNIGHT)
+            mSpellClassInfo[ClassID].push_back(52751);
+
         // All portals and teleports for mages
         if (ClassID == CLASS_MAGE)
         {
