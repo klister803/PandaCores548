@@ -7975,33 +7975,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
 
             break;
         }
-        // Deep Wounds
-        case 12834:
-        case 12849:
-        case 12867:
-        {
-            if (GetTypeId() != TYPEID_PLAYER)
-                return false;
-
-            // now compute approximate weapon damage by formula from wowwiki.com
-            Item* item = NULL;
-            if (procFlags & PROC_FLAG_DONE_OFFHAND_ATTACK)
-                item = ToPlayer()->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-            else
-                item = ToPlayer()->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-
-            // dunno if it's really needed but will prevent any possible crashes
-            if (!item)
-                return false;
-
-            ItemTemplate const* weapon = item->GetTemplate();
-
-            float weaponDPS = weapon->DPS;
-            float attackPower = GetTotalAttackPowerValue(BASE_ATTACK) / 14.0f;
-            float weaponSpeed = float(weapon->Delay) / 1000.0f;
-            basepoints0 = int32((weaponDPS + attackPower) * weaponSpeed);
-            break;
-        }
         // Persistent Shield (Scarab Brooch trinket)
         // This spell originally trigger 13567 - Dummy Trigger (vs dummy efect)
         case 26467:
@@ -9488,11 +9461,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Some spells don't benefit from done mods
     if (spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
-        return pdamage;
-
-    // small exception for Deep Wounds, can't find any general rule
-    // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 12721) // Deep Wounds
         return pdamage;
 
     // small exception for Echo of Light, can't find any general rule
