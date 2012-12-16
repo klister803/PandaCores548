@@ -36,7 +36,37 @@ enum WarriorSpells
     WARRIOR_SPELL_DEEP_WOUNDS                   = 115767,
     WARRIOR_SPELL_THUNDER_CLAP                  = 6343,
     WARRIOR_SPELL_WEAKENED_BLOWS                = 115798,
-    WARRIOR_SPELL_BLOOD_AND_THUNDER             = 84615
+    WARRIOR_SPELL_BLOOD_AND_THUNDER             = 84615,
+    WARRIOR_SPELL_SHOCKWAVE_STUN                = 132168
+};
+
+// Shockwave - 46968
+class spell_warr_shockwave : public SpellScriptLoader
+{
+    public:
+        spell_warr_shockwave() : SpellScriptLoader("spell_warr_shockwave") { }
+
+        class spell_warr_shockwave_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_shockwave_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, WARRIOR_SPELL_SHOCKWAVE_STUN, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_shockwave_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_shockwave_SpellScript();
+        }
 };
 
 // Bloodthirst - 23881
@@ -487,6 +517,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_shockwave();
     new spell_warr_bloodthirst();
     new spell_warr_victory_rush();
     new spell_warr_last_stand();
