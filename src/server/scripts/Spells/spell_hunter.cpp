@@ -59,6 +59,36 @@ enum HunterSpells
     SPELL_SHAMAN_EXHAUSTED                       = 57723
 };
 
+// Called by Multi Shot - 2643
+// Serpent Spread - 87935
+class spell_hun_serpent_spread : public SpellScriptLoader
+{
+    public:
+        spell_hun_serpent_spread() : SpellScriptLoader("spell_hun_serpent_spread") { }
+
+        class spell_hun_serpent_spread_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_serpent_spread_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, HUNTER_SPELL_SERPENT_STING, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_hun_serpent_spread_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_serpent_spread_SpellScript();
+        }
+};
+
 // Ancient Hysteria - 90355
 class spell_hun_ancient_hysteria : public SpellScriptLoader
 {
@@ -907,6 +937,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_serpent_spread();
     new spell_hun_ancient_hysteria();
     new spell_hun_kill_command();
     new spell_hun_rapid_fire();
