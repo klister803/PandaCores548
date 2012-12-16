@@ -17561,6 +17561,52 @@ void Unit::SendClearTarget()
     SendMessageToSet(&data, false);
 }
 
+bool Unit::IsVisionObscured(Unit* victim)
+{
+    AuraPtr victimAura = NULL;
+    AuraPtr myAura = NULL;
+    Unit* victimCaster = NULL;
+    Unit* myCaster = NULL;
+
+    AuraEffectList const& vAuras = victim->GetAuraEffectsByType(SPELL_AURA_INTERFERE_TARGETTING);
+    for (AuraEffectList::const_iterator i = vAuras.begin(); i != vAuras.end(); ++i)
+    {
+        victimAura = (*i)->GetBase();
+        victimCaster = victimAura->GetCaster();
+        break;
+    }
+    AuraEffectList const& myAuras = GetAuraEffectsByType(SPELL_AURA_INTERFERE_TARGETTING);
+    for (AuraEffectList::const_iterator i = myAuras.begin(); i != myAuras.end(); ++i)
+    {
+        myAura = (*i)->GetBase();
+        myCaster = myAura->GetCaster();
+        break;
+    }
+
+    if ((myAura != NULL && myCaster == NULL) || (victimAura != NULL && victimCaster == NULL))
+        return false; // Failed auras, will result in crash
+
+    // E.G. Victim is in smoke bomb, and I'm not
+    // Spells fail unless I'm friendly to the caster of victim's smoke bomb
+    if (victimAura != NULL && myAura == NULL)
+    {
+        if (IsFriendlyTo(victimCaster))
+            return false;
+        else
+            return true;
+    }
+    // Victim is not in smoke bomb, while I am
+    // Spells fail if my smoke bomb aura's caster is my enemy
+    else if (myAura != NULL && victimAura == NULL)
+    {
+        if (IsFriendlyTo(myCaster))
+            return false;
+        else
+            return true;
+    }
+    return false;
+}
+
 uint32 Unit::GetResistance(SpellSchoolMask mask) const
 {
     int32 resist = -1;
