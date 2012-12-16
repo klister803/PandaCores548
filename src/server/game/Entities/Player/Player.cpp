@@ -18042,8 +18042,8 @@ void Player::_LoadAuras(PreparedQueryResult result, PreparedQueryResult resultEf
             uint64 caster_guid = fields[0].GetUInt64();
             uint8 slot = fields[1].GetUInt8();
             uint32 spellid = fields[2].GetUInt32();
-            uint32 effmask = fields[3].GetUInt32();
-            uint32 recalculatemask = fields[4].GetUInt32();
+            uint32 effmask = fields[3].GetUInt8();
+            uint32 recalculatemask = fields[4].GetUInt8();
             uint8 stackcount = fields[5].GetUInt8();
             int32 maxduration = fields[6].GetInt32();
             int32 remaintime = fields[7].GetInt32();
