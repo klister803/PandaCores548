@@ -83,7 +83,12 @@ class spell_pal_word_of_glory : public SpellScriptLoader
                         if ((unitTarget->GetTypeId() != TYPEID_PLAYER && !unitTarget->isPet()) || unitTarget->IsHostileTo(_player))
                             unitTarget = _player;
 
-                        int32 holyPower = _player->GetPower(POWER_HOLY_POWER) > 3 ? 3 : _player->GetPower(POWER_HOLY_POWER);
+                        int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
+
+                        if (holyPower > 3)
+                            holyPower = 3;
+                        else if (holyPower == 0)
+                            holyPower = 1;
 
                         _player->CastSpell(unitTarget, PALADIN_SPELL_WORD_OF_GLORY_HEAL, true);
 
