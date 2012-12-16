@@ -6537,6 +6537,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
 
             switch (dummySpell->Id)
             {
+                case 82661: // Aspect of the Fox
+                {
+                    EnergizeBySpell(this, 82661, 2, POWER_FOCUS);
+                    break;
+                }
                 case 34477: // Misdirection
                 {
                     if (!GetMisdirectionTarget())
