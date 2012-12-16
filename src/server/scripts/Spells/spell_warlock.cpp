@@ -46,7 +46,46 @@ enum WarlockSpells
     WARLOCK_GLYPH_OF_FEAR                   = 56244,
     WARLOCK_FEAR_EFFECT                     = 118699,
     WARLOCK_GLYPH_OF_FEAR_EFFECT            = 130616,
-    WARLOCK_CREATE_HEALTHSTONE              = 23517
+    WARLOCK_CREATE_HEALTHSTONE              = 23517,
+    WARLOCK_HARVEST_LIFE_HEAL               = 125314
+};
+
+// Harvest Life - 115707
+class spell_warl_harvest_life : public SpellScriptLoader
+{
+    public:
+        spell_warl_harvest_life() : SpellScriptLoader("spell_warl_harvest_life") { }
+
+        class spell_warl_harvest_life_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_harvest_life_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    // Restoring 3-4.5% of the caster's total health every 1s
+                    int32 basepoints = int32(frand(0.03f, 0.045f) * _player->GetMaxHealth());
+
+                    if (!_player->HasSpellCooldown(WARLOCK_HARVEST_LIFE_HEAL))
+                    {
+                        _player->CastCustomSpell(_player, WARLOCK_HARVEST_LIFE_HEAL, &basepoints, NULL, NULL, true);
+                        // prevent the heal to proc off for each targets
+                        _player->AddSpellCooldown(WARLOCK_HARVEST_LIFE_HEAL, 0, time(NULL) + 1);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_harvest_life_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_harvest_life_AuraScript();
+        }
 };
 
 // Fear - 5782
@@ -750,10 +789,9 @@ public:
     }
 };
 
-
-
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_harvest_life();
     new spell_warl_fear();
     new spell_warl_banish();
     new spell_warl_demonic_empowerment();
