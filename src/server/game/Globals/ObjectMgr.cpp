@@ -1430,8 +1430,8 @@ void ObjectMgr::LoadCreatures()
 
         uint8 index = 0;
 
-        uint32 guid         = fields[++index].GetUInt32();
-        uint32 entry        = fields[++index].GetUInt32();
+        uint32 guid         = fields[index++].GetUInt32();
+        uint32 entry        = fields[index++].GetUInt32();
 
         CreatureTemplate const* cInfo = GetCreatureTemplate(entry);
         if (!cInfo)
@@ -1442,29 +1442,29 @@ void ObjectMgr::LoadCreatures()
 
         CreatureData& data = _creatureDataStore[guid];
         data.id             = entry;
-        data.mapid          = fields[++index].GetUInt16();
-        data.zoneId         = fields[++index].GetUInt16();
-        data.areaId         = fields[++index].GetUInt16();
-        data.displayid      = fields[++index].GetUInt32();
-        data.equipmentId    = fields[++index].GetInt32();
-        data.posX           = fields[++index].GetFloat();
-        data.posY           = fields[++index].GetFloat();
-        data.posZ           = fields[++index].GetFloat();
-        data.orientation    = fields[++index].GetFloat();
-        data.spawntimesecs  = fields[++index].GetUInt32();
-        data.spawndist      = fields[++index].GetFloat();
-        data.currentwaypoint= fields[++index].GetUInt32();
-        data.curhealth      = fields[++index].GetUInt32();
-        data.curmana        = fields[++index].GetUInt32();
-        data.movementType   = fields[++index].GetUInt8();
-        data.spawnMask      = fields[++index].GetUInt32();
-        data.phaseMask      = fields[++index].GetUInt16();
-        int16 gameEvent     = fields[++index].GetInt8();
-        uint32 PoolId       = fields[++index].GetUInt32();
-        data.npcflag        = fields[++index].GetUInt32();
-        data.unit_flags     = fields[++index].GetUInt32();
-        data.dynamicflags   = fields[++index].GetUInt32();
-        data.isActive       = fields[++index].GetBool();
+        data.mapid          = fields[index++].GetUInt16();
+        data.zoneId         = fields[index++].GetUInt16();
+        data.areaId         = fields[index++].GetUInt16();
+        data.displayid      = fields[index++].GetUInt32();
+        data.equipmentId    = fields[index++].GetInt32();
+        data.posX           = fields[index++].GetFloat();
+        data.posY           = fields[index++].GetFloat();
+        data.posZ           = fields[index++].GetFloat();
+        data.orientation    = fields[index++].GetFloat();
+        data.spawntimesecs  = fields[index++].GetUInt32();
+        data.spawndist      = fields[index++].GetFloat();
+        data.currentwaypoint= fields[index++].GetUInt32();
+        data.curhealth      = fields[index++].GetUInt32();
+        data.curmana        = fields[index++].GetUInt32();
+        data.movementType   = fields[index++].GetUInt8();
+        data.spawnMask      = fields[index++].GetUInt32();
+        data.phaseMask      = fields[index++].GetUInt16();
+        int16 gameEvent     = fields[index++].GetInt8();
+        uint32 PoolId       = fields[index++].GetUInt32();
+        data.npcflag        = fields[index++].GetUInt32();
+        data.unit_flags     = fields[index++].GetUInt32();
+        data.dynamicflags   = fields[index++].GetUInt32();
+        data.isActive       = fields[index++].GetBool();
 
         MapEntry const* mapEntry = sMapStore.LookupEntry(data.mapid);
         if (!mapEntry)
@@ -8420,16 +8420,16 @@ void ObjectMgr::LoadCreatureClassLevelStats()
 
         uint8 index = 0;
 
-        uint8 Level = fields[++index].GetInt8();
-        uint8 Class = fields[++index].GetInt8();
+        uint8 Level = fields[index++].GetInt8();
+        uint8 Class = fields[index++].GetInt8();
 
         CreatureBaseStats stats;
 
         for (uint8 i = 0; i < MAX_CREATURE_BASE_HP; ++i)
-            stats.BaseHealth[i] = fields[++index].GetUInt32();
+            stats.BaseHealth[i] = fields[index++].GetUInt32();
 
-        stats.BaseMana = fields[++index].GetUInt32();
-        stats.BaseArmor = fields[++index].GetUInt32();
+        stats.BaseMana = fields[index++].GetUInt32();
+        stats.BaseArmor = fields[index++].GetUInt32();
 
         if (!Class || ((1 << (Class - 1)) & CLASSMASK_ALL_CREATURES) == 0)
             sLog->outError(LOG_FILTER_SQL, "Creature base stats for level %u has invalid class %u", Level, Class);
