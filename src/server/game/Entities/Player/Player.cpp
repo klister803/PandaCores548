@@ -17461,7 +17461,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         if (MalDeRez)
             AddAura(15007, this);
 
-
+        ResurrectPlayer(1, true);
         RelocateToHomebind();
     }
     else if (!mapEntry || !IsPositionValid())
