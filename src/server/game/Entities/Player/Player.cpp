@@ -17435,6 +17435,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
 
     m_atLoginFlags = fields[34].GetUInt16();
+    bool mustResurrectFromUnlock = false;
 
     if(m_atLoginFlags & AT_LOGIN_UNLOCK)
     {
@@ -17461,7 +17462,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         if (MalDeRez)
             AddAura(15007, this);
 
-        ResurrectPlayer(1, true);
+        mustResurrectFromUnlock = true;
         RelocateToHomebind();
     }
     else if (!mapEntry || !IsPositionValid())
@@ -17959,6 +17960,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     
     if(QueryResult PersonnalRateResult = CharacterDatabase.PQuery("SELECT rate FROM character_rates WHERE guid='%u' LIMIT 1", GetGUIDLow()))
         m_PersonnalXpRate = (PersonnalRateResult->Fetch())[0].GetFloat();
+
+    if (mustResurrectFromUnlock)
+        ResurrectPlayer(1, true);
 
     return true;
 }
