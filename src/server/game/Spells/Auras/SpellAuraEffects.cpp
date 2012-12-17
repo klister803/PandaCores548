@@ -409,7 +409,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleNULL,                                      //350 SPELL_AURA_MOD_GATHERING_ITEMS_GAINED_PERCENT
     &AuraEffect::HandleNULL,                                      //351 SPELL_AURA_351
     &AuraEffect::HandleNULL,                                      //352 SPELL_AURA_352
-    &AuraEffect::HandleNULL,                                      //353 SPELL_AURA_MOD_CAMOUFLAGE
+    &AuraEffect::HandleModCamouflage,                             //353 SPELL_AURA_MOD_CAMOUFLAGE
     &AuraEffect::HandleNULL,                                      //354 SPELL_AURA_354
     &AuraEffect::HandleUnused,                                    //355 unused (4.3.4)
     &AuraEffect::HandleNULL,                                      //356 SPELL_AURA_356
@@ -1712,6 +1712,25 @@ void AuraEffect::HandleModInvisibility(AuraApplication const* aurApp, uint8 mode
         target->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_IMMUNE_OR_LOST_SELECTION);
     }
     target->UpdateObjectVisibility();
+}
+
+//TODO: Finish this aura
+void AuraEffect::HandleModCamouflage(AuraApplication const *aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_SEND_FOR_CLIENT_MASK))
+        return;
+
+    Unit *target = aurApp->GetTarget();
+
+    if (apply)
+    {
+        target->CastSpell(target, 80326, true);  // Camouflage
+    }
+    else if (!(target->isCamouflaged()))
+    {
+        target->RemoveAura(80326);
+        target->RemoveAura(80325);
+    }
 }
 
 void AuraEffect::HandleModStealthDetect(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4937,28 +4956,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
         // AT APPLY
         if (apply)
         {
-            // Overpower
-            if (caster && m_spellInfo->SpellFamilyName == SPELLFAMILY_WARRIOR &&
-                m_spellInfo->SpellFamilyFlags[0] & 0x4)
-            {
-                // In addition, if you strike a player..
-                if (target->GetTypeId() != TYPEID_PLAYER)
-                    return;
-                //  ..while they are casting
-                if (target->IsNonMeleeSpellCasted(false, false, true, false, true))
-                    if (AuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_WARRIOR, 2775, 0))
-                        switch (aurEff->GetId())
-                        {
-                            // Unrelenting Assault, rank 1
-                            case 46859:
-                                target->CastSpell(target, 64849, true, NULL, aurEff);
-                                break;
-                            // Unrelenting Assault, rank 2
-                            case 46860:
-                                target->CastSpell(target, 64850, true, NULL, aurEff);
-                                break;
-                        }
-            }
             switch (GetId())
             {
                 case 1515:                                      // Tame beast
@@ -5931,13 +5928,6 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
         }
         case SPELLFAMILY_HUNTER:
         {
-            // Explosive Shot
-            if (GetSpellInfo()->SpellFamilyFlags[1] & 0x80000000)
-            {
-                if (caster)
-                    caster->CastCustomSpell(53352, SPELLVALUE_BASE_POINT0, m_amount, target, true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
-                break;
-            }
             switch (GetSpellInfo()->Id)
             {
                 // Feeding Frenzy Rank 1

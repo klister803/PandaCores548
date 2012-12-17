@@ -69,8 +69,11 @@ class spell_dk_blood_charges : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
-                        _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
+                        if (_player->HasAura(45529))
+                        {
+                            _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
+                            _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
+                        }
                     }
                 }
             }
@@ -816,6 +819,35 @@ class spell_dk_ghoul_explode : public SpellScriptLoader
         }
 };
 
+// Death Gate - 53822
+class spell_dk_death_gate_teleport : public SpellScriptLoader
+{
+    public:
+        spell_dk_death_gate_teleport() : SpellScriptLoader("spell_dk_death_gate_teleport") {}
+
+        class spell_dk_death_gate_teleport_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_death_gate_teleport_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->TeleportTo(0, 2355.23f, -5666.4433f, 426.028f, _player->GetOrientation());
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_dk_death_gate_teleport_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_death_gate_teleport_SpellScript();
+        }
+};
+
+// Death Gate - 52751
 class spell_dk_death_gate : public SpellScriptLoader
 {
     public:
@@ -1151,6 +1183,7 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_anti_magic_zone();
     new spell_dk_corpse_explosion();
     new spell_dk_ghoul_explode();
+    new spell_dk_death_gate_teleport();
     new spell_dk_death_gate();
     new spell_dk_death_pact();
     new spell_dk_scourge_strike();

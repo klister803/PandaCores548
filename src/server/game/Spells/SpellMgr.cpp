@@ -2638,6 +2638,49 @@ void SpellMgr::LoadSpellClassInfo()
         if(!classEntry)
             continue;
 
+        // Death Gate : Waiting for start zone debug
+        if (ClassID == CLASS_DEATH_KNIGHT)
+            mSpellClassInfo[ClassID].push_back(52751);
+
+        // All portals and teleports for mages
+        if (ClassID == CLASS_MAGE)
+        {
+            mSpellClassInfo[ClassID].push_back(3561);
+            mSpellClassInfo[ClassID].push_back(3562);
+            mSpellClassInfo[ClassID].push_back(3563);
+            mSpellClassInfo[ClassID].push_back(3565);
+            mSpellClassInfo[ClassID].push_back(3566);
+            mSpellClassInfo[ClassID].push_back(3567);
+            mSpellClassInfo[ClassID].push_back(32271);
+            mSpellClassInfo[ClassID].push_back(32272);
+            mSpellClassInfo[ClassID].push_back(49359);
+            mSpellClassInfo[ClassID].push_back(49360);
+            mSpellClassInfo[ClassID].push_back(32266);
+            mSpellClassInfo[ClassID].push_back(32267);
+            mSpellClassInfo[ClassID].push_back(10059);
+            mSpellClassInfo[ClassID].push_back(11416);
+            mSpellClassInfo[ClassID].push_back(11417);
+            mSpellClassInfo[ClassID].push_back(11418);
+            mSpellClassInfo[ClassID].push_back(11419);
+            mSpellClassInfo[ClassID].push_back(11420);
+            mSpellClassInfo[ClassID].push_back(49358);
+            mSpellClassInfo[ClassID].push_back(49361);
+            mSpellClassInfo[ClassID].push_back(35715);
+            mSpellClassInfo[ClassID].push_back(33690);
+            mSpellClassInfo[ClassID].push_back(33691);
+            mSpellClassInfo[ClassID].push_back(35717);
+            mSpellClassInfo[ClassID].push_back(53140);
+            mSpellClassInfo[ClassID].push_back(53142);
+            mSpellClassInfo[ClassID].push_back(88342);
+            mSpellClassInfo[ClassID].push_back(88344);
+            mSpellClassInfo[ClassID].push_back(88345);
+            mSpellClassInfo[ClassID].push_back(88346);
+            mSpellClassInfo[ClassID].push_back(132620);
+            mSpellClassInfo[ClassID].push_back(132621);
+            mSpellClassInfo[ClassID].push_back(132626);
+            mSpellClassInfo[ClassID].push_back(132627);
+        }
+
         // Ancestral Focus
         if (ClassID == CLASS_SHAMAN)
             mSpellClassInfo[ClassID].push_back(89920);
@@ -3081,6 +3124,17 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 7384: // Overpower
+                spellInfo->AttributesEx |= SPELL_ATTR1_ENABLE_AT_DODGE;
+                break;
+            case 114695: // Pursuit of Justice
+                spellInfo->Effects[0].BasePoints = 0;
+                break;
+            case 6262: // Health Stone
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL_PCT;
+                spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
+                break;
+            case 31230: // Cheat Death
             case 114556 : // Purgatory
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
@@ -3136,7 +3190,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 124040: // Chi Torpedo : Damage
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(9);
                 break;
-            case 115008: // Cho Torpedo
+            case 115008: // Chi Torpedo
                 spellInfo->OverrideSpellList.push_back(121828); // Override List with Chi Torpedo - Talent
                 break;
             case 109132: // Roll

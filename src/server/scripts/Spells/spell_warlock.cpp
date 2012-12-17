@@ -32,8 +32,6 @@ enum WarlockSpells
     WARLOCK_DEMONIC_EMPOWERMENT_FELGUARD    = 54508,
     WARLOCK_DEMONIC_EMPOWERMENT_FELHUNTER   = 54509,
     WARLOCK_DEMONIC_EMPOWERMENT_IMP         = 54444,
-    WARLOCK_IMPROVED_HEALTHSTONE_R1         = 18692,
-    WARLOCK_IMPROVED_HEALTHSTONE_R2         = 18693,
     WARLOCK_DEMONIC_CIRCLE_SUMMON           = 48018,
     WARLOCK_DEMONIC_CIRCLE_TELEPORT         = 48020,
     WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST       = 62388,
@@ -47,7 +45,47 @@ enum WarlockSpells
     WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2  = 60956,
     WARLOCK_GLYPH_OF_FEAR                   = 56244,
     WARLOCK_FEAR_EFFECT                     = 118699,
-    WARLOCK_GLYPH_OF_FEAR_EFFECT            = 130616
+    WARLOCK_GLYPH_OF_FEAR_EFFECT            = 130616,
+    WARLOCK_CREATE_HEALTHSTONE              = 23517,
+    WARLOCK_HARVEST_LIFE_HEAL               = 125314
+};
+
+// Harvest Life - 115707
+class spell_warl_harvest_life : public SpellScriptLoader
+{
+    public:
+        spell_warl_harvest_life() : SpellScriptLoader("spell_warl_harvest_life") { }
+
+        class spell_warl_harvest_life_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_harvest_life_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    // Restoring 3-4.5% of the caster's total health every 1s
+                    int32 basepoints = int32(frand(0.03f, 0.045f) * _player->GetMaxHealth());
+
+                    if (!_player->HasSpellCooldown(WARLOCK_HARVEST_LIFE_HEAL))
+                    {
+                        _player->CastCustomSpell(_player, WARLOCK_HARVEST_LIFE_HEAL, &basepoints, NULL, NULL, true);
+                        // prevent the heal to proc off for each targets
+                        _player->AddSpellCooldown(WARLOCK_HARVEST_LIFE_HEAL, 0, time(NULL) + 1);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_harvest_life_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_harvest_life_AuraScript();
+        }
 };
 
 // Fear - 5782
@@ -208,7 +246,7 @@ class spell_warl_demonic_empowerment : public SpellScriptLoader
         }
 };
 
-// 6201 Create Healthstone
+// Create Healthstone - 6201
 class spell_warl_create_healthstone : public SpellScriptLoader
 {
     public:
@@ -218,55 +256,14 @@ class spell_warl_create_healthstone : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warl_create_healthstone_SpellScript);
 
-            static uint32 const iTypes[8][3];
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
+            void HandleAfterCast()
             {
-                if (!sSpellMgr->GetSpellInfo(WARLOCK_IMPROVED_HEALTHSTONE_R1) || !sSpellMgr->GetSpellInfo(WARLOCK_IMPROVED_HEALTHSTONE_R2))
-                    return false;
-                return true;
-            }
-
-            SpellCastResult CheckCast()
-            {
-                if (Player* caster = GetCaster()->ToPlayer())
-                {
-                    uint8 spellRank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
-                    ItemPosCountVec dest;
-                    InventoryResult msg = caster->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, iTypes[spellRank - 1][0], 1, NULL);
-                    if (msg != EQUIP_ERR_OK)
-                        return SPELL_FAILED_TOO_MANY_OF_ITEM;
-                }
-                return SPELL_CAST_OK;
-            }
-
-            void HandleScriptEffect(SpellEffIndex effIndex)
-            {
-                if (Unit* unitTarget = GetHitUnit())
-                {
-                    uint32 rank = 0;
-                    // Improved Healthstone
-                    if (constAuraEffectPtr aurEff = unitTarget->GetDummyAuraEffect(SPELLFAMILY_WARLOCK, 284, 0))
-                    {
-                        switch (aurEff->GetId())
-                        {
-                            case WARLOCK_IMPROVED_HEALTHSTONE_R1: rank = 1; break;
-                            case WARLOCK_IMPROVED_HEALTHSTONE_R2: rank = 2; break;
-                            default:
-                                sLog->outError(LOG_FILTER_SPELLS_AURAS, "Unknown rank of Improved Healthstone id: %d", aurEff->GetId());
-                                break;
-                        }
-                    }
-                    uint8 spellRank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
-                    if (spellRank > 0 && spellRank <= 8)
-                        CreateItem(effIndex, iTypes[spellRank - 1][rank]);
-                }
+                GetCaster()->CastSpell(GetCaster(), WARLOCK_CREATE_HEALTHSTONE, true);
             }
 
             void Register()
             {
-                OnEffectHitTarget += SpellEffectFn(spell_warl_create_healthstone_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-                OnCheckCast += SpellCheckCastFn(spell_warl_create_healthstone_SpellScript::CheckCast);
+                AfterCast += SpellCastFn(spell_warl_create_healthstone_SpellScript::HandleAfterCast);
             }
         };
 
@@ -274,17 +271,6 @@ class spell_warl_create_healthstone : public SpellScriptLoader
         {
             return new spell_warl_create_healthstone_SpellScript();
         }
-};
-
-uint32 const spell_warl_create_healthstone::spell_warl_create_healthstone_SpellScript::iTypes[8][3] = {
-    { 5512, 19004, 19005},              // Minor Healthstone
-    { 5511, 19006, 19007},              // Lesser Healthstone
-    { 5509, 19008, 19009},              // Healthstone
-    { 5510, 19010, 19011},              // Greater Healthstone
-    { 9421, 19012, 19013},              // Major Healthstone
-    {22103, 22104, 22105},              // Master Healthstone
-    {36889, 36890, 36891},              // Demonic Healthstone
-    {36892, 36893, 36894}               // Fel Healthstone
 };
 
 // 47422 Everlasting Affliction
@@ -803,10 +789,9 @@ public:
     }
 };
 
-
-
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_harvest_life();
     new spell_warl_fear();
     new spell_warl_banish();
     new spell_warl_demonic_empowerment();
