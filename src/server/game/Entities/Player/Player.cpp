@@ -17433,8 +17433,40 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     GetSession()->SetPlayer(this);
     MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
-    if (!mapEntry || !IsPositionValid())
+
+    m_atLoginFlags = fields[34].GetUInt16();
+
+    if(m_atLoginFlags & AT_LOGIN_UNLOCK)
     {
+        bool BGdesert = false;
+        bool DungeonDesert = false;
+        bool MalDeRez = false;
+
+        RemoveAtLoginFlag(AT_LOGIN_UNLOCK, true);
+        if (HasAura(26013)) // deserteur
+            BGdesert = true;
+        if (HasAura(71041)) // deserteur de donjon
+            DungeonDesert = true;
+        if (HasAura(15007))
+            MalDeRez = true;
+
+
+        RemoveAllAuras();
+        RemoveFromGroup();
+
+        if (BGdesert)
+            AddAura(26013, this);
+        if (DungeonDesert)
+            AddAura(71041, this);
+        if (MalDeRez)
+            AddAura(15007, this);
+
+
+        RelocateToHomebind();
+    }
+    else if (!mapEntry || !IsPositionValid())
+    {
+        RemoveAtLoginFlag(AT_LOGIN_UNLOCK, true);
         sLog->outError(LOG_FILTER_PLAYER, "Player (guidlow %d) have invalid coordinates (MapId: %u X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.", guid, mapId, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
         RelocateToHomebind();
     }
@@ -17679,8 +17711,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         sLog->outError(LOG_FILTER_PLAYER, "Player can have not more %u stable slots, but have in DB %u", MAX_PET_STABLES, uint32(m_stableSlots));
         m_stableSlots = MAX_PET_STABLES;
     }
-
-    m_atLoginFlags = fields[34].GetUInt16();
 
     // Honor system
     // Update Honor kills data
