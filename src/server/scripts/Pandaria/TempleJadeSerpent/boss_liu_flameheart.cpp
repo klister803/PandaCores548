@@ -137,7 +137,7 @@ class boss_liu_flameheart : public CreatureScript
                 {
                 case 0:
                     me->setFaction(35);
-                    me->getThreatManager().resetAllAggro();
+                    me->getThreatManager()->resetAllAggro();
                     me->SetReactState(REACT_PASSIVE);
                     break;
                 }

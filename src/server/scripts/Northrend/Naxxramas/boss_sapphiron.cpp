@@ -305,8 +305,8 @@ public:
                         case EVENT_ICEBOLT:
                         {
                             std::vector<UnitPtr> targets;
-                            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin();
-                            for (; i != me->getThreatManager().getThreatList().end(); ++i)
+                            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager()->getThreatList().begin();
+                            for (; i != me->getThreatManager()->getThreatList().end(); ++i)
                                 if ((*i)->getTarget()->GetTypeId() == TYPEID_PLAYER && !(*i)->getTarget()->HasAura(SPELL_ICEBOLT))
                                     targets.push_back((*i)->getTarget());
 
@@ -362,8 +362,8 @@ public:
         {
             DoZoneInCombat(); // make sure everyone is in threatlist
             std::vector<UnitPtr> targets;
-            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin();
-            for (; i != me->getThreatManager().getThreatList().end(); ++i)
+            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager()->getThreatList().begin();
+            for (; i != me->getThreatManager()->getThreatList().end(); ++i)
             {
                 UnitPtr target = (*i)->getTarget();
                 if (target->GetTypeId() != TYPEID_PLAYER)

@@ -585,7 +585,7 @@ public:
                 return;
 
             if (UnitPtr summoner = me->ToTempSummon()->GetSummoner())
-                if (CreaturePtr summonerCre = summoner->ToCreature())
+                if (CreaturePtr summonerCre = TO_CREATURE(summoner))
                     summonerCre->AI()->SetData(2, 2);
         }
     };

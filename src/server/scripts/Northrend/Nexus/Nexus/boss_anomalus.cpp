@@ -267,7 +267,7 @@ class achievement_chaos_theory : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Anomalus = target->ToCreature())
+            if (CreaturePtr Anomalus = TO_CREATURE(target))
                 if (Anomalus->AI()->GetData(DATA_CHAOS_THEORY))
                     return true;
 

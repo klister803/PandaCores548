@@ -101,7 +101,7 @@ void UnitAI::DoAddAuraToAllHostilePlayers(uint32 spellid)
 {
     if (me->isInCombat())
     {
-        std::list<HostileReferencePtr>& threatlist = me->getThreatManager().getThreatList();
+        std::list<HostileReferencePtr>& threatlist = me->getThreatManager()->getThreatList();
         for (std::list<HostileReferencePtr>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
         {
             if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid()))
@@ -116,7 +116,7 @@ void UnitAI::DoCastToAllHostilePlayers(uint32 spellid, bool triggered)
 {
     if (me->isInCombat())
     {
-        std::list<HostileReferencePtr>& threatlist = me->getThreatManager().getThreatList();
+        std::list<HostileReferencePtr>& threatlist = me->getThreatManager()->getThreatList();
         for (std::list<HostileReferencePtr>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
         {
             if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid()))
@@ -225,7 +225,7 @@ void PlayerAI::OnCharmed(bool apply) { me->IsAIEnabled = apply; }
 
 void SimpleCharmedAI::UpdateAI(const uint32 /*diff*/)
 {
-  CreaturePtr charmer = me->GetCharmer()->ToCreature();
+  CreaturePtr charmer = TO_CREATURE(me->GetCharmer());
 
     //kill self if charm aura has infinite duration
     if (charmer->IsInEvadeMode())

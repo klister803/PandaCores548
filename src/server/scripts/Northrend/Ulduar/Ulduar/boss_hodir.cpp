@@ -445,7 +445,7 @@ class boss_hodir : public CreatureScript
 
                 if (gettingColdInHereTimer <= diff && gettingColdInHere)
                 {
-                    std::list<HostileReferencePtr> ThreatList = me->getThreatManager().getThreatList();
+                    std::list<HostileReferencePtr> ThreatList = me->getThreatManager()->getThreatList();
                     for (std::list<HostileReferencePtr>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
                         if (UnitPtr target = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(me), (*itr)->getUnitGuid()))
                         {

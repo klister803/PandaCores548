@@ -767,7 +767,7 @@ public:
             if (BlastWave_Timer <= diff)
             {
                 UnitPtr target = nullptr;
-                std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
+                std::list<HostileReferencePtr> t_list = me->getThreatManager()->getThreatList();
                 std::vector<UnitPtr> target_list;
                 for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {

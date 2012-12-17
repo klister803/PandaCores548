@@ -127,7 +127,7 @@ public:
                     if (Temp->isDead())
                         CAST_CRE(Temp)->Respawn();
                     else if (Temp->getVictim())
-                        me->getThreatManager().addThreat(Temp->getVictim(), 0.0f);
+                        me->getThreatManager()->addThreat(Temp->getVictim(), 0.0f);
                 }
             }
 
@@ -389,7 +389,7 @@ public:
                     if (Temp->isDead())
                         CAST_CRE(Temp)->Respawn();
                     else if (Temp->getVictim())
-                        me->getThreatManager().addThreat(Temp->getVictim(), 0.0f);
+                        me->getThreatManager()->addThreat(Temp->getVictim(), 0.0f);
                 }
             }
 

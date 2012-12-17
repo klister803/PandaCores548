@@ -287,7 +287,7 @@ class achievement_king_dred : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Dred = target->ToCreature())
+            if (CreaturePtr Dred = TO_CREATURE(target))
                 if (Dred->AI()->GetData(DATA_KING_DRED) >= 6)
                     return true;
 

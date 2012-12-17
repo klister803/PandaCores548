@@ -782,7 +782,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
     if (gameObjTarget)
         sScriptMgr->OnDummyEffect(m_caster, m_spellInfo->Id, effIndex, gameObjTarget);
     else if (unitTarget && unitTarget->GetTypeId() == TYPEID_UNIT)
-        sScriptMgr->OnDummyEffect(m_caster, m_spellInfo->Id, effIndex, unitTarget->ToCreature());
+        sScriptMgr->OnDummyEffect(m_caster, m_spellInfo->Id, effIndex, TO_CREATURE(unitTarget));
     else if (itemTarget)
         sScriptMgr->OnDummyEffect(m_caster, m_spellInfo->Id, effIndex, itemTarget);
 }
@@ -2608,7 +2608,7 @@ void Spell::EffectDualWield(SpellEffIndex /*effIndex*/)
 
     unitTarget->SetCanDualWield(true);
     if (unitTarget->GetTypeId() == TYPEID_UNIT)
-        unitTarget->ToCreature()->UpdateDamagePhysical(OFF_ATTACK);
+        TO_CREATURE(unitTarget)->UpdateDamagePhysical(OFF_ATTACK);
 }
 
 void Spell::EffectPull(SpellEffIndex effIndex)
@@ -2973,7 +2973,7 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     if (unitTarget->GetTypeId() != TYPEID_UNIT)
         return;
 
-    CreaturePtr creatureTarget = unitTarget->ToCreature();
+    CreaturePtr creatureTarget = TO_CREATURE(unitTarget);
 
     if (creatureTarget->isPet())
         return;
@@ -2998,7 +2998,7 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     pet->SetUInt32Value(UNIT_FIELD_LEVEL, level - 1);
 
     // add to world
-    pet->GetMap()->AddToMap(pet->ToCreature());
+    pet->GetMap()->AddToMap(TO_CREATURE(pet));
 
     // visual effect for levelup
     pet->SetUInt32Value(UNIT_FIELD_LEVEL, level);
@@ -3139,21 +3139,21 @@ void Spell::EffectTaunt(SpellEffIndex /*effIndex*/)
     }
 
     // Also use this effect to set the taunter's threat to the taunted creature's highest value
-    if (unitTarget->getThreatManager().getCurrentVictim())
+    if (unitTarget->getThreatManager()->getCurrentVictim())
     {
-        float myThreat = unitTarget->getThreatManager().getThreat(m_caster);
-        float itsThreat = unitTarget->getThreatManager().getCurrentVictim()->getThreat();
+        float myThreat = unitTarget->getThreatManager()->getThreat(m_caster);
+        float itsThreat = unitTarget->getThreatManager()->getCurrentVictim()->getThreat();
         if (itsThreat > myThreat)
-            unitTarget->getThreatManager().addThreat(m_caster, itsThreat - myThreat);
+            unitTarget->getThreatManager()->addThreat(m_caster, itsThreat - myThreat);
     }
 
     //Set aggro victim to caster
-    if (!unitTarget->getThreatManager().getOnlineContainer().empty())
-        if (HostileReferencePtr forcedVictim = unitTarget->getThreatManager().getOnlineContainer().getReferenceByTarget(m_caster))
-            unitTarget->getThreatManager().setCurrentVictim(forcedVictim);
+    if (!unitTarget->getThreatManager()->getOnlineContainer().empty())
+        if (HostileReferencePtr forcedVictim = unitTarget->getThreatManager()->getOnlineContainer().getReferenceByTarget(m_caster))
+            unitTarget->getThreatManager()->setCurrentVictim(forcedVictim);
 
-    if (unitTarget->ToCreature()->IsAIEnabled && !unitTarget->ToCreature()->HasReactState(REACT_PASSIVE))
-        unitTarget->ToCreature()->AI()->AttackStart(m_caster);
+    if (TO_CREATURE(unitTarget)->IsAIEnabled && !TO_CREATURE(unitTarget)->HasReactState(REACT_PASSIVE))
+        TO_CREATURE(unitTarget)->AI()->AttackStart(m_caster);
 }
 
 void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
@@ -3742,7 +3742,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     if (PlayerPtr caster = TO_PLAYER(m_caster))
                     {
                         caster->RewardPlayerAndGroupAtEvent(18388, unitTarget);
-                        if (CreaturePtr target = unitTarget->ToCreature())
+                        if (CreaturePtr target = TO_CREATURE(unitTarget))
                         {
                             target->setDeathState(CORPSE);
                             target->RemoveCorpse();
@@ -3886,7 +3886,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     }
 
                     unitTarget->CastSpell(unitTarget, iTmpSpellId, true);
-                    CreaturePtr npc = unitTarget->ToCreature();
+                    CreaturePtr npc = TO_CREATURE(unitTarget);
                     npc->LoadEquipment(npc->GetEquipmentId());
                     return;
                 }
@@ -3929,7 +3929,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 }
                 case 52173: // Coyote Spirit Despawn
                 case 60243: // Blood Parrot Despawn
-                    if (unitTarget->GetTypeId() == TYPEID_UNIT && unitTarget->ToCreature()->isSummon())
+                    if (unitTarget->GetTypeId() == TYPEID_UNIT && TO_CREATURE(unitTarget)->isSummon())
                         unitTarget->ToTempSummon()->UnSummon();
                     return;
                 case 52479: // Gift of the Harvester
@@ -3945,7 +3945,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT || m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
 
-                    unitTarget->ToCreature()->DespawnOrUnsummon();
+                    TO_CREATURE(unitTarget)->DespawnOrUnsummon();
 
                     return;
                 }
@@ -5010,7 +5010,7 @@ void Spell::EffectSkinning(SpellEffIndex /*effIndex*/)
     if (m_caster->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    CreaturePtr creature = unitTarget->ToCreature();
+    CreaturePtr creature = TO_CREATURE(unitTarget);
     int32 targetLevel = creature->getLevel();
 
     uint32 skill = creature->GetCreatureTemplate()->GetRequiredLootSkill();
@@ -5085,7 +5085,7 @@ void Spell::EffectKnockBack(SpellEffIndex effIndex)
     if (!unitTarget)
         return;
 
-    if (CreaturePtr creatureTarget = unitTarget->ToCreature())
+    if (CreaturePtr creatureTarget = TO_CREATURE(unitTarget))
         if (creatureTarget->isWorldBoss() || creatureTarget->IsDungeonBoss())
             return;
 
@@ -5393,7 +5393,7 @@ void Spell::EffectModifyThreatPercent(SpellEffIndex /*effIndex*/)
     if (!unitTarget)
         return;
 
-    unitTarget->getThreatManager().modifyThreatPercent(m_caster, damage);
+    unitTarget->getThreatManager()->modifyThreatPercent(m_caster, damage);
 }
 
 void Spell::EffectTransmitted(SpellEffIndex effIndex)
@@ -5874,7 +5874,7 @@ void Spell::EffectCreateTamedPet(SpellEffIndex effIndex)
         return;
 
     // add to world
-    pet->GetMap()->AddToMap(pet->ToCreature());
+    pet->GetMap()->AddToMap(TO_CREATURE(pet));
 
     // unitTarget has pet now
     unitTarget->SetMinion(pet, true);
@@ -6030,7 +6030,7 @@ void Spell::EffectRenamePet(SpellEffIndex /*effIndex*/)
         return;
 
     if (!unitTarget || unitTarget->GetTypeId() != TYPEID_UNIT ||
-        !unitTarget->ToCreature()->isPet() || TO_PET(unitTarget)->getPetType() != HUNTER_PET)
+        !TO_CREATURE(unitTarget)->isPet() || TO_PET(unitTarget)->getPetType() != HUNTER_PET)
         return;
 
     unitTarget->SetByteFlag(UNIT_FIELD_BYTES_2, 2, UNIT_CAN_BE_RENAMED);

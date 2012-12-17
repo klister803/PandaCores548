@@ -41,15 +41,6 @@ m_auraRaidUpdateMask(0), m_loading(false), m_declinedname(nullptr)
     m_unitTypeMask |= UNIT_MASK_PET;
     if (type == HUNTER_PET)
         m_unitTypeMask |= UNIT_MASK_HUNTER_PET;
-
-    if (!(m_unitTypeMask & UNIT_MASK_CONTROLABLE_GUARDIAN))
-    {
-        m_unitTypeMask |= UNIT_MASK_CONTROLABLE_GUARDIAN;
-        InitCharmInfo();
-    }
-
-    m_name = "Pet";
-    m_regenTimer = PET_FOCUS_REGEN_INTERVAL;
 }
 
 Pet::~Pet()
@@ -63,7 +54,7 @@ void Pet::AddToWorld()
     if (!IsInWorld())
     {
         ///- Register the pet for guid lookup
-        sObjectAccessor->AddObject(THIS_PET);
+        sObjectAccessor->AddObject(THIS_PET());
         Unit::AddToWorld();
         AIM_Initialize();
     }
@@ -87,7 +78,7 @@ void Pet::RemoveFromWorld()
     {
         ///- Don't call the function for Creature, normal mobs + totems go in a different storage
         Unit::RemoveFromWorld();
-        sObjectAccessor->RemoveObject(THIS_PET);
+        sObjectAccessor->RemoveObject(THIS_PET());
     }
 }
 
@@ -195,7 +186,7 @@ bool Pet::LoadPetFromDB(PlayerPtr owner, uint32 petentry, uint32 petnumber, bool
     CreatureTemplate const* cinfo = GetCreatureTemplate();
     if (cinfo->type == CREATURE_TYPE_CRITTER)
     {
-        map->AddToMap(this->ToCreature());
+        map->AddToMap(THIS_CREATURE);
         return true;
     }
 
@@ -297,7 +288,7 @@ bool Pet::LoadPetFromDB(PlayerPtr owner, uint32 petentry, uint32 petnumber, bool
         owner->SendMessageToSet(&data, true);
     }
 
-    owner->SetMinion(THIS_PET, true);
+    owner->SetMinion(THIS_PET(), true);
     map->AddToMap(THIS_CREATURE);
 
     uint32 timediff = uint32(time(nullptr) - fields[13].GetUInt32());
@@ -651,7 +642,7 @@ void Creature::Regenerate(Powers power)
 
 void Pet::Remove(PetSaveMode mode, bool returnreagent)
 {
-    m_owner->RemovePet(THIS_PET, mode, returnreagent);
+    m_owner->RemovePet(THIS_PET(), mode, returnreagent);
 }
 
 void Pet::GivePetXP(uint32 xp)
@@ -1264,7 +1255,7 @@ void Pet::_LoadAuras(uint32 timediff)
                 }
             }
 
-            AuraPtr aura = Aura::TryCreate(spellInfo, effmask, THIS_PET, nullptr, spellInfo->spellPower, &baseDamage[0], nullptr, caster_guid);
+            AuraPtr aura = Aura::TryCreate(spellInfo, effmask, THIS_PET(), nullptr, spellInfo->spellPower, &baseDamage[0], nullptr, caster_guid);
             if (aura != nullptr)
             {
                 if (!aura->CanBeSaved())
@@ -1451,7 +1442,7 @@ bool Pet::addSpell(uint32 spellId, ActiveStates active /*= ACT_DECIDE*/, PetSpel
     m_spells[spellId] = newspell;
 
     if (spellInfo->IsPassive() && (!spellInfo->CasterAuraState || HasAuraState(AuraStateType(spellInfo->CasterAuraState))))
-        CastSpell(THIS_PET, spellId, true);
+        CastSpell(THIS_PET(), spellId, true);
     else
         m_charmInfo->AddSpellToActionBar(spellInfo);
 
@@ -1748,10 +1739,10 @@ void Pet::CastPetAura(PetAura const* aura)
     if (auraId == 35696)                                      // Demonic Knowledge
     {
         int32 basePoints = CalculatePct(aura->GetDamage(), GetStat(STAT_STAMINA) + GetStat(STAT_INTELLECT));
-        CastCustomSpell(THIS_PET, auraId, &basePoints, nullptr, nullptr, true);
+        CastCustomSpell(THIS_PET(), auraId, &basePoints, nullptr, nullptr, true);
     }
     else
-        CastSpell(THIS_PET, auraId, true);
+        CastSpell(THIS_PET(), auraId, true);
 }
 
 bool Pet::IsPetAura(constAuraPtr aura)

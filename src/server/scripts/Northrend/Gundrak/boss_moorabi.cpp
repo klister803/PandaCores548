@@ -183,7 +183,7 @@ class achievement_less_rabi : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Moorabi = target->ToCreature())
+            if (CreaturePtr Moorabi = TO_CREATURE(target))
                 if (Moorabi->AI()->GetData(DATA_LESS_RABI))
                     return true;
 

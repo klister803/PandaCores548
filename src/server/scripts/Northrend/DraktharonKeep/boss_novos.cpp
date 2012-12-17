@@ -356,7 +356,7 @@ class achievement_oh_novos : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Novos = target->ToCreature())
+            if (CreaturePtr Novos = TO_CREATURE(target))
                 if (Novos->AI()->GetData(DATA_OH_NOVOS))
                     return true;
 

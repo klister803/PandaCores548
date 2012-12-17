@@ -297,7 +297,7 @@ class achievement_share_the_love : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr GalDarah = target->ToCreature())
+            if (CreaturePtr GalDarah = TO_CREATURE(target))
                 if (GalDarah->AI()->GetData(DATA_SHARE_THE_LOVE) >= 5)
                     return true;
 

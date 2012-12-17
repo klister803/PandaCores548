@@ -1524,7 +1524,7 @@ class spell_frostwarden_handler_order_whelp : public SpellScriptLoader
                 PreventHitDefaultEffect(effIndex);
                 std::list<CreaturePtr> targets;
                 GetCreatureListWithEntryInGrid(targets, GetCaster(), NPC_FROSTWING_WHELP, 150.0f);
-                if (CreaturePtr creature = GetCaster()->ToCreature())
+                if (CreaturePtr creature = TO_CREATURE(GetCaster()))
                     targets.remove_if (OrderWhelpTargetSelector(creature));
 
                 Trinity::Containers::SelectRandomContainerElement(targets)->CastSpell(GetHitUnit(), uint32(GetEffectValue()), true);

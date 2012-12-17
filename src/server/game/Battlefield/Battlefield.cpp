@@ -469,7 +469,7 @@ WorldPacket Battlefield::BuildWarningAnnPacket(std::string msg)
 void Battlefield::SendWarningToAllInZone(uint32 entry)
 {
     if (UnitPtr unit = sObjectAccessor->FindUnit(StalkerGuid))
-        if (CreaturePtr stalker = unit->ToCreature())
+        if (CreaturePtr stalker = TO_CREATURE(unit))
             // FIXME: replaced CHAT_TYPE_END with CHAT_MSG_BG_SYSTEM_NEUTRAL to fix compile, it's a guessed change :/
             sCreatureTextMgr->SendChat(stalker, (uint8) entry, 0, CHAT_MSG_BG_SYSTEM_NEUTRAL, LANG_ADDON, TEXT_RANGE_ZONE);
 }
@@ -492,7 +492,7 @@ void Battlefield::SendWarningToPlayer(PlayerPtr player, uint32 entry)
 {
     if (player)
         if (UnitPtr unit = sObjectAccessor->FindUnit(StalkerGuid))
-            if (CreaturePtr stalker = unit->ToCreature())
+            if (CreaturePtr stalker = TO_CREATURE(unit))
                 sCreatureTextMgr->SendChat(stalker, (uint8)entry, player->GetGUID());
 }
 

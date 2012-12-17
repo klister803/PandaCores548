@@ -1690,7 +1690,7 @@ class spell_icc_stoneform : public SpellScriptLoader
 
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (CreaturePtr target = GetTarget()->ToCreature())
+                if (CreaturePtr target = TO_CREATURE(GetTarget()))
                 {
                     target->SetReactState(REACT_PASSIVE);
                     target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC);
@@ -1700,7 +1700,7 @@ class spell_icc_stoneform : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (CreaturePtr target = GetTarget()->ToCreature())
+                if (CreaturePtr target = TO_CREATURE(GetTarget()))
                 {
                     target->SetReactState(REACT_AGGRESSIVE);
                     target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_PC);

@@ -172,7 +172,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
                 {
                     if (IsCreature((*itr)))
                     {
-                        talker = (*itr)->ToCreature();
+                        talker = TO_CREATURE((*itr));
                         break;
                     }
                     else if (IsPlayer((*itr)))
@@ -212,7 +212,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
                 for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
                 {
                     if (IsCreature(*itr))
-                        sCreatureTextMgr->SendChat((*itr)->ToCreature(), uint8(e.action.talk.textGroupID), IsPlayer(GetLastInvoker())? GetLastInvoker()->GetGUID() : 0);
+                        sCreatureTextMgr->SendChat(TO_CREATURE((*itr)), uint8(e.action.talk.textGroupID), IsPlayer(GetLastInvoker())? GetLastInvoker()->GetGUID() : 0);
                     else if (IsPlayer(*itr) && me)
                     {
                         UnitPtr templastInvoker = GetLastInvoker();
@@ -275,17 +275,17 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
                     {
                         if (e.action.faction.factionID)
                         {
-                            (*itr)->ToCreature()->setFaction(e.action.faction.factionID);
+                            TO_CREATURE((*itr))->setFaction(e.action.faction.factionID);
                             sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_SET_FACTION: Creature entry %u, GuidLow %u set faction to %u",
                                 (*itr)->GetEntry(), (*itr)->GetGUIDLow(), e.action.faction.factionID);
                         }
                         else
                         {
-                            if (CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate((*itr)->ToCreature()->GetEntry()))
+                            if (CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(TO_CREATURE((*itr))->GetEntry()))
                             {
-                                if ((*itr)->ToCreature()->getFaction() != ci->faction_A)
+                                if (TO_CREATURE((*itr))->getFaction() != ci->faction_A)
                                 {
-                                    (*itr)->ToCreature()->setFaction(ci->faction_A);
+                                    TO_CREATURE((*itr))->setFaction(ci->faction_A);
                                     sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_SET_FACTION: Creature entry %u, GuidLow %u set faction to %u",
                                         (*itr)->GetEntry(), (*itr)->GetGUIDLow(), ci->faction_A);
                                 }
@@ -317,7 +317,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
                         if (CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(e.action.morphOrMount.creature))
                         {
                             uint32 display_id = sObjectMgr->ChooseDisplayId(0, ci);
-                            (*itr)->ToCreature()->SetDisplayId(display_id);
+                            TO_CREATURE((*itr))->SetDisplayId(display_id);
                             sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_MORPH_TO_ENTRY_OR_MODEL: Creature entry %u, GuidLow %u set displayid to %u",
                                 (*itr)->GetEntry(), (*itr)->GetGUIDLow(), display_id);
                         }
@@ -325,14 +325,14 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
                     //if no param1, then use value from param2 (modelId)
                     else
                     {
-                        (*itr)->ToCreature()->SetDisplayId(e.action.morphOrMount.model);
+                        TO_CREATURE((*itr))->SetDisplayId(e.action.morphOrMount.model);
                         sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_MORPH_TO_ENTRY_OR_MODEL: Creature entry %u, GuidLow %u set displayid to %u",
                             (*itr)->GetEntry(), (*itr)->GetGUIDLow(), e.action.morphOrMount.model);
                     }
                 }
                 else
                 {
-                    (*itr)->ToCreature()->DeMorph();
+                    TO_CREATURE((*itr))->DeMorph();
                     sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_MORPH_TO_ENTRY_OR_MODEL: Creature entry %u, GuidLow %u demorphs.",
                         (*itr)->GetEntry(), (*itr)->GetGUIDLow());
                 }
@@ -435,12 +435,12 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
             if (!me)
                 break;
 
-            std::list<HostileReferencePtr> const& threatList = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr> const& threatList = me->getThreatManager()->getThreatList();
             for (std::list<HostileReferencePtr>::const_iterator i = threatList.begin(); i != threatList.end(); ++i)
             {
                 if (UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid()))
                 {
-                    me->getThreatManager().modifyThreatPercent(target, e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
+                    me->getThreatManager()->modifyThreatPercent(target, e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
                     sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_THREAT_ALL_PCT: Creature guidLow %u modify threat for unit %u, value %i",
                         me->GetGUIDLow(), target->GetGUIDLow(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
                 }
@@ -460,7 +460,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
             {
                 if (IsUnit(*itr))
                 {
-                    me->getThreatManager().modifyThreatPercent((*itr)->ToUnit(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
+                    me->getThreatManager()->modifyThreatPercent((*itr)->ToUnit(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
                     sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::ProcessAction:: SMART_ACTION_THREAT_SINGLE_PCT: Creature guidLow %u modify threat for unit %u, value %i",
                         me->GetGUIDLow(), (*itr)->GetGUIDLow(), e.action.threatPCT.threatINC ? (int32)e.action.threatPCT.threatINC : -(int32)e.action.threatPCT.threatDEC);
                 }
@@ -1067,7 +1067,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
                 if (IsCreature(*itr))
-                    (*itr)->ToCreature()->AI()->SetData(e.action.setData.field, e.action.setData.data);
+                    TO_CREATURE((*itr))->AI()->SetData(e.action.setData.field, e.action.setData.data);
                 else if (IsGameObject(*itr))
                     (*itr)->ToGameObject()->AI()->SetData(e.action.setData.field, e.action.setData.data);
             }
@@ -1404,7 +1404,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
                 if (IsCreature(*itr))
-                    (*itr)->ToCreature()->Respawn();
+                    TO_CREATURE((*itr))->Respawn();
                 else if (IsGameObject(*itr))
                     (*itr)->ToGameObject()->SetRespawnTime(e.action.RespawnTarget.goRespawnTime);
             }
@@ -1433,7 +1433,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
 
             for (ObjectList::const_iterator itr = targets->begin(); itr != targets->end(); ++itr)
             {
-                if (CreaturePtr npc = (*itr)->ToCreature())
+                if (CreaturePtr npc = TO_CREATURE((*itr)))
                 {
                     uint32 slot[3];
                     if (e.action.equip.entry)
@@ -1517,7 +1517,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
                     if (!goOrigGUID)
                         goOrigGUID = go ? go->GetGUID() : 0;
                     go = nullptr;
-                    me = (*itr)->ToCreature();
+                    me = TO_CREATURE((*itr));
                     break;
                 }
                 else if (IsGameObject(*itr))
@@ -1553,7 +1553,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
             if (targets)
             {
                 for (ObjectList::iterator itr = targets->begin(); itr != targets->end(); ++itr)
-                    if (CreaturePtr target = (*itr)->ToCreature())
+                    if (CreaturePtr target = TO_CREATURE((*itr)))
                         if (IsSmart(target) && target->getVictim())
                             if (CAST_AI(SmartAI, target->AI())->CanCombatMove())
                                 target->GetMotionMaster()->MoveChase(target->getVictim(), attackDistance, attackAngle);
@@ -1575,7 +1575,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
             {
                 for (ObjectList::iterator itr = targets->begin(); itr != targets->end(); ++itr)
                 {
-                    if (CreaturePtr target = (*itr)->ToCreature())
+                    if (CreaturePtr target = TO_CREATURE((*itr)))
                     {
                         if (IsSmart(target))
                             CAST_AI(SmartAI, target->AI())->SetScript9(e, e.action.timedActionList.id, GetLastInvoker());
@@ -1699,7 +1699,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
             {
                 for (ObjectList::iterator itr = targets->begin(); itr != targets->end(); ++itr)
                 {
-                    if (CreaturePtr target = (*itr)->ToCreature())
+                    if (CreaturePtr target = TO_CREATURE((*itr)))
                     {
                         if (IsSmart(target))
                             CAST_AI(SmartAI, target->AI())->SetScript9(e, id, GetLastInvoker());
@@ -1729,7 +1729,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
             {
                 for (ObjectList::iterator itr = targets->begin(); itr != targets->end(); ++itr)
                 {
-                    if (CreaturePtr target = (*itr)->ToCreature())
+                    if (CreaturePtr target = TO_CREATURE((*itr)))
                     {
                         if (IsSmart(target))
                             CAST_AI(SmartAI, target->AI())->SetScript9(e, id, GetLastInvoker());
@@ -1769,9 +1769,9 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
                 if (IsCreature((*itr)))
                 {
                     if (e.action.moveRandom.distance)
-                        (*itr)->ToCreature()->GetMotionMaster()->MoveRandom((float)e.action.moveRandom.distance);
+                        TO_CREATURE((*itr))->GetMotionMaster()->MoveRandom((float)e.action.moveRandom.distance);
                     else
-                        (*itr)->ToCreature()->GetMotionMaster()->MoveIdle();
+                        TO_CREATURE((*itr))->GetMotionMaster()->MoveIdle();
                 }
             }
 
@@ -1909,7 +1909,7 @@ void SmartScript::ProcessAction(SmartScriptHolder& e, UnitPtr unit, uint32 var0,
             {
                 if (IsCreature(*itr))
                 {
-                    if (SmartAI* ai = CAST_AI(SmartAI, (*itr)->ToCreature()->AI()))
+                    if (SmartAI* ai = CAST_AI(SmartAI, TO_CREATURE((*itr))->AI()))
                         ai->GetScript()->StoreTargetList(new ObjectList(*storedTargets), e.action.sendTargetToTarget.id);   // store a copy of target list
                     else
                         sLog->outError(LOG_FILTER_SQL, "SmartScript: Action target for SMART_ACTION_SEND_TARGET_TO_TARGET is not using SmartAI, skipping");
@@ -2169,7 +2169,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, UnitPtr invoker 
                 if (me && me == *itr)
                     continue;
 
-                if (((e.target.unitRange.creature && (*itr)->ToCreature()->GetEntry() == e.target.unitRange.creature) || !e.target.unitRange.creature) && GetBaseObject()->IsInRange(*itr, (float)e.target.unitRange.minDist, (float)e.target.unitRange.maxDist))
+                if (((e.target.unitRange.creature && TO_CREATURE((*itr))->GetEntry() == e.target.unitRange.creature) || !e.target.unitRange.creature) && GetBaseObject()->IsInRange(*itr, (float)e.target.unitRange.minDist, (float)e.target.unitRange.maxDist))
                     l->push_back(*itr);
             }
 
@@ -2188,7 +2188,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, UnitPtr invoker 
                 if (me && me == *itr)
                     continue;
 
-                if ((e.target.unitDistance.creature && (*itr)->ToCreature()->GetEntry() == e.target.unitDistance.creature) || !e.target.unitDistance.creature)
+                if ((e.target.unitDistance.creature && TO_CREATURE((*itr))->GetEntry() == e.target.unitDistance.creature) || !e.target.unitDistance.creature)
                     l->push_back(*itr);
             }
 
@@ -2345,7 +2345,7 @@ ObjectList* SmartScript::GetTargets(SmartScriptHolder const& e, UnitPtr invoker 
         {
             if (me)
             {
-                std::list<HostileReferencePtr> const& threatList = me->getThreatManager().getThreatList();
+                std::list<HostileReferencePtr> const& threatList = me->getThreatManager()->getThreatList();
                 for (std::list<HostileReferencePtr>::const_iterator i = threatList.begin(); i != threatList.end(); ++i)
                     if (UnitPtr temp = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid()))
                         l->push_back(temp);
@@ -3039,7 +3039,7 @@ void SmartScript::OnInitialize(WorldObjectPtr obj, AreaTriggerEntry const* at)
         {
             case TYPEID_UNIT:
                 mScriptType = SMART_SCRIPT_TYPE_CREATURE;
-                me = obj->ToCreature();
+                me = TO_CREATURE(obj);
                 sLog->outDebug(LOG_FILTER_DATABASE_AI, "SmartScript::OnInitialize: source is Creature %u", me->GetEntry());
                 break;
             case TYPEID_GAMEOBJECT:

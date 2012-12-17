@@ -62,7 +62,7 @@ public:
 
         void OnUnitDeath(UnitPtr unit)
         {
-            CreaturePtr creature = unit->ToCreature();
+            CreaturePtr creature = TO_CREATURE(unit);
             if (!creature)
                 return;
 

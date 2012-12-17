@@ -89,5 +89,6 @@ class Corpse : public WorldObject, public GridObject<Corpse>
         CorpseType m_type;
         time_t m_time;
         GridCoord _gridCoord;                                    // gride for corpse position for fast search
+        std::shared_ptr<GridObject<Corpse>> _corpse;
 };
 #endif

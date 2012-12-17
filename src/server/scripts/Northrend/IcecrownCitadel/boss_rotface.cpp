@@ -551,7 +551,7 @@ class spell_rotface_slime_spray : public SpellScriptLoader
                 {
                     GetCaster()->ClearUnitState(UNIT_STATE_CANNOT_TURN);
 
-                    if (CreaturePtr creatureCaster = GetCaster()->ToCreature())
+                    if (CreaturePtr creatureCaster = TO_CREATURE(GetCaster()))
                     {
                         if (UnitPtr target = creatureCaster->AI()->SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0.0f, true))
                         {
@@ -703,7 +703,7 @@ class spell_rotface_mutated_infection : public SpellScriptLoader
 
             void NotifyTargets()
             {
-                if (CreaturePtr caster = GetCaster()->ToCreature())
+                if (CreaturePtr caster = TO_CREATURE(GetCaster()))
                     if (UnitPtr target = GetHitUnit())
                         caster->AI()->Talk(EMOTE_MUTATED_INFECTION, target->GetGUID());
             }
@@ -834,7 +834,7 @@ class spell_rotface_large_ooze_buff_combine : public SpellScriptLoader
                                     rotface->AI()->Talk(SAY_UNSTABLE_EXPLOSION);
                                 }
 
-                        if (CreaturePtr cre = GetCaster()->ToCreature())
+                        if (CreaturePtr cre = TO_CREATURE(GetCaster()))
                             cre->AI()->DoAction(EVENT_STICKY_OOZE);
                         GetCaster()->CastSpell(GetCaster(), SPELL_UNSTABLE_OOZE_EXPLOSION, false, nullptr, nullptr, GetCaster()->GetGUID());
                         if (InstanceScript* instance = GetCaster()->GetInstanceScript())

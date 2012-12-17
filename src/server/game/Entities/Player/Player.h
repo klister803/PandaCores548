@@ -55,6 +55,7 @@ class PlayerMenu;
 class PlayerSocial;
 class SpellCastTargets;
 class UpdateMask;
+class ClassFactory;
 
 typedef std::deque<Mail*> PlayerMails;
 
@@ -1175,11 +1176,13 @@ private:
 
 class Player : public Unit, public GridObject<Player>
 {
+    friend class ClassFactory;
     friend class WorldSession;
     friend void Item::AddToUpdateQueueOf(PlayerPtr player);
     friend void Item::RemoveFromUpdateQueueOf(PlayerPtr player);
-    public:
+    protected:
         explicit Player (WorldSession* session);
+    public:
         ~Player();
 
         void CleanupsBeforeDelete(bool finalCleanup = true);
@@ -2587,7 +2590,7 @@ class Player : public Unit, public GridObject<Player>
         void SetPassOnGroupLoot(bool bPassOnGroupLoot) { m_bPassOnGroupLoot = bPassOnGroupLoot; }
         bool GetPassOnGroupLoot() const { return m_bPassOnGroupLoot; }
 
-        MapReference &GetMapRef() { return m_mapRef; }
+        MapReferencePtr& GetMapRef() { return m_mapRef; }
 
         // Set map to player and add reference
         void SetMap(MapPtr map);
@@ -3004,7 +3007,7 @@ class Player : public Unit, public GridObject<Player>
                 m_DelayedOperations |= operation;
         }
 
-        MapReference m_mapRef;
+        MapReferencePtr m_mapRef;
 
         void UpdateCharmedAI();
 

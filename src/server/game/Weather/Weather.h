@@ -61,7 +61,7 @@ enum WeatherState
 };
 
 /// Weather for one zone
-class Weather
+class Weather : public std::enable_shared_from_this<Weather>
 {
     public:
 

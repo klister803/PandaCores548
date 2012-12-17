@@ -443,10 +443,10 @@ private:
 class Creature : public Unit, public GridObject<Creature>, public MapCreature
 {
     friend class ClassFactory;
-    protected:
-        explicit Creature(bool isWorldObject = false);
-    public:
 
+    public:
+        
+        explicit Creature(bool isWorldObject = false);
         virtual ~Creature();
 
         void AddToWorld();
@@ -780,6 +780,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         //Formation var
         CreatureGroup* m_formation;
         bool TriggerJustRespawned;
+        std::shared_ptr<GridObject<Creature>> _creature;
 };
 
 class AssistDelayEvent : public BasicEvent

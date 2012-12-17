@@ -408,7 +408,7 @@ class achievement_dehydration : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Ichoron = target->ToCreature())
+            if (CreaturePtr Ichoron = TO_CREATURE(target))
                 if (Ichoron->AI()->GetData(DATA_DEHYDRATION))
                     return true;
 

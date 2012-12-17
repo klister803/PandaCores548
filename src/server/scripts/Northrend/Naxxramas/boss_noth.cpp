@@ -100,7 +100,7 @@ public:
             me->SetReactState(REACT_AGGRESSIVE);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             DoZoneInCombat();
-            if (me->getThreatManager().isThreatListEmpty())
+            if (me->getThreatManager()->isThreatListEmpty())
                 EnterEvadeMode();
             else
             {

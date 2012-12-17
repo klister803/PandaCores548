@@ -516,7 +516,7 @@ class achievement_shadowdodger : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Vezax = target->ToCreature())
+            if (CreaturePtr Vezax = TO_CREATURE(target))
                 if (Vezax->AI()->GetData(DATA_SHADOWDODGER))
                     return true;
 
@@ -536,7 +536,7 @@ class achievement_smell_saronite : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Vezax = target->ToCreature())
+            if (CreaturePtr Vezax = TO_CREATURE(target))
                 if (Vezax->AI()->GetData(DATA_SMELL_SARONITE))
                     return true;
 

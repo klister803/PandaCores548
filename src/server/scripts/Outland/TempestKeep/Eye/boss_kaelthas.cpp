@@ -784,7 +784,7 @@ class boss_kaelthas : public CreatureScript
 
                             if (MindControl_Timer <= diff)
                             {
-                                if (me->getThreatManager().getThreatList().size() >= 2)
+                                if (me->getThreatManager()->getThreatList().size() >= 2)
                                     for (uint32 i = 0; i < 3; ++i)
                                 {
                                     sLog->outDebug(LOG_FILTER_TSCR, "SD2: Kael'Thas mind control not supported.");
@@ -883,7 +883,7 @@ class boss_kaelthas : public CreatureScript
                             //GravityLapse_Timer
                             if (GravityLapse_Timer <= diff)
                             {
-                                std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin();
+                                std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager()->getThreatList().begin();
                                 switch (GravityLapse_Phase)
                                 {
                                     case 0:
@@ -894,7 +894,7 @@ class boss_kaelthas : public CreatureScript
                                         me->MonsterMoveWithSpeed(afGravityPos[0], afGravityPos[1], afGravityPos[2], 0);
 
                                         // 1) Kael'thas will portal the whole raid right into his body
-                                        for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
+                                        for (i = me->getThreatManager()->getThreatList().begin(); i!= me->getThreatManager()->getThreatList().end(); ++i)
                                         {
                                             UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid());
                                             if (unit && (unit->GetTypeId() == TYPEID_PLAYER))
@@ -915,7 +915,7 @@ class boss_kaelthas : public CreatureScript
                                         DoScriptText(RAND(SAY_GRAVITYLAPSE1, SAY_GRAVITYLAPSE2), me);
 
                                         // 2) At that point he will put a Gravity Lapse debuff on everyone
-                                        for (i = me->getThreatManager().getThreatList().begin(); i != me->getThreatManager().getThreatList().end(); ++i)
+                                        for (i = me->getThreatManager()->getThreatList().begin(); i != me->getThreatManager()->getThreatList().end(); ++i)
                                         {
                                             if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid()))
                                             {
@@ -964,7 +964,7 @@ class boss_kaelthas : public CreatureScript
 
                                     case 3:
                                         //Remove flight
-                                        for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
+                                        for (i = me->getThreatManager()->getThreatList().begin(); i!= me->getThreatManager()->getThreatList().end(); ++i)
                                         {
                                             if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid()))
                                             {
@@ -1319,7 +1319,7 @@ class boss_grand_astromancer_capernian : public CreatureScript
                 {
                     bool InMeleeRange = false;
                     UnitPtr target = nullptr;
-                    std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager().getThreatList();
+                    std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager()->getThreatList();
                     for (std::list<HostileReferencePtr>::const_iterator i = m_threatlist.begin(); i!= m_threatlist.end(); ++i)
                     {
                         UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid());

@@ -323,7 +323,7 @@ public:
             handler->SetSentErrorMessage(true);
             return false;
         }
-        CreaturePtr creature = unit->ToCreature();
+        CreaturePtr creature = TO_CREATURE(unit);
         if (creature->UpdateEntry(newEntryNum))
             handler->SendSysMessage(LANG_DONE);
         else

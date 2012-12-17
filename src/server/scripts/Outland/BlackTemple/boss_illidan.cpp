@@ -614,7 +614,7 @@ public:
 
         void DeleteFromThreatList(uint64 TargetGUID)
         {
-            for (std::list<HostileReferencePtr>::const_iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr)
+            for (std::list<HostileReferencePtr>::const_iterator itr = me->getThreatManager()->getThreatList().begin(); itr != me->getThreatManager()->getThreatList().end(); ++itr)
             {
                 if ((*itr)->getUnitGuid() == TargetGUID)
                 {
@@ -1491,7 +1491,7 @@ public:
 
         void KillAllElites()
         {
-            std::list<HostileReferencePtr>& threatList = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr>& threatList = me->getThreatManager()->getThreatList();
             std::vector<UnitPtr> eliteList;
             for (std::list<HostileReferencePtr>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
             {

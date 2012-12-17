@@ -249,13 +249,13 @@ SpellInfo const* ScriptedAI::SelectSpell(UnitPtr target, uint32 school, uint32 m
 
 void ScriptedAI::DoResetThreat()
 {
-    if (!me->CanHaveThreatList() || me->getThreatManager().isThreatListEmpty())
+    if (!me->CanHaveThreatList() || me->getThreatManager()->isThreatListEmpty())
     {
         sLog->outError(LOG_FILTER_TSCR, "DoResetThreat called for creature that either cannot have threat list or has empty threat list (me entry = %d)", me->GetEntry());
         return;
     }
 
-    std::list<HostileReferencePtr>& threatlist = me->getThreatManager().getThreatList();
+    std::list<HostileReferencePtr>& threatlist = me->getThreatManager()->getThreatList();
 
     for (std::list<HostileReferencePtr>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
     {
@@ -270,14 +270,14 @@ float ScriptedAI::DoGetThreat(UnitPtr unit)
 {
     if (!unit)
         return 0.0f;
-    return me->getThreatManager().getThreat(unit);
+    return me->getThreatManager()->getThreat(unit);
 }
 
 void ScriptedAI::DoModifyThreatPercent(UnitPtr unit, int32 pct)
 {
     if (!unit)
         return;
-    me->getThreatManager().modifyThreatPercent(unit, pct);
+    me->getThreatManager()->modifyThreatPercent(unit, pct);
 }
 
 void ScriptedAI::DoTeleportTo(float x, float y, float z, uint32 time)
@@ -504,7 +504,7 @@ void BossAI::TeleportCheaters()
 {
     float x, y, z;
     me->GetPosition(x, y, z);
-    std::list<HostileReferencePtr>& threatList = me->getThreatManager().getThreatList();
+    std::list<HostileReferencePtr>& threatList = me->getThreatManager()->getThreatList();
     for (std::list<HostileReferencePtr>::iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
         if (UnitPtr target = (*itr)->getTarget())
             if (target->GetTypeId() == TYPEID_PLAYER && !CheckBoundary(target))

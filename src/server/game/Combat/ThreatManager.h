@@ -32,6 +32,7 @@ class Unit;
 class Creature;
 class ThreatManager;
 class SpellInfo;
+class ClassFactory;
 
 #define THREAT_UPDATE_INTERVAL 1 * IN_MILLISECONDS    // Server should send threat update to client periodically each second
 
@@ -47,8 +48,10 @@ struct ThreatCalcHelper
 //==============================================================
 class HostileReference : public Reference<Unit, ThreatManager>
 {
+    friend class ClassFactory;
+    private:
+        explicit HostileReference(UnitPtr refUnit, ThreatManagerPtr threatManager, float threat);
     public:
-        HostileReference(UnitPtr refUnit, ThreatManager* threatManager, float threat);
 
         //=================================================
         void addThreat(float modThreat);
@@ -179,7 +182,7 @@ class ThreatContainer
 
 //=================================================
 
-class ThreatManager
+class ThreatManager : public std::enable_shared_from_this<ThreatManager>
 {
     public:
         friend class HostileReference;

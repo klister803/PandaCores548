@@ -682,7 +682,7 @@ public:
                         //Place all units in threat list on outside of stomach
                         Stomach_Map.clear();
 
-                        for (std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin(); i != me->getThreatManager().getThreatList().end(); ++i)
+                        for (std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager()->getThreatList().begin(); i != me->getThreatManager()->getThreatList().end(); ++i)
                             Stomach_Map[(*i)->getUnitGuid()] = false;   //Outside stomach
 
                         //Spawn 2 flesh tentacles

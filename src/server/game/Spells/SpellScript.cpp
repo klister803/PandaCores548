@@ -428,7 +428,7 @@ CreaturePtr SpellScript::GetHitCreature()
         return nullptr;
     }
     if (m_spell->unitTarget)
-        return m_spell->unitTarget->ToCreature();
+        return TO_CREATURE(m_spell->unitTarget);
     else
         return nullptr;
 }

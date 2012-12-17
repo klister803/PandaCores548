@@ -370,7 +370,7 @@ class spell_warl_soulshatter : public SpellScriptLoader
                 UnitPtr caster = GetCaster();
                 if (UnitPtr target = GetHitUnit())
                 {
-                    if (target->CanHaveThreatList() && target->getThreatManager().getThreat(caster) > 0.0f)
+                    if (target->CanHaveThreatList() && target->getThreatManager()->getThreat(caster) > 0.0f)
                         caster->CastSpell(target, SPELL_SOULSHATTER, true);
                 }
             }

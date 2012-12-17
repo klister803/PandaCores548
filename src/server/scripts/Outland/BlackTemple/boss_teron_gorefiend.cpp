@@ -169,7 +169,7 @@ public:
 
         void CheckPlayers()
         {
-            std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager()->getThreatList();
             if (m_threatlist.empty())
                 return;                                         // No threat list. Don't continue.
             std::list<HostileReferencePtr>::const_iterator itr = m_threatlist.begin();
@@ -322,7 +322,7 @@ public:
             if (!Blossom)
                 return;
 
-            std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager()->getThreatList();
             std::list<HostileReferencePtr>::const_iterator i = m_threatlist.begin();
             for (i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
             {

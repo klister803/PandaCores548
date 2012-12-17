@@ -240,7 +240,7 @@ public:
             //Affliction_Timer
             if (Affliction_Timer <= diff)
             {
-                std::list<HostileReferencePtr> threatlist = me->getThreatManager().getThreatList();
+                std::list<HostileReferencePtr> threatlist = me->getThreatManager()->getThreatList();
                 for (std::list<HostileReferencePtr>::const_iterator i = threatlist.begin(); i != threatlist.end(); ++i)
                 {
                     if ((*i) && (*i)->getSource())

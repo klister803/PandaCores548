@@ -300,7 +300,7 @@ class achievement_respect_your_elders : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Nadox = target->ToCreature())
+            if (CreaturePtr Nadox = TO_CREATURE(target))
                 if (Nadox->AI()->GetData(DATA_RESPECT_YOUR_ELDERS))
                     return true;
 

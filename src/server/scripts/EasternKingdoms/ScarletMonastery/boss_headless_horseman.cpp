@@ -593,11 +593,11 @@ public:
                 caster->GetMotionMaster()->MoveFollow(me, 6, float(urand(0, 5)));
                 //DoResetThreat();//not sure if need
                 std::list<HostileReferencePtr>::const_iterator itr;
-                for (itr = caster->getThreatManager().getThreatList().begin(); itr != caster->getThreatManager().getThreatList().end(); ++itr)
+                for (itr = caster->getThreatManager()->getThreatList().begin(); itr != caster->getThreatManager()->getThreatList().end(); ++itr)
                 {
                     UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid());
                     if (unit && unit->isAlive() && unit != caster)
-                        me->AddThreat(unit, caster->getThreatManager().getThreat(unit));
+                        me->AddThreat(unit, caster->getThreatManager()->getThreat(unit));
                 }
             }
         }

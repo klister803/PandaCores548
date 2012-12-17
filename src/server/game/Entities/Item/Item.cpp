@@ -263,6 +263,7 @@ Item::Item()
         m_dynamicTab[i] = new uint32[32];
         m_dynamicChange[i] = new bool[32];
     }
+    loot = LootPtr(new Loot());
 }
 
 bool Item::Create(uint32 guidlow, uint32 itemid, constPlayerPtr owner)

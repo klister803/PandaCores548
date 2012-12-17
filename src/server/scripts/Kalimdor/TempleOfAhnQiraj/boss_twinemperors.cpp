@@ -419,7 +419,7 @@ public:
         void CastSpellOnBug(CreaturePtr target)
         {
             target->setFaction(14);
-            target->AI()->AttackStart(me->getThreatManager().getHostilTarget());
+            target->AI()->AttackStart(me->getThreatManager()->getHostilTarget());
             target->AddAura(SPELL_MUTATE_BUG, target);
             target->SetFullHealth();
         }

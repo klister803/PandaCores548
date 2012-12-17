@@ -249,7 +249,7 @@ public:
                     target->CastSpell(target, SPELL_SNAKE_WRAP, true);
 
                     if (TempSummonPtr _me = me->ToTempSummon())
-                        if (CreaturePtr sladran = _me->GetSummoner()->ToCreature())
+                        if (CreaturePtr sladran = TO_CREATURE(_me->GetSummoner()))
                             sladran->AI()->SetGUID(target->GetGUID() ,DATA_SNAKES_WHYD_IT_HAVE_TO_BE_SNAKES);
 
                     me->DespawnOrUnsummon();

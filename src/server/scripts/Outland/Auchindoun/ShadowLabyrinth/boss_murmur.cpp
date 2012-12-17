@@ -80,7 +80,7 @@ public:
 
         void SonicBoomEffect()
         {
-            std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr> t_list = me->getThreatManager()->getThreatList();
             for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
             {
                UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid());
@@ -165,7 +165,7 @@ public:
                 // Thundering Storm
                 if (ThunderingStorm_Timer <= diff)
                 {
-                    std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager().getThreatList();
+                    std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager()->getThreatList();
                     for (std::list<HostileReferencePtr>::const_iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
                         if (UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid()))
                             if (target->isAlive() && !me->IsWithinDist(target, 35, false))
@@ -188,7 +188,7 @@ public:
                 return;
             if (!me->IsWithinMeleeRange(me->getVictim()))
             {
-                std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager().getThreatList();
+                std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager()->getThreatList();
                 for (std::list<HostileReferencePtr>::const_iterator i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
                     if (UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid()))
                         if (target->isAlive() && me->IsWithinMeleeRange(target))

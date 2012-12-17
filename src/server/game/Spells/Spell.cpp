@@ -5236,7 +5236,7 @@ SpellCastResult Spell::CheckCast(bool strict)
                 if (!(m_targets.GetUnitTarget()->GetUInt32Value(UNIT_FIELD_FLAGS) & UNIT_FLAG_SKINNABLE))
                     return SPELL_FAILED_TARGET_UNSKINNABLE;
 
-                CreaturePtr creature = m_targets.GetUnitTarget()->ToCreature();
+                CreaturePtr creature = TO_CREATURE(m_targets.GetUnitTarget());
                 if (creature->GetCreatureType() != CREATURE_TYPE_CRITTER && !creature->loot->isLooted())
                     return SPELL_FAILED_TARGET_NOT_LOOTED;
 
@@ -5635,7 +5635,7 @@ SpellCastResult Spell::CheckPetCast(UnitPtr target)
     }
 
     // cooldown
-    if (constCreaturePtr creatureCaster = m_caster->ToCreature())
+    if (constCreaturePtr creatureCaster = TO_CREATURE(m_caster))
         if (creatureCaster->HasSpellCooldown(m_spellInfo->Id))
             return SPELL_FAILED_NOT_READY;
 

@@ -814,7 +814,7 @@ void WorldSession::HandlePetCastSpellOpcode(WorldPacket& recvPacket)
     {
         if (caster->GetTypeId() == TYPEID_UNIT)
         {
-            CreaturePtr pet = caster->ToCreature();
+            CreaturePtr pet = TO_CREATURE(caster);
             pet->AddCreatureSpellCooldown(spellId);
             if (pet->isPet())
             {

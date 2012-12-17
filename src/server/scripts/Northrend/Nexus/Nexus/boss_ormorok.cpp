@@ -193,8 +193,8 @@ public:
                             case 3: Healer = CLASS_DRUID; break;
                             case 4: Healer = CLASS_SHAMAN; break;
                         }
-                        std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin();
-                        for (; i != me->getThreatManager().getThreatList().end(); ++i)
+                        std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager()->getThreatList().begin();
+                        for (; i != me->getThreatManager()->getThreatList().end(); ++i)
                         {
                             UnitPtr temp = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid());
                             if (temp && temp->GetTypeId() == TYPEID_PLAYER && temp->getClass() == Healer)
@@ -211,7 +211,7 @@ public:
                     if (target)
                     {
                         Crystalline_Tangler->AI()->AttackStart(target);
-                        Crystalline_Tangler->getThreatManager().addThreat(target, 1000000000.0f);
+                        Crystalline_Tangler->getThreatManager()->addThreat(target, 1000000000.0f);
                     }
                 }
                 uiSummonCrystallineTanglerTimer = 17*IN_MILLISECONDS;

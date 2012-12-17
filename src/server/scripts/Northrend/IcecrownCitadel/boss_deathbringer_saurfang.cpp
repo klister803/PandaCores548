@@ -1099,7 +1099,7 @@ class spell_deathbringer_blood_link_aura : public SpellScriptLoader
             {
                 PreventDefaultAction();
                 if (GetUnitOwner()->getPowerType() == POWER_ENERGY && GetUnitOwner()->GetPower(POWER_ENERGY) == GetUnitOwner()->GetMaxPower(POWER_ENERGY))
-                    if (CreaturePtr saurfang = GetUnitOwner()->ToCreature())
+                    if (CreaturePtr saurfang = TO_CREATURE(GetUnitOwner()))
                         saurfang->AI()->DoAction(ACTION_MARK_OF_THE_FALLEN_CHAMPION);
             }
 
@@ -1349,7 +1349,7 @@ class achievement_ive_gone_and_made_a_mess : public AchievementCriteriaScript
         bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
         {
             if (target)
-                if (CreaturePtr saurfang = target->ToCreature())
+                if (CreaturePtr saurfang = TO_CREATURE(target))
                     if (saurfang->AI()->GetData(DATA_MADE_A_MESS))
                         return true;
 

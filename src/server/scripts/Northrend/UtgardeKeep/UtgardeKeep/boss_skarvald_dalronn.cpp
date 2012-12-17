@@ -110,7 +110,7 @@ public:
 
                 UnitPtr dalronn = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_DALRONN));
                 if (dalronn && dalronn->isAlive() && !dalronn->getVictim())
-                    dalronn->getThreatManager().addThreat(who, 0.0f);
+                    dalronn->getThreatManager()->addThreat(who, 0.0f);
 
                 instance->SetData(DATA_SKARVALD_DALRONN_EVENT, IN_PROGRESS);
             }
@@ -265,7 +265,7 @@ public:
             {
                 UnitPtr skarvald = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_SKARVALD));
                 if (skarvald && skarvald->isAlive() && !skarvald->getVictim())
-                    skarvald->getThreatManager().addThreat(who, 0.0f);
+                    skarvald->getThreatManager()->addThreat(who, 0.0f);
 
                 AggroYell_Timer = 5000;
 

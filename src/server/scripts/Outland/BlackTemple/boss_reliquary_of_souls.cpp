@@ -230,7 +230,7 @@ public:
             if (!target)
                 return;
 
-            std::list<HostileReferencePtr>& m_threatlist = target->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr>& m_threatlist = target->getThreatManager()->getThreatList();
             std::list<HostileReferencePtr>::const_iterator itr = m_threatlist.begin();
             for (; itr != m_threatlist.end(); ++itr)
             {
@@ -238,7 +238,7 @@ public:
                 if (unit)
                 {
                     DoModifyThreatPercent(unit, -100);
-                    float threat = target->getThreatManager().getThreat(unit);
+                    float threat = target->getThreatManager()->getThreat(unit);
                     me->AddThreat(unit, threat);       // This makes it so that the unit has the same amount of threat in Reliquary's threatlist as in the target creature's (One of the Essences).
                 }
             }
@@ -255,7 +255,7 @@ public:
             if (!Phase)
                 return;
 
-            if (me->getThreatManager().getThreatList().empty()) // Reset if event is begun and we don't have a threatlist
+            if (me->getThreatManager()->getThreatList().empty()) // Reset if event is begun and we don't have a threatlist
             {
                 EnterEvadeMode();
                 return;
@@ -450,7 +450,7 @@ public:
 
         void CastFixate()
         {
-            std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager()->getThreatList();
             if (m_threatlist.empty())
                 return; // No point continuing if empty threatlist.
             std::list<UnitPtr> targets;

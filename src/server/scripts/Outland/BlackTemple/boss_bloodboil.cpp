@@ -143,7 +143,7 @@ public:
         void CastBloodboil()
         {
             // Get the Threat List
-            std::list<HostileReferencePtr> m_threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr> m_threatlist = me->getThreatManager()->getThreatList();
 
             if (m_threatlist.empty()) // He doesn't have anyone in his threatlist, useless to continue
                 return;

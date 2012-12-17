@@ -250,7 +250,7 @@ public:
                     AttackStart(Dragonmaw);
                 }
 
-                HostileReferencePtr ref = me->getThreatManager().getOnlineContainer().getReferenceByTarget(caster);
+                HostileReferencePtr ref = me->getThreatManager()->getOnlineContainer().getReferenceByTarget(caster);
                 if (ref)
                     ref->removeReference();
             }

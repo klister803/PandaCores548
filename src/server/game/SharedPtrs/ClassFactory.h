@@ -10,16 +10,23 @@
 # include "Map.h"
 # include "MapInstanced.h"
 # include "ScriptMgr.h"
+# include "Object.h"
 
 class ClassFactory
 {
 public:
     static CreaturePtr ConstructCreature(bool isWorldObject = false)
     {
-        CreaturePtr creature(new Creature(isWorldObject));
+        CreaturePtr creature = std::make_shared<Creature>(isWorldObject);
         if (!creature)
             return nullptr;
-        creature->InitializeUnit();
+        
+        creature->i_motionMaster = MotionMaster(creature);
+        creature->m_ThreatManager = ThreatManagerPtr(new ThreatManager(creature));
+        creature->m_HostileRefManager = HostileRefManager(creature);
+        creature->_creature = CAST(GridObject<Creature>,creature);
+        
+        ObjectPtr unit = creature->SharedFromObject();
         return creature;
     }
 
@@ -28,7 +35,15 @@ public:
         PlayerPtr player(new Player(session));
         if (!player)
             return nullptr;
-        player->InitializeUnit();
+        player->i_motionMaster = MotionMaster(player);
+        player->m_ThreatManager = ThreatManagerPtr(new ThreatManager(player));
+        player->m_HostileRefManager = HostileRefManager(player);
+        player->m_achievementMgr = AchievementMgr<Player>(player);
+        player->m_reputationMgr = ReputationMgr(player);
+        player->m_mover = player;
+        player->m_movedPlayer = player;
+        player->m_seer = player;
+        player->m_mapRef = MapReferencePtr(new MapReference());
         return player;
     }
 
@@ -37,7 +52,19 @@ public:
         PetPtr pet(new Pet(player, type));
         if (!pet)
             return nullptr;
-        pet->InitializeUnit();
+        pet->i_motionMaster = MotionMaster(pet);
+        pet->m_ThreatManager = ThreatManagerPtr(new ThreatManager(pet));
+        pet->m_HostileRefManager = HostileRefManager(pet);
+        pet->_creature = CAST(GridObject<Creature>,pet);
+        
+        if (!(pet->m_unitTypeMask & UNIT_MASK_CONTROLABLE_GUARDIAN))
+        {
+            pet->m_unitTypeMask |= UNIT_MASK_CONTROLABLE_GUARDIAN;
+            pet->InitCharmInfo();
+        }
+
+        pet->m_name = "Pet";
+        pet->m_regenTimer = PET_FOCUS_REGEN_INTERVAL;
         return pet;
     }
 
@@ -46,7 +73,10 @@ public:
         TempSummonPtr temp(new TempSummon(properties, owner, isWorldObject));
         if (!temp)
             return nullptr;
-        temp->InitializeUnit();
+        temp->i_motionMaster = MotionMaster(temp);
+        temp->m_ThreatManager = ThreatManagerPtr(new ThreatManager(temp));
+        temp->m_HostileRefManager = HostileRefManager(temp);
+        temp->_creature = CAST(GridObject<Creature>,temp);
         return temp;
     }
 
@@ -55,7 +85,10 @@ public:
         GuardianPtr guardian(new Guardian(properties, owner, isWorldObject));
         if (!guardian)
             return nullptr;
-        guardian->InitializeUnit();
+        guardian->i_motionMaster = MotionMaster(guardian);
+        guardian->m_ThreatManager = ThreatManagerPtr(new ThreatManager(guardian));
+        guardian->m_HostileRefManager = HostileRefManager(guardian);
+        guardian->_creature = CAST(GridObject<Creature>,guardian);
         return guardian;
     }
 
@@ -64,7 +97,10 @@ public:
         PuppetPtr puppet(new Puppet(properties, owner));
         if (!puppet)
             return nullptr;
-        puppet->InitializeUnit();
+        puppet->i_motionMaster = MotionMaster(puppet);
+        puppet->m_ThreatManager = ThreatManagerPtr(new ThreatManager(puppet));
+        puppet->m_HostileRefManager = HostileRefManager(puppet);
+        puppet->_creature = CAST(GridObject<Creature>,puppet);
         return puppet;
     }
 
@@ -73,7 +109,10 @@ public:
         TotemPtr totem(new Totem(properties, owner));
         if (!totem)
             return nullptr;
-        totem->InitializeUnit();
+        totem->i_motionMaster = MotionMaster(totem);
+        totem->m_ThreatManager = ThreatManagerPtr(new ThreatManager(totem));
+        totem->m_HostileRefManager = HostileRefManager(totem);
+        totem->_creature = CAST(GridObject<Creature>,totem);
         return totem;
     }
 
@@ -82,7 +121,10 @@ public:
         MinionPtr minion(new Minion(properties, owner, isWorldObject));
         if (!minion)
             return nullptr;
-        minion->InitializeUnit();
+        minion->i_motionMaster = MotionMaster(minion);
+        minion->m_ThreatManager = ThreatManagerPtr(new ThreatManager(minion));
+        minion->m_HostileRefManager = HostileRefManager(minion);
+        minion->_creature = CAST(GridObject<Creature>,minion);
         return minion;
     }
 
@@ -170,7 +212,8 @@ public:
         GuildPtr guild(new Guild());
         if (!guild)
             return nullptr;
-        guild->InitializeGuild();
+        guild->m_achievementMgr = AchievementMgr<Guild>(guild);
+        guild->_newsLog = Guild::GuildNewsLog(guild);
         return guild;
     }
 
@@ -278,19 +321,42 @@ public:
         return map;
     }
 
+    static HostileReferencePtr ConstructHostileReference(UnitPtr refUnit, ThreatManagerPtr threatManager, float threat)
+    {
+        HostileReferencePtr ref(new HostileReference(refUnit, threatManager, threat));
+        if (!ref)
+            return nullptr;
+
+        ref->iThreat = threat;
+        ref->iTempThreatModifier = 0.0f;
+        ref->link(refUnit, threatManager); //Dirty FIXME
+        ref->iUnitGuid = refUnit->GetGUID();
+        ref->iOnline = true;
+        ref->iAccessible = true;
+
+        return ref;
+    }
+
     template<class T>
     static std::shared_ptr<T> ConstructClass()
     {
-        static_assert(true, "ConstructClass");
+        static_assert(false, "ConstructClass");
         std::shared_ptr<T> t(new T());
         return t;
     }
 
-    /*template<>
+    template<>
+    static std::shared_ptr<GameObject> ConstructClass()
+    {
+        std::shared_ptr<GameObject> t(new GameObject());
+        return t;
+    }
+
+    template<>
     static std::shared_ptr<Creature> ConstructClass()
     {
         return ConstructCreature();
-    }*/
+    }
 };
 
 #endif /* !CLASS_FACTORY_H */

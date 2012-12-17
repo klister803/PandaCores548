@@ -273,7 +273,7 @@ struct LootView;
 ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li);
 ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv);
 
-struct Loot
+struct Loot : public std::enable_shared_from_this<Loot>
 {
     friend ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv);
 

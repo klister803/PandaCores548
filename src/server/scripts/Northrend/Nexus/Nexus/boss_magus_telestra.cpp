@@ -350,7 +350,7 @@ class achievement_split_personality : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Telestra = target->ToCreature())
+            if (CreaturePtr Telestra = TO_CREATURE(target))
                 if (Telestra->AI()->GetData(DATA_SPLIT_PERSONALITY) == 2)
                     return true;
 

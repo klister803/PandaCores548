@@ -596,13 +596,13 @@ class boss_flame_leviathan_seat : public CreatureScript
                     else
                         DoScriptText(SAY_PLAYER_RIDING, me);
 
-                    if (CreaturePtr turret = me->GetVehicleKit()->GetPassenger(SEAT_TURRET)->ToCreature())
+                    if (CreaturePtr turret = TO_CREATURE(me->GetVehicleKit()->GetPassenger(SEAT_TURRET)))
                     {
                         turret->setFaction(me->GetVehicleBase()->getFaction());
                         turret->SetUInt32Value(UNIT_FIELD_FLAGS, 0); // unselectable
                         turret->AI()->AttackStart(who);
                     }
-                    if (CreaturePtr device = me->GetVehicleKit()->GetPassenger(SEAT_DEVICE)->ToCreature())
+                    if (CreaturePtr device = TO_CREATURE(me->GetVehicleKit()->GetPassenger(SEAT_DEVICE)))
                     {
                         device->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
                         device->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -1358,7 +1358,7 @@ class achievement_shutout : public AchievementCriteriaScript
         bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
         {
             if (target)
-                if (CreaturePtr leviathan = target->ToCreature())
+                if (CreaturePtr leviathan = TO_CREATURE(target))
                     if (leviathan->AI()->GetData(DATA_SHUTOUT))
                         return true;
 
@@ -1391,7 +1391,7 @@ class achievement_orbital_bombardment : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Leviathan = target->ToCreature())
+            if (CreaturePtr Leviathan = TO_CREATURE(target))
                 if (Leviathan->AI()->GetData(DATA_ORBIT_ACHIEVEMENTS) >= 1)
                     return true;
 
@@ -1409,7 +1409,7 @@ class achievement_orbital_devastation : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Leviathan = target->ToCreature())
+            if (CreaturePtr Leviathan = TO_CREATURE(target))
                 if (Leviathan->AI()->GetData(DATA_ORBIT_ACHIEVEMENTS) >= 2)
                     return true;
 
@@ -1427,7 +1427,7 @@ class achievement_nuked_from_orbit : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Leviathan = target->ToCreature())
+            if (CreaturePtr Leviathan = TO_CREATURE(target))
                 if (Leviathan->AI()->GetData(DATA_ORBIT_ACHIEVEMENTS) >= 3)
                     return true;
 
@@ -1445,7 +1445,7 @@ class achievement_orbit_uary : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Leviathan = target->ToCreature())
+            if (CreaturePtr Leviathan = TO_CREATURE(target))
                 if (Leviathan->AI()->GetData(DATA_ORBIT_ACHIEVEMENTS) == 4)
                     return true;
 
@@ -1575,7 +1575,7 @@ class spell_systems_shutdown : public SpellScriptLoader
 
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                CreaturePtr owner = GetOwner()->ToCreature();
+                CreaturePtr owner = TO_CREATURE(GetOwner());
                 if (!owner)
                     return;
 
@@ -1587,7 +1587,7 @@ class spell_systems_shutdown : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                CreaturePtr owner = GetOwner()->ToCreature();
+                CreaturePtr owner = TO_CREATURE(GetOwner());
                 if (!owner)
                     return;
 
@@ -1620,7 +1620,7 @@ class FlameLeviathanPursuedTargetSelector
         bool operator()(WorldObjectPtr target) const
         {
             //! No players, only vehicles (todo: check if blizzlike)
-            CreaturePtr creatureTarget = target->ToCreature();
+            CreaturePtr creatureTarget = TO_CREATURE(target);
             if (!creatureTarget)
                 return true;
 
@@ -1670,7 +1670,7 @@ class spell_pursue : public SpellScriptLoader
                 targets.remove_if(FlameLeviathanPursuedTargetSelector(GetCaster()));
                 if (targets.empty())
                 {
-                    if (CreaturePtr caster = GetCaster()->ToCreature())
+                    if (CreaturePtr caster = TO_CREATURE(GetCaster()))
                         caster->AI()->EnterEvadeMode();
                 }
                 else
@@ -1690,7 +1690,7 @@ class spell_pursue : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*eff*/)
             {
-                CreaturePtr caster = GetCaster()->ToCreature();
+                CreaturePtr caster = TO_CREATURE(GetCaster());
                 if (!caster)
                     return;
 

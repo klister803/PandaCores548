@@ -37,6 +37,10 @@
  */
 template<class OBJECT> struct ContainerMapList
 {
+    ContainerMapList()
+    {
+        _element = std::shared_ptr<GridRefManager<OBJECT>>(new GridRefManager<OBJECT>());
+    }
     //std::map<OBJECT_HANDLE, OBJECT *> _element;
     std::shared_ptr<GridRefManager<OBJECT>> _element;
 };
@@ -56,6 +60,10 @@ template<class H, class T> struct ContainerMapList<TypeList<H, T> >
  */
 template<class OBJECT> struct ContainerArrayList
 {
+    ContainerArrayList()
+    {
+        _element = std::shared_ptr<std::vector<OBJECT>>(new std::vector<OBJECT>());
+    }
     std::shared_ptr<std::vector<OBJECT>> _element;
 };
 
@@ -74,6 +82,10 @@ template<class H, class T> struct ContainerArrayList<TypeList<H, T> >
  */
 template<class OBJECT> struct ContainerList
 {
+    ContainerList()
+    {
+        _element = std::shared_ptr<OBJECT>(new OBJECT());
+    }
     std::shared_ptr<OBJECT> _element;
 };
 

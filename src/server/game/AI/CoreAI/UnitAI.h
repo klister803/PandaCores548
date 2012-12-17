@@ -156,7 +156,7 @@ class UnitAI
         // predicate shall extend std::unary_function<UnitPtr, bool>
         template <class PREDICATE> UnitPtr SelectTarget(SelectAggroTarget targetType, uint32 position, PREDICATE const& predicate)
         {
-            const std::list<HostileReferencePtr>& threatlist = me->getThreatManager().getThreatList();
+            const std::list<HostileReferencePtr>& threatlist = me->getThreatManager()->getThreatList();
             if (position >= threatlist.size())
                 return nullptr;
 
@@ -206,7 +206,7 @@ class UnitAI
         // predicate shall extend std::unary_function<UnitPtr, bool>
         template <class PREDICATE> void SelectTargetList(std::list<UnitPtr>& targetList, PREDICATE const& predicate, uint32 maxTargets, SelectAggroTarget targetType)
         {
-            std::list<HostileReferencePtr> const& threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr> const& threatlist = me->getThreatManager()->getThreatList();
             if (threatlist.empty())
                 return;
 

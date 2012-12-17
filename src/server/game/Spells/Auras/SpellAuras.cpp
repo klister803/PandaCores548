@@ -248,7 +248,7 @@ AuraPtr Aura::TryRefreshStackOrCreate(SpellInfo const* spellproto, uint32 tryEff
     if (!effMask)
         return nullptr;
 
-    AuraPtr foundAura = owner->ToUnit()->_TryStackingOrRefreshingExistingAura(spellproto, effMask, caster, baseAmount, castItem, casterGUID);
+    AuraPtr foundAura = TO_UNIT(owner)->_TryStackingOrRefreshingExistingAura(spellproto, effMask, caster, baseAmount, castItem, casterGUID);
     if (foundAura != nullptr)
     {
         // we've here aura, which script triggered removal after modding stack amount

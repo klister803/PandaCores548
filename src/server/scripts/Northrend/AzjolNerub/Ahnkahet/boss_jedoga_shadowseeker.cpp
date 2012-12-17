@@ -603,7 +603,7 @@ class achievement_volunteer_work : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Jedoga = target->ToCreature())
+            if (CreaturePtr Jedoga = TO_CREATURE(target))
                 if (Jedoga->AI()->GetData(DATA_VOLUNTEER_WORK))
                     return true;
 

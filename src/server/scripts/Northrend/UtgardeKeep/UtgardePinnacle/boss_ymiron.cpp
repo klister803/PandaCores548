@@ -407,7 +407,7 @@ class achievement_kings_bane : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Ymiron = target->ToCreature())
+            if (CreaturePtr Ymiron = TO_CREATURE(target))
                 if (Ymiron->AI()->GetData(DATA_KINGS_BANE))
                     return true;
 

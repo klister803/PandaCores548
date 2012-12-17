@@ -360,7 +360,7 @@ public:
             if (victim && me->IsWithinDistInMap(victim, me->GetAttackDistance(victim)))
                 return false;
 
-            std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager()->getThreatList();
             if (m_threatlist.empty())
                 return false;
 
@@ -383,7 +383,7 @@ public:
                 if (!me->IsWithinDistInMap(target, me->GetAttackDistance(target)))
                     return true;                                // Cast Finger of Death
                 else                                            // This target is closest, he is our new tank
-                    me->AddThreat(target, me->getThreatManager().getThreat(me->getVictim()));
+                    me->AddThreat(target, me->getThreatManager()->getThreat(me->getVictim()));
             }
 
             return false;

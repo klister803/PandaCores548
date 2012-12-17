@@ -834,7 +834,7 @@ public:
         if (!target || target->isTotem() || target->isPet())
             return false;
 
-        std::list<HostileReferencePtr>& threatList = target->getThreatManager().getThreatList();
+        std::list<HostileReferencePtr>& threatList = target->getThreatManager()->getThreatList();
         std::list<HostileReferencePtr>::iterator itr;
         uint32 count = 0;
         handler->PSendSysMessage("Threat list of %s (guid %u)", target->GetName(), target->GetGUIDLow());

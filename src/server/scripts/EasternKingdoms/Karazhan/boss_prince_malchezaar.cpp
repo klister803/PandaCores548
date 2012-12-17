@@ -314,7 +314,7 @@ public:
             if (!info)
                 return;
 
-            std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr> t_list = me->getThreatManager()->getThreatList();
             std::vector<UnitPtr> targets;
 
             if (t_list.empty())
@@ -466,7 +466,7 @@ public:
                             if (target)
                             {
                                 axe->AI()->AttackStart(target);
-                                //axe->getThreatManager().tauntApply(target); //Taunt Apply and fade out does not work properly
+                                //axe->getThreatManager()->tauntApply(target); //Taunt Apply and fade out does not work properly
                                                                 // So we'll use a hack to add a lot of threat to our target
                                 axe->AddThreat(target, 10000000.0f);
                             }
@@ -509,8 +509,8 @@ public:
                                     DoModifyThreatPercent(axe->getVictim(), -100);
                                 if (target)
                                     axe->AddThreat(target, 1000000.0f);
-                                //axe->getThreatManager().tauntFadeOut(axe->getVictim());
-                                //axe->getThreatManager().tauntApply(target);
+                                //axe->getThreatManager()->tauntFadeOut(axe->getVictim());
+                                //axe->getThreatManager()->tauntApply(target);
                             }
                         }
                     }

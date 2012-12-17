@@ -194,14 +194,14 @@ public:
             if (!SummonedUnit)
                 return;
 
-            std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager()->getThreatList();
             std::list<HostileReferencePtr>::const_iterator i = m_threatlist.begin();
             for (i = m_threatlist.begin(); i != m_threatlist.end(); ++i)
             {
                 UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid());
                 if (unit && unit->isAlive())
                 {
-                    float threat = me->getThreatManager().getThreat(unit);
+                    float threat = me->getThreatManager()->getThreat(unit);
                     SummonedUnit->AddThreat(unit, threat);
                 }
             }
@@ -213,8 +213,8 @@ public:
             float y = KaelLocations[0][1];
             me->SetPosition(x, y, LOCATION_Z, 0.0f);
             //me->SendMonsterMove(x, y, LOCATION_Z, 0, 0, 0); // causes some issues...
-            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin();
-            for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
+            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager()->getThreatList().begin();
+            for (i = me->getThreatManager()->getThreatList().begin(); i!= me->getThreatManager()->getThreatList().end(); ++i)
             {
                 UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid());
                 if (unit && (unit->GetTypeId() == TYPEID_PLAYER))
@@ -225,8 +225,8 @@ public:
 
         void CastGravityLapseKnockUp()
         {
-            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin();
-            for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
+            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager()->getThreatList().begin();
+            for (i = me->getThreatManager()->getThreatList().begin(); i!= me->getThreatManager()->getThreatList().end(); ++i)
             {
                 UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid());
                 if (unit && (unit->GetTypeId() == TYPEID_PLAYER))
@@ -237,8 +237,8 @@ public:
 
         void CastGravityLapseFly()                              // Use Fly Packet hack for now as players can't cast "fly" spells unless in map 530. Has to be done a while after they get knocked into the air...
         {
-            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin();
-            for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
+            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager()->getThreatList().begin();
+            for (i = me->getThreatManager()->getThreatList().begin(); i!= me->getThreatManager()->getThreatList().end(); ++i)
             {
                 UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid());
                 if (unit && (unit->GetTypeId() == TYPEID_PLAYER))
@@ -273,8 +273,8 @@ public:
 
         void RemoveGravityLapse()
         {
-            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin();
-            for (i = me->getThreatManager().getThreatList().begin(); i!= me->getThreatManager().getThreatList().end(); ++i)
+            std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager()->getThreatList().begin();
+            for (i = me->getThreatManager()->getThreatList().begin(); i!= me->getThreatManager()->getThreatList().end(); ++i)
             {
                 UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid());
                 if (unit && (unit->GetTypeId() == TYPEID_PLAYER))

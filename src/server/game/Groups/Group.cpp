@@ -1279,7 +1279,7 @@ void Group::GroupLoot(LootPtr loot, WorldObjectPtr pLootedObject)
 
                 RollId.push_back(r);
 
-                if (CreaturePtr creature = pLootedObject->ToCreature())
+                if (CreaturePtr creature = TO_CREATURE(pLootedObject))
                 {
                     creature->m_groupLootTimer = 60000;
                     creature->lootingGroupLowGUID = GetLowGUID();
@@ -1339,7 +1339,7 @@ void Group::GroupLoot(LootPtr loot, WorldObjectPtr pLootedObject)
 
             RollId.push_back(r);
 
-            if (CreaturePtr creature = pLootedObject->ToCreature())
+            if (CreaturePtr creature = TO_CREATURE(pLootedObject))
             {
                 creature->m_groupLootTimer = 60000;
                 creature->lootingGroupLowGUID = GetLowGUID();
@@ -1419,7 +1419,7 @@ void Group::NeedBeforeGreed(LootPtr loot, WorldObjectPtr lootedObject)
 
                 RollId.push_back(r);
 
-                if (CreaturePtr creature = lootedObject->ToCreature())
+                if (CreaturePtr creature = TO_CREATURE(lootedObject))
                 {
                     creature->m_groupLootTimer = 60000;
                     creature->lootingGroupLowGUID = GetLowGUID();
@@ -1481,7 +1481,7 @@ void Group::NeedBeforeGreed(LootPtr loot, WorldObjectPtr lootedObject)
 
             RollId.push_back(r);
 
-            if (CreaturePtr creature = lootedObject->ToCreature())
+            if (CreaturePtr creature = TO_CREATURE(lootedObject))
             {
                 creature->m_groupLootTimer = 60000;
                 creature->lootingGroupLowGUID = GetLowGUID();

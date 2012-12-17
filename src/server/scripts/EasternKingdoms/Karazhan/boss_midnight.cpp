@@ -284,7 +284,7 @@ void boss_attumen::boss_attumenAI::UpdateAI(const uint32 diff)
         if (ChargeTimer <= diff)
         {
             UnitPtr target = nullptr;
-            std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr> t_list = me->getThreatManager()->getThreatList();
             std::vector<UnitPtr> target_list;
             for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
             {

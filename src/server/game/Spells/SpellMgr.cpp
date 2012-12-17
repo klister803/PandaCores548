@@ -475,7 +475,7 @@ uint32 SpellMgr::GetSpellIdForDifficulty(uint32 spellId, constUnitPtr caster) co
 
     if (difficultyEntry->SpellID[mode] <= 0 && mode > HEROIC_DIFFICULTY)
     {
-    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellMgr::GetSpellIdForDifficulty: spell %u mode %u spell is nullptr, using mode %u", spellId, mode, mode - 2);
+    sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "SpellMgr::GetSpellIdForDifficulty: spell %u mode %u spell IS NULL, using mode %u", spellId, mode, mode - 2);
     mode -= 2;
     }
 

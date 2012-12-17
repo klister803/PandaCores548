@@ -196,6 +196,8 @@ class Object : public std::enable_shared_from_this<Object>
         virtual void AddToWorld();
         virtual void RemoveFromWorld();
 
+        ObjectPtr SharedFromObject() { return shared_from_this(); }
+
         uint64 GetGUID() const { return GetUInt64Value(0); }
         uint32 GetGUIDLow() const { return GUID_LOPART(GetUInt64Value(0)); }
         uint32 GetGUIDMid() const { return GUID_ENPART(GetUInt64Value(0)); }
@@ -383,15 +385,21 @@ class Object : public std::enable_shared_from_this<Object>
 
         // FG: some hacky helpers
         void ForceValuesUpdateAtIndex(uint32);
+        
+        PlayerPtr THIS_PLAYER() { if (GetTypeId() == TYPEID_PLAYER) return *(PlayerPtr*)&shared_from_this(); else return nullptr; }
+        PlayerPtr THIS_PLAYER() const { if (GetTypeId() == TYPEID_PLAYER) return *(PlayerPtr*)&shared_from_this(); else return nullptr; }
+        constPlayerPtr THIS_CONST_PLAYER() const { if (GetTypeId() == TYPEID_PLAYER) return *(constPlayerPtr*)&shared_from_this(); else return nullptr; }
 
-        CreaturePtr ToCreature() { if (GetTypeId() == TYPEID_UNIT) return TO_CREATURE(shared_from_this()); else return nullptr; }
-        constCreaturePtr ToCreature() const { if (GetTypeId() == TYPEID_UNIT) return TO_CONST_CREATURE(shared_from_this()); else return nullptr; }
+        WorldObjectPtr ToWorldObject() const { return *(WorldObjectPtr*)&shared_from_this(); }
 
-        UnitPtr ToUnit() { if (isType(TYPEMASK_UNIT)) return TO_UNIT(shared_from_this()); else return nullptr; }
-        constUnitPtr ToUnit() const { if (isType(TYPEMASK_UNIT)) return TO_CONST_UNIT(shared_from_this()); else return nullptr; }
+        Creature* ToCreature() { if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Creature*>(this); else return nullptr; }
+        Creature const* ToCreature() const { if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<const Creature*>(this); else return nullptr; }
 
-        GameObjectPtr ToGameObject() { if (GetTypeId() == TYPEID_GAMEOBJECT) return TO_GAMEOBJECT(shared_from_this()); else return nullptr; }
-        constGameObjectPtr ToGameObject() const { if (GetTypeId() == TYPEID_GAMEOBJECT) return TO_CONST_GAMEOBJECT(shared_from_this()); else return nullptr; }
+        UnitPtr ToUnit() { if (isType(TYPEMASK_UNIT)) return THIS_UNIT; else return nullptr; }
+        constUnitPtr ToUnit() const { if (isType(TYPEMASK_UNIT)) return THIS_CONST_UNIT; else return nullptr; }
+
+        GameObjectPtr ToGameObject() { if (GetTypeId() == TYPEID_GAMEOBJECT) return THIS_GAMEOBJECT; else return nullptr; }
+        constGameObjectPtr ToGameObject() const { if (GetTypeId() == TYPEID_GAMEOBJECT) return THIS_CONST_GAMEOBJECT; else return nullptr; }
 
         /*DynamicObjectPtr ToDynObject() { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return TO_DYNAMICOBJECT(shared_from_this()); else return nullptr; }
         constDynamicObjectPtr ToDynObject() const { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return TO_CONST_DYNAMICOBJECT(shared_from_this()); else return nullptr; }*/
@@ -646,14 +654,18 @@ class WorldLocation : public Position
 };
 
 template<class T>
-class GridObject : std::enable_shared_from_this<GridObject<T>>
+class GridObject
 {
     public:
-        bool IsInGrid() const { return _gridRef.isValid(); }
-        void AddToGrid(std::shared_ptr<GridRefManager<T>>& m) { ASSERT(!IsInGrid()); _gridRef.link(m, STATIC_CAST(T,shared_from_this())); }
-        void RemoveFromGrid() { ASSERT(IsInGrid()); _gridRef.unlink(); }
+        GridObject<T>()
+        {
+            _gridRef = std::shared_ptr<GridReference<T>>(new GridReference<T>());
+        }
+        bool IsInGrid() const { return _gridRef->isValid(); }
+        void AddToGrid(std::shared_ptr<GridRefManager<T>>& m) { ASSERT(!IsInGrid()); _gridRef->link(m, STATIC_CAST(T,((Object*)((T*)this))->SharedFromObject())); }
+        void RemoveFromGrid() { ASSERT(IsInGrid()); _gridRef->unlink(); }
     private:
-        GridReference<T> _gridRef;
+        std::shared_ptr<GridReference<T>> _gridRef;
 };
 
 template <class T_VALUES, class T_FLAGS, class FLAG_TYPE, uint8 ARRAY_SIZE>

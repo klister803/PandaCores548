@@ -358,8 +358,8 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
     else
     {
         int32 ApBySpellPct = 0;
-        int32 spellPower = THIS_PLAYER->GetBaseSpellPowerBonus(); // SpellPower from Weapon
-        spellPower += std::max(0, int32(THIS_PLAYER->GetStat(STAT_INTELLECT)) - 10); // SpellPower from intellect
+        int32 spellPower = THIS_PLAYER()->GetBaseSpellPowerBonus(); // SpellPower from Weapon
+        spellPower += std::max(0, int32(THIS_PLAYER()->GetStat(STAT_INTELLECT)) - 10); // SpellPower from intellect
 
         AuraEffectList const& APbySpell = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT);
         for (AuraEffectList::const_iterator iter = APbySpell.begin(); iter != APbySpell.end(); ++iter)

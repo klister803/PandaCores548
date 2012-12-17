@@ -226,7 +226,7 @@ void Map::InitVisibilityDistance()
 template<class T>
 void Map::AddToGrid(std::shared_ptr<T> obj, Cell const& cell)
 {
-    NGridType* grid = getNGrid(cell.GridX(), cell.GridY());
+    NGridTypePtr grid = getNGrid(cell.GridX(), cell.GridY());
     if (obj->IsWorldObject())
         grid->GetGridType(cell.CellX(), cell.CellY()).template AddWorldObject<T>(obj);
     else
@@ -236,7 +236,7 @@ void Map::AddToGrid(std::shared_ptr<T> obj, Cell const& cell)
 template<>
 void Map::AddToGrid(CreaturePtr obj, Cell const& cell)
 {
-    NGridType* grid = getNGrid(cell.GridX(), cell.GridY());
+    NGridTypePtr grid = getNGrid(cell.GridX(), cell.GridY());
     if (obj->IsWorldObject())
         grid->GetGridType(cell.CellX(), cell.CellY()).AddWorldObject(obj);
     else
@@ -260,7 +260,7 @@ void Map::SwitchGridContainers(CreaturePtr obj, bool on)
         return;
 
     sLog->outDebug(LOG_FILTER_MAPS, "Switch object " UI64FMTD " from grid[%u, %u] %u", obj->GetGUID(), cell.data.Part.grid_x, cell.data.Part.grid_y, on);
-    NGridType *ngrid = getNGrid(cell.GridX(), cell.GridY());
+    NGridTypePtr ngrid = getNGrid(cell.GridX(), cell.GridY());
     ASSERT(ngrid != nullptr);
 
     GridType &grid = ngrid->GetGridType(cell.CellX(), cell.CellY());
@@ -302,7 +302,7 @@ void Map::EnsureGridCreated(const GridCoord &p)
         {
             sLog->outDebug(LOG_FILTER_MAPS, "Creating grid[%u, %u] for map %u instance %u", p.x_coord, p.y_coord, GetId(), i_InstanceId);
 
-            setNGrid(new NGridType(p.x_coord*MAX_NUMBER_OF_GRIDS + p.y_coord, p.x_coord, p.y_coord, i_gridExpiry, sWorld->getBoolConfig(CONFIG_GRID_UNLOAD)),
+            setNGrid(NGridTypePtr(new NGridType(p.x_coord*MAX_NUMBER_OF_GRIDS + p.y_coord, p.x_coord, p.y_coord, i_gridExpiry, sWorld->getBoolConfig(CONFIG_GRID_UNLOAD))),
                 p.x_coord, p.y_coord);
 
             // build a linkage between this map and NGridType
@@ -324,7 +324,7 @@ void Map::EnsureGridCreated(const GridCoord &p)
 void Map::EnsureGridLoadedForActiveObject(const Cell &cell, WorldObjectPtr object)
 {
     EnsureGridLoaded(cell);
-    NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
+    NGridTypePtr grid = getNGrid(cell.GridX(), cell.GridY());
     ASSERT(grid != nullptr);
 
     // refresh grid state & timer
@@ -340,7 +340,7 @@ void Map::EnsureGridLoadedForActiveObject(const Cell &cell, WorldObjectPtr objec
 bool Map::EnsureGridLoaded(const Cell &cell)
 {
     EnsureGridCreated(GridCoord(cell.GridX(), cell.GridY()));
-    NGridType *grid = getNGrid(cell.GridX(), cell.GridY());
+    NGridTypePtr grid = getNGrid(cell.GridX(), cell.GridY());
 
     ASSERT(grid != nullptr);
     if (!isGridObjectDataLoaded(cell.GridX(), cell.GridY()))
@@ -607,7 +607,7 @@ void Map::ProcessRelocationNotifies(const uint32 diff)
     TypeContainerVisitor<ResetNotifier, WorldTypeMapContainer > world_notifier(reset);
     for (GridRefManager<NGridType>::iterator i = GridRefManager<NGridType>::begin(); i != GridRefManager<NGridType>::end(); ++i)
     {
-        NGridType* grid = i->getSource().get();
+        NGridTypePtr grid = i->getSource();
 
         if (grid->GetGridState() != GRID_STATE_ACTIVE)
             continue;
@@ -1589,7 +1589,7 @@ inline GridMap* Map::GetGrid(float x, float y)
 
 float Map::GetWaterOrGroundLevel(float x, float y, float z, float* ground /*= nullptr*/, bool /*swim = false*/) const
 {
-    if (THIS_MAP->GetGrid(x, y))
+    if (NO_CONST(Map,shared_from_this())->GetGrid(x, y))
     {
         // we need ground level (including grid height version) for proper return water level in point
         float ground_z = GetHeight(PHASEMASK_NORMAL, x, y, z, true, 50.0f);
@@ -1609,7 +1609,7 @@ float Map::GetHeight(float x, float y, float z, bool checkVMap /*= true*/, float
 {
     // find raw .map surface under Z coordinates
     float mapHeight = VMAP_INVALID_HEIGHT_VALUE;
-    if (GridMap* gmap = THIS_MAP->GetGrid(x, y))
+    if (GridMap* gmap = NO_CONST(Map,shared_from_this())->GetGrid(x, y))
     {
         float gridHeight = gmap->getHeight(x, y);
         // look from a bit higher pos to find the floor, ignore under surface case
@@ -1697,7 +1697,7 @@ bool Map::GetAreaInfo(float x, float y, float z, uint32 &flags, int32 &adtId, in
     if (vmgr->getAreaInfo(GetId(), x, y, vmap_z, flags, adtId, rootId, groupId))
     {
         // check if there's terrain between player height and object height
-        if (GridMap* gmap = THIS_MAP->GetGrid(x, y))
+        if (GridMap* gmap = NO_CONST(Map,shared_from_this())->GetGrid(x, y))
         {
             float _mapheight = gmap->getHeight(x, y);
             // z + 2.0f condition taken from GetHeight(), not sure if it's such a great choice...
@@ -1731,7 +1731,7 @@ uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
         areaflag = atEntry->exploreFlag;
     else
     {
-        if (GridMap* gmap = THIS_MAP->GetGrid(x, y))
+        if (GridMap* gmap = NO_CONST(Map,shared_from_this())->GetGrid(x, y))
             areaflag = gmap->getArea(x, y);
         // this used while not all *.map files generated (instances)
         else
@@ -1750,7 +1750,7 @@ uint16 Map::GetAreaFlag(float x, float y, float z, bool *isOutdoors) const
 
 uint8 Map::GetTerrainType(float x, float y) const
 {
-    if (GridMap* gmap = THIS_MAP->GetGrid(x, y))
+    if (GridMap* gmap = NO_CONST(Map,shared_from_this())->GetGrid(x, y))
         return gmap->getTerrainType(x, y);
     else
         return 0;
@@ -1820,7 +1820,7 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
         }
     }
 
-    if (GridMap* gmap = THIS_MAP->GetGrid(x, y))
+    if (GridMap* gmap = NO_CONST(Map,shared_from_this())->GetGrid(x, y))
     {
         LiquidData map_data;
         ZLiquidStatus map_result = gmap->getLiquidStatus(x, y, z, ReqLiquidType, &map_data);
@@ -1843,7 +1843,7 @@ ZLiquidStatus Map::getLiquidStatus(float x, float y, float z, uint8 ReqLiquidTyp
 
 float Map::GetWaterLevel(float x, float y) const
 {
-    if (GridMap* gmap = THIS_MAP->GetGrid(x, y))
+    if (GridMap* gmap = NO_CONST(Map,shared_from_this())->GetGrid(x, y))
         return gmap->getLiquidLevel(x, y);
     else
         return 0;
@@ -1905,7 +1905,7 @@ float Map::GetHeight(uint32 phasemask, float x, float y, float z, bool vmap/*=tr
 bool Map::IsInWater(float x, float y, float pZ, LiquidData* data) const
 {
     // Check surface in x, y point for liquid
-    if (THIS_MAP->GetGrid(x, y))
+    if (NO_CONST(Map,shared_from_this())->GetGrid(x, y))
     {
         LiquidData liquid_status;
         LiquidData* liquid_ptr = data ? data : &liquid_status;
@@ -1917,7 +1917,7 @@ bool Map::IsInWater(float x, float y, float pZ, LiquidData* data) const
 
 bool Map::IsUnderWater(float x, float y, float z) const
 {
-    if (THIS_MAP->GetGrid(x, y))
+    if (NO_CONST(Map,shared_from_this())->GetGrid(x, y))
     {
         if (getLiquidStatus(x, y, z, MAP_LIQUID_TYPE_WATER|MAP_LIQUID_TYPE_OCEAN)&LIQUID_MAP_UNDER_WATER)
             return true;
@@ -2051,7 +2051,7 @@ void Map::SendRemoveTransports(PlayerPtr player)
     player->GetSession()->SendPacket(&packet);
 }
 
-inline void Map::setNGrid(NGridType *grid, uint32 x, uint32 y)
+inline void Map::setNGrid(NGridTypePtr grid, uint32 x, uint32 y)
 {
     if (x >= MAX_NUMBER_OF_GRIDS || y >= MAX_NUMBER_OF_GRIDS)
     {
@@ -2113,7 +2113,7 @@ void Map::RemoveAllObjectsInRemoveList()
         i_objectsToSwitch.erase(itr);
 
         if (obj->GetTypeId() == TYPEID_UNIT && !obj->IsPermanentWorldObject())
-            SwitchGridContainers(obj->ToCreature(), on);
+            SwitchGridContainers(TO_CREATURE(obj), on);
     }
 
     //sLog->outDebug(LOG_FILTER_MAPS, "Object remover 1 check.");
@@ -2143,7 +2143,7 @@ void Map::RemoveAllObjectsInRemoveList()
             // in case triggered sequence some spell can continue casting after prev CleanupsBeforeDelete call
             // make sure that like sources auras/etc removed before destructor start
             obj->ToCreature()->CleanupsBeforeDelete();
-            RemoveFromMap(obj->ToCreature(), true);
+            RemoveFromMap(TO_CREATURE(obj), true);
             break;
         default:
             sLog->outError(LOG_FILTER_MAPS, "Non-grid object (TypeId: %u) is in grid object remove list, ignored.", obj->GetTypeId());
@@ -2287,7 +2287,7 @@ void InstanceMap::InitVisibilityDistance()
 */
 bool InstanceMap::CanEnter(PlayerPtr player)
 {
-    if (player->GetMapRef().getTarget() == THIS_INSTANCEMAP)
+    if (player->GetMapRef()->getTarget() == THIS_INSTANCEMAP)
     {
         sLog->outError(LOG_FILTER_MAPS, "InstanceMap::CanEnter - player %s(%u) already in map %d, %d, %d!", player->GetName(), player->GetGUIDLow(), GetId(), GetInstanceId(), GetSpawnMode());
         ASSERT(false);
@@ -2692,7 +2692,7 @@ void BattlegroundMap::InitVisibilityDistance()
 
 bool BattlegroundMap::CanEnter(PlayerPtr player)
 {
-    if (player->GetMapRef().getTarget() == THIS_BATTLEGROUNDMAP)
+    if (player->GetMapRef()->getTarget() == THIS_BATTLEGROUNDMAP)
     {
         sLog->outError(LOG_FILTER_MAPS, "BGMap::CanEnter - player %u is already in map!", player->GetGUIDLow());
         ASSERT(false);

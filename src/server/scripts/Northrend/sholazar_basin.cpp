@@ -808,7 +808,7 @@ public:
                 ev = EVENT_MISS_BIRD;
 
             UnitPtr shooter = GetCaster();
-            CreaturePtr wilhelm = GetHitUnit()->ToCreature();
+            CreaturePtr wilhelm = TO_CREATURE(GetHitUnit());
             CreaturePtr apple = shooter->FindNearestCreature(NPC_APPLE, 30);
             CreaturePtr drostan = shooter->FindNearestCreature(NPC_DROSTAN, 30);
 

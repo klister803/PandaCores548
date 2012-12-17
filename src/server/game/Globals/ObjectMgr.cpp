@@ -8678,7 +8678,7 @@ CreatureTemplate const* ObjectMgr::GetCreatureTemplate(uint32 entry)
 
 VehicleAccessoryList const* ObjectMgr::GetVehicleAccessoryList(VehiclePtr veh) const
 {
-    if (CreaturePtr cre = veh->GetBase()->ToCreature())
+    if (CreaturePtr cre = TO_CREATURE(veh->GetBase()))
     {
         // Give preference to GUID-based accessories
         VehicleAccessoryContainer::const_iterator itr = _vehicleAccessoryStore.find(cre->GetDBTableGUIDLow());

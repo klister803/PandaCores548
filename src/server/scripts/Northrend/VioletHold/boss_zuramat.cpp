@@ -215,7 +215,7 @@ class achievement_void_dance : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Zuramat = target->ToCreature())
+            if (CreaturePtr Zuramat = TO_CREATURE(target))
                 if (Zuramat->AI()->GetData(DATA_VOID_DANCE))
                     return true;
 

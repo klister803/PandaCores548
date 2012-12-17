@@ -302,7 +302,7 @@ class spell_varos_energize_core_area_enemy : public SpellScriptLoader
 
             void FilterTargets(std::list<WorldObjectPtr>& targets)
             {
-                CreaturePtr varos = GetCaster()->ToCreature();
+                CreaturePtr varos = TO_CREATURE(GetCaster());
                 if (!varos)
                     return;
 
@@ -349,7 +349,7 @@ class spell_varos_energize_core_area_entry : public SpellScriptLoader
 
             void FilterTargets(std::list<WorldObjectPtr>& targets)
             {
-                CreaturePtr varos = GetCaster()->ToCreature();
+                CreaturePtr varos = TO_CREATURE(GetCaster());
                 if (!varos)
                     return;
 

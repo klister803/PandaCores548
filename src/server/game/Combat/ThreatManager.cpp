@@ -26,6 +26,7 @@
 #include "UnitEvents.h"
 #include "SpellAuras.h"
 #include "SpellMgr.h"
+#include "ClassFactory.h"
 
 //==============================================================
 //================= ThreatCalcHelper ===========================
@@ -91,28 +92,22 @@ bool ThreatCalcHelper::isValidProcess(UnitPtr hatedUnit, UnitPtr hatingUnit, Spe
 //================= HostileReference ==========================
 //============================================================
 
-HostileReference::HostileReference(UnitPtr refUnit, ThreatManager* threatManager, float threat)
+HostileReference::HostileReference(UnitPtr refUnit, ThreatManagerPtr threatManager, float threat)
 {
-    iThreat = threat;
-    iTempThreatModifier = 0.0f;
-    link(refUnit, std::shared_ptr<ThreatManager>(threatManager)); //Dirty FIXME
-    iUnitGuid = refUnit->GetGUID();
-    iOnline = true;
-    iAccessible = true;
 }
 
 //============================================================
 // Tell our refTo (target) object that we have a link
 void HostileReference::targetObjectBuildLink()
 {
-    getTarget()->addHatedBy(THIS_HOSTILEREFERENCE);
+    getTarget()->addHatedBy(NO_CONST(HostileReference, STATIC_CAST(HostileReference,shared_from_this())));
 }
 
 //============================================================
 // Tell our refTo (taget) object, that the link is cut
 void HostileReference::targetObjectDestroyLink()
 {
-    getTarget()->removeHatedBy(THIS_HOSTILEREFERENCE);
+    getTarget()->removeHatedBy(NO_CONST(HostileReference,STATIC_CAST(HostileReference,shared_from_this())));
 }
 
 //============================================================
@@ -143,7 +138,7 @@ void HostileReference::addThreat(float modThreat)
         updateOnlineStatus();
     if (modThreat != 0.0f)
     {
-        ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, THIS_HOSTILEREFERENCE, modThreat);
+        ThreatRefStatusChangeEvent event(UEV_THREAT_REF_THREAT_CHANGE, NO_CONST(HostileReference,STATIC_CAST(HostileReference,shared_from_this())), modThreat);
         fireStatusChanged(event);
     }
 
@@ -185,7 +180,7 @@ void HostileReference::updateOnlineStatus()
         && getTarget()->InSamePhase(getSourceUnit())
         )
     {
-        CreaturePtr creature = getSourceUnit()->ToCreature();
+        CreaturePtr creature = TO_CREATURE(getSourceUnit());
         online = getTarget()->isInAccessiblePlaceFor(creature);
         if (!online)
         {
@@ -440,7 +435,7 @@ void ThreatManager::_addThreat(UnitPtr victim, float threat)
     if (!ref) // there was no ref => create a new one
     {
                                                             // threat has to be 0 here
-        HostileReferencePtr hostileRef (new HostileReference(victim, this, 0));
+        HostileReferencePtr hostileRef = ClassFactory::ConstructHostileReference(victim, shared_from_this(), 0);
         iThreatContainer.addReference(hostileRef);
         hostileRef->addThreat(threat); // now we add the real threat
         if (victim->GetTypeId() == TYPEID_PLAYER && TO_PLAYER(victim)->isGameMaster())
@@ -460,7 +455,7 @@ void ThreatManager::modifyThreatPercent(UnitPtr victim, int32 percent)
 UnitPtr ThreatManager::getHostilTarget()
 {
     iThreatContainer.update();
-    HostileReferencePtr nextVictim = iThreatContainer.selectNextVictim(getOwner()->ToCreature(), getCurrentVictim());
+    HostileReferencePtr nextVictim = iThreatContainer.selectNextVictim(TO_CREATURE(getOwner()), getCurrentVictim());
     setCurrentVictim(nextVictim);
     return getCurrentVictim() != nullptr ? getCurrentVictim()->getTarget() : nullptr;
 }
@@ -516,7 +511,7 @@ void ThreatManager::setCurrentVictim(HostileReferencePtr pHostileReference)
 
 void ThreatManager::processThreatEvent(ThreatRefStatusChangeEvent* threatRefStatusChangeEvent)
 {
-    threatRefStatusChangeEvent->setThreatManager(this);     // now we can set the threat manager
+    threatRefStatusChangeEvent->setThreatManager(shared_from_this());     // now we can set the threat manager
 
     HostileReferencePtr hostilRef = threatRefStatusChangeEvent->getReference();
 

@@ -607,7 +607,7 @@ public:
                         case EVENT_DETONATE:
                         {
                             std::vector<UnitPtr> unitList;
-                            std::list<HostileReferencePtr> *threatList = &me->getThreatManager().getThreatList();
+                            std::list<HostileReferencePtr> *threatList = &me->getThreatManager()->getThreatList();
                             for (std::list<HostileReferencePtr>::const_iterator itr = threatList->begin(); itr != threatList->end(); ++itr)
                             {
                                 if ((*itr)->getTarget()->GetTypeId() == TYPEID_PLAYER

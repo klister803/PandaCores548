@@ -751,7 +751,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
                 if (!GetExplTargetUnit())
                     return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
 
-                if (CreaturePtr target = GetExplTargetUnit()->ToCreature())
+                if (CreaturePtr target = TO_CREATURE(GetExplTargetUnit()))
                 {
                     if (target->getLevel() > caster->getLevel())
                         return SPELL_FAILED_HIGHLEVEL;

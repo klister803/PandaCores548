@@ -210,7 +210,7 @@ class boss_ick : public CreatureScript
                 if (!me->isInCombat())
                     return;
 
-                if (!me->getVictim() && me->getThreatManager().isThreatListEmpty())
+                if (!me->getVictim() && me->getThreatManager()->isThreatListEmpty())
                 {
                     EnterEvadeMode();
                     return;
@@ -607,7 +607,7 @@ class spell_exploding_orb_hasty_grow : public SpellScriptLoader
                     target->RemoveAurasDueToSpell(SPELL_HASTY_GROW);
                     target->RemoveAurasDueToSpell(SPELL_AUTO_GROW);
                     target->RemoveAurasDueToSpell(SPELL_EXPLODING_ORB);
-                    if (CreaturePtr creature = target->ToCreature())
+                    if (CreaturePtr creature = TO_CREATURE(target))
                         creature->DespawnOrUnsummon();
                 }
             }
@@ -639,12 +639,12 @@ class spell_krick_pursuit : public SpellScriptLoader
                     return;
 
                 UnitPtr caster = GetCaster();
-                CreatureAI* ickAI = caster->ToCreature()->AI();
+                CreatureAI* ickAI = TO_CREATURE(caster)->AI();
                 if (UnitPtr target = ickAI->SelectTarget(SELECT_TARGET_RANDOM, 0, 200.0f, true))
                 {
                     DoScriptText(SAY_ICK_CHASE_1, caster, target);
                     caster->AddAura(GetSpellInfo()->Id, target);
-                    CAST_AI(boss_ick::boss_ickAI, ickAI)->SetTempThreat(caster->getThreatManager().getThreat(target));
+                    CAST_AI(boss_ick::boss_ickAI, ickAI)->SetTempThreat(caster->getThreatManager()->getThreat(target));
                     caster->AddThreat(target, float(GetEffectValue()));
                     target->AddThreat(caster, float(GetEffectValue()));
                 }
@@ -663,7 +663,7 @@ class spell_krick_pursuit : public SpellScriptLoader
             void HandleExtraEffect(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (UnitPtr caster = GetCaster())
-                    if (CreaturePtr creCaster = caster->ToCreature())
+                    if (CreaturePtr creCaster = TO_CREATURE(caster))
                         CAST_AI(boss_ick::boss_ickAI, creCaster->AI())->_ResetThreat(GetTarget());
             }
 

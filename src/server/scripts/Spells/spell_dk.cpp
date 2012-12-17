@@ -340,7 +340,7 @@ class spell_dk_death_pact : public SpellScriptLoader
                 // Check if we have valid targets, otherwise skip spell casting here
                 if (PlayerPtr player = TO_PLAYER(GetCaster()))
                     for (Unit::ControlList::const_iterator itr = player->m_Controlled.begin(); itr != player->m_Controlled.end(); ++itr)
-                        if (CreaturePtr undeadPet = (*itr)->ToCreature())
+                        if (CreaturePtr undeadPet = TO_CREATURE((*itr)))
                             if (undeadPet->isAlive() &&
                                 undeadPet->GetOwnerGUID() == player->GetGUID() &&
                                 undeadPet->GetCreatureType() == CREATURE_TYPE_UNDEAD &&

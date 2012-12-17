@@ -305,7 +305,7 @@ public:
             summons.DespawnAll();
             // players that used Hover Disk are no in the aggro list
             me->SetInCombatWithZone();
-            std::list<HostileReferencePtr> &m_threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr> &m_threatlist = me->getThreatManager()->getThreatList();
             for (std::list<HostileReferencePtr>::const_iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
             {
                 if (UnitPtr target = (*itr)->getTarget())
@@ -394,7 +394,7 @@ public:
         {
             if (spell->Id == SPELL_POWER_SPARK_MALYGOS)
             {
-                if (CreaturePtr creature = caster->ToCreature())
+                if (CreaturePtr creature = TO_CREATURE(caster))
                     creature->DespawnOrUnsummon();
 
                 Talk(SAY_BUFF_SPARK);
@@ -683,7 +683,7 @@ class spell_malygos_vortex_visual : public SpellScriptLoader
             {
                 if (UnitPtr caster = GetCaster())
                 {
-                    std::list<HostileReferencePtr> &m_threatlist = caster->getThreatManager().getThreatList();
+                    std::list<HostileReferencePtr> &m_threatlist = caster->getThreatManager()->getThreatList();
                     for (std::list<HostileReferencePtr>::const_iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
                     {
                         if (UnitPtr target = (*itr)->getTarget())
@@ -702,7 +702,7 @@ class spell_malygos_vortex_visual : public SpellScriptLoader
                         }
                     }
 
-                    if (CreaturePtr malygos = caster->ToCreature())
+                    if (CreaturePtr malygos = TO_CREATURE(caster))
                     {
                         // This is a hack, we have to re add players to the threat list because when they enter to the vehicles they are removed.
                         // Anyway even with this issue, the boss does not enter in evade mode - this prevents iterate an empty list in the next vortex execution.
@@ -1049,8 +1049,8 @@ public:
                 if (CreaturePtr malygos = Unit::GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(DATA_MALYGOS)))
                 {
                     summoner->CastSpell(me, SPELL_RIDE_RED_DRAGON, true);
-                    float victimThreat = malygos->getThreatManager().getThreat(summoner);
-                    malygos->getThreatManager().resetAllAggro();
+                    float victimThreat = malygos->getThreatManager()->getThreat(summoner);
+                    malygos->getThreatManager()->resetAllAggro();
                     malygos->AI()->AttackStart(me);
                     malygos->AddThreat(me, victimThreat);
                 }

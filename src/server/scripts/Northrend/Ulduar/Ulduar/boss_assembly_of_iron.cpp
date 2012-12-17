@@ -728,7 +728,7 @@ class boss_stormcaller_brundir : public CreatureScript
                             me->RemoveAurasDueToSpell(SPELL_LIGHTNING_TENDRILS_VISUAL);
                             DoStartMovement(me->getVictim());
                             events.CancelEvent(EVENT_GROUND);
-                            me->getThreatManager().resetAllAggro();
+                            me->getThreatManager()->resetAllAggro();
                             break;
                         case EVENT_MOVE_POSITION:
                             if (me->IsWithinMeleeRange(me->getVictim()))

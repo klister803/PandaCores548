@@ -485,7 +485,7 @@ class mob_haunting_sha : public CreatureScript
                     if(!zao)
                         return;
 
-                    me->getThreatManager().addThreat(zao, 1000000.f);
+                    me->getThreatManager()->addThreat(zao, 1000000.f);
                     me->AI()->AttackStart(zao);
                 }
             }
@@ -503,7 +503,7 @@ class mob_haunting_sha : public CreatureScript
                             PlayerPtr plr = i->getSource();
                             if( !plr)
                                 continue;
-                            me->getThreatManager().addThreat(plr, 1.0f);
+                            me->getThreatManager()->addThreat(plr, 1.0f);
                         }
                     }
                     me->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM));

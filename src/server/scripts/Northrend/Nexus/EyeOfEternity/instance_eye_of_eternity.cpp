@@ -157,7 +157,7 @@ public:
         {
             if (CreaturePtr malygos = instance->GetCreature(malygosGUID))
             {
-                std::list<HostileReferencePtr> m_threatlist = malygos->getThreatManager().getThreatList();
+                std::list<HostileReferencePtr> m_threatlist = malygos->getThreatManager()->getThreatList();
                 for (std::list<uint64>::const_iterator itr_vortex = vortexTriggers.begin(); itr_vortex != vortexTriggers.end(); ++itr_vortex)
                 {
                     if (m_threatlist.empty())

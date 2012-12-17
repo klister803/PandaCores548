@@ -427,7 +427,7 @@ public:
             if (IsBanished)
             {
                 // Akama is set in the threatlist so when we reset, we make sure that he is not included in our check
-                if (me->getThreatManager().getThreatList().size() < 2)
+                if (me->getThreatManager()->getThreatList().size() < 2)
                 {
                     EnterEvadeMode();
                     return;
@@ -777,7 +777,7 @@ public:
                         }
                         if (Shade && Shade->isAlive())
                         {
-                            if (Shade->getThreatManager().getThreatList().size() < 2)
+                            if (Shade->getThreatManager()->getThreatList().size() < 2)
                                 Shade->AI()->EnterEvadeMode();
                         }
                     }

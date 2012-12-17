@@ -219,7 +219,7 @@ class achievement_safety_dance : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Heigan = target->ToCreature())
+            if (CreaturePtr Heigan = TO_CREATURE(target))
                 if (Heigan->AI()->GetData(DATA_SAFETY_DANCE))
                     return true;
 

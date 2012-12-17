@@ -331,7 +331,7 @@ class achievement_abuse_the_ooze : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Sjonnir = target->ToCreature())
+            if (CreaturePtr Sjonnir = TO_CREATURE(target))
                 if (Sjonnir->AI()->GetData(DATA_ABUSE_THE_OOZE) >= 5)
                     return true;
 

@@ -1885,7 +1885,7 @@ void AuraEffect::HandlePhase(constAuraApplicationPtr aurApp, uint8 mode, bool ap
         if (!newPhase)
         {
             newPhase = PHASEMASK_NORMAL;
-            if (CreaturePtr creature = target->ToCreature())
+            if (CreaturePtr creature = TO_CREATURE(target))
                 if (CreatureData const* data = sObjectMgr->GetCreatureData(creature->GetDBTableGUIDLow()))
                     newPhase = data->phaseMask;
         }
@@ -2591,7 +2591,7 @@ void AuraEffect::HandleAuraModDisarm(constAuraApplicationPtr aurApp, uint8 mode,
     if (apply)
         target->SetFlag(field, flag);
 
-    if (target->GetTypeId() == TYPEID_UNIT && target->ToCreature()->GetCurrentEquipmentId())
+    if (target->GetTypeId() == TYPEID_UNIT && TO_CREATURE(target)->GetCurrentEquipmentId())
         target->UpdateDamagePhysical(attType);
 }
 
@@ -3155,7 +3155,7 @@ void AuraEffect::HandleModPossessPet(constAuraApplicationPtr aurApp, uint8 mode,
     //    return;
 
     UnitPtr target = aurApp->GetTarget();
-    if (target->GetTypeId() != TYPEID_UNIT || !target->ToCreature()->isPet())
+    if (target->GetTypeId() != TYPEID_UNIT || !TO_CREATURE(target)->isPet())
         return;
 
     PetPtr pet = TO_PET(target);
@@ -3831,7 +3831,7 @@ void AuraEffect::HandleAuraModResistance(constAuraApplicationPtr aurApp, uint8 m
         if (GetMiscValue() & int32(1<<x))
         {
             target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + x), TOTAL_VALUE, float(GetAmount()), apply);
-            if (target->GetTypeId() == TYPEID_PLAYER || target->ToCreature()->isPet())
+            if (target->GetTypeId() == TYPEID_PLAYER || TO_CREATURE(target)->isPet())
                 target->ApplyResistanceBuffModsMod(SpellSchools(x), GetAmount() > 0, (float)GetAmount(), apply);
         }
     }
@@ -3848,7 +3848,7 @@ void AuraEffect::HandleAuraModBaseResistancePCT(constAuraApplicationPtr aurApp, 
     if (target->GetTypeId() != TYPEID_PLAYER)
     {
         //pets only have base armor
-        if (target->ToCreature()->isPet() && (GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
+        if (TO_CREATURE(target)->isPet() && (GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
             target->HandleStatModifier(UNIT_MOD_ARMOR, BASE_PCT, float(GetAmount()), apply);
     }
     else
@@ -3875,7 +3875,7 @@ void AuraEffect::HandleModResistancePercent(constAuraApplicationPtr aurApp, uint
         if (GetMiscValue() & int32(1<<i))
         {
             target->HandleStatModifier(UnitMods(UNIT_MOD_RESISTANCE_START + i), TOTAL_PCT, float(GetAmount()), apply);
-            if (target->GetTypeId() == TYPEID_PLAYER || target->ToCreature()->isPet())
+            if (target->GetTypeId() == TYPEID_PLAYER || TO_CREATURE(target)->isPet())
             {
                 target->ApplyResistanceBuffModsPercentMod(SpellSchools(i), true, (float)GetAmount(), apply);
                 target->ApplyResistanceBuffModsPercentMod(SpellSchools(i), false, (float)GetAmount(), apply);
@@ -3895,7 +3895,7 @@ void AuraEffect::HandleModBaseResistance(constAuraApplicationPtr aurApp, uint8 m
     if (target->GetTypeId() != TYPEID_PLAYER)
     {
         //only pets have base stats
-        if (target->ToCreature()->isPet() && (GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
+        if (TO_CREATURE(target)->isPet() && (GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL))
             target->HandleStatModifier(UNIT_MOD_ARMOR, TOTAL_VALUE, float(GetAmount()), apply);
     }
     else
@@ -3948,7 +3948,7 @@ void AuraEffect::HandleAuraModStat(constAuraApplicationPtr aurApp, uint8 mode, b
         {
             //target->ApplyStatMod(Stats(i), m_amount, apply);
             target->HandleStatModifier(UnitMods(UNIT_MOD_STAT_START + i), TOTAL_VALUE, float(GetAmount()), apply);
-            if (target->GetTypeId() == TYPEID_PLAYER || target->ToCreature()->isPet())
+            if (target->GetTypeId() == TYPEID_PLAYER || TO_CREATURE(target)->isPet())
                 target->ApplyStatBuffMod(Stats(i), (float)GetAmount(), apply);
         }
     }
@@ -4082,7 +4082,7 @@ void AuraEffect::HandleModTotalPercentStat(constAuraApplicationPtr aurApp, uint8
         if (GetMiscValueB() & 1 << i || !GetMiscValueB()) // 0 is also used for all stats
         {
             target->HandleStatModifier(UnitMods(UNIT_MOD_STAT_START + i), TOTAL_PCT, float(GetAmount()), apply);
-            if (target->GetTypeId() == TYPEID_PLAYER || target->ToCreature()->isPet())
+            if (target->GetTypeId() == TYPEID_PLAYER || TO_CREATURE(target)->isPet())
                 target->ApplyStatPercentBuffMod(Stats(i), float(GetAmount()), apply);
         }
     }
@@ -5471,7 +5471,7 @@ void AuraEffect::HandleChannelDeathItem(constAuraApplicationPtr aurApp, uint8 mo
     {
         // Soul Shard only from units that grant XP or honor
         if (!plCaster->isHonorOrXPTarget(target) ||
-            (target->GetTypeId() == TYPEID_UNIT && !target->ToCreature()->isTappedBy(plCaster)))
+            (target->GetTypeId() == TYPEID_UNIT && !TO_CREATURE(target)->isTappedBy(plCaster)))
             return;
 
         // If this is Drain Soul, check for Glyph of Drain Soul
@@ -6116,10 +6116,10 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(UnitPtr target, UnitPtr cast
                         // move loot to player inventory and despawn target
                         if (caster && caster->GetTypeId() == TYPEID_PLAYER &&
                                 target->GetTypeId() == TYPEID_UNIT &&
-                                target->ToCreature()->GetCreatureTemplate()->type == CREATURE_TYPE_GAS_CLOUD)
+                                TO_CREATURE(target)->GetCreatureTemplate()->type == CREATURE_TYPE_GAS_CLOUD)
                         {
                             PlayerPtr player = TO_PLAYER(caster);
-                            CreaturePtr creature = target->ToCreature();
+                            CreaturePtr creature = TO_CREATURE(target);
                             // missing lootid has been reported on startup - just return
                             if (!creature->GetCreatureTemplate()->SkinLootId)
                                 return;
@@ -6176,7 +6176,7 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(UnitPtr target, UnitPtr cast
 
                         caster->CastSpell(caster, 38495, true, nullptr, CONST_CAST(AuraEffect, shared_from_this()));
 
-                        CreaturePtr creatureTarget = target->ToCreature();
+                        CreaturePtr creatureTarget = TO_CREATURE(target);
 
                         creatureTarget->DespawnOrUnsummon();
                         return;
@@ -6246,12 +6246,12 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(UnitPtr target, UnitPtr cast
 
                 if (permafrostCaster)
                 {
-                    if (CreaturePtr permafrostCasterCreature = permafrostCaster->ToCreature())
+                    if (CreaturePtr permafrostCasterCreature = TO_CREATURE(permafrostCaster))
                         permafrostCasterCreature->DespawnOrUnsummon(3000);
 
                     target->CastSpell(target, 66181, false);
                     target->RemoveAllAuras();
-                    if (CreaturePtr targetCreature = target->ToCreature())
+                    if (CreaturePtr targetCreature = TO_CREATURE(target))
                         targetCreature->DisappearAndDie();
                 }
                 break;
@@ -6326,8 +6326,8 @@ void AuraEffect::HandlePeriodicTriggerSpellAuraTick(UnitPtr target, UnitPtr cast
     }
     else
     {
-        CreaturePtr c = target->ToCreature();
-        if (!c || !caster || !sScriptMgr->OnDummyEffect(caster, GetId(), SpellEffIndex(GetEffIndex()), target->ToCreature()) ||
+        CreaturePtr c = TO_CREATURE(target);
+        if (!c || !caster || !sScriptMgr->OnDummyEffect(caster, GetId(), SpellEffIndex(GetEffIndex()), TO_CREATURE(target)) ||
             !c->AI()->sOnDummyEffect(caster, GetId(), SpellEffIndex(GetEffIndex())))
             sLog->outDebug(LOG_FILTER_SPELLS_AURAS, "AuraEffect::HandlePeriodicTriggerSpellAuraTick: Spell %u has non-existent spell %u in EffectTriggered[%d] and is therefor not triggered.", GetId(), triggerSpellId, GetEffIndex());
     }

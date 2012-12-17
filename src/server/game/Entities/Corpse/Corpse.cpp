@@ -28,6 +28,7 @@
 
 Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES), m_type(type)
 {
+    loot = LootPtr(new Loot());
     m_objectType |= TYPEMASK_CORPSE;
     m_objectTypeId = TYPEID_CORPSE;
 

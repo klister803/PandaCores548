@@ -1617,7 +1617,7 @@ SpellCastResult SpellInfo::CheckTarget(constUnitPtr caster, constWorldObjectPtr 
             {
                 // Do not allow these spells to target creatures not tapped by us (Banish, Polymorph, many quest spells)
                 if (AttributesEx2 & SPELL_ATTR2_CANT_TARGET_TAPPED)
-                    if (constCreaturePtr targetCreature = unitTarget->ToCreature())
+                    if (constCreaturePtr targetCreature = TO_CONST_CREATURE(unitTarget))
                         if (targetCreature->hasLootRecipient() && !targetCreature->isTappedBy(TO_CONST_PLAYER(caster)))
                             return SPELL_FAILED_CANT_CAST_ON_TAPPED;
 

@@ -91,7 +91,7 @@ class ThreatRefStatusChangeEvent : public UnitBaseEvent
             int32 iIValue;
             bool iBValue;
         };
-        ThreatManager* iThreatManager;
+        ThreatManagerPtr iThreatManager;
     public:
         ThreatRefStatusChangeEvent(uint32 pType) : UnitBaseEvent(pType) { iHostileReference = nullptr; }
 
@@ -111,9 +111,9 @@ class ThreatRefStatusChangeEvent : public UnitBaseEvent
 
         HostileReferencePtr getReference() const { return iHostileReference; }
 
-        void setThreatManager(ThreatManager* pThreatManager) { iThreatManager = pThreatManager; }
+        void setThreatManager(ThreatManagerPtr pThreatManager) { iThreatManager = pThreatManager; }
 
-        ThreatManager* getThreatManager() const { return iThreatManager; }
+        ThreatManagerPtr getThreatManager() const { return iThreatManager; }
 };
 
 //==============================================================

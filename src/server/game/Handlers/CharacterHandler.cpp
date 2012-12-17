@@ -1086,7 +1086,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
             if(pet)
             {
                 c->DespawnOrUnsummon();
-                pet->GetMap()->AddToMap(pet->ToCreature());
+                pet->GetMap()->AddToMap(TO_CREATURE(pet));
                 pet->SetUInt32Value(UNIT_FIELD_LEVEL, 1);
                 pCurrChar->SetMinion(pet, true);
                 pet->SavePetToDB(PET_SAVE_AS_CURRENT);

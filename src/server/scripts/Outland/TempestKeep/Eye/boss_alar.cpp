@@ -329,7 +329,7 @@ class boss_alar : public CreatureScript
 
                 if (Phase1)
                 {
-                    if (me->getThreatManager().getThreatList().empty())
+                    if (me->getThreatManager()->getThreatList().empty())
                     {
                         EnterEvadeMode();
                         return;

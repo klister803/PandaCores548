@@ -1077,7 +1077,7 @@ class achievement_quick_shave : public AchievementCriteriaScript
         bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
         {
            if (target)
-                if (CreaturePtr razorscale = target->ToCreature())
+                if (CreaturePtr razorscale = TO_CREATURE(target))
                     if (razorscale->AI()->GetData(DATA_QUICK_SHAVE))
                         return true;
 

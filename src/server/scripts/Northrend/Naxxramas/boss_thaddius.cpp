@@ -345,10 +345,10 @@ public:
                         // magnetic pull is not working. So just jump.
 
                         // reset aggro to be sure that feugen will not follow the jump
-                        pFeugen->getThreatManager().modifyThreatPercent(pFeugenVictim, -100);
+                        pFeugen->getThreatManager()->modifyThreatPercent(pFeugenVictim, -100);
                         pFeugenVictim->JumpTo(me, 0.3f);
 
-                        me->getThreatManager().modifyThreatPercent(pStalaggVictim, -100);
+                        me->getThreatManager()->modifyThreatPercent(pStalaggVictim, -100);
                         pStalaggVictim->JumpTo(pFeugen, 0.3f);
                     }
                 }

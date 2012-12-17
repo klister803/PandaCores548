@@ -2169,7 +2169,7 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
 void Guild::SendBankTabText(WorldSession* session, uint8 tabId) const
 {
      if (BankTab const* tab = GetBankTab(tabId))
-        tab->SendText(THIS_GUILD, session);
+        tab->SendText(THIS_CONST_GUILD, session);
 }
 
 void Guild::SendPermissions(WorldSession* session) const
@@ -2923,14 +2923,14 @@ inline uint32 Guild::_GetRankBankTabRights(uint32 rankId, uint8 tabId) const
 inline uint32 Guild::_GetMemberRemainingSlots(uint64 guid, uint8 tabId) const
 {
     if (const Member* member = GetMember(guid))
-        return member->GetBankRemainingValue(tabId, THIS_GUILD);
+        return member->GetBankRemainingValue(tabId, thisGuild());
     return 0;
 }
 
 inline uint32 Guild::_GetMemberRemainingMoney(uint64 guid) const
 {
     if (const Member* member = GetMember(guid))
-        return member->GetBankRemainingValue(GUILD_BANK_MAX_TABS, THIS_GUILD);
+        return member->GetBankRemainingValue(GUILD_BANK_MAX_TABS, thisGuild());
     return 0;
 }
 

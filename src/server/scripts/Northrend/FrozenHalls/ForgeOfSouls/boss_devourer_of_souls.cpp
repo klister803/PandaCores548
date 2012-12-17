@@ -385,7 +385,7 @@ class achievement_three_faced : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Devourer = target->ToCreature())
+            if (CreaturePtr Devourer = TO_CREATURE(target))
                 if (Devourer->AI()->GetData(DATA_THREE_FACED))
                     return true;
 

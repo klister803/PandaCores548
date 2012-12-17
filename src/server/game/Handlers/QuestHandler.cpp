@@ -53,7 +53,7 @@ void WorldSession::HandleQuestgiverStatusQueryOpcode(WorldPacket & recvData)
         case TYPEID_UNIT:
         {
             sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_QUESTGIVER_STATUS_QUERY for npc, guid = %u", uint32(GUID_LOPART(guid)));
-            CreaturePtr cr_questgiver=questgiver->ToCreature();
+            CreaturePtr cr_questgiver=TO_CREATURE(questgiver);
             if (!cr_questgiver->IsHostileTo(_player))       // do not show quest status to enemies
             {
                 questStatus = sScriptMgr->GetDialogStatus(_player, cr_questgiver);
@@ -188,7 +188,7 @@ void WorldSession::HandleQuestgiverAcceptQuestOpcode(WorldPacket& recvData)
             switch (object->GetTypeId())
             {
                 case TYPEID_UNIT:
-                    sScriptMgr->OnQuestAccept(_player, (object->ToCreature()), quest);
+                    sScriptMgr->OnQuestAccept(_player, (TO_CREATURE(object)), quest);
                     (object->ToCreature())->AI()->sQuestAccept(_player, quest);
                     break;
                 case TYPEID_ITEM:
@@ -343,7 +343,7 @@ void WorldSession::HandleQuestgiverChooseRewardOpcode(WorldPacket& recvData)
         case TYPEID_PLAYER:
             {
                 //For AutoSubmition was added plr case there as it almost same exclude AI script cases.
-                CreaturePtr creatureQGiver = object->ToCreature();
+                CreaturePtr creatureQGiver = TO_CREATURE(object);
                 if (!creatureQGiver || !(sScriptMgr->OnQuestReward(_player, creatureQGiver, quest, reward)))
                 {
                     // Send next quest

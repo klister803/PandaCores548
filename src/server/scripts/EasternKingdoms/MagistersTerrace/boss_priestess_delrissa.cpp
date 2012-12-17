@@ -835,7 +835,7 @@ public:
             if (Blink_Timer <= diff)
             {
                 bool InMeleeRange = false;
-                std::list<HostileReferencePtr>& t_list = me->getThreatManager().getThreatList();
+                std::list<HostileReferencePtr>& t_list = me->getThreatManager()->getThreatList();
                 for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
                     if (UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid()))
@@ -922,7 +922,7 @@ public:
             if (Intercept_Stun_Timer <= diff)
             {
                 bool InMeleeRange = false;
-                std::list<HostileReferencePtr>& t_list = me->getThreatManager().getThreatList();
+                std::list<HostileReferencePtr>& t_list = me->getThreatManager()->getThreatList();
                 for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
                     if (UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid()))

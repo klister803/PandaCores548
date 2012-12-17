@@ -75,7 +75,7 @@ public:
     * -> adds a waypoint to the currently selected creature
     *
     *
-    * @param args if the user did not provide a GUID, it is nullptr
+    * @param args if the user did not provide a GUID, it IS NULL
     *
     * @return true - command did succeed, false - something went wrong
     */

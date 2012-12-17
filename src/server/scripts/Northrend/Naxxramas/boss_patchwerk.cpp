@@ -116,8 +116,8 @@ public:
                         //amount of HP within melee distance
                         uint32 MostHP = 0;
                         UnitPtr pMostHPTarget = nullptr;
-                        std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager().getThreatList().begin();
-                        for (; i != me->getThreatManager().getThreatList().end(); ++i)
+                        std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager()->getThreatList().begin();
+                        for (; i != me->getThreatManager()->getThreatList().end(); ++i)
                         {
                             UnitPtr target = (*i)->getTarget();
                             if (target->isAlive() && target != me->getVictim() && target->GetHealth() > MostHP && me->IsWithinMeleeRange(target))

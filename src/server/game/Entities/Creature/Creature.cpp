@@ -147,6 +147,7 @@ m_defaultMovementType(IDLE_MOTION_TYPE), m_DBTableGuid(0), m_equipmentId(0), m_A
 m_AlreadySearchedAssistance(false), m_regenHealth(true), m_AI_locked(false), m_meleeDamageSchoolMask(SPELL_SCHOOL_MASK_NORMAL),
 m_creatureInfo(nullptr), m_creatureData(nullptr), m_path_id(0), m_formation(nullptr)
 {
+    loot = LootPtr(new Loot());
     m_regenTimer = CREATURE_REGEN_INTERVAL;
     m_valuesCount = UNIT_END;
 
@@ -2033,7 +2034,7 @@ bool Creature::_IsTargetAcceptable(constUnitPtr target) const
     constUnitPtr targetVictim = target->getAttackerForHelper();
 
     // if I'm already fighting target, or I'm hostile towards the target, the target is acceptable
-    if (myVictim == target || targetVictim == THIS_CREATURE || IsHostileTo(target))
+    if (myVictim == target || targetVictim == THIS_CONST_CREATURE || IsHostileTo(target))
         return true;
 
     // if the target's victim is friendly, and the target is neutral, the target is acceptable
@@ -2055,13 +2056,13 @@ void Creature::SaveRespawnTime()
 // THIS_CREATURE should not be called by petAI or
 bool Creature::canCreatureAttack(constUnitPtr victim, bool /*force*/) const
 {
-    if (!victim->IsInMap(THIS_CREATURE))
+    if (!victim->IsInMap(THIS_CONST_CREATURE))
         return false;
 
     if (!IsValidAttackTarget(victim))
         return false;
 
-    if (!victim->isInAccessiblePlaceFor(THIS_CREATURE))
+    if (!victim->isInAccessiblePlaceFor(THIS_CONST_CREATURE))
         return false;
 
     if (IsAIEnabled && !AI()->CanAIAttack(victim))
@@ -2477,7 +2478,7 @@ void Creature::SetPosition(float x, float y, float z, float o)
         return;
     }
 
-    GetMap()->CreatureRelocation(ToCreature(), x, y, z, o);
+    GetMap()->CreatureRelocation(THIS_CREATURE, x, y, z, o);
     if (IsVehicle())
         GetVehicleKit();
 }

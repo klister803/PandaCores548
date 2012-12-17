@@ -60,6 +60,14 @@ class LinkedListElement : public std::enable_shared_from_this<LinkedListElement>
 
         void insertBefore(std::shared_ptr<LinkedListElement> pElem)
         {
+            /*if (pElem->iNext.use_count() == 0)
+                pElem->iNext = std::shared_ptr<LinkedListElement>(new LinkedListElement());
+            if (pElem->iPrev.use_count() == 0)
+                pElem->iPrev = std::shared_ptr<LinkedListElement>(new LinkedListElement());
+            if (iPrev.use_count() == 0)
+                iPrev = std::shared_ptr<LinkedListElement>(new LinkedListElement());
+            if (iPrev->iNext.use_count() == 0)
+                iPrev->iNext = std::shared_ptr<LinkedListElement>(new LinkedListElement());*/
             pElem->iNext = shared_from_this();
             pElem->iPrev = iPrev;
             iPrev->iNext = pElem;
@@ -68,6 +76,14 @@ class LinkedListElement : public std::enable_shared_from_this<LinkedListElement>
 
         void insertAfter(std::shared_ptr<LinkedListElement> pElem)
         {
+            /*if (pElem->iNext.use_count() == 0)
+                pElem->iNext = std::shared_ptr<LinkedListElement>(new LinkedListElement());
+            if (pElem->iPrev.use_count() == 0)
+                pElem->iPrev = std::shared_ptr<LinkedListElement>(new LinkedListElement());
+            if (iNext.use_count() == 0)
+                iNext = std::shared_ptr<LinkedListElement>(new LinkedListElement());
+            if (iNext->iPrev.use_count() == 0)
+                iNext->iPrev = std::shared_ptr<LinkedListElement>(new LinkedListElement());*/
             pElem->iPrev = shared_from_this();
             pElem->iNext = iNext;
             iNext->iPrev = pElem;
@@ -86,6 +102,8 @@ class LinkedListHead
     public:
         LinkedListHead(): iSize(0)
         {
+            iFirst = std::shared_ptr<LinkedListElement>(new LinkedListElement());
+            iLast = std::shared_ptr<LinkedListElement>(new LinkedListElement());
             // create empty list
 
             iFirst->iNext = iLast;
@@ -235,7 +253,7 @@ class LinkedListHead
                     return (_Ptr.get() != &_Right);
                 }
 
-                bool operator==(const_value_ptr _Right) const
+                /*bool operator==(const_value_ptr _Right) const
                 {                                           // test for shared_ptr equality
                     return (_Ptr == _Right);
                 }
@@ -243,7 +261,7 @@ class LinkedListHead
                 bool operator!=(const_value_ptr _Right) const
                 {                                           // test for shared_ptr equality
                     return (_Ptr != _Right);
-                }
+                }*/
 
                 value_ptr _Mynode()
                 {                                           // return node pointer

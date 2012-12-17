@@ -1467,7 +1467,7 @@ class spell_taldaram_flame_ball_visual : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                CreaturePtr target = GetTarget()->ToCreature();
+                CreaturePtr target = TO_CREATURE(GetTarget());
                 if (!target)
                     return;
 

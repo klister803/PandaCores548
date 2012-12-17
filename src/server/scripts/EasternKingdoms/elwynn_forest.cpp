@@ -61,7 +61,7 @@ public:
         void MoveInLineOfSight(UnitPtr who)
         {
             if (me->GetDistance(who) < 5.0f)
-                if (CreaturePtr creature = who->ToCreature())
+                if (CreaturePtr creature = TO_CREATURE(who))
                     if (creature->GetEntry() == NPC_WOLF)
                         if (!HasATarget)
                             if (who->Attack(me, true))

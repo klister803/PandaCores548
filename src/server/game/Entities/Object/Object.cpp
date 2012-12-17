@@ -610,12 +610,12 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
     bool IsActivateToQuest = false;
     if (updatetype == UPDATETYPE_CREATE_OBJECT || updatetype == UPDATETYPE_CREATE_OBJECT2)
     {
-        if (isType(TYPEMASK_GAMEOBJECT) && !(THIS_GAMEOBJECT)->IsDynTransport())
+        if (isType(TYPEMASK_GAMEOBJECT) && !(THIS_CONST_GAMEOBJECT)->IsDynTransport())
         {
-            if ((THIS_GAMEOBJECT)->ActivateToQuest(target) || target->isGameMaster())
+            if ((THIS_CONST_GAMEOBJECT)->ActivateToQuest(target) || target->isGameMaster())
                 IsActivateToQuest = true;
 
-            if ((THIS_GAMEOBJECT)->GetGoArtKit())
+            if ((THIS_CONST_GAMEOBJECT)->GetGoArtKit())
                 updateMask->SetBit(GAMEOBJECT_BYTES_1);
         }
         else if (isType(TYPEMASK_UNIT))
@@ -626,9 +626,9 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
     }
     else                                                    // case UPDATETYPE_VALUES
     {
-        if (isType(TYPEMASK_GAMEOBJECT) && !(THIS_GAMEOBJECT)->IsTransport())
+        if (isType(TYPEMASK_GAMEOBJECT) && !(THIS_CONST_GAMEOBJECT)->IsTransport())
         {
-            if ((THIS_GAMEOBJECT)->ActivateToQuest(target) || target->isGameMaster())
+            if ((THIS_CONST_GAMEOBJECT)->ActivateToQuest(target) || target->isGameMaster())
                 IsActivateToQuest = true;
 
             updateMask->SetBit(GAMEOBJECT_BYTES_1);
@@ -639,7 +639,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
         }
         else if (isType(TYPEMASK_UNIT))
         {
-            if ((THIS_UNIT)->HasFlag(UNIT_FIELD_AURASTATE, PER_CASTER_AURA_STATE_MASK))
+            if ((THIS_CONST_UNIT)->HasFlag(UNIT_FIELD_AURASTATE, PER_CASTER_AURA_STATE_MASK))
                 updateMask->SetBit(UNIT_FIELD_AURASTATE);
         }
     }
@@ -667,7 +667,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
 
                     if (GetTypeId() == TYPEID_UNIT)
                     {
-                        if (!target->canSeeSpellClickOn(shared_from_this()->ToCreature()))
+                        if (!target->canSeeSpellClickOn(THIS_CONST_CREATURE))
                             appendValue &= ~UNIT_NPC_FLAG_SPELLCLICK;
 
                         if (appendValue & UNIT_NPC_FLAG_TRAINER)
@@ -682,7 +682,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 else if (index == UNIT_FIELD_AURASTATE)
                 {
                     // Check per caster aura states to not enable using a pell in client if specified aura is not by target
-                    *data << (THIS_UNIT)->BuildAuraStateUpdateForTarget(target);
+                    *data << (THIS_CONST_UNIT)->BuildAuraStateUpdateForTarget(target);
                 }
                 // FIXME: Some values at server stored in float format but must be sent to client in uint32 format
                 else if (index >= UNIT_FIELD_BASEATTACKTIME && index <= UNIT_FIELD_RANGEDATTACKTIME)
@@ -751,7 +751,7 @@ void Object::_BuildValuesUpdate(uint8 updatetype, ByteBuffer* data, UpdateMask* 
                 {
                     uint32 dynamicFlags = m_uint32Values[index];
 
-                    if (constCreaturePtr creature = ToCreature())
+                    if (constCreaturePtr creature = THIS_CONST_CREATURE)
                     {
                         if (creature->hasLootRecipient())
                         {
@@ -1004,7 +1004,7 @@ void Object::GetUpdateFieldData(constPlayerPtr target, uint32*& flags, bool& isO
             break;
         case TYPEID_CORPSE:
             flags = CorpseUpdateFieldFlags;
-            isOwner = THIS_CORPSE->GetOwnerGUID() == target->GetGUID();
+            isOwner = THIS_CONST_CORPSE->GetOwnerGUID() == target->GetGUID();
             break;
         case TYPEID_OBJECT:
             break;
@@ -1528,14 +1528,14 @@ void WorldObject::setActive(bool on)
     if (on)
     {
         if (GetTypeId() == TYPEID_UNIT)
-            map->AddToActive(shared_from_this()->ToCreature());
+            map->AddToActive(THIS_CREATURE);
         else if (GetTypeId() == TYPEID_DYNAMICOBJECT)
             map->AddToActive(THIS_DYNAMICOBJECT);
     }
     else
     {
         if (GetTypeId() == TYPEID_UNIT)
-            map->RemoveFromActive(shared_from_this()->ToCreature());
+            map->RemoveFromActive(THIS_CREATURE);
         else if (GetTypeId() == TYPEID_DYNAMICOBJECT)
             map->RemoveFromActive(THIS_DYNAMICOBJECT);
     }
@@ -1894,7 +1894,7 @@ void WorldObject::UpdateAllowedPositionZ(float x, float y, float &z) const
         case TYPEID_PLAYER:
         {
             // for server controlled moves playr work same as creature (but it can always swim)
-            if (!THIS_CONST_PLAYER->CanFly())
+            if (!THIS_CONST_PLAYER()->CanFly())
             {
                 float ground_z = z;
                 float max_z = GetBaseMap()->GetWaterOrGroundLevel(x, y, z, &ground_z, !ToUnit()->HasAuraType(SPELL_AURA_WATER_WALK));
@@ -1931,7 +1931,7 @@ bool Position::IsPositionValid() const
 
 float WorldObject::GetGridActivationRange() const
 {
-    if (THIS_PLAYER)
+    if (THIS_CONST_PLAYER())
         return GetMap()->GetVisibilityRange();
     else if (ToCreature())
         return ToCreature()->m_SightDistance;
@@ -1941,7 +1941,7 @@ float WorldObject::GetGridActivationRange() const
 
 float WorldObject::GetVisibilityRange() const
 {
-    if (isActiveObject() && !THIS_PLAYER)
+    if (isActiveObject() && !THIS_CONST_PLAYER())
         return MAX_VISIBILITY_DISTANCE;
     else
         return GetMap()->GetVisibilityRange();
@@ -1951,7 +1951,7 @@ float WorldObject::GetSightRange(constWorldObjectPtr target) const
 {
     if (ToUnit())
     {
-        if (THIS_PLAYER)
+        if (THIS_CONST_PLAYER())
         {
             if (target && target->isActiveObject() && !TO_CONST_PLAYER(target))
                 return MAX_VISIBILITY_DISTANCE;
@@ -1982,7 +1982,7 @@ bool WorldObject::canSeeOrDetect(constWorldObjectPtr obj, bool ignoreStealth, bo
     if (distanceCheck)
     {
         bool corpseCheck = false;
-        if (constPlayerPtr thisPlayer = THIS_PLAYER)
+        if (constPlayerPtr thisPlayer = THIS_CONST_PLAYER())
         {
             if (thisPlayer->isDead() && thisPlayer->GetHealth() > 0 && // Cheap way to check for ghost state
                 !(obj->m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & GHOST_VISIBILITY_GHOST))
@@ -1997,8 +1997,8 @@ bool WorldObject::canSeeOrDetect(constWorldObjectPtr obj, bool ignoreStealth, bo
             }
         }
 
-        constWorldObjectPtr viewpoint = THIS_WORLDOBJECT;
-        if (constPlayerPtr player = THIS_PLAYER)
+        constWorldObjectPtr viewpoint = THIS_CONST_WORLDOBJECT;
+        if (constPlayerPtr player = THIS_CONST_PLAYER())
             viewpoint = player->GetViewpoint();
 
         if (!viewpoint)
@@ -2022,7 +2022,7 @@ bool WorldObject::canSeeOrDetect(constWorldObjectPtr obj, bool ignoreStealth, bo
     if (!corpseVisibility && !(obj->m_serverSideVisibility.GetValue(SERVERSIDE_VISIBILITY_GHOST) & m_serverSideVisibilityDetect.GetValue(SERVERSIDE_VISIBILITY_GHOST)))
     {
         // Alive players can see dead players in some cases, but other objects can't do that
-        if (constPlayerPtr thisPlayer = THIS_PLAYER)
+        if (constPlayerPtr thisPlayer = THIS_CONST_PLAYER())
         {
             if (constPlayerPtr objPlayer = TO_CONST_PLAYER(obj))
             {
@@ -2044,7 +2044,7 @@ bool WorldObject::canSeeOrDetect(constWorldObjectPtr obj, bool ignoreStealth, bo
 
     if (obj->MustBeVisibleOnlyForSomePlayers())
     {
-        constPlayerPtr thisPlayer = THIS_PLAYER;
+        constPlayerPtr thisPlayer = THIS_CONST_PLAYER();
 
         if (!thisPlayer)
             return false;
@@ -2058,7 +2058,7 @@ bool WorldObject::canSeeOrDetect(constWorldObjectPtr obj, bool ignoreStealth, bo
 
 bool WorldObject::CanDetect(constWorldObjectPtr obj, bool ignoreStealth) const
 {
-    constWorldObjectPtr seer = THIS_WORLDOBJECT;
+    constWorldObjectPtr seer = THIS_CONST_WORLDOBJECT;
 
     // Pets don't have detection, they use the detection of their masters
     if (constUnitPtr thisUnit = ToUnit())
@@ -2121,7 +2121,7 @@ bool WorldObject::CanDetectStealthOf(constWorldObjectPtr obj) const
     float combatReach = 0.0f;
 
     if (isType(TYPEMASK_UNIT))
-        combatReach = THIS_UNIT->GetCombatReach();
+        combatReach = THIS_CONST_UNIT->GetCombatReach();
 
     if (distance < combatReach)
         return true;
@@ -2135,7 +2135,7 @@ bool WorldObject::CanDetectStealthOf(constWorldObjectPtr obj) const
             continue;
 
         if (isType(TYPEMASK_UNIT))
-            if ((THIS_UNIT)->HasAuraTypeWithMiscvalue(SPELL_AURA_DETECT_STEALTH, i))
+            if ((THIS_CONST_UNIT)->HasAuraTypeWithMiscvalue(SPELL_AURA_DETECT_STEALTH, i))
                 return true;
 
         // Starting points
@@ -2195,7 +2195,7 @@ void WorldObject::SendPlaySound(uint32 Sound, bool OnlySelf)
     WorldPacket data(SMSG_PLAY_SOUND, 4);
     data << Sound;
     if (OnlySelf && GetTypeId() == TYPEID_PLAYER)
-        THIS_PLAYER->GetSession()->SendPacket(&data);
+        THIS_PLAYER()->GetSession()->SendPacket(&data);
     else
         SendMessageToSet(&data, true); // ToSelf ignored in shared_from_this() case
 }
@@ -2571,7 +2571,7 @@ TempSummonPtr Map::SummonCreature(uint32 entry, Position const& pos, SummonPrope
     if (viewersList)
         summon->AddPlayersInPersonnalVisibilityList(*viewersList);
 
-    AddToMap(summon->ToCreature());
+    AddToMap(TO_CREATURE(summon));
     summon->InitSummon();
 
     //ObjectAccessor::UpdateObjectVisibility(summon);
@@ -2604,7 +2604,7 @@ TempSummonPtr WorldObject::SummonCreature(uint32 entry, const Position &pos, Tem
 {
     if (MapPtr map = FindMap())
     {
-        if (TempSummonPtr summon = map->SummonCreature(entry, pos, nullptr, duration, isType(TYPEMASK_UNIT) ? THIS_UNIT : nullptr, 0, 0, viewerGuid, viewersList))
+        if (TempSummonPtr summon = map->SummonCreature(entry, pos, nullptr, duration, isType(TYPEMASK_UNIT) ? TO_UNIT(NO_CONST(Object,shared_from_this())) : nullptr, 0, 0, viewerGuid, viewersList))
         {
             summon->SetTempSummonType(spwtype);
             return summon;
@@ -2616,9 +2616,9 @@ TempSummonPtr WorldObject::SummonCreature(uint32 entry, const Position &pos, Tem
 
 PetPtr Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration)
 {
-    PetPtr pet = ClassFactory::ConstructPet(THIS_PLAYER, petType);
+    PetPtr pet = ClassFactory::ConstructPet(THIS_PLAYER(), petType);
 
-    if (petType == SUMMON_PET && pet->LoadPetFromDB(THIS_PLAYER, entry))
+    if (petType == SUMMON_PET && pet->LoadPetFromDB(THIS_PLAYER(), entry))
     {
         // Remove Demonic Sacrifice auras (known pet)
         Unit::AuraEffectList const& auraClassScripts = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
@@ -2686,7 +2686,7 @@ PetPtr Player::SummonPet(uint32 entry, float x, float y, float z, float ang, Pet
             break;
     }
 
-    map->AddToMap(pet->ToCreature());
+    map->AddToMap(TO_CREATURE(pet));
 
     switch (petType)
     {
@@ -2773,7 +2773,7 @@ CreaturePtr WorldObject::FindNearestCreature(uint32 entry, float range, bool ali
 {
     CreaturePtr creature = nullptr;
     Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck checker(THIS_CONST_WORLDOBJECT, entry, alive, range);
-    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(THIS_WORLDOBJECT, creature, checker);
+    Trinity::CreatureLastSearcher<Trinity::NearestCreatureEntryWithLiveStateInObjectRangeCheck> searcher(THIS_CONST_WORLDOBJECT, creature, checker);
     VisitNearbyObject(range, searcher);
     return creature;
 }
@@ -2782,7 +2782,7 @@ GameObjectPtr WorldObject::FindNearestGameObject(uint32 entry, float range) cons
 {
     GameObjectPtr go = nullptr;
     Trinity::NearestGameObjectEntryInObjectRangeCheck checker(THIS_CONST_WORLDOBJECT, entry, range);
-    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(THIS_WORLDOBJECT, go, checker);
+    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> searcher(THIS_CONST_WORLDOBJECT, go, checker);
     VisitNearbyGridObject(range, searcher);
     return go;
 }
@@ -2791,35 +2791,35 @@ GameObjectPtr WorldObject::FindNearestGameObjectOfType(GameobjectTypes type, flo
 { 
     GameObjectPtr go = nullptr;
     Trinity::NearestGameObjectTypeInObjectRangeCheck checker(THIS_CONST_WORLDOBJECT, type, range);
-    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectTypeInObjectRangeCheck> searcher(THIS_WORLDOBJECT, go, checker);
+    Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectTypeInObjectRangeCheck> searcher(THIS_CONST_WORLDOBJECT, go, checker);
     VisitNearbyGridObject(range, searcher);
     return go;
 }
 
 void WorldObject::GetGameObjectListWithEntryInGrid(std::list<GameObjectPtr>& gameobjectList, uint32 entry, float maxSearchRange) const
 {
-    CellCoord pair(Trinity::ComputeCellCoord(THIS_WORLDOBJECT->GetPositionX(), THIS_WORLDOBJECT->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(THIS_CONST_WORLDOBJECT->GetPositionX(), THIS_CONST_WORLDOBJECT->GetPositionY()));
     Cell cell(pair);
     cell.SetNoCreate();
 
     Trinity::AllGameObjectsWithEntryInRange check(THIS_CONST_WORLDOBJECT, entry, maxSearchRange);
-    Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange> searcher(THIS_WORLDOBJECT, gameobjectList, check);
+    Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange> searcher(THIS_CONST_WORLDOBJECT, gameobjectList, check);
     TypeContainerVisitor<Trinity::GameObjectListSearcher<Trinity::AllGameObjectsWithEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-    cell.Visit(pair, visitor, *(THIS_WORLDOBJECT->GetMap()), THIS_CONST_WORLDOBJECT, maxSearchRange);
+    cell.Visit(pair, visitor, *(THIS_CONST_WORLDOBJECT->GetMap()), THIS_CONST_WORLDOBJECT, maxSearchRange);
 }
 
 void WorldObject::GetCreatureListWithEntryInGrid(std::list<CreaturePtr>& creatureList, uint32 entry, float maxSearchRange) const
 {
-    CellCoord pair(Trinity::ComputeCellCoord(THIS_WORLDOBJECT->GetPositionX(), THIS_WORLDOBJECT->GetPositionY()));
+    CellCoord pair(Trinity::ComputeCellCoord(THIS_CONST_WORLDOBJECT->GetPositionX(), THIS_CONST_WORLDOBJECT->GetPositionY()));
     Cell cell(pair);
     cell.SetNoCreate();
 
     Trinity::AllCreaturesOfEntryInRange check(THIS_CONST_WORLDOBJECT, entry, maxSearchRange);
-    Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(THIS_WORLDOBJECT, creatureList, check);
+    Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(THIS_CONST_WORLDOBJECT, creatureList, check);
     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> visitor(searcher);
 
-    cell.Visit(pair, visitor, *(THIS_WORLDOBJECT->GetMap()), THIS_CONST_WORLDOBJECT, maxSearchRange);
+    cell.Visit(pair, visitor, *(THIS_CONST_WORLDOBJECT->GetMap()), THIS_CONST_WORLDOBJECT, maxSearchRange);
 }
 
 /*

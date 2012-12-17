@@ -837,14 +837,14 @@ public:
 
             if (me->getVictim()->GetPositionZ() >= 286.276f)
             {
-                std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
+                std::list<HostileReferencePtr> t_list = me->getThreatManager()->getThreatList();
                 for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
                     if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid()))
                     {
                         if (unit->GetPositionZ() <= 286.276f)
                         {
-                            me->getThreatManager().resetAllAggro();
+                            me->getThreatManager()->resetAllAggro();
                             me->AddThreat(unit, 5.0f);
                             break;
                         }
@@ -959,14 +959,14 @@ public:
             {
                 if (victim->GetPositionZ() >= 286.276f)
                 {
-                    std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
+                    std::list<HostileReferencePtr> t_list = me->getThreatManager()->getThreatList();
                     for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                     {
                         if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid()))
                         {
                             if (unit->GetPositionZ() <= 286.276f)
                             {
-                                me->getThreatManager().resetAllAggro();
+                                me->getThreatManager()->resetAllAggro();
                                 me->AddThreat(unit, 5.0f);
                                 break;
                             }
@@ -1104,14 +1104,14 @@ public:
 
             if (me->getVictim()->GetPositionZ() >= 286.276f)
             {
-                std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
+                std::list<HostileReferencePtr> t_list = me->getThreatManager()->getThreatList();
                 for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
                     if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid()))
                     {
                         if (unit->GetPositionZ() <= 286.276f)
                         {
-                            me->getThreatManager().resetAllAggro();
+                            me->getThreatManager()->resetAllAggro();
                             me->AddThreat(unit, 5.0f);
                             break;
                         }

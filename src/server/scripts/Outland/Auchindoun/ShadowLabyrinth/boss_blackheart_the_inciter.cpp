@@ -134,7 +134,7 @@ public:
             {
                 DoCast(me, SPELL_INCITE_CHAOS);
 
-                std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
+                std::list<HostileReferencePtr> t_list = me->getThreatManager()->getThreatList();
                 for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
                     UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid());

@@ -59,7 +59,7 @@ namespace Trinity
     }
 
     // non-const insert functions
-    template<class SPECIFIC_TYPE> std::shared_ptr<SPECIFIC_TYPE> Insert(std::shared_ptr<ContainerMapList<SPECIFIC_TYPE>> &elements, std::shared_ptr<SPECIFIC_TYPE> obj)
+    template<class SPECIFIC_TYPE> std::shared_ptr<SPECIFIC_TYPE> Insert(ContainerMapList<SPECIFIC_TYPE> &elements, std::shared_ptr<SPECIFIC_TYPE> obj)
     {
         //elements._element[hdl] = obj;
         obj->AddToGrid(elements._element);

@@ -304,7 +304,7 @@ public:
 
                 if (SpectralBlastTimer <= diff)
                 {
-                    std::list<HostileReferencePtr> &m_threatlist = me->getThreatManager().getThreatList();
+                    std::list<HostileReferencePtr> &m_threatlist = me->getThreatManager()->getThreatList();
                     std::list<UnitPtr> targetList;
                     for (std::list<HostileReferencePtr>::const_iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
                         if ((*itr)->getTarget() && (*itr)->getTarget()->GetTypeId() == TYPEID_PLAYER && (*itr)->getTarget()->GetGUID() != me->getVictim()->GetGUID() && !(*itr)->getTarget()->HasAura(AURA_SPECTRAL_EXHAUSTION) && (*itr)->getTarget()->GetPositionZ() > me->GetPositionZ()-5)
@@ -761,13 +761,13 @@ public:
 
             if (ResetThreat <= diff)
             {
-                for (std::list<HostileReferencePtr>::const_iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr)
+                for (std::list<HostileReferencePtr>::const_iterator itr = me->getThreatManager()->getThreatList().begin(); itr != me->getThreatManager()->getThreatList().end(); ++itr)
                 {
                     if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid()))
                     {
                         if (unit->GetPositionZ() > me->GetPositionZ()+5)
                         {
-                            me->getThreatManager().modifyThreatPercent(unit, -100);
+                            me->getThreatManager()->modifyThreatPercent(unit, -100);
                         }
                     }
                 }

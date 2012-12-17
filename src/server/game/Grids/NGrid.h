@@ -88,7 +88,7 @@ class NGrid : public std::enable_shared_from_this<NGrid<N, ACTIVE_OBJECT, WORLD_
 
 
         {
-
+            i_Reference = std::shared_ptr<GridReference<NGrid<N, ACTIVE_OBJECT, WORLD_OBJECT_TYPES, GRID_OBJECT_TYPES> > >(new GridReference<NGrid<N, ACTIVE_OBJECT, WORLD_OBJECT_TYPES, GRID_OBJECT_TYPES> >());
         }
 
         GridType& GetGridType(const uint32 x, const uint32 y)
@@ -112,7 +112,7 @@ class NGrid : public std::enable_shared_from_this<NGrid<N, ACTIVE_OBJECT, WORLD_
 
         void link(std::shared_ptr<GridRefManager<NGrid<N, ACTIVE_OBJECT, WORLD_OBJECT_TYPES, GRID_OBJECT_TYPES>>> pTo)
         {
-            i_Reference.link(pTo, shared_from_this());
+            i_Reference->link(pTo, shared_from_this());
         }
         bool isGridObjectDataLoaded() const { return i_GridObjectDataLoaded; }
         void setGridObjectDataLoaded(bool pLoaded) { i_GridObjectDataLoaded = pLoaded; }
@@ -191,7 +191,7 @@ class NGrid : public std::enable_shared_from_this<NGrid<N, ACTIVE_OBJECT, WORLD_
     private:
         uint32 i_gridId;
         GridInfo i_GridInfo;
-        GridReference<NGrid<N, ACTIVE_OBJECT, WORLD_OBJECT_TYPES, GRID_OBJECT_TYPES> > i_Reference;
+        std::shared_ptr<GridReference<NGrid<N, ACTIVE_OBJECT, WORLD_OBJECT_TYPES, GRID_OBJECT_TYPES> > > i_Reference;
         int32 i_x;
         int32 i_y;
         grid_state_t i_cellstate;

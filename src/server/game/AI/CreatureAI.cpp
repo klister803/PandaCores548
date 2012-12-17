@@ -68,8 +68,8 @@ void CreatureAI::DoZoneInCombat(CreaturePtr creature /*= nullptr*/, float maxRan
             if (UnitPtr summoner = creature->ToTempSummon()->GetSummoner())
             {
                 UnitPtr target = summoner->getAttackerForHelper();
-                if (!target && summoner->CanHaveThreatList() && !summoner->getThreatManager().isThreatListEmpty())
-                    target = summoner->getThreatManager().getHostilTarget();
+                if (!target && summoner->CanHaveThreatList() && !summoner->getThreatManager()->isThreatListEmpty())
+                    target = summoner->getThreatManager()->getHostilTarget();
                 if (target && (creature->IsFriendlyTo(summoner) || creature->IsHostileTo(target)))
                     creature->AI()->AttackStart(target);
             }

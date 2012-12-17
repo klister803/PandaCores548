@@ -325,7 +325,7 @@ public:
                     UnitPtr victim = nullptr;
                     victim = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_LEOTHERAS_EVENT_STARTER));
                     if (victim)
-                        me->getThreatManager().addThreat(victim, 1);
+                        me->getThreatManager()->addThreat(victim, 1);
                     StartEvent();
                 }
             }
@@ -525,7 +525,7 @@ public:
                 //Summon Inner Demon
                 if (InnerDemons_Timer <= diff)
                 {
-                    std::list<HostileReferencePtr>& ThreatList = me->getThreatManager().getThreatList();
+                    std::list<HostileReferencePtr>& ThreatList = me->getThreatManager()->getThreatList();
                     std::vector<UnitPtr> TargetList;
                     for (std::list<HostileReferencePtr>::const_iterator itr = ThreatList.begin(); itr != ThreatList.end(); ++itr)
                     {

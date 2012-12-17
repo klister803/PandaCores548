@@ -308,7 +308,7 @@ typedef std::vector <GuildBankRightsAndSlots> GuildBankRightsAndSlotsVec;
 
 typedef std::set <uint8> SlotIds;
 
-class Guild
+class Guild : public std::enable_shared_from_this<Guild>
 {
 private:
     // Class representing guild member
@@ -689,11 +689,7 @@ public:
 
     ~Guild();
 
-    void InitializeGuild()
-    {
-        m_achievementMgr = AchievementMgr<Guild>(THIS_GUILD);
-        _newsLog = GuildNewsLog(THIS_GUILD);
-    }
+    GuildPtr thisGuild() const { return NO_CONST(Guild,shared_from_this()); }
 
     bool Create(PlayerPtr pLeader, const std::string& name);
     void Disband();

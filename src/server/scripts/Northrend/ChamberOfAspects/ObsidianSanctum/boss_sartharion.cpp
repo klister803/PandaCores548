@@ -1711,7 +1711,7 @@ class achievement_twilight_assist : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Sartharion = target->ToCreature())
+            if (CreaturePtr Sartharion = TO_CREATURE(target))
                 if (Sartharion->AI()->GetData(TWILIGHT_ACHIEVEMENTS) >= 1)
                     return true;
 
@@ -1731,7 +1731,7 @@ class achievement_twilight_duo : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Sartharion = target->ToCreature())
+            if (CreaturePtr Sartharion = TO_CREATURE(target))
                 if (Sartharion->AI()->GetData(TWILIGHT_ACHIEVEMENTS) >= 2)
                     return true;
 
@@ -1751,7 +1751,7 @@ class achievement_twilight_zone : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Sartharion = target->ToCreature())
+            if (CreaturePtr Sartharion = TO_CREATURE(target))
                 if (Sartharion->AI()->GetData(TWILIGHT_ACHIEVEMENTS) == 3)
                     return true;
 

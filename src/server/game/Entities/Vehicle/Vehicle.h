@@ -27,7 +27,7 @@ class Unit;
 
 typedef std::set<uint64> GuidSet;
 
-class Vehicle : public TransportBase
+class Vehicle : public TransportBase, public std::enable_shared_from_this<Vehicle>
 {
     public:
         explicit Vehicle(UnitPtr unit, VehicleEntry const* vehInfo, uint32 creatureEntry);

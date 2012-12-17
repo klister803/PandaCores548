@@ -749,7 +749,7 @@ class achievement_brann_spankin_new : public AchievementCriteriaScript
             if (!target)
                 return false;
 
-            if (CreaturePtr Brann = target->ToCreature())
+            if (CreaturePtr Brann = TO_CREATURE(target))
                 if (Brann->AI()->GetData(DATA_BRANN_SPARKLIN_NEWS))
                     return true;
 

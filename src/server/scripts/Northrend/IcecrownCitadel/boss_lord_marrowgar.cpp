@@ -242,7 +242,7 @@ class boss_lord_marrowgar : public CreatureScript
                                 me->GetMotionMaster()->MovementExpired();
                             if(UnitPtr unit = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
                             {
-                                me->getThreatManager().resetAllAggro();
+                                me->getThreatManager()->resetAllAggro();
                                 me->AddThreat(unit, 1.0f);
                                 DoStartMovement(unit);
                             }
@@ -339,7 +339,7 @@ class npc_coldflame : public CreatureScript
                 if (owner->GetTypeId() != TYPEID_UNIT)
                     return;
 
-                CreaturePtr creOwner = owner->ToCreature();
+                CreaturePtr creOwner = TO_CREATURE(owner);
                 Position pos;
                 // random target case
                 if (!owner->HasAura(SPELL_BONE_STORM))
@@ -557,7 +557,7 @@ class spell_marrowgar_bone_spike_graveyard : public SpellScriptLoader
             void HandleSpikes(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                if (CreaturePtr marrowgar = GetCaster()->ToCreature())
+                if (CreaturePtr marrowgar = TO_CREATURE(GetCaster()))
                 {
                     CreatureAI* marrowgarAI = marrowgar->AI();
                     uint8 boneSpikeCount = GetCaster()->GetMap()->Is25ManRaid() ? 3 : 1;

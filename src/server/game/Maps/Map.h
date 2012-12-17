@@ -505,12 +505,12 @@ class Map : public GridRefManager<NGridType>, public std::enable_shared_from_thi
         bool EnsureGridLoaded(Cell const&);
         void EnsureGridLoadedForActiveObject(Cell const&, WorldObjectPtr object);
 
-        void buildNGridLinkage(NGridType* pNGridType) { pNGridType->link(shared_from_this()); }
+        void buildNGridLinkage(NGridTypePtr pNGridType) { pNGridType->link(shared_from_this()); }
 
         template<class T> void AddType(T *obj);
         template<class T> void RemoveType(T *obj, bool);
 
-        NGridType* getNGrid(uint32 x, uint32 y) const
+        NGridTypePtr getNGrid(uint32 x, uint32 y) const
         {
             ASSERT(x < MAX_NUMBER_OF_GRIDS && y < MAX_NUMBER_OF_GRIDS);
             return i_grids[x][y];
@@ -519,7 +519,7 @@ class Map : public GridRefManager<NGridType>, public std::enable_shared_from_thi
         bool isGridObjectDataLoaded(uint32 x, uint32 y) const { return getNGrid(x, y)->isGridObjectDataLoaded(); }
         void setGridObjectDataLoaded(bool pLoaded, uint32 x, uint32 y) { getNGrid(x, y)->setGridObjectDataLoaded(pLoaded); }
 
-        void setNGrid(NGridType* grid, uint32 x, uint32 y);
+        void setNGrid(NGridTypePtr grid, uint32 x, uint32 y);
         void ScriptsProcess();
 
         void UpdateActiveCells(const float &x, const float &y, const uint32 t_diff);
@@ -561,7 +561,7 @@ class Map : public GridRefManager<NGridType>, public std::enable_shared_from_thi
         //InstanceMaps and BattlegroundMaps...
         MapPtr m_parentMap;
 
-        NGridType* i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
+        NGridTypePtr i_grids[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         GridMap* GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
 

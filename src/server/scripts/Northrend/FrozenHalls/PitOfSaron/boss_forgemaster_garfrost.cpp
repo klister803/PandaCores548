@@ -336,7 +336,7 @@ class achievement_doesnt_go_to_eleven : public AchievementCriteriaScript
         bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
         {
             if (target)
-                if (CreaturePtr garfrost = target->ToCreature())
+                if (CreaturePtr garfrost = TO_CREATURE(target))
                     if (garfrost->AI()->GetData(ACHIEV_DOESNT_GO_TO_ELEVEN) <= 10)
                         return true;
 

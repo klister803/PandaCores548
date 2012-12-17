@@ -364,7 +364,7 @@ class boss_drakkari_elemental : public CreatureScript
             {
                 if (spell->Id == SPELL_MERGE)
                 {
-                    if (CreaturePtr colossus = target->ToCreature())
+                    if (CreaturePtr colossus = TO_CREATURE(target))
                     {
                         colossus->AI()->DoAction(ACTION_UNFREEZE_COLOSSUS);
                         me->DespawnOrUnsummon();

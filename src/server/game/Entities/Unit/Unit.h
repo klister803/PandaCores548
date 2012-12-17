@@ -344,6 +344,7 @@ class Totem;
 class Transport;
 class Vehicle;
 class TransportBase;
+class ClassFactory;
 
 typedef std::list<UnitPtr> UnitList;
 typedef std::list< std::pair<AuraPtr, uint8> > DispelChargesList;
@@ -1259,6 +1260,7 @@ struct SpellProcEventEntry;                                 // used only private
 
 class Unit : public WorldObject
 {
+    friend class ClassFactory;
     public:
         typedef std::set<UnitPtr> AttackerSet;
         typedef std::set<UnitPtr> ControlList;
@@ -1276,13 +1278,6 @@ class Unit : public WorldObject
 
         virtual ~Unit();
 
-        void InitializeUnit()
-        {
-            i_motionMaster = MotionMaster(THIS_UNIT);
-            m_ThreatManager = ThreatManager(THIS_UNIT);
-            m_HostileRefManager = HostileRefManager(THIS_UNIT);
-        }
-
         UnitAI* GetAI() { return i_AI; }
         void SetAI(UnitAI* newAI) { i_AI = newAI; }
 
@@ -1291,6 +1286,10 @@ class Unit : public WorldObject
 
         void CleanupBeforeRemoveFromMap(bool finalCleanup);
         void CleanupsBeforeDelete(bool finalCleanup = true);                        // used in ~Creature/~Player (or before mass creature delete to remove cross-references to already deleted units)
+
+        PetPtr THIS_PET() { if (isPet()) return *(PetPtr*)&shared_from_this(); else return nullptr; }
+        PetPtr THIS_PET() const { if (isPet()) return *(PetPtr*)&shared_from_this(); else return nullptr; }
+        constPetPtr THIS_CONST_PET() const { if (isPet()) return *(constPetPtr*)&shared_from_this(); else return nullptr; }
 
         DiminishingLevels GetDiminishing(DiminishingGroup  group);
         void IncrDiminishing(DiminishingGroup group);
@@ -1734,10 +1733,10 @@ class Unit : public WorldObject
         PlayerPtr GetSpellModOwner() const;
 
         UnitPtr GetOwner() const;
-        GuardianPtr GetGuardianPet() const;
-        MinionPtr GetFirstMinion() const;
+        GuardianPtr GetGuardianPet();
+        MinionPtr GetFirstMinion();
         UnitPtr GetCharmer() const;
-        UnitPtr GetCharm() const;
+        UnitPtr GetCharm();
         UnitPtr GetCharmerOrOwner() const { return GetCharmerGUID() ? GetCharmer() : GetOwner(); }
         UnitPtr GetCharmerOrOwnerOrSelf() const
         {
@@ -1759,13 +1758,13 @@ class Unit : public WorldObject
         void RestoreFaction();
 
         ControlList m_Controlled;
-        UnitPtr GetFirstControlled() const;
+        UnitPtr GetFirstControlled();
         void RemoveAllControlled();
 
         bool isCharmed() const { return GetCharmerGUID() != 0; }
         bool isPossessed() const { return HasUnitState(UNIT_STATE_POSSESSED); }
         bool isPossessedByPlayer() const { return HasUnitState(UNIT_STATE_POSSESSED) && IS_PLAYER_GUID(GetCharmerGUID()); }
-        bool isPossessing() const
+        bool isPossessing()
         {
             if (UnitPtr u = GetCharm())
                 return u->isPossessed();
@@ -2023,7 +2022,7 @@ class Unit : public WorldObject
         void DeleteThreatList();
         void TauntApply(UnitPtr victim);
         void TauntFadeOut(UnitPtr taunter);
-        ThreatManager& getThreatManager() { return m_ThreatManager; }
+        ThreatManagerPtr getThreatManager() { return m_ThreatManager; }
         void addHatedBy(HostileReferencePtr pHostileReference) { m_HostileRefManager.insertFirst(pHostileReference); };
         void removeHatedBy(HostileReferencePtr /*pHostileReference*/) { /* nothing to do yet */ }
         HostileRefManager& getHostileRefManager() { return m_HostileRefManager; }
@@ -2356,7 +2355,7 @@ class Unit : public WorldObject
         uint32 m_reactiveTimer[MAX_REACTIVE];
         uint32 m_regenTimer;
 
-        ThreatManager m_ThreatManager;
+        ThreatManagerPtr m_ThreatManager;
 
         VehiclePtr m_vehicle;
         VehiclePtr m_vehicleKit;

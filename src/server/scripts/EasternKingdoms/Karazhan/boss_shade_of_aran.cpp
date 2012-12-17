@@ -187,7 +187,7 @@ public:
         void FlameWreathEffect()
         {
             std::vector<UnitPtr> targets;
-            std::list<HostileReferencePtr> t_list = me->getThreatManager().getThreatList();
+            std::list<HostileReferencePtr> t_list = me->getThreatManager()->getThreatList();
 
             if (t_list.empty())
                 return;
