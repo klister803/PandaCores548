@@ -1943,7 +1943,8 @@ float WorldObject::GetVisibilityRange() const
     if (isActiveObject() && !ToPlayer())
         return MAX_VISIBILITY_DISTANCE;
     else
-        return GetMap()->GetVisibilityRange();
+        if (GetMap())
+            return GetMap()->GetVisibilityRange();
 }
 
 float WorldObject::GetSightRange(const WorldObject* target) const
