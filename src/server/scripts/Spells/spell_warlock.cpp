@@ -47,7 +47,49 @@ enum WarlockSpells
     WARLOCK_FEAR_EFFECT                     = 118699,
     WARLOCK_GLYPH_OF_FEAR_EFFECT            = 130616,
     WARLOCK_CREATE_HEALTHSTONE              = 23517,
-    WARLOCK_HARVEST_LIFE_HEAL               = 125314
+    WARLOCK_HARVEST_LIFE_HEAL               = 125314,
+    WARLOCK_DRAIN_LIFE_HEAL                 = 89653,
+    WARLOCK_SOULBURN_AURA                   = 74434
+};
+
+// Drain Life - 689
+class spell_warl_drain_life : public SpellScriptLoader
+{
+    public:
+        spell_warl_drain_life() : SpellScriptLoader("spell_warl_drain_life") { }
+
+        class spell_warl_drain_life_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_drain_life_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    // Restoring 2% of the caster's total health every 1s
+                    int32 basepoints = _player->GetMaxHealth() / 50;
+
+                    // In Demonology spec : Generates 10 Demonic Fury per second
+                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
+                        _player->EnergizeBySpell(_player, 689, 10, POWER_DEMONIC_FURY);
+                    // In affliction spec : Soulburn increase heal amount by 50%
+                    else if (_player->HasAura(WARLOCK_SOULBURN_AURA))
+                        basepoints *= 1.5f;
+
+                    _player->CastCustomSpell(_player, WARLOCK_DRAIN_LIFE_HEAL, &basepoints, NULL, NULL, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_drain_life_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_drain_life_AuraScript();
+        }
 };
 
 // Soul Harvest - 101976
@@ -733,6 +775,7 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_drain_life();
     new spell_warl_soul_harverst();
     new spell_warl_life_tap();
     new spell_warl_harvest_life();
