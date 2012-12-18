@@ -328,7 +328,6 @@ void AuctionHouseMgr::LoadAuctions()
         if (!aItem->LoadFromDB(fields))
         {
             aItem->DeleteFromDB(trans);
-            sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Delete de l'auctionhouse 1");
             delete aItem;
             continue;
         }
@@ -473,7 +472,6 @@ void AuctionHouseObject::Update()
 
         ///- In any case clear the auction
         auction->DeleteFromDB(trans);
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Delete de l'auctionhouse 2");
         CharacterDatabase.CommitTransaction(trans);
 
         RemoveAuction(auction, itemEntry);
@@ -655,7 +653,6 @@ uint32 AuctionEntry::GetAuctionOutBid() const
 
 void AuctionEntry::DeleteFromDB(SQLTransaction& trans) const
 {
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Delete de l'auctionhouse");
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_AUCTION);
     stmt->setUInt32(0, Id);
     trans->Append(stmt);
@@ -679,18 +676,20 @@ void AuctionEntry::SaveToDB(SQLTransaction& trans) const
 
 bool AuctionEntry::LoadFromDB(Field* fields)
 {
-    Id = fields[0].GetUInt32();
-    auctioneer = fields[1].GetUInt32();
-    itemGUIDLow = fields[2].GetUInt32();
-    itemEntry = fields[3].GetUInt32();
-    itemCount = fields[4].GetUInt32();
-    owner = fields[5].GetUInt32();
-    buyout = fields[6].GetUInt32();
-    expire_time = fields[7].GetUInt32();
-    bidder = fields[8].GetUInt32();
-    bid = fields[9].GetUInt32();
-    startbid = fields[10].GetUInt32();
-    deposit = fields[11].GetUInt32();
+    uint8 index = 0;
+
+    Id          = fields[index++].GetUInt32();
+    auctioneer  = fields[index++].GetUInt32();
+    itemGUIDLow = fields[index++].GetUInt32();
+    itemEntry   = fields[index++].GetUInt32();
+    itemCount   = fields[index++].GetUInt32();
+    owner       = fields[index++].GetUInt32();
+    buyout      = fields[index++].GetUInt32();
+    expire_time = fields[index++].GetUInt32();
+    bidder      = fields[index++].GetUInt32();
+    bid         = fields[index++].GetUInt32();
+    startbid    = fields[index++].GetUInt32();
+    deposit     = fields[index++].GetUInt32();
 
     CreatureData const* auctioneerData = sObjectMgr->GetCreatureData(auctioneer);
     if (!auctioneerData)
@@ -782,7 +781,6 @@ void AuctionHouseMgr::DeleteExpiredAuctionsAtStartup()
 
         // Delete the auction from the DB
         auction->DeleteFromDB(trans);
-        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Delete de l'auctionhouse 3");
         CharacterDatabase.CommitTransaction(trans);
 
         // Release memory
@@ -802,18 +800,20 @@ bool AuctionEntry::LoadFromFieldList(Field* fields)
     //  does not require the AuctionEntryMap to have been loaded with items. It simply
     //  acts as a wrapper to fill out an AuctionEntry struct from a field list
 
-    Id = fields[0].GetUInt32();
-    auctioneer = fields[1].GetUInt32();
-    itemGUIDLow = fields[2].GetUInt32();
-    itemEntry = fields[3].GetUInt32();
-    itemCount = fields[4].GetUInt32();
-    owner = fields[5].GetUInt32();
-    buyout = fields[6].GetUInt32();
-    expire_time = fields[7].GetUInt32();
-    bidder = fields[8].GetUInt32();
-    bid = fields[9].GetUInt32();
-    startbid = fields[10].GetUInt32();
-    deposit = fields[11].GetUInt32();
+    uint8 index = 0;
+
+    Id          = fields[index++].GetUInt32();
+    auctioneer  = fields[index++].GetUInt32();
+    itemGUIDLow = fields[index++].GetUInt32();
+    itemEntry   = fields[index++].GetUInt32();
+    itemCount   = fields[index++].GetUInt32();
+    owner       = fields[index++].GetUInt32();
+    buyout      = fields[index++].GetUInt32();
+    expire_time = fields[index++].GetUInt32();
+    bidder      = fields[index++].GetUInt32();
+    bid         = fields[index++].GetUInt32();
+    startbid    = fields[index++].GetUInt32();
+    deposit     = fields[index++].GetUInt32();
 
     CreatureData const* auctioneerData = sObjectMgr->GetCreatureData(auctioneer);
     if (!auctioneerData)
