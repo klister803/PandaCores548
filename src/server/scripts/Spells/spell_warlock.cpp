@@ -50,6 +50,60 @@ enum WarlockSpells
     WARLOCK_HARVEST_LIFE_HEAL               = 125314
 };
 
+// Soul Harvest - 101976
+class spell_warl_soul_harverst : public SpellScriptLoader
+{
+    public:
+        spell_warl_soul_harverst() : SpellScriptLoader("spell_warl_soul_harverst") { }
+
+        class spell_warl_soul_harverst_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_soul_harverst_AuraScript);
+
+            uint32 update;
+
+            bool Validate(SpellInfo const* /*spell*/)
+            {
+                update = 0;
+
+                if (!sSpellMgr->GetSpellInfo(101976))
+                    return false;
+                return true;
+            }
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                update += diff;
+
+                if (update >= 1000)
+                {
+                    if (Player* _player = GetCaster()->ToPlayer())
+                    {
+                        if (!_player->isInCombat())
+                        {
+                            _player->SetHealth(_player->GetHealth() + int32(_player->GetMaxHealth() / 50));
+
+                            if (Pet* pet = _player->GetPet())
+                                pet->SetHealth(pet->GetHealth() + int32(pet->GetMaxHealth() / 50));
+                        }
+                    }
+
+                    update = 0;
+                }
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_warl_soul_harverst_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_soul_harverst_AuraScript();
+        }
+};
+
 // Life Tap - 1454
 class spell_warl_life_tap : public SpellScriptLoader
 {
@@ -679,6 +733,7 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_soul_harverst();
     new spell_warl_life_tap();
     new spell_warl_harvest_life();
     new spell_warl_fear();
