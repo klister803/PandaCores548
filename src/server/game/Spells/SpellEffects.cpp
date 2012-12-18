@@ -4961,9 +4961,18 @@ void Spell::EffectSelfResurrect(SpellEffIndex effIndex)
     // percent case
     else
     {
-        health = m_caster->CountPctFromMaxHealth(damage);
-        if (m_caster->GetMaxPower(POWER_MANA) > 0)
-            mana = CalculatePct(m_caster->GetMaxPower(POWER_MANA), damage);
+        if (m_spellInfo->Id == 3026) // Soulstone resurrect
+        {
+            health = m_caster->CountPctFromMaxHealth(60);
+            if (m_caster->GetMaxPower(POWER_MANA) > 0)
+                mana = CalculatePct(m_caster->GetMaxPower(POWER_MANA), damage);
+        }
+        else
+        {
+            health = m_caster->CountPctFromMaxHealth(damage);
+            if (m_caster->GetMaxPower(POWER_MANA) > 0)
+                mana = CalculatePct(m_caster->GetMaxPower(POWER_MANA), damage);
+        }
     }
 
     Player* player = m_caster->ToPlayer();
