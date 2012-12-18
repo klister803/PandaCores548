@@ -328,6 +328,7 @@ void AuctionHouseMgr::LoadAuctions()
         if (!aItem->LoadFromDB(fields))
         {
             aItem->DeleteFromDB(trans);
+            sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Delete de l'auctionhouse 1");
             delete aItem;
             continue;
         }
@@ -472,6 +473,7 @@ void AuctionHouseObject::Update()
 
         ///- In any case clear the auction
         auction->DeleteFromDB(trans);
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Delete de l'auctionhouse 2");
         CharacterDatabase.CommitTransaction(trans);
 
         RemoveAuction(auction, itemEntry);
@@ -653,6 +655,7 @@ uint32 AuctionEntry::GetAuctionOutBid() const
 
 void AuctionEntry::DeleteFromDB(SQLTransaction& trans) const
 {
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Delete de l'auctionhouse");
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_AUCTION);
     stmt->setUInt32(0, Id);
     trans->Append(stmt);
@@ -779,6 +782,7 @@ void AuctionHouseMgr::DeleteExpiredAuctionsAtStartup()
 
         // Delete the auction from the DB
         auction->DeleteFromDB(trans);
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Delete de l'auctionhouse 3");
         CharacterDatabase.CommitTransaction(trans);
 
         // Release memory
