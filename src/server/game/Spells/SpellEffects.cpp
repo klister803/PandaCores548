@@ -1867,9 +1867,7 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
             level_diff = m_caster->getLevel() - 60;
             level_multiplier = 4;
             break;
-        case 31930:                                         // Judgements of the Wise
         case 63375:                                         // Primal Wisdom
-        case 68082:                                         // Glyph of Seal of Command
             damage = int32(CalculatePct(unitTarget->GetCreateMana(), damage));
             break;
         case 67490:                                         // Runic Mana Injector (mana gain increased by 25% for engineers - 3.2.0 patch change)
@@ -4963,9 +4961,18 @@ void Spell::EffectSelfResurrect(SpellEffIndex effIndex)
     // percent case
     else
     {
-        health = m_caster->CountPctFromMaxHealth(damage);
-        if (m_caster->GetMaxPower(POWER_MANA) > 0)
-            mana = CalculatePct(m_caster->GetMaxPower(POWER_MANA), damage);
+        if (m_spellInfo->Id == 3026) // Soulstone resurrect
+        {
+            health = m_caster->CountPctFromMaxHealth(60);
+            if (m_caster->GetMaxPower(POWER_MANA) > 0)
+                mana = CalculatePct(m_caster->GetMaxPower(POWER_MANA), damage);
+        }
+        else
+        {
+            health = m_caster->CountPctFromMaxHealth(damage);
+            if (m_caster->GetMaxPower(POWER_MANA) > 0)
+                mana = CalculatePct(m_caster->GetMaxPower(POWER_MANA), damage);
+        }
     }
 
     Player* player = m_caster->ToPlayer();

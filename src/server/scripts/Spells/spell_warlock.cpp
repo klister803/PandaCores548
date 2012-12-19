@@ -50,6 +50,93 @@ enum WarlockSpells
     WARLOCK_HARVEST_LIFE_HEAL               = 125314
 };
 
+// Soul Harvest - 101976
+class spell_warl_soul_harverst : public SpellScriptLoader
+{
+    public:
+        spell_warl_soul_harverst() : SpellScriptLoader("spell_warl_soul_harverst") { }
+
+        class spell_warl_soul_harverst_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_soul_harverst_AuraScript);
+
+            uint32 update;
+
+            bool Validate(SpellInfo const* /*spell*/)
+            {
+                update = 0;
+
+                if (!sSpellMgr->GetSpellInfo(101976))
+                    return false;
+                return true;
+            }
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                update += diff;
+
+                if (update >= 1000)
+                {
+                    if (Player* _player = GetCaster()->ToPlayer())
+                    {
+                        if (!_player->isInCombat())
+                        {
+                            _player->SetHealth(_player->GetHealth() + int32(_player->GetMaxHealth() / 50));
+
+                            if (Pet* pet = _player->GetPet())
+                                pet->SetHealth(pet->GetHealth() + int32(pet->GetMaxHealth() / 50));
+                        }
+                    }
+
+                    update = 0;
+                }
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_warl_soul_harverst_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_soul_harverst_AuraScript();
+        }
+};
+
+// Life Tap - 1454
+class spell_warl_life_tap : public SpellScriptLoader
+{
+    public:
+        spell_warl_life_tap() : SpellScriptLoader("spell_warl_life_tap") { }
+
+        class spell_warl_life_tap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_life_tap_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    int32 healthCost = int32(_player->GetMaxHealth() * 0.15f);
+
+                    _player->SetHealth(_player->GetHealth() - healthCost);
+                    _player->EnergizeBySpell(_player, 1454, healthCost, POWER_MANA);
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_life_tap_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_life_tap_SpellScript();
+        }
+};
+
 // Harvest Life - 115707
 class spell_warl_harvest_life : public SpellScriptLoader
 {
@@ -373,151 +460,6 @@ class spell_warl_soulshatter : public SpellScriptLoader
         }
 };
 
-enum LifeTap
-{
-    SPELL_LIFE_TAP_ENERGIZE     = 31818,
-    SPELL_LIFE_TAP_ENERGIZE_2   = 32553,
-    ICON_ID_IMPROVED_LIFE_TAP   = 208,
-    ICON_ID_MANA_FEED           = 1982,
-};
-
-/*class spell_warl_life_tap : public SpellScriptLoader
-{
-    public:
-        spell_warl_life_tap() : SpellScriptLoader("spell_warl_life_tap") { }
-
-        class spell_warl_life_tap_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_life_tap_SpellScript);
-
-            bool Load()
-            {
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
-            }
-
-            bool Validate(SpellInfo const* /)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_LIFE_TAP_ENERGIZE) || !sSpellMgr->GetSpellInfo(SPELL_LIFE_TAP_ENERGIZE_2))
-                    return false;
-                return true;
-            }
-
-            void HandleDummy(SpellEffIndex )
-            {
-                Player* caster = GetCaster()->ToPlayer();
-                if (Unit* target = GetHitUnit())
-                {
-                    int32 damage = GetEffectValue();
-                    int32 mana = int32(damage + (caster->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+SPELL_SCHOOL_SHADOW) * 0.5f));
-
-                    // Shouldn't Appear in Combat Log
-                    target->ModifyHealth(-damage);
-
-                    // Improved Life Tap mod
-                    if (constAuraEffectPtr aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_WARLOCK, ICON_ID_IMPROVED_LIFE_TAP, 0))
-                        AddPct(mana, aurEff->GetAmount());
-
-                    caster->CastCustomSpell(target, SPELL_LIFE_TAP_ENERGIZE, &mana, NULL, NULL, false);
-
-                    // Mana Feed
-                    int32 manaFeedVal = 0;
-                    if (constAuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_WARLOCK, ICON_ID_MANA_FEED, 0))
-                        manaFeedVal = aurEff->GetAmount();
-
-                    if (manaFeedVal > 0)
-                    {
-                        ApplyPct(manaFeedVal, mana);
-                        caster->CastCustomSpell(caster, SPELL_LIFE_TAP_ENERGIZE_2, &manaFeedVal, NULL, NULL, true, NULL);
-                    }
-                }
-            }
-
-            SpellCastResult CheckCast()
-            {
-                if ((int32(GetCaster()->GetHealth()) > int32(GetSpellInfo()->Effects[EFFECT_0].CalcValue() + (6.3875 * GetSpellInfo()->BaseLevel))))
-                    return SPELL_CAST_OK;
-                return SPELL_FAILED_FIZZLE;
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_warl_life_tap_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-                OnCheckCast += SpellCheckCastFn(spell_warl_life_tap_SpellScript::CheckCast);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_life_tap_SpellScript();
-        }
-}; */
-
-class spell_warl_life_tap : public SpellScriptLoader
-{
-public:
-    spell_warl_life_tap() : SpellScriptLoader("spell_warl_life_tap") { }
-
-    class spell_warl_life_tap_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_warl_life_tap_SpellScript);
-
-        SpellCastResult CheckCast()
-        {
-            if (Unit* caster = GetCaster())
-            {
-                if (caster->CountPctFromMaxHealth(GetSpellInfo()->Effects[EFFECT_2].CalcValue()) >= caster->GetHealth()) // You cant kill yourself with this
-                    return SPELL_FAILED_FIZZLE;
-
-                return SPELL_CAST_OK;
-            }
-            return SPELL_FAILED_DONT_REPORT;
-        }
-
-        void HandleDummy(SpellEffIndex /*EffIndex*/)
-        {
-            if (Unit* caster = GetCaster())
-            {
-                int32 damage = int32(caster->CountPctFromMaxHealth(GetSpellInfo()->Effects[EFFECT_2].CalcValue()));
-                int32 mana = 0;
-
-                uint32 multiplier = 1.2f;
-
-                // Should not appear in combat log
-                caster->ModifyHealth(-damage);
-
-                // Improved Life Tap mod
-                if (constAuraEffectPtr aurEff = caster->GetDummyAuraEffect(SPELLFAMILY_WARLOCK, 208, 0))
-                    multiplier += int32(aurEff->GetAmount() / 100);
-
-                mana = int32(damage * multiplier);
-                caster->CastCustomSpell(caster, 31818, &mana, NULL, NULL, false);
-
-                // Mana Feed
-                int32 manaFeedVal = 0;
-                if (constAuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_AURA_ADD_FLAT_MODIFIER, SPELLFAMILY_WARLOCK, 1982, 0))
-                    manaFeedVal = aurEff->GetAmount();
-
-                if (manaFeedVal > 0)
-                {
-                    manaFeedVal = int32(mana * manaFeedVal / 100);
-                    caster->CastCustomSpell(caster, 32553, &manaFeedVal, NULL, NULL, true, NULL);
-                }
-            }
-        }
-
-        void Register()
-        {
-            OnCheckCast += SpellCheckCastFn(spell_warl_life_tap_SpellScript::CheckCast);
-            OnEffectHitTarget += SpellEffectFn(spell_warl_life_tap_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-        }
-    };
-
-    SpellScript* GetSpellScript() const
-    {
-        return new spell_warl_life_tap_SpellScript();
-    }
-};
-
 class spell_warl_demonic_circle_summon : public SpellScriptLoader
 {
     public:
@@ -791,6 +733,8 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_soul_harverst();
+    new spell_warl_life_tap();
     new spell_warl_harvest_life();
     new spell_warl_fear();
     new spell_warl_banish();
@@ -799,7 +743,6 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_everlasting_affliction();
     new spell_warl_seed_of_corruption();
     new spell_warl_soulshatter();
-    new spell_warl_life_tap();
     new spell_warl_demonic_circle_summon();
     new spell_warl_demonic_circle_teleport();
     new spell_warl_haunt();

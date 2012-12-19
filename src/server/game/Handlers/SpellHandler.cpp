@@ -467,6 +467,16 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     // Custom MoP Script
+    // Aimed Shot - 19434 and Aimed Shot (for Master Marksman) - 82928
+    if (spellInfo->Id == 19434 && _player->HasAura(82926))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(82928);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
     // Drain Life - 689 and Harvest Life (overrided) - 108371
     if (spellInfo->Id == 689 && _player->HasSpell(108371))
     {

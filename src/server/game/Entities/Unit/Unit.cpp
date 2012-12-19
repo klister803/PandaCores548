@@ -5555,12 +5555,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     triggered_spell_id = 69961; // Glyph of Scourge Strike
                     break;
                 }
-                // Glyph of Life Tap
-                case 63320:
-                {
-                    triggered_spell_id = 63321; // Life Tap
-                    break;
-                }
                 // Purified Shard of the Scale - Onyxia 10 Caster Trinket
                 case 69755:
                 {
@@ -7969,6 +7963,27 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Master Marksmann
+        case 34487:
+        {
+            if (!procSpell || procSpell->Id != 56641) // Steady Shot
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER || getClass() != CLASS_HUNTER)
+                return false;
+
+            AuraPtr aimed = GetAura(trigger_spell_id);
+            //  After reaching 3 stacks, your next Aimed Shot's cast time and Focus cost are reduced by 100% for 10 sec
+            if (aimed && aimed->GetStackAmount() >= 2)
+            {
+                RemoveAura(trigger_spell_id);
+                CastSpell(this, 82926, true); // Fire !
+
+                return false;
+            }
+
+            break;
+        }
         // Will of the Necropolis
         case 81164:
         {
@@ -10184,7 +10199,7 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         break;
                     case SPELLFAMILY_SHAMAN:
                         // Lava Burst
-                        if (spellProto->Id == 117014 || spellProto->Id == 77451)
+                        if (spellProto->Id == 51505 || spellProto->Id == 77451)
                         {
                             if (victim->GetAura(8050))
                                 return true;

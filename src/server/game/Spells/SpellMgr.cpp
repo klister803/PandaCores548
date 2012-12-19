@@ -3124,6 +3124,17 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 109259: // Powershot
+                spellInfo->Effects[1].BasePoints = 60;
+                spellInfo->Effects[2].BasePoints = 800;
+                break;
+            case 82926: // Fire ! (for Master Marksman)
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+                spellInfo->Effects[0].MiscValue = SPELLMOD_CASTING_TIME;
+                spellInfo->Effects[0].BasePoints = -100;
+                spellInfo->Effects[0].SpellClassMask[0] |= 0x20000;
+                break;
             case 7384: // Overpower
                 spellInfo->AttributesEx |= SPELL_ATTR1_ENABLE_AT_DODGE;
                 break;
