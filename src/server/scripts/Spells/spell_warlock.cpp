@@ -55,6 +55,47 @@ enum WarlockSpells
     WARLOCK_UNSTABLE_AFFLICTION             = 30108,
     WARLOCK_IMMOLATE                        = 348,
     WARLOCK_SHADOWBURN_ENERGIZE             = 125882,
+    WARLOCK_CONFLAGRATE                     = 17962,
+    WARLOCK_CONFLAGRATE_FIRE_AND_BRIMSTONE  = 108685,
+    WARLOCK_IMMOLATE_FIRE_AND_BRIMSTONE     = 108686,
+};
+
+// Conflagrate - 17962 and Conflagrate (Fire and Brimstone) - 108685
+class spell_warl_conflagrate_aura : public SpellScriptLoader
+{
+    public:
+        spell_warl_conflagrate_aura() : SpellScriptLoader("spell_warl_conflagrate_aura") { }
+
+        class spell_warl_conflagrate_aura_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_conflagrate_aura_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (!target->HasAura(WARLOCK_IMMOLATE))
+                            if (AuraPtr conflagrate = target->GetAura(WARLOCK_CONFLAGRATE))
+                                target->RemoveAura(WARLOCK_CONFLAGRATE);
+                        if (!target->HasAura(WARLOCK_IMMOLATE_FIRE_AND_BRIMSTONE))
+                            if (AuraPtr conflagrate = target->GetAura(WARLOCK_CONFLAGRATE_FIRE_AND_BRIMSTONE))
+                                target->RemoveAura(WARLOCK_CONFLAGRATE_FIRE_AND_BRIMSTONE);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_conflagrate_aura_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_conflagrate_aura_SpellScript();
+        }
 };
 
 // Shadowburn - 29341
@@ -943,6 +984,7 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_conflagrate_aura();
     new spell_warl_shadowburn();
     new spell_warl_burning_embers();
     new spell_warl_fel_flame();
