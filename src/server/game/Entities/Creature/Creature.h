@@ -801,11 +801,11 @@ class AssistDelayEvent : public BasicEvent
 class ForcedDespawnDelayEvent : public BasicEvent
 {
     public:
-        ForcedDespawnDelayEvent(CreaturePtr& owner) : BasicEvent(), m_owner(owner) { }
+        ForcedDespawnDelayEvent(CreaturePtr owner) : BasicEvent(), m_owner(owner) { }
         bool Execute(uint64 e_time, uint32 p_time);
 
     private:
-        CreaturePtr& m_owner;
+        CreaturePtr m_owner;
 };
 
 #endif
