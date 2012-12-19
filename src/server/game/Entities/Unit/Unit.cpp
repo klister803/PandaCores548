@@ -9674,6 +9674,15 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         DoneTotalMod += Mastery;
     }
 
+    // Chaos Bolt - 116858
+    // damage is increased by your critical strike chance
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 116858)
+    {
+        float crit_chance;
+        crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(spellProto->GetSchoolMask()));
+        DoneTotalMod += (crit_chance / 100.0f);
+    }
+
     // Pet damage?
     if (GetTypeId() == TYPEID_UNIT && !ToCreature()->isPet())
         DoneTotalMod *= ToCreature()->GetSpellDamageMod(ToCreature()->GetCreatureTemplate()->rank);
