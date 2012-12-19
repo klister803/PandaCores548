@@ -53,7 +53,45 @@ enum WarlockSpells
     WARLOCK_CORRUPTION                      = 172,
     WARLOCK_DOOM                            = 124913,
     WARLOCK_UNSTABLE_AFFLICTION             = 30108,
-    WARLOCK_IMMOLATE                        = 348
+    WARLOCK_IMMOLATE                        = 348,
+};
+
+// Called By : Incinerate - 29722 and Incinerate (Fire and Brimstone) - 114654
+// Conflagrate - 17962 and Conflagrate (Fire and Brimstone) - 108685
+// Burning Embers generate
+class spell_warl_burning_embers : public SpellScriptLoader
+{
+    public:
+        spell_warl_burning_embers() : SpellScriptLoader("spell_warl_burning_embers") { }
+
+        class spell_warl_burning_embers_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_burning_embers_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (GetSpell()->IsCritForTarget(target))
+                            _player->SetPower(POWER_BURNING_EMBERS, _player->GetPower(POWER_BURNING_EMBERS) + 2);
+                        else
+                            _player->SetPower(POWER_BURNING_EMBERS, _player->GetPower(POWER_BURNING_EMBERS) + 1);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_burning_embers_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_burning_embers_SpellScript();
+        }
 };
 
 // Fel Flame - 77799
@@ -263,7 +301,7 @@ class spell_warl_life_tap : public SpellScriptLoader
 
             void Register()
             {
-                OnCheckCast += SpellCheckCastFn(spell_warl_life_tap_SpellScript::CheckLif);
+                OnCheckCast += SpellCheckCastFn(spell_warl_life_tap_SpellScript::CheckLife);
                 OnHit += SpellHitFn(spell_warl_life_tap_SpellScript::HandleOnHit);
             }
         };
@@ -870,6 +908,7 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_burning_embers();
     new spell_warl_fel_flame();
     new spell_warl_drain_life();
     new spell_warl_soul_harverst();
