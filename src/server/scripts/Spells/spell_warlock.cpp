@@ -54,6 +54,41 @@ enum WarlockSpells
     WARLOCK_DOOM                            = 124913,
     WARLOCK_UNSTABLE_AFFLICTION             = 30108,
     WARLOCK_IMMOLATE                        = 348,
+    WARLOCK_SHADOWBURN_ENERGIZE             = 125882,
+};
+
+// Shadowburn - 29341
+class spell_warl_shadowburn : public SpellScriptLoader
+{
+    public:
+        spell_warl_shadowburn() : SpellScriptLoader("spell_warl_shadowburn") { }
+
+        class spell_warl_shadowburn_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_shadowburn_AuraScript);
+
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetCaster())
+                {
+                    AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                    if (removeMode == AURA_REMOVE_BY_DEATH)
+                        GetCaster()->SetPower(POWER_BURNING_EMBERS, GetCaster()->GetPower(POWER_BURNING_EMBERS) + 10);
+                    else if (removeMode == AURA_REMOVE_BY_EXPIRE)
+                        GetCaster()->CastSpell(GetCaster(), WARLOCK_SHADOWBURN_ENERGIZE, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectApplyFn(spell_warl_shadowburn_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_shadowburn_AuraScript();
+        }
 };
 
 // Called By : Incinerate - 29722 and Incinerate (Fire and Brimstone) - 114654
@@ -908,6 +943,7 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_shadowburn();
     new spell_warl_burning_embers();
     new spell_warl_fel_flame();
     new spell_warl_drain_life();
