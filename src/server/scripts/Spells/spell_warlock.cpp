@@ -127,7 +127,7 @@ class spell_warl_fire_and_brimstone : public SpellScriptLoader
 
             void Register()
             {
-                AfterCast += SpellCastFn(spell_warl_fire_and_brimstone_SpellScript::HandleAfterCast);
+                OnHit += SpellHitFn(spell_warl_fire_and_brimstone_SpellScript::HandleOnHit);
             }
         };
 
