@@ -742,9 +742,9 @@ SkipCinematics = 0
 #        Description: Maximum level that can be reached by players.
 #        Important:   Levels beyond 100 are not recommended at all.
 #        Range:       1-255
-#        Default:     85
+#        Default:     90
 
-MaxPlayerLevel = 85
+MaxPlayerLevel = 90
 
 #
 #    MinDualSpecLevel
@@ -790,6 +790,21 @@ MaxHonorPoints = 75000
 #        Default:     0
 
 StartHonorPoints = 0
+
+#
+# MaxJusticePoints
+# Description: Maximum justice points a character can have.
+# Default: 400000
+
+MaxJusticePoints = 400000
+
+#
+# StartJusticePoints
+# Description: Amount of justice points that characters have after creation.
+# Default: 0
+
+StartJusticePoints = 0
+
 
 #
 #    MaxArenaPoints

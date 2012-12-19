@@ -113,23 +113,11 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket& recvData)
             int8 seatId;
             recvData >> seatId;
 
-            guid[0] = recvData.ReadBit();
-            guid[3] = recvData.ReadBit();
-            guid[6] = recvData.ReadBit();
-            guid[5] = recvData.ReadBit();
-            guid[2] = recvData.ReadBit();
-            guid[4] = recvData.ReadBit();
-            guid[7] = recvData.ReadBit();
-            guid[1] = recvData.ReadBit();
+            uint8 bitOrder[8] = {0, 3, 6, 5, 2, 4, 7, 1};
+            recvData.ReadBitInOrder(guid, bitOrder);
 
-            recvData.ReadByteSeq(guid[1]);
-            recvData.ReadByteSeq(guid[6]);
-            recvData.ReadByteSeq(guid[7]);
-            recvData.ReadByteSeq(guid[2]);
-            recvData.ReadByteSeq(guid[0]);
-            recvData.ReadByteSeq(guid[3]);
-            recvData.ReadByteSeq(guid[5]);
-            recvData.ReadByteSeq(guid[4]);
+            uint8 byteOrder[8] = {1, 6, 7, 2, 0, 3, 5, 4};
+            recvData.ReadBytesSeq(guid, byteOrder);
 
             if (vehicle_base->GetGUID() == guid)
                 GetPlayer()->ChangeSeat(seatId);
@@ -144,27 +132,16 @@ void WorldSession::HandleChangeSeatsOnControlledVehicle(WorldPacket& recvData)
     }
 }
 
-void WorldSession::HandleEnterPlayerVehicle(WorldPacket& data)
+void WorldSession::HandleEnterPlayerVehicle(WorldPacket& recvData)
 {
     // Read guid
     ObjectGuid guid;
-    guid[0] = data.ReadBit();
-    guid[7] = data.ReadBit();
-    guid[1] = data.ReadBit();
-    guid[2] = data.ReadBit();
-    guid[3] = data.ReadBit();
-    guid[4] = data.ReadBit();
-    guid[5] = data.ReadBit();
-    guid[6] = data.ReadBit();
 
-    data.ReadByteSeq(guid[4]);
-    data.ReadByteSeq(guid[0]);
-    data.ReadByteSeq(guid[5]);
-    data.ReadByteSeq(guid[6]);
-    data.ReadByteSeq(guid[1]);
-    data.ReadByteSeq(guid[3]);
-    data.ReadByteSeq(guid[7]);
-    data.ReadByteSeq(guid[2]);
+    uint8 bitOrder[8] = {0, 7, 1, 2, 3, 4, 5, 6};
+    recvData.ReadBitInOrder(guid, bitOrder);
+
+    uint8 byteOrder[8] = {4, 0, 5, 6, 1, 3, 7, 2};
+    recvData.ReadBytesSeq(guid, byteOrder);
 
     if (Player* player = ObjectAccessor::FindPlayer(guid))
     {

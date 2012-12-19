@@ -140,23 +140,12 @@ void WorldSession::HandleLfgProposalResultOpcode(WorldPacket& recvData)
     recvData.read_skip<uint32>();
     recvData.read_skip<uint32>();
     ObjectGuid unk;
-    unk[5] = recvData.ReadBit();
-    unk[1] = recvData.ReadBit();
-    unk[0] = recvData.ReadBit();
-    unk[2] = recvData.ReadBit();
-    unk[4] = recvData.ReadBit();
-    unk[6] = recvData.ReadBit();
-    unk[3] = recvData.ReadBit();
-    unk[7] = recvData.ReadBit();
 
-    recvData.ReadByteSeq(unk[4]);
-    recvData.ReadByteSeq(unk[1]);
-    recvData.ReadByteSeq(unk[2]);
-    recvData.ReadByteSeq(unk[5]);
-    recvData.ReadByteSeq(unk[0]);
-    recvData.ReadByteSeq(unk[7]);
-    recvData.ReadByteSeq(unk[3]);
-    recvData.ReadByteSeq(unk[6]);
+    uint8 bitOrder[8] = {5, 1, 0, 2, 4, 6, 3, 7};
+    recvData.ReadBitInOrder(unk, bitOrder);
+
+    uint8 byteOrder[8] = {4, 1, 2, 5, 0, 7, 3, 6};
+    recvData.ReadBytesSeq(unk, byteOrder);
 
     recvData.ReadBits(3);
     accept = recvData.ReadBit();
