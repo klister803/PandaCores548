@@ -14108,6 +14108,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (aura)
             aura->GetBase()->DropCharge();
     }
+    // Hack Fix Immolate - Critical strikes generate burning embers
+    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 348 && procExtra & PROC_EX_CRITICAL_HIT)
+        if (roll_chance_i(50))
+            SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
 
     ProcTriggeredList procTriggered;
     // Fill procTriggered list
