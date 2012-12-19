@@ -243,6 +243,13 @@ class spell_warl_life_tap : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warl_life_tap_SpellScript);
 
+            SpellCastResult CheckLife()
+            {
+                if (GetCaster()->GetHealthPct() > 15.0f)
+                    return SPELL_CAST_OK;
+                return SPELL_FAILED_FIZZLE;
+            }
+
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -256,6 +263,7 @@ class spell_warl_life_tap : public SpellScriptLoader
 
             void Register()
             {
+                OnCheckCast += SpellCheckCastFn(spell_warl_life_tap_SpellScript::CheckLif);
                 OnHit += SpellHitFn(spell_warl_life_tap_SpellScript::HandleOnHit);
             }
         };
