@@ -3296,11 +3296,7 @@ void Guild::GiveXP(uint32 xp, Player* source)
         xp = std::min(xp, sWorld->getIntConfig(CONFIG_GUILD_DAILY_XP_CAP) - uint32(_todayExperience));
 
     WorldPacket data(SMSG_GUILD_XP_GAIN, 8);
-    data << uint64(/*member ? member->GetTotalActivity() :*/ 0);
     data << uint64(xp);    // XP missing for next level
-    data << uint64(GetTodayExperience());
-    data << uint64(/*member ? member->GetWeeklyActivity() :*/ 0);
-    data << uint64(GetExperience());
     source->GetSession()->SendPacket(&data);
 
     _experience += xp;
@@ -3330,14 +3326,18 @@ void Guild::GiveXP(uint32 xp, Player* source)
     {
         if (Player* player = itr->second->FindPlayer())
         {
+            SendGuildXP(player->GetSession());
             player->SetGuildLevel(GetLevel());
             for (size_t i = 0; i < perksToLearn.size(); ++i)
                 player->learnSpell(perksToLearn[i], true);
         }
     }
 
-    GetNewsLog().AddNewEvent(GUILD_NEWS_LEVEL_UP, time(NULL), 0, 0, _level);
-    GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_GUILD_LEVEL, GetLevel(), 0, NULL, source);
+    if (oldLevel != _level)
+    {
+        GetNewsLog().AddNewEvent(GUILD_NEWS_LEVEL_UP, time(NULL), 0, 0, _level);
+        GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_GUILD_LEVEL, GetLevel(), 0, NULL, source);
+    }
 }
 
 void Guild::SendGuildXP(WorldSession* session) const
@@ -3345,11 +3345,10 @@ void Guild::SendGuildXP(WorldSession* session) const
     Member const* member = GetMember(session->GetGuidLow());
 
     WorldPacket data(SMSG_GUILD_XP, 40);
-    data << uint64(/*member ? member->GetTotalActivity() :*/ 0);
-    data << uint64(sGuildMgr->GetXPForGuildLevel(GetLevel()) - GetExperience());    // XP missing for next level
+    data << uint64(0); // fucking unknow
     data << uint64(GetTodayExperience());
-    data << uint64(/*member ? member->GetWeeklyActivity() :*/ 0);
     data << uint64(GetExperience());
+    data << uint64(sGuildMgr->GetXPForGuildLevel(GetLevel()) - GetExperience());    // XP missing for next level
     session->SendPacket(&data);
 }
 

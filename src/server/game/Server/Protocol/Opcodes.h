@@ -271,7 +271,7 @@ enum Opcodes
     CMSG_GUILD_REMOVE                                 = 0x183,  // 5.0.5 16048
     CMSG_GUILD_REPLACE_GUILD_MASTER                   = 0x4E3,  // 5.0.5 16048
     CMSG_GUILD_REQUEST_CHALLENGE_UPDATE               = 0x322,  // 5.0.5 16048
-    CMSG_GUILD_REQUEST_MAX_DAILY_XP                   = 0x1C7,  // 5.0.5 16048
+    CMSG_GUILD_REQUEST_MAX_DAILY_XP                   = 0x310,  // 5.0.5 16048
     CMSG_GUILD_REQUEST_PARTY_STATE                    = 0,
     CMSG_GUILD_ROSTER                                 = 0x222,  // 5.0.5 16048
     CMSG_GUILD_SET_ACHIEVEMENT_TRACKING               = 0x2E7,  // 5.0.5 16048
@@ -403,7 +403,7 @@ enum Opcodes
     CMSG_QUERY_GUILD_MEMBER_RECIPES                   = 0x0A7,  // 5.0.5 16048
     CMSG_QUERY_GUILD_RECIPES                          = 0x5A2,  // 5.0.5 16048
     CMSG_QUERY_GUILD_REWARDS                          = 0x624,  // 5.0.5 16048
-    CMSG_QUERY_GUILD_XP                               = 0x310,  // 5.0.5 16048
+    CMSG_QUERY_GUILD_XP                               = 0x1C7,  // 5.0.5 16048
     CMSG_QUERY_INSPECT_ACHIEVEMENTS                   = 0xC3A,  // 5.0.5 16048
     CMSG_QUERY_QUESTS_COMPLETED                       = 0x000,  // 5.0.5 16048 Deprecated Sure ? 0x2317 in 4.3.4
     CMSG_QUERY_TIME                                   = 0xCDA,  // 5.0.5 16048
