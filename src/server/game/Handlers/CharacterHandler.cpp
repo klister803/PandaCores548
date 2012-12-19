@@ -775,23 +775,12 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
     ObjectGuid playerGuid;
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd Player Logon Message");
-    playerGuid[3] = recvData.ReadBit();
-    playerGuid[5] = recvData.ReadBit();
-    playerGuid[7] = recvData.ReadBit();
-    playerGuid[0] = recvData.ReadBit();
-    playerGuid[6] = recvData.ReadBit();
-    playerGuid[2] = recvData.ReadBit();
-    playerGuid[1] = recvData.ReadBit();
-    playerGuid[4] = recvData.ReadBit();
 
-    recvData.ReadByteSeq(playerGuid[1]);
-    recvData.ReadByteSeq(playerGuid[0]);
-    recvData.ReadByteSeq(playerGuid[3]);
-    recvData.ReadByteSeq(playerGuid[2]);
-    recvData.ReadByteSeq(playerGuid[4]);
-    recvData.ReadByteSeq(playerGuid[7]);
-    recvData.ReadByteSeq(playerGuid[5]);
-    recvData.ReadByteSeq(playerGuid[6]);
+    uint8 bitOrder[8] = {3, 5, 7, 0, 6, 2, 1, 4};
+    recvData.ReadBitInOrder(playerGuid, bitOrder);
+
+    uint8 byteOrder[8] = {1, 0, 3, 2, 4, 7, 5, 6};
+    recvData.ReadBytesSeq(playerGuid, byteOrder);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Character (Guid: %u) logging in", GUID_LOPART(playerGuid));
 
@@ -2293,14 +2282,8 @@ void WorldSession::HandleReorderCharacters(WorldPacket& recvData)
 
     for (uint8 i = 0; i < charactersCount; ++i)
     {
-        guids[i][1] = recvData.ReadBit();
-        guids[i][6] = recvData.ReadBit();
-        guids[i][2] = recvData.ReadBit();
-        guids[i][7] = recvData.ReadBit();
-        guids[i][3] = recvData.ReadBit();
-        guids[i][5] = recvData.ReadBit();
-        guids[i][4] = recvData.ReadBit();
-        guids[i][0] = recvData.ReadBit();
+        uint8 bitOrder[8] = {1, 6, 2, 7, 3, 5, 4, 0};
+        recvData.ReadBitInOrder(guids[i], bitOrder);
     }
 
     recvData.FlushBits();

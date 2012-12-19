@@ -62,17 +62,9 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
 
     ObjectGuid itemGUIDs[MAX_MAIL_ITEMS];
 
+    uint8 bitOrder[8] = {3, 7, 0, 2, 6, 5, 1, 4};
     for (uint8 i = 0; i < items_count; ++i)
-    {
-        itemGUIDs[i][3] = recvData.ReadBit();
-        itemGUIDs[i][7] = recvData.ReadBit();
-        itemGUIDs[i][0] = recvData.ReadBit();
-        itemGUIDs[i][2] = recvData.ReadBit();
-        itemGUIDs[i][6] = recvData.ReadBit();
-        itemGUIDs[i][5] = recvData.ReadBit();
-        itemGUIDs[i][1] = recvData.ReadBit();
-        itemGUIDs[i][4] = recvData.ReadBit();
-    }
+        recvData.ReadBitInOrder(itemGUIDs[i], bitOrder);
 
     mailbox[4] = recvData.ReadBit();
     mailbox[3] = recvData.ReadBit();
@@ -396,23 +388,12 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData)
     ObjectGuid owner;
     uint32 mailId;
     recvData >> mailId;
-    owner[2] = recvData.ReadBit();
-    owner[6] = recvData.ReadBit();
-    owner[5] = recvData.ReadBit();
-    owner[0] = recvData.ReadBit();
-    owner[7] = recvData.ReadBit();
-    owner[3] = recvData.ReadBit();
-    owner[4] = recvData.ReadBit();
-    owner[1] = recvData.ReadBit();
 
-    recvData.ReadByteSeq(owner[3]);
-    recvData.ReadByteSeq(owner[1]);
-    recvData.ReadByteSeq(owner[5]);
-    recvData.ReadByteSeq(owner[0]);
-    recvData.ReadByteSeq(owner[4]);
-    recvData.ReadByteSeq(owner[2]);
-    recvData.ReadByteSeq(owner[7]);
-    recvData.ReadByteSeq(owner[6]);
+    uint8 bitOrder[8] = {2, 6, 5, 0, 7, 3, 4, 1};
+    recvData.ReadBitInOrder(owner, bitOrder);
+
+    uint8 byteOrder[8] = {3, 1, 5, 0, 4, 2, 7, 6};
+    recvData.ReadBytesSeq(owner, byteOrder);
 
     //if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
     //    return;

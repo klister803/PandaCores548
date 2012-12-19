@@ -1423,23 +1423,12 @@ void WorldSession::HandleItemRefundInfoRequest(WorldPacket& recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_ITEM_REFUND_INFO");
 
     ObjectGuid guid;
-    guid[2] = recvData.ReadBit();
-    guid[3] = recvData.ReadBit();
-    guid[7] = recvData.ReadBit();
-    guid[4] = recvData.ReadBit();
-    guid[0] = recvData.ReadBit();
-    guid[5] = recvData.ReadBit();
-    guid[6] = recvData.ReadBit();
-    guid[1] = recvData.ReadBit();
 
-    recvData.ReadByteSeq(guid[0]);
-    recvData.ReadByteSeq(guid[2]);
-    recvData.ReadByteSeq(guid[6]);
-    recvData.ReadByteSeq(guid[1]);
-    recvData.ReadByteSeq(guid[7]);
-    recvData.ReadByteSeq(guid[3]);
-    recvData.ReadByteSeq(guid[4]);
-    recvData.ReadByteSeq(guid[5]);
+    uint8 bitOrder[8] = {2, 3, 7, 4, 0, 5, 6, 1};
+    recvData.ReadBitInOrder(guid, bitOrder);
+
+    uint8 byteOrder[8] = {0, 2, 6, 1, 7, 3, 4, 5};
+    recvData.ReadBytesSeq(guid, byteOrder);
 
     Item* item = _player->GetItemByGuid(guid);
     if (!item)
@@ -1455,23 +1444,12 @@ void WorldSession::HandleItemRefund(WorldPacket &recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_ITEM_REFUND");
     ObjectGuid guid;
-    guid[6] = recvData.ReadBit();
-    guid[4] = recvData.ReadBit();
-    guid[1] = recvData.ReadBit();
-    guid[5] = recvData.ReadBit();
-    guid[2] = recvData.ReadBit();
-    guid[3] = recvData.ReadBit();
-    guid[7] = recvData.ReadBit();
-    guid[0] = recvData.ReadBit();
 
-    recvData.ReadByteSeq(guid[1]);
-    recvData.ReadByteSeq(guid[3]);
-    recvData.ReadByteSeq(guid[7]);
-    recvData.ReadByteSeq(guid[5]);
-    recvData.ReadByteSeq(guid[6]);
-    recvData.ReadByteSeq(guid[0]);
-    recvData.ReadByteSeq(guid[2]);
-    recvData.ReadByteSeq(guid[4]);
+    uint8 bitOrder[8] = {6, 4, 1, 5, 2, 3, 7, 0};
+    recvData.ReadBitInOrder(guid, bitOrder);
+
+    uint8 byteOrder[8] = {1, 3, 7, 5, 6, 0, 2, 4};
+    recvData.ReadBytesSeq(guid, byteOrder);
 
     Item* item = _player->GetItemByGuid(guid);
     if (!item)
@@ -1532,18 +1510,9 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
     std::vector<uint32> newEntries(count, 0);
     std::vector<uint32> slots(count, 0);
 
-
+    uint8 bitOrder[8] = {3, 2, 4, 0, 1, 6, 7, 5};
     for (uint8 i = 0; i < count; ++i)
-    {
-        itemGuids[i][3] = recvData.ReadBit();
-        itemGuids[i][2] = recvData.ReadBit();
-        itemGuids[i][4] = recvData.ReadBit();
-        itemGuids[i][0] = recvData.ReadBit();
-        itemGuids[i][1] = recvData.ReadBit();
-        itemGuids[i][6] = recvData.ReadBit();
-        itemGuids[i][7] = recvData.ReadBit();
-        itemGuids[i][5] = recvData.ReadBit();
-    }
+        recvData.ReadBitInOrder(itemGuids[i], bitOrder);
 
     npcGuid[5] = recvData.ReadBit();
     npcGuid[0] = recvData.ReadBit();
@@ -1573,14 +1542,8 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
         recvData.ReadByteSeq(itemGuids[i][4]);
     }
 
-    recvData.ReadByteSeq(npcGuid[4]);
-    recvData.ReadByteSeq(npcGuid[3]);
-    recvData.ReadByteSeq(npcGuid[5]);
-    recvData.ReadByteSeq(npcGuid[7]);
-    recvData.ReadByteSeq(npcGuid[0]);
-    recvData.ReadByteSeq(npcGuid[6]);
-    recvData.ReadByteSeq(npcGuid[1]);
-    recvData.ReadByteSeq(npcGuid[2]);
+    uint8 byteOrder[8] = {4, 3, 5, 7, 0, 6, 1, 2};
+    recvData.ReadBytesSeq(npcGuid, byteOrder);
 
     // Validate
 
@@ -1702,24 +1665,12 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
     Player* player = GetPlayer();
 
     recvData >> slot >> reforgeEntry >> bag;
-    
-    guid[1] = recvData.ReadBit();
-    guid[5] = recvData.ReadBit();
-    guid[7] = recvData.ReadBit();
-    guid[4] = recvData.ReadBit();
-    guid[0] = recvData.ReadBit();
-    guid[3] = recvData.ReadBit();
-    guid[2] = recvData.ReadBit();
-    guid[6] = recvData.ReadBit();
 
-    recvData.ReadByteSeq(guid[7]);
-    recvData.ReadByteSeq(guid[0]);
-    recvData.ReadByteSeq(guid[2]);
-    recvData.ReadByteSeq(guid[3]);
-    recvData.ReadByteSeq(guid[1]);
-    recvData.ReadByteSeq(guid[4]);
-    recvData.ReadByteSeq(guid[5]);
-    recvData.ReadByteSeq(guid[6]);
+    uint8 bitOrder[8] = {1, 5, 7, 4, 0, 3, 2, 6};
+    recvData.ReadBitInOrder(guid, bitOrder);
+
+    uint8 byteOrder[8] = {7, 0, 2, 3, 1, 4, 5, 6};
+    recvData.ReadBytesSeq(guid, byteOrder);
 
     if (!player->GetNPCIfCanInteractWith(guid, UNIT_NPC_FLAG_REFORGER))
     {
