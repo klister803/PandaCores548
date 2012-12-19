@@ -58,6 +58,39 @@ enum WarlockSpells
     WARLOCK_CONFLAGRATE                     = 17962,
     WARLOCK_CONFLAGRATE_FIRE_AND_BRIMSTONE  = 108685,
     WARLOCK_IMMOLATE_FIRE_AND_BRIMSTONE     = 108686,
+    WARLOCK_FIRE_AND_BRIMSTONE              = 108683,
+};
+
+// Called By : Incinerate (Fire and Brimstone) - 114654, Conflagrate (Fire and Brimstone) - 108685
+// Curse of the Elements (Fire and Brimstone) - 104225, Curse of Enfeeblement (Fire and Brimstone) - 109468
+// Immolate (Fire and Brimstone) - 108686
+// Fire and Brimstone - 108683
+class spell_warl_fire_and_brimstone : public SpellScriptLoader
+{
+    public:
+        spell_warl_fire_and_brimstone() : SpellScriptLoader("spell_warl_fire_and_brimstone") { }
+
+        class spell_warl_fire_and_brimstone_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_fire_and_brimstone_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->RemoveAura(WARLOCK_FIRE_AND_BRIMSTONE);
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_warl_fire_and_brimstone_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_fire_and_brimstone_SpellScript();
+        }
 };
 
 // Conflagrate - 17962 and Conflagrate (Fire and Brimstone) - 108685
@@ -984,6 +1017,7 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_fire_and_brimstone();
     new spell_warl_conflagrate_aura();
     new spell_warl_shadowburn();
     new spell_warl_burning_embers();
