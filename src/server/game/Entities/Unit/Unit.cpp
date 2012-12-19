@@ -9525,6 +9525,17 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         }
     }
 
+    // Mastery : Emberstorm - 77220
+    // Increases the damage of Immolate, Incinerate, Fel Flame and Conflagrate (include the Fire and Brimstone spells)
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(77220) && spellProto
+        && (spellProto->Id == 17962 || spellProto->Id == 348 || spellProto->Id == 77799
+        || spellProto->Id == 29722 || spellProto->Id == 114654 || spellProto->Id == 108685
+        || spellProto->Id == 108686))
+    {
+        float Mastery = (GetFloatValue(PLAYER_MASTERY) + 1) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
     // Custom MoP Script
     // 76808 - Mastery : Executioner
     if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 1943 || spellProto->Id == 2098 || spellProto->Id == 121411) && HasAura(76808))
