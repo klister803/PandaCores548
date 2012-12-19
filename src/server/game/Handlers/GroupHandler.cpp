@@ -553,23 +553,11 @@ void WorldSession::HandleGroupSetRolesOpcode(WorldPacket& recvData)
     recvData >> unk;
     recvData >> newRole;
 
-    guid2[5] = recvData.ReadBit();
-    guid2[6] = recvData.ReadBit();
-    guid2[0] = recvData.ReadBit();
-    guid2[3] = recvData.ReadBit();
-    guid2[1] = recvData.ReadBit();
-    guid2[2] = recvData.ReadBit();
-    guid2[4] = recvData.ReadBit();
-    guid2[7] = recvData.ReadBit();
+    uint8 bitOrder[8] = {5, 6, 0, 3, 1, 2, 4, 7};
+    recvData.ReadBitInOrder(guid2, bitOrder);
 
-    recvData.ReadByteSeq(guid2[7]);
-    recvData.ReadByteSeq(guid2[4]);
-    recvData.ReadByteSeq(guid2[2]);
-    recvData.ReadByteSeq(guid2[1]);
-    recvData.ReadByteSeq(guid2[6]);
-    recvData.ReadByteSeq(guid2[5]);
-    recvData.ReadByteSeq(guid2[3]);
-    recvData.ReadByteSeq(guid2[0]);
+    uint8 byteOrder[8] = {7, 4, 2, 1, 6, 5, 3, 0};
+    recvData.ReadBytesSeq(guid2, byteOrder);
 
     WorldPacket data(SMSG_GROUP_SET_ROLE, 24);
 
@@ -975,14 +963,8 @@ void WorldSession::HandleGroupAssistantLeaderOpcode(WorldPacket & recvData)
     guid[5] = recvData.ReadBit();
     recvData.FlushBits();
 
-    recvData.ReadByteSeq(guid[7]);
-    recvData.ReadByteSeq(guid[2]);
-    recvData.ReadByteSeq(guid[4]);
-    recvData.ReadByteSeq(guid[0]);
-    recvData.ReadByteSeq(guid[5]);
-    recvData.ReadByteSeq(guid[3]);
-    recvData.ReadByteSeq(guid[6]);
-    recvData.ReadByteSeq(guid[1]);
+    uint8 byteOrder[8] = {7, 2, 4, 0, 5, 3, 6, 1};
+    recvData.ReadBytesSeq(guid, byteOrder);
 
     group->SetGroupMemberFlag(guid, apply, MEMBER_FLAG_ASSISTANT);
 
