@@ -49,7 +49,88 @@ enum WarlockSpells
     WARLOCK_CREATE_HEALTHSTONE              = 23517,
     WARLOCK_HARVEST_LIFE_HEAL               = 125314,
     WARLOCK_DRAIN_LIFE_HEAL                 = 89653,
-    WARLOCK_SOULBURN_AURA                   = 74434
+    WARLOCK_SOULBURN_AURA                   = 74434,
+    WARLOCK_CORRUPTION                      = 172,
+    WARLOCK_UNSTABLE_AFFLICTION             = 30108,
+    WARLOCK_IMMOLATE                        = 348
+};
+
+// Fel Flame - 77799
+class spell_warl_fel_flame : public SpellScriptLoader
+{
+    public:
+        spell_warl_fel_flame() : SpellScriptLoader("spell_warl_fel_flame") { }
+
+        class spell_warl_fel_flame_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_fel_flame_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        // Increases the duration of Corruption and Unstable Affliction by 6s
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION)
+                        {
+                            if (AuraPtr unstableAffliction = target->GetAura(WARLOCK_UNSTABLE_AFFLICTION))
+                            {
+                                unstableAffliction->SetDuration(unstableAffliction->GetDuration() + 6000);
+                                unstableAffliction->SetNeedClientUpdateForTargets();
+                            }
+                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION))
+                            {
+                                corruption->SetDuration(corruption->GetDuration() + 6000);
+                                corruption->SetNeedClientUpdateForTargets();
+                            }
+                        }
+                        // Increases the duration of Corruption by 6s
+                        else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
+                        {
+                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION))
+                            {
+                                corruption->SetDuration(corruption->GetDuration() + 6000);
+                                corruption->SetNeedClientUpdateForTargets();
+                            }
+                        }
+                        // Increases the duration of Immolate by 6s
+                        else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+                        {
+                            if (AuraPtr corruption = target->GetAura(WARLOCK_IMMOLATE))
+                            {
+                                corruption->SetDuration(corruption->GetDuration() + 6000);
+                                corruption->SetNeedClientUpdateForTargets();
+                            }
+
+                            if (GetSpell()->IsCritForTarget(target))
+                                _player->SetPower(POWER_BURNING_EMBERS, _player->GetPower(POWER_BURNING_EMBERS) + 2);
+                            else
+                                _player->SetPower(POWER_BURNING_EMBERS, _player->GetPower(POWER_BURNING_EMBERS) + 1);
+                        }
+                        // Increases the duration of Corruption by 6s
+                        else
+                        {
+                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION))
+                            {
+                                corruption->SetDuration(corruption->GetDuration() + 6000);
+                                corruption->SetNeedClientUpdateForTargets();
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_fel_flame_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_fel_flame_SpellScript();
+        }
 };
 
 // Drain Life - 689
@@ -775,6 +856,7 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_fel_flame();
     new spell_warl_drain_life();
     new spell_warl_soul_harverst();
     new spell_warl_life_tap();
