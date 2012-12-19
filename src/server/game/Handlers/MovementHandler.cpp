@@ -127,7 +127,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         if (!_player->InBattleground())
         {
             // short preparations to continue flight
-            FlightPathMovementGenerator* flight = (FlightPathMovementGenerator*)(GetPlayer()->GetMotionMaster()->top());
+            FlightPathMovementGeneratorPtr flight = STATIC_CAST(FlightPathMovementGenerator,(GetPlayer()->GetMotionMaster()->top()));
             flight->Initialize(GetPlayer());
             return;
         }

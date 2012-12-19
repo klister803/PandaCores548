@@ -291,12 +291,12 @@ class Map : public GridRefManager<NGridType>, public std::enable_shared_from_thi
         bool GetUnloadLock(const GridCoord &p) const { return getNGrid(p.x_coord, p.y_coord)->getUnloadLock(); }
         void SetUnloadLock(const GridCoord &p, bool on) { getNGrid(p.x_coord, p.y_coord)->setUnloadExplicitLock(on); }
         void LoadGrid(float x, float y);
-        bool UnloadGrid(NGridType& ngrid, bool pForce);
+        bool UnloadGrid(NGridTypePtr& ngrid, bool pForce);
         virtual void UnloadAll();
 
-        void ResetGridExpiry(NGridType &grid, float factor = 1) const
+        void ResetGridExpiry(NGridTypePtr &grid, float factor = 1) const
         {
-            grid.ResetTimeTracker(time_t(float(i_gridExpiry)*factor));
+            grid->ResetTimeTracker(time_t(float(i_gridExpiry)*factor));
         }
 
         time_t GetGridExpiry(void) const { return i_gridExpiry; }
@@ -395,7 +395,7 @@ class Map : public GridRefManager<NGridType>, public std::enable_shared_from_thi
 
         bool HavePlayers() const { return !m_mapRefManager.isEmpty(); }
         uint32 GetPlayersCountExceptGMs() const;
-        bool ActiveObjectsNearGrid(NGridType const& ngrid) const;
+        bool ActiveObjectsNearGrid(NGridTypePtr const& ngrid) const;
 
         void AddWorldObject(WorldObjectPtr obj) { i_worldObjects.insert(obj); }
         void RemoveWorldObject(WorldObjectPtr obj) { i_worldObjects.erase(obj); }

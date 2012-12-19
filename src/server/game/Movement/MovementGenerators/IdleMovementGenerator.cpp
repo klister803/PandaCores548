@@ -20,7 +20,7 @@
 #include "CreatureAI.h"
 #include "Creature.h"
 
-IdleMovementGenerator si_idleMovement;
+std::shared_ptr<IdleMovementGenerator> si_idleMovement (new IdleMovementGenerator());
 
 // StopMoving is needed to make unit stop if its last movement generator expires
 // But it should not be sent otherwise there are many redundent packets

@@ -388,8 +388,6 @@ void Item::SaveToDB(SQLTransaction& trans)
 
             if (!isInTransaction)
                 CharacterDatabase.CommitTransaction(trans);
-
-            delete this;
             return;
         }
         case ITEM_UNCHANGED:
@@ -662,7 +660,6 @@ void Item::SetState(ItemUpdateState state, PlayerPtr forplayer)
         // pretend the item never existed
         RemoveFromUpdateQueueOf(forplayer);
         forplayer->DeleteRefundReference(GetGUIDLow());
-        delete this;
         return;
     }
     if (state != ITEM_UNCHANGED)

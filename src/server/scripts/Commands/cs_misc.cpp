@@ -1858,7 +1858,7 @@ public:
 
         for (uint8 i = 0; i < MAX_MOTION_SLOT; ++i)
         {
-            MovementGenerator* movementGenerator = motionMaster->GetMotionSlot(i);
+            std::shared_ptr<MovementGenerator> movementGenerator = motionMaster->GetMotionSlot(i);
             if (!movementGenerator)
             {
                 handler->SendSysMessage("Empty");
@@ -1886,9 +1886,9 @@ public:
                 {
                     UnitPtr target = nullptr;
                     if (unit->GetTypeId() == TYPEID_PLAYER)
-                        target = static_cast<ChaseMovementGenerator<Player> const*>(movementGenerator)->GetTarget();
+                        target = STATIC_CAST(const ChaseMovementGenerator<Player>,movementGenerator)->GetTarget();
                     else
-                        target = static_cast<ChaseMovementGenerator<Creature> const*>(movementGenerator)->GetTarget();
+                        target = STATIC_CAST(const ChaseMovementGenerator<Creature>,movementGenerator)->GetTarget();
 
                     if (!target)
                         handler->SendSysMessage(LANG_MOVEGENS_CHASE_NULL);
@@ -1902,9 +1902,9 @@ public:
                 {
                     UnitPtr target = nullptr;
                     if (unit->GetTypeId() == TYPEID_PLAYER)
-                        target = static_cast<FollowMovementGenerator<Player> const*>(movementGenerator)->GetTarget();
+                        target = STATIC_CAST(const FollowMovementGenerator<Player>,movementGenerator)->GetTarget();
                     else
-                        target = static_cast<FollowMovementGenerator<Creature> const*>(movementGenerator)->GetTarget();
+                        target = STATIC_CAST(const FollowMovementGenerator<Creature>,movementGenerator)->GetTarget();
 
                     if (!target)
                         handler->SendSysMessage(LANG_MOVEGENS_FOLLOW_NULL);

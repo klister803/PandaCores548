@@ -32,7 +32,7 @@ class ObjectGridLoader
     friend class ObjectWorldLoader;
 
     public:
-        ObjectGridLoader(NGridType &grid, MapPtr map, const Cell &cell)
+        ObjectGridLoader(NGridTypePtr &grid, MapPtr map, const Cell &cell)
             : i_cell(cell), i_grid(grid), i_map(map), i_gameObjects(0), i_creatures(0), i_corpses (0)
             {}
 
@@ -47,7 +47,7 @@ class ObjectGridLoader
 
     private:
         Cell i_cell;
-        NGridType &i_grid;
+        NGridTypePtr &i_grid;
         MapPtr i_map;
         uint32 i_gameObjects;
         uint32 i_creatures;

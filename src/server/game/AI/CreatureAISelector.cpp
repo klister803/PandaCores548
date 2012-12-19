@@ -99,7 +99,7 @@ namespace FactorySelector
         return (ai_factory == nullptr ? new NullCreatureAI(creature) : ai_factory->Create(&creature));
     }
 
-    MovementGenerator* selectMovementGenerator(CreaturePtr creature)
+    std::shared_ptr<MovementGenerator> selectMovementGenerator(CreaturePtr creature)
     {
         MovementGeneratorRegistry& mv_registry(*MovementGeneratorRepository::instance());
         ASSERT(creature->GetCreatureTemplate());
@@ -124,7 +124,7 @@ namespace FactorySelector
             }
         }*/
 
-        return (mv_factory == nullptr ? nullptr : mv_factory->Create(&creature));
+        return (mv_factory == nullptr ? nullptr : std::shared_ptr<MovementGenerator>(mv_factory->Create(&creature)));
     }
 
     GameObjectAI* SelectGameObjectAI(GameObjectPtr go)

@@ -59,7 +59,7 @@ class ObjectWorldLoader
 
     private:
         Cell i_cell;
-        NGridType &i_grid;
+        NGridTypePtr &i_grid;
         MapPtr i_map;
     public:
         uint32 i_corpses;
@@ -173,25 +173,25 @@ void ObjectGridLoader::LoadN(void)
             //Load creatures and game objects
             {
                 TypeContainerVisitor<ObjectGridLoader, GridTypeMapContainer> visitor(*this);
-                i_grid.VisitGrid(x, y, visitor);
+                i_grid->VisitGrid(x, y, visitor);
             }
 
             //Load corpses (not bones)
             {
                 ObjectWorldLoader worker(*this);
                 TypeContainerVisitor<ObjectWorldLoader, WorldTypeMapContainer> visitor(worker);
-                i_grid.VisitGrid(x, y, visitor);
+                i_grid->VisitGrid(x, y, visitor);
                 i_corpses += worker.i_corpses;
             }
         }
     }
-    sLog->outDebug(LOG_FILTER_MAPS, "%u GameObjects, %u Creatures, and %u Corpses/Bones loaded for grid %u on map %u", i_gameObjects, i_creatures, i_corpses, i_grid.GetGridId(), i_map->GetId());
+    sLog->outDebug(LOG_FILTER_MAPS, "%u GameObjects, %u Creatures, and %u Corpses/Bones loaded for grid %u on map %u", i_gameObjects, i_creatures, i_corpses, i_grid->GetGridId(), i_map->GetId());
 }
 
 template<class T>
 void ObjectGridUnloader::Visit(std::shared_ptr<GridRefManager<T>> &m)
 {
-    while (!m->isEmpty())
+    for (GridRefManager<T>::iterator itr = m->begin(); itr != m->end(); ++itr)
     {
         std::shared_ptr<T> obj = m->getFirst()->getSource();
         // if option set then object already saved at this moment
@@ -203,7 +203,9 @@ void ObjectGridUnloader::Visit(std::shared_ptr<GridRefManager<T>> &m)
         //TODO: Check if that script has the correct logic. Do we really need to summons something before deleting?
         obj->CleanupsBeforeDelete();
         ///- object will get delinked from the manager when deleted
+
     }
+    m->clearReferences();
 }
 
 void ObjectGridStoper::Visit(std::shared_ptr<CreatureMapType> &m)

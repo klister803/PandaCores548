@@ -32,7 +32,7 @@ class IdleMovementGenerator : public MovementGenerator
         MovementGeneratorType GetMovementGeneratorType() { return IDLE_MOTION_TYPE; }
 };
 
-extern IdleMovementGenerator si_idleMovement;
+extern std::shared_ptr<IdleMovementGenerator> si_idleMovement;
 
 class RotateMovementGenerator : public MovementGenerator
 {

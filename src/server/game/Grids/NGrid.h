@@ -187,11 +187,11 @@ class NGrid : public std::enable_shared_from_this<NGrid<N, ACTIVE_OBJECT, WORLD_
                     count += i_cells[x][y].template GetWorldObjectCountInGrid<T>();
             return count;
         }
-
+        
+        std::shared_ptr<GridReference<NGrid<N, ACTIVE_OBJECT, WORLD_OBJECT_TYPES, GRID_OBJECT_TYPES> > > i_Reference;
     private:
         uint32 i_gridId;
         GridInfo i_GridInfo;
-        std::shared_ptr<GridReference<NGrid<N, ACTIVE_OBJECT, WORLD_OBJECT_TYPES, GRID_OBJECT_TYPES> > > i_Reference;
         int32 i_x;
         int32 i_y;
         grid_state_t i_cellstate;

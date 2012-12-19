@@ -28,7 +28,7 @@
 
 class Unit;
 
-class MovementGenerator
+class MovementGenerator : public std::enable_shared_from_this<MovementGenerator>
 {
     public:
         virtual ~MovementGenerator();

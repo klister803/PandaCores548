@@ -82,7 +82,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
 {
     private:
         //typedef std::stack<MovementGenerator *> Impl;
-        typedef MovementGenerator* _Ty;
+        typedef std::shared_ptr<MovementGenerator> _Ty;
 
         void pop()
         {
@@ -180,7 +180,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
 
         bool GetDestination(float &x, float &y, float &z);
     private:
-        void Mutate(MovementGenerator *m, MovementSlot slot);                  // use Move* functions instead
+        void Mutate(std::shared_ptr<MovementGenerator> m, MovementSlot slot);                  // use Move* functions instead
 
         void DirectClean(bool reset);
         void DelayedClean();

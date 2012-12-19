@@ -1099,7 +1099,7 @@ public:
             return false;
         }
 
-        FollowMovementGenerator<Creature> const* mgen = static_cast<FollowMovementGenerator<Creature> const*>((creature->GetMotionMaster()->top()));
+        std::shared_ptr<const FollowMovementGenerator<Creature>> mgen = STATIC_CAST(const FollowMovementGenerator<Creature>,(creature->GetMotionMaster()->top()));
 
         if (mgen->GetTarget() != player)
         {

@@ -218,7 +218,7 @@ void WorldSession::HandleMoveSplineDoneOpcode(WorldPacket& recvData)
         if (GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE)
         {
             // short preparations to continue flight
-            FlightPathMovementGenerator* flight = (FlightPathMovementGenerator*)(GetPlayer()->GetMotionMaster()->top());
+            FlightPathMovementGeneratorPtr flight = STATIC_CAST(FlightPathMovementGenerator,(GetPlayer()->GetMotionMaster()->top()));
 
             flight->SetCurrentNodeAfterTeleport();
             TaxiPathNodeEntry const& node = flight->GetPath()[flight->GetCurrentNode()];

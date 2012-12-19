@@ -71,7 +71,7 @@ WeatherPtr AddWeather(uint32 zone_id)
         return nullptr;
 
     WeatherPtr w (new Weather(zone_id, weatherChances));
-    m_weathers[w->GetZone()].reset(&*w);
+    //m_weathers[w->GetZone()].reset(&*w);
     w->ReGenerate();
     w->UpdateWeather();
 

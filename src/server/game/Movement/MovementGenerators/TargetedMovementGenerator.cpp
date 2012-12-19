@@ -31,7 +31,7 @@
 template<class T, typename D>
 void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(std::shared_ptr<T> &owner)
 {
-    if (!i_target.isValid() || !i_target->IsInWorld())
+    if (!i_target->isValid() || !(*(Reference<T, D>*)i_target.get())->IsInWorld())
         return;
 
     if (owner->HasUnitState(UNIT_STATE_NOT_MOVE))
@@ -51,18 +51,18 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(std::shared_ptr<T>
 //     else
     if (!i_offset)
     {
-        if (i_target->IsWithinMeleeRange(owner))
+        if ((*(Reference<T, D>*)i_target.get())->IsWithinMeleeRange(owner))
             return;
 
         // to nearest random contact position
-        i_target->GetRandomContactPoint(owner, x, y, z, 0, MELEE_RANGE - 0.5f);
+        (*(Reference<T, D>*)i_target.get())->GetRandomContactPoint(owner, x, y, z, 0, MELEE_RANGE - 0.5f);
     }
     else
     {
-        if (i_target->IsWithinDistInMap(owner, i_offset + 1.0f))
+        if ((*(Reference<T, D>*)i_target.get())->IsWithinDistInMap(owner, i_offset + 1.0f))
             return;
         // to at i_offset distance from target and i_angle from target facing
-        i_target->GetClosePoint(x, y, z, owner->GetObjectSize(), i_offset, i_angle);
+        (*(Reference<T, D>*)i_target.get())->GetClosePoint(x, y, z, owner->GetObjectSize(), i_offset, i_angle);
     }
 
     /*
@@ -89,7 +89,7 @@ void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(std::shared_ptr<T>
 
     Movement::MoveSplineInit init(TO_UNIT(owner));
     init.MoveTo(x,y,z);
-    init.SetFacing(i_target.getTarget());
+    init.SetFacing(i_target->getTarget());
     init.SetWalk(((D*)this)->EnableWalking());
     init.Launch();
 }
@@ -123,7 +123,7 @@ void TargetedMovementGeneratorMedium<Creature,FollowMovementGenerator<Creature> 
 template<class T, typename D>
 bool TargetedMovementGeneratorMedium<T,D>::Update(std::shared_ptr<T> &owner, const uint32 & time_diff)
 {
-    if (!i_target.isValid() || !i_target->IsInWorld())
+    if (!i_target->isValid() || !(*(Reference<T, D>*)i_target.get())->IsInWorld())
         return false;
 
     if (!owner->isAlive())
@@ -155,8 +155,8 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(std::shared_ptr<T> &owner, con
     {
         i_recheckDistance.Reset(50);
         //More distance let have better performance, less distance let have more sensitive reaction at target move->
-        float allowed_dist = i_target->GetObjectSize() + owner->GetObjectSize() + MELEE_RANGE - 0.5f;
-        float dist = (owner->movespline->FinalDestination() - G3D::Vector3(i_target->GetPositionX(),i_target->GetPositionY(),i_target->GetPositionZ())).squaredLength();
+        float allowed_dist = (*(Reference<T, D>*)i_target.get())->GetObjectSize() + owner->GetObjectSize() + MELEE_RANGE - 0.5f;
+        float dist = (owner->movespline->FinalDestination() - G3D::Vector3((*(Reference<T, D>*)i_target.get())->GetPositionX(),(*(Reference<T, D>*)i_target.get())->GetPositionY(),(*(Reference<T, D>*)i_target.get())->GetPositionZ())).squaredLength();
         if (dist >= allowed_dist * allowed_dist)
             _setTargetLocation(owner);
     }
@@ -164,8 +164,8 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(std::shared_ptr<T> &owner, con
     if (owner->movespline->Finalized())
     {
         static_cast<D*>(this)->MovementInform(owner);
-        if (i_angle == 0.f && !owner->HasInArc(0.01f, i_target.getTarget().get()))
-            owner->SetInFront(i_target.getTarget());
+        if (i_angle == 0.f && !owner->HasInArc(0.01f, i_target->getTarget().get()))
+            owner->SetInFront(i_target->getTarget());
 
         if (!i_targetReached)
         {
@@ -185,8 +185,8 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(std::shared_ptr<T> &owner, con
 template<class T>
 void ChaseMovementGenerator<T>::_reachTarget(std::shared_ptr<T> &owner)
 {
-    if (owner->IsWithinMeleeRange(this->i_target.getTarget()))
-        owner->Attack(this->i_target.getTarget(),true);
+    if (owner->IsWithinMeleeRange(i_target->getTarget()))
+        owner->Attack(i_target->getTarget(),true);
 }
 
 template<>
@@ -226,14 +226,14 @@ void ChaseMovementGenerator<Creature>::MovementInform(CreaturePtr&unit)
 {
     // Pass back the GUIDLow of the target-> If it is pet's owner then PetAI will handle
     if (unit->AI())
-        unit->AI()->MovementInform(CHASE_MOTION_TYPE, i_target.getTarget()->GetGUIDLow());
+        unit->AI()->MovementInform(CHASE_MOTION_TYPE, i_target->getTarget()->GetGUIDLow());
 }
 
 //-----------------------------------------------//
 template<>
 bool FollowMovementGenerator<Creature>::EnableWalking() const
 {
-    return i_target.isValid() && i_target->IsWalking();
+    return i_target->isValid() && ((Unit*)i_target.get())->IsWalking();
 }
 
 template<>
@@ -252,7 +252,7 @@ template<>
 void FollowMovementGenerator<Creature>::_updateSpeed(CreaturePtr&u)
 {
     // pet only sync speed with owner
-    if (!TO_CREATURE(u)->isPet() || !i_target.isValid() || i_target->GetGUID() != u->GetOwnerGUID())
+    if (!TO_CREATURE(u)->isPet() || !i_target->isValid() || ((Unit*)i_target.get())->GetGUID() != u->GetOwnerGUID())
         return;
 
     u->UpdateSpeed(MOVE_RUN,true);
@@ -299,7 +299,7 @@ void FollowMovementGenerator<Creature>::MovementInform(CreaturePtr& unit)
 {
     // Pass back the GUIDLow of the target-> If it is pet's owner then PetAI will handle
     if (unit->AI())
-        unit->AI()->MovementInform(FOLLOW_MOTION_TYPE, i_target.getTarget()->GetGUIDLow());
+        unit->AI()->MovementInform(FOLLOW_MOTION_TYPE, i_target->getTarget()->GetGUIDLow());
 }
 
 //-----------------------------------------------//

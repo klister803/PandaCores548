@@ -11,6 +11,13 @@
 # include "MapInstanced.h"
 # include "ScriptMgr.h"
 # include "Object.h"
+# include "PointMovementGenerator.h"
+# include "TargetedMovementGenerator.h"
+# include "ConfusedMovementGenerator.h"
+# include "HomeMovementGenerator.h"
+# include "RandomMovementGenerator.h"
+# include "FleeingMovementGenerator.h"
+# include "IdleMovementGenerator.h"
 
 class ClassFactory
 {
@@ -335,6 +342,120 @@ public:
         ref->iAccessible = true;
 
         return ref;
+    }
+
+    template<class T>
+    static std::shared_ptr<FollowMovementGenerator<T>> ConstructFollowMovementGenerator(UnitPtr &target, float offset, float angle)
+    {
+        std::shared_ptr<FollowMovementGenerator<T>> gen(new FollowMovementGenerator<T>(target, offset, angle));
+        if (!gen)
+            return nullptr;
+        gen->i_target->link(target, gen);
+        return gen;
+    }
+
+    template<class T>
+    static std::shared_ptr<FollowMovementGenerator<T>> ConstructFollowMovementGenerator(UnitPtr &target)
+    {
+        std::shared_ptr<FollowMovementGenerator<T>> gen(new FollowMovementGenerator<T>(target));
+        if (!gen)
+            return nullptr;
+        gen->i_target.link(target, gen);
+        return gen;
+    }
+
+    template<class T>
+    static std::shared_ptr<PointMovementGenerator<T>> ConstructPointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _speed = 0.0f)
+    {
+        std::shared_ptr<PointMovementGenerator<T>> gen(new PointMovementGenerator<T>(_id, _x, _y, _z, _speed));
+        if (!gen)
+            return nullptr;
+        return gen;
+    }
+
+    template<class T>
+    static std::shared_ptr<ChaseMovementGenerator<T>> ConstructChaseMovementGenerator(UnitPtr &target, float offset, float angle)
+    {
+        std::shared_ptr<ChaseMovementGenerator<T>> gen(new ChaseMovementGenerator<T>(target, offset, angle));
+        if (!gen)
+            return nullptr;
+        gen->i_target->link(target, gen);
+        return gen;
+    }
+
+    template<class T>
+    static std::shared_ptr<ConfusedMovementGenerator<T>> ConstructConfusedMovementGenerator()
+    {
+        std::shared_ptr<ConfusedMovementGenerator<T>> gen(new ConfusedMovementGenerator<T>());
+        if (!gen)
+            return nullptr;
+        return gen;
+    }
+
+    template<class T>
+    static std::shared_ptr<HomeMovementGenerator<T>> ConstructHomeMovementGenerator()
+    {
+        static_assert(false, "ClassFactory can't build HomeMovementGenerator for T <> Creature");
+        return nullptr;
+    }
+
+    template<>
+    static std::shared_ptr<HomeMovementGenerator<Creature>> ConstructHomeMovementGenerator()
+    {
+        std::shared_ptr<HomeMovementGenerator<Creature>> gen (new HomeMovementGenerator<Creature>());
+        if (!gen)
+            return nullptr;
+        return gen;
+    }
+
+    template<class T>
+    static std::shared_ptr<RandomMovementGenerator<T>> ConstructRandomMovementGenerator(float spawn_dist = 0.0f)
+    {
+        std::shared_ptr<RandomMovementGenerator<T>> gen (new RandomMovementGenerator<T>());
+        if (!gen)
+            return nullptr;
+        return gen;
+    }
+
+    static std::shared_ptr<EffectMovementGenerator> ConstructEffectMovementGenerator(uint32 Id)
+    {
+        std::shared_ptr<EffectMovementGenerator> gen(new EffectMovementGenerator(Id));
+        if (!gen)
+            return nullptr;
+        return gen;
+    }
+
+    static std::shared_ptr<AssistanceMovementGenerator> ConstructAssistanceMovementGenerator(float _x, float _y, float _z)
+    {
+        std::shared_ptr<AssistanceMovementGenerator> gen ( new AssistanceMovementGenerator(_x, _y, _z));
+        if (!gen)
+            return nullptr;
+        return gen;
+    }
+
+    static std::shared_ptr<AssistanceDistractMovementGenerator> ConstructAssistanceDistractMovementGenerator(uint32 timer)
+    {
+        std::shared_ptr<AssistanceDistractMovementGenerator> gen (new AssistanceDistractMovementGenerator(timer));
+        if (!gen)
+            return nullptr;
+        return gen;
+    }
+
+    template<class T>
+    static std::shared_ptr<FleeingMovementGenerator<T>> ConstructFleeingMovementGenerator(uint64 fright)
+    {
+        std::shared_ptr<FleeingMovementGenerator<T>> gen(new FleeingMovementGenerator<T>(fright));
+        if (!gen)
+            return nullptr;
+        return gen;
+    }
+
+    static std::shared_ptr<TimedFleeingMovementGenerator> ConstructTimedFleeingMovementGenerator(uint64 fright, uint32 time)
+    {
+        std::shared_ptr<TimedFleeingMovementGenerator> gen(new TimedFleeingMovementGenerator(fright, time));
+        if (!gen)
+            return nullptr;
+        return gen;
     }
 
     template<class T>

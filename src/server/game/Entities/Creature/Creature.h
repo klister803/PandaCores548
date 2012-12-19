@@ -786,7 +786,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 class AssistDelayEvent : public BasicEvent
 {
     public:
-        AssistDelayEvent(uint64 victim, UnitPtr& owner) : BasicEvent(), m_victim(victim), m_owner(owner) { }
+        AssistDelayEvent(uint64 victim, UnitPtr owner) : BasicEvent(), m_victim(victim), m_owner(owner) { }
 
         bool Execute(uint64 e_time, uint32 p_time);
         void AddAssistant(uint64 guid) { m_assistants.push_back(guid); }
@@ -795,7 +795,7 @@ class AssistDelayEvent : public BasicEvent
 
         uint64            m_victim;
         std::list<uint64> m_assistants;
-        UnitPtr&             m_owner;
+        UnitPtr           m_owner;
 };
 
 class ForcedDespawnDelayEvent : public BasicEvent

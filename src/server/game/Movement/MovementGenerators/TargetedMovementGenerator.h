@@ -24,13 +24,17 @@
 #include "Timer.h"
 #include "Unit.h"
 
-class TargetedMovementGeneratorBase : public std::enable_shared_from_this<TargetedMovementGeneratorBase>
+class ClassFactory;
+
+class TargetedMovementGeneratorBase
 {
+    friend class ClassFactory;
+    protected:
+        TargetedMovementGeneratorBase(UnitPtr &target) : i_target(std::shared_ptr<FollowerReference>(new FollowerReference())) {} //gen->i_target.link(target, gen);
     public:
-        TargetedMovementGeneratorBase(UnitPtr &target) { i_target.link(target, shared_from_this()); }
         void stopFollowing() { }
     protected:
-        FollowerReference i_target;
+        std::shared_ptr<FollowerReference> i_target;
 };
 
 template<class T, typename D>
@@ -47,7 +51,7 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
 
     public:
         bool Update(std::shared_ptr<T> &, const uint32 &);
-        UnitPtr GetTarget() const { return i_target.getTarget(); }
+        UnitPtr GetTarget() const { return i_target->getTarget(); }
 
         void unitSpeedChanged() { i_recalculateTravel=true; }
         void UpdateFinalDistance(float fDistance);
@@ -65,11 +69,13 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
 template<class T>
 class ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMovementGenerator<T> >
 {
-    public:
+    friend class ClassFactory;
+    protected:
         ChaseMovementGenerator(UnitPtr &target)
             : TargetedMovementGeneratorMedium<T, ChaseMovementGenerator<T> >(target) {}
         ChaseMovementGenerator(UnitPtr &target, float offset, float angle)
             : TargetedMovementGeneratorMedium<T, ChaseMovementGenerator<T> >(target, offset, angle) {}
+    public:
         ~ChaseMovementGenerator() {}
 
         MovementGeneratorType GetMovementGeneratorType() { return CHASE_MOTION_TYPE; }
@@ -89,11 +95,13 @@ class ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMo
 template<class T>
 class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >
 {
-    public:
+    friend class ClassFactory;
+    private:
         FollowMovementGenerator(UnitPtr &target)
             : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target){}
         FollowMovementGenerator(UnitPtr &target, float offset, float angle)
             : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target, offset, angle) {}
+    public:
         ~FollowMovementGenerator() {}
 
         MovementGeneratorType GetMovementGeneratorType() { return FOLLOW_MOTION_TYPE; }

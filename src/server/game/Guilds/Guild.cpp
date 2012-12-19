@@ -3342,12 +3342,19 @@ void Guild::SendGuildXP(WorldSession* session) const
     Member const* member = GetMember(session->GetGuidLow());
 
     WorldPacket data(SMSG_GUILD_XP, 40);
-    data << uint64(/*member ? member->GetTotalActivity() :*/ 0);
+    data << uint64(0); // fucking unknow
+    data << uint64(GetTodayExperience());
+    data << uint64(GetExperience());
+    data << uint64(sGuildMgr->GetXPForGuildLevel(GetLevel()) - GetExperience());    // XP missing for next level
+    session->SendPacket(&data);
+
+/*    WorldPacket data(SMSG_GUILD_XP, 40);
+    data << uint64(/*member ? member->GetTotalActivity() :*/ /*0);
     data << uint64(sGuildMgr->GetXPForGuildLevel(GetLevel()) - GetExperience());    // XP missing for next level
     data << uint64(GetTodayExperience());
-    data << uint64(/*member ? member->GetWeeklyActivity() :*/ 0);
+    data << uint64(/*member ? member->GetWeeklyActivity() :*/ /*0);
     data << uint64(GetExperience());
-    session->SendPacket(&data);
+    session->SendPacket(&data);*/
 }
 
 void Guild::ResetDailyExperience()

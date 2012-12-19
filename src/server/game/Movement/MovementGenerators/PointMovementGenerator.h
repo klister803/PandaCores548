@@ -22,13 +22,16 @@
 #include "MovementGenerator.h"
 #include "FollowerReference.h"
 
+class ClassFactory;
+
 template<class T>
 class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementGenerator<T> >
 {
-    public:
+    friend class ClassFactory;
+    protected:
         PointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _speed = 0.0f) : id(_id),
             i_x(_x), i_y(_y), i_z(_z), speed(_speed) {}
-
+    public:
         void Initialize(std::shared_ptr<T> &);
         void Finalize(std::shared_ptr<T> &);
         void Reset(std::shared_ptr<T> &);

@@ -21,6 +21,17 @@ class Map;
 # define CONST_CAST(x, y) std::const_pointer_cast<const x>(y)
 # define NO_CONST(x,y) std::const_pointer_cast<x>(y)
 
+/*
+** Movements.
+*/
+class FlightPathMovementGenerator;
+class DistractMovementGenerator;
+typedef std::shared_ptr<FlightPathMovementGenerator> FlightPathMovementGeneratorPtr;
+typedef std::shared_ptr<DistractMovementGenerator> DistractMovementGeneratorPtr;
+/*
+** !Movements.
+*/
+
 # define GroupPtr std::shared_ptr<Group>
 # define constGroupPtr std::shared_ptr<const Group>
 # define MapPtr std::shared_ptr<Map>
