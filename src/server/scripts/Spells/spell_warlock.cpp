@@ -51,6 +51,7 @@ enum WarlockSpells
     WARLOCK_DRAIN_LIFE_HEAL                 = 89653,
     WARLOCK_SOULBURN_AURA                   = 74434,
     WARLOCK_CORRUPTION                      = 172,
+    WARLOCK_DOOM                            = 124913,
     WARLOCK_UNSTABLE_AFFLICTION             = 30108,
     WARLOCK_IMMOLATE                        = 348
 };
@@ -92,6 +93,11 @@ class spell_warl_fel_flame : public SpellScriptLoader
                             {
                                 corruption->SetDuration(corruption->GetDuration() + 6000);
                                 corruption->SetNeedClientUpdateForTargets();
+                            }
+                            else if (AuraPtr doom = target->GetAura(WARLOCK_DOOM))
+                            {
+                                doom->SetDuration(doom->GetDuration() + 6000);
+                                doom->SetNeedClientUpdateForTargets();
                             }
                         }
                         // Increases the duration of Immolate by 6s
