@@ -3291,6 +3291,10 @@ void Unit::_ApplyAura(AuraApplication * aurApp, uint32 effMask)
 {
     AuraPtr aura = aurApp->GetBase();
 
+    // Hack Fix for decrease speed of Conflagrate
+    if ((aura->GetId() == 108685 || aura->GetId() == 17962) && !HasAura(348))
+        return;
+
     _RemoveNoStackAurasDueToAura(aura);
 
     if (aurApp->GetRemoveMode())
