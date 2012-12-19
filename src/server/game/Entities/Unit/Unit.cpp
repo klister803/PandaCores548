@@ -10206,6 +10206,14 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             break;
                         }
                     break;
+                    case SPELLFAMILY_WARLOCK:
+                        // Chaos Bolt
+                        if (spellProto->Id == 116858)
+                            return true;
+                        // Soul Fire
+                        if (spellProto->Id == 6353)
+                            return true;
+                        break;
                 }
             }
             break;
@@ -13481,7 +13489,7 @@ int32 Unit::GetCreatePowers(Powers power) const
         case POWER_SHADOW_ORB:
             return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_PRIEST && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_PRIEST_SHADOW) ? 3 : 0);
         case POWER_BURNING_EMBERS:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION) ? 3 : 0);
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION) ? 30 : 0);
         case POWER_DEMONIC_FURY:
             return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY) ? 1000 : 0);
         case POWER_SOUL_SHARDS:

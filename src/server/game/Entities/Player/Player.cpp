@@ -685,6 +685,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_regenTimerCount = 0;
     m_holyPowerRegenTimerCount = 0;
     m_chiPowerRegenTimerCount = 0;
+    m_soulShardsRegenTimerCount = 0;
+    m_burningEmbersRegenTimerCount = 0;
     m_focusRegenTimerCount = 0;
     m_weaponChangeTimer = 0;
 
@@ -2602,8 +2604,12 @@ void Player::RegenerateAll()
     if (getClass() == CLASS_HUNTER)
         m_focusRegenTimerCount += m_regenTimer;
 
-    if (getClass() == CLASS_WARLOCK)
+    if (getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
         m_demonicFuryPowerRegenTimerCount += m_regenTimer;
+    else if (getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+        m_burningEmbersRegenTimerCount += m_regenTimer;
+    else if (getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION)
+        m_soulShardsRegenTimerCount += m_regenTimer;
 
     Regenerate(POWER_ENERGY);
     Regenerate(POWER_MANA);
@@ -2649,6 +2655,12 @@ void Player::RegenerateAll()
             Regenerate(POWER_RUNIC_POWER);
 
         m_regenTimerCount -= 2000;
+    }
+
+    if (m_burningEmbersRegenTimerCount >= 2000 && getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+    {
+        Regenerate(POWER_BURNING_EMBERS);
+        m_burningEmbersRegenTimerCount -= 2000;
     }
 
     if (m_holyPowerRegenTimerCount >= 10000 && getClass() == CLASS_PALADIN)
@@ -2756,12 +2768,22 @@ void Player::Regenerate(Powers power)
                 addvalue += (200.0f - GetPower(POWER_DEMONIC_FURY));      // min power demonic fury set at 200
         }
         break;
+        case POWER_BURNING_EMBERS:
+        {
+            // After 15s return to one embers if no one
+            // or return to one if more than one
+            if (!isInCombat() && GetPower(POWER_BURNING_EMBERS) < 10)
+                addvalue += 10 - GetPower(POWER_BURNING_EMBERS); // Return to one burning ember in 10s
+            else if (!isInCombat() && GetPower(POWER_BURNING_EMBERS) > 10)
+                addvalue += -1;
+        }
+        break;
         default:
             break;
     }
 
     // Mana regen calculated in Player::UpdateManaRegen()
-    if (power != POWER_MANA)
+    if (power != POWER_MANA && power != POWER_CHI && power != POWER_HOLY_POWER && power != POWER_SOUL_SHARDS && power != POWER_BURNING_EMBERS && power != POWER_DEMONIC_FURY)
     {
         AuraEffectList const& ModPowerRegenPCTAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
         for (AuraEffectList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
@@ -2893,7 +2915,7 @@ void Player::ResetAllPowers()
             SetPower(POWER_DEMONIC_FURY, 200);
             break;
         case POWER_BURNING_EMBERS:
-            SetPower(POWER_BURNING_EMBERS, 1);
+            SetPower(POWER_BURNING_EMBERS, 10);
             break;
         case POWER_SOUL_SHARDS:
             SetPower(POWER_SOUL_SHARDS, 1);
@@ -3607,7 +3629,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetPower(POWER_CHI, 0);
     SetPower(POWER_SOUL_SHARDS, 1);
     SetPower(POWER_DEMONIC_FURY, 200);
-    SetPower(POWER_BURNING_EMBERS, 1);
+    SetPower(POWER_BURNING_EMBERS, 10);
     SetPower(POWER_SHADOW_ORB, 0);
     SetPower(POWER_ECLIPSE, 0);
 
@@ -5450,8 +5472,8 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         SetPower(POWER_FOCUS, uint32(GetMaxPower(POWER_FOCUS)*restore_percent));
         SetPower(POWER_ECLIPSE, 0);
         SetPower(POWER_DEMONIC_FURY, 200);
-        SetPower(POWER_BURNING_EMBERS, 0);
-        SetPower(POWER_SOUL_SHARDS, 0);
+        SetPower(POWER_BURNING_EMBERS, 10);
+        SetPower(POWER_SOUL_SHARDS, 1);
         SetPower(POWER_CHI, 0);
         SetPower(POWER_SHADOW_ORB, 0);
     }
@@ -24051,8 +24073,8 @@ void Player::ResurectUsingRequestData()
     SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
     SetPower(POWER_FOCUS, GetMaxPower(POWER_FOCUS));
     SetPower(POWER_ECLIPSE, 0);
-    SetPower(POWER_BURNING_EMBERS, 0);
-    SetPower(POWER_SOUL_SHARDS, 0);
+    SetPower(POWER_BURNING_EMBERS, 10);
+    SetPower(POWER_SOUL_SHARDS, 1);
     SetPower(POWER_DEMONIC_FURY, 200);
     SetPower(POWER_SHADOW_ORB, 0);
     SetPower(POWER_CHI, 0);
