@@ -47,13 +47,17 @@ class Log
 
         void outTrace(LogFilterType f, char const* str, ...) ATTR_PRINTF(3,4);
         void outDebug(LogFilterType f, char const* str, ...) ATTR_PRINTF(3,4);
-        void outInfo(LogFilterType f, char const* str, ...) ATTR_PRINTF(3,4);
-        void outWarn(LogFilterType f, char const* str, ...) ATTR_PRINTF(3,4);
+        void outInfo (LogFilterType f, char const* str, ...) ATTR_PRINTF(3,4);
+        void outWarn (LogFilterType f, char const* str, ...) ATTR_PRINTF(3,4);
         void outError(LogFilterType f, char const* str, ...) ATTR_PRINTF(3,4);
         void outFatal(LogFilterType f, char const* str, ...) ATTR_PRINTF(3,4);
 
         void EnableDBAppenders();
-        void outCommand(uint32 account, const char * str, ...) ATTR_PRINTF(3, 4);
+        void outCommand( uint32 gm_account_id  , std::string gm_account_name,
+                         uint32 gm_character_id, std::string gm_character_name,
+                         uint32 sc_account_id  , std::string sc_account_name,
+                         uint32 sc_character_id, std::string sc_character_name,
+                         const char * str, ...)              ATTR_PRINTF(10,11);
         void outCharDump(char const* str, uint32 account_id, uint32 guid, char const* name);
         static std::string GetTimestampStr();
 

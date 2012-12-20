@@ -451,24 +451,33 @@ void Log::outCharDump(char const* str, uint32 accountId, uint32 guid, char const
     write(msg);
 }
 
-void Log::outCommand(uint32 account, const char * str, ...)
+void Log::outCommand(uint32 gm_account_id  , std::string gm_account_name, 
+                     uint32 gm_character_id, std::string gm_character_name,
+                     uint32 sc_account_id  , std::string sc_account_name,
+                     uint32 sc_character_id, std::string sc_character_name,
+                     const char * str, ...)
 {
-    if (!str || !ShouldLog(LOG_FILTER_GMCOMMAND, LOG_LEVEL_INFO))
+    if (!str)
         return;
+
+    GmCommand * new_command = new GmCommand;
+    new_command->accountID[0]       = gm_account_id;
+    new_command->accountID[1]       = sc_account_id;
+    new_command->accountName[0]     = gm_account_name;
+    new_command->accountName[1]     = sc_account_name;
+    new_command->characterID[0]     = gm_character_id;
+    new_command->characterID[1]     = sc_character_id;
+    new_command->characterName[0]   = gm_character_name;
+    new_command->characterName[1]   = sc_character_name;
 
     va_list ap;
     va_start(ap, str);
-    char text[MAX_QUERY_LEN];
-    vsnprintf(text, MAX_QUERY_LEN, str, ap);
+    char buffer[1024]; //buffer.
+    vsprintf(buffer, str, ap);
     va_end(ap);
+    new_command->command = buffer;
 
-    LogMessage* msg = new LogMessage(LOG_LEVEL_INFO, LOG_FILTER_GMCOMMAND, text);
-
-    std::ostringstream ss;
-    ss << account;
-    msg->param1 = ss.str();
-
-    write(msg);
+    GmLogQueue.add(new_command);
 }
 
 void Log::SetRealmID(uint32 id)
