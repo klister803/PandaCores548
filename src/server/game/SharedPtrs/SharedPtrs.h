@@ -238,5 +238,6 @@ typedef std::shared_ptr<DistractMovementGenerator> DistractMovementGeneratorPtr;
 /*
 ** End of spells and auras shared_ptr
 */
+#include "MovementGenerator.h"
 
 #endif /* !SHARED_PTRS_H */

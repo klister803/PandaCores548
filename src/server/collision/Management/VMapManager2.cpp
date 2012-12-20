@@ -34,6 +34,14 @@
 #include "Unit.h"
 #include "TemporarySummon.h"
 #include "MovementGenerator.h"
+#include "GameObject.h"
+#ifndef INCLUDES_FOR_SHARED_PTR
+# define INCLUDES_FOR_SHARED_PTR
+# include "../Entities/Player/Player.h"
+# include "../Groups/Group.h"
+# include "../Spells/Auras/SpellAuraEffects.H"
+# undef INCLUDES_FOR_SHARED_PTR
+#endif
 
 using G3D::Vector3;
 

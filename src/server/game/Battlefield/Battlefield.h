@@ -19,13 +19,23 @@
 #ifndef BATTLEFIELD_H_
 #define BATTLEFIELD_H_
 
-#include "Utilities/Util.h"
-#include "SharedDefines.h"
-#include "ZoneScript.h"
-#include "WorldPacket.h"
-#include "GameObject.h"
-#include "Battleground.h"
-#include "ObjectAccessor.h"
+#ifndef INCLUDES_FOR_SHARED_PTR
+# include "Utilities/Util.h"
+# include "SharedDefines.h"
+# include "ZoneScript.h"
+# include "WorldPacket.h"
+# include "GameObject.h"
+# include "Battleground.h"
+# include "ObjectAccessor.h"
+#else
+# include "Utilities/Util.h"
+# include "SharedDefines.h"
+# include "ZoneScript.h"
+# include "WorldPacket.h"
+# include "GameObject.h"
+# include "../Battlegrounds/Battleground.h"
+# include "../Globals/ObjectAccessor.h"
+#endif
 
 enum BattlefieldTypes
 {

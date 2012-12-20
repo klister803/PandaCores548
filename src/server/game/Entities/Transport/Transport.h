@@ -20,7 +20,11 @@
 #define TRANSPORTS_H
 
 #include "GameObject.h"
-#include "VehicleDefines.h"
+#ifndef INCLUDES_FOR_SHARED_PTR
+# include "VehicleDefines.h"
+#else
+# include "../Entities/Vehicle/VehicleDefines.h"
+#endif
 
 #include <map>
 #include <set>

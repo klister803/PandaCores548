@@ -27,9 +27,14 @@
 #include "UpdateData.h"
 
 #include "GridDefines.h"
+#ifndef INCLUDES_FOR_SHARED_PTR
 #include "Player.h"
-#include "Object.h"
 #include "Transport.h"
+#else
+#include "../Entities/Player/Player.h"
+#include "../Transport/Transport.h"
+#endif
+#include "Object.h"
 
 #include <set>
 

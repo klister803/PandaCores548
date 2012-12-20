@@ -36,6 +36,12 @@
 #include "Util.h"
 #include "SpellAuraEffects.h"
 
+#ifndef INCLUDES_FOR_SHARED_PTR
+# define INCLUDES_FOR_SHARED_PTR
+# include "Group.h"
+# undef INCLUDES_FOR_SHARED_PTR
+#endif
+
 #if PLATFORM != PLATFORM_WINDOWS
 #include <readline/readline.h>
 #include <readline/history.h>

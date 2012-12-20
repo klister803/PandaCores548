@@ -32,6 +32,13 @@
 #include "WorldRunnable.h"
 #include "OutdoorPvPMgr.h"
 
+#ifndef INCLUDES_FOR_SHARED_PTR
+# define INCLUDES_FOR_SHARED_PTR
+# include "../Spells/Auras/SpellAuraEffects.H"
+# include "../Groups/Group.h"
+# undef INCLUDES_FOR_SHARED_PTR
+#endif
+
 #define WORLD_SLEEP_CONST 50
 
 #ifdef _WIN32

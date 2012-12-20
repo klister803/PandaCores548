@@ -19,16 +19,27 @@
 #ifndef TRINITYCORE_GROUP_H
 #define TRINITYCORE_GROUP_H
 
+#ifndef INCLUDES_FOR_SHARED_PTR
 //#include "Battleground.h"
-#include "DBCEnums.h"
-#include "GroupRefManager.h"
-#include "LootMgr.h"
-#include "QueryResult.h"
-#include "SharedDefines.h"
-#include "Player.h"
-#include "Battlefield.h"
+# include "DBCEnums.h"
+# include "GroupRefManager.h"
+# include "LootMgr.h"
+# include "QueryResult.h"
+# include "SharedDefines.h"
+# include "Player.h"
+# include "Battlefield.h"
 //#include "BattlefieldMgr.h"
-#include "../SharedPtrs/SharedPtrs.h"
+# include "../SharedPtrs/SharedPtrs.h"
+#else
+# include "../Entities/Player/Player.h"
+# include "../Battlefield/Battlefield.h"
+# include "../SharedPtrs/SharedPtrs.h"
+# include "DBCEnums.h"
+# include "GroupRefManager.h"
+# include "../Loot/LootMgr.h"
+# include "QueryResult.h"
+# include "SharedDefines.h"
+#endif
 
 class Creature;
 class GroupReference;

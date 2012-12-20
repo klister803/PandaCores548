@@ -33,10 +33,11 @@
 #include "../Entities/Pet/Pet.h"
 #include "MapReference.h"
 
-#ifndef INCLUDE_PLAYER_FOR_GAMEOBJECT_MODEL
-# define INCLUDE_PLAYER_FOR_GAMEOBJECT_MODEL
+#ifndef INCLUDES_FOR_SHARED_PTR
+# define INCLUDES_FOR_SHARED_PTR
 # include "../Entities/Player/Player.h"
-# undef INCLUDE_PLAYER_FOR_GAMEOBJECT_MODEL
+# include "../Groups/Group.h"
+# undef INCLUDES_FOR_SHARED_PTR
 #endif
 
 using G3D::Vector3;
