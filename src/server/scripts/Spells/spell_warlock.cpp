@@ -61,6 +61,36 @@ enum WarlockSpells
     WARLOCK_FIRE_AND_BRIMSTONE              = 108683,
     WARLOCK_BACKDRAFT                       = 117828,
     WARLOCK_PYROCLASM                       = 123686,
+    WARLOCK_RAIN_OF_FIRE                    = 104232,
+    WARLOCK_RAIN_OF_FIRE_TRIGGERED          = 42223,
+};
+
+// Rain of Fire - 104232
+class spell_warl_rain_of_fire : public SpellScriptLoader
+{
+    public:
+        spell_warl_rain_of_fire() : SpellScriptLoader("spell_warl_rain_of_fire") { }
+
+        class spell_warl_rain_of_fire_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_rain_of_fire_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(WARLOCK_RAIN_OF_FIRE))
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), WARLOCK_RAIN_OF_FIRE_TRIGGERED, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_rain_of_fire_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_rain_of_fire_AuraScript();
+        }
 };
 
 // Chaos Bolt - 116858
@@ -1092,6 +1122,7 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_rain_of_fire();
     new spell_warl_chaos_bolt();
     new spell_warl_ember_tap();
     new spell_warl_fire_and_brimstone();

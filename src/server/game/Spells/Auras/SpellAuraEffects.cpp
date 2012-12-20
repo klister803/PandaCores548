@@ -6003,7 +6003,7 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                     break;
             }
             // Death and Decay
-            if (GetSpellInfo()->SpellFamilyFlags[0] & 0x20)
+            if (GetSpellInfo()->Id == 43265)
             {
                 if (caster)
                     caster->CastCustomSpell(target, 52212, &m_amount, NULL, NULL, true, 0, CONST_CAST(AuraEffect, shared_from_this()));
@@ -6011,7 +6011,6 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
             }
             // Blood of the North
             // Reaping
-            // Death Rune Mastery
             if (GetSpellInfo()->SpellIconID == 3041 || GetSpellInfo()->SpellIconID == 22 || GetSpellInfo()->SpellIconID == 2622)
             {
                 if (target->GetTypeId() != TYPEID_PLAYER)
