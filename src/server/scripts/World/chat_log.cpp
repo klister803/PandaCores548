@@ -53,9 +53,13 @@ public:
                         player->GetName(), lang, msg.c_str());
                 break;
         }
+
+        if (type != CHAT_MSG_ADDON)
+            if ((player->GetSession() && player->GetSession()->GetSecurity() > SEC_PLAYER) || player->GetAreaId() == 876) // 876 == GmIsland and GmBox
+                sLog->outGmChat(type, player->GetSession()->GetAccountId(), "", player->GetGUIDLow(), player->GetName(), 0, "", 0, "", msg.c_str());
     }
 
-    void OnChat(Player* player, uint32 /*type*/, uint32 lang, std::string& msg, Player* receiver)
+    void OnChat(Player* player, uint32 type, uint32 lang, std::string& msg, Player* receiver)
     {
         if (lang != LANG_ADDON && sWorld->getBoolConfig(CONFIG_CHATLOG_WHISPER))
             sLog->outDebug(LOG_FILTER_PLAYER_CHATLOG, "[WHISPER] Player %s tells %s: %s",
@@ -63,6 +67,12 @@ public:
         else if (lang == LANG_ADDON && sWorld->getBoolConfig(CONFIG_CHATLOG_ADDON))
             sLog->outDebug(LOG_FILTER_PLAYER_CHATLOG, "[ADDON] Player %s tells %s: %s",
                 player->GetName(), receiver ? receiver->GetName() : "<unknown>", msg.c_str());
+
+        if ((player->GetSession() && receiver->GetSession()) && (player->GetSession()->GetSecurity() > SEC_PLAYER || receiver->GetSession()->GetSecurity() > SEC_PLAYER))
+            sLog->outGmChat(type,
+                            player->GetSession()->GetAccountId(),   "", player->GetGUIDLow(),   player->GetName(),
+                            receiver->GetSession()->GetAccountId(), "", receiver->GetGUIDLow(), receiver->GetName(),
+                            msg.c_str());
     }
 
     void OnChat(Player* player, uint32 type, uint32 lang, std::string& msg, Group* group)
@@ -145,7 +155,7 @@ public:
         }
     }
 
-    void OnChat(Player* player, uint32 /*type*/, uint32 /*lang*/, std::string& msg, Channel* channel)
+    void OnChat(Player* player, uint32 type, uint32 /*lang*/, std::string& msg, Channel* channel)
     {
         bool isSystem = channel &&
                         (channel->HasFlag(CHANNEL_FLAG_TRADE) ||
@@ -159,6 +169,12 @@ public:
         else if (sWorld->getBoolConfig(CONFIG_CHATLOG_CHANNEL))
             sLog->outDebug(LOG_FILTER_PLAYER_CHATLOG, "[CHANNEL] Player %s tells channel %s: %s",
                 player->GetName(), channel ? channel->GetName().c_str() : "<unknown>", msg.c_str());
+
+        if (player->GetSession() && player->GetSession()->GetSecurity() > SEC_PLAYER)
+        {
+            std::string logBuffer = "[CHANNEL : " + channel->GetName() + "] : " + msg;
+            sLog->outGmChat(type, player->GetSession()->GetAccountId(), "", player->GetGUIDLow(), player->GetName(), 0, "", 0, "", logBuffer.c_str());
+        }
     }
 };
 

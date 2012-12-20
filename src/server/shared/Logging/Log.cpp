@@ -510,3 +510,49 @@ void Log::LoadFromConfig()
     ReadAppendersFromConfig();
     ReadLoggersFromConfig();
 }
+
+void Log::outGmChat( uint32 message_type,
+                     uint32 from_account_id  , std::string from_account_name,
+                     uint32 from_character_id, std::string from_character_name,
+                     uint32 to_account_id  , std::string to_account_name,
+                     uint32 to_character_id, std::string to_character_name,
+                     const char * str)
+{
+    if (!str)
+        return;
+
+    GmChat * new_message = new GmChat;
+    new_message->type               = message_type;
+    new_message->accountID[0]       = from_account_id;
+    new_message->accountID[1]       = to_account_id;
+    new_message->accountName[0]     = from_account_name;
+    new_message->accountName[1]     = to_account_name;
+    new_message->characterID[0]     = from_character_id;
+    new_message->characterID[1]     = to_character_id;
+    new_message->characterName[0]   = from_character_name;
+    new_message->characterName[1]   = to_character_name;
+    new_message->message            = str;
+
+    GmChatLogQueue.add(new_message);
+}
+
+void Log::outArena(const char * str, ...)
+{
+    if (!str)
+        return;
+
+    char result[MAX_QUERY_LEN];
+    va_list ap;
+
+    va_start(ap, str);
+    vsnprintf(result, MAX_QUERY_LEN, str, ap);
+    va_end(ap);
+
+    std::string query = result;
+
+    ArenaLog * log = new ArenaLog;
+    log->timestamp = time(NULL);
+    log->str = query;
+
+    ArenaLogQueue.add(log);
+}
