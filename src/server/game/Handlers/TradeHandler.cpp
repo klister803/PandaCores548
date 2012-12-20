@@ -301,6 +301,11 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                                     trader->GetName(), trader->GetSession()->GetAccountId());
                 }
 
+                CharacterDatabase.PExecute("INSERT INTO log_trade (id, date, sc_accountid, sc_guid, sc_name, tar_accountid, tar_guid, tar_name, item_name, item_entry, item_count) VALUES (0, NOW(), %u, %u, '%s', %u, %u, '%s', '%s', %u, %u);",
+                                            _player->GetSession()->GetAccountId(), _player->GetGUIDLow(), _player->GetName(),
+                                            trader->GetSession()->GetAccountId(),  trader->GetGUIDLow(),  trader->GetName(),
+                                            myItems[i]->GetTemplate()->Name1.c_str(), myItems[i]->GetEntry(), myItems[i]->GetCount());
+
                 // adjust time (depends on /played)
                 if (myItems[i]->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_BOP_TRADEABLE))
                     myItems[i]->SetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME, trader->GetTotalPlayedTime()-(_player->GetTotalPlayedTime()-myItems[i]->GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME)));
@@ -320,6 +325,11 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                                     hisItems[i]->GetTemplate()->Name1.c_str(), hisItems[i]->GetEntry(), hisItems[i]->GetCount(),
                                     _player->GetName(), _player->GetSession()->GetAccountId());
                 }
+
+                CharacterDatabase.PExecute("INSERT INTO log_trade (id, date, sc_accountid, sc_guid, sc_name, tar_accountid, tar_guid, tar_name, item_name, item_entry, item_count) VALUES (0, NOW(), %u, %u, '%s', %u, %u, '%s', '%s', %u, %u);",
+                                            trader->GetSession()->GetAccountId(),  trader->GetGUIDLow(),  trader->GetName(),
+                                            _player->GetSession()->GetAccountId(), _player->GetGUIDLow(), _player->GetName(),
+                                            hisItems[i]->GetTemplate()->Name1.c_str(), hisItems[i]->GetEntry(), hisItems[i]->GetCount());
 
                 // adjust time (depends on /played)
                 if (hisItems[i]->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_BOP_TRADEABLE))
