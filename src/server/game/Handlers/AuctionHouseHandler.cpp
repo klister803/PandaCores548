@@ -274,7 +274,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
             {
                 sLog->outCommand(GetAccountId(), "", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName(), 0, "", 0, "",
                                 "GM %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
-                                GetPlayerName(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount());
+                                GetPlayerName().c_str(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount());
             }
 
             AH->itemGUIDLow = item->GetGUIDLow();
@@ -321,7 +321,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
             {
                 sLog->outCommand(GetAccountId(), "", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName(), 0, "", 0, "",
                                 "GM %s (Account: %u) create auction: %s (Entry: %u Count: %u)",
-                                GetPlayerName(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount());
+                                GetPlayerName().c_str(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount());
             }
 
             AH->itemGUIDLow = newItem->GetGUIDLow();

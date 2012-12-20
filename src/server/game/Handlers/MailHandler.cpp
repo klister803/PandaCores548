@@ -296,7 +296,7 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
                     sLog->outCommand(GetAccountId(), "", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName(),
                                     rc_account, "", 0, receiver.c_str(),
                                     "GM %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
-                                    GetPlayerName(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
+                                    GetPlayerName().c_str(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
                 }
 
                 item->SetNotRefundable(GetPlayer()); // makes the item no longer refundable
@@ -319,7 +319,7 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
             sLog->outCommand(GetAccountId(), "", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName(),
                             rc_account, "", 0, receiver.c_str(),
                             "GM %s (Account: %u) mail money: %u to player: %s (Account: %u)",
-                            GetPlayerName(), GetAccountId(), money, receiver.c_str(), rc_account);
+                            GetPlayerName().c_str(), GetAccountId(), money, receiver.c_str(), rc_account);
         }
     }
 
@@ -520,7 +520,7 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
                 sLog->outCommand(GetAccountId(), "", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName(),
                                 sender_accId, "", sender_guid, sender_name.c_str(),
                                 "GM %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
-                                GetPlayerName(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount(), m->COD, sender_name.c_str(), sender_accId);
+                                GetPlayerName().c_str(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount(), m->COD, sender_name.c_str(), sender_accId);
             }
             else if (!receive)
                 sender_accId = sObjectMgr->GetPlayerAccountIdByGUID(sender_guid);
