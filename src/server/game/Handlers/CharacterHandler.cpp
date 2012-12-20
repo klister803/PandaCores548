@@ -1777,11 +1777,12 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     }
 
     Field* fields = result->Fetch();
-    uint32 playerClass = uint32(fields[0].GetUInt8());
-    uint32 level = uint32(fields[1].GetUInt8());
-    uint32 at_loginFlags = fields[2].GetUInt16();
-    uint32 used_loginFlag = ((recvData.GetOpcode() == CMSG_CHAR_RACE_CHANGE) ? AT_LOGIN_CHANGE_RACE : AT_LOGIN_CHANGE_FACTION);
-    char const* knownTitlesStr = fields[3].GetCString();
+    uint8  oldRace          = fields[0].GetUInt8();
+    uint32 playerClass      = uint32(fields[1].GetUInt8());
+    uint32 level            = uint32(fields[2].GetUInt8());
+    uint32 at_loginFlags    = fields[3].GetUInt16();
+    uint32 used_loginFlag   = ((recvData.GetOpcode() == CMSG_CHAR_RACE_CHANGE) ? AT_LOGIN_CHANGE_RACE : AT_LOGIN_CHANGE_FACTION);
+    char const* knownTitlesStr = fields[4].GetCString();
 
     if (!sObjectMgr->GetPlayerInfo(race, playerClass))
     {
@@ -1856,9 +1857,16 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_FACTION_OR_RACE);
     stmt->setString(0, newname);
-    stmt->setUInt8(1, race);
+    stmt->setUInt8 (1, race);
     stmt->setUInt16(2, used_loginFlag);
     stmt->setUInt32(3, lowGuid);
+    trans->Append(stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_FACTION_OR_RACE_LOG);
+    stmt->setUInt32(0, lowGuid);
+    stmt->setUInt32(1, GetAccountId());
+    stmt->setUInt8 (2, oldRace);
+    stmt->setUInt8 (3, race);
     trans->Append(stmt);
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_DECLINED_NAME);
