@@ -109,7 +109,7 @@ class Aura : public std::enable_shared_from_this<Aura>
         UnitPtr GetCaster() const;
         WorldObjectPtr GetOwner() const { return m_owner; }
         UnitPtr GetUnitOwner() const { ASSERT(GetType() == UNIT_AURA_TYPE); return TO_UNIT(m_owner); }
-        DynamicObjectPtr GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return TO_DYNAMICOBJECT(m_owner); }
+        DynamicObjectPtr GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return *(DynamicObjectPtr*)&m_owner; }
 
         AuraObjectType GetType() const;
 

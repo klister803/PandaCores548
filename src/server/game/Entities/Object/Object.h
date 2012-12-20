@@ -395,11 +395,11 @@ class Object : public std::enable_shared_from_this<Object>
         Creature* ToCreature() { if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<Creature*>(this); else return nullptr; }
         Creature const* ToCreature() const { if (GetTypeId() == TYPEID_UNIT) return reinterpret_cast<const Creature*>(this); else return nullptr; }
 
-        UnitPtr ToUnit() { if (isType(TYPEMASK_UNIT)) return THIS_UNIT; else return nullptr; }
-        constUnitPtr ToUnit() const { if (isType(TYPEMASK_UNIT)) return THIS_CONST_UNIT; else return nullptr; }
+        UnitPtr ToUnit() { if (isType(TYPEMASK_UNIT)) return *(UnitPtr*)&shared_from_this(); else return nullptr; }
+        constUnitPtr ToUnit() const { if (isType(TYPEMASK_UNIT)) return *(constUnitPtr*)&shared_from_this(); else return nullptr; }
 
-        GameObjectPtr ToGameObject() { if (GetTypeId() == TYPEID_GAMEOBJECT) return THIS_GAMEOBJECT; else return nullptr; }
-        constGameObjectPtr ToGameObject() const { if (GetTypeId() == TYPEID_GAMEOBJECT) return THIS_CONST_GAMEOBJECT; else return nullptr; }
+        GameObjectPtr ToGameObject() { if (GetTypeId() == TYPEID_GAMEOBJECT) return *(GameObjectPtr*)&shared_from_this(); else return nullptr; }
+        constGameObjectPtr ToGameObject() const { if (GetTypeId() == TYPEID_GAMEOBJECT) return *(constGameObjectPtr*)&shared_from_this(); else return nullptr; }
 
         /*DynamicObjectPtr ToDynObject() { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return TO_DYNAMICOBJECT(shared_from_this()); else return nullptr; }
         constDynamicObjectPtr ToDynObject() const { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return TO_CONST_DYNAMICOBJECT(shared_from_this()); else return nullptr; }*/

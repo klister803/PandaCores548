@@ -28,6 +28,16 @@
 #include "TemporarySummon.h"
 #include "Object.h"
 #include "DBCStores.h"
+#include "MovementGenerator.h"
+#include "SpellAuras.h"
+#include "../Entities/Pet/Pet.h"
+#include "MapReference.h"
+
+#ifndef INCLUDE_PLAYER_FOR_GAMEOBJECT_MODEL
+# define INCLUDE_PLAYER_FOR_GAMEOBJECT_MODEL
+# include "../Entities/Player/Player.h"
+# undef INCLUDE_PLAYER_FOR_GAMEOBJECT_MODEL
+#endif
 
 using G3D::Vector3;
 using G3D::Ray;

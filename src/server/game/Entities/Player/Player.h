@@ -19,23 +19,41 @@
 #ifndef _PLAYER_H
 #define _PLAYER_H
 
-#include "AchievementMgr.h"
-#include "Battleground.h"
-#include "Bag.h"
-#include "Common.h"
-#include "DatabaseEnv.h"
-#include "DBCEnums.h"
-#include "GroupReference.h"
-#include "ItemPrototype.h"
-#include "Item.h"
-#include "MapReference.h"
-#include "NPCHandler.h"
-#include "Pet.h"
-#include "QuestDef.h"
-#include "ReputationMgr.h"
-#include "Unit.h"
-#include "Util.h"                                           // for Tokenizer typedef
-#include "WorldSession.h"
+#ifndef INCLUDE_PLAYER_FOR_GAMEOBJECT_MODEL
+    #include "AchievementMgr.h"
+    #include "Battleground.h"
+    #include "Bag.h"
+    #include "Common.h"
+    #include "DatabaseEnv.h"
+    #include "DBCEnums.h"
+    #include "GroupReference.h"
+    #include "ItemPrototype.h"
+    #include "Item.h"
+    #include "MapReference.h"
+    #include "NPCHandler.h"
+    #include "Pet.h"
+    #include "QuestDef.h"
+    #include "ReputationMgr.h"
+    #include "Unit.h"
+    #include "Util.h"                                           // for Tokenizer typedef
+    #include "WorldSession.h"
+#else
+#include "../Achievements/AchievementMgr.h"
+#include "../Battlegrounds/Battleground.h"
+#include "../Entities/Item/Container/Bag.h"
+#include "../Common.h"
+#include "../Groups/GroupReference.h"
+#include "../Entities/Item/ItemPrototype.h"
+#include "../Entities/Item/Item.h"
+#include "../Maps/MapReference.h"
+#include "../Handlers/NPCHandler.h"
+#include "../Entities/Pet/Pet.h"
+#include "../Quests/QuestDef.h"
+#include "../Reputation/ReputationMgr.h"
+#include "../Entities/Unit/Unit.h"
+#include "../Utilities/Util.h"
+#include "../WorldSession.h"
+#endif
 
 // for template
 #include "SpellMgr.h"

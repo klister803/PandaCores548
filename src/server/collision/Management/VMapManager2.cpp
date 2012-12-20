@@ -31,6 +31,9 @@
 #include <ace/Singleton.h>
 #include "DisableMgr.h"
 #include "DBCStores.h"
+#include "Unit.h"
+#include "TemporarySummon.h"
+#include "MovementGenerator.h"
 
 using G3D::Vector3;
 
