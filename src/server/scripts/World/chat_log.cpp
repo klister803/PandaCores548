@@ -54,8 +54,8 @@ public:
                 break;
         }
 
-        if (type != CHAT_MSG_ADDON)
-            if ((player->GetSession() && player->GetSession()->GetSecurity() > SEC_PLAYER) || player->GetAreaId() == 876) // 876 == GmIsland and GmBox
+        if (type != uint32(CHAT_MSG_ADDON))
+            if (player->GetSession() && player->GetSession()->GetSecurity() > SEC_PLAYER) // 876 == GmIsland and GmBox
                 sLog->outGmChat(type, player->GetSession()->GetAccountId(), "", player->GetGUIDLow(), player->GetName(), 0, "", 0, "", msg.c_str());
     }
 
