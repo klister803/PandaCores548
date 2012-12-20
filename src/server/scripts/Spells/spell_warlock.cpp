@@ -78,12 +78,12 @@ class spell_warl_ember_tap : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         int32 healAmount;
-                        int32 pct;
+                        float pct;
                         float Mastery;
 
                         Mastery = 3.0f * _player->GetFloatValue(PLAYER_MASTERY) / 100.0f;
 
-                        pct = int32(0.15f * (1 + Mastery));
+                        pct = 0.15f * (1 + Mastery);
 
                         healAmount = int32(_player->GetMaxHealth() * pct);
 
