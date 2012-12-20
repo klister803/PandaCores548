@@ -1517,8 +1517,13 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
     for (uint8 i = 0; i < count; ++i)
         recvData.ReadBitInOrder(itemGuids[i], bitOrder);
     
-    uint8 bitOrder2[8] = {5, 0, 1, 4, 3, 2, 7};
-    recvData.ReadBitInOrder(npcGuid, bitOrder2);
+    npcGuid[5] = recvData.ReadBit();
+    npcGuid[0] = recvData.ReadBit();
+    npcGuid[1] = recvData.ReadBit();
+    npcGuid[4] = recvData.ReadBit();
+    npcGuid[3] = recvData.ReadBit();
+    npcGuid[2] = recvData.ReadBit();
+    npcGuid[7] = recvData.ReadBit();
 
     recvData.FlushBits();
 
