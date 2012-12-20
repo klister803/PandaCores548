@@ -151,7 +151,7 @@ void CharacterDatabaseConnection::DoPrepareStatements()
     PREPARE_STATEMENT(CHAR_SEL_MATCH_MAKER_RATING, "SELECT matchMakerRating FROM character_arena_stats WHERE guid = ? AND slot = ?", CONNECTION_SYNCH);
     PREPARE_STATEMENT(CHAR_SEL_CHARACTER_COUNT, "SELECT account, COUNT(guid) FROM characters WHERE account = ? GROUP BY account", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_UPD_NAME, "UPDATE characters set name = ?, at_login = at_login & ~ ? WHERE guid = ?", CONNECTION_ASYNC);
-    PREPARE_STATEMENT(CHAR_UPD_NAME_LOG, "INSERT INTO log_rename (`guid`, `oldName`, `newName`) VALUES (?, ?, ?)", CONNECTION_ASYNC);
+    PREPARE_STATEMENT(CHAR_UPD_NAME_LOG, "INSERT INTO log_rename (`guid`, `date`, `oldName`, `newName`) VALUES (?, NOW(), ?, ?)", CONNECTION_ASYNC);
     PREPARE_STATEMENT(CHAR_DEL_DECLINED_NAME, "DELETE FROM character_declinedname WHERE guid = ?", CONNECTION_ASYNC);
 
     // Guild handling

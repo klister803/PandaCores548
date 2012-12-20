@@ -1316,7 +1316,7 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
     CharacterDatabase.Execute(stmt);
 
     // Logging
-    stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_NAME);
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_NAME_LOG);
 
     stmt->setUInt32(0, guidLow);
     stmt->setString(1, oldName);
