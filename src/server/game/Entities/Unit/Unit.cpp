@@ -7964,9 +7964,9 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     switch (auraSpellInfo->Id)
     {
         // Backdraft
-        case 117828:
+        case 117896:
         {
-            if (!procSpell || procSpell->Id != 17962 || procSpell->Id != 108685)
+            if (!procSpell || (procSpell->Id != 17962 && procSpell->Id != 108685))
                 return false;
 
             if (GetTypeId() != TYPEID_PLAYER || getClass() != CLASS_WARLOCK || ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) != SPEC_WARLOCK_DESTRUCTION)

@@ -3124,6 +3124,22 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 117828: // Backdraft
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+                spellInfo->Effects[0].MiscValue = SPELLMOD_CASTING_TIME;
+                spellInfo->Effects[0].BasePoints = -30;
+                spellInfo->Effects[0].SpellClassMask[1] |= 0x2000;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+                spellInfo->Effects[1].MiscValue = SPELLMOD_COST;
+                spellInfo->Effects[1].BasePoints = -30;
+                spellInfo->Effects[1].SpellClassMask[1] |= 0x80;
+                spellInfo->Effects[1].SpellClassMask[0] |= 0x1000;
+                spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+                spellInfo->Effects[2].MiscValue = SPELLMOD_CASTING_TIME;
+                spellInfo->Effects[2].BasePoints = -30;
+                spellInfo->Effects[2].SpellClassMask[1] |= 0x80;
+                spellInfo->Effects[2].SpellClassMask[0] |= 0x1000;
+                break;
             case 109259: // Powershot
                 spellInfo->Effects[1].BasePoints = 60;
                 spellInfo->Effects[2].BasePoints = 800;

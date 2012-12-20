@@ -59,6 +59,38 @@ enum WarlockSpells
     WARLOCK_CONFLAGRATE_FIRE_AND_BRIMSTONE  = 108685,
     WARLOCK_IMMOLATE_FIRE_AND_BRIMSTONE     = 108686,
     WARLOCK_FIRE_AND_BRIMSTONE              = 108683,
+    WARLOCK_BACKDRAFT                       = 117828,
+    WARLOCK_PYROCLASM                       = 123686,
+};
+
+// Chaos Bolt - 116858
+class spell_warl_chaos_bolt : public SpellScriptLoader
+{
+    public:
+        spell_warl_chaos_bolt() : SpellScriptLoader("spell_warl_chaos_bolt") { }
+
+        class spell_warl_chaos_bolt_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_chaos_bolt_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(WARLOCK_BACKDRAFT) && _player->HasAura(WARLOCK_PYROCLASM))
+                            _player->RemoveAura(WARLOCK_BACKDRAFT);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_chaos_bolt_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_chaos_bolt_SpellScript();
+        }
 };
 
 // Ember Tap - 114635
@@ -1061,6 +1093,7 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_chaos_bolt();
     new spell_warl_ember_tap();
     new spell_warl_fire_and_brimstone();
     new spell_warl_conflagrate_aura();
