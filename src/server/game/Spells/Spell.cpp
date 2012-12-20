@@ -4824,7 +4824,7 @@ SpellCastResult Spell::CheckCast(bool strict)
     {
         // Custom MoP Script
         // 76856 - Mastery : Unshackled Fury - Hack Fix fake check cast
-        if (m_spellInfo->Id == 76856)
+        if (m_spellInfo->Id == 76856 && m_caster->ToPlayer() && m_caster->ToPlayer()->getLevel() > 80)
             return SPELL_CAST_OK;
         if (m_spellInfo->CasterAuraState && !m_caster->HasAuraState(AuraStateType(m_spellInfo->CasterAuraState), m_spellInfo, m_caster))
             return SPELL_FAILED_CASTER_AURASTATE;
