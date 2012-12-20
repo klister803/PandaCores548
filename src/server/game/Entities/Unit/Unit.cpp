@@ -11105,16 +11105,15 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
     AuraEffectList const& mDummyAuras = GetAuraEffectsByType(SPELL_AURA_DUMMY);
     for (AuraEffectList::const_iterator i = mDummyAuras.begin(); i != mDummyAuras.end(); ++i)
     {
-        switch ((*i)->GetSpellInfo()->SpellIconID)
+        switch ((*i)->GetSpellInfo()->Id)
         {
             // Cheat Death
-            case 2109:
+            case 45182:
                 if ((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL)
                 {
                     if (GetTypeId() != TYPEID_PLAYER)
                         continue;
-                    float mod = ToPlayer()->GetRatingBonusValue(CR_CRIT_TAKEN_MELEE) * (-8.0f);
-                    AddPct(TakenTotalMod, std::max(mod, float((*i)->GetAmount())));
+                    AddPct(TakenTotalMod, (*i)->GetAmount());
                 }
                 break;
         }
