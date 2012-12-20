@@ -1315,6 +1315,15 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
 
     CharacterDatabase.Execute(stmt);
 
+    // Logging
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_NAME);
+
+    stmt->setUInt32(0, guidLow);
+    stmt->setString(1, oldName);
+    stmt->setString(2, newName);
+
+    CharacterDatabase.Execute(stmt);
+
     sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s) Character:[%s] (guid:%u) Changed name to: %s", GetAccountId(), GetRemoteAddress().c_str(), oldName.c_str(), guidLow, newName.c_str());
 
     WorldPacket data(SMSG_CHAR_RENAME, 1+8+(newName.size()+1));
