@@ -1897,14 +1897,9 @@ void Group::SendTargetIconList(WorldSession* session)
         if (m_targetIcons[i] == 0)
             continue;
         ObjectGuid guid = m_targetIcons[i];
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[6]);
+    
+        uint8 bitOrder[8] = {3, 0, 7, 2, 4, 5, 1, 6};
+        data.WriteBitInOrder(guid, bitOrder);
 
         dataBuffer.WriteByteSeq(guid[1]);
         dataBuffer.WriteByteSeq(guid[7]);
@@ -1974,14 +1969,8 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
 
     if (true)
     {
-        data.WriteBit(looterGuid[7]);
-        data.WriteBit(looterGuid[0]);
-        data.WriteBit(looterGuid[1]);
-        data.WriteBit(looterGuid[5]);
-        data.WriteBit(looterGuid[6]);
-        data.WriteBit(looterGuid[2]);
-        data.WriteBit(looterGuid[4]);
-        data.WriteBit(looterGuid[3]);
+        uint8 bitOrder[8] = {7, 0, 1, 5, 6, 2, 4, 3};
+        data.WriteBitInOrder(guid, bitOrder);
     }
 
     data.WriteBit(leaderGuid[4]);

@@ -126,8 +126,9 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry* auction, SQLTransaction& 
 
             uint32 owner_accid = sObjectMgr->GetPlayerAccountIdByGUID(auction->owner);
 
-            sLog->outCommand(bidder_accId, "GM %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
-                bidder_name.c_str(), bidder_accId, pItem->GetTemplate()->Name1.c_str(), pItem->GetEntry(), pItem->GetCount(), auction->bid, owner_name.c_str(), owner_accid);
+            sLog->outCommand(bidder_accId, "", 0, bidder_name.c_str(), owner_accid, "", 0, owner_name.c_str(),
+              "GM %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
+              bidder_name.c_str(),bidder_accId,pItem->GetTemplate()->Name1.c_str(),pItem->GetEntry(),pItem->GetCount(),auction->bid,owner_name.c_str(),owner_accid);
         }
     }
 

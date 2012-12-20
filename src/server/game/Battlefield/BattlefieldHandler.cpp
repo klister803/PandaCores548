@@ -36,14 +36,8 @@ void WorldSession::SendBfInvitePlayerToWar(uint64 guid, uint32 zoneId, uint32 pT
     ObjectGuid guidBytes = guid;
     WorldPacket data(SMSG_BATTLEFIELD_MGR_ENTRY_INVITE);
 
-    data.WriteBit(guidBytes[6]);
-    data.WriteBit(guidBytes[5]);
-    data.WriteBit(guidBytes[2]);
-    data.WriteBit(guidBytes[4]);
-    data.WriteBit(guidBytes[3]);
-    data.WriteBit(guidBytes[0]);
-    data.WriteBit(guidBytes[7]);
-    data.WriteBit(guidBytes[1]);
+    uint8 bitOrder[8] = {6, 5, 2, 4, 3, 0, 7, 1};
+    data.WriteBitInOrder(guidBytes, bitOrder);
 
     data.WriteByteSeq(guidBytes[0]);
     data.WriteByteSeq(guidBytes[7]);
@@ -197,15 +191,9 @@ void WorldSession::SendBfEntered(uint64 guid)
     data.WriteBit(bgGuid[4]);
     data.WriteBit(1); // unk
     data.FlushBits();
-
-    data.WriteByteSeq(bgGuid[1]);
-    data.WriteByteSeq(bgGuid[7]);
-    data.WriteByteSeq(bgGuid[3]);
-    data.WriteByteSeq(bgGuid[4]);
-    data.WriteByteSeq(bgGuid[2]);
-    data.WriteByteSeq(bgGuid[5]);
-    data.WriteByteSeq(bgGuid[6]);
-    data.WriteByteSeq(bgGuid[0]);
+    
+    uint8 byteOrder[8] = {1, 7, 3, 4, 2, 5, 6, 0};
+    data.WriteBytesSeq(bgGuid, byteOrder);
 
     SendPacket(&data);
 }

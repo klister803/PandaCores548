@@ -110,6 +110,222 @@ public:
     }
 };
 
+class GmLogToDBRunnable : public ACE_Based::Runnable
+{
+public:
+
+    void run ()
+    {
+        while (!World::IsStopped())
+        {
+            GmCommand * command;
+            while(!GmLogQueue.empty())
+            {
+                GmLogQueue.next(command);
+                CharacterDatabase.EscapeString(command->accountName[0]);
+                CharacterDatabase.EscapeString(command->accountName[1]);
+                CharacterDatabase.EscapeString(command->characterName[0]);
+                CharacterDatabase.EscapeString(command->characterName[1]);
+                CharacterDatabase.EscapeString(command->command);
+                //No sql injections. Strings are escaped.
+
+                //au cas ou on a pas les infos...
+                if(command->accountName[0] == "" && command->accountID[0] != 0)
+                {
+                    QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = %u", command->accountID[0]);
+                    if (result)
+                    {
+                        Field *fields = result->Fetch();
+                        command->accountName[0] = fields[0].GetString();
+                        CharacterDatabase.EscapeString(command->accountName[0]);
+                    }
+                }
+
+                if(command->accountName[1] == "" && command->accountID[1] != 0)
+                {
+                    QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = %u", command->accountID[1]);
+                    if (result)
+                    {
+                        Field *fields = result->Fetch();
+                        command->accountName[1] = fields[0].GetString();
+                        CharacterDatabase.EscapeString(command->accountName[1]);
+                    }
+                }
+
+                if(command->characterName[0] == "" && command->characterID[0] != 0)
+                {
+                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", command->characterID[0]);
+                    if (result)
+                    {
+                        Field *fields = result->Fetch();
+                        command->characterName[0] = fields[0].GetString();
+                        CharacterDatabase.EscapeString(command->characterName[0]);
+                    }
+                }
+
+                if(command->characterName[0] == "" && command->characterID[0] != 0)
+                {
+                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", command->characterID[0]);
+                    if (result)
+                    {
+                        Field *fields = result->Fetch();
+                        command->characterName[0] = fields[0].GetString();
+                        CharacterDatabase.EscapeString(command->characterName[0]);
+                    }
+                }
+
+                if(command->characterName[1] == "" && command->characterID[1] != 0)
+                {
+                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", command->characterID[1]);
+                    if (result)
+                    {
+                        Field *fields = result->Fetch();
+                        command->characterName[1] = fields[0].GetString();
+                        CharacterDatabase.EscapeString(command->characterName[1]);
+                    }
+                }
+
+                std::string last_ip = " ";
+
+                QueryResult result = LoginDatabase.PQuery("SELECT last_ip FROM account WHERE id = %u", command->accountID[0]);
+                if (result)
+                {
+                    Field *fields_ip = result->Fetch();
+                    last_ip = fields_ip[0].GetString();
+                }
+
+                if(command->accountID[1] == 0 && command->characterID == 0)
+                {
+                    command->accountID[1] = command->accountID[0];
+                    command->characterID[1] = command->characterID[0];
+                    command->accountName[1] = command->accountName[0];
+                    command->characterName[1] = command->characterName[0];
+                }
+
+                CharacterDatabase.PExecute(	"INSERT INTO log_gm(`date`, "
+                    "`gm_account_id`, `gm_account_name`, `gm_character_id`, `gm_character_name`, `gm_last_ip`,"
+                    "`sc_account_id`, `sc_account_name`, `sc_character_id`, `sc_character_name`,"
+                    "`command`)"
+                    "VALUES(NOW(),"
+                    "%u,'%s',%u,'%s','%s',"
+                    "%u,'%s',%u,'%s',"
+                    "'%s')",
+                    command->accountID[0], command->accountName[0].c_str(), command->characterID[0], command->characterName[0].c_str(), last_ip.c_str(),
+                    command->accountID[1], command->accountName[1].c_str(), command->characterID[1], command->characterName[1].c_str(),
+                    command->command.c_str());
+                delete command;
+            }
+            ACE_Based::Thread::Sleep(1000);
+        }
+    }
+};
+
+class GmChatLogToDBRunnable : public ACE_Based::Runnable
+{
+public:
+
+    void run ()
+    {
+        while (!World::IsStopped())
+        {
+            GmChat * ChatLog;
+            while(!GmChatLogQueue.empty())
+            {
+                GmChatLogQueue.next(ChatLog);
+                CharacterDatabase.EscapeString(ChatLog->accountName[0]);
+                CharacterDatabase.EscapeString(ChatLog->accountName[1]);
+                CharacterDatabase.EscapeString(ChatLog->characterName[0]);
+                CharacterDatabase.EscapeString(ChatLog->characterName[1]);
+                CharacterDatabase.EscapeString(ChatLog->message);
+                //No sql injections. Strings are escaped.
+
+                //au cas ou on a pas les infos...
+                if(ChatLog->accountName[0] == "" && ChatLog->accountID[0] != 0)
+                {
+                    QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = %u", ChatLog->accountID[0]);
+                    if (result)
+                    {
+                        Field *fields = result->Fetch();
+                        ChatLog->accountName[0] = fields[0].GetString();
+                        CharacterDatabase.EscapeString(ChatLog->accountName[0]);
+                    }
+                }
+
+                if(ChatLog->accountName[1] == "" && ChatLog->accountID[1] != 0)
+                {
+                    QueryResult result = LoginDatabase.PQuery("SELECT username FROM account WHERE id = %u", ChatLog->accountID[1]);
+                    if (result)
+                    {
+                        Field *fields = result->Fetch();
+                        ChatLog->accountName[1] = fields[0].GetString();
+                        CharacterDatabase.EscapeString(ChatLog->accountName[1]);
+                    }
+                }
+
+                if(ChatLog->characterName[0] == "" && ChatLog->characterID[0] != 0)
+                {
+                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", ChatLog->characterID[0]);
+                    if (result)
+                    {
+                        Field *fields = result->Fetch();
+                        ChatLog->characterName[0] = fields[0].GetString();
+                        CharacterDatabase.EscapeString(ChatLog->characterName[0]);
+                    }
+                }
+
+                if(ChatLog->characterName[1] == "" && ChatLog->characterID[1] != 0)
+                {
+                    QueryResult result = CharacterDatabase.PQuery("SELECT name FROM character WHERE guid = %u", ChatLog->characterID[1]);
+                    if (result)
+                    {
+                        Field *fields = result->Fetch();
+                        ChatLog->characterName[1] = fields[0].GetString();
+                        CharacterDatabase.EscapeString(ChatLog->characterName[1]);
+                    }
+                }
+
+                CharacterDatabase.PExecute(	"INSERT INTO log_gm_chat(`type`, `date`, "
+                    "`from_account_id`, `from_account_name`, `from_character_id`, `from_character_name`,"
+                    "`to_account_id`, `to_account_name`, `to_character_id`, `to_character_name`,"
+                    "`message`)"
+                    "VALUES(%u, NOW(),"
+                    "%u,'%s',%u,'%s',"
+                    "%u,'%s',%u,'%s',"
+                    "'%s')",
+                    ChatLog->type,
+                    ChatLog->accountID[0], ChatLog->accountName[0].c_str(), ChatLog->characterID[0], ChatLog->characterName[0].c_str(),
+                    ChatLog->accountID[1], ChatLog->accountName[1].c_str(), ChatLog->characterID[1], ChatLog->characterName[1].c_str(),
+                    ChatLog->message.c_str());
+                delete ChatLog;
+            }
+            ACE_Based::Thread::Sleep(1000);
+        }
+    }
+};
+
+class ArenaLogToDBRunnable : public ACE_Based::Runnable
+{
+public:
+
+    void run ()
+    {
+        while (!World::IsStopped())
+        {
+            ArenaLog * log;
+            while(!ArenaLogQueue.empty())
+            {
+                ArenaLogQueue.next(log);
+                CharacterDatabase.EscapeString(log->str);
+                //No sql injections. Strings are escaped.
+
+                CharacterDatabase.PExecute("INSERT INTO log_arena (`id`, `timestamp`, `string`) VALUES (0, %u, '%s');", log->timestamp, log->str.c_str());
+                delete log;
+            }
+            ACE_Based::Thread::Sleep(1000);
+        }
+    }
+};
+
 Master::Master()
 {
 }
@@ -192,6 +408,9 @@ int Master::Run()
     }
 
     ACE_Based::Thread rar_thread(new RARunnable);
+    ACE_Based::Thread gmLogToDB_thread(new GmLogToDBRunnable);
+    ACE_Based::Thread gmChatLogToDB_thread(new GmChatLogToDBRunnable);
+    ACE_Based::Thread arenaLogToDB_thread(new ArenaLogToDBRunnable);
 
     ///- Handle affinity for multiple processors and process priority on Windows
     #ifdef _WIN32

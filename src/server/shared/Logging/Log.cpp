@@ -451,24 +451,33 @@ void Log::outCharDump(char const* str, uint32 accountId, uint32 guid, char const
     write(msg);
 }
 
-void Log::outCommand(uint32 account, const char * str, ...)
+void Log::outCommand(uint32 gm_account_id  , std::string gm_account_name, 
+                     uint32 gm_character_id, std::string gm_character_name,
+                     uint32 sc_account_id  , std::string sc_account_name,
+                     uint32 sc_character_id, std::string sc_character_name,
+                     const char * str, ...)
 {
-    if (!str || !ShouldLog(LOG_FILTER_GMCOMMAND, LOG_LEVEL_INFO))
+    if (!str)
         return;
+
+    GmCommand * new_command = new GmCommand;
+    new_command->accountID[0]       = gm_account_id;
+    new_command->accountID[1]       = sc_account_id;
+    new_command->accountName[0]     = gm_account_name;
+    new_command->accountName[1]     = sc_account_name;
+    new_command->characterID[0]     = gm_character_id;
+    new_command->characterID[1]     = sc_character_id;
+    new_command->characterName[0]   = gm_character_name;
+    new_command->characterName[1]   = sc_character_name;
 
     va_list ap;
     va_start(ap, str);
-    char text[MAX_QUERY_LEN];
-    vsnprintf(text, MAX_QUERY_LEN, str, ap);
+    char buffer[1024]; //buffer.
+    vsprintf(buffer, str, ap);
     va_end(ap);
+    new_command->command = buffer;
 
-    LogMessage* msg = new LogMessage(LOG_LEVEL_INFO, LOG_FILTER_GMCOMMAND, text);
-
-    std::ostringstream ss;
-    ss << account;
-    msg->param1 = ss.str();
-
-    write(msg);
+    GmLogQueue.add(new_command);
 }
 
 void Log::SetRealmID(uint32 id)
@@ -500,4 +509,50 @@ void Log::LoadFromConfig()
             m_logsDir.push_back('/');
     ReadAppendersFromConfig();
     ReadLoggersFromConfig();
+}
+
+void Log::outGmChat( uint32 message_type,
+                     uint32 from_account_id  , std::string from_account_name,
+                     uint32 from_character_id, std::string from_character_name,
+                     uint32 to_account_id  , std::string to_account_name,
+                     uint32 to_character_id, std::string to_character_name,
+                     const char * str)
+{
+    if (!str)
+        return;
+
+    GmChat * new_message = new GmChat;
+    new_message->type               = message_type;
+    new_message->accountID[0]       = from_account_id;
+    new_message->accountID[1]       = to_account_id;
+    new_message->accountName[0]     = from_account_name;
+    new_message->accountName[1]     = to_account_name;
+    new_message->characterID[0]     = from_character_id;
+    new_message->characterID[1]     = to_character_id;
+    new_message->characterName[0]   = from_character_name;
+    new_message->characterName[1]   = to_character_name;
+    new_message->message            = str;
+
+    GmChatLogQueue.add(new_message);
+}
+
+void Log::outArena(const char * str, ...)
+{
+    if (!str)
+        return;
+
+    char result[MAX_QUERY_LEN];
+    va_list ap;
+
+    va_start(ap, str);
+    vsnprintf(result, MAX_QUERY_LEN, str, ap);
+    va_end(ap);
+
+    std::string query = result;
+
+    ArenaLog * log = new ArenaLog;
+    log->timestamp = time(NULL);
+    log->str = query;
+
+    ArenaLogQueue.add(log);
 }

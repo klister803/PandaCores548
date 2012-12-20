@@ -856,15 +856,9 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
    ObjectGuid guid = vendorGuid;
 
     WorldPacket data(SMSG_LIST_INVENTORY, 12 + itemsData.size());
-
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[0]);
+    
+    uint8 bitOrder[8] = {5, 4, 2, 1, 6, 7, 3, 0};
+    data.WriteBitInOrder(guid, bitOrder);
 
     data.WriteBits(count, 21); // item count
 
@@ -1522,7 +1516,7 @@ void WorldSession::HandleTransmogrifyItems(WorldPacket& recvData)
     uint8 bitOrder[8] = {3, 2, 4, 0, 1, 6, 7, 5};
     for (uint8 i = 0; i < count; ++i)
         recvData.ReadBitInOrder(itemGuids[i], bitOrder);
-
+    
     npcGuid[5] = recvData.ReadBit();
     npcGuid[0] = recvData.ReadBit();
     npcGuid[1] = recvData.ReadBit();

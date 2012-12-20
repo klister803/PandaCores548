@@ -30,6 +30,10 @@ char const* localeNames[TOTAL_LOCALES] = {
   "ruRU"
 };
 
+ACE_Based::LockedQueue<GmCommand*, ACE_Thread_Mutex> GmLogQueue;
+ACE_Based::LockedQueue<GmChat*, ACE_Thread_Mutex> GmChatLogQueue;
+ACE_Based::LockedQueue<ArenaLog*, ACE_Thread_Mutex> ArenaLogQueue;
+
 LocaleConstant GetLocaleByName(const std::string& name)
 {
     for (uint32 i = 0; i < TOTAL_LOCALES; ++i)
