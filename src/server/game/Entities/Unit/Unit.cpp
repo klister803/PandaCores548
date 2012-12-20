@@ -9516,6 +9516,10 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         DoneTotalMod += PowerJcJ;
     }
 
+    // Shatter : Increase damage done against frozen targets by 50%
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && HasAura(12982) && victim->HasAuraState(AURA_STATE_FROZEN))
+        DoneTotalMod += 0.5;
+
     // Custom MoP Script
     // 76658 - Mastery : Essence of the Viper
     if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
