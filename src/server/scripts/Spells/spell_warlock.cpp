@@ -460,7 +460,7 @@ class spell_warl_soul_harverst : public SpellScriptLoader
                 {
                     if (Player* _player = GetCaster()->ToPlayer())
                     {
-                        if (!_player->isInCombat())
+                        if (!_player->isInCombat() && !_player->InArena())
                         {
                             _player->SetHealth(_player->GetHealth() + int32(_player->GetMaxHealth() / 50));
 
