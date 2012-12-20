@@ -69,7 +69,7 @@ class spell_dk_blood_charges : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (_player->HasAura(45529))
+                        if (_player->HasSpell(45529))
                         {
                             _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
                             _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);

@@ -2765,6 +2765,11 @@ void Player::Regenerate(Powers power)
                 addvalue += 10 - GetPower(POWER_BURNING_EMBERS); // Return to one burning ember in 10s
             else if (!isInCombat() && GetPower(POWER_BURNING_EMBERS) > 10)
                 addvalue += -1;
+
+            if (GetPower(POWER_BURNING_EMBERS) >= 10)
+                CastSpell(this, 116855, true);
+            else
+                RemoveAura(116855);
         }
         break;
         default:
