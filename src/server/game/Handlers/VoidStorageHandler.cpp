@@ -359,14 +359,9 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     for (uint8 i = 0; i < withdrawCount; ++i)
     {
         ObjectGuid itemId = withdrawItems[i].ItemId;
-        data.WriteBit(itemId[4]);
-        data.WriteBit(itemId[5]);
-        data.WriteBit(itemId[1]);
-        data.WriteBit(itemId[2]);
-        data.WriteBit(itemId[0]);
-        data.WriteBit(itemId[6]);
-        data.WriteBit(itemId[7]);
-        data.WriteBit(itemId[3]);
+    
+        uint8 bitOrder[8] = {4, 5, 1, 2, 0, 6, 7, 3};
+        data.WriteBitInOrder(itemId, bitOrder);
     }
 
     data.FlushBits();
@@ -374,14 +369,9 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     for (uint8 i = 0; i < withdrawCount; ++i)
     {
         ObjectGuid itemId = withdrawItems[i].ItemId;
-        data.WriteByteSeq(itemId[7]);
-        data.WriteByteSeq(itemId[4]);
-        data.WriteByteSeq(itemId[0]);
-        data.WriteByteSeq(itemId[2]);
-        data.WriteByteSeq(itemId[6]);
-        data.WriteByteSeq(itemId[3]);
-        data.WriteByteSeq(itemId[5]);
-        data.WriteByteSeq(itemId[1]);
+    
+        uint8 byteOrder[8] = {7, 4, 0, 2, 6, 3, 5, 1};
+        data.WriteBytesSeq(itemId, byteOrder);
     }
 
     for (uint8 i = 0; i < depositCount; ++i)

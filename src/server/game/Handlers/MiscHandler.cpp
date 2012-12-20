@@ -1291,15 +1291,9 @@ void WorldSession::HandleInspectOpcode(WorldPacket& recvData)
     if (guild != nullptr)
     {
         ObjectGuid guildGuid = guild->GetGUID();
-
-        data.WriteBit(guildGuid[4]);
-        data.WriteBit(guildGuid[6]);
-        data.WriteBit(guildGuid[3]);
-        data.WriteBit(guildGuid[2]);
-        data.WriteBit(guildGuid[7]);
-        data.WriteBit(guildGuid[0]);
-        data.WriteBit(guildGuid[5]);
-        data.WriteBit(guildGuid[1]);
+    
+        uint8 bitOrder[8] = {4, 6, 3, 2, 7, 0, 5, 1};
+        data.WriteBitInOrder(guildGuid, bitOrder);
     }
     data.WriteBit(playerGuid[5]);
     data.WriteBit(playerGuid[2]);
@@ -1419,14 +1413,10 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
 
     ObjectGuid playerGuid = player->GetGUID();
     WorldPacket data(SMSG_INSPECT_HONOR_STATS, 8+1+4+4);
-    data.WriteBit(playerGuid[2]);
-    data.WriteBit(playerGuid[0]);
-    data.WriteBit(playerGuid[3]);
-    data.WriteBit(playerGuid[5]);
-    data.WriteBit(playerGuid[1]);
-    data.WriteBit(playerGuid[6]);
-    data.WriteBit(playerGuid[7]);
-    data.WriteBit(playerGuid[4]);
+    
+    uint8 bitOrder2[8] = {2, 0, 3, 5, 1, 6, 7, 4};
+    data.WriteBitInOrder(guid, bitOrder2);
+
     data << uint16(4);
     data.WriteByteSeq(playerGuid[3]);
     data << uint8(3);                                               // rank
@@ -1449,23 +1439,13 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
     data << uint32(0); //SeasonWin
     data << uint32(0); //SeasonPlayed
     data << uint32(0); //Rating
-    data.WriteBit(gguid[5]);
-    data.WriteBit(gguid[7]);
-    data.WriteBit(gguid[2]);
-    data.WriteBit(gguid[3]);
-    data.WriteBit(gguid[4]);
-    data.WriteBit(gguid[6]);
-    data.WriteBit(gguid[0]);
-    data.WriteBit(gguid[1]);
+    
+    uint8 bitOrder3[8] = {5, 7, 2, 3, 4, 6, 0, 1};
+    data.WriteBitInOrder(gguid, bitOrder3);
+    
+    uint8 byteOrder2[8] = {6, 2, 3, 1, 7, 5, 4, 0};
+    data.WriteBytesSeq(gguid, byteOrder2);
 
-    data.WriteByteSeq(gguid[6]);
-    data.WriteByteSeq(gguid[2]);
-    data.WriteByteSeq(gguid[3]);
-    data.WriteByteSeq(gguid[1]);
-    data.WriteByteSeq(gguid[7]);
-    data.WriteByteSeq(gguid[5]);
-    data.WriteByteSeq(gguid[4]);
-    data.WriteByteSeq(gguid[0]);
     SendPacket(&data);
 }
 
@@ -1946,24 +1926,12 @@ void WorldSession::SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<
     data << uint32(unkValue);
     // for(uint32 i = 0; i < unkValue; i++) 
         //data << uint16(0); // WorldMapAreaId ?
-
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[2]);
-
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[1]);
+    
+    uint8 bitOrder[8] = {3, 7, 1, 6, 0, 4, 5, 2};
+    data.WriteBitInOrder(guid, bitOrder);
+    
+    uint8 byteOrder[8] = {4, 3, 0, 6, 2, 7, 5, 1};
+    data.WriteBytesSeq(guid, byteOrder);
 
     SendPacket(&data);
 }

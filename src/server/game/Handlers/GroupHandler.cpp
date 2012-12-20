@@ -1130,14 +1130,9 @@ void WorldSession::HandleRaidConfirmReadyCheck(WorldPacket& recvData)
         ObjectGuid grpGUID = group->GetGUID();
 
         data.Initialize(SMSG_RAID_READY_CHECK_COMPLETED);
-        data.WriteBit(grpGUID[2]);
-        data.WriteBit(grpGUID[7]);
-        data.WriteBit(grpGUID[6]);
-        data.WriteBit(grpGUID[4]);
-        data.WriteBit(grpGUID[0]);
-        data.WriteBit(grpGUID[1]);
-        data.WriteBit(grpGUID[3]);
-        data.WriteBit(grpGUID[5]);
+    
+        uint8 bitOrder[8] = {2, 7, 6, 4, 0, 1, 3, 5};
+        data.WriteBitInOrder(grpGUID, bitOrder);
 
         data.WriteByteSeq(grpGUID[3]);
         data.WriteByteSeq(grpGUID[1]);

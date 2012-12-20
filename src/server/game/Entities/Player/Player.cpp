@@ -2157,14 +2157,8 @@ void Player::SendTeleportPacket(Position &oldPos)
     data.WriteBit(guid[5]);
     if (transGuid)
     {
-        data.WriteBit(transGuid[5]);
-        data.WriteBit(transGuid[6]);
-        data.WriteBit(transGuid[2]);
-        data.WriteBit(transGuid[0]);
-        data.WriteBit(transGuid[1]);
-        data.WriteBit(transGuid[4]);
-        data.WriteBit(transGuid[7]);
-        data.WriteBit(transGuid[3]);
+        uint8 bitOrder[8] = {5, 6, 2, 0, 1, 4, 7, 3};
+        data.WriteBitInOrder(transGuid, bitOrder);
     }
     data.WriteBit(guid[1]);
     data.WriteBit(guid[4]);
@@ -2177,14 +2171,8 @@ void Player::SendTeleportPacket(Position &oldPos)
     data.FlushBits();
     if (transGuid)
     {
-        data.WriteByteSeq(transGuid[2]);
-        data.WriteByteSeq(transGuid[7]);
-        data.WriteByteSeq(transGuid[1]);
-        data.WriteByteSeq(transGuid[5]);
-        data.WriteByteSeq(transGuid[6]);
-        data.WriteByteSeq(transGuid[0]);
-        data.WriteByteSeq(transGuid[4]);
-        data.WriteByteSeq(transGuid[3]);
+        uint8 byteOrder[8] = {2, 7, 1, 5, 6, 0, 4, 3};
+        data.WriteBytesSeq(guid, byteOrder);
     }
     data.WriteByteSeq(guid[4]);
     data.WriteByteSeq(guid[0]);
@@ -2409,7 +2397,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     data  << m_transport->GetEntry() << GetMapId();
                 }
                 else
-                {         
+                {
                     data.WriteBit(0);       // unknown
                     data.WriteBit(0);   // has transport
                 }
@@ -9086,23 +9074,12 @@ void Player::SendLootRelease(uint64 guid)
 {
     WorldPacket data(SMSG_LOOT_RELEASE_RESPONSE);
     ObjectGuid guidd(guid);
-    data.WriteBit(guidd[6]);
-    data.WriteBit(guidd[0]);
-    data.WriteBit(guidd[3]);
-    data.WriteBit(guidd[1]);
-    data.WriteBit(guidd[4]);
-    data.WriteBit(guidd[7]);
-    data.WriteBit(guidd[2]);
-    data.WriteBit(guidd[5]);
 
-    data.WriteByteSeq(guidd[6]);
-    data.WriteByteSeq(guidd[0]);
-    data.WriteByteSeq(guidd[2]);
-    data.WriteByteSeq(guidd[7]);
-    data.WriteByteSeq(guidd[4]);
-    data.WriteByteSeq(guidd[1]);
-    data.WriteByteSeq(guidd[5]);
-    data.WriteByteSeq(guidd[3]);
+    uint8 bitOrder[8] = {6, 0, 3, 1, 4, 7, 2, 5};
+    data.WriteBitInOrder(guidd, bitOrder);
+
+    uint8 byteOrder[8] = {6, 0, 2, 7, 4, 1, 5, 3};
+    data.WriteBytesSeq(guidd, byteOrder);
 
     SendDirectMessage(&data);
 }
@@ -9427,23 +9404,11 @@ void Player::SendNotifyLootMoneyRemoved(uint64 gold)
     data.Initialize(SMSG_COIN_REMOVED);
     ObjectGuid guid = GetLootGUID();
 
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[7]);
+    uint8 bitOrder[8] = {5, 4, 6, 3, 1, 0, 2, 7};
+    data.WriteBitInOrder(guid, bitOrder);
 
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[3]);
+    uint8 byteOrder[8] = {1, 0, 4, 2, 6, 5, 7, 3};
+    data.WriteBytesSeq(guid, byteOrder);
     
     GetSession()->SendPacket(&data);
 }
@@ -10153,14 +10118,9 @@ void Player::SendTalentWipeConfirm(uint64 guid, bool specialization)
         cost = sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : GetNextResetSpecializationCost();
 
     WorldPacket data(SMSG_RESPEC_WIPE_CONFIRM);
-    data.WriteBit(Guid[6]);
-    data.WriteBit(Guid[3]);
-    data.WriteBit(Guid[5]);
-    data.WriteBit(Guid[2]);
-    data.WriteBit(Guid[0]);
-    data.WriteBit(Guid[7]);
-    data.WriteBit(Guid[1]);
-    data.WriteBit(Guid[4]);
+
+    uint8 bitOrder[8] = {6, 3, 5, 2, 0, 7, 1, 4};
+    data.WriteBitInOrder(Guid, bitOrder);
     data.FlushBits();
 
     data.WriteByteSeq(Guid[3]);
@@ -25555,14 +25515,8 @@ void Player::SendClearCooldown(uint32 spell_id, Unit* target)
     ObjectGuid guid = target->GetGUID();
     uint32 count = 1;
 
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[6]);
+    uint8 bitOrder[8] = {0, 3, 7, 1, 5, 2, 4, 6};
+    data.WriteBitInOrder(guid, bitOrder);
 
     data.WriteBits(count, 24); // count
     data.FlushBits();
@@ -25918,14 +25872,10 @@ void Player::SendRefundInfo(Item* item)
 
     ObjectGuid guid = item->GetGUID();
     WorldPacket data(SMSG_ITEM_REFUND_INFO_RESPONSE, 8+4+4+4+4*4+4*4+4+4);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[1]);
+
+    uint8 bitOrder[8] = {3, 5, 7, 6, 2, 4, 0, 1};
+    data.WriteBitInOrder(guid, bitOrder);
+
     data.FlushBits();
     data.WriteByteSeq(guid[7]);
     data << uint32(GetTotalPlayedTime() - item->GetPlayedTime());
@@ -25980,14 +25930,10 @@ void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece,
 {
     ObjectGuid guid = item->GetGUID();
     WorldPacket data(SMSG_ITEM_REFUND_RESULT, 1 + 1 + 8 + 4*8 + 4 + 4*8 + 1);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[2]);
+
+    uint8 bitOrder[8] = {4, 5, 1, 6, 7, 0, 3, 2};
+    data.WriteBitInOrder(guid, bitOrder);
+
     data.WriteBit(!error);
     data.WriteBit(item->GetPaidMoney() > 0);
     data.FlushBits();
@@ -26310,14 +26256,9 @@ void Player::SendMovementSetCanFly(bool apply)
     if (apply)
     {
         data.Initialize(SMSG_MOVE_SET_CAN_FLY, 1 + 8 + 4);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[2]);
+
+        uint8 bitOrder[8] = {0, 7, 6, 5, 1, 3, 4, 2};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[7]);
         data.WriteByteSeq(guid[1]);
@@ -26332,14 +26273,9 @@ void Player::SendMovementSetCanFly(bool apply)
     else
     {
         data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 1 + 8 + 4);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[1]);
+
+        uint8 bitOrder[8] = {5, 7, 2, 3, 6, 0, 4, 1};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[7]);
         data.WriteByteSeq(guid[1]);
@@ -26360,14 +26296,9 @@ void Player::SendMovementSetCanTransitionBetweenSwimAndFly(bool apply)
     if (apply)
     {
         WorldPacket data(SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY, 12);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[1]);
+    
+        uint8 bitOrder[8] = {5, 0, 2, 3, 4, 7, 6, 1};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[7]);
         data.WriteByteSeq(guid[2]);
@@ -26383,14 +26314,9 @@ void Player::SendMovementSetCanTransitionBetweenSwimAndFly(bool apply)
     else
     {
         WorldPacket data(SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY, 12);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[0]);
+    
+        uint8 bitOrder[8] = {3, 1, 6, 2, 4, 5, 7, 0};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[7]);
         data.WriteByteSeq(guid[0]);
@@ -26411,14 +26337,9 @@ void Player::SendMovementSetHover(bool apply)
     if (apply)
     {
         WorldPacket data(SMSG_MOVE_SET_HOVER, 12);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[0]);
+    
+        uint8 bitOrder[8] = {5, 0, 2, 3, 1, 7, 6, 0};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[7]);
         data << uint32(0);          //! movement counter
@@ -26435,24 +26356,13 @@ void Player::SendMovementSetHover(bool apply)
     {
         WorldPacket data(SMSG_MOVE_UNSET_HOVER, 12);
         data << uint32(0);          //! movement counter
+    
+        uint8 bitOrder[8] = {7, 4, 1, 6, 2, 0, 3, 5};
+        data.WriteBitInOrder(guid, bitOrder);
+    
+        uint8 byteOrder[8] = {7, 0, 1, 6, 5, 4, 3, 2};
+        data.WriteBytesSeq(guid, byteOrder);
 
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[5]);
-
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[2]);
         SendDirectMessage(&data);
     }
 }
@@ -26464,14 +26374,9 @@ void Player::SendMovementSetWaterWalking(bool apply)
     if (apply)
     {
         data.Initialize(SMSG_MOVE_WATER_WALK, 1 + 4 + 8);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[2]);
+    
+        uint8 bitOrder[8] = {7, 6, 0, 1, 5, 4, 3, 2};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[3]);
         data.WriteByteSeq(guid[2]);
@@ -26487,26 +26392,14 @@ void Player::SendMovementSetWaterWalking(bool apply)
     {
         data.Initialize(SMSG_MOVE_LAND_WALK, 1 + 4 + 8);
         data << uint32(0);          //! movement counter
-
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[6]);
+    
+        uint8 bitOrder[8] = {5, 4, 3, 2, 0, 7, 1, 6};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.FlushBits();
-
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[7]);
+    
+        uint8 byteOrder[8] = {1, 0, 2, 6, 3, 4, 5, 7};
+        data.WriteBytesSeq(guid, byteOrder);
     }
     SendDirectMessage(&data);
 }
@@ -26519,14 +26412,9 @@ void Player::SendMovementSetFeatherFall(bool apply)
     if (apply)
     {
         data.Initialize(SMSG_MOVE_FEATHER_FALL, 1 + 4 + 8);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[5]);
+    
+        uint8 bitOrder[8] = {7, 3, 2, 1, 6, 0, 4, 5};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[7]);
         data << uint32(0);          //! movement counter
@@ -26541,26 +26429,14 @@ void Player::SendMovementSetFeatherFall(bool apply)
     else
     {
         data.Initialize(SMSG_MOVE_NORMAL_FALL, 1 + 4 + 8);
-
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[3]);
+    
+        uint8 bitOrder[8] = {2, 1, 5, 0, 6, 4, 7, 3};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data << uint32(0);          //! movement counter
-
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[0]);
+    
+        uint8 byteOrder[8] = {2, 6, 4, 5, 7, 3, 1, 0};
+        data.WriteBytesSeq(guid, byteOrder);
     }
 
     SendDirectMessage(&data);
@@ -26605,24 +26481,12 @@ void Player::SetMover(Unit* target)
     {
         WorldPacket data(SMSG_MOVE_SET_ACTIVE_MOVER);
         ObjectGuid guid = m_mover->GetGUID();
-
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[6]);
-
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[5]);
+    
+        uint8 bitOrder[8] = {7, 0, 3, 4, 5, 1, 2, 6};
+        data.WriteBitInOrder(guid, bitOrder);
+    
+        uint8 byteOrder[8] = {0, 2, 6, 7, 1, 3, 4, 5};
+        data.WriteBytesSeq(guid, byteOrder);
 
         GetSession()->SendPacket(&data);
     }

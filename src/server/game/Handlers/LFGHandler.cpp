@@ -686,24 +686,13 @@ void WorldSession::SendLfgQueueStatus(uint32 dungeon, int32 waitTime, int32 avgW
     data << int32(avgWaitTime); //-1
     data << uint32(3); //4
     data << uint32(3); //3
+    
+    uint8 bitOrder[8] = {4, 5, 2, 6, 0, 3, 7, 1};
+    data.WriteBitInOrder(guid, bitOrder);
+    
+    uint8 byteOrder[8] = {7, 5, 0, 4, 1, 3, 2, 6};
+    data.WriteBytesSeq(guid, byteOrder);
 
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[1]);
-
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[6]);
     /*data << int32(avgWaitTime);                            // Average Wait time
     data << int32(waitTime);                               // Wait Time
     data << uint32(queuedTime);                            // Player wait time in queue*/
