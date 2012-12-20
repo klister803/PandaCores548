@@ -7963,6 +7963,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Backdraft
+        case 117896:
+        {
+            if (!procSpell || (procSpell->Id != 17962 && procSpell->Id != 108685))
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER || getClass() != CLASS_WARLOCK || ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) != SPEC_WARLOCK_DESTRUCTION)
+                return false;
+
+            break;
+        }
         // Master Marksmann
         case 34487:
         {
@@ -9525,6 +9536,17 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         }
     }
 
+    // Mastery : Emberstorm - 77220
+    // Increases the damage of Immolate, Incinerate, Fel Flame and Conflagrate (include the Fire and Brimstone spells)
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(77220) && spellProto
+        && (spellProto->Id == 17962 || spellProto->Id == 348 || spellProto->Id == 77799
+        || spellProto->Id == 29722 || spellProto->Id == 114654 || spellProto->Id == 108685
+        || spellProto->Id == 108686))
+    {
+        float Mastery = (GetFloatValue(PLAYER_MASTERY) + 1) / 100.0f;
+        DoneTotalMod += Mastery;
+    }
+
     // Custom MoP Script
     // 76808 - Mastery : Executioner
     if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 1943 || spellProto->Id == 2098 || spellProto->Id == 121411) && HasAura(76808))
@@ -9672,6 +9694,15 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f / 100.0f;
         DoneTotalMod += Mastery;
+    }
+
+    // Chaos Bolt - 116858
+    // damage is increased by your critical strike chance
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 116858)
+    {
+        float crit_chance;
+        crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(spellProto->GetSchoolMask()));
+        DoneTotalMod += (crit_chance / 100.0f);
     }
 
     // Pet damage?
@@ -10206,6 +10237,14 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             break;
                         }
                     break;
+                    case SPELLFAMILY_WARLOCK:
+                        // Chaos Bolt
+                        if (spellProto->Id == 116858)
+                            return true;
+                        // Soul Fire
+                        if (spellProto->Id == 6353)
+                            return true;
+                        break;
                 }
             }
             break;
@@ -13422,7 +13461,7 @@ int32 Unit::GetCreatePowers(Powers power) const
         case POWER_SHADOW_ORB:
             return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_PRIEST && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_PRIEST_SHADOW) ? 3 : 0);
         case POWER_BURNING_EMBERS:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION) ? 3 : 0);
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION) ? 30 : 0);
         case POWER_DEMONIC_FURY:
             return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY) ? 1000 : 0);
         case POWER_SOUL_SHARDS:
@@ -14028,6 +14067,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (aura)
             aura->GetBase()->DropCharge();
     }
+    // Hack Fix Immolate - Critical strikes generate burning embers
+    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 348 && procExtra & PROC_EX_CRITICAL_HIT)
+        if (roll_chance_i(50))
+            SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
 
     ProcTriggeredList procTriggered;
     // Fill procTriggered list

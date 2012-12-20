@@ -250,13 +250,15 @@ void Player::UpdateArmor()
 float Player::GetHealthBonusFromStamina()
 {
     // Taken from PaperDollFrame.lua - 4.3.4.15595
-    gtOCTHpPerStaminaEntry const* hpBase = sGtOCTHpPerStaminaStore.LookupEntry(getClass());
+    float ratio = 10.0f;
+    if (gtOCTHpPerStaminaEntry const* hpBase = sGtOCTHpPerStaminaStore.LookupEntry((getClass() - 1) * GT_MAX_LEVEL + getLevel() - 1))
+        ratio = hpBase->ratio;
 
     float stamina = GetStat(STAT_STAMINA);
     float baseStam = std::min(20.0f, stamina);
     float moreStam = stamina - baseStam;
 
-    return baseStam + moreStam * hpBase->ratio;
+    return baseStam + moreStam * ratio;
 }
 
 void Player::UpdateMaxHealth()
@@ -761,13 +763,31 @@ void Player::UpdateManaRegen()
     // Apply PCT bonus from SPELL_AURA_MOD_POWER_REGEN_PERCENT aura on spirit base regen
     spirit_regen *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
 
-    // Set regen rate in cast state apply only on spirit based regen
-    int32 modManaRegenInterrupt = GetTotalAuraModifier(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT);
+    float combat_regen = 0.004f * GetMaxPower(POWER_MANA) + spirit_regen;
+    float base_regen = 0.004f * GetMaxPower(POWER_MANA);
+
+    if (getClass() == CLASS_WARLOCK)
+    {
+        combat_regen = 0.01f * GetMaxPower(POWER_MANA) + spirit_regen;
+        base_regen = 0.01f * GetMaxPower(POWER_MANA);
+    }
+
+    // Chaotic Energy : Increase Mana regen by 625%
+    if (HasAura(111546))
+    {
+        // haste also increases your mana regeneration.
+        float HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
+
+        combat_regen = combat_regen + (combat_regen * 6.25f);
+        combat_regen *= HastePct;
+        base_regen = base_regen + (base_regen * 6.25f);
+        base_regen *= HastePct;
+    }
     
     // Not In Combat : 2% of base mana + spirit_regen
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, 0.004f * GetMaxPower(POWER_MANA));
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, base_regen);
     // In Combat : 2% of base mana
-    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, 0.004f * GetMaxPower(POWER_MANA) + spirit_regen);
+    SetStatFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER, combat_regen);
 }
 
 void Player::UpdateRuneRegen(RuneType rune)

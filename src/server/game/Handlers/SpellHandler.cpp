@@ -498,6 +498,26 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellId = newSpellInfo->Id;
         }
     }
+    // Fix Dark Soul for Destruction warlocks
+    if (spellInfo->Id == 113860 && _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(113858);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
+    // Fix Rain of Fire for Destruction warlocks
+    if (spellInfo->Id == 104232 && _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(5740);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
     // Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
     if (spellInfo->Id == 126892 && _player->HasAura(126896))
     {
