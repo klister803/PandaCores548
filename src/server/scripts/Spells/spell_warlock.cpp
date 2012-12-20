@@ -73,17 +73,16 @@ class spell_warl_chaos_bolt : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warl_chaos_bolt_SpellScript);
 
-            void HandleOnHit()
+            void HandleAfterCast()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
-                        if (_player->HasAura(WARLOCK_BACKDRAFT) && _player->HasAura(WARLOCK_PYROCLASM))
-                            _player->RemoveAura(WARLOCK_BACKDRAFT);
+                    if (_player->HasAura(WARLOCK_BACKDRAFT) && _player->HasAura(WARLOCK_PYROCLASM))
+                        _player->RemoveAura(WARLOCK_BACKDRAFT);
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_warl_chaos_bolt_SpellScript::HandleOnHit);
+                AfterCast += SpellCastFn(spell_warl_chaos_bolt_SpellScript::HandleAfterCast);
             }
         };
 
