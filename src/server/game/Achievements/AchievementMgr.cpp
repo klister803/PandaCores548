@@ -431,14 +431,9 @@ void AchievementMgr<Guild>::RemoveCriteriaProgress(const AchievementCriteriaEntr
     ObjectGuid guid = GetOwner()->GetGUID();
 
     WorldPacket data(SMSG_GUILD_CRITERIA_DELETED, 4 + 8);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
+
+    uint8 bitOrder[8] = {7, 3, 4, 2, 1, 5, 6, 0};
+    data.WriteBitInOrder(guid, bitOrder);
 
     data.WriteByteSeq(guid[5]);
     data.WriteByteSeq(guid[7]);
@@ -1073,14 +1068,10 @@ void AchievementMgr<Guild>::Reset()
     for (CompletedAchievementMap::const_iterator iter = m_completedAchievements.begin(); iter != m_completedAchievements.end(); ++iter)
     {
         WorldPacket data(SMSG_GUILD_ACHIEVEMENT_DELETED, 4);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[6]);
+
+        uint8 bitOrder[8] = {4, 1, 2, 3, 0, 7, 5, 6};
+        data.WriteBitInOrder(guid, bitOrder);
+
         data << uint32(iter->first);
         data.WriteByteSeq(guid[5]);
         data.WriteByteSeq(guid[1]);
@@ -1207,14 +1198,9 @@ void AchievementMgr<Guild>::SendAchievementEarned(AchievementEntry const* achiev
     ObjectGuid guid = GetOwner()->GetGUID();
 
     WorldPacket data(SMSG_GUILD_ACHIEVEMENT_EARNED, 8+4+8);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[5]);
+
+    uint8 bitOrder[8] = {3, 1, 0, 7, 4, 6, 2, 5};
+    data.WriteBitInOrder(guid, bitOrder);
 
     data.WriteByteSeq(guid[2]);
     data << uint32(secsToTimeBitFields(time(NULL)));
@@ -2323,14 +2309,8 @@ void AchievementMgr<T>::SendAllAchievementData(Player* /*receiver*/)
 
         ObjectGuid firstAccountGuid = (*itr).second.first_guid;
 
-        data.WriteBit(firstAccountGuid[4]);
-        data.WriteBit(firstAccountGuid[7]);
-        data.WriteBit(firstAccountGuid[3]);
-        data.WriteBit(firstAccountGuid[1]);
-        data.WriteBit(firstAccountGuid[5]);
-        data.WriteBit(firstAccountGuid[0]);
-        data.WriteBit(firstAccountGuid[6]);
-        data.WriteBit(firstAccountGuid[2]);
+        uint8 bitOrder[8] = {4, 7, 3, 1, 5, 0, 6, 2};
+        data.WriteBitInOrder(firstAccountGuid, bitOrder);
     }
     data.WriteBits(numCriteria, 21);
     for (CriteriaProgressMap::const_iterator itr = progressMap->begin(); itr != progressMap->end(); ++itr)

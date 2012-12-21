@@ -140,23 +140,12 @@ void WorldSession::HandleLfgProposalResultOpcode(WorldPacket& recvData)
     recvData.read_skip<uint32>();
     recvData.read_skip<uint32>();
     ObjectGuid unk;
-    unk[5] = recvData.ReadBit();
-    unk[1] = recvData.ReadBit();
-    unk[0] = recvData.ReadBit();
-    unk[2] = recvData.ReadBit();
-    unk[4] = recvData.ReadBit();
-    unk[6] = recvData.ReadBit();
-    unk[3] = recvData.ReadBit();
-    unk[7] = recvData.ReadBit();
 
-    recvData.ReadByteSeq(unk[4]);
-    recvData.ReadByteSeq(unk[1]);
-    recvData.ReadByteSeq(unk[2]);
-    recvData.ReadByteSeq(unk[5]);
-    recvData.ReadByteSeq(unk[0]);
-    recvData.ReadByteSeq(unk[7]);
-    recvData.ReadByteSeq(unk[3]);
-    recvData.ReadByteSeq(unk[6]);
+    uint8 bitOrder[8] = {5, 1, 0, 2, 4, 6, 3, 7};
+    recvData.ReadBitInOrder(unk, bitOrder);
+
+    uint8 byteOrder[8] = {4, 1, 2, 5, 0, 7, 3, 6};
+    recvData.ReadBytesSeq(unk, byteOrder);
 
     recvData.ReadBits(3);
     accept = recvData.ReadBit();
@@ -697,24 +686,13 @@ void WorldSession::SendLfgQueueStatus(uint32 dungeon, int32 waitTime, int32 avgW
     data << int32(avgWaitTime); //-1
     data << uint32(3); //4
     data << uint32(3); //3
+    
+    uint8 bitOrder[8] = {4, 5, 2, 6, 0, 3, 7, 1};
+    data.WriteBitInOrder(guid, bitOrder);
+    
+    uint8 byteOrder[8] = {7, 5, 0, 4, 1, 3, 2, 6};
+    data.WriteBytesSeq(guid, byteOrder);
 
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[1]);
-
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[3]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[6]);
     /*data << int32(avgWaitTime);                            // Average Wait time
     data << int32(waitTime);                               // Wait Time
     data << uint32(queuedTime);                            // Player wait time in queue*/

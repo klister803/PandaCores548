@@ -61,7 +61,97 @@ enum HunterSpells
     HUNTER_SPELL_CAMOUFLAGE_VISUAL               = 80326,
     HUNTER_SPELL_CAMOULAGE_STEALTH               = 80325,
     HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE             = 119449,
-    HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE_STEALTH     = 119450
+    HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE_STEALTH     = 119450,
+    HUNTER_SPELL_POWERSHOT                       = 109259
+};
+
+// Powershot - 109259
+class spell_hun_powershot : public SpellScriptLoader
+{
+    public:
+        spell_hun_powershot() : SpellScriptLoader("spell_hun_powershot") { }
+
+        class spell_hun_powershot_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_powershot_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        std::list<Unit*> tempUnitMap;
+                        _player->GetAttackableUnitListInRange(_player, tempUnitMap, _player->GetDistance(target));
+
+                        for (auto itr : tempUnitMap)
+                        {
+                            if (!itr->IsValidAttackTarget(_player))
+                                continue;
+
+                            if (itr->GetGUID() == _player->GetGUID())
+                                continue;
+
+                            if (!itr->IsInBetween(_player, target, 1.0f))
+                                continue;
+
+                            int32 bp = 400;
+
+                            _player->RemoveSpellCooldown(HUNTER_SPELL_POWERSHOT);
+                            _player->CastCustomSpell(itr, HUNTER_SPELL_POWERSHOT, NULL, NULL, &bp, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_hun_powershot_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_powershot_SpellScript();
+        }
+};
+
+// Feign Death - 5384
+class spell_hun_feign_death : public SpellScriptLoader
+{
+    public:
+        spell_hun_feign_death() : SpellScriptLoader("spell_hun_feign_death") { }
+
+        class spell_hun_feign_death_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_feign_death_AuraScript);
+
+            int32 health;
+            int32 focus;
+
+            void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                health = GetCaster()->GetHealth();
+                focus = GetCaster()->GetPower(POWER_FOCUS);
+            }
+
+            void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                GetCaster()->SetHealth(health);
+                GetCaster()->SetPower(POWER_FOCUS, focus);
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_hun_feign_death_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_FEIGN_DEATH, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_hun_feign_death_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_FEIGN_DEATH, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_feign_death_AuraScript();
+        }
 };
 
 // Camouflage Visual - 80326
@@ -1065,6 +1155,8 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_powershot();
+    new spell_hun_feign_death();
     new spell_hun_camouflage_visual();
     new spell_hun_camouflage();
     new spell_hun_serpent_spread();

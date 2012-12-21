@@ -41,23 +41,12 @@ void WorldSession::HandleVoidStorageUnlock(WorldPacket& recvData)
     Player* player = GetPlayer();
 
     ObjectGuid npcGuid;
-    npcGuid[5] = recvData.ReadBit();
-    npcGuid[3] = recvData.ReadBit();
-    npcGuid[4] = recvData.ReadBit();
-    npcGuid[2] = recvData.ReadBit();
-    npcGuid[1] = recvData.ReadBit();
-    npcGuid[7] = recvData.ReadBit();
-    npcGuid[0] = recvData.ReadBit();
-    npcGuid[6] = recvData.ReadBit();
 
-    recvData.ReadByteSeq(npcGuid[4]);
-    recvData.ReadByteSeq(npcGuid[5]);
-    recvData.ReadByteSeq(npcGuid[7]);
-    recvData.ReadByteSeq(npcGuid[3]);
-    recvData.ReadByteSeq(npcGuid[0]);
-    recvData.ReadByteSeq(npcGuid[6]);
-    recvData.ReadByteSeq(npcGuid[2]);
-    recvData.ReadByteSeq(npcGuid[1]);
+    uint8 bitOrder[8] = {5, 3, 4, 2, 1, 7, 0, 6};
+    recvData.ReadBitInOrder(npcGuid, bitOrder);
+
+    uint8 byteOrder[8] = {4, 5, 7, 3, 0, 6, 2, 1};
+    recvData.ReadBytesSeq(npcGuid, byteOrder);
 
     Creature* unit = player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_VAULTKEEPER);
     if (!unit)
@@ -83,25 +72,13 @@ void WorldSession::HandleVoidStorageQuery(WorldPacket& recvData)
 
     ObjectGuid npcGuid;
 
-    npcGuid[0] = recvData.ReadBit();
-    npcGuid[1] = recvData.ReadBit();
-    npcGuid[3] = recvData.ReadBit();
-    npcGuid[4] = recvData.ReadBit();
-    npcGuid[2] = recvData.ReadBit();
-    npcGuid[5] = recvData.ReadBit();
-    npcGuid[7] = recvData.ReadBit();
-    npcGuid[6] = recvData.ReadBit();
+    uint8 bitOrder[8] = {0, 1, 3, 4, 2, 5, 7, 6};
+    recvData.ReadBitInOrder(npcGuid, bitOrder);
 
     recvData.FlushBits();
 
-    recvData.ReadByteSeq(npcGuid[7]);
-    recvData.ReadByteSeq(npcGuid[6]);
-    recvData.ReadByteSeq(npcGuid[2]);
-    recvData.ReadByteSeq(npcGuid[4]);
-    recvData.ReadByteSeq(npcGuid[3]);
-    recvData.ReadByteSeq(npcGuid[0]);
-    recvData.ReadByteSeq(npcGuid[1]);
-    recvData.ReadByteSeq(npcGuid[5]);
+    uint8 byteOrder[8] = {7, 6, 2, 4, 3, 0, 1, 5};
+    recvData.ReadBytesSeq(npcGuid, byteOrder);
 
     Creature* unit = player->GetNPCIfCanInteractWith(npcGuid, UNIT_NPC_FLAG_VAULTKEEPER);
     if (!unit)
@@ -209,17 +186,10 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     }
 
     std::vector<ObjectGuid> itemIds(countWithdraw);
+
+    uint8 bitOrder[8] = {5, 1, 3, 4, 7, 0, 6, 2};
     for (uint32 i = 0; i < countWithdraw; ++i)
-    {
-        itemIds[i][5] = recvData.ReadBit();
-        itemIds[i][1] = recvData.ReadBit();
-        itemIds[i][3] = recvData.ReadBit();
-        itemIds[i][4] = recvData.ReadBit();
-        itemIds[i][7] = recvData.ReadBit();
-        itemIds[i][0] = recvData.ReadBit();
-        itemIds[i][6] = recvData.ReadBit();
-        itemIds[i][2] = recvData.ReadBit();
-    }
+        recvData.ReadBitInOrder(itemIds[i], bitOrder);
 
     if (countDeposit > 9)
     {
@@ -228,19 +198,10 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     }
 
     std::vector<ObjectGuid> itemGuids(countDeposit);
-    for (uint32 i = 0; i < countDeposit; ++i)
-    {
-        itemGuids[i][2] = recvData.ReadBit();
-        itemGuids[i][5] = recvData.ReadBit();
-        itemGuids[i][7] = recvData.ReadBit();
-        itemGuids[i][1] = recvData.ReadBit();
-        itemGuids[i][3] = recvData.ReadBit();
-        itemGuids[i][0] = recvData.ReadBit();
-        itemGuids[i][4] = recvData.ReadBit();
-        itemGuids[i][6] = recvData.ReadBit();
-    }
 
-    
+    uint8 bitOrder2[8] = {2, 5, 7, 1, 3, 0, 4, 6};
+    for (uint32 i = 0; i < countDeposit; ++i)
+        recvData.ReadBitInOrder(itemGuids[i], bitOrder2);
     
     npcGuid[4] = recvData.ReadBit();
     npcGuid[7] = recvData.ReadBit();
@@ -249,33 +210,17 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     npcGuid[5] = recvData.ReadBit();
 
     recvData.FlushBits();
-    
+
+    uint8 byteOrder[8] = {2, 0, 4, 6, 5, 1, 7, 3};
     for (uint32 i = 0; i < countWithdraw; ++i)
-    {
-        recvData.ReadByteSeq(itemIds[i][2]);
-        recvData.ReadByteSeq(itemIds[i][0]);
-        recvData.ReadByteSeq(itemIds[i][4]);
-        recvData.ReadByteSeq(itemIds[i][6]);
-        recvData.ReadByteSeq(itemIds[i][5]);
-        recvData.ReadByteSeq(itemIds[i][1]);
-        recvData.ReadByteSeq(itemIds[i][7]);
-        recvData.ReadByteSeq(itemIds[i][3]);
-    }
+        recvData.ReadBytesSeq(itemIds[i], byteOrder);
 
     recvData.ReadByteSeq(npcGuid[3]);
     recvData.ReadByteSeq(npcGuid[6]);
     
+    uint8 byteOrder2[8] = {7, 1, 4, 5, 2, 6, 3, 0};
     for (uint32 i = 0; i < countDeposit; ++i)
-    {
-        recvData.ReadByteSeq(itemGuids[i][7]);
-        recvData.ReadByteSeq(itemGuids[i][1]);
-        recvData.ReadByteSeq(itemGuids[i][4]);
-        recvData.ReadByteSeq(itemGuids[i][5]);
-        recvData.ReadByteSeq(itemGuids[i][2]);
-        recvData.ReadByteSeq(itemGuids[i][6]);
-        recvData.ReadByteSeq(itemGuids[i][3]);
-        recvData.ReadByteSeq(itemGuids[i][0]);
-    }
+        recvData.ReadBytesSeq(itemGuids[i], byteOrder2);
 
     recvData.ReadByteSeq(npcGuid[1]);
     recvData.ReadByteSeq(npcGuid[0]);
@@ -414,14 +359,9 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     for (uint8 i = 0; i < withdrawCount; ++i)
     {
         ObjectGuid itemId = withdrawItems[i].ItemId;
-        data.WriteBit(itemId[4]);
-        data.WriteBit(itemId[5]);
-        data.WriteBit(itemId[1]);
-        data.WriteBit(itemId[2]);
-        data.WriteBit(itemId[0]);
-        data.WriteBit(itemId[6]);
-        data.WriteBit(itemId[7]);
-        data.WriteBit(itemId[3]);
+    
+        uint8 bitOrder[8] = {4, 5, 1, 2, 0, 6, 7, 3};
+        data.WriteBitInOrder(itemId, bitOrder);
     }
 
     data.FlushBits();
@@ -429,14 +369,9 @@ void WorldSession::HandleVoidStorageTransfer(WorldPacket& recvData)
     for (uint8 i = 0; i < withdrawCount; ++i)
     {
         ObjectGuid itemId = withdrawItems[i].ItemId;
-        data.WriteByteSeq(itemId[7]);
-        data.WriteByteSeq(itemId[4]);
-        data.WriteByteSeq(itemId[0]);
-        data.WriteByteSeq(itemId[2]);
-        data.WriteByteSeq(itemId[6]);
-        data.WriteByteSeq(itemId[3]);
-        data.WriteByteSeq(itemId[5]);
-        data.WriteByteSeq(itemId[1]);
+    
+        uint8 byteOrder[8] = {7, 4, 0, 2, 6, 3, 5, 1};
+        data.WriteBytesSeq(itemId, byteOrder);
     }
 
     for (uint8 i = 0; i < depositCount; ++i)

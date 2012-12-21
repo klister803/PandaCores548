@@ -1169,7 +1169,7 @@ bool SpellInfo::IsPassiveStackableWithRanks() const
 
 bool SpellInfo::IsMultiSlotAura() const
 {
-    return IsPassive() || Id == 44413;
+    return (IsPassive() || Id == 44413) && Id != 76856; // hack fix for Unshackled Fury stacking with itself
 }
 
 bool SpellInfo::IsDeathPersistent() const
@@ -2137,7 +2137,7 @@ uint32 SpellInfo::CalcCastTime(Unit* caster, Spell* spell) const
     if (caster)
         caster->ModSpellCastTime(this, castTime, spell);
 
-    if (Attributes & SPELL_ATTR0_REQ_AMMO && (!IsAutoRepeatRangedSpell()))
+    if (Attributes & SPELL_ATTR0_REQ_AMMO && (!IsAutoRepeatRangedSpell()) && Id != 82928)
         castTime += 500;
 
     return (castTime > 0) ? uint32(castTime) : 0;

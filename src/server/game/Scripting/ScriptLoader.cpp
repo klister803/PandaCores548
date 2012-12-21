@@ -606,6 +606,8 @@ void AddSC_boss_sha_of_doubt();
 void AddSC_instance_stormstout_brewery();     // The Stormstout Brewery
 void AddSC_stormstout_brewery();
 void AddSC_boss_ook_ook();
+void AddSC_instance_gate_setting_sun();       // Gate of the Setting Sun
+void AddSC_gate_setting_sun();
 
 //Mogu'Shan Palace
 void AddSC_instance_mogu_shan_palace();
@@ -1269,6 +1271,8 @@ void AddPandarieScripts()
     AddSC_boss_gekkan();
     AddSC_boss_xin_the_weaponmaster();
     AddSC_WanderingIsland();
+    AddSC_instance_gate_setting_sun();       // Gate of the Setting Sun
+    AddSC_gate_setting_sun();
 #endif
 }
 

@@ -424,15 +424,9 @@ void Object::_BuildMovementUpdate(ByteBuffer* data, uint16 flags) const
     if (flags & UPDATEFLAG_HAS_TARGET)
     {
         ObjectGuid victimGuid = ToUnit()->getVictim()->GetGUID();   // checked in BuildCreateUpdateBlockForPlayer
-
-        data->WriteBit(victimGuid[2]);
-        data->WriteBit(victimGuid[6]);
-        data->WriteBit(victimGuid[5]);
-        data->WriteBit(victimGuid[1]);
-        data->WriteBit(victimGuid[7]);
-        data->WriteBit(victimGuid[3]);
-        data->WriteBit(victimGuid[4]);
-        data->WriteBit(victimGuid[0]);
+    
+        uint8 bitOrder[8] = {2, 6, 5, 1, 7, 3, 4, 0};
+        data->WriteBitInOrder(victimGuid, bitOrder);
     }
 
     if (flags & UPDATEFLAG_ANIMKITS)

@@ -2724,6 +2724,8 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_regenTimerCount;
         uint32 m_holyPowerRegenTimerCount;
         uint32 m_chiPowerRegenTimerCount;
+        uint32 m_burningEmbersRegenTimerCount;
+        uint32 m_soulShardsRegenTimerCount;
         uint32 m_focusRegenTimerCount;
         uint32 m_demonicFuryPowerRegenTimerCount;
         float m_powerFraction[MAX_POWERS_PER_CLASS];

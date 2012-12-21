@@ -126,8 +126,9 @@ void AuctionHouseMgr::SendAuctionWonMail(AuctionEntry* auction, SQLTransaction& 
 
             uint32 owner_accid = sObjectMgr->GetPlayerAccountIdByGUID(auction->owner);
 
-            sLog->outCommand(bidder_accId, "GM %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
-                bidder_name.c_str(), bidder_accId, pItem->GetTemplate()->Name1.c_str(), pItem->GetEntry(), pItem->GetCount(), auction->bid, owner_name.c_str(), owner_accid);
+            sLog->outCommand(bidder_accId, "", 0, bidder_name.c_str(), owner_accid, "", 0, owner_name.c_str(),
+              "GM %s (Account: %u) won item in auction: %s (Entry: %u Count: %u) and pay money: %u. Original owner %s (Account: %u)",
+              bidder_name.c_str(),bidder_accId,pItem->GetTemplate()->Name1.c_str(),pItem->GetEntry(),pItem->GetCount(),auction->bid,owner_name.c_str(),owner_accid);
         }
     }
 
@@ -676,18 +677,20 @@ void AuctionEntry::SaveToDB(SQLTransaction& trans) const
 
 bool AuctionEntry::LoadFromDB(Field* fields)
 {
-    Id = fields[0].GetUInt32();
-    auctioneer = fields[1].GetUInt32();
-    itemGUIDLow = fields[2].GetUInt32();
-    itemEntry = fields[3].GetUInt32();
-    itemCount = fields[4].GetUInt32();
-    owner = fields[5].GetUInt32();
-    buyout = fields[6].GetUInt32();
-    expire_time = fields[7].GetUInt32();
-    bidder = fields[8].GetUInt32();
-    bid = fields[9].GetUInt32();
-    startbid = fields[10].GetUInt32();
-    deposit = fields[11].GetUInt32();
+    uint8 index = 0;
+
+    Id          = fields[index++].GetUInt32();
+    auctioneer  = fields[index++].GetUInt32();
+    itemGUIDLow = fields[index++].GetUInt32();
+    itemEntry   = fields[index++].GetUInt32();
+    itemCount   = fields[index++].GetUInt32();
+    owner       = fields[index++].GetUInt32();
+    buyout      = fields[index++].GetUInt32();
+    expire_time = fields[index++].GetUInt32();
+    bidder      = fields[index++].GetUInt32();
+    bid         = fields[index++].GetUInt32();
+    startbid    = fields[index++].GetUInt32();
+    deposit     = fields[index++].GetUInt32();
 
     CreatureData const* auctioneerData = sObjectMgr->GetCreatureData(auctioneer);
     if (!auctioneerData)
@@ -798,18 +801,20 @@ bool AuctionEntry::LoadFromFieldList(Field* fields)
     //  does not require the AuctionEntryMap to have been loaded with items. It simply
     //  acts as a wrapper to fill out an AuctionEntry struct from a field list
 
-    Id = fields[0].GetUInt32();
-    auctioneer = fields[1].GetUInt32();
-    itemGUIDLow = fields[2].GetUInt32();
-    itemEntry = fields[3].GetUInt32();
-    itemCount = fields[4].GetUInt32();
-    owner = fields[5].GetUInt32();
-    buyout = fields[6].GetUInt32();
-    expire_time = fields[7].GetUInt32();
-    bidder = fields[8].GetUInt32();
-    bid = fields[9].GetUInt32();
-    startbid = fields[10].GetUInt32();
-    deposit = fields[11].GetUInt32();
+    uint8 index = 0;
+
+    Id          = fields[index++].GetUInt32();
+    auctioneer  = fields[index++].GetUInt32();
+    itemGUIDLow = fields[index++].GetUInt32();
+    itemEntry   = fields[index++].GetUInt32();
+    itemCount   = fields[index++].GetUInt32();
+    owner       = fields[index++].GetUInt32();
+    buyout      = fields[index++].GetUInt32();
+    expire_time = fields[index++].GetUInt32();
+    bidder      = fields[index++].GetUInt32();
+    bid         = fields[index++].GetUInt32();
+    startbid    = fields[index++].GetUInt32();
+    deposit     = fields[index++].GetUInt32();
 
     CreatureData const* auctioneerData = sObjectMgr->GetCreatureData(auctioneer);
     if (!auctioneerData)

@@ -58,7 +58,7 @@ If you visit the Gm Island as a alliance race you are automatically phased into 
 
 DELETE FROM `conditions` WHERE  `SourceTypeOrReferenceId`=23 AND `SourceGroup`=876 AND `SourceEntry`=1;
 INSERT INTO `conditions` (`SourceTypeOrReferenceId`, `SourceGroup`, `SourceEntry`, `SourceId`, `ElseGroup`, `ConditionTypeOrReference`, `ConditionTarget`, `ConditionValue1`, `ConditionValue2`, `ConditionValue3`, `NegativeCondition`, `ErrorTextId`, `ScriptName`, `Comment`) VALUES
-(23, 876, 1, 0, 0, 6, 0, 469, 0, 0, 0, 0, '', 'Phase Definitions Example: Phase is only visible for Alliance Members');
+(24, 876, 1, 0, 0, 6, 0, 469, 0, 0, 0, 0, '', 'Phase Definitions Example: Phase is only visible for Alliance Members');
 
 DELETE FROM `phase_definitions` WHERE  `zoneId`=876 AND `entry`=1;
 INSERT INTO `phase_definitions` (`zoneId`, `entry`, `phasemask`, `phaseId`, `terrainswapmap`, `flags`, `comment`) VALUES

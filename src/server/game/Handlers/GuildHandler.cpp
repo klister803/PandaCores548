@@ -76,23 +76,11 @@ void WorldSession::HandleGuildRemoveOpcode(WorldPacket& recvPacket)
 
     ObjectGuid playerGuid;
 
-    playerGuid[5] = recvPacket.ReadBit();
-    playerGuid[0] = recvPacket.ReadBit();
-    playerGuid[7] = recvPacket.ReadBit();
-    playerGuid[2] = recvPacket.ReadBit();
-    playerGuid[6] = recvPacket.ReadBit();
-    playerGuid[3] = recvPacket.ReadBit();
-    playerGuid[4] = recvPacket.ReadBit();
-    playerGuid[1] = recvPacket.ReadBit();
+    uint8 bitOrder[8] = {5, 0, 7, 2, 6, 3, 4, 1};
+    recvPacket.ReadBitInOrder(playerGuid, bitOrder);
 
-    recvPacket.ReadByteSeq(playerGuid[1]);
-    recvPacket.ReadByteSeq(playerGuid[4]);
-    recvPacket.ReadByteSeq(playerGuid[2]);
-    recvPacket.ReadByteSeq(playerGuid[5]);
-    recvPacket.ReadByteSeq(playerGuid[0]);
-    recvPacket.ReadByteSeq(playerGuid[7]);
-    recvPacket.ReadByteSeq(playerGuid[6]);
-    recvPacket.ReadByteSeq(playerGuid[3]);
+    uint8 byteOrder[8] = {1, 4, 2, 5, 0, 7, 6, 3};
+    recvPacket.ReadBytesSeq(playerGuid, byteOrder);
 
     if (Guild* guild = _GetPlayerGuild(this, true))
         guild->HandleRemoveMember(this, playerGuid);
@@ -135,23 +123,11 @@ void WorldSession::HandleGuildPromoteOpcode(WorldPacket& recvPacket)
     uint32 rank = 0;
     recvPacket >> rank;
 
-    targetGuid[3] = recvPacket.ReadBit();
-    targetGuid[5] = recvPacket.ReadBit();
-    targetGuid[7] = recvPacket.ReadBit();
-    targetGuid[4] = recvPacket.ReadBit();
-    targetGuid[6] = recvPacket.ReadBit();
-    targetGuid[0] = recvPacket.ReadBit();
-    targetGuid[1] = recvPacket.ReadBit();
-    targetGuid[2] = recvPacket.ReadBit();
+    uint8 bitOrder[8] = {3, 5, 7, 4, 6, 0, 1, 2};
+    recvPacket.ReadBitInOrder(targetGuid, bitOrder);
 
-    recvPacket.ReadByteSeq(targetGuid[2]);
-    recvPacket.ReadByteSeq(targetGuid[6]);
-    recvPacket.ReadByteSeq(targetGuid[7]);
-    recvPacket.ReadByteSeq(targetGuid[4]);
-    recvPacket.ReadByteSeq(targetGuid[0]);
-    recvPacket.ReadByteSeq(targetGuid[3]);
-    recvPacket.ReadByteSeq(targetGuid[5]);
-    recvPacket.ReadByteSeq(targetGuid[1]);
+    uint8 byteOrder[8] = {2, 6, 7, 4, 0, 3, 5, 1};
+    recvPacket.ReadBytesSeq(targetGuid, byteOrder);
 
     if (Guild* guild = _GetPlayerGuild(this, true))
         guild->HandleUpdateMemberRank(this, targetGuid, rank);
@@ -163,23 +139,11 @@ void WorldSession::HandleGuildDemoteOpcode(WorldPacket& recvPacket)
 
     ObjectGuid targetGuid;
 
-    targetGuid[7] = recvPacket.ReadBit();
-    targetGuid[1] = recvPacket.ReadBit();
-    targetGuid[5] = recvPacket.ReadBit();
-    targetGuid[6] = recvPacket.ReadBit();
-    targetGuid[2] = recvPacket.ReadBit();
-    targetGuid[3] = recvPacket.ReadBit();
-    targetGuid[0] = recvPacket.ReadBit();
-    targetGuid[4] = recvPacket.ReadBit();
+    uint8 bitOrder[8] = {7, 1, 5, 6, 2, 3, 0, 4};
+    recvPacket.ReadBitInOrder(targetGuid, bitOrder);
 
-    recvPacket.ReadByteSeq(targetGuid[1]);
-    recvPacket.ReadByteSeq(targetGuid[2]);
-    recvPacket.ReadByteSeq(targetGuid[7]);
-    recvPacket.ReadByteSeq(targetGuid[5]);
-    recvPacket.ReadByteSeq(targetGuid[6]);
-    recvPacket.ReadByteSeq(targetGuid[0]);
-    recvPacket.ReadByteSeq(targetGuid[4]);
-    recvPacket.ReadByteSeq(targetGuid[3]);
+    uint8 byteOrder[8] = {1, 2, 7, 5, 6, 0, 4, 3};
+    recvPacket.ReadBytesSeq(targetGuid, byteOrder);
 
     if (Guild* guild = _GetPlayerGuild(this, true))
         guild->HandleUpdateMemberRank(this, targetGuid, 0);
@@ -195,23 +159,11 @@ void WorldSession::HandleGuildAssignRankOpcode(WorldPacket& recvPacket)
     uint32 rankId;
     recvPacket >> rankId;
 
-    targetGuid[3] = recvPacket.ReadBit();
-    targetGuid[5] = recvPacket.ReadBit();
-    targetGuid[7] = recvPacket.ReadBit();
-    targetGuid[4] = recvPacket.ReadBit();
-    targetGuid[6] = recvPacket.ReadBit();
-    targetGuid[0] = recvPacket.ReadBit();
-    targetGuid[1] = recvPacket.ReadBit();
-    targetGuid[2] = recvPacket.ReadBit();
+    uint8 bitOrder[8] = {3, 5, 7, 4, 6, 0, 1, 2};
+    recvPacket.ReadBitInOrder(targetGuid, bitOrder);
 
-    recvPacket.ReadByteSeq(targetGuid[2]);
-    recvPacket.ReadByteSeq(targetGuid[6]);
-    recvPacket.ReadByteSeq(targetGuid[7]);
-    recvPacket.ReadByteSeq(targetGuid[4]);
-    recvPacket.ReadByteSeq(targetGuid[0]);
-    recvPacket.ReadByteSeq(targetGuid[3]);
-    recvPacket.ReadByteSeq(targetGuid[5]);
-    recvPacket.ReadByteSeq(targetGuid[1]);
+    uint8 byteOrder[8] = {2, 6, 7, 4, 0, 3, 5, 1};
+    recvPacket.ReadBytesSeq(targetGuid, byteOrder);
 
     if (Guild* guild = _GetPlayerGuild(this, true))
         guild->HandleSetMemberRank(this, targetGuid, GetPlayer()->GetGUID(), rankId);
@@ -299,14 +251,9 @@ void WorldSession::HandleGuildSetNoteOpcode(WorldPacket& recvPacket)
     playerGuid[2] = recvPacket.ReadBit();
     */
     std::string note = recvPacket.ReadString(noteLength);
-    recvPacket.ReadByteSeq(playerGuid[2]);
-    recvPacket.ReadByteSeq(playerGuid[5]);
-    recvPacket.ReadByteSeq(playerGuid[0]);
-    recvPacket.ReadByteSeq(playerGuid[3]);
-    recvPacket.ReadByteSeq(playerGuid[7]);
-    recvPacket.ReadByteSeq(playerGuid[4]);
-    recvPacket.ReadByteSeq(playerGuid[6]);
-    recvPacket.ReadByteSeq(playerGuid[1]);
+
+    uint8 byteOrder[8] = {2, 5, 0, 3, 7, 4, 6, 1};
+    recvPacket.ReadBytesSeq(playerGuid, byteOrder);
 
     if (Guild* guild = _GetPlayerGuild(this, true))
         guild->HandleSetMemberNote(this, note, playerGuid, type);
@@ -318,23 +265,11 @@ void WorldSession::HandleGuildQueryRanksOpcode(WorldPacket& recvData)
 
     ObjectGuid guildGuid;
 
-    guildGuid[2] = recvData.ReadBit();
-    guildGuid[1] = recvData.ReadBit();
-    guildGuid[7] = recvData.ReadBit();
-    guildGuid[3] = recvData.ReadBit();
-    guildGuid[4] = recvData.ReadBit();
-    guildGuid[6] = recvData.ReadBit();
-    guildGuid[0] = recvData.ReadBit();
-    guildGuid[5] = recvData.ReadBit();
+    uint8 bitOrder[8] = {2, 1, 7, 3, 4, 6, 0, 5};
+    recvData.ReadBitInOrder(guildGuid, bitOrder);
 
-    recvData.ReadByteSeq(guildGuid[5]);
-    recvData.ReadByteSeq(guildGuid[3]);
-    recvData.ReadByteSeq(guildGuid[4]);
-    recvData.ReadByteSeq(guildGuid[1]);
-    recvData.ReadByteSeq(guildGuid[2]);
-    recvData.ReadByteSeq(guildGuid[0]);
-    recvData.ReadByteSeq(guildGuid[6]);
-    recvData.ReadByteSeq(guildGuid[7]);
+    uint8 byteOrder[8] = {5, 3, 4, 1, 2, 0, 6, 7};
+    recvData.ReadBytesSeq(guildGuid, byteOrder);
 
     if (Guild* guild = sGuildMgr->GetGuildByGuid(guildGuid))
         if (guild->IsMember(_player->GetGUID()))
@@ -663,23 +598,11 @@ void WorldSession::HandleGuildQueryXPOpcode(WorldPacket& recvPacket)
 
     ObjectGuid guildGuid;
 
-    guildGuid[2] = recvPacket.ReadBit();
-    guildGuid[5] = recvPacket.ReadBit();
-    guildGuid[3] = recvPacket.ReadBit();
-    guildGuid[7] = recvPacket.ReadBit();
-    guildGuid[4] = recvPacket.ReadBit();
-    guildGuid[1] = recvPacket.ReadBit();
-    guildGuid[0] = recvPacket.ReadBit();
-    guildGuid[6] = recvPacket.ReadBit();
+    uint8 bitOrder[8] = {1, 2, 7, 3, 0, 5, 6, 4};
+    recvPacket.ReadBitInOrder(guildGuid, bitOrder);
 
-    recvPacket.ReadByteSeq(guildGuid[7]);
-    recvPacket.ReadByteSeq(guildGuid[3]);
-    recvPacket.ReadByteSeq(guildGuid[2]);
-    recvPacket.ReadByteSeq(guildGuid[1]);
-    recvPacket.ReadByteSeq(guildGuid[0]);
-    recvPacket.ReadByteSeq(guildGuid[5]);
-    recvPacket.ReadByteSeq(guildGuid[6]);
-    recvPacket.ReadByteSeq(guildGuid[4]);
+    uint8 byteOrder[8] = {5, 7, 2, 0, 4, 1, 6, 3};
+    recvPacket.ReadBytesSeq(guildGuid, byteOrder);
 
     if (Guild* guild = sGuildMgr->GetGuildByGuid(guildGuid))
         if (guild->IsMember(_player->GetGUID()))
@@ -733,23 +656,11 @@ void WorldSession::HandleGuildRequestPartyState(WorldPacket& recvData)
 
     ObjectGuid guildGuid;
 
-    guildGuid[4] = recvData.ReadBit();
-    guildGuid[3] = recvData.ReadBit();
-    guildGuid[6] = recvData.ReadBit();
-    guildGuid[7] = recvData.ReadBit();
-    guildGuid[2] = recvData.ReadBit();
-    guildGuid[5] = recvData.ReadBit();
-    guildGuid[0] = recvData.ReadBit();
-    guildGuid[1] = recvData.ReadBit();
+    uint8 bitOrder[8] = {4, 3, 6, 7, 2, 5, 0, 1};
+    recvData.ReadBitInOrder(guildGuid, bitOrder);
 
-    recvData.ReadByteSeq(guildGuid[5]);
-    recvData.ReadByteSeq(guildGuid[0]);
-    recvData.ReadByteSeq(guildGuid[2]);
-    recvData.ReadByteSeq(guildGuid[6]);
-    recvData.ReadByteSeq(guildGuid[3]);
-    recvData.ReadByteSeq(guildGuid[1]);
-    recvData.ReadByteSeq(guildGuid[4]);
-    recvData.ReadByteSeq(guildGuid[7]);
+    uint8 byteOrder[8] = {5, 0, 2, 6, 3, 1, 4, 7};
+    recvData.ReadBytesSeq(guildGuid, byteOrder);
 
     if (Guild* guild = sGuildMgr->GetGuildByGuid(guildGuid))
         guild->HandleGuildPartyRequest(this);
@@ -757,26 +668,15 @@ void WorldSession::HandleGuildRequestPartyState(WorldPacket& recvData)
 
 void WorldSession::HandleGuildRequestMaxDailyXP(WorldPacket& recvPacket)
 {
-    ObjectGuid guid;
-    guid[1] = recvPacket.ReadBit();
-    guid[2] = recvPacket.ReadBit();
-    guid[7] = recvPacket.ReadBit();
-    guid[3] = recvPacket.ReadBit();
-    guid[0] = recvPacket.ReadBit();
-    guid[5] = recvPacket.ReadBit();
-    guid[6] = recvPacket.ReadBit();
-    guid[4] = recvPacket.ReadBit();
+    ObjectGuid guildGuid;
 
-    recvPacket.ReadByteSeq(guid[5]);
-    recvPacket.ReadByteSeq(guid[7]);
-    recvPacket.ReadByteSeq(guid[2]);
-    recvPacket.ReadByteSeq(guid[0]);
-    recvPacket.ReadByteSeq(guid[4]);
-    recvPacket.ReadByteSeq(guid[1]);
-    recvPacket.ReadByteSeq(guid[6]);
-    recvPacket.ReadByteSeq(guid[3]);
+    uint8 bitOrder[8] = {2, 5, 3, 7, 4, 1, 0, 6};
+    recvPacket.ReadBitInOrder(guildGuid, bitOrder);
 
-    if (Guild* guild = sGuildMgr->GetGuildByGuid(guid))
+    uint8 byteOrder[8] = {7, 3, 2, 1, 0, 5, 6, 4};
+    recvPacket.ReadBytesSeq(guildGuid, byteOrder);
+
+    if (Guild* guild = sGuildMgr->GetGuildByGuid(guildGuid))
     {
         if (guild->IsMember(_player->GetGUID()))
         {
@@ -853,14 +753,8 @@ void WorldSession::HandleGuildNewsUpdateStickyOpcode(WorldPacket& recvPacket)
     guid[3] = recvPacket.ReadBit();
     guid[4] = recvPacket.ReadBit();
 
-    recvPacket.ReadByteSeq(guid[0]);
-    recvPacket.ReadByteSeq(guid[7]);
-    recvPacket.ReadByteSeq(guid[2]);
-    recvPacket.ReadByteSeq(guid[3]);
-    recvPacket.ReadByteSeq(guid[6]);
-    recvPacket.ReadByteSeq(guid[5]);
-    recvPacket.ReadByteSeq(guid[1]);
-    recvPacket.ReadByteSeq(guid[4]);
+    uint8 byteOrder[8] = {0, 7, 2, 3, 6, 5, 1, 4};
+    recvPacket.ReadBytesSeq(guid, byteOrder);
 
     if (Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
     {

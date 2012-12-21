@@ -509,7 +509,7 @@ void WorldSession::SendBindPoint(Creature* npc)
     _player->m_homebindZ = _player->GetPositionZ();
 
     // send spell for homebinding (3286)
-    npc->CastSpell(_player, bindspell, true);
+    _player->CastSpell(_player, bindspell, true);
 
     SendTrainerService(npc->GetGUID(), bindspell, 2);
     _player->PlayerTalkClass->SendCloseGossip();

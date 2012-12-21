@@ -775,23 +775,12 @@ void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
     ObjectGuid playerGuid;
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd Player Logon Message");
-    playerGuid[3] = recvData.ReadBit();
-    playerGuid[5] = recvData.ReadBit();
-    playerGuid[7] = recvData.ReadBit();
-    playerGuid[0] = recvData.ReadBit();
-    playerGuid[6] = recvData.ReadBit();
-    playerGuid[2] = recvData.ReadBit();
-    playerGuid[1] = recvData.ReadBit();
-    playerGuid[4] = recvData.ReadBit();
 
-    recvData.ReadByteSeq(playerGuid[1]);
-    recvData.ReadByteSeq(playerGuid[0]);
-    recvData.ReadByteSeq(playerGuid[3]);
-    recvData.ReadByteSeq(playerGuid[2]);
-    recvData.ReadByteSeq(playerGuid[4]);
-    recvData.ReadByteSeq(playerGuid[7]);
-    recvData.ReadByteSeq(playerGuid[5]);
-    recvData.ReadByteSeq(playerGuid[6]);
+    uint8 bitOrder[8] = {3, 5, 7, 0, 6, 2, 1, 4};
+    recvData.ReadBitInOrder(playerGuid, bitOrder);
+
+    uint8 byteOrder[8] = {1, 0, 3, 2, 4, 7, 5, 6};
+    recvData.ReadBytesSeq(playerGuid, byteOrder);
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Character (Guid: %u) logging in", GUID_LOPART(playerGuid));
 
@@ -1326,6 +1315,15 @@ void WorldSession::HandleChangePlayerNameOpcodeCallBack(PreparedQueryResult resu
 
     CharacterDatabase.Execute(stmt);
 
+    // Logging
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_NAME_LOG);
+
+    stmt->setUInt32(0, guidLow);
+    stmt->setString(1, oldName);
+    stmt->setString(2, newName);
+
+    CharacterDatabase.Execute(stmt);
+
     sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s) Character:[%s] (guid:%u) Changed name to: %s", GetAccountId(), GetRemoteAddress().c_str(), oldName.c_str(), guidLow, newName.c_str());
 
     WorldPacket data(SMSG_CHAR_RENAME, 1+8+(newName.size()+1));
@@ -1788,11 +1786,12 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     }
 
     Field* fields = result->Fetch();
-    uint32 playerClass = uint32(fields[0].GetUInt8());
-    uint32 level = uint32(fields[1].GetUInt8());
-    uint32 at_loginFlags = fields[2].GetUInt16();
-    uint32 used_loginFlag = ((recvData.GetOpcode() == CMSG_CHAR_RACE_CHANGE) ? AT_LOGIN_CHANGE_RACE : AT_LOGIN_CHANGE_FACTION);
-    char const* knownTitlesStr = fields[3].GetCString();
+    uint8  oldRace          = fields[0].GetUInt8();
+    uint32 playerClass      = uint32(fields[1].GetUInt8());
+    uint32 level            = uint32(fields[2].GetUInt8());
+    uint32 at_loginFlags    = fields[3].GetUInt16();
+    uint32 used_loginFlag   = ((recvData.GetOpcode() == CMSG_CHAR_RACE_CHANGE) ? AT_LOGIN_CHANGE_RACE : AT_LOGIN_CHANGE_FACTION);
+    char const* knownTitlesStr = fields[4].GetCString();
 
     if (!sObjectMgr->GetPlayerInfo(race, playerClass))
     {
@@ -1867,9 +1866,16 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_FACTION_OR_RACE);
     stmt->setString(0, newname);
-    stmt->setUInt8(1, race);
+    stmt->setUInt8 (1, race);
     stmt->setUInt16(2, used_loginFlag);
     stmt->setUInt32(3, lowGuid);
+    trans->Append(stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_FACTION_OR_RACE_LOG);
+    stmt->setUInt32(0, lowGuid);
+    stmt->setUInt32(1, GetAccountId());
+    stmt->setUInt8 (2, oldRace);
+    stmt->setUInt8 (3, race);
     trans->Append(stmt);
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_DECLINED_NAME);
@@ -1915,7 +1921,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     trans->Append(stmt);
 
     // Race specific languages
-    // TODO Add RACE_PANDAREN_HORDE/RACE_PANDAREN_ALLI/RACE_PANDAREN_NEUTRAL
+
     if (race != RACE_ORC && race != RACE_HUMAN)
     {
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_SKILL_LANGUAGE);
@@ -1952,6 +1958,15 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
                 break;
             case RACE_GOBLIN:
                 stmt->setUInt16(1, 792);
+                break;
+            case RACE_PANDAREN_ALLI:
+                stmt->setUInt16(1, 906);
+                break;
+            case RACE_PANDAREN_HORDE:
+                stmt->setUInt16(1, 907);
+                break;
+            case RACE_PANDAREN_NEUTRAL:
+                stmt->setUInt16(1, 905);
                 break;
         }
 
@@ -2293,14 +2308,8 @@ void WorldSession::HandleReorderCharacters(WorldPacket& recvData)
 
     for (uint8 i = 0; i < charactersCount; ++i)
     {
-        guids[i][1] = recvData.ReadBit();
-        guids[i][6] = recvData.ReadBit();
-        guids[i][2] = recvData.ReadBit();
-        guids[i][7] = recvData.ReadBit();
-        guids[i][3] = recvData.ReadBit();
-        guids[i][5] = recvData.ReadBit();
-        guids[i][4] = recvData.ReadBit();
-        guids[i][0] = recvData.ReadBit();
+        uint8 bitOrder[8] = {1, 6, 2, 7, 3, 5, 4, 0};
+        recvData.ReadBitInOrder(guids[i], bitOrder);
     }
 
     recvData.FlushBits();

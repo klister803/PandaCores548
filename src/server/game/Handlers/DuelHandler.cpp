@@ -33,24 +33,11 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
 {
     ObjectGuid guid;
 
-    guid[2] = recvPacket.ReadBit();
-    guid[7] = recvPacket.ReadBit();
-    guid[0] = recvPacket.ReadBit();
-    guid[5] = recvPacket.ReadBit();
-    guid[6] = recvPacket.ReadBit();
-    guid[3] = recvPacket.ReadBit();
-    guid[1] = recvPacket.ReadBit();
-    guid[4] = recvPacket.ReadBit();
+    uint8 bitOrder[8] = {2, 7, 0, 5, 6, 3, 1, 4};
+    recvPacket.ReadBitInOrder(guid, bitOrder);
     
-    recvPacket.ReadByteSeq(guid[3]);
-    recvPacket.ReadByteSeq(guid[4]);
-    recvPacket.ReadByteSeq(guid[1]);
-    recvPacket.ReadByteSeq(guid[5]);
-    recvPacket.ReadByteSeq(guid[0]);
-    recvPacket.ReadByteSeq(guid[2]);
-    recvPacket.ReadByteSeq(guid[7]);
-    recvPacket.ReadByteSeq(guid[6]);
-
+    uint8 byteOrder[8] = {3, 4, 1, 5, 0, 2, 7, 6};
+    recvPacket.ReadBytesSeq(guid, byteOrder);
 
     Player* caster = GetPlayer();
     Unit* unitTarget = NULL;

@@ -62,17 +62,9 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
 
     ObjectGuid itemGUIDs[MAX_MAIL_ITEMS];
 
+    uint8 bitOrder[8] = {3, 7, 0, 2, 6, 5, 1, 4};
     for (uint8 i = 0; i < items_count; ++i)
-    {
-        itemGUIDs[i][3] = recvData.ReadBit();
-        itemGUIDs[i][7] = recvData.ReadBit();
-        itemGUIDs[i][0] = recvData.ReadBit();
-        itemGUIDs[i][2] = recvData.ReadBit();
-        itemGUIDs[i][6] = recvData.ReadBit();
-        itemGUIDs[i][5] = recvData.ReadBit();
-        itemGUIDs[i][1] = recvData.ReadBit();
-        itemGUIDs[i][4] = recvData.ReadBit();
-    }
+        recvData.ReadBitInOrder(itemGUIDs[i], bitOrder);
 
     mailbox[4] = recvData.ReadBit();
     mailbox[3] = recvData.ReadBit();
@@ -301,8 +293,10 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
                 Item* item = items[i];
                 if (!AccountMgr::IsPlayerAccount(GetSecurity()) && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
                 {
-                    sLog->outCommand(GetAccountId(), "GM %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
-                        GetPlayerName().c_str(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
+                    sLog->outCommand(GetAccountId(), "", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName(),
+                                    rc_account, "", 0, receiver.c_str(),
+                                    "GM %s (Account: %u) mail item: %s (Entry: %u Count: %u) to player: %s (Account: %u)",
+                                    GetPlayerName().c_str(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount(), receiver.c_str(), rc_account);
                 }
 
                 item->SetNotRefundable(GetPlayer()); // makes the item no longer refundable
@@ -321,8 +315,11 @@ void WorldSession::HandleSendMail(WorldPacket& recvData)
 
         if (money > 0 && !AccountMgr::IsPlayerAccount(GetSecurity()) && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
         {
-            sLog->outCommand(GetAccountId(), "GM %s (Account: %u) mail money: " UI64FMTD " to player: %s (Account: %u)",
-                GetPlayerName().c_str(), GetAccountId(), money, receiver.c_str(), rc_account);
+            //TODO: charcter guid
+            sLog->outCommand(GetAccountId(), "", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName(),
+                            rc_account, "", 0, receiver.c_str(),
+                            "GM %s (Account: %u) mail money: %u to player: %s (Account: %u)",
+                            GetPlayerName().c_str(), GetAccountId(), money, receiver.c_str(), rc_account);
         }
     }
 
@@ -396,23 +393,12 @@ void WorldSession::HandleMailReturnToSender(WorldPacket & recvData)
     ObjectGuid owner;
     uint32 mailId;
     recvData >> mailId;
-    owner[2] = recvData.ReadBit();
-    owner[6] = recvData.ReadBit();
-    owner[5] = recvData.ReadBit();
-    owner[0] = recvData.ReadBit();
-    owner[7] = recvData.ReadBit();
-    owner[3] = recvData.ReadBit();
-    owner[4] = recvData.ReadBit();
-    owner[1] = recvData.ReadBit();
 
-    recvData.ReadByteSeq(owner[3]);
-    recvData.ReadByteSeq(owner[1]);
-    recvData.ReadByteSeq(owner[5]);
-    recvData.ReadByteSeq(owner[0]);
-    recvData.ReadByteSeq(owner[4]);
-    recvData.ReadByteSeq(owner[2]);
-    recvData.ReadByteSeq(owner[7]);
-    recvData.ReadByteSeq(owner[6]);
+    uint8 bitOrder[8] = {2, 6, 5, 0, 7, 3, 4, 1};
+    recvData.ReadBitInOrder(owner, bitOrder);
+
+    uint8 byteOrder[8] = {3, 1, 5, 0, 4, 2, 7, 6};
+    recvData.ReadBytesSeq(owner, byteOrder);
 
     //if (!GetPlayer()->GetGameObjectIfCanInteractWith(mailbox, GAMEOBJECT_TYPE_MAILBOX))
     //    return;
@@ -498,10 +484,10 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
         return;
     }
 
-    Item* it = player->GetMItem(itemId);
+    Item* item = player->GetMItem(itemId);
 
     ItemPosCountVec dest;
-    uint8 msg = _player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, it, false);
+    uint8 msg = _player->CanStoreItem(NULL_BAG, NULL_SLOT, dest, item, false);
     if (msg == EQUIP_ERR_OK)
     {
         SQLTransaction trans = CharacterDatabase.BeginTransaction();
@@ -531,8 +517,10 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
                     if (!sObjectMgr->GetPlayerNameByGUID(sender_guid, sender_name))
                         sender_name = sObjectMgr->GetTrinityStringForDBCLocale(LANG_UNKNOWN);
                 }
-                sLog->outCommand(GetAccountId(), "GM %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: " UI64FMTD " to player: %s (Account: %u)",
-                    GetPlayerName().c_str(), GetAccountId(), it->GetTemplate()->Name1.c_str(), it->GetEntry(), it->GetCount(), m->COD, sender_name.c_str(), sender_accId);
+                sLog->outCommand(GetAccountId(), "", GetPlayer()->GetGUIDLow(), GetPlayer()->GetName(),
+                                sender_accId, "", sender_guid, sender_name.c_str(),
+                                "GM %s (Account: %u) receive mail item: %s (Entry: %u Count: %u) and send COD money: %u to player: %s (Account: %u)",
+                                GetPlayerName().c_str(), GetAccountId(), item->GetTemplate()->Name1.c_str(), item->GetEntry(), item->GetCount(), m->COD, sender_name.c_str(), sender_accId);
             }
             else if (!receive)
                 sender_accId = sObjectMgr->GetPlayerAccountIdByGUID(sender_guid);
@@ -550,11 +538,11 @@ void WorldSession::HandleMailTakeItem(WorldPacket& recvData)
         m->COD = 0;
         m->state = MAIL_STATE_CHANGED;
         player->m_mailsUpdated = true;
-        player->RemoveMItem(it->GetGUIDLow());
+        player->RemoveMItem(item->GetGUIDLow());
 
-        uint32 count = it->GetCount();                      // save counts before store and possible merge with deleting
-        it->SetState(ITEM_UNCHANGED);                       // need to set this state, otherwise item cannot be removed later, if neccessary
-        player->MoveItemToInventory(dest, it, true);
+        uint32 count = item->GetCount();                      // save counts before store and possible merge with deleting
+        item->SetState(ITEM_UNCHANGED);                       // need to set this state, otherwise item cannot be removed later, if neccessary
+        player->MoveItemToInventory(dest, item, true);
 
         player->SaveInventoryAndGoldToDB(trans);
         player->_SaveMail(trans);

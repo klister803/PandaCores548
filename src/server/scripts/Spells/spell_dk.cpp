@@ -49,7 +49,75 @@ enum DeathKnightSpells
     DK_SPELL_PURGATORY_INSTAKILL                = 123982,
     DK_SPELL_BLOOD_RITES                        = 50034,
     DK_SPELL_DEATH_SIPHON_HEAL                  = 116783,
-    DK_SPELL_BLOOD_CHARGE                       = 114851
+    DK_SPELL_BLOOD_CHARGE                       = 114851,
+    DK_SPELL_PILLAR_OF_FROST                    = 51271,
+    DK_SPELL_SOUL_REAPER_HASTE                  = 114868,
+    DK_SPELL_SOUL_REAPER_DAMAGE                 = 114867,
+};
+
+// Soul Reaper - 130736 (unholy) or 130735 (frost) or 114866 (blood)
+class spell_dk_soul_reaper : public SpellScriptLoader
+{
+    public:
+        spell_dk_soul_reaper() : SpellScriptLoader("spell_dk_soul_reaper") { }
+
+        class spell_dk_soul_reaper_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_soul_reaper_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectApplyFn(spell_dk_soul_reaper_AuraScript::HandleRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_soul_reaper_AuraScript();
+        }
+};
+
+// Pillar of Frost - 51271
+class spell_dk_pillar_of_frost : public SpellScriptLoader
+{
+    public:
+        spell_dk_pillar_of_frost() : SpellScriptLoader("spell_dk_pillar_of_frost") { }
+
+        class spell_dk_pillar_of_frost_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_pillar_of_frost_AuraScript);
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    _player->ApplySpellImmune(DK_SPELL_PILLAR_OF_FROST, IMMUNITY_MECHANIC, MECHANIC_KNOCKOUT, false);
+            }
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    _player->ApplySpellImmune(DK_SPELL_PILLAR_OF_FROST, IMMUNITY_MECHANIC, MECHANIC_KNOCKOUT, true);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_dk_pillar_of_frost_AuraScript::OnApply, EFFECT_2, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_dk_pillar_of_frost_AuraScript::OnRemove, EFFECT_2, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_pillar_of_frost_AuraScript();
+        }
 };
 
 // Called by Death Coil - 47541, Rune Strike - 56815 and Frost Strike - 49143
@@ -69,7 +137,7 @@ class spell_dk_blood_charges : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (_player->HasAura(45529))
+                        if (_player->HasSpell(45529))
                         {
                             _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
                             _player->CastSpell(_player, DK_SPELL_BLOOD_CHARGE, true);
@@ -1166,6 +1234,8 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_soul_reaper();
+    new spell_dk_pillar_of_frost();
     new spell_dk_blood_charges();
     new spell_dk_blood_tap();
     new spell_dk_death_siphon();
