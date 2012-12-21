@@ -24,6 +24,9 @@ set(scripts_STAT_SRCS
   Pandaria/StormstoutBrewery/instance_stormstout_brewery.cpp
   Pandaria/StormstoutBrewery/stormstout_brewery.cpp
   Pandaria/StormstoutBrewery/stormstout_brewery.h
+  Pandaria/GateSettingSun/instance_gate_setting_sun.cpp
+  Pandaria/GateSettingSun/gate_setting_sun.cpp
+  Pandaria/GateSettingSun/gate_setting_sun.h
 
   Pandaria/WanderingIsland/wanderingisland.cpp
 )
