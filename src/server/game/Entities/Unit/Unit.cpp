@@ -16924,6 +16924,51 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
             }
             break;
         }
+        case RACE_PANDAREN_NEUTRAL:
+        {
+            switch (totemType)
+            {
+                case SUMMON_TYPE_TOTEM_FIRE:    // fire
+                    return 41670;
+                case SUMMON_TYPE_TOTEM_EARTH:   // earth
+                    return 41669;
+                case SUMMON_TYPE_TOTEM_WATER:   // water
+                    return 41671;
+                case SUMMON_TYPE_TOTEM_AIR:     // air
+                    return 41668;
+            }
+            break;
+        }
+        case RACE_PANDAREN_ALLI:
+        {
+            switch (totemType)
+            {
+                case SUMMON_TYPE_TOTEM_FIRE:    // fire
+                    return 41670;
+                case SUMMON_TYPE_TOTEM_EARTH:   // earth
+                    return 41669;
+                case SUMMON_TYPE_TOTEM_WATER:   // water
+                    return 41671;
+                case SUMMON_TYPE_TOTEM_AIR:     // air
+                    return 41668;
+            }
+            break;
+        }
+        case RACE_PANDAREN_HORDE:
+        {
+            switch (totemType)
+            {
+                case SUMMON_TYPE_TOTEM_FIRE:    // fire
+                    return 41670;
+                case SUMMON_TYPE_TOTEM_EARTH:   // earth
+                    return 41669;
+                case SUMMON_TYPE_TOTEM_WATER:   // water
+                    return 41671;
+                case SUMMON_TYPE_TOTEM_AIR:     // air
+                    return 41668;
+            }
+            break;
+        }
     }
     return 0;
 }
