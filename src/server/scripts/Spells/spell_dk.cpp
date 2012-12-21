@@ -49,7 +49,43 @@ enum DeathKnightSpells
     DK_SPELL_PURGATORY_INSTAKILL                = 123982,
     DK_SPELL_BLOOD_RITES                        = 50034,
     DK_SPELL_DEATH_SIPHON_HEAL                  = 116783,
-    DK_SPELL_BLOOD_CHARGE                       = 114851
+    DK_SPELL_BLOOD_CHARGE                       = 114851,
+    DK_SPELL_PILLAR_OF_FROST                    = 51271,
+};
+
+// Pillar of Frost - 51271
+class spell_dk_pillar_of_frost : public SpellScriptLoader
+{
+    public:
+        spell_dk_pillar_of_frost() : SpellScriptLoader("spell_dk_pillar_of_frost") { }
+
+        class spell_dk_pillar_of_frost_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_pillar_of_frost_AuraScript);
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    _player->ApplySpellImmune(DK_SPELL_PILLAR_OF_FROST, IMMUNITY_MECHANIC, MECHANIC_KNOCKOUT, false);
+            }
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    _player->ApplySpellImmune(DK_SPELL_PILLAR_OF_FROST, IMMUNITY_MECHANIC, MECHANIC_KNOCKOUT, true);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_dk_pillar_of_frost_AuraScript::OnApply, EFFECT_2, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_dk_pillar_of_frost_AuraScript::OnRemove, EFFECT_2, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_pillar_of_frost_AuraScript();
+        }
 };
 
 // Called by Death Coil - 47541, Rune Strike - 56815 and Frost Strike - 49143
@@ -1166,6 +1202,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_pillar_of_frost();
     new spell_dk_blood_charges();
     new spell_dk_blood_tap();
     new spell_dk_death_siphon();
