@@ -575,15 +575,39 @@ public:
 
         Player* player = handler->GetSession()->GetPlayer();
 
-        char* goZ = strtok((char*)args, " ");
+        char* goZ = NULL;
+
+        bool relative = false;
+        bool add = false;
+
+        if (*args == '+' || *args == '-')
+        {
+            relative = true;
+            add = (*args == '+');
+            goZ = strtok((char*)(args + 1), " ");
+        }
+        else
+            goZ = strtok((char*)args, " ");
 
         if (!goZ)
             return false;
 
         float x = player->GetPositionX();
         float y = player->GetPositionY();
-        float z = (float)atof(goZ);
         uint32 mapId = player->GetMapId();
+
+        float z = 0.0f;
+        float paramZ = (float)atof(goZ);
+
+        if (relative)
+        {
+            if (add)
+                z = player->GetPositionZ() + paramZ;
+            else
+                z = player->GetPositionZ() - paramZ;
+        }
+        else
+            z = paramZ;
 
         if (!MapManager::IsValidMapCoord(mapId, x, y, z))
         {
