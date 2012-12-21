@@ -3128,6 +3128,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 111771: // Demonic Gateway
+                spellInfo->Effects[0].Effect = 0;
+                spellInfo->Effects[0].BasePoints = 0;
+                break;
             case 117828: // Backdraft
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
                 spellInfo->Effects[0].MiscValue = SPELLMOD_CASTING_TIME;

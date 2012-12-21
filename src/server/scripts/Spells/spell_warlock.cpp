@@ -63,6 +63,35 @@ enum WarlockSpells
     WARLOCK_PYROCLASM                       = 123686,
     WARLOCK_RAIN_OF_FIRE                    = 104232,
     WARLOCK_RAIN_OF_FIRE_TRIGGERED          = 42223,
+    WARLOCK_SPAWN_PURPLE_DEMONIC_GATEWAY    = 113890,
+};
+
+// Demonic Gateway - 111771
+class spell_warl_demonic_gateway : public SpellScriptLoader
+{
+    public:
+        spell_warl_demonic_gateway() : SpellScriptLoader("spell_warl_demonic_gateway") { }
+
+        class spell_warl_demonic_gateway_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_demonic_gateway_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->CastSpell(_player, WARLOCK_SPAWN_PURPLE_DEMONIC_GATEWAY, true);
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_warl_demonic_gateway_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_demonic_gateway_SpellScript();
+        }
 };
 
 // Rain of Fire - 104232
@@ -1122,6 +1151,7 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_demonic_gateway();
     new spell_warl_rain_of_fire();
     new spell_warl_chaos_bolt();
     new spell_warl_ember_tap();
