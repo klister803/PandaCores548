@@ -1921,7 +1921,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     trans->Append(stmt);
 
     // Race specific languages
-    // TODO Add RACE_PANDAREN_HORDE/RACE_PANDAREN_ALLI/RACE_PANDAREN_NEUTRAL
+
     if (race != RACE_ORC && race != RACE_HUMAN)
     {
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_CHAR_SKILL_LANGUAGE);
@@ -1958,6 +1958,15 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
                 break;
             case RACE_GOBLIN:
                 stmt->setUInt16(1, 792);
+                break;
+            case RACE_PANDAREN_ALLI:
+                stmt->setUInt16(1, 906);
+                break;
+            case RACE_PANDAREN_HORDE:
+                stmt->setUInt16(1, 907);
+                break;
+            case RACE_PANDAREN_NEUTRAL:
+                stmt->setUInt16(1, 905);
                 break;
         }
 
