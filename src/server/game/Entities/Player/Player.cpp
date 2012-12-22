@@ -1138,7 +1138,7 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
     {
         for (int j = 0; j < MAX_OUTFIT_ITEMS; ++j)
         {
-            if (oEntry->ItemId[j] <= 0)
+            if (oEntry->ItemId[j] <= 0 || oEntry->ItemDisplayId[j] <= 0)
                 continue;
 
             uint32 itemId = oEntry->ItemId[j];
