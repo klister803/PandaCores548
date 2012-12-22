@@ -118,6 +118,15 @@ enum LootModes
     LOOT_MODE_HARD_MODE_4              = 0x10
 };
 
+enum Expansion
+{
+    EXP_VANILLA     = 0,
+    EXP_BC          = 1,
+    EXP_WOTLK       = 2,
+    EXP_CATACLYSM   = 3,
+    EXP_PANDARIA    = 4
+};
+
 enum Gender
 {
     GENDER_MALE                        = 0,
@@ -230,6 +239,8 @@ enum ReputationRank
 #define MAX_REPUTATION_RANK 8
 
 #define MAX_SPILLOVER_FACTIONS 5
+
+#define REP_GUILD           1168
 
 enum MoneyConstants
 {

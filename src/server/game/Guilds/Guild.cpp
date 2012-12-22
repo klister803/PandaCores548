@@ -2584,6 +2584,9 @@ bool Guild::AddMember(uint64 guid, uint8 rankId)
                     if (entry->Level >= GetLevel())
                         player->learnSpell(entry->SpellId, true);
         }
+
+        if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
+            player->GetReputationMgr().SetReputation(factionEntry, 0);
     }
 
     _UpdateAccountsNumber();
@@ -2648,6 +2651,9 @@ void Guild::DeleteMember(uint64 guid, bool isDisbanding, bool isKicked)
             if (GuildPerkSpellsEntry const* entry = sGuildPerkSpellsStore.LookupEntry(i))
                 if (entry->Level >= GetLevel())     
                     player->removeSpell(entry->SpellId, false, false);
+
+        if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
+            player->GetReputationMgr().SetReputation(factionEntry, 0);
     }
 
     _DeleteMemberFromDB(lowguid);
