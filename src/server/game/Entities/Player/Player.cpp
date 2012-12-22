@@ -3274,7 +3274,8 @@ void Player::GiveGatheringXP()
     else if (level > 84 && level < 90)
         gain = 1720 * level - 138800; // (7400 - 14280),  Guessed, TODO : find blizzlike formula (7400 - 14280)
 
-    GiveXP(gain, nullptr);
+    // TODO : implant a proper conf to rate gather XP
+    GiveXP(gain * sWorld->getRate(RATE_XP_KILL), nullptr);
 }
 
 // Update player to next level
@@ -5103,8 +5104,8 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                             do
                             {
                                 Field* itemFields = resultItems->Fetch();
-                                uint32 item_guidlow = itemFields[11].GetUInt32();
-                                uint32 item_template = itemFields[12].GetUInt32();
+                                uint32 item_guidlow = itemFields[13].GetUInt32();
+                                uint32 item_template = itemFields[14].GetUInt32();
 
                                 ItemTemplate const* itemProto = sObjectMgr->GetItemTemplate(item_template);
                                 if (!itemProto)
@@ -13876,9 +13877,12 @@ void Player::ApplyReforgeEnchantment(Item* item, bool apply)
     if (!item)
         return;
 
-    ItemReforgeEntry const* reforge = sItemReforgeStore.LookupEntry(item->GetEnchantmentId(REFORGE_ENCHANTMENT_SLOT));
+    ItemReforgeEntry const* reforge = sItemReforgeStore.LookupEntry(item->GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0));
     if (!reforge)
         return;
+
+    item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, apply ? reforge->Id : 0);
+    item->SetFlag(ITEM_FIELD_MODIFIERS_MASK, apply ? 1 : 0);
 
     float removeValue = item->GetReforgableStat(ItemModType(reforge->SourceStat)) * reforge->SourceMultiplier;
     float addValue = removeValue * reforge->FinalMultiplier;
@@ -14112,20 +14116,15 @@ void Player::ApplyReforgeEnchantment(Item* item, bool apply)
             HandleBaseModValue(SHIELD_BLOCK_VALUE, FLAT_MOD, addValue, apply);
             break;
     }
+
 }
 
 void Player::ApplyEnchantment(Item* item, bool apply)
 {
     for (uint32 slot = 0; slot < MAX_ENCHANTMENT_SLOT; ++slot)
-    {
-        // Apply reforge as last enchant
-        if (slot == REFORGE_ENCHANTMENT_SLOT)
-            continue;
-
         ApplyEnchantment(item, EnchantmentSlot(slot), apply);
-    }
 
-    ApplyEnchantment(item, REFORGE_ENCHANTMENT_SLOT, apply);
+    ApplyReforgeEnchantment(item, apply);
 }
 
 void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool apply_dur, bool ignore_condition)
@@ -14135,15 +14134,6 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
 
     if (slot >= MAX_ENCHANTMENT_SLOT)
         return;
-
-    if (slot == TRANSMOGRIFY_ENCHANTMENT_SLOT)
-        return;
-
-    if (slot == REFORGE_ENCHANTMENT_SLOT)
-    {
-        ApplyReforgeEnchantment(item, apply);
-        return;
-    }
 
     uint32 enchant_id = item->GetEnchantmentId(slot);
     if (!enchant_id)
@@ -18194,8 +18184,8 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
             Field* fields = result->Fetch();
             if (Item* item = _LoadItem(trans, zoneId, timeDiff, fields))
             {
-                uint32 bagGuid  = fields[11].GetUInt32();
-                uint8  slot     = fields[12].GetUInt8();
+                uint32 bagGuid  = fields[13].GetUInt32();
+                uint8  slot     = fields[14].GetUInt8();
 
                 uint8 err = EQUIP_ERR_OK;
                 // Item is not in bag
@@ -18350,8 +18340,8 @@ void Player::_LoadVoidStorage(PreparedQueryResult result)
 Item* Player::_LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, Field* fields)
 {
     Item* item = NULL;
-    uint32 itemGuid  = fields[13].GetUInt32();
-    uint32 itemEntry = fields[14].GetUInt32();
+    uint32 itemGuid  = fields[15].GetUInt32();
+    uint32 itemEntry = fields[16].GetUInt32();
     if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry))
     {
         bool remove = false;
