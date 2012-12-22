@@ -771,7 +771,7 @@ public:
 
         }
         char* damageStr = strtok (NULL, " ");
-        uint32 damage = damageStr ? atoi(damageStr) : 0;
+        int32 damage = damageStr ? atoi(damageStr) : 0;
 
         object->ModifyHealth(-damage, pPlayer);
         
