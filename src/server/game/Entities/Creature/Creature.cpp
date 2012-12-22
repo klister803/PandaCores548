@@ -1088,9 +1088,15 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
             dynamicflags = 0;
     }
 
+    uint32 zoneId = 0;
+    uint32 areaId = 0;
+    sMapMgr->GetZoneAndAreaId(zoneId, areaId, mapid, GetPositionX(), GetPositionY(), GetPositionZ());
+
     // data->guid = guid must not be updated at save
     data.id = GetEntry();
     data.mapid = mapid;
+    data.zoneId = zoneId;
+    data.areaId = areaId;
     data.phaseMask = phaseMask;
     data.displayid = displayId;
     data.equipmentId = GetEquipmentId();
@@ -1126,20 +1132,22 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
     stmt->setUInt32(index++, m_DBTableGuid);
     stmt->setUInt32(index++, GetEntry());
     stmt->setUInt16(index++, uint16(mapid));
-    stmt->setUInt8(index++, spawnMask);
+    stmt->setUInt32(index++, zoneId);
+    stmt->setUInt32(index++, areaId);
+    stmt->setUInt8(index++,  spawnMask);
     stmt->setUInt16(index++, uint16(GetPhaseMask()));
     stmt->setUInt32(index++, displayId);
-    stmt->setInt32(index++, int32(GetEquipmentId()));
-    stmt->setFloat(index++, GetPositionX());
-    stmt->setFloat(index++, GetPositionY());
-    stmt->setFloat(index++, GetPositionZ());
-    stmt->setFloat(index++, GetOrientation());
+    stmt->setInt32(index++,  int32(GetEquipmentId()));
+    stmt->setFloat(index++,  GetPositionX());
+    stmt->setFloat(index++,  GetPositionY());
+    stmt->setFloat(index++,  GetPositionZ());
+    stmt->setFloat(index++,  GetOrientation());
     stmt->setUInt32(index++, m_respawnDelay);
-    stmt->setFloat(index++, m_respawnradius);
+    stmt->setFloat(index++,  m_respawnradius);
     stmt->setUInt32(index++, 0);
     stmt->setUInt32(index++, GetHealth());
     stmt->setUInt32(index++, GetPower(POWER_MANA));
-    stmt->setUInt8(index++, uint8(GetDefaultMovementType()));
+    stmt->setUInt8(index++,  uint8(GetDefaultMovementType()));
     stmt->setUInt32(index++, npcflag);
     stmt->setUInt32(index++, unit_flags);
     stmt->setUInt32(index++, dynamicflags);
@@ -1374,6 +1382,7 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
 
     if (addToMap && !GetMap()->AddToMap(this))
         return false;
+
     return true;
 }
 
