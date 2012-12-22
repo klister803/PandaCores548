@@ -5812,6 +5812,22 @@ void AuraEffect::HandlePreventResurrection(AuraApplication const* aurApp, uint8 
 
 void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
 {
+	if (GetId() == 102522)
+    {
+        switch(rand()%4)
+        {
+            case 1:
+                caster->CastSpell(caster, 109090);
+                break;
+            case 2:
+                caster->CastSpell(caster, 109105);
+                break;
+        }
+        
+        if(GetBase()->GetDuration() < 1000)
+            caster->CastSpell(caster, 109107);
+    }
+    
     switch (GetSpellInfo()->SpellFamilyName)
     {
         case SPELLFAMILY_GENERIC:
