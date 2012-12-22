@@ -293,11 +293,18 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                 sLog->outDebug(LOG_FILTER_NETWORKIO, "partner storing: %u", myItems[i]->GetGUIDLow());
                 if (!AccountMgr::IsPlayerAccount(_player->GetSession()->GetSecurity()) && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
                 {
-                    sLog->outCommand(_player->GetSession()->GetAccountId(), "GM %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
-                        _player->GetName(), _player->GetSession()->GetAccountId(),
-                        myItems[i]->GetTemplate()->Name1.c_str(), myItems[i]->GetEntry(), myItems[i]->GetCount(),
-                        trader->GetName(), trader->GetSession()->GetAccountId());
+                    sLog->outCommand(_player->GetSession()->GetAccountId(), "", _player->GetGUIDLow(), _player->GetName(),
+                                    trader->GetSession()->GetAccountId(), "", trader->GetGUIDLow(), trader->GetName(),
+                                    "GM %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
+                                    _player->GetName(), _player->GetSession()->GetAccountId(),
+                                    myItems[i]->GetTemplate()->Name1.c_str(), myItems[i]->GetEntry(), myItems[i]->GetCount(),
+                                    trader->GetName(), trader->GetSession()->GetAccountId());
                 }
+
+                /*CharacterDatabase.PExecute("INSERT INTO log_trade (id, date, sc_accountid, sc_guid, sc_name, tar_accountid, tar_guid, tar_name, item_name, item_entry, item_count) VALUES (0, NOW(), %u, %u, '%s', %u, %u, '%s', '%s', %u, %u);",
+                                            _player->GetSession()->GetAccountId(), _player->GetGUIDLow(), _player->GetName(),
+                                            trader->GetSession()->GetAccountId(),  trader->GetGUIDLow(),  trader->GetName(),
+                                            myItems[i]->GetTemplate()->Name1.c_str(), myItems[i]->GetEntry(), myItems[i]->GetCount());*/
 
                 // adjust time (depends on /played)
                 if (myItems[i]->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_BOP_TRADEABLE))
@@ -311,11 +318,18 @@ void WorldSession::moveItems(Item* myItems[], Item* hisItems[])
                 sLog->outDebug(LOG_FILTER_NETWORKIO, "player storing: %u", hisItems[i]->GetGUIDLow());
                 if (!AccountMgr::IsPlayerAccount(trader->GetSession()->GetSecurity()) && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
                 {
-                    sLog->outCommand(trader->GetSession()->GetAccountId(), "GM %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
-                        trader->GetName(), trader->GetSession()->GetAccountId(),
-                        hisItems[i]->GetTemplate()->Name1.c_str(), hisItems[i]->GetEntry(), hisItems[i]->GetCount(),
-                        _player->GetName(), _player->GetSession()->GetAccountId());
+                    sLog->outCommand(trader->GetSession()->GetAccountId(), "", trader->GetGUIDLow(), trader->GetName(),
+                                    _player->GetSession()->GetAccountId(), "", _player->GetGUIDLow(), _player->GetName(),
+                                    "GM %s (Account: %u) trade: %s (Entry: %d Count: %u) to player: %s (Account: %u)",
+                                    trader->GetName(), trader->GetSession()->GetAccountId(),
+                                    hisItems[i]->GetTemplate()->Name1.c_str(), hisItems[i]->GetEntry(), hisItems[i]->GetCount(),
+                                    _player->GetName(), _player->GetSession()->GetAccountId());
                 }
+
+                /*CharacterDatabase.PExecute("INSERT INTO log_trade (id, date, sc_accountid, sc_guid, sc_name, tar_accountid, tar_guid, tar_name, item_name, item_entry, item_count) VALUES (0, NOW(), %u, %u, '%s', %u, %u, '%s', '%s', %u, %u);",
+                                            trader->GetSession()->GetAccountId(),  trader->GetGUIDLow(),  trader->GetName(),
+                                            _player->GetSession()->GetAccountId(), _player->GetGUIDLow(), _player->GetName(),
+                                            hisItems[i]->GetTemplate()->Name1.c_str(), hisItems[i]->GetEntry(), hisItems[i]->GetCount());*/
 
                 // adjust time (depends on /played)
                 if (hisItems[i]->HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_BOP_TRADEABLE))
@@ -601,17 +615,21 @@ void WorldSession::HandleAcceptTradeOpcode(WorldPacket& /*recvPacket*/)
         {
             if (!AccountMgr::IsPlayerAccount(_player->GetSession()->GetSecurity()) && my_trade->GetMoney() > 0)
             {
-                sLog->outCommand(_player->GetSession()->GetAccountId(), "GM %s (Account: %u) give money (Amount: " UI64FMTD ") to player: %s (Account: %u)",
-                    _player->GetName(), _player->GetSession()->GetAccountId(),
-                    my_trade->GetMoney(),
-                    trader->GetName(), trader->GetSession()->GetAccountId());
+                sLog->outCommand(_player->GetSession()->GetAccountId(), "", _player->GetGUIDLow(), _player->GetName(),
+                                trader->GetSession()->GetAccountId(), "", trader->GetGUIDLow(), trader->GetName(),
+                                "GM %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
+                                _player->GetName(), _player->GetSession()->GetAccountId(),
+                                my_trade->GetMoney(),
+                                trader->GetName(), trader->GetSession()->GetAccountId());
             }
             if (!AccountMgr::IsPlayerAccount(trader->GetSession()->GetSecurity()) && his_trade->GetMoney() > 0)
             {
-                sLog->outCommand(trader->GetSession()->GetAccountId(), "GM %s (Account: %u) give money (Amount: " UI64FMTD ") to player: %s (Account: %u)",
-                    trader->GetName(), trader->GetSession()->GetAccountId(),
-                    his_trade->GetMoney(),
-                    _player->GetName(), _player->GetSession()->GetAccountId());
+                sLog->outCommand(trader->GetSession()->GetAccountId(), "", trader->GetGUIDLow(), trader->GetName(),
+                                _player->GetSession()->GetAccountId(), "", _player->GetGUIDLow(), _player->GetName(),
+                                "GM %s (Account: %u) give money (Amount: %u) to player: %s (Account: %u)",
+                                trader->GetName(), trader->GetSession()->GetAccountId(),
+                                his_trade->GetMoney(),
+                                _player->GetName(), _player->GetSession()->GetAccountId());
             }
         }
 
@@ -687,23 +705,11 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
 {
     ObjectGuid guid;
 
-    guid[2] = recvPacket.ReadBit();
-    guid[5] = recvPacket.ReadBit();
-    guid[0] = recvPacket.ReadBit();
-    guid[7] = recvPacket.ReadBit();
-    guid[6] = recvPacket.ReadBit();
-    guid[4] = recvPacket.ReadBit();
-    guid[1] = recvPacket.ReadBit();
-    guid[3] = recvPacket.ReadBit();
+    uint8 bitOrder[8] = {2, 5, 0, 7, 6, 4, 1, 3};
+    recvPacket.ReadBitInOrder(guid, bitOrder);
 
-    recvPacket.ReadByteSeq(guid[0]);
-    recvPacket.ReadByteSeq(guid[4]);
-    recvPacket.ReadByteSeq(guid[2]);
-    recvPacket.ReadByteSeq(guid[7]);
-    recvPacket.ReadByteSeq(guid[3]);
-    recvPacket.ReadByteSeq(guid[6]);
-    recvPacket.ReadByteSeq(guid[1]);
-    recvPacket.ReadByteSeq(guid[5]);
+    uint8 byteOrder[8] = {0, 4, 2, 7, 3, 6, 1, 5};
+    recvPacket.ReadBytesSeq(guid, byteOrder);
 
     if (GetPlayer()->m_trade)
         return;
@@ -809,24 +815,14 @@ void WorldSession::HandleInitiateTradeOpcode(WorldPacket& recvPacket)
 
     ObjectGuid playerGuid = _player->GetGUID();
     // WTB StartBitStream...
-    data.WriteBit(playerGuid[4]);
-    data.WriteBit(playerGuid[0]);
-    data.WriteBit(playerGuid[5]);
-    data.WriteBit(playerGuid[6]);
-    data.WriteBit(playerGuid[1]);
-    data.WriteBit(playerGuid[3]);
-    data.WriteBit(playerGuid[2]);
-    data.WriteBit(playerGuid[7]);
-    data.WriteBit(0); // unk bit, usually 0
+    
+    uint8 bitOrder2[8] = {4, 0, 5, 6, 1, 3, 2, 7};
+    data.WriteBitInOrder(guid, bitOrder2);
 
-    data.WriteByteSeq(playerGuid[0]);
-    data.WriteByteSeq(playerGuid[2]);
-    data.WriteByteSeq(playerGuid[4]);
-    data.WriteByteSeq(playerGuid[7]);
-    data.WriteByteSeq(playerGuid[5]);
-    data.WriteByteSeq(playerGuid[6]);
-    data.WriteByteSeq(playerGuid[1]);
-    data.WriteByteSeq(playerGuid[3]);
+    data.WriteBit(0); // unk bit, usually 0
+    
+    uint8 byteOrder2[8] = {0, 2, 4, 7, 5, 6, 1, 3};
+    data.WriteBytesSeq(guid, byteOrder2);
 
     pOther->GetSession()->SendPacket(&data);
 }

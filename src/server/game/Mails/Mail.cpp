@@ -217,6 +217,25 @@ void MailDraft::SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, 
     stmt->setUInt8 (++index, uint8(checked));
     trans->Append(stmt);
 
+    // Logging
+    index = 0;
+    PreparedStatement* stmt_log = CharacterDatabase.GetPreparedStatement(CHAR_INS_MAIL_LOG);
+    stmt_log->setUInt32(  index, mailId);
+    stmt_log->setUInt8 (++index, uint8(sender.GetMailMessageType()));
+    stmt_log->setInt8  (++index, int8(sender.GetStationery()));
+    stmt_log->setUInt16(++index, GetMailTemplateId());
+    stmt_log->setUInt32(++index, sender.GetSenderId());
+    stmt_log->setUInt32(++index, receiver.GetPlayerGUIDLow());
+    stmt_log->setString(++index, GetSubject());
+    stmt_log->setString(++index, GetBody());
+    stmt_log->setBool  (++index, !m_items.empty());
+    stmt_log->setUInt64(++index, uint64(expire_time));
+    stmt_log->setUInt64(++index, uint64(deliver_time));
+    stmt_log->setUInt32(++index, m_money);
+    stmt_log->setUInt32(++index, m_COD);
+    stmt_log->setUInt8 (++index, uint8(checked));
+    trans->Append(stmt_log);
+
     for (MailItemMap::const_iterator mailItemIter = m_items.begin(); mailItemIter != m_items.end(); ++mailItemIter)
     {
         Item* pItem = mailItemIter->second;

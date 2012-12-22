@@ -36,14 +36,8 @@ void WorldSession::SendBfInvitePlayerToWar(uint64 guid, uint32 zoneId, uint32 pT
     ObjectGuid guidBytes = guid;
     WorldPacket data(SMSG_BATTLEFIELD_MGR_ENTRY_INVITE);
 
-    data.WriteBit(guidBytes[6]);
-    data.WriteBit(guidBytes[5]);
-    data.WriteBit(guidBytes[2]);
-    data.WriteBit(guidBytes[4]);
-    data.WriteBit(guidBytes[3]);
-    data.WriteBit(guidBytes[0]);
-    data.WriteBit(guidBytes[7]);
-    data.WriteBit(guidBytes[1]);
+    uint8 bitOrder[8] = {6, 5, 2, 4, 3, 0, 7, 1};
+    data.WriteBitInOrder(guidBytes, bitOrder);
 
     data.WriteByteSeq(guidBytes[0]);
     data.WriteByteSeq(guidBytes[7]);
@@ -197,15 +191,9 @@ void WorldSession::SendBfEntered(uint64 guid)
     data.WriteBit(bgGuid[4]);
     data.WriteBit(1); // unk
     data.FlushBits();
-
-    data.WriteByteSeq(bgGuid[1]);
-    data.WriteByteSeq(bgGuid[7]);
-    data.WriteByteSeq(bgGuid[3]);
-    data.WriteByteSeq(bgGuid[4]);
-    data.WriteByteSeq(bgGuid[2]);
-    data.WriteByteSeq(bgGuid[5]);
-    data.WriteByteSeq(bgGuid[6]);
-    data.WriteByteSeq(bgGuid[0]);
+    
+    uint8 byteOrder[8] = {1, 7, 3, 4, 2, 5, 6, 0};
+    data.WriteBytesSeq(bgGuid, byteOrder);
 
     SendPacket(&data);
 }
@@ -248,26 +236,15 @@ void WorldSession::HandleBfQueueInviteResponse(WorldPacket & recvData)
     uint8 accepted;
     ObjectGuid guid;
 
-    guid[4] = recvData.ReadBit();
-    guid[7] = recvData.ReadBit();
-    guid[6] = recvData.ReadBit();
-    guid[1] = recvData.ReadBit();
-    guid[2] = recvData.ReadBit();
-    guid[5] = recvData.ReadBit();
-    guid[0] = recvData.ReadBit();
-    guid[3] = recvData.ReadBit();
+    uint8 bitOrder[8] = {4, 7, 6, 1, 2, 5, 0, 3};
+    recvData.ReadBitInOrder(guid, bitOrder);
+
     accepted = recvData.ReadBit();
     
     recvData.FlushBits();
 
-    recvData.ReadByteSeq(guid[6]);
-    recvData.ReadByteSeq(guid[4]);
-    recvData.ReadByteSeq(guid[0]);
-    recvData.ReadByteSeq(guid[1]);
-    recvData.ReadByteSeq(guid[5]);
-    recvData.ReadByteSeq(guid[7]);
-    recvData.ReadByteSeq(guid[3]);
-    recvData.ReadByteSeq(guid[2]);
+    uint8 byteOrder[8] = {6, 4, 0, 1, 5, 7, 3, 2};
+    recvData.ReadBytesSeq(guid, byteOrder);
 
     sLog->outError(LOG_FILTER_GENERAL, "HandleQueueInviteResponse: GUID:" UI64FMTD " Accepted:%u", (uint64)guid, accepted);
 
@@ -299,14 +276,8 @@ void WorldSession::HandleBfEntryInviteResponse(WorldPacket & recvData)
 
     recvData.FlushBits();
 
-    recvData.ReadByteSeq(guid[3]);
-    recvData.ReadByteSeq(guid[2]);
-    recvData.ReadByteSeq(guid[4]);
-    recvData.ReadByteSeq(guid[0]);
-    recvData.ReadByteSeq(guid[5]);
-    recvData.ReadByteSeq(guid[7]);
-    recvData.ReadByteSeq(guid[6]);
-    recvData.ReadByteSeq(guid[1]);
+    uint8 byteOrder[8] = {3, 2, 4, 0, 5, 7, 6, 1};
+    recvData.ReadBytesSeq(guid, byteOrder);
 
     sLog->outError(LOG_FILTER_GENERAL, "HandleBattlefieldInviteResponse: GUID:" UI64FMTD " Accepted:%u", uint64(guid), accepted);
 
@@ -325,23 +296,11 @@ void WorldSession::HandleBfQueueRequest(WorldPacket& recvData)
 {
     ObjectGuid guid;
 
-    guid[3] = recvData.ReadBit();
-    guid[5] = recvData.ReadBit();
-    guid[7] = recvData.ReadBit();
-    guid[0] = recvData.ReadBit();
-    guid[6] = recvData.ReadBit();
-    guid[2] = recvData.ReadBit();
-    guid[1] = recvData.ReadBit();
-    guid[4] = recvData.ReadBit();
+    uint8 bitOrder[8] = {3, 5, 7, 0, 6, 2, 1, 4};
+    recvData.ReadBitInOrder(guid, bitOrder);
 
-    recvData.ReadByteSeq(guid[1]);
-    recvData.ReadByteSeq(guid[0]);
-    recvData.ReadByteSeq(guid[3]);
-    recvData.ReadByteSeq(guid[2]);
-    recvData.ReadByteSeq(guid[4]);
-    recvData.ReadByteSeq(guid[7]);
-    recvData.ReadByteSeq(guid[5]);
-    recvData.ReadByteSeq(guid[6]);
+    uint8 byteOrder[8] = {1, 0, 3, 2, 4, 7, 5, 6};
+    recvData.ReadBytesSeq(guid, byteOrder);
 
     sLog->outError(LOG_FILTER_GENERAL, "HandleBfQueueRequest: GUID:" UI64FMTD " ", (uint64)guid);
 
@@ -363,24 +322,13 @@ void WorldSession::HandleBfExitQueueRequest(WorldPacket & recvData)
 {
     ObjectGuid guid;
 
-    guid[4] = recvData.ReadBit();
-    guid[0] = recvData.ReadBit();
-    guid[1] = recvData.ReadBit();
-    guid[5] = recvData.ReadBit();
-    guid[3] = recvData.ReadBit();
-    guid[7] = recvData.ReadBit();
-    guid[6] = recvData.ReadBit();
-    guid[2] = recvData.ReadBit();
+    uint8 bitOrder[8] = {4, 0, 1, 5, 3, 7, 6, 2};
+    recvData.ReadBitInOrder(guid, bitOrder);
+
     recvData.FlushBits();
 
-    recvData.ReadByteSeq(guid[0]);
-    recvData.ReadByteSeq(guid[6]);
-    recvData.ReadByteSeq(guid[2]);
-    recvData.ReadByteSeq(guid[5]);
-    recvData.ReadByteSeq(guid[4]);
-    recvData.ReadByteSeq(guid[1]);
-    recvData.ReadByteSeq(guid[7]);
-    recvData.ReadByteSeq(guid[3]);
+    uint8 byteOrder[8] = {0, 6, 2, 5, 4, 1, 7, 3};
+    recvData.ReadBytesSeq(guid, byteOrder);
 
     sLog->outError(LOG_FILTER_GENERAL, "HandleBfExitQueueRequest: GUID:" UI64FMTD " ", (uint64)guid);
 

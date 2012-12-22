@@ -2638,6 +2638,14 @@ void SpellMgr::LoadSpellClassInfo()
         if(!classEntry)
             continue;
 
+        // Dark Soul
+        if (ClassID == CLASS_WARLOCK)
+            mSpellClassInfo[ClassID].push_back(77801);
+
+        // Death Gate : Waiting for start zone debug
+        if (ClassID == CLASS_DEATH_KNIGHT)
+            mSpellClassInfo[ClassID].push_back(52751);
+
         // All portals and teleports for mages
         if (ClassID == CLASS_MAGE)
         {
@@ -3120,6 +3128,43 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 111771: // Demonic Gateway
+                spellInfo->Effects[0].Effect = 0;
+                spellInfo->Effects[0].BasePoints = 0;
+                break;
+            case 117828: // Backdraft
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+                spellInfo->Effects[0].MiscValue = SPELLMOD_CASTING_TIME;
+                spellInfo->Effects[0].BasePoints = -30;
+                spellInfo->Effects[0].SpellClassMask[1] |= 0x2000;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+                spellInfo->Effects[1].MiscValue = SPELLMOD_COST;
+                spellInfo->Effects[1].BasePoints = -30;
+                spellInfo->Effects[1].SpellClassMask[1] |= 0x80;
+                spellInfo->Effects[1].SpellClassMask[0] |= 0x1000;
+                spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+                spellInfo->Effects[2].MiscValue = SPELLMOD_CASTING_TIME;
+                spellInfo->Effects[2].BasePoints = -30;
+                spellInfo->Effects[2].SpellClassMask[1] |= 0x80;
+                spellInfo->Effects[2].SpellClassMask[0] |= 0x1000;
+                break;
+            case 109259: // Powershot
+                spellInfo->Effects[1].BasePoints = 60;
+                spellInfo->Effects[2].BasePoints = 800;
+                break;
+            case 82926: // Fire ! (for Master Marksman)
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
+                spellInfo->Effects[0].MiscValue = SPELLMOD_CASTING_TIME;
+                spellInfo->Effects[0].BasePoints = -100;
+                spellInfo->Effects[0].SpellClassMask[0] |= 0x20000;
+                break;
+            case 7384: // Overpower
+                spellInfo->AttributesEx |= SPELL_ATTR1_ENABLE_AT_DODGE;
+                break;
+            case 114695: // Pursuit of Justice
+                spellInfo->Effects[0].BasePoints = 0;
+                break;
             case 6262: // Health Stone
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL_PCT;
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;

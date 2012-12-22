@@ -32,7 +32,41 @@ enum WarriorSpells
     WARRIOR_SPELL_VICTORY_RUSH_HEAL             = 118779,
     WARRIOR_SPELL_VICTORIOUS_STATE              = 32216,
     WARRIOR_SPELL_BLOODTHIRST                   = 23881,
-    WARRIOR_SPELL_BLOODTHIRST_HEAL              = 117313
+    WARRIOR_SPELL_BLOODTHIRST_HEAL              = 117313,
+    WARRIOR_SPELL_DEEP_WOUNDS                   = 115767,
+    WARRIOR_SPELL_THUNDER_CLAP                  = 6343,
+    WARRIOR_SPELL_WEAKENED_BLOWS                = 115798,
+    WARRIOR_SPELL_BLOOD_AND_THUNDER             = 84615,
+    WARRIOR_SPELL_SHOCKWAVE_STUN                = 132168
+};
+
+// Shockwave - 46968
+class spell_warr_shockwave : public SpellScriptLoader
+{
+    public:
+        spell_warr_shockwave() : SpellScriptLoader("spell_warr_shockwave") { }
+
+        class spell_warr_shockwave_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_shockwave_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, WARRIOR_SPELL_SHOCKWAVE_STUN, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_shockwave_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_shockwave_SpellScript();
+        }
 };
 
 // Bloodthirst - 23881
@@ -232,14 +266,37 @@ public:
     }
 };
 
-enum DeepWounds
+// Thunder Clap - 6343
+class spell_warr_thunder_clap : public SpellScriptLoader
 {
-    SPELL_DEEP_WOUNDS_RANK_1         = 12162,
-    SPELL_DEEP_WOUNDS_RANK_2         = 12850,
-    SPELL_DEEP_WOUNDS_RANK_3         = 12868,
-    SPELL_DEEP_WOUNDS_RANK_PERIODIC  = 12721,
+    public:
+        spell_warr_thunder_clap() : SpellScriptLoader("spell_warr_thunder_clap") { }
+
+        class spell_warr_thunder_clap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_thunder_clap_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, WARRIOR_SPELL_WEAKENED_BLOWS, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_thunder_clap_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_thunder_clap_SpellScript();
+        }
 };
 
+// Called By Thunder Clap - 6343, Mortal Strike - 12294, Bloodthirst - 23881 and Devastate - 20243
+// Deep Wounds - 115767
 class spell_warr_deep_wounds : public SpellScriptLoader
 {
     public:
@@ -249,42 +306,23 @@ class spell_warr_deep_wounds : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warr_deep_wounds_SpellScript);
 
-            bool Validate(SpellInfo const* /*SpellEntry*/)
+            void HandleOnHit()
             {
-                if (!sSpellMgr->GetSpellInfo(SPELL_DEEP_WOUNDS_RANK_1) || !sSpellMgr->GetSpellInfo(SPELL_DEEP_WOUNDS_RANK_2) || !sSpellMgr->GetSpellInfo(SPELL_DEEP_WOUNDS_RANK_3))
-                    return false;
-                return true;
-            }
-
-            void HandleDummy(SpellEffIndex /* effIndex */)
-            {
-                int32 damage = GetEffectValue();
-                Unit* caster = GetCaster();
-                if (Unit* target = GetHitUnit())
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    // apply percent damage mods
-                    damage = caster->SpellDamageBonusDone(target, GetSpellInfo(), damage, SPELL_DIRECT_DAMAGE);
-
-                    ApplyPct(damage, 16 * sSpellMgr->GetSpellRank(GetSpellInfo()->Id));
-
-                    damage = target->SpellDamageBonusTaken(caster, GetSpellInfo(), damage, SPELL_DIRECT_DAMAGE);
-
-                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(SPELL_DEEP_WOUNDS_RANK_PERIODIC);
-                    uint32 ticks = spellInfo->GetDuration() / spellInfo->Effects[EFFECT_0].Amplitude;
-
-                    // Add remaining ticks to damage done
-                    if (constAuraEffectPtr aurEff = target->GetAuraEffect(SPELL_DEEP_WOUNDS_RANK_PERIODIC, EFFECT_0, caster->GetGUID()))
-                        damage += aurEff->GetAmount() * (ticks - aurEff->GetTickNumber());
-
-                    damage = damage / ticks;
-
-                    caster->CastCustomSpell(target, SPELL_DEEP_WOUNDS_RANK_PERIODIC, &damage, NULL, NULL, true);
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (GetSpellInfo()->Id == WARRIOR_SPELL_THUNDER_CLAP && _player->HasAura(WARRIOR_SPELL_BLOOD_AND_THUNDER))
+                            _player->CastSpell(target, WARRIOR_SPELL_DEEP_WOUNDS, true);
+                        else if (GetSpellInfo()->Id != WARRIOR_SPELL_THUNDER_CLAP)
+                            _player->CastSpell(target, WARRIOR_SPELL_DEEP_WOUNDS, true);
+                    }
                 }
             }
 
             void Register()
             {
-                OnEffectHitTarget += SpellEffectFn(spell_warr_deep_wounds_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+                OnHit += SpellHitFn(spell_warr_deep_wounds_SpellScript::HandleOnHit);
             }
         };
 
@@ -479,11 +517,13 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_shockwave();
     new spell_warr_bloodthirst();
     new spell_warr_victory_rush();
     new spell_warr_last_stand();
     new spell_warr_improved_spell_reflection();
     new spell_warr_vigilance();
+    new spell_warr_thunder_clap();
     new spell_warr_deep_wounds();
     new spell_warr_charge();
     new spell_warr_execute();

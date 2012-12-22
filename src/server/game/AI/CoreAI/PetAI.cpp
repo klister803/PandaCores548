@@ -128,7 +128,7 @@ void PetAI::UpdateAI(const uint32 diff)
             HandleReturnMovement();
     }
     else if (owner && !me->HasUnitState(UNIT_STATE_FOLLOW)) // no charm info and no victim
-        HandleReturnMovement();
+        me->GetMotionMaster()->MoveFollow(owner, PET_FOLLOW_DIST, me->GetFollowAngle());
 
     if (!me->GetCharmInfo())
         return;
@@ -508,6 +508,10 @@ void PetAI::MovementInform(uint32 moveType, uint32 data)
 
 bool PetAI::CanAttack(Unit* target)
 {
+    // CrashFix
+    if (!me->GetCharmInfo())
+        return false;
+
     // Evaluates wether a pet can attack a specific
     // target based on CommandState, ReactState and other flags
 

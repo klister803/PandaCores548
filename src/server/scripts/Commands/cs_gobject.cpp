@@ -59,6 +59,7 @@ public:
             { "target",         SEC_GAMEMASTER,     false, &HandleGameObjectTargetCommand,    "", NULL },
             { "turn",           SEC_GAMEMASTER,     false, &HandleGameObjectTurnCommand,      "", NULL },
             { "bindportal",     SEC_GAMEMASTER,     false, &HandleBindPortalCommand,          "", NULL },
+            { "damage",         SEC_GAMEMASTER,     false, &HandleDamageObjectCommand,        "", NULL },
             { "add",            SEC_GAMEMASTER,     false, NULL,            "", gobjectAddCommandTable },
             { "set",            SEC_GAMEMASTER,     false, NULL,            "", gobjectSetCommandTable },
             { NULL,             0,                  false, NULL,                              "", NULL }
@@ -738,6 +739,42 @@ public:
         }
 
         sObjectMgr->LoadGameObjectScripts();
+        return true;
+    }
+
+    static bool HandleDamageObjectCommand(ChatHandler* handler, char const* args)
+    {
+        uint32 guidLow = GetGuidLowFromArgsOrLastTargetedGo(handler, args);
+
+        if (!guidLow)
+            return false;
+
+        if (!handler->GetSession())
+            return false;
+
+        Player* pPlayer = handler->GetSession()->GetPlayer();
+
+        if (!pPlayer)
+            return false;
+
+        GameObject* object = NULL;
+
+        // by DB guid
+        if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
+            object = handler->GetObjectGlobalyWithGuidOrNearWithDbGuid(guidLow, gameObjectData->id);
+
+        if (!object)
+        {
+            handler->PSendSysMessage(LANG_COMMAND_OBJNOTFOUND, guidLow);
+            handler->SetSentErrorMessage(true);
+            return false;
+
+        }
+        char* damageStr = strtok (NULL, " ");
+        int32 damage = damageStr ? atoi(damageStr) : 0;
+
+        object->ModifyHealth(-damage, pPlayer);
+        
         return true;
     }
 };

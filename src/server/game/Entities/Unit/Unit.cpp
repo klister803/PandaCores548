@@ -5555,12 +5555,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     triggered_spell_id = 69961; // Glyph of Scourge Strike
                     break;
                 }
-                // Glyph of Life Tap
-                case 63320:
-                {
-                    triggered_spell_id = 63321; // Life Tap
-                    break;
-                }
                 // Purified Shard of the Scale - Onyxia 10 Caster Trinket
                 case 69755:
                 {
@@ -6537,6 +6531,11 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
 
             switch (dummySpell->Id)
             {
+                case 82661: // Aspect of the Fox
+                {
+                    EnergizeBySpell(this, 82661, 2, POWER_FOCUS);
+                    break;
+                }
                 case 34477: // Misdirection
                 {
                     if (!GetMisdirectionTarget())
@@ -6550,16 +6549,16 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         }
         case SPELLFAMILY_PALADIN:
         {
-            // Seal of Righteousness - melee proc dummy (addition  (MWS * (0.011 * AP.022 * holy spell power) * 100 / 100) damage)
-            if (dummySpell->SpellFamilyFlags[0] & 0x8000000)
+            // Seal of Command
+            if (dummySpell->Id == 105361 &&  effIndex == 0)
             {
-                if (effIndex != 0)
-                    return false;
-                triggered_spell_id = 25742;
-                float ap = GetTotalAttackPowerValue(BASE_ATTACK);
-                int32 holy = SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) +
-                             victim->SpellBaseDamageBonusTaken(SPELL_SCHOOL_MASK_HOLY);
-                basepoints0 = (int32)GetAttackTime(BASE_ATTACK) * int32(ap * 0.011f + 0.022f * holy) / 1000;
+                triggered_spell_id = 118215;
+                break;
+            }
+            // Seal of Righteousness
+            if (dummySpell->Id == 20154)
+            {
+                triggered_spell_id = 101423;
                 break;
             }
             // Light's Beacon - Beacon of Light
@@ -7964,6 +7963,38 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Backdraft
+        case 117896:
+        {
+            if (!procSpell || (procSpell->Id != 17962 && procSpell->Id != 108685))
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER || getClass() != CLASS_WARLOCK || ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) != SPEC_WARLOCK_DESTRUCTION)
+                return false;
+
+            break;
+        }
+        // Master Marksmann
+        case 34487:
+        {
+            if (!procSpell || procSpell->Id != 56641) // Steady Shot
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER || getClass() != CLASS_HUNTER)
+                return false;
+
+            AuraPtr aimed = GetAura(trigger_spell_id);
+            //  After reaching 3 stacks, your next Aimed Shot's cast time and Focus cost are reduced by 100% for 10 sec
+            if (aimed && aimed->GetStackAmount() >= 2)
+            {
+                RemoveAura(trigger_spell_id);
+                CastSpell(this, 82926, true); // Fire !
+
+                return false;
+            }
+
+            break;
+        }
         // Will of the Necropolis
         case 81164:
         {
@@ -7973,33 +8004,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
             if (GetHealthPct() > 30.0f)
                 return false;
 
-            break;
-        }
-        // Deep Wounds
-        case 12834:
-        case 12849:
-        case 12867:
-        {
-            if (GetTypeId() != TYPEID_PLAYER)
-                return false;
-
-            // now compute approximate weapon damage by formula from wowwiki.com
-            Item* item = NULL;
-            if (procFlags & PROC_FLAG_DONE_OFFHAND_ATTACK)
-                item = ToPlayer()->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-            else
-                item = ToPlayer()->GetUseableItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-
-            // dunno if it's really needed but will prevent any possible crashes
-            if (!item)
-                return false;
-
-            ItemTemplate const* weapon = item->GetTemplate();
-
-            float weaponDPS = weapon->DPS;
-            float attackPower = GetTotalAttackPowerValue(BASE_ATTACK) / 14.0f;
-            float weaponSpeed = float(weapon->Delay) / 1000.0f;
-            basepoints0 = int32((weaponDPS + attackPower) * weaponSpeed);
             break;
         }
         // Persistent Shield (Scarab Brooch trinket)
@@ -9490,11 +9494,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     if (spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
         return pdamage;
 
-    // small exception for Deep Wounds, can't find any general rule
-    // should ignore ALL damage mods, they already calculated in trigger spell
-    if (spellProto->Id == 12721) // Deep Wounds
-        return pdamage;
-
     // small exception for Echo of Light, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
     if (spellProto->Id == 77489) // Echo of Light
@@ -9517,6 +9516,10 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         DoneTotalMod += PowerJcJ;
     }
 
+    // Shatter : Increase damage done against frozen targets by 50%
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && HasAura(12982) && victim->HasAuraState(AURA_STATE_FROZEN))
+        DoneTotalMod += 0.5;
+
     // Custom MoP Script
     // 76658 - Mastery : Essence of the Viper
     if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
@@ -9535,6 +9538,17 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
             DoneTotalMod += Mastery;
         }
+    }
+
+    // Mastery : Emberstorm - 77220
+    // Increases the damage of Immolate, Incinerate, Fel Flame and Conflagrate (include the Fire and Brimstone spells)
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(77220) && spellProto
+        && (spellProto->Id == 17962 || spellProto->Id == 348 || spellProto->Id == 77799
+        || spellProto->Id == 29722 || spellProto->Id == 114654 || spellProto->Id == 108685
+        || spellProto->Id == 108686))
+    {
+        float Mastery = (GetFloatValue(PLAYER_MASTERY) + 1) / 100.0f;
+        DoneTotalMod += Mastery;
     }
 
     // Custom MoP Script
@@ -9684,6 +9698,15 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     {
         float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f / 100.0f;
         DoneTotalMod += Mastery;
+    }
+
+    // Chaos Bolt - 116858
+    // damage is increased by your critical strike chance
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 116858)
+    {
+        float crit_chance;
+        crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(spellProto->GetSchoolMask()));
+        DoneTotalMod += (crit_chance / 100.0f);
     }
 
     // Pet damage?
@@ -10209,33 +10232,23 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         if (FindCurrentSpellBySpellId(5938))
                             crit_chance = 0.0f;
                         break;
-                    case SPELLFAMILY_PALADIN:
-                        // Flash of light
-                        if (spellProto->SpellFamilyFlags[0] & 0x40000000)
+                    case SPELLFAMILY_SHAMAN:
+                        // Lava Burst
+                        if (spellProto->Id == 51505 || spellProto->Id == 77451)
                         {
-                            // Sacred Shield
-                            if (constAuraEffectPtr aura = victim->GetAuraEffect(58597, 1, GetGUID()))
-                                crit_chance += aura->GetAmount();
-                            break;
-                        }
-                        // Exorcism
-                        else if (spellProto->Category == 19)
-                        {
-                            if (victim->GetCreatureTypeMask() & CREATURE_TYPEMASK_DEMON_OR_UNDEAD)
+                            if (victim->GetAura(8050))
                                 return true;
                             break;
                         }
                     break;
-                    case SPELLFAMILY_SHAMAN:
-                        // Lava Burst
-                        if (spellProto->SpellFamilyFlags[1] & 0x00001000)
-                        {
-                            if (victim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_SHAMAN, 0x10000000, 0, 0, GetGUID()))
-                                if (victim->GetTotalAuraModifier(SPELL_AURA_MOD_ATTACKER_SPELL_AND_WEAPON_CRIT_CHANCE) > -100)
-                                    return true;
-                            break;
-                        }
-                    break;
+                    case SPELLFAMILY_WARLOCK:
+                        // Chaos Bolt
+                        if (spellProto->Id == 116858)
+                            return true;
+                        // Soul Fire
+                        if (spellProto->Id == 6353)
+                            return true;
+                        break;
                 }
             }
             break;
@@ -10476,6 +10489,12 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         modOwner->ApplySpellMod(spellProto->Id, damagetype == DOT ? SPELLMOD_DOT : SPELLMOD_DAMAGE, heal);
 
     // Custom MoP Script
+    // Word of Glory - 130551
+    if (spellProto->Id == 130551 && GetTypeId() == TYPEID_PLAYER)
+    {
+        int32 holyPower = GetPower(POWER_HOLY_POWER) > 3 ? 3 : GetPower(POWER_HOLY_POWER);
+        heal *= holyPower;
+    }
     // Ascendance - 114052 : Water Ascendant - Healing done is duplicated and distribued evenly among all nearby (15 yards) allies
     if (GetTypeId() == TYPEID_PLAYER && heal != 0 && HasAura(114052) && spellProto->Id != 114083)
     {
@@ -11090,16 +11109,15 @@ uint32 Unit::MeleeDamageBonusTaken(Unit* attacker, uint32 pdamage, WeaponAttackT
     AuraEffectList const& mDummyAuras = GetAuraEffectsByType(SPELL_AURA_DUMMY);
     for (AuraEffectList::const_iterator i = mDummyAuras.begin(); i != mDummyAuras.end(); ++i)
     {
-        switch ((*i)->GetSpellInfo()->SpellIconID)
+        switch ((*i)->GetSpellInfo()->Id)
         {
             // Cheat Death
-            case 2109:
+            case 45182:
                 if ((*i)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL)
                 {
                     if (GetTypeId() != TYPEID_PLAYER)
                         continue;
-                    float mod = ToPlayer()->GetRatingBonusValue(CR_CRIT_TAKEN_MELEE) * (-8.0f);
-                    AddPct(TakenTotalMod, std::max(mod, float((*i)->GetAmount())));
+                    AddPct(TakenTotalMod, (*i)->GetAmount());
                 }
                 break;
         }
@@ -12040,15 +12058,12 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
         switch (mtype)
         {
             case MOVE_WALK:
+            {
                 data.Initialize(SMSG_SPLINE_MOVE_SET_WALK_SPEED, 8+4+2+4+4+4+4+4+4+4);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[0]);
+    
+                uint8 bitOrder[8] = {3, 6, 2, 1, 4, 7, 5, 0};
+                data.WriteBitInOrder(guid, bitOrder);
+
                 data.FlushBits();
                 data.WriteByteSeq(guid[5]);
                 data << float(GetSpeed(mtype));
@@ -12061,16 +12076,14 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.WriteByteSeq(guid[3]);
                 data.WriteByteSeq(guid[4]);
                 break;
+            }
             case MOVE_RUN:
+            {
                 data.Initialize(SMSG_SPLINE_MOVE_SET_RUN_SPEED, 1 + 8 + 4);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[7]);
+    
+                uint8 bitOrder[8] = {6, 5, 2, 3, 4, 1, 0, 7};
+                data.WriteBitInOrder(guid, bitOrder);
+
                 data.FlushBits();
                 data.WriteByteSeq(guid[1]);
                 data.WriteByteSeq(guid[4]);
@@ -12083,16 +12096,14 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data << float(GetSpeed(mtype));
                 data.WriteByteSeq(guid[3]);
                 break;
+            }
             case MOVE_RUN_BACK:
+            {
                 data.Initialize(SMSG_SPLINE_MOVE_SET_RUN_BACK_SPEED, 1 + 8 + 4);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[2]);
+    
+                uint8 bitOrder[8] = {1, 3, 0, 5, 7, 6, 4, 2};
+                data.WriteBitInOrder(guid, bitOrder);
+
                 data.FlushBits();
                 data.WriteByteSeq(guid[2]);
                 data.WriteByteSeq(guid[6]);
@@ -12104,16 +12115,14 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.WriteByteSeq(guid[0]);
                 data.WriteByteSeq(guid[7]);
                 break;
+            }
             case MOVE_SWIM:
+            {
                 data.Initialize(SMSG_SPLINE_MOVE_SET_SWIM_SPEED, 1 + 8 + 4);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[1]);
+    
+                uint8 bitOrder[8] = {0, 6, 2, 3, 5, 4, 7, 1};
+                data.WriteBitInOrder(guid, bitOrder);
+
                 data.FlushBits();
                 data.WriteByteSeq(guid[4]);
                 data.WriteByteSeq(guid[7]);
@@ -12125,16 +12134,14 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.WriteByteSeq(guid[0]);
                 data.WriteByteSeq(guid[6]);
                 break;
+            }
             case MOVE_SWIM_BACK:
+            {
                 data.Initialize(SMSG_SPLINE_MOVE_SET_SWIM_BACK_SPEED, 1 + 8 + 4);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[3]);
+    
+                uint8 bitOrder[8] = {4, 6, 5, 2, 7, 1, 0, 3};
+                data.WriteBitInOrder(guid, bitOrder);
+
                 data.FlushBits();
                 data.WriteByteSeq(guid[1]);
                 data.WriteByteSeq(guid[6]);
@@ -12146,37 +12153,28 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.WriteByteSeq(guid[5]);
                 data.WriteByteSeq(guid[7]);
                 break;
+            }
             case MOVE_TURN_RATE:
+            {
                 data.Initialize(SMSG_SPLINE_MOVE_SET_TURN_RATE, 1 + 8 + 4);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[0]);
+    
+                uint8 bitOrder[8] = {2, 4, 6, 1, 3, 5, 7, 0};
+                data.WriteBitInOrder(guid, bitOrder);
+
                 data.FlushBits();
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[2]);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[4]);
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[0]);
+    
+                uint8 byteOrder[8] = {1, 5, 3, 2, 7, 4, 6, 0};
+                data.WriteBytesSeq(guid, byteOrder);
                 break;
+            }
             case MOVE_FLIGHT:
+            {
                 data.Initialize(SMSG_SPLINE_MOVE_SET_FLIGHT_SPEED, 1 + 8 + 4);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[5]);
+    
+                uint8 bitOrder[8] = {3, 2, 7, 0, 1, 6, 4, 5};
+                data.WriteBitInOrder(guid, bitOrder);
+
                 data.FlushBits();
                 data.WriteByteSeq(guid[5]);
                 data.WriteByteSeq(guid[6]);
@@ -12188,16 +12186,14 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data << float(GetSpeed(mtype));
                 data.WriteByteSeq(guid[2]);
                 break;
+            }
             case MOVE_FLIGHT_BACK:
+            {
                 data.Initialize(SMSG_SPLINE_MOVE_SET_FLIGHT_BACK_SPEED, 1 + 8 + 4);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[7]);
+    
+                uint8 bitOrder[8] = {3, 6, 4, 0, 1, 5, 2, 7};
+                data.WriteBitInOrder(guid, bitOrder);
+
                 data.FlushBits();
                 data.WriteByteSeq(guid[5]);
                 data.WriteByteSeq(guid[3]);
@@ -12209,27 +12205,21 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.WriteByteSeq(guid[1]);
                 data.WriteByteSeq(guid[2]);
                 break;
+            }
             case MOVE_PITCH_RATE:
+            {
                 data.Initialize(SMSG_SPLINE_MOVE_SET_PITCH_RATE, 1 + 8 + 4);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[0]);
+                    
+                uint8 bitOrder[8] = {6, 3, 7, 5, 2, 1, 4, 0};
+                data.WriteBitInOrder(guid, bitOrder);
+
                 data.FlushBits();
                 data << float(GetSpeed(mtype));
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[2]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[4]);
-                data.WriteByteSeq(guid[1]);
+    
+                uint8 byteOrder[8] = {6, 5, 2, 0, 3, 7, 4, 1};
+                data.WriteBytesSeq(guid, byteOrder);
                 break;
+            }
             default:
                 sLog->outError(LOG_FILTER_UNITS, "Unit::SetSpeed: Unsupported move type (%d), data not sent to client.", mtype);
                 return;
@@ -12253,15 +12243,11 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
         switch (mtype)
         {
             case MOVE_WALK:
+            {
                 data.Initialize(SMSG_MOVE_SET_WALK_SPEED, 1 + 8 + 4 + 4);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[0]);
+    
+                uint8 bitOrder[8] = {3, 6, 2, 1, 4, 7, 5, 0};
+                data.WriteBitInOrder(guid, bitOrder);
 
                 data.WriteByteSeq(guid[5]);
                 data << float(GetSpeed(mtype));
@@ -12274,16 +12260,13 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.WriteByteSeq(guid[3]);
                 data.WriteByteSeq(guid[4]);
                 break;
+            }
             case MOVE_RUN:
+            {
                 data.Initialize(SMSG_MOVE_SET_RUN_SPEED, 1 + 8 + 4 + 4);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[7]);
+    
+                uint8 bitOrder[8] = {6, 5, 2, 1, 3, 4, 0, 7};
+                data.WriteBitInOrder(guid, bitOrder);
 
                 data.WriteByteSeq(guid[1]);
                 data.WriteByteSeq(guid[4]);
@@ -12296,16 +12279,13 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data << float(GetSpeed(mtype));
                 data.WriteByteSeq(guid[3]);
                 break;
+            }
             case MOVE_RUN_BACK:
+            {
                 data.Initialize(SMSG_MOVE_SET_RUN_BACK_SPEED, 1 + 8 + 4 + 4);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[0]);
+    
+                uint8 bitOrder[8] = {1, 2, 5, 7, 3, 4, 6, 0};
+                data.WriteBitInOrder(guid, bitOrder);
 
                 data.WriteByteSeq(guid[4]);
                 data << uint32(0);
@@ -12318,39 +12298,27 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.WriteByteSeq(guid[7]);
                 data.WriteByteSeq(guid[5]);
                 break;
+            }
             case MOVE_SWIM:
+            {
                 data.Initialize(SMSG_MOVE_SET_SWIM_SPEED, 1 + 8 + 4 + 4);
                 data << float(GetSpeed(mtype));
                 data << uint32(0);
+    
+                uint8 bitOrder[8] = {3, 7, 2, 4, 0, 1, 6, 5};
+                data.WriteBitInOrder(guid, bitOrder);
+    
+                uint8 byteOrder[8] = {6, 0, 2, 7, 1, 4, 3, 5};
+                data.WriteBytesSeq(guid, byteOrder);
 
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[5]);
-
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[0]);
-                data.WriteByteSeq(guid[2]);
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[4]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[5]);
                 break;
+            }
             case MOVE_SWIM_BACK:
+            {
                 data.Initialize(SMSG_MOVE_SET_SWIM_BACK_SPEED, 1 + 8 + 4 + 4);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[7]);
+    
+                uint8 bitOrder[8] = {3, 4, 0, 2, 1, 5, 6, 7};
+                data.WriteBitInOrder(guid, bitOrder);
 
                 data.WriteByteSeq(guid[5]);
                 data.WriteByteSeq(guid[7]);
@@ -12363,16 +12331,14 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.WriteByteSeq(guid[4]);
                 data << uint32(0);
                 break;
+            }
             case MOVE_TURN_RATE:
+            {
                 data.Initialize(SMSG_MOVE_SET_TURN_RATE, 1 + 8 + 4 + 4);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[3]);
+    
+                uint8 bitOrder[8] = {7, 2, 1, 0, 4, 5, 6, 3};
+                data.WriteBitInOrder(guid, bitOrder);
+
                 data.WriteByteSeq(guid[5]);
                 data.WriteByteSeq(guid[7]);
                 data.WriteByteSeq(guid[2]);
@@ -12384,16 +12350,13 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.WriteByteSeq(guid[6]);
                 data.WriteByteSeq(guid[4]);
                 break;
+            }
             case MOVE_FLIGHT:
+            {
                 data.Initialize(SMSG_MOVE_SET_FLIGHT_SPEED, 1 + 8 + 4 + 4);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[1]);
+    
+                uint8 bitOrder[8] = {5, 2, 3, 7, 4, 0, 6, 1};
+                data.WriteBitInOrder(guid, bitOrder);
 
                 data.WriteByteSeq(guid[5]);
                 data.WriteByteSeq(guid[4]);
@@ -12406,16 +12369,13 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.WriteByteSeq(guid[2]);
                 data.WriteByteSeq(guid[3]);
                 break;
+            }
             case MOVE_FLIGHT_BACK:
+            {
                 data.Initialize(SMSG_MOVE_SET_FLIGHT_BACK_SPEED, 1 + 8 + 4 + 4);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[3]);
+    
+                uint8 bitOrder[8] = {6, 1, 2, 7, 5, 4, 0, 3};
+                data.WriteBitInOrder(guid, bitOrder);
 
                 data.WriteByteSeq(guid[4]);
                 data << uint32(0);
@@ -12428,16 +12388,14 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.WriteByteSeq(guid[1]);
                 data.WriteByteSeq(guid[6]);
                 break;
+            }
             case MOVE_PITCH_RATE:
+            {
                 data.Initialize(SMSG_MOVE_SET_PITCH_RATE, 1 + 8 + 4 + 4);
-                data.WriteBit(guid[7]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[4]);
+    
+                uint8 bitOrder[8] = {7, 5, 2, 3, 1, 0, 6, 4};
+                data.WriteBitInOrder(guid, bitOrder);
+
                 data << float(GetSpeed(mtype));
                 data.WriteByteSeq(guid[6]);
                 data.WriteByteSeq(guid[7]);
@@ -12449,6 +12407,7 @@ void Unit::SetSpeed(UnitMoveType mtype, float rate, bool forced)
                 data.WriteByteSeq(guid[1]);
                 data.WriteByteSeq(guid[5]);
                 break;
+            }
             default:
                 sLog->outError(LOG_FILTER_UNITS, "Unit::SetSpeed: Unsupported move type (%d), data not sent to client.", mtype);
                 return;
@@ -13415,6 +13374,29 @@ void Unit::SetPower(Powers power, int32 val)
         SendMessageToSet(&data, GetTypeId() == TYPEID_PLAYER ? true : false);
     }
 
+    // Custom MoP Script
+    // Pursuit of Justice - 26023
+    if (Player* _player = ToPlayer())
+    {
+        if (_player->HasAura(26023))
+        {
+            AuraPtr aura = _player->GetAura(26023);
+            if (aura)
+            {
+                int32 holyPower = _player->GetPower(POWER_HOLY_POWER) >= 3 ? 3 : _player->GetPower(POWER_HOLY_POWER);
+                int32 AddValue = 5 * holyPower;
+
+                aura->GetEffect(0)->ChangeAmount(15 + AddValue);
+
+                AuraPtr aura2 = _player->AddAura(114695, _player);
+                if (aura2)
+                    aura2->GetEffect(0)->ChangeAmount(AddValue);
+            }
+        }
+        else if (_player->HasAura(114695))
+            _player->RemoveAura(114695);
+    }
+
     // group update
     if (Player* player = ToPlayer())
     {
@@ -13482,7 +13464,7 @@ int32 Unit::GetCreatePowers(Powers power) const
         case POWER_SHADOW_ORB:
             return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_PRIEST && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_PRIEST_SHADOW) ? 3 : 0);
         case POWER_BURNING_EMBERS:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION) ? 3 : 0);
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION) ? 30 : 0);
         case POWER_DEMONIC_FURY:
             return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY) ? 1000 : 0);
         case POWER_SOUL_SHARDS:
@@ -14075,10 +14057,28 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 {
                     ToPlayer()->AddComboPoints(target, 1);
                     StartReactiveTimer(REACTIVE_OVERPOWER);
+                    CastSpell(this, 119962, true);
                 }
             }
         }
     }
+
+    // Hack Fix Ice Floes - Drop charges
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(108839) && procSpell && procSpell->Id != 108839)
+    {
+        AuraApplication* aura = GetAuraApplication(108839, GetGUID());
+        if (aura)
+            aura->GetBase()->DropCharge();
+    }
+    // Hack Fix Immolate - Critical strikes generate burning embers
+    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 348 && procExtra & PROC_EX_CRITICAL_HIT)
+        if (roll_chance_i(50))
+            SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
+
+    // Hack Rain of Fire - Has a chance to generate burning embers
+    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 42223)
+        if (roll_chance_i(30))
+            SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
 
     ProcTriggeredList procTriggered;
     // Fill procTriggered list
@@ -15600,14 +15600,9 @@ void Unit::SendMoveRoot(uint32 value)
 {
     ObjectGuid guid = GetGUID();
     WorldPacket data(SMSG_MOVE_ROOT, 1 + 8 + 4);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[7]);
+    
+    uint8 bitOrder[8] = {4, 6, 3, 1, 0, 2, 5, 7};
+    data.WriteBitInOrder(guid, bitOrder);
 
     data.FlushBits();
 
@@ -15628,14 +15623,9 @@ void Unit::SendMoveUnroot(uint32 value)
 {
     ObjectGuid guid = GetGUID();
     WorldPacket data(SMSG_MOVE_UNROOT, 1 + 8 + 4);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[6]);
+    
+    uint8 bitOrder[8] = {2, 1, 0, 3, 7, 4, 5, 6};
+    data.WriteBitInOrder(guid, bitOrder);
 
     data.WriteByteSeq(guid[3]);
     data.WriteByteSeq(guid[4]);
@@ -15710,23 +15700,15 @@ void Unit::SetRooted(bool apply)
         {
             ObjectGuid guid = GetGUID();
             WorldPacket data(SMSG_SPLINE_MOVE_ROOT, 8);
-            data.WriteBit(guid[7]);
-            data.WriteBit(guid[3]);
-            data.WriteBit(guid[0]);
-            data.WriteBit(guid[5]);
-            data.WriteBit(guid[6]);
-            data.WriteBit(guid[1]);
-            data.WriteBit(guid[2]);
-            data.WriteBit(guid[4]);
+    
+            uint8 bitOrder[8] = {7, 3, 0, 5, 6, 1, 2, 4};
+            data.WriteBitInOrder(guid, bitOrder);
+
             data.FlushBits();
-            data.WriteByteSeq(guid[4]);
-            data.WriteByteSeq(guid[2]);
-            data.WriteByteSeq(guid[1]);
-            data.WriteByteSeq(guid[7]);
-            data.WriteByteSeq(guid[5]);
-            data.WriteByteSeq(guid[3]);
-            data.WriteByteSeq(guid[6]);
-            data.WriteByteSeq(guid[0]);
+    
+            uint8 byteOrder[8] = {4, 2, 1, 7, 5, 3, 6, 0};
+            data.WriteBytesSeq(guid, byteOrder);
+
             SendMessageToSet(&data, true);
             StopMoving();
         }
@@ -15741,23 +15723,15 @@ void Unit::SetRooted(bool apply)
             {
                 ObjectGuid guid = GetGUID();
                 WorldPacket data(SMSG_SPLINE_MOVE_UNROOT, 8);
-                data.WriteBit(guid[4]);
-                data.WriteBit(guid[2]);
-                data.WriteBit(guid[5]);
-                data.WriteBit(guid[3]);
-                data.WriteBit(guid[0]);
-                data.WriteBit(guid[1]);
-                data.WriteBit(guid[6]);
-                data.WriteBit(guid[7]);
+                    
+                uint8 bitOrder[8] = {4, 2, 5, 3, 0, 1, 6, 7};
+                data.WriteBitInOrder(guid, bitOrder);
+
                 data.FlushBits();
-                data.WriteByteSeq(guid[7]);
-                data.WriteByteSeq(guid[1]);
-                data.WriteByteSeq(guid[2]);
-                data.WriteByteSeq(guid[6]);
-                data.WriteByteSeq(guid[5]);
-                data.WriteByteSeq(guid[3]);
-                data.WriteByteSeq(guid[4]);
-                data.WriteByteSeq(guid[0]);
+    
+                uint8 byteOrder[8] = {7, 1, 2, 6, 5, 3, 4, 0};
+                data.WriteBytesSeq(guid, byteOrder);
+
                 SendMessageToSet(&data, true);
             }
 
@@ -16286,14 +16260,10 @@ void Unit::SendPlaySpellVisualKit(uint32 id, uint32 unkParam)
 
     WorldPacket data(SMSG_PLAY_SPELL_VISUAL_KIT, 4 + 4+ 4 + 8);
     //I am not sure for the uint32 values, we may have to swap them.
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[6]);
+    
+    uint8 bitOrder[8] = {0, 1, 5, 3, 7, 2, 4, 6};
+    data.WriteBitInOrder(guid, bitOrder);
+
     data.FlushBits();
 
     data << uint32(0);
@@ -16459,14 +16429,9 @@ void Unit::SendMoveKnockBack(Player* player, float speedXY, float speedZ, float 
 {
     ObjectGuid guid = GetGUID();
     WorldPacket data(SMSG_MOVE_KNOCK_BACK, (1+8+4+4+4+4+4));
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[3]);
+    
+    uint8 bitOrder[8] = {7, 0, 5, 1, 4, 6, 2, 3};
+    data.WriteBitInOrder(guid, bitOrder);
     
     data << float(speedZ); //32
     data.WriteByteSeq(guid[0]);
@@ -16959,6 +16924,51 @@ uint32 Unit::GetModelForTotem(PlayerTotemType totemType)
             }
             break;
         }
+        case RACE_PANDAREN_NEUTRAL:
+        {
+            switch (totemType)
+            {
+                case SUMMON_TYPE_TOTEM_FIRE:    // fire
+                    return 41670;
+                case SUMMON_TYPE_TOTEM_EARTH:   // earth
+                    return 41669;
+                case SUMMON_TYPE_TOTEM_WATER:   // water
+                    return 41671;
+                case SUMMON_TYPE_TOTEM_AIR:     // air
+                    return 41668;
+            }
+            break;
+        }
+        case RACE_PANDAREN_ALLI:
+        {
+            switch (totemType)
+            {
+                case SUMMON_TYPE_TOTEM_FIRE:    // fire
+                    return 41670;
+                case SUMMON_TYPE_TOTEM_EARTH:   // earth
+                    return 41669;
+                case SUMMON_TYPE_TOTEM_WATER:   // water
+                    return 41671;
+                case SUMMON_TYPE_TOTEM_AIR:     // air
+                    return 41668;
+            }
+            break;
+        }
+        case RACE_PANDAREN_HORDE:
+        {
+            switch (totemType)
+            {
+                case SUMMON_TYPE_TOTEM_FIRE:    // fire
+                    return 41670;
+                case SUMMON_TYPE_TOTEM_EARTH:   // earth
+                    return 41669;
+                case SUMMON_TYPE_TOTEM_WATER:   // water
+                    return 41671;
+                case SUMMON_TYPE_TOTEM_AIR:     // air
+                    return 41668;
+            }
+            break;
+        }
     }
     return 0;
 }
@@ -17184,23 +17194,15 @@ void Unit::_ExitVehicle(Position const* exitPosition)
     {
         WorldPacket data(SMSG_SPLINE_MOVE_UNROOT, 8);
         ObjectGuid guid = GetGUID();
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[7]);
+    
+        uint8 bitOrder[8] = {4, 2, 5, 3, 0, 1, 6, 7};
+        data.WriteBitInOrder(guid, bitOrder);
+
         data.FlushBits();
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[0]);
+    
+        uint8 byteOrder[8] = {7, 1, 2, 6, 5, 3, 4, 0};
+        data.WriteBytesSeq(guid, byteOrder);
+
         SendMessageToSet(&data, false);
     }
 
@@ -17566,6 +17568,52 @@ void Unit::SendClearTarget()
     WorldPacket data(SMSG_BREAK_TARGET, GetPackGUID().size());
     data.append(GetPackGUID());
     SendMessageToSet(&data, false);
+}
+
+bool Unit::IsVisionObscured(Unit* victim)
+{
+    AuraPtr victimAura = NULL;
+    AuraPtr myAura = NULL;
+    Unit* victimCaster = NULL;
+    Unit* myCaster = NULL;
+
+    AuraEffectList const& vAuras = victim->GetAuraEffectsByType(SPELL_AURA_INTERFERE_TARGETTING);
+    for (AuraEffectList::const_iterator i = vAuras.begin(); i != vAuras.end(); ++i)
+    {
+        victimAura = (*i)->GetBase();
+        victimCaster = victimAura->GetCaster();
+        break;
+    }
+    AuraEffectList const& myAuras = GetAuraEffectsByType(SPELL_AURA_INTERFERE_TARGETTING);
+    for (AuraEffectList::const_iterator i = myAuras.begin(); i != myAuras.end(); ++i)
+    {
+        myAura = (*i)->GetBase();
+        myCaster = myAura->GetCaster();
+        break;
+    }
+
+    if ((myAura != NULL && myCaster == NULL) || (victimAura != NULL && victimCaster == NULL))
+        return false; // Failed auras, will result in crash
+
+    // E.G. Victim is in smoke bomb, and I'm not
+    // Spells fail unless I'm friendly to the caster of victim's smoke bomb
+    if (victimAura != NULL && myAura == NULL)
+    {
+        if (IsFriendlyTo(victimCaster))
+            return false;
+        else
+            return true;
+    }
+    // Victim is not in smoke bomb, while I am
+    // Spells fail if my smoke bomb aura's caster is my enemy
+    else if (myAura != NULL && victimAura == NULL)
+    {
+        if (IsFriendlyTo(myCaster))
+            return false;
+        else
+            return true;
+    }
+    return false;
 }
 
 uint32 Unit::GetResistance(SpellSchoolMask mask) const

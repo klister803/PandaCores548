@@ -24,7 +24,71 @@
 #include "Log.h"
 #include "Utilities/ByteConverter.h"
 
+//! Structure to ease conversions from single 64 bit integer guid into individual bytes, for packet sending purposes
+//! Nuke this out when porting ObjectGuid from MaNGOS, but preserve the per-byte storage
+struct ObjectGuid
+{
+    public:
+        ObjectGuid() { _data.u64 = 0LL; }
+        ObjectGuid(uint64 guid) { _data.u64 = guid; }
+        ObjectGuid(ObjectGuid const& other) { _data.u64 = other._data.u64; }
 
+        uint8& operator[](uint32 index)
+        {
+            ASSERT(index < sizeof(uint64));
+
+#if TRINITY_ENDIAN == TRINITY_LITTLEENDIAN
+            return _data.byte[index];
+#else
+            return _data.byte[7 - index];
+#endif
+        }
+
+        uint8 const& operator[](uint32 index) const
+        {
+            ASSERT(index < sizeof(uint64));
+
+#if TRINITY_ENDIAN == TRINITY_LITTLEENDIAN
+            return _data.byte[index];
+#else
+            return _data.byte[7 - index];
+#endif
+        }
+
+        operator uint64()
+        {
+            return _data.u64;
+        }
+
+        ObjectGuid& operator=(uint64 guid)
+        {
+            _data.u64 = guid;
+            return *this;
+        }
+
+        ObjectGuid& operator=(ObjectGuid const& other)
+        {
+            _data.u64 = other._data.u64;
+            return *this;
+        }
+
+        void Clear()
+        {
+            _data.u64 = 0LL;
+        }
+
+        bool IsEmpty() const
+        {
+            return bool(_data.u64);
+        }
+
+    private:
+        union
+        {
+            uint64 u64;
+            uint8 byte[8];
+        } _data;
+};
 
 class ByteBufferException
 {
@@ -126,6 +190,12 @@ class ByteBuffer
             _bitpos = 8;
         }
 
+        void WriteBitInOrder(ObjectGuid guid, uint8 order[8])
+        {
+            for (uint8 i = 0; i < 8; ++i)
+                WriteBit(guid[order[i]]);
+        }
+
         bool WriteBit(uint32 bit)
         {
             --_bitpos;
@@ -140,6 +210,12 @@ class ByteBuffer
             }
 
             return (bit != 0);
+        }
+
+        void ReadBitInOrder(ObjectGuid& guid, uint8 order[8])
+        {
+            for (uint8 i = 0; i < 8; ++i)
+                guid[order[i]] = ReadBit();
         }
 
         bool ReadBit()
@@ -170,11 +246,23 @@ class ByteBuffer
             return value;
         }
 
+        void ReadBytesSeq(ObjectGuid& guid, uint8 order[8])
+        {
+            for (uint8 i = 0; i < 8; ++i)
+                ReadByteSeq(guid[order[i]]);
+        }
+
         // Reads a byte (if needed) in-place
         void ReadByteSeq(uint8& b)
         {
             if (b != 0)
                 b ^= read<uint8>();
+        }
+
+        void WriteBytesSeq(ObjectGuid guid, uint8 order[8])
+        {
+            for (uint8 i = 0; i < 8; ++i)
+                WriteByteSeq(guid[order[i]]);
         }
 
         void WriteByteSeq(uint8 b)

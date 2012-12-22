@@ -83,27 +83,15 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
     recvData.read_skip<uint32>();
     recvData.read_skip<uint32>();
 
-    guid[2] = recvData.ReadBit();
-    guid[5] = recvData.ReadBit();
-    guid[3] = recvData.ReadBit();
-    guid[7] = recvData.ReadBit();
-    guid[6] = recvData.ReadBit();
-    guid[0] = recvData.ReadBit();
-    guid[1] = recvData.ReadBit();
-    guid[4] = recvData.ReadBit();
+    uint8 bitOrder[8] = {2, 5, 3, 7, 6, 0, 1, 4};
+    recvData.ReadBitInOrder(guid, bitOrder);
 
     joinAsGroup = recvData.ReadBit();
 
     recvData.FlushBits();
 
-    recvData.ReadByteSeq(guid[6]);
-    recvData.ReadByteSeq(guid[1]);
-    recvData.ReadByteSeq(guid[3]);
-    recvData.ReadByteSeq(guid[5]);
-    recvData.ReadByteSeq(guid[7]);
-    recvData.ReadByteSeq(guid[0]);
-    recvData.ReadByteSeq(guid[4]);
-    recvData.ReadByteSeq(guid[2]);
+    uint8 byteOrder[8] = {6, 1, 3, 5, 7, 0, 4, 2};
+    recvData.ReadBytesSeq(guid, byteOrder);
 
     bgTypeId_ = GUID_LOPART(guid);
 
@@ -386,14 +374,8 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
 
     recvData.FlushBits();
 
-    recvData.ReadByteSeq(guid[0]);
-    recvData.ReadByteSeq(guid[3]);
-    recvData.ReadByteSeq(guid[4]);
-    recvData.ReadByteSeq(guid[7]);
-    recvData.ReadByteSeq(guid[1]);
-    recvData.ReadByteSeq(guid[5]);
-    recvData.ReadByteSeq(guid[6]);
-    recvData.ReadByteSeq(guid[2]);
+    uint8 byteOrder[8] = {0, 3, 4, 7, 1, 5, 6, 2};
+    recvData.ReadBytesSeq(guid, byteOrder);
 
     if (!_player->InBattlegroundQueue())
     {

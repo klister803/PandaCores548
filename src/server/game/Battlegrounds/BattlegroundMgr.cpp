@@ -188,14 +188,9 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
         case STATUS_NONE:
         {
             data->Initialize(SMSG_BATTLEFIELD_STATUS);
-            data->WriteBit(guidBytes1[2]);
-            data->WriteBit(guidBytes1[7]);
-            data->WriteBit(guidBytes1[0]);
-            data->WriteBit(guidBytes1[6]);
-            data->WriteBit(guidBytes1[1]);
-            data->WriteBit(guidBytes1[5]);
-            data->WriteBit(guidBytes1[3]);
-            data->WriteBit(guidBytes1[4]);
+    
+            uint8 bitOrder[8] = {2, 7, 0, 6, 1, 5, 3, 4};
+            data->WriteBitInOrder(guidBytes1, bitOrder);
 
             data->FlushBits();
 
@@ -812,24 +807,12 @@ void BattlegroundMgr::BuildPlayerLeftBattlegroundPacket(WorldPacket* data, uint6
     ObjectGuid guidBytes = guid;
 
     data->Initialize(SMSG_BATTLEGROUND_PLAYER_LEFT, 8);
-
-    data->WriteBit(guidBytes[7]);
-    data->WriteBit(guidBytes[6]);
-    data->WriteBit(guidBytes[2]);
-    data->WriteBit(guidBytes[4]);
-    data->WriteBit(guidBytes[5]);
-    data->WriteBit(guidBytes[1]);
-    data->WriteBit(guidBytes[3]);
-    data->WriteBit(guidBytes[0]);
-
-    data->WriteByteSeq(guidBytes[4]);
-    data->WriteByteSeq(guidBytes[2]);
-    data->WriteByteSeq(guidBytes[5]);
-    data->WriteByteSeq(guidBytes[7]);
-    data->WriteByteSeq(guidBytes[0]);
-    data->WriteByteSeq(guidBytes[6]);
-    data->WriteByteSeq(guidBytes[1]);
-    data->WriteByteSeq(guidBytes[3]);
+    
+    uint8 bitOrder[8] = {7, 6, 2, 4, 5, 1, 3, 0};
+    data->WriteBitInOrder(guidBytes, bitOrder);
+    
+    uint8 byteOrder[8] = {4, 2, 5, 7, 0, 6, 1, 3};
+    data->WriteBytesSeq(guidBytes, byteOrder);
 }
 
 void BattlegroundMgr::BuildPlayerJoinedBattlegroundPacket(WorldPacket* data, uint64 guid)

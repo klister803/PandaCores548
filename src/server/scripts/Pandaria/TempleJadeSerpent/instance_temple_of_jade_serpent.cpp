@@ -132,7 +132,7 @@ enum eStatus
 class instance_temple_of_jade_serpent : public InstanceMapScript
 {
 public:
-    instance_temple_of_jade_serpent() : InstanceMapScript("instance_temple_of_jade_serpent", 690) { }
+    instance_temple_of_jade_serpent() : InstanceMapScript("instance_temple_of_jade_serpent", 960) { }
 
     InstanceScript* GetInstanceScript(InstanceMap* map) const
     {

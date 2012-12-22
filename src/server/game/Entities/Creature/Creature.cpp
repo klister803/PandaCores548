@@ -1088,9 +1088,15 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
             dynamicflags = 0;
     }
 
+    uint32 zoneId = 0;
+    uint32 areaId = 0;
+    sMapMgr->GetZoneAndAreaId(zoneId, areaId, mapid, GetPositionX(), GetPositionY(), GetPositionZ());
+
     // data->guid = guid must not be updated at save
     data.id = GetEntry();
     data.mapid = mapid;
+    data.zoneId = zoneId;
+    data.areaId = areaId;
     data.phaseMask = phaseMask;
     data.displayid = displayId;
     data.equipmentId = GetEquipmentId();
@@ -1126,20 +1132,22 @@ void Creature::SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask)
     stmt->setUInt32(index++, m_DBTableGuid);
     stmt->setUInt32(index++, GetEntry());
     stmt->setUInt16(index++, uint16(mapid));
-    stmt->setUInt8(index++, spawnMask);
+    stmt->setUInt32(index++, zoneId);
+    stmt->setUInt32(index++, areaId);
+    stmt->setUInt8(index++,  spawnMask);
     stmt->setUInt16(index++, uint16(GetPhaseMask()));
     stmt->setUInt32(index++, displayId);
-    stmt->setInt32(index++, int32(GetEquipmentId()));
-    stmt->setFloat(index++, GetPositionX());
-    stmt->setFloat(index++, GetPositionY());
-    stmt->setFloat(index++, GetPositionZ());
-    stmt->setFloat(index++, GetOrientation());
+    stmt->setInt32(index++,  int32(GetEquipmentId()));
+    stmt->setFloat(index++,  GetPositionX());
+    stmt->setFloat(index++,  GetPositionY());
+    stmt->setFloat(index++,  GetPositionZ());
+    stmt->setFloat(index++,  GetOrientation());
     stmt->setUInt32(index++, m_respawnDelay);
-    stmt->setFloat(index++, m_respawnradius);
+    stmt->setFloat(index++,  m_respawnradius);
     stmt->setUInt32(index++, 0);
     stmt->setUInt32(index++, GetHealth());
     stmt->setUInt32(index++, GetPower(POWER_MANA));
-    stmt->setUInt8(index++, uint8(GetDefaultMovementType()));
+    stmt->setUInt8(index++,  uint8(GetDefaultMovementType()));
     stmt->setUInt32(index++, npcflag);
     stmt->setUInt32(index++, unit_flags);
     stmt->setUInt32(index++, dynamicflags);
@@ -1374,6 +1382,7 @@ bool Creature::LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap)
 
     if (addToMap && !GetMap()->AddToMap(this))
         return false;
+
     return true;
 }
 
@@ -2499,14 +2508,10 @@ bool Creature::SetWalk(bool enable)
     if (enable)
     {
         WorldPacket data(SMSG_SPLINE_MOVE_SET_WALK_MODE, 9);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[0]);
+    
+        uint8 bitOrder[8] = {2, 3, 4, 7, 6, 1, 5, 0};
+        data.WriteBitInOrder(guid, bitOrder);
+
         data.FlushBits();
         data.WriteByteSeq(guid[1]);
         data.WriteByteSeq(guid[3]);
@@ -2522,23 +2527,15 @@ bool Creature::SetWalk(bool enable)
     else
     {
         WorldPacket data(SMSG_SPLINE_MOVE_SET_RUN_MODE, 9);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[6]);
+    
+        uint8 bitOrder[8] = {7, 4, 2, 1, 3, 5, 0, 6};
+        data.WriteBitInOrder(guid, bitOrder);
+
         data.FlushBits();
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[0]);
+    
+        uint8 byteOrder[8] = {5, 6, 7, 1, 2, 4, 3, 0};
+        data.WriteBytesSeq(guid, byteOrder);
+
         SendMessageToSet(&data, false);
     }
 
@@ -2559,45 +2556,29 @@ bool Creature::SetDisableGravity(bool disable, bool packetOnly/*=false*/)
     if (disable)
     {
         WorldPacket data(SMSG_SPLINE_MOVE_GRAVITY_DISABLE, 9);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[1]);
+    
+        uint8 bitOrder[8] = {2, 6, 4, 7, 0, 5, 3, 1};
+        data.WriteBitInOrder(guid, bitOrder);
+
         data.FlushBits();
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[3]);
+    
+        uint8 byteOrder[8] = {1, 2, 5, 4, 0, 7, 6, 3};
+        data.WriteBytesSeq(guid, byteOrder);
+
         SendMessageToSet(&data, false);
     }
     else
     {
         WorldPacket data(SMSG_SPLINE_MOVE_GRAVITY_ENABLE, 9);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[0]);
+    
+        uint8 bitOrder[8] = {5, 4, 7, 1, 3, 6, 2, 0};
+        data.WriteBitInOrder(guid, bitOrder);
+
         data.FlushBits();
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[5]);
+    
+        uint8 byteOrder[8] = {7, 3, 4, 2, 1, 6, 0, 5};
+        data.WriteBytesSeq(guid, byteOrder);
+
         SendMessageToSet(&data, false);
     }
 
@@ -2623,45 +2604,29 @@ bool Creature::SetHover(bool enable)
     if (enable)
     {
         WorldPacket data(SMSG_SPLINE_MOVE_SET_HOVER, 9);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[4]);
+    
+        uint8 bitOrder[8] = {2, 0, 6, 1, 5, 7, 3, 4};
+        data.WriteBitInOrder(guid, bitOrder);
+
         data.FlushBits();
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[2]);
+    
+        uint8 byteOrder[8] = {3, 6, 5, 0, 4, 7, 1, 2};
+        data.WriteBytesSeq(guid, byteOrder);
+
         SendMessageToSet(&data, false);
     }
     else
     {
         WorldPacket data(SMSG_SPLINE_MOVE_UNSET_HOVER, 9);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[3]);
+    
+        uint8 bitOrder[8] = {7, 0, 5, 6, 2, 4, 1, 3};
+        data.WriteBitInOrder(guid, bitOrder);
+
         data.FlushBits();
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[1]);
+    
+        uint8 byteOrder[8] = {4, 3, 2, 0, 6, 5, 7, 1};
+        data.WriteBytesSeq(guid, byteOrder);
+
         SendMessageToSet(&data, false);
     }
 

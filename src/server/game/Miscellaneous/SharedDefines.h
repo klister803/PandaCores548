@@ -118,6 +118,15 @@ enum LootModes
     LOOT_MODE_HARD_MODE_4              = 0x10
 };
 
+enum Expansion
+{
+    EXP_VANILLA     = 0,
+    EXP_BC          = 1,
+    EXP_WOTLK       = 2,
+    EXP_CATACLYSM   = 3,
+    EXP_PANDARIA    = 4
+};
+
 enum Gender
 {
     GENDER_MALE                        = 0,
@@ -230,6 +239,8 @@ enum ReputationRank
 #define MAX_REPUTATION_RANK 8
 
 #define MAX_SPILLOVER_FACTIONS 5
+
+#define REP_GUILD           1168
 
 enum MoneyConstants
 {
@@ -615,7 +626,7 @@ enum SpellAttr7
     SPELL_ATTR7_REACTIVATE_AT_RESURRECT          = 0x00000004, //  2 Paladin's auras and 65607 only.
     SPELL_ATTR7_IS_CHEAT_SPELL                   = 0x00000008, //  3 Cannot cast if caster doesn't have UnitFlag2 & UNIT_FLAG2_ALLOW_CHEAT_SPELLS
     SPELL_ATTR7_UNK4                             = 0x00000010, //  4 Only 47883 (Soulstone Resurrection) and test spell.
-    SPELL_ATTR7_SUMMON_PLAYER_TOTEM              = 0x00000020, //  5 Only Shaman player totems.
+    SPELL_ATTR7_SUMMON_TOTEM                     = 0x00000020, //  5 Only Shaman player totems.
     SPELL_ATTR7_UNK6                             = 0x00000040, //  6 Dark Surge, Surge of Light, Burning Breath triggers (boss spells).
     SPELL_ATTR7_UNK7                             = 0x00000080, //  7 66218 (Launch) spell.
     SPELL_ATTR7_HORDE_ONLY                       = 0x00000100, //  8 Teleports, mounts and other spells.
@@ -654,23 +665,23 @@ enum SpellAttr8
     SPELL_ATTR8_UNK5                             = 0x00000020, // 5
     SPELL_ATTR8_UNK6                             = 0x00000040, // 6
     SPELL_ATTR8_UNK7                             = 0x00000080, // 7
-    SPELL_ATTR8_UNK8                             = 0x00000100, // 8
+    SPELL_ATTR8_AFFECT_PARTY_AND_RAID            = 0x00000100, // 8 Nearly all spells have "all party and raid" in description
     SPELL_ATTR8_DONT_RESET_PERIODIC_TIMER        = 0x00000200, // 9 Periodic auras with this flag keep old periodic timer when refreshing at close to one tick remaining (kind of anti DoT clipping)
-    SPELL_ATTR8_UNK10                            = 0x00000400, // 10
+    SPELL_ATTR8_NAME_CHANGED_DURING_TRANSFORM    = 0x00000400, // 10 according to wowhead comments, name changes, title remains
     SPELL_ATTR8_UNK11                            = 0x00000800, // 11
     SPELL_ATTR8_AURA_SEND_AMOUNT                 = 0x00001000, // 12 Aura must have flag AFLAG_ANY_EFFECT_AMOUNT_SENT to send amount
     SPELL_ATTR8_UNK13                            = 0x00002000, // 13
     SPELL_ATTR8_UNK14                            = 0x00004000, // 14
-    SPELL_ATTR8_UNK15                            = 0x00008000, // 15
+    SPELL_ATTR8_WATER_MOUNT                      = 0x00008000, // 15 only one River Boat used in Thousand Needles
     SPELL_ATTR8_UNK16                            = 0x00010000, // 16
     SPELL_ATTR8_UNK17                            = 0x00020000, // 17
-    SPELL_ATTR8_UNK18                            = 0x00040000, // 18
-    SPELL_ATTR8_UNK19                            = 0x00080000, // 19
+    SPELL_ATTR8_REMEMBER_SPELLS                  = 0x00040000, // 18 at some point in time, these auras remember spells and allow to cast them later
+    SPELL_ATTR8_USE_COMBO_POINTS_ON_ANY_TARGET   = 0x00080000, // 19 allows to consume combo points from dead targets
     SPELL_ATTR8_ARMOR_SPECIALIZATION             = 0x00100000, // 20
     SPELL_ATTR8_UNK21                            = 0x00200000, // 21
     SPELL_ATTR8_UNK22                            = 0x00400000, // 22
     SPELL_ATTR8_UNK23                            = 0x00800000, // 23
-    SPELL_ATTR8_UNK24                            = 0x01000000, // 24
+    SPELL_ATTR8_HEALING_SPELL                    = 0x01000000, // 24
     SPELL_ATTR8_UNK25                            = 0x02000000, // 25
     SPELL_ATTR8_RAID_MARKER                      = 0x04000000, // 26 probably spell no need learn to cast
     SPELL_ATTR8_UNK27                            = 0x08000000, // 27
@@ -684,10 +695,10 @@ enum SpellAttr9
 {
     SPELL_ATTR9_UNK0                             = 0x00000001, // 0
     SPELL_ATTR9_UNK1                             = 0x00000002, // 1
-    SPELL_ATTR9_UNK2                             = 0x00000004, // 2
+    SPELL_ATTR9_RESTRICTED_FLIGHT_AREA           = 0x00000004, //  2 Dalaran and Wintergrasp flight area auras have it
     SPELL_ATTR9_UNK3                             = 0x00000008, // 3
     SPELL_ATTR9_UNK4                             = 0x00000010, // 4
-    SPELL_ATTR9_UNK5                             = 0x00000020, // 5
+    SPELL_ATTR9_SUMMON_PLAYER_TOTEM              = 0x00000020, // 5
     SPELL_ATTR9_UNK6                             = 0x00000040, // 6
     SPELL_ATTR9_UNK7                             = 0x00000080, // 7
     SPELL_ATTR9_UNK8                             = 0x00000100, // 8
@@ -695,7 +706,7 @@ enum SpellAttr9
     SPELL_ATTR9_UNK10                            = 0x00000400, // 10
     SPELL_ATTR9_UNK11                            = 0x00000800, // 11
     SPELL_ATTR9_UNK12                            = 0x00001000, // 12
-    SPELL_ATTR9_UNK13                            = 0x00002000, // 13
+    SPELL_ATTR9_SLAM                             = 0x00002000, // 13
     SPELL_ATTR9_USABLE_IN_RATED_BATTLEGROUNDS    = 0x00004000, // 14 Can be used in Rated Battlegrounds
     SPELL_ATTR9_UNK15                            = 0x00008000, // 15
     SPELL_ATTR9_UNK16                            = 0x00010000, // 16
@@ -722,14 +733,14 @@ enum SpellAttr10
     SPELL_ATTR10_UNK1                             = 0x00000002, // 1
     SPELL_ATTR10_UNK2                             = 0x00000004, // 2
     SPELL_ATTR10_UNK3                             = 0x00000008, // 3
-    SPELL_ATTR10_UNK4                             = 0x00000010, // 4
+    SPELL_ATTR10_WATER_SPOUT                      = 0x00000010, // 4
     SPELL_ATTR10_UNK5                             = 0x00000020, // 5
     SPELL_ATTR10_UNK6                             = 0x00000040, // 6
-    SPELL_ATTR10_UNK7                             = 0x00000080, // 7
+    SPELL_ATTR10_TELEPORT_PLAYER                  = 0x00000080, // 7 4 Teleport Player spells
     SPELL_ATTR10_UNK8                             = 0x00000100, // 8
     SPELL_ATTR10_UNK9                             = 0x00000200, // 9
     SPELL_ATTR10_UNK10                            = 0x00000400, // 10
-    SPELL_ATTR10_UNK11                            = 0x00000800, // 11
+    SPELL_ATTR10_HERB_GATHERING_MINING            = 0x00000800, // 11 Only Herb Gathering and Mining
     SPELL_ATTR10_UNK12                            = 0x00001000, // 12
     SPELL_ATTR10_UNK13                            = 0x00002000, // 13
     SPELL_ATTR10_UNK14                            = 0x00004000, // 14
@@ -849,7 +860,7 @@ enum TeamId
 {
     TEAM_ALLIANCE = 0,
     TEAM_HORDE,
-    TEAM_NEUTRAL,
+    TEAM_NEUTRAL
 };
 
 enum Team
@@ -857,12 +868,12 @@ enum Team
     TEAM_NONE           = 0,
     HORDE               = 67,
     ALLIANCE            = 469,
-    //TEAM_STEAMWHEEDLE_CARTEL = 169,                       // not used in code
+    //TEAM_STEAMWHEEDLE_CARTEL = 169,                     // not used in code
     //TEAM_ALLIANCE_FORCES     = 891,
     //TEAM_HORDE_FORCES        = 892,
     //TEAM_SANCTUARY           = 936,
     //TEAM_OUTLAND             = 980,
-    PANDAREN_NEUTRAL          = 1249,                      // Pandaren is neutral on start
+    PANDAREN_NEUTRAL          = 1249,                     // Pandaren is neutral on start
     TEAM_OTHER               = 0,                         // if ReputationListId > 0 && Flags != FACTION_FLAG_TEAM_HEADER
 };
 
@@ -1050,7 +1061,7 @@ enum SpellEffects
     SPELL_EFFECT_180                                = 180, // Unused (4.3.4)
     SPELL_EFFECT_UNLEARN_TALENT                     = 181,
     SPELL_EFFECT_182                                = 182,
-    TOTAL_SPELL_EFFECTS                             = 183,
+    TOTAL_SPELL_EFFECTS                             = 183
 };
 
 enum SpellCastResult
@@ -1259,7 +1270,7 @@ enum SpellCastResult
     SPELL_FAILED_EXCEEDED_WEEKLY_USAGE          = 201,
     SPELL_FAILED_NOT_IN_LFG_DUNGEON             = 202,
     SPELL_FAILED_UNKNOWN                        = 254, // custom value, default case
-    SPELL_CAST_OK                               = 255, // custom value, must not be sent to client
+    SPELL_CAST_OK                               = 255 // custom value, must not be sent to client
 };
 
 enum SpellCustomErrors
@@ -1670,6 +1681,17 @@ enum Targets
     TARGET_UNK_125                     = 125,
     TARGET_UNK_126                     = 126,
     TARGET_UNK_127                     = 127,
+    TARGET_UNK_128                     = 128,
+    TARGET_UNK_129                     = 129,
+    TARGET_UNK_130                     = 130,
+    TARGET_UNK_131                     = 131,
+    TARGET_UNK_132                     = 132,
+    TARGET_UNK_133                     = 133,
+    TARGET_UNK_134                     = 134,
+    TARGET_UNK_135                     = 135,
+    TARGET_UNK_136                     = 136,
+    TARGET_UNK_137                     = 137,
+    TARGET_UNK_138                     = 138,
     TOTAL_SPELL_TARGETS
 };
 
@@ -3544,7 +3566,7 @@ enum SkillType
     SKILL_PET_BEETLE               = 818,
     SKILL_ALL_GUILD_PERKS          = 821,
     SKILL_PET_HYDRA                = 824,
-    SKILL_GENERAL_MONK			   = 829, //GENERAL? 5.0.5
+    SKILL_GENERAL_MONK			   = 829, // GENERAL? 5.0.5
     SKILL_NEW_WARRIOR			   = 840, // New on MoP 5.0.5
     SKILL_NEW_WARLOCK			   = 849, // New in MoP 5.0.5
     SKILL_RACIAL_PANDAREN		   = 899, // 5.0.5
@@ -4144,6 +4166,12 @@ enum ActivateTaxiReply
     ERR_TAXIPLAYERMOVING            = 10,
     ERR_TAXISAMENODE                = 11,
     ERR_TAXINOTSTANDING             = 12
+};
+
+enum ProfessionUI
+{
+    MAX_PRIMARY_PROFESSIONS = 2,
+    MAX_SECONDARY_SKILLS = 5
 };
 
 // Calendar - start

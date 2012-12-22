@@ -467,10 +467,41 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
 
     // Custom MoP Script
+    // Aimed Shot - 19434 and Aimed Shot (for Master Marksman) - 82928
+    if (spellInfo->Id == 19434 && _player->HasAura(82926))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(82928);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
+    // Drain Life - 689 and Harvest Life (overrided) - 108371
+    if (spellInfo->Id == 689 && _player->HasSpell(108371))
+    {
+        // Use the right spell
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(115707);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
     // Alter Time - 108978 and Alter Time (overrided) - 127140
     if (spellInfo->Id == 108978 && _player->HasAura(110909))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(127140);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
+    // Fix Dark Soul for Destruction warlocks
+    if (spellInfo->Id == 113860 && _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(113858);
         if(newSpellInfo)
         {
             spellInfo = newSpellInfo;

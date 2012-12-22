@@ -404,6 +404,8 @@ void WorldSession::HandleNpcTextQueryOpcode(WorldPacket & recvData)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Sent SMSG_NPC_TEXT_UPDATE");
 }
 
+#define DEFAULT_GREETINGS_GOSSIP      68
+
 void WorldSession::SendBroadcastTextDb2Reply(uint32 entry)
 {
     ByteBuffer buff;
@@ -411,7 +413,10 @@ void WorldSession::SendBroadcastTextDb2Reply(uint32 entry)
 
     GossipText const* pGossip = sObjectMgr->GetGossipText(entry);
 
-    std::string text = "Greetings $N";
+    if (!pGossip)
+        pGossip = sObjectMgr->GetGossipText(DEFAULT_GREETINGS_GOSSIP);
+
+    std::string text = "Greetings, $N";
 
     uint16 size1 = pGossip ? pGossip->Options[0].Text_0.length() : text.length();
     uint16 size2 = pGossip ? pGossip->Options[0].Text_1.length() : text.length();

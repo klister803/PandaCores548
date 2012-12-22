@@ -184,6 +184,41 @@ LocaleConstant GetLocaleByName(const std::string& name);
 
 typedef std::vector<std::string> StringVector;
 
+enum GM_COMMAND_TAB
+{
+    GM,
+    PLAYER
+};
+
+struct GmCommand
+{
+    uint32 accountID[2];
+    std::string accountName[2];
+    uint32 characterID[2];
+    std::string characterName[2];
+    std::string command;
+};
+
+struct GmChat
+{
+    uint32 type;
+    uint32 accountID[2];
+    std::string accountName[2];
+    uint32 characterID[2];
+    std::string characterName[2];
+    std::string message;
+};
+
+struct ArenaLog
+{
+    uint32 timestamp;
+    std::string str;
+};
+
+extern ACE_Based::LockedQueue<GmCommand*, ACE_Thread_Mutex> GmLogQueue;
+extern ACE_Based::LockedQueue<GmChat*,    ACE_Thread_Mutex> GmChatLogQueue;
+extern ACE_Based::LockedQueue<ArenaLog*,  ACE_Thread_Mutex> ArenaLogQueue;
+
 // we always use stdlibc++ std::max/std::min, undefine some not C++ standard defines (Win API and some other platforms)
 #ifdef max
 #undef max

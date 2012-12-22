@@ -46,6 +46,7 @@ public:
             { "zonexy",         SEC_MODERATOR,      false, &HandleGoZoneXYCommand,            "", NULL },
             { "xyz",            SEC_MODERATOR,      false, &HandleGoXYZCommand,               "", NULL },
             { "ticket",         SEC_MODERATOR,      false, &HandleGoTicketCommand,            "", NULL },
+            { "z",              SEC_MODERATOR,      false, &HandleGoZCommand,                 "", NULL },
             { "",               SEC_MODERATOR,      false, &HandleGoXYZCommand,               "", NULL },
             { NULL,             0,                  false, NULL,                              "", NULL }
         };
@@ -563,6 +564,69 @@ public:
             player->SaveRecallPosition();
 
         ticket->TeleportTo(player);
+        return true;
+    }
+
+    //teleport at coordinates, including Z and orientation
+    static bool HandleGoZCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        Player* player = handler->GetSession()->GetPlayer();
+
+        char* goZ = NULL;
+
+        bool relative = false;
+        bool add = false;
+
+        if (*args == '+' || *args == '-')
+        {
+            relative = true;
+            add = (*args == '+');
+            goZ = strtok((char*)(args + 1), " ");
+        }
+        else
+            goZ = strtok((char*)args, " ");
+
+        if (!goZ)
+            return false;
+
+        float x = player->GetPositionX();
+        float y = player->GetPositionY();
+        uint32 mapId = player->GetMapId();
+
+        float z = 0.0f;
+        float paramZ = (float)atof(goZ);
+
+        if (relative)
+        {
+            if (add)
+                z = player->GetPositionZ() + paramZ;
+            else
+                z = player->GetPositionZ() - paramZ;
+        }
+        else
+            z = paramZ;
+
+        if (!MapManager::IsValidMapCoord(mapId, x, y, z))
+        {
+            handler->PSendSysMessage(LANG_INVALID_TARGET_COORD, x, y, mapId);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        // stop flight if need
+        if (player->isInFlight())
+        {
+            player->GetMotionMaster()->MovementExpired();
+            player->CleanupAfterTaxiFlight();
+        }
+        // save only in non-flight case
+        else
+            player->SaveRecallPosition();
+
+        player->TeleportTo(mapId, x, y, z, player->GetOrientation());
         return true;
     }
 };

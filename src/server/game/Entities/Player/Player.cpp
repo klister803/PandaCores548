@@ -685,6 +685,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_regenTimerCount = 0;
     m_holyPowerRegenTimerCount = 0;
     m_chiPowerRegenTimerCount = 0;
+    m_soulShardsRegenTimerCount = 0;
+    m_burningEmbersRegenTimerCount = 0;
     m_focusRegenTimerCount = 0;
     m_weaponChangeTimer = 0;
 
@@ -1031,6 +1033,7 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
 
     SetUInt32Value(PLAYER_FIELD_COINAGE, sWorld->getIntConfig(CONFIG_START_PLAYER_MONEY));
     SetCurrency(CURRENCY_TYPE_HONOR_POINTS, sWorld->getIntConfig(CONFIG_START_HONOR_POINTS));
+    SetCurrency(CURRENCY_TYPE_JUSTICE_POINTS, sWorld->getIntConfig(CONFIG_START_JUSTICE_POINTS));
     SetCurrency(CURRENCY_TYPE_CONQUEST_POINTS, sWorld->getIntConfig(CONFIG_START_ARENA_POINTS));
 
     // start with every map explored
@@ -2157,14 +2160,8 @@ void Player::SendTeleportPacket(Position &oldPos)
     data.WriteBit(guid[5]);
     if (transGuid)
     {
-        data.WriteBit(transGuid[5]);
-        data.WriteBit(transGuid[6]);
-        data.WriteBit(transGuid[2]);
-        data.WriteBit(transGuid[0]);
-        data.WriteBit(transGuid[1]);
-        data.WriteBit(transGuid[4]);
-        data.WriteBit(transGuid[7]);
-        data.WriteBit(transGuid[3]);
+        uint8 bitOrder[8] = {5, 6, 2, 0, 1, 4, 7, 3};
+        data.WriteBitInOrder(transGuid, bitOrder);
     }
     data.WriteBit(guid[1]);
     data.WriteBit(guid[4]);
@@ -2177,14 +2174,8 @@ void Player::SendTeleportPacket(Position &oldPos)
     data.FlushBits();
     if (transGuid)
     {
-        data.WriteByteSeq(transGuid[2]);
-        data.WriteByteSeq(transGuid[7]);
-        data.WriteByteSeq(transGuid[1]);
-        data.WriteByteSeq(transGuid[5]);
-        data.WriteByteSeq(transGuid[6]);
-        data.WriteByteSeq(transGuid[0]);
-        data.WriteByteSeq(transGuid[4]);
-        data.WriteByteSeq(transGuid[3]);
+        uint8 byteOrder[8] = {2, 7, 1, 5, 6, 0, 4, 3};
+        data.WriteBytesSeq(guid, byteOrder);
     }
     data.WriteByteSeq(guid[4]);
     data.WriteByteSeq(guid[0]);
@@ -2409,7 +2400,7 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
                     data  << m_transport->GetEntry() << GetMapId();
                 }
                 else
-                {         
+                {
                     data.WriteBit(0);       // unknown
                     data.WriteBit(0);   // has transport
                 }
@@ -2602,8 +2593,12 @@ void Player::RegenerateAll()
     if (getClass() == CLASS_HUNTER)
         m_focusRegenTimerCount += m_regenTimer;
 
-    if (getClass() == CLASS_WARLOCK)
+    if (getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
         m_demonicFuryPowerRegenTimerCount += m_regenTimer;
+    else if (getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+        m_burningEmbersRegenTimerCount += m_regenTimer;
+    else if (getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION)
+        m_soulShardsRegenTimerCount += m_regenTimer;
 
     Regenerate(POWER_ENERGY);
     Regenerate(POWER_MANA);
@@ -2649,6 +2644,12 @@ void Player::RegenerateAll()
             Regenerate(POWER_RUNIC_POWER);
 
         m_regenTimerCount -= 2000;
+    }
+
+    if (m_burningEmbersRegenTimerCount >= 2000 && getClass() == CLASS_WARLOCK && GetSpecializationId(GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+    {
+        Regenerate(POWER_BURNING_EMBERS);
+        m_burningEmbersRegenTimerCount -= 2000;
     }
 
     if (m_holyPowerRegenTimerCount >= 10000 && getClass() == CLASS_PALADIN)
@@ -2756,12 +2757,27 @@ void Player::Regenerate(Powers power)
                 addvalue += (200.0f - GetPower(POWER_DEMONIC_FURY));      // min power demonic fury set at 200
         }
         break;
+        case POWER_BURNING_EMBERS:
+        {
+            // After 15s return to one embers if no one
+            // or return to one if more than one
+            if (!isInCombat() && GetPower(POWER_BURNING_EMBERS) < 10)
+                addvalue += 10 - GetPower(POWER_BURNING_EMBERS); // Return to one burning ember in 10s
+            else if (!isInCombat() && GetPower(POWER_BURNING_EMBERS) > 10)
+                addvalue += -1;
+
+            if (GetPower(POWER_BURNING_EMBERS) >= 10)
+                CastSpell(this, 116855, true);
+            else
+                RemoveAura(116855);
+        }
+        break;
         default:
             break;
     }
 
     // Mana regen calculated in Player::UpdateManaRegen()
-    if (power != POWER_MANA)
+    if (power != POWER_MANA && power != POWER_CHI && power != POWER_HOLY_POWER && power != POWER_SOUL_SHARDS && power != POWER_BURNING_EMBERS && power != POWER_DEMONIC_FURY)
     {
         AuraEffectList const& ModPowerRegenPCTAuras = GetAuraEffectsByType(SPELL_AURA_MOD_POWER_REGEN_PERCENT);
         for (AuraEffectList::const_iterator i = ModPowerRegenPCTAuras.begin(); i != ModPowerRegenPCTAuras.end(); ++i)
@@ -2893,7 +2909,7 @@ void Player::ResetAllPowers()
             SetPower(POWER_DEMONIC_FURY, 200);
             break;
         case POWER_BURNING_EMBERS:
-            SetPower(POWER_BURNING_EMBERS, 1);
+            SetPower(POWER_BURNING_EMBERS, 10);
             break;
         case POWER_SOUL_SHARDS:
             SetPower(POWER_SOUL_SHARDS, 1);
@@ -3258,6 +3274,15 @@ void Player::GiveGatheringXP()
     else if (level > 84 && level < 90)
         gain = 1720 * level - 138800; // (7400 - 14280),  Guessed, TODO : find blizzlike formula (7400 - 14280)
 
+    float GatheringXpRate = 1;
+
+    if(GetPersonnalXpRate())
+        GatheringXpRate = GetPersonnalXpRate();
+    else
+        GatheringXpRate = sWorld->getRate(RATE_XP_GATHERING);
+
+    gain *= GatheringXpRate;
+
     GiveXP(gain, nullptr);
 }
 
@@ -3313,6 +3338,7 @@ void Player::GiveLevel(uint8 level)
     InitGlyphsForLevel();
 
     UpdateAllStats();
+    _ApplyAllLevelScaleItemMods(true); // Moved to above SetFullHealth so player will have full health from Heirlooms
 
     // set current level health and mana/energy to maximum after applying all mods.
     SetFullHealth();
@@ -3321,8 +3347,6 @@ void Player::GiveLevel(uint8 level)
     if (GetPower(POWER_RAGE) > GetMaxPower(POWER_RAGE))
         SetPower(POWER_RAGE, GetMaxPower(POWER_RAGE));
     SetPower(POWER_FOCUS, 0);
-
-    _ApplyAllLevelScaleItemMods(true);
 
     // update level to hunter/summon pet
     if (Pet* pet = GetPet())
@@ -3607,7 +3631,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetPower(POWER_CHI, 0);
     SetPower(POWER_SOUL_SHARDS, 1);
     SetPower(POWER_DEMONIC_FURY, 200);
-    SetPower(POWER_BURNING_EMBERS, 1);
+    SetPower(POWER_BURNING_EMBERS, 10);
     SetPower(POWER_SHADOW_ORB, 0);
     SetPower(POWER_ECLIPSE, 0);
 
@@ -5088,8 +5112,8 @@ void Player::DeleteFromDB(uint64 playerguid, uint32 accountId, bool updateRealmC
                             do
                             {
                                 Field* itemFields = resultItems->Fetch();
-                                uint32 item_guidlow = itemFields[11].GetUInt32();
-                                uint32 item_template = itemFields[12].GetUInt32();
+                                uint32 item_guidlow = itemFields[13].GetUInt32();
+                                uint32 item_template = itemFields[14].GetUInt32();
 
                                 ItemTemplate const* itemProto = sObjectMgr->GetItemTemplate(item_template);
                                 if (!itemProto)
@@ -5450,8 +5474,8 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         SetPower(POWER_FOCUS, uint32(GetMaxPower(POWER_FOCUS)*restore_percent));
         SetPower(POWER_ECLIPSE, 0);
         SetPower(POWER_DEMONIC_FURY, 200);
-        SetPower(POWER_BURNING_EMBERS, 0);
-        SetPower(POWER_SOUL_SHARDS, 0);
+        SetPower(POWER_BURNING_EMBERS, 10);
+        SetPower(POWER_SOUL_SHARDS, 1);
         SetPower(POWER_CHI, 0);
         SetPower(POWER_SHADOW_ORB, 0);
     }
@@ -7282,6 +7306,47 @@ void Player::RewardReputation(Quest const* quest)
     }
 }
 
+Expansion Player::GetExpByLevel()
+{
+    uint8 level = getLevel();
+
+    if (level <= 60)
+        return EXP_VANILLA;
+    else if (level <= 70)
+        return EXP_BC;
+    else if (level <= 80)
+        return EXP_WOTLK;
+    else if (level <= 85)
+        return EXP_CATACLYSM;
+    else if (level <= 90)
+        return EXP_PANDARIA;
+    else
+        return EXP_VANILLA;
+}
+
+void Player::RewardGuildReputation(Quest const* quest)
+{
+    uint32 rep = 0;
+
+    switch (GetExpByLevel())
+    {
+        case EXP_VANILLA:   rep = 25;  break;
+        case EXP_BC:        rep = 50;  break;
+        case EXP_WOTLK:     rep = 75;  break;
+        case EXP_CATACLYSM: rep = 100; break;
+        case EXP_PANDARIA:  rep = 150; break;
+        default:            rep = 0;   break;
+    }
+
+    rep = CalculateReputationGain(GetQuestLevel(quest), rep, REP_GUILD, true);
+
+    if (GetsRecruitAFriendBonus(false))
+        rep = int32(rep * (1 + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS)));
+
+    if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
+        GetReputationMgr().ModifyReputation(factionEntry, rep);
+}
+
 void Player::UpdateHonorFields()
 {
     /// called when rewarding honor and at each save
@@ -9086,23 +9151,12 @@ void Player::SendLootRelease(uint64 guid)
 {
     WorldPacket data(SMSG_LOOT_RELEASE_RESPONSE);
     ObjectGuid guidd(guid);
-    data.WriteBit(guidd[6]);
-    data.WriteBit(guidd[0]);
-    data.WriteBit(guidd[3]);
-    data.WriteBit(guidd[1]);
-    data.WriteBit(guidd[4]);
-    data.WriteBit(guidd[7]);
-    data.WriteBit(guidd[2]);
-    data.WriteBit(guidd[5]);
 
-    data.WriteByteSeq(guidd[6]);
-    data.WriteByteSeq(guidd[0]);
-    data.WriteByteSeq(guidd[2]);
-    data.WriteByteSeq(guidd[7]);
-    data.WriteByteSeq(guidd[4]);
-    data.WriteByteSeq(guidd[1]);
-    data.WriteByteSeq(guidd[5]);
-    data.WriteByteSeq(guidd[3]);
+    uint8 bitOrder[8] = {6, 0, 3, 1, 4, 7, 2, 5};
+    data.WriteBitInOrder(guidd, bitOrder);
+
+    uint8 byteOrder[8] = {6, 0, 2, 7, 4, 1, 5, 3};
+    data.WriteBytesSeq(guidd, byteOrder);
 
     SendDirectMessage(&data);
 }
@@ -9427,23 +9481,11 @@ void Player::SendNotifyLootMoneyRemoved(uint64 gold)
     data.Initialize(SMSG_COIN_REMOVED);
     ObjectGuid guid = GetLootGUID();
 
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[7]);
+    uint8 bitOrder[8] = {5, 4, 6, 3, 1, 0, 2, 7};
+    data.WriteBitInOrder(guid, bitOrder);
 
-    data.WriteByteSeq(guid[1]);
-    data.WriteByteSeq(guid[0]);
-    data.WriteByteSeq(guid[4]);
-    data.WriteByteSeq(guid[2]);
-    data.WriteByteSeq(guid[6]);
-    data.WriteByteSeq(guid[5]);
-    data.WriteByteSeq(guid[7]);
-    data.WriteByteSeq(guid[3]);
+    uint8 byteOrder[8] = {1, 0, 4, 2, 6, 5, 7, 3};
+    data.WriteBytesSeq(guid, byteOrder);
     
     GetSession()->SendPacket(&data);
 }
@@ -10153,14 +10195,9 @@ void Player::SendTalentWipeConfirm(uint64 guid, bool specialization)
         cost = sWorld->getBoolConfig(CONFIG_NO_RESET_TALENT_COST) ? 0 : GetNextResetSpecializationCost();
 
     WorldPacket data(SMSG_RESPEC_WIPE_CONFIRM);
-    data.WriteBit(Guid[6]);
-    data.WriteBit(Guid[3]);
-    data.WriteBit(Guid[5]);
-    data.WriteBit(Guid[2]);
-    data.WriteBit(Guid[0]);
-    data.WriteBit(Guid[7]);
-    data.WriteBit(Guid[1]);
-    data.WriteBit(Guid[4]);
+
+    uint8 bitOrder[8] = {6, 3, 5, 2, 0, 7, 1, 4};
+    data.WriteBitInOrder(Guid, bitOrder);
     data.FlushBits();
 
     data.WriteByteSeq(Guid[3]);
@@ -13889,9 +13926,12 @@ void Player::ApplyReforgeEnchantment(Item* item, bool apply)
     if (!item)
         return;
 
-    ItemReforgeEntry const* reforge = sItemReforgeStore.LookupEntry(item->GetEnchantmentId(REFORGE_ENCHANTMENT_SLOT));
+    ItemReforgeEntry const* reforge = sItemReforgeStore.LookupEntry(item->GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0));
     if (!reforge)
         return;
+
+    item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, apply ? reforge->Id : 0);
+    item->SetFlag(ITEM_FIELD_MODIFIERS_MASK, apply ? 1 : 0);
 
     float removeValue = item->GetReforgableStat(ItemModType(reforge->SourceStat)) * reforge->SourceMultiplier;
     float addValue = removeValue * reforge->FinalMultiplier;
@@ -14125,20 +14165,15 @@ void Player::ApplyReforgeEnchantment(Item* item, bool apply)
             HandleBaseModValue(SHIELD_BLOCK_VALUE, FLAT_MOD, addValue, apply);
             break;
     }
+
 }
 
 void Player::ApplyEnchantment(Item* item, bool apply)
 {
     for (uint32 slot = 0; slot < MAX_ENCHANTMENT_SLOT; ++slot)
-    {
-        // Apply reforge as last enchant
-        if (slot == REFORGE_ENCHANTMENT_SLOT)
-            continue;
-
         ApplyEnchantment(item, EnchantmentSlot(slot), apply);
-    }
 
-    ApplyEnchantment(item, REFORGE_ENCHANTMENT_SLOT, apply);
+    ApplyReforgeEnchantment(item, apply);
 }
 
 void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool apply_dur, bool ignore_condition)
@@ -14148,15 +14183,6 @@ void Player::ApplyEnchantment(Item* item, EnchantmentSlot slot, bool apply, bool
 
     if (slot >= MAX_ENCHANTMENT_SLOT)
         return;
-
-    if (slot == TRANSMOGRIFY_ENCHANTMENT_SLOT)
-        return;
-
-    if (slot == REFORGE_ENCHANTMENT_SLOT)
-    {
-        ApplyReforgeEnchantment(item, apply);
-        return;
-    }
 
     uint32 enchant_id = item->GetEnchantmentId(slot);
     if (!enchant_id)
@@ -15596,6 +15622,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     }
 
     RewardReputation(quest);
+    RewardGuildReputation(quest);
 
     uint16 log_slot = FindQuestSlot(quest_id);
     if (log_slot < MAX_QUEST_LOG_SIZE)
@@ -17433,8 +17460,41 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     GetSession()->SetPlayer(this);
     MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
-    if (!mapEntry || !IsPositionValid())
+
+    m_atLoginFlags = fields[34].GetUInt16();
+    bool mustResurrectFromUnlock = false;
+
+    if(m_atLoginFlags & AT_LOGIN_UNLOCK)
     {
+        bool BGdesert = false;
+        bool DungeonDesert = false;
+        bool MalDeRez = false;
+
+        RemoveAtLoginFlag(AT_LOGIN_UNLOCK, true);
+        if (HasAura(26013)) // deserteur
+            BGdesert = true;
+        if (HasAura(71041)) // deserteur de donjon
+            DungeonDesert = true;
+        if (HasAura(15007))
+            MalDeRez = true;
+
+
+        RemoveAllAuras();
+        RemoveFromGroup();
+
+        if (BGdesert)
+            AddAura(26013, this);
+        if (DungeonDesert)
+            AddAura(71041, this);
+        if (MalDeRez)
+            AddAura(15007, this);
+
+        mustResurrectFromUnlock = true;
+        RelocateToHomebind();
+    }
+    else if (!mapEntry || !IsPositionValid())
+    {
+        RemoveAtLoginFlag(AT_LOGIN_UNLOCK, true);
         sLog->outError(LOG_FILTER_PLAYER, "Player (guidlow %d) have invalid coordinates (MapId: %u X: %f Y: %f Z: %f O: %f). Teleport to default race/class locations.", guid, mapId, GetPositionX(), GetPositionY(), GetPositionZ(), GetOrientation());
         RelocateToHomebind();
     }
@@ -17471,7 +17531,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
             const WorldLocation& _loc = GetBattlegroundEntryPoint();
             mapId = _loc.GetMapId(); instanceId = 0;
 
-            if (mapId == MAPID_INVALID) // Battleground Entry Point not found (???)
+            // Db field type is type int16, so it can never be MAPID_INVALID
+            //if (mapId == MAPID_INVALID) -- code kept for reference
+            if (int16(mapId) == int16(-1)) // Battleground Entry Point not found (???)
             {
                 sLog->outError(LOG_FILTER_PLAYER, "Player (guidlow %d) was in BG in database, but BG was not found, and entry point was invalid! Teleport to default race/class locations.", guid);
                 RelocateToHomebind();
@@ -17679,8 +17741,6 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         sLog->outError(LOG_FILTER_PLAYER, "Player can have not more %u stable slots, but have in DB %u", MAX_PET_STABLES, uint32(m_stableSlots));
         m_stableSlots = MAX_PET_STABLES;
     }
-
-    m_atLoginFlags = fields[34].GetUInt16();
 
     // Honor system
     // Update Honor kills data
@@ -17930,6 +17990,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     if(QueryResult PersonnalRateResult = CharacterDatabase.PQuery("SELECT rate FROM character_rates WHERE guid='%u' LIMIT 1", GetGUIDLow()))
         m_PersonnalXpRate = (PersonnalRateResult->Fetch())[0].GetFloat();
 
+    if (mustResurrectFromUnlock)
+        ResurrectPlayer(1, true);
+
     return true;
 }
 
@@ -18042,8 +18105,8 @@ void Player::_LoadAuras(PreparedQueryResult result, PreparedQueryResult resultEf
             uint64 caster_guid = fields[0].GetUInt64();
             uint8 slot = fields[1].GetUInt8();
             uint32 spellid = fields[2].GetUInt32();
-            uint32 effmask = fields[3].GetUInt32();
-            uint32 recalculatemask = fields[4].GetUInt32();
+            uint32 effmask = fields[3].GetUInt8();
+            uint32 recalculatemask = fields[4].GetUInt8();
             uint8 stackcount = fields[5].GetUInt8();
             int32 maxduration = fields[6].GetInt32();
             int32 remaintime = fields[7].GetInt32();
@@ -18171,8 +18234,8 @@ void Player::_LoadInventory(PreparedQueryResult result, uint32 timeDiff)
             Field* fields = result->Fetch();
             if (Item* item = _LoadItem(trans, zoneId, timeDiff, fields))
             {
-                uint32 bagGuid  = fields[11].GetUInt32();
-                uint8  slot     = fields[12].GetUInt8();
+                uint32 bagGuid  = fields[13].GetUInt32();
+                uint8  slot     = fields[14].GetUInt8();
 
                 uint8 err = EQUIP_ERR_OK;
                 // Item is not in bag
@@ -18327,8 +18390,8 @@ void Player::_LoadVoidStorage(PreparedQueryResult result)
 Item* Player::_LoadItem(SQLTransaction& trans, uint32 zoneId, uint32 timeDiff, Field* fields)
 {
     Item* item = NULL;
-    uint32 itemGuid  = fields[13].GetUInt32();
-    uint32 itemEntry = fields[14].GetUInt32();
+    uint32 itemGuid  = fields[15].GetUInt32();
+    uint32 itemEntry = fields[16].GetUInt32();
     if (ItemTemplate const* proto = sObjectMgr->GetItemTemplate(itemEntry))
     {
         bool remove = false;
@@ -21929,7 +21992,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
     if (count < 1) count = 1;
 
     // cheating attempt
-    if (slot > MAX_BAG_SIZE && slot !=NULL_SLOT)
+    if (slot > MAX_BAG_SIZE && slot != NULL_SLOT)
         return false;
 
     if (!isAlive())
@@ -23847,12 +23910,6 @@ uint32 Player::GetResurrectionSpellId()
             switch ((*itr)->GetId())
             {
                 case 20707: spell_id =  3026; break;        // rank 1
-                case 20762: spell_id = 20758; break;        // rank 2
-                case 20763: spell_id = 20759; break;        // rank 3
-                case 20764: spell_id = 20760; break;        // rank 4
-                case 20765: spell_id = 20761; break;        // rank 5
-                case 27239: spell_id = 27240; break;        // rank 6
-                case 47883: spell_id = 47882; break;        // rank 7
                 default:
                     sLog->outError(LOG_FILTER_PLAYER, "Unhandled spell %u: S.Resurrection", (*itr)->GetId());
                     continue;
@@ -24023,8 +24080,8 @@ void Player::ResurectUsingRequestData()
     SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
     SetPower(POWER_FOCUS, GetMaxPower(POWER_FOCUS));
     SetPower(POWER_ECLIPSE, 0);
-    SetPower(POWER_BURNING_EMBERS, 0);
-    SetPower(POWER_SOUL_SHARDS, 0);
+    SetPower(POWER_BURNING_EMBERS, 10);
+    SetPower(POWER_SOUL_SHARDS, 1);
     SetPower(POWER_DEMONIC_FURY, 200);
     SetPower(POWER_SHADOW_ORB, 0);
     SetPower(POWER_CHI, 0);
@@ -25527,14 +25584,8 @@ void Player::SendClearCooldown(uint32 spell_id, Unit* target)
     ObjectGuid guid = target->GetGUID();
     uint32 count = 1;
 
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[6]);
+    uint8 bitOrder[8] = {0, 3, 7, 1, 5, 2, 4, 6};
+    data.WriteBitInOrder(guid, bitOrder);
 
     data.WriteBits(count, 24); // count
     data.FlushBits();
@@ -25890,14 +25941,10 @@ void Player::SendRefundInfo(Item* item)
 
     ObjectGuid guid = item->GetGUID();
     WorldPacket data(SMSG_ITEM_REFUND_INFO_RESPONSE, 8+4+4+4+4*4+4*4+4+4);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[2]);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[1]);
+
+    uint8 bitOrder[8] = {3, 5, 7, 6, 2, 4, 0, 1};
+    data.WriteBitInOrder(guid, bitOrder);
+
     data.FlushBits();
     data.WriteByteSeq(guid[7]);
     data << uint32(GetTotalPlayedTime() - item->GetPlayedTime());
@@ -25952,14 +25999,10 @@ void Player::SendItemRefundResult(Item* item, ItemExtendedCostEntry const* iece,
 {
     ObjectGuid guid = item->GetGUID();
     WorldPacket data(SMSG_ITEM_REFUND_RESULT, 1 + 1 + 8 + 4*8 + 4 + 4*8 + 1);
-    data.WriteBit(guid[4]);
-    data.WriteBit(guid[5]);
-    data.WriteBit(guid[1]);
-    data.WriteBit(guid[6]);
-    data.WriteBit(guid[7]);
-    data.WriteBit(guid[0]);
-    data.WriteBit(guid[3]);
-    data.WriteBit(guid[2]);
+
+    uint8 bitOrder[8] = {4, 5, 1, 6, 7, 0, 3, 2};
+    data.WriteBitInOrder(guid, bitOrder);
+
     data.WriteBit(!error);
     data.WriteBit(item->GetPaidMoney() > 0);
     data.FlushBits();
@@ -26282,14 +26325,9 @@ void Player::SendMovementSetCanFly(bool apply)
     if (apply)
     {
         data.Initialize(SMSG_MOVE_SET_CAN_FLY, 1 + 8 + 4);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[2]);
+
+        uint8 bitOrder[8] = {0, 7, 6, 5, 1, 3, 4, 2};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[7]);
         data.WriteByteSeq(guid[1]);
@@ -26304,14 +26342,9 @@ void Player::SendMovementSetCanFly(bool apply)
     else
     {
         data.Initialize(SMSG_MOVE_UNSET_CAN_FLY, 1 + 8 + 4);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[1]);
+
+        uint8 bitOrder[8] = {5, 7, 2, 3, 6, 0, 4, 1};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[7]);
         data.WriteByteSeq(guid[1]);
@@ -26332,14 +26365,9 @@ void Player::SendMovementSetCanTransitionBetweenSwimAndFly(bool apply)
     if (apply)
     {
         WorldPacket data(SMSG_MOVE_SET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY, 12);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[1]);
+    
+        uint8 bitOrder[8] = {5, 0, 2, 3, 4, 7, 6, 1};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[7]);
         data.WriteByteSeq(guid[2]);
@@ -26355,14 +26383,9 @@ void Player::SendMovementSetCanTransitionBetweenSwimAndFly(bool apply)
     else
     {
         WorldPacket data(SMSG_MOVE_UNSET_CAN_TRANSITION_BETWEEN_SWIM_AND_FLY, 12);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[0]);
+    
+        uint8 bitOrder[8] = {3, 1, 6, 2, 4, 5, 7, 0};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[7]);
         data.WriteByteSeq(guid[0]);
@@ -26383,14 +26406,9 @@ void Player::SendMovementSetHover(bool apply)
     if (apply)
     {
         WorldPacket data(SMSG_MOVE_SET_HOVER, 12);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[0]);
+    
+        uint8 bitOrder[8] = {5, 0, 2, 3, 1, 7, 6, 0};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[7]);
         data << uint32(0);          //! movement counter
@@ -26407,24 +26425,13 @@ void Player::SendMovementSetHover(bool apply)
     {
         WorldPacket data(SMSG_MOVE_UNSET_HOVER, 12);
         data << uint32(0);          //! movement counter
+    
+        uint8 bitOrder[8] = {7, 4, 1, 6, 2, 0, 3, 5};
+        data.WriteBitInOrder(guid, bitOrder);
+    
+        uint8 byteOrder[8] = {7, 0, 1, 6, 5, 4, 3, 2};
+        data.WriteBytesSeq(guid, byteOrder);
 
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[5]);
-
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[2]);
         SendDirectMessage(&data);
     }
 }
@@ -26436,14 +26443,9 @@ void Player::SendMovementSetWaterWalking(bool apply)
     if (apply)
     {
         data.Initialize(SMSG_MOVE_WATER_WALK, 1 + 4 + 8);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[2]);
+    
+        uint8 bitOrder[8] = {7, 6, 0, 1, 5, 4, 3, 2};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[3]);
         data.WriteByteSeq(guid[2]);
@@ -26459,26 +26461,14 @@ void Player::SendMovementSetWaterWalking(bool apply)
     {
         data.Initialize(SMSG_MOVE_LAND_WALK, 1 + 4 + 8);
         data << uint32(0);          //! movement counter
-
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[6]);
+    
+        uint8 bitOrder[8] = {5, 4, 3, 2, 0, 7, 1, 6};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.FlushBits();
-
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[7]);
+    
+        uint8 byteOrder[8] = {1, 0, 2, 6, 3, 4, 5, 7};
+        data.WriteBytesSeq(guid, byteOrder);
     }
     SendDirectMessage(&data);
 }
@@ -26491,14 +26481,9 @@ void Player::SendMovementSetFeatherFall(bool apply)
     if (apply)
     {
         data.Initialize(SMSG_MOVE_FEATHER_FALL, 1 + 4 + 8);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[5]);
+    
+        uint8 bitOrder[8] = {7, 3, 2, 1, 6, 0, 4, 5};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data.WriteByteSeq(guid[7]);
         data << uint32(0);          //! movement counter
@@ -26513,26 +26498,14 @@ void Player::SendMovementSetFeatherFall(bool apply)
     else
     {
         data.Initialize(SMSG_MOVE_NORMAL_FALL, 1 + 4 + 8);
-
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[6]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[3]);
+    
+        uint8 bitOrder[8] = {2, 1, 5, 0, 6, 4, 7, 3};
+        data.WriteBitInOrder(guid, bitOrder);
 
         data << uint32(0);          //! movement counter
-
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[5]);
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[0]);
+    
+        uint8 byteOrder[8] = {2, 6, 4, 5, 7, 3, 1, 0};
+        data.WriteBytesSeq(guid, byteOrder);
     }
 
     SendDirectMessage(&data);
@@ -26577,24 +26550,12 @@ void Player::SetMover(Unit* target)
     {
         WorldPacket data(SMSG_MOVE_SET_ACTIVE_MOVER);
         ObjectGuid guid = m_mover->GetGUID();
-
-        data.WriteBit(guid[7]);
-        data.WriteBit(guid[0]);
-        data.WriteBit(guid[3]);
-        data.WriteBit(guid[4]);
-        data.WriteBit(guid[5]);
-        data.WriteBit(guid[1]);
-        data.WriteBit(guid[2]);
-        data.WriteBit(guid[6]);
-
-        data.WriteByteSeq(guid[0]);
-        data.WriteByteSeq(guid[2]);
-        data.WriteByteSeq(guid[6]);
-        data.WriteByteSeq(guid[7]);
-        data.WriteByteSeq(guid[1]);
-        data.WriteByteSeq(guid[3]);
-        data.WriteByteSeq(guid[4]);
-        data.WriteByteSeq(guid[5]);
+    
+        uint8 bitOrder[8] = {7, 0, 3, 4, 5, 1, 2, 6};
+        data.WriteBitInOrder(guid, bitOrder);
+    
+        uint8 byteOrder[8] = {0, 2, 6, 7, 1, 3, 4, 5};
+        data.WriteBytesSeq(guid, byteOrder);
 
         GetSession()->SendPacket(&data);
     }

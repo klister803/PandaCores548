@@ -921,11 +921,9 @@ void Guild::BankMoveItemData::LogAction(MoveItemData* pFrom) const
 {
     MoveItemData::LogAction(pFrom);
     if (!pFrom->IsBank() && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE) && !AccountMgr::IsPlayerAccount(m_pPlayer->GetSession()->GetSecurity()))       // TODO: move to scripts
-        sLog->outCommand(m_pPlayer->GetSession()->GetAccountId(),
-            "GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
-            m_pPlayer->GetName(), m_pPlayer->GetSession()->GetAccountId(),
-            pFrom->GetItem()->GetTemplate()->Name1.c_str(), pFrom->GetItem()->GetEntry(), pFrom->GetItem()->GetCount(),
-            m_pGuild->GetId());
+        sLog->outCommand(m_pPlayer->GetSession()->GetAccountId(), "", m_pPlayer->GetGUIDLow(), m_pPlayer->GetName(), 0, "", 0, "",
+                        "GM %s (Account: %u) deposit item: %s (Entry: %d Count: %u) to guild bank (Guild ID: %u)",
+                        m_pPlayer->GetName(), m_pPlayer->GetSession()->GetAccountId(), pFrom->GetItem()->GetTemplate()->Name1.c_str(), pFrom->GetItem()->GetEntry(), pFrom->GetItem()->GetCount(), m_pGuild->GetId());
 }
 
 Item* Guild::BankMoveItemData::_StoreItem(SQLTransaction& trans, BankTab* pTab, Item* pItem, ItemPosCount& pos, bool clone) const
@@ -1955,9 +1953,9 @@ void Guild::HandleMemberDepositMoney(WorldSession* session, uint32 amount, bool 
     // Log GM action (TODO: move to scripts)
     if (!AccountMgr::IsPlayerAccount(player->GetSession()->GetSecurity()) && sWorld->getBoolConfig(CONFIG_GM_LOG_TRADE))
     {
-        sLog->outCommand(player->GetSession()->GetAccountId(),
-            "GM %s (Account: %u) deposit money (Amount: %u) to guild bank (Guild ID %u)",
-            player->GetName(), player->GetSession()->GetAccountId(), amount, m_id);
+        sLog->outCommand(player->GetSession()->GetAccountId(), "", player->GetGUIDLow(), player->GetName(), 0, "", 0, "",
+                        "GM %s (Account: %u) deposit money (Amount: %u) to guild bank (Guild ID %u)",
+                        player->GetName(), player->GetSession()->GetAccountId(), amount, m_id);
     }
     // Log guild bank event
     _LogBankEvent(trans, cashFlow ? GUILD_BANK_LOG_CASH_FLOW_DEPOSIT : GUILD_BANK_LOG_DEPOSIT_MONEY, uint8(0), player->GetGUIDLow(), amount);
@@ -2586,6 +2584,9 @@ bool Guild::AddMember(uint64 guid, uint8 rankId)
                     if (entry->Level >= GetLevel())
                         player->learnSpell(entry->SpellId, true);
         }
+
+        if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
+            player->GetReputationMgr().SetReputation(factionEntry, 0);
     }
 
     _UpdateAccountsNumber();
@@ -2650,6 +2651,9 @@ void Guild::DeleteMember(uint64 guid, bool isDisbanding, bool isKicked)
             if (GuildPerkSpellsEntry const* entry = sGuildPerkSpellsStore.LookupEntry(i))
                 if (entry->Level >= GetLevel())     
                     player->removeSpell(entry->SpellId, false, false);
+
+        if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
+            player->GetReputationMgr().SetReputation(factionEntry, 0);
     }
 
     _DeleteMemberFromDB(lowguid);
@@ -3296,11 +3300,7 @@ void Guild::GiveXP(uint32 xp, Player* source)
         xp = std::min(xp, sWorld->getIntConfig(CONFIG_GUILD_DAILY_XP_CAP) - uint32(_todayExperience));
 
     WorldPacket data(SMSG_GUILD_XP_GAIN, 8);
-    data << uint64(/*member ? member->GetTotalActivity() :*/ 0);
     data << uint64(xp);    // XP missing for next level
-    data << uint64(GetTodayExperience());
-    data << uint64(/*member ? member->GetWeeklyActivity() :*/ 0);
-    data << uint64(GetExperience());
     source->GetSession()->SendPacket(&data);
 
     _experience += xp;
@@ -3330,14 +3330,18 @@ void Guild::GiveXP(uint32 xp, Player* source)
     {
         if (Player* player = itr->second->FindPlayer())
         {
+            SendGuildXP(player->GetSession());
             player->SetGuildLevel(GetLevel());
             for (size_t i = 0; i < perksToLearn.size(); ++i)
                 player->learnSpell(perksToLearn[i], true);
         }
     }
 
-    GetNewsLog().AddNewEvent(GUILD_NEWS_LEVEL_UP, time(NULL), 0, 0, _level);
-    GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_GUILD_LEVEL, GetLevel(), 0, NULL, source);
+    if (oldLevel != _level)
+    {
+        GetNewsLog().AddNewEvent(GUILD_NEWS_LEVEL_UP, time(NULL), 0, 0, _level);
+        GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_REACH_GUILD_LEVEL, GetLevel(), 0, NULL, source);
+    }
 }
 
 void Guild::SendGuildXP(WorldSession* session) const
@@ -3345,11 +3349,10 @@ void Guild::SendGuildXP(WorldSession* session) const
     Member const* member = GetMember(session->GetGuidLow());
 
     WorldPacket data(SMSG_GUILD_XP, 40);
-    data << uint64(/*member ? member->GetTotalActivity() :*/ 0);
-    data << uint64(sGuildMgr->GetXPForGuildLevel(GetLevel()) - GetExperience());    // XP missing for next level
+    data << uint64(0); // fucking unknow
     data << uint64(GetTodayExperience());
-    data << uint64(/*member ? member->GetWeeklyActivity() :*/ 0);
     data << uint64(GetExperience());
+    data << uint64(sGuildMgr->GetXPForGuildLevel(GetLevel()) - GetExperience());    // XP missing for next level
     session->SendPacket(&data);
 }
 

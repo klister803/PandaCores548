@@ -30,28 +30,94 @@ enum PaladinSpells
 {
     PALADIN_SPELL_DIVINE_PLEA                    = 54428,
     PALADIN_SPELL_BLESSING_OF_SANCTUARY_BUFF     = 67480,
-
     PALADIN_SPELL_JUDGMENT                       = 20271,
     PALADIN_SPELL_JUDGMENTS_OF_THE_BOLD          = 111529,
     PALADIN_SPELL_JUDGMENTS_OF_THE_WISE          = 105424,
     PALADIN_SPELL_PHYSICAL_VULNERABILITY         = 81326,
-
+    PALADIN_SPELL_LONG_ARM_OF_THE_LAW            = 87172,
+    PALADIN_SPELL_LONG_ARM_OF_THE_LAW_RUN_SPEED  = 87173,
+    PALADIN_SPELL_BURDEN_OF_GUILT                = 110301,
+    PALADIN_SPELL_BURDEN_OF_GUILT_DECREASE_SPEED = 110300,
     PALADIN_SPELL_HOLY_SHOCK_R1                  = 20473,
     PALADIN_SPELL_HOLY_SHOCK_R1_DAMAGE           = 25912,
     PALADIN_SPELL_HOLY_SHOCK_R1_HEALING          = 25914,
-
     SPELL_BLESSING_OF_LOWER_CITY_DRUID           = 37878,
     SPELL_BLESSING_OF_LOWER_CITY_PALADIN         = 37879,
     SPELL_BLESSING_OF_LOWER_CITY_PRIEST          = 37880,
     SPELL_BLESSING_OF_LOWER_CITY_SHAMAN          = 37881,
-
     SPELL_DIVINE_STORM                           = 53385,
     SPELL_DIVINE_STORM_DUMMY                     = 54171,
     SPELL_DIVINE_STORM_HEAL                      = 54172,
-
     SPELL_FORBEARANCE                            = 25771,
     SPELL_AVENGING_WRATH_MARKER                  = 61987,
     SPELL_IMMUNE_SHIELD_MARKER                   = 61988,
+    PALADIN_SPELL_WORD_OF_GLORY                  = 85673,
+    PALADIN_SPELL_WORD_OF_GLORY_HEAL             = 130551,
+    PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY         = 54936,
+    PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE  = 115522
+};
+
+// Word of Glory - 85673
+class spell_pal_word_of_glory : public SpellScriptLoader
+{
+    public:
+        spell_pal_word_of_glory() : SpellScriptLoader("spell_pal_word_of_glory") { }
+
+        class spell_pal_word_of_glory_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_word_of_glory_SpellScript);
+
+            bool Validate()
+            {
+                if (!sSpellMgr->GetSpellInfo(PALADIN_SPELL_WORD_OF_GLORY))
+                    return false;
+                return true;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if ((unitTarget->GetTypeId() != TYPEID_PLAYER && !unitTarget->isPet()) || unitTarget->IsHostileTo(_player))
+                            unitTarget = _player;
+
+                        int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
+
+                        if (holyPower > 3)
+                            holyPower = 3;
+                        else if (holyPower == 0)
+                            holyPower = 1;
+
+                        _player->CastSpell(unitTarget, PALADIN_SPELL_WORD_OF_GLORY_HEAL, true);
+
+                        if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY))
+                        {
+                            AuraPtr aura = _player->AddAura(PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE, _player);
+
+                            if (aura)
+                            {
+                                aura->GetEffect(0)->ChangeAmount(aura->GetEffect(0)->GetAmount() * holyPower);
+                                aura->SetNeedClientUpdateForTargets();
+                            }
+                        }
+
+                        _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) - holyPower);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_word_of_glory_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_word_of_glory_SpellScript();
+        }
 };
 
 // Judgment - 20271
@@ -84,6 +150,12 @@ class spell_pal_judgment : public SpellScriptLoader
                         }
                         else if (_player->HasAura(PALADIN_SPELL_JUDGMENTS_OF_THE_WISE))
                             _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + 1);
+
+                        if (_player->HasAura(PALADIN_SPELL_LONG_ARM_OF_THE_LAW))
+                            _player->CastSpell(_player, PALADIN_SPELL_LONG_ARM_OF_THE_LAW_RUN_SPEED, true);
+
+                        if (_player->HasAura(PALADIN_SPELL_BURDEN_OF_GUILT))
+                            _player->CastSpell(unitTarget, PALADIN_SPELL_BURDEN_OF_GUILT_DECREASE_SPEED, true);
                     }
                 }
             }
@@ -669,6 +741,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_word_of_glory();
     new spell_pal_judgment();
     //new spell_pal_ardent_defender();
     new spell_pal_blessing_of_faith();
