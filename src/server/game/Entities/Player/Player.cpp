@@ -3274,8 +3274,16 @@ void Player::GiveGatheringXP()
     else if (level > 84 && level < 90)
         gain = 1720 * level - 138800; // (7400 - 14280),  Guessed, TODO : find blizzlike formula (7400 - 14280)
 
-    // TODO : implant a proper conf to rate gather XP
-    GiveXP(gain * sWorld->getRate(RATE_XP_KILL), nullptr);
+    float GatheringXpRate = 1;
+
+    if(GetPersonnalXpRate())
+        GatheringXpRate = GetPersonnalXpRate();
+    else
+        GatheringXpRate = sWorld->getRate(RATE_XP_GATHERING);
+
+    gain *= GatheringXpRate;
+
+    GiveXP(gain, nullptr);
 }
 
 // Update player to next level
