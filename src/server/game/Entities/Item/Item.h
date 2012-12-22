@@ -167,8 +167,6 @@ enum EnchantmentSlot
     BONUS_ENCHANTMENT_SLOT          = 5,
     PRISMATIC_ENCHANTMENT_SLOT      = 6,                    // added at apply special permanent enchantment
     //TODO: 7,
-    REFORGE_ENCHANTMENT_SLOT        = 8,
-    TRANSMOGRIFY_ENCHANTMENT_SLOT   = 9,
     MAX_INSPECTED_ENCHANTMENT_SLOT  = 8,
 
     PROP_ENCHANTMENT_SLOT_0         = 8,                   // used with RandomSuffix
@@ -357,7 +355,7 @@ class Item : public Object
 
         uint32 GetVisibleEntry() const
         {
-            if (uint32 transmogrification = GetEnchantmentId(TRANSMOGRIFY_ENCHANTMENT_SLOT))
+            if (uint32 transmogrification = GetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 1))
                 return transmogrification;
             return GetEntry();
         }

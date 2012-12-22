@@ -265,7 +265,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
         else
             AH->auctioneer = GUID_LOPART(auctioneer);
 
-        assert(sObjectMgr->GetCreatureData(auctioneer)); // Tentative de vendre un item a un pnj qui n'existe pas, mieux vaut crash ici sinon l'item en question risque de disparaitre tout simplement
+        ASSERT(sObjectMgr->GetCreatureData(auctioneer)); // Tentative de vendre un item a un pnj qui n'existe pas, mieux vaut crash ici sinon l'item en question risque de disparaitre tout simplement
 
         // Required stack size of auction matches to current item stack size, just move item to auctionhouse
         if (itemsCount == 1 && item->GetCount() == count[i])
