@@ -211,9 +211,9 @@ GridUnload = 1
 #    SocketTimeOutTime
 #        Description: Time (in milliseconds) after which a connection being idle on the character
 #                     selection screen is disconnected.
-#        Default:     900000 - (15 minutes)
+#        Default:     10800000 - (3 heures)
 
-SocketTimeOutTime = 900000
+SocketTimeOutTime = 10800000
 
 #
 #    SessionAddDelay
