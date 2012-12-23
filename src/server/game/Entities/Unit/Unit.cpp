@@ -8397,6 +8397,9 @@ ReputationRank Unit::GetReactionTo(Unit const* target) const
     if (this == target)
         return REP_FRIENDLY;
 
+    if (!target)
+    	return REP_FRIENDLY;
+
     // always friendly to charmer or owner
     if (GetCharmerOrOwnerOrSelf() == target->GetCharmerOrOwnerOrSelf())
         return REP_FRIENDLY;
@@ -12994,8 +12997,13 @@ float Unit::GetSpellMaxRangeForTarget(Unit const* target, SpellInfo const* spell
 {
     if (!spellInfo->RangeEntry)
         return 0;
+
     if (spellInfo->RangeEntry->maxRangeFriend == spellInfo->RangeEntry->maxRangeHostile)
         return spellInfo->GetMaxRange();
+
+    if (!target)
+    	return spellInfo->RangeEntry->maxRangeFriend;
+
     return spellInfo->GetMaxRange(!IsHostileTo(target));
 }
 
