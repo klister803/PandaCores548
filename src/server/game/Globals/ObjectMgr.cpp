@@ -1537,6 +1537,15 @@ void ObjectMgr::LoadCreatures()
         if (gameEvent == 0 && PoolId == 0)
             AddCreatureToGrid(guid, &data);
 
+        if (!data.zoneId || !data.areaId)
+        {
+            uint32 zoneId = 0;
+            uint32 areaId = 0;
+
+            sMapMgr->GetZoneAndAreaId(zoneId, areaId, data.mapid, data.posX, data.posY, data.posZ);
+            WorldDatabase.PExecute("UPDATE creature SET zoneId = %u, areaId = %u WHERE guid = %u", zoneId, areaId, guid);
+        }
+
         ++count;
 
     } while (result->NextRow());

@@ -7306,6 +7306,47 @@ void Player::RewardReputation(Quest const* quest)
     }
 }
 
+Expansion Player::GetExpByLevel()
+{
+    uint8 level = getLevel();
+
+    if (level <= 60)
+        return EXP_VANILLA;
+    else if (level <= 70)
+        return EXP_BC;
+    else if (level <= 80)
+        return EXP_WOTLK;
+    else if (level <= 85)
+        return EXP_CATACLYSM;
+    else if (level <= 90)
+        return EXP_PANDARIA;
+    else
+        return EXP_VANILLA;
+}
+
+void Player::RewardGuildReputation(Quest const* quest)
+{
+    uint32 rep = 0;
+
+    switch (GetExpByLevel())
+    {
+        case EXP_VANILLA:   rep = 25;  break;
+        case EXP_BC:        rep = 50;  break;
+        case EXP_WOTLK:     rep = 75;  break;
+        case EXP_CATACLYSM: rep = 100; break;
+        case EXP_PANDARIA:  rep = 150; break;
+        default:            rep = 0;   break;
+    }
+
+    rep = CalculateReputationGain(GetQuestLevel(quest), rep, REP_GUILD, true);
+
+    if (GetsRecruitAFriendBonus(false))
+        rep = int32(rep * (1 + sWorld->getRate(RATE_REPUTATION_RECRUIT_A_FRIEND_BONUS)));
+
+    if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
+        GetReputationMgr().ModifyReputation(factionEntry, rep);
+}
+
 void Player::UpdateHonorFields()
 {
     /// called when rewarding honor and at each save
@@ -15581,6 +15622,7 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     }
 
     RewardReputation(quest);
+    RewardGuildReputation(quest);
 
     uint16 log_slot = FindQuestSlot(quest_id);
     if (log_slot < MAX_QUEST_LOG_SIZE)

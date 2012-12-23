@@ -2183,11 +2183,14 @@ class Player : public Unit, public GridObject<Player>
         uint8 GetGrantableLevels() { return m_grantableLevels; }
         void SetGrantableLevels(uint8 val) { m_grantableLevels = val; }
 
+        Expansion GetExpByLevel();
+
         ReputationMgr&       GetReputationMgr()       { return m_reputationMgr; }
         ReputationMgr const& GetReputationMgr() const { return m_reputationMgr; }
         ReputationRank GetReputationRank(uint32 faction_id) const;
         void RewardReputation(Unit* victim, float rate);
         void RewardReputation(Quest const* quest);
+        void RewardGuildReputation(Quest const* quest);
 
         void ModifySkillBonus(uint32 skillid, int32 val, bool talent);
 
