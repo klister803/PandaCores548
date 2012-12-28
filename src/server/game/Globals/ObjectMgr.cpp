@@ -8701,23 +8701,23 @@ void ObjectMgr::LoadPhaseDefinitions()
     {
         Field *fields = result->Fetch();
 
-        PhaseDefinition PhaseDefinition;
+        PhaseDefinition pd;
 
-        PhaseDefinition.zoneId                = fields[0].GetUInt32();
-        PhaseDefinition.entry                 = fields[1].GetUInt32();
-        PhaseDefinition.phasemask             = fields[2].GetUInt32();
-        PhaseDefinition.phaseId               = fields[3].GetUInt32();
-        PhaseDefinition.terrainswapmap        = fields[4].GetUInt32();
-        PhaseDefinition.flags                 = fields[5].GetUInt32();
+        pd.zoneId                = fields[0].GetUInt32();
+        pd.entry                 = fields[1].GetUInt16();
+        pd.phasemask             = fields[2].GetUInt64();
+        pd.phaseId               = fields[3].GetUInt8();
+        pd.terrainswapmap        = fields[4].GetUInt16();
+        pd.flags                 = fields[5].GetUInt8();
 
         // Checks
-        if ((PhaseDefinition.flags & PHASE_FLAG_OVERWRITE_EXISTING) && (PhaseDefinition.flags & PHASE_FLAG_NEGATE_PHASE))
+        if ((pd.flags & PHASE_FLAG_OVERWRITE_EXISTING) && (pd.flags & PHASE_FLAG_NEGATE_PHASE))
         {
-            sLog->outError(LOG_FILTER_SQL, "Flags defined in phase_definitions in zoneId %d and entry %u does contain PHASE_FLAG_OVERWRITE_EXISTING and PHASE_FLAG_NEGATE_PHASE. Setting flags to PHASE_FLAG_OVERWRITE_EXISTING", PhaseDefinition.zoneId, PhaseDefinition.entry);
-            PhaseDefinition.flags &= ~PHASE_FLAG_NEGATE_PHASE;
+            sLog->outError(LOG_FILTER_SQL, "Flags defined in phase_definitions in zoneId %d and entry %u does contain PHASE_FLAG_OVERWRITE_EXISTING and PHASE_FLAG_NEGATE_PHASE. Setting flags to PHASE_FLAG_OVERWRITE_EXISTING", pd.zoneId, pd.entry);
+            pd.flags &= ~PHASE_FLAG_NEGATE_PHASE;
         }
 
-        _PhaseDefinitionStore[PhaseDefinition.zoneId].push_back(PhaseDefinition);
+        _PhaseDefinitionStore[pd.zoneId].push_back(pd);
 
         ++count;
     }

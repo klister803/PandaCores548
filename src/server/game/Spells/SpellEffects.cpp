@@ -714,6 +714,10 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
     case 107045: //Jade Fire 
         m_caster->CastSpell(unitTarget, 107098, false);
         break;
+    case 106299: //Summon Living Air
+        TempSummon* enne = m_caster->SummonCreature(54631, m_caster->GetPositionX()+rand()%5, m_caster->GetPositionY()+2+rand()%5, m_caster->GetPositionZ()+1, 3.3f,TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+        enne->AddThreat(m_caster, 2000.f);
+        break;
     }
 
     //spells triggered by dummy effect should not miss
@@ -2126,7 +2130,14 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
                 // Allow one skill-up until respawned
                 if (!gameObjTarget->IsInSkillupList(player->GetGUIDLow()) &&
                     player->UpdateGatherSkill(skillId, pureSkillValue, reqSkillValue))
+                {
                     gameObjTarget->AddToSkillupList(player->GetGUIDLow());
+
+                    // Update player XP
+                    // Patch 4.0.1 (2010-10-12): Gathering herbs and Mining will give XP
+                    if (skillId == SKILL_MINING || skillId == SKILL_HERBALISM)
+                        player->GiveGatheringXP();
+                }
             }
             else if (itemTarget)
             {
@@ -2134,12 +2145,6 @@ void Spell::EffectOpenLock(SpellEffIndex effIndex)
                 player->UpdateGatherSkill(skillId, pureSkillValue, reqSkillValue);
             }
         }
-
-        // Update player XP
-        // Patch 4.0.1 (2010-10-12): Gathering herbs and Mining will give XP
-        if (skillId == SKILL_MINING || skillId == SKILL_HERBALISM)
-            player->GiveGatheringXP();
-
     }
     ExecuteLogEffectOpenLock(effIndex, gameObjTarget ? (Object*)gameObjTarget : (Object*)itemTarget);
 }
