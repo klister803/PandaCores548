@@ -84,7 +84,7 @@ struct ItemSparseEntry
     uint32     Stackable;                                    // 19
     uint32     ContainerSlots;                               // 20
     int32      ItemStatType[MAX_ITEM_PROTO_STATS];           // 21 - 30
-    uint32     ItemStatValue[MAX_ITEM_PROTO_STATS];          // 31 - 40
+    int32      ItemStatValue[MAX_ITEM_PROTO_STATS];          // 31 - 40
     int32      ItemStatUnk1[MAX_ITEM_PROTO_STATS];           // 41 - 50
     int32      ItemStatUnk2[MAX_ITEM_PROTO_STATS];           // 51 - 60
     uint32     ScalingStatDistribution;                      // 61
