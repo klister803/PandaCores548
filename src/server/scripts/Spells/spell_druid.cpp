@@ -47,6 +47,35 @@ enum DruidSpells
     SPELL_DRUID_PROWL                    = 5215
 };
 
+// Growl - 6795
+class spell_dru_growl : public SpellScriptLoader
+{
+    public:
+        spell_dru_growl() : SpellScriptLoader("spell_dru_growl") { }
+
+        class spell_dru_growl_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_growl_SpellScript);
+
+            void HandleOnHit()
+            {
+                // This spell activate the bear form
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->CastSpell(_player, 5487, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_growl_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_growl_SpellScript();
+        }
+};
+
 // Prowl - 5212
 class spell_dru_prowl : public SpellScriptLoader
 {
@@ -66,6 +95,7 @@ class spell_dru_prowl : public SpellScriptLoader
 
             void HandleOnHit()
             {
+                // This spell activate the cat form
                 if (Player* _player = GetCaster()->ToPlayer())
                     _player->CastSpell(_player, 768, true);
             }
@@ -778,6 +808,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_growl();
     new spell_dru_prowl();
     new spell_dru_eclipse();
     new spell_dru_glyph_of_starfire();
