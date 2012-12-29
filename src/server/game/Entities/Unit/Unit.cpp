@@ -10248,15 +10248,9 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                 switch (spellProto->SpellFamilyName)
                 {
                     case SPELLFAMILY_DRUID:
-                        // Rend and Tear - bonus crit chance for Ferocious Bite on bleeding targets
-                        if (spellProto->SpellFamilyFlags[0] & 0x00800000
-                            && spellProto->SpellIconID == 1680
-                            && victim->HasAuraState(AURA_STATE_BLEEDING))
-                        {
-                            if (constAuraEffectPtr rendAndTear = GetDummyAuraEffect(SPELLFAMILY_DRUID, 2859, 1))
-                                crit_chance += rendAndTear->GetAmount();
-                            break;
-                        }
+                        // +25% crit chance for Ferocious Bite on bleeding targets
+                        if (spellProto->Id == 22568 && victim->HasAuraState(AURA_STATE_BLEEDING))
+                            crit_chance += 25.0f;
                     break;
                     case SPELLFAMILY_WARRIOR:
                        // Victory Rush

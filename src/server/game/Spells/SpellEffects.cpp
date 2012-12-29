@@ -446,6 +446,11 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                     int32 energy = -(m_caster->ModifyPower(POWER_ENERGY, -25));
                     // 25 energy = 100% more damage
                     AddPct(damage, energy * 4);
+
+                    // if target is under 25% of life, also reset rake duration
+                    if (unitTarget->GetHealthPct() <= 25.0f)
+                        if (AuraPtr aura = unitTarget->GetAura(1822))
+                            aura->RefreshDuration();
                 }
                 break;
             }
