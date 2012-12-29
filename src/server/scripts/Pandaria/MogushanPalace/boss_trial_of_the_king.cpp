@@ -45,7 +45,7 @@ class mob_xian_the_weaponmaster_trigger : public CreatureScript
         {
             EVENT_TALK_0 = 1,
             EVENT_TALK_1 = 2,
-            EVENT_JUMP   = 3,
+            EVENT_JUMP_XIAN = 3,
             EVENT_DISAPPEAR = 4,
         };
 
@@ -102,9 +102,9 @@ class mob_xian_the_weaponmaster_trigger : public CreatureScript
                         break;
                     case EVENT_TALK_1:
                         me->GetMotionMaster()->MovePoint(0, -4229.333f, -2624.051f, 16.47f);
-                        events.ScheduleEvent(EVENT_JUMP, 7000);
+                        events.ScheduleEvent(EVENT_JUMP_XIAN, 7000);
                         break;
-                    case EVENT_JUMP:
+                    case EVENT_JUMP_XIAN:
                         Talk(TALK_INTRO_02);
                         me->GetMotionMaster()->MoveJump(-4296.391f, -2613.577f, 22.325f, 30.f, 20.f);
                         events.ScheduleEvent(EVENT_DISAPPEAR, 5000);
