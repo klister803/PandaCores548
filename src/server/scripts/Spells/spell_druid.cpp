@@ -48,6 +48,35 @@ enum DruidSpells
     SPELL_DRUID_WEAKENED_ARMOR           = 113746,
 };
 
+// Stampeding Roar - 97993
+class spell_dru_stampeding_roar : public SpellScriptLoader
+{
+    public:
+        spell_dru_stampeding_roar() : SpellScriptLoader("spell_dru_stampeding_roar") { }
+
+        class spell_dru_stampeding_roar_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_stampeding_roar_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        target->RemoveMovementImpairingAuras();
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_stampeding_roar_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_stampeding_roar_SpellScript();
+        }
+};
+
 // Innervate - 29166
 class spell_dru_innervate : public SpellScriptLoader
 {
@@ -180,7 +209,7 @@ class spell_dru_teleport_moonglade : public SpellScriptLoader
         }
 };
 
-// Growl - 6795, Might of Ursoc - 106922
+// Growl - 6795, Might of Ursoc - 106922, Stampeding Roar - 106898
 class spell_dru_growl : public SpellScriptLoader
 {
     public:
@@ -194,7 +223,12 @@ class spell_dru_growl : public SpellScriptLoader
             {
                 // This spell activate the bear form
                 if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, 5487, true);
+                {
+                    if (GetSpellInfo()->Id == 106898 && _player->GetShapeshiftForm() != FORM_CAT && _player->GetShapeshiftForm() != FORM_BEAR)
+                        _player->CastSpell(_player, 5487, true);
+                    else if (GetSpellInfo()->Id != 106898)
+                        _player->CastSpell(_player, 5487, true);
+                }
             }
 
             void Register()
@@ -941,6 +975,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_stampeding_roar();
     new spell_dru_innervate();
     new spell_dru_lacerate();
     new spell_dru_faerie_fire();
