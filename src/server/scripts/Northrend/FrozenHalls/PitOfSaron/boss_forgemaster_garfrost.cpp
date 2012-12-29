@@ -53,7 +53,7 @@ enum Events
     EVENT_THROW_SARONITE    = 1,
     EVENT_CHILLING_WAVE     = 2,
     EVENT_DEEP_FREEZE       = 3,
-    EVENT_JUMP              = 4,
+    EVENT_FORGEMASTER_JUMP  = 4,
     EVENT_FORGING           = 5,
     EVENT_RESUME_ATTACK     = 6,
 };
@@ -143,7 +143,7 @@ class boss_garfrost : public CreatureScript
                     Talk(SAY_PHASE2);
                     events.DelayEvents(8000);
                     DoCast(me, SPELL_THUNDERING_STOMP);
-                    events.ScheduleEvent(EVENT_JUMP, 1500);
+                    events.ScheduleEvent(EVENT_FORGEMASTER_JUMP, 1500);
                     return;
                 }
 
@@ -153,7 +153,7 @@ class boss_garfrost : public CreatureScript
                     Talk(SAY_PHASE3);
                     events.DelayEvents(8000);
                     DoCast(me, SPELL_THUNDERING_STOMP);
-                    events.ScheduleEvent(EVENT_JUMP, 1500);
+                    events.ScheduleEvent(EVENT_FORGEMASTER_JUMP, 1500);
                     return;
                 }
             }
@@ -226,7 +226,7 @@ class boss_garfrost : public CreatureScript
                             }
                             events.ScheduleEvent(EVENT_DEEP_FREEZE, 35000, 0, PHASE_THREE);
                             break;
-                        case EVENT_JUMP:
+                        case EVENT_FORGEMASTER_JUMP:
                             me->AttackStop();
                             if (events.GetPhaseMask() & PHASE_TWO_MASK)
                                 me->GetMotionMaster()->MoveJump(northForgePos.GetPositionX(), northForgePos.GetPositionY(), northForgePos.GetPositionZ(), 25.0f, 15.0f);
