@@ -477,6 +477,29 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellId = newSpellInfo->Id;
         }
     }
+    // Mutilate - 33917 and Mutilate - 33876 (form cat)
+    if (spellInfo->Id == 33917 && _player->GetShapeshiftForm() == FORM_CAT)
+    {
+        // Use the right spell
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(33876);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
+    // Mutilate - 33917 and Mutilate - 33878 (form bear)
+    if (spellInfo->Id == 33917 && _player->GetShapeshiftForm() == FORM_BEAR)
+    {
+        // Use the right spell
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(33878);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->AddSpellCooldown(33917, 0, time(NULL) + 6);
+        }
+    }
     // Drain Life - 689 and Harvest Life (overrided) - 108371
     if (spellInfo->Id == 689 && _player->HasSpell(108371))
     {
