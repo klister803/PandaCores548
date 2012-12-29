@@ -3128,6 +3128,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 106922: // Might of Ursoc
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
+                break;
             case 111771: // Demonic Gateway
                 spellInfo->Effects[0].Effect = 0;
                 spellInfo->Effects[0].BasePoints = 0;

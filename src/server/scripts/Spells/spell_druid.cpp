@@ -180,7 +180,7 @@ class spell_dru_teleport_moonglade : public SpellScriptLoader
         }
 };
 
-// Growl - 6795
+// Growl - 6795, Might of Ursoc - 106922
 class spell_dru_growl : public SpellScriptLoader
 {
     public:
