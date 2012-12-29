@@ -686,7 +686,7 @@ enum SpellAttr8
     SPELL_ATTR8_RAID_MARKER                      = 0x04000000, // 26 probably spell no need learn to cast
     SPELL_ATTR8_UNK27                            = 0x08000000, // 27
     SPELL_ATTR8_NOT_IN_BG_OR_ARENA               = 0x10000000, // 28 not allow to cast or deactivate currently active effect, not sure about Fast Track
-    SPELL_ATTR8_MASTERY                          = 0x20000000, // 29
+    SPELL_ATTR8_MASTERY_SPECIALIZATION           = 0x20000000, // 29
     SPELL_ATTR8_UNK30                            = 0x40000000, // 30
     SPELL_ATTR8_UNK31                            = 0x80000000  // 31
 };
@@ -1753,7 +1753,8 @@ enum SpellPreventionType
 {
     SPELL_PREVENTION_TYPE_NONE      = 0,
     SPELL_PREVENTION_TYPE_SILENCE   = 1,
-    SPELL_PREVENTION_TYPE_PACIFY    = 2
+    SPELL_PREVENTION_TYPE_PACIFY    = 2,
+    SPELL_PREVENTION_TYPE_UNK       = 3 // Only a few spells have this, but most of the should be interruptable.
 };
 
 enum GameobjectTypes
@@ -3896,7 +3897,8 @@ enum SummonType
 
 enum EventId
 {
-    EVENT_CHARGE            = 1003
+    EVENT_CHARGE            = 1003,
+    EVENT_JUMP              = 1004
 };
 
 enum ResponseCodes
