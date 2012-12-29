@@ -7604,7 +7604,7 @@ void Player::SendNewCurrency(uint32 id) const
         if (!entry) // should never happen
             continue;
 
-        uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? 100 : 1;
+        uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1;
         uint32 weekCount = itr->second.weekCount / precision;
         uint32 weekCap = _GetCurrencyWeekCap(entry) / precision;
 
@@ -7642,7 +7642,7 @@ void Player::SendCurrencies() const
         if (!entry) // should never happen
             continue;
 
-        uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? 100 : 1;
+        uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1;
         uint32 weekCount = itr->second.weekCount / precision;
         uint32 weekCap = _GetCurrencyWeekCap(entry) / precision;
         
@@ -7692,7 +7692,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (!ignoreMultipliers)
         count *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_CURRENCY_GAIN, id);
 
-    int32 precision = currency->Flags & CURRENCY_FLAG_HIGH_PRECISION ? 100 : 1;
+    int32 precision = currency->Flags & CURRENCY_FLAG_HIGH_PRECISION ? CURRENCY_PRECISION : 1;
     uint32 oldTotalCount = 0;
     uint32 oldWeekCount = 0;
     PlayerCurrenciesMap::iterator itr = _currencyStorage.find(id);
@@ -7817,7 +7817,7 @@ uint32 Player::_GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const
    {
        WorldPacket packet(SMSG_UPDATE_CURRENCY_WEEK_LIMIT, 8);
        packet << uint32(currency->ID);
-       packet << uint32(cap / ((currency->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? 100 : 1));
+       packet << uint32(cap / ((currency->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1));
        GetSession()->SendPacket(&packet);
    }
 
@@ -21946,7 +21946,7 @@ bool Player::BuyCurrencyFromVendorSlot(uint64 vendorGuid, uint32 vendorSlot, uin
                 return false;
             }
 
-            uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? 100 : 1;
+            uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1;
 
             if (!HasCurrency(iece->RequiredCurrency[i], (iece->RequiredCurrencyCount[i] * count) / precision))
             {
@@ -22076,7 +22076,7 @@ bool Player::BuyItemFromVendorSlot(uint64 vendorguid, uint32 vendorslot, uint32 
                 return false;
             }
 
-            uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? 100 : 1;
+            uint32 precision = (entry->Flags & CURRENCY_FLAG_HIGH_PRECISION) ? CURRENCY_PRECISION : 1;
 
             if (!HasCurrency(iece->RequiredCurrency[i], (iece->RequiredCurrencyCount[i] * count) / precision))
             {
