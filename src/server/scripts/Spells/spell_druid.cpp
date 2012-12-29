@@ -47,6 +47,34 @@ enum DruidSpells
     SPELL_DRUID_PROWL                    = 5215
 };
 
+// Teleport : Moonglade - 18960
+class spell_dru_teleport_moonglade : public SpellScriptLoader
+{
+    public:
+        spell_dru_teleport_moonglade() : SpellScriptLoader("spell_dru_teleport_moonglade") { }
+
+        class spell_dru_teleport_moonglade_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_teleport_moonglade_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->TeleportTo(1, 7964.063f, -2491.099f, 487.83f, _player->GetOrientation());
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_dru_teleport_moonglade_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_teleport_moonglade_SpellScript();
+        }
+};
+
 // Growl - 6795
 class spell_dru_growl : public SpellScriptLoader
 {
