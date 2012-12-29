@@ -836,6 +836,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_teleport_moonglade();
     new spell_dru_growl();
     new spell_dru_prowl();
     new spell_dru_eclipse();
