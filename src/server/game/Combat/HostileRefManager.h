@@ -38,6 +38,7 @@ class HostileRefManager : public RefManager<Unit, ThreatManager>
         ~HostileRefManager();
 
         UnitPtr getOwner() { return iOwner; }
+        void setOwner(UnitPtr owner) { iOwner = owner; }
 
         // send threat to all my hateres for the victim
         // The victim is hated than by them as well

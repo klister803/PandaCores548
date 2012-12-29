@@ -24,13 +24,13 @@ class ClassFactory
 public:
     static CreaturePtr ConstructCreature(bool isWorldObject = false)
     {
-        CreaturePtr creature = std::make_shared<Creature>(isWorldObject);
+        CreaturePtr creature(new Creature(isWorldObject));
         if (!creature)
             return nullptr;
         
         creature->i_motionMaster = MotionMaster(creature);
         creature->m_ThreatManager = ThreatManagerPtr(new ThreatManager(creature));
-        creature->m_HostileRefManager = HostileRefManager(creature);
+        creature->m_HostileRefManager.setOwner(creature);
         creature->_creature = CAST(GridObject<Creature>,creature);
         
         ObjectPtr unit = creature->SharedFromObject();
