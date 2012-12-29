@@ -50,6 +50,8 @@ enum DruidSpells
     SPELL_DRUID_FRENZIED_REGEN_HEAL_TAKE = 124769,
     SPELL_DRUID_CELESTIAL_ALIGNMENT      = 112071,
     SPELL_DRUID_ASTRAL_COMMUNION         = 127663,
+    SPELL_DRUID_SUNFIRE                  = 93402,
+    SPELL_DRUID_MOONFIRE                 = 8921,
 };
 
 // Astral Communion - 127663
@@ -497,6 +499,11 @@ class spell_dru_eclipse : public SpellScriptLoader
                                     else if (caster->GetEclipsePower() <= 0 && caster->HasAura(SPELL_DRUID_SOLAR_ECLIPSE))
                                         caster->RemoveAura(SPELL_DRUID_SOLAR_ECLIPSE);
 
+                                    // Your crits with wrath also increase sunfire duration by 2s
+                                    if (GetSpell()->IsCritForTarget(target))
+                                        if (AuraPtr aura = target->GetAura(SPELL_DRUID_SUNFIRE))
+                                            aura->SetDuration(aura->GetDuration() + 2);
+
                                     break;
                                 }
                                 case SPELL_DRUID_STARFIRE:
@@ -516,6 +523,11 @@ class spell_dru_eclipse : public SpellScriptLoader
                                     }
                                     else if (caster->HasAura(SPELL_DRUID_LUNAR_ECLIPSE) && caster->GetEclipsePower() >= 0)
                                         caster->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE);
+
+                                    // Your crits with wrath also increase moonfire duration by 2s
+                                    if (GetSpell()->IsCritForTarget(target))
+                                        if (AuraPtr aura = target->GetAura(SPELL_DRUID_MOONFIRE))
+                                            aura->SetDuration(aura->GetDuration() + 2);
 
                                     break;
                                 }
@@ -548,6 +560,15 @@ class spell_dru_eclipse : public SpellScriptLoader
                                         caster->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE);
                                     else if (caster->HasAura(SPELL_DRUID_SOLAR_ECLIPSE) && caster->GetEclipsePower() <= 0)
                                         caster->RemoveAura(SPELL_DRUID_SOLAR_ECLIPSE);
+
+                                    // Your crits with wrath also increase sunfire duration by 2s
+                                    if (GetSpell()->IsCritForTarget(target))
+                                        if (AuraPtr aura = target->GetAura(SPELL_DRUID_SUNFIRE))
+                                            aura->SetDuration(aura->GetDuration() + 2);
+                                    // Your crits with wrath also increase moonfire duration by 2s
+                                    if (GetSpell()->IsCritForTarget(target))
+                                        if (AuraPtr aura = target->GetAura(SPELL_DRUID_MOONFIRE))
+                                            aura->SetDuration(aura->GetDuration() + 2);
 
                                     break;
                                 }
