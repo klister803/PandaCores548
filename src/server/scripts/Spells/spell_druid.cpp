@@ -49,6 +49,60 @@ enum DruidSpells
     SPELL_DRUID_GLYPH_OF_FRENZIED_REGEN  = 54810,
     SPELL_DRUID_FRENZIED_REGEN_HEAL_TAKE = 124769,
     SPELL_DRUID_CELESTIAL_ALIGNMENT      = 112071,
+    SPELL_DRUID_ASTRAL_COMMUNION         = 127663,
+};
+
+// Astral Communion - 127663
+class spell_dru_astral_communion : public SpellScriptLoader
+{
+    public:
+        spell_dru_astral_communion() : SpellScriptLoader("spell_dru_astral_communion") { }
+
+        class spell_dru_astral_communion_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_astral_communion_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    int32 eclipse = 25; // 20 Solar or Lunar energy
+
+                    // Give Lunar energy if Eclipse Power is null or negative, else, give Solar energy
+                    if (_player->GetEclipsePower() <= 0)
+                        _player->SetEclipsePower(int32(_player->GetEclipsePower() - eclipse));
+                    else
+                        _player->SetEclipsePower(int32(_player->GetEclipsePower() + eclipse));
+
+                    if (_player->GetEclipsePower() == 100 && !_player->HasAura(SPELL_DRUID_SOLAR_ECLIPSE))
+                    {
+                        _player->CastSpell(_player, SPELL_DRUID_SOLAR_ECLIPSE, true, 0); // Cast Lunar Eclipse
+                        _player->CastSpell(_player, SPELL_DRUID_NATURES_GRACE, true); // Cast Nature's Grace
+                        _player->CastSpell(_player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true); // Cast Eclipse - Give 35% of POWER_MANA
+                    }
+                    else if (_player->GetEclipsePower() == -100 && !_player->HasAura(SPELL_DRUID_LUNAR_ECLIPSE))
+                    {
+                        _player->CastSpell(_player, SPELL_DRUID_LUNAR_ECLIPSE, true, 0); // Cast Lunar Eclipse
+                        _player->CastSpell(_player, SPELL_DRUID_NATURES_GRACE, true); // Cast Nature's Grace
+                        _player->CastSpell(_player, SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE, true); // Cast Eclipse - Give 35% of POWER_MANA
+                    }
+                    else if (_player->HasAura(SPELL_DRUID_LUNAR_ECLIPSE) && _player->GetEclipsePower() >= 0)
+                        _player->RemoveAura(SPELL_DRUID_LUNAR_ECLIPSE);
+                    else if (_player->HasAura(SPELL_DRUID_SOLAR_ECLIPSE) && _player->GetEclipsePower() <= 0)
+                        _player->RemoveAura(SPELL_DRUID_SOLAR_ECLIPSE);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_astral_communion_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_astral_communion_AuraScript();
+        }
 };
 
 // Celestial Alignment - 112071
@@ -1097,6 +1151,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_astral_communion();
     new spell_dru_shooting_stars();
     new spell_dru_celestial_alignment();
     new spell_dru_frenzied_regeneration();
