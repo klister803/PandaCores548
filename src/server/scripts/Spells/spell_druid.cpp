@@ -44,7 +44,43 @@ enum DruidSpells
     SPELL_DRUID_LUNAR_ECLIPSE            = 48518,
     SPELL_DRUID_NATURES_GRACE            = 16886,
     SPELL_DRUID_EUPHORIA                 = 81062,
-    SPELL_DRUID_PROWL                    = 5215
+    SPELL_DRUID_PROWL                    = 5215,
+    SPELL_DRUID_WEAKENED_ARMOR           = 113746,
+};
+
+// Faerie Fire - 770
+class spell_dru_faerie_fire : public SpellScriptLoader
+{
+    public:
+        spell_dru_faerie_fire() : SpellScriptLoader("spell_dru_faerie_fire") { }
+
+        class spell_dru_faerie_fire_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_faerie_fire_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        _player->CastSpell(target, SPELL_DRUID_WEAKENED_ARMOR, true);
+                        _player->CastSpell(target, SPELL_DRUID_WEAKENED_ARMOR, true);
+                        _player->CastSpell(target, SPELL_DRUID_WEAKENED_ARMOR, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_faerie_fire_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_faerie_fire_SpellScript();
+        }
 };
 
 // Teleport : Moonglade - 18960
@@ -836,6 +872,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_faerie_fire();
     new spell_dru_teleport_moonglade();
     new spell_dru_growl();
     new spell_dru_prowl();
