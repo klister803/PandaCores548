@@ -52,6 +52,36 @@ enum DruidSpells
     SPELL_DRUID_ASTRAL_COMMUNION         = 127663,
     SPELL_DRUID_SUNFIRE                  = 93402,
     SPELL_DRUID_MOONFIRE                 = 8921,
+    SPELL_DRUID_SWIFTMEND                = 81262,
+    SPELL_DRUID_SWIFTMEND_TICK           = 81269,
+};
+
+// Swiftmend - 81262
+class spell_dru_swiftmend : public SpellScriptLoader
+{
+    public:
+        spell_dru_swiftmend() : SpellScriptLoader("spell_dru_swiftmend") { }
+
+        class spell_dru_swiftmend_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_swiftmend_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_DRUID_SWIFTMEND))
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_SWIFTMEND_TICK, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_swiftmend_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_swiftmend_AuraScript();
+        }
 };
 
 // Astral Communion - 127663
@@ -1172,6 +1202,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_swiftmend();
     new spell_dru_astral_communion();
     new spell_dru_shooting_stars();
     new spell_dru_celestial_alignment();
