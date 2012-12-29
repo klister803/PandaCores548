@@ -46,6 +46,66 @@ enum DruidSpells
     SPELL_DRUID_EUPHORIA                 = 81062,
     SPELL_DRUID_PROWL                    = 5215,
     SPELL_DRUID_WEAKENED_ARMOR           = 113746,
+    SPELL_DRUID_GLYPH_OF_FRENZIED_REGEN  = 54810,
+    SPELL_DRUID_FRENZIED_REGEN_HEAL_TAKE = 124769,
+};
+
+// Frenzied Regeneration - 22842
+class spell_dru_frenzied_regeneration : public SpellScriptLoader
+{
+    public:
+        spell_dru_frenzied_regeneration() : SpellScriptLoader("spell_dru_frenzied_regeneration") { }
+
+        class spell_dru_frenzied_regeneration_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_frenzied_regeneration_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (!_player->HasAura(SPELL_DRUID_GLYPH_OF_FRENZIED_REGEN))
+                        {
+                            int32 rageused = _player->GetPower(POWER_RAGE);
+                            int32 AP = _player->GetTotalAttackPowerValue(BASE_ATTACK);
+                            int32 agility = _player->GetStat(STAT_AGILITY) * 4;
+                            int32 stamina = int32(_player->GetStat(STAT_STAMINA) * 2.5f);
+                            int32 healAmount;
+
+                            healAmount = int32(2 * (AP - agility));
+
+                            if (healAmount < 0)
+                                healAmount = stamina;
+
+                            if (rageused >= 600)
+                                rageused = 600;
+                            else
+                                healAmount = rageused * healAmount / 600;
+
+                            SetHitHeal(healAmount);
+                            _player->EnergizeBySpell(_player, 22842, -rageused, POWER_RAGE);
+                        }
+                        else
+                        {
+                            SetHitHeal(0);
+                            _player->CastSpell(_player, SPELL_DRUID_FRENZIED_REGEN_HEAL_TAKE, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_frenzied_regeneration_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_frenzied_regeneration_SpellScript();
+        }
 };
 
 // Stampeding Roar - 97993
@@ -975,6 +1035,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_frenzied_regeneration();
     new spell_dru_stampeding_roar();
     new spell_dru_innervate();
     new spell_dru_lacerate();
