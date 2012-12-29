@@ -500,7 +500,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             _player->AddSpellCooldown(106785, 0, time(NULL) + 3);
         }
     }
-    // Mutilate - 33917 and Mutilate - 33876 (form cat)
+    // Mangle - 33917 and Mangle - 33876 (form cat)
     if (spellInfo->Id == 33917 && _player->GetShapeshiftForm() == FORM_CAT)
     {
         // Use the right spell
@@ -511,7 +511,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellId = newSpellInfo->Id;
         }
     }
-    // Mutilate - 33917 and Mutilate - 33878 (form bear)
+    // Mangle - 33917 and Mangle - 33878 (form bear)
     else if (spellInfo->Id == 33917 && _player->GetShapeshiftForm() == FORM_BEAR)
     {
         // Use the right spell
