@@ -46,6 +46,164 @@ enum DruidSpells
     SPELL_DRUID_EUPHORIA                 = 81062,
     SPELL_DRUID_PROWL                    = 5215,
     SPELL_DRUID_WEAKENED_ARMOR           = 113746,
+    SPELL_DRUID_GLYPH_OF_FRENZIED_REGEN  = 54810,
+    SPELL_DRUID_FRENZIED_REGEN_HEAL_TAKE = 124769,
+};
+
+// Frenzied Regeneration - 22842
+class spell_dru_frenzied_regeneration : public SpellScriptLoader
+{
+    public:
+        spell_dru_frenzied_regeneration() : SpellScriptLoader("spell_dru_frenzied_regeneration") { }
+
+        class spell_dru_frenzied_regeneration_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_frenzied_regeneration_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (!_player->HasAura(SPELL_DRUID_GLYPH_OF_FRENZIED_REGEN))
+                        {
+                            int32 rageused = _player->GetPower(POWER_RAGE);
+                            int32 AP = _player->GetTotalAttackPowerValue(BASE_ATTACK);
+                            int32 agility = _player->GetStat(STAT_AGILITY) * 4;
+                            int32 stamina = int32(_player->GetStat(STAT_STAMINA) * 2.5f);
+                            int32 healAmount;
+
+                            healAmount = int32(2 * (AP - agility));
+
+                            if (healAmount < 0)
+                                healAmount = stamina;
+
+                            if (rageused >= 600)
+                                rageused = 600;
+                            else
+                                healAmount = rageused * healAmount / 600;
+
+                            SetHitHeal(healAmount);
+                            _player->EnergizeBySpell(_player, 22842, -rageused, POWER_RAGE);
+                        }
+                        else
+                        {
+                            SetHitHeal(0);
+                            _player->CastSpell(_player, SPELL_DRUID_FRENZIED_REGEN_HEAL_TAKE, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_frenzied_regeneration_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_frenzied_regeneration_SpellScript();
+        }
+};
+
+// Stampeding Roar - 97993
+class spell_dru_stampeding_roar : public SpellScriptLoader
+{
+    public:
+        spell_dru_stampeding_roar() : SpellScriptLoader("spell_dru_stampeding_roar") { }
+
+        class spell_dru_stampeding_roar_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_stampeding_roar_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        target->RemoveMovementImpairingAuras();
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_stampeding_roar_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_stampeding_roar_SpellScript();
+        }
+};
+
+// Innervate - 29166
+class spell_dru_innervate : public SpellScriptLoader
+{
+    public:
+        spell_dru_innervate() : SpellScriptLoader("spell_dru_innervate") { }
+
+        class spell_dru_innervate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_innervate_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 mana = target->GetMaxPower(POWER_MANA) / 10;
+
+                        if (target->GetGUID() == _player->GetGUID())
+                            mana *= 2;
+
+                        if (AuraPtr innervate = target->GetAura(29166))
+                            innervate->GetEffect(0)->ChangeAmount(mana / 10);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_innervate_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_innervate_SpellScript();
+        }
+};
+
+// Lacerate - 33745
+class spell_dru_lacerate : public SpellScriptLoader
+{
+    public:
+        spell_dru_lacerate() : SpellScriptLoader("spell_dru_lacerate") { }
+
+        class spell_dru_lacerate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_lacerate_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (roll_chance_i(25))
+                            _player->RemoveSpellCooldown(33917);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_lacerate_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_lacerate_SpellScript();
+        }
 };
 
 // Faerie Fire - 770
@@ -111,7 +269,7 @@ class spell_dru_teleport_moonglade : public SpellScriptLoader
         }
 };
 
-// Growl - 6795
+// Growl - 6795, Might of Ursoc - 106922, Stampeding Roar - 106898
 class spell_dru_growl : public SpellScriptLoader
 {
     public:
@@ -125,7 +283,12 @@ class spell_dru_growl : public SpellScriptLoader
             {
                 // This spell activate the bear form
                 if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, 5487, true);
+                {
+                    if (GetSpellInfo()->Id == 106898 && _player->GetShapeshiftForm() != FORM_CAT && _player->GetShapeshiftForm() != FORM_BEAR)
+                        _player->CastSpell(_player, 5487, true);
+                    else if (GetSpellInfo()->Id != 106898)
+                        _player->CastSpell(_player, 5487, true);
+                }
             }
 
             void Register()
@@ -872,6 +1035,10 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_frenzied_regeneration();
+    new spell_dru_stampeding_roar();
+    new spell_dru_innervate();
+    new spell_dru_lacerate();
     new spell_dru_faerie_fire();
     new spell_dru_teleport_moonglade();
     new spell_dru_growl();

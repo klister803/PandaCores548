@@ -43,10 +43,10 @@ class mob_xian_the_weaponmaster_trigger : public CreatureScript
 
         enum eEvents
         {
-            EVENT_TALK_0 = 1,
-            EVENT_TALK_1 = 2,
+            EVENT_TALK_0    = 1,
+            EVENT_TALK_1    = 2,
             EVENT_JUMP_XIAN = 3,
-            EVENT_DISAPPEAR = 4,
+            EVENT_DISAPPEAR = 4
         };
 
         enum eSpells

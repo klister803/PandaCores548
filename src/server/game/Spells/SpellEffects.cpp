@@ -4821,6 +4821,10 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
     uint32 health = target->CountPctFromMaxHealth(damage);
     uint32 mana   = CalculatePct(target->GetMaxPower(POWER_MANA), damage);
 
+    // Rebirth, soulstone ...
+    if (m_spellInfo->Id == 20484 || m_spellInfo->Id == 3026)
+        health = target->CountPctFromMaxHealth(60);
+
     ExecuteLogEffectResurrect(effIndex, target);
 
     target->setResurrectRequestData(m_caster->GetGUID(), m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), health, mana);
