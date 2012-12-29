@@ -28,7 +28,7 @@
 #define MAX_QUIET_DISTANCE 43.0f
 
 template<class T>
-void FleeingMovementGenerator<T>::_setTargetLocation(std::shared_ptr<T>& owner)
+void FleeingMovementGenerator<T>::_setTargetLocation(std::shared_ptr<T> owner)
 {
     if (!owner)
         return;
@@ -52,7 +52,7 @@ void FleeingMovementGenerator<T>::_setTargetLocation(std::shared_ptr<T>& owner)
 }
 
 template<class T>
-bool FleeingMovementGenerator<T>::_getPoint(std::shared_ptr<T>& owner, float &x, float &y, float &z)
+bool FleeingMovementGenerator<T>::_getPoint(std::shared_ptr<T> owner, float &x, float &y, float &z)
 {
     if (!owner)
         return false;
@@ -190,7 +190,7 @@ bool FleeingMovementGenerator<T>::_getPoint(std::shared_ptr<T>& owner, float &x,
 }
 
 template<class T>
-bool FleeingMovementGenerator<T>::_setMoveData(std::shared_ptr<T>& owner)
+bool FleeingMovementGenerator<T>::_setMoveData(std::shared_ptr<T> owner)
 {
     float cur_dist_xyz = owner->GetDistance(i_caster_x, i_caster_y, i_caster_z);
 
@@ -282,7 +282,7 @@ bool FleeingMovementGenerator<T>::_setMoveData(std::shared_ptr<T>& owner)
 }
 
 template<class T>
-void FleeingMovementGenerator<T>::Initialize(std::shared_ptr<T>& owner)
+void FleeingMovementGenerator<T>::Initialize(std::shared_ptr<T> owner)
 {
     if (!owner)
         return;
@@ -313,7 +313,7 @@ void FleeingMovementGenerator<T>::Initialize(std::shared_ptr<T>& owner)
 }
 
 template<>
-void FleeingMovementGenerator<Creature>::_Init(CreaturePtr& owner)
+void FleeingMovementGenerator<Creature>::_Init(CreaturePtr owner)
 {
     if (!owner)
         return;
@@ -324,14 +324,14 @@ void FleeingMovementGenerator<Creature>::_Init(CreaturePtr& owner)
 }
 
 template<>
-void FleeingMovementGenerator<Player>::_Init(PlayerPtr& )
+void FleeingMovementGenerator<Player>::_Init(PlayerPtr )
 {
     is_water_ok = true;
     is_land_ok  = true;
 }
 
 template<>
-void FleeingMovementGenerator<Player>::Finalize(PlayerPtr& owner)
+void FleeingMovementGenerator<Player>::Finalize(PlayerPtr owner)
 {
     owner->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner->ClearUnitState(UNIT_STATE_FLEEING|UNIT_STATE_FLEEING_MOVE);
@@ -339,7 +339,7 @@ void FleeingMovementGenerator<Player>::Finalize(PlayerPtr& owner)
 }
 
 template<>
-void FleeingMovementGenerator<Creature>::Finalize(CreaturePtr& owner)
+void FleeingMovementGenerator<Creature>::Finalize(CreaturePtr owner)
 {
     owner->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner->ClearUnitState(UNIT_STATE_FLEEING|UNIT_STATE_FLEEING_MOVE);
@@ -348,13 +348,13 @@ void FleeingMovementGenerator<Creature>::Finalize(CreaturePtr& owner)
 }
 
 template<class T>
-void FleeingMovementGenerator<T>::Reset(std::shared_ptr<T>& owner)
+void FleeingMovementGenerator<T>::Reset(std::shared_ptr<T> owner)
 {
     Initialize(owner);
 }
 
 template<class T>
-bool FleeingMovementGenerator<T>::Update(std::shared_ptr<T>& owner, const uint32 &time_diff)
+bool FleeingMovementGenerator<T>::Update(std::shared_ptr<T> owner, const uint32 &time_diff)
 {
     if (!owner || !owner->isAlive())
         return false;
@@ -371,20 +371,20 @@ bool FleeingMovementGenerator<T>::Update(std::shared_ptr<T>& owner, const uint32
     return true;
 }
 
-template void FleeingMovementGenerator<Player>::Initialize(PlayerPtr& );
-template void FleeingMovementGenerator<Creature>::Initialize(CreaturePtr& );
-template bool FleeingMovementGenerator<Player>::_setMoveData(PlayerPtr& );
-template bool FleeingMovementGenerator<Creature>::_setMoveData(CreaturePtr& );
-template bool FleeingMovementGenerator<Player>::_getPoint(PlayerPtr& , float &, float &, float &);
-template bool FleeingMovementGenerator<Creature>::_getPoint(CreaturePtr& , float &, float &, float &);
-template void FleeingMovementGenerator<Player>::_setTargetLocation(PlayerPtr& );
-template void FleeingMovementGenerator<Creature>::_setTargetLocation(CreaturePtr& );
-template void FleeingMovementGenerator<Player>::Reset(PlayerPtr& );
-template void FleeingMovementGenerator<Creature>::Reset(CreaturePtr& );
-template bool FleeingMovementGenerator<Player>::Update(PlayerPtr& , const uint32 &);
-template bool FleeingMovementGenerator<Creature>::Update(CreaturePtr& , const uint32 &);
+template void FleeingMovementGenerator<Player>::Initialize(PlayerPtr);
+template void FleeingMovementGenerator<Creature>::Initialize(CreaturePtr);
+template bool FleeingMovementGenerator<Player>::_setMoveData(PlayerPtr);
+template bool FleeingMovementGenerator<Creature>::_setMoveData(CreaturePtr);
+template bool FleeingMovementGenerator<Player>::_getPoint(PlayerPtr, float &, float &, float &);
+template bool FleeingMovementGenerator<Creature>::_getPoint(CreaturePtr, float &, float &, float &);
+template void FleeingMovementGenerator<Player>::_setTargetLocation(PlayerPtr);
+template void FleeingMovementGenerator<Creature>::_setTargetLocation(CreaturePtr);
+template void FleeingMovementGenerator<Player>::Reset(PlayerPtr);
+template void FleeingMovementGenerator<Creature>::Reset(CreaturePtr);
+template bool FleeingMovementGenerator<Player>::Update(PlayerPtr, const uint32 &);
+template bool FleeingMovementGenerator<Creature>::Update(CreaturePtr, const uint32 &);
 
-void TimedFleeingMovementGenerator::Finalize(UnitPtr& owner)
+void TimedFleeingMovementGenerator::Finalize(UnitPtr owner)
 {
     owner->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_FLEEING);
     owner->ClearUnitState(UNIT_STATE_FLEEING|UNIT_STATE_FLEEING_MOVE);
@@ -398,7 +398,7 @@ void TimedFleeingMovementGenerator::Finalize(UnitPtr& owner)
     }
 }
 
-bool TimedFleeingMovementGenerator::Update(UnitPtr& owner, const uint32& time_diff)
+bool TimedFleeingMovementGenerator::Update(UnitPtr owner, const uint32& time_diff)
 {
     if (!owner->isAlive())
         return false;

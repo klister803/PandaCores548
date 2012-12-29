@@ -63,7 +63,7 @@ typedef std::shared_ptr<DistractMovementGenerator> DistractMovementGeneratorPtr;
 
 # define TO_GROUP(y) STATIC_CAST(Group,y)
 # define TO_CONST_GROUP(y) STATIC_CAST(const Group,y)
-# define TO_MAP(y) STATIC_CAST(Map,y)
+# define TO_MAP(y) CAST(Map,y)
 # define TO_CONST_MAP(y) STATIC_CAST(const Map,y)
 # define TO_INSTANCEMAP(y) STATIC_CAST(InstanceMap,y)
 # define TO_BATTLEGROUNDMAP(y) STATIC_CAST(BattlegroundMap,y)
@@ -238,6 +238,5 @@ typedef std::shared_ptr<DistractMovementGenerator> DistractMovementGeneratorPtr;
 /*
 ** End of spells and auras shared_ptr
 */
-#include "MovementGenerator.h"
 
 #endif /* !SHARED_PTRS_H */

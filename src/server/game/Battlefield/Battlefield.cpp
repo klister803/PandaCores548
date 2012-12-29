@@ -33,6 +33,7 @@
 #include "GroupMgr.h"
 #include "SpellAuraEffects.h"
 #include "ClassFactory.h"
+#include "../SharedPtrs/SharedPtrs.h"
 
 Battlefield::Battlefield()
 {
@@ -810,7 +811,7 @@ CreaturePtr Battlefield::SpawnCreature(uint32 entry, Position pos, TeamId team)
 CreaturePtr Battlefield::SpawnCreature(uint32 entry, float x, float y, float z, float o, TeamId team)
 {
     //Get map object
-    MapPtr map = TO_MAP(sMapMgr->CreateBaseMap(m_MapId));
+    MapPtr map = TO_MAP((sMapMgr->CreateBaseMap(m_MapId)));
     if (!map)
     {
         sLog->outError(LOG_FILTER_BATTLEFIELD, "Battlefield::SpawnCreature: Can't create creature entry: %u map not found", entry);
@@ -847,7 +848,7 @@ CreaturePtr Battlefield::SpawnCreature(uint32 entry, float x, float y, float z, 
 GameObjectPtr Battlefield::SpawnGameObject(uint32 entry, float x, float y, float z, float o)
 {
     // Get map object
-    MapPtr map = TO_MAP(sMapMgr->CreateBaseMap(571)); // *vomits*
+    MapPtr map = TO_MAP((sMapMgr->CreateBaseMap(571))); // *vomits*
     if (!map)
         return 0;
 

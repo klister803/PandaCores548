@@ -144,7 +144,7 @@ namespace Movement
         unit->SendMessageToSet(&data, true);
     }
 
-    MoveSplineInit::MoveSplineInit(UnitPtr& m) : unit(m)
+    MoveSplineInit::MoveSplineInit(UnitPtr m) : unit(m)
     {
         args.splineId = splineIdGen.NewId();
         // Elevators also use MOVEMENTFLAG_ONTRANSPORT but we do not keep track of their position changes

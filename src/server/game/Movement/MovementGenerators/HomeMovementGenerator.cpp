@@ -23,16 +23,16 @@
 #include "MoveSplineInit.h"
 #include "MoveSpline.h"
 
-void HomeMovementGenerator<Creature>::Initialize(CreaturePtr & owner)
+void HomeMovementGenerator<Creature>::Initialize(CreaturePtr owner)
 {
     _setTargetLocation(owner);
 }
 
-void HomeMovementGenerator<Creature>::Reset(CreaturePtr &)
+void HomeMovementGenerator<Creature>::Reset(CreaturePtr)
 {
 }
 
-void HomeMovementGenerator<Creature>::_setTargetLocation(CreaturePtr & owner)
+void HomeMovementGenerator<Creature>::_setTargetLocation(CreaturePtr owner)
 {
     if (owner->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
         return;
@@ -53,13 +53,13 @@ void HomeMovementGenerator<Creature>::_setTargetLocation(CreaturePtr & owner)
     owner->ClearUnitState(UNIT_STATE_ALL_STATE & ~UNIT_STATE_EVADE);
 }
 
-bool HomeMovementGenerator<Creature>::Update(CreaturePtr &owner, const uint32 /*time_diff*/)
+bool HomeMovementGenerator<Creature>::Update(CreaturePtr owner, const uint32 /*time_diff*/)
 {
     arrived = owner->movespline->Finalized();
     return !arrived;
 }
 
-void HomeMovementGenerator<Creature>::Finalize(CreaturePtr& owner)
+void HomeMovementGenerator<Creature>::Finalize(CreaturePtr owner)
 {
     if (arrived)
     {

@@ -945,16 +945,16 @@ void Object::ClearUpdateMask(bool remove)
 
 void Object::BuildFieldsUpdate(PlayerPtr player, UpdateDataMapType& data_map) const
 {
-    UpdateDataMapType::iterator iter = data_map.find(player);
+    UpdateDataMapType::iterator iter = data_map.find(player->GetGUID());
 
     if (iter == data_map.end())
     {
-        std::pair<UpdateDataMapType::iterator, bool> p = data_map.insert(UpdateDataMapType::value_type(player, UpdateData(player->GetMapId())));
+        std::pair<UpdateDataMapType::iterator, bool> p = data_map.insert(UpdateDataMapType::value_type(player->GetGUID(), UpdateData(player->GetMapId())));
         ASSERT(p.second);
         iter = p.first;
     }
 
-    BuildValuesUpdateBlockForPlayer(&iter->second, iter->first);
+    BuildValuesUpdateBlockForPlayer(&iter->second, ObjectAccessor::GetPlayer(player, iter->first));
 }
 
 void Object::_LoadIntoDataField(char const* data, uint32 startOffset, uint32 count)
@@ -2215,7 +2215,7 @@ namespace Trinity
     class MonsterChatBuilder
     {
         public:
-            MonsterChatBuilder(constWorldObjectPtr& obj, ChatMsg msgtype, int32 textId, uint32 language, uint64 targetGUID)
+            MonsterChatBuilder(constWorldObjectPtr obj, ChatMsg msgtype, int32 textId, uint32 language, uint64 targetGUID)
                 : i_object(obj), i_msgtype(msgtype), i_textId(textId), i_language(language), i_targetGUID(targetGUID) {}
             void operator()(WorldPacket& data, LocaleConstant loc_idx)
             {
@@ -2226,7 +2226,7 @@ namespace Trinity
             }
 
         private:
-            constWorldObjectPtr& i_object;
+            constWorldObjectPtr i_object;
             ChatMsg i_msgtype;
             int32 i_textId;
             uint32 i_language;
@@ -2236,7 +2236,7 @@ namespace Trinity
     class MonsterCustomChatBuilder
     {
         public:
-            MonsterCustomChatBuilder(constWorldObjectPtr& obj, ChatMsg msgtype, const char* text, uint32 language, uint64 targetGUID)
+            MonsterCustomChatBuilder(constWorldObjectPtr obj, ChatMsg msgtype, const char* text, uint32 language, uint64 targetGUID)
                 : i_object(obj), i_msgtype(msgtype), i_text(text), i_language(language), i_targetGUID(targetGUID) {}
             void operator()(WorldPacket& data, LocaleConstant loc_idx)
             {
@@ -2245,7 +2245,7 @@ namespace Trinity
             }
 
         private:
-            constWorldObjectPtr& i_object;
+            constWorldObjectPtr i_object;
             ChatMsg i_msgtype;
             const char* i_text;
             uint32 i_language;
@@ -2828,7 +2828,7 @@ namespace Trinity
     class NearUsedPosDo
     {
         public:
-            NearUsedPosDo(constWorldObjectPtr& obj, constWorldObjectPtr searcher, float angle, ObjectPosSelector& selector)
+            NearUsedPosDo(constWorldObjectPtr obj, constWorldObjectPtr searcher, float angle, ObjectPosSelector& selector)
                 : i_object(obj), i_searcher(searcher), i_angle(angle), i_selector(selector) {}
 
             void operator()(CorpsePtr) const {}
@@ -2887,7 +2887,7 @@ namespace Trinity
                 i_selector.AddUsedPos(u->GetObjectSize(), angle, dist2d + i_object.GetObjectSize());
             }
         private:
-            constWorldObjectPtr& i_object;
+            constWorldObjectPtr i_object;
             constWorldObjectPtr i_searcher;
             float              i_angle;
             ObjectPosSelector& i_selector;
@@ -3210,9 +3210,9 @@ void WorldObject::UpdateObjectVisibility(bool /*forced*/)
 struct WorldObjectChangeAccumulator
 {
     UpdateDataMapType& i_updateDatas;
-    WorldObjectPtr& i_object;
+    WorldObjectPtr i_object;
     std::set<uint64> plr_list;
-    WorldObjectChangeAccumulator(WorldObjectPtr& obj, UpdateDataMapType& d) : i_updateDatas(d), i_object(obj) {}
+    WorldObjectChangeAccumulator(WorldObjectPtr obj, UpdateDataMapType& d) : i_updateDatas(d), i_object(obj) {}
     void Visit(std::shared_ptr<PlayerMapType>& m)
     {
         PlayerPtr source = nullptr;

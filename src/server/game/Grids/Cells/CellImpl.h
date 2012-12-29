@@ -119,7 +119,7 @@ inline void Cell::Visit(CellCoord const& standing_cell, TypeContainerVisitor<T, 
 }
 
 template<class T, class CONTAINER>
-inline void Cell::Visit(CellCoord const& standing_cell, TypeContainerVisitor<T, CONTAINER>& visitor, Map& map, constWorldObjectPtr& obj, float radius) const
+inline void Cell::Visit(CellCoord const& standing_cell, TypeContainerVisitor<T, CONTAINER>& visitor, Map& map, constWorldObjectPtr obj, float radius) const
 {
     //we should increase search radius by object's radius, otherwise
     //we could have problems with huge creatures, which won't attack nearest players etc

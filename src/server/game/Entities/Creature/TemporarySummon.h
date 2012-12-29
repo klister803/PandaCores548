@@ -112,10 +112,10 @@ class Puppet : public Minion
 class ForcedUnsummonDelayEvent : public BasicEvent
 {
 public:
-    ForcedUnsummonDelayEvent(TempSummonPtr& owner) : BasicEvent(), m_owner(owner) { }
+    ForcedUnsummonDelayEvent(TempSummonPtr owner) : BasicEvent(), m_owner(owner) { }
     bool Execute(uint64 e_time, uint32 p_time);
 
 private:
-    TempSummonPtr& m_owner;
+    TempSummonPtr m_owner;
 };
 #endif

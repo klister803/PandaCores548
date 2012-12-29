@@ -395,17 +395,8 @@ public:
     template<class T>
     static std::shared_ptr<HomeMovementGenerator<T>> ConstructHomeMovementGenerator()
     {
-        static_assert(false, "ClassFactory can't build HomeMovementGenerator for T <> Creature");
+        //static_assert(false, "ClassFactory can't build HomeMovementGenerator for T <> Creature");
         return nullptr;
-    }
-
-    template<>
-    static std::shared_ptr<HomeMovementGenerator<Creature>> ConstructHomeMovementGenerator()
-    {
-        std::shared_ptr<HomeMovementGenerator<Creature>> gen (new HomeMovementGenerator<Creature>());
-        if (!gen)
-            return nullptr;
-        return gen;
     }
 
     template<class T>
@@ -461,23 +452,32 @@ public:
     template<class T>
     static std::shared_ptr<T> ConstructClass()
     {
-        static_assert(false, "ConstructClass");
+        //static_assert(false, "ConstructClass");
         std::shared_ptr<T> t(new T());
         return t;
     }
-
-    template<>
-    static std::shared_ptr<GameObject> ConstructClass()
-    {
-        std::shared_ptr<GameObject> t(new GameObject());
-        return t;
-    }
-
-    template<>
-    static std::shared_ptr<Creature> ConstructClass()
-    {
-        return ConstructCreature();
-    }
 };
+
+template<>
+inline std::shared_ptr<HomeMovementGenerator<Creature>> ClassFactory::ConstructHomeMovementGenerator()
+{
+    std::shared_ptr<HomeMovementGenerator<Creature>> gen (new HomeMovementGenerator<Creature>());
+    if (!gen)
+        return nullptr;
+    return gen;
+}
+
+template<>
+inline std::shared_ptr<GameObject> ClassFactory::ConstructClass()
+{
+    std::shared_ptr<GameObject> t(new GameObject());
+    return t;
+}
+
+template<>
+inline std::shared_ptr<Creature> ClassFactory::ConstructClass()
+{
+    return ConstructCreature();
+}
 
 #endif /* !CLASS_FACTORY_H */

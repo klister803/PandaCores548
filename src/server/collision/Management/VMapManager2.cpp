@@ -39,7 +39,7 @@
 # define INCLUDES_FOR_SHARED_PTR
 # include "../Entities/Player/Player.h"
 # include "../Groups/Group.h"
-# include "../Spells/Auras/SpellAuraEffects.H"
+# include "../Spells/Auras/SpellAuraEffects.h"
 # undef INCLUDES_FOR_SHARED_PTR
 #endif
 

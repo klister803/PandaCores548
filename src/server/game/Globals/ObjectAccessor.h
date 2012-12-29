@@ -183,17 +183,17 @@ class ObjectAccessor
         }
 
         // these functions return objects only if in map of specified object
-        static WorldObjectPtr GetWorldObject(constWorldObjectPtr&, uint64);
-        static ObjectPtr GetObjectByTypeMask(constWorldObjectPtr&, uint64, uint32 typemask);
-        static CorpsePtr GetCorpse(constWorldObjectPtr& u, uint64 guid);
-        static GameObjectPtr GetGameObject(constWorldObjectPtr& u, uint64 guid);
-        static DynamicObjectPtr GetDynamicObject(constWorldObjectPtr& u, uint64 guid);
-        static UnitPtr GetUnit(constWorldObjectPtr&, uint64 guid);
-        static CreaturePtr GetCreature(constWorldObjectPtr& u, uint64 guid);
-        static PetPtr GetPet(constWorldObjectPtr&, uint64 guid);
-        static PlayerPtr GetPlayer(constWorldObjectPtr&, uint64 guid);
-        static CreaturePtr GetCreatureOrPetOrVehicle(constWorldObjectPtr&, uint64);
-        static TransportPtr GetTransport(constWorldObjectPtr& u, uint64 guid);
+        static WorldObjectPtr GetWorldObject(constWorldObjectPtr, uint64);
+        static ObjectPtr GetObjectByTypeMask(constWorldObjectPtr, uint64, uint32 typemask);
+        static CorpsePtr GetCorpse(constWorldObjectPtr u, uint64 guid);
+        static GameObjectPtr GetGameObject(constWorldObjectPtr u, uint64 guid);
+        static DynamicObjectPtr GetDynamicObject(constWorldObjectPtr u, uint64 guid);
+        static UnitPtr GetUnit(constWorldObjectPtr, uint64 guid);
+        static CreaturePtr GetCreature(constWorldObjectPtr u, uint64 guid);
+        static PetPtr GetPet(constWorldObjectPtr, uint64 guid);
+        static PlayerPtr GetPlayer(constWorldObjectPtr, uint64 guid);
+        static CreaturePtr GetCreatureOrPetOrVehicle(constWorldObjectPtr, uint64);
+        static TransportPtr GetTransport(constWorldObjectPtr u, uint64 guid);
 
         // these functions return objects if found in whole world
         // ACCESS LIKE THAT IS NOT THREAD SAFE

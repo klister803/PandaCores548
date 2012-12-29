@@ -29,7 +29,7 @@
 #include <cmath>
 
 template<class T, typename D>
-void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(std::shared_ptr<T> &owner)
+void TargetedMovementGeneratorMedium<T,D>::_setTargetLocation(std::shared_ptr<T> owner)
 {
     if (!i_target->isValid() || !(*(Reference<T, D>*)i_target.get())->IsInWorld())
         return;
@@ -121,7 +121,7 @@ void TargetedMovementGeneratorMedium<Creature,FollowMovementGenerator<Creature> 
 }
 
 template<class T, typename D>
-bool TargetedMovementGeneratorMedium<T,D>::Update(std::shared_ptr<T> &owner, const uint32 & time_diff)
+bool TargetedMovementGeneratorMedium<T,D>::Update(std::shared_ptr<T> owner, const uint32 & time_diff)
 {
     if (!i_target->isValid() || !(*(Reference<T, D>*)i_target.get())->IsInWorld())
         return false;
@@ -183,21 +183,21 @@ bool TargetedMovementGeneratorMedium<T,D>::Update(std::shared_ptr<T> &owner, con
 
 //-----------------------------------------------//
 template<class T>
-void ChaseMovementGenerator<T>::_reachTarget(std::shared_ptr<T> &owner)
+void ChaseMovementGenerator<T>::_reachTarget(std::shared_ptr<T> owner)
 {
-    if (owner->IsWithinMeleeRange(i_target->getTarget()))
-        owner->Attack(i_target->getTarget(),true);
+    if (owner->IsWithinMeleeRange(this->i_target->getTarget()))
+        owner->Attack(this->i_target->getTarget(),true);
 }
 
 template<>
-void ChaseMovementGenerator<Player>::Initialize(PlayerPtr&owner)
+void ChaseMovementGenerator<Player>::Initialize(PlayerPtr owner)
 {
     owner->AddUnitState(UNIT_STATE_CHASE|UNIT_STATE_CHASE_MOVE);
     _setTargetLocation(owner);
 }
 
 template<>
-void ChaseMovementGenerator<Creature>::Initialize(CreaturePtr&owner)
+void ChaseMovementGenerator<Creature>::Initialize(CreaturePtr owner)
 {
     owner->SetWalk(false);
     owner->AddUnitState(UNIT_STATE_CHASE|UNIT_STATE_CHASE_MOVE);
@@ -205,24 +205,24 @@ void ChaseMovementGenerator<Creature>::Initialize(CreaturePtr&owner)
 }
 
 template<class T>
-void ChaseMovementGenerator<T>::Finalize(std::shared_ptr<T> &owner)
+void ChaseMovementGenerator<T>::Finalize(std::shared_ptr<T> owner)
 {
     owner->ClearUnitState(UNIT_STATE_CHASE|UNIT_STATE_CHASE_MOVE);
 }
 
 template<class T>
-void ChaseMovementGenerator<T>::Reset(std::shared_ptr<T> &owner)
+void ChaseMovementGenerator<T>::Reset(std::shared_ptr<T> owner)
 {
     Initialize(owner);
 }
 
 template<class T>
-void ChaseMovementGenerator<T>::MovementInform(std::shared_ptr<T> & /*Unit*/)
+void ChaseMovementGenerator<T>::MovementInform(std::shared_ptr<T>  /*Unit*/)
 {
 }
 
 template<>
-void ChaseMovementGenerator<Creature>::MovementInform(CreaturePtr&unit)
+void ChaseMovementGenerator<Creature>::MovementInform(CreaturePtr unit)
 {
     // Pass back the GUIDLow of the target-> If it is pet's owner then PetAI will handle
     if (unit->AI())
@@ -243,13 +243,13 @@ bool FollowMovementGenerator<Player>::EnableWalking() const
 }
 
 template<>
-void FollowMovementGenerator<Player>::_updateSpeed(PlayerPtr&/*u*/)
+void FollowMovementGenerator<Player>::_updateSpeed(PlayerPtr/*u*/)
 {
     // nothing to do for Player
 }
 
 template<>
-void FollowMovementGenerator<Creature>::_updateSpeed(CreaturePtr&u)
+void FollowMovementGenerator<Creature>::_updateSpeed(CreaturePtr u)
 {
     // pet only sync speed with owner
     if (!TO_CREATURE(u)->isPet() || !i_target->isValid() || ((Unit*)i_target.get())->GetGUID() != u->GetOwnerGUID())
@@ -261,7 +261,7 @@ void FollowMovementGenerator<Creature>::_updateSpeed(CreaturePtr&u)
 }
 
 template<>
-void FollowMovementGenerator<Player>::Initialize(PlayerPtr&owner)
+void FollowMovementGenerator<Player>::Initialize(PlayerPtr owner)
 {
     owner->AddUnitState(UNIT_STATE_FOLLOW|UNIT_STATE_FOLLOW_MOVE);
     _updateSpeed(owner);
@@ -269,7 +269,7 @@ void FollowMovementGenerator<Player>::Initialize(PlayerPtr&owner)
 }
 
 template<>
-void FollowMovementGenerator<Creature>::Initialize(CreaturePtr&owner)
+void FollowMovementGenerator<Creature>::Initialize(CreaturePtr owner)
 {
     owner->AddUnitState(UNIT_STATE_FOLLOW|UNIT_STATE_FOLLOW_MOVE);
     _updateSpeed(owner);
@@ -277,25 +277,25 @@ void FollowMovementGenerator<Creature>::Initialize(CreaturePtr&owner)
 }
 
 template<class T>
-void FollowMovementGenerator<T>::Finalize(std::shared_ptr<T> &owner)
+void FollowMovementGenerator<T>::Finalize(std::shared_ptr<T> owner)
 {
     owner->ClearUnitState(UNIT_STATE_FOLLOW|UNIT_STATE_FOLLOW_MOVE);
     _updateSpeed(owner);
 }
 
 template<class T>
-void FollowMovementGenerator<T>::Reset(std::shared_ptr<T> &owner)
+void FollowMovementGenerator<T>::Reset(std::shared_ptr<T> owner)
 {
     Initialize(owner);
 }
 
 template<class T>
-void FollowMovementGenerator<T>::MovementInform(std::shared_ptr<T> & /*Unit*/)
+void FollowMovementGenerator<T>::MovementInform(std::shared_ptr<T>  /*Unit*/)
 {
 }
 
 template<>
-void FollowMovementGenerator<Creature>::MovementInform(CreaturePtr& unit)
+void FollowMovementGenerator<Creature>::MovementInform(CreaturePtr unit)
 {
     // Pass back the GUIDLow of the target-> If it is pet's owner then PetAI will handle
     if (unit->AI())
@@ -303,25 +303,25 @@ void FollowMovementGenerator<Creature>::MovementInform(CreaturePtr& unit)
 }
 
 //-----------------------------------------------//
-template void TargetedMovementGeneratorMedium<Player,ChaseMovementGenerator<Player> >::_setTargetLocation(PlayerPtr&);
-template void TargetedMovementGeneratorMedium<Player,FollowMovementGenerator<Player> >::_setTargetLocation(PlayerPtr&);
-template void TargetedMovementGeneratorMedium<Creature,ChaseMovementGenerator<Creature> >::_setTargetLocation(CreaturePtr&);
-template void TargetedMovementGeneratorMedium<Creature,FollowMovementGenerator<Creature> >::_setTargetLocation(CreaturePtr&);
-template bool TargetedMovementGeneratorMedium<Player,ChaseMovementGenerator<Player> >::Update(PlayerPtr&, const uint32 &);
-template bool TargetedMovementGeneratorMedium<Player,FollowMovementGenerator<Player> >::Update(PlayerPtr&, const uint32 &);
-template bool TargetedMovementGeneratorMedium<Creature,ChaseMovementGenerator<Creature> >::Update(CreaturePtr&, const uint32 &);
-template bool TargetedMovementGeneratorMedium<Creature,FollowMovementGenerator<Creature> >::Update(CreaturePtr&, const uint32 &);
+template void TargetedMovementGeneratorMedium<Player,ChaseMovementGenerator<Player> >::_setTargetLocation(PlayerPtr);
+template void TargetedMovementGeneratorMedium<Player,FollowMovementGenerator<Player> >::_setTargetLocation(PlayerPtr);
+template void TargetedMovementGeneratorMedium<Creature,ChaseMovementGenerator<Creature> >::_setTargetLocation(CreaturePtr);
+template void TargetedMovementGeneratorMedium<Creature,FollowMovementGenerator<Creature> >::_setTargetLocation(CreaturePtr);
+template bool TargetedMovementGeneratorMedium<Player,ChaseMovementGenerator<Player> >::Update(PlayerPtr, const uint32 &);
+template bool TargetedMovementGeneratorMedium<Player,FollowMovementGenerator<Player> >::Update(PlayerPtr, const uint32 &);
+template bool TargetedMovementGeneratorMedium<Creature,ChaseMovementGenerator<Creature> >::Update(CreaturePtr, const uint32 &);
+template bool TargetedMovementGeneratorMedium<Creature,FollowMovementGenerator<Creature> >::Update(CreaturePtr, const uint32 &);
 
-template void ChaseMovementGenerator<Player>::_reachTarget(PlayerPtr&);
-template void ChaseMovementGenerator<Creature>::_reachTarget(CreaturePtr&);
-template void ChaseMovementGenerator<Player>::Finalize(PlayerPtr&);
-template void ChaseMovementGenerator<Creature>::Finalize(CreaturePtr&);
-template void ChaseMovementGenerator<Player>::Reset(PlayerPtr&);
-template void ChaseMovementGenerator<Creature>::Reset(CreaturePtr&);
-template void ChaseMovementGenerator<Player>::MovementInform(PlayerPtr&unit);
+template void ChaseMovementGenerator<Player>::_reachTarget(PlayerPtr);
+template void ChaseMovementGenerator<Creature>::_reachTarget(CreaturePtr);
+template void ChaseMovementGenerator<Player>::Finalize(PlayerPtr);
+template void ChaseMovementGenerator<Creature>::Finalize(CreaturePtr);
+template void ChaseMovementGenerator<Player>::Reset(PlayerPtr);
+template void ChaseMovementGenerator<Creature>::Reset(CreaturePtr);
+template void ChaseMovementGenerator<Player>::MovementInform(PlayerPtr unit);
 
-template void FollowMovementGenerator<Player>::Finalize(PlayerPtr&);
-template void FollowMovementGenerator<Creature>::Finalize(CreaturePtr&);
-template void FollowMovementGenerator<Player>::Reset(PlayerPtr&);
-template void FollowMovementGenerator<Creature>::Reset(CreaturePtr&);
-template void FollowMovementGenerator<Player>::MovementInform(PlayerPtr&unit);
+template void FollowMovementGenerator<Player>::Finalize(PlayerPtr);
+template void FollowMovementGenerator<Creature>::Finalize(CreaturePtr);
+template void FollowMovementGenerator<Player>::Reset(PlayerPtr);
+template void FollowMovementGenerator<Creature>::Reset(CreaturePtr);
+template void FollowMovementGenerator<Player>::MovementInform(PlayerPtr unit);

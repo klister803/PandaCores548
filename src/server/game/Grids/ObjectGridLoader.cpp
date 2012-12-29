@@ -191,7 +191,7 @@ void ObjectGridLoader::LoadN(void)
 template<class T>
 void ObjectGridUnloader::Visit(std::shared_ptr<GridRefManager<T>> &m)
 {
-    for (GridRefManager<T>::iterator itr = m->begin(); itr != m->end(); ++itr)
+    for (typename GridRefManager<T>::iterator itr = m->begin(); itr != m->end(); ++itr)
     {
         std::shared_ptr<T> obj = m->getFirst()->getSource();
         // if option set then object already saved at this moment

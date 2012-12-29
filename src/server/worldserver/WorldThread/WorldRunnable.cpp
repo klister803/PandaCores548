@@ -34,7 +34,7 @@
 
 #ifndef INCLUDES_FOR_SHARED_PTR
 # define INCLUDES_FOR_SHARED_PTR
-# include "../Spells/Auras/SpellAuraEffects.H"
+# include "../Spells/Auras/SpellAuraEffects.h"
 # include "../Groups/Group.h"
 # undef INCLUDES_FOR_SHARED_PTR
 #endif

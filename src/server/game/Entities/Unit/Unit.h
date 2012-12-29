@@ -2128,9 +2128,9 @@ class Unit : public WorldObject
 
         void addFollower(FollowerReferencePtr pRef) { m_FollowingRefManager.insertFirst(pRef); }
         void removeFollower(FollowerReferencePtr /*pRef*/) { /* nothing to do yet */ }
-        static UnitPtr GetUnit(WorldObjectPtr& object, uint64 guid);
-        static PlayerPtr GetPlayer(WorldObjectPtr& object, uint64 guid);
-        static CreaturePtr GetCreature(WorldObjectPtr& object, uint64 guid);
+        static UnitPtr GetUnit(WorldObjectPtr object, uint64 guid);
+        static PlayerPtr GetPlayer(WorldObjectPtr object, uint64 guid);
+        static CreaturePtr GetCreature(WorldObjectPtr object, uint64 guid);
 
         MotionMaster* GetMotionMaster() { return &i_motionMaster; }
         const MotionMaster* GetMotionMaster() const { return &i_motionMaster; }

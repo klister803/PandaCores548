@@ -33,7 +33,7 @@
 #endif
 
 template<>
-void RandomMovementGenerator<Creature>::_setRandomLocation(CreaturePtr& creature)
+void RandomMovementGenerator<Creature>::_setRandomLocation(CreaturePtr creature)
 {
     float respX, respY, respZ, respO, destX, destY, destZ, travelDistZ;
     creature->GetHomePosition(respX, respY, respZ, respO);
@@ -114,7 +114,7 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(CreaturePtr& creature
 }
 
 template<>
-void RandomMovementGenerator<Creature>::Initialize(CreaturePtr& creature)
+void RandomMovementGenerator<Creature>::Initialize(CreaturePtr creature)
 {
     if (!creature->isAlive())
         return;
@@ -127,20 +127,20 @@ void RandomMovementGenerator<Creature>::Initialize(CreaturePtr& creature)
 }
 
 template<>
-void RandomMovementGenerator<Creature>::Reset(CreaturePtr& creature)
+void RandomMovementGenerator<Creature>::Reset(CreaturePtr creature)
 {
     Initialize(creature);
 }
 
 template<>
-void RandomMovementGenerator<Creature>::Finalize(CreaturePtr& creature)
+void RandomMovementGenerator<Creature>::Finalize(CreaturePtr creature)
 {
     creature->ClearUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
     creature->SetWalk(false);
 }
 
 template<>
-bool RandomMovementGenerator<Creature>::Update(CreaturePtr& creature, const uint32 diff)
+bool RandomMovementGenerator<Creature>::Update(CreaturePtr creature, const uint32 diff)
 {
     if (creature->HasUnitState(UNIT_STATE_ROOT | UNIT_STATE_STUNNED | UNIT_STATE_DISTRACTED))
     {
@@ -159,7 +159,7 @@ bool RandomMovementGenerator<Creature>::Update(CreaturePtr& creature, const uint
 }
 
 template<>
-bool RandomMovementGenerator<Creature>::GetResetPosition(CreaturePtr& creature, float& x, float& y, float& z)
+bool RandomMovementGenerator<Creature>::GetResetPosition(CreaturePtr creature, float& x, float& y, float& z)
 {
     float radius;
     creature->GetRespawnPosition(x, y, z, nullptr, &radius);

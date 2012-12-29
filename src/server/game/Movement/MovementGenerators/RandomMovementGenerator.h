@@ -27,12 +27,12 @@ class RandomMovementGenerator : public MovementGeneratorMedium< T, RandomMovemen
     public:
         RandomMovementGenerator(float spawn_dist = 0.0f) : i_nextMoveTime(0), wander_distance(spawn_dist) {}
 
-        void _setRandomLocation(std::shared_ptr<T> &);
-        void Initialize(std::shared_ptr<T> &);
-        void Finalize(std::shared_ptr<T> &);
-        void Reset(std::shared_ptr<T> &);
-        bool Update(std::shared_ptr<T> &, const uint32);
-        bool GetResetPosition(std::shared_ptr<T>&, float& x, float& y, float& z);
+        void _setRandomLocation(std::shared_ptr<T>);
+        void Initialize(std::shared_ptr<T>);
+        void Finalize(std::shared_ptr<T>);
+        void Reset(std::shared_ptr<T>);
+        bool Update(std::shared_ptr<T>, const uint32);
+        bool GetResetPosition(std::shared_ptr<T>, float& x, float& y, float& z);
         MovementGeneratorType GetMovementGeneratorType() { return RANDOM_MOTION_TYPE; }
     private:
         TimeTrackerSmall i_nextMoveTime;

@@ -28,7 +28,7 @@
 
 //----- Point Movement Generator
 template<class T>
-void PointMovementGenerator<T>::Initialize(std::shared_ptr<T>& unit)
+void PointMovementGenerator<T>::Initialize(std::shared_ptr<T> unit)
 {
     if (!unit->IsStopped())
         unit->StopMoving();
@@ -43,7 +43,7 @@ void PointMovementGenerator<T>::Initialize(std::shared_ptr<T>& unit)
 }
 
 template<class T>
-bool PointMovementGenerator<T>::Update(std::shared_ptr<T>& unit, const uint32 & /*diff*/)
+bool PointMovementGenerator<T>::Update(std::shared_ptr<T> unit, const uint32 & /*diff*/)
 {
     if (!&unit)
         return false;
@@ -70,7 +70,7 @@ bool PointMovementGenerator<T>::Update(std::shared_ptr<T>& unit, const uint32 & 
 }
 
 template<class T>
-void PointMovementGenerator<T>::Finalize(std::shared_ptr<T>& unit)
+void PointMovementGenerator<T>::Finalize(std::shared_ptr<T> unit)
 {
     unit->ClearUnitState(UNIT_STATE_ROAMING|UNIT_STATE_ROAMING_MOVE);
 
@@ -79,7 +79,7 @@ void PointMovementGenerator<T>::Finalize(std::shared_ptr<T>& unit)
 }
 
 template<class T>
-void PointMovementGenerator<T>::Reset(std::shared_ptr<T>& unit)
+void PointMovementGenerator<T>::Reset(std::shared_ptr<T> unit)
 {
     if (!unit->IsStopped())
         unit->StopMoving();
@@ -88,11 +88,11 @@ void PointMovementGenerator<T>::Reset(std::shared_ptr<T>& unit)
 }
 
 template<class T>
-void PointMovementGenerator<T>::MovementInform(std::shared_ptr<T>& /*Unit*/)
+void PointMovementGenerator<T>::MovementInform(std::shared_ptr<T> /*Unit*/)
 {
 }
 
-template <> void PointMovementGenerator<Creature>::MovementInform(CreaturePtr& unit)
+template <> void PointMovementGenerator<Creature>::MovementInform(CreaturePtr unit)
 {
     if (unit->AI())
         unit->AI()->MovementInform(POINT_MOTION_TYPE, id);
@@ -104,7 +104,7 @@ enum specialSpells
     MONK_CLASH_IMPACT   = 126451
 };
 
-template <> void PointMovementGenerator<Player>::MovementInform(PlayerPtr& unit)
+template <> void PointMovementGenerator<Player>::MovementInform(PlayerPtr unit)
 {
     switch (id)
     {
@@ -116,16 +116,16 @@ template <> void PointMovementGenerator<Player>::MovementInform(PlayerPtr& unit)
     }
 }
 
-template void PointMovementGenerator<Player>::Initialize(PlayerPtr&);
-template void PointMovementGenerator<Creature>::Initialize(CreaturePtr&);
-template void PointMovementGenerator<Player>::Finalize(PlayerPtr&);
-template void PointMovementGenerator<Creature>::Finalize(CreaturePtr&);
-template void PointMovementGenerator<Player>::Reset(PlayerPtr&);
-template void PointMovementGenerator<Creature>::Reset(CreaturePtr&);
-template bool PointMovementGenerator<Player>::Update(PlayerPtr &, const uint32 &);
-template bool PointMovementGenerator<Creature>::Update(CreaturePtr&, const uint32 &);
+template void PointMovementGenerator<Player>::Initialize(PlayerPtr);
+template void PointMovementGenerator<Creature>::Initialize(CreaturePtr);
+template void PointMovementGenerator<Player>::Finalize(PlayerPtr);
+template void PointMovementGenerator<Creature>::Finalize(CreaturePtr);
+template void PointMovementGenerator<Player>::Reset(PlayerPtr);
+template void PointMovementGenerator<Creature>::Reset(CreaturePtr);
+template bool PointMovementGenerator<Player>::Update(PlayerPtr, const uint32 &);
+template bool PointMovementGenerator<Creature>::Update(CreaturePtr, const uint32 &);
 
-void AssistanceMovementGenerator::Finalize(UnitPtr& unit)
+void AssistanceMovementGenerator::Finalize(UnitPtr unit)
 {
     unit->ToCreature()->SetNoCallAssistance(false);
     unit->ToCreature()->CallAssistance();
@@ -133,12 +133,12 @@ void AssistanceMovementGenerator::Finalize(UnitPtr& unit)
         unit->GetMotionMaster()->MoveSeekAssistanceDistract(sWorld->getIntConfig(CONFIG_CREATURE_FAMILY_ASSISTANCE_DELAY));
 }
 
-bool EffectMovementGenerator::Update(UnitPtr& unit, const uint32&)
+bool EffectMovementGenerator::Update(UnitPtr unit, const uint32&)
 {
     return !unit->movespline->Finalized();
 }
 
-void EffectMovementGenerator::Finalize(UnitPtr& unit)
+void EffectMovementGenerator::Finalize(UnitPtr unit)
 {
     if (unit->GetTypeId() != TYPEID_UNIT)
         return;

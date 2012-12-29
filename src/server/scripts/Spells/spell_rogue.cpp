@@ -55,7 +55,7 @@ class spell_rog_cheat_death : public SpellScriptLoader
             bool Load()
             {
                 absorbChance = GetSpellInfo()->Effects[EFFECT_0].CalcValue();
-                return TO_PLAYER(GetUnitOwner());
+                return TO_PLAYER(GetUnitOwner()) != nullptr;
             }
 
             void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)

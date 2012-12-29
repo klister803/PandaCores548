@@ -39,21 +39,21 @@ namespace Trinity
 {
     struct VisibleNotifier
     {
-        PlayerPtr& i_player;
+        PlayerPtr i_player;
         UpdateData i_data;
         std::set<UnitPtr> i_visibleNow;
         Player::ClientGUIDs vis_guids;
 
-        VisibleNotifier(PlayerPtr& player) : i_player(player), i_data(player->GetMapId()), vis_guids(player->m_clientGUIDs) {}
+        VisibleNotifier(PlayerPtr player) : i_player(player), i_data(player->GetMapId()), vis_guids(player->m_clientGUIDs) {}
         template<class T> void Visit(std::shared_ptr<GridRefManager<T>> &m);
         void SendToSelf(void);
     };
 
     struct VisibleChangesNotifier
     {
-        WorldObjectPtr& i_object;
+        WorldObjectPtr i_object;
 
-        explicit VisibleChangesNotifier(WorldObjectPtr& object) : i_object(object) {}
+        explicit VisibleChangesNotifier(WorldObjectPtr object) : i_object(object) {}
         template<class T> void Visit(std::shared_ptr<GridRefManager<T>> &) {}
         void Visit(std::shared_ptr<GridRefManager<Player>> &);
         void Visit(std::shared_ptr<GridRefManager<Creature>> &);
@@ -62,7 +62,7 @@ namespace Trinity
 
     struct PlayerRelocationNotifier : public VisibleNotifier
     {
-        PlayerRelocationNotifier(PlayerPtr& player) : VisibleNotifier(player) {}
+        PlayerRelocationNotifier(PlayerPtr player) : VisibleNotifier(player) {}
 
         template<class T> void Visit(std::shared_ptr<GridRefManager<T>> &m) { VisibleNotifier::Visit(m); }
         void Visit(std::shared_ptr<GridRefManager<Creature>> &);
@@ -71,8 +71,8 @@ namespace Trinity
 
     struct CreatureRelocationNotifier
     {
-        CreaturePtr& i_creature;
-        CreatureRelocationNotifier(CreaturePtr& c) : i_creature(c) {}
+        CreaturePtr i_creature;
+        CreatureRelocationNotifier(CreaturePtr c) : i_creature(c) {}
         template<class T> void Visit(std::shared_ptr<GridRefManager<T>> &) {}
         void Visit(std::shared_ptr<GridRefManager<Creature>> &);
         void Visit(std::shared_ptr<GridRefManager<Player>> &);
@@ -93,9 +93,9 @@ namespace Trinity
 
     struct AIRelocationNotifier
     {
-        UnitPtr& i_unit;
+        UnitPtr i_unit;
         bool isCreature;
-        explicit AIRelocationNotifier(UnitPtr& unit) : i_unit(unit), isCreature(unit->GetTypeId() == TYPEID_UNIT)  {}
+        explicit AIRelocationNotifier(UnitPtr unit) : i_unit(unit), isCreature(unit->GetTypeId() == TYPEID_UNIT)  {}
         template<class T> void Visit(std::shared_ptr<GridRefManager<T>> &) {}
         void Visit(std::shared_ptr<GridRefManager<Creature>> &);
     };
@@ -629,7 +629,7 @@ namespace Trinity
     class NearestGameObjectFishingHole
     {
         public:
-            NearestGameObjectFishingHole(constWorldObjectPtr& obj, float range) : i_obj(obj), i_range(range) {}
+            NearestGameObjectFishingHole(constWorldObjectPtr obj, float range) : i_obj(obj), i_range(range) {}
             bool operator()(GameObjectPtr go)
             {
                 if (go->GetGOInfo()->type == GAMEOBJECT_TYPE_FISHINGHOLE && go->isSpawned() && i_obj->IsWithinDistInMap(go, i_range) && i_obj->IsWithinDistInMap(go, (float)go->GetGOInfo()->fishinghole.radius))
@@ -641,7 +641,7 @@ namespace Trinity
             }
             float GetLastRange() const { return i_range; }
         private:
-            constWorldObjectPtr& i_obj;
+            constWorldObjectPtr i_obj;
             float  i_range;
 
             // prevent clone
@@ -651,7 +651,7 @@ namespace Trinity
     class NearestGameObjectCheck
     {
         public:
-            NearestGameObjectCheck(constWorldObjectPtr& obj) : i_obj(obj), i_range(999) {}
+            NearestGameObjectCheck(constWorldObjectPtr obj) : i_obj(obj), i_range(999) {}
             bool operator()(GameObjectPtr go)
             {
                 if (i_obj->IsWithinDistInMap(go, i_range))
@@ -663,7 +663,7 @@ namespace Trinity
             }
             float GetLastRange() const { return i_range; }
         private:
-            constWorldObjectPtr& i_obj;
+            constWorldObjectPtr i_obj;
             float i_range;
 
             // prevent clone this object
@@ -674,7 +674,7 @@ namespace Trinity
     class NearestGameObjectEntryInObjectRangeCheck
     {
         public:
-            NearestGameObjectEntryInObjectRangeCheck(constWorldObjectPtr& obj, uint32 entry, float range) : i_obj(obj), i_entry(entry), i_range(range) {}
+            NearestGameObjectEntryInObjectRangeCheck(constWorldObjectPtr obj, uint32 entry, float range) : i_obj(obj), i_entry(entry), i_range(range) {}
             bool operator()(GameObjectPtr go)
             {
                 if (go->GetEntry() == i_entry && i_obj->IsWithinDistInMap(go, i_range))
@@ -686,7 +686,7 @@ namespace Trinity
             }
             float GetLastRange() const { return i_range; }
         private:
-            constWorldObjectPtr& i_obj;
+            constWorldObjectPtr i_obj;
             uint32 i_entry;
             float  i_range;
 
@@ -698,7 +698,7 @@ namespace Trinity
     class NearestGameObjectTypeInObjectRangeCheck
     {
     public:
-        NearestGameObjectTypeInObjectRangeCheck(constWorldObjectPtr& obj, GameobjectTypes type, float range) : i_obj(obj), i_type(type), i_range(range) {}
+        NearestGameObjectTypeInObjectRangeCheck(constWorldObjectPtr obj, GameobjectTypes type, float range) : i_obj(obj), i_type(type), i_range(range) {}
         bool operator()(GameObjectPtr go)
         {
             if (go->GetGoType() == i_type && i_obj->IsWithinDistInMap(go, i_range))
@@ -710,7 +710,7 @@ namespace Trinity
         }
         float GetLastRange() const { return i_range; }
     private:
-        constWorldObjectPtr& i_obj;
+        constWorldObjectPtr i_obj;
         GameobjectTypes i_type;
         float  i_range;
 
@@ -722,13 +722,13 @@ namespace Trinity
     class GameObjectWithDbGUIDCheck
     {
         public:
-            GameObjectWithDbGUIDCheck(constWorldObjectPtr& obj, uint32 db_guid) : i_obj(obj), i_db_guid(db_guid) {}
+            GameObjectWithDbGUIDCheck(constWorldObjectPtr obj, uint32 db_guid) : i_obj(obj), i_db_guid(db_guid) {}
             bool operator()(constGameObjectPtr go) const
             {
                 return go->GetDBTableGUIDLow() == i_db_guid;
             }
         private:
-            constWorldObjectPtr& i_obj;
+            constWorldObjectPtr i_obj;
             uint32 i_db_guid;
     };
 
@@ -1154,7 +1154,7 @@ namespace Trinity
     class NearestCreatureEntryWithLiveStateInObjectRangeCheck
     {
         public:
-            NearestCreatureEntryWithLiveStateInObjectRangeCheck(constWorldObjectPtr& obj, uint32 entry, bool alive, float range)
+            NearestCreatureEntryWithLiveStateInObjectRangeCheck(constWorldObjectPtr obj, uint32 entry, bool alive, float range)
                 : i_obj(obj), i_entry(entry), i_alive(alive), i_range(range) {}
 
             bool operator()(CreaturePtr u)
@@ -1168,7 +1168,7 @@ namespace Trinity
             }
             float GetLastRange() const { return i_range; }
         private:
-            constWorldObjectPtr& i_obj;
+            constWorldObjectPtr i_obj;
             uint32 i_entry;
             bool   i_alive;
             float  i_range;

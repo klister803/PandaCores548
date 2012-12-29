@@ -24,18 +24,18 @@ std::shared_ptr<IdleMovementGenerator> si_idleMovement (new IdleMovementGenerato
 
 // StopMoving is needed to make unit stop if its last movement generator expires
 // But it should not be sent otherwise there are many redundent packets
-void IdleMovementGenerator::Initialize(UnitPtr& owner)
+void IdleMovementGenerator::Initialize(UnitPtr owner)
 {
     Reset(owner);
 }
 
-void IdleMovementGenerator::Reset(UnitPtr& owner)
+void IdleMovementGenerator::Reset(UnitPtr owner)
 {
     if (!owner->IsStopped())
         owner->StopMoving();
 }
 
-void RotateMovementGenerator::Initialize(UnitPtr& owner)
+void RotateMovementGenerator::Initialize(UnitPtr owner)
 {
     if (!owner->IsStopped())
         owner->StopMoving();
@@ -48,7 +48,7 @@ void RotateMovementGenerator::Initialize(UnitPtr& owner)
     owner->AttackStop();
 }
 
-bool RotateMovementGenerator::Update(UnitPtr& owner, const uint32& diff)
+bool RotateMovementGenerator::Update(UnitPtr owner, const uint32& diff)
 {
     float angle = owner->GetOrientation();
     if (m_direction == ROTATE_DIRECTION_LEFT)
@@ -72,24 +72,24 @@ bool RotateMovementGenerator::Update(UnitPtr& owner, const uint32& diff)
     return true;
 }
 
-void RotateMovementGenerator::Finalize(UnitPtr& unit)
+void RotateMovementGenerator::Finalize(UnitPtr unit)
 {
     unit->ClearUnitState(UNIT_STATE_ROTATING);
     if (unit->GetTypeId() == TYPEID_UNIT)
       unit->ToCreature()->AI()->MovementInform(ROTATE_MOTION_TYPE, 0);
 }
 
-void DistractMovementGenerator::Initialize(UnitPtr& owner)
+void DistractMovementGenerator::Initialize(UnitPtr owner)
 {
     owner->AddUnitState(UNIT_STATE_DISTRACTED);
 }
 
-void DistractMovementGenerator::Finalize(UnitPtr& owner)
+void DistractMovementGenerator::Finalize(UnitPtr owner)
 {
     owner->ClearUnitState(UNIT_STATE_DISTRACTED);
 }
 
-bool DistractMovementGenerator::Update(UnitPtr& /*owner*/, const uint32& time_diff)
+bool DistractMovementGenerator::Update(UnitPtr /*owner*/, const uint32& time_diff)
 {
     if (time_diff > m_timer)
         return false;
@@ -98,7 +98,7 @@ bool DistractMovementGenerator::Update(UnitPtr& /*owner*/, const uint32& time_di
     return true;
 }
 
-void AssistanceDistractMovementGenerator::Finalize(UnitPtr& unit)
+void AssistanceDistractMovementGenerator::Finalize(UnitPtr unit)
 {
     unit->ClearUnitState(UNIT_STATE_DISTRACTED);
     unit->ToCreature()->SetReactState(REACT_AGGRESSIVE);

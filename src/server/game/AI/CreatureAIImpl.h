@@ -554,7 +554,7 @@ inline bool CreatureAI::UpdateVictimWithGaze()
 
     if (UnitPtr victim = me->SelectVictim())
         AttackStart(victim);
-    return me->getVictim();
+    return me->getVictim() != nullptr;
 }
 
 inline bool CreatureAI::UpdateVictim()
@@ -566,7 +566,7 @@ inline bool CreatureAI::UpdateVictim()
     {
         if (UnitPtr victim = me->SelectVictim())
             AttackStart(victim);
-        return me->getVictim();
+        return me->getVictim() != nullptr;
     }
     else if (me->getThreatManager()->isThreatListEmpty())
     {

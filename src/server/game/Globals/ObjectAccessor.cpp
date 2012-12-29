@@ -47,7 +47,7 @@ ObjectAccessor::~ObjectAccessor()
 {
 }
 
-WorldObjectPtr ObjectAccessor::GetWorldObject(constWorldObjectPtr& p, uint64 guid)
+WorldObjectPtr ObjectAccessor::GetWorldObject(constWorldObjectPtr p, uint64 guid)
 {
     switch (GUID_HIPART(guid))
     {
@@ -64,7 +64,7 @@ WorldObjectPtr ObjectAccessor::GetWorldObject(constWorldObjectPtr& p, uint64 gui
     }
 }
 
-ObjectPtr ObjectAccessor::GetObjectByTypeMask(constWorldObjectPtr& p, uint64 guid, uint32 typemask)
+ObjectPtr ObjectAccessor::GetObjectByTypeMask(constWorldObjectPtr p, uint64 guid, uint32 typemask)
 {
     switch (GUID_HIPART(guid))
     {
@@ -102,47 +102,47 @@ ObjectPtr ObjectAccessor::GetObjectByTypeMask(constWorldObjectPtr& p, uint64 gui
     return nullptr;
 }
 
-CorpsePtr ObjectAccessor::GetCorpse(constWorldObjectPtr& u, uint64 guid)
+CorpsePtr ObjectAccessor::GetCorpse(constWorldObjectPtr u, uint64 guid)
 {
     return GetObjectInMap(guid, u->GetMap(), (Corpse*)nullptr);
 }
 
-GameObjectPtr ObjectAccessor::GetGameObject(constWorldObjectPtr& u, uint64 guid)
+GameObjectPtr ObjectAccessor::GetGameObject(constWorldObjectPtr u, uint64 guid)
 {
     return TO_GAMEOBJECT(GetObjectInMap(guid, u->GetMap(), (GameObject*)nullptr));
 }
 
-DynamicObjectPtr ObjectAccessor::GetDynamicObject(constWorldObjectPtr& u, uint64 guid)
+DynamicObjectPtr ObjectAccessor::GetDynamicObject(constWorldObjectPtr u, uint64 guid)
 {
     return TO_DYNAMICOBJECT(GetObjectInMap(guid, u->GetMap(), (DynamicObject*)nullptr));
 }
 
-UnitPtr ObjectAccessor::GetUnit(constWorldObjectPtr& u, uint64 guid)
+UnitPtr ObjectAccessor::GetUnit(constWorldObjectPtr u, uint64 guid)
 {
     return GetObjectInMap(guid, u->GetMap(), (Unit*)nullptr);
 }
 
-CreaturePtr ObjectAccessor::GetCreature(constWorldObjectPtr& u, uint64 guid)
+CreaturePtr ObjectAccessor::GetCreature(constWorldObjectPtr u, uint64 guid)
 {
     return GetObjectInMap(guid, u->GetMap(), (Creature*)nullptr);
 }
 
-PetPtr ObjectAccessor::GetPet(constWorldObjectPtr& u, uint64 guid)
+PetPtr ObjectAccessor::GetPet(constWorldObjectPtr u, uint64 guid)
 {
     return GetObjectInMap(guid, u->GetMap(), (Pet*)nullptr);
 }
 
-PlayerPtr ObjectAccessor::GetPlayer(constWorldObjectPtr& u, uint64 guid)
+PlayerPtr ObjectAccessor::GetPlayer(constWorldObjectPtr u, uint64 guid)
 {
     return GetObjectInMap(guid, u->GetMap(), (Player*)nullptr);
 }
 
-TransportPtr ObjectAccessor::GetTransport(constWorldObjectPtr& u, uint64 guid)
+TransportPtr ObjectAccessor::GetTransport(constWorldObjectPtr u, uint64 guid)
 {
     return GetObjectInMap(guid, u->GetMap(), (Transport*)nullptr);
 }
 
-CreaturePtr ObjectAccessor::GetCreatureOrPetOrVehicle(constWorldObjectPtr& u, uint64 guid)
+CreaturePtr ObjectAccessor::GetCreatureOrPetOrVehicle(constWorldObjectPtr u, uint64 guid)
 {
     if (IS_PET_GUID(guid))
         return GetPet(u, guid);
@@ -379,7 +379,7 @@ void ObjectAccessor::Update(uint32 /*diff*/)
     for (UpdateDataMapType::iterator iter = update_players.begin(); iter != update_players.end(); ++iter)
     {
         iter->second.BuildPacket(&packet);
-        iter->first->GetSession()->SendPacket(&packet);
+        FindPlayer(iter->first)->GetSession()->SendPacket(&packet);
         packet.clear();                                     // clean the string
     }
 }

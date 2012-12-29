@@ -117,8 +117,9 @@ class CreatureAI;
 class ZoneScript;
 class Unit;
 class Transport;
+class Map;
 
-typedef UNORDERED_MAP<PlayerPtr, UpdateData> UpdateDataMapType;
+typedef UNORDERED_MAP<uint64, UpdateData> UpdateDataMapType;
 
 //! Structure to ease conversions from single 64 bit integer guid into individual bytes, for packet sending purposes
 //! Nuke this out when porting ObjectGuid from MaNGOS, but preserve the per-byte storage

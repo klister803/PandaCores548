@@ -381,7 +381,7 @@ void Unit::Update(uint32 p_time)
 bool Unit::haveOffhandWeapon() const
 {
     if (GetTypeId() == TYPEID_PLAYER)
-        return THIS_CONST_PLAYER()->GetWeaponForAttack(OFF_ATTACK, true);
+        return THIS_CONST_PLAYER()->GetWeaponForAttack(OFF_ATTACK, true) != nullptr;
     else
         return m_canDualWield;
 }
@@ -13018,17 +13018,17 @@ float Unit::GetSpellMinRangeForTarget(constUnitPtr target, SpellInfo const* spel
     return spellInfo->GetMinRange(!IsHostileTo(target));
 }
 
-UnitPtr Unit::GetUnit(WorldObjectPtr& object, uint64 guid)
+UnitPtr Unit::GetUnit(WorldObjectPtr object, uint64 guid)
 {
     return ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(object), guid);
 }
 
-PlayerPtr Unit::GetPlayer(WorldObjectPtr& object, uint64 guid)
+PlayerPtr Unit::GetPlayer(WorldObjectPtr object, uint64 guid)
 {
     return ObjectAccessor::GetPlayer(TO_CONST_WORLDOBJECT(object), guid);
 }
 
-CreaturePtr Unit::GetCreature(WorldObjectPtr& object, uint64 guid)
+CreaturePtr Unit::GetCreature(WorldObjectPtr object, uint64 guid)
 {
     return object->GetMap()->GetCreature(guid);
 }

@@ -30,7 +30,7 @@ class TargetedMovementGeneratorBase
 {
     friend class ClassFactory;
     protected:
-        TargetedMovementGeneratorBase(UnitPtr &target) : i_target(std::shared_ptr<FollowerReference>(new FollowerReference())) {} //gen->i_target.link(target, gen);
+        TargetedMovementGeneratorBase(UnitPtr target) : i_target(std::shared_ptr<FollowerReference>(new FollowerReference())) {} //gen->i_target.link(target, gen);
     public:
         void stopFollowing() { }
     protected:
@@ -41,7 +41,7 @@ template<class T, typename D>
 class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, public TargetedMovementGeneratorBase
 {
     protected:
-        TargetedMovementGeneratorMedium(UnitPtr &target, float offset, float angle) :
+        TargetedMovementGeneratorMedium(UnitPtr target, float offset, float angle) :
             TargetedMovementGeneratorBase(target), i_recheckDistance(0),
             i_offset(offset), i_angle(angle),
             i_recalculateTravel(false), i_targetReached(false)
@@ -50,14 +50,14 @@ class TargetedMovementGeneratorMedium : public MovementGeneratorMedium< T, D >, 
         ~TargetedMovementGeneratorMedium() {}
 
     public:
-        bool Update(std::shared_ptr<T> &, const uint32 &);
+        bool Update(std::shared_ptr<T>, const uint32 &);
         UnitPtr GetTarget() const { return i_target->getTarget(); }
 
         void unitSpeedChanged() { i_recalculateTravel=true; }
         void UpdateFinalDistance(float fDistance);
 
     protected:
-        void _setTargetLocation(std::shared_ptr<T> &);
+        void _setTargetLocation(std::shared_ptr<T>);
 
         TimeTrackerSmall i_recheckDistance;
         float i_offset;
@@ -71,25 +71,25 @@ class ChaseMovementGenerator : public TargetedMovementGeneratorMedium<T, ChaseMo
 {
     friend class ClassFactory;
     protected:
-        ChaseMovementGenerator(UnitPtr &target)
+        ChaseMovementGenerator(UnitPtr target)
             : TargetedMovementGeneratorMedium<T, ChaseMovementGenerator<T> >(target) {}
-        ChaseMovementGenerator(UnitPtr &target, float offset, float angle)
+        ChaseMovementGenerator(UnitPtr target, float offset, float angle)
             : TargetedMovementGeneratorMedium<T, ChaseMovementGenerator<T> >(target, offset, angle) {}
     public:
         ~ChaseMovementGenerator() {}
 
         MovementGeneratorType GetMovementGeneratorType() { return CHASE_MOTION_TYPE; }
 
-        void Initialize(std::shared_ptr<T> &);
-        void Finalize(std::shared_ptr<T> &);
-        void Reset(std::shared_ptr<T> &);
-        void MovementInform(std::shared_ptr<T> &);
+        void Initialize(std::shared_ptr<T>);
+        void Finalize(std::shared_ptr<T>);
+        void Reset(std::shared_ptr<T>);
+        void MovementInform(std::shared_ptr<T>);
 
-        static void _clearUnitStateMove(std::shared_ptr<T> &u) { u->ClearUnitState(UNIT_STATE_CHASE_MOVE); }
-        static void _addUnitStateMove(std::shared_ptr<T> &u)  { u->AddUnitState(UNIT_STATE_CHASE_MOVE); }
+        static void _clearUnitStateMove(std::shared_ptr<T> u) { u->ClearUnitState(UNIT_STATE_CHASE_MOVE); }
+        static void _addUnitStateMove(std::shared_ptr<T> u)  { u->AddUnitState(UNIT_STATE_CHASE_MOVE); }
         bool EnableWalking() const { return false;}
-        bool _lostTarget(std::shared_ptr<T> &u) const { return u->getVictim() != this->GetTarget(); }
-        void _reachTarget(std::shared_ptr<T> &);
+        bool _lostTarget(std::shared_ptr<T> u) const { return u->getVictim() != this->GetTarget(); }
+        void _reachTarget(std::shared_ptr<T>);
 };
 
 template<class T>
@@ -97,27 +97,27 @@ class FollowMovementGenerator : public TargetedMovementGeneratorMedium<T, Follow
 {
     friend class ClassFactory;
     private:
-        FollowMovementGenerator(UnitPtr &target)
+        FollowMovementGenerator(UnitPtr target)
             : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target){}
-        FollowMovementGenerator(UnitPtr &target, float offset, float angle)
+        FollowMovementGenerator(UnitPtr target, float offset, float angle)
             : TargetedMovementGeneratorMedium<T, FollowMovementGenerator<T> >(target, offset, angle) {}
     public:
         ~FollowMovementGenerator() {}
 
         MovementGeneratorType GetMovementGeneratorType() { return FOLLOW_MOTION_TYPE; }
 
-        void Initialize(std::shared_ptr<T> &);
-        void Finalize(std::shared_ptr<T> &);
-        void Reset(std::shared_ptr<T> &);
-        void MovementInform(std::shared_ptr<T> &);
+        void Initialize(std::shared_ptr<T>);
+        void Finalize(std::shared_ptr<T>);
+        void Reset(std::shared_ptr<T>);
+        void MovementInform(std::shared_ptr<T>);
 
-        static void _clearUnitStateMove(std::shared_ptr<T> &u) { u->ClearUnitState(UNIT_STATE_FOLLOW_MOVE); }
-        static void _addUnitStateMove(std::shared_ptr<T> &u)  { u->AddUnitState(UNIT_STATE_FOLLOW_MOVE); }
+        static void _clearUnitStateMove(std::shared_ptr<T> u) { u->ClearUnitState(UNIT_STATE_FOLLOW_MOVE); }
+        static void _addUnitStateMove(std::shared_ptr<T> u)  { u->AddUnitState(UNIT_STATE_FOLLOW_MOVE); }
         bool EnableWalking() const;
-        bool _lostTarget(std::shared_ptr<T> &) const { return false; }
-        void _reachTarget(std::shared_ptr<T> &) {}
+        bool _lostTarget(std::shared_ptr<T>) const { return false; }
+        void _reachTarget(std::shared_ptr<T>) {}
     private:
-        void _updateSpeed(std::shared_ptr<T> &u);
+        void _updateSpeed(std::shared_ptr<T> u);
 };
 
 #endif

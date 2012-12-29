@@ -33,12 +33,12 @@ class MovementGenerator : public std::enable_shared_from_this<MovementGenerator>
     public:
         virtual ~MovementGenerator();
 
-        virtual void Initialize(UnitPtr &) = 0;
-        virtual void Finalize(UnitPtr &) = 0;
+        virtual void Initialize(UnitPtr) = 0;
+        virtual void Finalize(UnitPtr) = 0;
 
-        virtual void Reset(UnitPtr &) = 0;
+        virtual void Reset(UnitPtr) = 0;
 
-        virtual bool Update(UnitPtr &, const uint32& time_diff) = 0;
+        virtual bool Update(UnitPtr, const uint32& time_diff) = 0;
 
         virtual MovementGeneratorType GetMovementGeneratorType() = 0;
 
@@ -49,32 +49,32 @@ template<class T, class D>
 class MovementGeneratorMedium : public MovementGenerator
 {
     public:
-        void Initialize(UnitPtr &u)
+        void Initialize(UnitPtr u)
         {
             //u->AssertIsType<T>();
             (static_cast<D*>(this))->Initialize(CAST(T,u));
         }
-        void Finalize(UnitPtr &u)
+        void Finalize(UnitPtr u)
         {
             //u->AssertIsType<T>();
             (static_cast<D*>(this))->Finalize(CAST(T,u));
         }
-        void Reset(UnitPtr &u)
+        void Reset(UnitPtr u)
         {
             //u->AssertIsType<T>();
             (static_cast<D*>(this))->Reset(CAST(T,u));
         }
-        bool Update(UnitPtr &u, const uint32& time_diff)
+        bool Update(UnitPtr u, const uint32& time_diff)
         {
             //u->AssertIsType<T>();
             return (static_cast<D*>(this))->Update(CAST(T,u), time_diff);
         }
     public:
         // will not link if not overridden in the generators
-        void Initialize(std::shared_ptr<T> &u);
-        void Finalize(std::shared_ptr<T> &u);
-        void Reset(std::shared_ptr<T> &u);
-        bool Update(std::shared_ptr<T> &u, const uint32& time_diff);
+        void Initialize(std::shared_ptr<T> u);
+        void Finalize(std::shared_ptr<T> u);
+        void Reset(std::shared_ptr<T> u);
+        bool Update(std::shared_ptr<T> u, const uint32& time_diff);
 };
 
 struct SelectableMovement : public FactoryHolder<MovementGenerator, MovementGeneratorType>
