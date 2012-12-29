@@ -452,6 +452,12 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         if (AuraPtr aura = unitTarget->GetAura(1822))
                             aura->RefreshDuration();
                 }
+                // Maul - Deals 20% more damage if target is bleeding
+                if (m_spellInfo->Id == 6807 && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
+                    AddPct(damage, 20);
+                // Swipe - Deals 20% more damage if target is bleeding
+                if ((m_spellInfo->Id == 62078 || m_spellInfo->Id == 779) && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
+                    AddPct(damage, 20);
                 break;
             }
             case SPELLFAMILY_ROGUE:
