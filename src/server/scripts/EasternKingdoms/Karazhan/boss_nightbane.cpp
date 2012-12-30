@@ -64,14 +64,14 @@ class boss_nightbane : public CreatureScript
 public:
     boss_nightbane() : CreatureScript("boss_nightbane") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_nightbaneAI (creature);
     }
 
     struct boss_nightbaneAI : public ScriptedAI
     {
-        boss_nightbaneAI(Creature* creature) : ScriptedAI(creature)
+        boss_nightbaneAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             Intro = true;
@@ -155,7 +155,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             if (instance)
                 instance->SetData(TYPE_NIGHTBANE, IN_PROGRESS);
@@ -164,13 +164,13 @@ public:
             me->MonsterYell(YELL_AGGRO, LANG_UNIVERSAL, 0);
         }
 
-        void AttackStart(Unit* who)
+        void AttackStart(UnitPtr who)
         {
             if (!Intro && !Flying)
                 ScriptedAI::AttackStart(who);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(TYPE_NIGHTBANE, DONE);
@@ -178,7 +178,7 @@ public:
             HandleTerraceDoors(true);
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (!Intro && !Flying)
                 ScriptedAI::MoveInLineOfSight(who);
@@ -230,7 +230,7 @@ public:
             }
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->AI()->AttackStart(me->getVictim());
         }
@@ -322,22 +322,22 @@ public:
 
                 if (CharredEarthTimer <= diff)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                         DoCast(target, SPELL_CHARRED_EARTH);
                     CharredEarthTimer = 20000;
                 } else CharredEarthTimer -= diff;
 
                 if (TailSweepTimer <= diff)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
-                        if (!me->HasInArc(M_PI, target))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (!me->HasInArc(M_PI, target.get()))
                             DoCast(target, SPELL_TAIL_SWEEP);
                     TailSweepTimer = 15000;
                 } else TailSweepTimer -= diff;
 
                 if (SearingCindersTimer <= diff)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                         DoCast(target, SPELL_SEARING_CINDERS);
                     SearingCindersTimer = 10000;
                 } else SearingCindersTimer -= diff;
@@ -379,7 +379,7 @@ public:
 
                     if (DistractingAshTimer <= diff)
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             DoCast(target, SPELL_DISTRACTING_ASH);
                         DistractingAshTimer = 2000; //timer wrong
                     } else DistractingAshTimer -= diff;
@@ -396,7 +396,7 @@ public:
 
                 if (FireballBarrageTimer <= diff)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST, 0))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_FARTHEST, 0))
                         DoCast(target, SPELL_FIREBALL_BARRAGE);
                     FireballBarrageTimer = 20000;
                 } else FireballBarrageTimer -= diff;

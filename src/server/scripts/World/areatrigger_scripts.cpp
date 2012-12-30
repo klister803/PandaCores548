@@ -56,9 +56,9 @@ class AreaTrigger_at_coilfang_waterfall : public AreaTriggerScript
         {
         }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+        bool OnTrigger(PlayerPtr player, AreaTriggerEntry const* /*trigger*/)
         {
-            if (GameObject* go = GetClosestGameObjectWithEntry(player, GO_COILFANG_WATERFALL, 35.0f))
+            if (GameObjectPtr go = GetClosestGameObjectWithEntry(player, GO_COILFANG_WATERFALL, 35.0f))
                 if (go->getLootState() == GO_READY)
                     go->UseDoorOrButton();
 
@@ -88,7 +88,7 @@ class AreaTrigger_at_legion_teleporter : public AreaTriggerScript
         {
         }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+        bool OnTrigger(PlayerPtr player, AreaTriggerEntry const* /*trigger*/)
         {
             if (player->isAlive() && !player->isInCombat())
             {
@@ -130,7 +130,7 @@ class AreaTrigger_at_stormwright_shelf : public AreaTriggerScript
         {
         }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+        bool OnTrigger(PlayerPtr player, AreaTriggerEntry const* /*trigger*/)
         {
             if (!player->isDead() && player->GetQuestStatus(QUEST_STRENGTH_OF_THE_TEMPEST) == QUEST_STATUS_INCOMPLETE)
                 player->CastSpell(player, SPELL_CREATE_TRUE_POWER_OF_THE_TEMPEST, false);
@@ -158,7 +158,7 @@ class AreaTrigger_at_scent_larkorwi : public AreaTriggerScript
         {
         }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+        bool OnTrigger(PlayerPtr player, AreaTriggerEntry const* /*trigger*/)
         {
             if (!player->isDead() && player->GetQuestStatus(QUEST_SCENT_OF_LARKORWI) == QUEST_STATUS_INCOMPLETE)
             {
@@ -189,7 +189,7 @@ class AreaTrigger_at_last_rites : public AreaTriggerScript
         {
         }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        bool OnTrigger(PlayerPtr player, AreaTriggerEntry const* trigger)
         {
             if (!(player->GetQuestStatus(QUEST_LAST_RITES) == QUEST_STATUS_INCOMPLETE ||
                 player->GetQuestStatus(QUEST_LAST_RITES) == QUEST_STATUS_COMPLETE ||
@@ -246,7 +246,7 @@ class AreaTrigger_at_sholazar_waygate : public AreaTriggerScript
         {
         }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        bool OnTrigger(PlayerPtr player, AreaTriggerEntry const* trigger)
         {
             if (player->GetQuestStatus(QUEST_THE_MAKERS_OVERLOOK) == QUEST_STATUS_REWARDED && !player->isDead() &&
                 player->GetQuestStatus(QUEST_THE_MAKERS_PERCH)    == QUEST_STATUS_REWARDED)
@@ -283,7 +283,7 @@ class AreaTrigger_at_nats_landing : public AreaTriggerScript
     public:
         AreaTrigger_at_nats_landing() : AreaTriggerScript("at_nats_landing") { }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+        bool OnTrigger(PlayerPtr player, AreaTriggerEntry const* /*trigger*/)
         {
             if (!player->isAlive() || !player->HasAura(SPELL_FISH_PASTE))
                 return false;
@@ -292,7 +292,7 @@ class AreaTrigger_at_nats_landing : public AreaTriggerScript
             {
                 if (!player->FindNearestCreature(NPC_LURKING_SHARK, 20.0f))
                 {
-                    if (Creature* shark = player->SummonCreature(NPC_LURKING_SHARK, -4246.243f, -3922.356f, -7.488f, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 100000))
+                    if (CreaturePtr shark = player->SummonCreature(NPC_LURKING_SHARK, -4246.243f, -3922.356f, -7.488f, 5.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 100000))
                         shark->AI()->AttackStart(player);
 
                     return false;
@@ -333,7 +333,7 @@ class AreaTrigger_at_bring_your_orphan_to : public AreaTriggerScript
     public:
         AreaTrigger_at_bring_your_orphan_to() : AreaTriggerScript("at_bring_your_orphan_to") { }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        bool OnTrigger(PlayerPtr player, AreaTriggerEntry const* trigger)
         {
             uint32 questId = 0;
 
@@ -398,7 +398,7 @@ class AreaTrigger_at_brewfest : public AreaTriggerScript
             _triggerTimes[AT_BREWFEST_DUROTAR] = _triggerTimes[AT_BREWFEST_DUN_MOROGH] = 0;
         }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        bool OnTrigger(PlayerPtr player, AreaTriggerEntry const* trigger)
         {
             uint32 triggerId = trigger->id;
             // Second trigger happened too early after first, skip for now
@@ -408,11 +408,11 @@ class AreaTrigger_at_brewfest : public AreaTriggerScript
             switch (triggerId)
             {
                 case AT_BREWFEST_DUROTAR:
-                    if (Creature* tapper = player->FindNearestCreature(NPC_TAPPER_SWINDLEKEG, 20.0f))
+                    if (CreaturePtr tapper = player->FindNearestCreature(NPC_TAPPER_SWINDLEKEG, 20.0f))
                         tapper->AI()->Talk(SAY_WELCOME, player->GetGUID());
                     break;
                 case AT_BREWFEST_DUN_MOROGH:
-                    if (Creature* ipfelkofer = player->FindNearestCreature(NPC_IPFELKOFER_IRONKEG, 20.0f))
+                    if (CreaturePtr ipfelkofer = player->FindNearestCreature(NPC_IPFELKOFER_IRONKEG, 20.0f))
                         ipfelkofer->AI()->Talk(SAY_WELCOME, player->GetGUID());
                     break;
                 default:
@@ -451,7 +451,7 @@ class AreaTrigger_at_area_52_entrance : public AreaTriggerScript
             _triggerTimes[AT_AREA_52_SOUTH] = _triggerTimes[AT_AREA_52_NORTH] = _triggerTimes[AT_AREA_52_WEST] = _triggerTimes[AT_AREA_52_EAST] = 0;
         }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* trigger)
+        bool OnTrigger(PlayerPtr player, AreaTriggerEntry const* trigger)
         {
             float x = 0.0f, y = 0.0f, z = 0.0f;
 

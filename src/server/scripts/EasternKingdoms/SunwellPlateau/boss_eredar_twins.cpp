@@ -91,14 +91,14 @@ class boss_sacrolash : public CreatureScript
 public:
     boss_sacrolash() : CreatureScript("boss_sacrolash") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_sacrolashAI (creature);
     };
 
     struct boss_sacrolashAI : public ScriptedAI
     {
-        boss_sacrolashAI(Creature* creature) : ScriptedAI(creature)
+        boss_sacrolashAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -121,13 +121,13 @@ public:
 
             if (instance)
             {
-                Unit* Temp =  Unit::GetUnit(*me, instance->GetData64(DATA_ALYTHESS));
+                UnitPtr Temp =  Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_ALYTHESS));
                 if (Temp)
                 {
                     if (Temp->isDead())
                         CAST_CRE(Temp)->Respawn();
                     else if (Temp->getVictim())
-                        me->getThreatManager().addThreat(Temp->getVictim(), 0.0f);
+                        me->getThreatManager()->addThreat(Temp->getVictim(), 0.0f);
                 }
             }
 
@@ -147,13 +147,13 @@ public:
                 instance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             DoZoneInCombat();
 
             if (instance)
             {
-                Unit* Temp =  Unit::GetUnit(*me, instance->GetData64(DATA_ALYTHESS));
+                UnitPtr Temp =  Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_ALYTHESS));
                 if (Temp && Temp->isAlive() && !(Temp->getVictim()))
                     CAST_CRE(Temp)->AI()->AttackStart(who);
             }
@@ -162,13 +162,13 @@ public:
                 instance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             if (rand()%4 == 0)
                 DoScriptText(RAND(YELL_SAC_KILL_1, YELL_SAC_KILL_2), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             // only if ALY death
             if (SisterDeath)
@@ -182,7 +182,7 @@ public:
                 me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
         }
 
-        void SpellHitTarget(Unit* target, const SpellInfo* spell)
+        void SpellHitTarget(UnitPtr target, const SpellInfo* spell)
         {
             switch (spell->Id)
             {
@@ -198,7 +198,7 @@ public:
             }
         }
 
-        void HandleTouchedSpells(Unit* target, uint32 TouchedType)
+        void HandleTouchedSpells(UnitPtr target, uint32 TouchedType)
         {
             switch (TouchedType)
             {
@@ -231,8 +231,8 @@ public:
             {
                 if (instance)
                 {
-                    Unit* Temp = NULL;
-                    Temp = Unit::GetUnit(*me, instance->GetData64(DATA_ALYTHESS));
+                    UnitPtr Temp = nullptr;
+                    Temp = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_ALYTHESS));
                     if (Temp && Temp->isDead())
                     {
                         DoScriptText(YELL_SISTER_ALYTHESS_DEAD, me);
@@ -253,7 +253,7 @@ public:
                     if (!me->IsNonMeleeSpellCasted(false))
                     {
                         me->InterruptSpell(CURRENT_GENERIC_SPELL);
-                        Unit* target = NULL;
+                        UnitPtr target = nullptr;
                         target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                         if (target)
                             DoCast(target, SPELL_CONFLAGRATION);
@@ -267,7 +267,7 @@ public:
                 {
                     if (!me->IsNonMeleeSpellCasted(false))
                     {
-                        Unit* target = NULL;
+                        UnitPtr target = nullptr;
                         target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                         if (target)
                             DoCast(target, SPELL_SHADOW_NOVA);
@@ -287,7 +287,7 @@ public:
             {
                 if (!me->IsNonMeleeSpellCasted(false))
                 {
-                    Unit* target = NULL;
+                    UnitPtr target = nullptr;
                     target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (target)
                         DoCast(target, SPELL_CONFOUNDING_BLOW);
@@ -297,8 +297,8 @@ public:
 
             if (ShadowimageTimer <= diff)
             {
-                Unit* target = NULL;
-                Creature* temp = NULL;
+                UnitPtr target = nullptr;
+                CreaturePtr temp = nullptr;
                 for (uint8 i = 0; i<3; ++i)
                 {
                     target = SelectTarget(SELECT_TARGET_RANDOM, 0);
@@ -349,14 +349,14 @@ class boss_alythess : public CreatureScript
 public:
     boss_alythess() : CreatureScript("boss_alythess") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_alythessAI (creature);
     };
 
     struct boss_alythessAI : public Scripted_NoMovementAI
     {
-        boss_alythessAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        boss_alythessAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
         {
             instance = creature->GetInstanceScript();
             IntroStepCounter = 10;
@@ -383,13 +383,13 @@ public:
 
             if (instance)
             {
-                Unit* Temp =  Unit::GetUnit(*me, instance->GetData64(DATA_SACROLASH));
+                UnitPtr Temp =  Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_SACROLASH));
                 if (Temp)
                 {
                     if (Temp->isDead())
                         CAST_CRE(Temp)->Respawn();
                     else if (Temp->getVictim())
-                        me->getThreatManager().addThreat(Temp->getVictim(), 0.0f);
+                        me->getThreatManager()->addThreat(Temp->getVictim(), 0.0f);
                 }
             }
 
@@ -410,13 +410,13 @@ public:
                 instance->SetData(DATA_EREDAR_TWINS_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             DoZoneInCombat();
 
             if (instance)
             {
-                Unit* Temp =  Unit::GetUnit(*me, instance->GetData64(DATA_SACROLASH));
+                UnitPtr Temp =  Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_SACROLASH));
                 if (Temp && Temp->isAlive() && !(Temp->getVictim()))
                     CAST_CRE(Temp)->AI()->AttackStart(who);
             }
@@ -425,7 +425,7 @@ public:
                 instance->SetData(DATA_EREDAR_TWINS_EVENT, IN_PROGRESS);
         }
 
-        void AttackStart(Unit* who)
+        void AttackStart(UnitPtr who)
         {
             if (!me->isInCombat())
             {
@@ -433,7 +433,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (!who || me->getVictim())
                 return;
@@ -455,7 +455,7 @@ public:
             }
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             if (rand()%4 == 0)
             {
@@ -463,7 +463,7 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (SisterDeath)
             {
@@ -476,7 +476,7 @@ public:
                 me->RemoveFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_LOOTABLE);
         }
 
-        void SpellHitTarget(Unit* target, const SpellInfo* spell)
+        void SpellHitTarget(UnitPtr target, const SpellInfo* spell)
         {
             switch (spell->Id)
             {
@@ -493,7 +493,7 @@ public:
             }
         }
 
-        void HandleTouchedSpells(Unit* target, uint32 TouchedType)
+        void HandleTouchedSpells(UnitPtr target, uint32 TouchedType)
         {
             switch (TouchedType)
             {
@@ -525,7 +525,7 @@ public:
 
         uint32 IntroStep(uint32 step)
         {
-            Creature* Sacrolash = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_SACROLASH) : 0);
+            CreaturePtr Sacrolash = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_SACROLASH) : 0);
             switch (step)
             {
             case 0: return 0;
@@ -567,8 +567,8 @@ public:
             {
                 if (instance)
                 {
-                    Unit* Temp = NULL;
-                    Temp = Unit::GetUnit(*me, instance->GetData64(DATA_SACROLASH));
+                    UnitPtr Temp = nullptr;
+                    Temp = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_SACROLASH));
                     if (Temp && Temp->isDead())
                     {
                         DoScriptText(YELL_SISTER_SACROLASH_DEAD, me);
@@ -582,7 +582,7 @@ public:
             {
                 if (instance)
                 {
-                    Creature* sisiter = Unit::GetCreature((*me), instance->GetData64(DATA_SACROLASH));
+                    CreaturePtr sisiter = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_SACROLASH));
                     if (sisiter && !sisiter->isDead() && sisiter->getVictim())
                     {
                         me->AddThreat(sisiter->getVictim(), 0.0f);
@@ -601,7 +601,7 @@ public:
                 {
                     if (!me->IsNonMeleeSpellCasted(false))
                     {
-                        Unit* target = NULL;
+                        UnitPtr target = nullptr;
                         target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                         if (target)
                             DoCast(target, SPELL_SHADOW_NOVA);
@@ -616,7 +616,7 @@ public:
                     if (!me->IsNonMeleeSpellCasted(false))
                     {
                         me->InterruptSpell(CURRENT_GENERIC_SPELL);
-                        Unit* target = NULL;
+                        UnitPtr target = nullptr;
                         target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                         if (target)
                             DoCast(target, SPELL_CONFLAGRATION);
@@ -678,14 +678,14 @@ class mob_shadow_image : public CreatureScript
 public:
     mob_shadow_image() : CreatureScript("mob_shadow_image") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_shadow_imageAI (creature);
     };
 
     struct mob_shadow_imageAI : public ScriptedAI
     {
-        mob_shadow_imageAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_shadow_imageAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 ShadowfuryTimer;
         uint32 KillTimer;
@@ -699,9 +699,9 @@ public:
             KillTimer = 15000;
         }
 
-        void EnterCombat(Unit* /*who*/){}
+        void EnterCombat(UnitPtr /*who*/){}
 
-        void SpellHitTarget(Unit* target, const SpellInfo* spell)
+        void SpellHitTarget(UnitPtr target, const SpellInfo* spell)
         {
             switch (spell->Id)
             {

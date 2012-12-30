@@ -498,7 +498,7 @@ struct SpellArea
     bool autocast;                                          // if true then auto applied at area enter, in other case just allowed to cast
 
     // helpers
-    bool IsFitToRequirements(Player const* player, uint32 newZone, uint32 newArea) const;
+    bool IsFitToRequirements(constPlayerPtr player, uint32 newZone, uint32 newArea) const;
 };
 
 typedef std::multimap<uint32, SpellArea> SpellAreaMap;
@@ -611,13 +611,13 @@ class SpellMgr
     // Accessors (const or static functions)
     public:
         // Spell correctness for client using
-        static bool IsSpellValid(SpellInfo const* spellInfo, Player* player = NULL, bool msg = true);
+        static bool IsSpellValid(SpellInfo const* spellInfo, PlayerPtr player = nullptr, bool msg = true);
 
         // Spell difficulty
         uint32 GetSpellDifficultyId(uint32 spellId) const;
         void SetSpellDifficultyId(uint32 spellId, uint32 id);
-        uint32 GetSpellIdForDifficulty(uint32 spellId, Unit const* caster) const;
-        SpellInfo const* GetSpellForDifficultyFromSpell(SpellInfo const* spell, Unit const* caster) const;
+        uint32 GetSpellIdForDifficulty(uint32 spellId, constUnitPtr caster) const;
+        SpellInfo const* GetSpellForDifficultyFromSpell(SpellInfo const* spell, constUnitPtr caster) const;
 
         // Spell Ranks table
         SpellChainNode const* GetSpellChainNode(uint32 spell_id) const;
@@ -696,7 +696,7 @@ class SpellMgr
         uint32 GetSpellInfoStoreSize() const { return mSpellInfoMap[NONE_DIFFICULTY].size(); }
         std::list<uint32> GetSpellClassList(uint8 ClassID) const { return mSpellClassInfo[ClassID]; }
         std::list<uint32> GetSpellPowerList(uint32 spellId) const { return mSpellPowerInfo[spellId]; }
-        std::list<uint32> const* GetSpellOverrideInfo(uint32 spellId) { return mSpellOverrideInfo.find(spellId) == mSpellOverrideInfo.end() ? NULL : &mSpellOverrideInfo[spellId]; }
+        std::list<uint32> const* GetSpellOverrideInfo(uint32 spellId) { return mSpellOverrideInfo.find(spellId) == mSpellOverrideInfo.end() ? nullptr : &mSpellOverrideInfo[spellId]; }
 
         bool IsTalent(uint32 spellId) { return mTalentSpellInfo.find(spellId) != mTalentSpellInfo.end() ?  true :  false; }
 

@@ -179,8 +179,8 @@ class OPvPCapturePointZM_Beacon : public OPvPCapturePoint
         void FillInitialWorldStates(WorldPacket & data);
 
         // used when player is activated/inactivated in the area
-        bool HandlePlayerEnter(Player* player);
-        void HandlePlayerLeave(Player* player);
+        bool HandlePlayerEnter(PlayerPtr player);
+        void HandlePlayerLeave(PlayerPtr player);
 
         void UpdateTowerState();
 
@@ -211,15 +211,15 @@ class OPvPCapturePointZM_GraveYard : public OPvPCapturePoint
 
         void UpdateTowerState();
 
-        int32 HandleOpenGo(Player* player, uint64 guid);
+        int32 HandleOpenGo(PlayerPtr player, uint64 guid);
 
         void SetBeaconState(uint32 controlling_team); // not good atm
 
-        bool HandleGossipOption(Player* player, uint64 guid, uint32 gossipid);
+        bool HandleGossipOption(PlayerPtr player, uint64 guid, uint32 gossipid);
 
-        bool HandleDropFlag(Player* player, uint32 spellId);
+        bool HandleDropFlag(PlayerPtr player, uint32 spellId);
 
-        bool CanTalkTo(Player* player, Creature* creature, GossipMenuItems const& gso);
+        bool CanTalkTo(PlayerPtr player, CreaturePtr creature, GossipMenuItems const& gso);
 
         uint32 GetGraveYardState() const;
 
@@ -242,16 +242,16 @@ class OutdoorPvPZM : public OutdoorPvP
 
         bool SetupOutdoorPvP();
 
-        void HandlePlayerEnterZone(Player* player, uint32 zone);
-        void HandlePlayerLeaveZone(Player* player, uint32 zone);
+        void HandlePlayerEnterZone(PlayerPtr player, uint32 zone);
+        void HandlePlayerLeaveZone(PlayerPtr player, uint32 zone);
 
         bool Update(uint32 diff);
 
         void FillInitialWorldStates(WorldPacket &data);
 
-        void SendRemoveWorldStates(Player* player);
+        void SendRemoveWorldStates(PlayerPtr player);
 
-        void HandleKillImpl(Player* player, Unit* killed);
+        void HandleKillImpl(PlayerPtr player, UnitPtr killed);
 
         uint32 GetAllianceTowersControlled() const;
         void SetAllianceTowersControlled(uint32 count);

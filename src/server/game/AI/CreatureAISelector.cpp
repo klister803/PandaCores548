@@ -28,9 +28,9 @@
 
 namespace FactorySelector
 {
-    CreatureAI* selectAI(Creature* creature)
+    CreatureAI* selectAI(CreaturePtr creature)
     {
-        const CreatureAICreator* ai_factory = NULL;
+        const CreatureAICreator* ai_factory = nullptr;
         CreatureAIRegistry& ai_registry(*CreatureAIRepository::instance());
 
         if (creature->isPet())
@@ -51,7 +51,7 @@ namespace FactorySelector
         {
             if (creature->IsVehicle())
                 ai_factory = ai_registry.GetRegistryItem("VehicleAI");
-            else if (creature->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN) && ((Guardian*)creature)->GetOwner()->GetTypeId() == TYPEID_PLAYER)
+            else if (creature->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN) && TO_GUARDIAN(creature)->GetOwner()->GetTypeId() == TYPEID_PLAYER)
                 ai_factory = ai_registry.GetRegistryItem("PetAI");
             else if (creature->HasFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK))
                 ai_factory = ai_registry.GetRegistryItem("NullCreatureAI");
@@ -93,19 +93,19 @@ namespace FactorySelector
         }
 
         // select NullCreatureAI if not another cases
-        ainame = (ai_factory == NULL) ? "NullCreatureAI" : ai_factory->key();
+        ainame = (ai_factory == nullptr) ? "NullCreatureAI" : ai_factory->key();
 
         sLog->outDebug(LOG_FILTER_TSCR, "Creature %u used AI is %s.", creature->GetGUIDLow(), ainame.c_str());
-        return (ai_factory == NULL ? new NullCreatureAI(creature) : ai_factory->Create(creature));
+        return (ai_factory == nullptr ? new NullCreatureAI(creature) : ai_factory->Create(&creature));
     }
 
-    MovementGenerator* selectMovementGenerator(Creature* creature)
+    std::shared_ptr<MovementGenerator> selectMovementGenerator(CreaturePtr creature)
     {
         MovementGeneratorRegistry& mv_registry(*MovementGeneratorRepository::instance());
         ASSERT(creature->GetCreatureTemplate());
         const MovementGeneratorCreator* mv_factory = mv_registry.GetRegistryItem(creature->GetDefaultMovementType());
 
-        /* if (mv_factory == NULL)
+        /* if (mv_factory == nullptr)
         {
             int best_val = -1;
             StringVector l;
@@ -114,7 +114,7 @@ namespace FactorySelector
             {
             const MovementGeneratorCreator *factory = mv_registry.GetRegistryItem((*iter).c_str());
             const SelectableMovement *p = dynamic_cast<const SelectableMovement *>(factory);
-            ASSERT(p != NULL);
+            ASSERT(p != nullptr);
             int val = p->Permit(creature);
             if (val > best_val)
             {
@@ -124,12 +124,12 @@ namespace FactorySelector
             }
         }*/
 
-        return (mv_factory == NULL ? NULL : mv_factory->Create(creature));
+        return (mv_factory == nullptr ? nullptr : std::shared_ptr<MovementGenerator>(mv_factory->Create(&creature)));
     }
 
-    GameObjectAI* SelectGameObjectAI(GameObject* go)
+    GameObjectAI* SelectGameObjectAI(GameObjectPtr go)
     {
-        const GameObjectAICreator* ai_factory = NULL;
+        const GameObjectAICreator* ai_factory = nullptr;
         GameObjectAIRegistry& ai_registry(*GameObjectAIRepository::instance());
 
         if (GameObjectAI* scriptedAI = sScriptMgr->GetGameObjectAI(go))
@@ -144,11 +144,11 @@ namespace FactorySelector
 
         //future goAI types go here
 
-        std::string ainame = (ai_factory == NULL || go->GetScriptId()) ? "NullGameObjectAI" : ai_factory->key();
+        std::string ainame = (ai_factory == nullptr || go->GetScriptId()) ? "NullGameObjectAI" : ai_factory->key();
 
         sLog->outDebug(LOG_FILTER_TSCR, "GameObject %u used AI is %s.", go->GetGUIDLow(), ainame.c_str());
 
-        return (ai_factory == NULL ? new NullGameObjectAI(go) : ai_factory->Create(go));
+        return (ai_factory == nullptr ? new NullGameObjectAI(go) : ai_factory->Create(&go));
     }
 }
 

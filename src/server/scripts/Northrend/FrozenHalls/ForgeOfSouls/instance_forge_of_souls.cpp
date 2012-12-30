@@ -33,7 +33,7 @@ class instance_forge_of_souls : public InstanceMapScript
 
         struct instance_forge_of_souls_InstanceScript : public InstanceScript
         {
-            instance_forge_of_souls_InstanceScript(Map* map) : InstanceScript(map)
+            instance_forge_of_souls_InstanceScript(MapPtr map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
                 bronjahm = 0;
@@ -42,11 +42,11 @@ class instance_forge_of_souls : public InstanceMapScript
                 teamInInstance = 0;
             }
 
-            void OnCreatureCreate(Creature* creature)
+            void OnCreatureCreate(CreaturePtr creature)
             {
                 Map::PlayerList const &players = instance->GetPlayers();
                 if (!players.isEmpty())
-                    if (Player* player = players.begin()->getSource())
+                    if (PlayerPtr player = players.begin()->getSource())
                         teamInInstance = player->GetTeam();
 
                 switch (creature->GetEntry())
@@ -148,7 +148,7 @@ class instance_forge_of_souls : public InstanceMapScript
             uint32 teamInInstance;
         };
 
-        InstanceScript* GetInstanceScript(InstanceMap* map) const
+        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
         {
             return new instance_forge_of_souls_InstanceScript(map);
         }

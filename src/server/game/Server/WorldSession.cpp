@@ -59,7 +59,7 @@ bool MapSessionFilter::Process(WorldPacket* packet)
     if (opHandle->packetProcessing == PROCESS_THREADUNSAFE)
         return false;
 
-    Player* player = m_pSession->GetPlayer();
+    PlayerPtr player = m_pSession->GetPlayer();
     if (!player)
         return false;
 
@@ -82,7 +82,7 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
         return true;
 
     //no player attached? -> our client! ^^
-    Player* player = m_pSession->GetPlayer();
+    PlayerPtr player = m_pSession->GetPlayer();
     if (!player)
         return true;
 
@@ -92,7 +92,7 @@ bool WorldSessionFilter::Process(WorldPacket* packet)
 
 /// WorldSession constructor
 WorldSession::WorldSession(uint32 id, WorldSocket* sock, AccountTypes sec, uint8 expansion, time_t mute_time, LocaleConstant locale, uint32 recruiter, bool isARecruiter):
-m_muteTime(mute_time), m_timeOutTime(0), _player(NULL), m_Socket(sock),
+m_muteTime(mute_time), m_timeOutTime(0), _player(nullptr), m_Socket(sock),
 _security(sec), _accountId(id), m_expansion(expansion), _logoutTime(0),
 m_inQueue(false), m_playerLoading(false), m_playerLogout(false),
 m_playerRecentlyLogout(false), m_playerSave(false),
@@ -101,7 +101,7 @@ m_sessionDbLocaleIndex(locale),
 m_latency(0), m_TutorialsChanged(false), recruiterId(recruiter),
 isRecruiter(isARecruiter), timeLastWhoCommand(0)
 {
-    _warden = NULL;
+    _warden = nullptr;
     _filterAddonMessages = false;
 
     if (sock)
@@ -115,11 +115,11 @@ isRecruiter(isARecruiter), timeLastWhoCommand(0)
     InitializeQueryCallbackParameters();
 
     _compressionStream = new z_stream();
-    _compressionStream->zalloc = (alloc_func)NULL;
-    _compressionStream->zfree = (free_func)NULL;
-    _compressionStream->opaque = (voidpf)NULL;
+    _compressionStream->zalloc = (alloc_func)nullptr;
+    _compressionStream->zfree = (free_func)nullptr;
+    _compressionStream->opaque = (voidpf)nullptr;
     _compressionStream->avail_in = 0;
-    _compressionStream->next_in = NULL;
+    _compressionStream->next_in = nullptr;
     int32 z_res = deflateInit(_compressionStream, sWorld->getIntConfig(CONFIG_COMPRESSION));
     if (z_res != Z_OK)
     {
@@ -140,14 +140,14 @@ WorldSession::~WorldSession()
     {
         m_Socket->CloseSocket();
         m_Socket->RemoveReference();
-        m_Socket = NULL;
+        m_Socket = nullptr;
     }
 
     if (_warden)
         delete _warden;
 
     ///- empty incoming packet queue
-    WorldPacket* packet = NULL;
+    WorldPacket* packet = nullptr;
     while (_recvQueue.next(packet))
         delete packet;
 
@@ -169,7 +169,7 @@ std::string WorldSession::GetPlayerName(bool simple /* = true */) const
     std::string name = "[Player: ";
     uint32 guidLow = 0;
 
-    if (Player* player = GetPlayer())
+    if (PlayerPtr player = GetPlayer())
     {
         name.append(player->GetName());
         guidLow = player->GetGUIDLow();
@@ -226,13 +226,13 @@ void WorldSession::SendPacket(WorldPacket const* packet, bool forced /*= false*/
     static uint64 sendPacketCount = 0;
     static uint64 sendPacketBytes = 0;
 
-    static time_t firstTime = time(NULL);
+    static time_t firstTime = time(nullptr);
     static time_t lastTime = firstTime;                     // next 60 secs start time
 
     static uint64 sendLastPacketCount = 0;
     static uint64 sendLastPacketBytes = 0;
 
-    time_t cur_time = time(NULL);
+    time_t cur_time = time(nullptr);
 
     if ((cur_time - lastTime) < 60)
     {
@@ -293,11 +293,11 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
 
     ///- Retrieve packets from the receive queue and call the appropriate handlers
     /// not process packets if socket already closed
-    WorldPacket* packet = NULL;
+    WorldPacket* packet = nullptr;
     //! Delete packet after processing by default
     bool deletePacket = true;
     //! To prevent infinite loop
-    WorldPacket* firstDelayedPacket = NULL;
+    WorldPacket* firstDelayedPacket = nullptr;
     //! If _recvQueue.peek() == firstDelayedPacket it means that in this Update call, we've processed all
     //! *properly timed* packets, and we're now at the part of the queue where we find
     //! delayed packets that were re-enqueued due to improper timing. To prevent an infinite
@@ -415,7 +415,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
     //logout procedure should happen only in World::UpdateSessions() method!!!
     if (updater.ProcessLogout())
     {
-        time_t currTime = time(NULL);
+        time_t currTime = time(nullptr);
         ///- If necessary, log the player out
         if (ShouldLogOut(currTime) && !m_playerLoading)
             LogoutPlayer(true);
@@ -427,7 +427,7 @@ bool WorldSession::Update(uint32 diff, PacketFilter& updater)
         if (m_Socket && m_Socket->IsClosed())
         {
             m_Socket->RemoveReference();
-            m_Socket = NULL;
+            m_Socket = nullptr;
         }
 
         if (!m_Socket)
@@ -463,14 +463,14 @@ void WorldSession::LogoutPlayer(bool Save)
         else if (!_player->getAttackers().empty())
         {
             // build set of player who attack _player or who have pet attacking of _player
-            std::set<Player*> aset;
+            std::set<PlayerPtr> aset;
             for (Unit::AttackerSet::const_iterator itr = _player->getAttackers().begin(); itr != _player->getAttackers().end(); ++itr)
             {
-                Unit* owner = (*itr)->GetOwner();           // including player controlled case
+                UnitPtr owner = (*itr)->GetOwner();           // including player controlled case
                 if (owner && owner->GetTypeId() == TYPEID_PLAYER)
-                    aset.insert(owner->ToPlayer());
+                    aset.insert(TO_PLAYER(owner));
                 else if ((*itr)->GetTypeId() == TYPEID_PLAYER)
-                    aset.insert((Player*)(*itr));
+                    aset.insert(TO_PLAYER(*itr));
             }
             // CombatStop() method is removing all attackers from the AttackerSet
             // That is why it must be AFTER building current set of attackers
@@ -483,7 +483,7 @@ void WorldSession::LogoutPlayer(bool Save)
             _player->RepopAtGraveyard();
 
             // give honor to all attackers from set like group case
-            for (std::set<Player*>::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
+            for (std::set<PlayerPtr>::const_iterator itr = aset.begin(); itr != aset.end(); ++itr)
                 (*itr)->RewardHonor(_player, aset.size());
 
             // give bg rewards and update counters like kill by first from attackers
@@ -531,11 +531,11 @@ void WorldSession::LogoutPlayer(bool Save)
             HandleMoveWorldportAckOpcode();
 
         ///- If the player is in a guild, update the guild roster and broadcast a logout message to other guild members
-        if (Guild* guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
+        if (GuildPtr guild = sGuildMgr->GetGuildById(_player->GetGuildId()))
             guild->HandleMemberLogout(this);
 
         ///- Remove pet
-        _player->RemovePet(NULL, PET_SAVE_AS_CURRENT, true);
+        _player->RemovePet(nullptr, PET_SAVE_AS_CURRENT, true);
 
         ///- empty buyback items and save the player in the database
         // some save parts only correctly work in case player present in map/player_lists (pets, etc)
@@ -583,10 +583,10 @@ void WorldSession::LogoutPlayer(bool Save)
         // calls to GetMap in this case may cause crashes
         _player->CleanupsBeforeDelete();
         sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s) Logout Character:[%s] (GUID: %u) Level: %d", GetAccountId(), GetRemoteAddress().c_str(), _player->GetName(), _player->GetGUIDLow(), _player->getLevel());
-        if (Map* _map = _player->FindMap())
+        if (MapPtr _map = _player->FindMap())
             _map->RemovePlayerFromMap(_player, true);
 
-        SetPlayer(NULL); //! Pointer already deleted during RemovePlayerFromMap
+        SetPlayer(nullptr); //! Pointer already deleted during RemovePlayerFromMap
 
         //! Send the 'logout complete' packet to the client
         //! Client will respond by sending 3x CMSG_CANCEL_TRADE, which we currently dont handle
@@ -742,7 +742,7 @@ void WorldSession::SetAccountData(AccountDataType type, time_t tm, std::string d
     }
     else
     {
-        // _player can be NULL and packet received after logout but m_GUID still store correct guid
+        // _player can be nullptr and packet received after logout but m_GUID still store correct guid
         if (!m_GUIDLow)
             return;
 
@@ -764,7 +764,7 @@ void WorldSession::SetAccountData(AccountDataType type, time_t tm, std::string d
 void WorldSession::SendAccountDataTimes(uint32 mask)
 {
     WorldPacket data(SMSG_ACCOUNT_DATA_TIMES, 4+1+4+NUM_ACCOUNT_DATA_TYPES*4);
-    data << uint32(time(NULL));                             // Server time
+    data << uint32(time(nullptr));                             // Server time
     data << uint8(0);
     data << uint32(mask);                                   // type mask
     for (uint32 i = 0; i < NUM_ACCOUNT_DATA_TYPES; ++i)
@@ -1006,7 +1006,7 @@ void WorldSession::HandleAddonRegisteredPrefixesOpcode(WorldPacket& recvPacket)
     _filterAddonMessages = true;
 }
 
-void WorldSession::SetPlayer(Player* player)
+void WorldSession::SetPlayer(PlayerPtr player)
 {
     _player = player;
 
@@ -1018,8 +1018,8 @@ void WorldSession::SetPlayer(Player* player)
 void WorldSession::InitializeQueryCallbackParameters()
 {
     // Callback parameters that have pointers in them should be properly
-    // initialized to NULL here.
-    _charCreateCallback.SetParam(NULL);
+    // initialized to nullptr here.
+    _charCreateCallback.SetParam(nullptr);
 }
 
 void WorldSession::ProcessQueryCallbacks()

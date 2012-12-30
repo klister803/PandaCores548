@@ -32,6 +32,7 @@
 #include "DB2Structure.h"
 #include "DB2Stores.h"
 #include <fstream>
+#include "../SharedPtrs/ClassFactory.h"
 
 class misc_commandscript : public CommandScript
 {
@@ -42,82 +43,82 @@ public:
     {
         static ChatCommand groupCommandTable[] =
         {
-            { "leader",         SEC_ADMINISTRATOR,          false,  &HandleGroupLeaderCommand,          "", NULL },
-            { "disband",        SEC_ADMINISTRATOR,          false,  &HandleGroupDisbandCommand,         "", NULL },
-            { "remove",         SEC_ADMINISTRATOR,          false,  &HandleGroupRemoveCommand,          "", NULL },
-            { NULL,             0,                          false,  NULL,                               "", NULL }
+            { "leader",         SEC_ADMINISTRATOR,          false,  &HandleGroupLeaderCommand,          "", nullptr },
+            { "disband",        SEC_ADMINISTRATOR,          false,  &HandleGroupDisbandCommand,         "", nullptr },
+            { "remove",         SEC_ADMINISTRATOR,          false,  &HandleGroupRemoveCommand,          "", nullptr },
+            { nullptr,             0,                          false,  nullptr,                               "", nullptr }
         };
         static ChatCommand petCommandTable[] =
         {
-            { "create",             SEC_GAMEMASTER,         false, &HandleCreatePetCommand,             "", NULL },
-            { "learn",              SEC_GAMEMASTER,         false, &HandlePetLearnCommand,              "", NULL },
-            { "unlearn",            SEC_GAMEMASTER,         false, &HandlePetUnlearnCommand,            "", NULL },
-            { NULL,                 0,                      false, NULL,                                "", NULL }
+            { "create",             SEC_GAMEMASTER,         false, &HandleCreatePetCommand,             "", nullptr },
+            { "learn",              SEC_GAMEMASTER,         false, &HandlePetLearnCommand,              "", nullptr },
+            { "unlearn",            SEC_GAMEMASTER,         false, &HandlePetUnlearnCommand,            "", nullptr },
+            { nullptr,                 0,                      false, nullptr,                                "", nullptr }
         };
         static ChatCommand sendCommandTable[] =
         {
-            { "items",              SEC_ADMINISTRATOR,      true,  &HandleSendItemsCommand,             "", NULL },
-            { "mail",               SEC_MODERATOR,          true,  &HandleSendMailCommand,              "", NULL },
-            { "message",            SEC_ADMINISTRATOR,      true,  &HandleSendMessageCommand,           "", NULL },
-            { "money",              SEC_ADMINISTRATOR,      true,  &HandleSendMoneyCommand,             "", NULL },
-            { NULL,                 0,                      false, NULL,                                "", NULL }
+            { "items",              SEC_ADMINISTRATOR,      true,  &HandleSendItemsCommand,             "", nullptr },
+            { "mail",               SEC_MODERATOR,          true,  &HandleSendMailCommand,              "", nullptr },
+            { "message",            SEC_ADMINISTRATOR,      true,  &HandleSendMessageCommand,           "", nullptr },
+            { "money",              SEC_ADMINISTRATOR,      true,  &HandleSendMoneyCommand,             "", nullptr },
+            { nullptr,                 0,                      false, nullptr,                                "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "dev",                SEC_ADMINISTRATOR,      false, &HandleDevCommand,                   "", NULL },
-            { "gps",                SEC_ADMINISTRATOR,      false, &HandleGPSCommand,                   "", NULL },
-            { "aura",               SEC_ADMINISTRATOR,      false, &HandleAuraCommand,                  "", NULL },
-            { "unaura",             SEC_ADMINISTRATOR,      false, &HandleUnAuraCommand,                "", NULL },
-            { "appear",             SEC_MODERATOR,          false, &HandleAppearCommand,                "", NULL },
-            { "summon",             SEC_MODERATOR,          false, &HandleSummonCommand,                "", NULL },
-            { "groupsummon",        SEC_MODERATOR,          false, &HandleGroupSummonCommand,           "", NULL },
-            { "commands",           SEC_PLAYER,             true,  &HandleCommandsCommand,              "", NULL },
-            { "die",                SEC_ADMINISTRATOR,      false, &HandleDieCommand,                   "", NULL },
-            { "revive",             SEC_ADMINISTRATOR,      true,  &HandleReviveCommand,                "", NULL },
-            { "dismount",           SEC_PLAYER,             false, &HandleDismountCommand,              "", NULL },
-            { "guid",               SEC_GAMEMASTER,         false, &HandleGUIDCommand,                  "", NULL },
-            { "help",               SEC_PLAYER,             true,  &HandleHelpCommand,                  "", NULL },
-            { "itemmove",           SEC_GAMEMASTER,         false, &HandleItemMoveCommand,              "", NULL },
-            { "cooldown",           SEC_ADMINISTRATOR,      false, &HandleCooldownCommand,              "", NULL },
-            { "distance",           SEC_ADMINISTRATOR,      false, &HandleGetDistanceCommand,           "", NULL },
-            { "recall",             SEC_MODERATOR,          false, &HandleRecallCommand,                "", NULL },
-            { "save",               SEC_PLAYER,             false, &HandleSaveCommand,                  "", NULL },
-            { "saveall",            SEC_MODERATOR,          true,  &HandleSaveAllCommand,               "", NULL },
-            { "kick",               SEC_GAMEMASTER,         true,  &HandleKickPlayerCommand,            "", NULL },
-            { "start",              SEC_PLAYER,             false, &HandleStartCommand,                 "", NULL },
-            { "linkgrave",          SEC_ADMINISTRATOR,      false, &HandleLinkGraveCommand,             "", NULL },
-            { "neargrave",          SEC_ADMINISTRATOR,      false, &HandleNearGraveCommand,             "", NULL },
-            { "showarea",           SEC_ADMINISTRATOR,      false, &HandleShowAreaCommand,              "", NULL },
-            { "hidearea",           SEC_ADMINISTRATOR,      false, &HandleHideAreaCommand,              "", NULL },
-            { "additem",            SEC_ADMINISTRATOR,      false, &HandleAddItemCommand,               "", NULL },
-            { "additemset",         SEC_ADMINISTRATOR,      false, &HandleAddItemSetCommand,            "", NULL },
-            { "bank",               SEC_ADMINISTRATOR,      false, &HandleBankCommand,                  "", NULL },
-            { "wchange",            SEC_ADMINISTRATOR,      false, &HandleChangeWeather,                "", NULL },
-            { "setskill",           SEC_ADMINISTRATOR,      false, &HandleSetSkillCommand,              "", NULL },
-            { "pinfo",              SEC_GAMEMASTER,         true,  &HandlePInfoCommand,                 "", NULL },
-            { "respawn",            SEC_ADMINISTRATOR,      false, &HandleRespawnCommand,               "", NULL },
-            { "send",               SEC_MODERATOR,          true,  NULL,                                "", sendCommandTable },
-            { "pet",                SEC_GAMEMASTER,         false, NULL,                                "", petCommandTable },
-            { "mute",               SEC_MODERATOR,          true,  &HandleMuteCommand,                  "", NULL },
-            { "unmute",             SEC_MODERATOR,          true,  &HandleUnmuteCommand,                "", NULL },
-            { "movegens",           SEC_ADMINISTRATOR,      false, &HandleMovegensCommand,              "", NULL },
-            { "cometome",           SEC_ADMINISTRATOR,      false, &HandleComeToMeCommand,              "", NULL },
-            { "damage",             SEC_ADMINISTRATOR,      false, &HandleDamageCommand,                "", NULL },
-            { "combatstop",         SEC_GAMEMASTER,         true,  &HandleCombatStopCommand,            "", NULL },
-            { "flusharenapoints",   SEC_ADMINISTRATOR,      false, &HandleFlushArenaPointsCommand,      "", NULL },
-            { "repairitems",        SEC_GAMEMASTER,         true,  &HandleRepairitemsCommand,           "", NULL },
-            { "freeze",             SEC_MODERATOR,          false, &HandleFreezeCommand,                "", NULL },
-            { "unfreeze",           SEC_MODERATOR,          false, &HandleUnFreezeCommand,              "", NULL },
-            { "listfreeze",         SEC_MODERATOR,          false, &HandleListFreezeCommand,            "", NULL },
-            { "group",              SEC_ADMINISTRATOR,      false, NULL,                                "", groupCommandTable },
-            { "possess",            SEC_ADMINISTRATOR,      false, &HandlePossessCommand,                "", NULL },
-            { "unpossess",          SEC_ADMINISTRATOR,      false, &HandleUnPossessCommand,              "", NULL },
-            { "bindsight",          SEC_ADMINISTRATOR,      false, &HandleBindSightCommand,              "", NULL },
-            { "unbindsight",        SEC_ADMINISTRATOR,      false, &HandleUnbindSightCommand,            "", NULL },
-            { "playall",            SEC_GAMEMASTER,         false, &HandlePlayAllCommand,                "", NULL },
-            { "selectfaction",      SEC_ADMINISTRATOR,      false, &HandleSelectFactionCommand,          "", NULL },
-            { "outItemTemplate",    SEC_ADMINISTRATOR,      false, &HandleOutItemTemplateCommand,        "", NULL },
-            { NULL,                 0,                      false, NULL,                                "", NULL }
+            { "dev",                SEC_ADMINISTRATOR,      false, &HandleDevCommand,                   "", nullptr },
+            { "gps",                SEC_ADMINISTRATOR,      false, &HandleGPSCommand,                   "", nullptr },
+            { "aura",               SEC_ADMINISTRATOR,      false, &HandleAuraCommand,                  "", nullptr },
+            { "unaura",             SEC_ADMINISTRATOR,      false, &HandleUnAuraCommand,                "", nullptr },
+            { "appear",             SEC_MODERATOR,          false, &HandleAppearCommand,                "", nullptr },
+            { "summon",             SEC_MODERATOR,          false, &HandleSummonCommand,                "", nullptr },
+            { "groupsummon",        SEC_MODERATOR,          false, &HandleGroupSummonCommand,           "", nullptr },
+            { "commands",           SEC_PLAYER,             true,  &HandleCommandsCommand,              "", nullptr },
+            { "die",                SEC_ADMINISTRATOR,      false, &HandleDieCommand,                   "", nullptr },
+            { "revive",             SEC_ADMINISTRATOR,      true,  &HandleReviveCommand,                "", nullptr },
+            { "dismount",           SEC_PLAYER,             false, &HandleDismountCommand,              "", nullptr },
+            { "guid",               SEC_GAMEMASTER,         false, &HandleGUIDCommand,                  "", nullptr },
+            { "help",               SEC_PLAYER,             true,  &HandleHelpCommand,                  "", nullptr },
+            { "itemmove",           SEC_GAMEMASTER,         false, &HandleItemMoveCommand,              "", nullptr },
+            { "cooldown",           SEC_ADMINISTRATOR,      false, &HandleCooldownCommand,              "", nullptr },
+            { "distance",           SEC_ADMINISTRATOR,      false, &HandleGetDistanceCommand,           "", nullptr },
+            { "recall",             SEC_MODERATOR,          false, &HandleRecallCommand,                "", nullptr },
+            { "save",               SEC_PLAYER,             false, &HandleSaveCommand,                  "", nullptr },
+            { "saveall",            SEC_MODERATOR,          true,  &HandleSaveAllCommand,               "", nullptr },
+            { "kick",               SEC_GAMEMASTER,         true,  &HandleKickPlayerCommand,            "", nullptr },
+            { "start",              SEC_PLAYER,             false, &HandleStartCommand,                 "", nullptr },
+            { "linkgrave",          SEC_ADMINISTRATOR,      false, &HandleLinkGraveCommand,             "", nullptr },
+            { "neargrave",          SEC_ADMINISTRATOR,      false, &HandleNearGraveCommand,             "", nullptr },
+            { "showarea",           SEC_ADMINISTRATOR,      false, &HandleShowAreaCommand,              "", nullptr },
+            { "hidearea",           SEC_ADMINISTRATOR,      false, &HandleHideAreaCommand,              "", nullptr },
+            { "additem",            SEC_ADMINISTRATOR,      false, &HandleAddItemCommand,               "", nullptr },
+            { "additemset",         SEC_ADMINISTRATOR,      false, &HandleAddItemSetCommand,            "", nullptr },
+            { "bank",               SEC_ADMINISTRATOR,      false, &HandleBankCommand,                  "", nullptr },
+            { "wchange",            SEC_ADMINISTRATOR,      false, &HandleChangeWeather,                "", nullptr },
+            { "setskill",           SEC_ADMINISTRATOR,      false, &HandleSetSkillCommand,              "", nullptr },
+            { "pinfo",              SEC_GAMEMASTER,         true,  &HandlePInfoCommand,                 "", nullptr },
+            { "respawn",            SEC_ADMINISTRATOR,      false, &HandleRespawnCommand,               "", nullptr },
+            { "send",               SEC_MODERATOR,          true,  nullptr,                                "", sendCommandTable },
+            { "pet",                SEC_GAMEMASTER,         false, nullptr,                                "", petCommandTable },
+            { "mute",               SEC_MODERATOR,          true,  &HandleMuteCommand,                  "", nullptr },
+            { "unmute",             SEC_MODERATOR,          true,  &HandleUnmuteCommand,                "", nullptr },
+            { "movegens",           SEC_ADMINISTRATOR,      false, &HandleMovegensCommand,              "", nullptr },
+            { "cometome",           SEC_ADMINISTRATOR,      false, &HandleComeToMeCommand,              "", nullptr },
+            { "damage",             SEC_ADMINISTRATOR,      false, &HandleDamageCommand,                "", nullptr },
+            { "combatstop",         SEC_GAMEMASTER,         true,  &HandleCombatStopCommand,            "", nullptr },
+            { "flusharenapoints",   SEC_ADMINISTRATOR,      false, &HandleFlushArenaPointsCommand,      "", nullptr },
+            { "repairitems",        SEC_GAMEMASTER,         true,  &HandleRepairitemsCommand,           "", nullptr },
+            { "freeze",             SEC_MODERATOR,          false, &HandleFreezeCommand,                "", nullptr },
+            { "unfreeze",           SEC_MODERATOR,          false, &HandleUnFreezeCommand,              "", nullptr },
+            { "listfreeze",         SEC_MODERATOR,          false, &HandleListFreezeCommand,            "", nullptr },
+            { "group",              SEC_ADMINISTRATOR,      false, nullptr,                                "", groupCommandTable },
+            { "possess",            SEC_ADMINISTRATOR,      false, &HandlePossessCommand,               "", nullptr },
+            { "unpossess",          SEC_ADMINISTRATOR,      false, &HandleUnPossessCommand,             "", nullptr },
+            { "bindsight",          SEC_ADMINISTRATOR,      false, &HandleBindSightCommand,             "", nullptr },
+            { "unbindsight",        SEC_ADMINISTRATOR,      false, &HandleUnbindSightCommand,           "", nullptr },
+            { "playall",            SEC_GAMEMASTER,         false, &HandlePlayAllCommand,               "", nullptr },
+            { "selectfaction",      SEC_ADMINISTRATOR,      false, &HandleSelectFactionCommand,         "", nullptr },
+            { "outItemTemplate",    SEC_ADMINISTRATOR,      false, &HandleOutItemTemplateCommand,       "", nullptr },
+            { nullptr,              0,                      false, nullptr,                             "", nullptr }
         };
         return commandTable;
     }
@@ -156,12 +157,12 @@ public:
 
     static bool HandleGPSCommand(ChatHandler* handler, char const* args)
     {
-        WorldObject* object = NULL;
+        WorldObjectPtr object = nullptr;
         if (*args)
         {
             uint64 guid = handler->extractGuidFromLink((char*)args);
             if (guid)
-                object = (WorldObject*)ObjectAccessor::GetObjectByTypeMask(*handler->GetSession()->GetPlayer(), guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT);
+                object = TO_WORLDOBJECT(ObjectAccessor::GetObjectByTypeMask(TO_CONST_WORLDOBJECT(handler->GetSession()->GetPlayer()), guid, TYPEMASK_UNIT | TYPEMASK_GAMEOBJECT));
 
             if (!object)
             {
@@ -197,7 +198,7 @@ public:
 
         Map2ZoneCoordinates(zoneX, zoneY, zoneId);
 
-        Map const* map = object->GetMap();
+        constMapPtr map = object->GetMap();
         float groundZ = map->GetHeight(object->GetPhaseMask(), object->GetPositionX(), object->GetPositionY(), MAX_HEIGHT);
         float floorZ = map->GetHeight(object->GetPhaseMask(), object->GetPositionX(), object->GetPositionY(), object->GetPositionZ());
 
@@ -240,7 +241,7 @@ public:
 
     static bool HandleAuraCommand(ChatHandler* handler, char const* args)
     {
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (!target)
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -259,7 +260,7 @@ public:
 
     static bool HandleUnAuraCommand(ChatHandler* handler, char const* args)
     {
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (!target)
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -286,13 +287,13 @@ public:
     // Teleport to Player
     static bool HandleAppearCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
             return false;
 
-        Player* _player = handler->GetSession()->GetPlayer();
+        PlayerPtr _player = handler->GetSession()->GetPlayer();
         if (target == _player || targetGuid == _player->GetGUID())
         {
             handler->SendSysMessage(LANG_CANT_TELEPORT_SELF);
@@ -308,7 +309,7 @@ public:
 
             std::string chrNameLink = handler->playerLink(targetName);
 
-            Map* map = target->GetMap();
+            MapPtr map = target->GetMap();
             if (map->IsBattlegroundOrArena())
             {
                 // only allow if gm mode is on
@@ -360,9 +361,9 @@ public:
                 InstancePlayerBind* bind = _player->GetBoundInstance(target->GetMapId(), target->GetDifficulty(map->IsRaid()));
                 if (!bind)
                 {
-                    Group* group = _player->GetGroup();
+                    GroupPtr group = _player->GetGroup();
                     // if no bind exists, create a solo bind
-                    InstanceGroupBind* gBind = group ? group->GetBoundInstance(target) : NULL;                // if no bind exists, create a solo bind
+                    InstanceGroupBind* gBind = group ? group->GetBoundInstance(target) : nullptr;                // if no bind exists, create a solo bind
                     if (!gBind)
                         if (InstanceSave* save = sInstanceSaveMgr->GetInstanceSave(target->GetInstanceId()))
                             _player->BindToInstance(save, !save->CanReset());
@@ -390,13 +391,13 @@ public:
             float x, y, z;
             target->GetContactPoint(_player, x, y, z);
 
-            _player->TeleportTo(target->GetMapId(), x, y, z, _player->GetAngle(target), TELE_TO_GM_MODE);
+            _player->TeleportTo(target->GetMapId(), x, y, z, _player->GetAngle(target.get()), TELE_TO_GM_MODE);
             _player->SetPhaseMask(target->GetPhaseMask(), true);
         }
         else
         {
             // check offline security
-            if (handler->HasLowerSecurity(NULL, targetGuid))
+            if (handler->HasLowerSecurity(nullptr, targetGuid))
                 return false;
 
             std::string nameLink = handler->playerLink(targetName);
@@ -428,13 +429,13 @@ public:
     // Summon Player
     static bool HandleSummonCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
             return false;
 
-        Player* _player = handler->GetSession()->GetPlayer();
+        PlayerPtr _player = handler->GetSession()->GetPlayer();
         if (target == _player || targetGuid == _player->GetGUID())
         {
             handler->PSendSysMessage(LANG_CANT_TELEPORT_SELF);
@@ -456,7 +457,7 @@ public:
                 return false;
             }
 
-            Map* map = handler->GetSession()->GetPlayer()->GetMap();
+            MapPtr map = handler->GetSession()->GetPlayer()->GetMap();
 
             if (map->IsBattlegroundOrArena())
             {
@@ -480,7 +481,7 @@ public:
             }
             else if (map->IsDungeon())
             {
-                Map* map = target->GetMap();
+                MapPtr map = target->GetMap();
 
                 if (map->Instanceable() && map->GetInstanceId() != map->GetInstanceId())
                     target->UnbindInstance(map->GetInstanceId(), target->GetDungeonDifficulty(), true);
@@ -520,7 +521,7 @@ public:
         else
         {
             // check offline security
-            if (handler->HasLowerSecurity(NULL, targetGuid))
+            if (handler->HasLowerSecurity(nullptr, targetGuid))
                 return false;
 
             std::string nameLink = handler->playerLink(targetName);
@@ -542,7 +543,7 @@ public:
     // Summon group of player
     static bool HandleGroupSummonCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         if (!handler->extractPlayerTarget((char*)args, &target))
             return false;
 
@@ -550,7 +551,7 @@ public:
         if (handler->HasLowerSecurity(target, 0))
             return false;
 
-        Group* group = target->GetGroup();
+        GroupPtr group = target->GetGroup();
 
         std::string nameLink = handler->GetNameLink(target);
 
@@ -561,7 +562,7 @@ public:
             return false;
         }
 
-        Map* gmMap = handler->GetSession()->GetPlayer()->GetMap();
+        MapPtr gmMap = handler->GetSession()->GetPlayer()->GetMap();
         bool toInstance = gmMap->Instanceable();
 
         // we are in instance, and can summon only player in our group with us as lead
@@ -575,9 +576,9 @@ public:
             return false;
         }
 
-        for (GroupReference* itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+        for (GroupReferencePtr itr = group->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
-            Player* player = itr->getSource();
+            PlayerPtr player = itr->getSource();
 
             if (!player || player == handler->GetSession()->GetPlayer() || !player->GetSession())
                 continue;
@@ -597,7 +598,7 @@ public:
 
             if (toInstance)
             {
-                Map* playerMap = player->GetMap();
+                MapPtr playerMap = player->GetMap();
 
                 if (playerMap->Instanceable() && playerMap->GetInstanceId() != gmMap->GetInstanceId())
                 {
@@ -639,7 +640,7 @@ public:
 
     static bool HandleDieCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
 
         if (!target || !handler->GetSession()->GetPlayer()->GetSelection())
         {
@@ -650,7 +651,7 @@ public:
 
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
-            if (handler->HasLowerSecurity((Player*)target, 0, false))
+            if (handler->HasLowerSecurity(TO_PLAYER(target), 0, false))
                 return false;
         }
 
@@ -659,7 +660,7 @@ public:
             if (sWorld->getBoolConfig(CONFIG_DIE_COMMAND_MODE))
                 handler->GetSession()->GetPlayer()->Kill(target);
             else
-                handler->GetSession()->GetPlayer()->DealDamage(target, target->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                handler->GetSession()->GetPlayer()->DealDamage(target, target->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
         }
 
         return true;
@@ -667,7 +668,7 @@ public:
 
     static bool HandleReviveCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid))
             return false;
@@ -687,7 +688,7 @@ public:
 
     static bool HandleDismountCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         // If player is not mounted, so go out :)
         if (!player->IsMounted())
@@ -750,7 +751,7 @@ public:
         if (!param1)
             return false;
 
-        char const* param2 = strtok(NULL, " ");
+        char const* param2 = strtok(nullptr, " ");
         if (!param2)
             return false;
 
@@ -776,7 +777,7 @@ public:
 
     static bool HandleCooldownCommand(ChatHandler* handler, char const* args)
     {
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -813,13 +814,13 @@ public:
 
     static bool HandleGetDistanceCommand(ChatHandler* handler, char const* args)
     {
-        WorldObject* obj = NULL;
+        WorldObjectPtr obj = nullptr;
 
         if (*args)
         {
             uint64 guid = handler->extractGuidFromLink((char*)args);
             if (guid)
-                obj = (WorldObject*)ObjectAccessor::GetObjectByTypeMask(*handler->GetSession()->GetPlayer(), guid, TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT);
+                obj = TO_WORLDOBJECT(ObjectAccessor::GetObjectByTypeMask(TO_CONST_WORLDOBJECT(handler->GetSession()->GetPlayer()), guid, TYPEMASK_UNIT|TYPEMASK_GAMEOBJECT));
 
             if (!obj)
             {
@@ -840,13 +841,13 @@ public:
             }
         }
 
-        handler->PSendSysMessage(LANG_DISTANCE, handler->GetSession()->GetPlayer()->GetDistance(obj), handler->GetSession()->GetPlayer()->GetDistance2d(obj), handler->GetSession()->GetPlayer()->GetExactDist(obj), handler->GetSession()->GetPlayer()->GetExactDist2d(obj));
+        handler->PSendSysMessage(LANG_DISTANCE, handler->GetSession()->GetPlayer()->GetDistance(obj), handler->GetSession()->GetPlayer()->GetDistance2d(obj), handler->GetSession()->GetPlayer()->GetExactDist(obj.get()), handler->GetSession()->GetPlayer()->GetExactDist2d(obj.get()));
         return true;
     }
     // Teleport player to last position
     static bool HandleRecallCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         if (!handler->extractPlayerTarget((char*)args, &target))
             return false;
 
@@ -874,12 +875,12 @@ public:
 
     static bool HandleSaveCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         // save GM account without delay and output message
         if (!AccountMgr::IsPlayerAccount(handler->GetSession()->GetSecurity()))
         {
-            if (Player* target = handler->getSelectedPlayer())
+            if (PlayerPtr target = handler->getSelectedPlayer())
                 target->SaveToDB();
             else
                 player->SaveToDB();
@@ -906,9 +907,9 @@ public:
     // kick player
     static bool HandleKickPlayerCommand(ChatHandler* handler, char const* args)
     {
-        Player* target = NULL;
+        PlayerPtr target = nullptr;
         std::string playerName;
-        if (!handler->extractPlayerTarget((char*)args, &target, NULL, &playerName))
+        if (!handler->extractPlayerTarget((char*)args, &target, nullptr, &playerName))
             return false;
 
         if (handler->GetSession() && target == handler->GetSession()->GetPlayer())
@@ -934,7 +935,7 @@ public:
 
     static bool HandleStartCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (player->isInFlight())
         {
@@ -975,7 +976,7 @@ public:
 
         uint32 team;
 
-        char* px2 = strtok(NULL, " ");
+        char* px2 = strtok(nullptr, " ");
 
         if (!px2)
             team = 0;
@@ -995,7 +996,7 @@ public:
             return false;
         }
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         uint32 zoneId = player->GetZoneId();
 
@@ -1030,7 +1031,7 @@ public:
         else
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
         uint32 zone_id = player->GetZoneId();
 
         WorldSafeLocsEntry const* graveyard = sObjectMgr->GetClosestGraveYard(
@@ -1086,7 +1087,7 @@ public:
         if (!*args)
             return false;
 
-        Player* playerTarget = handler->getSelectedPlayer();
+        PlayerPtr playerTarget = handler->getSelectedPlayer();
         if (!playerTarget)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -1117,7 +1118,7 @@ public:
         if (!*args)
             return false;
 
-        Player* playerTarget = handler->getSelectedPlayer();
+        PlayerPtr playerTarget = handler->getSelectedPlayer();
         if (!playerTarget)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -1182,18 +1183,18 @@ public:
             itemId = uint32(atol(id));
         }
 
-        char const* ccount = strtok(NULL, " ");
+        char const* ccount = strtok(nullptr, " ");
 
         int32 count = 1;
 
         if (ccount)
-            count = strtol(ccount, NULL, 10);
+            count = strtol(ccount, nullptr, 10);
 
         if (count == 0)
             count = 1;
 
-        Player* player = handler->GetSession()->GetPlayer();
-        Player* playerTarget = handler->getSelectedPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
+        PlayerPtr playerTarget = handler->getSelectedPlayer();
         if (!playerTarget)
             playerTarget = player;
 
@@ -1231,12 +1232,12 @@ public:
             return false;
         }
 
-        Item* item = playerTarget->StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
+        ItemPtr item = playerTarget->StoreNewItem(dest, itemId, true, Item::GenerateItemRandomPropertyId(itemId));
 
         // remove binding (let GM give it to another player later)
         if (player == playerTarget)
             for (ItemPosCountVec::const_iterator itr = dest.begin(); itr != dest.end(); ++itr)
-                if (Item* item1 = player->GetItemByPos(itr->pos))
+                if (ItemPtr item1 = player->GetItemByPos(itr->pos))
                     item1->SetBinding(false);
 
         if (count > 0 && item)
@@ -1271,8 +1272,8 @@ public:
             return false;
         }
 
-        Player* player = handler->GetSession()->GetPlayer();
-        Player* playerTarget = handler->getSelectedPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
+        PlayerPtr playerTarget = handler->getSelectedPlayer();
         if (!playerTarget)
             playerTarget = player;
 
@@ -1289,7 +1290,7 @@ public:
                 InventoryResult msg = playerTarget->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itr->second.ItemId, 1);
                 if (msg == EQUIP_ERR_OK)
                 {
-                    Item* item = playerTarget->StoreNewItem(dest, itr->second.ItemId, true);
+                    ItemPtr item = playerTarget->StoreNewItem(dest, itr->second.ItemId, true);
 
                     // remove binding (let GM give it to another player later)
                     if (player == playerTarget)
@@ -1301,7 +1302,7 @@ public:
                 }
                 else
                 {
-                    player->SendEquipError(msg, NULL, NULL, itr->second.ItemId);
+                    player->SendEquipError(msg, nullptr, nullptr, itr->second.ItemId);
                     handler->PSendSysMessage(LANG_ITEM_CANNOT_CREATE, itr->second.ItemId, 1);
                 }
             }
@@ -1338,7 +1339,7 @@ public:
 
         // *Change the weather of a cell
         char const* px = strtok((char*)args, " ");
-        char const* py = strtok(NULL, " ");
+        char const* py = strtok(nullptr, " ");
 
         if (!px || !py)
             return false;
@@ -1346,10 +1347,10 @@ public:
         uint32 type = uint32(atoi(px));                         //0 to 3, 0: fine, 1: rain, 2: snow, 3: sand
         float grade = float(atof(py));                          //0 to 1, sending -1 is instand good weather
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
         uint32 zoneid = player->GetZoneId();
 
-        Weather* weather = WeatherMgr::FindWeather(zoneid);
+        WeatherPtr weather = WeatherMgr::FindWeather(zoneid);
 
         if (!weather)
             weather = WeatherMgr::AddWeather(zoneid);
@@ -1372,11 +1373,11 @@ public:
         if (!skillStr)
             return false;
 
-        char const* levelStr = strtok(NULL, " ");
+        char const* levelStr = strtok(nullptr, " ");
         if (!levelStr)
             return false;
 
-        char const* maxPureSkill = strtok(NULL, " ");
+        char const* maxPureSkill = strtok(nullptr, " ");
 
         int32 skill = atoi(skillStr);
         if (skill <= 0)
@@ -1388,7 +1389,7 @@ public:
 
         int32 level = uint32(atol(levelStr));
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -1426,7 +1427,7 @@ public:
     // show info of player
     static bool HandlePInfoCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
 
@@ -1476,7 +1477,7 @@ public:
         else
         {
             // check offline security
-            if (handler->HasLowerSecurity(NULL, targetGuid))
+            if (handler->HasLowerSecurity(nullptr, targetGuid))
                 return false;
 
             PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PINFO);
@@ -1576,10 +1577,10 @@ public:
         }
 
         if (muteTime > 0)
-            handler->PSendSysMessage(LANG_PINFO_MUTE, secsToTimeString(muteTime - time(NULL), true).c_str());
+            handler->PSendSysMessage(LANG_PINFO_MUTE, secsToTimeString(muteTime - time(nullptr), true).c_str());
 
         if (banTime >= 0)
-            handler->PSendSysMessage(LANG_PINFO_BAN, banTime > 0 ? secsToTimeString(banTime - time(NULL), true).c_str() : "permanently", bannedby.c_str(), banreason.c_str());
+            handler->PSendSysMessage(LANG_PINFO_BAN, banTime > 0 ? secsToTimeString(banTime - time(nullptr), true).c_str() : "permanently", bannedby.c_str(), banreason.c_str());
 
         std::string raceStr, ClassStr;
         switch (race)
@@ -1706,10 +1707,10 @@ public:
 
     static bool HandleRespawnCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         // accept only explicitly selected target (not implicitly self targeting case)
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (player->GetSelection() && target)
         {
             if (target->GetTypeId() != TYPEID_UNIT || target->isPet())
@@ -1732,7 +1733,7 @@ public:
         Trinity::WorldObjectWorker<Trinity::RespawnDo> worker(player, u_do);
 
         TypeContainerVisitor<Trinity::WorldObjectWorker<Trinity::RespawnDo>, GridTypeMapContainer > obj_worker(worker);
-        cell.Visit(p, obj_worker, *player->GetMap(), *player, player->GetGridActivationRange());
+        cell.Visit(p, obj_worker, *player->GetMap(), TO_CONST_WORLDOBJECT(player), player->GetGridActivationRange());
 
         return true;
     }
@@ -1745,12 +1746,12 @@ public:
         if (!delayStr)
             return false;
 
-        char const* muteReason = strtok(NULL, "\r");
+        char const* muteReason = strtok(nullptr, "\r");
         std::string muteReasonStr = "No reason";
-        if (muteReason != NULL)
+        if (muteReason != nullptr)
             muteReasonStr = muteReason;
 
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget(nameStr, &target, &targetGuid, &targetName))
@@ -1774,7 +1775,7 @@ public:
         if (target)
         {
             // Target is online, mute will be in effect right away.
-            int64 muteTime = time(NULL) + notSpeakTime * MINUTE;
+            int64 muteTime = time(nullptr) + notSpeakTime * MINUTE;
             target->GetSession()->m_muteTime = muteTime;
             stmt->setInt64(0, muteTime);
             ChatHandler(target).PSendSysMessage(LANG_YOUR_CHAT_DISABLED, notSpeakTime, muteReasonStr.c_str());
@@ -1798,7 +1799,7 @@ public:
     // unmute player
     static bool HandleUnmuteCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
@@ -1845,7 +1846,7 @@ public:
 
     static bool HandleMovegensCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Unit* unit = handler->getSelectedUnit();
+        UnitPtr unit = handler->getSelectedUnit();
         if (!unit)
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -1861,7 +1862,7 @@ public:
 
         for (uint8 i = 0; i < MAX_MOTION_SLOT; ++i)
         {
-            MovementGenerator* movementGenerator = motionMaster->GetMotionSlot(i);
+            std::shared_ptr<MovementGenerator> movementGenerator = motionMaster->GetMotionSlot(i);
             if (!movementGenerator)
             {
                 handler->SendSysMessage("Empty");
@@ -1887,11 +1888,11 @@ public:
                     break;
                 case CHASE_MOTION_TYPE:
                 {
-                    Unit* target = NULL;
+                    UnitPtr target = nullptr;
                     if (unit->GetTypeId() == TYPEID_PLAYER)
-                        target = static_cast<ChaseMovementGenerator<Player> const*>(movementGenerator)->GetTarget();
+                        target = STATIC_CAST(const ChaseMovementGenerator<Player>,movementGenerator)->GetTarget();
                     else
-                        target = static_cast<ChaseMovementGenerator<Creature> const*>(movementGenerator)->GetTarget();
+                        target = STATIC_CAST(const ChaseMovementGenerator<Creature>,movementGenerator)->GetTarget();
 
                     if (!target)
                         handler->SendSysMessage(LANG_MOVEGENS_CHASE_NULL);
@@ -1903,11 +1904,11 @@ public:
                 }
                 case FOLLOW_MOTION_TYPE:
                 {
-                    Unit* target = NULL;
+                    UnitPtr target = nullptr;
                     if (unit->GetTypeId() == TYPEID_PLAYER)
-                        target = static_cast<FollowMovementGenerator<Player> const*>(movementGenerator)->GetTarget();
+                        target = STATIC_CAST(const FollowMovementGenerator<Player>,movementGenerator)->GetTarget();
                     else
-                        target = static_cast<FollowMovementGenerator<Creature> const*>(movementGenerator)->GetTarget();
+                        target = STATIC_CAST(const FollowMovementGenerator<Creature>,movementGenerator)->GetTarget();
 
                     if (!target)
                         handler->SendSysMessage(LANG_MOVEGENS_FOLLOW_NULL);
@@ -1960,7 +1961,7 @@ public:
         if (!newFlagStr)
             return false;
 
-        Creature* caster = handler->getSelectedCreature();
+        CreaturePtr caster = handler->getSelectedCreature();
         if (!caster)
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
@@ -1968,7 +1969,7 @@ public:
             return false;
         }
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         caster->GetMotionMaster()->MovePoint(0, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ());
 
@@ -1980,7 +1981,7 @@ public:
         if (!*args)
             return false;
 
-        Unit* target = handler->getSelectedUnit();
+        UnitPtr target = handler->getSelectedUnit();
         if (!target || !handler->GetSession()->GetPlayer()->GetSelection())
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -1990,7 +1991,7 @@ public:
 
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
-            if (handler->HasLowerSecurity((Player*)target, 0, false))
+            if (handler->HasLowerSecurity(TO_PLAYER(target), 0, false))
                 return false;
         }
 
@@ -2007,12 +2008,12 @@ public:
 
         uint32 damage = damage_int;
 
-        char* schoolStr = strtok((char*)NULL, " ");
+        char* schoolStr = strtok((char*)nullptr, " ");
 
         // flat melee damage without resistence/etc reduction
         if (!schoolStr)
         {
-            handler->GetSession()->GetPlayer()->DealDamage(target, damage, NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+            handler->GetSession()->GetPlayer()->DealDamage(target, damage, nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
             if (target != handler->GetSession()->GetPlayer())
                 handler->GetSession()->GetPlayer()->SendAttackStateUpdate (HITINFO_AFFECTS_VICTIM, target, 1, SPELL_SCHOOL_MASK_NORMAL, damage, 0, 0, VICTIMSTATE_HIT, 0);
             return true;
@@ -2025,9 +2026,9 @@ public:
         SpellSchoolMask schoolmask = SpellSchoolMask(1 << school);
 
         if (Unit::IsDamageReducedByArmor(schoolmask))
-            damage = handler->GetSession()->GetPlayer()->CalcArmorReducedDamage(target, damage, NULL, BASE_ATTACK);
+            damage = handler->GetSession()->GetPlayer()->CalcArmorReducedDamage(target, damage, nullptr, BASE_ATTACK);
 
-        char* spellStr = strtok((char*)NULL, " ");
+        char* spellStr = strtok((char*)nullptr, " ");
 
         // melee damage by specific school
         if (!spellStr)
@@ -2043,7 +2044,7 @@ public:
             damage -= absorb + resist;
 
             handler->GetSession()->GetPlayer()->DealDamageMods(target, damage, &absorb);
-            handler->GetSession()->GetPlayer()->DealDamage(target, damage, NULL, DIRECT_DAMAGE, schoolmask, NULL, false);
+            handler->GetSession()->GetPlayer()->DealDamage(target, damage, nullptr, DIRECT_DAMAGE, schoolmask, nullptr, false);
             handler->GetSession()->GetPlayer()->SendAttackStateUpdate (HITINFO_AFFECTS_VICTIM, target, 1, schoolmask, damage, absorb, resist, VICTIMSTATE_HIT, 0);
             return true;
         }
@@ -2061,7 +2062,7 @@ public:
 
     static bool HandleCombatStopCommand(ChatHandler* handler, char const* args)
     {
-        Player* target = NULL;
+        PlayerPtr target = nullptr;
 
         if (args && strlen(args) > 0)
         {
@@ -2097,7 +2098,7 @@ public:
 
     static bool HandleRepairitemsCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         if (!handler->extractPlayerTarget((char*)args, &target))
             return false;
 
@@ -2119,13 +2120,13 @@ public:
     static bool HandleSendMailCommand(ChatHandler* handler, char const* args)
     {
         // format: name "subject text" "mail text"
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
             return false;
 
-        char* tail1 = strtok(NULL, "");
+        char* tail1 = strtok(nullptr, "");
         if (!tail1)
             return false;
 
@@ -2133,7 +2134,7 @@ public:
         if (!msgSubject)
             return false;
 
-        char* tail2 = strtok(NULL, "");
+        char* tail2 = strtok(nullptr, "");
         if (!tail2)
             return false;
 
@@ -2163,13 +2164,13 @@ public:
     static bool HandleSendItemsCommand(ChatHandler* handler, char const* args)
     {
         // format: name "subject text" "mail text" item1[:count1] item2[:count2] ... item12[:count12]
-        Player* receiver;
+        PlayerPtr receiver;
         uint64 receiverGuid;
         std::string receiverName;
         if (!handler->extractPlayerTarget((char*)args, &receiver, &receiverGuid, &receiverName))
             return false;
 
-        char* tail1 = strtok(NULL, "");
+        char* tail1 = strtok(nullptr, "");
         if (!tail1)
             return false;
 
@@ -2177,7 +2178,7 @@ public:
         if (!msgSubject)
             return false;
 
-        char* tail2 = strtok(NULL, "");
+        char* tail2 = strtok(nullptr, "");
         if (!tail2)
             return false;
 
@@ -2195,17 +2196,17 @@ public:
         ItemPairs items;
 
         // get all tail string
-        char* tail = strtok(NULL, "");
+        char* tail = strtok(nullptr, "");
 
         // get from tail next item str
         while (char* itemStr = strtok(tail, " "))
         {
             // and get new tail
-            tail = strtok(NULL, "");
+            tail = strtok(nullptr, "");
 
             // parse item str
             char const* itemIdStr = strtok(itemStr, ":");
-            char const* itemCountStr = strtok(NULL, " ");
+            char const* itemCountStr = strtok(nullptr, " ");
 
             uint32 itemId = atoi(itemIdStr);
             if (!itemId)
@@ -2253,7 +2254,7 @@ public:
 
         for (ItemPairs::const_iterator itr = items.begin(); itr != items.end(); ++itr)
         {
-            if (Item* item = Item::CreateItem(itr->first, itr->second, handler->GetSession() ? handler->GetSession()->GetPlayer() : 0))
+            if (ItemPtr item = Item::CreateItem(itr->first, itr->second, handler->GetSession() ? handler->GetSession()->GetPlayer() : 0))
             {
                 item->SaveToDB(trans);                               // save for prevent lost at next mail load, if send fail then item will deleted
                 draft.AddItem(item);
@@ -2272,13 +2273,13 @@ public:
     {
         /// format: name "subject text" "mail text" money
 
-        Player* receiver;
+        PlayerPtr receiver;
         uint64 receiverGuid;
         std::string receiverName;
         if (!handler->extractPlayerTarget((char*)args, &receiver, &receiverGuid, &receiverName))
             return false;
 
-        char* tail1 = strtok(NULL, "");
+        char* tail1 = strtok(nullptr, "");
         if (!tail1)
             return false;
 
@@ -2286,7 +2287,7 @@ public:
         if (!msgSubject)
             return false;
 
-        char* tail2 = strtok(NULL, "");
+        char* tail2 = strtok(nullptr, "");
         if (!tail2)
             return false;
 
@@ -2294,7 +2295,7 @@ public:
         if (!msgText)
             return false;
 
-        char* moneyStr = strtok(NULL, "");
+        char* moneyStr = strtok(nullptr, "");
         int32 money = moneyStr ? atoi(moneyStr) : 0;
         if (money <= 0)
             return false;
@@ -2322,11 +2323,11 @@ public:
     static bool HandleSendMessageCommand(ChatHandler* handler, char const* args)
     {
         /// - Find the player
-        Player* player;
+        PlayerPtr player;
         if (!handler->extractPlayerTarget((char*)args, &player))
             return false;
 
-        char* msgStr = strtok(NULL, "");
+        char* msgStr = strtok(nullptr, "");
         if (!msgStr)
             return false;
 
@@ -2352,8 +2353,8 @@ public:
 
     static bool HandleCreatePetCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* player = handler->GetSession()->GetPlayer();
-        Creature* creatureTarget = handler->getSelectedCreature();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
+        CreaturePtr creatureTarget = handler->getSelectedCreature();
 
         if (!creatureTarget || creatureTarget->isPet() || creatureTarget->GetTypeId() == TYPEID_PLAYER)
         {
@@ -2379,10 +2380,9 @@ public:
         }
 
         // Everything looks OK, create new pet
-        Pet* pet = new Pet(player, HUNTER_PET);
+        PetPtr pet = ClassFactory::ConstructPet(player, HUNTER_PET);
         if (!pet->CreateBaseAtCreature(creatureTarget))
         {
-            delete pet;
             handler->PSendSysMessage("Error 1");
             return false;
         }
@@ -2398,7 +2398,6 @@ public:
         {
             sLog->outError(LOG_FILTER_GENERAL, "InitStatsForLevel() in EffectTameCreature failed! Pet deleted.");
             handler->PSendSysMessage("Error 2");
-            delete pet;
             return false;
         }
 
@@ -2410,7 +2409,7 @@ public:
         pet->InitPetCreateSpells();
         pet->SetFullHealth();
 
-        pet->GetMap()->AddToMap(pet->ToCreature());
+        pet->GetMap()->AddToMap(TO_CREATURE(pet));
 
         // visual effect for levelup
         pet->SetUInt32Value(UNIT_FIELD_LEVEL, creatureTarget->getLevel());
@@ -2427,8 +2426,8 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
-        Pet* pet = player->GetPet();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
+        PetPtr pet = player->GetPet();
 
         if (!pet)
         {
@@ -2470,8 +2469,8 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
-        Pet* pet = player->GetPet();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
+        PetPtr pet = player->GetPet();
         if (!pet)
         {
             handler->PSendSysMessage("You have no pet");
@@ -2492,7 +2491,7 @@ public:
     static bool HandleFreezeCommand(ChatHandler* handler, char const* args)
     {
         std::string name;
-        Player* player;
+        PlayerPtr player;
         char const* TargetName = strtok((char*)args, " "); // get entered name
         if (!TargetName) // if no name entered use target
         {
@@ -2537,7 +2536,7 @@ public:
             // if player class = hunter || warlock remove pet if alive
             if ((player->getClass() == CLASS_HUNTER) || (player->getClass() == CLASS_WARLOCK))
             {
-                if (Pet* pet = player->GetPet())
+                if (PetPtr pet = player->GetPet())
                 {
                     pet->SavePetToDB(PET_SAVE_AS_CURRENT);
                     // not let dismiss dead pet
@@ -2559,7 +2558,7 @@ public:
     static bool HandleUnFreezeCommand(ChatHandler* handler, char const*args)
     {
         std::string name;
-        Player* player;
+        PlayerPtr player;
         char* targetName = strtok((char*)args, " "); // Get entered name
 
         if (targetName)
@@ -2653,8 +2652,8 @@ public:
 
     static bool HandleGroupLeaderCommand(ChatHandler* handler, char const* args)
     {
-        Player* player = NULL;
-        Group* group = NULL;
+        PlayerPtr player = nullptr;
+        GroupPtr group = nullptr;
         uint64 guid = 0;
         char* nameStr = strtok((char*)args, " ");
 
@@ -2670,8 +2669,8 @@ public:
 
     static bool HandleGroupDisbandCommand(ChatHandler* handler, char const* args)
     {
-        Player* player = NULL;
-        Group* group = NULL;
+        PlayerPtr player = nullptr;
+        GroupPtr group = nullptr;
         uint64 guid = 0;
         char* nameStr = strtok((char*)args, " ");
 
@@ -2684,8 +2683,8 @@ public:
 
     static bool HandleGroupRemoveCommand(ChatHandler* handler, char const* args)
     {
-        Player* player = NULL;
-        Group* group = NULL;
+        PlayerPtr player = nullptr;
+        GroupPtr group = nullptr;
         uint64 guid = 0;
         char* nameStr = strtok((char*)args, " ");
 
@@ -2720,7 +2719,7 @@ public:
 
     static bool HandlePossessCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Unit* unit = handler->getSelectedUnit();
+        UnitPtr unit = handler->getSelectedUnit();
         if (!unit)
             return false;
 
@@ -2730,7 +2729,7 @@ public:
 
     static bool HandleUnPossessCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Unit* unit = handler->getSelectedUnit();
+        UnitPtr unit = handler->getSelectedUnit();
         if (!unit)
             unit = handler->GetSession()->GetPlayer();
 
@@ -2741,7 +2740,7 @@ public:
 
     static bool HandleBindSightCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Unit* unit = handler->getSelectedUnit();
+        UnitPtr unit = handler->getSelectedUnit();
         if (!unit)
             return false;
 
@@ -2751,7 +2750,7 @@ public:
 
     static bool HandleUnbindSightCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (player->isPossessing())
             return false;

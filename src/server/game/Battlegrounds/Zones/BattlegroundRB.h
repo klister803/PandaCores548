@@ -34,15 +34,15 @@ class BattlegroundRB : public Battleground
         BattlegroundRB();
         ~BattlegroundRB();
 
-        virtual void AddPlayer(Player* player);
+        virtual void AddPlayer(PlayerPtr player);
         virtual void StartingEventCloseDoors();
         virtual void StartingEventOpenDoors();
 
-        void RemovePlayer(Player* player, uint64 guid, uint32 team);
-        void HandleAreaTrigger(Player* Source, uint32 Trigger);
+        void RemovePlayer(PlayerPtr player, uint64 guid, uint32 team);
+        void HandleAreaTrigger(PlayerPtr Source, uint32 Trigger);
 
         /* Scorekeeping */
-        void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
+        void UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor = true);
 
     private:
 };

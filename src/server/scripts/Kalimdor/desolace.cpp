@@ -60,7 +60,7 @@ class npc_aged_dying_ancient_kodo : public CreatureScript
 public:
     npc_aged_dying_ancient_kodo() : CreatureScript("npc_aged_dying_ancient_kodo") { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (player->HasAura(SPELL_KODO_KOMBO_PLAYER_BUFF) && creature->HasAura(SPELL_KODO_KOMBO_DESPAWN_BUFF))
         {
@@ -75,7 +75,7 @@ public:
         return true;
     }
 
-    bool EffectDummyCreature(Unit* pCaster, uint32 spellId, uint32 effIndex, Creature* creatureTarget)
+    bool EffectDummyCreature(UnitPtr pCaster, uint32 spellId, uint32 effIndex, CreaturePtr creatureTarget)
     {
         //always check spellid and effectindex
         if (spellId == SPELL_KODO_KOMBO_ITEM && effIndex == 0)
@@ -105,14 +105,14 @@ public:
         return false;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_aged_dying_ancient_kodoAI(creature);
     }
 
     struct npc_aged_dying_ancient_kodoAI : public ScriptedAI
     {
-        npc_aged_dying_ancient_kodoAI(Creature* creature) : ScriptedAI(creature) { Reset(); }
+        npc_aged_dying_ancient_kodoAI(CreaturePtr creature) : ScriptedAI(creature) { Reset(); }
 
         uint32 DespawnTimer;
 
@@ -121,7 +121,7 @@ public:
             DespawnTimer = 0;
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (who->GetEntry() == NPC_SMEED)
             {
@@ -138,7 +138,7 @@ public:
             }
         }
 
-        void SpellHit(Unit* /*pCaster*/, SpellInfo const* pSpell)
+        void SpellHit(UnitPtr /*pCaster*/, SpellInfo const* pSpell)
         {
             if (pSpell->Id == SPELL_KODO_KOMBO_GOSSIP)
             {
@@ -186,11 +186,11 @@ class go_demon_portal : public GameObjectScript
     public:
         go_demon_portal() : GameObjectScript("go_demon_portal") { }
 
-        bool OnGossipHello(Player* player, GameObject* go)
+        bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
         {
             if (player->GetQuestStatus(QUEST_PORTAL_OF_THE_LEGION) == QUEST_STATUS_INCOMPLETE && !go->FindNearestCreature(NPC_DEMON_GUARDIAN, 5.0f, true))
             {
-                if (Creature* guardian = player->SummonCreature(NPC_DEMON_GUARDIAN, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), 0.0f, TEMPSUMMON_DEAD_DESPAWN, 0))
+                if (CreaturePtr guardian = player->SummonCreature(NPC_DEMON_GUARDIAN, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), 0.0f, TEMPSUMMON_DEAD_DESPAWN, 0))
                     guardian->AI()->AttackStart(player);
             }
 

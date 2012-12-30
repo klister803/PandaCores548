@@ -51,14 +51,14 @@ class boss_marwyn : public CreatureScript
 public:
     boss_marwyn() : CreatureScript("boss_marwyn") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_marwynAI(creature);
     }
 
     struct boss_marwynAI : public boss_horAI
     {
-        boss_marwynAI(Creature* creature) : boss_horAI(creature) {}
+        boss_marwynAI(CreaturePtr creature) : boss_horAI(creature) {}
 
         void Reset()
         {
@@ -68,7 +68,7 @@ public:
                 instance->SetData(DATA_MARWYN_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             if (instance)
@@ -80,7 +80,7 @@ public:
             events.ScheduleEvent(EVENT_SHARED_SUFFERING, 20000);    // TODO Check timer
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -88,7 +88,7 @@ public:
                 instance->SetData(DATA_MARWYN_EVENT, DONE);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
         }
@@ -120,7 +120,7 @@ public:
                     events.ScheduleEvent(EVENT_CORRUPTED_FLESH, 20000);
                     break;
                 case EVENT_SHARED_SUFFERING:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM))
                         DoCast(target, SPELL_SHARED_SUFFERING);
                     events.ScheduleEvent(EVENT_SHARED_SUFFERING, 20000);
                     break;

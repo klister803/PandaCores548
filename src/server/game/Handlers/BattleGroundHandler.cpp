@@ -41,7 +41,7 @@ void WorldSession::HandleBattlemasterHelloOpcode(WorldPacket & recvData)
     recvData >> guid;
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_BATTLEMASTER_HELLO Message from (GUID: %u TypeId:%u)", GUID_LOPART(guid), GuidHigh2TypeId(GUID_HIPART(guid)));
 
-    Creature* unit = GetPlayer()->GetMap()->GetCreature(guid);
+    CreaturePtr unit = GetPlayer()->GetMap()->GetCreature(guid);
     if (!unit)
         return;
 
@@ -77,7 +77,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
     uint32 instanceId = 0;
     uint8 joinAsGroup = 0;
     bool isPremade = false;
-    Group* grp = NULL;
+    GroupPtr grp = nullptr;
 
     recvData >> instanceId;                                 // battleground type id (DBC id)
     recvData.read_skip<uint32>();
@@ -101,7 +101,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
         return;
     }
 
-    if (DisableMgr::IsDisabledFor(DISABLE_TYPE_BATTLEGROUND, bgTypeId_, NULL))
+    if (DisableMgr::IsDisabledFor(DISABLE_TYPE_BATTLEGROUND, bgTypeId_, nullptr))
     {
         ChatHandler(this).PSendSysMessage(LANG_BG_DISABLED);
         return;
@@ -120,7 +120,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
         return;
 
     // get bg instance or bg template if instance not found
-    Battleground* bg = NULL;
+    Battleground* bg = nullptr;
     if (instanceId)
         bg = sBattlegroundMgr->GetBattlegroundThroughClientInstance(instanceId, bgTypeId);
 
@@ -191,7 +191,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
 
         BattlegroundQueue& bgQueue = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId];
 
-        GroupQueueInfo* ginfo = bgQueue.AddGroup(_player, NULL, bgTypeId, bracketEntry, 0, false, isPremade, 0, 0);
+        GroupQueueInfo* ginfo = bgQueue.AddGroup(_player, nullptr, bgTypeId, bracketEntry, 0, false, isPremade, 0, 0);
         uint32 avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
         uint32 queueSlot = _player->AddBattlegroundQueueId(bgQueueTypeId);
 
@@ -218,7 +218,7 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
         isPremade = (grp->GetMembersCount() >= bg->GetMinPlayersPerTeam());
 
         BattlegroundQueue& bgQueue = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId];
-        GroupQueueInfo* ginfo = NULL;
+        GroupQueueInfo* ginfo = nullptr;
         uint32 avgTime = 0;
 
         if (!err)
@@ -228,9 +228,9 @@ void WorldSession::HandleBattlemasterJoinOpcode(WorldPacket & recvData)
             avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
         }
 
-        for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+        for (GroupReferencePtr itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
         {
-            Player* member = itr->getSource();
+            PlayerPtr member = itr->getSource();
             if (!member)
                 continue;   // this should never happen
 
@@ -270,8 +270,8 @@ void WorldSession::HandleBattlegroundPlayerPositionsOpcode(WorldPacket& /*recvDa
         return;
 
     uint32 flagCarrierCount = 0;
-    Player* allianceFlagCarrier = NULL;
-    Player* hordeFlagCarrier = NULL;
+    PlayerPtr allianceFlagCarrier = nullptr;
+    PlayerPtr hordeFlagCarrier = nullptr;
 
     if (uint64 guid = bg->GetFlagPickerGUID(BG_TEAM_ALLIANCE))
     {
@@ -549,7 +549,7 @@ void WorldSession::HandleBattlefieldStatusOpcode(WorldPacket & /*recvData*/)
 
     WorldPacket data;
     // we must update all queues here
-    Battleground* bg = NULL;
+    Battleground* bg = nullptr;
     for (uint8 i = 0; i < PLAYER_MAX_BATTLEGROUND_QUEUES; ++i)
     {
         BattlegroundQueueTypeId bgQueueTypeId = _player->GetBattlegroundQueueTypeId(i);
@@ -632,7 +632,7 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recvData)
         return;
     }
 
-    if (DisableMgr::IsDisabledFor(DISABLE_TYPE_BATTLEGROUND, BATTLEGROUND_AA, NULL))
+    if (DisableMgr::IsDisabledFor(DISABLE_TYPE_BATTLEGROUND, BATTLEGROUND_AA, nullptr))
     {
         ChatHandler(this).PSendSysMessage(LANG_ARENA_DISABLED);
         return;
@@ -647,7 +647,7 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recvData)
 
     GroupJoinBattlegroundResult err = ERR_BATTLEGROUND_NONE;
 
-     Group* grp = _player->GetGroup();
+     GroupPtr grp = _player->GetGroup();
      // no group found, error
      if (!grp)
          return;
@@ -685,9 +685,9 @@ void WorldSession::HandleBattlemasterJoinArena(WorldPacket & recvData)
         avgTime = bgQueue.GetAverageQueueWaitTime(ginfo, bracketEntry->GetBracketId());
     }
 
-    for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
+    for (GroupReferencePtr itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
     {
-        Player* member = itr->getSource();
+        PlayerPtr member = itr->getSource();
         if (!member)
             continue;
 

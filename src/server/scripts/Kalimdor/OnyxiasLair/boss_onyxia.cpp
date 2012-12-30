@@ -113,14 +113,14 @@ class boss_onyxia : public CreatureScript
 public:
     boss_onyxia() : CreatureScript("boss_onyxia") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_onyxiaAI (creature);
     }
 
     struct boss_onyxiaAI : public ScriptedAI
     {
-        boss_onyxiaAI(Creature* creature) : ScriptedAI(creature), Summons(me)
+        boss_onyxiaAI(CreaturePtr creature) : ScriptedAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
             Reset();
@@ -185,7 +185,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             Talk(SAY_AGGRO);
             me->SetInCombatWithZone();
@@ -197,7 +197,7 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(DATA_ONYXIA, DONE);
@@ -205,10 +205,10 @@ public:
             Summons.DespawnAll();
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->SetInCombatWithZone();
-            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 summoned->AI()->AttackStart(target);
 
             switch (summoned->GetEntry())
@@ -223,17 +223,17 @@ public:
             Summons.Summon(summoned);
         }
 
-        void SummonedCreatureDespawn(Creature* summon)
+        void SummonedCreatureDespawn(CreaturePtr summon)
         {
             Summons.Despawn(summon);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             Talk(SAY_KILL);
         }
 
-        void SpellHit(Unit* /*pCaster*/, const SpellInfo* Spell)
+        void SpellHit(UnitPtr /*pCaster*/, const SpellInfo* Spell)
         {
             if (Spell->Id == SPELL_BREATH_EAST_TO_WEST ||
                 Spell->Id == SPELL_BREATH_WEST_TO_EAST ||
@@ -293,7 +293,7 @@ public:
             }
         }
 
-        void SpellHitTarget(Unit* target, const SpellInfo* Spell)
+        void SpellHitTarget(UnitPtr target, const SpellInfo* Spell)
         {
             //Workaround - Couldn't find a way to group this spells (All Eruption)
             if (((Spell->Id >= 17086 && Spell->Id <= 17095) ||
@@ -326,7 +326,7 @@ public:
                     return &MoveData[i];
             }
 
-            return NULL;
+            return nullptr;
         }
 
         void SetNextRandomPoint()
@@ -366,7 +366,7 @@ public:
                     {
                         DoCastVictim(SPELL_BELLOWING_ROAR);
                         // Eruption
-                        GameObject* Floor = NULL;
+                        GameObjectPtr Floor = nullptr;
                         Trinity::GameObjectInRangeCheck check(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 15);
                         Trinity::GameObjectLastSearcher<Trinity::GameObjectInRangeCheck> searcher(me, Floor, check);
                         me->VisitNearbyGridObject(30, searcher);
@@ -465,7 +465,7 @@ public:
                 {
                     if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE)
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(target, SPELL_FIREBALL);
 
                         FireballTimer = 8000;

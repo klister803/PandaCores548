@@ -45,6 +45,8 @@
 #include "AccountMgr.h"
 #include "DBCStores.h"
 #include "LFGMgr.h"
+#include "SpellAuraEffects.h"
+#include "ClassFactory.h"
 
 class LoginQueryHolder : public SQLQueryHolder
 {
@@ -65,7 +67,7 @@ bool LoginQueryHolder::Initialize()
 
     bool res = true;
     uint32 lowGuid = GUID_LOPART(m_guid);
-    PreparedStatement* stmt = NULL;
+    PreparedStatement* stmt = nullptr;
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER);
     stmt->setUInt32(0, lowGuid);
@@ -125,7 +127,7 @@ bool LoginQueryHolder::Initialize()
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_MAILCOUNT);
     stmt->setUInt32(0, lowGuid);
-    stmt->setUInt64(1, uint64(time(NULL)));
+    stmt->setUInt64(1, uint64(time(nullptr)));
     res &= SetPreparedQuery(PLAYER_LOGIN_QUERY_LOADMAILCOUNT, stmt);
 
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHARACTER_MAILDATE);
@@ -518,7 +520,7 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
             }
 
             _charCreateCallback.NextStage();
-            HandleCharCreateCallback(PreparedQueryResult(NULL), createInfo);   // Will jump to case 3
+            HandleCharCreateCallback(PreparedQueryResult(nullptr), createInfo);   // Will jump to case 3
         }
         break;
         case 3:
@@ -642,12 +644,12 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                 sLog->outDebug(LOG_FILTER_NETWORKIO, "Character creation %s (account %u) has unhandled tail data: [%u]", createInfo->Name.c_str(), GetAccountId(), unk);
             }
 
-            Player newChar(this);
-            newChar.GetMotionMaster()->Initialize();
-            if (!newChar.Create(sObjectMgr->GenerateLowGuid(HIGHGUID_PLAYER), createInfo))
+            PlayerPtr newChar = ClassFactory::ConstructPlayer(this);
+            newChar->GetMotionMaster()->Initialize();
+            if (!newChar->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_PLAYER), createInfo))
             {
                 // Player not create (race/class/etc problem?)
-                newChar.CleanupsBeforeDelete();
+                newChar->CleanupsBeforeDelete();
 
                 WorldPacket data(SMSG_CHAR_CREATE, 1);
                 data << uint8(CHAR_CREATE_ERROR);
@@ -658,12 +660,12 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
             }
 
             if ((haveSameRace && skipCinematics == 1) || skipCinematics == 2)
-                newChar.setCinematic(1);                          // not show intro
+                newChar->setCinematic(1);                          // not show intro
 
-            newChar.SetAtLoginFlag(AT_LOGIN_FIRST);               // First login
+            newChar->SetAtLoginFlag(AT_LOGIN_FIRST);               // First login
 
             // Player created, save it now
-            newChar.SaveToDB(true);
+            newChar->SaveToDB(true);
             createInfo->CharCount += 1;
 
             SQLTransaction trans = LoginDatabase.BeginTransaction();
@@ -686,11 +688,11 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
             SendPacket(&data);
 
             std::string IP_str = GetRemoteAddress();
-            sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s) Create Character:[%s] (GUID: %u)", GetAccountId(), IP_str.c_str(), createInfo->Name.c_str(), newChar.GetGUIDLow());
-            sScriptMgr->OnPlayerCreate(&newChar);
-            sWorld->AddCharacterNameData(newChar.GetGUIDLow(), std::string(newChar.GetName()), newChar.getGender(), newChar.getRace(), newChar.getClass(), newChar.getLevel());
+            sLog->outInfo(LOG_FILTER_CHARACTER, "Account: %d (IP: %s) Create Character:[%s] (GUID: %u)", GetAccountId(), IP_str.c_str(), createInfo->Name.c_str(), newChar->GetGUIDLow());
+            sScriptMgr->OnPlayerCreate(newChar);
+            sWorld->AddCharacterNameData(newChar->GetGUIDLow(), std::string(newChar->GetName()), newChar->getGender(), newChar->getRace(), newChar->getClass(), newChar->getLevel());
 
-            newChar.CleanupsBeforeDelete();
+            newChar->CleanupsBeforeDelete();
             delete createInfo;
             _charCreateCallback.Reset();
         }
@@ -765,7 +767,7 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
 
 void WorldSession::HandlePlayerLoginOpcode(WorldPacket& recvData)
 {
-    if (PlayerLoading() || GetPlayer() != NULL)
+    if (PlayerLoading() || GetPlayer() != nullptr)
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "Player tries to login again, AccountId = %d", GetAccountId());
         return;
@@ -817,16 +819,15 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
 {
     uint64 playerGuid = holder->GetGuid();
 
-    Player* pCurrChar = new Player(this);
+    PlayerPtr pCurrChar = ClassFactory::ConstructPlayer(this);
      // for send server info and strings (config)
     ChatHandler chH = ChatHandler(pCurrChar);
 
     // "GetAccountId() == db stored account id" checked in LoadFromDB (prevent login not own character using cheating tools)
     if (!pCurrChar->LoadFromDB(GUID_LOPART(playerGuid), holder))
     {
-        SetPlayer(NULL);
+        SetPlayer(nullptr);
         KickPlayer();                                       // disconnect client, player no set to session and it will not deleted or saved at kick
-        delete pCurrChar;                                   // delete it manually
         delete holder;                                      // delete all unprocessed queries
         m_playerLoading = false;
         return;
@@ -899,7 +900,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         Field* fields = resultGuild->Fetch();
         pCurrChar->SetInGuild(fields[0].GetUInt32());
         pCurrChar->SetRank(fields[1].GetUInt8());
-        if (Guild* guild = sGuildMgr->GetGuildById(pCurrChar->GetGuildId()))
+        if (GuildPtr guild = sGuildMgr->GetGuildById(pCurrChar->GetGuildId()))
             pCurrChar->SetGuildLevel(guild->GetLevel());
     }
     else if (pCurrChar->GetGuildId())                        // clear guild related fields in case wrong data about non existed membership
@@ -945,7 +946,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
         }
     }
 
-    if (Group* group = pCurrChar->GetGroup())
+    if (GroupPtr group = pCurrChar->GetGroup())
     {
         if (group->isLFGGroup())
         {
@@ -970,7 +971,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
 
     if (pCurrChar->GetGuildId() != 0)
     {
-        if (Guild* guild = sGuildMgr->GetGuildById(pCurrChar->GetGuildId()))
+        if (GuildPtr guild = sGuildMgr->GetGuildById(pCurrChar->GetGuildId()))
             guild->SendLoginInfo(this);
         else
         {
@@ -993,7 +994,7 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
     pCurrChar->SetInGameTime(getMSTime());
 
     // announce group about member online (must be after add to player list to receive announce to self)
-    if (Group* group = pCurrChar->GetGroup())
+    if (GroupPtr group = pCurrChar->GetGroup())
     {
         //pCurrChar->groupInfo.group->SendInit(this); // useless
         group->SendUpdate();
@@ -1067,14 +1068,14 @@ void WorldSession::HandlePlayerLogin(LoginQueryHolder* holder)
 
         float x, y, z;
         pCurrChar->GetClosePoint(x, y, z, pCurrChar->GetObjectSize());
-        Creature* c = pCurrChar->SummonCreature(creature_id, x, y, z, pCurrChar->GetOrientation());
+        CreaturePtr c = pCurrChar->SummonCreature(creature_id, x, y, z, pCurrChar->GetOrientation());
         if (c)
         {
-            Pet* pet = pCurrChar->CreateTamedPetFrom(c, spell_id);
+            PetPtr pet = pCurrChar->CreateTamedPetFrom(c, spell_id);
             if(pet)
             {
                 c->DespawnOrUnsummon();
-                pet->GetMap()->AddToMap(pet->ToCreature());
+                pet->GetMap()->AddToMap(TO_CREATURE(pet));
                 pet->SetUInt32Value(UNIT_FIELD_LEVEL, 1);
                 pCurrChar->SetMinion(pet, true);
                 pet->SavePetToDB(PET_SAVE_AS_CURRENT);
@@ -1454,7 +1455,7 @@ void WorldSession::HandleAlterAppearance(WorldPacket& recvData)
     if (bs_skinColor && (bs_skinColor->type != 3 || bs_skinColor->race != _player->getRace() || bs_skinColor->gender != _player->getGender()))
         return;
 
-    GameObject* go = _player->FindNearestGameObjectOfType(GAMEOBJECT_TYPE_BARBER_CHAIR, 5.0f);
+    GameObjectPtr go = _player->FindNearestGameObjectOfType(GAMEOBJECT_TYPE_BARBER_CHAIR, 5.0f);
     if (!go)
     {
         WorldPacket data(SMSG_BARBER_SHOP_RESULT, 4);
@@ -1678,7 +1679,7 @@ void WorldSession::HandleEquipmentSetSave(WorldPacket& recvData)
             continue;
         }
 
-        Item* item = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+        ItemPtr item = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
 
         if (!item && itemGuid)                               // cheating check 1
             return;
@@ -1725,13 +1726,13 @@ void WorldSession::HandleEquipmentSetUse(WorldPacket& recvData)
         if (itemGuid == 1)
             continue;
 
-        Item* item = _player->GetItemByGuid(itemGuid);
+        ItemPtr item = _player->GetItemByGuid(itemGuid);
 
         uint16 dstpos = i | (INVENTORY_SLOT_BAG_0 << 8);
 
         if (!item)
         {
-            Item* uItem = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
+            ItemPtr uItem = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, i);
             if (!uItem)
                 continue;
 
@@ -1743,7 +1744,7 @@ void WorldSession::HandleEquipmentSetUse(WorldPacket& recvData)
                 _player->StoreItem(sDest, uItem, true);
             }
             else
-                _player->SendEquipError(msg, uItem, NULL);
+                _player->SendEquipError(msg, uItem, nullptr);
 
             continue;
         }
@@ -2074,7 +2075,7 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
 
             PreparedQueryResult result = CharacterDatabase.Query(stmt);
             if (result)
-                if (Guild* guild = sGuildMgr->GetGuildById((result->Fetch()[0]).GetUInt32()))
+                if (GuildPtr guild = sGuildMgr->GetGuildById((result->Fetch()[0]).GetUInt32()))
                     guild->DeleteMember(MAKE_NEW_GUID(lowGuid, 0, HIGHGUID_PLAYER));
         }
 

@@ -37,8 +37,12 @@
  */
 template<class OBJECT> struct ContainerMapList
 {
+    ContainerMapList()
+    {
+        _element = std::shared_ptr<GridRefManager<OBJECT>>(new GridRefManager<OBJECT>());
+    }
     //std::map<OBJECT_HANDLE, OBJECT *> _element;
-    GridRefManager<OBJECT> _element;
+    std::shared_ptr<GridRefManager<OBJECT>> _element;
 };
 
 template<> struct ContainerMapList<TypeNull>                /* nothing is in type null */
@@ -56,7 +60,11 @@ template<class H, class T> struct ContainerMapList<TypeList<H, T> >
  */
 template<class OBJECT> struct ContainerArrayList
 {
-    std::vector<OBJECT> _element;
+    ContainerArrayList()
+    {
+        _element = std::shared_ptr<std::vector<OBJECT>>(new std::vector<OBJECT>());
+    }
+    std::shared_ptr<std::vector<OBJECT>> _element;
 };
 
 // termination condition
@@ -74,7 +82,11 @@ template<class H, class T> struct ContainerArrayList<TypeList<H, T> >
  */
 template<class OBJECT> struct ContainerList
 {
-    OBJECT _element;
+    ContainerList()
+    {
+        _element = std::shared_ptr<OBJECT>(new OBJECT());
+    }
+    std::shared_ptr<OBJECT> _element;
 };
 
 /* TypeNull is underfined */
@@ -98,20 +110,20 @@ template<class OBJECT_TYPES>
 class TypeMapContainer
 {
     public:
-        template<class SPECIFIC_TYPE> size_t Count() const { return Trinity::Count(i_elements, (SPECIFIC_TYPE*)NULL); }
+        template<class SPECIFIC_TYPE> size_t Count() const { return Trinity::Count(i_elements, (SPECIFIC_TYPE*)nullptr); }
 
         /// inserts a specific object into the container
-        template<class SPECIFIC_TYPE> bool insert(SPECIFIC_TYPE *obj)
+        template<class SPECIFIC_TYPE> bool insert(std::shared_ptr<SPECIFIC_TYPE> obj)
         {
-            SPECIFIC_TYPE* t = Trinity::Insert(i_elements, obj);
-            return (t != NULL);
+            std::shared_ptr<SPECIFIC_TYPE> t = Trinity::Insert(i_elements, obj);
+            return (t != nullptr);
         }
 
         ///  Removes the object from the container, and returns the removed object
         //template<class SPECIFIC_TYPE> bool remove(SPECIFIC_TYPE* obj)
         //{
         //    SPECIFIC_TYPE* t = Trinity::Remove(i_elements, obj);
-        //    return (t != NULL);
+        //    return (t != nullptr);
         //}
 
         ContainerMapList<OBJECT_TYPES> & GetElements(void) { return i_elements; }

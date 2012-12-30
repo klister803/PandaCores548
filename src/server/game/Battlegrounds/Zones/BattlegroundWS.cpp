@@ -27,6 +27,7 @@
 #include "Player.h"
 #include "World.h"
 #include "WorldPacket.h"
+#include "SpellAuraEffects.h"
 
 // these variables aren't used outside of this file, so declare them only here
 enum BG_WSG_Rewards
@@ -136,20 +137,20 @@ void BattlegroundWS::PostUpdateImpl(uint32 diff)
             _flagSpellForceTimer += diff;
             if (_flagDebuffState == 0 && _flagSpellForceTimer >= 10*MINUTE*IN_MILLISECONDS)  //10 minutes
             {
-                if (Player* player = ObjectAccessor::FindPlayer(m_FlagKeepers[0]))
+                if (PlayerPtr player = ObjectAccessor::FindPlayer(m_FlagKeepers[0]))
                     player->CastSpell(player, WS_SPELL_FOCUSED_ASSAULT, true);
-                if (Player* player = ObjectAccessor::FindPlayer(m_FlagKeepers[1]))
+                if (PlayerPtr player = ObjectAccessor::FindPlayer(m_FlagKeepers[1]))
                     player->CastSpell(player, WS_SPELL_FOCUSED_ASSAULT, true);
                 _flagDebuffState = 1;
             }
             else if (_flagDebuffState == 1 && _flagSpellForceTimer >= 900000) //15 minutes
             {
-                if (Player* player = ObjectAccessor::FindPlayer(m_FlagKeepers[0]))
+                if (PlayerPtr player = ObjectAccessor::FindPlayer(m_FlagKeepers[0]))
                 {
                     player->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
                     player->CastSpell(player, WS_SPELL_BRUTAL_ASSAULT, true);
                 }
-                if (Player* player = ObjectAccessor::FindPlayer(m_FlagKeepers[1]))
+                if (PlayerPtr player = ObjectAccessor::FindPlayer(m_FlagKeepers[1]))
                 {
                     player->RemoveAurasDueToSpell(WS_SPELL_FOCUSED_ASSAULT);
                     player->CastSpell(player, WS_SPELL_BRUTAL_ASSAULT, true);
@@ -198,7 +199,7 @@ void BattlegroundWS::StartingEventOpenDoors()
     StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, WS_EVENT_START_BATTLE);
 }
 
-void BattlegroundWS::AddPlayer(Player* player)
+void BattlegroundWS::AddPlayer(PlayerPtr player)
 {
     Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
@@ -250,7 +251,7 @@ void BattlegroundWS::RespawnFlagAfterDrop(uint32 team)
 
     PlaySoundToAll(BG_WS_SOUND_FLAGS_RESPAWNED);
 
-    if (GameObject* obj = GetBgMap()->GetGameObject(GetDroppedFlagGUID(team)))
+    if (GameObjectPtr obj = GetBgMap()->GetGameObject(GetDroppedFlagGUID(team)))
         obj->Delete();
     else
         sLog->outError(LOG_FILTER_BATTLEGROUND, "unknown droped flag bg, guid: %u", GUID_LOPART(GetDroppedFlagGUID(team)));
@@ -259,7 +260,7 @@ void BattlegroundWS::RespawnFlagAfterDrop(uint32 team)
     _bothFlagsKept = false;
 }
 
-void BattlegroundWS::EventPlayerCapturedFlag(Player* Source)
+void BattlegroundWS::EventPlayerCapturedFlag(PlayerPtr Source)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -345,7 +346,7 @@ void BattlegroundWS::EventPlayerCapturedFlag(Player* Source)
     }
 }
 
-void BattlegroundWS::EventPlayerDroppedFlag(Player* Source)
+void BattlegroundWS::EventPlayerDroppedFlag(PlayerPtr Source)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
     {
@@ -431,7 +432,7 @@ void BattlegroundWS::EventPlayerDroppedFlag(Player* Source)
     }
 }
 
-void BattlegroundWS::EventPlayerClickedOnFlag(Player* Source, GameObject* target_obj)
+void BattlegroundWS::EventPlayerClickedOnFlag(PlayerPtr Source, GameObjectPtr target_obj)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -552,7 +553,7 @@ void BattlegroundWS::EventPlayerClickedOnFlag(Player* Source, GameObject* target
     Source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
 }
 
-void BattlegroundWS::RemovePlayer(Player* player, uint64 guid, uint32 /*team*/)
+void BattlegroundWS::RemovePlayer(PlayerPtr player, uint64 guid, uint32 /*team*/)
 {
     // sometimes flag aura not removed :(
     if (IsAllianceFlagPickedup() && m_FlagKeepers[BG_TEAM_ALLIANCE] == guid)
@@ -595,7 +596,7 @@ void BattlegroundWS::UpdateTeamScore(uint32 team)
         UpdateWorldState(BG_WS_FLAG_CAPTURES_HORDE, GetTeamScore(team));
 }
 
-void BattlegroundWS::HandleAreaTrigger(Player* Source, uint32 Trigger)
+void BattlegroundWS::HandleAreaTrigger(PlayerPtr Source, uint32 Trigger)
 {
     // this is wrong way to implement these things. On official it done by gameobject spell cast.
     if (GetStatus() != STATUS_IN_PROGRESS)
@@ -751,7 +752,7 @@ void BattlegroundWS::EndBattleground(uint32 winner)
     Battleground::EndBattleground(winner);
 }
 
-void BattlegroundWS::HandleKillPlayer(Player* player, Player* killer)
+void BattlegroundWS::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -761,7 +762,7 @@ void BattlegroundWS::HandleKillPlayer(Player* player, Player* killer)
     Battleground::HandleKillPlayer(player, killer);
 }
 
-void BattlegroundWS::UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor)
+void BattlegroundWS::UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor)
 {
 
     BattlegroundScoreMap::iterator itr = PlayerScores.find(Source->GetGUID());
@@ -784,7 +785,7 @@ void BattlegroundWS::UpdatePlayerScore(Player* Source, uint32 type, uint32 value
     }
 }
 
-WorldSafeLocsEntry const* BattlegroundWS::GetClosestGraveYard(Player* player)
+WorldSafeLocsEntry const* BattlegroundWS::GetClosestGraveYard(PlayerPtr player)
 {
     //if status in progress, it returns main graveyards with spiritguides
     //else it will return the graveyard in the flagroom - this is especially good

@@ -55,7 +55,7 @@ public:
 
     DialogTemplate(LPCSTR caption, DWORD style, 
                  int x, int y, int w, int h,
-                 LPCSTR font = NULL, WORD fontSize = 8) {
+                 LPCSTR font = nullptr, WORD fontSize = 8) {
     
       usedBufferLength = sizeof(DLGTEMPLATE);
       totalBufferLength = usedBufferLength;
@@ -64,7 +64,7 @@ public:
 
       dialogTemplate->style = style;
         
-      if (font != NULL) {
+      if (font != nullptr) {
         dialogTemplate->style |= DS_SETFONT;
       }
         
@@ -84,7 +84,7 @@ public:
 
       AppendString(caption);
 
-      if (font != NULL) {
+      if (font != nullptr) {
           AppendData(&fontSize, sizeof(WORD));
           AppendString(font);
       }
@@ -197,7 +197,7 @@ public:
 protected:
 
   void AddStandardComponent(WORD type, LPCSTR caption, DWORD style, DWORD exStyle, 
-                            int x, int y, int w, int h, WORD id, LPSTR font = NULL, WORD fontSize = 8) {
+                            int x, int y, int w, int h, WORD id, LPSTR font = nullptr, WORD fontSize = 8) {
 
       DLGITEMTEMPLATE item;
 
@@ -206,7 +206,7 @@ protected:
       AlignData(sizeof(DWORD));
 
       item.style = style;
-      if (font != NULL) {
+      if (font != nullptr) {
           item.style |= DS_SETFONT;
       }
       item.x     = (short)x;
@@ -226,7 +226,7 @@ protected:
 
       AppendString(caption);
 
-      if (font != NULL) {
+      if (font != nullptr) {
           AppendData(&fontSize, sizeof(WORD));
           AppendString(font);
       }
@@ -249,7 +249,7 @@ protected:
 
   void AppendString(LPCSTR string) {
 
-      int length = MultiByteToWideChar(CP_ACP, 0, string, -1, NULL, 0);
+      int length = MultiByteToWideChar(CP_ACP, 0, string, -1, nullptr, 0);
 
       WCHAR* wideString = (WCHAR*)malloc(sizeof(WCHAR) * length);
       MultiByteToWideChar(CP_ACP, 0, string, -1, wideString, length);
@@ -429,7 +429,7 @@ static int guiPrompt(
     params.title    = windowTitle;
 
     HMODULE module = GetModuleHandle(0);
-    int ret = DialogBoxIndirectParam(module, dialogTemplate, NULL, (DLGPROC) PromptDlgProc, (DWORD)&params);
+    int ret = DialogBoxIndirectParam(module, dialogTemplate, nullptr, (DLGPROC) PromptDlgProc, (DWORD)&params);
 
     free(newStr);
 
@@ -440,30 +440,30 @@ static int guiPrompt(
         DWORD lastErr = GetLastError();
     
         // The decoded message from FormatMessage
-        LPTSTR formatMsg = NULL;
+        LPTSTR formatMsg = nullptr;
 
-        if (NULL == formatMsg) {
+        if (nullptr == formatMsg) {
             FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
                           FORMAT_MESSAGE_IGNORE_INSERTS |
                           FORMAT_MESSAGE_FROM_SYSTEM,
-                            NULL,
+                            nullptr,
                             lastErr,
                             0,
                             (LPTSTR)&formatMsg,
                             0,
-                            NULL);
+                            nullptr);
         }
 
         // Make sure the message got translated into something.
         LPTSTR realLastErr;
-        if (NULL != formatMsg) {
+        if (nullptr != formatMsg) {
             realLastErr = formatMsg;
         } else {
             realLastErr = "Last error code does not exist.";
         }
 
         // Get rid of the allocated memory from FormatMessage.
-        if (NULL != formatMsg) {
+        if (nullptr != formatMsg) {
             LocalFree((LPVOID)formatMsg);
         }
         */
@@ -602,7 +602,7 @@ static int guiPrompt
     Rect	rectWin = {0, 0, 200 + ((iNumButtonRows-1) * (CARBON_BUTTON_HEIGHT+CARBON_BUTTON_SPACING)), 550};			// top, left, bottom, right
     CFStringRef	szWindowTitle = CFStringCreateWithCString(kCFAllocatorDefault, windowTitle, kCFStringEncodingUTF8);
 
-    window = NULL;
+    window = nullptr;
 
     err = CreateNewWindow(kMovableAlertWindowClass, kWindowStandardHandlerAttribute|kWindowCompositingAttribute, &rectWin, &window);
     err = SetWindowTitleWithCFString(window, szWindowTitle);
@@ -616,8 +616,8 @@ static int guiPrompt
     // Static Text Variables
     Rect		rectStatic = {20, 20, 152, 530};
     CFStringRef		szStaticText = CFStringCreateWithCString(kCFAllocatorDefault, prompt, kCFStringEncodingUTF8);
-    ControlRef		refStaticText = NULL;
-    err = CreateStaticTextControl(window, &rectStatic, szStaticText, NULL, &refStaticText);
+    ControlRef		refStaticText = nullptr;
+    err = CreateStaticTextControl(window, &rectStatic, szStaticText, nullptr, &refStaticText);
     
     // Button Variables
     Rect		bounds[numChoices];
@@ -649,12 +649,12 @@ static int guiPrompt
 
         err = InstallControlEventHandler(button[i], buttonHandler, 
                                          GetEventTypeCount(buttonSpec), buttonSpec,
-                                         &callbackData[i], NULL);
+                                         &callbackData[i], nullptr);
         assert(err == noErr);
     }
     
     // Show Dialog
-    err = RepositionWindow(window, NULL, kWindowCenterOnMainScreen);
+    err = RepositionWindow(window, nullptr, kWindowCenterOnMainScreen);
     ShowWindow(window);
     BringToFront(window);
     err = ActivateWindow(window, true);

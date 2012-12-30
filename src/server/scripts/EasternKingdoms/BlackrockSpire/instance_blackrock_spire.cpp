@@ -24,14 +24,14 @@ class instance_blackrock_spire : public InstanceMapScript
 public:
     instance_blackrock_spire() : InstanceMapScript("instance_blackrock_spire", 229) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_blackrock_spireMapScript(map);
     }
 
     struct instance_blackrock_spireMapScript : public InstanceScript
     {
-        instance_blackrock_spireMapScript(InstanceMap* map) : InstanceScript(map) {}
+        instance_blackrock_spireMapScript(InstanceMapPtr map) : InstanceScript(map) {}
 
         uint32 encounter[MAX_ENCOUNTER];
         std::string m_strInstData;
@@ -88,7 +88,7 @@ public:
             return false;
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -141,12 +141,12 @@ public:
              }
          }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {
                 case GO_WHELP_SPAWNER:
-                    go->CastSpell(NULL, SPELL_SUMMON_ROOKERY_WHELP);
+                    go->CastSpell(nullptr, SPELL_SUMMON_ROOKERY_WHELP);
                     break;
                 case GO_EMBERSEER_IN:
                     go_emberseerin = go->GetGUID();
@@ -210,7 +210,7 @@ public:
              return true;
         }
 
-        void ProcessEvent(WorldObject* /*gameObject*/, uint32 eventId)
+        void ProcessEvent(WorldObjectPtr /*GameObject*/, uint32 eventId)
         {
             switch (eventId)
             {

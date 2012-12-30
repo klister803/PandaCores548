@@ -39,7 +39,7 @@ class go_blackfathom_altar : public GameObjectScript
 public:
     go_blackfathom_altar() : GameObjectScript("go_blackfathom_altar") { }
 
-    bool OnGossipHello(Player* player, GameObject* /*go*/)
+    bool OnGossipHello(PlayerPtr player, GameObjectPtr /*go*/)
     {
         if (!player->HasAura(SPELL_BLESSING_OF_BLACKFATHOM))
             player->AddAura(SPELL_BLESSING_OF_BLACKFATHOM, player);
@@ -52,7 +52,7 @@ class go_blackfathom_fire : public GameObjectScript
 public:
     go_blackfathom_fire() : GameObjectScript("go_blackfathom_fire") { }
 
-    bool OnGossipHello(Player* /*player*/, GameObject* go)
+    bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
     {
         InstanceScript* instance = go->GetInstanceScript();
 
@@ -72,14 +72,14 @@ class npc_blackfathom_deeps_event : public CreatureScript
 public:
     npc_blackfathom_deeps_event() : CreatureScript("npc_blackfathom_deeps_event") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_blackfathom_deeps_eventAI (creature);
     }
 
     struct npc_blackfathom_deeps_eventAI : public ScriptedAI
     {
-        npc_blackfathom_deeps_eventAI(Creature* creature) : ScriptedAI(creature)
+        npc_blackfathom_deeps_eventAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             if (creature->isSummon())
             {
@@ -116,7 +116,7 @@ public:
 
             for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
             {
-                if (Player* player = i->getSource())
+                if (PlayerPtr player = i->getSource())
                 {
                     if (player->isGameMaster())
                         continue;
@@ -161,7 +161,7 @@ public:
                 {
                     if (frostBoltVolleyTimer <= diff)
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             DoCast(target, SPELL_FROST_BOLT_VOLLEY);
                         frostBoltVolleyTimer = urand(5000, 8000);
                     }
@@ -180,7 +180,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (me->isSummon()) //we are not a normal spawn.
                 if (instance)
@@ -200,7 +200,7 @@ class npc_morridune : public CreatureScript
 public:
     npc_morridune() : CreatureScript("npc_morridune") { }
 
-    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr /*CreaturePtr/, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -213,7 +213,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_MORRIDUNE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
 
@@ -221,14 +221,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_morriduneAI (creature);
     }
 
     struct npc_morriduneAI : public npc_escortAI
     {
-        npc_morriduneAI(Creature* creature) : npc_escortAI(creature)
+        npc_morriduneAI(CreaturePtr creature) : npc_escortAI(creature)
         {
             DoScriptText(SAY_MORRIDUNE_1, creature);
             me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);

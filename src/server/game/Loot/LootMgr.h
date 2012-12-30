@@ -148,9 +148,9 @@ struct LootItem
     explicit LootItem(LootStoreItem const& li);
 
     // Basic checks for player/item compatibility - if false no chance to see the item in the loot
-    bool AllowedForPlayer(Player const* player) const;
+    bool AllowedForPlayer(constPlayerPtr player) const;
 
-    void AddAllowedLooter(Player const* player);
+    void AddAllowedLooter(constPlayerPtr player);
     const AllowedLooterSet & GetAllowedLooters() const { return allowedGUIDs; }
 };
 
@@ -188,13 +188,13 @@ class LootStore
         void Verify() const;
 
         uint32 LoadAndCollectLootIds(LootIdSet& ids_set);
-        void CheckLootRefs(LootIdSet* ref_set = NULL) const; // check existence reference and remove it from ref_set
+        void CheckLootRefs(LootIdSet* ref_set = nullptr) const; // check existence reference and remove it from ref_set
         void ReportUnusedIds(LootIdSet const& ids_set) const;
         void ReportNotExistedId(uint32 id) const;
 
         bool HaveLootFor(uint32 loot_id) const { return m_LootTemplates.find(loot_id) != m_LootTemplates.end(); }
         bool HaveQuestLootFor(uint32 loot_id) const;
-        bool HaveQuestLootForPlayer(uint32 loot_id, Player* player) const;
+        bool HaveQuestLootForPlayer(uint32 loot_id, PlayerPtr player) const;
 
         LootTemplate const* GetLootFor(uint32 loot_id) const;
         void ResetConditions();
@@ -228,7 +228,7 @@ class LootTemplate
         // True if template includes at least 1 quest drop entry
         bool HasQuestDrop(LootTemplateMap const& store, uint8 groupId = 0) const;
         // True if template includes at least 1 quest drop for an active quest of the player
-        bool HasQuestDropForPlayer(LootTemplateMap const& store, Player const* player, uint8 groupId = 0) const;
+        bool HasQuestDropForPlayer(LootTemplateMap const& store, constPlayerPtr player, uint8 groupId = 0) const;
 
         // Checks integrity of the template
         void Verify(LootStore const& store, uint32 Id) const;
@@ -258,13 +258,13 @@ class LootValidatorRefManager : public RefManager<Loot, LootValidatorRef>
     public:
         typedef LinkedListHead::Iterator< LootValidatorRef > iterator;
 
-        LootValidatorRef* getFirst() { return (LootValidatorRef*)RefManager<Loot, LootValidatorRef>::getFirst(); }
-        LootValidatorRef* getLast() { return (LootValidatorRef*)RefManager<Loot, LootValidatorRef>::getLast(); }
+        LootValidatorRefPtr getFirst() { return TO_LOOTVALIDATORREF((RefManager<Loot, LootValidatorRef>::getFirst())); }
+        LootValidatorRefPtr getLast() { return TO_LOOTVALIDATORREF((RefManager<Loot, LootValidatorRef>::getLast())); }
 
         iterator begin() { return iterator(getFirst()); }
-        iterator end() { return iterator(NULL); }
+        iterator end() { return iterator(nullptr); }
         iterator rbegin() { return iterator(getLast()); }
-        iterator rend() { return iterator(NULL); }
+        iterator rend() { return iterator(nullptr); }
 };
 
 //=====================================================
@@ -273,7 +273,7 @@ struct LootView;
 ByteBuffer& operator<<(ByteBuffer& b, LootItem const& li);
 ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv);
 
-struct Loot
+struct Loot : public std::enable_shared_from_this<Loot>
 {
     friend ByteBuffer& operator<<(ByteBuffer& b, LootView const& lv);
 
@@ -292,7 +292,7 @@ struct Loot
     ~Loot() { clear(); }
 
     // if loot becomes invalid this reference is used to inform the listener
-    void addLootValidatorRef(LootValidatorRef* pLootValidatorRef)
+    void addLootValidatorRef(LootValidatorRefPtr pLootValidatorRef)
     {
         i_LootValidatorRefManager.insertFirst(pLootValidatorRef);
     }
@@ -331,21 +331,21 @@ struct Loot
     void RemoveLooter(uint64 GUID) { PlayersLooting.erase(GUID); }
 
     void generateMoneyLoot(uint32 minAmount, uint32 maxAmount);
-    bool FillLoot(uint32 lootId, LootStore const& store, Player* lootOwner, bool personal, bool noEmptyError = false, uint16 lootMode = LOOT_MODE_DEFAULT);
+    bool FillLoot(uint32 lootId, LootStore const& store, PlayerPtr lootOwner, bool personal, bool noEmptyError = false, uint16 lootMode = LOOT_MODE_DEFAULT);
 
     // Inserts the item into the loot (called by LootTemplate processors)
     void AddItem(LootStoreItem const & item);
 
-    LootItem* LootItemInSlot(uint32 lootslot, Player* player, QuestItem** qitem = NULL, QuestItem** ffaitem = NULL, QuestItem** conditem = NULL);
-    uint32 GetMaxSlotInLootFor(Player* player) const;
-    bool hasItemFor(Player* player) const;
+    LootItem* LootItemInSlot(uint32 lootslot, PlayerPtr player, QuestItem** qitem = nullptr, QuestItem** ffaitem = nullptr, QuestItem** conditem = nullptr);
+    uint32 GetMaxSlotInLootFor(PlayerPtr player) const;
+    bool hasItemFor(PlayerPtr player) const;
     bool hasOverThresholdItem() const;
 
     private:
-        void FillNotNormalLootFor(Player* player, bool presentAtLooting);
-        QuestItemList* FillFFALoot(Player* player);
-        QuestItemList* FillQuestLoot(Player* player);
-        QuestItemList* FillNonQuestNonFFAConditionalLoot(Player* player, bool presentAtLooting);
+        void FillNotNormalLootFor(PlayerPtr player, bool presentAtLooting);
+        QuestItemList* FillFFALoot(PlayerPtr player);
+        QuestItemList* FillQuestLoot(PlayerPtr player);
+        QuestItemList* FillNonQuestNonFFAConditionalLoot(PlayerPtr player, bool presentAtLooting);
 
         std::set<uint64> PlayersLooting;
         QuestItemMap PlayerQuestItems;
@@ -358,12 +358,12 @@ struct Loot
 
 struct LootView
 {
-    Loot &loot;
-    Player* viewer;
+    LootPtr& loot;
+    PlayerPtr viewer;
     PermissionTypes permission;
     uint8 _loot_type;
     ObjectGuid _guid;
-    LootView(Loot &_loot, Player* _viewer, uint8 loot_type, uint64 guid, PermissionTypes _permission = ALL_PERMISSION)
+    LootView(LootPtr&_loot, PlayerPtr _viewer, uint8 loot_type, uint64 guid, PermissionTypes _permission = ALL_PERMISSION)
         : loot(_loot), viewer(_viewer), _loot_type(loot_type), _guid(ObjectGuid(guid)), permission(_permission) {}
 };
 

@@ -37,60 +37,60 @@ public:
     {
         static ChatCommand serverIdleRestartCommandTable[] =
         {
-            { "cancel",         SEC_ADMINISTRATOR,  true,  &HandleServerShutDownCancelCommand,      "", NULL },
-            { ""   ,            SEC_ADMINISTRATOR,  true,  &HandleServerIdleRestartCommand,         "", NULL },
-            { NULL,             0,                  false, NULL,                                    "", NULL }
+            { "cancel",         SEC_ADMINISTRATOR,  true,  &HandleServerShutDownCancelCommand,      "", nullptr },
+            { ""   ,            SEC_ADMINISTRATOR,  true,  &HandleServerIdleRestartCommand,         "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                    "", nullptr }
         };
 
         static ChatCommand serverIdleShutdownCommandTable[] =
         {
-            { "cancel",         SEC_ADMINISTRATOR,  true,  &HandleServerShutDownCancelCommand,      "", NULL },
-            { ""   ,            SEC_ADMINISTRATOR,  true,  &HandleServerIdleShutDownCommand,        "", NULL },
-            { NULL,             0,                  false, NULL,                                    "", NULL }
+            { "cancel",         SEC_ADMINISTRATOR,  true,  &HandleServerShutDownCancelCommand,      "", nullptr },
+            { ""   ,            SEC_ADMINISTRATOR,  true,  &HandleServerIdleShutDownCommand,        "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                    "", nullptr }
         };
 
         static ChatCommand serverRestartCommandTable[] =
         {
-            { "cancel",         SEC_ADMINISTRATOR,  true,  &HandleServerShutDownCancelCommand,      "", NULL },
-            { ""   ,            SEC_ADMINISTRATOR,  true,  &HandleServerRestartCommand,             "", NULL },
-            { NULL,             0,                  false, NULL,                                    "", NULL }
+            { "cancel",         SEC_ADMINISTRATOR,  true,  &HandleServerShutDownCancelCommand,      "", nullptr },
+            { ""   ,            SEC_ADMINISTRATOR,  true,  &HandleServerRestartCommand,             "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                    "", nullptr }
         };
 
         static ChatCommand serverShutdownCommandTable[] =
         {
-            { "cancel",         SEC_ADMINISTRATOR,  true,  &HandleServerShutDownCancelCommand,      "", NULL },
-            { ""   ,            SEC_ADMINISTRATOR,  true,  &HandleServerShutDownCommand,            "", NULL },
-            { NULL,             0,                  false, NULL,                                    "", NULL }
+            { "cancel",         SEC_ADMINISTRATOR,  true,  &HandleServerShutDownCancelCommand,      "", nullptr },
+            { ""   ,            SEC_ADMINISTRATOR,  true,  &HandleServerShutDownCommand,            "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                    "", nullptr }
         };
 
         static ChatCommand serverSetCommandTable[] =
         {
-            { "difftime",       SEC_CONSOLE,        true,  &HandleServerSetDiffTimeCommand,         "", NULL },
-            { "loglevel",       SEC_CONSOLE,        true,  &HandleServerSetLogLevelCommand,         "", NULL },
-            { "motd",           SEC_ADMINISTRATOR,  true,  &HandleServerSetMotdCommand,             "", NULL },
-            { "closed",         SEC_ADMINISTRATOR,  true,  &HandleServerSetClosedCommand,           "", NULL },
-            { NULL,             0,                  false, NULL,                                    "", NULL }
+            { "difftime",       SEC_CONSOLE,        true,  &HandleServerSetDiffTimeCommand,         "", nullptr },
+            { "loglevel",       SEC_CONSOLE,        true,  &HandleServerSetLogLevelCommand,         "", nullptr },
+            { "motd",           SEC_ADMINISTRATOR,  true,  &HandleServerSetMotdCommand,             "", nullptr },
+            { "closed",         SEC_ADMINISTRATOR,  true,  &HandleServerSetClosedCommand,           "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                    "", nullptr }
         };
 
         static ChatCommand serverCommandTable[] =
         {
-            { "corpses",        SEC_GAMEMASTER,     true,  &HandleServerCorpsesCommand,             "", NULL },
-            { "exit",           SEC_CONSOLE,        true,  &HandleServerExitCommand,                "", NULL },
-            { "idlerestart",    SEC_ADMINISTRATOR,  true,  NULL,                                    "", serverIdleRestartCommandTable },
-            { "idleshutdown",   SEC_ADMINISTRATOR,  true,  NULL,                                    "", serverIdleShutdownCommandTable },
-            { "info",           SEC_PLAYER,         true,  &HandleServerInfoCommand,                "", NULL },
-            { "motd",           SEC_PLAYER,         true,  &HandleServerMotdCommand,                "", NULL },
-            { "plimit",         SEC_ADMINISTRATOR,  true,  &HandleServerPLimitCommand,              "", NULL },
-            { "restart",        SEC_ADMINISTRATOR,  true,  NULL,                                    "", serverRestartCommandTable },
-            { "shutdown",       SEC_ADMINISTRATOR,  true,  NULL,                                    "", serverShutdownCommandTable },
-            { "set",            SEC_ADMINISTRATOR,  true,  NULL,                                    "", serverSetCommandTable },
-            { NULL,             0,                  false, NULL,                                    "", NULL }
+            { "corpses",        SEC_GAMEMASTER,     true,  &HandleServerCorpsesCommand,             "", nullptr },
+            { "exit",           SEC_CONSOLE,        true,  &HandleServerExitCommand,                "", nullptr },
+            { "idlerestart",    SEC_ADMINISTRATOR,  true,  nullptr,                                    "", serverIdleRestartCommandTable },
+            { "idleshutdown",   SEC_ADMINISTRATOR,  true,  nullptr,                                    "", serverIdleShutdownCommandTable },
+            { "info",           SEC_PLAYER,         true,  &HandleServerInfoCommand,                "", nullptr },
+            { "motd",           SEC_PLAYER,         true,  &HandleServerMotdCommand,                "", nullptr },
+            { "plimit",         SEC_ADMINISTRATOR,  true,  &HandleServerPLimitCommand,              "", nullptr },
+            { "restart",        SEC_ADMINISTRATOR,  true,  nullptr,                                    "", serverRestartCommandTable },
+            { "shutdown",       SEC_ADMINISTRATOR,  true,  nullptr,                                    "", serverShutdownCommandTable },
+            { "set",            SEC_ADMINISTRATOR,  true,  nullptr,                                    "", serverSetCommandTable },
+            { nullptr,             0,                  false, nullptr,                                    "", nullptr }
         };
 
          static ChatCommand commandTable[] =
         {
-            { "server",         SEC_ADMINISTRATOR,  true,  NULL,                                    "", serverCommandTable },
-            { NULL,             0,                  false, NULL,                                    "", NULL }
+            { "server",         SEC_ADMINISTRATOR,  true,  nullptr,                                    "", serverCommandTable },
+            { nullptr,             0,                  false, nullptr,                                    "", nullptr }
         };
         return commandTable;
     }
@@ -203,7 +203,7 @@ public:
             return false;
 
         char* timeStr = strtok((char*) args, " ");
-        char* exitCodeStr = strtok(NULL, "");
+        char* exitCodeStr = strtok(nullptr, "");
 
         int32 time = atoi(timeStr);
 
@@ -239,7 +239,7 @@ public:
             return false;
 
         char* timeStr = strtok((char*) args, " ");
-        char* exitCodeStr = strtok(NULL, "");
+        char* exitCodeStr = strtok(nullptr, "");
 
         int32 time = atoi(timeStr);
 
@@ -275,7 +275,7 @@ public:
             return false;
 
         char* timeStr = strtok((char*) args, " ");
-        char* exitCodeStr = strtok(NULL, "");
+        char* exitCodeStr = strtok(nullptr, "");
 
         int32 time = atoi(timeStr);
 
@@ -310,7 +310,7 @@ public:
             return false;
 
         char* timeStr = strtok((char*) args, " ");
-        char* exitCodeStr = strtok(NULL, "");
+        char* exitCodeStr = strtok(nullptr, "");
 
         int32 time = atoi(timeStr);
 
@@ -383,8 +383,8 @@ public:
             return false;
 
         char* type = strtok((char*)args, " ");
-        char* name = strtok(NULL, " ");
-        char* level = strtok(NULL, " ");
+        char* name = strtok(nullptr, " ");
+        char* level = strtok(nullptr, " ");
 
         if (!type || !name || !level || *name == '\0' || *level == '\0' || (*type != 'a' && *type != 'l'))
             return false;

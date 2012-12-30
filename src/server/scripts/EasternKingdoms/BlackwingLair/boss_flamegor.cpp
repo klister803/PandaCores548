@@ -43,14 +43,14 @@ class boss_flamegor : public CreatureScript
 public:
     boss_flamegor() : CreatureScript("boss_flamegor") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_flamegorAI (creature);
     }
 
     struct boss_flamegorAI : public ScriptedAI
     {
-        boss_flamegorAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_flamegorAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 ShadowFlame_Timer;
         uint32 WingBuffet_Timer;
@@ -63,7 +63,7 @@ public:
             Frenzy_Timer = 10000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoZoneInCombat();
         }

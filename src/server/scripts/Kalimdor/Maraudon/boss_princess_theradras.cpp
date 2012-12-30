@@ -40,14 +40,14 @@ class boss_princess_theradras : public CreatureScript
 public:
     boss_princess_theradras() : CreatureScript("boss_princess_theradras") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_ptheradrasAI (creature);
     }
 
     struct boss_ptheradrasAI : public ScriptedAI
     {
-        boss_ptheradrasAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_ptheradrasAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 DustfieldTimer;
         uint32 BoulderTimer;
@@ -62,9 +62,9 @@ public:
             RepulsiveGazeTimer = 23000;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             me->SummonCreature(12238, 28.067f, 61.875f, -123.405f, 4.67f, TEMPSUMMON_TIMED_DESPAWN, 600000);
         }
@@ -85,7 +85,7 @@ public:
             //BoulderTimer
             if (BoulderTimer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_BOULDER);
                 BoulderTimer = 10000;
             }

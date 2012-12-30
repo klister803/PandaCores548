@@ -168,7 +168,7 @@ bool ItemChatLink::Initialize(std::istringstream& iss)
 inline std::string ItemChatLink::FormatName(uint8 index, ItemLocale const *locale, char* suffixStrings) const
 {
     std::stringstream ss;
-    if (locale == NULL || index >= locale->Name.size())
+    if (locale == nullptr || index >= locale->Name.size())
         ss << _item->Name1;
     else
         ss << locale->Name[index];
@@ -181,9 +181,9 @@ bool ItemChatLink::ValidateName(char* buffer, const char* context)
 {
     ChatLink::ValidateName(buffer, context);
 
-    char* suffixStrings = _suffix ? _suffix->nameSuffix : (_property ? _property->nameSuffix : NULL);
+    char* suffixStrings = _suffix ? _suffix->nameSuffix : (_property ? _property->nameSuffix : nullptr);
 
-    bool res = (FormatName(LOCALE_enUS, NULL, suffixStrings) == buffer);
+    bool res = (FormatName(LOCALE_enUS, nullptr, suffixStrings) == buffer);
     if (!res)
     {
         ItemLocale const* il = sObjectMgr->GetItemLocale(_item->ItemId);
@@ -552,12 +552,12 @@ bool LinkExtractor::IsValidMessage()
     std::istringstream::pos_type startPos = 0;
     uint32 color = 0;
 
-    ChatLink* link = NULL;
+    ChatLink* link = nullptr;
     while (!_iss.eof())
     {
         if (validSequence == validSequenceIterator)
         {
-            link = NULL;
+            link = nullptr;
             _iss.ignore(255, PIPE_CHAR);
             startPos = _iss.tellg() - std::istringstream::pos_type(1);
         }

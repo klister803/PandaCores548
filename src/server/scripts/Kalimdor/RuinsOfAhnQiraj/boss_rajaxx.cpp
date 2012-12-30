@@ -63,7 +63,7 @@ class boss_rajaxx : public CreatureScript
 
         struct boss_rajaxxAI : public BossAI
         {
-            boss_rajaxxAI(Creature* creature) : BossAI(creature, BOSS_RAJAXX)
+            boss_rajaxxAI(CreaturePtr creature) : BossAI(creature, BOSS_RAJAXX)
             {
             }
 
@@ -75,13 +75,13 @@ class boss_rajaxx : public CreatureScript
                 events.ScheduleEvent(EVENT_THUNDERCRASH, 12000);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 //SAY_DEATH
                 _JustDied();
             }
 
-            void EnterCombat(Unit* /*victim*/)
+            void EnterCombat(UnitPtr /*victim*/)
             {
                 _EnterCombat();
             }
@@ -119,7 +119,7 @@ class boss_rajaxx : public CreatureScript
                 bool enraged;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_rajaxxAI (creature);
         }

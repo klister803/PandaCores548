@@ -107,7 +107,7 @@ ACE_MEM_Acceptor::accept (ACE_MEM_Stream &new_stream,
         }
 
       do
-        // On Win32 the third parameter to <accept> must be a NULL
+        // On Win32 the third parameter to <accept> must be a nullptr
         // pointer if to ignore the client's address.
         new_stream.set_handle (ACE_OS::accept (this->get_handle (),
                                                addr,

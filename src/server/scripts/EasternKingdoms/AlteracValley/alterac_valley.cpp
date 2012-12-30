@@ -57,7 +57,7 @@ class mob_av_marshal_or_warmaster : public CreatureScript
 
         struct mob_av_marshal_or_warmasterAI : public ScriptedAI
         {
-            mob_av_marshal_or_warmasterAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_av_marshal_or_warmasterAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
             uint32 ChargeTimer;
             uint32 CleaveTimer;
@@ -173,7 +173,7 @@ class mob_av_marshal_or_warmaster : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_av_marshal_or_warmasterAI(creature);
         }

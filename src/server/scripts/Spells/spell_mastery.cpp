@@ -58,9 +58,9 @@ class spell_mastery_combo_breaker : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         if (caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(115636))
                         {
@@ -110,9 +110,9 @@ class spell_mastery_blood_shield : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         if (caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(77513))
                         {
@@ -123,7 +123,7 @@ class spell_mastery_blood_shield : public SpellScriptLoader
 
                                 int32 bp = int32(GetHitHeal() * Mastery);
 
-                                caster->CastCustomSpell(target, MASTERY_SPELL_BLOOD_SHIELD, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(target, MASTERY_SPELL_BLOOD_SHIELD, &bp, nullptr, nullptr, true);
                             }
                         }
                     }
@@ -166,9 +166,9 @@ class spell_mastery_ignite : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         if (caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(12846))
                         {
@@ -181,7 +181,7 @@ class spell_mastery_ignite : public SpellScriptLoader
                                 int32 bp = int32(GetHitDamage() * value / 100 / 2);
                                 bp += target->GetRemainingPeriodicAmount(caster->GetGUID(), MASTERY_SPELL_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
 
-                                caster->CastCustomSpell(target, MASTERY_SPELL_IGNITE, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(target, MASTERY_SPELL_IGNITE, &bp, nullptr, nullptr, true);
                             }
                         }
                     }
@@ -224,9 +224,9 @@ class spell_mastery_hand_of_light : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         if (caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(76672))
                         {
@@ -238,7 +238,7 @@ class spell_mastery_hand_of_light : public SpellScriptLoader
 
                                 int32 bp = int32(GetHitDamage() * value / 100);
 
-                                caster->CastCustomSpell(target, MASTERY_SPELL_HAND_OF_LIGHT, &bp, NULL, NULL, true);
+                                caster->CastCustomSpell(target, MASTERY_SPELL_HAND_OF_LIGHT, &bp, nullptr, nullptr, true);
                             }
                         }
                     }
@@ -281,9 +281,9 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
 
                 if (procSpell)
                 {
-                    if (Unit* caster = GetCaster())
+                    if (UnitPtr caster = GetCaster())
                     {
-                        if (Unit* unitTarget = GetHitUnit())
+                        if (UnitPtr unitTarget = GetHitUnit())
                         {
                             if (caster->GetTypeId() == TYPEID_PLAYER && caster->HasAura(77222))
                             {

@@ -60,7 +60,7 @@ class boss_high_botanist_freywinn : public CreatureScript
 
         struct boss_high_botanist_freywinnAI : public ScriptedAI
         {
-            boss_high_botanist_freywinnAI(Creature* creature) : ScriptedAI(creature) {}
+            boss_high_botanist_freywinnAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
             std::list<uint64> Adds_List;
 
@@ -81,12 +81,12 @@ class boss_high_botanist_freywinn : public CreatureScript
                 MoveFree = true;
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 DoScriptText(SAY_AGGRO, me);
             }
 
-            void JustSummoned(Creature* summoned)
+            void JustSummoned(CreaturePtr summoned)
             {
                 if (summoned->GetEntry() == ENTRY_FRAYER)
                     Adds_List.push_back(summoned->GetGUID());
@@ -103,12 +103,12 @@ class boss_high_botanist_freywinn : public CreatureScript
                 }
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), me);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoScriptText(SAY_DEATH, me);
             }
@@ -147,7 +147,7 @@ class boss_high_botanist_freywinn : public CreatureScript
                         {
                             for (std::list<uint64>::iterator itr = Adds_List.begin(); itr != Adds_List.end(); ++itr)
                             {
-                                if (Unit* temp = Unit::GetUnit(*me, *itr))
+                                if (UnitPtr temp = Unit::GetUnit(TO_WORLDOBJECT(me), *itr))
                                 {
                                     if (!temp->isAlive())
                                     {
@@ -196,7 +196,7 @@ class boss_high_botanist_freywinn : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_high_botanist_freywinnAI(creature);
         }

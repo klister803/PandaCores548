@@ -35,26 +35,26 @@ public:
     {
         static ChatCommand resetCommandTable[] =
         {
-            { "achievements",   SEC_ADMINISTRATOR,  true,  &HandleResetAchievementsCommand,     "", NULL },
-            { "honor",          SEC_ADMINISTRATOR,  true,  &HandleResetHonorCommand,            "", NULL },
-            { "level",          SEC_ADMINISTRATOR,  true,  &HandleResetLevelCommand,            "", NULL },
-            { "spells",         SEC_ADMINISTRATOR,  true,  &HandleResetSpellsCommand,           "", NULL },
-            { "stats",          SEC_ADMINISTRATOR,  true,  &HandleResetStatsCommand,            "", NULL },
-            { "talents",        SEC_ADMINISTRATOR,  true,  &HandleResetTalentsCommand,          "", NULL },
-            { "all",            SEC_ADMINISTRATOR,  true,  &HandleResetAllCommand,              "", NULL },
-            { NULL,             0,                  false, NULL,                                "", NULL }
+            { "achievements",   SEC_ADMINISTRATOR,  true,  &HandleResetAchievementsCommand,     "", nullptr },
+            { "honor",          SEC_ADMINISTRATOR,  true,  &HandleResetHonorCommand,            "", nullptr },
+            { "level",          SEC_ADMINISTRATOR,  true,  &HandleResetLevelCommand,            "", nullptr },
+            { "spells",         SEC_ADMINISTRATOR,  true,  &HandleResetSpellsCommand,           "", nullptr },
+            { "stats",          SEC_ADMINISTRATOR,  true,  &HandleResetStatsCommand,            "", nullptr },
+            { "talents",        SEC_ADMINISTRATOR,  true,  &HandleResetTalentsCommand,          "", nullptr },
+            { "all",            SEC_ADMINISTRATOR,  true,  &HandleResetAllCommand,              "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "reset",          SEC_ADMINISTRATOR,  true, NULL,                                 "", resetCommandTable },
-            { NULL,             0,                  false, NULL,                                "", NULL }
+            { "reset",          SEC_ADMINISTRATOR,  true, nullptr,                                 "", resetCommandTable },
+            { nullptr,             0,                  false, nullptr,                                "", nullptr }
         };
         return commandTable;
     }
 
     static bool HandleResetAchievementsCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid))
             return false;
@@ -69,7 +69,7 @@ public:
 
     static bool HandleResetHonorCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         if (!handler->extractPlayerTarget((char*)args, &target))
             return false;
 
@@ -80,7 +80,7 @@ public:
         return true;
     }
 
-    static bool HandleResetStatsOrLevelHelper(Player* player)
+    static bool HandleResetStatsOrLevelHelper(PlayerPtr player)
     {
         ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(player->getClass());
         if (!classEntry)
@@ -119,7 +119,7 @@ public:
 
     static bool HandleResetLevelCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         if (!handler->extractPlayerTarget((char*)args, &target))
             return false;
 
@@ -145,7 +145,7 @@ public:
         target->_ApplyAllLevelScaleItemMods(true);
 
         // reset level for pet
-        if (Pet* pet = target->GetPet())
+        if (PetPtr pet = target->GetPet())
             pet->SynchronizeLevelWithOwner();
 
         sScriptMgr->OnPlayerLevelChanged(target, oldLevel);
@@ -155,7 +155,7 @@ public:
 
     static bool HandleResetSpellsCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
@@ -184,7 +184,7 @@ public:
 
     static bool HandleResetStatsCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         if (!handler->extractPlayerTarget((char*)args, &target))
             return false;
 
@@ -202,7 +202,7 @@ public:
 
     static bool HandleResetTalentsCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string targetName;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid, &targetName))
@@ -220,7 +220,7 @@ public:
             if (!handler->GetSession() || handler->GetSession()->GetPlayer() != target)
                 handler->PSendSysMessage(LANG_RESET_TALENTS_ONLINE, handler->GetNameLink(target).c_str());
 
-            Pet* pet = target->GetPet();
+            PetPtr pet = target->GetPet();
             if (pet)
                 target->SendTalentsInfoData(true);
             return true;

@@ -174,7 +174,7 @@ void BattlegroundMgr::Update(uint32 diff)
     }
 }
 
-void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battleground* bg, Player * pPlayer, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint8 uiFrame)
+void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battleground* bg, PlayerPtr pPlayer, uint8 QueueSlot, uint8 StatusID, uint32 Time1, uint32 Time2, uint8 arenatype, uint8 uiFrame)
 {
     // we can be in 2 queues in same time...
     if (!bg)
@@ -509,7 +509,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
             continue;
         }
         ObjectGuid guid = itr2->first;
-        Player* player = ObjectAccessor::FindPlayer(itr2->first);
+        PlayerPtr player = ObjectAccessor::FindPlayer(itr2->first);
 
         if (!player)
             continue;
@@ -730,7 +730,7 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
                 data->WriteString(at->GetName());
 }
 
-void BattlegroundMgr::BuildStatusFailedPacket(WorldPacket* data, Battleground* bg, Player* player, uint8 QueueSlot, GroupJoinBattlegroundResult result)
+void BattlegroundMgr::BuildStatusFailedPacket(WorldPacket* data, Battleground* bg, PlayerPtr player, uint8 QueueSlot, GroupJoinBattlegroundResult result)
 {
     ObjectGuid guidBytes1 = player->GetGUID(); // player who caused the error
     ObjectGuid guidBytes2 = bg->GetGUID();
@@ -827,7 +827,7 @@ Battleground* BattlegroundMgr::GetBattlegroundThroughClientInstance(uint32 insta
     //SMSG_BATTLEFIELD_LIST we need to find the battleground with this clientinstance-id
     Battleground* bg = GetBattlegroundTemplate(bgTypeId);
     if (!bg)
-        return NULL;
+        return nullptr;
 
     if (bg->isArena())
         return GetBattleground(instanceId, bgTypeId);
@@ -837,13 +837,13 @@ Battleground* BattlegroundMgr::GetBattlegroundThroughClientInstance(uint32 insta
         if (itr->second->GetClientInstanceID() == instanceId)
             return itr->second;
     }
-    return NULL;
+    return nullptr;
 }
 
 Battleground* BattlegroundMgr::GetBattleground(uint32 InstanceID, BattlegroundTypeId bgTypeId)
 {
     if (!InstanceID)
-        return NULL;
+        return nullptr;
     //search if needed
     BattlegroundSet::iterator itr;
     if (bgTypeId == BATTLEGROUND_TYPE_NONE)
@@ -854,16 +854,16 @@ Battleground* BattlegroundMgr::GetBattleground(uint32 InstanceID, BattlegroundTy
             if (itr != m_Battlegrounds[i].end())
                 return itr->second;
         }
-        return NULL;
+        return nullptr;
     }
     itr = m_Battlegrounds[bgTypeId].find(InstanceID);
-    return ((itr != m_Battlegrounds[bgTypeId].end()) ? itr->second : NULL);
+    return ((itr != m_Battlegrounds[bgTypeId].end()) ? itr->second : nullptr);
 }
 
 Battleground* BattlegroundMgr::GetBattlegroundTemplate(BattlegroundTypeId bgTypeId)
 {
     //map is sorted and we can be sure that lowest instance id has only BG template
-    return m_Battlegrounds[bgTypeId].empty() ? NULL : m_Battlegrounds[bgTypeId].begin()->second;
+    return m_Battlegrounds[bgTypeId].empty() ? nullptr : m_Battlegrounds[bgTypeId].begin()->second;
 }
 
 uint32 BattlegroundMgr::CreateClientVisibleInstanceId(BattlegroundTypeId bgTypeId, BattlegroundBracketId bracket_id)
@@ -893,12 +893,12 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
 {
     // get the template BG
     Battleground* bg_template = GetBattlegroundTemplate(bgTypeId);
-    BattlegroundSelectionWeightMap* selectionWeights = NULL;
+    BattlegroundSelectionWeightMap* selectionWeights = nullptr;
 
     if (!bg_template)
     {
         sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
-        return NULL;
+        return nullptr;
     }
     bool isRandom = false;
 
@@ -913,7 +913,7 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
     if (selectionWeights)
     {
         if (selectionWeights->empty())
-           return NULL;
+           return nullptr;
         uint32 Weight = 0;
         uint32 selectedWeight = 0;
         bgTypeId = BATTLEGROUND_TYPE_NONE;
@@ -921,7 +921,7 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         for (BattlegroundSelectionWeightMap::const_iterator it = selectionWeights->begin(); it != selectionWeights->end(); ++it)
             Weight += it->second;
         if (!Weight)
-            return NULL;
+            return nullptr;
         // Select a random value
         selectedWeight = urand(0, Weight-1);
 
@@ -940,11 +940,11 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
         if (!bg_template)
         {
             sLog->outError(LOG_FILTER_BATTLEGROUND, "Battleground: CreateNewBattleground - bg template not found for %u", bgTypeId);
-            return NULL;
+            return nullptr;
         }
     }
 
-    Battleground* bg = NULL;
+    Battleground* bg = nullptr;
     // create a copy of the BG template
     switch (bgTypeId)
     {
@@ -1030,7 +1030,7 @@ Battleground* BattlegroundMgr::CreateNewBattleground(BattlegroundTypeId bgTypeId
 uint32 BattlegroundMgr::CreateBattleground(CreateBattlegroundData& data)
 {
     // Create the BG
-    Battleground* bg = NULL;
+    Battleground* bg = nullptr;
     switch (data.bgTypeId)
     {
         case BATTLEGROUND_AV: bg = new BattlegroundAV; break;
@@ -1099,7 +1099,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         Field* fields = result->Fetch();
 
         uint32 bgTypeID_ = fields[0].GetUInt32();
-        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_BATTLEGROUND, bgTypeID_, NULL))
+        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_BATTLEGROUND, bgTypeID_, nullptr))
             continue;
 
         // can be overwrite by values from DB
@@ -1200,7 +1200,7 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u battlegrounds in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
-void BattlegroundMgr::BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid guid, Player* player, BattlegroundTypeId bgTypeId)
+void BattlegroundMgr::BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid guid, PlayerPtr player, BattlegroundTypeId bgTypeId)
 {
     if (!player)
         return;
@@ -1321,7 +1321,7 @@ void BattlegroundMgr::BuildBattlegroundListPacket(WorldPacket* data, ObjectGuid 
     }*/
 }
 
-void BattlegroundMgr::SendToBattleground(Player* player, uint32 instanceId, BattlegroundTypeId bgTypeId)
+void BattlegroundMgr::SendToBattleground(PlayerPtr player, uint32 instanceId, BattlegroundTypeId bgTypeId)
 {
     Battleground* bg = GetBattleground(instanceId, bgTypeId);
     if (bg)
@@ -1342,7 +1342,7 @@ void BattlegroundMgr::SendToBattleground(Player* player, uint32 instanceId, Batt
     }
 }
 
-void BattlegroundMgr::SendAreaSpiritHealerQueryOpcode(Player* player, Battleground* bg, uint64 guid)
+void BattlegroundMgr::SendAreaSpiritHealerQueryOpcode(PlayerPtr player, Battleground* bg, uint64 guid)
 {
     WorldPacket data(SMSG_AREA_SPIRIT_HEALER_TIME, 12);
     uint32 time_ = 30000 - bg->GetLastResurrectTime();      // resurrect every 30 seconds

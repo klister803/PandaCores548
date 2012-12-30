@@ -58,7 +58,7 @@ public:
 
     struct npc_injured_rainspeaker_oracleAI : public npc_escortAI
     {
-        npc_injured_rainspeaker_oracleAI(Creature* creature) : npc_escortAI(creature) { c_guid = creature->GetGUID(); }
+        npc_injured_rainspeaker_oracleAI(CreaturePtr creature) : npc_escortAI(creature) { c_guid = creature->GetGUID(); }
 
         uint64 c_guid;
 
@@ -75,7 +75,7 @@ public:
 
         void WaypointReached(uint32 waypointId)
         {
-            Player* player = GetPlayerForEscort();
+            PlayerPtr player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -110,12 +110,12 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (!HasEscortState(STATE_ESCORT_ESCORTING))
                 return;
 
-            if (Player* player = GetPlayerForEscort())
+            if (PlayerPtr player = GetPlayerForEscort())
             {
                 if (player->GetQuestStatus(QUEST_FORTUNATE_MISUNDERSTANDINGS) != QUEST_STATUS_COMPLETE)
                     player->FailQuest(QUEST_FORTUNATE_MISUNDERSTANDINGS);
@@ -123,7 +123,7 @@ public:
         }
     };
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -136,7 +136,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -158,13 +158,13 @@ public:
         return true;
     }
 
-    bool OnQuestAccept(Player* /*player*/, Creature* creature, Quest const* /*_Quest*/)
+    bool OnQuestAccept(PlayerPtr /*Player*/, CreaturePtr creature, Quest const* /*_Quest*/)
     {
         DoScriptText(SAY_QUEST_ACCEPT_IRO, creature);
         return false;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_injured_rainspeaker_oracleAI(creature);
     }
@@ -194,7 +194,7 @@ class npc_vekjik : public CreatureScript
 public:
     npc_vekjik() : CreatureScript("npc_vekjik") { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -210,7 +210,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -255,7 +255,7 @@ class npc_avatar_of_freya : public CreatureScript
 public:
     npc_avatar_of_freya() : CreatureScript("npc_avatar_of_freya") { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -267,7 +267,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -300,7 +300,7 @@ public:
 
     struct npc_bushwhackerAI : public ScriptedAI
     {
-        npc_bushwhackerAI(Creature* creature) : ScriptedAI(creature)
+        npc_bushwhackerAI(CreaturePtr creature) : ScriptedAI(creature)
         {
         }
 
@@ -309,8 +309,8 @@ public:
             if (me->isDead())
                 return;
 
-            if (TempSummon* summ = me->ToTempSummon())
-                if (Unit* summoner = summ->GetSummoner())
+            if (TempSummonPtr summ = me->ToTempSummon())
+                if (UnitPtr summoner = summ->GetSummoner())
                     me->GetMotionMaster()->MovePoint(0, summoner->GetPositionX(), summoner->GetPositionY(), summoner->GetPositionZ());
 
             Reset();
@@ -325,7 +325,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_bushwhackerAI(creature);
     }
@@ -358,13 +358,13 @@ public:
 
     struct npc_engineer_heliceAI : public npc_escortAI
     {
-        npc_engineer_heliceAI(Creature* creature) : npc_escortAI(creature) { }
+        npc_engineer_heliceAI(CreaturePtr creature) : npc_escortAI(creature) { }
 
         uint32 m_uiChatTimer;
 
         void WaypointReached(uint32 waypointId)
         {
-            Player* player = GetPlayerForEscort();
+            PlayerPtr player = GetPlayerForEscort();
 
             switch (waypointId)
             {
@@ -406,11 +406,11 @@ public:
             m_uiChatTimer = 4000;
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (HasEscortState(STATE_ESCORT_ESCORTING))
             {
-                if (Player* player = GetPlayerForEscort())
+                if (PlayerPtr player = GetPlayerForEscort())
                     player->FailQuest(QUEST_DISASTER);
             }
         }
@@ -431,12 +431,12 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_engineer_heliceAI(creature);
     }
 
-    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, const Quest* quest)
     {
         if (quest->GetQuestId() == QUEST_DISASTER)
         {
@@ -484,7 +484,7 @@ public:
 
     struct npc_jungle_punch_targetAI : public ScriptedAI
     {
-        npc_jungle_punch_targetAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_jungle_punch_targetAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint16 sayTimer;
         uint8 sayStep;
@@ -546,15 +546,15 @@ public:
                 sayTimer -= uiDiff;
         }
 
-        void SpellHit(Unit* caster, const SpellInfo* proto)
+        void SpellHit(UnitPtr caster, const SpellInfo* proto)
         {
             if (!proto || proto->Id != SPELL_OFFER)
                 return;
 
-            if (!caster->ToPlayer())
+            if (!TO_PLAYER(caster))
                 return;
 
-            QuestStatusMap::const_iterator itr = caster->ToPlayer()->getQuestStatusMap().find(QUEST_ENTRY);
+            QuestStatusMap::const_iterator itr = TO_PLAYER(caster)->getQuestStatusMap().find(QUEST_ENTRY);
             if (itr->second.Status != QUEST_STATUS_INCOMPLETE)
                 return;
 
@@ -582,15 +582,15 @@ public:
                 if (itr->second.CreatureOrGOCount[i] != 0)
                     continue;
 
-                caster->ToPlayer()->KilledMonsterCredit(me->GetEntry(), 0);
-                caster->ToPlayer()->Say(SAY_OFFER, LANG_UNIVERSAL);
+                TO_PLAYER(caster)->KilledMonsterCredit(me->GetEntry(), 0);
+                TO_PLAYER(caster)->Say(SAY_OFFER, LANG_UNIVERSAL);
                 sayStep = 0;
                 break;
             }
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_jungle_punch_targetAI(creature);
     }
@@ -627,13 +627,13 @@ class npc_adventurous_dwarf : public CreatureScript
 public:
     npc_adventurous_dwarf() : CreatureScript("npc_adventurous_dwarf") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         DoScriptText(SAY_DWARF_OUCH, creature);
-        return NULL;
+        return nullptr;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (player->GetQuestStatus(QUEST_12634) != QUEST_STATUS_INCOMPLETE)
             return false;
@@ -651,7 +651,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         uint32 spellId = 0;
@@ -701,18 +701,18 @@ public:
         {
             PreventHitDefaultEffect(effIndex);
 
-            if (Unit* caster = GetCaster())
+            if (UnitPtr caster = GetCaster())
             {
-                if (Creature* presence = caster->FindNearestCreature(NPC_PRESENCE, 50.0f))
+                if (CreaturePtr presence = caster->FindNearestCreature(NPC_PRESENCE, 50.0f))
                 {
                     presence->AI()->Talk(WHISPER_ACTIVATE, caster->GetGUID());
                     presence->CastSpell(presence, SPELL_FREYA_DUMMY, true); // will target plants
                     // Freya Dummy could be scripted with the following code
 
                     // Revive plants
-                    std::list<Creature*> servants;
+                    std::list<CreaturePtr> servants;
                     GetCaster()->GetCreatureListWithEntryInGrid(servants, NPC_SERVANT, 200.0f);
-                    for (std::list<Creature*>::iterator itr = servants.begin(); itr != servants.end(); ++itr)
+                    for (std::list<CreaturePtr>::iterator itr = servants.begin(); itr != servants.end(); ++itr)
                     {
                         // Couldn't find a spell that does this
                         if ((*itr)->isDead())
@@ -722,14 +722,14 @@ public:
                         (*itr)->CastSpell(*itr, SPELL_LASHER_EMERGE, false);
                         (*itr)->CastSpell(*itr, SPELL_WILD_GROWTH, false);
 
-                        if (Unit* target = (*itr)->SelectNearestTarget(150.0f))
+                        if (UnitPtr target = (*itr)->SelectNearestTarget(150.0f))
                             (*itr)->AI()->AttackStart(target);
                     }
 
                     // Kill nearby enemies
-                    std::list<Creature*> saboteurs;
+                    std::list<CreaturePtr> saboteurs;
                     caster->GetCreatureListWithEntryInGrid(saboteurs, NPC_SABOTEUR, 200.0f);
-                    for (std::list<Creature*>::iterator itr = saboteurs.begin(); itr != saboteurs.end(); ++itr)
+                    for (std::list<CreaturePtr>::iterator itr = saboteurs.begin(); itr != saboteurs.end(); ++itr)
                         if ((*itr)->isAlive())
                             // Lifeforce has a cast duration, it should be cast at all saboteurs one by one
                             presence->CastSpell((*itr), SPELL_LIFEFORCE, false);
@@ -787,7 +787,7 @@ public:
 
         SpellCastResult CheckCast()
         {
-            if (Unit* target = GetExplTargetUnit())
+            if (UnitPtr target = GetExplTargetUnit())
                 if (target->GetEntry() == NPC_LUCKY_WILHELM)
                     return SPELL_CAST_OK;
 
@@ -807,10 +807,10 @@ public:
             else
                 ev = EVENT_MISS_BIRD;
 
-            Unit* shooter = GetCaster();
-            Creature* wilhelm = GetHitUnit()->ToCreature();
-            Creature* apple = shooter->FindNearestCreature(NPC_APPLE, 30);
-            Creature* drostan = shooter->FindNearestCreature(NPC_DROSTAN, 30);
+            UnitPtr shooter = GetCaster();
+            CreaturePtr wilhelm = TO_CREATURE(GetHitUnit());
+            CreaturePtr apple = shooter->FindNearestCreature(NPC_APPLE, 30);
+            CreaturePtr drostan = shooter->FindNearestCreature(NPC_DROSTAN, 30);
 
             if (!wilhelm || !apple || !drostan)
                 return;
@@ -819,8 +819,8 @@ public:
             {
                 case EVENT_MISS_BIRD:
                 {
-                    Creature* crunchy = shooter->FindNearestCreature(NPC_CRUNCHY, 30);
-                    Creature* bird = shooter->FindNearestCreature(NPC_THICKBIRD, 30);
+                    CreaturePtr crunchy = shooter->FindNearestCreature(NPC_CRUNCHY, 30);
+                    CreaturePtr bird = shooter->FindNearestCreature(NPC_THICKBIRD, 30);
 
                     if (!bird || !crunchy)
                         ; // fall to EVENT_MISS
@@ -851,7 +851,7 @@ public:
                     shooter->CastSpell(apple, SPELL_HIT_APPLE);
                     apple->CastSpell(apple, SPELL_APPLE_FALL);
                     wilhelm->AI()->Talk(SAY_WILHELM_HIT);
-                    if (Player* player = shooter->ToPlayer())
+                    if (PlayerPtr player = TO_PLAYER(shooter))
                         player->KilledMonsterCredit(NPC_APPLE, 0);
                     apple->DespawnOrUnsummon();
 

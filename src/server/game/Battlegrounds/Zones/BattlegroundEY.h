@@ -339,7 +339,7 @@ class BattlegroundEY : public Battleground
         ~BattlegroundEY();
 
         /* inherited from BattlegroundClass */
-        virtual void AddPlayer(Player* player);
+        virtual void AddPlayer(PlayerPtr player);
         virtual void StartingEventCloseDoors();
         virtual void StartingEventOpenDoors();
 
@@ -351,32 +351,32 @@ class BattlegroundEY : public Battleground
         void RespawnFlag(bool send_message);
         void RespawnFlagAfterDrop();
 
-        void RemovePlayer(Player* player, uint64 guid, uint32 team);
+        void RemovePlayer(PlayerPtr player, uint64 guid, uint32 team);
         void HandleBuffUse(uint64 buff_guid);
-        void HandleAreaTrigger(Player* Source, uint32 Trigger);
-        void HandleKillPlayer(Player* player, Player* killer);
-        virtual WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
+        void HandleAreaTrigger(PlayerPtr Source, uint32 Trigger);
+        void HandleKillPlayer(PlayerPtr player, PlayerPtr killer);
+        virtual WorldSafeLocsEntry const* GetClosestGraveYard(PlayerPtr player);
         virtual bool SetupBattleground();
         virtual void Reset();
         void UpdateTeamScore(uint32 Team);
         void EndBattleground(uint32 winner);
-        void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
+        void UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor = true);
         virtual void FillInitialWorldStates(WorldPacket& data);
         void SetDroppedFlagGUID(uint64 guid)       { m_DroppedFlagGUID = guid;}
         uint64 GetDroppedFlagGUID() const          { return m_DroppedFlagGUID;}
 
         /* Battleground Events */
-        virtual void EventPlayerClickedOnFlag(Player* Source, GameObject* target_obj);
-        virtual void EventPlayerDroppedFlag(Player* Source);
+        virtual void EventPlayerClickedOnFlag(PlayerPtr Source, GameObjectPtr target_obj);
+        virtual void EventPlayerDroppedFlag(PlayerPtr Source);
 
         /* achievement req. */
         bool IsAllNodesConrolledByTeam(uint32 team) const;
     private:
         virtual void PostUpdateImpl(uint32 diff);
 
-        void EventPlayerCapturedFlag(Player* Source, uint32 BgObjectType);
-        void EventTeamCapturedPoint(Player* Source, uint32 Point);
-        void EventTeamLostPoint(Player* Source, uint32 Point);
+        void EventPlayerCapturedFlag(PlayerPtr Source, uint32 BgObjectType);
+        void EventTeamCapturedPoint(PlayerPtr Source, uint32 Point);
+        void EventTeamLostPoint(PlayerPtr Source, uint32 Point);
         void UpdatePointsCount(uint32 Team);
         void UpdatePointsIcons(uint32 Team, uint32 Point);
 

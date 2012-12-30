@@ -66,14 +66,14 @@ class boss_moroes : public CreatureScript
 public:
     boss_moroes() : CreatureScript("boss_moroes") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_moroesAI (creature);
     }
 
     struct boss_moroesAI : public ScriptedAI
     {
-        boss_moroesAI(Creature* creature) : ScriptedAI(creature)
+        boss_moroesAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             memset(AddId, 0, sizeof(AddId));
             memset(AddGUID, 0, sizeof(AddGUID));
@@ -120,7 +120,7 @@ public:
             DoZoneInCombat();
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             StartEvent();
 
@@ -129,12 +129,12 @@ public:
             DoZoneInCombat();
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2, SAY_KILL_3), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -153,7 +153,7 @@ public:
             DeSpawnAdds();
             if (isAddlistEmpty())
             {
-                Creature* creature = NULL;
+                CreaturePtr creature = nullptr;
                 std::vector<uint32> AddList;
 
                 for (uint8 i = 0; i < 6; ++i)
@@ -179,7 +179,7 @@ public:
             {
                 for (uint8 i = 0; i < 4; ++i)
                 {
-                    Creature* creature = me->SummonCreature(AddId[i], Locations[i][0], Locations[i][1], POS_Z, Locations[i][2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+                    CreaturePtr creature = me->SummonCreature(AddId[i], Locations[i][0], Locations[i][1], POS_Z, Locations[i][2], TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
                     if (creature)
                     {
                         AddGUID[i] = creature->GetGUID();
@@ -201,10 +201,10 @@ public:
         {
             for (uint8 i = 0; i < 4; ++i)
             {
-                Creature* Temp = NULL;
+                CreaturePtr Temp = nullptr;
                 if (AddGUID[i])
                 {
-                    Creature* temp = Creature::GetCreature((*me), AddGUID[i]);
+                    CreaturePtr temp = Creature::GetCreature(TO_WORLDOBJECT(me), AddGUID[i]);
                     if (temp && temp->isAlive())
                         temp->DisappearAndDie();
                 }
@@ -217,7 +217,7 @@ public:
             {
                 if (AddGUID[i])
                 {
-                    Creature* temp = Creature::GetCreature((*me), AddGUID[i]);
+                    CreaturePtr temp = Creature::GetCreature(TO_WORLDOBJECT(me), AddGUID[i]);
                     if (temp && temp->isAlive())
                     {
                         temp->AI()->AttackStart(me->getVictim());
@@ -252,7 +252,7 @@ public:
                 {
                     if (AddGUID[i])
                     {
-                        Creature* temp = Unit::GetCreature((*me), AddGUID[i]);
+                        CreaturePtr temp = Unit::GetCreature(TO_WORLDOBJECT(me), AddGUID[i]);
                         if (temp && temp->isAlive())
                             if (!temp->getVictim())
                                 temp->AI()->AttackStart(me->getVictim());
@@ -281,9 +281,9 @@ public:
 
                 if (Blind_Timer <= diff)
                 {
-                    std::list<Unit*> targets;
+                    std::list<UnitPtr> targets;
                     SelectTargetList(targets, 5, SELECT_TARGET_RANDOM, me->GetMeleeReach()*5, true);
-                    for (std::list<Unit*>::const_iterator i = targets.begin(); i != targets.end(); ++i)
+                    for (std::list<UnitPtr>::const_iterator i = targets.begin(); i != targets.end(); ++i)
                         if (!me->IsWithinMeleeRange(*i))
                         {
                             DoCast(*i, SPELL_BLIND);
@@ -300,7 +300,7 @@ public:
                 {
                     DoScriptText(RAND(SAY_SPECIAL_1, SAY_SPECIAL_2), me);
 
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                         target->CastSpell(target, SPELL_GARROTE, true);
 
                     InVanish = false;
@@ -321,7 +321,7 @@ struct boss_moroes_guestAI : public ScriptedAI
 
     uint64 GuestGUID[4];
 
-    boss_moroes_guestAI(Creature* creature) : ScriptedAI(creature)
+    boss_moroes_guestAI(CreaturePtr creature) : ScriptedAI(creature)
     {
         for (uint8 i = 0; i < 4; ++i)
             GuestGUID[i] = 0;
@@ -340,18 +340,18 @@ struct boss_moroes_guestAI : public ScriptedAI
         if (!instance)
             return;
 
-        if (Creature* Moroes = Unit::GetCreature(*me, instance->GetData64(DATA_MOROES)))
+        if (CreaturePtr Moroes = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_MOROES)))
             for (uint8 i = 0; i < 4; ++i)
                 if (uint64 GUID = CAST_AI(boss_moroes::boss_moroesAI, Moroes->AI())->AddGUID[i])
                     GuestGUID[i] = GUID;
     }
 
-    Unit* SelectGuestTarget()
+    UnitPtr SelectGuestTarget()
     {
         uint64 TempGUID = GuestGUID[rand()%4];
         if (TempGUID)
         {
-            Unit* unit = Unit::GetUnit(*me, TempGUID);
+            UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), TempGUID);
             if (unit && unit->isAlive())
                 return unit;
         }
@@ -401,7 +401,7 @@ class boss_baroness_dorothea_millstipe : public CreatureScript
 public:
     boss_baroness_dorothea_millstipe() : CreatureScript("boss_baroness_dorothea_millstipe") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_baroness_dorothea_millstipeAI (creature);
     }
@@ -409,7 +409,7 @@ public:
     struct boss_baroness_dorothea_millstipeAI : public boss_moroes_guestAI
     {
         //Shadow Priest
-        boss_baroness_dorothea_millstipeAI(Creature* creature) : boss_moroes_guestAI(creature) {}
+        boss_baroness_dorothea_millstipeAI(CreaturePtr creature) : boss_moroes_guestAI(creature) {}
 
         uint32 ManaBurn_Timer;
         uint32 MindFlay_Timer;
@@ -441,7 +441,7 @@ public:
 
             if (ManaBurn_Timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     if (target->getPowerType() == POWER_MANA)
                         DoCast(target, SPELL_MANABURN);
                 ManaBurn_Timer = 5000;                          // 3 sec cast
@@ -449,7 +449,7 @@ public:
 
             if (ShadowWordPain_Timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                 {
                     DoCast(target, SPELL_SWPAIN);
                     ShadowWordPain_Timer = 7000;
@@ -465,7 +465,7 @@ class boss_baron_rafe_dreuger : public CreatureScript
 public:
     boss_baron_rafe_dreuger() : CreatureScript("boss_baron_rafe_dreuger") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_baron_rafe_dreugerAI (creature);
     }
@@ -473,7 +473,7 @@ public:
     struct boss_baron_rafe_dreugerAI : public boss_moroes_guestAI
     {
         //Retr Pally
-        boss_baron_rafe_dreugerAI(Creature* creature) : boss_moroes_guestAI(creature){}
+        boss_baron_rafe_dreugerAI(CreaturePtr creature) : boss_moroes_guestAI(creature){}
 
         uint32 HammerOfJustice_Timer;
         uint32 SealOfCommand_Timer;
@@ -523,7 +523,7 @@ class boss_lady_catriona_von_indi : public CreatureScript
 public:
     boss_lady_catriona_von_indi() : CreatureScript("boss_lady_catriona_von_indi") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_lady_catriona_von_indiAI (creature);
     }
@@ -531,7 +531,7 @@ public:
     struct boss_lady_catriona_von_indiAI : public boss_moroes_guestAI
     {
         //Holy Priest
-        boss_lady_catriona_von_indiAI(Creature* creature) : boss_moroes_guestAI(creature) {}
+        boss_lady_catriona_von_indiAI(CreaturePtr creature) : boss_moroes_guestAI(creature) {}
 
         uint32 DispelMagic_Timer;
         uint32 GreaterHeal_Timer;
@@ -565,7 +565,7 @@ public:
 
             if (GreaterHeal_Timer <= diff)
             {
-                Unit* target = SelectGuestTarget();
+                UnitPtr target = SelectGuestTarget();
 
                 DoCast(target, SPELL_GREATERHEAL);
                 GreaterHeal_Timer = 17000;
@@ -579,7 +579,7 @@ public:
 
             if (DispelMagic_Timer <= diff)
             {
-                if (Unit* target = RAND(SelectGuestTarget(), SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true)))
+                if (UnitPtr target = RAND(SelectGuestTarget(), SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true)))
                     DoCast(target, SPELL_DISPELMAGIC);
 
                 DispelMagic_Timer = 25000;
@@ -594,7 +594,7 @@ class boss_lady_keira_berrybuck : public CreatureScript
 public:
     boss_lady_keira_berrybuck() : CreatureScript("boss_lady_keira_berrybuck") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_lady_keira_berrybuckAI (creature);
     }
@@ -602,7 +602,7 @@ public:
     struct boss_lady_keira_berrybuckAI : public boss_moroes_guestAI
     {
         //Holy Pally
-        boss_lady_keira_berrybuckAI(Creature* creature) : boss_moroes_guestAI(creature)  {}
+        boss_lady_keira_berrybuckAI(CreaturePtr creature) : boss_moroes_guestAI(creature)  {}
 
         uint32 Cleanse_Timer;
         uint32 GreaterBless_Timer;
@@ -636,7 +636,7 @@ public:
 
             if (HolyLight_Timer <= diff)
             {
-                Unit* target = SelectGuestTarget();
+                UnitPtr target = SelectGuestTarget();
 
                 DoCast(target, SPELL_HOLYLIGHT);
                 HolyLight_Timer = 10000;
@@ -644,7 +644,7 @@ public:
 
             if (GreaterBless_Timer <= diff)
             {
-                Unit* target = SelectGuestTarget();
+                UnitPtr target = SelectGuestTarget();
 
                 DoCast(target, SPELL_GREATERBLESSOFMIGHT);
 
@@ -653,7 +653,7 @@ public:
 
             if (Cleanse_Timer <= diff)
             {
-                Unit* target = SelectGuestTarget();
+                UnitPtr target = SelectGuestTarget();
 
                 DoCast(target, SPELL_CLEANSE);
 
@@ -669,7 +669,7 @@ class boss_lord_robin_daris : public CreatureScript
 public:
     boss_lord_robin_daris() : CreatureScript("boss_lord_robin_daris") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_lord_robin_darisAI (creature);
     }
@@ -677,7 +677,7 @@ public:
     struct boss_lord_robin_darisAI : public boss_moroes_guestAI
     {
         //Arms Warr
-        boss_lord_robin_darisAI(Creature* creature) : boss_moroes_guestAI(creature) {}
+        boss_lord_robin_darisAI(CreaturePtr creature) : boss_moroes_guestAI(creature) {}
 
         uint32 Hamstring_Timer;
         uint32 MortalStrike_Timer;
@@ -726,7 +726,7 @@ class boss_lord_crispin_ference : public CreatureScript
 public:
     boss_lord_crispin_ference() : CreatureScript("boss_lord_crispin_ference") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_lord_crispin_ferenceAI (creature);
     }
@@ -734,7 +734,7 @@ public:
     struct boss_lord_crispin_ferenceAI : public boss_moroes_guestAI
     {
         //Arms Warr
-        boss_lord_crispin_ferenceAI(Creature* creature) : boss_moroes_guestAI(creature) {}
+        boss_lord_crispin_ferenceAI(CreaturePtr creature) : boss_moroes_guestAI(creature) {}
 
         uint32 Disarm_Timer;
         uint32 HeroicStrike_Timer;

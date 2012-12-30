@@ -185,7 +185,7 @@ void Channel::Join(uint64 p, const char *pass)
         return;
     }
 
-    Player* player = ObjectAccessor::FindPlayer(p);
+    PlayerPtr player = ObjectAccessor::FindPlayer(p);
 
     if (player)
     {
@@ -247,7 +247,7 @@ void Channel::Leave(uint64 p, bool send)
     }
     else
     {
-        Player* player = ObjectAccessor::FindPlayer(p);
+        PlayerPtr player = ObjectAccessor::FindPlayer(p);
 
         if (send)
         {
@@ -290,7 +290,7 @@ void Channel::Leave(uint64 p, bool send)
 void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
 {
     AccountTypes sec = SEC_PLAYER;
-    Player* gplr = ObjectAccessor::FindPlayer(good);
+    PlayerPtr gplr = ObjectAccessor::FindPlayer(good);
     if (gplr)
         sec = gplr->GetSession()->GetSecurity();
 
@@ -308,8 +308,8 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
     }
     else
     {
-        Player* bad = sObjectAccessor->FindPlayerByName(badname);
-        if (bad == NULL || !IsOn(bad->GetGUID()))
+        PlayerPtr bad = sObjectAccessor->FindPlayerByName(badname);
+        if (bad == nullptr || !IsOn(bad->GetGUID()))
         {
             WorldPacket data;
             MakePlayerNotFound(&data, badname);
@@ -358,7 +358,7 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
 void Channel::UnBan(uint64 good, const char *badname)
 {
     uint32 sec = 0;
-    Player* gplr = ObjectAccessor::FindPlayer(good);
+    PlayerPtr gplr = ObjectAccessor::FindPlayer(good);
     if (gplr)
         sec = gplr->GetSession()->GetSecurity();
 
@@ -376,8 +376,8 @@ void Channel::UnBan(uint64 good, const char *badname)
     }
     else
     {
-        Player* bad = sObjectAccessor->FindPlayerByName(badname);
-        if (bad == NULL || !IsBanned(bad->GetGUID()))
+        PlayerPtr bad = sObjectAccessor->FindPlayerByName(badname);
+        if (bad == nullptr || !IsBanned(bad->GetGUID()))
         {
             WorldPacket data;
             MakePlayerNotFound(&data, badname);
@@ -399,7 +399,7 @@ void Channel::UnBan(uint64 good, const char *badname)
 void Channel::Password(uint64 p, const char *pass)
 {
     uint32 sec = 0;
-    Player* player = ObjectAccessor::FindPlayer(p);
+    PlayerPtr player = ObjectAccessor::FindPlayer(p);
     if (player)
         sec = player->GetSession()->GetSecurity();
 
@@ -437,7 +437,7 @@ void Channel::Password(uint64 p, const char *pass)
 
 void Channel::SetMode(uint64 p, const char *p2n, bool mod, bool set)
 {
-    Player* player = ObjectAccessor::FindPlayer(p);
+    PlayerPtr player = ObjectAccessor::FindPlayer(p);
     if (!player)
         return;
 
@@ -457,7 +457,7 @@ void Channel::SetMode(uint64 p, const char *p2n, bool mod, bool set)
     }
     else
     {
-        Player* newp = sObjectAccessor->FindPlayerByName(p2n);
+        PlayerPtr newp = sObjectAccessor->FindPlayerByName(p2n);
         if (!newp)
         {
             WorldPacket data;
@@ -505,7 +505,7 @@ void Channel::SetMode(uint64 p, const char *p2n, bool mod, bool set)
 
 void Channel::SetOwner(uint64 p, const char *newname)
 {
-    Player* player = ObjectAccessor::FindPlayer(p);
+    PlayerPtr player = ObjectAccessor::FindPlayer(p);
     if (!player)
         return;
 
@@ -527,8 +527,8 @@ void Channel::SetOwner(uint64 p, const char *newname)
         return;
     }
 
-    Player* newp = sObjectAccessor->FindPlayerByName(newname);
-    if (newp == NULL || !IsOn(newp->GetGUID()))
+    PlayerPtr newp = sObjectAccessor->FindPlayerByName(newname);
+    if (newp == nullptr || !IsOn(newp->GetGUID()))
     {
         WorldPacket data;
         MakePlayerNotFound(&data, newname);
@@ -564,7 +564,7 @@ void Channel::SendWhoOwner(uint64 p)
     }
 }
 
-void Channel::List(Player* player)
+void Channel::List(PlayerPtr player)
 {
     uint64 p = player->GetGUID();
 
@@ -589,7 +589,7 @@ void Channel::List(Player* player)
         uint32 count  = 0;
         for (PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
         {
-            Player* member = ObjectAccessor::FindPlayer(i->first);
+            PlayerPtr member = ObjectAccessor::FindPlayer(i->first);
 
             // PLAYER can't see MODERATOR, GAME MASTER, ADMINISTRATOR characters
             // MODERATOR, GAME MASTER, ADMINISTRATOR can see all
@@ -611,7 +611,7 @@ void Channel::List(Player* player)
 void Channel::Announce(uint64 p)
 {
     uint32 sec = 0;
-    Player* player = ObjectAccessor::FindPlayer(p);
+    PlayerPtr player = ObjectAccessor::FindPlayer(p);
     if (player)
         sec = player->GetSession()->GetSecurity();
 
@@ -649,7 +649,7 @@ void Channel::Say(uint64 p, const char *what, uint32 lang)
     if (sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
         lang = LANG_UNIVERSAL;
 
-    Player* player = ObjectAccessor::FindPlayer(p);
+    PlayerPtr player = ObjectAccessor::FindPlayer(p);
 
     if (!IsOn(p))
     {
@@ -692,7 +692,7 @@ void Channel::Invite(uint64 p, const char *newname)
         return;
     }
 
-    Player* newp = sObjectAccessor->FindPlayerByName(newname);
+    PlayerPtr newp = sObjectAccessor->FindPlayerByName(newname);
     if (!newp || !newp->isGMVisible())
     {
         WorldPacket data;
@@ -709,7 +709,7 @@ void Channel::Invite(uint64 p, const char *newname)
         return;
     }
 
-    Player* player = ObjectAccessor::FindPlayer(p);
+    PlayerPtr player = ObjectAccessor::FindPlayer(p);
     if (!player)
         return;
 
@@ -775,7 +775,7 @@ void Channel::SendToAll(WorldPacket* data, uint64 p)
 {
     for (PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
     {
-        Player* player = ObjectAccessor::FindPlayer(i->first);
+        PlayerPtr player = ObjectAccessor::FindPlayer(i->first);
         if (player)
         {
             if (!p || !player->GetSocial()->HasIgnore(GUID_LOPART(p)))
@@ -790,7 +790,7 @@ void Channel::SendToAllButOne(WorldPacket* data, uint64 who)
     {
         if (i->first != who)
         {
-            Player* player = ObjectAccessor::FindPlayer(i->first);
+            PlayerPtr player = ObjectAccessor::FindPlayer(i->first);
             if (player)
                 player->GetSession()->SendPacket(data);
         }
@@ -799,7 +799,7 @@ void Channel::SendToAllButOne(WorldPacket* data, uint64 who)
 
 void Channel::SendToOne(WorldPacket* data, uint64 who)
 {
-    Player* player = ObjectAccessor::FindPlayer(who);
+    PlayerPtr player = ObjectAccessor::FindPlayer(who);
     if (player)
         player->GetSession()->SendPacket(data);
 }

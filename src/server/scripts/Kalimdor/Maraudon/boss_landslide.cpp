@@ -38,14 +38,14 @@ class boss_landslide : public CreatureScript
 public:
     boss_landslide() : CreatureScript("boss_landslide") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_landslideAI (creature);
     }
 
     struct boss_landslideAI : public ScriptedAI
     {
-        boss_landslideAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_landslideAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 KnockAwayTimer;
         uint32 TrampleTimer;
@@ -58,7 +58,7 @@ public:
             LandslideTimer = 0;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 

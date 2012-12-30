@@ -62,14 +62,14 @@ class boss_drakos : public CreatureScript
 public:
     boss_drakos() : CreatureScript("boss_drakos") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_drakosAI (creature);
     }
 
     struct boss_drakosAI : public BossAI
     {
-        boss_drakosAI(Creature* creature) : BossAI(creature, DATA_DRAKOS_EVENT) {}
+        boss_drakosAI(CreaturePtr creature) : BossAI(creature, DATA_DRAKOS_EVENT) {}
 
         void Reset()
         {
@@ -82,7 +82,7 @@ public:
             postPull = false;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
             DoScriptText(SAY_AGGRO, me);
@@ -132,7 +132,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             _JustDied();
 
@@ -142,7 +142,7 @@ public:
             instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMED_START_EVENT);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2, SAY_KILL_3), me);
         }
@@ -156,14 +156,14 @@ class npc_unstable_sphere : public CreatureScript
 public:
     npc_unstable_sphere() : CreatureScript("npc_unstable_sphere") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_unstable_sphereAI (creature);
     }
 
     struct npc_unstable_sphereAI : public ScriptedAI
     {
-        npc_unstable_sphereAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_unstable_sphereAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         void Reset()
         {

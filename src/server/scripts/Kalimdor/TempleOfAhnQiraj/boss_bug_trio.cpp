@@ -43,14 +43,14 @@ class boss_kri : public CreatureScript
 public:
     boss_kri() : CreatureScript("boss_kri") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_kriAI (creature);
     }
 
     struct boss_kriAI : public ScriptedAI
     {
-        boss_kriAI(Creature* creature) : ScriptedAI(creature)
+        boss_kriAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -74,11 +74,11 @@ public:
             Death = false;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
             {
@@ -140,14 +140,14 @@ class boss_vem : public CreatureScript
 public:
     boss_vem() : CreatureScript("boss_vem") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_vemAI (creature);
     }
 
     struct boss_vemAI : public ScriptedAI
     {
-        boss_vemAI(Creature* creature) : ScriptedAI(creature)
+        boss_vemAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -169,7 +169,7 @@ public:
             Enraged = false;
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
             {
@@ -181,7 +181,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
@@ -194,7 +194,7 @@ public:
             //Charge_Timer
             if (Charge_Timer <= diff)
             {
-                Unit* target = NULL;
+                UnitPtr target = nullptr;
                 target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (target)
                 {
@@ -233,14 +233,14 @@ class boss_yauj : public CreatureScript
 public:
     boss_yauj() : CreatureScript("boss_yauj") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_yaujAI (creature);
     }
 
     struct boss_yaujAI : public ScriptedAI
     {
-        boss_yaujAI(Creature* creature) : ScriptedAI(creature)
+        boss_yaujAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -262,7 +262,7 @@ public:
             VemDead = false;
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
             {
@@ -274,14 +274,14 @@ public:
 
             for (uint8 i = 0; i < 10; ++i)
             {
-                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
-                Creature* Summoned = me->SummonCreature(15621, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 90000);
+                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                CreaturePtr Summoned = me->SummonCreature(15621, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 90000);
                 if (Summoned && target)
                     Summoned->AI()->AttackStart(target);
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
@@ -304,8 +304,8 @@ public:
             {
                 if (instance)
                 {
-                    Unit* pKri = Unit::GetUnit(*me, instance->GetData64(DATA_KRI));
-                    Unit* pVem = Unit::GetUnit(*me, instance->GetData64(DATA_VEM));
+                    UnitPtr pKri = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_KRI));
+                    UnitPtr pVem = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_VEM));
 
                     switch (urand(0, 2))
                     {

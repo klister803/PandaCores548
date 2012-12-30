@@ -52,7 +52,7 @@ void OPvPCapturePointZM_Beacon::UpdateTowerState()
     m_PvP->SendUpdateWorldState(uint32(ZMBeaconInfo[m_TowerType].map_tower_h), uint32(bool(m_TowerState & ZM_TOWERSTATE_H)));
 }
 
-bool OPvPCapturePointZM_Beacon::HandlePlayerEnter(Player* player)
+bool OPvPCapturePointZM_Beacon::HandlePlayerEnter(PlayerPtr player)
 {
     if (OPvPCapturePoint::HandlePlayerEnter(player))
     {
@@ -65,7 +65,7 @@ bool OPvPCapturePointZM_Beacon::HandlePlayerEnter(Player* player)
     return false;
 }
 
-void OPvPCapturePointZM_Beacon::HandlePlayerLeave(Player* player)
+void OPvPCapturePointZM_Beacon::HandlePlayerLeave(PlayerPtr player)
 {
     player->SendUpdateWorldState(ZMBeaconInfo[m_TowerType].slider_disp, 0);
     OPvPCapturePoint::HandlePlayerLeave(player);
@@ -145,7 +145,7 @@ bool OutdoorPvPZM::Update(uint32 diff)
     return changed;
 }
 
-void OutdoorPvPZM::HandlePlayerEnterZone(Player* player, uint32 zone)
+void OutdoorPvPZM::HandlePlayerEnterZone(PlayerPtr player, uint32 zone)
 {
     if (player->GetTeam() == ALLIANCE)
     {
@@ -160,7 +160,7 @@ void OutdoorPvPZM::HandlePlayerEnterZone(Player* player, uint32 zone)
     OutdoorPvP::HandlePlayerEnterZone(player, zone);
 }
 
-void OutdoorPvPZM::HandlePlayerLeaveZone(Player* player, uint32 zone)
+void OutdoorPvPZM::HandlePlayerLeaveZone(PlayerPtr player, uint32 zone)
 {
     // remove buffs
     player->RemoveAurasDueToSpell(ZM_CAPTURE_BUFF);
@@ -173,7 +173,7 @@ void OutdoorPvPZM::HandlePlayerLeaveZone(Player* player, uint32 zone)
 OutdoorPvPZM::OutdoorPvPZM()
 {
     m_TypeId = OUTDOOR_PVP_ZM;
-    m_GraveYard = NULL;
+    m_GraveYard = nullptr;
     m_AllianceTowersControlled = 0;
     m_HordeTowersControlled = 0;
 }
@@ -195,14 +195,14 @@ bool OutdoorPvPZM::SetupOutdoorPvP()
     return true;
 }
 
-void OutdoorPvPZM::HandleKillImpl(Player* player, Unit* killed)
+void OutdoorPvPZM::HandleKillImpl(PlayerPtr player, UnitPtr killed)
 {
     if (killed->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if (player->GetTeam() == ALLIANCE && killed->ToPlayer()->GetTeam() != ALLIANCE)
+    if (player->GetTeam() == ALLIANCE && TO_PLAYER(killed)->GetTeam() != ALLIANCE)
         player->CastSpell(player, ZM_AlliancePlayerKillReward, true);
-    else if (player->GetTeam() == HORDE && killed->ToPlayer()->GetTeam() != HORDE)
+    else if (player->GetTeam() == HORDE && TO_PLAYER(killed)->GetTeam() != HORDE)
         player->CastSpell(player, ZM_HordePlayerKillReward, true);
 }
 
@@ -213,7 +213,7 @@ bool OPvPCapturePointZM_GraveYard::Update(uint32 /*diff*/)
     return retval;
 }
 
-int32 OPvPCapturePointZM_GraveYard::HandleOpenGo(Player* player, uint64 guid)
+int32 OPvPCapturePointZM_GraveYard::HandleOpenGo(PlayerPtr player, uint64 guid)
 {
     int32 retval = OPvPCapturePoint::HandleOpenGo(player, guid);
     if (retval >= 0)
@@ -316,7 +316,7 @@ void OPvPCapturePointZM_GraveYard::SetBeaconState(uint32 controlling_faction)
             if (m_FlagCarrierGUID)
             {
                 // remove flag from carrier, reset flag carrier guid
-                Player* p = ObjectAccessor::FindPlayer(m_FlagCarrierGUID);
+                PlayerPtr p = ObjectAccessor::FindPlayer(m_FlagCarrierGUID);
                 if (p)
                 {
                    p->RemoveAurasDueToSpell(ZM_BATTLE_STANDARD_A);
@@ -331,7 +331,7 @@ void OPvPCapturePointZM_GraveYard::SetBeaconState(uint32 controlling_faction)
     UpdateTowerState();
 }
 
-bool OPvPCapturePointZM_GraveYard::CanTalkTo(Player* player, Creature* c, GossipMenuItems const& /*gso*/)
+bool OPvPCapturePointZM_GraveYard::CanTalkTo(PlayerPtr player, CreaturePtr c, GossipMenuItems const& /*gso*/)
 {
     uint64 guid = c->GetGUID();
     std::map<uint64, uint32>::iterator itr = m_CreatureTypes.find(guid);
@@ -345,12 +345,12 @@ bool OPvPCapturePointZM_GraveYard::CanTalkTo(Player* player, Creature* c, Gossip
     return false;
 }
 
-bool OPvPCapturePointZM_GraveYard::HandleGossipOption(Player* player, uint64 guid, uint32 /*gossipid*/)
+bool OPvPCapturePointZM_GraveYard::HandleGossipOption(PlayerPtr player, uint64 guid, uint32 /*gossipid*/)
 {
     std::map<uint64, uint32>::iterator itr = m_CreatureTypes.find(guid);
     if (itr != m_CreatureTypes.end())
     {
-        Creature* cr = HashMapHolder<Creature>::Find(guid);
+        CreaturePtr cr = HashMapHolder<Creature>::Find(guid);
         if (!cr)
             return true;
         // if the flag is already taken, then return
@@ -373,7 +373,7 @@ bool OPvPCapturePointZM_GraveYard::HandleGossipOption(Player* player, uint64 gui
     return false;
 }
 
-bool OPvPCapturePointZM_GraveYard::HandleDropFlag(Player* /*player*/, uint32 spellId)
+bool OPvPCapturePointZM_GraveYard::HandleDropFlag(PlayerPtr /*Player*/, uint32 spellId)
 {
     switch (spellId)
     {
@@ -421,7 +421,7 @@ void OutdoorPvPZM::FillInitialWorldStates(WorldPacket &data)
     }
 }
 
-void OutdoorPvPZM::SendRemoveWorldStates(Player* player)
+void OutdoorPvPZM::SendRemoveWorldStates(PlayerPtr player)
 {
     player->SendUpdateWorldState(ZM_UI_TOWER_SLIDER_N_W, 0);
     player->SendUpdateWorldState(ZM_UI_TOWER_SLIDER_POS_W, 0);

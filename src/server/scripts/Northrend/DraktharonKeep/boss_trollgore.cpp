@@ -63,7 +63,7 @@ public:
 
     struct boss_trollgoreAI : public ScriptedAI
     {
-        boss_trollgoreAI(Creature* creature) : ScriptedAI(creature), lSummons(me)
+        boss_trollgoreAI(CreaturePtr creature) : ScriptedAI(creature), lSummons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -100,7 +100,7 @@ public:
                 instance->SetData(DATA_TROLLGORE_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -158,7 +158,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -176,14 +176,14 @@ public:
             return 0;
         }
 
-        void KilledUnit(Unit* victim)
+        void KilledUnit(UnitPtr victim)
         {
             if (victim == me)
                 return;
             DoScriptText(SAY_KILL, me);
         }
 
-        void JustSummoned(Creature* summon)
+        void JustSummoned(CreaturePtr summon)
         {
             lSummons.push_back(summon->GetGUID());
             if (summon->AI())
@@ -191,7 +191,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_trollgoreAI(creature);
     }
@@ -204,12 +204,12 @@ class achievement_consumption_junction : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(Player* /*player*/, Unit* target)
+        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
         {
             if (!target)
                 return false;
 
-            if (Creature* Trollgore = target->ToCreature())
+            if (CreaturePtr Trollgore = TO_CREATURE(target))
                 if (Trollgore->AI()->GetData(DATA_CONSUMPTION_JUNCTION))
                     return true;
 

@@ -20,6 +20,7 @@
 #define TRINITY_DISABLEMGR_H
 
 #include "Define.h"
+#include "../SharedPtrs/SharedPtrs.h"
 
 class Unit;
 
@@ -57,7 +58,7 @@ enum VmapDisableTypes
 namespace DisableMgr
 {
     void LoadDisables();
-    bool IsDisabledFor(DisableType type, uint32 entry, Unit const* unit, uint8 flags = 0);
+    bool IsDisabledFor(DisableType type, uint32 entry, constUnitPtr unit, uint8 flags = 0);
     void CheckQuestDisables();
 }
 

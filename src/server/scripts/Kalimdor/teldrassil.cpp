@@ -49,7 +49,7 @@ class npc_mist : public CreatureScript
 public:
     npc_mist() : CreatureScript("npc_mist") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_MIST)
             if (npc_mistAI* pMistAI = CAST_AI(npc_mist::npc_mistAI, creature->AI()))
@@ -58,18 +58,18 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_mistAI(creature);
     }
 
     struct npc_mistAI : public FollowerAI
     {
-        npc_mistAI(Creature* creature) : FollowerAI(creature) { }
+        npc_mistAI(CreaturePtr creature) : FollowerAI(creature) { }
 
         void Reset() { }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             FollowerAI::MoveInLineOfSight(who);
 
@@ -87,7 +87,7 @@ public:
         {
             DoScriptText(EMOTE_AT_HOME, me);
 
-            Player* player = GetLeaderForFollower();
+            PlayerPtr player = GetLeaderForFollower();
             if (player && player->GetQuestStatus(QUEST_MIST) == QUEST_STATUS_INCOMPLETE)
                 player->GroupEventHappens(QUEST_MIST, me);
 

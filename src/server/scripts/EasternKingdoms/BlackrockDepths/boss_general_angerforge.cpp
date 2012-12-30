@@ -31,14 +31,14 @@ class boss_general_angerforge : public CreatureScript
 public:
     boss_general_angerforge() : CreatureScript("boss_general_angerforge") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_general_angerforgeAI (creature);
     }
 
     struct boss_general_angerforgeAI : public ScriptedAI
     {
-        boss_general_angerforgeAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_general_angerforgeAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 MightyBlow_Timer;
         uint32 HamString_Timer;
@@ -55,17 +55,17 @@ public:
             Medics = false;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void SummonAdds(Unit* victim)
+        void SummonAdds(UnitPtr victim)
         {
-            if (Creature* SummonedAdd = DoSpawnCreature(8901, float(irand(-14, 14)), float(irand(-14, 14)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120000))
+            if (CreaturePtr SummonedAdd = DoSpawnCreature(8901, float(irand(-14, 14)), float(irand(-14, 14)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120000))
                 SummonedAdd->AI()->AttackStart(victim);
         }
 
-        void SummonMedics(Unit* victim)
+        void SummonMedics(UnitPtr victim)
         {
-            if (Creature* SummonedMedic = DoSpawnCreature(8894, float(irand(-9, 9)), float(irand(-9, 9)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120000))
+            if (CreaturePtr SummonedMedic = DoSpawnCreature(8894, float(irand(-9, 9)), float(irand(-9, 9)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 120000))
                 SummonedMedic->AI()->AttackStart(victim);
         }
 

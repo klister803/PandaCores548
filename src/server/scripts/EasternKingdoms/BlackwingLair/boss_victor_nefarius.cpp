@@ -85,7 +85,7 @@ class boss_victor_nefarius : public CreatureScript
 public:
     boss_victor_nefarius() : CreatureScript("boss_victor_nefarius") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -107,21 +107,21 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
         player->SEND_GOSSIP_MENU(7134, creature->GetGUID());
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_victor_nefariusAI (creature);
     }
 
     struct boss_victor_nefariusAI : public ScriptedAI
     {
-        boss_victor_nefariusAI(Creature* creature) : ScriptedAI(creature)
+        boss_victor_nefariusAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             NefarianGUID = 0;
             switch (urand(0, 19))
@@ -235,13 +235,13 @@ public:
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
 
-        void BeginEvent(Player* target)
+        void BeginEvent(PlayerPtr target)
         {
             DoScriptText(SAY_GAMESBEGIN_2, me);
 
             //Trinity::Singleton<MapManager>::Instance().GetMap(me->GetMapId(), me)->GetPlayers().begin();
             /*
-            list <Player*>::const_iterator i = sMapMgr->GetMap(me->GetMapId(), me)->GetPlayers().begin();
+            list <PlayerPtr>::const_iterator i = sMapMgr->GetMap(me->GetMapId(), me)->GetPlayers().begin();
 
             for (i = sMapMgr->GetMap(me->GetMapId(), me)->GetPlayers().begin(); i != sMapMgr->GetMap(me->GetMapId(), me)->GetPlayers().end(); ++i)
             {
@@ -254,11 +254,11 @@ public:
             AttackStart(target);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             //We simply use this function to find players until we can use map->GetPlayers()
 
@@ -280,7 +280,7 @@ public:
                 //ShadowBoltTimer
                 if (ShadowBoltTimer <= diff)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                         DoCast(target, SPELL_SHADOWBOLT);
 
                     ShadowBoltTimer = urand(3000, 10000);
@@ -289,7 +289,7 @@ public:
                 //FearTimer
                 if (FearTimer <= diff)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                         DoCast(target, SPELL_FEAR);
 
                     FearTimer = 10000 + (rand()%10000);
@@ -300,8 +300,8 @@ public:
                 {
                     //Spawn 2 random types of creatures at the 2 locations
                     uint32 CreatureID;
-                    Creature* Spawned = NULL;
-                    Unit* target = NULL;
+                    CreaturePtr Spawned = nullptr;
+                    UnitPtr target = nullptr;
 
                     //1 in 3 chance it will be a chromatic
                     if (urand(0, 2) == 0)
@@ -356,7 +356,7 @@ public:
                         me->AddUnitState(UNIT_STATE_FLEEING);
 
                         //Spawn nef and have him attack a random target
-                        Creature* Nefarian = me->SummonCreature(CREATURE_NEFARIAN, NEF_X, NEF_Y, NEF_Z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
+                        CreaturePtr Nefarian = me->SummonCreature(CREATURE_NEFARIAN, NEF_X, NEF_Y, NEF_Z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 120000);
                         target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
                         if (target && Nefarian)
                         {
@@ -374,7 +374,7 @@ public:
             {
                 if (NefCheckTime <= diff)
                 {
-                    Unit* Nefarian = Unit::GetCreature((*me), NefarianGUID);
+                    UnitPtr Nefarian = Unit::GetCreature(TO_WORLDOBJECT(me), NefarianGUID);
 
                     //If nef is dead then we die to so the players get out of combat
                     //and cannot repeat the event

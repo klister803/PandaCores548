@@ -30,14 +30,14 @@ class boss_grizzle : public CreatureScript
 public:
     boss_grizzle() : CreatureScript("boss_grizzle") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_grizzleAI (creature);
     }
 
     struct boss_grizzleAI : public ScriptedAI
     {
-        boss_grizzleAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_grizzleAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 GroundTremor_Timer;
         uint32 Frenzy_Timer;
@@ -48,7 +48,7 @@ public:
             Frenzy_Timer =0;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {

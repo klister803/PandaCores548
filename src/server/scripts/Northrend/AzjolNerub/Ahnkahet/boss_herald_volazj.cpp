@@ -64,7 +64,7 @@ public:
 
     struct boss_volazjAI : public ScriptedAI
     {
-        boss_volazjAI(Creature* creature) : ScriptedAI(creature), Summons(me)
+        boss_volazjAI(CreaturePtr creature) : ScriptedAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -85,7 +85,7 @@ public:
             return 100*(me->GetHealth()-damage)/me->GetMaxHealth();
         }
 
-        void DamageTaken(Unit* /*pAttacker*/, uint32 &damage)
+        void DamageTaken(UnitPtr /*pAttacker*/, uint32 &damage)
         {
             if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
                 damage = 0;
@@ -98,7 +98,7 @@ public:
             }
         }
 
-        void SpellHitTarget(Unit* target, const SpellInfo* spell)
+        void SpellHitTarget(UnitPtr target, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_INSANITY)
             {
@@ -120,11 +120,11 @@ public:
                 Map::PlayerList const &players = me->GetMap()->GetPlayers();
                 for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
                 {
-                    Player* player = i->getSource();
+                    PlayerPtr player = i->getSource();
                     if (!player || !player->isAlive())
                         continue;
                     // Summon clone
-                    if (Unit* summon = me->SummonCreature(MOB_TWISTED_VISAGE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN, 0))
+                    if (UnitPtr summon = me->SummonCreature(MOB_TWISTED_VISAGE, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_CORPSE_DESPAWN, 0))
                     {
                         // clone
                         player->CastSpell(summon, SPELL_CLONE_PLAYER, true);
@@ -141,7 +141,7 @@ public:
             Map::PlayerList const &players = me->GetMap()->GetPlayers();
             for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
             {
-                Player* player = i->getSource();
+                PlayerPtr player = i->getSource();
                 player->RemoveAurasDueToSpell(GetSpellForPhaseMask(player->GetPhaseMask()));
             }
         }
@@ -171,7 +171,7 @@ public:
             me->SetControlled(false, UNIT_STATE_STUNNED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
            Talk(SAY_AGGRO);
 
@@ -182,7 +182,7 @@ public:
             }
         }
 
-        void JustSummoned(Creature* summon)
+        void JustSummoned(CreaturePtr summon)
         {
             Summons.Summon(summon);
         }
@@ -211,7 +211,7 @@ public:
             return spell;
         }
 
-        void SummonedCreatureDespawn(Creature* summon)
+        void SummonedCreatureDespawn(CreaturePtr summon)
         {
             uint32 phase= summon->GetPhaseMask();
             uint32 nextPhase = 0;
@@ -220,7 +220,7 @@ public:
             // Check if all summons in this phase killed
             for (SummonList::const_iterator iter = Summons.begin(); iter != Summons.end(); ++iter)
             {
-                if (Creature* visage = Unit::GetCreature(*me, *iter))
+                if (CreaturePtr visage = Unit::GetCreature(TO_WORLDOBJECT(me), *iter))
                 {
                     // Not all are dead
                     if (phase == visage->GetPhaseMask())
@@ -233,7 +233,7 @@ public:
             // Roll Insanity
             uint32 spell = GetSpellForPhaseMask(phase);
             uint32 spell2 = GetSpellForPhaseMask(nextPhase);
-            Map* map = me->GetMap();
+            MapPtr map = me->GetMap();
             if (!map)
                 return;
 
@@ -242,7 +242,7 @@ public:
             {
                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                 {
-                    if (Player* player = i->getSource())
+                    if (PlayerPtr player = i->getSource())
                     {
                         if (player->HasAura(spell))
                         {
@@ -286,7 +286,7 @@ public:
 
             if (uiShiverTimer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_SHIVER);
                 uiShiverTimer = 15*IN_MILLISECONDS;
             } else uiShiverTimer -= diff;
@@ -294,7 +294,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             Talk(SAY_DEATH);
 
@@ -305,13 +305,13 @@ public:
             ResetPlayersPhaseMask();
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             Talk(SAY_SLAY);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_volazjAI(creature);
     }

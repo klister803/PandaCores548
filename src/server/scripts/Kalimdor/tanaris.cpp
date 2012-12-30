@@ -62,18 +62,18 @@ class npc_custodian_of_time : public CreatureScript
 public:
     npc_custodian_of_time() : CreatureScript("npc_custodian_of_time") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_custodian_of_timeAI(creature);
     }
 
     struct npc_custodian_of_timeAI : public npc_escortAI
     {
-        npc_custodian_of_timeAI(Creature* creature) : npc_escortAI(creature) {}
+        npc_custodian_of_timeAI(CreaturePtr creature) : npc_escortAI(creature) {}
 
         void WaypointReached(uint32 waypointId)
         {
-            if (Player* player = GetPlayerForEscort())
+            if (PlayerPtr player = GetPlayerForEscort())
             {
                 switch (waypointId)
                 {
@@ -138,7 +138,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (HasEscortState(STATE_ESCORT_ESCORTING))
                 return;
@@ -156,7 +156,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
         void Reset() {}
 
         void UpdateAI(const uint32 diff)
@@ -178,7 +178,7 @@ class npc_steward_of_time : public CreatureScript
 public:
     npc_steward_of_time() : CreatureScript("npc_steward_of_time") { }
 
-    bool OnQuestAccept(Player* player, Creature* /*creature*/, Quest const* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr /*CreaturePtr/, Quest const* quest)
     {
         if (quest->GetQuestId() == 10279)                      //Quest: To The Master's Lair
             player->CastSpell(player, 34891, true);               //(Flight through Caverns)
@@ -186,7 +186,7 @@ public:
         return false;
     }
 
-    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr /*CreaturePtr/, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF + 1)
@@ -195,7 +195,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -238,7 +238,7 @@ class npc_OOX17 : public CreatureScript
 public:
     npc_OOX17() : CreatureScript("npc_OOX17") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
     {
         if (quest->GetQuestId() == Q_OOX17)
         {
@@ -254,18 +254,18 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_OOX17AI(creature);
     }
 
     struct npc_OOX17AI : public npc_escortAI
     {
-        npc_OOX17AI(Creature* creature) : npc_escortAI(creature) {}
+        npc_OOX17AI(CreaturePtr creature) : npc_escortAI(creature) {}
 
         void WaypointReached(uint32 waypointId)
         {
-            if (Player* player = GetPlayerForEscort())
+            if (PlayerPtr player = GetPlayerForEscort())
             {
                 switch (waypointId)
                 {
@@ -280,7 +280,7 @@ public:
                         me->SummonCreature(SPAWN_SECOND_2, -7515.07f, -4797.50f, 9.35f, 6.22f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
                         me->SummonCreature(SPAWN_SECOND_2, -7518.07f, -4792.50f, 9.35f, 6.22f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
                         DoScriptText(SAY_OOX_AMBUSH, me);
-                        if (Unit* scoff = me->FindNearestCreature(SPAWN_SECOND_2, 30))
+                        if (UnitPtr scoff = me->FindNearestCreature(SPAWN_SECOND_2, 30))
                             DoScriptText(SAY_OOX17_AMBUSH_REPLY, scoff);
                         break;
                     case 86:
@@ -293,12 +293,12 @@ public:
 
         void Reset(){}
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(RAND(SAY_OOX_AGGRO1, SAY_OOX_AGGRO2), me);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->AI()->AttackStart(me);
         }

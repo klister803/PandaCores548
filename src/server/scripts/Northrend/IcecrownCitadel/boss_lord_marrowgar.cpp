@@ -87,10 +87,10 @@ class boss_lord_marrowgar : public CreatureScript
 
         struct boss_lord_marrowgarAI : public BossAI
         {
-            boss_lord_marrowgarAI(Creature* creature) : BossAI(creature, DATA_LORD_MARROWGAR)
+            boss_lord_marrowgarAI(CreaturePtr creature) : BossAI(creature, DATA_LORD_MARROWGAR)
             {
                 _baseSpeed = creature->GetSpeedRate(MOVE_RUN);
-                _coldflameLastPos.Relocate(creature);
+                _coldflameLastPos.Relocate(creature.get());
                 _introDone = false;
                 _boneSlice = false;
             }
@@ -115,7 +115,7 @@ class boss_lord_marrowgar : public CreatureScript
                 _boneStormVictimCount = 0;
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 Talk(SAY_AGGRO);
 
@@ -124,12 +124,12 @@ class boss_lord_marrowgar : public CreatureScript
                 instance->SetBossState(DATA_LORD_MARROWGAR, IN_PROGRESS);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage)
+            void DamageTaken(UnitPtr attacker, uint32& damage)
             {
                 CheckPlayerDamage(attacker, damage);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 Talk(SAY_DEATH);
 
@@ -143,13 +143,13 @@ class boss_lord_marrowgar : public CreatureScript
                 instance->SetData(DATA_BONED_ACHIEVEMENT, uint32(true));    // reset
             }
 
-            void KilledUnit(Unit* victim)
+            void KilledUnit(UnitPtr victim)
             {
                 if (victim->GetTypeId() == TYPEID_PLAYER)
                     Talk(SAY_KILL);
             }
 
-            void MoveInLineOfSight(Unit* who)
+            void MoveInLineOfSight(UnitPtr who)
             {
                 if (!_introDone && me->IsWithinDistInMap(who, 70.0f))
                 {
@@ -183,7 +183,7 @@ class boss_lord_marrowgar : public CreatureScript
                                 for (uint8 i = 0; i < boneSpikeCount; ++i)
                                 {
                                     // select any unit but not the tank
-                                    Unit* target = SelectTarget(SELECT_TARGET_RANDOM, tankCount, 150.0f, true, -SPELL_IMPALED);
+                                    UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, tankCount, 150.0f, true, -SPELL_IMPALED);
 
                                     if (!target)
                                         return;
@@ -199,7 +199,7 @@ class boss_lord_marrowgar : public CreatureScript
                             if (!me->HasAura(SPELL_BONE_STORM))
                             {
                                 me->CastCustomSpell(SPELL_COLDFLAME_NORMAL, SPELLVALUE_MAX_TARGETS, 1, me);
-                                _coldflameLastPos.Relocate(me);
+                                _coldflameLastPos.Relocate(me.get());
                             }
                             //else
                             //    DoCast(me, SPELL_COLDFLAME_BONE_STORM);
@@ -217,7 +217,7 @@ class boss_lord_marrowgar : public CreatureScript
                         case EVENT_BONE_STORM_BEGIN:
                             {
                                 AuraPtr pStorm = me->GetAura(SPELL_BONE_STORM);
-                                if (pStorm != NULLAURA)
+                                if (pStorm != nullptr)
                                     pStorm->SetDuration(1 * HOUR * IN_MILLISECONDS);
 
                                 me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_TAUNT, true);
@@ -231,7 +231,7 @@ class boss_lord_marrowgar : public CreatureScript
                         case EVENT_BONE_STORM_MOVE:
                         {
                             me->SetSpeed(MOVE_RUN, _baseSpeed*3.0f, true);
-                            Unit* unit = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);
+                            UnitPtr unit = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true);
 
                             if (unit)
                                 me->GetMotionMaster()->MovePoint(POINT_TARGET_BONESTORM_PLAYER, unit->GetPositionX(), unit->GetPositionY(), unit->GetPositionZ());
@@ -240,9 +240,9 @@ class boss_lord_marrowgar : public CreatureScript
                         case EVENT_BONE_STORM_END:
                             if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
                                 me->GetMotionMaster()->MovementExpired();
-                            if(Unit* unit = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
+                            if(UnitPtr unit = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0.0f, true))
                             {
-                                me->getThreatManager().resetAllAggro();
+                                me->getThreatManager()->resetAllAggro();
                                 me->AddThreat(unit, 1.0f);
                                 DoStartMovement(unit);
                             }
@@ -292,7 +292,7 @@ class boss_lord_marrowgar : public CreatureScript
                 _boneStormVictimCount++;
                 DoStartNoMovement(me->getVictim());
 
-                _coldflameLastPos.Relocate(me);
+                _coldflameLastPos.Relocate(me.get());
                 DoCast(me, SPELL_COLDFLAME_BONE_STORM);
 
                 if (_boneStormVictimCount >= 5)
@@ -302,7 +302,7 @@ class boss_lord_marrowgar : public CreatureScript
 
             }
 
-            Position const* GetLastColdflamePosition() const
+            const Position* GetLastColdflamePosition() const
             {
                 return &_coldflameLastPos;
             }
@@ -315,7 +315,7 @@ class boss_lord_marrowgar : public CreatureScript
             bool _boneSlice;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetIcecrownCitadelAI<boss_lord_marrowgarAI>(creature);
         }
@@ -330,22 +330,22 @@ class npc_coldflame : public CreatureScript
 
         struct npc_coldflameAI : public ScriptedAI
         {
-            npc_coldflameAI(Creature* creature) : ScriptedAI(creature)
+            npc_coldflameAI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
 
-            void IsSummonedBy(Unit* owner)
+            void IsSummonedBy(UnitPtr owner)
             {
                 if (owner->GetTypeId() != TYPEID_UNIT)
                     return;
 
-                Creature * creOwner = owner->ToCreature();
+                CreaturePtr creOwner = TO_CREATURE(owner);
                 Position pos;
                 // random target case
                 if (!owner->HasAura(SPELL_BONE_STORM))
                 {
                     // select any unit but not the tank (by owners threatlist)
-                    Unit* target = creOwner->AI()->SelectTarget(SELECT_TARGET_RANDOM, 2, -owner->GetObjectSize(), true, -SPELL_IMPALED);
+                    UnitPtr target = creOwner->AI()->SelectTarget(SELECT_TARGET_RANDOM, 2, -owner->GetObjectSize(), true, -SPELL_IMPALED);
                     if (!target)
                     {
                         target = creOwner->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true); // or the tank if its solo
@@ -356,14 +356,14 @@ class npc_coldflame : public CreatureScript
                         return;
                     }
 
-                    me->SetOrientation(me->GetAngle(target));
+                    me->SetOrientation(me->GetAngle(target.get()));
                     me->GetNearPosition(pos, 15.0f, 0.0f);
                 }
                 else
                 {
                     if (MarrowgarAI* marrowgarAI = CAST_AI(MarrowgarAI, creOwner->AI()))
                     {
-                        Position const* ownerPos = marrowgarAI->GetLastColdflamePosition();
+                        const Position* ownerPos = marrowgarAI->GetLastColdflamePosition();
                         float ang = me->GetAngle(ownerPos) - static_cast<float>(M_PI);
                         //MapManager::NormalizeOrientation(ang);
                         me->SetOrientation(ang);
@@ -394,7 +394,7 @@ class npc_coldflame : public CreatureScript
             EventMap _events;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetIcecrownCitadelAI<npc_coldflameAI>(creature);
         }
@@ -407,27 +407,27 @@ class npc_bone_spike : public CreatureScript
 
         struct npc_bone_spikeAI : public Scripted_NoMovementAI
         {
-            npc_bone_spikeAI(Creature* creature) : Scripted_NoMovementAI(creature), _hasTrappedUnit(false)
+            npc_bone_spikeAI(CreaturePtr creature) : Scripted_NoMovementAI(creature), _hasTrappedUnit(false)
             {
                 ASSERT(creature->GetVehicleKit());
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
-                if (TempSummon* summ = me->ToTempSummon())
-                    if (Unit* trapped = summ->GetSummoner())
+                if (TempSummonPtr summ = me->ToTempSummon())
+                    if (UnitPtr trapped = summ->GetSummoner())
                         trapped->RemoveAurasDueToSpell(SPELL_IMPALED);
 
                 me->DespawnOrUnsummon();
             }
 
-            void KilledUnit(Unit* victim)
+            void KilledUnit(UnitPtr victim)
             {
                 me->DespawnOrUnsummon();
                 victim->RemoveAurasDueToSpell(SPELL_IMPALED);
             }
 
-            void IsSummonedBy(Unit* summoner)
+            void IsSummonedBy(UnitPtr summoner)
             {
                 DoCast(summoner, SPELL_IMPALED);
                 //me->GetVehicleKit()->SetPassengerCanBeCast(true);
@@ -453,7 +453,7 @@ class npc_bone_spike : public CreatureScript
             bool _hasTrappedUnit;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetIcecrownCitadelAI<npc_bone_spikeAI>(creature);
         }
@@ -471,7 +471,7 @@ class spell_marrowgar_coldflame : public SpellScriptLoader
             void HandleScriptEffect(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 caster->CastSpell(caster, GetEffectValue(), true);
             }
 
@@ -499,7 +499,7 @@ class spell_marrowgar_coldflame_bonestorm : public SpellScriptLoader
             void HandleScriptEffect(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
 
                 for (uint8 i = 0; i < 4; ++i)
                     caster->CastSpell(caster, uint32(GetEffectValue() + i), true);
@@ -528,8 +528,8 @@ class spell_marrowgar_coldflame_damage : public SpellScriptLoader
 
             void OnPeriodic(constAuraEffectPtr /*aurEff*/)
             {
-                if (DynamicObject* owner = GetDynobjOwner())
-                    if (GetTarget()->GetExactDist2d(owner) >= owner->GetRadius() || GetTarget()->HasAura(SPELL_IMPALED))
+                if (DynamicObjectPtr owner = GetDynobjOwner())
+                    if (GetTarget()->GetExactDist2d(owner.get()) >= owner->GetRadius() || GetTarget()->HasAura(SPELL_IMPALED))
                         PreventDefaultAction();
             }
 
@@ -557,7 +557,7 @@ class spell_marrowgar_bone_spike_graveyard : public SpellScriptLoader
             void HandleSpikes(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                if (Creature* marrowgar = GetCaster()->ToCreature())
+                if (CreaturePtr marrowgar = TO_CREATURE(GetCaster()))
                 {
                     CreatureAI* marrowgarAI = marrowgar->AI();
                     uint8 boneSpikeCount = GetCaster()->GetMap()->Is25ManRaid() ? 3 : 1;
@@ -565,7 +565,7 @@ class spell_marrowgar_bone_spike_graveyard : public SpellScriptLoader
                     for (uint8 i = 0; i < boneSpikeCount; ++i)
                     {
                         // select any unit but not the tank
-                        Unit* target = marrowgarAI->SelectTarget(SELECT_TARGET_RANDOM, tankCount, 150.0f, true, -SPELL_IMPALED);
+                        UnitPtr target = marrowgarAI->SelectTarget(SELECT_TARGET_RANDOM, tankCount, 150.0f, true, -SPELL_IMPALED);
 
                         if (!target)
                             return;
@@ -600,7 +600,7 @@ class spell_marrowgar_bone_storm : public SpellScriptLoader
 
             void RecalculateDamage(SpellEffIndex /*effIndex*/)
             {
-                SetHitDamage(int32(GetHitDamage() / sqrtf(logf(GetHitUnit()->GetExactDist2d(GetCaster())))));
+                SetHitDamage(int32(GetHitDamage() / sqrtf(logf(GetHitUnit()->GetExactDist2d(GetCaster().get())))));
             }
 
             void Register()

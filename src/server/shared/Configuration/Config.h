@@ -23,7 +23,7 @@
 
 namespace ConfigMgr
 {
-    bool Load(const char *file = NULL);
+    bool Load(const char *file = nullptr);
 
     std::string GetStringDefault(const char* name, const std::string& def);
     bool GetBoolDefault(const char* name, bool def);

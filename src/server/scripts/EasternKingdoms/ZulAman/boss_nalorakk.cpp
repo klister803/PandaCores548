@@ -104,7 +104,7 @@ class boss_nalorakk : public CreatureScript
 
         struct boss_nalorakkAI : public ScriptedAI
         {
-            boss_nalorakkAI(Creature* creature) : ScriptedAI(creature)
+            boss_nalorakkAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 MoveEvent = true;
                 MovePhase = 0;
@@ -158,9 +158,9 @@ class boss_nalorakk : public CreatureScript
                 // me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, 5122);  // TODO: find the correct equipment id
             }
 
-            void SendAttacker(Unit* target)
+            void SendAttacker(UnitPtr target)
             {
-                std::list<Creature*> templist;
+                std::list<CreaturePtr> templist;
                 float x, y, z;
                 me->GetPosition(x, y, z);
 
@@ -174,13 +174,13 @@ class boss_nalorakk : public CreatureScript
 
                     TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllFriendlyCreaturesInGrid>, GridTypeMapContainer> cSearcher(searcher);
 
-                    cell.Visit(pair, cSearcher, *(me->GetMap()), *me, me->GetGridActivationRange());
+                    cell.Visit(pair, cSearcher, *(me->GetMap()), TO_CONST_WORLDOBJECT(me), me->GetGridActivationRange());
                 }
 
                 if (templist.empty())
                     return;
 
-                for (std::list<Creature*>::const_iterator i = templist.begin(); i != templist.end(); ++i)
+                for (std::list<CreaturePtr>::const_iterator i = templist.begin(); i != templist.end(); ++i)
                 {
                     if ((*i) && me->IsWithinDistInMap((*i), 25))
                     {
@@ -190,13 +190,13 @@ class boss_nalorakk : public CreatureScript
                 }
             }
 
-            void AttackStart(Unit* who)
+            void AttackStart(UnitPtr who)
             {
                 if (!MoveEvent)
                     ScriptedAI::AttackStart(who);
             }
 
-            void MoveInLineOfSight(Unit* who)
+            void MoveInLineOfSight(UnitPtr who)
             {
                 if (!MoveEvent)
                 {
@@ -269,7 +269,7 @@ class boss_nalorakk : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 if (instance)
                     instance->SetData(DATA_NALORAKKEVENT, IN_PROGRESS);
@@ -279,7 +279,7 @@ class boss_nalorakk : public CreatureScript
                 DoZoneInCombat();
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 if (instance)
                     instance->SetData(DATA_NALORAKKEVENT, DONE);
@@ -288,7 +288,7 @@ class boss_nalorakk : public CreatureScript
                 DoPlaySoundToSet(me, SOUND_YELL_DEATH);
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 switch (urand(0, 1))
                 {
@@ -416,7 +416,7 @@ class boss_nalorakk : public CreatureScript
                     {
                         me->MonsterYell(YELL_SURGE, LANG_UNIVERSAL, 0);
                         DoPlaySoundToSet(me, SOUND_YELL_SURGE);
-                        Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 45, true);
+                        UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 45, true);
                         if (target)
                             DoCast(target, SPELL_SURGE);
                         Surge_Timer = urand(15000, 20000);
@@ -447,7 +447,7 @@ class boss_nalorakk : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_nalorakkAI(creature);
         }

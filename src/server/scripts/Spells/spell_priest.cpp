@@ -68,7 +68,7 @@ class spell_pri_inner_fire_or_will : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
                 {
                     if (GetSpellInfo()->Id == PRIEST_INNER_FIRE)
                     {
@@ -114,8 +114,8 @@ class spell_pri_leap_of_faith : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                    if (UnitPtr target = GetHitUnit())
                         target->CastSpell(_player, PRIEST_LEAP_OF_FAITH_JUMP, true);
             }
 
@@ -150,9 +150,9 @@ class spell_pri_void_shift : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         float playerPct;
                         float targetPct;
@@ -205,11 +205,11 @@ class spell_pri_shadow_orb : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
-                        if (caster->ToPlayer() && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_PRIEST_SHADOW)
+                        if (TO_PLAYER(caster) && TO_PLAYER(caster)->GetSpecializationId(TO_PLAYER(caster)->GetActiveSpec()) == SPEC_PRIEST_SHADOW)
                         {
                             int32 currentPower = caster->GetPower(POWER_SHADOW_ORB);
 
@@ -256,7 +256,7 @@ class spell_pri_shadow_orb : public SpellScriptLoader
                                     else if (caster->HasAura(127850))
                                         caster->RemoveAura(127850);
                                     // +1s per Shadow Orb consumed
-                                    if (AuraApplication* aura = target->GetAuraApplication(64044))
+                                    if (AuraApplicationPtr aura = target->GetAuraApplication(64044))
                                     {
                                         AuraPtr psychicHorror = aura->GetBase();
                                         int32 maxDuration = psychicHorror->GetMaxDuration();
@@ -321,14 +321,14 @@ class spell_pri_guardian_spirit : public SpellScriptLoader
 
             void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 if (dmgInfo.GetDamage() < target->GetHealth())
                     return;
 
                 int32 healAmount = int32(target->CountPctFromMaxHealth(healPct));
                 // remove the aura now, we don't want 40% healing bonus
                 Remove(AURA_REMOVE_BY_ENEMY_SPELL);
-                target->CastCustomSpell(target, PRIEST_SPELL_GUARDIAN_SPIRIT_HEAL, &healAmount, NULL, NULL, true);
+                target->CastCustomSpell(target, PRIEST_SPELL_GUARDIAN_SPIRIT_HEAL, &healAmount, nullptr, nullptr, true);
                 absorbAmount = dmgInfo.GetDamage();
             }
 
@@ -358,7 +358,7 @@ class spell_pri_pain_and_suffering_proc : public SpellScriptLoader
             void HandleEffectScriptEffect(SpellEffIndex /*effIndex*/)
             {
                 // Refresh Shadow Word: Pain on target
-                if (Unit* unitTarget = GetHitUnit())
+                if (UnitPtr unitTarget = GetHitUnit())
                     if (AuraEffectPtr aur = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x8000, 0, 0, GetCaster()->GetGUID()))
                         aur->GetBase()->RefreshDuration();
             }
@@ -408,8 +408,8 @@ class spell_pri_penance : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
-                if (Unit* unitTarget = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr unitTarget = GetHitUnit())
                 {
                     if (!unitTarget->isAlive())
                         return;
@@ -425,8 +425,8 @@ class spell_pri_penance : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                Player* caster = GetCaster()->ToPlayer();
-                if (Unit* target = GetExplTargetUnit())
+                PlayerPtr caster = TO_PLAYER(GetCaster());
+                if (UnitPtr target = GetExplTargetUnit())
                     if (!caster->IsFriendlyTo(target) && !caster->IsValidAttackTarget(target))
                         return SPELL_FAILED_BAD_TARGETS;
                 return SPELL_CAST_OK;
@@ -465,7 +465,7 @@ class spell_pri_reflective_shield_trigger : public SpellScriptLoader
 
             void Trigger(AuraEffectPtr aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
             {
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 if (dmgInfo.GetAttacker() == target)
                     return;
 
@@ -473,7 +473,7 @@ class spell_pri_reflective_shield_trigger : public SpellScriptLoader
                     if (AuraEffectPtr talentAurEff = target->GetAuraEffectOfRankedSpell(PRIEST_SPELL_REFLECTIVE_SHIELD_R1, EFFECT_0))
                     {
                         int32 bp = CalculatePct(absorbAmount, talentAurEff->GetAmount());
-                        target->CastCustomSpell(dmgInfo.GetAttacker(), PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED, &bp, NULL, NULL, true, NULL, aurEff);
+                        target->CastCustomSpell(dmgInfo.GetAttacker(), PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED, &bp, nullptr, nullptr, true, nullptr, aurEff);
                     }
             }
 
@@ -505,7 +505,7 @@ public:
 
         void HandleHeal(SpellEffIndex /*effIndex*/)
         {
-            if (Unit* caster = GetOriginalCaster())
+            if (UnitPtr caster = GetOriginalCaster())
             {
                 if (AuraEffectPtr aurEff = caster->GetAuraEffect(SPELL_T9_HEALING_2_PIECE, EFFECT_0))
                 {
@@ -547,13 +547,13 @@ class spell_pri_vampiric_touch : public SpellScriptLoader
 
             void HandleDispel(DispelInfo* /*dispelInfo*/)
             {
-                if (Unit* caster = GetCaster())
-                    if (Unit* target = GetUnitOwner())
+                if (UnitPtr caster = GetCaster())
+                    if (UnitPtr target = GetUnitOwner())
                         if (constAuraEffectPtr aurEff = GetEffect(EFFECT_1))
                         {
                             int32 damage = aurEff->GetAmount() * 8;
                             // backfire damage
-                            caster->CastCustomSpell(target, PRIEST_SPELL_VAMPIRIC_TOUCH_DISPEL, &damage, NULL, NULL, true, NULL, aurEff);
+                            caster->CastCustomSpell(target, PRIEST_SPELL_VAMPIRIC_TOUCH_DISPEL, &damage, nullptr, nullptr, true, nullptr, aurEff);
                         }
             }
 
@@ -585,7 +585,7 @@ class spell_priest_renew : public SpellScriptLoader
 
             void HandleApplyEffect(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
                     // Empowered Renew
                     if (constAuraEffectPtr empoweredRenewAurEff = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_EMPOWERED_RENEW_TALENT, EFFECT_1))
@@ -594,7 +594,7 @@ class spell_priest_renew : public SpellScriptLoader
                         heal = GetTarget()->SpellHealingBonusTaken(caster, GetSpellInfo(), heal, DOT);
 
                         int32 basepoints0 = empoweredRenewAurEff->GetAmount() * GetEffect(EFFECT_0)->GetTotalTicks() * int32(heal) / 100;
-                        caster->CastCustomSpell(GetTarget(), PRIEST_SPELL_EMPOWERED_RENEW, &basepoints0, NULL, NULL, true, NULL, aurEff);
+                        caster->CastCustomSpell(GetTarget(), PRIEST_SPELL_EMPOWERED_RENEW, &basepoints0, nullptr, nullptr, true, nullptr, aurEff);
                     }
                 }
             }

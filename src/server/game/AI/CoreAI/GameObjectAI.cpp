@@ -18,12 +18,12 @@
 
 #include "GameObjectAI.h"
 
-//GameObjectAI::GameObjectAI(GameObject* g) : go(g) {}
-int GameObjectAI::Permissible(const GameObject* go)
+//GameObjectAI::GameObjectAI(GameObjectPtr g) : go(g) {}
+int GameObjectAI::Permissible(constGameObjectPtr go)
 {
     if (go->GetAIName() == "GameObjectAI")
         return PERMIT_BASE_SPECIAL;
     return PERMIT_BASE_NO;
 }
 
-NullGameObjectAI::NullGameObjectAI(GameObject* g) : GameObjectAI(g) {}
+NullGameObjectAI::NullGameObjectAI(GameObjectPtr g) : GameObjectAI(g) {}

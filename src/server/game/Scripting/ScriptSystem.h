@@ -76,7 +76,7 @@ class SystemMgr
             TextDataMap::const_iterator itr = m_mTextDataMap.find(textId);
 
             if (itr == m_mTextDataMap.end())
-                return NULL;
+                return nullptr;
 
             return &itr->second;
         }

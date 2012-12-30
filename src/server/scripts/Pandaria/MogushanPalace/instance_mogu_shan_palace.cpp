@@ -105,7 +105,7 @@ class instance_mogu_shan_palace : public InstanceMapScript
 public:
     instance_mogu_shan_palace() : InstanceMapScript("instance_mogu_shan_palace", 994) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_mogu_shan_palace_InstanceMapScript(map);
     }
@@ -143,7 +143,7 @@ public:
         /*
         ** End of Xin the weaponmaster.
         */
-        instance_mogu_shan_palace_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_mogu_shan_palace_InstanceMapScript(MapPtr map) : InstanceScript(map)
         {
             xin_guid = 0;
             kuai_guid = 0;
@@ -161,18 +161,18 @@ public:
         {
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             OnCreatureCreate_gekkan(creature);
             OnCreatureCreate_trial_of_the_king(creature);
             OnCreatureCreate_xin_the_weaponmaster(creature);
         }
 
-        void OnUnitDeath(Unit* unit)
+        void OnUnitDeath(UnitPtr unit)
         {
             OnUnitDeath_gekkan(unit);
         }
@@ -216,7 +216,7 @@ public:
             {
                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                 {
-                    Player* plr = i->getSource();
+                    PlayerPtr plr = i->getSource();
                     if( !plr)
                         continue;
                     if (plr->isAlive() && !plr->isGameMaster())
@@ -234,7 +234,7 @@ public:
                 {
                     std::list<uint64>::iterator itr = animated_staffs.begin();
                     std::advance(itr, animated_staffs.size() - 1);
-                    Creature* creature = instance->GetCreature(*itr);
+                    CreaturePtr creature = instance->GetCreature(*itr);
                     if (!creature)
                         return;
                     if (creature->GetAI())
@@ -243,7 +243,7 @@ public:
                 break;
             }
         }
-        void OnCreatureCreate_xin_the_weaponmaster(Creature* creature)
+        void OnCreatureCreate_xin_the_weaponmaster(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -257,7 +257,7 @@ public:
             }
         }
 
-        void OnUnitDeath_gekkan(Unit* unit)
+        void OnUnitDeath_gekkan(UnitPtr unit)
         {
             if (unit->ToCreature())
             {
@@ -268,7 +268,7 @@ public:
                 case CREATURE_GLINTROK_ORACLE:
                 case CREATURE_GLINTROK_HEXXER:
                     {
-                        Creature* c = instance->GetCreature(gekkan);
+                        CreaturePtr c = instance->GetCreature(gekkan);
                         if (!c)
                             return;
                         if (c->GetAI())
@@ -278,7 +278,7 @@ public:
                 }
             }
         }
-        void OnCreatureCreate_gekkan(Creature* creature)
+        void OnCreatureCreate_gekkan(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -306,7 +306,7 @@ public:
             {
             case TYPE_OUTRO_05:
                 {
-                    Creature* haiyan = instance->GetCreature(haiyan_guid);
+                    CreaturePtr haiyan = instance->GetCreature(haiyan_guid);
                     if (!haiyan)
                         return;
                     if (haiyan->GetAI())
@@ -315,7 +315,7 @@ public:
                 break;
             case TYPE_OUTRO_04:
                 {
-                    Creature* kuai = instance->GetCreature(kuai_guid);
+                    CreaturePtr kuai = instance->GetCreature(kuai_guid);
                     if (!kuai)
                         return;
                     if (kuai->GetAI())
@@ -324,7 +324,7 @@ public:
                 break;
             case TYPE_OUTRO_03:
                 {
-                    Creature* ming = instance->GetCreature(ming_guid);
+                    CreaturePtr ming = instance->GetCreature(ming_guid);
                     if (!ming)
                         return;
                     if (ming->GetAI())
@@ -333,7 +333,7 @@ public:
                 break;
             case TYPE_OUTRO_02:
                 {
-                    Creature* haiyan = instance->GetCreature(haiyan_guid);
+                    CreaturePtr haiyan = instance->GetCreature(haiyan_guid);
                     if (!haiyan)
                         return;
                     if (haiyan->GetAI())
@@ -342,7 +342,7 @@ public:
                 break;
             case TYPE_OUTRO_01:
                 {
-                    Creature* ming = instance->GetCreature(ming_guid);
+                    CreaturePtr ming = instance->GetCreature(ming_guid);
                     if (!ming)
                         return;
                     if (ming->GetAI())
@@ -351,7 +351,7 @@ public:
                 break;
             case TYPE_MING_INTRO:
                 {
-                    Creature* ming = instance->GetCreature(ming_guid);
+                    CreaturePtr ming = instance->GetCreature(ming_guid);
                     if (!ming)
                         return;
                     if (ming->GetAI())
@@ -360,7 +360,7 @@ public:
                 break;
             case TYPE_WIPE_FIRST_BOSS:
                 {
-                    Creature* xin = instance->GetCreature(xin_guid);
+                    CreaturePtr xin = instance->GetCreature(xin_guid);
                     if (!xin)
                         return;
                     xin->SetVisible(true);
@@ -371,7 +371,7 @@ public:
                     case 0:
                         for (auto guid : adepts)
                         {
-                            Creature* creature = instance->GetCreature(guid);
+                            CreaturePtr creature = instance->GetCreature(guid);
                             if (!creature)
                                 continue;
 
@@ -383,7 +383,7 @@ public:
                     case 1:
                         for (auto guid : scrappers)
                         {
-                            Creature* creature = instance->GetCreature(guid);
+                            CreaturePtr creature = instance->GetCreature(guid);
                             if (!creature)
                                 continue;
 
@@ -395,7 +395,7 @@ public:
                     case 2:
                         for (auto guid : grunts)
                         {
-                            Creature* creature = instance->GetCreature(guid);
+                            CreaturePtr creature = instance->GetCreature(guid);
                             if (!creature)
                                 continue;
 
@@ -412,12 +412,12 @@ public:
                     //Move the adepts
                     for (auto guid : adepts)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        CreaturePtr creature = instance->GetCreature(guid);
 
                         if (creature && creature->GetAI())
                             creature->GetAI()->DoAction(0); //EVENT_ENCOURAGE
                     }
-                    Creature* ming = instance->GetCreature(ming_guid);
+                    CreaturePtr ming = instance->GetCreature(ming_guid);
                     if (!ming)
                         return;
                     ming->GetMotionMaster()->MovePoint(0, -4237.658f, -2613.860f, 16.48f);
@@ -430,12 +430,12 @@ public:
                     //Move the scrappers
                     for (auto guid : scrappers)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        CreaturePtr creature = instance->GetCreature(guid);
 
                         if (creature && creature->GetAI())
                             creature->GetAI()->DoAction(0); //EVENT_ENCOURAGE
                     }
-                    Creature* kuai = instance->GetCreature(kuai_guid);
+                    CreaturePtr kuai = instance->GetCreature(kuai_guid);
                     if (!kuai)
                         return;
                     kuai->GetMotionMaster()->MovePoint(0, -4215.359f, -2601.283f, 16.48f);
@@ -448,12 +448,12 @@ public:
                     //Move the scrappers
                     for (auto guid : grunts)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        CreaturePtr creature = instance->GetCreature(guid);
 
                         if (creature && creature->GetAI())
                             creature->GetAI()->DoAction(0); //EVENT_ENCOURAGE
                     }
-                    Creature* haiyan = instance->GetCreature(haiyan_guid);
+                    CreaturePtr haiyan = instance->GetCreature(haiyan_guid);
                     if (!haiyan)
                         return;
                     haiyan->GetMotionMaster()->MovePoint(0, -4215.772f, -2627.216f, 16.48f);
@@ -465,7 +465,7 @@ public:
                 {
                     for (auto guid : adepts)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        CreaturePtr creature = instance->GetCreature(guid);
 
                         if (creature && creature->GetAI())
                             creature->GetAI()->DoAction(2); //ACTION_ATTACK
@@ -473,13 +473,13 @@ public:
                         std::list<uint64>::iterator itr = grunts.begin();
                         std::advance(itr, urand(0, grunts.size() - 1));
 
-                        Creature* grunt = instance->GetCreature(*itr);
+                        CreaturePtr grunt = instance->GetCreature(*itr);
                         if (grunt)
                             creature->Attack(grunt, true);
                     }
                     for (auto guid : grunts)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        CreaturePtr creature = instance->GetCreature(guid);
 
                         if (creature && creature->GetAI())
                             creature->GetAI()->DoAction(2); //ACTION_ATTACK
@@ -487,13 +487,13 @@ public:
                         std::list<uint64>::iterator itr = scrappers.begin();
                         std::advance(itr, urand(0, scrappers.size() - 1));
 
-                        Creature* scrapper = instance->GetCreature(*itr);
+                        CreaturePtr scrapper = instance->GetCreature(*itr);
                         if (scrapper)
                             creature->Attack(scrapper, true);
                     }
                     for (auto guid : scrappers)
                     {
-                        Creature* creature = instance->GetCreature(guid);
+                        CreaturePtr creature = instance->GetCreature(guid);
 
                         if (creature && creature->GetAI())
                             creature->GetAI()->DoAction(2); //ACTION_ATTACK
@@ -501,7 +501,7 @@ public:
                         std::list<uint64>::iterator itr = adepts.begin();
                         std::advance(itr, urand(0, adepts.size() - 1));
 
-                        Creature* adept = instance->GetCreature(*itr);
+                        CreaturePtr adept = instance->GetCreature(*itr);
                         if (adept)
                             creature->Attack(adept, true);
                     }
@@ -511,7 +511,7 @@ public:
                 //Retire the adepts
                 for (auto guid : adepts)
                 {
-                    Creature* creature = instance->GetCreature(guid);
+                    CreaturePtr creature = instance->GetCreature(guid);
 
                     if (creature && creature->GetAI())
                         creature->GetAI()->DoAction(1); //EVENT_RETIRE
@@ -521,7 +521,7 @@ public:
                 //Retire the adepts
                 for (auto guid : scrappers)
                 {
-                    Creature* creature = instance->GetCreature(guid);
+                    CreaturePtr creature = instance->GetCreature(guid);
 
                     if (creature && creature->GetAI())
                         creature->GetAI()->DoAction(1); //EVENT_RETIRE
@@ -531,7 +531,7 @@ public:
                 //Retire the adepts
                 for (auto guid : grunts)
                 {
-                    Creature* creature = instance->GetCreature(guid);
+                    CreaturePtr creature = instance->GetCreature(guid);
 
                     if (creature && creature->GetAI())
                         creature->GetAI()->DoAction(1); //EVENT_RETIRE
@@ -539,7 +539,7 @@ public:
                 break;
             }
         }
-        void OnCreatureCreate_trial_of_the_king(Creature* creature)
+        void OnCreatureCreate_trial_of_the_king(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {

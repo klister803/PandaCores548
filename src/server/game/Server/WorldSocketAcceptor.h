@@ -56,7 +56,7 @@ protected:
         {
             sLog->outError(LOG_FILTER_GENERAL, "Out of file descriptors, suspending incoming connections for 10 seconds");
             reactor()->remove_handler(this, ACE_Event_Handler::ACCEPT_MASK | ACE_Event_Handler::DONT_CALL);
-            reactor()->schedule_timer(this, NULL, ACE_Time_Value(10));
+            reactor()->schedule_timer(this, nullptr, ACE_Time_Value(10));
         }
 #endif
         return 0;

@@ -57,14 +57,14 @@ class boss_skeram : public CreatureScript
 public:
     boss_skeram() : CreatureScript("boss_skeram") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_skeramAI (creature);
     }
 
     struct boss_skeramAI : public ScriptedAI
     {
-        boss_skeramAI(Creature* creature) : ScriptedAI(creature)
+        boss_skeramAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             IsImage = false;
         }
@@ -101,18 +101,18 @@ public:
                 me->setDeathState(JUST_DIED);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (!IsImage)
                 DoScriptText(SAY_DEATH, me);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             if (IsImage || Images75)
                 return;
@@ -237,9 +237,9 @@ public:
 
             for (uint16 i = 0; i < 41; ++i)
             {
-                if (Player* target = CAST_PLR(SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true)))
+                if (PlayerPtr target = CAST_PLR(SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true)))
                 {
-                    if (Group* pGrp = target->GetGroup())
+                    if (GroupPtr pGrp = target->GetGroup())
                         for (uint8 ico = 0; ico < TARGETICONCOUNT; ++ico)
                         {
                             //if (grp->m_targetIcons[ico] == me->GetGUID()) -- private member :(
@@ -265,9 +265,9 @@ public:
                 case 25: Images25 = true; break;
             }
 
-            Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+            UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
 
-            Creature* Image1 = me->SummonCreature(15263, i1->x, i1->y, i1->z, i1->r, TEMPSUMMON_CORPSE_DESPAWN, 30000);
+            CreaturePtr Image1 = me->SummonCreature(15263, i1->x, i1->y, i1->z, i1->r, TEMPSUMMON_CORPSE_DESPAWN, 30000);
             if (Image1)
             {
                 Image1->SetMaxHealth(me->GetMaxHealth() / 5);
@@ -277,7 +277,7 @@ public:
                 CAST_AI(boss_skeram::boss_skeramAI, Image1->AI())->IsImage = true;
             }
 
-            Creature* Image2 = me->SummonCreature(15263, i2->x, i2->y, i2->z, i2->r, TEMPSUMMON_CORPSE_DESPAWN, 30000);
+            CreaturePtr Image2 = me->SummonCreature(15263, i2->x, i2->y, i2->z, i2->r, TEMPSUMMON_CORPSE_DESPAWN, 30000);
             if (Image2)
             {
                 Image2->SetMaxHealth(me->GetMaxHealth() / 5);

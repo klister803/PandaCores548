@@ -59,7 +59,7 @@ class boss_gatewatcher_iron_hand : public CreatureScript
             // Gatewatcher Iron-Hand AI
             struct boss_gatewatcher_iron_handAI : public ScriptedAI
             {
-                boss_gatewatcher_iron_handAI(Creature* creature) : ScriptedAI(creature)
+                boss_gatewatcher_iron_handAI(CreaturePtr creature) : ScriptedAI(creature)
                 {
                 }
 
@@ -74,12 +74,12 @@ class boss_gatewatcher_iron_hand : public CreatureScript
                     Stream_of_Machine_Fluid_Timer = 55000;
 
                 }
-                void EnterCombat(Unit* /*who*/)
+                void EnterCombat(UnitPtr /*who*/)
                 {
                     DoScriptText(SAY_AGGRO_1, me);
                 }
 
-                void KilledUnit(Unit* /*victim*/)
+                void KilledUnit(UnitPtr /*victim*/)
                 {
                     if (rand()%2)
                         return;
@@ -87,7 +87,7 @@ class boss_gatewatcher_iron_hand : public CreatureScript
                     DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
                 }
 
-                void JustDied(Unit* /*killer*/)
+                void JustDied(UnitPtr /*killer*/)
                 {
                     DoScriptText(SAY_DEATH_1, me);
                     //TODO: Add door check/open code
@@ -138,7 +138,7 @@ class boss_gatewatcher_iron_hand : public CreatureScript
                 }
             };
 
-            CreatureAI* GetAI(Creature* creature) const
+            CreatureAI* GetAI(CreaturePtr creature) const
             {
                 return new boss_gatewatcher_iron_handAI(creature);
             }

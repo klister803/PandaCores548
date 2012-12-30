@@ -58,14 +58,14 @@ class boss_talon_king_ikiss : public CreatureScript
 public:
     boss_talon_king_ikiss() : CreatureScript("boss_talon_king_ikiss") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_talon_king_ikissAI (creature);
     }
 
     struct boss_talon_king_ikissAI : public ScriptedAI
     {
-        boss_talon_king_ikissAI(Creature* creature) : ScriptedAI(creature)
+        boss_talon_king_ikissAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -92,7 +92,7 @@ public:
             ManaShield = false;
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (!me->getVictim() && me->canCreatureAttack(who))
             {
@@ -114,12 +114,12 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -127,7 +127,7 @@ public:
                 instance->SetData(DATA_IKISSDOOREVENT, DONE);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
         }
@@ -152,7 +152,7 @@ public:
 
             if (Sheep_Timer <= diff)
             {
-                Unit* target;
+                UnitPtr target;
 
                 //second top aggro target in normal, random target in heroic correct?
                 if (IsHeroic())
@@ -185,7 +185,7 @@ public:
             {
                 DoScriptText(EMOTE_ARCANE_EXP, me);
 
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
                     if (me->IsNonMeleeSpellCasted(false))
                         me->InterruptNonMeleeSpells(false);

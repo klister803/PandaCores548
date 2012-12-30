@@ -24,59 +24,59 @@
 class PassiveAI : public CreatureAI
 {
     public:
-        explicit PassiveAI(Creature* c);
+        explicit PassiveAI(CreaturePtr c);
 
-        void MoveInLineOfSight(Unit*) {}
-        void AttackStart(Unit*) {}
+        void MoveInLineOfSight(UnitPtr) {}
+        void AttackStart(UnitPtr) {}
         void UpdateAI(const uint32);
 
-        static int Permissible(const Creature*) { return PERMIT_BASE_IDLE;  }
+        static int Permissible(constCreaturePtr) { return PERMIT_BASE_IDLE;  }
 };
 
 class PossessedAI : public CreatureAI
 {
     public:
-        explicit PossessedAI(Creature* c);
+        explicit PossessedAI(CreaturePtr c);
 
-        void MoveInLineOfSight(Unit*) {}
-        void AttackStart(Unit* target);
+        void MoveInLineOfSight(UnitPtr) {}
+        void AttackStart(UnitPtr target);
         void UpdateAI(const uint32);
         void EnterEvadeMode() {}
 
-        void JustDied(Unit*);
-        void KilledUnit(Unit* victim);
+        void JustDied(UnitPtr);
+        void KilledUnit(UnitPtr victim);
 
-        static int Permissible(const Creature*) { return PERMIT_BASE_IDLE;  }
+        static int Permissible(constCreaturePtr) { return PERMIT_BASE_IDLE;  }
 };
 
 class NullCreatureAI : public CreatureAI
 {
     public:
-        explicit NullCreatureAI(Creature* c);
+        explicit NullCreatureAI(CreaturePtr c);
 
-        void MoveInLineOfSight(Unit*) {}
-        void AttackStart(Unit*) {}
+        void MoveInLineOfSight(UnitPtr) {}
+        void AttackStart(UnitPtr) {}
         void UpdateAI(const uint32) {}
         void EnterEvadeMode() {}
         void OnCharmed(bool /*apply*/) {}
 
-        static int Permissible(const Creature*) { return PERMIT_BASE_IDLE;  }
+        static int Permissible(constCreaturePtr) { return PERMIT_BASE_IDLE;  }
 };
 
 class CritterAI : public PassiveAI
 {
     public:
-        explicit CritterAI(Creature* c) : PassiveAI(c) {}
+        explicit CritterAI(CreaturePtr c) : PassiveAI(c) {}
 
-        void DamageTaken(Unit* done_by, uint32& /*damage*/);
+        void DamageTaken(UnitPtr done_by, uint32& /*damage*/);
         void EnterEvadeMode();
 };
 
 class TriggerAI : public NullCreatureAI
 {
     public:
-        explicit TriggerAI(Creature* c) : NullCreatureAI(c) {}
-        void IsSummonedBy(Unit* summoner);
+        explicit TriggerAI(CreaturePtr c) : NullCreatureAI(c) {}
+        void IsSummonedBy(UnitPtr summoner);
 };
 
 #endif

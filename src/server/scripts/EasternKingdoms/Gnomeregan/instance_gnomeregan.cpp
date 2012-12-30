@@ -26,14 +26,14 @@ class instance_gnomeregan : public InstanceMapScript
 public:
     instance_gnomeregan() : InstanceMapScript("instance_gnomeregan", 90) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_gnomeregan_InstanceMapScript(map);
     }
 
     struct instance_gnomeregan_InstanceMapScript : public InstanceScript
     {
-        instance_gnomeregan_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_gnomeregan_InstanceMapScript(MapPtr map) : InstanceScript(map)
         {
         }
 
@@ -76,7 +76,7 @@ public:
             OUT_LOAD_INST_DATA_COMPLETE;
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -84,7 +84,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {

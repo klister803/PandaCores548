@@ -30,14 +30,14 @@ class npc_valkyr_battle_maiden : public CreatureScript
 public:
     npc_valkyr_battle_maiden() : CreatureScript("npc_valkyr_battle_maiden") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_valkyr_battle_maidenAI (creature);
     }
 
     struct npc_valkyr_battle_maidenAI : public PassiveAI
     {
-        npc_valkyr_battle_maidenAI(Creature* creature) : PassiveAI(creature) {}
+        npc_valkyr_battle_maidenAI(CreaturePtr creature) : PassiveAI(creature) {}
 
         uint32 FlyBackTimer;
         float x, y, z;
@@ -64,9 +64,9 @@ public:
         {
             if (FlyBackTimer <= diff)
             {
-                Player* player = NULL;
+                PlayerPtr player = nullptr;
                 if (me->isSummon())
-                    if (Unit* summoner = me->ToTempSummon()->GetSummoner())
+                    if (UnitPtr summoner = me->ToTempSummon()->GetSummoner())
                         if (summoner->GetTypeId() == TYPEID_PLAYER)
                             player = CAST_PLR(summoner);
 

@@ -84,9 +84,9 @@ class MailSender
             : m_messageType(messageType), m_senderId(sender_guidlow_or_entry), m_stationery(stationery)
         {
         }
-        MailSender(Object* sender, MailStationery stationery = MAIL_STATIONERY_DEFAULT);
+        MailSender(ObjectPtr sender, MailStationery stationery = MAIL_STATIONERY_DEFAULT);
         MailSender(AuctionEntry* sender);
-        MailSender(Player* sender);
+        MailSender(PlayerPtr sender);
     public:                                                 // Accessors
         MailMessageType GetMailMessageType() const { return m_messageType; }
         uint32 GetSenderId() const { return m_senderId; }
@@ -100,20 +100,20 @@ class MailSender
 class MailReceiver
 {
     public:                                                 // Constructors
-        explicit MailReceiver(uint32 receiver_lowguid) : m_receiver(NULL), m_receiver_lowguid(receiver_lowguid) {}
-        MailReceiver(Player* receiver);
-        MailReceiver(Player* receiver, uint32 receiver_lowguid);
+        explicit MailReceiver(uint32 receiver_lowguid) : m_receiver(nullptr), m_receiver_lowguid(receiver_lowguid) {}
+        MailReceiver(PlayerPtr receiver);
+        MailReceiver(PlayerPtr receiver, uint32 receiver_lowguid);
     public:                                                 // Accessors
-        Player* GetPlayer() const { return m_receiver; }
+        PlayerPtr GetPlayer() const { return m_receiver; }
         uint32  GetPlayerGUIDLow() const { return m_receiver_lowguid; }
     private:
-        Player* m_receiver;
+        PlayerPtr m_receiver;
         uint32  m_receiver_lowguid;
 };
 
 class MailDraft
 {
-    typedef std::map<uint32, Item*> MailItemMap;
+    typedef std::map<uint32, ItemPtr> MailItemMap;
 
     public:                                                 // Constructors
         explicit MailDraft(uint16 mailTemplateId, bool need_items = true)
@@ -129,7 +129,7 @@ class MailDraft
         std::string const& GetBody() const { return m_body; }
 
     public:                                                 // modifiers
-        MailDraft& AddItem(Item* item);
+        MailDraft& AddItem(ItemPtr item);
         MailDraft& AddMoney(uint64 money) { m_money = money; return *this; }
         MailDraft& AddCOD(uint32 COD) { m_COD = COD; return *this; }
 
@@ -139,7 +139,7 @@ class MailDraft
 
     private:
         void deleteIncludedItems(SQLTransaction& trans, bool inDB = false);
-        void prepareItems(Player* receiver, SQLTransaction& trans);                // called from SendMailTo for generate mailTemplateBase items
+        void prepareItems(PlayerPtr receiver, SQLTransaction& trans);                // called from SendMailTo for generate mailTemplateBase items
 
         uint16      m_mailTemplateId;
         bool        m_mailTemplateItemsNeed;

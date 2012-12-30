@@ -54,14 +54,14 @@ class boss_mekgineer_steamrigger : public CreatureScript
 public:
     boss_mekgineer_steamrigger() : CreatureScript("boss_mekgineer_steamrigger") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_mekgineer_steamriggerAI (creature);
     }
 
     struct boss_mekgineer_steamriggerAI : public ScriptedAI
     {
-        boss_mekgineer_steamriggerAI(Creature* creature) : ScriptedAI(creature)
+        boss_mekgineer_steamriggerAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -89,7 +89,7 @@ public:
                 instance->SetData(TYPE_MEKGINEER_STEAMRIGGER, NOT_STARTED);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -97,12 +97,12 @@ public:
                 instance->SetData(TYPE_MEKGINEER_STEAMRIGGER, DONE);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3), me);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
 
@@ -138,7 +138,7 @@ public:
 
             if (Saw_Blade_Timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                     DoCast(target, SPELL_SAW_BLADE);
                 else
                     DoCast(me->getVictim(), SPELL_SAW_BLADE);
@@ -198,14 +198,14 @@ class mob_steamrigger_mechanic : public CreatureScript
 public:
     mob_steamrigger_mechanic() : CreatureScript("mob_steamrigger_mechanic") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_steamrigger_mechanicAI (creature);
     }
 
     struct mob_steamrigger_mechanicAI : public ScriptedAI
     {
-        mob_steamrigger_mechanicAI(Creature* creature) : ScriptedAI(creature)
+        mob_steamrigger_mechanicAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -219,12 +219,12 @@ public:
             Repair_Timer = 2000;
         }
 
-        void MoveInLineOfSight(Unit* /*who*/)
+        void MoveInLineOfSight(UnitPtr /*who*/)
         {
             //react only if attacked
         }
 
-        void EnterCombat(Unit* /*who*/) { }
+        void EnterCombat(UnitPtr /*who*/) { }
 
         void UpdateAI(const uint32 diff)
         {
@@ -232,7 +232,7 @@ public:
             {
                 if (instance && instance->GetData64(DATA_MEKGINEERSTEAMRIGGER) && instance->GetData(TYPE_MEKGINEER_STEAMRIGGER) == IN_PROGRESS)
                 {
-                    if (Unit* pMekgineer = Unit::GetUnit(*me, instance->GetData64(DATA_MEKGINEERSTEAMRIGGER)))
+                    if (UnitPtr pMekgineer = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_MEKGINEERSTEAMRIGGER)))
                     {
                         if (me->IsWithinDistInMap(pMekgineer, MAX_REPAIR_RANGE))
                         {

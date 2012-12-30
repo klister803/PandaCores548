@@ -36,7 +36,7 @@ void WorldSession::HandleInspectArenaTeamsOpcode(WorldPacket & recvData)
     recvData >> guid;
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Inspect Arena stats (GUID: %u TypeId: %u)", GUID_LOPART(guid), GuidHigh2TypeId(GUID_HIPART(guid)));
 
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
     {
         for (uint8 i = 0; i < MAX_ARENA_SLOT; ++i)
         {
@@ -81,7 +81,7 @@ void WorldSession::HandleArenaTeamInviteOpcode(WorldPacket & recvData)
     uint32 arenaTeamId;                                     // arena team id
     std::string invitedName;
 
-    Player* player = NULL;
+    PlayerPtr player = nullptr;
 
     recvData >> arenaTeamId >> invitedName;
 

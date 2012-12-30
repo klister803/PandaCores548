@@ -75,14 +75,14 @@ class boss_slad_ran : public CreatureScript
 public:
     boss_slad_ran() : CreatureScript("boss_slad_ran") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_slad_ranAI (creature);
     }
 
     struct boss_slad_ranAI : public ScriptedAI
     {
-        boss_slad_ranAI(Creature* creature) : ScriptedAI(creature), lSummons(me)
+        boss_slad_ranAI(CreaturePtr creature) : ScriptedAI(creature), lSummons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -114,7 +114,7 @@ public:
                 instance->SetData(DATA_SLAD_RAN_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -175,7 +175,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
             lSummons.DespawnAll();
@@ -184,12 +184,12 @@ public:
                 instance->SetData(DATA_SLAD_RAN_EVENT, DONE);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3), me);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
             lSummons.Summon(summoned);
@@ -214,14 +214,14 @@ class mob_slad_ran_constrictor : public CreatureScript
 public:
     mob_slad_ran_constrictor() : CreatureScript("mob_slad_ran_constrictor") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_slad_ran_constrictorAI (creature);
     }
 
     struct mob_slad_ran_constrictorAI : public ScriptedAI
     {
-        mob_slad_ran_constrictorAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_slad_ran_constrictorAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 uiGripOfSladRanTimer;
 
@@ -237,7 +237,7 @@ public:
 
             if (uiGripOfSladRanTimer <= diff)
             {
-                Unit* target = me->getVictim();
+                UnitPtr target = me->getVictim();
 
                 DoCast(target, SPELL_GRIP_OF_SLAD_RAN);
                 uiGripOfSladRanTimer = urand(3, 6)*IN_MILLISECONDS;
@@ -248,8 +248,8 @@ public:
                     target->RemoveAurasDueToSpell(SPELL_GRIP_OF_SLAD_RAN, me->GetGUID());
                     target->CastSpell(target, SPELL_SNAKE_WRAP, true);
 
-                    if (TempSummon* _me = me->ToTempSummon())
-                        if (Creature* sladran = _me->GetSummoner()->ToCreature())
+                    if (TempSummonPtr _me = me->ToTempSummon())
+                        if (CreaturePtr sladran = TO_CREATURE(_me->GetSummoner()))
                             sladran->AI()->SetGUID(target->GetGUID() ,DATA_SNAKES_WHYD_IT_HAVE_TO_BE_SNAKES);
 
                     me->DespawnOrUnsummon();
@@ -267,14 +267,14 @@ class mob_slad_ran_viper : public CreatureScript
 public:
     mob_slad_ran_viper() : CreatureScript("mob_slad_ran_viper") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_slad_ran_viperAI (creature);
     }
 
     struct mob_slad_ran_viperAI : public ScriptedAI
     {
-        mob_slad_ran_viperAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_slad_ran_viperAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 uiVenomousBiteTimer;
 
@@ -307,7 +307,7 @@ class achievement_snakes_whyd_it_have_to_be_snakes : public AchievementCriteriaS
         {
         }
 
-        bool OnCheck(Player* player, Unit* target)
+        bool OnCheck(PlayerPtr player, UnitPtr target)
         {
             if (!target)
                 return false;

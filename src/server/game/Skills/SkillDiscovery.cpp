@@ -157,7 +157,7 @@ void LoadSkillDiscoveryTable()
 
 }
 
-uint32 GetExplicitDiscoverySpell(uint32 spellId, Player* player)
+uint32 GetExplicitDiscoverySpell(uint32 spellId, PlayerPtr player)
 {
     // explicit discovery spell chances (always success if case exist)
     // in this case we have both skill and spell
@@ -194,7 +194,7 @@ uint32 GetExplicitDiscoverySpell(uint32 spellId, Player* player)
     return 0;
 }
 
-bool HasDiscoveredAllSpells(uint32 spellId, Player* player)
+bool HasDiscoveredAllSpells(uint32 spellId, PlayerPtr player)
 {
     SkillDiscoveryMap::const_iterator tab = SkillDiscoveryStore.find(int32(spellId));
     if (tab == SkillDiscoveryStore.end())
@@ -207,7 +207,7 @@ bool HasDiscoveredAllSpells(uint32 spellId, Player* player)
     return true;
 }
 
-uint32 GetSkillDiscoverySpell(uint32 skillId, uint32 spellId, Player* player)
+uint32 GetSkillDiscoverySpell(uint32 skillId, uint32 spellId, PlayerPtr player)
 {
     uint32 skillvalue = skillId ? player->GetSkillValue(skillId) : uint32(0);
 
