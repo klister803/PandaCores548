@@ -200,7 +200,7 @@ void Channel::Join(uint64 p, const char *pass)
         player->JoinedChannel(this);
     }
 
-    if (m_announce && (!player || !AccountMgr::IsGMAccount(player->GetSession()->GetSecurity()) || !sWorld->getBoolConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
+    if (m_announce && (!player || !AccountMgr::IsModeratorAccount(player->GetSession()->GetSecurity()) || !sWorld->getBoolConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
     {
         MakeJoined(&data, p);
         SendToAll(&data);
@@ -262,7 +262,7 @@ void Channel::Leave(uint64 p, bool send)
         bool changeowner = players[p].IsOwner();
 
         players.erase(p);
-        if (m_announce && (!player || !AccountMgr::IsGMAccount(player->GetSession()->GetSecurity()) || !sWorld->getBoolConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
+        if (m_announce && (!player || !AccountMgr::IsModeratorAccount(player->GetSession()->GetSecurity()) || !sWorld->getBoolConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL)))
         {
             WorldPacket data;
             MakeLeft(&data, p);
@@ -300,7 +300,7 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
         MakeNotMember(&data);
         SendToOne(&data, good);
     }
-    else if (!players[good].IsModerator() && !AccountMgr::IsGMAccount(sec))
+    else if (!players[good].IsModerator() && !AccountMgr::IsModeratorAccount(sec))
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -315,7 +315,7 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
             MakePlayerNotFound(&data, badname);
             SendToOne(&data, good);
         }
-        else if (!AccountMgr::IsGMAccount(sec) && bad->GetGUID() == m_ownerGUID && good != m_ownerGUID)
+        else if (!AccountMgr::IsModeratorAccount(sec) && bad->GetGUID() == m_ownerGUID && good != m_ownerGUID)
         {
             WorldPacket data;
             MakeNotOwner(&data);
@@ -326,7 +326,7 @@ void Channel::KickOrBan(uint64 good, const char *badname, bool ban)
             bool changeowner = (m_ownerGUID == bad->GetGUID());
 
             WorldPacket data;
-            bool notify = !(AccountMgr::IsGMAccount(sec) && sWorld->getBoolConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL));
+            bool notify = !(AccountMgr::IsModeratorAccount(sec) && sWorld->getBoolConfig(CONFIG_SILENTLY_GM_JOIN_TO_CHANNEL));
 
             if (ban && !IsBanned(bad->GetGUID()))
             {
@@ -368,7 +368,7 @@ void Channel::UnBan(uint64 good, const char *badname)
         MakeNotMember(&data);
         SendToOne(&data, good);
     }
-    else if (!players[good].IsModerator() && !AccountMgr::IsGMAccount(sec))
+    else if (!players[good].IsModerator() && !AccountMgr::IsModeratorAccount(sec))
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -411,7 +411,7 @@ void Channel::Password(uint64 p, const char *pass)
         MakeNotMember(&data);
         SendToOne(&data, p);
     }
-    else if (!players[p].IsModerator() && !AccountMgr::IsGMAccount(sec))
+    else if (!players[p].IsModerator() && !AccountMgr::IsModeratorAccount(sec))
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -449,7 +449,7 @@ void Channel::SetMode(uint64 p, const char *p2n, bool mod, bool set)
         MakeNotMember(&data);
         SendToOne(&data, p);
     }
-    else if (!players[p].IsModerator() && !AccountMgr::IsGMAccount(sec))
+    else if (!players[p].IsModerator() && !AccountMgr::IsModeratorAccount(sec))
     {
         WorldPacket data;
         MakeNotModerator(&data);
@@ -479,7 +479,7 @@ void Channel::SetMode(uint64 p, const char *p2n, bool mod, bool set)
 
         // allow make moderator from another team only if both is GMs
         // at this moment this only way to show channel post for GM from another team
-        if ((!AccountMgr::IsGMAccount(player->GetSession()->GetSecurity()) || !AccountMgr::IsGMAccount(newp->GetSession()->GetSecurity())) &&
+        if ((!AccountMgr::IsModeratorAccount(player->GetSession()->GetSecurity()) || !AccountMgr::IsModeratorAccount(newp->GetSession()->GetSecurity())) &&
             player->GetTeam() != newp->GetTeam() && !sWorld->getBoolConfig(CONFIG_ALLOW_TWO_SIDE_INTERACTION_CHANNEL))
         {
             WorldPacket data;
@@ -519,7 +519,7 @@ void Channel::SetOwner(uint64 p, const char *newname)
         return;
     }
 
-    if (!AccountMgr::IsGMAccount(sec) && p != m_ownerGUID)
+    if (!AccountMgr::IsModeratorAccount(sec) && p != m_ownerGUID)
     {
         WorldPacket data;
         MakeNotOwner(&data);
@@ -621,7 +621,7 @@ void Channel::Announce(uint64 p)
         MakeNotMember(&data);
         SendToOne(&data, p);
     }
-    else if (!players[p].IsModerator() && !AccountMgr::IsGMAccount(sec))
+    else if (!players[p].IsModerator() && !AccountMgr::IsModeratorAccount(sec))
     {
         WorldPacket data;
         MakeNotModerator(&data);
