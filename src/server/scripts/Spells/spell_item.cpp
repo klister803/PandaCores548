@@ -1114,6 +1114,7 @@ enum PurifyHelboarMeat
 {
     SPELL_SUMMON_PURIFIED_HELBOAR_MEAT      = 29277,
     SPELL_SUMMON_TOXIC_HELBOAR_MEAT         = 29278,
+    ITEM_PURIFIED_HELBOAR_MEAT              = 23248,
 };
 
 class spell_item_purify_helboar_meat : public SpellScriptLoader
@@ -1140,7 +1141,11 @@ class spell_item_purify_helboar_meat : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
                 UnitPtr caster = GetCaster();
-                caster->CastSpell(caster, roll_chance_i(50) ? SPELL_SUMMON_PURIFIED_HELBOAR_MEAT : SPELL_SUMMON_TOXIC_HELBOAR_MEAT, true, nullptr);
+                if(roll_chance_i(50))
+                    caster->CastSpell(caster, SPELL_SUMMON_TOXIC_HELBOAR_MEAT, true);
+                else
+                    if (caster->GetTypeId() == TYPEID_PLAYER)
+                        TO_PLAYER(caster)->AddItem(ITEM_PURIFIED_HELBOAR_MEAT, 1);
             }
 
             void Register()

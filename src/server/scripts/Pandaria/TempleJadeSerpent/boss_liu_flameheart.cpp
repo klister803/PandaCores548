@@ -391,7 +391,7 @@ class boss_yu_lon : public CreatureScript
                     {
                     case EVENT_JADE_FIRE:
                         me->CastSpell(SelectTarget(SELECT_TARGET_RANDOM), SPELL_JADE_FIRE, false);
-                        events.ScheduleEvent(EVENT_JADE_FIRE, 1000);
+                        events.ScheduleEvent(EVENT_JADE_FIRE, 1700);
                         break;
                     }
                 }
@@ -464,6 +464,9 @@ class mob_minion_of_doubt: public CreatureScript
             void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
                 events.Update(diff);
