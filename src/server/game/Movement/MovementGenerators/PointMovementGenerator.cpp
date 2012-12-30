@@ -99,8 +99,8 @@ template <> void PointMovementGenerator<Creature>::MovementInform(Creature &unit
 
 enum specialSpells
 {
-    MONK_CLASH          = 126452,
-    MONK_CLASH_IMPACT   = 126451
+    MONK_CLASH                  = 126452,
+    MONK_CLASH_IMPACT           = 126451,
 };
 
 template <> void PointMovementGenerator<Player>::MovementInform(Player& unit)
@@ -139,17 +139,33 @@ bool EffectMovementGenerator::Update(Unit &unit, const uint32&)
 
 void EffectMovementGenerator::Finalize(Unit &unit)
 {
-    if (unit.GetTypeId() != TYPEID_UNIT)
-        return;
+    MovementInform(unit);
+}
 
-    if (((Creature&)unit).AI())
-        ((Creature&)unit).AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
-    // Need restore previous movement since we have no proper states system
-    //if (unit.isAlive() && !unit.HasUnitState(UNIT_STATE_CONFUSED|UNIT_STATE_FLEEING))
-    //{
-    //    if (Unit * victim = unit.getVictim())
-    //        unit.GetMotionMaster()->MoveChase(victim);
-    //    else
-    //        unit.GetMotionMaster()->Initialize();
-    //}
+enum Spells
+{
+    WARRIOR_HEROIC_LEAP         = 6544,
+    WARRIOR_HEROIC_LEAP_DAMAGE  = 52174,
+};
+
+void EffectMovementGenerator::MovementInform(Unit& unit)
+{
+    if (unit.GetTypeId() == TYPEID_UNIT)
+    {
+        Creature* creature = unit.ToCreature();
+
+        if (creature->AI())
+            creature->AI()->MovementInform(POINT_MOTION_TYPE, m_Id);
+    }
+    else if (unit.GetTypeId() == TYPEID_PLAYER)
+    {
+        switch (m_Id)
+        {
+            case WARRIOR_HEROIC_LEAP:
+                unit.CastSpell(&unit, WARRIOR_HEROIC_LEAP_DAMAGE, true);
+                break;
+            default:
+                break;
+        }
+    }
 }

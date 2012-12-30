@@ -67,6 +67,9 @@ class EffectMovementGenerator : public MovementGenerator
         void Finalize(Unit &unit);
         void Reset(Unit &) {}
         bool Update(Unit &u, const uint32&);
+
+        void MovementInform(Unit& unit);
+
         MovementGeneratorType GetMovementGeneratorType() { return EFFECT_MOTION_TYPE; }
     private:
         uint32 m_Id;

@@ -37,7 +37,72 @@ enum WarriorSpells
     WARRIOR_SPELL_THUNDER_CLAP                  = 6343,
     WARRIOR_SPELL_WEAKENED_BLOWS                = 115798,
     WARRIOR_SPELL_BLOOD_AND_THUNDER             = 84615,
-    WARRIOR_SPELL_SHOCKWAVE_STUN                = 132168
+    WARRIOR_SPELL_SHOCKWAVE_STUN                = 132168,
+    WARRIOR_SPELL_HEROIC_LEAP_DAMAGE            = 52174,
+};
+
+// Heroic leap - 6544
+class spell_warr_heroic_leap : public SpellScriptLoader
+{
+    public:
+        spell_warr_heroic_leap() : SpellScriptLoader("spell_warr_heroic_leap") { }
+
+        class spell_warr_heroic_leap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_heroic_leap_SpellScript);
+
+            std::list<Unit*> targetList;
+
+            SpellCastResult CheckElevation()
+            {
+                Unit* caster = GetCaster();
+
+                WorldLocation* dest = const_cast<WorldLocation*>(GetExplTargetDest());
+
+                if (dest->GetPositionZ() > caster->GetPositionZ() + 5.0f)
+                    return SPELL_FAILED_NOPATH;
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_warr_heroic_leap_SpellScript::CheckElevation);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+        return new spell_warr_heroic_leap_SpellScript();
+        }
+};
+
+// Heroic Leap (damage) - 52174
+class spell_warr_heroic_leap_damage : public SpellScriptLoader
+{
+    public:
+        spell_warr_heroic_leap_damage() : SpellScriptLoader("spell_warr_heroic_leap_damage") { }
+
+        class spell_warr_heroic_leap_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_heroic_leap_damage_SpellScript);
+
+            void HandleOnHit()
+            {
+                if(Unit* caster = GetCaster())
+                    SetHitDamage(int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.5f));
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_heroic_leap_damage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_heroic_leap_damage_SpellScript();
+        }
 };
 
 // Shockwave - 46968
@@ -517,6 +582,8 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_heroic_leap_damage();
+    new spell_warr_heroic_leap();
     new spell_warr_shockwave();
     new spell_warr_bloodthirst();
     new spell_warr_victory_rush();
