@@ -14059,7 +14059,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             aura->GetBase()->DropCharge();
     }
     // Hack Fix Shooting Stars - Drop charge
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(93400) && getClass() == CLASS_DRUID && procSpell->Id == 78674)
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(93400) && getClass() == CLASS_DRUID && procSpell && procSpell->Id == 78674)
         if (AuraPtr aura = GetAura(93400))
             RemoveAura(93400);
     // Hack Fix Immolate - Critical strikes generate burning embers
