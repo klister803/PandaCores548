@@ -59,9 +59,9 @@ class spell_warr_sword_and_board : public SpellScriptLoader
             void HandleOnHit()
             {
                 // Fix Sword and Board
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         if (roll_chance_i(30))
                         {
@@ -97,8 +97,8 @@ class spell_warr_mortal_strike : public SpellScriptLoader
             void HandleOnHit()
             {
                 // Fix Apply Mortal strike buff on player only if he has the correct glyph
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                    if (UnitPtr target = GetHitUnit())
                         if (_player->HasAura(12294))
                             if (!_player->HasAura(WARRIOR_SPELL_GLYPH_OF_MORTAL_STRIKE))
                                 _player->RemoveAura(12294);
@@ -128,11 +128,11 @@ class spell_warr_rallying_cry : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
                 {
                     _player->CastSpell(_player, WARRIOR_SPELL_RALLYING_CRY, true);
 
-                    std::list<Unit*> memberList;
+                    std::list<UnitPtr> memberList;
                     _player->GetPartyMembers(memberList);
 
                     for (auto itr : memberList)
@@ -163,11 +163,11 @@ class spell_warr_heroic_leap : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warr_heroic_leap_SpellScript);
 
-            std::list<Unit*> targetList;
+            std::list<UnitPtr> targetList;
 
             SpellCastResult CheckElevation()
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
 
                 WorldLocation* dest = const_cast<WorldLocation*>(GetExplTargetDest());
 
@@ -201,7 +201,7 @@ class spell_warr_heroic_leap_damage : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if(Unit* caster = GetCaster())
+                if(UnitPtr caster = GetCaster())
                     SetHitDamage(int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.5f));
             }
 

@@ -76,19 +76,19 @@ class spell_dru_wild_mushroom : public SpellScriptLoader
 
             void HandleSummon(SpellEffIndex effIndex)
             {
-                if (Player* player = GetCaster()->ToPlayer())
+                if (PlayerPtr player = TO_PLAYER(GetCaster()))
                 {
                     PreventHitDefaultEffect(effIndex);
 
                     const SpellInfo* spell = GetSpellInfo();
-                    std::list<Creature*> mushroomlist;
+                    std::list<CreaturePtr> mushroomlist;
 
                     player->GetCreatureListWithEntryInGrid(mushroomlist, DRUID_NPC_WILD_MUSHROOM, 500.0f);
 
                     // Remove other players mushrooms
-                    for (std::list<Creature*>::iterator i = mushroomlist.begin(); i != mushroomlist.end(); ++i)
+                    for (std::list<CreaturePtr>::iterator i = mushroomlist.begin(); i != mushroomlist.end(); ++i)
                     {
-                        Unit* owner = (*i)->GetOwner();
+                        UnitPtr owner = (*i)->GetOwner();
                         if (owner && owner == player && (*i)->isSummon())
                             continue;
 
@@ -102,7 +102,7 @@ class spell_dru_wild_mushroom : public SpellScriptLoader
                     Position pos;
                     GetExplTargetDest()->GetPosition(&pos);
                     const SummonPropertiesEntry* properties = sSummonPropertiesStore.LookupEntry(spell->Effects[effIndex].MiscValueB);
-                    TempSummon* summon = player->SummonCreature(spell->Effects[effIndex].MiscValue, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, spell->GetDuration());
+                    TempSummonPtr summon = player->SummonCreature(spell->Effects[effIndex].MiscValue, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, spell->GetDuration());
                     if (!summon)
                         return;
 
@@ -137,23 +137,23 @@ class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
 
             // Globals variables
             float spellRange;
-            std::list<TempSummon*> mushroomList;
+            std::list<TempSummonPtr> mushroomList;
 
             bool Load()
             {
                 spellRange = GetSpellInfo()->GetMaxRange(true);
 
-                Player* player = GetCaster()->ToPlayer();
+                PlayerPtr player = TO_PLAYER(GetCaster());
                 if (!player)
                     return false;
 
-                std::list<Creature*> list;
-                std::list<TempSummon*> summonList;
+                std::list<CreaturePtr> list;
+                std::list<TempSummonPtr> summonList;
                 player->GetCreatureListWithEntryInGrid(list, DRUID_NPC_WILD_MUSHROOM, 500.0f);
 
-                for (std::list<Creature*>::const_iterator i = list.begin(); i != list.end(); ++i)
+                for (std::list<CreaturePtr>::const_iterator i = list.begin(); i != list.end(); ++i)
                 {
-                    Unit* owner = (*i)->GetOwner();
+                    UnitPtr owner = (*i)->GetOwner();
                     if (owner && owner == player && (*i)->isSummon())
                     {
                         summonList.push_back((*i)->ToTempSummon());
@@ -170,7 +170,7 @@ class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                Player* player = GetCaster()->ToPlayer();
+                PlayerPtr player = TO_PLAYER(GetCaster());
                 if (!player)
                     return SPELL_FAILED_CASTER_DEAD;
 
@@ -179,7 +179,7 @@ class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
 
                 bool inRange = false;
 
-                for (std::list<TempSummon*>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
+                for (std::list<TempSummonPtr>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
                 {
                     Position shroomPos;
                     (*i)->GetPosition(&shroomPos);
@@ -200,7 +200,7 @@ class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Player* player = GetCaster()->ToPlayer())
+                if (PlayerPtr player = TO_PLAYER(GetCaster()))
                 {
                     uint32 fungal = NULL;
                     if (player->HasAura(DRUID_TALENT_FUNGAL_GROWTH_1)) // Fungal Growth Rank 1
@@ -208,7 +208,7 @@ class spell_dru_wild_mushroom_detonate : public SpellScriptLoader
                     else if (player->HasAura(DRUID_TALENT_FUNGAL_GROWTH_2)) // Fungal Growth Rank 2
                         fungal = DRUID_NPC_FUNGAL_GROWTH_2;
 
-                    for (std::list<TempSummon*>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
+                    for (std::list<TempSummonPtr>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
                     {
                         Position shroomPos;
                         (*i)->GetPosition(&shroomPos);
@@ -249,23 +249,23 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
 
             // Globals variables
             float spellRange;
-            std::list<TempSummon*> mushroomList;
+            std::list<TempSummonPtr> mushroomList;
 
             bool Load()
             {
                 spellRange = GetSpellInfo()->GetMaxRange(true);
 
-                Player* player = GetCaster()->ToPlayer();
+                PlayerPtr player = TO_PLAYER(GetCaster());
                 if (!player)
                     return false;
 
-                std::list<Creature*> list;
-                std::list<TempSummon*> summonList;
+                std::list<CreaturePtr> list;
+                std::list<TempSummonPtr> summonList;
                 player->GetCreatureListWithEntryInGrid(list, DRUID_NPC_WILD_MUSHROOM, 500.0f);
 
-                for (std::list<Creature*>::const_iterator i = list.begin(); i != list.end(); ++i)
+                for (std::list<CreaturePtr>::const_iterator i = list.begin(); i != list.end(); ++i)
                 {
-                    Unit* owner = (*i)->GetOwner();
+                    UnitPtr owner = (*i)->GetOwner();
                     if (owner && owner == player && (*i)->isSummon())
                     {
                         summonList.push_back((*i)->ToTempSummon());
@@ -282,7 +282,7 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                Player* player = GetCaster()->ToPlayer();
+                PlayerPtr player = TO_PLAYER(GetCaster());
                 if (!player)
                     return SPELL_FAILED_CASTER_DEAD;
 
@@ -291,7 +291,7 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
 
                 bool inRange = false;
 
-                for (std::list<TempSummon*>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
+                for (std::list<TempSummonPtr>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
                 {
                     Position shroomPos;
                     (*i)->GetPosition(&shroomPos);
@@ -312,7 +312,7 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Player* player = GetCaster()->ToPlayer())
+                if (PlayerPtr player = TO_PLAYER(GetCaster()))
                 {
                     uint32 fungal = NULL;
                     if (player->HasAura(DRUID_TALENT_FUNGAL_GROWTH_1)) // Fungal Growth Rank 1
@@ -320,7 +320,7 @@ class spell_dru_wild_mushroom_bloom : public SpellScriptLoader
                     else if (player->HasAura(DRUID_TALENT_FUNGAL_GROWTH_2)) // Fungal Growth Rank 2
                         fungal = DRUID_NPC_FUNGAL_GROWTH_2;
 
-                    for (std::list<TempSummon*>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
+                    for (std::list<TempSummonPtr>::const_iterator i = mushroomList.begin(); i != mushroomList.end(); ++i)
                     {
                         Position shroomPos;
                         (*i)->GetPosition(&shroomPos);
