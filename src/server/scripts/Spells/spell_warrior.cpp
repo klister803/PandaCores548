@@ -37,7 +37,184 @@ enum WarriorSpells
     WARRIOR_SPELL_THUNDER_CLAP                  = 6343,
     WARRIOR_SPELL_WEAKENED_BLOWS                = 115798,
     WARRIOR_SPELL_BLOOD_AND_THUNDER             = 84615,
-    WARRIOR_SPELL_SHOCKWAVE_STUN                = 132168
+    WARRIOR_SPELL_SHOCKWAVE_STUN                = 132168,
+    WARRIOR_SPELL_HEROIC_LEAP_DAMAGE            = 52174,
+    WARRIOR_SPELL_RALLYING_CRY		            = 122507,
+    WARRIOR_SPELL_GLYPH_OF_MORTAL_STRIKE        = 58368,
+    WARRIOR_SPELL_SWORD_AND_BOARD               = 50227,
+    WARRIOR_SPELL_SHIELD_SLAM                   = 23922,
+};
+
+// Called by Devastate - 20243
+// Sword and Board - 46953
+class spell_warr_sword_and_board : public SpellScriptLoader
+{
+    public:
+        spell_warr_sword_and_board() : SpellScriptLoader("spell_warr_sword_and_board") { }
+
+        class spell_warr_sword_and_board_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_sword_and_board_SpellScript);
+
+            void HandleOnHit()
+            {
+                // Fix Sword and Board
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                {
+                    if (UnitPtr target = GetHitUnit())
+                    {
+                        if (roll_chance_i(30))
+                        {
+                            _player->CastSpell(_player, WARRIOR_SPELL_SWORD_AND_BOARD, true);
+                            _player->RemoveSpellCooldown(WARRIOR_SPELL_SHIELD_SLAM, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_sword_and_board_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_sword_and_board_SpellScript();
+        }
+};
+
+// Mortal strike - 12294
+class spell_warr_mortal_strike : public SpellScriptLoader
+{
+    public:
+        spell_warr_mortal_strike() : SpellScriptLoader("spell_warr_mortal_strike") { }
+
+        class spell_warr_mortal_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_mortal_strike_SpellScript);
+
+            void HandleOnHit()
+            {
+                // Fix Apply Mortal strike buff on player only if he has the correct glyph
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                    if (UnitPtr target = GetHitUnit())
+                        if (_player->HasAura(12294))
+                            if (!_player->HasAura(WARRIOR_SPELL_GLYPH_OF_MORTAL_STRIKE))
+                                _player->RemoveAura(12294);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_mortal_strike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_mortal_strike_SpellScript();
+        }
+};
+
+// Rallying cry - 97462
+class spell_warr_rallying_cry : public SpellScriptLoader
+{
+    public:
+        spell_warr_rallying_cry() : SpellScriptLoader("spell_warr_rallying_cry") { }
+
+        class spell_warr_rallying_cry_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_rallying_cry_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                {
+                    _player->CastSpell(_player, WARRIOR_SPELL_RALLYING_CRY, true);
+
+                    std::list<UnitPtr> memberList;
+                    _player->GetPartyMembers(memberList);
+
+                    for (auto itr : memberList)
+                        if (itr->IsWithinDistInMap(_player, 30.0f))
+                            _player->CastSpell(itr, WARRIOR_SPELL_RALLYING_CRY, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_warr_rallying_cry_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_rallying_cry_SpellScript();
+        }
+};
+
+// Heroic leap - 6544
+class spell_warr_heroic_leap : public SpellScriptLoader
+{
+    public:
+        spell_warr_heroic_leap() : SpellScriptLoader("spell_warr_heroic_leap") { }
+
+        class spell_warr_heroic_leap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_heroic_leap_SpellScript);
+
+            std::list<UnitPtr> targetList;
+
+            SpellCastResult CheckElevation()
+            {
+                UnitPtr caster = GetCaster();
+
+                WorldLocation* dest = const_cast<WorldLocation*>(GetExplTargetDest());
+
+                if (dest->GetPositionZ() > caster->GetPositionZ() + 5.0f)
+                    return SPELL_FAILED_NOPATH;
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_warr_heroic_leap_SpellScript::CheckElevation);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+        return new spell_warr_heroic_leap_SpellScript();
+        }
+};
+
+// Heroic Leap (damage) - 52174
+class spell_warr_heroic_leap_damage : public SpellScriptLoader
+{
+    public:
+        spell_warr_heroic_leap_damage() : SpellScriptLoader("spell_warr_heroic_leap_damage") { }
+
+        class spell_warr_heroic_leap_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_heroic_leap_damage_SpellScript);
+
+            void HandleOnHit()
+            {
+                if(UnitPtr caster = GetCaster())
+                    SetHitDamage(int32(caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.5f));
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_heroic_leap_damage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_heroic_leap_damage_SpellScript();
+        }
 };
 
 // Shockwave - 46968
@@ -517,6 +694,11 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_sword_and_board();
+    new spell_warr_mortal_strike();
+    new spell_warr_rallying_cry();
+    new spell_warr_heroic_leap_damage();
+    new spell_warr_heroic_leap();
     new spell_warr_shockwave();
     new spell_warr_bloodthirst();
     new spell_warr_victory_rush();
