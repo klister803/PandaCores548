@@ -41,6 +41,47 @@ enum WarriorSpells
     WARRIOR_SPELL_HEROIC_LEAP_DAMAGE            = 52174,
     WARRIOR_SPELL_RALLYING_CRY		            = 122507,
     WARRIOR_SPELL_GLYPH_OF_MORTAL_STRIKE        = 58368,
+    WARRIOR_SPELL_SWORD_AND_BOARD               = 50227,
+    WARRIOR_SPELL_SHIELD_SLAM                   = 23922,
+};
+
+// Called by Devastate - 20243
+// Sword and Board - 46953
+class spell_warr_sword_and_board : public SpellScriptLoader
+{
+    public:
+        spell_warr_sword_and_board() : SpellScriptLoader("spell_warr_sword_and_board") { }
+
+        class spell_warr_sword_and_board_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_sword_and_board_SpellScript);
+
+            void HandleOnHit()
+            {
+                // Fix Sword and Board
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (roll_chance_i(30))
+                        {
+                            _player->CastSpell(_player, WARRIOR_SPELL_SWORD_AND_BOARD, true);
+                            _player->RemoveSpellCooldown(WARRIOR_SPELL_SHIELD_SLAM, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_sword_and_board_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_sword_and_board_SpellScript();
+        }
 };
 
 // Mortal strike - 12294
@@ -653,6 +694,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_sword_and_board();
     new spell_warr_mortal_strike();
     new spell_warr_rallying_cry();
     new spell_warr_heroic_leap_damage();
