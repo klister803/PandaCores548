@@ -201,39 +201,39 @@ void MailDraft::SendMailTo(SQLTransaction& trans, MailReceiver const& receiver, 
     // Add to DB
     uint8 index = 0;
     PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_MAIL);
-    stmt->setUInt32(  index, mailId);
-    stmt->setUInt8 (++index, uint8(sender.GetMailMessageType()));
-    stmt->setInt8  (++index, int8(sender.GetStationery()));
-    stmt->setUInt16(++index, GetMailTemplateId());
-    stmt->setUInt32(++index, sender.GetSenderId());
-    stmt->setUInt32(++index, receiver.GetPlayerGUIDLow());
-    stmt->setString(++index, GetSubject());
-    stmt->setString(++index, GetBody());
-    stmt->setBool  (++index, !m_items.empty());
-    stmt->setUInt64(++index, uint64(expire_time));
-    stmt->setUInt64(++index, uint64(deliver_time));
-    stmt->setUInt32(++index, m_money);
-    stmt->setUInt32(++index, m_COD);
-    stmt->setUInt8 (++index, uint8(checked));
+    stmt->setUInt32(index++, mailId);
+    stmt->setUInt8 (index++, uint8(sender.GetMailMessageType()));
+    stmt->setInt8  (index++, int8(sender.GetStationery()));
+    stmt->setUInt16(index++, GetMailTemplateId());
+    stmt->setUInt32(index++, sender.GetSenderId());
+    stmt->setUInt32(index++, receiver.GetPlayerGUIDLow());
+    stmt->setString(index++, GetSubject());
+    stmt->setString(index++, GetBody());
+    stmt->setBool  (index++, !m_items.empty());
+    stmt->setUInt64(index++, uint64(expire_time));
+    stmt->setUInt64(index++, uint64(deliver_time));
+    stmt->setUInt32(index++, m_money);
+    stmt->setUInt32(index++, m_COD);
+    stmt->setUInt8 (index, uint8(checked));
     trans->Append(stmt);
 
     // Logging
     index = 0;
     PreparedStatement* stmt_log = CharacterDatabase.GetPreparedStatement(CHAR_INS_MAIL_LOG);
-    stmt_log->setUInt32(  index, mailId);
-    stmt_log->setUInt8 (++index, uint8(sender.GetMailMessageType()));
-    stmt_log->setInt8  (++index, int8(sender.GetStationery()));
-    stmt_log->setUInt16(++index, GetMailTemplateId());
-    stmt_log->setUInt32(++index, sender.GetSenderId());
-    stmt_log->setUInt32(++index, receiver.GetPlayerGUIDLow());
-    stmt_log->setString(++index, GetSubject());
-    stmt_log->setString(++index, GetBody());
-    stmt_log->setBool  (++index, !m_items.empty());
-    stmt_log->setUInt64(++index, uint64(expire_time));
-    stmt_log->setUInt64(++index, uint64(deliver_time));
-    stmt_log->setUInt32(++index, m_money);
-    stmt_log->setUInt32(++index, m_COD);
-    stmt_log->setUInt8 (++index, uint8(checked));
+    stmt_log->setUInt32(index++, mailId);
+    stmt_log->setUInt8 (index++, uint8(sender.GetMailMessageType()));
+    stmt_log->setInt8  (index++, int8(sender.GetStationery()));
+    stmt_log->setUInt16(index++, GetMailTemplateId());
+    stmt_log->setUInt32(index++, sender.GetSenderId());
+    stmt_log->setUInt32(index++, receiver.GetPlayerGUIDLow());
+    stmt_log->setString(index++, GetSubject());
+    stmt_log->setString(index++, GetBody());
+    stmt_log->setBool  (index++, !m_items.empty());
+    stmt_log->setUInt64(index++, uint64(expire_time));
+    stmt_log->setUInt64(index++, uint64(deliver_time));
+    stmt_log->setUInt32(index++, m_money);
+    stmt_log->setUInt32(index++, m_COD);
+    stmt_log->setUInt8 (index, uint8(checked));
     trans->Append(stmt_log);
 
     for (MailItemMap::const_iterator mailItemIter = m_items.begin(); mailItemIter != m_items.end(); ++mailItemIter)
