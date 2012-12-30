@@ -27,7 +27,9 @@ char const* localeNames[TOTAL_LOCALES] = {
   "zhTW",
   "esES",
   "esMX",
-  "ruRU"
+  "ruRU",
+  "ptPT",
+  "itIT",
 };
 
 ACE_Based::LockedQueue<GmCommand*, ACE_Thread_Mutex> GmLogQueue;
