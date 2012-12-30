@@ -466,6 +466,9 @@ class mob_minion_of_doubt: public CreatureScript
                 if (!UpdateVictim())
                     return;
 
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
                 events.Update(diff);
 
                 while (uint32 eventId = events.ExecuteEvent())
