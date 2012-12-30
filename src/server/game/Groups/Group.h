@@ -181,10 +181,13 @@ struct InstanceGroupBind
     InstanceGroupBind() : save(nullptr), perm(false) {}
 };
 
+struct GroupDeleter;
+
 /** request member stats checken **/
 /** todo: uninvite people that not accepted invite **/
 class Group : public std::enable_shared_from_this<Group>
 {
+    friend struct GroupDeleter;
     public:
         struct MemberSlot
         {
@@ -375,5 +378,36 @@ class Group : public std::enable_shared_from_this<Group>
         uint32              m_dbStoreId;                    // Represents the ID used in database (Can be reused by other groups if group was disbanded)
         uint8               m_readyCheckCount;
         bool                m_readyCheck;
+};
+struct GroupDeleter
+{
+    typedef UNORDERED_MAP< uint32 /*mapId*/, InstanceGroupBind> BoundInstancesMap;
+    void operator()(Group* ptr)
+    {
+        if (ptr->m_bgGroup)
+        {
+            sLog->outDebug(LOG_FILTER_BATTLEGROUND, "Group::~Group: battleground group being deleted.");
+            if (ptr->m_bgGroup->GetBgRaid(ALLIANCE).get() == ptr) ptr->m_bgGroup->SetBgRaid(ALLIANCE, nullptr);
+            else if (ptr->m_bgGroup->GetBgRaid(HORDE).get() == ptr) ptr->m_bgGroup->SetBgRaid(HORDE, nullptr);
+            else sLog->outError(LOG_FILTER_GENERAL, "Group::~Group: battleground group is not linked to the correct battleground.");
+        }
+        std::vector<RollPtr>::iterator itr;
+        while (!ptr->RollId.empty())
+        {
+            itr = ptr->RollId.begin();
+            RollPtr r = *itr;
+            ptr->RollId.erase(itr);
+        }
+
+        // it is undefined whether objectmgr (which stores the groups) or instancesavemgr
+        // will be unloaded first so we must be prepared for both cases
+        // shared_from_this() may unload some instance saves
+        for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
+            ptr->m_boundInstances[i].clear();
+
+        // Sub group counters clean up
+        delete[] ptr->m_subGroupsCounts;
+        delete ptr;
+    }
 };
 #endif

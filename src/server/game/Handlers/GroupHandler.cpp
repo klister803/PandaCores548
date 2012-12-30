@@ -245,7 +245,7 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
     // at least one person joins
     if (!group)
     {
-        group = GroupPtr(new Group);
+        group = GroupPtr(new Group, GroupDeleter());
         // new group: if can't add then delete
         if (!group->AddLeaderInvite(GetPlayer()))
             return;

@@ -33,6 +33,7 @@
 # include "../Entities/GameObject/GameObject.h"
 # include "../Spells/Auras/SpellAuraEffects.h"
 # include "../Groups/Group.h"
+# include "../MovementGenerator.h"
 # undef INCLUDES_FOR_SHARED_PTR
 #endif
 

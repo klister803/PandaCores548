@@ -570,7 +570,7 @@ bool Battlefield::AddOrSetPlayerToCorrectBfGroup(PlayerPtr player)
     GroupPtr group = GetFreeBfRaid(player->GetTeamId());
     if (!group)
     {
-        group = GroupPtr(new Group);
+        group = GroupPtr(new Group, GroupDeleter());
         group->SetBattlefieldGroup(this);
         group->Create(player);
         sGroupMgr->AddGroup(group);
