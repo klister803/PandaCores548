@@ -237,6 +237,7 @@ public:
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->LoadEquipment(0, true);
                 me->RemoveAura(SPELL_ANTI_MAGIC_ZONE);
+                me->SetReactState(REACT_PASSIVE);
             }
         }
 
@@ -355,6 +356,9 @@ public:
                 }
                 else
                     m_uiWave_Timer -= uiDiff;
+
+                if(!me->HasAura(52894))
+                    DoCast(me, 52894);
             }
         }
     };

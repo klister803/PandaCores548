@@ -12,7 +12,7 @@
 
 enum eSpells
 {
-    SPELL_CORRUPTED_WATERS      = 115167,
+    SPELL_CORRUPTED_WATERS      = 106778,
     //Spells for Lorewalker Stonestep event.
     SPELL_SHA_CORRUPTION        = 107034, //On spawn: Lot of mobs and decoration
     //HAUNTING SHA SPELLS
@@ -147,6 +147,7 @@ public:
         Position roomCenter;
         uint32 waterDamageTimer;
         uint64 doorWiseMari;
+        uint64 wiseMariGUID;
         /*
         ** End of Wise Mari script
         */
@@ -206,6 +207,7 @@ public:
             roomCenter.m_positionZ = 174.9552f;
             roomCenter.m_orientation = 4.33f;
             waterDamageTimer = 250;
+            wiseMariGUID = 0;
 
             //LoreWalkter Stonestep script.
             lorewalkter_stonestep = 0;
@@ -261,6 +263,9 @@ public:
             OnCreatureCreate_lorewalker_stonestep(creature);
             OnCreatureCreate_liu_flameheart(creature);
             OnCreatureCreate_sha_of_doubt(creature);
+
+            if (creature->GetEntry() == 56448)
+            	wiseMariGUID = creature->GetGUID();
         }
 
         void OnUnitDeath(Unit* unit)
@@ -298,6 +303,13 @@ public:
                         Player* plr = i->getSource();
                         if( !plr)
                             continue;
+
+                        Unit* wiseMari = Unit::GetUnit(*plr, wiseMariGUID);
+                        if (!wiseMari)
+                        	continue;
+
+                        if (!wiseMari->isAlive() || !wiseMari->isInCombat())
+                        	continue;
 
                         // position : center of the wise mari's room
                         Position pos;
