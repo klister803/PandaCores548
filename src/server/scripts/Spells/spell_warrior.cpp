@@ -95,7 +95,8 @@ class spell_warr_rallying_cry : public SpellScriptLoader
                     _player->GetPartyMembers(memberList);
 
                     for (auto itr : memberList)
-                        _player->CastSpell(itr, WARRIOR_SPELL_RALLYING_CRY, true);
+                        if (itr->IsWithinDistInMap(_player, 30.0f))
+                            _player->CastSpell(itr, WARRIOR_SPELL_RALLYING_CRY, true);
                 }
             }
 
