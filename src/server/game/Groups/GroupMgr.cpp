@@ -131,7 +131,7 @@ void GroupMgr::LoadGroups()
         do
         {
             Field* fields = result->Fetch();
-            GroupPtr group (new Group);
+            GroupPtr group (new Group, GroupDeleter());
             group->LoadGroupFromDB(fields);
             AddGroup(group);
 

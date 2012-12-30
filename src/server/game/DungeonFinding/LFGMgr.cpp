@@ -1687,7 +1687,7 @@ void LFGMgr::UpdateProposal(uint32 proposalId, uint64 guid, bool accept)
 
             if (!grp)
             {
-                grp = GroupPtr(new Group());
+                grp = GroupPtr(new Group(), GroupDeleter());
                 grp->Create(player);
                 grp->ConvertToLFG();
                 uint64 gguid = grp->GetGUID();

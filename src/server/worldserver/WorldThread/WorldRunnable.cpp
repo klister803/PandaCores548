@@ -36,6 +36,7 @@
 # define INCLUDES_FOR_SHARED_PTR
 # include "../Spells/Auras/SpellAuraEffects.h"
 # include "../Groups/Group.h"
+# include "MovementGenerator.h"
 # undef INCLUDES_FOR_SHARED_PTR
 #endif
 
