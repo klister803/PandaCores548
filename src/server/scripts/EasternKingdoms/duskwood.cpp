@@ -43,16 +43,16 @@ class at_twilight_grove : public AreaTriggerScript
 public:
     at_twilight_grove() : AreaTriggerScript("at_twilight_grove") { }
 
-    bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/)
+    bool OnTrigger(PlayerPtr player, const AreaTriggerEntry* /*at*/)
     {
         if (player->HasQuestForItem(21149))
         {
-            if (Unit* TCorrupter = player->SummonCreature(15625, -10328.16f, -489.57f, 49.95f, 0, TEMPSUMMON_MANUAL_DESPAWN, 60000))
+            if (UnitPtr TCorrupter = player->SummonCreature(15625, -10328.16f, -489.57f, 49.95f, 0, TEMPSUMMON_MANUAL_DESPAWN, 60000))
             {
                 TCorrupter->setFaction(14);
                 TCorrupter->SetMaxHealth(832750);
             }
-            if (Creature* CorrupterSpeaker = player->SummonCreature(1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()-1, 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
+            if (CreaturePtr CorrupterSpeaker = player->SummonCreature(1, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ()-1, 0, TEMPSUMMON_TIMED_DESPAWN, 15000))
             {
                 CorrupterSpeaker->SetName("Twilight Corrupter");
                 CorrupterSpeaker->SetVisible(true);
@@ -76,14 +76,14 @@ class boss_twilight_corrupter : public CreatureScript
 public:
     boss_twilight_corrupter() : CreatureScript("boss_twilight_corrupter") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_twilight_corrupterAI (creature);
     }
 
     struct boss_twilight_corrupterAI : public ScriptedAI
     {
-        boss_twilight_corrupterAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_twilight_corrupterAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 SoulCorruption_Timer;
         uint32 CreatureOfNightmare_Timer;
@@ -95,12 +95,12 @@ public:
             CreatureOfNightmare_Timer = 30000;
             KillCount = 0;
         }
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             Talk(YELL_TWILIGHTCORRUPTOR_AGGRO);
         }
 
-        void KilledUnit(Unit* victim)
+        void KilledUnit(UnitPtr victim)
         {
             if (victim->GetTypeId() == TYPEID_PLAYER)
             {

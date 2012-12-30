@@ -61,13 +61,13 @@ class boss_faerlina : public CreatureScript
 
         struct boss_faerlinaAI : public BossAI
         {
-            boss_faerlinaAI(Creature* creature) : BossAI(creature, BOSS_FAERLINA),
+            boss_faerlinaAI(CreaturePtr creature) : BossAI(creature, BOSS_FAERLINA),
                 _frenzyDispels(0), _introDone(false), _delayFrenzy(false)
             {
             }
 
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 _EnterCombat();
                 DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3, SAY_AGGRO_4), me);
@@ -83,7 +83,7 @@ class boss_faerlina : public CreatureScript
                 _frenzyDispels = 0;
             }
 
-            void MoveInLineOfSight(Unit* who)
+            void MoveInLineOfSight(UnitPtr who)
             {
                 if (!_introDone && who->GetTypeId() == TYPEID_PLAYER)
                 {
@@ -94,19 +94,19 @@ class boss_faerlina : public CreatureScript
                 BossAI::MoveInLineOfSight(who);
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 if (!urand(0, 2))
                     DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 _JustDied();
                 DoScriptText(SAY_DEATH, me);
             }
 
-            void SpellHit(Unit* caster, SpellInfo const* spell)
+            void SpellHit(UnitPtr caster, SpellInfo const* spell)
             {
                 if (spell->Id == SPELL_WIDOWS_EMBRACE || spell->Id == H_SPELL_WIDOWS_EMBRACE)
                 {
@@ -151,7 +151,7 @@ class boss_faerlina : public CreatureScript
                             events.ScheduleEvent(EVENT_POISON, urand(8000, 15000));
                             break;
                         case EVENT_FIRE:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, RAID_MODE(SPELL_RAIN_OF_FIRE, H_SPELL_RAIN_OF_FIRE));
                             events.ScheduleEvent(EVENT_FIRE, urand(6000, 18000));
                             break;
@@ -176,7 +176,7 @@ class boss_faerlina : public CreatureScript
             bool _delayFrenzy;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_faerlinaAI(creature);
         }
@@ -189,7 +189,7 @@ class mob_faerlina_add : public CreatureScript
 
         struct mob_faerlina_addAI : public ScriptedAI
         {
-            mob_faerlina_addAI(Creature* creature) : ScriptedAI(creature),
+            mob_faerlina_addAI(CreaturePtr creature) : ScriptedAI(creature),
                 _instance(creature->GetInstanceScript())
             {
             }
@@ -202,10 +202,10 @@ class mob_faerlina_add : public CreatureScript
                 }
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 if (_instance && GetDifficulty() == MAN10_DIFFICULTY)
-                    if (Creature* faerlina = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_FAERLINA)))
+                    if (CreaturePtr faerlina = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_FAERLINA)))
                         DoCast(faerlina, SPELL_WIDOWS_EMBRACE);
             }
 
@@ -213,7 +213,7 @@ class mob_faerlina_add : public CreatureScript
             InstanceScript* const _instance;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_faerlina_addAI(creature);
         }
@@ -224,7 +224,7 @@ class achievement_momma_said_knock_you_out : public AchievementCriteriaScript
     public:
         achievement_momma_said_knock_you_out() : AchievementCriteriaScript("achievement_momma_said_knock_you_out") { }
 
-        bool OnCheck(Player* /*source*/, Unit* target)
+        bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
         {
             return target && !target->GetAI()->GetData(DATA_FRENZY_DISPELS);
         }

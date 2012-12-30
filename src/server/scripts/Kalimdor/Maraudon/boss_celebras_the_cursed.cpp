@@ -38,14 +38,14 @@ class celebras_the_cursed : public CreatureScript
 public:
     celebras_the_cursed() : CreatureScript("celebras_the_cursed") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new celebras_the_cursedAI (creature);
     }
 
     struct celebras_the_cursedAI : public ScriptedAI
     {
-        celebras_the_cursedAI(Creature* creature) : ScriptedAI(creature) {}
+        celebras_the_cursedAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 WrathTimer;
         uint32 EntanglingRootsTimer;
@@ -58,9 +58,9 @@ public:
             CorruptForcesTimer = 30000;
         }
 
-        void EnterCombat(Unit* /*who*/) { }
+        void EnterCombat(UnitPtr /*who*/) { }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             me->SummonCreature(13716, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 600000);
         }
@@ -73,7 +73,7 @@ public:
             //Wrath
             if (WrathTimer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_WRATH);
                 WrathTimer = 8000;
             }

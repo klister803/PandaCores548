@@ -148,7 +148,7 @@ void zipRead(const std::string& file,
     std::string zip, desiredFile;
 #if _HAVE_ZIP /* G3DFIX: Use ZIP-library only if defined */    
     if (zipfileExists(file, zip, desiredFile)) {
-        struct zip *z = zip_open( zip.c_str(), ZIP_CHECKCONS, NULL );
+        struct zip *z = zip_open( zip.c_str(), ZIP_CHECKCONS, nullptr );
         {
             struct zip_stat info;
             zip_stat_init( &info );    // TODO: Docs unclear if zip_stat_init is required.
@@ -167,10 +167,10 @@ void zipRead(const std::string& file,
         }
         zip_close( z );
     } else {
-        data = NULL;
+        data = nullptr;
     }
 #else
-    data = NULL;
+    data = nullptr;
 #endif
 }
 
@@ -190,8 +190,8 @@ int64 fileLength(const std::string& filename) {
 		if(zipfileExists(filename, zip, contents)){
 			int64 requiredMem;
 
-                        struct zip *z = zip_open( zip.c_str(), ZIP_CHECKCONS, NULL );
-                        debugAssertM(z != NULL, zip + ": zip open failed.");
+                        struct zip *z = zip_open( zip.c_str(), ZIP_CHECKCONS, nullptr );
+                        debugAssertM(z != nullptr, zip + ": zip open failed.");
 			{
                                 struct zip_stat info;
                                 zip_stat_init( &info );    // TODO: Docs unclear if zip_stat_init is required.
@@ -328,7 +328,7 @@ static void _zip_resolveDirectory(std::string& completeDir, const std::string& d
 
 // assumes that zipDir references a .zip file
 static bool _zip_zipContains(const std::string& zipDir, const std::string& desiredFile){
-        struct zip *z = zip_open( zipDir.c_str(), ZIP_CHECKCONS, NULL );
+        struct zip *z = zip_open( zipDir.c_str(), ZIP_CHECKCONS, nullptr );
 	//the last parameter, an int, determines case sensitivity:
 	//1 is sensitive, 2 is not, 0 is default
         int test = zip_name_locate( z, desiredFile.c_str(), ZIP_FL_NOCASE );
@@ -646,10 +646,10 @@ static void getFileOrDirListNormal
         // Unix implementation
         DIR* dir = opendir(path.c_str());
 
-        if (dir != NULL) {
+        if (dir != nullptr) {
             struct dirent* entry = readdir(dir);
 
-            while (entry != NULL) {
+            while (entry != nullptr) {
 
                 // Exclude '.' and '..'
                 if ((strcmp(entry->d_name, ".") != 0) &&
@@ -746,7 +746,7 @@ static void getFileOrDirListZip(const std::string& path,
                                 bool wantFiles,
                                 bool includePath){
 #if _HAVE_ZIP /* G3DFIX: Use ZIP-library only if defined */
-    struct zip *z = zip_open( path.c_str(), ZIP_CHECKCONS, NULL );
+    struct zip *z = zip_open( path.c_str(), ZIP_CHECKCONS, nullptr );
 
     Set<std::string> fileSet;
 
@@ -887,7 +887,7 @@ std::string filenamePath(const std::string& filename) {
 bool isZipfile(const std::string& filename) {
 
 	FILE* f = fopen(filename.c_str(), "r");
-	if (f == NULL) {
+	if (f == nullptr) {
 		return false;
 	}
 	uint8 header[4];

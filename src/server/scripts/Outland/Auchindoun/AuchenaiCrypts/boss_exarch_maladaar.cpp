@@ -47,14 +47,14 @@ class mob_stolen_soul : public CreatureScript
 public:
     mob_stolen_soul() : CreatureScript("mob_stolen_soul") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_stolen_soulAI (creature);
     }
 
     struct mob_stolen_soulAI : public ScriptedAI
     {
-        mob_stolen_soulAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_stolen_soulAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint8 myClass;
         uint32 Class_Timer;
@@ -64,7 +64,7 @@ public:
             Class_Timer = 1000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         { }
 
         void SetMyClass(uint8 myclass)
@@ -156,14 +156,14 @@ class boss_exarch_maladaar : public CreatureScript
 public:
     boss_exarch_maladaar() : CreatureScript("boss_exarch_maladaar") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_exarch_maladaarAI (creature);
     }
 
     struct boss_exarch_maladaarAI : public ScriptedAI
     {
-        boss_exarch_maladaarAI(Creature* creature) : ScriptedAI(creature)
+        boss_exarch_maladaarAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             HasTaunted = false;
         }
@@ -192,7 +192,7 @@ public:
             Avatar_summoned = false;
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (!HasTaunted && me->IsWithinDistInMap(who, 150.0f))
             {
@@ -203,12 +203,12 @@ public:
             ScriptedAI::MoveInLineOfSight(who);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             if (summoned->GetEntry() == ENTRY_STOLEN_SOUL)
             {
@@ -217,7 +217,7 @@ public:
                 summoned->SetDisplayId(soulmodel);
                 summoned->setFaction(me->getFaction());
 
-                if (Unit* target = Unit::GetUnit(*me, soulholder))
+                if (UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), soulholder))
                 {
 
                 CAST_AI(mob_stolen_soul::mob_stolen_soulAI, summoned->AI())->SetMyClass(soulclass);
@@ -226,7 +226,7 @@ public:
             }
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             if (rand()%2)
                 return;
@@ -234,7 +234,7 @@ public:
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
             //When Exarch Maladar is defeated D'ore appear.
@@ -260,7 +260,7 @@ public:
 
             if (StolenSoul_Timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
                     if (target->GetTypeId() == TYPEID_PLAYER)
                     {
@@ -287,7 +287,7 @@ public:
 
             if (Ribbon_of_Souls_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_RIBBON_OF_SOULS);
 
                 Ribbon_of_Souls_timer = 5000 + (rand()%20 * 1000);
@@ -313,14 +313,14 @@ class mob_avatar_of_martyred : public CreatureScript
 public:
     mob_avatar_of_martyred() : CreatureScript("mob_avatar_of_martyred") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_avatar_of_martyredAI (creature);
     }
 
     struct mob_avatar_of_martyredAI : public ScriptedAI
     {
-        mob_avatar_of_martyredAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_avatar_of_martyredAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 Mortal_Strike_timer;
 
@@ -329,7 +329,7 @@ public:
             Mortal_Strike_timer = 10000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 

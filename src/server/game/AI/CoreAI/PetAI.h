@@ -29,23 +29,23 @@ class PetAI : public CreatureAI
 {
     public:
 
-        explicit PetAI(Creature* c);
+        explicit PetAI(CreaturePtr c);
 
         void EnterEvadeMode();
-        void JustDied(Unit* /*who*/) { _stopAttack(); }
+        void JustDied(UnitPtr /*who*/) { _stopAttack(); }
 
         void UpdateAI(const uint32);
-        static int Permissible(const Creature*);
+        static int Permissible(constCreaturePtr);
 
-        void KilledUnit(Unit* /*victim*/);
-        void AttackStart(Unit* target);
+        void KilledUnit(UnitPtr /*victim*/);
+        void AttackStart(UnitPtr target);
         void MovementInform(uint32 moveType, uint32 data);
-        void OwnerDamagedBy(Unit* attacker);
-        void OwnerAttacked(Unit* target);
-        void ReceiveEmote(Player* player, uint32 textEmote);
+        void OwnerDamagedBy(UnitPtr attacker);
+        void OwnerAttacked(UnitPtr target);
+        void ReceiveEmote(PlayerPtr player, uint32 textEmote);
 
     private:
-        bool _isVisible(Unit*) const;
+        bool _isVisible(UnitPtr) const;
         bool _needToStop(void);
         void _stopAttack(void);
 
@@ -56,10 +56,10 @@ class PetAI : public CreatureAI
         std::set<uint64> m_AllySet;
         uint32 m_updateAlliesTimer;
 
-        Unit* SelectNextTarget();
+        UnitPtr SelectNextTarget();
         void HandleReturnMovement();
-        void DoAttack(Unit* target, bool chase);
-        bool CanAttack(Unit* target);
+        void DoAttack(UnitPtr target, bool chase);
+        bool CanAttack(UnitPtr target);
 };
 #endif
 

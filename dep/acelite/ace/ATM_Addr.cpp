@@ -268,7 +268,7 @@ ACE_ATM_Addr::string_to_addr (const ACE_TCHAR sap[])
   struct hostent *entry;
   struct atmnsap_addr *nsap;
 
-  // Yow, someone gave us a NULL ATM address!
+  // Yow, someone gave us a nullptr ATM address!
   if (sap == 0)
     {
       errno = EINVAL;

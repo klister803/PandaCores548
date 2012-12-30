@@ -28,7 +28,7 @@ void ReferenceCountedObject::ReferenceCountedObject_zeroWeakPointers() {
     
     _WeakPtrLinkedList* node = ReferenceCountedObject_weakPointer;
 
-    while (node != NULL) {
+    while (node != nullptr) {
         // Notify the weak pointer that it is going away
         node->weakPtr->objectCollected();
 

@@ -33,14 +33,14 @@ class instance_halls_of_stone : public InstanceMapScript
 public:
     instance_halls_of_stone() : InstanceMapScript("instance_halls_of_stone", 599) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_halls_of_stone_InstanceMapScript(map);
     }
 
     struct instance_halls_of_stone_InstanceMapScript : public InstanceScript
     {
-        instance_halls_of_stone_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_halls_of_stone_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
 
         uint64 uiMaidenOfGrief;
         uint64 uiKrystallus;
@@ -90,7 +90,7 @@ public:
                 m_auiEncounter[i] = NOT_STARTED;
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -104,7 +104,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {
@@ -175,7 +175,7 @@ public:
                     if (m_auiEncounter[2] == DONE)
                     {
                         HandleGameObject(uiSjonnirDoor, true);
-                        GameObject* go = instance->GetGameObject(uiTribunalChest);
+                        GameObjectPtr go = instance->GetGameObject(uiTribunalChest);
                         if (go)
                             go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
                     }

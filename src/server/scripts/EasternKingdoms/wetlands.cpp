@@ -51,14 +51,14 @@ class npc_tapoke_slim_jahn : public CreatureScript
 public:
     npc_tapoke_slim_jahn() : CreatureScript("npc_tapoke_slim_jahn") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_tapoke_slim_jahnAI(creature);
     }
 
     struct npc_tapoke_slim_jahnAI : public npc_escortAI
     {
-        npc_tapoke_slim_jahnAI(Creature* creature) : npc_escortAI(creature) { }
+        npc_tapoke_slim_jahnAI(CreaturePtr creature) : npc_escortAI(creature) { }
 
         bool IsFriendSummoned;
 
@@ -81,7 +81,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             if (HasEscortState(STATE_ESCORT_ESCORTING) && !IsFriendSummoned && GetPlayerForEscort())
             {
@@ -92,13 +92,13 @@ public:
             }
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
-            if (Player* player = GetPlayerForEscort())
+            if (PlayerPtr player = GetPlayerForEscort())
                 summoned->AI()->AttackStart(player);
         }
 
-        void AttackedBy(Unit* pAttacker)
+        void AttackedBy(UnitPtr pAttacker)
         {
             if (me->getVictim())
                 return;
@@ -109,11 +109,11 @@ public:
             AttackStart(pAttacker);
         }
 
-        void DamageTaken(Unit* /*pDoneBy*/, uint32& uiDamage)
+        void DamageTaken(UnitPtr /*pDoneBy*/, uint32& uiDamage)
         {
             if (HealthBelowPct(20))
             {
-                if (Player* player = GetPlayerForEscort())
+                if (PlayerPtr player = GetPlayerForEscort())
                 {
                     if (player->GetTypeId() == TYPEID_PLAYER)
                         CAST_PLR(player)->GroupEventHappens(QUEST_MISSING_DIPLO_PT11, me);
@@ -141,11 +141,11 @@ class npc_mikhail : public CreatureScript
 public:
     npc_mikhail() : CreatureScript("npc_mikhail") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, const Quest* quest)
     {
         if (quest->GetQuestId() == QUEST_MISSING_DIPLO_PT11)
         {
-            Creature* pSlim = creature->FindNearestCreature(NPC_TAPOKE_SLIM_JAHN, 25.0f);
+            CreaturePtr pSlim = creature->FindNearestCreature(NPC_TAPOKE_SLIM_JAHN, 25.0f);
 
             if (!pSlim)
                 return false;

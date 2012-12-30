@@ -33,14 +33,14 @@ class boss_anubshiah : public CreatureScript
 public:
     boss_anubshiah() : CreatureScript("boss_anubshiah") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_anubshiahAI (creature);
     }
 
     struct boss_anubshiahAI : public ScriptedAI
     {
-        boss_anubshiahAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_anubshiahAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 ShadowBolt_Timer;
         uint32 CurseOfTongues_Timer;
@@ -57,7 +57,7 @@ public:
             EnvelopingWeb_Timer = 16000;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -75,7 +75,7 @@ public:
             //CurseOfTongues_Timer
             if (CurseOfTongues_Timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_CURSEOFTONGUES);
                 CurseOfTongues_Timer = 18000;
             } else CurseOfTongues_Timer -= diff;
@@ -97,7 +97,7 @@ public:
             //EnvelopingWeb_Timer
             if (EnvelopingWeb_Timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_ENVELOPINGWEB);
                 EnvelopingWeb_Timer = 12000;
             } else EnvelopingWeb_Timer -= diff;

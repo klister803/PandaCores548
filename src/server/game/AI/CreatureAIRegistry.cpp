@@ -28,6 +28,7 @@
 #include "WaypointMovementGenerator.h"
 #include "CreatureAIFactory.h"
 #include "SmartAI.h"
+#include "SpellAuraEffects.h"
 
 namespace AIRegistry
 {

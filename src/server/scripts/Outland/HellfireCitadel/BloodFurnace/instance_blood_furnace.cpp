@@ -40,7 +40,7 @@ class instance_blood_furnace : public InstanceMapScript
 
         struct instance_blood_furnace_InstanceMapScript : public InstanceScript
         {
-            instance_blood_furnace_InstanceMapScript(Map* map) : InstanceScript(map) {}
+            instance_blood_furnace_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
 
             uint64 The_MakerGUID;
             uint64 BroggokGUID;
@@ -109,7 +109,7 @@ class instance_blood_furnace : public InstanceMapScript
                 BroggokLeverGUID = 0;
             }
 
-            void OnCreatureCreate(Creature* creature)
+            void OnCreatureCreate(CreaturePtr creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -128,13 +128,13 @@ class instance_blood_furnace : public InstanceMapScript
                 }
             }
 
-            void OnUnitDeath(Unit* unit)
+            void OnUnitDeath(UnitPtr unit)
             {
                 if (unit && unit->GetTypeId() == TYPEID_UNIT && unit->GetEntry() == 17398)
                     PrisonerDied(unit->GetGUID());
             }
 
-            void OnGameObjectCreate(GameObject* go)
+            void OnGameObjectCreate(GameObjectPtr go)
             {
                  if (go->GetEntry() == 181766)                //Final exit door
                      Door1GUID = go->GetGUID();
@@ -274,7 +274,7 @@ class instance_blood_furnace : public InstanceMapScript
                     ResetPrisons();
                     HandleGameObject(Door5GUID, false);
                     HandleGameObject(Door4GUID, true);
-                    if (GameObject* lever = instance->GetGameObject(BroggokLeverGUID))
+                    if (GameObjectPtr lever = instance->GetGameObject(BroggokLeverGUID))
                         lever->Respawn();
                     break;
                 }
@@ -302,18 +302,18 @@ class instance_blood_furnace : public InstanceMapScript
             void ResetPrisoners(std::set<uint64> prisoners)
             {
                 for (std::set<uint64>::iterator i = prisoners.begin(); i != prisoners.end(); ++i)
-                    if (Creature* prisoner = instance->GetCreature(*i))
+                    if (CreaturePtr prisoner = instance->GetCreature(*i))
                         ResetPrisoner(prisoner);
             }
 
-            void ResetPrisoner(Creature* prisoner)
+            void ResetPrisoner(CreaturePtr prisoner)
             {
                 if (!prisoner->isAlive())
                     prisoner->Respawn(true);
                 prisoner->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_NON_ATTACKABLE);
             }
 
-            void StorePrisoner(Creature* creature)
+            void StorePrisoner(CreaturePtr creature)
             {
                 float posX = creature->GetPositionX();
                 float posY = creature->GetPositionY();
@@ -387,7 +387,7 @@ class instance_blood_furnace : public InstanceMapScript
                     break;
                 case DATA_DOOR5:
                     HandleGameObject(Door5GUID,true);
-                    if (Creature* broggok = instance->GetCreature(BroggokGUID))
+                    if (CreaturePtr broggok = instance->GetCreature(BroggokGUID))
                         broggok->AI()->DoAction(ACTION_ACTIVATE_BROGGOK);
                     break;
                 }
@@ -396,7 +396,7 @@ class instance_blood_furnace : public InstanceMapScript
             void ActivatePrisoners(std::set<uint64> prisoners)
             {
                 for (std::set<uint64>::iterator i = prisoners.begin(); i != prisoners.end(); ++i)
-                    if (Creature* prisoner = instance->GetCreature(*i))
+                    if (CreaturePtr prisoner = instance->GetCreature(*i))
                     {
                         prisoner->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_IMMUNE_TO_NPC | UNIT_FLAG_NON_ATTACKABLE);
                         prisoner->SetInCombatWithZone();
@@ -404,7 +404,7 @@ class instance_blood_furnace : public InstanceMapScript
             }
         };
 
-        InstanceScript* GetInstanceScript(InstanceMap* map) const
+        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
         {
             return new instance_blood_furnace_InstanceMapScript(map);
         }

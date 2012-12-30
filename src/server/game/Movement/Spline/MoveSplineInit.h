@@ -37,12 +37,12 @@ namespace Movement
     class TransportPathTransform
     {
     public:
-        TransportPathTransform(Unit& owner, bool transformForTransport)
+        TransportPathTransform(UnitPtr owner, bool transformForTransport)
             : _owner(owner), _transformForTransport(transformForTransport) { }
         Vector3 operator()(Vector3 input);
 
     private:
-        Unit& _owner;
+        UnitPtr _owner;
         bool _transformForTransport;
     };
 
@@ -52,7 +52,7 @@ namespace Movement
     {
     public:
 
-        explicit MoveSplineInit(Unit& m);
+        explicit MoveSplineInit(UnitPtr m);
 
         /*  Final pass of initialization that launches spline movement.
          */
@@ -79,7 +79,7 @@ namespace Movement
          */
         void SetFacing(float angle);
         void SetFacing(Vector3 const& point);
-        void SetFacing(const Unit * target);
+        void SetFacing(constUnitPtr  target);
 
         /* Initializes movement by path
          * @param path - array of points, shouldn't be empty
@@ -145,7 +145,7 @@ namespace Movement
     protected:
 
         MoveSplineInitArgs args;
-        Unit&  unit;
+        UnitPtr  unit;
     };
 
     inline void MoveSplineInit::SetFly() { args.flags.flying = true; }

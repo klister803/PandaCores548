@@ -40,7 +40,7 @@ public:
 
     struct boss_galvangarAI : public ScriptedAI
     {
-        boss_galvangarAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_galvangarAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 CleaveTimer;
         uint32 FrighteningShoutTimer;
@@ -59,7 +59,7 @@ public:
             ResetTimer                      = 5 * IN_MILLISECONDS;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             Talk(YELL_AGGRO);
         }
@@ -119,7 +119,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_galvangarAI(creature);
     }

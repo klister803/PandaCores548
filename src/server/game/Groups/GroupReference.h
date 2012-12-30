@@ -34,8 +34,8 @@ class GroupReference : public Reference<Group, Player>
     public:
         GroupReference() : Reference<Group, Player>(), iSubGroup(0) {}
         ~GroupReference() { unlink(); }
-        GroupReference* next() { return (GroupReference*)Reference<Group, Player>::next(); }
-        GroupReference const* next() const { return (GroupReference const*)Reference<Group, Player>::next(); }
+        std::shared_ptr<GroupReference> next() { return CAST(GroupReference,(Reference<Group, Player>::next())); }
+        std::shared_ptr<const GroupReference> next() const { return CAST(const GroupReference,(Reference<Group, Player>::next())); }
         uint8 getSubGroup() const { return iSubGroup; }
         void setSubGroup(uint8 pSubGroup) { iSubGroup = pSubGroup; }
 };

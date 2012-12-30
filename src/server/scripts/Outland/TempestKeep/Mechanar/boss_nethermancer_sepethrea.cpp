@@ -62,7 +62,7 @@ class boss_nethermancer_sepethrea : public CreatureScript
         }
         struct boss_nethermancer_sepethreaAI : public ScriptedAI
         {
-            boss_nethermancer_sepethreaAI(Creature* creature) : ScriptedAI(creature)
+            boss_nethermancer_sepethreaAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -87,7 +87,7 @@ class boss_nethermancer_sepethrea : public CreatureScript
                     instance->SetData(DATA_NETHERMANCER_EVENT, NOT_STARTED);
             }
 
-            void EnterCombat(Unit* who)
+            void EnterCombat(UnitPtr who)
             {
                 if (instance)
                     instance->SetData(DATA_NETHERMANCER_EVENT, IN_PROGRESS);
@@ -97,12 +97,12 @@ class boss_nethermancer_sepethrea : public CreatureScript
                 DoScriptText(SAY_SUMMON, me);
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoScriptText(SAY_DEATH, me);
                 if (instance)
@@ -169,7 +169,7 @@ class boss_nethermancer_sepethrea : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_nethermancer_sepethreaAI(creature);
         }
@@ -184,7 +184,7 @@ class mob_ragin_flames : public CreatureScript
 
             struct mob_ragin_flamesAI : public ScriptedAI
             {
-                mob_ragin_flamesAI(Creature* creature) : ScriptedAI(creature)
+                mob_ragin_flamesAI(CreaturePtr creature) : ScriptedAI(creature)
                 {
                     instance = creature->GetInstanceScript();
                 }
@@ -208,7 +208,7 @@ class mob_ragin_flames : public CreatureScript
                     me->SetSpeed(MOVE_RUN, DUNGEON_MODE(0.5f, 0.7f));
                 }
 
-                void EnterCombat(Unit* /*who*/)
+                void EnterCombat(UnitPtr /*who*/)
                 {
                 }
 
@@ -234,7 +234,7 @@ class mob_ragin_flames : public CreatureScript
 
                     if (!onlyonce)
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             me->GetMotionMaster()->MoveChase(target);
                         onlyonce = true;
                     }
@@ -256,7 +256,7 @@ class mob_ragin_flames : public CreatureScript
                 }
 
             };
-            CreatureAI* GetAI(Creature* creature) const
+            CreatureAI* GetAI(CreaturePtr creature) const
             {
                 return new mob_ragin_flamesAI(creature);
             }

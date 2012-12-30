@@ -58,17 +58,17 @@ enum eSpells
     SPELL_WAKING_NIGHTMARE_H    = 67677
 };
 
-class OrientationCheck : public std::unary_function<Unit*, bool>
+class OrientationCheck : public std::unary_function<UnitPtr, bool>
 {
     public:
-        explicit OrientationCheck(Unit* _caster) : caster(_caster) { }
-        bool operator()(WorldObject* object)
+        explicit OrientationCheck(UnitPtr _caster) : caster(_caster) { }
+        bool operator()(WorldObjectPtr object)
         {
             return !object->isInFront(caster, 2.5f) || !object->IsWithinDist(caster, 40.0f);
         }
 
     private:
-        Unit* caster;
+        UnitPtr caster;
 };
 
 class spell_eadric_radiance : public SpellScriptLoader
@@ -79,7 +79,7 @@ class spell_eadric_radiance : public SpellScriptLoader
         {
             PrepareSpellScript(spell_eadric_radiance_SpellScript);
 
-            void FilterTargets(std::list<WorldObject*>& unitList)
+            void FilterTargets(std::list<WorldObjectPtr>& unitList)
             {
                 unitList.remove_if(OrientationCheck(GetCaster()));
             }
@@ -103,7 +103,7 @@ public:
     boss_eadric() : CreatureScript("boss_eadric") { }
     struct boss_eadricAI : public ScriptedAI
     {
-        boss_eadricAI(Creature* creature) : ScriptedAI(creature)
+        boss_eadricAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             creature->SetReactState(REACT_PASSIVE);
@@ -129,7 +129,7 @@ public:
             bDone = false;
         }
 
-        void DamageTaken(Unit* /*done_by*/, uint32 &damage)
+        void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
         {
             if (damage >= me->GetHealth())
             {
@@ -166,7 +166,7 @@ public:
             {
                 me->InterruptNonMeleeSpells(true);
 
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 250, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 250, true))
                 {
                     if (target && target->isAlive())
                     {
@@ -195,7 +195,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_eadricAI(creature);
     }
@@ -208,7 +208,7 @@ public:
 
     struct boss_paletressAI : public ScriptedAI
     {
-        boss_paletressAI(Creature* creature) : ScriptedAI(creature)
+        boss_paletressAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
 
@@ -242,7 +242,7 @@ public:
             bHealth = false;
             bDone = false;
 
-            if (Creature* pMemory = Unit::GetCreature(*me, MemoryGUID))
+            if (CreaturePtr pMemory = Unit::GetCreature(TO_WORLDOBJECT(me), MemoryGUID))
                 if (pMemory->isAlive())
                     pMemory->RemoveFromWorld();
         }
@@ -253,7 +253,7 @@ public:
                 me->RemoveAura(SPELL_SHIELD);
         }
 
-        void DamageTaken(Unit* /*done_by*/, uint32 &damage)
+        void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
         {
             if (damage >= me->GetHealth())
             {
@@ -288,7 +288,7 @@ public:
 
             if (uiHolyFireTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 250, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 250, true))
                 {
                     if (target && target->isAlive())
                         DoCast(target, SPELL_HOLY_FIRE);
@@ -301,7 +301,7 @@ public:
 
             if (uiHolySmiteTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 250, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 250, true))
                 {
                     if (target && target->isAlive())
                         DoCast(target, SPELL_SMITE);
@@ -324,7 +324,7 @@ public:
                             DoCast(me, SPELL_RENEW);
                             break;
                         case 1:
-                            if (Creature* pMemory = Unit::GetCreature(*me, MemoryGUID))
+                            if (CreaturePtr pMemory = Unit::GetCreature(TO_WORLDOBJECT(me), MemoryGUID))
                                 if (pMemory->isAlive())
                                     DoCast(pMemory, SPELL_RENEW);
                             break;
@@ -347,13 +347,13 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustSummoned(Creature* summon)
+        void JustSummoned(CreaturePtr summon)
         {
             MemoryGUID = summon->GetGUID();
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_paletressAI(creature);
     }
@@ -366,7 +366,7 @@ public:
 
     struct npc_memoryAI : public ScriptedAI
     {
-        npc_memoryAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_memoryAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 uiOldWoundsTimer;
         uint32 uiShadowPastTimer;
@@ -386,7 +386,7 @@ public:
 
             if (uiOldWoundsTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
                     if (target && target->isAlive())
                         DoCast(target, SPELL_OLD_WOUNDS);
@@ -402,7 +402,7 @@ public:
 
             if (uiShadowPastTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                 {
                     if (target && target->isAlive())
                         DoCast(target, SPELL_SHADOWS_PAST);
@@ -413,16 +413,16 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
-            if (TempSummon* summ = me->ToTempSummon())
-                if (Unit* summoner = summ->GetSummoner())
+            if (TempSummonPtr summ = me->ToTempSummon())
+                if (UnitPtr summoner = summ->GetSummoner())
                     if (summoner->isAlive())
                         summoner->GetAI()->SetData(1, 0);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_memoryAI(creature);
     }
@@ -436,7 +436,7 @@ public:
     // THIS AI NEEDS MORE IMPROVEMENTS
     struct npc_argent_soldierAI : public npc_escortAI
     {
-        npc_argent_soldierAI(Creature* creature) : npc_escortAI(creature)
+        npc_argent_soldierAI(CreaturePtr creature) : npc_escortAI(creature)
         {
             instance = creature->GetInstanceScript();
             me->SetReactState(REACT_DEFENSIVE);
@@ -531,14 +531,14 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(DATA_ARGENT_SOLDIER_DEFEATED, instance->GetData(DATA_ARGENT_SOLDIER_DEFEATED) + 1);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_argent_soldierAI(creature);
     }

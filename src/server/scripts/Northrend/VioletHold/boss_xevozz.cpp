@@ -63,14 +63,14 @@ class boss_xevozz : public CreatureScript
 public:
     boss_xevozz() : CreatureScript("boss_xevozz") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_xevozzAI (creature);
     }
 
     struct boss_xevozzAI : public ScriptedAI
     {
-        boss_xevozzAI(Creature* creature) : ScriptedAI(creature)
+        boss_xevozzAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance  = creature->GetInstanceScript();
         }
@@ -99,30 +99,30 @@ public:
 
         void DespawnSphere()
         {
-            std::list<Creature*> assistList;
+            std::list<CreaturePtr> assistList;
             GetCreatureListWithEntryInGrid(assistList, me, NPC_ETHEREAL_SPHERE, 150.0f);
 
             if (assistList.empty())
                 return;
 
-            for (std::list<Creature*>::const_iterator iter = assistList.begin(); iter != assistList.end(); ++iter)
+            for (std::list<CreaturePtr>::const_iterator iter = assistList.begin(); iter != assistList.end(); ++iter)
             {
-                if (Creature* pSphere = *iter)
+                if (CreaturePtr pSphere = *iter)
                     pSphere->Kill(pSphere, false);
             }
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->SetSpeed(MOVE_RUN, 0.5f);
-            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
             {
                 summoned->AddThreat(target, 0.00f);
                 summoned->AI()->AttackStart(target);
             }
         }
 
-        void AttackStart(Unit* who)
+        void AttackStart(UnitPtr who)
         {
             if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                 return;
@@ -136,12 +136,12 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             if (instance)
             {
-                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_XEVOZZ_CELL)))
+                if (GameObjectPtr pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_XEVOZZ_CELL)))
                     if (pDoor->GetGoState() == GO_STATE_READY)
                     {
                         EnterEvadeMode();
@@ -154,7 +154,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 uiDiff)
         {
@@ -194,7 +194,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -214,7 +214,7 @@ public:
                 }
             }
         }
-        void KilledUnit(Unit* victim)
+        void KilledUnit(UnitPtr victim)
         {
             if (victim == me)
                 return;
@@ -230,14 +230,14 @@ class mob_ethereal_sphere : public CreatureScript
 public:
     mob_ethereal_sphere() : CreatureScript("mob_ethereal_sphere") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_ethereal_sphereAI (creature);
     }
 
     struct mob_ethereal_sphereAI : public ScriptedAI
     {
-        mob_ethereal_sphereAI(Creature* creature) : ScriptedAI(creature)
+        mob_ethereal_sphereAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance   = creature->GetInstanceScript();
         }
@@ -266,7 +266,7 @@ public:
             {
                 if (instance)
                 {
-                    if (Creature* pXevozz = Unit::GetCreature(*me, instance->GetData64(DATA_XEVOZZ)))
+                    if (CreaturePtr pXevozz = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_XEVOZZ)))
                     {
                         float fDistance = me->GetDistance2d(pXevozz);
                         if (fDistance <= 3)
@@ -283,7 +283,7 @@ public:
             {
                 DoCast(me, SPELL_SUMMON_PLAYERS); // not working right
 
-                Map* map = me->GetMap();
+                MapPtr map = me->GetMap();
                 if (map && map->IsDungeon())
                 {
                     Map::PlayerList const &PlayerList = map->GetPlayers();

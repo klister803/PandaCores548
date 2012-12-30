@@ -25,6 +25,7 @@
 #include "WorldSession.h"
 #include "ObjectAccessor.h"
 #include "UpdateMask.h"
+#include "SpellAuraEffects.h"
 
 void WorldSession::HandleSetSpecialization(WorldPacket& recvData)
 {
@@ -114,7 +115,7 @@ void WorldSession::HandleTalentWipeConfirmOpcode(WorldPacket& recvData)
 
     _player->SendTalentsInfoData(false);
 
-    if(Unit* unit = _player->GetSelectedUnit())
+    if(UnitPtr unit = _player->GetSelectedUnit())
         unit->CastSpell(_player, 14867, true);                  //spell: "Untalent Visual Effect"
 }
 

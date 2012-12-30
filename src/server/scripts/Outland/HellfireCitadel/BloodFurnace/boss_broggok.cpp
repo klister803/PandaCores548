@@ -49,7 +49,7 @@ class boss_broggok : public CreatureScript
 
         struct boss_broggokAI : public BossAI
         {
-            boss_broggokAI(Creature* creature) : BossAI(creature, DATA_BROGGOK)
+            boss_broggokAI(CreaturePtr creature) : BossAI(creature, DATA_BROGGOK)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -72,12 +72,12 @@ class boss_broggok : public CreatureScript
                 instance->SetData(TYPE_BROGGOK_EVENT, NOT_STARTED);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 DoScriptText(SAY_AGGRO, me);
             }
 
-            void JustSummoned(Creature* summoned)
+            void JustSummoned(CreaturePtr summoned)
             {
                 summoned->setFaction(16);
                 summoned->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -119,7 +119,7 @@ class boss_broggok : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 if (instance)
                 {
@@ -131,7 +131,7 @@ class boss_broggok : public CreatureScript
 
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_broggokAI(creature);
         }
@@ -142,13 +142,13 @@ class go_broggok_lever : public GameObjectScript
 public:
     go_broggok_lever() : GameObjectScript("go_broggok_lever") {}
 
-    bool OnGossipHello(Player* /*player*/, GameObject* go)
+    bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
     {
         if (InstanceScript* instance = go->GetInstanceScript())
             if (instance->GetData(TYPE_BROGGOK_EVENT) != DONE && instance->GetData(TYPE_BROGGOK_EVENT) != IN_PROGRESS)
             {
                 instance->SetData(TYPE_BROGGOK_EVENT, IN_PROGRESS);
-                if (Creature* broggok = Creature::GetCreature(*go, instance->GetData64(DATA_BROGGOK)))
+                if (CreaturePtr broggok = Creature::GetCreature(TO_WORLDOBJECT(go), instance->GetData64(DATA_BROGGOK)))
                     broggok->AI()->DoAction(ACTION_PREPARE_BROGGOK);
             }
             go->UseDoorOrButton();

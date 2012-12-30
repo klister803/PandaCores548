@@ -54,14 +54,14 @@ class instance_utgarde_keep : public InstanceMapScript
 public:
     instance_utgarde_keep() : InstanceMapScript("instance_utgarde_keep", 574) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
        return new instance_utgarde_keep_InstanceMapScript(map);
     }
 
     struct instance_utgarde_keep_InstanceMapScript : public InstanceScript
     {
-        instance_utgarde_keep_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_utgarde_keep_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
 
         uint64 Keleseth;
         uint64 Skarvald;
@@ -107,7 +107,7 @@ public:
             return false;
         }
 
-        Player* GetPlayerInMap()
+        PlayerPtr GetPlayerInMap()
         {
             Map::PlayerList const& players = instance->GetPlayers();
 
@@ -115,16 +115,16 @@ public:
             {
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 {
-                    if (Player* player = itr->getSource())
+                    if (PlayerPtr player = itr->getSource())
                     return player;
                 }
             }
 
             sLog->outDebug(LOG_FILTER_TSCR, "Instance Utgarde Keep: GetPlayerInMap, but PlayerList is empty!");
-            return NULL;
+            return nullptr;
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -135,7 +135,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {

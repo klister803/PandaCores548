@@ -56,14 +56,14 @@ class boss_darkmaster_gandling : public CreatureScript
 public:
     boss_darkmaster_gandling() : CreatureScript("boss_darkmaster_gandling") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_darkmaster_gandlingAI (creature);
     }
 
     struct boss_darkmaster_gandlingAI : public ScriptedAI
     {
-        boss_darkmaster_gandlingAI(Creature* creature) : ScriptedAI(creature)
+        boss_darkmaster_gandlingAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = me->GetInstanceScript();
         }
@@ -83,11 +83,11 @@ public:
             Teleport_Timer = 16000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(TYPE_GANDLING, DONE);
@@ -125,14 +125,14 @@ public:
             {
                 if (Teleport_Timer <= diff)
                 {
-                    Unit* target = NULL;
+                    UnitPtr target = nullptr;
                     target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (target && target->GetTypeId() == TYPEID_PLAYER)
                     {
                         if (DoGetThreat(target))
                             DoModifyThreatPercent(target, -100);
 
-                        Creature* Summoned = NULL;
+                        CreaturePtr Summoned = nullptr;
                         switch (rand()%6)
                         {
                             case 0:

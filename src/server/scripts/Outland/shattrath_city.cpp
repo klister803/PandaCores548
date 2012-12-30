@@ -57,7 +57,7 @@ class npc_raliq_the_drunk : public CreatureScript
 public:
     npc_raliq_the_drunk() : CreatureScript("npc_raliq_the_drunk") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -69,7 +69,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (player->GetQuestStatus(QUEST_CRACK_SKULLS) == QUEST_STATUS_INCOMPLETE)
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_VENDOR, GOSSIP_RALIQ, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
@@ -78,14 +78,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_raliq_the_drunkAI (creature);
     }
 
     struct npc_raliq_the_drunkAI : public ScriptedAI
     {
-        npc_raliq_the_drunkAI(Creature* creature) : ScriptedAI(creature)
+        npc_raliq_the_drunkAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             m_uiNormFaction = creature->getFaction();
         }
@@ -130,7 +130,7 @@ class npc_salsalabim : public CreatureScript
 public:
     npc_salsalabim() : CreatureScript("npc_salsalabim") { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (player->GetQuestStatus(QUEST_10004) == QUEST_STATUS_INCOMPLETE)
         {
@@ -146,14 +146,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_salsalabimAI (creature);
     }
 
     struct npc_salsalabimAI : public ScriptedAI
     {
-        npc_salsalabimAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_salsalabimAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 MagneticPull_Timer;
 
@@ -163,7 +163,7 @@ public:
             me->RestoreFaction();
         }
 
-        void DamageTaken(Unit* done_by, uint32 &damage)
+        void DamageTaken(UnitPtr done_by, uint32 &damage)
         {
             if (done_by->GetTypeId() == TYPEID_PLAYER)
                 if (me->HealthBelowPctDamaged(20, damage))
@@ -206,7 +206,7 @@ class npc_shattrathflaskvendors : public CreatureScript
 public:
     npc_shattrathflaskvendors() : CreatureScript("npc_shattrathflaskvendors") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_TRADE)
@@ -215,7 +215,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->GetEntry() == 23484)
         {
@@ -260,7 +260,7 @@ class npc_zephyr : public CreatureScript
 public:
     npc_zephyr() : CreatureScript("npc_zephyr") { }
 
-    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr /*CreaturePtr/, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -269,7 +269,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (player->GetReputationRank(989) >= REP_REVERED)
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HZ, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
@@ -311,7 +311,7 @@ class npc_kservant : public CreatureScript
 public:
     npc_kservant() : CreatureScript("npc_kservant") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_kservantAI(creature);
     }
@@ -319,11 +319,11 @@ public:
     struct npc_kservantAI : public npc_escortAI
     {
     public:
-        npc_kservantAI(Creature* creature) : npc_escortAI(creature) {}
+        npc_kservantAI(CreaturePtr creature) : npc_escortAI(creature) {}
 
         void WaypointReached(uint32 waypointId)
         {
-            Player* player = GetPlayerForEscort();
+            PlayerPtr player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -399,7 +399,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (HasEscortState(STATE_ESCORT_ESCORTING))
                 return;
@@ -445,7 +445,7 @@ public:
 
     struct npc_dirty_larryAI : public ScriptedAI
     {
-        npc_dirty_larryAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_dirty_larryAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         bool Event;
         bool Attack;
@@ -468,14 +468,14 @@ public:
 
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             me->setFaction(1194);
-            Unit* Creepjack = me->FindNearestCreature(NPC_CREEPJACK, 20);
+            UnitPtr Creepjack = me->FindNearestCreature(NPC_CREEPJACK, 20);
             if (Creepjack)
             {
                 CAST_CRE(Creepjack)->AI()->EnterEvadeMode();
                 Creepjack->setFaction(1194);
                 Creepjack->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             }
-            Unit* Malone = me->FindNearestCreature(NPC_MALONE, 20);
+            UnitPtr Malone = me->FindNearestCreature(NPC_MALONE, 20);
             if (Malone)
             {
                 CAST_CRE(Malone)->AI()->EnterEvadeMode();
@@ -486,15 +486,15 @@ public:
 
         uint32 NextStep(uint32 Step)
         {
-            Player* player = Unit::GetPlayer(*me, PlayerGUID);
+            PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID);
 
             switch (Step)
             {
             case 0:{ me->SetInFront(player);
-                Unit* Creepjack = me->FindNearestCreature(NPC_CREEPJACK, 20);
+                UnitPtr Creepjack = me->FindNearestCreature(NPC_CREEPJACK, 20);
                 if (Creepjack)
                     Creepjack->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
-                Unit* Malone = me->FindNearestCreature(NPC_MALONE, 20);
+                UnitPtr Malone = me->FindNearestCreature(NPC_MALONE, 20);
                 if (Malone)
                     Malone->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
                 me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP); }return 2000;
@@ -508,7 +508,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/){}
+        void EnterCombat(UnitPtr /*who*/){}
 
         void UpdateAI(const uint32 diff)
         {
@@ -520,12 +520,12 @@ public:
 
             if (Attack)
             {
-                Player* player = Unit::GetPlayer(*me, PlayerGUID);
+                PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID);
                 me->setFaction(14);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 if (player)
                 {
-                Unit* Creepjack = me->FindNearestCreature(NPC_CREEPJACK, 20);
+                UnitPtr Creepjack = me->FindNearestCreature(NPC_CREEPJACK, 20);
                 if (Creepjack)
                 {
                     Creepjack->Attack(player, true);
@@ -533,7 +533,7 @@ public:
                     Creepjack->GetMotionMaster()->MoveChase(player);
                     Creepjack->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
-                Unit* Malone = me->FindNearestCreature(NPC_MALONE, 20);
+                UnitPtr Malone = me->FindNearestCreature(NPC_MALONE, 20);
                 if (Malone)
                 {
                     Malone->Attack(player, true);
@@ -552,7 +552,7 @@ public:
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 me->RemoveAllAuras();
 
-                Unit* Creepjack = me->FindNearestCreature(NPC_CREEPJACK, 20);
+                UnitPtr Creepjack = me->FindNearestCreature(NPC_CREEPJACK, 20);
                 if (Creepjack)
                 {
                     CAST_CRE(Creepjack)->AI()->EnterEvadeMode();
@@ -560,7 +560,7 @@ public:
                     Creepjack->GetMotionMaster()->MoveTargetedHome();
                     Creepjack->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                 }
-                Unit* Malone = me->FindNearestCreature(NPC_MALONE, 20);
+                UnitPtr Malone = me->FindNearestCreature(NPC_MALONE, 20);
                 if (Malone)
                 {
                     CAST_CRE(Malone)->AI()->EnterEvadeMode();
@@ -570,11 +570,11 @@ public:
                 }
                 me->setFaction(1194);
                 Done = true;
-                DoScriptText(SAY_GIVEUP, me, NULL);
+                DoScriptText(SAY_GIVEUP, me, nullptr);
                 me->DeleteThreatList();
                 me->CombatStop();
                 me->GetMotionMaster()->MoveTargetedHome();
-                Player* player = Unit::GetPlayer(*me, PlayerGUID);
+                PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID);
                 if (player)
                     CAST_PLR(player)->GroupEventHappens(QUEST_WBI, me);
             }
@@ -582,7 +582,7 @@ public:
         }
     };
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -595,7 +595,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -607,7 +607,7 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_dirty_larryAI (creature);
     }
@@ -625,7 +625,7 @@ class npc_ishanah : public CreatureScript
 public:
     npc_ishanah() : CreatureScript("npc_ishanah") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -636,7 +636,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -666,7 +666,7 @@ class npc_khadgar : public CreatureScript
 public:
     npc_khadgar() : CreatureScript("npc_khadgar") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -703,7 +703,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());

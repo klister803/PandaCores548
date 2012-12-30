@@ -47,12 +47,12 @@ class boss_ossirian : public CreatureScript
 
         struct boss_ossirianAI : public ScriptedAI
         {
-            boss_ossirianAI(Creature* creature) : ScriptedAI(creature)
+            boss_ossirianAI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_ossirianAI (creature);
         }

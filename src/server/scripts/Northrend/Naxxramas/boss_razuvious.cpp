@@ -58,22 +58,22 @@ class boss_razuvious : public CreatureScript
 public:
     boss_razuvious() : CreatureScript("boss_razuvious") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_razuviousAI (creature);
     }
 
     struct boss_razuviousAI : public BossAI
     {
-        boss_razuviousAI(Creature* creature) : BossAI(creature, BOSS_RAZUVIOUS) {}
+        boss_razuviousAI(CreaturePtr creature) : BossAI(creature, BOSS_RAZUVIOUS) {}
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             if (!(rand()%3))
                 DoPlaySoundToSet(me, SOUND_SLAY);
         }
 
-        void DamageTaken(Unit* pDone_by, uint32& uiDamage)
+        void DamageTaken(UnitPtr pDone_by, uint32& uiDamage)
         {
             // Damage done by the controlled Death Knight understudies should also count toward damage done by players
             if (pDone_by->GetTypeId() == TYPEID_UNIT && (pDone_by->GetEntry() == 16803 || pDone_by->GetEntry() == 29941))
@@ -82,14 +82,14 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             _JustDied();
             DoPlaySoundToSet(me, SOUND_DEATH);
             me->CastSpell(me, SPELL_HOPELESS, true); // TODO: this may affect other creatures
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
             DoPlaySoundToSet(me, SOUND_AGGRO);
@@ -119,7 +119,7 @@ public:
                         events.ScheduleEvent(EVENT_SHOUT, 25000);
                         return;
                     case EVENT_KNIFE:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f))
                             DoCast(target, SPELL_JAGGED_KNIFE);
                         events.ScheduleEvent(EVENT_KNIFE, 10000);
                         return;

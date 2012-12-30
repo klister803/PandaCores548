@@ -43,19 +43,19 @@ class boss_commander_kolurg : public CreatureScript
 public:
     boss_commander_kolurg() : CreatureScript("boss_commander_kolurg") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_commander_kolurgAI (creature);
     }
 
     struct boss_commander_kolurgAI : public ScriptedAI
     {
-        boss_commander_kolurgAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_commander_kolurgAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         void Reset() {}
-        void EnterCombat(Unit* /*who*/) {}
-        void AttackStart(Unit* /*who*/) {}
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
+        void AttackStart(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
         void UpdateAI(const uint32 /*diff*/)
         {
             //Return since we have no target
@@ -64,7 +64,7 @@ public:
 
             DoMeleeAttackIfReady();
         }
-        void JustDied(Unit* /*killer*/)  {}
+        void JustDied(UnitPtr /*killer*/)  {}
     };
 
 };

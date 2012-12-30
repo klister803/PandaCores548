@@ -39,14 +39,14 @@ class boss_halycon : public CreatureScript
 public:
     boss_halycon() : CreatureScript("boss_halycon") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_halyconAI(creature);
     }
 
     struct boss_halyconAI : public BossAI
     {
-        boss_halyconAI(Creature* creature) : BossAI(creature, DATA_HALYCON) {}
+        boss_halyconAI(CreaturePtr creature) : BossAI(creature, DATA_HALYCON) {}
 
         bool Summoned;
 
@@ -56,14 +56,14 @@ public:
             Summoned = false;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_CROWD_PUMMEL, 8 * IN_MILLISECONDS);
             events.ScheduleEvent(EVENT_MIGHTY_BLOW, 14 * IN_MILLISECONDS);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             _JustDied();
         }

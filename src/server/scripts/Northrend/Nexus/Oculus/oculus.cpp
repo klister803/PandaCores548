@@ -67,7 +67,7 @@ class npc_oculus_drake : public CreatureScript
 public:
     npc_oculus_drake() : CreatureScript("npc_oculus_drake") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (creature->GetEntry())
@@ -167,7 +167,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -193,9 +193,9 @@ public:
 
     struct npc_image_belgaristraszAI : public ScriptedAI
     {
-        npc_image_belgaristraszAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_image_belgaristraszAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
-        void IsSummonedBy(Unit* summoner)
+        void IsSummonedBy(UnitPtr summoner)
         {
             if (summoner->GetEntry() == NPC_VAROS)
             {
@@ -210,7 +210,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_image_belgaristraszAI(creature);
     }
@@ -227,10 +227,10 @@ public:
 
         void Apply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            Unit* caster = GetCaster();
+            UnitPtr caster = GetCaster();
             if (!caster)
                 return;
-            Unit* target = GetTarget();
+            UnitPtr target = GetTarget();
             for (uint32 i = 0; i < 5; ++i)
                 caster->CastSpell(target, SPELL_SHOCK_CHARGE, false);
         }

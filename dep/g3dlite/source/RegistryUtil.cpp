@@ -30,7 +30,7 @@ bool RegistryUtil::keyExists(const std::string& key) {
 
     HKEY hkey = getRootKeyFromString(key.c_str(), pos);
 
-    if (hkey == NULL) {
+    if (hkey == nullptr) {
         return false;
     }
 
@@ -55,7 +55,7 @@ bool RegistryUtil::valueExists(const std::string& key, const std::string& value)
 
     HKEY hkey = getRootKeyFromString(key.c_str(), pos);
 
-    if ( hkey == NULL ) {
+    if ( hkey == nullptr ) {
         return false;
     }
 
@@ -65,7 +65,7 @@ bool RegistryUtil::valueExists(const std::string& key, const std::string& value)
 
     if (result == ERROR_SUCCESS) {
         uint32 dataSize = 0;
-        result = RegQueryValueExA(openKey, value.c_str(), NULL, NULL, NULL, reinterpret_cast<LPDWORD>(&dataSize));
+        result = RegQueryValueExA(openKey, value.c_str(), nullptr, nullptr, nullptr, reinterpret_cast<LPDWORD>(&dataSize));
 
         debugAssert(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
         RegCloseKey(openKey);
@@ -82,7 +82,7 @@ bool RegistryUtil::readInt32(const std::string& key, const std::string& value, i
 
     HKEY hkey = getRootKeyFromString(key.c_str(), pos);
 
-    if ( hkey == NULL ) {
+    if ( hkey == nullptr ) {
         return false;
     }
 
@@ -92,7 +92,7 @@ bool RegistryUtil::readInt32(const std::string& key, const std::string& value, i
 
     if (result == ERROR_SUCCESS) {
         uint32 dataSize = sizeof(int32);
-        result = RegQueryValueExA(openKey, value.c_str(), NULL, NULL, reinterpret_cast<LPBYTE>(&data), reinterpret_cast<LPDWORD>(&dataSize));
+        result = RegQueryValueExA(openKey, value.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&data), reinterpret_cast<LPDWORD>(&dataSize));
 
         debugAssertM(result == ERROR_SUCCESS, "Could not read registry key value.");
 
@@ -109,7 +109,7 @@ bool RegistryUtil::readBytes(const std::string& key, const std::string& value, u
 
     HKEY hkey = getRootKeyFromString(key.c_str(), pos);
 
-    if (hkey == NULL) {
+    if (hkey == nullptr) {
         return false;
     }
 
@@ -118,10 +118,10 @@ bool RegistryUtil::readBytes(const std::string& key, const std::string& value, u
     debugAssert(result == ERROR_SUCCESS || result == ERROR_FILE_NOT_FOUND);
 
     if (result == ERROR_SUCCESS) {
-        if (data == NULL) {
-            result = RegQueryValueExA(openKey, value.c_str(), NULL, NULL, NULL, reinterpret_cast<LPDWORD>(&dataSize));
+        if (data == nullptr) {
+            result = RegQueryValueExA(openKey, value.c_str(), nullptr, nullptr, nullptr, reinterpret_cast<LPDWORD>(&dataSize));
         } else {
-            result = RegQueryValueExA(openKey, value.c_str(), NULL, NULL, reinterpret_cast<LPBYTE>(&data), reinterpret_cast<LPDWORD>(&dataSize));
+            result = RegQueryValueExA(openKey, value.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(&data), reinterpret_cast<LPDWORD>(&dataSize));
         }
 
         debugAssertM(result == ERROR_SUCCESS, "Could not read registry key value.");
@@ -139,7 +139,7 @@ bool RegistryUtil::readString(const std::string& key, const std::string& value, 
 
     HKEY hkey = getRootKeyFromString(key.c_str(), pos);
 
-    if (hkey == NULL) {
+    if (hkey == nullptr) {
         return false;
     }
 
@@ -150,7 +150,7 @@ bool RegistryUtil::readString(const std::string& key, const std::string& value, 
     if (result == ERROR_SUCCESS) {
         uint32 dataSize = 0;
 
-        result = RegQueryValueExA(openKey, value.c_str(), NULL, NULL, NULL, reinterpret_cast<LPDWORD>(&dataSize));
+        result = RegQueryValueExA(openKey, value.c_str(), nullptr, nullptr, nullptr, reinterpret_cast<LPDWORD>(&dataSize));
         debugAssertM(result == ERROR_SUCCESS, "Could not read registry key value.");
 
         // increment datasize to allow for non null-terminated strings in registry
@@ -160,7 +160,7 @@ bool RegistryUtil::readString(const std::string& key, const std::string& value, 
             char* tmpStr = static_cast<char*>(System::malloc(dataSize));
             System::memset(tmpStr, 0, dataSize);
 
-            result = RegQueryValueExA(openKey, value.c_str(), NULL, NULL, reinterpret_cast<LPBYTE>(tmpStr), reinterpret_cast<LPDWORD>(&dataSize));
+            result = RegQueryValueExA(openKey, value.c_str(), nullptr, nullptr, reinterpret_cast<LPBYTE>(tmpStr), reinterpret_cast<LPDWORD>(&dataSize));
             debugAssertM(result == ERROR_SUCCESS, "Could not read registry key value.");
                 
             if (result == ERROR_SUCCESS) {
@@ -182,7 +182,7 @@ bool RegistryUtil::writeInt32(const std::string& key, const std::string& value, 
 
     HKEY hkey = getRootKeyFromString(key.c_str(), pos);
 
-    if (hkey == NULL) {
+    if (hkey == nullptr) {
         return false;
     }
 
@@ -210,7 +210,7 @@ bool RegistryUtil::writeBytes(const std::string& key, const std::string& value, 
 
     HKEY hkey = getRootKeyFromString(key.c_str(), pos);
 
-    if (hkey == NULL) {
+    if (hkey == nullptr) {
         return false;
     }
 
@@ -238,7 +238,7 @@ bool RegistryUtil::writeString(const std::string& key, const std::string& value,
 
     HKEY hkey = getRootKeyFromString(key.c_str(), pos);
 
-    if (hkey == NULL) {
+    if (hkey == nullptr) {
         return false;
     }
 
@@ -278,10 +278,10 @@ static HKEY getRootKeyFromString(const char* str, size_t length) {
         } else if  ( strncmp(str, "HKEY_CLASSES_ROOT", length) == 0 ) {
             return HKEY_CLASSES_ROOT;
         } else {
-            return NULL;
+            return nullptr;
         }
     } else {
-        return NULL;
+        return nullptr;
     }
 }
 

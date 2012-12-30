@@ -32,14 +32,14 @@ class boss_high_interrogator_gerstahn : public CreatureScript
 public:
     boss_high_interrogator_gerstahn() : CreatureScript("boss_high_interrogator_gerstahn") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_high_interrogator_gerstahnAI (creature);
     }
 
     struct boss_high_interrogator_gerstahnAI : public ScriptedAI
     {
-        boss_high_interrogator_gerstahnAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_high_interrogator_gerstahnAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 ShadowWordPain_Timer;
         uint32 ManaBurn_Timer;
@@ -54,7 +54,7 @@ public:
             ShadowShield_Timer = 8000;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -65,7 +65,7 @@ public:
             //ShadowWordPain_Timer
             if (ShadowWordPain_Timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_SHADOWWORDPAIN);
                 ShadowWordPain_Timer = 7000;
             } else ShadowWordPain_Timer -= diff;
@@ -73,7 +73,7 @@ public:
             //ManaBurn_Timer
             if (ManaBurn_Timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_MANABURN);
                 ManaBurn_Timer = 10000;
             } else ManaBurn_Timer -= diff;

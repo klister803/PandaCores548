@@ -59,7 +59,7 @@ void BattlegroundNA::StartingEventOpenDoors()
         SpawnBGObject(i, 60);
 }
 
-void BattlegroundNA::AddPlayer(Player* player)
+void BattlegroundNA::AddPlayer(PlayerPtr player)
 {
     Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
@@ -70,7 +70,7 @@ void BattlegroundNA::AddPlayer(Player* player)
     UpdateArenaWorldState();
 }
 
-void BattlegroundNA::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
+void BattlegroundNA::RemovePlayer(PlayerPtr /*Player*/, uint64 /*guid*/, uint32 /*team*/)
 {
     if (GetStatus() == STATUS_WAIT_LEAVE)
         return;
@@ -79,7 +79,7 @@ void BattlegroundNA::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*
     CheckArenaWinConditions();
 }
 
-void BattlegroundNA::HandleKillPlayer(Player* player, Player* killer)
+void BattlegroundNA::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -96,13 +96,13 @@ void BattlegroundNA::HandleKillPlayer(Player* player, Player* killer)
     CheckArenaWinConditions();
 }
 
-bool BattlegroundNA::HandlePlayerUnderMap(Player* player)
+bool BattlegroundNA::HandlePlayerUnderMap(PlayerPtr player)
 {
     player->TeleportTo(GetMapId(), 4055.504395f, 2919.660645f, 13.611241f, player->GetOrientation(), false);
     return true;
 }
 
-void BattlegroundNA::HandleAreaTrigger(Player* Source, uint32 Trigger)
+void BattlegroundNA::HandleAreaTrigger(PlayerPtr Source, uint32 Trigger)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;

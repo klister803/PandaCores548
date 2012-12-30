@@ -28,18 +28,18 @@
 #include "SpellAuras.h"
 
 template<class T>
-inline void Trinity::VisibleNotifier::Visit(GridRefManager<T> &m)
+inline void Trinity::VisibleNotifier::Visit(std::shared_ptr<GridRefManager<T>> &m)
 {
-    for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (typename GridRefManager<T>::iterator iter = m->begin(); iter != m->end(); ++iter)
     {
         vis_guids.erase(iter->getSource()->GetGUID());
-        i_player.UpdateVisibilityOf(iter->getSource(), i_data, i_visibleNow);
+        i_player->UpdateVisibilityOf(iter->getSource(), i_data, i_visibleNow);
     }
 }
 
-inline void Trinity::ObjectUpdater::Visit(CreatureMapType &m)
+inline void Trinity::ObjectUpdater::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
 {
-    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
+    for (GridRefManager<Creature>::iterator iter = m->begin(); iter != m->end(); ++iter)
         if (iter->getSource()->IsInWorld())
             iter->getSource()->Update(i_timeDiff);
 }
@@ -49,7 +49,7 @@ inline void Trinity::ObjectUpdater::Visit(CreatureMapType &m)
 // WorldObject searchers & workers
 
 template<class Check>
-void Trinity::WorldObjectSearcher<Check>::Visit(GameObjectMapType &m)
+void Trinity::WorldObjectSearcher<Check>::Visit(std::shared_ptr<GridRefManager<GameObject>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_GAMEOBJECT))
         return;
@@ -58,7 +58,7 @@ void Trinity::WorldObjectSearcher<Check>::Visit(GameObjectMapType &m)
     if (i_object)
         return;
 
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<GameObject>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -72,7 +72,7 @@ void Trinity::WorldObjectSearcher<Check>::Visit(GameObjectMapType &m)
 }
 
 template<class Check>
-void Trinity::WorldObjectSearcher<Check>::Visit(PlayerMapType &m)
+void Trinity::WorldObjectSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Player>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_PLAYER))
         return;
@@ -81,7 +81,7 @@ void Trinity::WorldObjectSearcher<Check>::Visit(PlayerMapType &m)
     if (i_object)
         return;
 
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Player>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -95,7 +95,7 @@ void Trinity::WorldObjectSearcher<Check>::Visit(PlayerMapType &m)
 }
 
 template<class Check>
-void Trinity::WorldObjectSearcher<Check>::Visit(CreatureMapType &m)
+void Trinity::WorldObjectSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CREATURE))
         return;
@@ -104,7 +104,7 @@ void Trinity::WorldObjectSearcher<Check>::Visit(CreatureMapType &m)
     if (i_object)
         return;
 
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Creature>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -118,7 +118,7 @@ void Trinity::WorldObjectSearcher<Check>::Visit(CreatureMapType &m)
 }
 
 template<class Check>
-void Trinity::WorldObjectSearcher<Check>::Visit(CorpseMapType &m)
+void Trinity::WorldObjectSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Corpse>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CORPSE))
         return;
@@ -127,7 +127,7 @@ void Trinity::WorldObjectSearcher<Check>::Visit(CorpseMapType &m)
     if (i_object)
         return;
 
-    for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Corpse>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -141,7 +141,7 @@ void Trinity::WorldObjectSearcher<Check>::Visit(CorpseMapType &m)
 }
 
 template<class Check>
-void Trinity::WorldObjectSearcher<Check>::Visit(DynamicObjectMapType &m)
+void Trinity::WorldObjectSearcher<Check>::Visit(std::shared_ptr<GridRefManager<DynamicObject>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_DYNAMICOBJECT))
         return;
@@ -150,7 +150,7 @@ void Trinity::WorldObjectSearcher<Check>::Visit(DynamicObjectMapType &m)
     if (i_object)
         return;
 
-    for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<DynamicObject>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -165,12 +165,12 @@ void Trinity::WorldObjectSearcher<Check>::Visit(DynamicObjectMapType &m)
 
 
 template<class Check>
-void Trinity::WorldObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
+void Trinity::WorldObjectLastSearcher<Check>::Visit(std::shared_ptr<GridRefManager<GameObject>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_GAMEOBJECT))
         return;
 
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<GameObject>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -181,12 +181,12 @@ void Trinity::WorldObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
 }
 
 template<class Check>
-void Trinity::WorldObjectLastSearcher<Check>::Visit(PlayerMapType &m)
+void Trinity::WorldObjectLastSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Player>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_PLAYER))
         return;
 
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Player>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -197,12 +197,12 @@ void Trinity::WorldObjectLastSearcher<Check>::Visit(PlayerMapType &m)
 }
 
 template<class Check>
-void Trinity::WorldObjectLastSearcher<Check>::Visit(CreatureMapType &m)
+void Trinity::WorldObjectLastSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CREATURE))
         return;
 
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Creature>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -213,12 +213,12 @@ void Trinity::WorldObjectLastSearcher<Check>::Visit(CreatureMapType &m)
 }
 
 template<class Check>
-void Trinity::WorldObjectLastSearcher<Check>::Visit(CorpseMapType &m)
+void Trinity::WorldObjectLastSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Corpse>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CORPSE))
         return;
 
-    for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Corpse>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -229,12 +229,12 @@ void Trinity::WorldObjectLastSearcher<Check>::Visit(CorpseMapType &m)
 }
 
 template<class Check>
-void Trinity::WorldObjectLastSearcher<Check>::Visit(DynamicObjectMapType &m)
+void Trinity::WorldObjectLastSearcher<Check>::Visit(std::shared_ptr<GridRefManager<DynamicObject>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_DYNAMICOBJECT))
         return;
 
-    for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<DynamicObject>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -245,56 +245,56 @@ void Trinity::WorldObjectLastSearcher<Check>::Visit(DynamicObjectMapType &m)
 }
 
 template<class Check>
-void Trinity::WorldObjectListSearcher<Check>::Visit(PlayerMapType &m)
+void Trinity::WorldObjectListSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Player>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_PLAYER))
         return;
 
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Player>::iterator itr=m->begin(); itr != m->end(); ++itr)
         if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
 template<class Check>
-void Trinity::WorldObjectListSearcher<Check>::Visit(CreatureMapType &m)
+void Trinity::WorldObjectListSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CREATURE))
         return;
 
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Creature>::iterator itr=m->begin(); itr != m->end(); ++itr)
         if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
 template<class Check>
-void Trinity::WorldObjectListSearcher<Check>::Visit(CorpseMapType &m)
+void Trinity::WorldObjectListSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Corpse>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_CORPSE))
         return;
 
-    for (CorpseMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Corpse>::iterator itr=m->begin(); itr != m->end(); ++itr)
         if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
 template<class Check>
-void Trinity::WorldObjectListSearcher<Check>::Visit(GameObjectMapType &m)
+void Trinity::WorldObjectListSearcher<Check>::Visit(std::shared_ptr<GridRefManager<GameObject>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_GAMEOBJECT))
         return;
 
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<GameObject>::iterator itr=m->begin(); itr != m->end(); ++itr)
         if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
 
 template<class Check>
-void Trinity::WorldObjectListSearcher<Check>::Visit(DynamicObjectMapType &m)
+void Trinity::WorldObjectListSearcher<Check>::Visit(std::shared_ptr<GridRefManager<DynamicObject>> &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_DYNAMICOBJECT))
         return;
 
-    for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<DynamicObject>::iterator itr=m->begin(); itr != m->end(); ++itr)
         if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }
@@ -302,13 +302,13 @@ void Trinity::WorldObjectListSearcher<Check>::Visit(DynamicObjectMapType &m)
 // Gameobject searchers
 
 template<class Check>
-void Trinity::GameObjectSearcher<Check>::Visit(GameObjectMapType &m)
+void Trinity::GameObjectSearcher<Check>::Visit(std::shared_ptr<GridRefManager<GameObject>> &m)
 {
     // already found
     if (i_object)
         return;
 
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<GameObject>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -322,9 +322,9 @@ void Trinity::GameObjectSearcher<Check>::Visit(GameObjectMapType &m)
 }
 
 template<class Check>
-void Trinity::GameObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
+void Trinity::GameObjectLastSearcher<Check>::Visit(std::shared_ptr<GridRefManager<GameObject>> &m)
 {
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<GameObject>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -335,9 +335,9 @@ void Trinity::GameObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
 }
 
 template<class Check>
-void Trinity::GameObjectListSearcher<Check>::Visit(GameObjectMapType &m)
+void Trinity::GameObjectListSearcher<Check>::Visit(std::shared_ptr<GridRefManager<GameObject>> &m)
 {
-    for (GameObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<GameObject>::iterator itr=m->begin(); itr != m->end(); ++itr)
         if (itr->getSource()->InSamePhase(i_phaseMask))
             if (i_check(itr->getSource()))
                 i_objects.push_back(itr->getSource());
@@ -346,13 +346,13 @@ void Trinity::GameObjectListSearcher<Check>::Visit(GameObjectMapType &m)
 // Unit searchers
 
 template<class Check>
-void Trinity::UnitSearcher<Check>::Visit(CreatureMapType &m)
+void Trinity::UnitSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
 {
     // already found
     if (i_object)
         return;
 
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Creature>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -366,13 +366,13 @@ void Trinity::UnitSearcher<Check>::Visit(CreatureMapType &m)
 }
 
 template<class Check>
-void Trinity::UnitSearcher<Check>::Visit(PlayerMapType &m)
+void Trinity::UnitSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Player>> &m)
 {
     // already found
     if (i_object)
         return;
 
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Player>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -386,9 +386,9 @@ void Trinity::UnitSearcher<Check>::Visit(PlayerMapType &m)
 }
 
 template<class Check>
-void Trinity::UnitLastSearcher<Check>::Visit(CreatureMapType &m)
+void Trinity::UnitLastSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
 {
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Creature>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -399,9 +399,9 @@ void Trinity::UnitLastSearcher<Check>::Visit(CreatureMapType &m)
 }
 
 template<class Check>
-void Trinity::UnitLastSearcher<Check>::Visit(PlayerMapType &m)
+void Trinity::UnitLastSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Player>> &m)
 {
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Player>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -412,18 +412,18 @@ void Trinity::UnitLastSearcher<Check>::Visit(PlayerMapType &m)
 }
 
 template<class Check>
-void Trinity::UnitListSearcher<Check>::Visit(PlayerMapType &m)
+void Trinity::UnitListSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Player>> &m)
 {
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Player>::iterator itr=m->begin(); itr != m->end(); ++itr)
         if (itr->getSource()->InSamePhase(i_phaseMask))
             if (i_check(itr->getSource()))
                 i_objects.push_back(itr->getSource());
 }
 
 template<class Check>
-void Trinity::UnitListSearcher<Check>::Visit(CreatureMapType &m)
+void Trinity::UnitListSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
 {
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Creature>::iterator itr=m->begin(); itr != m->end(); ++itr)
         if (itr->getSource()->InSamePhase(i_phaseMask))
             if (i_check(itr->getSource()))
                 i_objects.push_back(itr->getSource());
@@ -432,13 +432,13 @@ void Trinity::UnitListSearcher<Check>::Visit(CreatureMapType &m)
 // Creature searchers
 
 template<class Check>
-void Trinity::CreatureSearcher<Check>::Visit(CreatureMapType &m)
+void Trinity::CreatureSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
 {
     // already found
     if (i_object)
         return;
 
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Creature>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -452,9 +452,9 @@ void Trinity::CreatureSearcher<Check>::Visit(CreatureMapType &m)
 }
 
 template<class Check>
-void Trinity::CreatureLastSearcher<Check>::Visit(CreatureMapType &m)
+void Trinity::CreatureLastSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
 {
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Creature>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -465,31 +465,31 @@ void Trinity::CreatureLastSearcher<Check>::Visit(CreatureMapType &m)
 }
 
 template<class Check>
-void Trinity::CreatureListSearcher<Check>::Visit(CreatureMapType &m)
+void Trinity::CreatureListSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
 {
-    for (CreatureMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Creature>::iterator itr=m->begin(); itr != m->end(); ++itr)
         if (itr->getSource()->InSamePhase(i_phaseMask))
             if (i_check(itr->getSource()))
                 i_objects.push_back(itr->getSource());
 }
 
 template<class Check>
-void Trinity::PlayerListSearcher<Check>::Visit(PlayerMapType &m)
+void Trinity::PlayerListSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Player>> &m)
 {
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Player>::iterator itr=m->begin(); itr != m->end(); ++itr)
         if (itr->getSource()->InSamePhase(i_phaseMask))
             if (i_check(itr->getSource()))
                 i_objects.push_back(itr->getSource());
 }
 
 template<class Check>
-void Trinity::PlayerSearcher<Check>::Visit(PlayerMapType &m)
+void Trinity::PlayerSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Player>> &m)
 {
     // already found
     if (i_object)
         return;
 
-    for (PlayerMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Player>::iterator itr=m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -503,9 +503,9 @@ void Trinity::PlayerSearcher<Check>::Visit(PlayerMapType &m)
 }
 
 template<class Check>
-void Trinity::PlayerLastSearcher<Check>::Visit(PlayerMapType& m)
+void Trinity::PlayerLastSearcher<Check>::Visit(std::shared_ptr<GridRefManager<Player>>& m)
 {
-    for (PlayerMapType::iterator itr = m.begin(); itr != m.end(); ++itr)
+    for (GridRefManager<Player>::iterator itr = m->begin(); itr != m->end(); ++itr)
     {
         if (!itr->getSource()->InSamePhase(i_phaseMask))
             continue;
@@ -516,7 +516,7 @@ void Trinity::PlayerLastSearcher<Check>::Visit(PlayerMapType& m)
 }
 
 template<class Builder>
-void Trinity::LocalizedPacketDo<Builder>::operator()(Player* p)
+void Trinity::LocalizedPacketDo<Builder>::operator()(PlayerPtr p)
 {
     LocaleConstant loc_idx = p->GetSession()->GetSessionDbLocaleIndex();
     uint32 cache_idx = loc_idx+1;
@@ -541,7 +541,7 @@ void Trinity::LocalizedPacketDo<Builder>::operator()(Player* p)
 }
 
 template<class Builder>
-void Trinity::LocalizedPacketListDo<Builder>::operator()(Player* p)
+void Trinity::LocalizedPacketListDo<Builder>::operator()(PlayerPtr p)
 {
     LocaleConstant loc_idx = p->GetSession()->GetSessionDbLocaleIndex();
     uint32 cache_idx = loc_idx+1;

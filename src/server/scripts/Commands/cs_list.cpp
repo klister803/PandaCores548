@@ -37,16 +37,16 @@ public:
     {
         static ChatCommand listCommandTable[] =
         {
-            { "creature",       SEC_ADMINISTRATOR,  true,  &HandleListCreatureCommand,          "", NULL },
-            { "item",           SEC_ADMINISTRATOR,  true,  &HandleListItemCommand,              "", NULL },
-            { "object",         SEC_ADMINISTRATOR,  true,  &HandleListObjectCommand,            "", NULL },
-            { "auras",          SEC_ADMINISTRATOR,  false, &HandleListAurasCommand,             "", NULL },
-            { NULL,             0,                  false, NULL,                                "", NULL }
+            { "creature",       SEC_ADMINISTRATOR,  true,  &HandleListCreatureCommand,          "", nullptr },
+            { "item",           SEC_ADMINISTRATOR,  true,  &HandleListItemCommand,              "", nullptr },
+            { "object",         SEC_ADMINISTRATOR,  true,  &HandleListObjectCommand,            "", nullptr },
+            { "auras",          SEC_ADMINISTRATOR,  false, &HandleListAurasCommand,             "", nullptr },
+            { nullptr,             0,                  false, nullptr,                                "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "list",          SEC_ADMINISTRATOR,   true, NULL,                                 "", listCommandTable },
-            { NULL,            0,                   false, NULL,                                "", NULL }
+            { "list",          SEC_ADMINISTRATOR,   true, nullptr,                                 "", listCommandTable },
+            { nullptr,            0,                   false, nullptr,                                "", nullptr }
         };
         return commandTable;
     }
@@ -77,7 +77,7 @@ public:
             return false;
         }
 
-        char* countStr = strtok(NULL, " ");
+        char* countStr = strtok(nullptr, " ");
         uint32 count = countStr ? atol(countStr) : 10;
 
         if (count == 0)
@@ -92,7 +92,7 @@ public:
 
         if (handler->GetSession())
         {
-            Player* player = handler->GetSession()->GetPlayer();
+            PlayerPtr player = handler->GetSession()->GetPlayer();
             result = WorldDatabase.PQuery("SELECT guid, position_x, position_y, position_z, map, (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ FROM creature WHERE id = '%u' ORDER BY order_ ASC LIMIT %u",
                 player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), creatureId, count);
         }
@@ -149,7 +149,7 @@ public:
             return false;
         }
 
-        char* countStr = strtok(NULL, " ");
+        char* countStr = strtok(nullptr, " ");
         uint32 count = countStr ? atol(countStr) : 10;
 
         if (count == 0)
@@ -224,7 +224,7 @@ public:
             result = CharacterDatabase.Query(stmt);
         }
         else
-            result = PreparedQueryResult(NULL);
+            result = PreparedQueryResult(nullptr);
 
         if (result)
         {
@@ -271,7 +271,7 @@ public:
             result = CharacterDatabase.Query(stmt);
         }
         else
-            result = PreparedQueryResult(NULL);
+            result = PreparedQueryResult(nullptr);
 
         if (result)
         {
@@ -366,7 +366,7 @@ public:
             return false;
         }
 
-        char* countStr = strtok(NULL, " ");
+        char* countStr = strtok(nullptr, " ");
         uint32 count = countStr ? atol(countStr) : 10;
 
         if (count == 0)
@@ -381,7 +381,7 @@ public:
 
         if (handler->GetSession())
         {
-            Player* player = handler->GetSession()->GetPlayer();
+            PlayerPtr player = handler->GetSession()->GetPlayer();
             result = WorldDatabase.PQuery("SELECT guid, position_x, position_y, position_z, map, id, (POW(position_x - '%f', 2) + POW(position_y - '%f', 2) + POW(position_z - '%f', 2)) AS order_ FROM gameobject WHERE id = '%u' ORDER BY order_ ASC LIMIT %u",
                 player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), gameObjectId, count);
         }
@@ -416,7 +416,7 @@ public:
 
     static bool HandleListAurasCommand(ChatHandler* handler, char const* /*args*/)
     {
-        Unit* unit = handler->getSelectedUnit();
+        UnitPtr unit = handler->getSelectedUnit();
         if (!unit)
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -433,7 +433,7 @@ public:
         {
             bool talent = false;// GetTalentSpellCost(itr->second->GetBase()->GetId()) > 0;
 
-            AuraApplication const* aurApp = itr->second;
+            constAuraApplicationPtr aurApp = itr->second;
             constAuraPtr aura = aurApp->GetBase();
             char const* name = aura->GetSpellInfo()->SpellName;
 

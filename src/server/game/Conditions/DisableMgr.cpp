@@ -263,7 +263,7 @@ void CheckQuestDisables()
 
 }
 
-bool IsDisabledFor(DisableType type, uint32 entry, Unit const* unit, uint8 flags)
+bool IsDisabledFor(DisableType type, uint32 entry, constUnitPtr unit, uint8 flags)
 {
     ASSERT(type < MAX_DISABLE_TYPES);
     if (m_DisableMap[type].empty())
@@ -314,7 +314,7 @@ bool IsDisabledFor(DisableType type, uint32 entry, Unit const* unit, uint8 flags
             break;
         }
         case DISABLE_TYPE_MAP:
-            if (Player const* player = unit->ToPlayer())
+            if (constPlayerPtr player = TO_CONST_PLAYER(unit))
             {
                 MapEntry const* mapEntry = sMapStore.LookupEntry(entry);
                 if (mapEntry->IsDungeon())
@@ -341,7 +341,7 @@ bool IsDisabledFor(DisableType type, uint32 entry, Unit const* unit, uint8 flags
         case DISABLE_TYPE_QUEST:
             if (!unit)
                 return true;
-            if (Player const* player = unit->ToPlayer())
+            if (constPlayerPtr player = TO_CONST_PLAYER(unit))
                 if (player->isGameMaster())
                     return false;
             return true;

@@ -28,22 +28,22 @@ private:
     ~GroupMgr();
 
 public:
-    typedef std::map<uint32, Group*> GroupContainer;
-    typedef std::vector<Group*>      GroupDbContainer;
+    typedef std::map<uint32, GroupPtr> GroupContainer;
+    typedef std::vector<GroupPtr>      GroupDbContainer;
 
-    Group* GetGroupByGUID(uint32 guid) const;
+    GroupPtr GetGroupByGUID(uint32 guid) const;
 
     uint32 GenerateNewGroupDbStoreId();
-    void   RegisterGroupDbStoreId(uint32 storageId, Group* group);
-    void   FreeGroupDbStoreId(Group* group);
+    void   RegisterGroupDbStoreId(uint32 storageId, GroupPtr group);
+    void   FreeGroupDbStoreId(GroupPtr group);
     void   SetNextGroupDbStoreId(uint32 storageId) { NextGroupDbStoreId = storageId; };
-    Group* GetGroupByDbStoreId(uint32 storageId) const;
+    GroupPtr GetGroupByDbStoreId(uint32 storageId) const;
     void   SetGroupDbStoreSize(uint32 newSize) { GroupDbStore.resize(newSize); }
 
     void   LoadGroups();
     uint32 GenerateGroupId();
-    void   AddGroup(Group* group);
-    void   RemoveGroup(Group* group);
+    void   AddGroup(GroupPtr group);
+    void   RemoveGroup(GroupPtr group);
 
 
 protected:

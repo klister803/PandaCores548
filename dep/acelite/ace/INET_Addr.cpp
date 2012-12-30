@@ -322,7 +322,7 @@ ACE_INET_Addr::set (u_short port_number,
 {
   ACE_TRACE ("ACE_INET_Addr::set");
 
-  // Yow, someone gave us a NULL host_name!
+  // Yow, someone gave us a nullptr host_name!
   if (host_name == 0)
     {
       errno = EINVAL;
