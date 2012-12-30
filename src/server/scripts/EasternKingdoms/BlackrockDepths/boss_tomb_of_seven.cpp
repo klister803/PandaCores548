@@ -47,7 +47,7 @@ class boss_gloomrel : public CreatureScript
 public:
     boss_gloomrel() : CreatureScript("boss_gloomrel") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -76,7 +76,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (player->GetQuestRewardStatus(QUEST_SPECTRAL_CHALICE) == 1 && player->GetSkillValue(SKILL_MINING) >= DATA_SKILLPOINT_MIN && !player->HasSpell(SPELL_SMELT_DARK_IRON))
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_TEACH_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
@@ -106,7 +106,7 @@ class boss_doomrel : public CreatureScript
 public:
     boss_doomrel() : CreatureScript("boss_doomrel") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -129,7 +129,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_CHALLENGE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
         player->SEND_GOSSIP_MENU(2601, creature->GetGUID());
@@ -137,14 +137,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_doomrelAI (creature);
     }
 
     struct boss_doomrelAI : public ScriptedAI
     {
-        boss_doomrelAI(Creature* creature) : ScriptedAI(creature)
+        boss_doomrelAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -178,7 +178,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
@@ -190,12 +190,12 @@ public:
             me->LoadCreaturesAddon();
             if (me->isAlive())
                 me->GetMotionMaster()->MoveTargetedHome();
-            me->SetLootRecipient(NULL);
+            me->SetLootRecipient(nullptr);
             if (instance)
                 instance->SetData64(DATA_EVENSTARTER, 0);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(DATA_GHOSTKILL, 1);
@@ -216,7 +216,7 @@ public:
             //Immolate_Timer
             if (Immolate_Timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_IMMOLATE);
 
                 Immolate_Timer = 25000;

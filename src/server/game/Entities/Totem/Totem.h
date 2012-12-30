@@ -21,6 +21,8 @@
 
 #include "TemporarySummon.h"
 
+class ClassFactory;
+
 enum TotemType
 {
     TOTEM_PASSIVE    = 0,
@@ -35,8 +37,10 @@ enum TotemType
 
 class Totem : public Minion
 {
+    friend class ClassFactory;
+    protected:
+        explicit Totem(SummonPropertiesEntry const* properties, UnitPtr owner);
     public:
-        Totem(SummonPropertiesEntry const* properties, Unit* owner);
         virtual ~Totem() {}
         void Update(uint32 time);
         void InitStats(uint32 duration);

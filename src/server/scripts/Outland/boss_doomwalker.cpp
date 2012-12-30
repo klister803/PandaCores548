@@ -55,7 +55,7 @@ class boss_doomwalker : public CreatureScript
 
         struct boss_doomwalkerAI : public ScriptedAI
         {
-            boss_doomwalkerAI(Creature* creature) : ScriptedAI(creature)
+            boss_doomwalkerAI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
 
@@ -70,7 +70,7 @@ class boss_doomwalker : public CreatureScript
                 _inEnrage = false;
             }
 
-            void KilledUnit(Unit* victim)
+            void KilledUnit(UnitPtr victim)
             {
                 victim->CastSpell(victim, SPELL_MARK_DEATH, 0);
 
@@ -80,17 +80,17 @@ class boss_doomwalker : public CreatureScript
                 Talk(SAY_SLAY);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 Talk(SAY_DEATH);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 Talk(SAY_AGGRO);
             }
 
-            void MoveInLineOfSight(Unit* who)
+            void MoveInLineOfSight(UnitPtr who)
             {
                 if (who && who->GetTypeId() == TYPEID_PLAYER && me->IsValidAttackTarget(who))
                     if (who->HasAura(SPELL_MARK_DEATH, 0))
@@ -138,7 +138,7 @@ class boss_doomwalker : public CreatureScript
                             _events.ScheduleEvent(EVENT_QUAKE, urand(30000, 55000));
                             break;
                         case EVENT_CHAIN:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
                                 DoCast(target, SPELL_CHAIN_LIGHTNING);
                             _events.ScheduleEvent(EVENT_CHAIN, urand(7000, 27000));
                             break;
@@ -158,7 +158,7 @@ class boss_doomwalker : public CreatureScript
                 bool _inEnrage;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_doomwalkerAI (creature);
         }

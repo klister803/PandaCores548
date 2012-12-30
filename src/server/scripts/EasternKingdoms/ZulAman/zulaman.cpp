@@ -51,7 +51,7 @@ class npc_forest_frog : public CreatureScript
 
         struct npc_forest_frogAI : public ScriptedAI
         {
-            npc_forest_frogAI(Creature* creature) : ScriptedAI(creature)
+            npc_forest_frogAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -60,7 +60,7 @@ class npc_forest_frog : public CreatureScript
 
             void Reset() {}
 
-            void EnterCombat(Unit* /*who*/) {}
+            void EnterCombat(UnitPtr /*who*/) {}
 
             void DoSpawnRandom()
             {
@@ -93,7 +93,7 @@ class npc_forest_frog : public CreatureScript
                 }
             }
 
-            void SpellHit(Unit* caster, const SpellInfo* spell)
+            void SpellHit(UnitPtr caster, const SpellInfo* spell)
             {
                 if (spell->Id == SPELL_REMOVE_AMANI_CURSE && caster->GetTypeId() == TYPEID_PLAYER && me->GetEntry() == ENTRY_FOREST_FROG)
                 {
@@ -104,7 +104,7 @@ class npc_forest_frog : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new npc_forest_frogAI(creature);
         }
@@ -126,7 +126,7 @@ class npc_zulaman_hostage : public CreatureScript
 
         struct npc_zulaman_hostageAI : public ScriptedAI
         {
-            npc_zulaman_hostageAI(Creature* creature) : ScriptedAI(creature)
+            npc_zulaman_hostageAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 IsLoot = false;
             }
@@ -136,11 +136,11 @@ class npc_zulaman_hostage : public CreatureScript
 
             void Reset() {}
 
-            void EnterCombat(Unit* /*who*/) {}
+            void EnterCombat(UnitPtr /*who*/) {}
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
-                Player* player = Unit::GetPlayer(*me, PlayerGUID);
+                PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID);
                 if (player)
                     player->SendLoot(me->GetGUID(), LOOT_CORPSE);
             }
@@ -152,19 +152,19 @@ class npc_zulaman_hostage : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new npc_zulaman_hostageAI(creature);
         }
 
-        bool OnGossipHello(Player* player, Creature* creature)
+        bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
         {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HOSTAGE1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
             player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+        bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
 

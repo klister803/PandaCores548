@@ -444,7 +444,7 @@ class BattlegroundSA : public Battleground
 
         /* inherited from BattlegroundClass */
         /// Called when a player join battle
-        virtual void AddPlayer(Player* player);
+        virtual void AddPlayer(PlayerPtr player);
         /// Called when battle start
         virtual void StartingEventCloseDoors();
         virtual void StartingEventOpenDoors();
@@ -454,15 +454,15 @@ class BattlegroundSA : public Battleground
         /// Called for generate packet contain worldstate data
         virtual void FillInitialWorldStates(WorldPacket& data);
         /// Called when a player deal damage to building (door)
-        virtual void EventPlayerDamagedGO(Player* player, GameObject* go, uint32 eventType);
+        virtual void EventPlayerDamagedGO(PlayerPtr player, GameObjectPtr go, uint32 eventType);
         /// Called when a player kill a unit in bg
-        virtual void HandleKillUnit(Creature* creature, Player* killer);
+        virtual void HandleKillUnit(CreaturePtr creature, PlayerPtr killer);
         /// Return the nearest graveyard where player can respawn
-        virtual WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
+        virtual WorldSafeLocsEntry const* GetClosestGraveYard(PlayerPtr player);
         /// Called when a player click on flag (graveyard flag)
-        virtual void EventPlayerClickedOnFlag(Player* Source, GameObject* target_obj);
+        virtual void EventPlayerClickedOnFlag(PlayerPtr Source, GameObjectPtr target_obj);
         /// Called when a player use a gamobject (relic)
-        virtual void EventPlayerUsedGO(Player* Source, GameObject* object);
+        virtual void EventPlayerUsedGO(PlayerPtr Source, GameObjectPtr object);
         /// Return gate id, relative to bg data, according to gameobject id
         uint32 getGateIdFromDamagedOrDestroyEventId(uint32 id)
         {
@@ -524,12 +524,12 @@ class BattlegroundSA : public Battleground
         void EndBattleground(uint32 winner);
 
         /// CAlled when a player leave battleground
-        void RemovePlayer(Player* player, uint64 guid, uint32 team);
-        void HandleAreaTrigger(Player* Source, uint32 Trigger);
+        void RemovePlayer(PlayerPtr player, uint64 guid, uint32 team);
+        void HandleAreaTrigger(PlayerPtr Source, uint32 Trigger);
 
         /* Scorekeeping */
         /// Update score board
-        void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
+        void UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor = true);
 
         // Achievement: Defense of the Ancients
         bool gateDestroyed;
@@ -568,7 +568,7 @@ class BattlegroundSA : public Battleground
          * -Update worldstate
          * -Delete gameobject in front of door (lighting object, with different colours for each door)
          */
-        void DestroyGate(Player* player, GameObject* go);
+        void DestroyGate(PlayerPtr player, GameObjectPtr go);
         /// Update timer worldstate
         void SendTime();
         /**
@@ -580,7 +580,7 @@ class BattlegroundSA : public Battleground
          * \param i : id of graveyard
          * \param Source : Player who capture gy
          */
-        void CaptureGraveyard(BG_SA_Graveyards i, Player* Source);
+        void CaptureGraveyard(BG_SA_Graveyards i, PlayerPtr Source);
         /// Switch on/off timer worldstate
         void ToggleTimer();
 
@@ -588,9 +588,9 @@ class BattlegroundSA : public Battleground
         void UpdateDemolisherSpawns();
 
         /// Send packet to player for create boats (client part)
-        void SendTransportInit(Player* player);
+        void SendTransportInit(PlayerPtr player);
         /// Send packet to player for destroy boats (client part)
-        void SendTransportsRemove(Player* player);
+        void SendTransportsRemove(PlayerPtr player);
 
         /// Totale elapsed time of current round
         uint32 TotalTime;

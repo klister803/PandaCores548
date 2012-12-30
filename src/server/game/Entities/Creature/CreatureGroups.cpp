@@ -30,9 +30,9 @@ FormationMgr::~FormationMgr()
         delete itr->second;
 }
 
-void FormationMgr::AddCreatureToGroup(uint32 groupId, Creature* member)
+void FormationMgr::AddCreatureToGroup(uint32 groupId, CreaturePtr member)
 {
-    Map* map = member->FindMap();
+    MapPtr map = member->FindMap();
     if (!map)
         return;
 
@@ -54,14 +54,14 @@ void FormationMgr::AddCreatureToGroup(uint32 groupId, Creature* member)
     }
 }
 
-void FormationMgr::RemoveCreatureFromGroup(CreatureGroup* group, Creature* member)
+void FormationMgr::RemoveCreatureFromGroup(CreatureGroup* group, CreaturePtr member)
 {
     sLog->outDebug(LOG_FILTER_UNITS, "Deleting member pointer to GUID: %u from group %u", group->GetId(), member->GetDBTableGUIDLow());
     group->RemoveMember(member);
 
     if (group->isEmpty())
     {
-        Map* map = member->FindMap();
+        MapPtr map = member->FindMap();
         if (!map)
             return;
 
@@ -138,7 +138,7 @@ void FormationMgr::LoadCreatureFormations()
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u creatures in formations in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
 }
 
-void CreatureGroup::AddMember(Creature* member)
+void CreatureGroup::AddMember(CreaturePtr member)
 {
     sLog->outDebug(LOG_FILTER_UNITS, "CreatureGroup::AddMember: Adding unit GUID: %u.", member->GetGUIDLow());
 
@@ -153,16 +153,16 @@ void CreatureGroup::AddMember(Creature* member)
     member->SetFormation(this);
 }
 
-void CreatureGroup::RemoveMember(Creature* member)
+void CreatureGroup::RemoveMember(CreaturePtr member)
 {
     if (m_leader == member)
-        m_leader = NULL;
+        m_leader = nullptr;
 
     m_members.erase(member);
-    member->SetFormation(NULL);
+    member->SetFormation(nullptr);
 }
 
-void CreatureGroup::MemberAttackStart(Creature* member, Unit* target)
+void CreatureGroup::MemberAttackStart(CreaturePtr member, UnitPtr target)
 {
     uint8 groupAI = sFormationMgr->CreatureGroupMap[member->GetDBTableGUIDLow()]->groupAI;
     if (!groupAI)
@@ -218,7 +218,7 @@ void CreatureGroup::LeaderMoveTo(float x, float y, float z)
 
     for (CreatureGroupMemberType::iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
     {
-        Creature* member = itr->first;
+        CreaturePtr member = itr->first;
         if (member == m_leader || !member->isAlive() || member->getVictim())
             continue;
 

@@ -35,7 +35,7 @@ namespace Trinity
     // count functions
     template<class SPECIFIC_TYPE> size_t Count(const ContainerMapList<SPECIFIC_TYPE> &elements, SPECIFIC_TYPE* /*fake*/)
     {
-        return elements._element.getSize();
+        return elements._element->getSize();
     }
 
     template<class SPECIFIC_TYPE> size_t Count(const ContainerMapList<TypeNull> &/*elements*/, SPECIFIC_TYPE* /*fake*/)
@@ -59,54 +59,54 @@ namespace Trinity
     }
 
     // non-const insert functions
-    template<class SPECIFIC_TYPE> SPECIFIC_TYPE* Insert(ContainerMapList<SPECIFIC_TYPE> &elements, SPECIFIC_TYPE *obj)
+    template<class SPECIFIC_TYPE> std::shared_ptr<SPECIFIC_TYPE> Insert(ContainerMapList<SPECIFIC_TYPE> &elements, std::shared_ptr<SPECIFIC_TYPE> obj)
     {
         //elements._element[hdl] = obj;
         obj->AddToGrid(elements._element);
         return obj;
     }
 
-    template<class SPECIFIC_TYPE> SPECIFIC_TYPE* Insert(ContainerMapList<TypeNull> &/*elements*/, SPECIFIC_TYPE * /*obj*/)
+    template<class SPECIFIC_TYPE> std::shared_ptr<SPECIFIC_TYPE> Insert(ContainerMapList<TypeNull> &/*elements*/, std::shared_ptr<SPECIFIC_TYPE> /*obj*/)
     {
-        return NULL;
+        return nullptr;
     }
 
     // this is a missed
-    template<class SPECIFIC_TYPE, class T> SPECIFIC_TYPE* Insert(ContainerMapList<T> &/*elements*/, SPECIFIC_TYPE * /*obj*/)
+    template<class SPECIFIC_TYPE, class T> std::shared_ptr<SPECIFIC_TYPE> Insert(ContainerMapList<T> &/*elements*/, std::shared_ptr<SPECIFIC_TYPE> /*obj*/)
     {
-        return NULL;                                        // a missed
+        return nullptr;                                        // a missed
     }
 
     // Recursion
-    template<class SPECIFIC_TYPE, class H, class T> SPECIFIC_TYPE* Insert(ContainerMapList<TypeList<H, T> >&elements, SPECIFIC_TYPE *obj)
+    template<class SPECIFIC_TYPE, class H, class T> std::shared_ptr<SPECIFIC_TYPE> Insert(ContainerMapList<TypeList<H, T> >&elements, std::shared_ptr<SPECIFIC_TYPE> obj)
     {
-        SPECIFIC_TYPE* t= Insert(elements._elements, obj);
-        return (t != NULL ? t : Insert(elements._TailElements, obj));
+        std::shared_ptr<SPECIFIC_TYPE> t = Insert(elements._elements, obj);
+        return (t != nullptr ? t : Insert(elements._TailElements, obj));
     }
 
     //// non-const remove method
-    //template<class SPECIFIC_TYPE> SPECIFIC_TYPE* Remove(ContainerMapList<SPECIFIC_TYPE> & /*elements*/, SPECIFIC_TYPE *obj)
+    //template<class SPECIFIC_TYPE> std::shared_ptr<SPECIFIC_TYPE> Remove(ContainerMapList<SPECIFIC_TYPE> & /*elements*/, SPECIFIC_TYPE *obj)
     //{
     //    obj->GetGridRef().unlink();
     //    return obj;
     //}
 
-    //template<class SPECIFIC_TYPE> SPECIFIC_TYPE* Remove(ContainerMapList<TypeNull> &/*elements*/, SPECIFIC_TYPE * /*obj*/)
+    //template<class SPECIFIC_TYPE> std::shared_ptr<SPECIFIC_TYPE> Remove(ContainerMapList<TypeNull> &/*elements*/, SPECIFIC_TYPE * /*obj*/)
     //{
-    //    return NULL;
+    //    return nullptr;
     //}
 
     //// this is a missed
-    //template<class SPECIFIC_TYPE, class T> SPECIFIC_TYPE* Remove(ContainerMapList<T> &/*elements*/, SPECIFIC_TYPE * /*obj*/)
+    //template<class SPECIFIC_TYPE, class T> std::shared_ptr<SPECIFIC_TYPE> Remove(ContainerMapList<T> &/*elements*/, SPECIFIC_TYPE * /*obj*/)
     //{
-    //    return NULL;                                        // a missed
+    //    return nullptr;                                        // a missed
     //}
 
-    //template<class SPECIFIC_TYPE, class T, class H> SPECIFIC_TYPE* Remove(ContainerMapList<TypeList<H, T> > &elements, SPECIFIC_TYPE *obj)
+    //template<class SPECIFIC_TYPE, class T, class H> std::shared_ptr<SPECIFIC_TYPE> Remove(ContainerMapList<TypeList<H, T> > &elements, SPECIFIC_TYPE *obj)
     //{
     //    // The head element is bad
-    //    SPECIFIC_TYPE* t = Remove(elements._elements, obj);
-    //    return ( t != NULL ? t : Remove(elements._TailElements, obj) );
+    //    std::shared_ptr<SPECIFIC_TYPE> t = Remove(elements._elements, obj);
+    //    return ( t != nullptr ? t : Remove(elements._TailElements, obj) );
     //}
 }
 #endif

@@ -63,14 +63,14 @@ class mob_kilrek : public CreatureScript
 public:
     mob_kilrek() : CreatureScript("mob_kilrek") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_kilrekAI (creature);
     }
 
     struct mob_kilrekAI : public ScriptedAI
     {
-        mob_kilrekAI(Creature* creature) : ScriptedAI(creature)
+        mob_kilrekAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -87,7 +87,7 @@ public:
             AmplifyTimer = 2000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             if (!instance)
             {
@@ -96,14 +96,14 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
             {
                 uint64 TerestianGUID = instance->GetData64(DATA_TERESTIAN);
                 if (TerestianGUID)
                 {
-                    Unit* Terestian = Unit::GetUnit(*me, TerestianGUID);
+                    UnitPtr Terestian = Unit::GetUnit(TO_WORLDOBJECT(me), TerestianGUID);
                     if (Terestian && Terestian->isAlive())
                         DoCast(Terestian, SPELL_BROKEN_PACT, true);
                 }
@@ -135,14 +135,14 @@ class mob_demon_chain : public CreatureScript
 public:
     mob_demon_chain() : CreatureScript("mob_demon_chain") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_demon_chainAI(creature);
     }
 
     struct mob_demon_chainAI : public ScriptedAI
     {
-        mob_demon_chainAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_demon_chainAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint64 SacrificeGUID;
 
@@ -151,15 +151,15 @@ public:
             SacrificeGUID = 0;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
-        void AttackStart(Unit* /*who*/) {}
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
+        void AttackStart(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (SacrificeGUID)
             {
-                Unit* Sacrifice = Unit::GetUnit(*me, SacrificeGUID);
+                UnitPtr Sacrifice = Unit::GetUnit(TO_WORLDOBJECT(me), SacrificeGUID);
                 if (Sacrifice)
                     Sacrifice->RemoveAurasDueToSpell(SPELL_SACRIFICE);
             }
@@ -173,14 +173,14 @@ class mob_fiendish_portal : public CreatureScript
 public:
     mob_fiendish_portal() : CreatureScript("mob_fiendish_portal") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_fiendish_portalAI (creature);
     }
 
     struct mob_fiendish_portalAI : public PassiveAI
     {
-        mob_fiendish_portalAI(Creature* creature) : PassiveAI(creature), summons(me){}
+        mob_fiendish_portalAI(CreaturePtr creature) : PassiveAI(creature), summons(me){}
 
         SummonList summons;
 
@@ -189,7 +189,7 @@ public:
             DespawnAllImp();
         }
 
-        void JustSummoned(Creature* summon)
+        void JustSummoned(CreaturePtr summon)
         {
             summons.Summon(summon);
             DoZoneInCombat(summon);
@@ -210,14 +210,14 @@ class mob_fiendish_imp : public CreatureScript
 public:
     mob_fiendish_imp() : CreatureScript("mob_fiendish_imp") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_fiendish_impAI (creature);
     }
 
     struct mob_fiendish_impAI : public ScriptedAI
     {
-        mob_fiendish_impAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_fiendish_impAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 FireboltTimer;
 
@@ -228,7 +228,7 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_SCHOOL, SPELL_SCHOOL_MASK_FIRE, true);
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -253,14 +253,14 @@ class boss_terestian_illhoof : public CreatureScript
 public:
     boss_terestian_illhoof() : CreatureScript("boss_terestian_illhoof") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_terestianAI (creature);
     }
 
     struct boss_terestianAI : public ScriptedAI
     {
-        boss_terestianAI(Creature* creature) : ScriptedAI(creature)
+        boss_terestianAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             for (uint8 i = 0; i < 2; ++i)
                 PortalGUID[i] = 0;
@@ -286,7 +286,7 @@ public:
             {
                 if (PortalGUID[i])
                 {
-                    if (Creature* pPortal = Unit::GetCreature(*me, PortalGUID[i]))
+                    if (CreaturePtr pPortal = Unit::GetCreature(TO_WORLDOBJECT(me), PortalGUID[i]))
                     {
                         CAST_AI(mob_fiendish_portal::mob_fiendish_portalAI, pPortal->AI())->DespawnAllImp();
                         pPortal->DespawnOrUnsummon();
@@ -310,7 +310,7 @@ public:
 
             me->RemoveAurasDueToSpell(SPELL_BROKEN_PACT);
 
-            if (Minion* Kilrek = me->GetFirstMinion())
+            if (MinionPtr Kilrek = me->GetFirstMinion())
             {
                 if (!Kilrek->isAlive())
                 {
@@ -321,12 +321,12 @@ public:
             else DoCast(me, SPELL_SUMMON_IMP, true);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             if (summoned->GetEntry() == CREATURE_PORTAL)
             {
@@ -341,18 +341,18 @@ public:
             }
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             for (uint8 i = 0; i < 2; ++i)
             {
                 if (PortalGUID[i])
                 {
-                    if (Creature* pPortal = Unit::GetCreature((*me), PortalGUID[i]))
+                    if (CreaturePtr pPortal = Unit::GetCreature(TO_WORLDOBJECT(me), PortalGUID[i]))
                         pPortal->DespawnOrUnsummon();
 
                     PortalGUID[i] = 0;
@@ -372,13 +372,13 @@ public:
 
             if (SacrificeTimer <= diff)
             {
-                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true);
+                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true);
                 if (target && target->isAlive())
                 {
                     DoCast(target, SPELL_SACRIFICE, true);
                     DoCast(target, SPELL_SUMMON_DEMONCHAINS, true);
 
-                    if (Creature* Chains = me->FindNearestCreature(CREATURE_DEMONCHAINS, 5000))
+                    if (CreaturePtr Chains = me->FindNearestCreature(CREATURE_DEMONCHAINS, 5000))
                     {
                         CAST_AI(mob_demon_chain::mob_demon_chainAI, Chains->AI())->SacrificeGUID = target->GetGUID();
                         Chains->CastSpell(Chains, SPELL_DEMON_CHAINS, true);
@@ -404,7 +404,7 @@ public:
 
                 if (PortalGUID[0] && PortalGUID[1])
                 {
-                    if (Creature* pPortal = Unit::GetCreature(*me, PortalGUID[urand(0, 1)]))
+                    if (CreaturePtr pPortal = Unit::GetCreature(TO_WORLDOBJECT(me), PortalGUID[urand(0, 1)]))
                         pPortal->CastSpell(me->getVictim(), SPELL_SUMMON_FIENDISIMP, false);
                     SummonTimer = 5000;
                 }

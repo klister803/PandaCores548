@@ -42,14 +42,14 @@ class boss_postmaster_malown : public CreatureScript
 public:
     boss_postmaster_malown() : CreatureScript("boss_postmaster_malown") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_postmaster_malownAI (creature);
     }
 
     struct boss_postmaster_malownAI : public ScriptedAI
     {
-        boss_postmaster_malownAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_postmaster_malownAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 WailingDead_Timer;
         uint32 Backhand_Timer;
@@ -68,7 +68,7 @@ public:
             HasYelled = false;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 

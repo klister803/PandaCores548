@@ -530,7 +530,7 @@ struct AISpellInfoType
 
 AISpellInfoType* GetAISpellInfo(uint32 i);
 
-inline void CreatureAI::SetGazeOn(Unit* target)
+inline void CreatureAI::SetGazeOn(UnitPtr target)
 {
     if (me->IsValidAttackTarget(target))
     {
@@ -552,9 +552,9 @@ inline bool CreatureAI::UpdateVictimWithGaze()
             me->SetReactState(REACT_AGGRESSIVE);
     }
 
-    if (Unit* victim = me->SelectVictim())
+    if (UnitPtr victim = me->SelectVictim())
         AttackStart(victim);
-    return me->getVictim();
+    return me->getVictim() != nullptr;
 }
 
 inline bool CreatureAI::UpdateVictim()
@@ -564,11 +564,11 @@ inline bool CreatureAI::UpdateVictim()
 
     if (!me->HasReactState(REACT_PASSIVE))
     {
-        if (Unit* victim = me->SelectVictim())
+        if (UnitPtr victim = me->SelectVictim())
             AttackStart(victim);
-        return me->getVictim();
+        return me->getVictim() != nullptr;
     }
-    else if (me->getThreatManager().isThreatListEmpty())
+    else if (me->getThreatManager()->isThreatListEmpty())
     {
         EnterEvadeMode();
         return false;
@@ -589,7 +589,7 @@ inline bool CreatureAI::_EnterEvadeMode()
     me->DeleteThreatList();
     me->CombatStop(true);
     me->LoadCreaturesAddon();
-    me->SetLootRecipient(NULL);
+    me->SetLootRecipient(nullptr);
     me->ResetPlayerDamageReq();
 
     if (me->IsInEvadeMode())
@@ -598,7 +598,7 @@ inline bool CreatureAI::_EnterEvadeMode()
     return true;
 }
 
-inline void UnitAI::DoCast(Unit* victim, uint32 spellId, bool triggered)
+inline void UnitAI::DoCast(UnitPtr victim, uint32 spellId, bool triggered)
 {
     if (!victim || (me->HasUnitState(UNIT_STATE_CASTING) && !triggered))
         return;
@@ -617,22 +617,22 @@ inline void UnitAI::DoCastAOE(uint32 spellId, bool triggered)
     if (!triggered && me->HasUnitState(UNIT_STATE_CASTING))
         return;
 
-    me->CastSpell((Unit*)NULL, spellId, triggered);
+    me->CastSpell(std::shared_ptr<Unit>(), spellId, triggered);
 }
 
-inline Creature* CreatureAI::DoSummon(uint32 entry, const Position& pos, uint32 despawnTime, TempSummonType summonType)
+inline CreaturePtr CreatureAI::DoSummon(uint32 entry, const Position& pos, uint32 despawnTime, TempSummonType summonType)
 {
     return me->SummonCreature(entry, pos, summonType, despawnTime);
 }
 
-inline Creature* CreatureAI::DoSummon(uint32 entry, WorldObject* obj, float radius, uint32 despawnTime, TempSummonType summonType)
+inline CreaturePtr CreatureAI::DoSummon(uint32 entry, WorldObjectPtr obj, float radius, uint32 despawnTime, TempSummonType summonType)
 {
     Position pos;
     obj->GetRandomNearPosition(pos, radius);
     return me->SummonCreature(entry, pos, summonType, despawnTime);
 }
 
-inline Creature* CreatureAI::DoSummonFlyer(uint32 entry, WorldObject* obj, float flightZ, float radius, uint32 despawnTime, TempSummonType summonType)
+inline CreaturePtr CreatureAI::DoSummonFlyer(uint32 entry, WorldObjectPtr obj, float flightZ, float radius, uint32 despawnTime, TempSummonType summonType)
 {
     Position pos;
     obj->GetRandomNearPosition(pos, radius);

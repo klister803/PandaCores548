@@ -31,11 +31,13 @@
 
 class SpellInfo;
 
+class ClassFactory;
 class CreatureAI;
 class Quest;
 class Player;
 class WorldSession;
 class CreatureGroup;
+class TempSummon;
 
 enum CreatureFlagsExtra
 {
@@ -342,7 +344,7 @@ struct VendorItemData
     VendorItem* GetItem(uint32 slot) const
     {
         if (slot >= m_items.size())
-            return NULL;
+            return nullptr;
 
         return m_items[slot];
     }
@@ -356,8 +358,6 @@ struct VendorItemData
     VendorItem const* FindItemCostPair(uint32 item_id, uint32 extendedCost, uint8 type) const;
     void Clear()
     {
-        for (VendorItemList::const_iterator itr = m_items.begin(); itr != m_items.end(); ++itr)
-            delete (*itr);
         m_items.clear();
     }
 };
@@ -365,7 +365,7 @@ struct VendorItemData
 struct VendorItemCount
 {
     explicit VendorItemCount(uint32 _item, uint32 _count)
-        : itemId(_item), count(_count), lastIncrementTime(time(NULL)) {}
+        : itemId(_item), count(_count), lastIncrementTime(time(nullptr)) {}
 
     uint32 itemId;
     uint32 count;
@@ -444,8 +444,10 @@ private:
 
 class Creature : public Unit, public GridObject<Creature>, public MapCreature
 {
-    public:
+    friend class ClassFactory;
 
+    public:
+        
         explicit Creature(bool isWorldObject = false);
         virtual ~Creature();
 
@@ -454,7 +456,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         void DisappearAndDie();
 
-        bool Create(uint32 guidlow, Map* map, uint32 phaseMask, uint32 Entry, uint32 vehId, uint32 team, float x, float y, float z, float ang, const CreatureData* data = NULL);
+        bool Create(uint32 guidlow, MapPtr map, uint32 phaseMask, uint32 Entry, uint32 vehId, uint32 team, float x, float y, float z, float ang, const CreatureData* data = nullptr);
         bool LoadCreaturesAddon(bool reload = false);
         void SelectLevel(const CreatureTemplate* cinfo);
         void LoadEquipment(uint32 equip_entry, bool force=false);
@@ -462,7 +464,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint32 GetDBTableGUIDLow() const { return m_DBTableGuid; }
 
         void Update(uint32 time);                         // overwrited Unit::Update
-        void GetRespawnPosition(float &x, float &y, float &z, float* ori = NULL, float* dist =NULL) const;
+        void GetRespawnPosition(float &x, float &y, float &z, float* ori = nullptr, float* dist =nullptr) const;
         uint32 GetEquipmentId() const { return GetCreatureTemplate()->equipmentId; }
 
         void SetCorpseDelay(uint32 delay) { m_corpseDelay = delay; }
@@ -489,10 +491,10 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         }
 
         ///// TODO RENAME THIS!!!!!
-        bool isCanTrainingOf(Player* player, bool msg) const;
-        bool isCanInteractWithBattleMaster(Player* player, bool msg) const;
-        bool isCanTrainingAndResetTalentsOf(Player* player) const;
-        bool canCreatureAttack(Unit const* victim, bool force = true) const;
+        bool isCanTrainingOf(PlayerPtr player, bool msg) const;
+        bool isCanInteractWithBattleMaster(PlayerPtr player, bool msg) const;
+        bool isCanTrainingAndResetTalentsOf(PlayerPtr player) const;
+        bool canCreatureAttack(constUnitPtr victim, bool force = true) const;
         bool IsImmunedToSpell(SpellInfo const* spellInfo);
                                                             // redefine Unit::IsImmunedToSpell
         bool IsImmunedToSpellEffect(SpellInfo const* spellInfo, uint32 index) const;
@@ -516,11 +518,11 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         bool IsDungeonBoss() const;
 
-        uint8 getLevelForTarget(WorldObject const* target) const; // overwrite Unit::getLevelForTarget for boss level support
+        uint8 getLevelForTarget(constWorldObjectPtr target) const; // overwrite Unit::getLevelForTarget for boss level support
 
         bool IsInEvadeMode() const { return HasUnitState(UNIT_STATE_EVADE); }
 
-        bool AIM_Initialize(CreatureAI* ai = NULL);
+        bool AIM_Initialize(CreatureAI* ai = nullptr);
         void Motion_Initialize();
 
         void AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, uint8 type);
@@ -541,7 +543,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         bool HasSpell(uint32 spellID) const;
 
-        bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
+        bool UpdateEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=nullptr);
         bool UpdateStats(Stats stat);
         bool UpdateAllStats();
         void UpdateResistances(uint32 school);
@@ -579,22 +581,22 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         void setDeathState(DeathState s);                   // override virtual Unit::setDeathState
 
-        bool LoadFromDB(uint32 guid, Map* map) { return LoadCreatureFromDB(guid, map, false); }
-        bool LoadCreatureFromDB(uint32 guid, Map* map, bool addToMap = true);
+        bool LoadFromDB(uint32 guid, MapPtr map) { return LoadCreatureFromDB(guid, map, false); }
+        bool LoadCreatureFromDB(uint32 guid, MapPtr map, bool addToMap = true);
         void SaveToDB();
                                                             // overriden in Pet
         virtual void SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask);
         virtual void DeleteFromDB();                        // overriden in Pet
 
-        Loot loot;
+        LootPtr loot;
         bool lootForPickPocketed;
         bool lootForBody;
-        Player* GetLootRecipient() const;
-        Group* GetLootRecipientGroup() const;
+        PlayerPtr GetLootRecipient() const;
+        GroupPtr GetLootRecipientGroup() const;
         bool hasLootRecipient() const { return m_lootRecipient || m_lootRecipientGroup; }
-        bool isTappedBy(Player const* player) const;                          // return true if the creature is tapped by the player or a member of his party.
+        bool isTappedBy(constPlayerPtr player) const;                          // return true if the creature is tapped by the player or a member of his party.
 
-        void SetLootRecipient (Unit* unit);
+        void SetLootRecipient (UnitPtr unit);
         void AllLootRemovedFromCorpse();
 
         uint16 GetLootMode() { return m_LootMode; }
@@ -604,21 +606,21 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         void RemoveLootMode(uint16 lootMode) { m_LootMode &= ~lootMode; }
         void ResetLootMode() { m_LootMode = LOOT_MODE_DEFAULT; }
 
-        SpellInfo const* reachWithSpellAttack(Unit* victim);
-        SpellInfo const* reachWithSpellCure(Unit* victim);
+        SpellInfo const* reachWithSpellAttack(UnitPtr victim);
+        SpellInfo const* reachWithSpellCure(UnitPtr victim);
 
         uint32 m_spells[CREATURE_MAX_SPELLS];
         CreatureSpellCooldowns m_CreatureSpellCooldowns;
         CreatureSpellCooldowns m_CreatureCategoryCooldowns;
 
-        bool canStartAttack(Unit const* u, bool force) const;
-        float GetAttackDistance(Unit const* player) const;
+        bool canStartAttack(constUnitPtr u, bool force) const;
+        float GetAttackDistance(constUnitPtr player) const;
 
         void SendAIReaction(AiReaction reactionType);
 
-        Unit* SelectNearestTarget(float dist = 0) const;
-        Unit* SelectNearestTargetInAttackDistance(float dist = 0) const;
-        Player* SelectNearestPlayer(float distance = 0) const;
+        UnitPtr SelectNearestTarget(float dist = 0) const;
+        UnitPtr SelectNearestTargetInAttackDistance(float dist = 0) const;
+        PlayerPtr SelectNearestPlayer(float distance = 0) const;
 
         void DoFleeToGetAssistance();
         void CallForHelp(float fRadius);
@@ -626,8 +628,8 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         void SetNoCallAssistance(bool val) { m_AlreadyCallAssistance = val; }
         void SetNoSearchAssistance(bool val) { m_AlreadySearchedAssistance = val; }
         bool HasSearchedAssistance() { return m_AlreadySearchedAssistance; }
-        bool CanAssistTo(const Unit* u, const Unit* enemy, bool checkfaction = true) const;
-        bool _IsTargetAcceptable(const Unit* target) const;
+        bool CanAssistTo(constUnitPtr u, constUnitPtr enemy, bool checkfaction = true) const;
+        bool _IsTargetAcceptable(constUnitPtr target) const;
 
         MovementGeneratorType GetDefaultMovementType() const { return m_defaultMovementType; }
         void SetDefaultMovementType(MovementGeneratorType mgt) { m_defaultMovementType = mgt; }
@@ -638,7 +640,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         time_t const& GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const;
-        void SetRespawnTime(uint32 respawn) { m_respawnTime = respawn ? time(NULL) + respawn : 0; }
+        void SetRespawnTime(uint32 respawn) { m_respawnTime = respawn ? time(nullptr) + respawn : 0; }
         void Respawn(bool force = false);
         void SaveRespawnTime();
 
@@ -654,7 +656,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
         uint32 lootingGroupLowGUID;                         // used to find group which is looting corpse
 
-        void SendZoneUnderAttackMessage(Player* attacker);
+        void SendZoneUnderAttackMessage(PlayerPtr attacker);
 
         void SetInCombatWithZone();
 
@@ -694,7 +696,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         CreatureGroup* GetFormation() {return m_formation;}
         void SetFormation(CreatureGroup* formation) {m_formation = formation;}
 
-        Unit* SelectVictim();
+        UnitPtr SelectVictim();
 
         void SetDisableReputationGain(bool disable) { DisableReputationGain = disable; }
         bool IsReputationGainDisabled() { return DisableReputationGain; }
@@ -717,15 +719,15 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         void SetGUIDTransport(uint32 guid) { guid_transport=guid; }
         uint32 GetGUIDTransport() { return guid_transport; }
 
-        void FarTeleportTo(Map* map, float X, float Y, float Z, float O);
+        void FarTeleportTo(MapPtr map, float X, float Y, float Z, float O);
 
         bool m_isTempWorldObject; //true when possessed
 
         void ForcedDespawn(uint32 timeMSToDespawn = 0);
 
     protected:
-        bool CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint32 team, const CreatureData* data = NULL);
-        bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
+        bool CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint32 team, const CreatureData* data = nullptr);
+        bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=nullptr);
 
         // vendor items
         VendorItemCounts m_vendorItemCounts;
@@ -770,7 +772,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         uint32 guid_transport;
 
         bool IsInvisibleDueToDespawn() const;
-        bool CanAlwaysSee(WorldObject const* obj) const;
+        bool CanAlwaysSee(constWorldObjectPtr obj) const;
     private:
 
         //WaypointMovementGenerator vars
@@ -780,12 +782,13 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         //Formation var
         CreatureGroup* m_formation;
         bool TriggerJustRespawned;
+        std::shared_ptr<GridObject<Creature>> _creature;
 };
 
 class AssistDelayEvent : public BasicEvent
 {
     public:
-        AssistDelayEvent(uint64 victim, Unit& owner) : BasicEvent(), m_victim(victim), m_owner(owner) { }
+        AssistDelayEvent(uint64 victim, UnitPtr owner) : BasicEvent(), m_victim(victim), m_owner(owner) { }
 
         bool Execute(uint64 e_time, uint32 p_time);
         void AddAssistant(uint64 guid) { m_assistants.push_back(guid); }
@@ -794,17 +797,17 @@ class AssistDelayEvent : public BasicEvent
 
         uint64            m_victim;
         std::list<uint64> m_assistants;
-        Unit&             m_owner;
+        UnitPtr           m_owner;
 };
 
 class ForcedDespawnDelayEvent : public BasicEvent
 {
     public:
-        ForcedDespawnDelayEvent(Creature& owner) : BasicEvent(), m_owner(owner) { }
+        ForcedDespawnDelayEvent(CreaturePtr owner) : BasicEvent(), m_owner(owner) { }
         bool Execute(uint64 e_time, uint32 p_time);
 
     private:
-        Creature& m_owner;
+        CreaturePtr m_owner;
 };
 
 #endif

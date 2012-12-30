@@ -45,14 +45,14 @@ class boss_anetheron : public CreatureScript
 public:
     boss_anetheron() : CreatureScript("boss_anetheron") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_anetheronAI (creature);
     }
 
     struct boss_anetheronAI : public hyjal_trashAI
     {
-        boss_anetheronAI(Creature* creature) : hyjal_trashAI(creature)
+        boss_anetheronAI(CreaturePtr creature) : hyjal_trashAI(creature)
         {
             instance = creature->GetInstanceScript();
             go = false;
@@ -76,14 +76,14 @@ public:
                 instance->SetData(DATA_ANETHERONEVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             if (instance && IsEvent)
                 instance->SetData(DATA_ANETHERONEVENT, IN_PROGRESS);
             Talk(SAY_ONAGGRO);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             Talk(SAY_ONSLAY);
         }
@@ -92,13 +92,13 @@ public:
         {
             if (waypointId == 7 && instance)
             {
-                Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_JAINAPROUDMOORE));
+                UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_JAINAPROUDMOORE));
                 if (target && target->isAlive())
                     me->AddThreat(target, 0.0f);
             }
         }
 
-        void JustDied(Unit* killer)
+        void JustDied(UnitPtr killer)
         {
             hyjal_trashAI::JustDied(killer);
             if (instance && IsEvent)
@@ -137,7 +137,7 @@ public:
 
             if (SwarmTimer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_CARRION_SWARM);
 
                 SwarmTimer = urand(45000, 60000);
@@ -148,7 +148,7 @@ public:
             {
                 for (uint8 i = 0; i < 3; ++i)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                         target->CastSpell(target, SPELL_SLEEP, true);
                 }
                 SleepTimer = 60000;
@@ -177,14 +177,14 @@ class mob_towering_infernal : public CreatureScript
 public:
     mob_towering_infernal() : CreatureScript("mob_towering_infernal") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_towering_infernalAI (creature);
     }
 
     struct mob_towering_infernalAI : public ScriptedAI
     {
-        mob_towering_infernalAI(Creature* creature) : ScriptedAI(creature)
+        mob_towering_infernalAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             if (instance)
@@ -203,19 +203,19 @@ public:
             CheckTimer = 5000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (me->IsWithinDist(who, 50) && !me->isInCombat() && me->IsValidAttackTarget(who))
                 AttackStart(who);
@@ -227,7 +227,7 @@ public:
             {
                 if (AnetheronGUID)
                 {
-                    Creature* boss = Unit::GetCreature((*me), AnetheronGUID);
+                    CreaturePtr boss = Unit::GetCreature(TO_WORLDOBJECT(me), AnetheronGUID);
                     if (!boss || (boss && boss->isDead()))
                     {
                         me->setDeathState(JUST_DIED);

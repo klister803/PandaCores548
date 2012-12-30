@@ -27,8 +27,6 @@ GroupMgr::GroupMgr()
 
 GroupMgr::~GroupMgr()
 {
-    for (GroupContainer::iterator itr = GroupStore.begin(); itr != GroupStore.end(); ++itr)
-        delete itr->second;
 }
 
 uint32 GroupMgr::GenerateNewGroupDbStoreId()
@@ -37,7 +35,7 @@ uint32 GroupMgr::GenerateNewGroupDbStoreId()
 
     for (uint32 i = ++NextGroupDbStoreId; i < 0xFFFFFFFF; ++i)
     {
-        if ((i < GroupDbStore.size() && GroupDbStore[i] == NULL) || i >= GroupDbStore.size())
+        if ((i < GroupDbStore.size() && GroupDbStore[i] == nullptr) || i >= GroupDbStore.size())
         {
             NextGroupDbStoreId = i;
             break;
@@ -53,7 +51,7 @@ uint32 GroupMgr::GenerateNewGroupDbStoreId()
     return newStorageId;
 }
 
-void GroupMgr::RegisterGroupDbStoreId(uint32 storageId, Group* group)
+void GroupMgr::RegisterGroupDbStoreId(uint32 storageId, GroupPtr group)
 {
     // Allocate space if necessary.
     if (storageId >= uint32(GroupDbStore.size()))
@@ -62,22 +60,22 @@ void GroupMgr::RegisterGroupDbStoreId(uint32 storageId, Group* group)
     GroupDbStore[storageId] = group;
 }
 
-void GroupMgr::FreeGroupDbStoreId(Group* group)
+void GroupMgr::FreeGroupDbStoreId(GroupPtr group)
 {
     uint32 storageId = group->GetDbStoreId();
 
     if (storageId < NextGroupDbStoreId)
         NextGroupDbStoreId = storageId;
 
-    GroupDbStore[storageId] = NULL;
+    GroupDbStore[storageId] = nullptr;
 }
 
-Group* GroupMgr::GetGroupByDbStoreId(uint32 storageId) const
+GroupPtr GroupMgr::GetGroupByDbStoreId(uint32 storageId) const
 {
     if (storageId < GroupDbStore.size())
         return GroupDbStore[storageId];
 
-    return NULL;
+    return nullptr;
 }
 
 uint32 GroupMgr::GenerateGroupId()
@@ -90,21 +88,21 @@ uint32 GroupMgr::GenerateGroupId()
     return NextGroupId++;
 }
 
-Group* GroupMgr::GetGroupByGUID(uint32 groupId) const
+GroupPtr GroupMgr::GetGroupByGUID(uint32 groupId) const
 {
     GroupContainer::const_iterator itr = GroupStore.find(groupId);
     if (itr != GroupStore.end())
         return itr->second;
 
-    return NULL;
+    return nullptr;
 }
 
-void GroupMgr::AddGroup(Group* group)
+void GroupMgr::AddGroup(GroupPtr group)
 {
     GroupStore[group->GetLowGUID()] = group;
 }
 
-void GroupMgr::RemoveGroup(Group* group)
+void GroupMgr::RemoveGroup(GroupPtr group)
 {
     GroupStore.erase(group->GetLowGUID());
 }
@@ -133,7 +131,7 @@ void GroupMgr::LoadGroups()
         do
         {
             Field* fields = result->Fetch();
-            Group* group = new Group;
+            GroupPtr group (new Group, GroupDeleter());
             group->LoadGroupFromDB(fields);
             AddGroup(group);
 
@@ -176,7 +174,7 @@ void GroupMgr::LoadGroups()
         do
         {
             Field* fields = result->Fetch();
-            Group* group = GetGroupByDbStoreId(fields[0].GetUInt32());
+            GroupPtr group = GetGroupByDbStoreId(fields[0].GetUInt32());
 
             if (group)
                 group->LoadMemberFromDB(fields[1].GetUInt32(), fields[2].GetUInt8(), fields[3].GetUInt8(), fields[4].GetUInt8());
@@ -207,8 +205,8 @@ void GroupMgr::LoadGroups()
         do
         {
             Field* fields = result->Fetch();
-            Group* group = GetGroupByDbStoreId(fields[0].GetUInt32());
-            // group will never be NULL (we have run consistency sql's before loading)
+            GroupPtr group = GetGroupByDbStoreId(fields[0].GetUInt32());
+            // group will never be nullptr (we have run consistency sql's before loading)
 
             MapEntry const* mapEntry = sMapStore.LookupEntry(fields[1].GetUInt16());
             if (!mapEntry || !mapEntry->IsDungeon())

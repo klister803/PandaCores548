@@ -100,14 +100,14 @@ class boss_jaraxxus : public CreatureScript
 public:
     boss_jaraxxus() : CreatureScript("boss_jaraxxus") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_jaraxxusAI(creature);
     }
 
     struct boss_jaraxxusAI : public ScriptedAI
     {
-        boss_jaraxxusAI(Creature* creature) : ScriptedAI(creature), Summons(me)
+        boss_jaraxxusAI(CreaturePtr creature) : ScriptedAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
             Reset();
@@ -149,7 +149,7 @@ public:
             me->SetReactState(REACT_PASSIVE);
         }
 
-        void KilledUnit(Unit* who)
+        void KilledUnit(UnitPtr who)
         {
             if (who->GetTypeId() == TYPEID_PLAYER)
             {
@@ -158,7 +158,7 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             Summons.DespawnAll();
             Talk(SAY_DEATH);
@@ -166,12 +166,12 @@ public:
                 instance->SetData(TYPE_JARAXXUS, DONE);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             Summons.Summon(summoned);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             me->SetInCombatWithZone();
             if (instance)
@@ -208,14 +208,14 @@ public:
 
             if (m_uiFelLightningTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM))
                     DoCast(target, SPELL_FEL_LIGHTING);
                 m_uiFelLightningTimer = urand(10*IN_MILLISECONDS, 15*IN_MILLISECONDS);
             } else m_uiFelLightningTimer -= uiDiff;
 
             if (m_uiIncinerateFleshTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0, true))
                 {
                     Talk(EMOTE_INCINERATE, target->GetGUID());
                     Talk(SAY_INCINERATE);
@@ -232,7 +232,7 @@ public:
 
             if (m_uiLegionFlameTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0, true))
                 {
                     Talk(EMOTE_LEGION_FLAME, target->GetGUID());
                     DoCast(target, SPELL_LEGION_FLAME);
@@ -251,14 +251,14 @@ class mob_legion_flame : public CreatureScript
 public:
     mob_legion_flame() : CreatureScript("mob_legion_flame") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_legion_flameAI(creature);
     }
 
     struct mob_legion_flameAI : public Scripted_NoMovementAI
     {
-        mob_legion_flameAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        mob_legion_flameAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
         {
             Reset();
         }
@@ -283,14 +283,14 @@ class mob_infernal_volcano : public CreatureScript
 public:
     mob_infernal_volcano() : CreatureScript("mob_infernal_volcano") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_infernal_volcanoAI(creature);
     }
 
     struct mob_infernal_volcanoAI : public Scripted_NoMovementAI
     {
-        mob_infernal_volcanoAI(Creature* creature) : Scripted_NoMovementAI(creature), Summons(me)
+        mob_infernal_volcanoAI(CreaturePtr creature) : Scripted_NoMovementAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
             Reset();
@@ -312,19 +312,19 @@ public:
             Summons.DespawnAll();
         }
 
-        void IsSummonedBy(Unit* /*summoner*/)
+        void IsSummonedBy(UnitPtr /*summoner*/)
         {
             DoCast(SPELL_INFERNAL_ERUPTION_EFFECT);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             Summons.Summon(summoned);
             // makes immediate corpse despawn of summoned Felflame Infernals
             summoned->SetCorpseDelay(0);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             // used to despawn corpse immediately
             me->DespawnOrUnsummon();
@@ -340,14 +340,14 @@ class mob_fel_infernal : public CreatureScript
 public:
     mob_fel_infernal() : CreatureScript("mob_fel_infernal") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_fel_infernalAI(creature);
     }
 
     struct mob_fel_infernalAI : public ScriptedAI
     {
-        mob_fel_infernalAI(Creature* creature) : ScriptedAI(creature)
+        mob_fel_infernalAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             Reset();
@@ -362,7 +362,7 @@ public:
             me->SetInCombatWithZone();
         }
 
-        /*void SpellHitTarget(Unit* target, const SpellInfo* pSpell)
+        /*void SpellHitTarget(UnitPtr target, const SpellInfo* pSpell)
         {
             if (pSpell->Id == SPELL_FEL_STREAK)
                 DoCastAOE(SPELL_FEL_INFERNO); //66517
@@ -378,7 +378,7 @@ public:
 
             if (m_uiFelStreakTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_FEL_STREAK);
                 m_uiFelStreakTimer = 30*IN_MILLISECONDS;
             } else m_uiFelStreakTimer -= uiDiff;
@@ -394,14 +394,14 @@ class mob_nether_portal : public CreatureScript
 public:
     mob_nether_portal() : CreatureScript("mob_nether_portal") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_nether_portalAI(creature);
     }
 
     struct mob_nether_portalAI : public ScriptedAI
     {
-        mob_nether_portalAI(Creature* creature) : ScriptedAI(creature), Summons(me)
+        mob_nether_portalAI(CreaturePtr creature) : ScriptedAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
             Reset();
@@ -423,19 +423,19 @@ public:
             Summons.DespawnAll();
         }
 
-        void IsSummonedBy(Unit* /*summoner*/)
+        void IsSummonedBy(UnitPtr /*summoner*/)
         {
             DoCast(SPELL_NETHER_PORTAL_EFFECT);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             Summons.Summon(summoned);
             // makes immediate corpse despawn of summoned Mistress of Pain
             summoned->SetCorpseDelay(0);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             // used to despawn corpse immediately
             me->DespawnOrUnsummon();
@@ -451,14 +451,14 @@ class mob_mistress_of_pain : public CreatureScript
 public:
     mob_mistress_of_pain() : CreatureScript("mob_mistress_of_pain") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_mistress_of_painAI(creature);
     }
 
     struct mob_mistress_of_painAI : public ScriptedAI
     {
-        mob_mistress_of_painAI(Creature* creature) : ScriptedAI(creature)
+        mob_mistress_of_painAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             if (instance)
@@ -479,7 +479,7 @@ public:
             me->SetInCombatWithZone();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(DATA_MISTRESS_OF_PAIN_COUNT, DECREASE);
@@ -504,14 +504,14 @@ public:
 
             if (m_uiSpinningStrikeTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
                     DoCast(target, SPELL_SPINNING_STRIKE);
                 m_uiSpinningStrikeTimer = 30*IN_MILLISECONDS;
             } else m_uiSpinningStrikeTimer -= uiDiff;
 
             if (IsHeroic() && m_uiMistressKissTimer <= uiDiff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
                     DoCast(target, SPELL_MISTRESS_KISS);
                 m_uiMistressKissTimer = 30*IN_MILLISECONDS;
             } else m_uiMistressKissTimer -= uiDiff;

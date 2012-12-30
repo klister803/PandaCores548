@@ -37,14 +37,14 @@ class boss_infinite_corruptor : public CreatureScript
 public:
     boss_infinite_corruptor() : CreatureScript("boss_infinite_corruptor") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_infinite_corruptorAI(creature);
     }
 
     struct boss_infinite_corruptorAI : public ScriptedAI
     {
-        boss_infinite_corruptorAI(Creature* creature) : ScriptedAI(creature)
+        boss_infinite_corruptorAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -57,7 +57,7 @@ public:
                 instance->SetData(DATA_INFINITE_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             if (instance)
                 instance->SetData(DATA_INFINITE_EVENT, IN_PROGRESS);
@@ -72,7 +72,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(DATA_INFINITE_EVENT, DONE);

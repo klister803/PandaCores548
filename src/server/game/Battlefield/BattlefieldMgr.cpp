@@ -69,7 +69,7 @@ void BattlefieldMgr::AddZone(uint32 zoneid, Battlefield *handle)
     m_BattlefieldMap[zoneid] = handle;
 }
 
-void BattlefieldMgr::HandlePlayerEnterZone(Player * player, uint32 zoneid)
+void BattlefieldMgr::HandlePlayerEnterZone(PlayerPtr player, uint32 zoneid)
 {
     BattlefieldMap::iterator itr = m_BattlefieldMap.find(zoneid);
     if (itr == m_BattlefieldMap.end())
@@ -82,7 +82,7 @@ void BattlefieldMgr::HandlePlayerEnterZone(Player * player, uint32 zoneid)
     sLog->outDebug(LOG_FILTER_BATTLEFIELD, "Player %u entered outdoorpvp id %u", player->GetGUIDLow(), itr->second->GetTypeId());
 }
 
-void BattlefieldMgr::HandlePlayerLeaveZone(Player * player, uint32 zoneid)
+void BattlefieldMgr::HandlePlayerLeaveZone(PlayerPtr player, uint32 zoneid)
 {
     BattlefieldMap::iterator itr = m_BattlefieldMap.find(zoneid);
     if (itr == m_BattlefieldMap.end())
@@ -101,10 +101,10 @@ Battlefield *BattlefieldMgr::GetBattlefieldToZoneId(uint32 zoneid)
     if (itr == m_BattlefieldMap.end())
     {
         // no handle for this zone, return
-        return NULL;
+        return nullptr;
     }
     if (!itr->second->IsEnabled())
-        return NULL;
+        return nullptr;
     return itr->second;
 }
 
@@ -115,7 +115,7 @@ Battlefield *BattlefieldMgr::GetBattlefieldByBattleId(uint32 battleid)
         if ((*itr)->GetBattleId() == battleid)
             return (*itr);
     }
-    return NULL;
+    return nullptr;
 }
 
 Battlefield* BattlefieldMgr::GetBattlefieldByGUID(uint64 guid)
@@ -124,7 +124,7 @@ Battlefield* BattlefieldMgr::GetBattlefieldByGUID(uint64 guid)
         if ((*itr)->GetGUID() == guid)
             return (*itr);
 
-    return NULL;
+    return nullptr;
 }
 
 void BattlefieldMgr::Update(uint32 diff)
@@ -145,5 +145,5 @@ ZoneScript *BattlefieldMgr::GetZoneScript(uint32 zoneId)
     if (itr != m_BattlefieldMap.end())
         return itr->second;
     else
-        return NULL;
+        return nullptr;
 }

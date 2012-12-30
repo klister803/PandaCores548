@@ -60,14 +60,14 @@ class mobs_bladespire_ogre : public CreatureScript
 public:
     mobs_bladespire_ogre() : CreatureScript("mobs_bladespire_ogre") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mobs_bladespire_ogreAI (creature);
     }
 
     struct mobs_bladespire_ogreAI : public ScriptedAI
     {
-        mobs_bladespire_ogreAI(Creature* creature) : ScriptedAI(creature) {}
+        mobs_bladespire_ogreAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         void Reset() { }
 
@@ -111,14 +111,14 @@ class mobs_nether_drake : public CreatureScript
 public:
     mobs_nether_drake() : CreatureScript("mobs_nether_drake") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mobs_nether_drakeAI (creature);
     }
 
     struct mobs_nether_drakeAI : public ScriptedAI
     {
-        mobs_nether_drakeAI(Creature* creature) : ScriptedAI(creature) {}
+        mobs_nether_drakeAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         bool IsNihil;
         uint32 NihilSpeech_Timer;
@@ -139,9 +139,9 @@ public:
             IntangiblePresence_Timer = 15000;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                 return;
@@ -163,7 +163,7 @@ public:
             }
         }
 
-        void SpellHit(Unit* caster, const SpellInfo* spell)
+        void SpellHit(UnitPtr caster, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_T_PHASE_MODULATOR && caster->GetTypeId() == TYPEID_PLAYER)
             {
@@ -243,7 +243,7 @@ public:
 
             if (ManaBurn_Timer <= diff)
             {
-                Unit* target = me->getVictim();
+                UnitPtr target = me->getVictim();
                 if (target && target->getPowerType() == POWER_MANA)
                     DoCast(target, SPELL_MANA_BURN);
                 ManaBurn_Timer = 8000+rand()%8000;
@@ -275,20 +275,20 @@ class npc_daranelle : public CreatureScript
 public:
     npc_daranelle() : CreatureScript("npc_daranelle") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_daranelleAI (creature);
     }
 
     struct npc_daranelleAI : public ScriptedAI
     {
-        npc_daranelleAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_daranelleAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         void Reset() { }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (who->GetTypeId() == TYPEID_PLAYER)
             {
@@ -316,7 +316,7 @@ class npc_overseer_nuaar : public CreatureScript
 public:
     npc_overseer_nuaar() : CreatureScript("npc_overseer_nuaar") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -327,7 +327,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (player->GetQuestStatus(10682) == QUEST_STATUS_INCOMPLETE)
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_ON, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
@@ -350,7 +350,7 @@ class npc_saikkal_the_elder : public CreatureScript
 public:
     npc_saikkal_the_elder() : CreatureScript("npc_saikkal_the_elder") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -367,7 +367,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (player->GetQuestStatus(10980) == QUEST_STATUS_INCOMPLETE)
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_HELLO_STE, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
@@ -387,7 +387,7 @@ class go_legion_obelisk : public GameObjectScript
 public:
     go_legion_obelisk() : GameObjectScript("go_legion_obelisk") { }
 
-    bool OnGossipHello(Player* player, GameObject* go)
+    bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
     {
         if (player->GetQuestStatus(10821) == QUEST_STATUS_INCOMPLETE)
         {
@@ -444,16 +444,16 @@ class npc_bloodmaul_brutebane : public CreatureScript
 public:
     npc_bloodmaul_brutebane() : CreatureScript("npc_bloodmaul_brutebane") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_bloodmaul_brutebaneAI(creature);
     }
 
     struct npc_bloodmaul_brutebaneAI : public ScriptedAI
     {
-        npc_bloodmaul_brutebaneAI(Creature* creature) : ScriptedAI(creature)
+        npc_bloodmaul_brutebaneAI(CreaturePtr creature) : ScriptedAI(creature)
         {
-           if (Creature* Ogre = me->FindNearestCreature(NPC_OGRE_BRUTE, 50, true))
+           if (CreaturePtr Ogre = me->FindNearestCreature(NPC_OGRE_BRUTE, 50, true))
            {
                Ogre->SetReactState(REACT_DEFENSIVE);
                Ogre->GetMotionMaster()->MovePoint(1, me->GetPositionX()-1, me->GetPositionY()+1, me->GetPositionZ());
@@ -480,14 +480,14 @@ class npc_ogre_brute : public CreatureScript
 public:
     npc_ogre_brute() : CreatureScript("npc_ogre_brute") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_ogre_bruteAI(creature);
     }
 
     struct npc_ogre_bruteAI : public ScriptedAI
     {
-        npc_ogre_bruteAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_ogre_bruteAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint64 PlayerGUID;
 
@@ -496,7 +496,7 @@ public:
             PlayerGUID = 0;
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (!who || (!who->isAlive()))
                 return;
@@ -504,24 +504,24 @@ public:
             if (me->IsWithinDistInMap(who, 50.0f))
             {
                 if (who->GetTypeId() == TYPEID_PLAYER)
-                    if (who->ToPlayer()->GetQuestStatus(QUEST_GETTING_THE_BLADESPIRE_TANKED) == QUEST_STATUS_INCOMPLETE
-                        || who->ToPlayer()->GetQuestStatus(QUEST_BLADESPIRE_KEGGER) == QUEST_STATUS_INCOMPLETE)
+                    if (TO_PLAYER(who)->GetQuestStatus(QUEST_GETTING_THE_BLADESPIRE_TANKED) == QUEST_STATUS_INCOMPLETE
+                        || TO_PLAYER(who)->GetQuestStatus(QUEST_BLADESPIRE_KEGGER) == QUEST_STATUS_INCOMPLETE)
                         PlayerGUID = who->GetGUID();
             }
         }
 
         void MovementInform(uint32 /*type*/, uint32 id)
         {
-            Player* player = Unit::GetPlayer(*me, PlayerGUID);
+            PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID);
             if (id == 1)
             {
-                GameObject* Keg = me->FindNearestGameObject(GO_KEG, 20);
+                GameObjectPtr Keg = me->FindNearestGameObject(GO_KEG, 20);
                 if (Keg)
                     Keg->Delete();
                 me->HandleEmoteCommand(7);
                 me->SetReactState(REACT_AGGRESSIVE);
                 me->GetMotionMaster()->MoveTargetedHome();
-                Creature* Credit = me->FindNearestCreature(NPC_QUEST_CREDIT, 50, true);
+                CreaturePtr Credit = me->FindNearestCreature(NPC_QUEST_CREDIT, 50, true);
                 if (player && Credit)
                     player->KilledMonster(Credit->GetCreatureTemplate(), Credit->GetGUID());
             }
@@ -551,10 +551,10 @@ class go_thunderspike : public GameObjectScript
     public:
         go_thunderspike() : GameObjectScript("go_thunderspike") { }
 
-        bool OnGossipHello(Player* player, GameObject* go)
+        bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
         {
             if (player->GetQuestStatus(QUEST_THUNDERSPIKE) == QUEST_STATUS_INCOMPLETE && !go->FindNearestCreature(NPC_GOR_GRIMGUT, 25.0f, true))
-                if (Creature* gorGrimgut = go->SummonCreature(NPC_GOR_GRIMGUT, -2413.4f, 6914.48f, 25.01f, 3.67f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 300000))
+                if (CreaturePtr gorGrimgut = go->SummonCreature(NPC_GOR_GRIMGUT, -2413.4f, 6914.48f, 25.01f, 3.67f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 300000))
                     gorGrimgut->AI()->AttackStart(player);
 
             return true;
@@ -639,7 +639,7 @@ class npc_simon_bunny : public CreatureScript
 
         struct npc_simon_bunnyAI : public ScriptedAI
         {
-            npc_simon_bunnyAI(Creature* creature) : ScriptedAI(creature) { }
+            npc_simon_bunnyAI(CreaturePtr creature) : ScriptedAI(creature) { }
 
             bool large;
             bool listening;
@@ -782,14 +782,14 @@ class npc_simon_bunny : public CreatureScript
                 playerSequence.clear();
                 me->SetObjectScale(large ? 2.0f : 1.0f);
 
-                std::list<WorldObject*> ClusterList;
+                std::list<WorldObjectPtr> ClusterList;
                 Trinity::AllWorldObjectsInRange objects(me, searchDistance);
                 Trinity::WorldObjectListSearcher<Trinity::AllWorldObjectsInRange> searcher(me, ClusterList, objects);
                 me->VisitNearbyObject(searchDistance, searcher);
 
-                for (std::list<WorldObject*>::const_iterator i = ClusterList.begin(); i != ClusterList.end(); ++i)
+                for (std::list<WorldObjectPtr>::const_iterator i = ClusterList.begin(); i != ClusterList.end(); ++i)
                 {
-                    if (GameObject* go = (*i)->ToGameObject())
+                    if (GameObjectPtr go = (*i)->ToGameObject())
                     {
                         // We are checking for displayid because all simon nodes have 4 clusters with different entries
                         if (large)
@@ -841,7 +841,7 @@ class npc_simon_bunny : public CreatureScript
                 _events.ScheduleEvent(EVENT_SIMON_ROUND_FINISHED, 1000);
                 _events.ScheduleEvent(EVENT_SIMON_PERIODIC_PLAYER_CHECK, 2000);
 
-                if (GameObject* relic = me->FindNearestGameObject(large ? GO_APEXIS_MONUMENT : GO_APEXIS_RELIC, searchDistance))
+                if (GameObjectPtr relic = me->FindNearestGameObject(large ? GO_APEXIS_MONUMENT : GO_APEXIS_RELIC, searchDistance))
                     relic->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
             }
 
@@ -851,14 +851,14 @@ class npc_simon_bunny : public CreatureScript
                 DoPlaySoundToSet(me, SOUND_DISABLE_NODE);
 
                 for (uint32 clusterId = SIMON_BLUE; clusterId < SIMON_MAX_COLORS; clusterId++)
-                    if (GameObject* cluster = me->FindNearestGameObject(clusterIds[clusterId], searchDistance))
+                    if (GameObjectPtr cluster = me->FindNearestGameObject(clusterIds[clusterId], searchDistance))
                         cluster->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
 
                 for (uint32 auraId = GO_AURA_BLUE; auraId <= GO_AURA_YELLOW; auraId++)
-                    if (GameObject* auraGo = me->FindNearestGameObject(auraId, searchDistance))
+                    if (GameObjectPtr auraGo = me->FindNearestGameObject(auraId, searchDistance))
                         auraGo->RemoveFromWorld();
 
-                if (GameObject* relic = me->FindNearestGameObject(large ? GO_APEXIS_MONUMENT : GO_APEXIS_RELIC, searchDistance))
+                if (GameObjectPtr relic = me->FindNearestGameObject(large ? GO_APEXIS_MONUMENT : GO_APEXIS_RELIC, searchDistance))
                     relic->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
 
                 me->DespawnOrUnsummon(1000);
@@ -902,14 +902,14 @@ class npc_simon_bunny : public CreatureScript
             void PrepareClusters(bool clustersOnly = false)
             {
                 for (uint32 clusterId = SIMON_BLUE; clusterId < SIMON_MAX_COLORS; clusterId++)
-                    if (GameObject* cluster = me->FindNearestGameObject(clusterIds[clusterId], searchDistance))
+                    if (GameObjectPtr cluster = me->FindNearestGameObject(clusterIds[clusterId], searchDistance))
                         cluster->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
 
                 if (clustersOnly)
                     return;
 
                 for (uint32 auraId = GO_AURA_BLUE; auraId <= GO_AURA_YELLOW; auraId++)
-                    if (GameObject* auraGo = me->FindNearestGameObject(auraId, searchDistance))
+                    if (GameObjectPtr auraGo = me->FindNearestGameObject(auraId, searchDistance))
                         auraGo->RemoveFromWorld();
             }
 
@@ -955,7 +955,7 @@ class npc_simon_bunny : public CreatureScript
             {
                 for (uint32 clusterId = SIMON_BLUE; clusterId < SIMON_MAX_COLORS; clusterId++)
                 {
-                    if (GameObject* cluster = me->FindNearestGameObject(clusterIds[clusterId], 2.0f*searchDistance))
+                    if (GameObjectPtr cluster = me->FindNearestGameObject(clusterIds[clusterId], 2.0f*searchDistance))
                     {
                         cluster->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
 
@@ -982,7 +982,7 @@ class npc_simon_bunny : public CreatureScript
                     }
                 }
 
-                if (GameObject* relic = me->FindNearestGameObject(large ? GO_APEXIS_MONUMENT : GO_APEXIS_RELIC, searchDistance))
+                if (GameObjectPtr relic = me->FindNearestGameObject(large ? GO_APEXIS_MONUMENT : GO_APEXIS_RELIC, searchDistance))
                 {
                     float x, y, z, o;
                     relic->GetPosition(x, y, z, o);
@@ -1013,7 +1013,7 @@ class npc_simon_bunny : public CreatureScript
                 }
 
                 if (rewSpell)
-                    if (Player* player = me->GetPlayer(*me, playerGUID))
+                    if (PlayerPtr player = me->GetPlayer(TO_WORLDOBJECT(me), playerGUID))
                         DoCast(player, rewSpell, true);
             }
 
@@ -1028,8 +1028,8 @@ class npc_simon_bunny : public CreatureScript
             {
                 if (large)
                 {
-                    if (Player* player = me->GetPlayer(*me, playerGUID))
-                        if (Creature* guardian = me->SummonCreature(NPC_APEXIS_GUARDIAN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() - zCoordCorrection, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 20000))
+                    if (PlayerPtr player = me->GetPlayer(TO_WORLDOBJECT(me), playerGUID))
+                        if (CreaturePtr guardian = me->SummonCreature(NPC_APEXIS_GUARDIAN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ() - zCoordCorrection, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 20000))
                             guardian->AI()->AttackStart(player);
 
                     ResetNode();
@@ -1038,7 +1038,7 @@ class npc_simon_bunny : public CreatureScript
                 {
                     fails++;
 
-                    if (Player* player = me->GetPlayer(*me, playerGUID))
+                    if (PlayerPtr player = me->GetPlayer(TO_WORLDOBJECT(me), playerGUID))
                         DoCast(player, SPELL_BAD_PRESS_TRIGGER, true);
 
                     if (fails >= 4)
@@ -1046,7 +1046,7 @@ class npc_simon_bunny : public CreatureScript
                 }
             }
 
-            void SpellHitTarget(Unit* target, const SpellInfo* spell)
+            void SpellHitTarget(UnitPtr target, const SpellInfo* spell)
             {
                 // Cast SPELL_BAD_PRESS_DAMAGE with scaled basepoints when the visual hits the target.
                 // Need Fix: When SPELL_BAD_PRESS_TRIGGER hits target it triggers spell SPELL_BAD_PRESS_DAMAGE by itself
@@ -1054,14 +1054,14 @@ class npc_simon_bunny : public CreatureScript
                 if (spell->Id == SPELL_BAD_PRESS_TRIGGER)
                 {
                     int32 bp = (int32)((float)(fails)*0.33f*target->GetMaxHealth());
-                    target->CastCustomSpell(target, SPELL_BAD_PRESS_DAMAGE, &bp, NULL, NULL, true);
+                    target->CastCustomSpell(target, SPELL_BAD_PRESS_DAMAGE, &bp, nullptr, nullptr, true);
                 }
             }
 
             // Checks if player has already die or has get too far from the current node
             bool CheckPlayer()
             {
-                if (Player* player = me->GetPlayer(*me, playerGUID))
+                if (PlayerPtr player = me->GetPlayer(TO_WORLDOBJECT(me), playerGUID))
                 {
                     if (player->isDead())
                         return false;
@@ -1078,7 +1078,7 @@ class npc_simon_bunny : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new npc_simon_bunnyAI(creature);
         }
@@ -1089,9 +1089,9 @@ class go_simon_cluster : public GameObjectScript
     public:
         go_simon_cluster() : GameObjectScript("go_simon_cluster") { }
 
-        bool OnGossipHello(Player* player, GameObject* go)
+        bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
         {
-            if (Creature* bunny = go->FindNearestCreature(NPC_SIMON_BUNNY, 12.0f, true))
+            if (CreaturePtr bunny = go->FindNearestCreature(NPC_SIMON_BUNNY, 12.0f, true))
                 bunny->AI()->SetData(go->GetEntry(), 0);
 
             player->CastSpell(player, go->GetGOInfo()->goober.spellId, true);
@@ -1115,14 +1115,14 @@ class go_apexis_relic : public GameObjectScript
     public:
         go_apexis_relic() : GameObjectScript("go_apexis_relic") { }
 
-        bool OnGossipHello(Player* player, GameObject* go)
+        bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
         {
             player->PrepareGossipMenu(go, go->GetGOInfo()->questgiver.gossipID);
             player->SendPreparedGossip(go);
             return true;
         }
 
-        bool OnGossipSelect(Player* player, GameObject* go, uint32 /*sender*/, uint32 /*action*/)
+        bool OnGossipSelect(PlayerPtr player, GameObjectPtr go, uint32 /*sender*/, uint32 /*action*/)
         {
             player->CLOSE_GOSSIP_MENU();
 
@@ -1131,7 +1131,7 @@ class go_apexis_relic : public GameObjectScript
             {
                 player->CastSpell(player, large ? SPELL_TAKE_REAGENTS_GROUP : SPELL_TAKE_REAGENTS_SOLO, false);
 
-                if (Creature* bunny = player->SummonCreature(NPC_SIMON_BUNNY, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ()))
+                if (CreaturePtr bunny = player->SummonCreature(NPC_SIMON_BUNNY, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ()))
                     bunny->AI()->SetGUID(player->GetGUID(), large);
             }
 

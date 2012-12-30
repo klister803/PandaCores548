@@ -59,14 +59,14 @@ class boss_darkweaver_syth : public CreatureScript
 public:
     boss_darkweaver_syth() : CreatureScript("boss_darkweaver_syth") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_darkweaver_sythAI (creature);
     }
 
     struct boss_darkweaver_sythAI : public ScriptedAI
     {
-        boss_darkweaver_sythAI(Creature* creature) : ScriptedAI(creature)
+        boss_darkweaver_sythAI(CreaturePtr creature) : ScriptedAI(creature)
         {
         }
 
@@ -93,17 +93,17 @@ public:
             summon10 = false;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             if (rand()%2)
                 return;
@@ -111,9 +111,9 @@ public:
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
-            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 summoned->AI()->AttackStart(target);
         }
 
@@ -155,7 +155,7 @@ public:
 
             if (flameshock_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_FLAME_SHOCK);
 
                 flameshock_timer = urand(10000, 15000);
@@ -163,7 +163,7 @@ public:
 
             if (arcaneshock_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_ARCANE_SHOCK);
 
                 arcaneshock_timer = urand(10000, 15000);
@@ -171,7 +171,7 @@ public:
 
             if (frostshock_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_FROST_SHOCK);
 
                 frostshock_timer = urand(10000, 15000);
@@ -179,7 +179,7 @@ public:
 
             if (shadowshock_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_SHADOW_SHOCK);
 
                 shadowshock_timer = urand(10000, 15000);
@@ -187,7 +187,7 @@ public:
 
             if (chainlightning_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_CHAIN_LIGHTNING);
 
                 chainlightning_timer = 25000;
@@ -207,7 +207,7 @@ public:
 
     struct mob_syth_fireAI : public ScriptedAI
     {
-        mob_syth_fireAI(Creature* creature) : ScriptedAI(creature)
+        mob_syth_fireAI(CreaturePtr creature) : ScriptedAI(creature)
         {
         }
 
@@ -221,7 +221,7 @@ public:
             flamebuffet_timer = 5000;
         }
 
-        void EnterCombat(Unit* /*who*/) { }
+        void EnterCombat(UnitPtr /*who*/) { }
 
         void UpdateAI(const uint32 diff)
         {
@@ -230,7 +230,7 @@ public:
 
             if (flameshock_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_FLAME_SHOCK);
 
                 flameshock_timer = 5000;
@@ -238,7 +238,7 @@ public:
 
             if (flamebuffet_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_FLAME_BUFFET);
 
                 flamebuffet_timer = 5000;
@@ -248,7 +248,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_syth_fireAI (creature);
     }
@@ -259,14 +259,14 @@ class mob_syth_arcane : public CreatureScript
 public:
     mob_syth_arcane() : CreatureScript("mob_syth_arcane") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_syth_arcaneAI (creature);
     }
 
     struct mob_syth_arcaneAI : public ScriptedAI
     {
-        mob_syth_arcaneAI(Creature* creature) : ScriptedAI(creature)
+        mob_syth_arcaneAI(CreaturePtr creature) : ScriptedAI(creature)
         {
         }
 
@@ -280,7 +280,7 @@ public:
             arcanebuffet_timer = 5000;
         }
 
-        void EnterCombat(Unit* /*who*/) { }
+        void EnterCombat(UnitPtr /*who*/) { }
 
         void UpdateAI(const uint32 diff)
         {
@@ -289,7 +289,7 @@ public:
 
             if (arcaneshock_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_ARCANE_SHOCK);
 
                 arcaneshock_timer = 5000;
@@ -297,7 +297,7 @@ public:
 
             if (arcanebuffet_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_ARCANE_BUFFET);
 
                 arcanebuffet_timer = 5000;
@@ -313,14 +313,14 @@ class mob_syth_frost : public CreatureScript
 public:
     mob_syth_frost() : CreatureScript("mob_syth_frost") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_syth_frostAI (creature);
     }
 
     struct mob_syth_frostAI : public ScriptedAI
     {
-        mob_syth_frostAI(Creature* creature) : ScriptedAI(creature)
+        mob_syth_frostAI(CreaturePtr creature) : ScriptedAI(creature)
         {
         }
 
@@ -334,7 +334,7 @@ public:
             frostbuffet_timer = 5000;
         }
 
-        void EnterCombat(Unit* /*who*/) { }
+        void EnterCombat(UnitPtr /*who*/) { }
 
         void UpdateAI(const uint32 diff)
         {
@@ -343,7 +343,7 @@ public:
 
             if (frostshock_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_FROST_SHOCK);
 
                 frostshock_timer = 5000;
@@ -351,7 +351,7 @@ public:
 
             if (frostbuffet_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_FROST_BUFFET);
 
                 frostbuffet_timer = 5000;
@@ -368,14 +368,14 @@ class mob_syth_shadow : public CreatureScript
 public:
     mob_syth_shadow() : CreatureScript("mob_syth_shadow") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_syth_shadowAI (creature);
     }
 
     struct mob_syth_shadowAI : public ScriptedAI
     {
-        mob_syth_shadowAI(Creature* creature) : ScriptedAI(creature)
+        mob_syth_shadowAI(CreaturePtr creature) : ScriptedAI(creature)
         {
         }
 
@@ -389,7 +389,7 @@ public:
             shadowbuffet_timer = 5000;
         }
 
-        void EnterCombat(Unit* /*who*/) { }
+        void EnterCombat(UnitPtr /*who*/) { }
 
         void UpdateAI(const uint32 diff)
         {
@@ -398,7 +398,7 @@ public:
 
             if (shadowshock_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_SHADOW_SHOCK);
 
                 shadowshock_timer = 5000;
@@ -406,7 +406,7 @@ public:
 
             if (shadowbuffet_timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_SHADOW_BUFFET);
 
                 shadowbuffet_timer = 5000;

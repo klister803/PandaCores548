@@ -258,14 +258,14 @@ static bool LoadDBC_assert_print(uint32 fsize, uint32 rsize, const std::string& 
 }
 
 template<class T>
-inline void LoadDBC(uint32& availableDbcLocales, StoreProblemList& errors, DBCStorage<T>& storage, std::string const& dbcPath, std::string const& filename, std::string const* customFormat = NULL, std::string const* customIndexName = NULL)
+inline void LoadDBC(uint32& availableDbcLocales, StoreProblemList& errors, DBCStorage<T>& storage, std::string const& dbcPath, std::string const& filename, std::string const* customFormat = nullptr, std::string const* customIndexName = nullptr)
 {
     // compatibility format and C++ structure sizes
     ASSERT(DBCFileLoader::GetFormatRecordSize(storage.GetFormat()) == sizeof(T) || LoadDBC_assert_print(DBCFileLoader::GetFormatRecordSize(storage.GetFormat()), sizeof(T), filename));
 
     ++DBCFileCount;
     std::string dbcFilename = dbcPath + filename;
-    SqlDbc * sql = NULL;
+    SqlDbc * sql = nullptr;
     if (customFormat)
         sql = new SqlDbc(&filename, customFormat, customIndexName, storage.GetFormat());
 
@@ -752,24 +752,24 @@ SimpleFactionsList const* GetFactionTeamList(uint32 faction)
     if (itr != sFactionTeamMap.end())
         return &itr->second;
 
-    return NULL;
+    return nullptr;
 }
 
 char const* GetPetName(uint32 petfamily, uint32 /*dbclang*/)
 {
     if (!petfamily)
-        return NULL;
+        return nullptr;
     CreatureFamilyEntry const* pet_family = sCreatureFamilyStore.LookupEntry(petfamily);
     if (!pet_family)
-        return NULL;
-    return pet_family->Name ? pet_family->Name : NULL;
+        return nullptr;
+    return pet_family->Name ? pet_family->Name : nullptr;
 }
 
 SpellEffectEntry const* GetSpellEffectEntry(uint32 spellId, uint32 effect, uint32 difficulty)
 {
     SpellEffectMap::const_iterator itr = sSpellEffectMap.find(spellId);
     if(itr == sSpellEffectMap.end())
-        return NULL;
+        return nullptr;
 
     if(itr->second.effects[difficulty][effect])
         return itr->second.effects[difficulty][effect];
@@ -786,7 +786,7 @@ SpellReagentsEntry const* GetSpellReagentEntry(uint32 spellId, uint8 reagent)
 {
     SpellReagentMap::const_iterator itr = sSpellReagentMap.find(spellId);
     if(itr == sSpellReagentMap.end())
-        return NULL;
+        return nullptr;
 
     return itr->second.reagents[reagent];
 }
@@ -795,17 +795,17 @@ SpellTotemsEntry const* GetSpellTotemEntry(uint32 spellId, uint8 totem)
 {
     SpellTotemMap::const_iterator itr = sSpellTotemMap.find(spellId);
     if(itr == sSpellTotemMap.end())
-        return NULL;
+        return nullptr;
 
     return itr->second.totems[totem];
 }
 
 TalentSpellPos const* GetTalentSpellPos(uint32 spellId)
 {
-    return NULL;
+    return nullptr;
     /*TalentSpellPosMap::const_iterator itr = sTalentSpellPosMap.find(spellId);
     if (itr == sTalentSpellPosMap.end())
-        return NULL;
+        return nullptr;
 
     return &itr->second;*/
 }
@@ -831,7 +831,7 @@ WMOAreaTableEntry const* GetWMOAreaTableEntryByTripple(int32 rootid, int32 adtid
 {
     WMOAreaInfoByTripple::iterator i = sWMOAreaInfoByTripple.find(WMOAreaTableTripple(rootid, adtid, groupid));
         if (i == sWMOAreaInfoByTripple.end())
-            return NULL;
+            return nullptr;
         return i->second;
 }
 
@@ -839,7 +839,7 @@ AreaTableEntry const* GetAreaEntryByAreaID(uint32 area_id)
 {
     int32 areaflag = GetAreaFlagByAreaID(area_id);
     if (areaflag < 0)
-        return NULL;
+        return nullptr;
 
     return sAreaStore.LookupEntry(areaflag);
 }
@@ -852,7 +852,7 @@ AreaTableEntry const* GetAreaEntryByAreaFlagAndMap(uint32 area_flag, uint32 map_
     if (MapEntry const* mapEntry = sMapStore.LookupEntry(map_id))
         return GetAreaEntryByAreaID(mapEntry->linked_zone);
 
-    return NULL;
+    return nullptr;
 }
 
 uint32 GetAreaFlagByMapId(uint32 mapid)
@@ -952,7 +952,7 @@ void Map2ZoneCoordinates(float& x, float& y, uint32 zone)
 MapDifficulty const* GetMapDifficultyData(uint32 mapId, Difficulty difficulty)
 {
     MapDifficultyMap::const_iterator itr = sMapDifficultyMap.find(MAKE_PAIR32(mapId, difficulty));
-    return itr != sMapDifficultyMap.end() ? &itr->second : NULL;
+    return itr != sMapDifficultyMap.end() ? &itr->second : nullptr;
 }
 
 // TODO
@@ -986,7 +986,7 @@ MapDifficulty const* GetDownscaledMapDifficultyData(uint32 mapId, Difficulty &di
 
 PvPDifficultyEntry const* GetBattlegroundBracketByLevel(uint32 mapid, uint32 level)
 {
-    PvPDifficultyEntry const* maxEntry = NULL;              // used for level > max listed level case
+    PvPDifficultyEntry const* maxEntry = nullptr;              // used for level > max listed level case
     for (uint32 i = 0; i < sPvPDifficultyStore.GetNumRows(); ++i)
     {
         if (PvPDifficultyEntry const* entry = sPvPDifficultyStore.LookupEntry(i))
@@ -1015,15 +1015,15 @@ PvPDifficultyEntry const* GetBattlegroundBracketById(uint32 mapid, BattlegroundB
             if (entry->mapId == mapid && entry->GetBracketId() == id)
                 return entry;
 
-    return NULL;
+    return nullptr;
 }
 
 std::vector<uint32> const* GetTalentTreePrimarySpells(uint32 talentTree)
 {
-    return NULL;
+    return nullptr;
     /*TalentTreePrimarySpellsMap::const_iterator itr = sTalentTreePrimarySpellsMap.find(talentTree);
     if (itr == sTalentTreePrimarySpellsMap.end())
-        return NULL;
+        return nullptr;
 
     return &itr->second;*/
 }

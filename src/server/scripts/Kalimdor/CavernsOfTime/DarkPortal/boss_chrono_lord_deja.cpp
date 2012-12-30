@@ -49,14 +49,14 @@ class boss_chrono_lord_deja : public CreatureScript
 public:
     boss_chrono_lord_deja() : CreatureScript("boss_chrono_lord_deja") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_chrono_lord_dejaAI (creature);
     }
 
     struct boss_chrono_lord_dejaAI : public ScriptedAI
     {
-        boss_chrono_lord_dejaAI(Creature* creature) : ScriptedAI(creature)
+        boss_chrono_lord_dejaAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -76,12 +76,12 @@ public:
             Attraction_Timer = 25000+rand()%10000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             //Despawn Time Keeper
             if (who->GetTypeId() == TYPEID_UNIT && who->GetEntry() == C_TIME_KEEPER)
@@ -89,19 +89,19 @@ public:
                 if (me->IsWithinDistInMap(who, 20.0f))
                 {
                     DoScriptText(SAY_BANISH, me);
-                    me->DealDamage(who, who->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    me->DealDamage(who, who->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                 }
             }
 
             ScriptedAI::MoveInLineOfSight(who);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -125,7 +125,7 @@ public:
             //Arcane Discharge
             if (ArcaneDischarge_Timer <= diff)
             {
-                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 DoCast(target, SPELL_ARCANE_DISCHARGE);
                 ArcaneDischarge_Timer = 20000+rand()%10000;
             } else ArcaneDischarge_Timer -= diff;

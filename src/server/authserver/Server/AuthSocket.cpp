@@ -196,7 +196,7 @@ const AuthHandler table[] =
 Patcher PatchesCache;
 
 // Constructor - set the N and g values for SRP6
-AuthSocket::AuthSocket(RealmSocket& socket) : pPatch(NULL), socket_(socket)
+AuthSocket::AuthSocket(RealmSocket& socket) : pPatch(nullptr), socket_(socket)
 {
     N.SetHexStr("894B645E89E1535BBDAD5B8B290650530801B18EBFBF5E8FAB3C82872A3E9BB7");
     g.SetDword(7);
@@ -528,7 +528,7 @@ bool AuthSocket::_HandleLogonProof()
     }
 
     SHA1Hash sha;
-    sha.UpdateBigNumbers(&A, &B, NULL);
+    sha.UpdateBigNumbers(&A, &B, nullptr);
     sha.Finalize();
     BigNumber u;
     u.SetBinary(sha.GetDigest(), 20);
@@ -564,11 +564,11 @@ bool AuthSocket::_HandleLogonProof()
     uint8 hash[20];
 
     sha.Initialize();
-    sha.UpdateBigNumbers(&N, NULL);
+    sha.UpdateBigNumbers(&N, nullptr);
     sha.Finalize();
     memcpy(hash, sha.GetDigest(), 20);
     sha.Initialize();
-    sha.UpdateBigNumbers(&g, NULL);
+    sha.UpdateBigNumbers(&g, nullptr);
     sha.Finalize();
 
     for (int i = 0; i < 20; ++i)
@@ -584,9 +584,9 @@ bool AuthSocket::_HandleLogonProof()
     memcpy(t4, sha.GetDigest(), SHA_DIGEST_LENGTH);
 
     sha.Initialize();
-    sha.UpdateBigNumbers(&t3, NULL);
+    sha.UpdateBigNumbers(&t3, nullptr);
     sha.UpdateData(t4, SHA_DIGEST_LENGTH);
-    sha.UpdateBigNumbers(&s, &A, &B, &K, NULL);
+    sha.UpdateBigNumbers(&s, &A, &B, &K, nullptr);
     sha.Finalize();
     BigNumber M;
     M.SetBinary(sha.GetDigest(), 20);
@@ -624,7 +624,7 @@ bool AuthSocket::_HandleLogonProof()
 
         // Finish SRP6 and send the final result to the client
         sha.Initialize();
-        sha.UpdateBigNumbers(&A, &M, &K, NULL);
+        sha.UpdateBigNumbers(&A, &M, &K, nullptr);
         sha.Finalize();
 
         sAuthLogonProof_S proof;
@@ -786,7 +786,7 @@ bool AuthSocket::_HandleReconnectProof()
     SHA1Hash sha;
     sha.Initialize();
     sha.UpdateData(_login);
-    sha.UpdateBigNumbers(&t1, &_reconnectProof, &K, NULL);
+    sha.UpdateBigNumbers(&t1, &_reconnectProof, &K, nullptr);
     sha.Finalize();
 
     if (!memcmp(sha.GetDigest(), lp.R2, SHA_DIGEST_LENGTH))
@@ -978,7 +978,7 @@ void Patcher::LoadPatchesInfo()
     while (dirp)
     {
         errno = 0;
-        if ((dp = readdir(dirp)) != NULL)
+        if ((dp = readdir(dirp)) != nullptr)
         {
             int l = strlen(dp->d_name);
 

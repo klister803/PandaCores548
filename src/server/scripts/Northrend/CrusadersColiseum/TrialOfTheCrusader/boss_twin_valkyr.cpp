@@ -117,7 +117,7 @@ enum Actions
 class OrbsDespawner : public BasicEvent
 {
     public:
-        explicit OrbsDespawner(Creature* creature) : _creature(creature)
+        explicit OrbsDespawner(CreaturePtr creature) : _creature(creature)
         {
         }
 
@@ -128,7 +128,7 @@ class OrbsDespawner : public BasicEvent
             return true;
         }
 
-        void operator()(Creature* creature) const
+        void operator()(CreaturePtr creature) const
         {
             switch (creature->GetEntry())
             {
@@ -142,12 +142,12 @@ class OrbsDespawner : public BasicEvent
         }
 
     private:
-        Creature* _creature;
+        CreaturePtr _creature;
 };
 
 struct boss_twin_baseAI : public ScriptedAI
 {
-    boss_twin_baseAI(Creature* creature) : ScriptedAI(creature), Summons(me)
+    boss_twin_baseAI(CreaturePtr creature) : ScriptedAI(creature), Summons(me)
     {
         instance = creature->GetInstanceScript();
     }
@@ -218,7 +218,7 @@ struct boss_twin_baseAI : public ScriptedAI
         }
     }
 
-    void KilledUnit(Unit* who)
+    void KilledUnit(UnitPtr who)
     {
         if (who->GetTypeId() == TYPEID_PLAYER)
         {
@@ -228,12 +228,12 @@ struct boss_twin_baseAI : public ScriptedAI
         }
     }
 
-    void JustSummoned(Creature* summoned)
+    void JustSummoned(CreaturePtr summoned)
     {
         Summons.Summon(summoned);
     }
 
-    void SummonedCreatureDespawn(Creature* summoned)
+    void SummonedCreatureDespawn(CreaturePtr summoned)
     {
         switch (summoned->GetEntry())
         {
@@ -252,12 +252,12 @@ struct boss_twin_baseAI : public ScriptedAI
         Summons.Despawn(summoned);
     }
 
-    void JustDied(Unit* /*killer*/)
+    void JustDied(UnitPtr /*killer*/)
     {
         Talk(SAY_DEATH);
         if (instance)
         {
-            if (Creature* pSister = GetSister())
+            if (CreaturePtr pSister = GetSister())
             {
                 if (!pSister->isAlive())
                 {
@@ -278,17 +278,17 @@ struct boss_twin_baseAI : public ScriptedAI
     }
 
     // Called when sister pointer needed
-    Creature* GetSister()
+    CreaturePtr GetSister()
     {
-        return Unit::GetCreature((*me), instance->GetData64(m_uiSisterNpcId));
+        return Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(m_uiSisterNpcId));
     }
 
-    void EnterCombat(Unit* /*who*/)
+    void EnterCombat(UnitPtr /*who*/)
     {
         me->SetInCombatWithZone();
         if (instance)
         {
-            if (Creature* pSister = GetSister())
+            if (CreaturePtr pSister = GetSister())
             {
                 me->AddAura(m_uiMyEmphatySpellId, pSister);
                 pSister->SetInCombatWithZone();
@@ -332,7 +332,7 @@ struct boss_twin_baseAI : public ScriptedAI
             case 1: // Vortex
                 if (m_uiSpecialAbilityTimer <= uiDiff)
                 {
-                    if (Creature* pSister = GetSister())
+                    if (CreaturePtr pSister = GetSister())
                         pSister->AI()->DoAction(ACTION_VORTEX);
                     Talk(m_uiVortexEmote);
                     DoCastAOE(m_uiVortexSpellId);
@@ -347,7 +347,7 @@ struct boss_twin_baseAI : public ScriptedAI
                 {
                     Talk(EMOTE_TWINK_PACT);
                     Talk(SAY_TWINK_PACT);
-                    if (Creature* pSister = GetSister())
+                    if (CreaturePtr pSister = GetSister())
                     {
                         pSister->AI()->DoAction(ACTION_PACT);
                         pSister->CastSpell(pSister, SPELL_POWER_TWINS, false);
@@ -374,7 +374,7 @@ struct boss_twin_baseAI : public ScriptedAI
 
         if (IsHeroic() && m_uiTouchTimer <= uiDiff)
         {
-            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true, m_uiOtherEssenceSpellId))
+            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 200, true, m_uiOtherEssenceSpellId))
                 me->CastCustomSpell(m_uiTouchSpellId, SPELLVALUE_MAX_TARGETS, 1, target, false);
             m_uiTouchTimer = urand(10, 15)*IN_MILLISECONDS;
         }
@@ -403,14 +403,14 @@ class boss_fjola : public CreatureScript
 public:
     boss_fjola() : CreatureScript("boss_fjola") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_fjolaAI(creature);
     }
 
     struct boss_fjolaAI : public boss_twin_baseAI
     {
-        boss_fjolaAI(Creature* creature) : boss_twin_baseAI(creature)
+        boss_fjolaAI(CreaturePtr creature) : boss_twin_baseAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -440,7 +440,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             if (instance)
             {
@@ -477,14 +477,14 @@ class boss_eydis : public CreatureScript
 public:
     boss_eydis() : CreatureScript("boss_eydis") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_eydisAI(creature);
     }
 
     struct boss_eydisAI : public boss_twin_baseAI
     {
-        boss_eydisAI(Creature* creature) : boss_twin_baseAI(creature) {}
+        boss_eydisAI(CreaturePtr creature) : boss_twin_baseAI(creature) {}
 
         void Reset() {
             boss_twin_baseAI::Reset();
@@ -517,7 +517,7 @@ class mob_essence_of_twin : public CreatureScript
 
         struct mob_essence_of_twinAI : public ScriptedAI
         {
-            mob_essence_of_twinAI(Creature* creature) : ScriptedAI(creature) { }
+            mob_essence_of_twinAI(CreaturePtr creature) : ScriptedAI(creature) { }
 
             uint32 GetData(uint32 data)
             {
@@ -538,12 +538,12 @@ class mob_essence_of_twin : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_essence_of_twinAI(creature);
         };
 
-        bool OnGossipHello(Player* player, Creature* creature)
+        bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
         {
             player->RemoveAurasDueToSpell(creature->GetAI()->GetData(ESSENCE_REMOVE));
             player->CastSpell(player, creature->GetAI()->GetData(ESSENCE_APPLY), true);
@@ -554,7 +554,7 @@ class mob_essence_of_twin : public CreatureScript
 
 struct mob_unleashed_ballAI : public ScriptedAI
 {
-    mob_unleashed_ballAI(Creature* creature) : ScriptedAI(creature)
+    mob_unleashed_ballAI(CreaturePtr creature) : ScriptedAI(creature)
     {
         instance = creature->GetInstanceScript();
     }
@@ -609,14 +609,14 @@ class mob_unleashed_dark : public CreatureScript
 public:
     mob_unleashed_dark() : CreatureScript("mob_unleashed_dark") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_unleashed_darkAI(creature);
     }
 
     struct mob_unleashed_darkAI : public mob_unleashed_ballAI
     {
-        mob_unleashed_darkAI(Creature* creature) : mob_unleashed_ballAI(creature) {}
+        mob_unleashed_darkAI(CreaturePtr creature) : mob_unleashed_ballAI(creature) {}
 
         void UpdateAI(const uint32 uiDiff)
         {
@@ -633,7 +633,7 @@ public:
             else m_uiRangeCheckTimer -= uiDiff;
         }
 
-        void SpellHitTarget(Unit* who, SpellInfo const* spell)
+        void SpellHitTarget(UnitPtr who, SpellInfo const* spell)
         {
             if (spell->Id == SPELL_UNLEASHED_DARK_HELPER)
             {
@@ -650,14 +650,14 @@ class mob_unleashed_light : public CreatureScript
 public:
     mob_unleashed_light() : CreatureScript("mob_unleashed_light") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_unleashed_lightAI(creature);
     }
 
     struct mob_unleashed_lightAI : public mob_unleashed_ballAI
     {
-        mob_unleashed_lightAI(Creature* creature) : mob_unleashed_ballAI(creature) {}
+        mob_unleashed_lightAI(CreaturePtr creature) : mob_unleashed_ballAI(creature) {}
 
         void UpdateAI(const uint32 uiDiff)
         {
@@ -674,7 +674,7 @@ public:
             else m_uiRangeCheckTimer -= uiDiff;
         }
 
-        void SpellHitTarget(Unit* who, SpellInfo const* spell)
+        void SpellHitTarget(UnitPtr who, SpellInfo const* spell)
         {
             if (spell->Id == SPELL_UNLEASHED_LIGHT_HELPER)
             {
@@ -691,14 +691,14 @@ class mob_bullet_controller : public CreatureScript
 public:
     mob_bullet_controller() : CreatureScript("mob_bullet_controller") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_bullet_controllerAI(creature);
     }
 
     struct mob_bullet_controllerAI : public Scripted_NoMovementAI
     {
-        mob_bullet_controllerAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        mob_bullet_controllerAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
         {
             Reset();
         }
@@ -726,10 +726,10 @@ class spell_powering_up : public SpellScriptLoader
 
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* target = GetTarget())
+                if (UnitPtr target = GetTarget())
                 {
                     AuraPtr pAura = target->GetAura(GetId());
-                    if (pAura != NULLAURA)
+                    if (pAura != nullptr)
                     {
                         if (pAura->GetStackAmount() == 100)
                         {
@@ -773,7 +773,7 @@ class spell_powering_up : public SpellScriptLoader
 
             void HandleScriptEffect(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* target = GetExplTargetUnit())
+                if (UnitPtr target = GetExplTargetUnit())
                     if (urand(0, 99) < 15)
                         target->CastSpell(target, spellId, true);
             }
@@ -845,7 +845,7 @@ class spell_power_of_the_twins : public SpellScriptLoader
             {
                 if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                 {
-                    if (Creature* Valk = ObjectAccessor::GetCreature(*GetCaster(), instance->GetData64(GetCaster()->GetEntry())))
+                    if (CreaturePtr Valk = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(GetCaster()), instance->GetData64(GetCaster()->GetEntry())))
                         CAST_AI(boss_twin_baseAI, Valk->AI())->EnableDualWield(true);
                 }
             }
@@ -854,7 +854,7 @@ class spell_power_of_the_twins : public SpellScriptLoader
             {
                 if (InstanceScript* instance = GetCaster()->GetInstanceScript())
                 {
-                    if (Creature* Valk = ObjectAccessor::GetCreature(*GetCaster(), instance->GetData64(GetCaster()->GetEntry())))
+                    if (CreaturePtr Valk = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(GetCaster()), instance->GetData64(GetCaster()->GetEntry())))
                         CAST_AI(boss_twin_baseAI, Valk->AI())->EnableDualWield(false);
                 }
             }

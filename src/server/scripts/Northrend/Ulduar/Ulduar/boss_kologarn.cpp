@@ -93,7 +93,7 @@ class boss_kologarn : public CreatureScript
 
         struct boss_kologarnAI : public BossAI
         {
-            boss_kologarnAI(Creature* creature) : BossAI(creature, BOSS_KOLOGARN), vehicle(creature->GetVehicleKit()),
+            boss_kologarnAI(CreaturePtr creature) : BossAI(creature, BOSS_KOLOGARN), vehicle(creature->GetVehicleKit()),
                 left(false), right(false)
             {
                 ASSERT(vehicle);
@@ -106,11 +106,11 @@ class boss_kologarn : public CreatureScript
                 Reset();
             }
 
-            Vehicle* vehicle;
+            VehiclePtr vehicle;
             bool left, right;
             uint64 eyebeamTarget;
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 DoScriptText(SAY_AGGRO, me);
 
@@ -122,7 +122,7 @@ class boss_kologarn : public CreatureScript
                 events.ScheduleEvent(EVENT_ENRAGE, 600000);
 
                 for (uint8 i = 0; i < 2; ++i)
-                    if (Unit* arm = vehicle->GetPassenger(i))
+                    if (UnitPtr arm = vehicle->GetPassenger(i))
                         arm->ToCreature()->SetInCombatWithZone();
 
                 _EnterCombat();
@@ -135,7 +135,7 @@ class boss_kologarn : public CreatureScript
                 eyebeamTarget = 0;
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoScriptText(SAY_DEATH, me);
                 DoCast(SPELL_KOLOGARN_PACIFY);
@@ -145,12 +145,12 @@ class boss_kologarn : public CreatureScript
                 _JustDied();
             }
 
-            void KilledUnit(Unit* /*who*/)
+            void KilledUnit(UnitPtr /*who*/)
             {
                 DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
             }
 
-            void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+            void PassengerBoarded(UnitPtr who, int8 /*seatId*/, bool apply)
             {
                 bool isEncounterInProgress = instance->GetBossState(BOSS_KOLOGARN) == IN_PROGRESS;
                 if (who->GetEntry() == NPC_LEFT_ARM)
@@ -182,7 +182,7 @@ class boss_kologarn : public CreatureScript
                 {
                     who->CastSpell(me, SPELL_ARM_DEAD_DAMAGE, true);
 
-                    if (Creature* rubbleStalker = who->FindNearestCreature(NPC_RUBBLE_STALKER, 70.0f))
+                    if (CreaturePtr rubbleStalker = who->FindNearestCreature(NPC_RUBBLE_STALKER, 70.0f))
                     {
                         rubbleStalker->CastSpell(rubbleStalker, SPELL_FALLING_RUBBLE, true);
                         rubbleStalker->CastSpell(rubbleStalker, SPELL_SUMMON_RUBBLE, true);
@@ -200,7 +200,7 @@ class boss_kologarn : public CreatureScript
                 }
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(CreaturePtr summon)
             {
                 switch (summon->GetEntry())
                 {
@@ -226,7 +226,7 @@ class boss_kologarn : public CreatureScript
                 // Victim gets 67351
                 if (eyebeamTarget)
                 {
-                    if (Unit* target = Unit::GetUnit(*summon, eyebeamTarget))
+                    if (UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(summon), eyebeamTarget))
                     {
                         summon->Attack(target, false);
                         summon->GetMotionMaster()->MoveChase(target);
@@ -295,7 +295,7 @@ class boss_kologarn : public CreatureScript
                         }
                         break;
                         case EVENT_FOCUSED_EYEBEAM:
-                            if (Unit* eyebeamTargetUnit = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0, true))
+                            if (UnitPtr eyebeamTargetUnit = SelectTarget(SELECT_TARGET_FARTHEST, 0, 0, true))
                             {
                                 eyebeamTarget = eyebeamTargetUnit->GetGUID();
                                 DoCast(me, SPELL_SUMMON_FOCUSED_EYEBEAM, true);
@@ -309,7 +309,7 @@ class boss_kologarn : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetUlduarAI<boss_kologarnAI>(creature);
         }
@@ -326,14 +326,14 @@ class spell_ulduar_rubble_summon : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (!caster)
                     return;
 
                 uint64 originalCaster = caster->GetInstanceScript() ? caster->GetInstanceScript()->GetData64(BOSS_KOLOGARN) : 0;
                 uint32 spellId = GetEffectValue();
                 for (uint8 i = 0; i < 5; ++i)
-                    caster->CastSpell(caster, spellId, true, NULL, NULL, originalCaster);
+                    caster->CastSpell(caster, spellId, true, nullptr, nullptr, originalCaster);
             }
 
             void Register()
@@ -349,14 +349,14 @@ class spell_ulduar_rubble_summon : public SpellScriptLoader
 };
 
 // predicate function to select non main tank target
-class StoneGripTargetSelector : public std::unary_function<Unit*, bool>
+class StoneGripTargetSelector : public std::unary_function<UnitPtr, bool>
 {
     public:
-        StoneGripTargetSelector(Creature* me, Unit const* victim) : _me(me), _victim(victim) {}
+        StoneGripTargetSelector(CreaturePtr me, constUnitPtr victim) : _me(me), _victim(victim) {}
 
-        bool operator()(WorldObject* target)
+        bool operator()(WorldObjectPtr target)
         {
-            if (target == _victim && _me->getThreatManager().getThreatList().size() > 1)
+            if (target == _victim && _me->getThreatManager()->getThreatList().size() > 1)
                 return true;
 
             if (target->GetTypeId() != TYPEID_PLAYER)
@@ -365,8 +365,8 @@ class StoneGripTargetSelector : public std::unary_function<Unit*, bool>
             return false;
         }
 
-        Creature* _me;
-        Unit const* _victim;
+        CreaturePtr _me;
+        constUnitPtr _victim;
 };
 
 class spell_ulduar_stone_grip_cast_target : public SpellScriptLoader
@@ -385,10 +385,10 @@ class spell_ulduar_stone_grip_cast_target : public SpellScriptLoader
                 return true;
             }
 
-            void FilterTargetsInitial(std::list<WorldObject*>& unitList)
+            void FilterTargetsInitial(std::list<WorldObjectPtr>& unitList)
             {
                 // Remove "main tank" and non-player targets
-                unitList.remove_if(StoneGripTargetSelector(GetCaster()->ToCreature(), GetCaster()->getVictim()));
+                unitList.remove_if(StoneGripTargetSelector(TO_CREATURE(GetCaster()), GetCaster()->getVictim()));
                 // Maximum affected targets per difficulty mode
                 uint32 maxTargets = 1;
                 if (GetSpellInfo()->Id == 63981)
@@ -397,7 +397,7 @@ class spell_ulduar_stone_grip_cast_target : public SpellScriptLoader
                 // Return a random amount of targets based on maxTargets
                 while (maxTargets < unitList.size())
                 {
-                    std::list<WorldObject*>::iterator itr = unitList.begin();
+                    std::list<WorldObjectPtr>::iterator itr = unitList.begin();
                     advance(itr, urand(0, unitList.size()-1));
                     unitList.erase(itr);
                 }
@@ -406,7 +406,7 @@ class spell_ulduar_stone_grip_cast_target : public SpellScriptLoader
                 m_unitList = unitList;
             }
 
-            void FillTargetsSubsequential(std::list<WorldObject*>& unitList)
+            void FillTargetsSubsequential(std::list<WorldObjectPtr>& unitList)
             {
                 unitList = m_unitList;
             }
@@ -419,7 +419,7 @@ class spell_ulduar_stone_grip_cast_target : public SpellScriptLoader
             }
 
             // Shared between effects
-            std::list<WorldObject*> m_unitList;
+            std::list<WorldObjectPtr> m_unitList;
         };
 
         SpellScript* GetSpellScript() const
@@ -439,7 +439,7 @@ class spell_ulduar_cancel_stone_grip : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                Unit* target = GetHitUnit();
+                UnitPtr target = GetHitUnit();
                 if (!target || !target->GetVehicle())
                     return;
 
@@ -483,7 +483,7 @@ class spell_ulduar_squeezed_lifeless : public SpellScriptLoader
                     return;
 
                 //! Proper exit position does not work currently,
-                //! See documentation in void Unit::ExitVehicle(Position const* exitPosition)
+                //! See documentation in void Unit::ExitVehicle(const Position* exitPosition)
                 Position pos;
                 pos.m_positionX = 1756.25f + irand(-3, 3);
                 pos.m_positionY = -8.3f + irand(-3, 3);
@@ -526,7 +526,7 @@ class spell_ulduar_stone_grip_absorb : public SpellScriptLoader
                     return;
 
                 uint32 rubbleStalkerEntry = (GetOwner()->GetMap()->GetDifficulty() == REGULAR_DIFFICULTY ? 33809 : 33942);
-                Creature* rubbleStalker = GetOwner()->FindNearestCreature(rubbleStalkerEntry, 200.0f, true);
+                CreaturePtr rubbleStalker = GetOwner()->FindNearestCreature(rubbleStalkerEntry, 200.0f, true);
                 if (rubbleStalker)
                     rubbleStalker->CastSpell(rubbleStalker, SPELL_STONE_GRIP_CANCEL, true);
             }
@@ -554,7 +554,7 @@ class spell_ulduar_stone_grip : public SpellScriptLoader
 
             void OnRemoveStun(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
-                if (Player* owner = GetOwner()->ToPlayer())
+                if (PlayerPtr owner = TO_PLAYER(GetOwner()))
                     owner->RemoveAurasDueToSpell(aurEff->GetAmount());
             }
 
@@ -566,7 +566,7 @@ class spell_ulduar_stone_grip : public SpellScriptLoader
                 if (GetOwner()->GetTypeId() != TYPEID_UNIT)
                     return;
 
-                Player* caster = GetCaster() ? GetCaster()->ToPlayer() : NULL;
+                PlayerPtr caster = GetCaster() ? TO_PLAYER(GetCaster()) : nullptr;
                 if (!caster || !caster->IsOnVehicle(GetOwner()->ToUnit()))
                     return;
 
@@ -598,7 +598,7 @@ class spell_kologarn_stone_shout : public SpellScriptLoader
         {
             PrepareSpellScript(spell_kologarn_stone_shout_SpellScript);
 
-            void FilterTargets(std::list<WorldObject*>& unitList)
+            void FilterTargets(std::list<WorldObjectPtr>& unitList)
             {
                 unitList.remove_if(PlayerOrPetCheck());
             }

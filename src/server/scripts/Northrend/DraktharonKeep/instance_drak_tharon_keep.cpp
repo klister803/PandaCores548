@@ -50,7 +50,7 @@ public:
 
     struct instance_drak_tharon_InstanceScript : public InstanceScript
     {
-        instance_drak_tharon_InstanceScript(Map* map) : InstanceScript(map) {}
+        instance_drak_tharon_InstanceScript(MapPtr map) : InstanceScript(map) {}
 
         uint8 uiDredAchievCounter;
 
@@ -91,7 +91,7 @@ public:
             return false;
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {
@@ -110,7 +110,7 @@ public:
             }
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -231,7 +231,7 @@ public:
         }
     };
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_drak_tharon_InstanceScript(map);
     }

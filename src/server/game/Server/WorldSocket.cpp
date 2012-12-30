@@ -154,7 +154,7 @@ void WorldSocket::CloseSocket (void)
     {
         ACE_GUARD (LockType, Guard, m_SessionLock);
 
-        m_Session = NULL;
+        m_Session = nullptr;
     }
 }
 
@@ -457,7 +457,7 @@ int WorldSocket::handle_close (ACE_HANDLE h, ACE_Reactor_Mask)
     {
         ACE_GUARD_RETURN (LockType, Guard, m_SessionLock, -1);
 
-        m_Session = NULL;
+        m_Session = nullptr;
     }
 
     reactor()->remove_handler(this, ACE_Event_Handler::DONT_CALL | ACE_Event_Handler::ALL_EVENTS_MASK);
@@ -482,7 +482,7 @@ int WorldSocket::Update (void)
 
 int WorldSocket::handle_input_header (void)
 {
-    ACE_ASSERT(m_RecvWPct == NULL);
+    ACE_ASSERT(m_RecvWPct == nullptr);
 
     ACE_ASSERT(m_Header.length() == sizeof(ClientPktHeader));
 
@@ -506,7 +506,7 @@ int WorldSocket::handle_input_header (void)
 
     if ((size > 10240) || (cmd > 0xFFFF && (cmd >> 16) != 0x4C52))  // LR (from MSG_VERIFY_CONNECTIVITY)
     {
-        Player* _player = m_Session ? m_Session->GetPlayer() : NULL;
+        PlayerPtr _player = m_Session ? m_Session->GetPlayer() : nullptr;
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSocket::handle_input_header(): client (account: %u, char [GUID: %u, name: %s]) sent malformed packet (size: %d, cmd: %d)",
             m_Session ? m_Session->GetAccountId() : 0,
             _player ? _player->GetGUIDLow() : 0,
@@ -543,13 +543,13 @@ int WorldSocket::handle_input_payload (void)
 
     ACE_ASSERT (m_RecvPct.space() == 0);
     ACE_ASSERT (m_Header.space() == 0);
-    ACE_ASSERT (m_RecvWPct != NULL);
+    ACE_ASSERT (m_RecvWPct != nullptr);
 
     const int ret = ProcessIncoming (m_RecvWPct);
 
-    m_RecvPct.base (NULL, 0);
+    m_RecvPct.base (nullptr, 0);
     m_RecvPct.reset();
-    m_RecvWPct = NULL;
+    m_RecvWPct = nullptr;
 
     m_Header.reset();
 
@@ -615,7 +615,7 @@ int WorldSocket::handle_input_missing_data (void)
         // hope this is not hack, as proper m_RecvWPct is asserted around
         if (!m_RecvWPct)
         {
-            sLog->outError(LOG_FILTER_NETWORKIO, "Forcing close on input m_RecvWPct = NULL");
+            sLog->outError(LOG_FILTER_NETWORKIO, "Forcing close on input m_RecvWPct = nullptr");
             errno = EINVAL;
             return -1;
         }
@@ -1047,7 +1047,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     //! Negative mutetime indicates amount of seconds to be muted effective on next login - which is now.
     if (mutetime < 0)
     {
-        mutetime = time(NULL) + llabs(mutetime);
+        mutetime = time(nullptr) + llabs(mutetime);
 
         PreparedStatement* stmt = LoginDatabase.GetPreparedStatement(LOGIN_UPD_MUTE_TIME);
 
@@ -1113,7 +1113,7 @@ int WorldSocket::HandleAuthSession(WorldPacket& recvPacket)
     sha.UpdateData((uint8*)&t, 4);
     sha.UpdateData((uint8*)&clientSeed, 4);
     sha.UpdateData((uint8*)&seed, 4);
-    sha.UpdateBigNumbers(&k, NULL);
+    sha.UpdateBigNumbers(&k, nullptr);
     sha.Finalize();
 
     std::string address = GetRemoteAddress();

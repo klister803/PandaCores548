@@ -27,6 +27,6 @@ enum CreaturesIds
     NPC_YAN_ZHU     = 59479
 };
 
-void CheckPlayerDamage(Unit* pUnit, uint32 & damage);
+void CheckPlayerDamage(UnitPtr pUnit, uint32 & damage);
 
 #endif // STORMSTOUT_BREWERY_H_

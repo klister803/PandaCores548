@@ -64,14 +64,14 @@ class boss_netherspite : public CreatureScript
 public:
     boss_netherspite() : CreatureScript("boss_netherspite") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_netherspiteAI(creature);
     }
 
     struct boss_netherspiteAI : public ScriptedAI
     {
-        boss_netherspiteAI(Creature* creature) : ScriptedAI(creature)
+        boss_netherspiteAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
 
@@ -97,7 +97,7 @@ public:
         uint64 BeamerGUID[3]; // guid's of auxiliary beaming portals
         uint64 BeamTarget[3]; // guid's of portals' current targets
 
-        bool IsBetween(WorldObject* u1, WorldObject* target, WorldObject* u2) // the in-line checker
+        bool IsBetween(WorldObjectPtr u1, WorldObjectPtr target, WorldObjectPtr u2) // the in-line checker
         {
             if (!u1 || !u2 || !target)
                 return false;
@@ -142,7 +142,7 @@ public:
             pos[BLUE_PORTAL] = (r > 1 ? 1 : 2); // Blue Portal not on the left side (0)
 
             for (int i=0; i<3; ++i)
-                if (Creature* portal = me->SummonCreature(PortalID[i], PortalCoord[pos[i]][0], PortalCoord[pos[i]][1], PortalCoord[pos[i]][2], 0, TEMPSUMMON_TIMED_DESPAWN, 60000))
+                if (CreaturePtr portal = me->SummonCreature(PortalID[i], PortalCoord[pos[i]][0], PortalCoord[pos[i]][1], PortalCoord[pos[i]][2], 0, TEMPSUMMON_TIMED_DESPAWN, 60000))
                 {
                     PortalGUID[i] = portal->GetGUID();
                     portal->AddAura(PortalVisual[i], portal);
@@ -153,9 +153,9 @@ public:
         {
             for (int i=0; i<3; ++i)
             {
-                if (Creature* portal = Unit::GetCreature(*me, PortalGUID[i]))
+                if (CreaturePtr portal = Unit::GetCreature(TO_WORLDOBJECT(me), PortalGUID[i]))
                     portal->DisappearAndDie();
-                if (Creature* portal = Unit::GetCreature(*me, BeamerGUID[i]))
+                if (CreaturePtr portal = Unit::GetCreature(TO_WORLDOBJECT(me), BeamerGUID[i]))
                     portal->DisappearAndDie();
                 PortalGUID[i] = 0;
                 BeamTarget[i] = 0;
@@ -165,21 +165,21 @@ public:
         void UpdatePortals() // Here we handle the beams' behavior
         {
             for (int j=0; j<3; ++j) // j = color
-                if (Creature* portal = Unit::GetCreature(*me, PortalGUID[j]))
+                if (CreaturePtr portal = Unit::GetCreature(TO_WORLDOBJECT(me), PortalGUID[j]))
                 {
                     // the one who's been casted upon before
-                    Unit* current = Unit::GetUnit(*portal, BeamTarget[j]);
+                    UnitPtr current = Unit::GetUnit(TO_WORLDOBJECT(portal), BeamTarget[j]);
                     // temporary store for the best suitable beam reciever
-                    Unit* target = me;
+                    UnitPtr target = me;
 
-                    if (Map* map = me->GetMap())
+                    if (MapPtr map = me->GetMap())
                     {
                         Map::PlayerList const& players = map->GetPlayers();
 
                         // get the best suitable target
                         for (Map::PlayerList::const_iterator i = players.begin(); i != players.end(); ++i)
                         {
-                            Player* p = i->getSource();
+                            PlayerPtr p = i->getSource();
                             if (p && p->isAlive() // alive
                                 && (!target || target->GetDistance2d(portal)>p->GetDistance2d(portal)) // closer than current best
                                 && !p->HasAura(PlayerDebuff[j], 0) // not exhausted
@@ -200,14 +200,14 @@ public:
                     {
                         BeamTarget[j] = target->GetGUID();
                         // remove currently beaming portal
-                        if (Creature* beamer = Unit::GetCreature(*portal, BeamerGUID[j]))
+                        if (CreaturePtr beamer = Unit::GetCreature(TO_WORLDOBJECT(portal), BeamerGUID[j]))
                         {
                             beamer->CastSpell(target, PortalBeam[j], false);
                             beamer->DisappearAndDie();
                             BeamerGUID[j] = 0;
                         }
                         // create new one and start beaming on the target
-                        if (Creature* beamer = portal->SummonCreature(PortalID[j], portal->GetPositionX(), portal->GetPositionY(), portal->GetPositionZ(), portal->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 60000))
+                        if (CreaturePtr beamer = portal->SummonCreature(PortalID[j], portal->GetPositionX(), portal->GetPositionY(), portal->GetPositionZ(), portal->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 60000))
                         {
                             beamer->CastSpell(target, PortalBeam[j], false);
                             BeamerGUID[j] = beamer->GetGUID();
@@ -215,7 +215,7 @@ public:
                     }
                     // aggro target if Red Beam
                     if (j == RED_PORTAL && me->getVictim() != target && target->GetTypeId() == TYPEID_PLAYER)
-                        me->getThreatManager().addThreat(target, 100000.0f+DoGetThreat(me->getVictim()));
+                        me->getThreatManager()->addThreat(target, 100000.0f+DoGetThreat(me->getVictim()));
                 }
         }
 
@@ -248,17 +248,17 @@ public:
 
         void HandleDoors(bool open) // Massive Door switcher
         {
-            if (GameObject* Door = GameObject::GetGameObject(*me, instance ? instance->GetData64(DATA_GO_MASSIVE_DOOR) : 0))
+            if (GameObjectPtr Door = GameObject::GetGameObject(*me, instance ? instance->GetData64(DATA_GO_MASSIVE_DOOR) : 0))
                 Door->SetGoState(open ? GO_STATE_ACTIVE : GO_STATE_READY);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             HandleDoors(false);
             SwitchToPortalPhase();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             HandleDoors(true);
             DestroyPortals();
@@ -315,7 +315,7 @@ public:
                 // Netherbreath
                 if (NetherbreathTimer <= diff)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 40, true))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 40, true))
                         DoCast(target, SPELL_NETHERBREATH);
                     NetherbreathTimer = urand(5000, 7000);
                 } else NetherbreathTimer -= diff;

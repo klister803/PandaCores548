@@ -45,14 +45,14 @@ class boss_broodlord : public CreatureScript
 public:
     boss_broodlord() : CreatureScript("boss_broodlord") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_broodlordAI (creature);
     }
 
     struct boss_broodlordAI : public ScriptedAI
     {
-        boss_broodlordAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_broodlordAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 Cleave_Timer;
         uint32 BlastWave_Timer;
@@ -67,7 +67,7 @@ public:
             KnockBack_Timer = 30000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             DoZoneInCombat();

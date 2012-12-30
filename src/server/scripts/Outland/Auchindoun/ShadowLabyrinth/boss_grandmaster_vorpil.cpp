@@ -68,14 +68,14 @@ class mob_voidtraveler : public CreatureScript
 public:
     mob_voidtraveler() : CreatureScript("mob_voidtraveler") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_voidtravelerAI (creature);
     }
 
     struct mob_voidtravelerAI : public ScriptedAI
     {
-        mob_voidtravelerAI(Creature* creature) : ScriptedAI(creature)
+        mob_voidtravelerAI(CreaturePtr creature) : ScriptedAI(creature)
         {
         }
 
@@ -90,7 +90,7 @@ public:
             sacrificed = false;
         }
 
-        void EnterCombat(Unit* /*who*/){}
+        void EnterCombat(UnitPtr /*who*/){}
 
         void UpdateAI(const uint32 diff)
         {
@@ -101,7 +101,7 @@ public:
             }
             if (move <= diff)
             {
-                Creature* Vorpil = Unit::GetCreature(*me, VorpilGUID);
+                CreaturePtr Vorpil = Unit::GetCreature(TO_WORLDOBJECT(me), VorpilGUID);
                 if (!Vorpil)
                 {
                     VorpilGUID = 0;
@@ -141,14 +141,14 @@ class boss_grandmaster_vorpil : public CreatureScript
 public:
     boss_grandmaster_vorpil() : CreatureScript("boss_grandmaster_vorpil") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_grandmaster_vorpilAI (creature);
     }
 
     struct boss_grandmaster_vorpilAI : public ScriptedAI
     {
-        boss_grandmaster_vorpilAI(Creature* creature) : ScriptedAI(creature)
+        boss_grandmaster_vorpilAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             Intro = false;
@@ -184,7 +184,7 @@ public:
             {
                 for (uint8 i = 0; i < 5; ++i)
                 {
-                    Creature* Portal = NULL;
+                    CreaturePtr Portal = nullptr;
                     Portal = me->SummonCreature(MOB_VOID_PORTAL, VoidPortalCoords[i][0], VoidPortalCoords[i][1], VoidPortalCoords[i][2], 0, TEMPSUMMON_CORPSE_DESPAWN, 3000000);
                     if (Portal)
                     {
@@ -203,9 +203,9 @@ public:
             {
                 for (uint8 i = 0; i < 5; ++i)
                 {
-                    Unit* Portal = Unit::GetUnit(*me, PortalsGuid[i]);
+                    UnitPtr Portal = Unit::GetUnit(TO_WORLDOBJECT(me), PortalsGuid[i]);
                     if (Portal && Portal->isAlive())
-                        Portal->DealDamage(Portal, Portal->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                        Portal->DealDamage(Portal, Portal->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                     PortalsGuid[i] = 0;
                 }
                 sumportals = false;
@@ -223,18 +223,18 @@ public:
             }
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             if (summoned && summoned->GetEntry() == MOB_VOID_TRAVELER)
                 CAST_AI(mob_voidtraveler::mob_voidtravelerAI, summoned->AI())->VorpilGUID = me->GetGUID();
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
             destroyPortals();
@@ -243,7 +243,7 @@ public:
                 instance->SetData(DATA_GRANDMASTERVORPILEVENT, DONE);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), me);
             summonPortals();
@@ -252,7 +252,7 @@ public:
                 instance->SetData(DATA_GRANDMASTERVORPILEVENT, IN_PROGRESS);
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             ScriptedAI::MoveInLineOfSight(who);
 
@@ -276,7 +276,7 @@ public:
 
             if (IsHeroic() && banish_Timer <= diff)
             {
-                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, false);
+                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, false);
                 if (target)
                 {
                     DoCast(target, SPELL_BANISH);
@@ -286,10 +286,10 @@ public:
 
             if (DrawShadows_Timer <= diff)
             {
-                Map* map = me->GetMap();
+                MapPtr map = me->GetMap();
                 Map::PlayerList const &PlayerList = map->GetPlayers();
                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                    if (Player* i_pl = i->getSource())
+                    if (PlayerPtr i_pl = i->getSource())
                         if (i_pl->isAlive() && !i_pl->HasAura(SPELL_BANISH))
                             i_pl->TeleportTo(me->GetMapId(), VorpilPosition[0], VorpilPosition[1], VorpilPosition[2], 0, TELE_TO_NOT_LEAVE_COMBAT);
 

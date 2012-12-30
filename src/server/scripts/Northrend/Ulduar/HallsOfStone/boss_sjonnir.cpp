@@ -84,14 +84,14 @@ class boss_sjonnir : public CreatureScript
 public:
     boss_sjonnir() : CreatureScript("boss_sjonnir") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_sjonnirAI (creature);
     }
 
     struct boss_sjonnirAI : public ScriptedAI
     {
-        boss_sjonnirAI(Creature* creature) : ScriptedAI(creature), lSummons(me)
+        boss_sjonnirAI(CreaturePtr creature) : ScriptedAI(creature), lSummons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -130,7 +130,7 @@ public:
                 instance->SetData(DATA_SJONNIR_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -138,7 +138,7 @@ public:
 
             if (instance)
             {
-                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_SJONNIR_DOOR)))
+                if (GameObjectPtr pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_SJONNIR_DOOR)))
                     if (pDoor->GetGoState() == GO_STATE_READY)
                     {
                         EnterEvadeMode();
@@ -157,7 +157,7 @@ public:
 
             if (uiChainLightningTimer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_CHAIN_LIGHTING);
                 uiChainLightningTimer = urand(10000, 15000);
             } else uiChainLightningTimer -= diff;
@@ -207,15 +207,15 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustSummoned(Creature* summon)
+        void JustSummoned(CreaturePtr summon)
         {
             summon->GetMotionMaster()->MovePoint(0, CenterPoint.x, CenterPoint.y, CenterPoint.z);
-            /*if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+            /*if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                 summon->AI()->AttackStart(target);*/
             lSummons.Summon(summon);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
             lSummons.DespawnAll();
@@ -223,7 +223,7 @@ public:
             if (instance)
                 instance->SetData(DATA_SJONNIR_EVENT, DONE);
         }
-        void KilledUnit(Unit* victim)
+        void KilledUnit(UnitPtr victim)
         {
             if (victim == me)
                 return;
@@ -252,14 +252,14 @@ class mob_malformed_ooze : public CreatureScript
 public:
     mob_malformed_ooze() : CreatureScript("mob_malformed_ooze") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_malformed_oozeAI(creature);
     }
 
     struct mob_malformed_oozeAI : public ScriptedAI
     {
-        mob_malformed_oozeAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_malformed_oozeAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 uiMergeTimer;
 
@@ -272,7 +272,7 @@ public:
         {
             if (uiMergeTimer <= diff)
             {
-                if (Creature* temp = me->FindNearestCreature(CREATURE_MALFORMED_OOZE, 3.0f, true))
+                if (CreaturePtr temp = me->FindNearestCreature(CREATURE_MALFORMED_OOZE, 3.0f, true))
                 {
                     DoSpawnCreature(CREATURE_IRON_SLUDGE, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 20000);
                     temp->DisappearAndDie();
@@ -295,24 +295,24 @@ class mob_iron_sludge : public CreatureScript
 public:
     mob_iron_sludge() : CreatureScript("mob_iron_sludge") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_iron_sludgeAI(creature);
     }
 
     struct mob_iron_sludgeAI : public ScriptedAI
     {
-        mob_iron_sludgeAI(Creature* creature) : ScriptedAI(creature)
+        mob_iron_sludgeAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
 
         InstanceScript* instance;
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
-                if (Creature* Sjonnir = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_SJONNIR)))
+                if (CreaturePtr Sjonnir = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_SJONNIR)))
                     Sjonnir->AI()->DoAction(ACTION_OOZE_DEAD);
         }
     };
@@ -326,12 +326,12 @@ class achievement_abuse_the_ooze : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(Player* /*player*/, Unit* target)
+        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
         {
             if (!target)
                 return false;
 
-            if (Creature* Sjonnir = target->ToCreature())
+            if (CreaturePtr Sjonnir = TO_CREATURE(target))
                 if (Sjonnir->AI()->GetData(DATA_ABUSE_THE_OOZE) >= 5)
                     return true;
 

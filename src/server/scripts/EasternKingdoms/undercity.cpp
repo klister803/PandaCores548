@@ -76,7 +76,7 @@ class npc_lady_sylvanas_windrunner : public CreatureScript
 public:
     npc_lady_sylvanas_windrunner() : CreatureScript("npc_lady_sylvanas_windrunner") { }
 
-    bool OnQuestReward(Player* /*player*/, Creature* creature, const Quest *_Quest, uint32 /*slot*/)
+    bool OnQuestReward(PlayerPtr /*Player*/, CreaturePtr creature, const Quest *_Quest, uint32 /*slot*/)
     {
         if (_Quest->GetQuestId() == QUEST_JOURNEY_TO_UNDERCITY)
         {
@@ -91,14 +91,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_lady_sylvanas_windrunnerAI (creature);
     }
 
     struct npc_lady_sylvanas_windrunnerAI : public ScriptedAI
     {
-        npc_lady_sylvanas_windrunnerAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_lady_sylvanas_windrunnerAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 LamentEventTimer;
         bool LamentEvent;
@@ -123,13 +123,13 @@ public:
             MultiShotTimer = 10000;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             if (summoned->GetEntry() == ENTRY_HIGHBORNE_BUNNY)
             {
-                if (Creature* target = Unit::GetCreature(*summoned, targetGUID))
+                if (CreaturePtr target = Unit::GetCreature(TO_WORLDOBJECT(summoned), targetGUID))
                 {
                     target->MonsterMoveWithSpeed(target->GetPositionX(), target->GetPositionY(), me->GetPositionZ()+15.0f, 0);
                     target->SetPosition(target->GetPositionX(), target->GetPositionY(), me->GetPositionZ()+15.0f, 0.0f);
@@ -171,7 +171,7 @@ public:
                 DoCast(me, SPELL_FADE_BLINK);
                 FadeTimer = 30000 + rand()%5000;
                 // if the victim is out of melee range she cast multi shot
-                if (Unit* victim = me->getVictim())
+                if (UnitPtr victim = me->getVictim())
                     if (me->GetDistance(victim) > 10.0f)
                         DoCast(victim, SPELL_MULTI_SHOT);
             } else FadeTimer -= diff;
@@ -184,7 +184,7 @@ public:
 
             if (BlackArrowTimer <= diff)
             {
-                if (Unit* victim = me->getVictim())
+                if (UnitPtr victim = me->getVictim())
                 {
                     DoCast(victim, SPELL_BLACK_ARROW);
                     BlackArrowTimer = 15000 + rand()%5000;
@@ -193,7 +193,7 @@ public:
 
             if (ShotTimer <= diff)
             {
-                if (Unit* victim = me->getVictim())
+                if (UnitPtr victim = me->getVictim())
                 {
                     DoCast(victim, SPELL_SHOT);
                     ShotTimer = 8000 + rand()%2000;
@@ -202,7 +202,7 @@ public:
 
             if (MultiShotTimer <= diff)
             {
-                if (Unit* victim = me->getVictim())
+                if (UnitPtr victim = me->getVictim())
                 {
                     DoCast(victim, SPELL_MULTI_SHOT);
                     MultiShotTimer = 10000 + rand()%3000;
@@ -223,14 +223,14 @@ class npc_highborne_lamenter : public CreatureScript
 public:
     npc_highborne_lamenter() : CreatureScript("npc_highborne_lamenter") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_highborne_lamenterAI (creature);
     }
 
     struct npc_highborne_lamenterAI : public ScriptedAI
     {
-        npc_highborne_lamenterAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_highborne_lamenterAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 EventMoveTimer;
         uint32 EventCastTimer;
@@ -245,7 +245,7 @@ public:
             EventCast = true;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -286,7 +286,7 @@ class npc_parqual_fintallas : public CreatureScript
 public:
     npc_parqual_fintallas() : CreatureScript("npc_parqual_fintallas") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -302,7 +302,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());

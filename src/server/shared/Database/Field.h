@@ -176,7 +176,7 @@ class Field
 
             if (data.raw)
                 return *reinterpret_cast<int64*>(data.value);
-            return static_cast<int64>(strtol((char*)data.value, NULL, 10));
+            return static_cast<int64>(strtol((char*)data.value, nullptr, 10));
         }
 
         float GetFloat() const
@@ -218,13 +218,13 @@ class Field
         char const* GetCString() const
         {
             if (!data.value)
-                return NULL;
+                return nullptr;
 
             #ifdef TRINITY_DEBUG
             if (IsNumeric())
             {
                 sLog->outWarn(LOG_FILTER_SQL, "Error: GetCString() on numeric field. Using type: %s.", FieldTypeToString(data.type));
-                return NULL;
+                return nullptr;
             }
             #endif
             return static_cast<char const*>(data.value);
@@ -274,7 +274,7 @@ class Field
         void CleanUp()
         {
             delete[] ((char*)data.value);
-            data.value = NULL;
+            data.value = nullptr;
         }
 
         static size_t SizeForType(MYSQL_FIELD* field)
@@ -365,7 +365,7 @@ class Field
                 case MYSQL_TYPE_LONG_BLOB:   return "LONG_BLOB";
                 case MYSQL_TYPE_MEDIUM_BLOB: return "MEDIUM_BLOB";
                 case MYSQL_TYPE_NEWDATE:     return "NEWDATE";
-                case MYSQL_TYPE_NULL:        return "NULL";
+                case MYSQL_TYPE_NULL:        return "nullptr";
                 case MYSQL_TYPE_SET:         return "SET";
                 case MYSQL_TYPE_SHORT:       return "SHORT";
                 case MYSQL_TYPE_STRING:      return "STRING";

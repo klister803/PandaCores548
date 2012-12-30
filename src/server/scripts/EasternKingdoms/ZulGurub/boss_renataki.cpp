@@ -39,7 +39,7 @@ class boss_renataki : public CreatureScript
 
         struct boss_renatakiAI : public BossAI
         {
-            boss_renatakiAI(Creature* creature) : BossAI(creature, DATA_RENATAKI)
+            boss_renatakiAI(CreaturePtr creature) : BossAI(creature, DATA_RENATAKI)
             {
             }
 
@@ -47,11 +47,11 @@ class boss_renataki : public CreatureScript
             {
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
             }
 
@@ -79,7 +79,7 @@ class boss_renataki : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_renatakiAI(creature);
         }

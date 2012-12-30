@@ -38,7 +38,7 @@ AssertionHook _failureHook = _handleErrorCheck_;
 
 #ifdef G3D_LINUX
 #if 0 /* G3DFIX: Disabled to avoid requirement for X11 libraries */
-    Display*      x11Display = NULL;
+    Display*      x11Display = nullptr;
     Window        x11Window  = 0;
 #endif
 #endif
@@ -46,7 +46,7 @@ AssertionHook _failureHook = _handleErrorCheck_;
 
 #ifdef G3D_WIN32
 static void postToClipboard(const char *text) {
-    if (OpenClipboard(NULL)) {
+    if (OpenClipboard(nullptr)) {
         HGLOBAL hMem = GlobalAlloc(GHND | GMEM_DDESHARE, strlen(text) + 1);
         if (hMem) {
             char *pMem = (char*)GlobalLock(hMem);
@@ -84,23 +84,23 @@ static void createErrorMessage(
         DWORD lastErr = GetLastError();
     
         // The decoded message from FormatMessage
-        LPTSTR formatMsg = NULL;
+        LPTSTR formatMsg = nullptr;
 
-        if (NULL == formatMsg) {
+        if (nullptr == formatMsg) {
             FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
                           FORMAT_MESSAGE_IGNORE_INSERTS |
                           FORMAT_MESSAGE_FROM_SYSTEM,
-                            NULL,
+                            nullptr,
                             lastErr,
                             0,
                             (LPTSTR)&formatMsg,
                             0,
-                            NULL);
+                            nullptr);
         }
 
         // Make sure the message got translated into something.
         LPTSTR realLastErr;
-        if (NULL != formatMsg) {
+        if (nullptr != formatMsg) {
             realLastErr = formatMsg;
         } else {
             realLastErr = _T("Last error code does not exist.");
@@ -111,12 +111,12 @@ static void createErrorMessage(
 		}
 
         // Get rid of the allocated memory from FormatMessage.
-        if (NULL != formatMsg) {
+        if (nullptr != formatMsg) {
             LocalFree((LPVOID)formatMsg);
         }
 
         char modulePath[MAX_PATH];
-        GetModuleFileNameA(NULL, modulePath, MAX_PATH);
+        GetModuleFileNameA(nullptr, modulePath, MAX_PATH);
 
         const char* moduleName = strrchr(modulePath, '\\');
         outTitle = outTitle + string(" - ") + string(moduleName ? (moduleName + 1) : modulePath);
@@ -243,17 +243,17 @@ void _releaseInputGrab_() {
         }
 
         // Set the default cursor in case the application
-        // set the cursor to NULL.
+        // set the cursor to nullptr.
         oldCursor = GetCursor();
-        SetCursor(LoadCursor(NULL, IDC_ARROW));
+        SetCursor(LoadCursor(nullptr, IDC_ARROW));
 
         // Allow the cursor full access to the screen
         GetClipCursor(&oldCursorRect);
-        ClipCursor(NULL);
+        ClipCursor(nullptr);
         
     #elif defined(G3D_LINUX)
 #if 0 /* G3DFIX: Disabled to avoid requirement for X11 libraries */
-        if (x11Display != NULL) {
+        if (x11Display != nullptr) {
             XUngrabPointer(x11Display, CurrentTime);
             XUngrabKeyboard(x11Display, CurrentTime);
             if (x11Window != 0) {

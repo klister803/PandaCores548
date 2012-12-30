@@ -39,14 +39,14 @@ class boss_scorn : public CreatureScript
 public:
     boss_scorn() : CreatureScript("boss_scorn") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_scornAI (creature);
     }
 
     struct boss_scornAI : public ScriptedAI
     {
-        boss_scornAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_scornAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 LichSlap_Timer;
         uint32 FrostboltVolley_Timer;
@@ -61,7 +61,7 @@ public:
             FrostNova_Timer = 30000;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {

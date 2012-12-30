@@ -129,11 +129,11 @@ void GuildFinderMgr::AddMembershipRequest(uint32 guildGuid, MembershipRequest co
     CharacterDatabase.CommitTransaction(trans);
 
     // Notify the applicant his submittion has been added
-    if (Player* player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(request.GetPlayerGUID(), 0, HIGHGUID_PLAYER)))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(request.GetPlayerGUID(), 0, HIGHGUID_PLAYER)))
         SendMembershipRequestListUpdate(*player);
 
     // Notify the guild master and officers the list changed
-    if (Guild* guild = sGuildMgr->GetGuildById(guildGuid))
+    if (GuildPtr guild = sGuildMgr->GetGuildById(guildGuid))
         SendApplicantListUpdate(*guild);
 }
 
@@ -160,7 +160,7 @@ void GuildFinderMgr::RemoveAllMembershipRequestsFromPlayer(uint32 playerId)
         itr->second.erase(itr2);
 
         // Notify the guild master and officers the list changed
-        if (Guild* guild = sGuildMgr->GetGuildById(itr->first))
+        if (GuildPtr guild = sGuildMgr->GetGuildById(itr->first))
             SendApplicantListUpdate(*guild);
     }
 }
@@ -187,11 +187,11 @@ void GuildFinderMgr::RemoveMembershipRequest(uint32 playerId, uint32 guildId)
     _membershipRequests[guildId].erase(itr);
 
     // Notify the applicant his submittion has been removed
-    if (Player* player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(playerId, 0, HIGHGUID_PLAYER)))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(playerId, 0, HIGHGUID_PLAYER)))
         SendMembershipRequestListUpdate(*player);
 
     // Notify the guild master and officers the list changed
-    if (Guild* guild = sGuildMgr->GetGuildById(guildId))
+    if (GuildPtr guild = sGuildMgr->GetGuildById(guildId))
         SendApplicantListUpdate(*guild);
 }
 
@@ -306,7 +306,7 @@ void GuildFinderMgr::DeleteGuild(uint32 guildId)
         _membershipRequests[guildId].erase(itr);
 
         // Notify the applicant his submition has been removed
-        if (Player* player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(applicant, 0, HIGHGUID_PLAYER)))
+        if (PlayerPtr player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(applicant, 0, HIGHGUID_PLAYER)))
             SendMembershipRequestListUpdate(*player);
     }
 
@@ -314,7 +314,7 @@ void GuildFinderMgr::DeleteGuild(uint32 guildId)
     _guildSettings.erase(guildId);
 
     // Notify the guild master the list changed (even if he's not a GM any more, not sure if needed)
-    if (Guild* guild = sGuildMgr->GetGuildById(guildId))
+    if (GuildPtr guild = sGuildMgr->GetGuildById(guildId))
         SendApplicantListUpdate(*guild);
 }
 
@@ -345,10 +345,10 @@ void GuildFinderMgr::SendApplicantListUpdate(Guild& guild)
         
         dataBuffer << int32(request.GetAvailability());
         dataBuffer.WriteByteSeq(playerGuid[1]);
-        dataBuffer << int32(time(NULL) <= request.GetExpiryTime());
+        dataBuffer << int32(time(nullptr) <= request.GetExpiryTime());
         dataBuffer << int32(request.GetInterests());
         dataBuffer << int32(request.GetClassRoles());
-        dataBuffer << int32(time(NULL) - request.GetSubmitTime()); // Time in seconds since application submitted.
+        dataBuffer << int32(time(nullptr) - request.GetSubmitTime()); // Time in seconds since application submitted.
         dataBuffer.WriteString(request.GetName());
         dataBuffer.WriteByteSeq(playerGuid[4]);
         dataBuffer.WriteByteSeq(playerGuid[6]);
@@ -356,7 +356,7 @@ void GuildFinderMgr::SendApplicantListUpdate(Guild& guild)
         dataBuffer.WriteByteSeq(playerGuid[7]);
         dataBuffer.WriteString(request.GetComment());
         dataBuffer << int32(request.GetLevel());
-        dataBuffer << int32(request.GetExpiryTime() - time(NULL)); // TIme in seconds until application expires.
+        dataBuffer << int32(request.GetExpiryTime() - time(nullptr)); // TIme in seconds until application expires.
         dataBuffer.WriteByteSeq(playerGuid[2]);
         dataBuffer.WriteByteSeq(playerGuid[0]);
         dataBuffer << int32(request.GetClass());
@@ -365,8 +365,8 @@ void GuildFinderMgr::SendApplicantListUpdate(Guild& guild)
 
     data.FlushBits();
     data.append(dataBuffer);
-    data << uint32(time(NULL)); // Unk time
-    if (Player* player = ObjectAccessor::FindPlayer(guild.GetLeaderGUID()))
+    data << uint32(time(nullptr)); // Unk time
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guild.GetLeaderGUID()))
         player->SendDirectMessage(&data);
     guild.BroadcastPacketToRank(&data, GR_OFFICER);
 }
@@ -398,10 +398,10 @@ void GuildFinderMgr::SendMembershipRequestListUpdate(Player& player)
         
         dataBuffer << int32(request.GetAvailability());
         dataBuffer.WriteByteSeq(playerGuid[1]);
-        dataBuffer << int32(time(NULL) <= request.GetExpiryTime());
+        dataBuffer << int32(time(nullptr) <= request.GetExpiryTime());
         dataBuffer << int32(request.GetInterests());
         dataBuffer << int32(request.GetClassRoles());
-        dataBuffer << int32(time(NULL) - request.GetSubmitTime()); // Time in seconds since application submitted.
+        dataBuffer << int32(time(nullptr) - request.GetSubmitTime()); // Time in seconds since application submitted.
         dataBuffer.WriteString(request.GetName());
         dataBuffer.WriteByteSeq(playerGuid[4]);
         dataBuffer.WriteByteSeq(playerGuid[6]);
@@ -409,7 +409,7 @@ void GuildFinderMgr::SendMembershipRequestListUpdate(Player& player)
         dataBuffer.WriteByteSeq(playerGuid[7]);
         dataBuffer.WriteString(request.GetComment());
         dataBuffer << int32(request.GetLevel());
-        dataBuffer << int32(request.GetExpiryTime() - time(NULL)); // TIme in seconds until application expires.
+        dataBuffer << int32(request.GetExpiryTime() - time(nullptr)); // TIme in seconds until application expires.
         dataBuffer.WriteByteSeq(playerGuid[2]);
         dataBuffer.WriteByteSeq(playerGuid[0]);
         dataBuffer << int32(request.GetClass());
@@ -418,6 +418,6 @@ void GuildFinderMgr::SendMembershipRequestListUpdate(Player& player)
 
     data.FlushBits();
     data.append(dataBuffer);
-    data << uint32(time(NULL)); // Unk time
+    data << uint32(time(nullptr)); // Unk time
     player.SendDirectMessage(&data);
 }

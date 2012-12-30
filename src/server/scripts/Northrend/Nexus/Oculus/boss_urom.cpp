@@ -92,14 +92,14 @@ class boss_urom : public CreatureScript
 public:
     boss_urom() : CreatureScript("boss_urom") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_uromAI (creature);
     }
 
     struct boss_uromAI : public BossAI
     {
-        boss_uromAI(Creature* creature) : BossAI(creature, DATA_UROM_EVENT) {}
+        boss_uromAI(CreaturePtr creature) : BossAI(creature, DATA_UROM_EVENT) {}
 
         void Reset()
         {
@@ -128,7 +128,7 @@ public:
             timeBombTimer = urand(20000, 25000);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
 
@@ -140,7 +140,7 @@ public:
                 instance->SetData(DATA_UROM_PLATAFORM, instance->GetData(DATA_UROM_PLATAFORM)+1);
         }
 
-        void AttackStart(Unit* who)
+        void AttackStart(UnitPtr who)
         {
             if (!who)
                 return;
@@ -277,7 +277,7 @@ public:
 
                 if (timeBombTimer <= uiDiff)
                 {
-                    if (Unit* unit = SelectTarget(SELECT_TARGET_RANDOM))
+                    if (UnitPtr unit = SelectTarget(SELECT_TARGET_RANDOM))
                         DoCast(unit, SPELL_TIME_BOMB);
 
                     timeBombTimer = urand(20000, 25000);
@@ -287,7 +287,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             _JustDied();
             DoCast(me, SPELL_DEATH_SPELL, true); // we cast the spell as triggered or the summon effect does not occur
@@ -300,7 +300,7 @@ public:
             me->DeleteThreatList();
         }
 
-        void SpellHit(Unit* /*pCaster*/, const SpellInfo* pSpell)
+        void SpellHit(UnitPtr /*pCaster*/, const SpellInfo* pSpell)
         {
             switch (pSpell->Id)
             {

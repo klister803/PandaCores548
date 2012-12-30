@@ -91,14 +91,14 @@ class boss_ingvar_the_plunderer : public CreatureScript
 public:
     boss_ingvar_the_plunderer() : CreatureScript("boss_ingvar_the_plunderer") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_ingvar_the_plundererAI(creature);
     }
 
     struct boss_ingvar_the_plundererAI : public ScriptedAI
     {
-        boss_ingvar_the_plundererAI(Creature* creature) : ScriptedAI(creature)
+        boss_ingvar_the_plundererAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             bIsUndead = false;
@@ -141,7 +141,7 @@ public:
                 instance->SetData(DATA_INGVAR_EVENT, NOT_STARTED);
         }
 
-        void DamageTaken(Unit* /*done_by*/, uint32 &damage)
+        void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
         {
             if (damage >= me->GetHealth() && !bIsUndead)
             {
@@ -181,7 +181,7 @@ public:
             DoScriptText(YELL_AGGRO_2, me);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(YELL_AGGRO_1, me);
 
@@ -189,7 +189,7 @@ public:
                 instance->SetData(DATA_INGVAR_EVENT, IN_PROGRESS);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(YELL_DEAD_2, me);
 
@@ -201,7 +201,7 @@ public:
             }
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             if (bIsUndead)
                 DoScriptText(YELL_KILL_1, me);
@@ -269,7 +269,7 @@ public:
                         events.ScheduleEvent(EVENT_WOE_STRIKE, urand(10,14)*IN_MILLISECONDS, 0, PHASE_UNDEAD);
                         break;
                     case EVENT_SHADOW_AXE:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 1))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_TOPAGGRO, 1))
                         {
                             me->SummonCreature(ENTRY_THROW_TARGET, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 2000);
                             DoCast(me, SPELL_SHADOW_AXE_SUMMON);
@@ -304,14 +304,14 @@ class mob_annhylde_the_caller : public CreatureScript
 public:
     mob_annhylde_the_caller() : CreatureScript("mob_annhylde_the_caller") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_annhylde_the_callerAI (creature);
     }
 
     struct mob_annhylde_the_callerAI : public ScriptedAI
     {
-        mob_annhylde_the_callerAI(Creature* creature) : ScriptedAI(creature)
+        mob_annhylde_the_callerAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -333,7 +333,7 @@ public:
             me->GetPosition(x, y, z);
             DoTeleportTo(x+1, y, z+30);
 
-            Unit* ingvar = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_INGVAR) : 0);
+            UnitPtr ingvar = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_INGVAR) : 0);
             if (ingvar)
             {
                 me->GetMotionMaster()->MovePoint(1, x, y, z+15);
@@ -346,7 +346,7 @@ public:
         {
             if (type != POINT_MOTION_TYPE)
                 return;
-            Unit* ingvar = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_INGVAR) : 0);
+            UnitPtr ingvar = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_INGVAR) : 0);
             if (ingvar)
             {
                 switch (id)
@@ -367,9 +367,9 @@ public:
             }
         }
 
-        void AttackStart(Unit* /*who*/) {}
-        void MoveInLineOfSight(Unit* /*who*/) {}
-        void EnterCombat(Unit* /*who*/) {}
+        void AttackStart(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
         void UpdateAI(const uint32 diff)
         {
             if (uiResurectTimer)
@@ -378,7 +378,7 @@ public:
                 {
                     if (uiResurectPhase == 1)
                     {
-                        Unit* ingvar = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_INGVAR) : 0);
+                        UnitPtr ingvar = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_INGVAR) : 0);
                         if (ingvar)
                         {
                             ingvar->SetStandState(UNIT_STAND_STATE_STAND);
@@ -389,7 +389,7 @@ public:
                     }
                     else if (uiResurectPhase == 2)
                     {
-                        if (Creature* ingvar = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_INGVAR) : 0))
+                        if (CreaturePtr ingvar = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_INGVAR) : 0))
                         {
                             ingvar->RemoveAurasDueToSpell(SPELL_SCOURG_RESURRECTION_DUMMY);
 
@@ -419,14 +419,14 @@ class mob_ingvar_throw_dummy : public CreatureScript
 public:
     mob_ingvar_throw_dummy() : CreatureScript("mob_ingvar_throw_dummy") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_ingvar_throw_dummyAI (creature);
     }
 
     struct mob_ingvar_throw_dummyAI : public ScriptedAI
     {
-        mob_ingvar_throw_dummyAI(Creature* creature) : ScriptedAI(creature)
+        mob_ingvar_throw_dummyAI(CreaturePtr creature) : ScriptedAI(creature)
         {
         }
 
@@ -434,7 +434,7 @@ public:
 
         void Reset()
         {
-            Unit* target = me->FindNearestCreature(ENTRY_THROW_TARGET, 50);
+            UnitPtr target = me->FindNearestCreature(ENTRY_THROW_TARGET, 50);
             if (target)
             {
                 DoCast(me, SPELL_SHADOW_AXE_DAMAGE);
@@ -444,9 +444,9 @@ public:
             }
             uiDespawnTimer = 7000;
         }
-        void AttackStart(Unit* /*who*/) {}
-        void MoveInLineOfSight(Unit* /*who*/) {}
-        void EnterCombat(Unit* /*who*/) {}
+        void AttackStart(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {

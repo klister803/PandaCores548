@@ -105,7 +105,7 @@ class boss_auriaya : public CreatureScript
 
         struct boss_auriayaAI : public BossAI
         {
-            boss_auriayaAI(Creature* creature) : BossAI(creature, BOSS_AURIAYA)
+            boss_auriayaAI(CreaturePtr creature) : BossAI(creature, BOSS_AURIAYA)
             {
             }
 
@@ -118,7 +118,7 @@ class boss_auriaya : public CreatureScript
                 nineLives = false;
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 _EnterCombat();
                 DoScriptText(SAY_AGGRO, me);
@@ -131,16 +131,16 @@ class boss_auriaya : public CreatureScript
                 events.ScheduleEvent(EVENT_BERSERK, 600000);
             }
 
-            void KilledUnit(Unit* /*who*/)
+            void KilledUnit(UnitPtr /*who*/)
             {
                 DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
             }
 
-            void JustSummoned(Creature* summoned)
+            void JustSummoned(CreaturePtr summoned)
             {
                 summons.Summon(summoned);
 
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                 {
                     summoned->AI()->AttackStart(target);
                     summoned->AddThreat(target, 250.0f);
@@ -204,7 +204,7 @@ class boss_auriaya : public CreatureScript
                }
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoScriptText(SAY_DEATH, me);
                 _JustDied();
@@ -240,11 +240,11 @@ class boss_auriaya : public CreatureScript
                         case EVENT_DEFENDER:
                             DoScriptText(EMOTE_DEFENDER, me);
                             DoCast(SPELL_DEFENDER_TRIGGER);
-                            if (Creature* trigger = me->FindNearestCreature(NPC_FERAL_DEFENDER_TRIGGER, 15.0f, true))
+                            if (CreaturePtr trigger = me->FindNearestCreature(NPC_FERAL_DEFENDER_TRIGGER, 15.0f, true))
                                 DoCast(trigger, SPELL_ACTIVATE_DEFENDER, true);
                             break;
                         case EVENT_RESPAWN_DEFENDER:
-                            if (Creature* Defender = ObjectAccessor::GetCreature(*me, DefenderGUID))
+                            if (CreaturePtr Defender = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), DefenderGUID))
                             {
                                 Defender->Respawn();
                                 if (defenderLives)
@@ -256,7 +256,7 @@ class boss_auriaya : public CreatureScript
                             }
                             break;
                         case EVENT_SUMMON:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                                 DoCast(target, SPELL_SUMMON_SWARMING_GUARDIAN);
                             events.ScheduleEvent(EVENT_SUMMON, urand(30000, 45000));
                             break;
@@ -278,7 +278,7 @@ class boss_auriaya : public CreatureScript
             bool nineLives;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetUlduarAI<boss_auriayaAI>(creature);
         }
@@ -291,7 +291,7 @@ class npc_auriaya_seeping_trigger : public CreatureScript
 
         struct npc_auriaya_seeping_triggerAI : public ScriptedAI
         {
-            npc_auriaya_seeping_triggerAI(Creature* creature) : ScriptedAI(creature)
+            npc_auriaya_seeping_triggerAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
@@ -312,7 +312,7 @@ class npc_auriaya_seeping_trigger : public CreatureScript
             InstanceScript* instance;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new npc_auriaya_seeping_triggerAI(creature);
         }
@@ -325,7 +325,7 @@ class npc_sanctum_sentry : public CreatureScript
 
         struct npc_sanctum_sentryAI : public ScriptedAI
         {
-            npc_sanctum_sentryAI(Creature* creature) : ScriptedAI(creature)
+            npc_sanctum_sentryAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
@@ -336,7 +336,7 @@ class npc_sanctum_sentry : public CreatureScript
                 events.ScheduleEvent(EVENT_POUNCE, urand(12000, 15000));
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 DoCast(me, SPELL_STRENGHT_PACK, true);
             }
@@ -360,7 +360,7 @@ class npc_sanctum_sentry : public CreatureScript
                             events.ScheduleEvent(EVENT_RIP, urand(12000, 15000));
                             break;
                         case EVENT_POUNCE:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                             {
                                 me->AddThreat(target, 100.0f);
                                 me->AI()->AttackStart(target);
@@ -376,9 +376,9 @@ class npc_sanctum_sentry : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
-                if (Creature* Auriaya = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_AURIAYA)))
+                if (CreaturePtr Auriaya = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_AURIAYA)))
                     Auriaya->AI()->DoAction(ACTION_CRAZY_CAT_LADY);
             }
 
@@ -387,7 +387,7 @@ class npc_sanctum_sentry : public CreatureScript
             EventMap events;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new npc_sanctum_sentryAI(creature);
         }
@@ -400,7 +400,7 @@ class npc_feral_defender : public CreatureScript
 
         struct npc_feral_defenderAI : public ScriptedAI
         {
-            npc_feral_defenderAI(Creature* creature) : ScriptedAI(creature)
+            npc_feral_defenderAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
@@ -426,7 +426,7 @@ class npc_feral_defender : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_FERAL_POUNCE:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                             {
                                 me->AddThreat(target, 100.0f);
                                 me->AI()->AttackStart(target);
@@ -435,7 +435,7 @@ class npc_feral_defender : public CreatureScript
                             events.ScheduleEvent(EVENT_FERAL_POUNCE, urand(10000, 12000));
                             break;
                         case EVENT_RUSH:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                             {
                                 me->AddThreat(target, 100.0f);
                                 me->AI()->AttackStart(target);
@@ -451,10 +451,10 @@ class npc_feral_defender : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoCast(me, SPELL_SUMMON_ESSENCE);
-                if (Creature* Auriaya = ObjectAccessor::GetCreature(*me, instance->GetData64(BOSS_AURIAYA)))
+                if (CreaturePtr Auriaya = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(BOSS_AURIAYA)))
                     Auriaya->AI()->DoAction(ACTION_RESPAWN_DEFENDER);
             }
 
@@ -463,7 +463,7 @@ class npc_feral_defender : public CreatureScript
             EventMap events;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new npc_feral_defenderAI(creature);
         }
@@ -472,7 +472,7 @@ class npc_feral_defender : public CreatureScript
 class SanctumSentryCheck
 {
     public:
-        bool operator()(WorldObject* object) const
+        bool operator()(WorldObjectPtr object) const
         {
             if (object->GetEntry() == NPC_SANCTUM_SENTRY)
                 return false;
@@ -490,7 +490,7 @@ class spell_auriaya_strenght_of_the_pack : public SpellScriptLoader
         {
             PrepareSpellScript(spell_auriaya_strenght_of_the_pack_SpellScript);
 
-            void FilterTargets(std::list<WorldObject*>& unitList)
+            void FilterTargets(std::list<WorldObjectPtr>& unitList)
             {
                 unitList.remove_if(SanctumSentryCheck());
             }
@@ -516,7 +516,7 @@ class spell_auriaya_sentinel_blast : public SpellScriptLoader
         {
             PrepareSpellScript(spell_auriaya_sentinel_blast_SpellScript);
 
-            void FilterTargets(std::list<WorldObject*>& unitList)
+            void FilterTargets(std::list<WorldObjectPtr>& unitList)
             {
                 unitList.remove_if(PlayerOrPetCheck());
             }
@@ -542,12 +542,12 @@ class achievement_nine_lives : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(Player* /*player*/, Unit* target)
+        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
         {
             if (!target)
                 return false;
 
-            if (Creature* Auriaya = target->ToCreature())
+            if (CreaturePtr Auriaya = TO_CREATURE(target))
                 if (Auriaya->AI()->GetData(DATA_NINE_LIVES))
                     return true;
 
@@ -562,12 +562,12 @@ class achievement_crazy_cat_lady : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(Player* /*player*/, Unit* target)
+        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
         {
             if (!target)
                 return false;
 
-            if (Creature* Auriaya = target->ToCreature())
+            if (CreaturePtr Auriaya = TO_CREATURE(target))
                 if (Auriaya->AI()->GetData(DATA_CRAZY_CAT_LADY))
                     return true;
 

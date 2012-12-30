@@ -62,7 +62,7 @@ void BattlegroundBE::StartingEventOpenDoors()
         SpawnBGObject(i, 60);
 }
 
-void BattlegroundBE::AddPlayer(Player* player)
+void BattlegroundBE::AddPlayer(PlayerPtr player)
 {
     Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
@@ -73,7 +73,7 @@ void BattlegroundBE::AddPlayer(Player* player)
     UpdateArenaWorldState();
 }
 
-void BattlegroundBE::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
+void BattlegroundBE::RemovePlayer(PlayerPtr /*Player*/, uint64 /*guid*/, uint32 /*team*/)
 {
     if (GetStatus() == STATUS_WAIT_LEAVE)
         return;
@@ -82,7 +82,7 @@ void BattlegroundBE::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*
     CheckArenaWinConditions();
 }
 
-void BattlegroundBE::HandleKillPlayer(Player* player, Player* killer)
+void BattlegroundBE::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -99,13 +99,13 @@ void BattlegroundBE::HandleKillPlayer(Player* player, Player* killer)
     CheckArenaWinConditions();
 }
 
-bool BattlegroundBE::HandlePlayerUnderMap(Player* player)
+bool BattlegroundBE::HandlePlayerUnderMap(PlayerPtr player)
 {
     player->TeleportTo(GetMapId(), 6238.930176f, 262.963470f, 0.889519f, player->GetOrientation(), false);
     return true;
 }
 
-void BattlegroundBE::HandleAreaTrigger(Player* Source, uint32 Trigger)
+void BattlegroundBE::HandleAreaTrigger(PlayerPtr Source, uint32 Trigger)
 {
     // this is wrong way to implement these things. On official it done by gameobject spell cast.
     if (GetStatus() != STATUS_IN_PROGRESS)
@@ -161,7 +161,7 @@ bool BattlegroundBE::SetupBattleground()
     return true;
 }
 
-void BattlegroundBE::UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor)
+void BattlegroundBE::UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor)
 {
 
     BattlegroundScoreMap::iterator itr = PlayerScores.find(Source->GetGUID());

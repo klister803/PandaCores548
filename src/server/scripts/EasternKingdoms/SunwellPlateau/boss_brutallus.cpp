@@ -72,14 +72,14 @@ class boss_brutallus : public CreatureScript
 public:
     boss_brutallus() : CreatureScript("boss_brutallus") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_brutallusAI (creature);
     }
 
     struct boss_brutallusAI : public ScriptedAI
     {
-        boss_brutallusAI(Creature* creature) : ScriptedAI(creature)
+        boss_brutallusAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             Intro = true;
@@ -120,7 +120,7 @@ public:
                 instance->SetData(DATA_BRUTALLUS_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(YELL_AGGRO, me);
 
@@ -128,12 +128,12 @@ public:
                 instance->SetData(DATA_BRUTALLUS_EVENT, IN_PROGRESS);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(YELL_KILL1, YELL_KILL2, YELL_KILL3), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(YELL_DEATH, me);
 
@@ -156,7 +156,7 @@ public:
         {
             if (!Intro || IsIntro)
                 return;
-            Creature* Madrigosa = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_MADRIGOSA) : 0);
+            CreaturePtr Madrigosa = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_MADRIGOSA) : 0);
             if (Madrigosa)
             {
                 Madrigosa->Respawn();
@@ -183,7 +183,7 @@ public:
             IsIntro = false;
         }
 
-        void AttackStart(Unit* who)
+        void AttackStart(UnitPtr who)
         {
             if (!who || Intro || IsIntro)
                 return;
@@ -192,7 +192,7 @@ public:
 
         void DoIntro()
         {
-            Creature* Madrigosa = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_MADRIGOSA) : 0);
+            CreaturePtr Madrigosa = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_MADRIGOSA) : 0);
             if (!Madrigosa)
                 return;
 
@@ -268,7 +268,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (!me->IsValidAttackTarget(who))
                 return;
@@ -293,7 +293,7 @@ public:
                 {
                     if (IntroFrostBoltTimer <= diff)
                     {
-                        if (Creature* Madrigosa = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_MADRIGOSA) : 0))
+                        if (CreaturePtr Madrigosa = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_MADRIGOSA) : 0))
                         {
                             Madrigosa->CastSpell(me, SPELL_INTRO_FROSTBOLT, true);
                             IntroFrostBoltTimer = 2000;
@@ -323,9 +323,9 @@ public:
 
             if (BurnTimer <= diff)
             {
-                std::list<Unit*> targets;
+                std::list<UnitPtr> targets;
                 SelectTargetList(targets, 10, SELECT_TARGET_RANDOM, 100, true);
-                for (std::list<Unit*>::const_iterator i = targets.begin(); i != targets.end(); ++i)
+                for (std::list<UnitPtr>::const_iterator i = targets.begin(); i != targets.end(); ++i)
                     if (!(*i)->HasAura(SPELL_BURN))
                     {
                         (*i)->CastSpell((*i), SPELL_BURN, true);

@@ -53,14 +53,14 @@ class boss_pyroguard_emberseer : public CreatureScript
 public:
     boss_pyroguard_emberseer() : CreatureScript("boss_pyroguard_emberseer") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_pyroguard_emberseerAI(creature);
     }
 
     struct boss_pyroguard_emberseerAI : public BossAI
     {
-        boss_pyroguard_emberseerAI(Creature* creature) : BossAI(creature, DATA_PYROGAURD_EMBERSEER) {}
+        boss_pyroguard_emberseerAI(CreaturePtr creature) : BossAI(creature, DATA_PYROGAURD_EMBERSEER) {}
 
         void Reset()
         {
@@ -73,7 +73,7 @@ public:
             _Reset();
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_FIRENOVA,    6 * IN_MILLISECONDS);
@@ -81,7 +81,7 @@ public:
             events.ScheduleEvent(EVENT_PYROBLAST,  14 * IN_MILLISECONDS);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             instance->SetBossState(DATA_PYROGAURD_EMBERSEER,DONE);
             OpenDoors(true);
@@ -90,12 +90,12 @@ public:
 
        void OpenDoors(bool Boss_Killed)
        {
-           if (GameObject* door1 = me->GetMap()->GetGameObject(instance->GetData64(GO_EMBERSEER_IN)))
+           if (GameObjectPtr door1 = me->GetMap()->GetGameObject(instance->GetData64(GO_EMBERSEER_IN)))
                door1->SetGoState(GO_STATE_ACTIVE);
-           if (GameObject* door2 = me->GetMap()->GetGameObject(instance->GetData64(GO_DOORS)))
+           if (GameObjectPtr door2 = me->GetMap()->GetGameObject(instance->GetData64(GO_DOORS)))
                door2->SetGoState(GO_STATE_ACTIVE);
            if (Boss_Killed)
-               if (GameObject* door3 = me->GetMap()->GetGameObject(instance->GetData64(GO_EMBERSEER_OUT)))
+               if (GameObjectPtr door3 = me->GetMap()->GetGameObject(instance->GetData64(GO_EMBERSEER_OUT)))
                     door3->SetGoState(GO_STATE_ACTIVE);
        }
 
@@ -123,7 +123,7 @@ public:
                         events.ScheduleEvent(EVENT_FLAMEBUFFET, 14 * IN_MILLISECONDS);
                         break;
                     case EVENT_PYROBLAST:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             DoCast(target, SPELL_PYROBLAST);
                         events.ScheduleEvent(EVENT_PYROBLAST, 15 * IN_MILLISECONDS);
                         break;

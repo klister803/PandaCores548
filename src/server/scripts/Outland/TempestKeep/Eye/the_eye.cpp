@@ -47,7 +47,7 @@ class mob_crystalcore_devastator : public CreatureScript
         }
         struct mob_crystalcore_devastatorAI : public ScriptedAI
         {
-            mob_crystalcore_devastatorAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_crystalcore_devastatorAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
             uint32 Knockaway_Timer;
             uint32 Countercharge_Timer;
@@ -58,7 +58,7 @@ class mob_crystalcore_devastator : public CreatureScript
                 Knockaway_Timer = 25000;
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
             }
 
@@ -74,7 +74,7 @@ class mob_crystalcore_devastator : public CreatureScript
                     DoCast(me->getVictim(), SPELL_KNOCKAWAY, true);
 
                     // current aggro target is knocked away pick new target
-                    Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0);
+                    UnitPtr target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0);
 
                     if (!target || target == me->getVictim())
                         target = SelectTarget(SELECT_TARGET_TOPAGGRO, 1);
@@ -100,7 +100,7 @@ class mob_crystalcore_devastator : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_crystalcore_devastatorAI(creature);
         }

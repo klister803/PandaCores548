@@ -26,7 +26,7 @@ class instance_ruins_of_ahnqiraj : public InstanceMapScript
 
         struct instance_ruins_of_ahnqiraj_InstanceMapScript : public InstanceScript
         {
-            instance_ruins_of_ahnqiraj_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_ruins_of_ahnqiraj_InstanceMapScript(MapPtr map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
 
@@ -38,7 +38,7 @@ class instance_ruins_of_ahnqiraj : public InstanceMapScript
                 _ossirianGUID   = 0;
             }
 
-            void OnCreatureCreate(Creature* creature)
+            void OnCreatureCreate(CreaturePtr creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -144,7 +144,7 @@ class instance_ruins_of_ahnqiraj : public InstanceMapScript
             uint64 _ossirianGUID;
         };
 
-        InstanceScript* GetInstanceScript(InstanceMap* map) const
+        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
         {
             return new instance_ruins_of_ahnqiraj_InstanceMapScript(map);
         }

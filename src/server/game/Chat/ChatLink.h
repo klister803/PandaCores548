@@ -56,7 +56,7 @@ protected:
 class ItemChatLink : public ChatLink
 {
 public:
-    ItemChatLink() : ChatLink(), _item(NULL), _suffix(NULL), _property(NULL) { }
+    ItemChatLink() : ChatLink(), _item(nullptr), _suffix(nullptr), _property(nullptr) { }
     virtual bool Initialize(std::istringstream& iss);
     virtual bool ValidateName(char* buffer, const char* context);
 
@@ -73,7 +73,7 @@ protected:
 class QuestChatLink : public ChatLink
 {
 public:
-    QuestChatLink() : ChatLink(), _quest(NULL), _questLevel(0) { }
+    QuestChatLink() : ChatLink(), _quest(nullptr), _questLevel(0) { }
     virtual bool Initialize(std::istringstream& iss);
     virtual bool ValidateName(char* buffer, const char* context);
 
@@ -86,7 +86,7 @@ protected:
 class SpellChatLink : public ChatLink
 {
 public:
-    SpellChatLink() : ChatLink(), _spell(NULL) { }
+    SpellChatLink() : ChatLink(), _spell(nullptr) { }
     virtual bool Initialize(std::istringstream& iss);
     virtual bool ValidateName(char* buffer, const char* context);
 
@@ -98,7 +98,7 @@ protected:
 class AchievementChatLink : public ChatLink
 {
 public:
-    AchievementChatLink() : ChatLink(), _guid(0), _achievement(NULL) { }
+    AchievementChatLink() : ChatLink(), _guid(0), _achievement(nullptr) { }
     virtual bool Initialize(std::istringstream& iss);
     virtual bool ValidateName(char* buffer, const char* context);
 
@@ -145,7 +145,7 @@ public:
 class GlyphChatLink : public SpellChatLink
 {
 public:
-    GlyphChatLink() : SpellChatLink(), _slotId(0), _glyph(NULL) { }
+    GlyphChatLink() : SpellChatLink(), _slotId(0), _glyph(nullptr) { }
     virtual bool Initialize(std::istringstream& iss);
 private:
     uint32 _slotId;

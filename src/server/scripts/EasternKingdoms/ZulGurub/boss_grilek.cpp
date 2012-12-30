@@ -39,7 +39,7 @@ class boss_grilek : public CreatureScript
 
         struct boss_grilekAI : public BossAI
         {
-            boss_grilekAI(Creature* creature) : BossAI(creature, DATA_GRILEK)
+            boss_grilekAI(CreaturePtr creature) : BossAI(creature, DATA_GRILEK)
             {
             }
 
@@ -47,11 +47,11 @@ class boss_grilek : public CreatureScript
             {
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
             }
 
@@ -79,7 +79,7 @@ class boss_grilek : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_grilekAI(creature);
         }

@@ -186,14 +186,14 @@ class boss_xt002 : public CreatureScript
     public:
         boss_xt002() : CreatureScript("boss_xt002") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetUlduarAI<boss_xt002_AI>(creature);
         }
 
         struct boss_xt002_AI : public BossAI
         {
-            boss_xt002_AI(Creature* creature) : BossAI(creature, BOSS_XT002)
+            boss_xt002_AI(CreaturePtr creature) : BossAI(creature, BOSS_XT002)
             {
             }
 
@@ -218,7 +218,7 @@ class boss_xt002 : public CreatureScript
                 instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_MUST_DECONSTRUCT_FASTER);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 DoScriptText(SAY_AGGRO, me);
                 _EnterCombat();
@@ -245,18 +245,18 @@ class boss_xt002 : public CreatureScript
                 }
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoScriptText(SAY_DEATH, me);
                 _JustDied();
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
             {
                 if (!_hardMode && _phase == 1 && !HealthAbovePct(100 - 25 * (_heartExposed+1)))
                     ExposeHeart();
@@ -277,13 +277,13 @@ class boss_xt002 : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_SEARING_LIGHT:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, RAID_MODE(SPELL_SEARING_LIGHT_10, SPELL_SEARING_LIGHT_25));
 
                             events.ScheduleEvent(EVENT_SEARING_LIGHT, TIMER_SEARING_LIGHT);
                             break;
                         case EVENT_GRAVITY_BOMB:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, RAID_MODE(SPELL_GRAVITY_BOMB_10, SPELL_GRAVITY_BOMB_25));
 
                             events.ScheduleEvent(EVENT_GRAVITY_BOMB, TIMER_GRAVITY_BOMB);
@@ -314,7 +314,7 @@ class boss_xt002 : public CreatureScript
                     DoMeleeAttackIfReady();
             }
 
-            void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
+            void PassengerBoarded(UnitPtr who, int8 /*seatId*/, bool apply)
             {
                 if (apply && who->GetEntry() == NPC_XS013_SCRAPBOT)
                 {
@@ -362,7 +362,7 @@ class boss_xt002 : public CreatureScript
                 me->AttackStop();
                 me->SetReactState(REACT_PASSIVE);
 
-                Unit* heart = me->GetVehicleKit() ? me->GetVehicleKit()->GetPassenger(HEART_VEHICLE_SEAT_NORMAL) : NULL;
+                UnitPtr heart = me->GetVehicleKit() ? me->GetVehicleKit()->GetPassenger(HEART_VEHICLE_SEAT_NORMAL) : nullptr;
                 if (heart)
                 {
                     heart->CastSpell(heart, SPELL_HEART_OVERLOAD, false);
@@ -399,7 +399,7 @@ class boss_xt002 : public CreatureScript
                 events.RescheduleEvent(EVENT_GRAVITY_BOMB, TIMER_GRAVITY_BOMB);
                 events.RescheduleEvent(EVENT_TYMPANIC_TANTRUM, urand(TIMER_TYMPANIC_TANTRUM_MIN, TIMER_TYMPANIC_TANTRUM_MAX));
 
-                Unit* heart = me->GetVehicleKit() ? me->GetVehicleKit()->GetPassenger(HEART_VEHICLE_SEAT_EXPOSED) : NULL;
+                UnitPtr heart = me->GetVehicleKit() ? me->GetVehicleKit()->GetPassenger(HEART_VEHICLE_SEAT_EXPOSED) : nullptr;
                 if (!heart)
                     return;
 
@@ -442,16 +442,16 @@ class mob_xt002_heart : public CreatureScript
 
         struct mob_xt002_heartAI : public Scripted_NoMovementAI
         {
-            mob_xt002_heartAI(Creature* creature) : Scripted_NoMovementAI(creature),
+            mob_xt002_heartAI(CreaturePtr creature) : Scripted_NoMovementAI(creature),
                 _instance(creature->GetInstanceScript())
             {
             }
 
             void UpdateAI(uint32 const /*diff*/) { }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
-                Creature* xt002 = _instance ? me->GetCreature(*me, _instance->GetData64(BOSS_XT002)) : NULL;
+                CreaturePtr xt002 = _instance ? me->GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(BOSS_XT002)) : nullptr;
                 if (!xt002 || !xt002->AI())
                     return;
 
@@ -463,7 +463,7 @@ class mob_xt002_heart : public CreatureScript
             InstanceScript* _instance;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_xt002_heartAI(creature);
         }
@@ -479,14 +479,14 @@ class mob_scrapbot : public CreatureScript
     public:
         mob_scrapbot() : CreatureScript("mob_scrapbot") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_scrapbotAI(creature);
         }
 
         struct mob_scrapbotAI : public ScriptedAI
         {
-            mob_scrapbotAI(Creature* creature) : ScriptedAI(creature)
+            mob_scrapbotAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 _instance = me->GetInstanceScript();
             }
@@ -497,7 +497,7 @@ class mob_scrapbot : public CreatureScript
 
                 _rangeCheckTimer = 500;
 
-                if (Creature* pXT002 = me->GetCreature(*me, _instance->GetData64(BOSS_XT002)))
+                if (CreaturePtr pXT002 = me->GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(BOSS_XT002)))
                     me->GetMotionMaster()->MoveFollow(pXT002, 0.0f, 0.0f);
             }
 
@@ -505,7 +505,7 @@ class mob_scrapbot : public CreatureScript
             {
                 if (_rangeCheckTimer <= diff)
                 {
-                    if (Creature* xt002 = me->GetCreature(*me, _instance->GetData64(BOSS_XT002)))
+                    if (CreaturePtr xt002 = me->GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(BOSS_XT002)))
                     {
                         if (me->IsWithinMeleeRange(xt002))
                         {
@@ -536,14 +536,14 @@ class mob_pummeller : public CreatureScript
     public:
         mob_pummeller() : CreatureScript("mob_pummeller") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_pummellerAI(creature);
         }
 
         struct mob_pummellerAI : public ScriptedAI
         {
-            mob_pummellerAI(Creature* creature) : ScriptedAI(creature)
+            mob_pummellerAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 _instance = creature->GetInstanceScript();
             }
@@ -554,7 +554,7 @@ class mob_pummeller : public CreatureScript
                 _trampleTimer = TIMER_TRAMPLE;
                 _uppercutTimer = TIMER_UPPERCUT;
 
-                if (Creature* xt002 = me->GetCreature(*me, _instance->GetData64(BOSS_XT002)))
+                if (CreaturePtr xt002 = me->GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(BOSS_XT002)))
                 {
                     Position pos;
                     xt002->GetPosition(&pos);
@@ -613,7 +613,7 @@ class mob_pummeller : public CreatureScript
 class BoomEvent : public BasicEvent
 {
     public:
-        BoomEvent(Creature* me) : _me(me)
+        BoomEvent(CreaturePtr me) : _me(me)
         {
         }
 
@@ -630,7 +630,7 @@ class BoomEvent : public BasicEvent
         }
 
     private:
-        Creature* _me;
+        CreaturePtr _me;
 };
 
 class mob_boombot : public CreatureScript
@@ -638,14 +638,14 @@ class mob_boombot : public CreatureScript
     public:
         mob_boombot() : CreatureScript("mob_boombot") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_boombotAI(creature);
         }
 
         struct mob_boombotAI : public ScriptedAI
         {
-            mob_boombotAI(Creature* creature) : ScriptedAI(creature)
+            mob_boombotAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 _instance = creature->GetInstanceScript();
             }
@@ -663,11 +663,11 @@ class mob_boombot : public CreatureScript
                 me->SetFloatValue(UNIT_FIELD_MAXDAMAGE, 18000.0f);
 
                 // Todo: proper waypoints?
-                if (Creature* pXT002 = me->GetCreature(*me, _instance->GetData64(BOSS_XT002)))
+                if (CreaturePtr pXT002 = me->GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(BOSS_XT002)))
                     me->GetMotionMaster()->MoveFollow(pXT002, 0.0f, 0.0f);
             }
 
-            void DamageTaken(Unit* /*who*/, uint32& damage)
+            void DamageTaken(UnitPtr /*who*/, uint32& damage)
             {
                 if (damage >= (me->GetHealth() - me->GetMaxHealth() * 0.5f) && !_boomed)
                 {
@@ -679,7 +679,7 @@ class mob_boombot : public CreatureScript
                     data << uint32(SPELL_BOOM);
                     me->SendMessageToSet(&data, false);
 
-                    me->DealDamage(me, me->GetHealth(), NULL, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                    me->DealDamage(me, me->GetHealth(), nullptr, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
 
                     damage = 0;
 
@@ -717,14 +717,14 @@ class mob_life_spark : public CreatureScript
     public:
         mob_life_spark() : CreatureScript("mob_life_spark") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_life_sparkAI(creature);
         }
 
         struct mob_life_sparkAI : public ScriptedAI
         {
-            mob_life_sparkAI(Creature* creature) : ScriptedAI(creature)
+            mob_life_sparkAI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
 
@@ -773,8 +773,8 @@ class spell_xt002_searing_light_spawn_life_spark : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
-                if (Player* player = GetOwner()->ToPlayer())
-                    if (Unit* xt002 = GetCaster())
+                if (PlayerPtr player = TO_PLAYER(GetOwner()))
+                    if (UnitPtr xt002 = GetCaster())
                         if (xt002->HasAura(aurEff->GetAmount()))   // Heartbreak aura indicating hard mode
                             player->CastSpell(player, SPELL_SUMMON_LIFE_SPARK, true);
             }
@@ -809,19 +809,19 @@ class spell_xt002_gravity_bomb_aura : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
-                if (Player* player = GetOwner()->ToPlayer())
-                    if (Unit* xt002 = GetCaster())
+                if (PlayerPtr player = TO_PLAYER(GetOwner()))
+                    if (UnitPtr xt002 = GetCaster())
                         if (xt002->HasAura(aurEff->GetAmount()))   // Heartbreak aura indicating hard mode
                             player->CastSpell(player, SPELL_SUMMON_VOID_ZONE, true);
             }
 
             void OnPeriodic(constAuraEffectPtr aurEff)
             {
-                Unit* xt002 = GetCaster();
+                UnitPtr xt002 = GetCaster();
                 if (!xt002)
                     return;
 
-                Unit* owner = GetOwner()->ToUnit();
+                UnitPtr owner = TO_UNIT(GetOwner());
                 if (!owner)
                     return;
 
@@ -854,7 +854,7 @@ class spell_xt002_gravity_bomb_damage : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*eff*/)
             {
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 if (!caster)
                     return;
 
@@ -903,11 +903,11 @@ class spell_xt002_heart_overload_periodic : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                 {
                     if (InstanceScript* instance = caster->GetInstanceScript())
                     {
-                        if (Unit* toyPile = ObjectAccessor::GetUnit(*caster, instance->GetData64(DATA_TOY_PILE_0 + urand(0, 3))))
+                        if (UnitPtr toyPile = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(caster), instance->GetData64(DATA_TOY_PILE_0 + urand(0, 3))))
                         {
                             caster->CastSpell(toyPile, SPELL_ENERGY_ORB, true);
 
@@ -920,7 +920,7 @@ class spell_xt002_heart_overload_periodic : public SpellScriptLoader
                             {
                                 uint8 a = urand(0, 4);
                                 uint32 spellId = spells[a];
-                                toyPile->CastSpell(toyPile, spellId, true, NULL, NULL, instance->GetData64(BOSS_XT002));
+                                toyPile->CastSpell(toyPile, spellId, true, nullptr, nullptr, instance->GetData64(BOSS_XT002));
                             }
                         }
                     }
@@ -950,7 +950,7 @@ class spell_xt002_tympanic_tantrum : public SpellScriptLoader
         {
             PrepareSpellScript(spell_xt002_tympanic_tantrum_SpellScript);
 
-            void FilterTargets(std::list<WorldObject*>& targets)
+            void FilterTargets(std::list<WorldObjectPtr>& targets)
             {
                 targets.remove_if(PlayerOrPetCheck());
             }
@@ -986,7 +986,7 @@ class spell_xt002_submerged : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*eff*/)
             {
-                Creature* target = GetHitCreature();
+                CreaturePtr target = GetHitCreature();
                 if (!target)
                     return;
 
@@ -1017,7 +1017,7 @@ class spell_xt002_stand : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*eff*/)
             {
-                Creature* target = GetHitCreature();
+                CreaturePtr target = GetHitCreature();
                 if (!target)
                     return;
 
@@ -1042,7 +1042,7 @@ class achievement_nerf_engineering : public AchievementCriteriaScript
     public:
         achievement_nerf_engineering() : AchievementCriteriaScript("achievement_nerf_engineering") { }
 
-        bool OnCheck(Player* /*source*/, Unit* target)
+        bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
         {
             if (!target || !target->GetAI())
                 return false;
@@ -1056,7 +1056,7 @@ class achievement_heartbreaker : public AchievementCriteriaScript
     public:
         achievement_heartbreaker() : AchievementCriteriaScript("achievement_heartbreaker") { }
 
-        bool OnCheck(Player* /*source*/, Unit* target)
+        bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
         {
             if (!target || !target->GetAI())
                 return false;
@@ -1070,7 +1070,7 @@ class achievement_nerf_gravity_bombs : public AchievementCriteriaScript
     public:
         achievement_nerf_gravity_bombs() : AchievementCriteriaScript("achievement_nerf_gravity_bombs") { }
 
-        bool OnCheck(Player* /*source*/, Unit* target)
+        bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
         {
             if (!target || !target->GetAI())
                 return false;

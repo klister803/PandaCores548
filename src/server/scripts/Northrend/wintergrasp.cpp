@@ -114,7 +114,7 @@ class npc_wg_demolisher_engineer : public CreatureScript
     public:
         npc_wg_demolisher_engineer() : CreatureScript("npc_wg_demolisher_engineer") { }
 
-        bool OnGossipHello(Player* player, Creature* creature)
+        bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
         {
             if (creature->isQuestGiver())
                 player->PrepareQuestMenu(creature->GetGUID());
@@ -137,7 +137,7 @@ class npc_wg_demolisher_engineer : public CreatureScript
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+        bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
         {
             player->CLOSE_GOSSIP_MENU();
 
@@ -155,14 +155,14 @@ class npc_wg_demolisher_engineer : public CreatureScript
                         creature->CastSpell(player, player->GetTeamId() == TEAM_ALLIANCE ? SPELL_BUILD_SIEGE_VEHICLE_FORCE_ALLIANCE : SPELL_BUILD_SIEGE_VEHICLE_FORCE_HORDE, true);
                         break;
                 }
-                if (Creature* controlArms = creature->FindNearestCreature(NPC_WINTERGRASP_CONTROL_ARMS, 30.0f, true))
+                if (CreaturePtr controlArms = creature->FindNearestCreature(NPC_WINTERGRASP_CONTROL_ARMS, 30.0f, true))
                     creature->CastSpell(controlArms, SPELL_ACTIVATE_CONTROL_ARMS, true);
             }
             return true;
         }
 
     private:
-        bool canBuild(Creature* creature)
+        bool canBuild(CreaturePtr creature)
         {
             Battlefield* wintergrasp = sBattlefieldMgr->GetBattlefieldByBattleId(BATTLEFIELD_BATTLEID_WG);
             if (!wintergrasp)
@@ -185,7 +185,7 @@ class npc_wg_spirit_guide : public CreatureScript
     public:
         npc_wg_spirit_guide() : CreatureScript("npc_wg_spirit_guide") { }
 
-        bool OnGossipHello(Player* player, Creature* creature)
+        bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
         {
             if (creature->isQuestGiver())
                 player->PrepareQuestMenu(creature->GetGUID());
@@ -203,7 +203,7 @@ class npc_wg_spirit_guide : public CreatureScript
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
+        bool OnGossipSelect(PlayerPtr player, CreaturePtr /*CreaturePtr/, uint32 /*sender*/, uint32 action)
         {
             player->CLOSE_GOSSIP_MENU();
 
@@ -221,7 +221,7 @@ class npc_wg_spirit_guide : public CreatureScript
 
         struct npc_wg_spirit_guideAI : public ScriptedAI
         {
-            npc_wg_spirit_guideAI(Creature* creature) : ScriptedAI(creature) { }
+            npc_wg_spirit_guideAI(CreaturePtr creature) : ScriptedAI(creature) { }
 
             void UpdateAI(uint32 const /*diff*/)
             {
@@ -230,7 +230,7 @@ class npc_wg_spirit_guide : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new npc_wg_spirit_guideAI(creature);
         }
@@ -241,7 +241,7 @@ class npc_wg_queue : public CreatureScript
     public:
         npc_wg_queue() : CreatureScript("npc_wg_queue") { }
 
-        bool OnGossipHello(Player* player, Creature* creature)
+        bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
         {
             if (creature->isQuestGiver())
                 player->PrepareQuestMenu(creature->GetGUID());
@@ -258,7 +258,7 @@ class npc_wg_queue : public CreatureScript
             else
             {
                 uint32 timer = wintergrasp->GetTimer() / 1000;
-                player->SendUpdateWorldState(4354, time(NULL) + timer);
+                player->SendUpdateWorldState(4354, time(nullptr) + timer);
                 if (timer < 15 * MINUTE)
                 {
                     player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, sObjectMgr->GetTrinityStringForDBCLocale(WG_NPCQUEUE_TEXTOPTION_JOIN), GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF);
@@ -270,7 +270,7 @@ class npc_wg_queue : public CreatureScript
             return true;
         }
 
-        bool OnGossipSelect(Player* player, Creature* /*creature*/ , uint32 /*sender*/ , uint32 /*action*/)
+        bool OnGossipSelect(PlayerPtr player, CreaturePtr /*CreaturePtr/ , uint32 /*sender*/ , uint32 /*action*/)
         {
             player->CLOSE_GOSSIP_MENU();
 
@@ -297,7 +297,7 @@ class go_wg_vehicle_teleporter : public GameObjectScript
 
         struct go_wg_vehicle_teleporterAI : public GameObjectAI
         {
-            go_wg_vehicle_teleporterAI(GameObject* gameObject) : GameObjectAI(gameObject), _checkTimer(1000) { }
+            go_wg_vehicle_teleporterAI(GameObjectPtr gameObject) : GameObjectAI(gameObject), _checkTimer(1000) { }
 
             void UpdateAI(uint32 diff)
             {
@@ -306,9 +306,9 @@ class go_wg_vehicle_teleporter : public GameObjectScript
                     if (Battlefield* wg = sBattlefieldMgr->GetBattlefieldByBattleId(BATTLEFIELD_BATTLEID_WG))
                         // Tabulation madness in the hole!
                         for (uint8 i = 0; i < MAX_WINTERGRASP_VEHICLES; i++)
-                            if (Creature* vehicleCreature = go->FindNearestCreature(vehiclesList[i], 3.0f, true))
+                            if (CreaturePtr vehicleCreature = go->FindNearestCreature(vehiclesList[i], 3.0f, true))
                                 if (!vehicleCreature->HasAura(SPELL_VEHICLE_TELEPORT) && vehicleCreature->getFaction() == WintergraspFaction[wg->GetDefenderTeam()])
-                                    if (Creature* teleportTrigger = vehicleCreature->FindNearestCreature(NPC_WORLD_TRIGGER_LARGE_AOI_NOT_IMMUNE_PC_NPC, 100.0f, true))
+                                    if (CreaturePtr teleportTrigger = vehicleCreature->FindNearestCreature(NPC_WORLD_TRIGGER_LARGE_AOI_NOT_IMMUNE_PC_NPC, 100.0f, true))
                                         teleportTrigger->CastSpell(vehicleCreature, SPELL_VEHICLE_TELEPORT, true);
 
                     _checkTimer = 1000;
@@ -320,7 +320,7 @@ class go_wg_vehicle_teleporter : public GameObjectScript
               uint32 _checkTimer;
         };
 
-        GameObjectAI* GetAI(GameObject* go) const
+        GameObjectAI* GetAI(GameObjectPtr go) const
         {
             return new go_wg_vehicle_teleporterAI(go);
         }
@@ -331,7 +331,7 @@ class npc_wg_quest_giver : public CreatureScript
     public:
         npc_wg_quest_giver() : CreatureScript("npc_wg_quest_giver") { }
 
-        bool OnGossipHello(Player* player, Creature* creature)
+        bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
         {
             if (creature->isQuestGiver())
                 player->PrepareQuestMenu(creature->GetGUID());
@@ -501,7 +501,7 @@ class spell_wintergrasp_grab_passenger : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*effIndex*/)
             {
-                if (Player* target = GetHitPlayer())
+                if (PlayerPtr target = GetHitPlayer())
                     target->CastSpell(GetCaster(), SPELL_RIDE_WG_VEHICLE, false);
             }
 
@@ -522,17 +522,17 @@ class achievement_wg_didnt_stand_a_chance : public AchievementCriteriaScript
 public:
     achievement_wg_didnt_stand_a_chance() : AchievementCriteriaScript("achievement_wg_didnt_stand_a_chance") { }
 
-    bool OnCheck(Player* source, Unit* target)
+    bool OnCheck(PlayerPtr source, UnitPtr target)
     {
         if (!target)
             return false;
 
-        if (Player* victim = target->ToPlayer())
+        if (PlayerPtr victim = TO_PLAYER(target))
         {
             if (!victim->IsMounted())
                 return false;
 
-            if (Vehicle* vehicle = source->GetVehicle())
+            if (VehiclePtr vehicle = source->GetVehicle())
                 if (vehicle->GetVehicleInfo()->m_ID == 244) // Wintergrasp Tower Cannon
                     return true;
         }
@@ -553,7 +553,7 @@ public:
         SpellCastResult CheckCast()
         {
             if (Battlefield* wg = sBattlefieldMgr->GetBattlefieldByBattleId(BATTLEFIELD_BATTLEID_WG))
-                if (Player* target = GetExplTargetUnit()->ToPlayer())
+                if (PlayerPtr target = TO_PLAYER(GetExplTargetUnit()))
                     if (target->GetTeamId() != wg->GetDefenderTeam())
                         return SPELL_FAILED_BAD_TARGETS;
             return SPELL_CAST_OK;

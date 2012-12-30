@@ -162,20 +162,20 @@ namespace Trinity
             return baseGain;
         }
 
-        inline uint32 Gain(Player* player, Unit* u)
+        inline uint32 Gain(PlayerPtr player, UnitPtr u)
         {
             uint32 gain;
 
             if (u->GetTypeId() == TYPEID_UNIT &&
-                (((Creature*)u)->isTotem() || ((Creature*)u)->isPet() ||
-                (((Creature*)u)->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_XP_AT_KILL) ||
-                ((Creature*)u)->GetCreatureTemplate()->type == CREATURE_TYPE_CRITTER))
+                ((TO_CREATURE(u))->isTotem() || (TO_CREATURE(u))->isPet() ||
+                ((TO_CREATURE(u))->GetCreatureTemplate()->flags_extra & CREATURE_FLAG_EXTRA_NO_XP_AT_KILL) ||
+                (TO_CREATURE(u))->GetCreatureTemplate()->type == CREATURE_TYPE_CRITTER))
                 gain = 0;
             else
             {
                 gain = BaseGain(player->getLevel(), u->getLevel(), GetContentLevelsForMapAndZone(u->GetMapId(), u->GetZoneId()));
 
-                if (gain != 0 && u->GetTypeId() == TYPEID_UNIT && ((Creature*)u)->isElite())
+                if (gain != 0 && u->GetTypeId() == TYPEID_UNIT && (TO_CREATURE(u))->isElite())
                 {
                     // Elites in instances have a 2.75x XP bonus instead of the regular 2x world bonus.
                     if (u->GetMap() && u->GetMap()->IsDungeon())

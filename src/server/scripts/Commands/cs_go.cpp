@@ -37,24 +37,24 @@ public:
     {
         static ChatCommand goCommandTable[] =
         {
-            { "creature",       SEC_MODERATOR,      false, &HandleGoCreatureCommand,          "", NULL },
-            { "graveyard",      SEC_MODERATOR,      false, &HandleGoGraveyardCommand,         "", NULL },
-            { "grid",           SEC_MODERATOR,      false, &HandleGoGridCommand,              "", NULL },
-            { "object",         SEC_MODERATOR,      false, &HandleGoObjectCommand,            "", NULL },
-            { "taxinode",       SEC_MODERATOR,      false, &HandleGoTaxinodeCommand,          "", NULL },
-            { "trigger",        SEC_MODERATOR,      false, &HandleGoTriggerCommand,           "", NULL },
-            { "zonexy",         SEC_MODERATOR,      false, &HandleGoZoneXYCommand,            "", NULL },
-            { "xyz",            SEC_MODERATOR,      false, &HandleGoXYZCommand,               "", NULL },
-            { "ticket",         SEC_MODERATOR,      false, &HandleGoTicketCommand,            "", NULL },
-            { "z",              SEC_MODERATOR,      false, &HandleGoZCommand,                 "", NULL },
-            { "",               SEC_MODERATOR,      false, &HandleGoXYZCommand,               "", NULL },
-            { NULL,             0,                  false, NULL,                              "", NULL }
+            { "creature",       SEC_MODERATOR,      false, &HandleGoCreatureCommand,          "", nullptr },
+            { "graveyard",      SEC_MODERATOR,      false, &HandleGoGraveyardCommand,         "", nullptr },
+            { "grid",           SEC_MODERATOR,      false, &HandleGoGridCommand,              "", nullptr },
+            { "object",         SEC_MODERATOR,      false, &HandleGoObjectCommand,            "", nullptr },
+            { "taxinode",       SEC_MODERATOR,      false, &HandleGoTaxinodeCommand,          "", nullptr },
+            { "trigger",        SEC_MODERATOR,      false, &HandleGoTriggerCommand,           "", nullptr },
+            { "zonexy",         SEC_MODERATOR,      false, &HandleGoZoneXYCommand,            "", nullptr },
+            { "xyz",            SEC_MODERATOR,      false, &HandleGoXYZCommand,               "", nullptr },
+            { "ticket",         SEC_MODERATOR,      false, &HandleGoTicketCommand,            "", nullptr },
+            { "z",              SEC_MODERATOR,      false, &HandleGoZCommand,                 "", nullptr },
+            { "",               SEC_MODERATOR,      false, &HandleGoXYZCommand,               "", nullptr },
+            { nullptr,          0,                  false, nullptr,                           "", nullptr }
         };
 
         static ChatCommand commandTable[] =
         {
-            { "go",             SEC_MODERATOR,      false, NULL,                     "", goCommandTable },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "go",             SEC_MODERATOR,      false, nullptr,                     "", goCommandTable },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
         return commandTable;
     }
@@ -75,7 +75,7 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         // "id" or number or [name] Shift-click form |color|Hcreature_entry:creature_id|h[name]|h|r
         char* param1 = handler->extractKeyFromLink((char*)args, "Hcreature");
@@ -89,7 +89,7 @@ public:
         {
             // Get the "creature_template.entry"
             // number or [name] Shift-click form |color|Hcreature_entry:creature_id|h[name]|h|r
-            char* tail = strtok(NULL, "");
+            char* tail = strtok(nullptr, "");
             if (!tail)
                 return false;
             char* id = handler->extractKeyFromLink(tail, "Hcreature_entry");
@@ -137,7 +137,7 @@ public:
         uint32 id = fields[6].GetUInt32();
 
         // if creature is in same map with caster go at its current location
-        if (Creature* creature = sObjectAccessor->GetCreature(*player, MAKE_NEW_GUID(guid, id, HIGHGUID_UNIT)))
+        if (CreaturePtr creature = sObjectAccessor->GetCreature(TO_CONST_WORLDOBJECT(player), MAKE_NEW_GUID(guid, id, HIGHGUID_UNIT)))
         {
             x = creature->GetPositionX();
             y = creature->GetPositionY();
@@ -168,7 +168,7 @@ public:
 
     static bool HandleGoGraveyardCommand(ChatHandler* handler, char const* args)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (!*args)
             return false;
@@ -217,11 +217,11 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         char* gridX = strtok((char*)args, " ");
-        char* gridY = strtok(NULL, " ");
-        char* id = strtok(NULL, " ");
+        char* gridY = strtok(nullptr, " ");
+        char* id = strtok(nullptr, " ");
 
         if (!gridX || !gridY)
             return false;
@@ -249,7 +249,7 @@ public:
         else
             player->SaveRecallPosition();
 
-        Map const* map = sMapMgr->CreateBaseMap(mapId);
+        constMapPtr map = sMapMgr->CreateBaseMap(mapId);
         float z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
 
         player->TeleportTo(mapId, x, y, z, player->GetOrientation());
@@ -262,7 +262,7 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         // number or [name] Shift-click form |color|Hgameobject:go_guid|h[name]|h|r
         char* id = handler->extractKeyFromLink((char*)args, "Hgameobject");
@@ -315,7 +315,7 @@ public:
 
     static bool HandleGoTaxinodeCommand(ChatHandler* handler, char const* args)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (!*args)
             return false;
@@ -360,7 +360,7 @@ public:
 
     static bool HandleGoTriggerCommand(ChatHandler* handler, char const* args)
     {
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         if (!*args)
             return false;
@@ -409,11 +409,11 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         char* zoneX = strtok((char*)args, " ");
-        char* zoneY = strtok(NULL, " ");
-        char* tail = strtok(NULL, "");
+        char* zoneY = strtok(nullptr, " ");
+        char* tail = strtok(nullptr, "");
 
         char* id = handler->extractKeyFromLink(tail, "Harea");       // string or [name] Shift-click form |color|Harea:area_id|h[name]|h|r
 
@@ -441,7 +441,7 @@ public:
         // update to parent zone if exist (client map show only zones without parents)
         AreaTableEntry const* zoneEntry = areaEntry->zone ? GetAreaEntryByAreaID(areaEntry->zone) : areaEntry;
 
-        Map const* map = sMapMgr->CreateBaseMap(zoneEntry->mapid);
+        constMapPtr map = sMapMgr->CreateBaseMap(zoneEntry->mapid);
 
         if (map->Instanceable())
         {
@@ -481,13 +481,13 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         char* goX = strtok((char*)args, " ");
-        char* goY = strtok(NULL, " ");
-        char* goZ = strtok(NULL, " ");
-        char* id = strtok(NULL, " ");
-        char* port = strtok(NULL, " ");
+        char* goY = strtok(nullptr, " ");
+        char* goZ = strtok(nullptr, " ");
+        char* id = strtok(nullptr, " ");
+        char* port = strtok(nullptr, " ");
 
         if (!goX || !goY)
             return false;
@@ -516,7 +516,7 @@ public:
                 handler->SetSentErrorMessage(true);
                 return false;
             }
-            Map const* map = sMapMgr->CreateBaseMap(mapId);
+            constMapPtr map = sMapMgr->CreateBaseMap(mapId);
             z = std::max(map->GetHeight(x, y, MAX_HEIGHT), map->GetWaterLevel(x, y));
         }
 
@@ -554,7 +554,7 @@ public:
             return true;
         }
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
         if (player->isInFlight())
         {
             player->GetMotionMaster()->MovementExpired();
@@ -573,7 +573,7 @@ public:
         if (!*args)
             return false;
 
-        Player* player = handler->GetSession()->GetPlayer();
+        PlayerPtr player = handler->GetSession()->GetPlayer();
 
         char* goZ = NULL;
 

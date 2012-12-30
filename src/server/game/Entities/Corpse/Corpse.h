@@ -55,8 +55,8 @@ class Corpse : public WorldObject, public GridObject<Corpse>
         void AddToWorld();
         void RemoveFromWorld();
 
-        bool Create(uint32 guidlow, Map* map);
-        bool Create(uint32 guidlow, Player* owner);
+        bool Create(uint32 guidlow, MapPtr map);
+        bool Create(uint32 guidlow, PlayerPtr owner);
 
         void SaveToDB();
         bool LoadCorpseFromDB(uint32 guid, Field* fields);
@@ -67,14 +67,14 @@ class Corpse : public WorldObject, public GridObject<Corpse>
         uint64 GetOwnerGUID() const { return GetUInt64Value(CORPSE_FIELD_OWNER); }
 
         time_t const& GetGhostTime() const { return m_time; }
-        void ResetGhostTime() { m_time = time(NULL); }
+        void ResetGhostTime() { m_time = time(nullptr); }
         CorpseType GetType() const { return m_type; }
 
         GridCoord const& GetGridCoord() const { return _gridCoord; }
         void SetGridCoord(GridCoord const& gridCoord) { _gridCoord = gridCoord; }
 
-        Loot loot;                                          // remove insignia ONLY at BG
-        Player* lootRecipient;
+        LootPtr loot;                                          // remove insignia ONLY at BG
+        PlayerPtr lootRecipient;
         bool lootForBody;
 
         void Say(int32 textId, uint32 language, uint64 TargetGuid) { MonsterSay(textId, language, TargetGuid); }
@@ -89,5 +89,6 @@ class Corpse : public WorldObject, public GridObject<Corpse>
         CorpseType m_type;
         time_t m_time;
         GridCoord _gridCoord;                                    // gride for corpse position for fast search
+        std::shared_ptr<GridObject<Corpse>> _corpse;
 };
 #endif
