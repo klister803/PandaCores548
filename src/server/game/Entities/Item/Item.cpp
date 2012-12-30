@@ -863,7 +863,7 @@ bool Item::IsFitToSpellRequirements(SpellInfo const* spellInfo) const
             (spellInfo->EquippedItemInventoryTypeMask & (1 << INVTYPE_WEAPONMAINHAND) ||
              spellInfo->EquippedItemInventoryTypeMask & (1 << INVTYPE_WEAPONOFFHAND)))
             return true;
-        else if ((spellInfo->EquippedItemInventoryTypeMask & (1 << proto->InventoryType)) == 0)
+        else if ((spellInfo->EquippedItemInventoryTypeMask & (1 << proto->InventoryType)) == 0 && spellInfo->Id != 100130) // Hack Fix Wild Strikes
             return false;                                   // inventory type not present in mask
     }
 
