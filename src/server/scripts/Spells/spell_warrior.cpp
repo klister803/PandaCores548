@@ -39,6 +39,40 @@ enum WarriorSpells
     WARRIOR_SPELL_BLOOD_AND_THUNDER             = 84615,
     WARRIOR_SPELL_SHOCKWAVE_STUN                = 132168,
     WARRIOR_SPELL_HEROIC_LEAP_DAMAGE            = 52174,
+    WARRIOR_SPELL_RALLYING_CRY		            = 122507,
+    WARRIOR_SPELL_GLYPH_OF_MORTAL_STRIKE        = 58368,
+};
+
+// Mortal strike - 12294
+class spell_warr_mortal_strike : public SpellScriptLoader
+{
+    public:
+        spell_warr_mortal_strike() : SpellScriptLoader("spell_warr_mortal_strike") { }
+
+        class spell_warr_mortal_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_mortal_strike_SpellScript);
+
+            void HandleOnHit()
+            {
+                // Fix Apply Mortal strike buff on player only if he has the correct glyph
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(12294))
+                            if (!_player->HasAura(WARRIOR_SPELL_GLYPH_OF_MORTAL_STRIKE))
+                                _player->RemoveAura(12294);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_mortal_strike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_mortal_strike_SpellScript();
+        }
 };
 
 // Rallying cry - 97462
@@ -618,6 +652,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_mortal_strike();
     new spell_warr_rallying_cry();
     new spell_warr_heroic_leap_damage();
     new spell_warr_heroic_leap();
