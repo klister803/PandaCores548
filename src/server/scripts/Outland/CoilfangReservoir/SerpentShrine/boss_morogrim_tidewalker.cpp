@@ -83,14 +83,14 @@ class boss_morogrim_tidewalker : public CreatureScript
 public:
     boss_morogrim_tidewalker() : CreatureScript("boss_morogrim_tidewalker") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_morogrim_tidewalkerAI (creature);
     }
 
     struct boss_morogrim_tidewalkerAI : public ScriptedAI
     {
-        boss_morogrim_tidewalkerAI(Creature* creature) : ScriptedAI(creature)
+        boss_morogrim_tidewalkerAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -136,12 +136,12 @@ public:
                 instance->SetData(DATA_MOROGRIMTIDEWALKEREVENT, IN_PROGRESS);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -149,14 +149,14 @@ public:
                 instance->SetData(DATA_MOROGRIMTIDEWALKEREVENT, DONE);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             PlayerList = &me->GetMap()->GetPlayers();
             Playercount = PlayerList->getSize();
             StartEvent();
         }
 
-        void ApplyWateryGrave(Unit* player, uint8 i)
+        void ApplyWateryGrave(UnitPtr player, uint8 i)
         {
             switch (i)
             {
@@ -188,8 +188,8 @@ public:
 
                     for (uint8 i = 0; i < 10; ++i)
                     {
-                        Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
-                        Creature* Murloc = me->SummonCreature(NPC_TIDEWALKER_LURKER, MurlocCords[i][0], MurlocCords[i][1], MurlocCords[i][2], MurlocCords[i][3], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
+                        UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                        CreaturePtr Murloc = me->SummonCreature(NPC_TIDEWALKER_LURKER, MurlocCords[i][0], MurlocCords[i][1], MurlocCords[i][2], MurlocCords[i][3], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 10000);
                         if (target && Murloc)
                             Murloc->AI()->AttackStart(target);
                     }
@@ -212,7 +212,7 @@ public:
                 if (WateryGrave_Timer <= diff)
                 {
                     //Teleport 4 players under the waterfalls
-                    Unit* target;
+                    UnitPtr target;
                     std::set<uint64> list;
                     std::set<uint64>::const_iterator itr;
                     for (uint8 i = 0; i < 4; ++i)
@@ -250,7 +250,7 @@ public:
                 //WateryGlobules_Timer
                 if (WateryGlobules_Timer <= diff)
                 {
-                    Unit* pGlobuleTarget;
+                    UnitPtr pGlobuleTarget;
                     std::set<uint64> globulelist;
                     std::set<uint64>::const_iterator itr;
                     for (uint8 g = 0; g < 4; g++)  //one unit can't cast more than one spell per update, so some players have to cast for us XD
@@ -290,14 +290,14 @@ class mob_water_globule : public CreatureScript
 public:
     mob_water_globule() : CreatureScript("mob_water_globule") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_water_globuleAI (creature);
     }
 
     struct mob_water_globuleAI : public ScriptedAI
     {
-        mob_water_globuleAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_water_globuleAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 Check_Timer;
 
@@ -310,9 +310,9 @@ public:
             me->setFaction(14);
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (!who || me->getVictim())
                 return;

@@ -142,13 +142,13 @@ ACE_Process::spawn (ACE_Process_Options &options)
   BOOL fork_result =
     ACE_TEXT_CreateProcess (options.process_name(),
                             options.command_line_buf(),
-                            options.get_process_attributes(),  // must be NULL in CE
-                            options.get_thread_attributes(),   // must be NULL in CE
+                            options.get_process_attributes(),  // must be nullptr in CE
+                            options.get_thread_attributes(),   // must be nullptr in CE
                             options.handle_inheritance(),      // must be false in CE
-                            options.creation_flags(),          // must be NULL in CE
-                            options.env_buf(),                 // environment variables, must be NULL in CE
-                            options.working_directory(),       // must be NULL in CE
-                            options.startup_info(),            // must be NULL in CE
+                            options.creation_flags(),          // must be nullptr in CE
+                            options.env_buf(),                 // environment variables, must be nullptr in CE
+                            options.working_directory(),       // must be nullptr in CE
+                            options.startup_info(),            // must be nullptr in CE
                             &this->process_info_);
 
   if (fork_result)

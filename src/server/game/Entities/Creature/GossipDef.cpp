@@ -149,7 +149,7 @@ void PlayerMenu::SendGossipMenu(uint32 titleTextId, uint64 objectGUID) const
         uint32 questID = item.QuestId;
         Quest const* quest = sObjectMgr->GetQuestTemplate(questID);
 
-        Player* plr = _session->GetPlayer();
+        PlayerPtr plr = _session->GetPlayer();
 
         uint32 questStat = plr ? plr->GetQuestStatus(questID) : 0;
 
@@ -275,7 +275,7 @@ void PlayerMenu::SendQuestGiverQuestList(QEmote eEmote, const std::string& Title
         {
             std::string title = quest->GetTitle();
 
-            Player* plr = _session->GetPlayer();
+            PlayerPtr plr = _session->GetPlayer();
 
             int loc_idx = _session->GetSessionDbLocaleIndex();
             if (loc_idx >= 0)

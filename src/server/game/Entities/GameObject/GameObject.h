@@ -625,9 +625,9 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         void RemoveFromWorld();
         void CleanupsBeforeDelete(bool finalCleanup = true);
 
-        bool Create(uint32 guidlow, uint32 name_id, Map* map, uint32 phaseMask, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 artKit = 0);
+        bool Create(uint32 guidlow, uint32 name_id, MapPtr map, uint32 phaseMask, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 animprogress, GOState go_state, uint32 artKit = 0);
         void Update(uint32 p_time);
-        static GameObject* GetGameObject(WorldObject& object, uint64 guid);
+        static GameObjectPtr GetGameObject(WorldObject& object, uint64 guid);
         GameObjectTemplate const* GetGOInfo() const { return m_goInfo; }
         GameObjectData const* GetGOData() const { return m_goData; }
         GameObjectValue * GetGOValue() const { return m_goValue; }
@@ -651,8 +651,8 @@ class GameObject : public WorldObject, public GridObject<GameObject>
 
         void SaveToDB();
         void SaveToDB(uint32 mapid, uint32 spawnMask, uint32 phaseMask);
-        bool LoadFromDB(uint32 guid, Map* map) { return LoadGameObjectFromDB(guid, map, false); }
-        bool LoadGameObjectFromDB(uint32 guid, Map* map, bool addToMap = true);
+        bool LoadFromDB(uint32 guid, MapPtr map) { return LoadGameObjectFromDB(guid, map, false); }
+        bool LoadGameObjectFromDB(uint32 guid, MapPtr map, bool addToMap = true);
         void DeleteFromDB();
 
         void SetOwnerGUID(uint64 owner)
@@ -666,7 +666,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
             SetUInt64Value(OBJECT_FIELD_CREATED_BY, owner);
         }
         uint64 GetOwnerGUID() const { return GetUInt64Value(OBJECT_FIELD_CREATED_BY); }
-        Unit* GetOwner() const;
+        UnitPtr GetOwner() const;
 
         void SetSpellId(uint32 id)
         {
@@ -678,7 +678,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         time_t GetRespawnTime() const { return m_respawnTime; }
         time_t GetRespawnTimeEx() const
         {
-            time_t now = time(NULL);
+            time_t now = time(nullptr);
             if (m_respawnTime > now)
                 return m_respawnTime;
             else
@@ -687,7 +687,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
 
         void SetRespawnTime(int32 respawn)
         {
-            m_respawnTime = respawn > 0 ? time(NULL) + respawn : 0;
+            m_respawnTime = respawn > 0 ? time(nullptr) + respawn : 0;
             m_respawnDelayTime = respawn > 0 ? respawn : 0;
         }
         void Respawn();
@@ -702,7 +702,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         uint32 GetRespawnDelay() const { return m_respawnDelayTime; }
         void Refresh();
         void Delete();
-        void getFishLoot(Loot* loot, Player* loot_owner);
+        void getFishLoot(LootPtr loot, PlayerPtr loot_owner);
         GameobjectTypes GetGoType() const { return GameobjectTypes(GetByteValue(GAMEOBJECT_BYTES_1, 1)); }
         void SetGoType(GameobjectTypes type) { SetByteValue(GAMEOBJECT_BYTES_1, 1, type); }
         GOState GetGoState() const { return GOState(GetByteValue(GAMEOBJECT_BYTES_1, 0)); }
@@ -711,16 +711,16 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         void SetGoArtKit(uint8 artkit);
         uint8 GetGoAnimProgress() const { return GetByteValue(GAMEOBJECT_BYTES_1, 3); }
         void SetGoAnimProgress(uint8 animprogress) { SetByteValue(GAMEOBJECT_BYTES_1, 3, animprogress); }
-        static void SetGoArtKit(uint8 artkit, GameObject* go, uint32 lowguid = 0);
+        static void SetGoArtKit(uint8 artkit, GameObjectPtr go, uint32 lowguid = 0);
 
         void SetPhaseMask(uint32 newPhaseMask, bool update);
         void EnableCollision(bool enable);
 
-        void Use(Unit* user);
+        void Use(UnitPtr user);
 
         LootState getLootState() const { return m_lootState; }
         // Note: unit is only used when s = GO_ACTIVATED
-        void SetLootState(LootState s, Unit* unit = NULL);
+        void SetLootState(LootState s, UnitPtr unit = nullptr);
 
         uint16 GetLootMode() { return m_LootMode; }
         bool HasLootMode(uint16 lootMode) { return m_LootMode & lootMode; }
@@ -740,7 +740,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         }
         void ClearSkillupList() { m_SkillupList.clear(); }
 
-        void AddUniqueUse(Player* player);
+        void AddUniqueUse(PlayerPtr player);
         void AddUse() { ++m_usetimes; }
 
         uint32 GetUseCount() const { return m_usetimes; }
@@ -748,45 +748,45 @@ class GameObject : public WorldObject, public GridObject<GameObject>
 
         void SaveRespawnTime();
 
-        Loot        loot;
+        LootPtr     loot;
 
-        Player* GetLootRecipient() const;
-        Group* GetLootRecipientGroup() const;
-        void SetLootRecipient(Unit* unit);
-        bool IsLootAllowedFor(Player const* player) const;
+        PlayerPtr GetLootRecipient() const;
+        GroupPtr GetLootRecipientGroup() const;
+        void SetLootRecipient(UnitPtr unit);
+        bool IsLootAllowedFor(constPlayerPtr player) const;
         bool HasLootRecipient() const { return m_lootRecipient || m_lootRecipientGroup; }
         uint32 m_groupLootTimer;                            // (msecs)timer used for group loot
         uint32 lootingGroupLowGUID;                         // used to find group which is looting
 
         bool hasQuest(uint32 quest_id) const;
         bool hasInvolvedQuest(uint32 quest_id) const;
-        bool ActivateToQuest(Player* target) const;
-        void UseDoorOrButton(uint32 time_to_restore = 0, bool alternative = false, Unit* user = NULL);
+        bool ActivateToQuest(PlayerPtr target) const;
+        void UseDoorOrButton(uint32 time_to_restore = 0, bool alternative = false, UnitPtr user = nullptr);
                                                             // 0 = use `gameobject`.`spawntimesecs`
         void ResetDoorOrButton();
 
-        void TriggeringLinkedGameObject(uint32 trapEntry, Unit* target);
+        void TriggeringLinkedGameObject(uint32 trapEntry, UnitPtr target);
 
-        bool IsAlwaysVisibleFor(WorldObject const* seer) const;
+        bool IsAlwaysVisibleFor(constWorldObjectPtr seer) const;
         bool IsInvisibleDueToDespawn() const;
 
-        uint8 getLevelForTarget(WorldObject const* target) const
+        uint8 getLevelForTarget(constWorldObjectPtr target) const
         {
-            if (Unit* owner = GetOwner())
+            if (UnitPtr owner = GetOwner())
                 return owner->getLevelForTarget(target);
 
             return 1;
         }
 
-        GameObject* LookupFishingHoleAround(float range);
+        GameObjectPtr LookupFishingHoleAround(float range);
 
-        void CastSpell(Unit* target, uint32 spell);
+        void CastSpell(UnitPtr target, uint32 spell);
         void SendCustomAnim(uint32 anim);
         bool IsInRange(float x, float y, float z, float radius) const;
 
-        void ModifyHealth(int32 change, Unit* attackerOrHealer = NULL, uint32 spellId = 0);
+        void ModifyHealth(int32 change, UnitPtr attackerOrHealer = nullptr, uint32 spellId = 0);
         // sets GameObject type 33 destruction flags and optionally default health for that state
-        void SetDestructibleState(GameObjectDestructibleState state, Player* eventInvoker = NULL, bool setHealth = false);
+        void SetDestructibleState(GameObjectDestructibleState state, PlayerPtr eventInvoker = nullptr, bool setHealth = false);
         GameObjectDestructibleState GetDestructibleState() const
         {
             if (HasFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED))
@@ -818,7 +818,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
                                                             // For traps this: spell casting cooldown, for doors/buttons: reset time.
         std::list<uint32> m_SkillupList;
 
-        Player* m_ritualOwner;                              // used for GAMEOBJECT_TYPE_SUMMONING_RITUAL where GO is not summoned (no owner)
+        PlayerPtr m_ritualOwner;                              // used for GAMEOBJECT_TYPE_SUMMONING_RITUAL where GO is not summoned (no owner)
         std::set<uint64> m_unique_users;
         uint32 m_usetimes;
 
@@ -841,7 +841,7 @@ class GameObject : public WorldObject, public GridObject<GameObject>
         void UpdateModel();                                 // updates model in case displayId were changed
 
         //! Object distance/size - overridden from Object::_IsWithinDist. Needs to take in account proper GO size.
-        bool _IsWithinDist(WorldObject const* obj, float dist2compare, bool /*is3D*/) const
+        bool _IsWithinDist(constWorldObjectPtr obj, float dist2compare, bool /*is3D*/) const
         {
             //! Following check does check 3d distance
             return IsInRange(obj->GetPositionX(), obj->GetPositionY(), obj->GetPositionZ(), dist2compare);

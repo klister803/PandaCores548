@@ -39,14 +39,14 @@ class instance_halls_of_lightning : public InstanceMapScript
 public:
     instance_halls_of_lightning() : InstanceMapScript("instance_halls_of_lightning", 602) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_halls_of_lightning_InstanceMapScript(map);
     }
 
     struct instance_halls_of_lightning_InstanceMapScript : public InstanceScript
     {
-        instance_halls_of_lightning_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_halls_of_lightning_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
 
@@ -77,7 +77,7 @@ public:
             m_uiLokenGlobeGUID       = 0;
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -96,7 +96,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {
@@ -140,30 +140,30 @@ public:
             {
                 case TYPE_BJARNGRIM:
                     if (uiData == DONE)
-                        if (GameObject* pDoor = instance->GetGameObject(m_uiBjarngrimDoorGUID))
+                        if (GameObjectPtr pDoor = instance->GetGameObject(m_uiBjarngrimDoorGUID))
                             pDoor->SetGoState(GO_STATE_ACTIVE);
                     m_auiEncounter[0] = uiData;
                     break;
                 case TYPE_VOLKHAN:
                     if (uiData == DONE)
-                        if (GameObject* pDoor = instance->GetGameObject(m_uiVolkhanDoorGUID))
+                        if (GameObjectPtr pDoor = instance->GetGameObject(m_uiVolkhanDoorGUID))
                             pDoor->SetGoState(GO_STATE_ACTIVE);
                     m_auiEncounter[1] = uiData;
                     break;
                 case TYPE_IONAR:
                     if (uiData == DONE)
-                        if (GameObject* pDoor = instance->GetGameObject(m_uiIonarDoorGUID))
+                        if (GameObjectPtr pDoor = instance->GetGameObject(m_uiIonarDoorGUID))
                             pDoor->SetGoState(GO_STATE_ACTIVE);
                     m_auiEncounter[2] = uiData;
                     break;
                 case TYPE_LOKEN:
                     if (uiData == DONE)
                     {
-                        if (GameObject* pDoor = instance->GetGameObject(m_uiLokenDoorGUID))
+                        if (GameObjectPtr pDoor = instance->GetGameObject(m_uiLokenDoorGUID))
                             pDoor->SetGoState(GO_STATE_ACTIVE);
 
                         // Appears to be type 5 GO with animation. Need to figure out how this work, code below only placeholder
-                        if (GameObject* pGlobe = instance->GetGameObject(m_uiLokenGlobeGUID))
+                        if (GameObjectPtr pGlobe = instance->GetGameObject(m_uiLokenGlobeGUID))
                             pGlobe->SetGoState(GO_STATE_ACTIVE);
                     }
                     m_auiEncounter[3] = uiData;

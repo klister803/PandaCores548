@@ -66,14 +66,14 @@ class boss_najentus : public CreatureScript
 public:
     boss_najentus() : CreatureScript("boss_najentus") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_najentusAI (creature);
     }
 
     struct boss_najentusAI : public ScriptedAI
     {
-        boss_najentusAI(Creature* creature) : ScriptedAI(creature)
+        boss_najentusAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -93,13 +93,13 @@ public:
                 instance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, NOT_STARTED);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(urand(0, 1) ? SAY_SLAY1 : SAY_SLAY2, me);
             events.DelayEvents(5000, GCD_YELL);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, DONE);
@@ -107,7 +107,7 @@ public:
             DoScriptText(SAY_DEATH, me);
         }
 
-        void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
+        void SpellHit(UnitPtr /*caster*/, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_HURL_SPINE && me->HasAura(SPELL_TIDAL_SHIELD))
             {
@@ -117,7 +117,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             if (instance)
                 instance->SetData(DATA_HIGHWARLORDNAJENTUSEVENT, IN_PROGRESS);
@@ -134,7 +134,7 @@ public:
             if (!SpineTargetGUID)
                 return false;
 
-            Unit* target = Unit::GetUnit(*me, SpineTargetGUID);
+            UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), SpineTargetGUID);
             if (target && target->HasAura(SPELL_IMPALING_SPINE))
                 target->RemoveAurasDueToSpell(SPELL_IMPALING_SPINE);
             SpineTargetGUID=0;
@@ -170,7 +170,7 @@ public:
                         break;
                     case EVENT_SPINE:
                     {
-                        Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                        UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1);
                         if (!target) target = me->getVictim();
                         if (target)
                         {
@@ -188,9 +188,9 @@ public:
                     case EVENT_NEEDLE:
                     {
                         //DoCast(me, SPELL_NEEDLE_SPINE, true);
-                        std::list<Unit*> targets;
+                        std::list<UnitPtr> targets;
                         SelectTargetList(targets, 3, SELECT_TARGET_RANDOM, 80, true);
-                        for (std::list<Unit*>::const_iterator i = targets.begin(); i != targets.end(); ++i)
+                        for (std::list<UnitPtr>::const_iterator i = targets.begin(); i != targets.end(); ++i)
                             DoCast(*i, 39835, true);
                         events.ScheduleEvent(EVENT_NEEDLE, urand(15000, 25000), GCD_CAST);
                         events.DelayEvents(1500, GCD_CAST);
@@ -215,10 +215,10 @@ class go_najentus_spine : public GameObjectScript
 public:
     go_najentus_spine() : GameObjectScript("go_najentus_spine") { }
 
-    bool OnGossipHello(Player* player, GameObject* go)
+    bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
     {
         if (InstanceScript* instance = go->GetInstanceScript())
-            if (Creature* Najentus = Unit::GetCreature(*go, instance->GetData64(DATA_HIGHWARLORDNAJENTUS)))
+            if (CreaturePtr Najentus = Unit::GetCreature(TO_WORLDOBJECT(go), instance->GetData64(DATA_HIGHWARLORDNAJENTUS)))
                 if (CAST_AI(boss_najentus::boss_najentusAI, Najentus->AI())->RemoveImpalingSpine())
                 {
                     player->CastSpell(player, SPELL_CREATE_NAJENTUS_SPINE, true);

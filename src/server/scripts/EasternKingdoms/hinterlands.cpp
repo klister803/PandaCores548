@@ -57,7 +57,7 @@ class npc_00x09hl : public CreatureScript
 public:
     npc_00x09hl() : CreatureScript("npc_00x09hl") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, const Quest* quest)
     {
         if (quest->GetQuestId() == QUEST_RESQUE_OOX_09)
         {
@@ -76,14 +76,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_00x09hlAI(creature);
     }
 
     struct npc_00x09hlAI : public npc_escortAI
     {
-        npc_00x09hlAI(Creature* creature) : npc_escortAI(creature) { }
+        npc_00x09hlAI(CreaturePtr creature) : npc_escortAI(creature) { }
 
         void Reset() { }
 
@@ -99,7 +99,7 @@ public:
                     break;
                 case 64:
                     DoScriptText(SAY_OOX_END, me);
-                    if (Player* player = GetPlayerForEscort())
+                    if (PlayerPtr player = GetPlayerForEscort())
                         player->GroupEventHappens(QUEST_RESQUE_OOX_09, me);
                     break;
             }
@@ -130,7 +130,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             if (who->GetEntry() == NPC_MARAUDING_OWL || who->GetEntry() == NPC_VILE_AMBUSHER)
                 return;
@@ -141,7 +141,7 @@ public:
                 DoScriptText(SAY_OOX_AGGRO2, me);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
         }

@@ -55,7 +55,7 @@ class npc_daphne_stilwell : public CreatureScript
 public:
     npc_daphne_stilwell() : CreatureScript("npc_daphne_stilwell") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, const Quest* quest)
     {
         if (quest->GetQuestId() == QUEST_TOME_VALOR)
         {
@@ -68,14 +68,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_daphne_stilwellAI(creature);
     }
 
     struct npc_daphne_stilwellAI : public npc_escortAI
     {
-        npc_daphne_stilwellAI(Creature* creature) : npc_escortAI(creature) {}
+        npc_daphne_stilwellAI(CreaturePtr creature) : npc_escortAI(creature) {}
 
         uint32 uiWPHolder;
         uint32 uiShootTimer;
@@ -105,7 +105,7 @@ public:
 
         void WaypointReached(uint32 waypointId)
         {
-            Player* player = GetPlayerForEscort();
+            PlayerPtr player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -155,7 +155,7 @@ public:
             }
         }
 
-        void AttackStart(Unit* who)
+        void AttackStart(UnitPtr who)
         {
             if (!who)
                 return;
@@ -170,7 +170,7 @@ public:
             }
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->AI()->AttackStart(me);
         }
@@ -210,7 +210,7 @@ class npc_defias_traitor : public CreatureScript
 public:
     npc_defias_traitor() : CreatureScript("npc_defias_traitor") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_DEFIAS_BROTHERHOOD)
         {
@@ -223,18 +223,18 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_defias_traitorAI(creature);
     }
 
     struct npc_defias_traitorAI : public npc_escortAI
     {
-        npc_defias_traitorAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
+        npc_defias_traitorAI(CreaturePtr creature) : npc_escortAI(creature) { Reset(); }
 
         void WaypointReached(uint32 waypointId)
         {
-            Player* player = GetPlayerForEscort();
+            PlayerPtr player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -253,7 +253,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2), me, who);
         }

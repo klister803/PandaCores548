@@ -68,7 +68,7 @@ class boss_saviana_ragefire : public CreatureScript
 
         struct boss_saviana_ragefireAI : public BossAI
         {
-            boss_saviana_ragefireAI(Creature* creature) : BossAI(creature, DATA_SAVIANA_RAGEFIRE)
+            boss_saviana_ragefireAI(CreaturePtr creature) : BossAI(creature, DATA_SAVIANA_RAGEFIRE)
             {
             }
 
@@ -78,7 +78,7 @@ class boss_saviana_ragefire : public CreatureScript
                 me->SetReactState(REACT_AGGRESSIVE);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 _EnterCombat();
                 Talk(SAY_AGGRO);
@@ -88,7 +88,7 @@ class boss_saviana_ragefire : public CreatureScript
                 events.ScheduleEvent(EVENT_FLIGHT, 60000);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 _JustDied();
                 me->PlayDirectSound(SOUND_ID_DEATH);
@@ -125,7 +125,7 @@ class boss_saviana_ragefire : public CreatureScript
                 me->SetDisableGravity(false);
             }
 
-            void KilledUnit(Unit* victim)
+            void KilledUnit(UnitPtr victim)
             {
                 if (victim->GetTypeId() == TYPEID_PLAYER)
                     Talk(SAY_KILL);
@@ -176,7 +176,7 @@ class boss_saviana_ragefire : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetRubySanctumAI<boss_saviana_ragefireAI>(creature);
         }
@@ -187,7 +187,7 @@ class ConflagrationTargetSelector
     public:
         ConflagrationTargetSelector() { }
 
-        bool operator()(WorldObject* unit) const
+        bool operator()(WorldObjectPtr unit) const
         {
             return unit->GetTypeId() != TYPEID_PLAYER;
         }
@@ -202,7 +202,7 @@ class spell_saviana_conflagration_init : public SpellScriptLoader
         {
             PrepareSpellScript(spell_saviana_conflagration_init_SpellScript);
 
-            void FilterTargets(std::list<WorldObject*>& targets)
+            void FilterTargets(std::list<WorldObjectPtr>& targets)
             {
                 targets.remove_if(ConflagrationTargetSelector());
                 uint8 maxSize = uint8(GetCaster()->GetMap()->GetSpawnMode() & 1 ? 6 : 3);

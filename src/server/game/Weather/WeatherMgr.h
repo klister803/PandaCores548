@@ -32,11 +32,11 @@ namespace WeatherMgr
 {
     void LoadWeatherData();
 
-    Weather* FindWeather(uint32 id);
-    Weather* AddWeather(uint32 zone_id);
+    WeatherPtr FindWeather(uint32 id);
+    WeatherPtr AddWeather(uint32 zone_id);
     void RemoveWeather(uint32 zone_id);
 
-    void SendFineWeatherUpdateToPlayer(Player* player);
+    void SendFineWeatherUpdateToPlayer(PlayerPtr player);
 
     void Update(uint32 diff);
 }

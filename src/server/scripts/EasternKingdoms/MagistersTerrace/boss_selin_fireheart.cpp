@@ -57,14 +57,14 @@ class boss_selin_fireheart : public CreatureScript
 public:
     boss_selin_fireheart() : CreatureScript("boss_selin_fireheart") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_selin_fireheartAI (creature);
     };
 
     struct boss_selin_fireheartAI : public ScriptedAI
     {
-        boss_selin_fireheartAI(Creature* creature) : ScriptedAI(creature)
+        boss_selin_fireheartAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
 
@@ -104,8 +104,8 @@ public:
                 //for (uint8 i = 0; i < CRYSTALS_NUMBER; ++i)
                 for (std::list<uint64>::const_iterator itr = Crystals.begin(); itr != Crystals.end(); ++itr)
                 {
-                    //Unit* unit = Unit::GetUnit(*me, FelCrystals[i]);
-                    Unit* unit = Unit::GetUnit(*me, *itr);
+                    //UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), FelCrystals[i]);
+                    UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), *itr);
                     if (unit)
                     {
                         if (!unit->isAlive())
@@ -144,14 +144,14 @@ public:
 
             //float ShortestDistance = 0;
             CrystalGUID = 0;
-            Unit* pCrystal = NULL;
-            Unit* CrystalChosen = NULL;
+            UnitPtr pCrystal = nullptr;
+            UnitPtr CrystalChosen = nullptr;
             //for (uint8 i =  0; i < CRYSTALS_NUMBER; ++i)
             for (std::list<uint64>::const_iterator itr = Crystals.begin(); itr != Crystals.end(); ++itr)
             {
-                pCrystal = NULL;
-                //pCrystal = Unit::GetUnit(*me, FelCrystals[i]);
-                pCrystal = Unit::GetUnit(*me, *itr);
+                pCrystal = nullptr;
+                //pCrystal = Unit::GetUnit(TO_WORLDOBJECT(me), FelCrystals[i]);
+                pCrystal = Unit::GetUnit(TO_WORLDOBJECT(me), *itr);
                 if (pCrystal && pCrystal->isAlive())
                 {
                     // select nearest
@@ -186,14 +186,14 @@ public:
             //for (uint8 i = 0; i < CRYSTALS_NUMBER; ++i)
             for (std::list<uint64>::const_iterator itr = Crystals.begin(); itr != Crystals.end(); ++itr)
             {
-                //Creature* pCrystal = (Unit::GetCreature(*me, FelCrystals[i]));
-                Creature* pCrystal = Unit::GetCreature(*me, *itr);
+                //CreaturePtr pCrystal = (Unit::GetCreature(TO_WORLDOBJECT(me), FelCrystals[i]));
+                CreaturePtr pCrystal = Unit::GetCreature(TO_WORLDOBJECT(me), *itr);
                 if (pCrystal && pCrystal->isAlive())
                     pCrystal->Kill(pCrystal);
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -202,7 +202,7 @@ public:
                 //Close the encounter door, open it in JustDied/Reset
          }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), me);
         }
@@ -211,7 +211,7 @@ public:
         {
             if (type == POINT_MOTION_TYPE && id == 1)
             {
-                Unit* CrystalChosen = Unit::GetUnit(*me, CrystalGUID);
+                UnitPtr CrystalChosen = Unit::GetUnit(TO_WORLDOBJECT(me), CrystalGUID);
                 if (CrystalChosen && CrystalChosen->isAlive())
                 {
                     // Make the crystal attackable
@@ -229,7 +229,7 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -303,7 +303,7 @@ public:
 
                         DoScriptText(SAY_EMPOWERED, me);
 
-                        Unit* CrystalChosen = Unit::GetUnit(*me, CrystalGUID);
+                        UnitPtr CrystalChosen = Unit::GetUnit(TO_WORLDOBJECT(me), CrystalGUID);
                         if (CrystalChosen && CrystalChosen->isAlive())
                             // Use Deal Damage to kill it, not setDeathState.
                             CrystalChosen->Kill(CrystalChosen);
@@ -327,26 +327,26 @@ class mob_fel_crystal : public CreatureScript
 public:
     mob_fel_crystal() : CreatureScript("mob_fel_crystal") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_fel_crystalAI (creature);
     };
 
     struct mob_fel_crystalAI : public ScriptedAI
     {
-        mob_fel_crystalAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_fel_crystalAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         void Reset() {}
-        void EnterCombat(Unit* /*who*/) {}
-        void AttackStart(Unit* /*who*/) {}
-        void MoveInLineOfSight(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
+        void AttackStart(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
         void UpdateAI(const uint32 /*diff*/) {}
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (InstanceScript* instance = me->GetInstanceScript())
             {
-                Creature* Selin = (Unit::GetCreature(*me, instance->GetData64(DATA_SELIN)));
+                CreaturePtr Selin = (Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_SELIN)));
                 if (Selin && Selin->isAlive())
                 {
                     if (CAST_AI(boss_selin_fireheart::boss_selin_fireheartAI, Selin->AI())->CrystalGUID == me->GetGUID())

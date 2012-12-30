@@ -64,11 +64,11 @@ public:
 
     struct npc_deathstalker_erlandAI : public npc_escortAI
     {
-        npc_deathstalker_erlandAI(Creature* creature) : npc_escortAI(creature) {}
+        npc_deathstalker_erlandAI(CreaturePtr creature) : npc_escortAI(creature) {}
 
         void WaypointReached(uint32 waypointId)
         {
-            Player* player = GetPlayerForEscort();
+            PlayerPtr player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -85,7 +85,7 @@ public:
                     DoScriptText(SAY_THANKS, me, player);
                     break;
                 case 15:
-                    if (Unit* Rane = me->FindNearestCreature(NPC_RANE, 20))
+                    if (UnitPtr Rane = me->FindNearestCreature(NPC_RANE, 20))
                         DoScriptText(SAY_RANE, Rane);
                     break;
                 case 16:
@@ -98,24 +98,24 @@ public:
                     DoScriptText(SAY_GREETINGS, me);
                     break;
                 case 25:
-                    if (Unit* Quinn = me->FindNearestCreature(NPC_QUINN, 20))
+                    if (UnitPtr Quinn = me->FindNearestCreature(NPC_QUINN, 20))
                         DoScriptText(SAY_QUINN, Quinn);
                     break;
                 case 26:
-                    DoScriptText(SAY_ON_BYE, me, NULL);
+                    DoScriptText(SAY_ON_BYE, me, nullptr);
                     break;
             }
         }
 
         void Reset() {}
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2), me, who);
         }
     };
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_ESCORTING)
         {
@@ -128,7 +128,7 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_deathstalker_erlandAI(creature);
     }

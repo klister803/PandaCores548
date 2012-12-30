@@ -98,8 +98,8 @@ class OPvPCapturePointHP : public OPvPCapturePoint
         void FillInitialWorldStates(WorldPacket & data);
 
         // used when player is activated/inactivated in the area
-        bool HandlePlayerEnter(Player* player);
-        void HandlePlayerLeave(Player* player);
+        bool HandlePlayerEnter(PlayerPtr player);
+        void HandlePlayerLeave(PlayerPtr player);
 
     private:
 
@@ -114,16 +114,16 @@ class OutdoorPvPHP : public OutdoorPvP
 
         bool SetupOutdoorPvP();
 
-        void HandlePlayerEnterZone(Player* player, uint32 zone);
-        void HandlePlayerLeaveZone(Player* player, uint32 zone);
+        void HandlePlayerEnterZone(PlayerPtr player, uint32 zone);
+        void HandlePlayerLeaveZone(PlayerPtr player, uint32 zone);
 
         bool Update(uint32 diff);
 
         void FillInitialWorldStates(WorldPacket &data);
 
-        void SendRemoveWorldStates(Player* player);
+        void SendRemoveWorldStates(PlayerPtr player);
 
-        void HandleKillImpl(Player* player, Unit* killed);
+        void HandleKillImpl(PlayerPtr player, UnitPtr killed);
 
         uint32 GetAllianceTowersControlled() const;
         void SetAllianceTowersControlled(uint32 count);

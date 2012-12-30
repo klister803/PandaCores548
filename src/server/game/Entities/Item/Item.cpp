@@ -27,7 +27,7 @@
 #include "ScriptMgr.h"
 #include "ConditionMgr.h"
 
-void AddItemsSetItem(Player* player, Item* item)
+void AddItemsSetItem(PlayerPtr player, ItemPtr item)
 {
     ItemTemplate const* proto = item->GetTemplate();
     uint32 setid = proto->ItemSet;
@@ -43,7 +43,7 @@ void AddItemsSetItem(Player* player, Item* item)
     if (set->required_skill_id && player->GetSkillValue(set->required_skill_id) < set->required_skill_value)
         return;
 
-    ItemSetEffect* eff = NULL;
+    ItemSetEffect* eff = nullptr;
 
     for (size_t x = 0; x < player->ItemSetEff.size(); ++x)
     {
@@ -101,7 +101,7 @@ void AddItemsSetItem(Player* player, Item* item)
                 }
 
                 // spell casted only if fit form requirement, in other case will casted at form change
-                player->ApplyEquipSpell(spellInfo, NULL, true);
+                player->ApplyEquipSpell(spellInfo, nullptr, true);
                 eff->spells[y] = spellInfo;
                 break;
             }
@@ -109,7 +109,7 @@ void AddItemsSetItem(Player* player, Item* item)
     }
 }
 
-void RemoveItemsSetItem(Player*player, ItemTemplate const* proto)
+void RemoveItemsSetItem(PlayerPtr player, ItemTemplate const* proto)
 {
     uint32 setid = proto->ItemSet;
 
@@ -121,7 +121,7 @@ void RemoveItemsSetItem(Player*player, ItemTemplate const* proto)
         return;
     }
 
-    ItemSetEffect* eff = NULL;
+    ItemSetEffect* eff = nullptr;
     size_t setindex = 0;
     for (; setindex < player->ItemSetEff.size(); setindex++)
     {
@@ -152,8 +152,8 @@ void RemoveItemsSetItem(Player*player, ItemTemplate const* proto)
             if (eff->spells[z] && eff->spells[z]->Id == set->spells[x])
             {
                 // spell can be not active if not fit form requirement
-                player->ApplyEquipSpell(eff->spells[z], NULL, false);
-                eff->spells[z]=NULL;
+                player->ApplyEquipSpell(eff->spells[z], nullptr, false);
+                eff->spells[z]=nullptr;
                 break;
             }
         }
@@ -163,7 +163,7 @@ void RemoveItemsSetItem(Player*player, ItemTemplate const* proto)
     {
         ASSERT(eff == player->ItemSetEff[setindex]);
         delete eff;
-        player->ItemSetEff[setindex] = NULL;
+        player->ItemSetEff[setindex] = nullptr;
     }
 }
 
@@ -247,10 +247,10 @@ Item::Item()
     m_slot = 0;
     uState = ITEM_NEW;
     uQueuePos = -1;
-    m_container = NULL;
+    m_container = nullptr;
     m_lootGenerated = false;
     mb_in_trade = false;
-    m_lastPlayedTimeUpdate = time(NULL);
+    m_lastPlayedTimeUpdate = time(nullptr);
 
     m_refundRecipient = 0;
     m_paidMoney = 0;
@@ -263,9 +263,10 @@ Item::Item()
         m_dynamicTab[i] = new uint32[32];
         m_dynamicChange[i] = new bool[32];
     }
+    loot = LootPtr(new Loot());
 }
 
-bool Item::Create(uint32 guidlow, uint32 itemid, Player const* owner)
+bool Item::Create(uint32 guidlow, uint32 itemid, constPlayerPtr owner)
 {
     Object::_Create(guidlow, 0, HIGHGUID_ITEM);
 
@@ -295,12 +296,12 @@ bool Item::Create(uint32 guidlow, uint32 itemid, Player const* owner)
 // Returns false if Item is not a bag OR it is an empty bag.
 bool Item::IsNotEmptyBag() const
 {
-    if (Bag const* bag = ToBag())
+    if (constBagPtr bag = ToBag())
         return !bag->IsEmpty();
     return false;
 }
 
-void Item::UpdateDuration(Player* owner, uint32 diff)
+void Item::UpdateDuration(PlayerPtr owner, uint32 diff)
 {
     if (!GetUInt32Value(ITEM_FIELD_DURATION))
         return;
@@ -389,8 +390,6 @@ void Item::SaveToDB(SQLTransaction& trans)
 
             if (!isInTransaction)
                 CharacterDatabase.CommitTransaction(trans);
-
-            delete this;
             return;
         }
         case ITEM_UNCHANGED:
@@ -405,8 +404,8 @@ void Item::SaveToDB(SQLTransaction& trans)
 
 bool Item::LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entry)
 {
-    //                                                    0                1      2         3        4      5             6                 7           8           9    10
-    //result = CharacterDatabase.PQuery("SELECT creatorGuid, giftCreatorGuid, count, duration, charges, flags, enchantments, randomPropertyId, durability, playedTime, text FROM item_instance WHERE guid = '%u'", guid);
+    //                                                    0                1      2         3        4      5             6                 7          8               9            10          11    12
+    //result = CharacterDatabase.PQuery("SELECT creatorGuid, giftCreatorGuid, count, duration, charges, flags, enchantments, randomPropertyId, reforgeId, transmogrifyId,   durability, playedTime, text FROM item_instance WHERE guid = '%u'", guid);
 
     // create item before any checks for store correct guid
     // and allow use "FSetState(ITEM_REMOVED); SaveToDB();" for deleting item from DB
@@ -528,7 +527,7 @@ ItemTemplate const* Item::GetTemplate() const
     return sObjectMgr->GetItemTemplate(GetEntry());
 }
 
-Player* Item::GetOwner()const
+PlayerPtr Item::GetOwner()const
 {
     return ObjectAccessor::FindPlayer(GetOwnerGUID());
 }
@@ -662,14 +661,13 @@ void Item::UpdateItemSuffixFactor()
     SetUInt32Value(ITEM_FIELD_PROPERTY_SEED, suffixFactor);
 }
 
-void Item::SetState(ItemUpdateState state, Player* forplayer)
+void Item::SetState(ItemUpdateState state, PlayerPtr forplayer)
 {
     if (uState == ITEM_NEW && state == ITEM_REMOVED)
     {
         // pretend the item never existed
         RemoveFromUpdateQueueOf(forplayer);
         forplayer->DeleteRefundReference(GetGUIDLow());
-        delete this;
         return;
     }
     if (state != ITEM_UNCHANGED)
@@ -689,12 +687,12 @@ void Item::SetState(ItemUpdateState state, Player* forplayer)
     }
 }
 
-void Item::AddToUpdateQueueOf(Player* player)
+void Item::AddToUpdateQueueOf(PlayerPtr player)
 {
     if (IsInUpdateQueue())
         return;
 
-    ASSERT(player != NULL);
+    ASSERT(player != nullptr);
 
     if (player->GetGUID() != GetOwnerGUID())
     {
@@ -705,16 +703,16 @@ void Item::AddToUpdateQueueOf(Player* player)
     if (player->m_itemUpdateQueueBlocked)
         return;
 
-    player->m_itemUpdateQueue.push_back(this);
+    player->m_itemUpdateQueue.push_back(THIS_ITEM);
     uQueuePos = player->m_itemUpdateQueue.size()-1;
 }
 
-void Item::RemoveFromUpdateQueueOf(Player* player)
+void Item::RemoveFromUpdateQueueOf(PlayerPtr player)
 {
     if (!IsInUpdateQueue())
         return;
 
-    ASSERT(player != NULL)
+    ASSERT(player != nullptr)
 
     if (player->GetGUID() != GetOwnerGUID())
     {
@@ -725,7 +723,7 @@ void Item::RemoveFromUpdateQueueOf(Player* player)
     if (player->m_itemUpdateQueueBlocked)
         return;
 
-    player->m_itemUpdateQueue[uQueuePos] = NULL;
+    player->m_itemUpdateQueue[uQueuePos] = nullptr;
     uQueuePos = -1;
 }
 
@@ -750,7 +748,7 @@ bool Item::CanBeTraded(bool mail, bool trade) const
     if (IsBag() && (Player::IsBagPos(GetPos()) || !((Bag const*)this)->IsEmpty()))
         return false;
 
-    if (Player* owner = GetOwner())
+    if (PlayerPtr owner = GetOwner())
     {
         if (owner->CanUnequipItem(GetPos(), false) != EQUIP_ERR_OK)
             return false;
@@ -764,7 +762,7 @@ bool Item::CanBeTraded(bool mail, bool trade) const
     return true;
 }
 
-bool Item::HasEnchantRequiredSkill(const Player* player) const
+bool Item::HasEnchantRequiredSkill(constPlayerPtr player) const
 {
     // Check all enchants for required skill
     for (uint32 enchant_slot = PERM_ENCHANTMENT_SLOT; enchant_slot < MAX_ENCHANTMENT_SLOT; ++enchant_slot)
@@ -882,7 +880,7 @@ void Item::SetEnchantment(EnchantmentSlot slot, uint32 id, uint32 duration, uint
     SetState(ITEM_CHANGED, GetOwner());
 }
 
-void Item::SetEnchantmentDuration(EnchantmentSlot slot, uint32 duration, Player* owner)
+void Item::SetEnchantmentDuration(EnchantmentSlot slot, uint32 duration, PlayerPtr owner)
 {
     if (GetEnchantmentDuration(slot) == duration)
         return;
@@ -999,7 +997,7 @@ bool Item::IsLimitedToAnotherMapOrZone(uint32 cur_mapId, uint32 cur_zoneId) cons
 // Though the client has the information in the item's data field,
 // we have to send SMSG_ITEM_TIME_UPDATE to display the remaining
 // time.
-void Item::SendTimeUpdate(Player* owner)
+void Item::SendTimeUpdate(PlayerPtr owner)
 {
     uint32 duration = GetUInt32Value(ITEM_FIELD_DURATION);
     if (!duration)
@@ -1011,10 +1009,10 @@ void Item::SendTimeUpdate(Player* owner)
     owner->GetSession()->SendPacket(&data);
 }
 
-Item* Item::CreateItem(uint32 item, uint32 count, Player const* player)
+ItemPtr Item::CreateItem(uint32 item, uint32 count, constPlayerPtr player)
 {
     if (count < 1)
-        return NULL;                                        //don't create item at zero count
+        return nullptr;                                        //don't create item at zero count
 
     ItemTemplate const* pProto = sObjectMgr->GetItemTemplate(item);
     if (pProto)
@@ -1024,37 +1022,35 @@ Item* Item::CreateItem(uint32 item, uint32 count, Player const* player)
 
         ASSERT(count != 0 && "pProto->Stackable == 0 but checked at loading already");
 
-        Item* pItem = NewItemOrBag(pProto);
+        ItemPtr pItem = NewItemOrBag(pProto);
         if (pItem->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_ITEM), item, player))
         {
             pItem->SetCount(count);
             return pItem;
         }
-        else
-            delete pItem;
     }
     else
         ASSERT(false);
-    return NULL;
+    return nullptr;
 }
 
-Item* Item::CloneItem(uint32 count, Player const* player) const
+ItemPtr Item::CloneItem(uint32 count, constPlayerPtr player) const
 {
-    Item* newItem = CreateItem(GetEntry(), count, player);
+    ItemPtr newItem = CreateItem(GetEntry(), count, player);
     if (!newItem)
-        return NULL;
+        return nullptr;
 
     newItem->SetUInt32Value(ITEM_FIELD_CREATOR,      GetUInt32Value(ITEM_FIELD_CREATOR));
     newItem->SetUInt32Value(ITEM_FIELD_GIFTCREATOR,  GetUInt32Value(ITEM_FIELD_GIFTCREATOR));
     newItem->SetUInt32Value(ITEM_FIELD_FLAGS,        GetUInt32Value(ITEM_FIELD_FLAGS) & ~(ITEM_FLAG_REFUNDABLE | ITEM_FLAG_BOP_TRADEABLE));
     newItem->SetUInt32Value(ITEM_FIELD_DURATION,     GetUInt32Value(ITEM_FIELD_DURATION));
-    // player CAN be NULL in which case we must not update random properties because that accesses player's item update queue
+    // player CAN be nullptr in which case we must not update random properties because that accesses player's item update queue
     if (player)
         newItem->SetItemRandomProperties(GetItemRandomPropertyId());
     return newItem;
 }
 
-bool Item::IsBindedNotWith(Player const* player) const
+bool Item::IsBindedNotWith(constPlayerPtr player) const
 {
     // not binded item
     if (!IsSoulBound())
@@ -1077,7 +1073,7 @@ bool Item::IsBindedNotWith(Player const* player) const
 
 void Item::BuildUpdate(UpdateDataMapType& data_map)
 {
-    if (Player* owner = GetOwner())
+    if (PlayerPtr owner = GetOwner())
         BuildFieldsUpdate(owner, data_map);
     ClearUpdateMask(false);
 }
@@ -1111,7 +1107,7 @@ void Item::DeleteRefundDataFromDB(SQLTransaction* trans)
     }
 }
 
-void Item::SetNotRefundable(Player* owner, bool changestate /*=true*/, SQLTransaction* trans /*=NULL*/)
+void Item::SetNotRefundable(PlayerPtr owner, bool changestate /*=true*/, SQLTransaction* trans /*=nullptr*/)
 {
     if (!HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_REFUNDABLE))
         return;
@@ -1129,7 +1125,7 @@ void Item::SetNotRefundable(Player* owner, bool changestate /*=true*/, SQLTransa
     owner->DeleteRefundReference(GetGUIDLow());
 }
 
-void Item::UpdatePlayedTime(Player* owner)
+void Item::UpdatePlayedTime(PlayerPtr owner)
 {
     /*  Here we update our played time
         We simply add a number to the current played time,
@@ -1138,7 +1134,7 @@ void Item::UpdatePlayedTime(Player* owner)
     // Get current played time
     uint32 current_playtime = GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME);
     // Calculate time elapsed since last played time update
-    time_t curtime = time(NULL);
+    time_t curtime = time(nullptr);
     uint32 elapsed = uint32(curtime - m_lastPlayedTimeUpdate);
     uint32 new_playtime = current_playtime + elapsed;
     // Check if the refund timer has expired yet
@@ -1159,7 +1155,7 @@ void Item::UpdatePlayedTime(Player* owner)
 
 uint32 Item::GetPlayedTime()
 {
-    time_t curtime = time(NULL);
+    time_t curtime = time(nullptr);
     uint32 elapsed = uint32(curtime - m_lastPlayedTimeUpdate);
     return GetUInt32Value(ITEM_FIELD_CREATE_PLAYED_TIME) + elapsed;
 }
@@ -1175,7 +1171,7 @@ void Item::SetSoulboundTradeable(AllowedLooterSet& allowedLooters)
     allowedGUIDs = allowedLooters;
 }
 
-void Item::ClearSoulboundTradeable(Player* currentOwner)
+void Item::ClearSoulboundTradeable(PlayerPtr currentOwner)
 {
     RemoveFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_BOP_TRADEABLE);
     if (allowedGUIDs.empty())
@@ -1255,7 +1251,7 @@ bool Item::CanTransmogrify() const
     return true;
 }
 
-bool Item::CanTransmogrifyItemWithItem(Item const* transmogrified, Item const* transmogrifier)
+bool Item::CanTransmogrifyItemWithItem(constItemPtr transmogrified, constItemPtr transmogrifier)
 {
     if (!transmogrifier || !transmogrified)
         return false;

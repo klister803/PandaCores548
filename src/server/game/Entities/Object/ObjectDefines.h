@@ -73,7 +73,14 @@ enum HighGuid
 // l - OBJECT_FIELD_GUID
 // e - OBJECT_FIELD_ENTRY for GO (except GAMEOBJECT_TYPE_MO_TRANSPORT) and creatures or UNIT_FIELD_PETNUMBER for pets
 // h - OBJECT_FIELD_GUID + 1
-#define MAKE_NEW_GUID(l, e, h)   uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_GUILD || h == HIGHGUID_CORPSE) ? 48 : 52)))
+inline uint64 MAKE_NEW_GUID(uint64 l, uint64 e, uint64 h)
+{
+    if (!l)
+        return 0;
+
+    return uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_GUILD || h == HIGHGUID_CORPSE) ? 48 : 52)));
+}
+//#define MAKE_NEW_GUID(l, e, h)   uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_GUILD || h == HIGHGUID_CORPSE) ? 48 : 52)))
 
 //#define GUID_HIPART(x)   (uint32)((uint64(x) >> 52)) & 0x0000FFFF)
 inline uint32 GUID_HIPART(uint64 guid)

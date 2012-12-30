@@ -53,7 +53,7 @@ class npc_erozion : public CreatureScript
 public:
     npc_erozion() : CreatureScript("npc_erozion") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -73,7 +73,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -195,12 +195,12 @@ class npc_thrall_old_hillsbrad : public CreatureScript
 public:
     npc_thrall_old_hillsbrad() : CreatureScript("npc_thrall_old_hillsbrad") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_thrall_old_hillsbradAI(creature);
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         InstanceScript* instance = creature->GetInstanceScript();
@@ -250,7 +250,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
         {
@@ -284,7 +284,7 @@ public:
 
     struct npc_thrall_old_hillsbradAI : public npc_escortAI
     {
-        npc_thrall_old_hillsbradAI(Creature* creature) : npc_escortAI(creature)
+        npc_thrall_old_hillsbradAI(CreaturePtr creature) : npc_escortAI(creature)
         {
             instance = creature->GetInstanceScript();
             HadMount = false;
@@ -415,7 +415,7 @@ public:
                 case 94:
                     if (uint64 TarethaGUID = instance->GetData64(DATA_TARETHA))
                     {
-                        if (Unit* Taretha = Unit::GetUnit(*me, TarethaGUID))
+                        if (UnitPtr Taretha = Unit::GetUnit(TO_WORLDOBJECT(me), TarethaGUID))
                             DoScriptText(SAY_TA_ESCAPED, Taretha, me);
                     }
                     break;
@@ -438,20 +438,20 @@ public:
                 case 106:
                     {
                         //trigger taretha to run down outside
-                        if (Creature* Taretha = instance->instance->GetCreature(instance->GetData64(DATA_TARETHA)))
+                        if (CreaturePtr Taretha = instance->instance->GetCreature(instance->GetData64(DATA_TARETHA)))
                         {
-                            if (Player* player = GetPlayerForEscort())
+                            if (PlayerPtr player = GetPlayerForEscort())
                                 CAST_AI(npc_escortAI, (Taretha->AI()))->Start(false, true, player->GetGUID());
                         }
 
                         //kill credit Creature for quest
-                        Map* map = me->GetMap();
+                        MapPtr map = me->GetMap();
                         Map::PlayerList const& players = map->GetPlayers();
                         if (!players.isEmpty() && map->IsDungeon())
                         {
                             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                             {
-                                if (Player* player = itr->getSource())
+                                if (PlayerPtr player = itr->getSource())
                                     player->KilledMonsterCredit(20156, 0);
                             }
                         }
@@ -502,7 +502,7 @@ public:
             me->Dismount();
             me->SetSpeed(MOVE_RUN, SPEED_RUN);
         }
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(RAND(SAY_TH_RANDOM_AGGRO1, SAY_TH_RANDOM_AGGRO2, SAY_TH_RANDOM_AGGRO3, SAY_TH_RANDOM_AGGRO4), me);
             if (me->IsMounted())
@@ -512,7 +512,7 @@ public:
             }
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
              switch (summoned->GetEntry())
              {
@@ -529,11 +529,11 @@ public:
              }
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_TH_RANDOM_KILL1, SAY_TH_RANDOM_KILL2, SAY_TH_RANDOM_KILL3), me);
         }
-        void JustDied(Unit* slayer)
+        void JustDied(UnitPtr slayer)
         {
             if (instance)
                 instance->SetData(TYPE_THRALL_EVENT, FAIL);
@@ -577,12 +577,12 @@ class npc_taretha : public CreatureScript
 public:
     npc_taretha() : CreatureScript("npc_taretha") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_tarethaAI(creature);
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         InstanceScript* instance = creature->GetInstanceScript();
@@ -603,7 +603,7 @@ public:
 
                  if (uint64 ThrallGUID = instance->GetData64(DATA_THRALL))
                  {
-                     Creature* Thrall = (Unit::GetCreature((*creature), ThrallGUID));
+                     CreaturePtr Thrall = (Unit::GetCreature(TO_WORLDOBJECT(creature), ThrallGUID));
                      if (Thrall)
                          CAST_AI(npc_thrall_old_hillsbrad::npc_thrall_old_hillsbradAI, Thrall->AI())->StartWP();
                  }
@@ -612,7 +612,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         InstanceScript* instance = creature->GetInstanceScript();
         if (instance && instance->GetData(TYPE_THRALL_PART3) == DONE && instance->GetData(TYPE_THRALL_PART4) == NOT_STARTED)
@@ -625,7 +625,7 @@ public:
 
     struct npc_tarethaAI : public npc_escortAI
     {
-        npc_tarethaAI(Creature* creature) : npc_escortAI(creature)
+        npc_tarethaAI(CreaturePtr creature) : npc_escortAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -646,7 +646,7 @@ public:
         }
 
         void Reset() {}
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {

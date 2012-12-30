@@ -32,6 +32,7 @@ class Unit;
 class Creature;
 class ThreatManager;
 class SpellInfo;
+class ClassFactory;
 
 #define THREAT_UPDATE_INTERVAL 1 * IN_MILLISECONDS    // Server should send threat update to client periodically each second
 
@@ -40,15 +41,17 @@ class SpellInfo;
 
 struct ThreatCalcHelper
 {
-    static float calcThreat(Unit* hatedUnit, Unit* hatingUnit, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const* threatSpell = NULL);
-    static bool isValidProcess(Unit* hatedUnit, Unit* hatingUnit, SpellInfo const* threatSpell = NULL);
+    static float calcThreat(UnitPtr hatedUnit, UnitPtr hatingUnit, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const* threatSpell = nullptr);
+    static bool isValidProcess(UnitPtr hatedUnit, UnitPtr hatingUnit, SpellInfo const* threatSpell = nullptr);
 };
 
 //==============================================================
 class HostileReference : public Reference<Unit, ThreatManager>
 {
+    friend class ClassFactory;
+    private:
+        explicit HostileReference(UnitPtr refUnit, ThreatManagerPtr threatManager, float threat);
     public:
-        HostileReference(Unit* refUnit, ThreatManager* threatManager, float threat);
 
         //=================================================
         void addThreat(float modThreat);
@@ -112,7 +115,7 @@ class HostileReference : public Reference<Unit, ThreatManager>
 
         //=================================================
 
-        HostileReference* next() { return ((HostileReference*) Reference<Unit, ThreatManager>::next()); }
+        std::shared_ptr<HostileReference> next() { return CAST(HostileReference, (Reference<Unit, ThreatManager>::next())); }
 
         //=================================================
 
@@ -128,7 +131,7 @@ class HostileReference : public Reference<Unit, ThreatManager>
         // Inform the source, that the status of that reference was changed
         void fireStatusChanged(ThreatRefStatusChangeEvent& threatRefStatusChangeEvent);
 
-        Unit* getSourceUnit();
+        UnitPtr getSourceUnit();
     private:
         float iThreat;
         float iTempThreatModifier;                          // used for taunt
@@ -143,13 +146,13 @@ class ThreatManager;
 class ThreatContainer
 {
     private:
-        std::list<HostileReference*> iThreatList;
+        std::list<HostileReferencePtr> iThreatList;
         bool iDirty;
     protected:
         friend class ThreatManager;
 
-        void remove(HostileReference* hostileRef) { iThreatList.remove(hostileRef); }
-        void addReference(HostileReference* hostileRef) { iThreatList.push_back(hostileRef); }
+        void remove(HostileReferencePtr hostileRef) { iThreatList.remove(hostileRef); }
+        void addReference(HostileReferencePtr hostileRef) { iThreatList.push_back(hostileRef); }
         void clearReferences();
 
         // Sort the list if necessary
@@ -158,11 +161,11 @@ class ThreatContainer
         ThreatContainer() { iDirty = false; }
         ~ThreatContainer() { clearReferences(); }
 
-        HostileReference* addThreat(Unit* victim, float threat);
+        HostileReferencePtr addThreat(UnitPtr victim, float threat);
 
-        void modifyThreatPercent(Unit* victim, int32 percent);
+        void modifyThreatPercent(UnitPtr victim, int32 percent);
 
-        HostileReference* selectNextVictim(Creature* attacker, HostileReference* currentVictim);
+        HostileReferencePtr selectNextVictim(CreaturePtr attacker, HostileReferencePtr currentVictim);
 
         void setDirty(bool isDirty) { iDirty = isDirty; }
 
@@ -170,33 +173,33 @@ class ThreatContainer
 
         bool empty() const { return iThreatList.empty(); }
 
-        HostileReference* getMostHated() { return iThreatList.empty() ? NULL : iThreatList.front(); }
+        HostileReferencePtr getMostHated() { return iThreatList.empty() ? nullptr : iThreatList.front(); }
 
-        HostileReference* getReferenceByTarget(Unit* victim);
+        HostileReferencePtr getReferenceByTarget(UnitPtr victim);
 
-        std::list<HostileReference*>& getThreatList() { return iThreatList; }
+        std::list<HostileReferencePtr>& getThreatList() { return iThreatList; }
 };
 
 //=================================================
 
-class ThreatManager
+class ThreatManager : public std::enable_shared_from_this<ThreatManager>
 {
     public:
         friend class HostileReference;
 
-        explicit ThreatManager(Unit* owner);
+        explicit ThreatManager(UnitPtr owner);
 
         ~ThreatManager() { clearReferences(); }
 
         void clearReferences();
 
-        void addThreat(Unit* victim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const* threatSpell = NULL);
+        void addThreat(UnitPtr victim, float threat, SpellSchoolMask schoolMask = SPELL_SCHOOL_MASK_NORMAL, SpellInfo const* threatSpell = nullptr);
 
-        void doAddThreat(Unit* victim, float threat);
+        void doAddThreat(UnitPtr victim, float threat);
 
-        void modifyThreatPercent(Unit* victim, int32 percent);
+        void modifyThreatPercent(UnitPtr victim, int32 percent);
 
-        float getThreat(Unit* victim, bool alsoSearchOfflineList = false);
+        float getThreat(UnitPtr victim, bool alsoSearchOfflineList = false);
 
         bool isThreatListEmpty() { return iThreatContainer.empty(); }
 
@@ -204,16 +207,16 @@ class ThreatManager
 
         bool isNeedUpdateToClient(uint32 time);
 
-        HostileReference* getCurrentVictim() { return iCurrentVictim; }
+        HostileReferencePtr getCurrentVictim() { return iCurrentVictim; }
 
-        Unit* getOwner() { return iOwner; }
+        UnitPtr getOwner() { return iOwner; }
 
-        Unit* getHostilTarget();
+        UnitPtr getHostilTarget();
 
-        void tauntApply(Unit* taunter);
-        void tauntFadeOut(Unit* taunter);
+        void tauntApply(UnitPtr taunter);
+        void tauntFadeOut(UnitPtr taunter);
 
-        void setCurrentVictim(HostileReference* hostileRef);
+        void setCurrentVictim(HostileReferencePtr hostileRef);
 
         void setDirty(bool isDirty) { iThreatContainer.setDirty(isDirty); }
 
@@ -223,13 +226,13 @@ class ThreatManager
         // Reset all aggro of unit in threadlist satisfying the predicate.
         template<class PREDICATE> void resetAggro(PREDICATE predicate)
         {
-            std::list<HostileReference*> &threatList = getThreatList();
+            std::list<HostileReferencePtr> &threatList = getThreatList();
             if (threatList.empty())
                 return;
 
-            for (std::list<HostileReference*>::iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
+            for (std::list<HostileReferencePtr>::iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
             {
-                HostileReference* ref = (*itr);
+                HostileReferencePtr ref = (*itr);
 
                 if (predicate(ref->getTarget()))
                 {
@@ -241,15 +244,15 @@ class ThreatManager
 
         // methods to access the lists from the outside to do some dirty manipulation (scriping and such)
         // I hope they are used as little as possible.
-        std::list<HostileReference*>& getThreatList() { return iThreatContainer.getThreatList(); }
-        std::list<HostileReference*>& getOfflineThreatList() { return iThreatOfflineContainer.getThreatList(); }
+        std::list<HostileReferencePtr>& getThreatList() { return iThreatContainer.getThreatList(); }
+        std::list<HostileReferencePtr>& getOfflineThreatList() { return iThreatOfflineContainer.getThreatList(); }
         ThreatContainer& getOnlineContainer() { return iThreatContainer; }
         ThreatContainer& getOfflineContainer() { return iThreatOfflineContainer; }
     private:
-        void _addThreat(Unit* victim, float threat);
+        void _addThreat(UnitPtr victim, float threat);
 
-        HostileReference* iCurrentVictim;
-        Unit* iOwner;
+        HostileReferencePtr iCurrentVictim;
+        UnitPtr iOwner;
         uint32 iUpdateTimer;
         ThreatContainer iThreatContainer;
         ThreatContainer iThreatOfflineContainer;
@@ -264,7 +267,7 @@ namespace Trinity
     {
         public:
             ThreatOrderPred(bool ascending = false) : m_ascending(ascending) {}
-            bool operator() (HostileReference const* a, HostileReference const* b) const
+            bool operator() (constHostileReferencePtr a, constHostileReferencePtr b) const
             {
                 return m_ascending ? a->getThreat() < b->getThreat() : a->getThreat() > b->getThreat();
             }

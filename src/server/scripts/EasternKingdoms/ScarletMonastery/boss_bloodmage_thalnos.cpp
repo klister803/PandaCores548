@@ -43,14 +43,14 @@ class boss_bloodmage_thalnos : public CreatureScript
 public:
     boss_bloodmage_thalnos() : CreatureScript("boss_bloodmage_thalnos") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_bloodmage_thalnosAI (creature);
     }
 
     struct boss_bloodmage_thalnosAI : public ScriptedAI
     {
-        boss_bloodmage_thalnosAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_bloodmage_thalnosAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         bool HpYell;
         uint32 FlameShock_Timer;
@@ -67,12 +67,12 @@ public:
             FireNova_Timer = 40000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
         }
 
-        void KilledUnit(Unit* /*Victim*/)
+        void KilledUnit(UnitPtr /*Victim*/)
         {
             DoScriptText(SAY_KILL, me);
         }

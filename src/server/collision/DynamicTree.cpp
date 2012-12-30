@@ -26,6 +26,16 @@
 #include "Timer.h"
 #include "GameObjectModel.h"
 #include "ModelInstance.h"
+#ifndef INCLUDES_FOR_SHARED_PTR
+# define INCLUDES_FOR_SHARED_PTR
+# include "../Entities/Unit/Unit.h"
+# include "../Entities/Player/Player.h"
+# include "../Entities/GameObject/GameObject.h"
+# include "../Spells/Auras/SpellAuraEffects.h"
+# include "../Groups/Group.h"
+# include "../MovementGenerator.h"
+# undef INCLUDES_FOR_SHARED_PTR
+#endif
 
 using VMAP::ModelInstance;
 using G3D::Ray;

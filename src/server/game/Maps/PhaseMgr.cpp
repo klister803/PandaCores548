@@ -21,7 +21,7 @@
 //////////////////////////////////////////////////////////////////
 // Updating
 
-PhaseMgr::PhaseMgr(Player* _player) : player(_player), phaseData(_player), _UpdateFlags(0)
+PhaseMgr::PhaseMgr(PlayerPtr _player) : player(_player), phaseData(_player), _UpdateFlags(0)
 {
     _PhaseDefinitionStore = sObjectMgr->GetPhaseDefinitionStore();
     _SpellPhaseStore = sObjectMgr->GetSpellPhaseStore();
@@ -126,7 +126,7 @@ bool PhaseMgr::NeedsPhaseUpdateWithData(PhaseUpdateData const updateData) const
 //////////////////////////////////////////////////////////////////
 // Auras
 
-void PhaseMgr::RegisterPhasingAuraEffect(AuraEffect const* auraEffect)
+void PhaseMgr::RegisterPhasingAuraEffect(constAuraEffectPtr auraEffect)
 {
     PhaseInfo phaseInfo;
 
@@ -161,7 +161,7 @@ void PhaseMgr::RegisterPhasingAuraEffect(AuraEffect const* auraEffect)
     Update();
 }
 
-void PhaseMgr::UnRegisterPhasingAuraEffect(AuraEffect const* auraEffect)
+void PhaseMgr::UnRegisterPhasingAuraEffect(constAuraEffectPtr auraEffect)
 {
     _UpdateFlags |= phaseData.RemoveAuraInfo(auraEffect->GetId());
 
@@ -171,7 +171,7 @@ void PhaseMgr::UnRegisterPhasingAuraEffect(AuraEffect const* auraEffect)
 //////////////////////////////////////////////////////////////////
 // Commands
 
-void PhaseMgr::SendDebugReportToPlayer(Player* const debugger)
+void PhaseMgr::SendDebugReportToPlayer(const PlayerPtr debugger)
 {
     ChatHandler(debugger).PSendSysMessage(LANG_PHASING_REPORT_STATUS, player->GetName(), player->GetZoneId(), player->getLevel(), player->GetTeamId(), _UpdateFlags);
 

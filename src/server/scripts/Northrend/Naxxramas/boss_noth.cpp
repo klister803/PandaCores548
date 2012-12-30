@@ -69,14 +69,14 @@ class boss_noth : public CreatureScript
 public:
     boss_noth() : CreatureScript("boss_noth") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_nothAI (creature);
     }
 
     struct boss_nothAI : public BossAI
     {
-        boss_nothAI(Creature* creature) : BossAI(creature, BOSS_NOTH) {}
+        boss_nothAI(CreaturePtr creature) : BossAI(creature, BOSS_NOTH) {}
 
         uint32 waveCount, balconyCount;
 
@@ -87,7 +87,7 @@ public:
             _Reset();
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
             DoScriptText(SAY_AGGRO, me);
@@ -100,7 +100,7 @@ public:
             me->SetReactState(REACT_AGGRESSIVE);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             DoZoneInCombat();
-            if (me->getThreatManager().isThreatListEmpty())
+            if (me->getThreatManager()->isThreatListEmpty())
                 EnterEvadeMode();
             else
             {
@@ -112,20 +112,20 @@ public:
             }
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             if (!(rand()%5))
                 DoScriptText(SAY_SLAY, me);
         }
 
-        void JustSummoned(Creature* summon)
+        void JustSummoned(CreaturePtr summon)
         {
             summons.Summon(summon);
             summon->setActive(true);
             summon->AI()->DoZoneInCombat();
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             _JustDied();
             DoScriptText(SAY_DEATH, me);

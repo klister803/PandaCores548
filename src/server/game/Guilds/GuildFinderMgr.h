@@ -74,7 +74,7 @@ struct MembershipRequest
             _interests(interests), _time(submitTime), _comment(comment) {}
         
         MembershipRequest() : _playerGUID(0), _guildId(0), _availability(0), _classRoles(0),
-            _interests(0), _time(time(NULL)) {}
+            _interests(0), _time(time(nullptr)) {}
 
         uint32 GetGuildId() const      { return _guildId; }
         uint32 GetPlayerGUID() const   { return _playerGUID; }

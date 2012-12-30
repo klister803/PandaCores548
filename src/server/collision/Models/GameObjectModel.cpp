@@ -28,6 +28,17 @@
 #include "TemporarySummon.h"
 #include "Object.h"
 #include "DBCStores.h"
+#include "MovementGenerator.h"
+#include "SpellAuras.h"
+#include "../Entities/Pet/Pet.h"
+#include "MapReference.h"
+
+#ifndef INCLUDES_FOR_SHARED_PTR
+# define INCLUDES_FOR_SHARED_PTR
+# include "../Entities/Player/Player.h"
+# include "../Groups/Group.h"
+# undef INCLUDES_FOR_SHARED_PTR
+#endif
 
 using G3D::Vector3;
 using G3D::Ray;
@@ -93,7 +104,7 @@ GameObjectModel::~GameObjectModel()
         ((VMAP::VMapManager2*)VMAP::VMapFactory::createOrGetVMapManager())->releaseModelInstance(name);
 }
 
-bool GameObjectModel::initialize(const GameObject& go, const GameObjectDisplayInfoEntry& info)
+bool GameObjectModel::initialize(constGameObjectPtr go, const GameObjectDisplayInfoEntry& info)
 {
     ModelList::const_iterator it = model_list.find(info.Displayid);
     if (it == model_list.end())
@@ -116,12 +127,12 @@ bool GameObjectModel::initialize(const GameObject& go, const GameObjectDisplayIn
     //flags = VMAP::MOD_M2;
     //adtId = 0;
     //ID = 0;
-    iPos = Vector3(go.GetPositionX(), go.GetPositionY(), go.GetPositionZ());
-    phasemask = go.GetPhaseMask();
-    iScale = go.GetFloatValue(OBJECT_FIELD_SCALE_X);
+    iPos = Vector3(go->GetPositionX(), go->GetPositionY(), go->GetPositionZ());
+    phasemask = go->GetPhaseMask();
+    iScale = go->GetFloatValue(OBJECT_FIELD_SCALE_X);
     iInvScale = 1.f / iScale;
 
-    G3D::Matrix3 iRotation = G3D::Matrix3::fromEulerAnglesZYX(go.GetOrientation(), 0, 0);
+    G3D::Matrix3 iRotation = G3D::Matrix3::fromEulerAnglesZYX(go->GetOrientation(), 0, 0);
     iInvRot = iRotation.inverse();
     // transform bounding box:
     mdl_box = AABox(mdl_box.low() * iScale, mdl_box.high() * iScale);
@@ -135,7 +146,7 @@ bool GameObjectModel::initialize(const GameObject& go, const GameObjectDisplayIn
     for (int i = 0; i < 8; ++i)
     {
         Vector3 pos(iBound.corner(i));
-        if (Creature* c = const_cast<GameObject&>(go).SummonCreature(24440, pos.x, pos.y, pos.z, 0, TEMPSUMMON_MANUAL_DESPAWN))
+        if (CreaturePtr c = const_cast<GameObject&>(go).SummonCreature(24440, pos.x, pos.y, pos.z, 0, TEMPSUMMON_MANUAL_DESPAWN))
         {
             c->setFaction(35);
             c->SetFloatValue(OBJECT_FIELD_SCALE_X, 0.1f);
@@ -146,17 +157,17 @@ bool GameObjectModel::initialize(const GameObject& go, const GameObjectDisplayIn
     return true;
 }
 
-GameObjectModel* GameObjectModel::Create(const GameObject& go)
+GameObjectModel* GameObjectModel::Create(constGameObjectPtr go)
 {
-    const GameObjectDisplayInfoEntry* info = sGameObjectDisplayInfoStore.LookupEntry(go.GetDisplayId());
+    const GameObjectDisplayInfoEntry* info = sGameObjectDisplayInfoStore.LookupEntry(go->GetDisplayId());
     if (!info)
-        return NULL;
+        return nullptr;
 
     GameObjectModel* mdl = new GameObjectModel();
     if (!mdl->initialize(go, *info))
     {
         delete mdl;
-        return NULL;
+        return nullptr;
     }
 
     return mdl;

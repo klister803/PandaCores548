@@ -35,21 +35,21 @@ public:
     {
         static ChatCommand titlesSetCommandTable[] =
         {
-            { "mask",           SEC_GAMEMASTER,     false, &HandleTitlesSetMaskCommand,        "", NULL },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "mask",           SEC_GAMEMASTER,     false, &HandleTitlesSetMaskCommand,        "", nullptr },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
         static ChatCommand titlesCommandTable[] =
         {
-            { "add",            SEC_GAMEMASTER,     false, &HandleTitlesAddCommand,            "", NULL },
-            { "current",        SEC_GAMEMASTER,     false, &HandleTitlesCurrentCommand,        "", NULL },
-            { "remove",         SEC_GAMEMASTER,     false, &HandleTitlesRemoveCommand,         "", NULL },
-            { "set",            SEC_GAMEMASTER,     false, NULL,              "", titlesSetCommandTable },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "add",            SEC_GAMEMASTER,     false, &HandleTitlesAddCommand,            "", nullptr },
+            { "current",        SEC_GAMEMASTER,     false, &HandleTitlesCurrentCommand,        "", nullptr },
+            { "remove",         SEC_GAMEMASTER,     false, &HandleTitlesRemoveCommand,         "", nullptr },
+            { "set",            SEC_GAMEMASTER,     false, nullptr,              "", titlesSetCommandTable },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "titles",         SEC_GAMEMASTER,     false, NULL,                 "", titlesCommandTable },
-            { NULL,             0,                  false, NULL,                               "", NULL }
+            { "titles",         SEC_GAMEMASTER,     false, nullptr,                 "", titlesCommandTable },
+            { nullptr,             0,                  false, nullptr,                               "", nullptr }
         };
         return commandTable;
     }
@@ -69,7 +69,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -114,7 +114,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -161,7 +161,7 @@ public:
             return false;
         }
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -210,7 +210,7 @@ public:
 
         sscanf((char*)args, UI64FMTD, &titles);
 
-        Player* target = handler->getSelectedPlayer();
+        PlayerPtr target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);

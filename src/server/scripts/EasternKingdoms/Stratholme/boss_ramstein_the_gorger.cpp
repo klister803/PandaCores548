@@ -37,14 +37,14 @@ class boss_ramstein_the_gorger : public CreatureScript
 public:
     boss_ramstein_the_gorger() : CreatureScript("boss_ramstein_the_gorger") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_ramstein_the_gorgerAI (creature);
     }
 
     struct boss_ramstein_the_gorgerAI : public ScriptedAI
     {
-        boss_ramstein_the_gorgerAI(Creature* creature) : ScriptedAI(creature)
+        boss_ramstein_the_gorgerAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = me->GetInstanceScript();
         }
@@ -60,15 +60,15 @@ public:
             Knockout_Timer = 12000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             for (uint8 i = 0; i < 30; ++i)
             {
-                if (Creature* mob = me->SummonCreature(C_MINDLESS_UNDEAD, 3969.35f+irand(-10, 10), -3391.87f+irand(-10, 10), 119.11f, 5.91f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 1800000))
+                if (CreaturePtr mob = me->SummonCreature(C_MINDLESS_UNDEAD, 3969.35f+irand(-10, 10), -3391.87f+irand(-10, 10), 119.11f, 5.91f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 1800000))
                     mob->AI()->AttackStart(me->SelectNearestTarget(100.0f));
             }
 

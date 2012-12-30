@@ -29,14 +29,14 @@ class boss_ambassador_flamelash : public CreatureScript
 public:
     boss_ambassador_flamelash() : CreatureScript("boss_ambassador_flamelash") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_ambassador_flamelashAI (creature);
     }
 
     struct boss_ambassador_flamelashAI : public ScriptedAI
     {
-        boss_ambassador_flamelashAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_ambassador_flamelashAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 FireBlast_Timer;
         uint32 Spirit_Timer;
@@ -47,11 +47,11 @@ public:
             Spirit_Timer = 24000;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void SummonSpirits(Unit* victim)
+        void SummonSpirits(UnitPtr victim)
         {
-            if (Creature* Spirit = DoSpawnCreature(9178, float(irand(-9, 9)), float(irand(-9, 9)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000))
+            if (CreaturePtr Spirit = DoSpawnCreature(9178, float(irand(-9, 9)), float(irand(-9, 9)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000))
                 Spirit->AI()->AttackStart(victim);
         }
 

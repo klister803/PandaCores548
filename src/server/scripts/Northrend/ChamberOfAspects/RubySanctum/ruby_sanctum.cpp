@@ -53,7 +53,7 @@ class npc_xerestrasza : public CreatureScript
 
         struct npc_xerestraszaAI : public ScriptedAI
         {
-            npc_xerestraszaAI(Creature* creature) : ScriptedAI(creature)
+            npc_xerestraszaAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 _isIntro = true;
                 _introDone = false;
@@ -137,7 +137,7 @@ class npc_xerestrasza : public CreatureScript
             bool _introDone;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetRubySanctumAI<npc_xerestraszaAI>(creature);
         }
@@ -148,15 +148,15 @@ class at_baltharus_plateau : public AreaTriggerScript
     public:
         at_baltharus_plateau() : AreaTriggerScript("at_baltharus_plateau") { }
 
-        bool OnTrigger(Player* player, AreaTriggerEntry const* /*areaTrigger*/)
+        bool OnTrigger(PlayerPtr player, AreaTriggerEntry const* /*areaTrigger*/)
         {
             // Only trigger once
             if (InstanceScript* instance = player->GetInstanceScript())
             {
-                if (Creature* xerestrasza = ObjectAccessor::GetCreature(*player, instance->GetData64(DATA_XERESTRASZA)))
+                if (CreaturePtr xerestrasza = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(player), instance->GetData64(DATA_XERESTRASZA)))
                     xerestrasza->AI()->DoAction(ACTION_INTRO_BALTHARUS);
 
-                if (Creature* baltharus = ObjectAccessor::GetCreature(*player, instance->GetData64(DATA_BALTHARUS_THE_WARBORN)))
+                if (CreaturePtr baltharus = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(player), instance->GetData64(DATA_BALTHARUS_THE_WARBORN)))
                     baltharus->AI()->DoAction(ACTION_INTRO_BALTHARUS);
             }
 

@@ -28,7 +28,7 @@ namespace Trinity
 class SignalHandler : public ACE_Event_Handler
 {
     public:
-        int handle_signal(int SigNum, siginfo_t* = NULL, ucontext_t* = NULL)
+        int handle_signal(int SigNum, siginfo_t* = nullptr, ucontext_t* = nullptr)
         {
             HandleSignal(SigNum);
             return 0;

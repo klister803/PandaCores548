@@ -22,12 +22,12 @@
 
 void FollowerReference::targetObjectBuildLink()
 {
-    getTarget()->addFollower(this);
+    getTarget()->addFollower(STATIC_CAST(FollowerReference,shared_from_this()));
 }
 
 void FollowerReference::targetObjectDestroyLink()
 {
-    getTarget()->removeFollower(this);
+    getTarget()->removeFollower(STATIC_CAST(FollowerReference,shared_from_this()));
 }
 
 void FollowerReference::sourceObjectDestroyLink()

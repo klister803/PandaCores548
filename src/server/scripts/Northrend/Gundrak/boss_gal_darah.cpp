@@ -69,14 +69,14 @@ class boss_gal_darah : public CreatureScript
 public:
     boss_gal_darah() : CreatureScript("boss_gal_darah") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_gal_darahAI (creature);
     }
 
     struct boss_gal_darahAI : public ScriptedAI
     {
-        boss_gal_darahAI(Creature* creature) : ScriptedAI(creature)
+        boss_gal_darahAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -123,7 +123,7 @@ public:
                 instance->SetData(DATA_GAL_DARAH_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -229,7 +229,7 @@ public:
 
                         if (uiImpalingChargeTimer <= diff)
                         {
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             {
                                 DoCast(target, SPELL_IMPALING_CHARGE);
                                 CheckAchievement(target->GetGUID());
@@ -266,7 +266,7 @@ public:
             return 0;
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -274,7 +274,7 @@ public:
                 instance->SetData(DATA_GAL_DARAH_EVENT, DONE);
         }
 
-        void KilledUnit(Unit* victim)
+        void KilledUnit(UnitPtr victim)
         {
             if (victim == me)
                 return;
@@ -292,12 +292,12 @@ class achievement_share_the_love : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(Player* /*player*/, Unit* target)
+        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
         {
             if (!target)
                 return false;
 
-            if (Creature* GalDarah = target->ToCreature())
+            if (CreaturePtr GalDarah = TO_CREATURE(target))
                 if (GalDarah->AI()->GetData(DATA_SHARE_THE_LOVE) >= 5)
                     return true;
 

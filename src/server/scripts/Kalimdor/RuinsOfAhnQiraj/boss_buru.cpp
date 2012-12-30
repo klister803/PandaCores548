@@ -39,12 +39,12 @@ class boss_buru : public CreatureScript
 
         struct boss_buruAI : public ScriptedAI
         {
-            boss_buruAI(Creature* creature) : ScriptedAI(creature)
+            boss_buruAI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_buruAI(creature);
         }

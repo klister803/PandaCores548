@@ -56,14 +56,14 @@ class boss_patchwerk : public CreatureScript
 public:
     boss_patchwerk() : CreatureScript("boss_patchwerk") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_patchwerkAI (creature);
     }
 
     struct boss_patchwerkAI : public BossAI
     {
-        boss_patchwerkAI(Creature* creature) : BossAI(creature, BOSS_PATCHWERK) {}
+        boss_patchwerkAI(CreaturePtr creature) : BossAI(creature, BOSS_PATCHWERK) {}
 
         bool Enraged;
 
@@ -75,19 +75,19 @@ public:
                 instance->DoStopTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_MAKE_QUICK_WERK_OF_HIM_STARTING_EVENT);
         }
 
-        void KilledUnit(Unit* /*Victim*/)
+        void KilledUnit(UnitPtr /*Victim*/)
         {
             if (!(rand()%5))
                 DoScriptText(SAY_SLAY, me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             _JustDied();
             DoScriptText(SAY_DEATH, me);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
             Enraged = false;
@@ -115,11 +115,11 @@ public:
                         //Cast Hateful strike on the player with the highest
                         //amount of HP within melee distance
                         uint32 MostHP = 0;
-                        Unit* pMostHPTarget = NULL;
-                        std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
-                        for (; i != me->getThreatManager().getThreatList().end(); ++i)
+                        UnitPtr pMostHPTarget = nullptr;
+                        std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager()->getThreatList().begin();
+                        for (; i != me->getThreatManager()->getThreatList().end(); ++i)
                         {
-                            Unit* target = (*i)->getTarget();
+                            UnitPtr target = (*i)->getTarget();
                             if (target->isAlive() && target != me->getVictim() && target->GetHealth() > MostHP && me->IsWithinMeleeRange(target))
                             {
                                 MostHP = target->GetHealth();

@@ -46,14 +46,14 @@ class boss_captain_skarloc : public CreatureScript
 public:
     boss_captain_skarloc() : CreatureScript("boss_captain_skarloc") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_captain_skarlocAI (creature);
     }
 
     struct boss_captain_skarlocAI : public ScriptedAI
     {
-        boss_captain_skarlocAI(Creature* creature) : ScriptedAI(creature)
+        boss_captain_skarlocAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -77,19 +77,19 @@ public:
             Consecration_Timer = 8000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             //This is not correct. Should taunt Thrall before engage in combat
             DoScriptText(SAY_TAUNT1, me);
             DoScriptText(SAY_TAUNT2, me);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 

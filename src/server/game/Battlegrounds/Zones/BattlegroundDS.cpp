@@ -23,6 +23,7 @@
 #include "Object.h"
 #include "ObjectMgr.h"
 #include "WorldPacket.h"
+#include "SpellAuraEffects.h"
 
 BattlegroundDS::BattlegroundDS()
 {
@@ -55,7 +56,7 @@ void BattlegroundDS::PostUpdateImpl(uint32 diff)
         if (getPipeKnockBackTimer() < diff)
         {
             for (uint32 i = BG_DS_NPC_PIPE_KNOCKBACK_1; i <= BG_DS_NPC_PIPE_KNOCKBACK_2; ++i)
-                if (Creature* waterSpout = GetBgMap()->GetCreature(BgCreatures[i]))
+                if (CreaturePtr waterSpout = GetBgMap()->GetCreature(BgCreatures[i]))
                     waterSpout->CastSpell(waterSpout, BG_DS_SPELL_FLUSH, true);
 
             setPipeKnockBackCount(getPipeKnockBackCount() + 1);
@@ -69,7 +70,7 @@ void BattlegroundDS::PostUpdateImpl(uint32 diff)
     {
         if (getWaterFallKnockbackTimer() < diff)
         {
-            if (Creature* waterSpout = GetBgMap()->GetCreature(BgCreatures[BG_DS_NPC_WATERFALL_KNOCKBACK]))
+            if (CreaturePtr waterSpout = GetBgMap()->GetCreature(BgCreatures[BG_DS_NPC_WATERFALL_KNOCKBACK]))
                 waterSpout->CastSpell(waterSpout, BG_DS_SPELL_WATER_SPOUT, true);
 
             setWaterFallKnockbackTimer(BG_DS_WATERFALL_KNOCKBACK_TIMER);
@@ -88,7 +89,7 @@ void BattlegroundDS::PostUpdateImpl(uint32 diff)
         }
         else if (getWaterFallStatus() == BG_DS_WATERFALL_STATUS_WARNING) // Active collision and start knockback timer
         {
-            if (GameObject* gob = GetBgMap()->GetGameObject(BgObjects[BG_DS_OBJECT_WATER_1]))
+            if (GameObjectPtr gob = GetBgMap()->GetGameObject(BgObjects[BG_DS_OBJECT_WATER_1]))
                 gob->SetGoState(GO_STATE_READY);
 
             setWaterFallTimer(BG_DS_WATERFALL_DURATION);
@@ -98,7 +99,7 @@ void BattlegroundDS::PostUpdateImpl(uint32 diff)
         else //if (getWaterFallStatus() == BG_DS_WATERFALL_STATUS_ON) // Remove collision and water
         {
             // turn off collision
-            if (GameObject* gob = GetBgMap()->GetGameObject(BgObjects[BG_DS_OBJECT_WATER_1]))
+            if (GameObjectPtr gob = GetBgMap()->GetGameObject(BgObjects[BG_DS_OBJECT_WATER_1]))
                 gob->SetGoState(GO_STATE_ACTIVE);
 
             DoorOpen(BG_DS_OBJECT_WATER_2);
@@ -134,17 +135,17 @@ void BattlegroundDS::StartingEventOpenDoors()
     DoorOpen(BG_DS_OBJECT_WATER_2);
 
     // Turn off collision
-    if (GameObject* gob = GetBgMap()->GetGameObject(BgObjects[BG_DS_OBJECT_WATER_1]))
+    if (GameObjectPtr gob = GetBgMap()->GetGameObject(BgObjects[BG_DS_OBJECT_WATER_1]))
         gob->SetGoState(GO_STATE_ACTIVE);
 
     // Remove effects of Demonic Circle Summon
     for (BattlegroundPlayerMap::const_iterator itr = GetPlayers().begin(); itr != GetPlayers().end(); ++itr)
-        if (Player* player = ObjectAccessor::FindPlayer(itr->first))
+        if (PlayerPtr player = ObjectAccessor::FindPlayer(itr->first))
             if (player->HasAura(48018))
                 player->RemoveAurasDueToSpell(48018);
 }
 
-void BattlegroundDS::AddPlayer(Player* player)
+void BattlegroundDS::AddPlayer(PlayerPtr player)
 {
     Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
@@ -155,7 +156,7 @@ void BattlegroundDS::AddPlayer(Player* player)
     UpdateArenaWorldState();
 }
 
-void BattlegroundDS::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
+void BattlegroundDS::RemovePlayer(PlayerPtr /*Player*/, uint64 /*guid*/, uint32 /*team*/)
 {
     if (GetStatus() == STATUS_WAIT_LEAVE)
         return;
@@ -164,7 +165,7 @@ void BattlegroundDS::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*
     CheckArenaWinConditions();
 }
 
-void BattlegroundDS::HandleKillPlayer(Player* player, Player* killer)
+void BattlegroundDS::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -181,7 +182,7 @@ void BattlegroundDS::HandleKillPlayer(Player* player, Player* killer)
     CheckArenaWinConditions();
 }
 
-void BattlegroundDS::HandleAreaTrigger(Player* Source, uint32 Trigger)
+void BattlegroundDS::HandleAreaTrigger(PlayerPtr Source, uint32 Trigger)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -206,7 +207,7 @@ void BattlegroundDS::HandleAreaTrigger(Player* Source, uint32 Trigger)
     }
 }
 
-bool BattlegroundDS::HandlePlayerUnderMap(Player* player)
+bool BattlegroundDS::HandlePlayerUnderMap(PlayerPtr player)
 {
     player->TeleportTo(GetMapId(), 1299.046f, 784.825f, 9.338f, 2.422f, false);
     return true;

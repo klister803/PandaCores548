@@ -67,14 +67,14 @@ class instance_blackrock_depths : public InstanceMapScript
 public:
     instance_blackrock_depths() : InstanceMapScript("instance_blackrock_depths", 230) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_blackrock_depths_InstanceMapScript(map);
     }
 
     struct instance_blackrock_depths_InstanceMapScript : public InstanceScript
     {
-        instance_blackrock_depths_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_blackrock_depths_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
 
         uint32 encounter[MAX_ENCOUNTER];
         std::string str_data;
@@ -154,7 +154,7 @@ public:
                 TombBossGUIDs[i] = 0;
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {
@@ -176,7 +176,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {
@@ -374,11 +374,11 @@ public:
         {
             if (GhostKillCount < 7 && TombBossGUIDs[TombEventCounter])
             {
-                if (Creature* boss = instance->GetCreature(TombBossGUIDs[TombEventCounter]))
+                if (CreaturePtr boss = instance->GetCreature(TombBossGUIDs[TombEventCounter]))
                 {
                     boss->setFaction(FACTION_HOSTILE);
                     boss->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
-                    if (Unit* target = boss->SelectNearestTarget(500))
+                    if (UnitPtr target = boss->SelectNearestTarget(500))
                         boss->AI()->AttackStart(target);
                 }
             }
@@ -390,7 +390,7 @@ public:
             HandleGameObject(GoTombEnterGUID, true);//event reseted, open entrance door
             for (uint8 i = 0; i < 7; ++i)
             {
-                if (Creature* boss = instance->GetCreature(TombBossGUIDs[i]))
+                if (CreaturePtr boss = instance->GetCreature(TombBossGUIDs[i]))
                 {
                     if (!boss->isAlive())
                     {//do not call EnterEvadeMode(), it will create infinit loops
@@ -400,7 +400,7 @@ public:
                         boss->CombatStop(true);
                         boss->LoadCreaturesAddon();
                         boss->GetMotionMaster()->MoveTargetedHome();
-                        boss->SetLootRecipient(NULL);
+                        boss->SetLootRecipient(nullptr);
                     }
                     boss->setFaction(FACTION_FRIEND);
                 }
@@ -439,7 +439,7 @@ public:
                     // Check Killed bosses
                     for (uint8 i = 0; i < 7; ++i)
                     {
-                        if (Creature* boss = instance->GetCreature(TombBossGUIDs[i]))
+                        if (CreaturePtr boss = instance->GetCreature(TombBossGUIDs[i]))
                         {
                             if (!boss->isAlive())
                             {

@@ -61,14 +61,14 @@ class boss_nexusprince_shaffar : public CreatureScript
 public:
     boss_nexusprince_shaffar() : CreatureScript("boss_nexusprince_shaffar") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_nexusprince_shaffarAI (creature);
     }
 
     struct boss_nexusprince_shaffarAI : public ScriptedAI
     {
-        boss_nexusprince_shaffarAI(Creature* creature) : ScriptedAI(creature), summons(me) { HasTaunted = false; }
+        boss_nexusprince_shaffarAI(CreaturePtr creature) : ScriptedAI(creature), summons(me) { HasTaunted = false; }
 
         uint32 Blink_Timer;
         uint32 Beacon_Timer;
@@ -106,7 +106,7 @@ public:
             ScriptedAI::EnterEvadeMode();
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (!HasTaunted && who->GetTypeId() == TYPEID_PLAYER && me->IsWithinDistInMap(who, 100.0f))
             {
@@ -115,7 +115,7 @@ public:
             }
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
 
@@ -123,30 +123,30 @@ public:
             summons.DoZoneInCombat();
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             if (summoned->GetEntry() == NPC_BEACON)
             {
                 summoned->CastSpell(summoned, SPELL_ETHEREAL_BEACON_VISUAL, false);
 
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     summoned->AI()->AttackStart(target);
             }
 
             summons.Summon(summoned);
         }
 
-        void SummonedCreatureDespawn(Creature* summon)
+        void SummonedCreatureDespawn(CreaturePtr summon)
         {
             summons.Despawn(summon);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEAD, me);
             summons.DespawnAll();
@@ -227,14 +227,14 @@ class mob_ethereal_beacon : public CreatureScript
 public:
     mob_ethereal_beacon() : CreatureScript("mob_ethereal_beacon") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_ethereal_beaconAI (creature);
     }
 
     struct mob_ethereal_beaconAI : public ScriptedAI
     {
-        mob_ethereal_beaconAI(Creature* creature) : ScriptedAI(creature)
+        mob_ethereal_beaconAI(CreaturePtr creature) : ScriptedAI(creature)
         {
         }
 
@@ -254,10 +254,10 @@ public:
             Check_Timer = 1000;
         }
 
-        void EnterCombat(Unit* who)
+        void EnterCombat(UnitPtr who)
         {
             // Send Shaffar to fight
-            Creature* Shaffar = me->FindNearestCreature(NPC_SHAFFAR, 100);
+            CreaturePtr Shaffar = me->FindNearestCreature(NPC_SHAFFAR, 100);
             if (!Shaffar || Shaffar->isDead())
             {
                 KillSelf();
@@ -267,7 +267,7 @@ public:
                 Shaffar->AI()->AttackStart(who);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->AI()->AttackStart(me->getVictim());
         }
@@ -279,7 +279,7 @@ public:
 
             if (Check_Timer <= diff)
             {
-                Creature* Shaffar = me->FindNearestCreature(NPC_SHAFFAR, 100);
+                CreaturePtr Shaffar = me->FindNearestCreature(NPC_SHAFFAR, 100);
                 if (!Shaffar || Shaffar->isDead() || !Shaffar->isInCombat())
                 {
                     KillSelf();
@@ -319,14 +319,14 @@ class mob_ethereal_apprentice : public CreatureScript
 public:
     mob_ethereal_apprentice() : CreatureScript("mob_ethereal_apprentice") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_ethereal_apprenticeAI (creature);
     }
 
     struct mob_ethereal_apprenticeAI : public ScriptedAI
     {
-        mob_ethereal_apprenticeAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_ethereal_apprenticeAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 Cast_Timer;
 

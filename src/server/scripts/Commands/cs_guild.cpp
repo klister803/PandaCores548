@@ -27,6 +27,7 @@ EndScriptData */
 #include "Guild.h"
 #include "GuildMgr.h"
 #include "ObjectAccessor.h"
+#include "../SharedPtrs/ClassFactory.h"
 
 class guild_commandscript : public CommandScript
 {
@@ -37,19 +38,19 @@ public:
     {
         static ChatCommand guildCommandTable[] =
         {
-            { "create",         SEC_GAMEMASTER,     true,  &HandleGuildCreateCommand,           "", NULL },
-            { "delete",         SEC_GAMEMASTER,     true,  &HandleGuildDeleteCommand,           "", NULL },
-            { "invite",         SEC_GAMEMASTER,     true,  &HandleGuildInviteCommand,           "", NULL },
-            { "uninvite",       SEC_GAMEMASTER,     true,  &HandleGuildUninviteCommand,         "", NULL },
-            { "rank",           SEC_GAMEMASTER,     true,  &HandleGuildRankCommand,             "", NULL },
-            { "givexp",         SEC_GAMEMASTER,     true,  &HandleGuildXpCommand,               "", NULL },
-            { "levelup",        SEC_GAMEMASTER,     true,  &HandleGuildLevelUpCommand,          "", NULL },
-            { NULL,             0,                  false, NULL,                                "", NULL }
+            { "create",         SEC_GAMEMASTER,     true,  &HandleGuildCreateCommand,           "", nullptr },
+            { "delete",         SEC_GAMEMASTER,     true,  &HandleGuildDeleteCommand,           "", nullptr },
+            { "invite",         SEC_GAMEMASTER,     true,  &HandleGuildInviteCommand,           "", nullptr },
+            { "uninvite",       SEC_GAMEMASTER,     true,  &HandleGuildUninviteCommand,         "", nullptr },
+            { "rank",           SEC_GAMEMASTER,     true,  &HandleGuildRankCommand,             "", nullptr },
+            { "givexp",         SEC_GAMEMASTER,     true,  &HandleGuildXpCommand,               "", nullptr },
+            { "levelup",        SEC_GAMEMASTER,     true,  &HandleGuildLevelUpCommand,          "", nullptr },
+            { nullptr,          0,                  false, nullptr,                             "", nullptr }
         };
         static ChatCommand commandTable[] =
         {
-            { "guild",          SEC_ADMINISTRATOR,  true, NULL,                                 "", guildCommandTable },
-            { NULL,             0,                  false, NULL,                                "", NULL }
+            { "guild",          SEC_ADMINISTRATOR,  true, nullptr,                                 "", guildCommandTable },
+            { nullptr,          0,                  false, nullptr,                                "", nullptr }
         };
         return commandTable;
     }
@@ -68,11 +69,11 @@ public:
             return false;
 
         // if not guild name only (in "") then player name
-        Player* target;
-        if (!handler->extractPlayerTarget(*args != '"' ? (char*)args : NULL, &target))
+        PlayerPtr target;
+        if (!handler->extractPlayerTarget(*args != '"' ? (char*)args : nullptr, &target))
             return false;
 
-        char* tailStr = *args != '"' ? strtok(NULL, "") : (char*)args;
+        char* tailStr = *args != '"' ? strtok(nullptr, "") : (char*)args;
         if (!tailStr)
             return false;
 
@@ -88,10 +89,9 @@ public:
             return true;
         }
 
-        Guild* guild = new Guild;
+        GuildPtr guild = ClassFactory::ConstructGuild();
         if (!guild->Create(target, guildName))
         {
-            delete guild;
             handler->SendSysMessage(LANG_GUILD_NOT_CREATED);
             handler->SetSentErrorMessage(true);
             return false;
@@ -113,7 +113,7 @@ public:
 
         std::string guildName = guildStr;
 
-        Guild* targetGuild = sGuildMgr->GetGuildByName(guildName);
+        GuildPtr targetGuild = sGuildMgr->GetGuildByName(guildName);
         if (!targetGuild)
             return false;
 
@@ -129,10 +129,10 @@ public:
 
         // if not guild name only (in "") then player name
         uint64 targetGuid;
-        if (!handler->extractPlayerTarget(*args != '"' ? (char*)args : NULL, NULL, &targetGuid))
+        if (!handler->extractPlayerTarget(*args != '"' ? (char*)args : nullptr, nullptr, &targetGuid))
             return false;
 
-        char* tailStr = *args != '"' ? strtok(NULL, "") : (char*)args;
+        char* tailStr = *args != '"' ? strtok(nullptr, "") : (char*)args;
         if (!tailStr)
             return false;
 
@@ -141,7 +141,7 @@ public:
             return false;
 
         std::string guildName = guildStr;
-        Guild* targetGuild = sGuildMgr->GetGuildByName(guildName);
+        GuildPtr targetGuild = sGuildMgr->GetGuildByName(guildName);
         if (!targetGuild)
             return false;
 
@@ -151,7 +151,7 @@ public:
 
     static bool HandleGuildUninviteCommand(ChatHandler* handler, char const* args)
     {
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         if (!handler->extractPlayerTarget((char*)args, &target, &targetGuid))
             return false;
@@ -160,7 +160,7 @@ public:
         if (!guildId)
             return false;
 
-        Guild* targetGuild = sGuildMgr->GetGuildById(guildId);
+        GuildPtr targetGuild = sGuildMgr->GetGuildById(guildId);
         if (!targetGuild)
             return false;
 
@@ -176,7 +176,7 @@ public:
         if (!rankStr)
             return false;
 
-        Player* target;
+        PlayerPtr target;
         uint64 targetGuid;
         std::string target_name;
         if (!handler->extractPlayerTarget(nameStr, &target, &targetGuid, &target_name))
@@ -186,7 +186,7 @@ public:
         if (!guildId)
             return false;
 
-        Guild* targetGuild = sGuildMgr->GetGuildById(guildId);
+        GuildPtr targetGuild = sGuildMgr->GetGuildById(guildId);
         if (!targetGuild)
             return false;
 
@@ -199,7 +199,7 @@ public:
         if (!*args)
             return false;
 
-        Guild* targetGuild;
+        GuildPtr targetGuild;
         uint32 amount = 0;
 
         if (*args == '"')
@@ -215,7 +215,7 @@ public:
             if (!handler->getSelectedPlayer())
                 return false;
 
-            Player* target = handler->getSelectedPlayer();
+            PlayerPtr target = handler->getSelectedPlayer();
 
             if (!target->GetGuildId())
                 return false;
@@ -237,7 +237,7 @@ public:
         if (!*args)
             return false;
 
-        Guild* targetGuild;
+        GuildPtr targetGuild;
         uint32 amount = 0;
 
         if (*args == '"')
@@ -253,7 +253,7 @@ public:
             if (!handler->getSelectedPlayer())
                 return false;
 
-            Player* target = handler->getSelectedPlayer();
+            PlayerPtr target = handler->getSelectedPlayer();
 
             if (!target->GetGuildId())
                 return false;

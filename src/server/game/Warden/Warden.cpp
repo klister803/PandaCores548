@@ -38,7 +38,7 @@ Warden::~Warden()
 {
     delete[] _module->CompressedData;
     delete _module;
-    _module = NULL;
+    _module = nullptr;
     _initialized = false;
 }
 
@@ -162,7 +162,7 @@ uint32 Warden::BuildChecksum(const uint8* data, uint32 length)
     return checkSum;
 }
 
-std::string Warden::Penalty(WardenCheck* check /*= NULL*/)
+std::string Warden::Penalty(WardenCheck* check /*= nullptr*/)
 {
     WardenActions action;
 
@@ -188,7 +188,7 @@ std::string Warden::Penalty(WardenCheck* check /*= NULL*/)
             AccountMgr::GetName(_session->GetAccountId(), accountName);
             std::stringstream banReason;
             banReason << "Warden Anticheat Violation";
-            // Check can be NULL, for example if the client sent a wrong signature in the warden packet (CHECKSUM FAIL)
+            // Check can be nullptr, for example if the client sent a wrong signature in the warden packet (CHECKSUM FAIL)
             if (check)
                 banReason << ": " << check->Comment << " (CheckId: " << check->CheckId << ")";
 

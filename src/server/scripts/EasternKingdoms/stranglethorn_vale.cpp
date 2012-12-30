@@ -39,14 +39,14 @@ class mob_yenniku : public CreatureScript
 public:
     mob_yenniku() : CreatureScript("mob_yenniku") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_yennikuAI (creature);
     }
 
     struct mob_yennikuAI : public ScriptedAI
     {
-        mob_yennikuAI(Creature* creature) : ScriptedAI(creature)
+        mob_yennikuAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             bReset = false;
         }
@@ -60,7 +60,7 @@ public:
             me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_NONE);
         }
 
-        void SpellHit(Unit* caster, const SpellInfo* spell)
+        void SpellHit(UnitPtr caster, const SpellInfo* spell)
         {
             if (caster->GetTypeId() == TYPEID_PLAYER)
             {
@@ -79,7 +79,7 @@ public:
             return;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -98,7 +98,7 @@ public:
                 {
                     if (me->getVictim()->GetTypeId() == TYPEID_PLAYER)
                     {
-                        Unit* victim = me->getVictim();
+                        UnitPtr victim = me->getVictim();
                         if (CAST_PLR(victim)->GetTeam() == HORDE)
                         {
                             me->CombatStop();

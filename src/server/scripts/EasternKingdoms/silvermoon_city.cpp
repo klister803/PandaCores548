@@ -47,14 +47,14 @@ class npc_blood_knight_stillblade : public CreatureScript
 public:
     npc_blood_knight_stillblade() : CreatureScript("npc_blood_knight_stillblade") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_blood_knight_stillbladeAI (creature);
     }
 
     struct npc_blood_knight_stillbladeAI : public ScriptedAI
     {
-        npc_blood_knight_stillbladeAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_blood_knight_stillbladeAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 lifeTimer;
         bool spellHit;
@@ -67,11 +67,11 @@ public:
             spellHit = false;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 
-        void MoveInLineOfSight(Unit* /*who*/)
+        void MoveInLineOfSight(UnitPtr /*who*/)
         {
         }
 
@@ -86,7 +86,7 @@ public:
             }
         }
 
-        void SpellHit(Unit* Hitter, const SpellInfo* Spellkind)
+        void SpellHit(UnitPtr Hitter, const SpellInfo* Spellkind)
         {
             if ((Spellkind->Id == SPELL_SHIMMERING_VESSEL) && !spellHit &&
                 (Hitter->GetTypeId() == TYPEID_PLAYER) && (CAST_PLR(Hitter)->IsActiveQuest(QUEST_REDEEMING_THE_DEAD)))

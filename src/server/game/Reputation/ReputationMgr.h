@@ -64,7 +64,7 @@ class Player;
 class ReputationMgr
 {
     public:                                                 // constructors and global modifiers
-        explicit ReputationMgr(Player* owner) : _player(owner),
+        explicit ReputationMgr(PlayerPtr owner) : _player(owner),
             _visibleFactionCount(0), _honoredFactionCount(0), _reveredFactionCount(0), _exaltedFactionCount(0), _sendFactionIncreased(false) {}
         ~ReputationMgr() {}
 
@@ -86,13 +86,13 @@ class ReputationMgr
 
         FactionState const* GetState(FactionEntry const* factionEntry) const
         {
-            return factionEntry->CanHaveReputation() ? GetState(factionEntry->reputationListID) : NULL;
+            return factionEntry->CanHaveReputation() ? GetState(factionEntry->reputationListID) : nullptr;
         }
 
         FactionState const* GetState(RepListID id) const
         {
             FactionStateList::const_iterator repItr = _factions.find (id);
-            return repItr != _factions.end() ? &repItr->second : NULL;
+            return repItr != _factions.end() ? &repItr->second : nullptr;
         }
 
         bool IsAtWar(uint32 faction_id) const;
@@ -112,7 +112,7 @@ class ReputationMgr
         ReputationRank const* GetForcedRankIfAny(FactionTemplateEntry const* factionTemplateEntry) const
         {
             ForcedReactions::const_iterator forceItr = _forcedReactions.find(factionTemplateEntry->faction);
-            return forceItr != _forcedReactions.end() ? &forceItr->second : NULL;
+            return forceItr != _forcedReactions.end() ? &forceItr->second : nullptr;
         }
 
     public:                                                 // modifiers
@@ -151,7 +151,7 @@ class ReputationMgr
         void SendVisible(FactionState const* faction) const;
         void UpdateRankCounters(ReputationRank old_rank, ReputationRank new_rank);
     private:
-        Player* _player;
+        PlayerPtr _player;
         FactionStateList _factions;
         ForcedReactions _forcedReactions;
         uint8 _visibleFactionCount :8;

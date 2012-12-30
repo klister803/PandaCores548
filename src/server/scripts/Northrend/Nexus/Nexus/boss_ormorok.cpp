@@ -55,14 +55,14 @@ class boss_ormorok : public CreatureScript
 public:
     boss_ormorok() : CreatureScript("boss_ormorok") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_ormorokAI (creature);
     }
 
     struct boss_ormorokAI : public ScriptedAI
     {
-        boss_ormorokAI(Creature* creature) : ScriptedAI(creature)
+        boss_ormorokAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -98,7 +98,7 @@ public:
                 instance->SetData(DATA_ORMOROK_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -106,7 +106,7 @@ public:
                 instance->SetData(DATA_ORMOROK_EVENT, IN_PROGRESS);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -114,7 +114,7 @@ public:
                 instance->SetData(DATA_ORMOROK_EVENT, DONE);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(SAY_KILL, me);
         }
@@ -179,10 +179,10 @@ public:
 
             if (IsHeroic() && (uiSummonCrystallineTanglerTimer <= diff))
             {
-                Creature* Crystalline_Tangler = me->SummonCreature(MOB_CRYSTALLINE_TANGLER, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000);
+                CreaturePtr Crystalline_Tangler = me->SummonCreature(MOB_CRYSTALLINE_TANGLER, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000);
                 if (Crystalline_Tangler)
                 {
-                    Unit* target = NULL;
+                    UnitPtr target = nullptr;
                     uint8 Healer = 0;
                     for (uint8 j = 1; j <= 4; j++)
                     {
@@ -193,10 +193,10 @@ public:
                             case 3: Healer = CLASS_DRUID; break;
                             case 4: Healer = CLASS_SHAMAN; break;
                         }
-                        std::list<HostileReference*>::const_iterator i = me->getThreatManager().getThreatList().begin();
-                        for (; i != me->getThreatManager().getThreatList().end(); ++i)
+                        std::list<HostileReferencePtr>::const_iterator i = me->getThreatManager()->getThreatList().begin();
+                        for (; i != me->getThreatManager()->getThreatList().end(); ++i)
                         {
-                            Unit* temp = Unit::GetUnit(*me, (*i)->getUnitGuid());
+                            UnitPtr temp = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid());
                             if (temp && temp->GetTypeId() == TYPEID_PLAYER && temp->getClass() == Healer)
                             {
                                 target = temp;
@@ -211,7 +211,7 @@ public:
                     if (target)
                     {
                         Crystalline_Tangler->AI()->AttackStart(target);
-                        Crystalline_Tangler->getThreatManager().addThreat(target, 1000000000.0f);
+                        Crystalline_Tangler->getThreatManager()->addThreat(target, 1000000000.0f);
                     }
                 }
                 uiSummonCrystallineTanglerTimer = 17*IN_MILLISECONDS;
@@ -228,14 +228,14 @@ class mob_crystal_spike : public CreatureScript
 public:
     mob_crystal_spike() : CreatureScript("mob_crystal_spike") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_crystal_spikeAI (creature);
     }
 
     struct mob_crystal_spikeAI : public Scripted_NoMovementAI
     {
-        mob_crystal_spikeAI(Creature* creature) : Scripted_NoMovementAI(creature)
+        mob_crystal_spikeAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
         {
         }
 
@@ -271,14 +271,14 @@ class mob_crystalline_tangler : public CreatureScript
 public:
     mob_crystalline_tangler() : CreatureScript("mob_crystalline_tangler") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_crystalline_tanglerAI (creature);
     }
 
     struct mob_crystalline_tanglerAI : public ScriptedAI
     {
-        mob_crystalline_tanglerAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_crystalline_tanglerAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 uiRootsTimer;
 

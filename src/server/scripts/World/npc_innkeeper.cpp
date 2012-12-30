@@ -45,7 +45,7 @@ class npc_innkeeper : public CreatureScript
 public:
     npc_innkeeper() : CreatureScript("npc_innkeeper") { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (IsEventActive(HALLOWEEN_EVENTID) && !player->HasAura(SPELL_TRICK_OR_TREATED))
         {
@@ -82,7 +82,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+HALLOWEEN_EVENTID && IsEventActive(HALLOWEEN_EVENTID) && !player->HasAura(SPELL_TRICK_OR_TREATED))

@@ -53,7 +53,7 @@ class go_bridge_console : public GameObjectScript
     public:
         go_bridge_console() : GameObjectScript("go_bridge_console") { }
 
-        bool OnGossipHello(Player* /*player*/, GameObject* go)
+        bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
         {
             InstanceScript* instance = go->GetInstanceScript();
 
@@ -74,7 +74,7 @@ class instance_serpent_shrine : public InstanceMapScript
 
         struct instance_serpentshrine_cavern_InstanceMapScript : public InstanceScript
         {
-            instance_serpentshrine_cavern_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_serpentshrine_cavern_InstanceMapScript(MapPtr map) : InstanceScript(map)
             {
             }
 
@@ -135,7 +135,7 @@ class instance_serpent_shrine : public InstanceMapScript
                         return;
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                     {
-                        if (Player* player = i->getSource())
+                        if (PlayerPtr player = i->getSource())
                         {
                             if (player->isAlive() && /*i->getSource()->GetPositionZ() <= -21.434931f*/player->IsInWater())
                             {
@@ -151,7 +151,7 @@ class instance_serpent_shrine : public InstanceMapScript
                                     //spawn frenzy
                                     if (DoSpawnFrenzy)
                                     {
-                                        if (Creature* frenzy = player->SummonCreature(MOB_COILFANG_FRENZY, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 2000))
+                                        if (CreaturePtr frenzy = player->SummonCreature(MOB_COILFANG_FRENZY, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 2000))
                                         {
                                             frenzy->Attack(player, false);
                                             frenzy->AddUnitMovementFlag(MOVEMENTFLAG_SWIMMING | MOVEMENTFLAG_DISABLE_GRAVITY);
@@ -179,7 +179,7 @@ class instance_serpent_shrine : public InstanceMapScript
                     FrenzySpawnTimer -= diff;
             }
 
-            void OnGameObjectCreate(GameObject* go)
+            void OnGameObjectCreate(GameObjectPtr go)
             {
                 switch (go->GetEntry())
                 {
@@ -204,7 +204,7 @@ class instance_serpent_shrine : public InstanceMapScript
                 }
             }
 
-            void OnCreatureCreate(Creature* creature)
+            void OnCreatureCreate(CreaturePtr creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -435,7 +435,7 @@ class instance_serpent_shrine : public InstanceMapScript
             bool DoSpawnFrenzy;
         };
 
-        InstanceScript* GetInstanceScript(InstanceMap* map) const
+        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
         {
             return new instance_serpentshrine_cavern_InstanceMapScript(map);
         }

@@ -36,17 +36,17 @@ class mob_xian_the_weaponmaster_trigger : public CreatureScript
     public:
         mob_xian_the_weaponmaster_trigger() : CreatureScript("mob_xian_the_weaponmaster_trigger") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_xian_the_weaponmaster_trigger_AI(creature);
         }
 
         enum eEvents
         {
-            EVENT_TALK_0 = 1,
-            EVENT_TALK_1 = 2,
-            EVENT_JUMP   = 3,
-            EVENT_DISAPPEAR = 4,
+            EVENT_TALK_0    = 1,
+            EVENT_TALK_1    = 2,
+            EVENT_JUMP_XIAN = 3,
+            EVENT_DISAPPEAR = 4
         };
 
         enum eSpells
@@ -62,7 +62,7 @@ class mob_xian_the_weaponmaster_trigger : public CreatureScript
 
         struct mob_xian_the_weaponmaster_trigger_AI : public ScriptedAI
         {
-            mob_xian_the_weaponmaster_trigger_AI(Creature* creature) : ScriptedAI(creature)
+            mob_xian_the_weaponmaster_trigger_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 event_go = false;
             }
@@ -75,7 +75,7 @@ class mob_xian_the_weaponmaster_trigger : public CreatureScript
                 me->GetMotionMaster()->MoveTargetedHome();
             }
 
-            void MoveInLineOfSight(Unit* who)
+            void MoveInLineOfSight(UnitPtr who)
             {
                 // If Lorewalker stonestep sees a player, launch the speech.
                 if (!event_go && who->GetTypeId() == TYPEID_PLAYER && who->GetAreaId() == 6471)//Salle de l'assemblée cramoisie
@@ -102,9 +102,9 @@ class mob_xian_the_weaponmaster_trigger : public CreatureScript
                         break;
                     case EVENT_TALK_1:
                         me->GetMotionMaster()->MovePoint(0, -4229.333f, -2624.051f, 16.47f);
-                        events.ScheduleEvent(EVENT_JUMP, 7000);
+                        events.ScheduleEvent(EVENT_JUMP_XIAN, 7000);
                         break;
-                    case EVENT_JUMP:
+                    case EVENT_JUMP_XIAN:
                         Talk(TALK_INTRO_02);
                         me->GetMotionMaster()->MoveJump(-4296.391f, -2613.577f, 22.325f, 30.f, 20.f);
                         events.ScheduleEvent(EVENT_DISAPPEAR, 5000);
@@ -126,7 +126,7 @@ class boss_ming_the_cunning : public CreatureScript
     public:
         boss_ming_the_cunning() : CreatureScript("boss_ming_the_cunning") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_ming_the_cunning_AI(creature);
         }
@@ -171,7 +171,7 @@ class boss_ming_the_cunning : public CreatureScript
 
         struct boss_ming_the_cunning_AI : public BossAI
         {
-            boss_ming_the_cunning_AI(Creature* creature) : BossAI(creature, BOSS_MING_THE_CUNNING)
+            boss_ming_the_cunning_AI(CreaturePtr creature) : BossAI(creature, BOSS_MING_THE_CUNNING)
             {
                 magnetic_timer = 1000;
             }
@@ -185,7 +185,7 @@ class boss_ming_the_cunning : public CreatureScript
                 _Reset();
             }
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 Talk(TALK_AGGRO);
                 me->CastSpell(me, SPELL_GUARDIAN_GRUNT, false);
@@ -194,7 +194,7 @@ class boss_ming_the_cunning : public CreatureScript
                 events.ScheduleEvent(EVENT_MAGNETIC_FIELD, 30000);
             }
 
-            void KilledUnit(Unit* u)
+            void KilledUnit(UnitPtr u)
             {
                 Talk(TALK_KILLING);
             }
@@ -217,7 +217,7 @@ class boss_ming_the_cunning : public CreatureScript
                 }
             }
 
-            void DamageTaken(Unit* killer, uint32 &damage)
+            void DamageTaken(UnitPtr killer, uint32 &damage)
             {
                 //We need to retire Ming and let the next boss enter combat.
                 if (int(me->GetHealth()) - int(damage) <= 0)
@@ -252,7 +252,7 @@ class boss_ming_the_cunning : public CreatureScript
                         {
                             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                             {
-                                Player* plr = i->getSource();
+                                PlayerPtr plr = i->getSource();
                                 if( !plr)
                                     continue;
                                 if (plr->GetDistance2d(me) <= 5.f)
@@ -313,7 +313,7 @@ class mob_whirling_dervish : public CreatureScript
     public:
         mob_whirling_dervish() : CreatureScript("mob_whirling_dervish") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_whirling_dervish_AI(creature);
         }
@@ -328,14 +328,14 @@ class mob_whirling_dervish : public CreatureScript
 
         struct mob_whirling_dervish_AI : public ScriptedAI
         {
-            mob_whirling_dervish_AI(Creature* creature) : ScriptedAI(creature)
+            mob_whirling_dervish_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 me->CastSpell(me, SPELL_WIRHLING_DERVISH_2, false);
                 me->ForcedDespawn(10000);
             }
             EventMap events;
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 events.ScheduleEvent(1, 2000);
             }
@@ -371,7 +371,7 @@ class mob_adepts : public CreatureScript
     public:
         mob_adepts() : CreatureScript("mob_adepts") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_adepts_AI(creature);
         }
@@ -406,7 +406,7 @@ class mob_adepts : public CreatureScript
 
         struct mob_adepts_AI : public ScriptedAI
         {
-            mob_adepts_AI(Creature* creature) : ScriptedAI(creature)
+            mob_adepts_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 status = STATUS_ATTACK_PLAYER;
                 me->SetReactState(REACT_AGGRESSIVE);
@@ -458,7 +458,7 @@ class mob_adepts : public CreatureScript
                     me->SetFacingTo(me->GetOrientation() - M_PI);
             }
 
-            void MoveInLineOfSight(Unit* who)
+            void MoveInLineOfSight(UnitPtr who)
             {
                 if (who->GetTypeId() == TYPEID_PLAYER && who->GetAreaId() == 6471//Salle de l'assemblée cramoisie
                     && me->GetDistance2d(who) < 2.0f
@@ -473,7 +473,7 @@ class mob_adepts : public CreatureScript
 
             void UpdateAI(const uint32 diff)
             {
-                if (status == STATUS_ATTACK_GRUNTS && me->getVictim() && me->getVictim()->ToPlayer())
+                if (status == STATUS_ATTACK_GRUNTS && me->getVictim() && TO_PLAYER(me->getVictim()))
                     me->AttackStop();
 
                 events.Update(diff);
@@ -496,7 +496,7 @@ class boss_kuai_the_brute : public CreatureScript
     public:
         boss_kuai_the_brute() : CreatureScript("boss_kuai_the_brute") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_kuai_the_brute_AI(creature);
         }
@@ -546,9 +546,9 @@ class boss_kuai_the_brute : public CreatureScript
 
         struct boss_kuai_the_brute_AI : public BossAI
         {
-            boss_kuai_the_brute_AI(Creature* creature) : BossAI(creature, BOSS_KUAI_THE_BRUTE)
+            boss_kuai_the_brute_AI(CreaturePtr creature) : BossAI(creature, BOSS_KUAI_THE_BRUTE)
             {
-                TempSummon* sum = me->SummonCreature(CREATURE_MU_SHIBA, me->GetPositionX() + 3 * cos(M_PI / 4), me->GetPositionY() + 3 * sin(M_PI / 4), me->GetPositionZ(), me->GetOrientation());
+                TempSummonPtr sum = me->SummonCreature(CREATURE_MU_SHIBA, me->GetPositionX() + 3 * cos(M_PI / 4), me->GetPositionY() + 3 * sin(M_PI / 4), me->GetPositionZ(), me->GetOrientation());
                 if (sum)
                 {
                     pet_guid = sum->GetGUID();
@@ -565,7 +565,7 @@ class boss_kuai_the_brute : public CreatureScript
                 _Reset();
             }
 
-            void KilledUnit(Unit* u)
+            void KilledUnit(UnitPtr u)
             {
                 Talk(TALK_KILLING);
             }
@@ -585,16 +585,16 @@ class boss_kuai_the_brute : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 Talk(TALK_AGGRO);
                 events.ScheduleEvent(EVENT_SHOCKWAVE, 3000);
-                Creature* mu_shiba = me->GetMap()->GetCreature(pet_guid);
+                CreaturePtr mu_shiba = me->GetMap()->GetCreature(pet_guid);
                 if (mu_shiba && mu_shiba->GetAI())
                     mu_shiba->GetAI()->DoAction(ACTION_ATTACK);
             }
 
-            void DamageTaken(Unit* killer, uint32 &damage)
+            void DamageTaken(UnitPtr killer, uint32 &damage)
             {
                 //We need to retire Ming and let the next boss enter combat.
                 if (int(me->GetHealth()) - int(damage) <= 0)
@@ -610,7 +610,7 @@ class boss_kuai_the_brute : public CreatureScript
                     if (me->GetInstanceScript())
                         me->GetInstanceScript()->SetData(TYPE_KUAI_RETIRED, 0);
 
-                    Creature* mu_shiba = me->GetMap()->GetCreature(pet_guid);
+                    CreaturePtr mu_shiba = me->GetMap()->GetCreature(pet_guid);
                     if (mu_shiba && mu_shiba->isAlive())
                     {
                         mu_shiba->GetMotionMaster()->MoveFollow(me, 2.0f, M_PI / 4);
@@ -671,7 +671,7 @@ class mob_mu_shiba : public CreatureScript
     public:
         mob_mu_shiba() : CreatureScript("mob_mu_shiba") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_mu_shiba_AI(creature);
         }
@@ -689,7 +689,7 @@ class mob_mu_shiba : public CreatureScript
 
         struct mob_mu_shiba_AI : public ScriptedAI
         {
-            mob_mu_shiba_AI(Creature* creature) : ScriptedAI(creature)
+            mob_mu_shiba_AI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 me->SetReactState(REACT_PASSIVE);
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
@@ -701,7 +701,7 @@ class mob_mu_shiba : public CreatureScript
                 DoAction(ACTION_ATTACK_STOP);
             }
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 events.ScheduleEvent(1, 2000);
             }
@@ -753,7 +753,7 @@ class boss_haiyan_the_unstoppable : public CreatureScript
     public:
         boss_haiyan_the_unstoppable() : CreatureScript("boss_haiyan_the_unstoppable") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_haiyan_the_unstoppable_AI(creature);
         }
@@ -798,11 +798,11 @@ class boss_haiyan_the_unstoppable : public CreatureScript
 
         struct boss_haiyan_the_unstoppable_AI : public BossAI
         {
-            boss_haiyan_the_unstoppable_AI(Creature* creature) : BossAI(creature, BOSS_HAIYAN_THE_UNSTOPPABLE)
+            boss_haiyan_the_unstoppable_AI(CreaturePtr creature) : BossAI(creature, BOSS_HAIYAN_THE_UNSTOPPABLE)
             {
             }
 
-            void EnterCombat(Unit* unit)
+            void EnterCombat(UnitPtr unit)
             {
                 Talk(TALK_AGGRO);
                 events.ScheduleEvent(EVENT_TRAUMATIC_BLOW, 3000);
@@ -832,12 +832,12 @@ class boss_haiyan_the_unstoppable : public CreatureScript
                 }
             }
 
-            void KilledUnit(Unit* u)
+            void KilledUnit(UnitPtr u)
             {
                 Talk(TALK_KILLING);
             }
 
-            void DamageTaken(Unit* killer, uint32 &damage)
+            void DamageTaken(UnitPtr killer, uint32 &damage)
             {
                 //We need to retire Ming and let the next boss enter combat.
                 if (int(me->GetHealth()) - int(damage) <= 0)

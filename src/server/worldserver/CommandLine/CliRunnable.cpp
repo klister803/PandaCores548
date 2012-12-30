@@ -34,6 +34,14 @@
 #include "MapManager.h"
 #include "Player.h"
 #include "Util.h"
+#include "SpellAuraEffects.h"
+
+#ifndef INCLUDES_FOR_SHARED_PTR
+# define INCLUDES_FOR_SHARED_PTR
+# include "Group.h"
+# include "MovementGenerator.h"
+# undef INCLUDES_FOR_SHARED_PTR
+#endif
 
 #if PLATFORM != PLATFORM_WINDOWS
 #include <readline/readline.h>
@@ -63,17 +71,17 @@ char * command_finder(const char* text, int state)
         //printf("Checking %s \n", cmd[idx].Name);
         if (strncmp(ret, text, len) == 0)
             return strdup(ret);
-        if (cmd[idx].Name == NULL)
+        if (cmd[idx].Name == nullptr)
             break;
     }
 
-    return ((char*)NULL);
+    return ((char*)nullptr);
 }
 
 char ** cli_completion(const char * text, int start, int /*end*/)
 {
     char ** matches;
-    matches = (char**)NULL;
+    matches = (char**)nullptr;
 
     if (start == 0)
         matches = rl_completion_matches((char*)text, &command_finder);
@@ -126,7 +134,7 @@ int kb_hit_return()
     tv.tv_usec = 0;
     FD_ZERO(&fds);
     FD_SET(STDIN_FILENO, &fds);
-    select(STDIN_FILENO+1, &fds, NULL, NULL, &tv);
+    select(STDIN_FILENO+1, &fds, nullptr, nullptr, &tv);
     return FD_ISSET(STDIN_FILENO, &fds);
 }
 #endif
@@ -163,7 +171,7 @@ void CliRunnable::run()
         rl_bind_key('\t', rl_complete);
 #endif
 
-        if (command_str != NULL)
+        if (command_str != nullptr)
         {
             for (int x=0; command_str[x]; ++x)
                 if (command_str[x] == '\r' || command_str[x] == '\n')
@@ -190,7 +198,7 @@ void CliRunnable::run()
             }
 
             fflush(stdout);
-            sWorld->QueueCliCommand(new CliCommandHolder(NULL, command.c_str(), &utf8print, &commandFinished));
+            sWorld->QueueCliCommand(new CliCommandHolder(nullptr, command.c_str(), &utf8print, &commandFinished));
 #if PLATFORM != PLATFORM_WINDOWS
             add_history(command.c_str());
 #endif

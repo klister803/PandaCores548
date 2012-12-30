@@ -26,13 +26,13 @@ class Creature;
 class GuardAI : public ScriptedAI
 {
     public:
-        explicit GuardAI(Creature* creature);
+        explicit GuardAI(CreaturePtr creature);
 
-        static int Permissible(Creature const* creature);
-        bool CanSeeAlways(WorldObject const* obj);
+        static int Permissible(constCreaturePtr creature);
+        bool CanSeeAlways(constWorldObjectPtr obj);
 
         void EnterEvadeMode();
-        void JustDied(Unit* killer);
+        void JustDied(UnitPtr killer);
 };
 #endif
 
