@@ -41,6 +41,42 @@ enum WarriorSpells
     WARRIOR_SPELL_HEROIC_LEAP_DAMAGE            = 52174,
 };
 
+// Rallying cry - 97462
+class spell_warr_rallying_cry : public SpellScriptLoader
+{
+    public:
+        spell_warr_rallying_cry() : SpellScriptLoader("spell_warr_rallying_cry") { }
+
+        class spell_warr_rallying_cry_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_rallying_cry_SpellScript);
+
+            void HandleDummy(SpellEffIndex /*effIndex*/)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    _player->CastSpell(_player, WARRIOR_SPELL_RALLYING_CRY, true);
+
+                    std::list<Unit*> memberList;
+                    _player->GetPartyMembers(memberList);
+
+                    for (auto itr : memberList)
+                        _player->CastSpell(itr, WARRIOR_SPELL_RALLYING_CRY, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_warr_rallying_cry_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_rallying_cry_SpellScript();
+        }
+};
+
 // Heroic leap - 6544
 class spell_warr_heroic_leap : public SpellScriptLoader
 {
@@ -582,6 +618,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_rallying_cry();
     new spell_warr_heroic_leap_damage();
     new spell_warr_heroic_leap();
     new spell_warr_shockwave();

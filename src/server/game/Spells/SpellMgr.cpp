@@ -3127,6 +3127,14 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 12975: // Last Stand
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
+                break;
+            case 122507: // Rallying Cry
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(1);
+                break;
             case 106922: // Might of Ursoc
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
                 break;
