@@ -44,7 +44,7 @@ public:
             return nullptr;
         player->i_motionMaster = MotionMaster(player);
         player->m_ThreatManager = ThreatManagerPtr(new ThreatManager(player));
-        player->m_HostileRefManager = HostileRefManager(player);
+        player->m_HostileRefManager.setOwner(player);
         player->m_achievementMgr = AchievementMgr<Player>(player);
         player->m_reputationMgr = ReputationMgr(player);
         player->m_mover = player;
@@ -61,7 +61,7 @@ public:
             return nullptr;
         pet->i_motionMaster = MotionMaster(pet);
         pet->m_ThreatManager = ThreatManagerPtr(new ThreatManager(pet));
-        pet->m_HostileRefManager = HostileRefManager(pet);
+        pet->m_HostileRefManager.setOwner(pet);
         pet->_creature = CAST(GridObject<Creature>,pet);
         
         if (!(pet->m_unitTypeMask & UNIT_MASK_CONTROLABLE_GUARDIAN))
@@ -82,7 +82,7 @@ public:
             return nullptr;
         temp->i_motionMaster = MotionMaster(temp);
         temp->m_ThreatManager = ThreatManagerPtr(new ThreatManager(temp));
-        temp->m_HostileRefManager = HostileRefManager(temp);
+        temp->m_HostileRefManager.setOwner(temp);
         temp->_creature = CAST(GridObject<Creature>,temp);
         return temp;
     }
@@ -94,7 +94,7 @@ public:
             return nullptr;
         guardian->i_motionMaster = MotionMaster(guardian);
         guardian->m_ThreatManager = ThreatManagerPtr(new ThreatManager(guardian));
-        guardian->m_HostileRefManager = HostileRefManager(guardian);
+        guardian->m_HostileRefManager.setOwner(guardian);
         guardian->_creature = CAST(GridObject<Creature>,guardian);
         return guardian;
     }
@@ -106,7 +106,7 @@ public:
             return nullptr;
         puppet->i_motionMaster = MotionMaster(puppet);
         puppet->m_ThreatManager = ThreatManagerPtr(new ThreatManager(puppet));
-        puppet->m_HostileRefManager = HostileRefManager(puppet);
+        puppet->m_HostileRefManager.setOwner(puppet);
         puppet->_creature = CAST(GridObject<Creature>,puppet);
         return puppet;
     }
@@ -118,7 +118,7 @@ public:
             return nullptr;
         totem->i_motionMaster = MotionMaster(totem);
         totem->m_ThreatManager = ThreatManagerPtr(new ThreatManager(totem));
-        totem->m_HostileRefManager = HostileRefManager(totem);
+        totem->m_HostileRefManager.setOwner(totem);
         totem->_creature = CAST(GridObject<Creature>,totem);
         return totem;
     }
@@ -130,7 +130,7 @@ public:
             return nullptr;
         minion->i_motionMaster = MotionMaster(minion);
         minion->m_ThreatManager = ThreatManagerPtr(new ThreatManager(minion));
-        minion->m_HostileRefManager = HostileRefManager(minion);
+        minion->m_HostileRefManager.setOwner(minion);
         minion->_creature = CAST(GridObject<Creature>,minion);
         return minion;
     }
