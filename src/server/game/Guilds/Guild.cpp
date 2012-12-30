@@ -3195,6 +3195,8 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
 
         size_t rempos = data.wpos();
         data << uint32(-1);                                      // Item withdraw amount, will be filled later
+        data << uint64(m_bankMoney);
+        data << uint32(tabId);
 
         for (Members::const_iterator itr = m_members.begin(); itr != m_members.end(); ++itr)
             if (_MemberHasTabRights(itr->second->GetGUID(), tabId, GUILD_BANK_RIGHT_VIEW_TAB))
@@ -3203,8 +3205,6 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
                     data.put<uint32>(rempos, uint32(_GetMemberRemainingSlots(player->GetGUID(), tabId)));
                     player->GetSession()->SendPacket(&data);
                 }
-        data << uint64(m_bankMoney);
-        data << uint32(tabId);
 
         sLog->outDebug(LOG_FILTER_GUILD, "WORLD: Sent (SMSG_GUILD_BANK_LIST)");
     }
