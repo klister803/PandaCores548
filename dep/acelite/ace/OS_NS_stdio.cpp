@@ -131,7 +131,7 @@ ACE_OS::fopen (const char *filename,
 #else
   int hmode = _O_TEXT;
 
-  // Let the chips fall where they may if the user passes in a NULL
+  // Let the chips fall where they may if the user passes in a nullptr
   // mode string.  Convert to an empty mode string to prevent a
   // crash.
   ACE_TCHAR const empty_mode[] = ACE_TEXT ("");

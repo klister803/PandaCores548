@@ -98,7 +98,7 @@ struct ArenaTeamMember
     uint16 PersonalRating;
     uint16 MatchMakerRating;
 
-    void ModifyPersonalRating(Player* player, int32 mod, uint32 type);
+    void ModifyPersonalRating(PlayerPtr player, int32 mod, uint32 type);
     void ModifyMatchmakerRating(int32 mod, uint32 slot);
 };
 
@@ -136,7 +136,7 @@ class ArenaTeam
         const ArenaTeamStats& GetStats() const { return Stats; }
 
         uint32 GetRating() const          { return Stats.Rating; }
-        uint32 GetAverageMMR(Group* group) const;
+        uint32 GetAverageMMR(GroupPtr group) const;
 
         void SetCaptain(uint64 guid);
         bool AddMember(uint64 PlayerGuid);
@@ -174,9 +174,9 @@ class ArenaTeam
         int32  GetRatingMod(uint32 ownRating, uint32 opponentRating, bool won);
         float  GetChanceAgainst(uint32 ownRating, uint32 opponentRating);
         int32  WonAgainst(uint32 Own_MMRating, uint32 Opponent_MMRating, int32& rating_change);
-        void   MemberWon(Player* player, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange);
+        void   MemberWon(PlayerPtr player, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange);
         int32  LostAgainst(uint32 Own_MMRating, uint32 Opponent_MMRating, int32& rating_change);
-        void   MemberLost(Player* player, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange = -12);
+        void   MemberLost(PlayerPtr player, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange = -12);
         void   OfflineMemberLost(uint64 guid, uint32 againstMatchmakerRating, int32 MatchmakerRatingChange = -12);
 
         void FinishWeek();

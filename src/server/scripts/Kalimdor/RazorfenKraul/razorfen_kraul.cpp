@@ -52,7 +52,7 @@ class npc_willix : public CreatureScript
 public:
     npc_willix() : CreatureScript("npc_willix") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_WILLIX_THE_IMPORTER)
         {
@@ -64,18 +64,18 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_willixAI(creature);
     }
 
     struct npc_willixAI : public npc_escortAI
     {
-        npc_willixAI(Creature* creature) : npc_escortAI(creature) {}
+        npc_willixAI(CreaturePtr creature) : npc_escortAI(creature) {}
 
         void WaypointReached(uint32 waypointId)
         {
-            Player* player = GetPlayerForEscort();
+            PlayerPtr player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -126,19 +126,19 @@ public:
 
         void Reset() {}
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
-            DoScriptText(SAY_AGGRO1, me, NULL);
+            DoScriptText(SAY_AGGRO1, me, nullptr);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->AI()->AttackStart(me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
-            if (Player* player = GetPlayerForEscort())
+            if (PlayerPtr player = GetPlayerForEscort())
                 CAST_PLR(player)->FailQuest(QUEST_WILLIX_THE_IMPORTER);
         }
     };

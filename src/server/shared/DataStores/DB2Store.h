@@ -34,10 +34,10 @@ class DB2Storage
     typedef std::list<char*> StringPoolList;
     typedef std::vector<T*> DataTableEx;
 public:
-    explicit DB2Storage(const char *f) : nCount(0), fieldCount(0), fmt(f), indexTable(NULL), m_dataTable(NULL) { }
+    explicit DB2Storage(const char *f) : nCount(0), fieldCount(0), fmt(f), indexTable(nullptr), m_dataTable(nullptr) { }
     ~DB2Storage() { Clear(); }
 
-    T const* LookupEntry(uint32 id) const { return (id>=nCount)?NULL:indexTable[id]; }
+    T const* LookupEntry(uint32 id) const { return (id>=nCount)?nullptr:indexTable[id]; }
     uint32  GetNumRows() const { return nCount; }
     char const* GetFormat() const { return fmt; }
     uint32 GetFieldCount() const { return fieldCount; }
@@ -83,8 +83,8 @@ public:
         // load strings from dbc data
         m_stringPoolList.push_back(db2.AutoProduceStrings(fmt, (char*)m_dataTable));
 
-        // error in dbc file at loading if NULL
-        return indexTable!=NULL;
+        // error in dbc file at loading if nullptr
+        return indexTable!=nullptr;
     }
 
     bool LoadStringsFrom(char const* fn)
@@ -110,9 +110,9 @@ public:
             return;
 
         delete[] ((char*)indexTable);
-        indexTable = NULL;
+        indexTable = nullptr;
         delete[] ((char*)m_dataTable);
-        m_dataTable = NULL;
+        m_dataTable = nullptr;
             for (typename DataTableEx::const_iterator itr = m_dataTableEx.begin(); itr != m_dataTableEx.end(); ++itr)
                 delete *itr;
             m_dataTableEx.clear();
@@ -125,7 +125,7 @@ public:
         nCount = 0;
     }
 
-    void EraseEntry(uint32 id) { indexTable[id] = NULL; }
+    void EraseEntry(uint32 id) { indexTable[id] = nullptr; }
 
 private:
     uint32 nCount;

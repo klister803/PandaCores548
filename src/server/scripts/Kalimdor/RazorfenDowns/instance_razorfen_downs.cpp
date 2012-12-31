@@ -26,14 +26,14 @@ class instance_razorfen_downs : public InstanceMapScript
 public:
     instance_razorfen_downs() : InstanceMapScript("instance_razorfen_downs", 129) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_razorfen_downs_InstanceMapScript(map);
     }
 
     struct instance_razorfen_downs_InstanceMapScript : public InstanceScript
     {
-        instance_razorfen_downs_InstanceMapScript(Map* map) : InstanceScript(map)
+        instance_razorfen_downs_InstanceMapScript(MapPtr map) : InstanceScript(map)
         {
         }
 
@@ -99,7 +99,7 @@ public:
             OUT_LOAD_INST_DATA_COMPLETE;
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {
@@ -123,14 +123,14 @@ public:
                 {
                     case 9:
                     case 14:
-                        if (GameObject* go = instance->GetGameObject(uiGongGUID))
+                        if (GameObjectPtr go = instance->GetGameObject(uiGongGUID))
                             go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                         break;
                     case 1:
                     case 10:
                     case 16:
                     {
-                        GameObject* go = instance->GetGameObject(uiGongGUID);
+                        GameObjectPtr go = instance->GetGameObject(uiGongGUID);
 
                         if (!go)
                             return;
@@ -157,13 +157,13 @@ public:
                                 break;
                         }
 
-                        if (Creature* creature = go->SummonCreature(uiCreature, 2502.635f, 844.140f, 46.896f, 0.633f))
+                        if (CreaturePtr creature = go->SummonCreature(uiCreature, 2502.635f, 844.140f, 46.896f, 0.633f))
                         {
                             if (uiGongWaves == 10 || uiGongWaves == 1)
                             {
                                 for (uint8 i = 0; i < uiSummonTimes; ++i)
                                 {
-                                    if (Creature* summon = go->SummonCreature(uiCreature, 2502.635f + float(irand(-5, 5)), 844.140f + float(irand(-5, 5)), 46.896f, 0.633f))
+                                    if (CreaturePtr summon = go->SummonCreature(uiCreature, 2502.635f + float(irand(-5, 5)), 844.140f + float(irand(-5, 5)), 46.896f, 0.633f))
                                         summon->GetMotionMaster()->MovePoint(0, 2533.479f + float(irand(-5, 5)), 870.020f + float(irand(-5, 5)), 47.678f);
                                 }
                             }

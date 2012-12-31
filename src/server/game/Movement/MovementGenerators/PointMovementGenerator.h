@@ -22,19 +22,22 @@
 #include "MovementGenerator.h"
 #include "FollowerReference.h"
 
+class ClassFactory;
+
 template<class T>
 class PointMovementGenerator : public MovementGeneratorMedium< T, PointMovementGenerator<T> >
 {
-    public:
+    friend class ClassFactory;
+    protected:
         PointMovementGenerator(uint32 _id, float _x, float _y, float _z, float _speed = 0.0f) : id(_id),
             i_x(_x), i_y(_y), i_z(_z), speed(_speed) {}
+    public:
+        void Initialize(std::shared_ptr<T>);
+        void Finalize(std::shared_ptr<T>);
+        void Reset(std::shared_ptr<T>);
+        bool Update(std::shared_ptr<T>, const uint32 &);
 
-        void Initialize(T &);
-        void Finalize(T &);
-        void Reset(T &);
-        bool Update(T &, const uint32 &);
-
-        void MovementInform(T &);
+        void MovementInform(std::shared_ptr<T>);
 
         void unitSpeedChanged() { i_recalculateSpeed = true; }
 
@@ -55,7 +58,7 @@ class AssistanceMovementGenerator : public PointMovementGenerator<Creature>
             PointMovementGenerator<Creature>(0, _x, _y, _z) {}
 
         MovementGeneratorType GetMovementGeneratorType() { return ASSISTANCE_MOTION_TYPE; }
-        void Finalize(Unit &);
+        void Finalize(UnitPtr);
 };
 
 // Does almost nothing - just doesn't allows previous movegen interrupt current effect.
@@ -63,10 +66,12 @@ class EffectMovementGenerator : public MovementGenerator
 {
     public:
         explicit EffectMovementGenerator(uint32 Id) : m_Id(Id) {}
-        void Initialize(Unit &) {}
-        void Finalize(Unit &unit);
-        void Reset(Unit &) {}
-        bool Update(Unit &u, const uint32&);
+        void Initialize(UnitPtr) {}
+        void Finalize(UnitPtr unit);
+        void Reset(UnitPtr) {}
+        bool Update(UnitPtr u, const uint32&);
+
+        void MovementInform(UnitPtr unit);
         MovementGeneratorType GetMovementGeneratorType() { return EFFECT_MOTION_TYPE; }
     private:
         uint32 m_Id;

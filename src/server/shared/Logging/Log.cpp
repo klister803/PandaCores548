@@ -29,7 +29,7 @@
 #include <cstdio>
 #include <sstream>
 
-Log::Log() : worker(NULL)
+Log::Log() : worker(nullptr)
 {
     SetRealmID(0);
     m_logsTimestamp = "_" + GetTimestampStr();
@@ -74,7 +74,7 @@ Appender* Log::GetAppenderByName(std::string const& name)
     while (it != appenders.end() && it->second && it->second->getName() != name)
         ++it;
 
-    return it == appenders.end() ? NULL : it->second;
+    return it == appenders.end() ? nullptr : it->second;
 }
 
 void Log::CreateAppenderFromConfig(const char* name)
@@ -296,7 +296,7 @@ void Log::write(LogMessage* msg)
 
 std::string Log::GetTimestampStr()
 {
-    time_t t = time(NULL);
+    time_t t = time(nullptr);
     tm* aTm = localtime(&t);
     //       YYYY   year
     //       MM     month (2 digits 01-12)
@@ -488,12 +488,12 @@ void Log::SetRealmID(uint32 id)
 void Log::Close()
 {
     delete worker;
-    worker = NULL;
+    worker = nullptr;
     loggers.clear();
     for (AppenderMap::iterator it = appenders.begin(); it != appenders.end(); ++it)
     {
         delete it->second;
-        it->second = NULL;
+        it->second = nullptr;
     }
     appenders.clear();
 }

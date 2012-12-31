@@ -41,20 +41,20 @@ public:
 
     struct mobs_ghoul_flayerAI : public ScriptedAI
     {
-        mobs_ghoul_flayerAI(Creature* creature) : ScriptedAI(creature) { }
+        mobs_ghoul_flayerAI(CreaturePtr creature) : ScriptedAI(creature) { }
 
         void Reset() {}
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void JustDied(Unit* killer)
+        void JustDied(UnitPtr killer)
         {
             if (killer->GetTypeId() == TYPEID_PLAYER)
                 me->SummonCreature(11064, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_DESPAWN, 60000);
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mobs_ghoul_flayerAI (creature);
     }
@@ -69,7 +69,7 @@ class npc_augustus_the_touched : public CreatureScript
 public:
     npc_augustus_the_touched() : CreatureScript("npc_augustus_the_touched") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_TRADE)
@@ -77,7 +77,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -101,7 +101,7 @@ class npc_darrowshire_spirit : public CreatureScript
 public:
     npc_darrowshire_spirit() : CreatureScript("npc_darrowshire_spirit") { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         player->SEND_GOSSIP_MENU(3873, creature->GetGUID());
         player->TalkedToCreature(creature->GetEntry(), creature->GetGUID());
@@ -109,14 +109,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_darrowshire_spiritAI (creature);
     }
 
     struct npc_darrowshire_spiritAI : public ScriptedAI
     {
-        npc_darrowshire_spiritAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_darrowshire_spiritAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         void Reset()
         {
@@ -124,7 +124,7 @@ public:
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
     };
 };
 
@@ -142,7 +142,7 @@ class npc_tirion_fordring : public CreatureScript
 public:
     npc_tirion_fordring() : CreatureScript("npc_tirion_fordring") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -167,7 +167,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());

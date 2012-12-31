@@ -75,17 +75,17 @@ class npc_frost_tomb : public CreatureScript
 public:
     npc_frost_tomb() : CreatureScript("npc_frost_tomb") {}
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_frost_tombAI(creature);
     }
 
     struct npc_frost_tombAI : public ScriptedAI
     {
-        npc_frost_tombAI(Creature* creature) : ScriptedAI(creature)
+        npc_frost_tombAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             if (me->isSummon())
-                if (Unit* summon = me->ToTempSummon()->GetSummoner())
+                if (UnitPtr summon = me->ToTempSummon()->GetSummoner())
                     DoCast(summon, SPELL_FROST_TOMB, true);
 
             instance = creature->GetInstanceScript();
@@ -93,10 +93,10 @@ public:
 
         void UpdateAI(const uint32 /*diff*/) {}
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
-                if (Unit* boss = me->GetUnit(*me, instance->GetData64(DATA_PRINCEKELESETH)))
+                if (UnitPtr boss = me->GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_PRINCEKELESETH)))
                     if (boss->ToCreature() && boss->ToCreature()->AI())
                         boss->ToCreature()->AI()->SetData(DATA_ON_THE_ROCKS, false);
         }
@@ -111,14 +111,14 @@ class boss_keleseth : public CreatureScript
 public:
     boss_keleseth() : CreatureScript("boss_keleseth") {}
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_kelesethAI (creature);
     }
 
     struct boss_kelesethAI : public BossAI
     {
-        boss_kelesethAI(Creature* creature) : BossAI(creature, DATA_PRINCEKELESETH_EVENT)
+        boss_kelesethAI(CreaturePtr creature) : BossAI(creature, DATA_PRINCEKELESETH_EVENT)
         {
             creature->SetReactState(REACT_DEFENSIVE);
         }
@@ -138,7 +138,7 @@ public:
             onTheRocks = true;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             me->SetInCombatWithZone();
             if(instance)
@@ -146,7 +146,7 @@ public:
             Talk(SAY_START_COMBAT);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if(instance)
                instance->SetData(DATA_PRINCEKELESETH_EVENT, DONE);
@@ -181,7 +181,7 @@ public:
                     events.ScheduleEvent(EVENT_SHADOWBOLT, urand(2,3)*IN_MILLISECONDS);
                     break;
                 case EVENT_FROST_TOMB:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true, -SPELL_FROST_TOMB))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true, -SPELL_FROST_TOMB))
                     {
                         Talk(SAY_FROST_TOMB);
                         Talk(SAY_FROST_TOMB_EMOTE, target->GetGUID());
@@ -211,14 +211,14 @@ class npc_vrykul_skeleton : public CreatureScript
 public:
     npc_vrykul_skeleton() : CreatureScript("npc_vrykul_skeleton") {}
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_vrykul_skeletonAI (creature);
     }
 
     struct npc_vrykul_skeletonAI : public ScriptedAI
     {
-        npc_vrykul_skeletonAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_vrykul_skeletonAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         void Reset()
         {
@@ -228,7 +228,7 @@ public:
             DoCast(SPELL_BONE_ARMOR);
         }
 
-        void DamageTaken(Unit* /*done_by*/, uint32 &damage)
+        void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
         {
             if (damage >= me->GetHealth())
             {
@@ -306,7 +306,7 @@ class spell_frost_tomb : public SpellScriptLoader
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_DEATH)
-                    if (Unit* caster = GetCaster())
+                    if (UnitPtr caster = GetCaster())
                         if (caster->ToCreature() && caster->isAlive())
                             caster->ToCreature()->DespawnOrUnsummon(1000);
             }
@@ -329,7 +329,7 @@ class achievement_on_the_rocks : public AchievementCriteriaScript
     public:
         achievement_on_the_rocks() : AchievementCriteriaScript("achievement_on_the_rocks") {}
 
-        bool OnCheck(Player* /*source*/, Unit* target)
+        bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
         {
             return target && target->IsAIEnabled && target->GetAI()->GetData(DATA_ON_THE_ROCKS);
         }

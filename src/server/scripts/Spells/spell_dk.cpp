@@ -94,13 +94,13 @@ class spell_dk_pillar_of_frost : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Player* _player = GetTarget()->ToPlayer())
+                if (PlayerPtr _player = GetTarget()->THIS_PLAYER())
                     _player->ApplySpellImmune(DK_SPELL_PILLAR_OF_FROST, IMMUNITY_MECHANIC, MECHANIC_KNOCKOUT, false);
             }
 
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Player* _player = GetTarget()->ToPlayer())
+                if (PlayerPtr _player = GetTarget()->THIS_PLAYER())
                     _player->ApplySpellImmune(DK_SPELL_PILLAR_OF_FROST, IMMUNITY_MECHANIC, MECHANIC_KNOCKOUT, true);
             }
 
@@ -130,9 +130,9 @@ class spell_dk_blood_charges : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         if (_player->HasSpell(45529))
                         {
@@ -167,9 +167,9 @@ class spell_dk_blood_tap : public SpellScriptLoader
 
             SpellCastResult CheckBloodCharges()
             {
-                if (GetCaster()->ToPlayer())
+                if (TO_PLAYER(GetCaster()))
                 {
-                    if (AuraPtr bloodCharges = GetCaster()->ToPlayer()->GetAura(DK_SPELL_BLOOD_CHARGE))
+                    if (AuraPtr bloodCharges = TO_PLAYER(GetCaster())->GetAura(DK_SPELL_BLOOD_CHARGE))
                     {
                         if (bloodCharges->GetStackAmount() < 5)
                             return SPELL_FAILED_DONT_REPORT;
@@ -181,9 +181,9 @@ class spell_dk_blood_tap : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         if (AuraPtr bloodCharges = _player->GetAura(DK_SPELL_BLOOD_CHARGE))
                         {
@@ -240,9 +240,9 @@ class spell_dk_death_siphon : public SpellScriptLoader
 
             void HandleScriptEffect(SpellEffIndex /*effIndex*/)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         int32 bp = GetHitDamage();
                         bool runeDeath = false;
@@ -292,7 +292,7 @@ class spell_dk_improved_blood_presence : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
                     _player->UpdateAllRunesRegen();
             }
 
@@ -320,7 +320,7 @@ class spell_dk_unholy_presence : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
                     _player->UpdateAllRunesRegen();
             }
 
@@ -348,9 +348,9 @@ class spell_dk_death_strike : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         // Apply Blood Rites effects
                         if (_player->HasAura(DK_SPELL_BLOOD_RITES))
@@ -412,7 +412,7 @@ class spell_dk_purgatory : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Player* _player = GetTarget()->ToPlayer())
+                if (PlayerPtr _player = GetTarget()->THIS_PLAYER())
                 {
                     AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
                     if (removeMode == AURA_REMOVE_BY_EXPIRE)
@@ -446,10 +446,10 @@ class spell_dk_plague_leech : public SpellScriptLoader
             {
                 int32 runesUsed = 0;
 
-                if (GetCaster() && GetCaster()->ToPlayer())
+                if (GetCaster() && GetCaster()->THIS_PLAYER())
                 {
                     for (uint8 i = 0; i < MAX_RUNES; ++i)
-                        if (GetCaster()->ToPlayer()->GetRuneCooldown(i))
+                        if (GetCaster()->THIS_PLAYER()->GetRuneCooldown(i))
                             runesUsed++;
 
                     if (runesUsed != 6)
@@ -457,7 +457,7 @@ class spell_dk_plague_leech : public SpellScriptLoader
                     else
                         return SPELL_CAST_OK;
 
-                    if (Unit* target = GetExplTargetUnit())
+                    if (UnitPtr target = GetExplTargetUnit())
                     {
                         if (!target->HasAura(DK_SPELL_BLOOD_PLAGUE) && !target->HasAura(DK_SPELL_FROST_FEVER))
                             return SPELL_FAILED_DONT_REPORT;
@@ -471,9 +471,9 @@ class spell_dk_plague_leech : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         target->RemoveAura(DK_SPELL_FROST_FEVER);
                         target->RemoveAura(DK_SPELL_BLOOD_PLAGUE);
@@ -522,9 +522,9 @@ class spell_dk_unholy_blight : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         _player->CastSpell(target, DK_SPELL_BLOOD_PLAGUE, true);
                         _player->CastSpell(target, DK_SPELL_FROST_FEVER, true);
@@ -557,8 +557,8 @@ class spell_dk_chilblains : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
+                    if (UnitPtr target = GetHitUnit())
                         if (_player->HasAura(DK_SPELL_CHILBLAINS))
                             _player->CastSpell(target, DK_SPELL_CHAINS_OF_ICE_ROOT, true);
             }
@@ -587,9 +587,9 @@ class spell_dk_outbreak : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         _player->CastSpell(target, DK_SPELL_BLOOD_PLAGUE, true);
                         _player->CastSpell(target, DK_SPELL_FROST_FEVER, true);
@@ -621,7 +621,7 @@ class spell_dk_raise_dead : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
                 {
                     if (_player->HasAura(DK_SPELL_MASTER_OF_GHOULS))
                         _player->CastSpell(_player, DK_SPELL_GHOUL_AS_PET, true);
@@ -721,11 +721,11 @@ class spell_dk_anti_magic_shell_self : public SpellScriptLoader
 
             void Trigger(AuraEffectPtr aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
             {
-                Unit* target = GetTarget();
+                UnitPtr target = GetTarget();
                 // damage absorbed by Anti-Magic Shell energizes the DK with additional runic power.
                 // This, if I'm not mistaken, shows that we get back ~20% of the absorbed damage as runic power.
                 int32 bp = absorbAmount * 2 / 10;
-                target->CastCustomSpell(target, DK_SPELL_RUNIC_POWER_ENERGIZE, &bp, NULL, NULL, true, NULL, aurEff);
+                target->CastCustomSpell(target, DK_SPELL_RUNIC_POWER_ENERGIZE, &bp, nullptr, nullptr, true, nullptr, aurEff);
             }
 
             void Register()
@@ -771,7 +771,7 @@ class spell_dk_anti_magic_zone : public SpellScriptLoader
             {
                 SpellInfo const* talentSpell = sSpellMgr->GetSpellInfo(DK_SPELL_ANTI_MAGIC_SHELL_TALENT);
                 amount = talentSpell->Effects[EFFECT_0].CalcValue(GetCaster());
-                if (Player* player = GetCaster()->ToPlayer())
+                if (PlayerPtr player = TO_PLAYER(GetCaster()))
                      amount += int32(2 * player->GetTotalAttackPowerValue(BASE_ATTACK));
             }
 
@@ -814,18 +814,18 @@ class spell_dk_corpse_explosion : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* unitTarget = GetHitUnit())
+                if (UnitPtr unitTarget = GetHitUnit())
                 {
                     int32 bp = 0;
                     if (unitTarget->isAlive())  // Living ghoul as a target
                     {
                         bp = int32(unitTarget->CountPctFromMaxHealth(25));
-                        unitTarget->CastCustomSpell(unitTarget, DK_SPELL_GHOUL_EXPLODE, &bp, NULL, NULL, false);
+                        unitTarget->CastCustomSpell(unitTarget, DK_SPELL_GHOUL_EXPLODE, &bp, nullptr, nullptr, false);
                     }
                     else                        // Some corpse
                     {
                         bp = GetEffectValue();
-                        GetCaster()->CastCustomSpell(unitTarget, GetSpellInfo()->Effects[EFFECT_1].CalcValue(), &bp, NULL, NULL, true);
+                        GetCaster()->CastCustomSpell(unitTarget, GetSpellInfo()->Effects[EFFECT_1].CalcValue(), &bp, nullptr, nullptr, true);
                         // Corpse Explosion (Suicide)
                         unitTarget->CastSpell(unitTarget, DK_SPELL_CORPSE_EXPLOSION_TRIGGERED, true);
                     }
@@ -865,7 +865,7 @@ class spell_dk_ghoul_explode : public SpellScriptLoader
 
             void Suicide(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* unitTarget = GetHitUnit())
+                if (UnitPtr unitTarget = GetHitUnit())
                 {
                     // Corpse Explosion (Suicide)
                     unitTarget->CastSpell(unitTarget, DK_SPELL_CORPSE_EXPLOSION_TRIGGERED, true);
@@ -906,7 +906,7 @@ class spell_dk_death_gate_teleport : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
                     _player->TeleportTo(0, 2355.23f, -5666.4433f, 426.028f, _player->GetOrientation());
             }
 
@@ -947,7 +947,7 @@ class spell_dk_death_gate : public SpellScriptLoader
             void HandleScript(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                if (Unit* target = GetHitUnit())
+                if (UnitPtr target = GetHitUnit())
                     target->CastSpell(target, GetEffectValue(), false);
             }
 
@@ -976,9 +976,9 @@ class spell_dk_death_pact : public SpellScriptLoader
             SpellCastResult CheckCast()
             {
                 // Check if we have valid targets, otherwise skip spell casting here
-                if (Player* player = GetCaster()->ToPlayer())
+                if (PlayerPtr player = TO_PLAYER(GetCaster()))
                     for (Unit::ControlList::const_iterator itr = player->m_Controlled.begin(); itr != player->m_Controlled.end(); ++itr)
-                        if (Creature* undeadPet = (*itr)->ToCreature())
+                        if (CreaturePtr undeadPet = TO_CREATURE((*itr)))
                             if (undeadPet->isAlive() &&
                                 undeadPet->GetOwnerGUID() == player->GetGUID() &&
                                 undeadPet->GetCreatureType() == CREATURE_TYPE_UNDEAD &&
@@ -988,12 +988,12 @@ class spell_dk_death_pact : public SpellScriptLoader
                 return SPELL_FAILED_NO_PET;
             }
 
-            void FilterTargets(std::list<WorldObject*>& unitList)
+            void FilterTargets(std::list<WorldObjectPtr>& unitList)
             {
-                Unit* unit_to_add = NULL;
-                for (std::list<WorldObject*>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
+                UnitPtr unit_to_add = nullptr;
+                for (std::list<WorldObjectPtr>::iterator itr = unitList.begin(); itr != unitList.end(); ++itr)
                 {
-                    if (Unit* unit = (*itr)->ToUnit())
+                    if (UnitPtr unit = (*itr)->ToUnit())
                     if (unit->GetOwnerGUID() == GetCaster()->GetGUID() && unit->GetCreatureType() == CREATURE_TYPE_UNDEAD)
                     {
                         unit_to_add = unit;
@@ -1045,8 +1045,8 @@ class spell_dk_scourge_strike : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
-                if (Unit* unitTarget = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr unitTarget = GetHitUnit())
                 {
                     multiplier = (GetEffectValue() * unitTarget->GetDiseasesByCaster(caster->GetGUID()) / 100.f);
                     // Death Knight T8 Melee 4P Bonus
@@ -1057,15 +1057,15 @@ class spell_dk_scourge_strike : public SpellScriptLoader
 
             void HandleAfterHit()
             {
-                Unit* caster = GetCaster();
-                if (Unit* unitTarget = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr unitTarget = GetHitUnit())
                 {
                     int32 bp = GetHitDamage() * multiplier;
 
                     if (AuraEffectPtr aurEff = caster->GetAuraEffectOfRankedSpell(DK_SPELL_BLACK_ICE_R1, EFFECT_0))
                         AddPct(bp, aurEff->GetAmount());
 
-                    caster->CastCustomSpell(unitTarget, DK_SPELL_SCOURGE_STRIKE_TRIGGERED, &bp, NULL, NULL, true);
+                    caster->CastCustomSpell(unitTarget, DK_SPELL_SCOURGE_STRIKE_TRIGGERED, &bp, nullptr, nullptr, true);
                 }
             }
 
@@ -1094,14 +1094,14 @@ class spell_dk_blood_boil : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (UnitPtr target = GetHitUnit())
                     {
                         GetCaster()->CastSpell(GetCaster(), DK_SPELL_BLOOD_BOIL_TRIGGERED, true);
 
                         // Deals 50% additional damage to targets infected with Blood Plague or Frost Fever
-                        if (AuraApplication* aura = target->GetAuraApplication(DK_SPELL_FROST_FEVER))
+                        if (AuraApplicationPtr aura = target->GetAuraApplication(DK_SPELL_FROST_FEVER))
                         {
                             SetHitDamage(int32(GetHitDamage() * 1.5f));
 
@@ -1109,7 +1109,7 @@ class spell_dk_blood_boil : public SpellScriptLoader
                             if (_player->HasAura(DK_SPELL_ROILING_BLOOD))
                                 _player->CastSpell(target, DK_SPELL_PESTILENCE, true);
                         }
-                        else if (AuraApplication* aura = target->GetAuraApplication(DK_SPELL_BLOOD_PLAGUE))
+                        else if (AuraApplicationPtr aura = target->GetAuraApplication(DK_SPELL_BLOOD_PLAGUE))
                         {
                             SetHitDamage(int32(GetHitDamage() * 1.5f));
 
@@ -1159,27 +1159,27 @@ class spell_dk_death_coil : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 int32 damage = GetEffectValue();
-                Unit* caster = GetCaster();
-                if (Unit* target = GetHitUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr target = GetHitUnit())
                 {
                     if (caster->IsFriendlyTo(target))
                     {
                         int32 bp = int32(damage * 1.5f);
-                        caster->CastCustomSpell(target, SPELL_DEATH_COIL_HEAL, &bp, NULL, NULL, true);
+                        caster->CastCustomSpell(target, SPELL_DEATH_COIL_HEAL, &bp, nullptr, nullptr, true);
                     }
                     else
                     {
                         if (constAuraEffectPtr auraEffect = caster->GetAuraEffect(SPELL_SIGIL_VENGEFUL_HEART, EFFECT_1))
                             damage += auraEffect->GetBaseAmount();
-                        caster->CastCustomSpell(target, SPELL_DEATH_COIL_DAMAGE, &damage, NULL, NULL, true);
+                        caster->CastCustomSpell(target, SPELL_DEATH_COIL_DAMAGE, &damage, nullptr, nullptr, true);
                     }
                 }
             }
 
             SpellCastResult CheckCast()
             {
-                Unit* caster = GetCaster();
-                if (Unit* target = GetExplTargetUnit())
+                UnitPtr caster = GetCaster();
+                if (UnitPtr target = GetExplTargetUnit())
                 {
                     if (!caster->IsFriendlyTo(target) && !caster->isInFront(target))
                         return SPELL_FAILED_UNIT_NOT_INFRONT;
@@ -1219,8 +1219,8 @@ class spell_dk_death_grip : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 int32 damage = GetEffectValue();
-                Position const* pos = GetExplTargetDest();
-                if (Unit* target = GetHitUnit())
+                const Position* pos = GetExplTargetDest();
+                if (UnitPtr target = GetHitUnit())
                 {
                     if (!target->HasAuraType(SPELL_AURA_DEFLECT_SPELLS)) // Deterrence
                         target->CastSpell(pos->GetPositionX(), pos->GetPositionY(), pos->GetPositionZ(), damage, true);

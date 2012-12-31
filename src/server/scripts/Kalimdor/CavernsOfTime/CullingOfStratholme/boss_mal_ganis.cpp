@@ -72,14 +72,14 @@ class boss_mal_ganis : public CreatureScript
 public:
     boss_mal_ganis() : CreatureScript("boss_mal_ganis") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_mal_ganisAI (creature);
     }
 
     struct boss_mal_ganisAI : public ScriptedAI
     {
-        boss_mal_ganisAI(Creature* creature) : ScriptedAI(creature)
+        boss_mal_ganisAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -114,14 +114,14 @@ public:
                  instance->SetData(DATA_MAL_GANIS_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             if (instance)
                 instance->SetData(DATA_MAL_GANIS_EVENT, IN_PROGRESS);
         }
 
-        void DamageTaken(Unit* done_by, uint32 &damage)
+        void DamageTaken(UnitPtr done_by, uint32 &damage)
         {
             if (damage >= me->GetHealth() && done_by != me)
                 damage = me->GetHealth()-1;
@@ -157,7 +157,7 @@ public:
                         return;
                     }
 
-                    if (Creature* pArthas = me->GetCreature(*me, instance ? instance->GetData64(DATA_ARTHAS) : 0))
+                    if (CreaturePtr pArthas = me->GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_ARTHAS) : 0))
                         if (pArthas->isDead())
                         {
                             EnterEvadeMode();
@@ -174,7 +174,7 @@ public:
 
                     if (uiMindBlastTimer < diff)
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             DoCast(target, SPELL_MIND_BLAST);
                         uiMindBlastTimer = 6000;
                     } else uiMindBlastTimer -= diff;
@@ -188,7 +188,7 @@ public:
                     if (uiSleepTimer < diff)
                     {
                         DoScriptText(RAND(SAY_SLEEP_1, SAY_SLEEP_2), me);
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             DoCast(target, SPELL_SLEEP);
                         uiSleepTimer = urand(15000, 20000);
                     } else uiSleepTimer -= diff;
@@ -234,7 +234,7 @@ public:
             }
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
             {
@@ -245,7 +245,7 @@ public:
             }
         }
 
-        void KilledUnit(Unit* victim)
+        void KilledUnit(UnitPtr victim)
         {
             if (victim == me)
                 return;

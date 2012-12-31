@@ -51,7 +51,7 @@ class npc_highlord_demitrian : public CreatureScript
 public:
     npc_highlord_demitrian() : CreatureScript("npc_highlord_demitrian") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -92,7 +92,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -138,7 +138,7 @@ class npcs_rutgar_and_frankal : public CreatureScript
 public:
     npcs_rutgar_and_frankal() : CreatureScript("npcs_rutgar_and_frankal") { }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -202,7 +202,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -343,7 +343,7 @@ class go_wind_stone : public GameObjectScript
         go_wind_stone() : GameObjectScript("go_wind_stone") { }
 
     private:
-        uint8 GetPlayerRank(Player* player) // For random summoning
+        uint8 GetPlayerRank(PlayerPtr player) // For random summoning
         {
             bool setAura = player->HasAura(AURA_TWILIGHT_SET);
             bool medallionAura = player->HasAura(AURA_MEDALLION);
@@ -359,7 +359,7 @@ class go_wind_stone : public GameObjectScript
                 return 0;
         }
 
-        uint8 GetItems(Player* player, WS type)
+        uint8 GetItems(PlayerPtr player, WS type)
         {
             uint8 result = 0x0;
 
@@ -407,10 +407,10 @@ class go_wind_stone : public GameObjectScript
             return result;
         }
 
-        void SummonNPC(GameObject* go, Player* player, uint32 npc, uint32 spell)
+        void SummonNPC(GameObjectPtr go, PlayerPtr player, uint32 npc, uint32 spell)
         {
             go->CastSpell(player, spell);
-            TempSummon* summons = go->SummonCreature(npc, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), player->GetOrientation() - M_PI, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10 * 60 * 1000);
+            TempSummonPtr summons = go->SummonCreature(npc, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), player->GetOrientation() - M_PI, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10 * 60 * 1000);
             summons->CastSpell(summons, SPELL_SPAWN_IN, false);
             switch (summons->GetEntry())
             {
@@ -440,7 +440,7 @@ class go_wind_stone : public GameObjectScript
         }
 
     public:
-        bool OnGossipHello(Player* player, GameObject* go)
+        bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
         {
             uint8 rank = GetPlayerRank(player);
 
@@ -518,7 +518,7 @@ class go_wind_stone : public GameObjectScript
             return true;
         }
 
-        bool OnGossipSelect(Player* player, GameObject* go, uint32 /*sender*/, uint32 action)
+        bool OnGossipSelect(PlayerPtr player, GameObjectPtr go, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
             player->PlayerTalkClass->SendCloseGossip();

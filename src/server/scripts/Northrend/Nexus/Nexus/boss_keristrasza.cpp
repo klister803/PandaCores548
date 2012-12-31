@@ -57,14 +57,14 @@ class boss_keristrasza : public CreatureScript
 public:
     boss_keristrasza() : CreatureScript("boss_keristrasza") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_keristraszaAI (creature);
     }
 
     struct boss_keristraszaAI : public ScriptedAI
     {
-        boss_keristraszaAI(Creature* creature) : ScriptedAI(creature)
+        boss_keristraszaAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -97,7 +97,7 @@ public:
                 instance->SetData(DATA_KERISTRASZA_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             DoCastAOE(SPELL_INTENSE_COLD);
@@ -106,7 +106,7 @@ public:
                 instance->SetData(DATA_KERISTRASZA_EVENT, IN_PROGRESS);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -114,7 +114,7 @@ public:
                 instance->SetData(DATA_KERISTRASZA_EVENT, DONE);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(SAY_SLAY, me);
         }
@@ -128,7 +128,7 @@ public:
             auiContainmentSphereGUIDs[1] = instance->GetData64(ORMOROKS_CONTAINMET_SPHERE);
             auiContainmentSphereGUIDs[2] = instance->GetData64(TELESTRAS_CONTAINMET_SPHERE);
 
-            GameObject* ContainmentSpheres[DATA_CONTAINMENT_SPHERES];
+            GameObjectPtr ContainmentSpheres[DATA_CONTAINMENT_SPHERES];
 
             for (uint8 i = 0; i < DATA_CONTAINMENT_SPHERES; ++i)
             {
@@ -195,7 +195,7 @@ public:
                 DoScriptText(SAY_CRYSTAL_NOVA, me);
                 if (IsHeroic())
                     DoCast(me, SPELL_CRYSTALIZE);
-                else if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                else if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_CRYSTAL_CHAINS);
                 uiCrystalChainsCrystalizeTimer = DUNGEON_MODE(30*IN_MILLISECONDS, 11*IN_MILLISECONDS);
             } else uiCrystalChainsCrystalizeTimer -= diff;
@@ -211,11 +211,11 @@ class containment_sphere : public GameObjectScript
 public:
     containment_sphere() : GameObjectScript("containment_sphere") { }
 
-    bool OnGossipHello(Player* /*player*/, GameObject* go)
+    bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
     {
         InstanceScript* instance = go->GetInstanceScript();
 
-        Creature* pKeristrasza = Unit::GetCreature(*go, instance ? instance->GetData64(DATA_KERISTRASZA) : 0);
+        CreaturePtr pKeristrasza = Unit::GetCreature(TO_WORLDOBJECT(go), instance ? instance->GetData64(DATA_KERISTRASZA) : 0);
         if (pKeristrasza && pKeristrasza->isAlive())
         {
             // maybe these are hacks :(
@@ -242,7 +242,7 @@ class spell_intense_cold : public SpellScriptLoader
             {
                 if (aurEff->GetBase()->GetStackAmount() < 2)
                     return;
-                Unit* caster = GetCaster();
+                UnitPtr caster = GetCaster();
                 //TODO: the caster should be boss but not the player
                 if (!caster || !caster->GetAI())
                     return;
@@ -268,7 +268,7 @@ class achievement_intense_cold : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(Player* player, Unit* target)
+        bool OnCheck(PlayerPtr player, UnitPtr target)
         {
             if (!target)
                 return false;

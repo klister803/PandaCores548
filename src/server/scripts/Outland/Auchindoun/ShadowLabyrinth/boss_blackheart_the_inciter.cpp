@@ -60,14 +60,14 @@ class boss_blackheart_the_inciter : public CreatureScript
 public:
     boss_blackheart_the_inciter() : CreatureScript("boss_blackheart_the_inciter") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_blackheart_the_inciterAI (creature);
     }
 
     struct boss_blackheart_the_inciterAI : public ScriptedAI
     {
-        boss_blackheart_the_inciterAI(Creature* creature) : ScriptedAI(creature)
+        boss_blackheart_the_inciterAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -92,12 +92,12 @@ public:
                 instance->SetData(DATA_BLACKHEARTTHEINCITEREVENT, NOT_STARTED);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -105,7 +105,7 @@ public:
                 instance->SetData(DATA_BLACKHEARTTHEINCITEREVENT, DONE);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), me);
 
@@ -134,10 +134,10 @@ public:
             {
                 DoCast(me, SPELL_INCITE_CHAOS);
 
-                std::list<HostileReference*> t_list = me->getThreatManager().getThreatList();
-                for (std::list<HostileReference*>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+                std::list<HostileReferencePtr> t_list = me->getThreatManager()->getThreatList();
+                for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
-                    Unit* target = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid());
                     if (target && target->GetTypeId() == TYPEID_PLAYER)
                         me->CastSpell(target, SPELL_INCITE_CHAOS_B, true);
                 }
@@ -151,7 +151,7 @@ public:
             //Charge_Timer
             if (Charge_Timer <= diff)
             {
-                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_CHARGE);
                 Charge_Timer = urand(15000, 25000);
             } else Charge_Timer -= diff;

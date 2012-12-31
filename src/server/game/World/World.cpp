@@ -100,7 +100,7 @@ World::World()
     m_allowMovement = true;
     m_ShutdownMask = 0;
     m_ShutdownTimer = 0;
-    m_gameTime = time(NULL);
+    m_gameTime = time(nullptr);
     m_startTime = m_gameTime;
     m_maxActiveSessionCount = 0;
     m_maxQueuedSessionCount = 0;
@@ -131,7 +131,7 @@ World::~World()
         m_sessions.erase(m_sessions.begin());
     }
 
-    CliCommandHolder* command = NULL;
+    CliCommandHolder* command = nullptr;
     while (cliCmdQueue.next(command))
         delete command;
 
@@ -141,7 +141,7 @@ World::~World()
 }
 
 /// Find a player in a specified zone
-Player* World::FindPlayerInZone(uint32 zone)
+PlayerPtr World::FindPlayerInZone(uint32 zone)
 {
     ///- circle through active sessions and return the first player found in the zone
     SessionMap::const_iterator itr;
@@ -150,7 +150,7 @@ Player* World::FindPlayerInZone(uint32 zone)
         if (!itr->second)
             continue;
 
-        Player* player = itr->second->GetPlayer();
+        PlayerPtr player = itr->second->GetPlayer();
         if (!player)
             continue;
 
@@ -160,7 +160,7 @@ Player* World::FindPlayerInZone(uint32 zone)
             return player;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 bool World::IsClosed() const
@@ -194,9 +194,9 @@ WorldSession* World::FindSession(uint32 id) const
     SessionMap::const_iterator itr = m_sessions.find(id);
 
     if (itr != m_sessions.end())
-        return itr->second;                                 // also can return NULL for kicked session
+        return itr->second;                                 // also can return nullptr for kicked session
     else
-        return NULL;
+        return nullptr;
 }
 
 /// Remove a given session
@@ -299,7 +299,7 @@ bool World::HasRecentlyDisconnected(WorldSession* session)
     {
         for (DisconnectMap::iterator i = m_disconnects.begin(); i != m_disconnects.end();)
         {
-            if (difftime(i->second, time(NULL)) < tolerance)
+            if (difftime(i->second, time(nullptr)) < tolerance)
             {
                 if (i->first == session->GetAccountId())
                     return true;
@@ -1255,7 +1255,7 @@ void World::SetInitialWorldSettings()
     uint32 startupBegin = getMSTime();
 
     ///- Initialize the random number generator
-    srand((unsigned int)time(NULL));
+    srand((unsigned int)time(nullptr));
 
     ///- Initialize config settings
     LoadConfigSettings();
@@ -1722,7 +1722,7 @@ void World::SetInitialWorldSettings()
 
     ///- Initialize game time and timers
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Initialize game time and timers");
-    m_gameTime = time(NULL);
+    m_gameTime = time(nullptr);
     m_startTime = m_gameTime;
 
     LoginDatabase.PExecute("INSERT INTO uptime (realmid, starttime, uptime, revision) VALUES(%u, %u, 0, '%s')",
@@ -2001,7 +2001,7 @@ void World::Update(uint32 diff)
     }
 
     /// <li> Handle session updates when the timer has passed
-    RecordTimeDiff(NULL);
+    RecordTimeDiff(nullptr);
     UpdateSessions(diff);
     RecordTimeDiff("UpdateSessions");
 
@@ -2048,7 +2048,7 @@ void World::Update(uint32 diff)
 
     /// <li> Handle all other objects
     ///- Update objects when the timer has passed (maps, transport, creatures, ...)
-    RecordTimeDiff(NULL);
+    RecordTimeDiff(nullptr);
     sMapMgr->Update(diff);
     RecordTimeDiff("UpdateMapMgr");
 
@@ -2174,7 +2174,7 @@ namespace Trinity
     {
         public:
             typedef std::vector<WorldPacket*> WorldPacketList;
-            explicit WorldWorldTextBuilder(int32 textId, va_list* args = NULL) : i_textId(textId), i_args(args) {}
+            explicit WorldWorldTextBuilder(int32 textId, va_list* args = nullptr) : i_textId(textId), i_args(args) {}
             void operator()(WorldPacketList& data_list, LocaleConstant loc_idx)
             {
                 char const* text = sObjectMgr->GetTrinityString(i_textId, loc_idx);
@@ -2195,7 +2195,7 @@ namespace Trinity
                     do_helper(data_list, (char*)text);
             }
         private:
-            char* lineFromMessage(char*& pos) { char* start = strtok(pos, "\n"); pos = NULL; return start; }
+            char* lineFromMessage(char*& pos) { char* start = strtok(pos, "\n"); pos = nullptr; return start; }
             void do_helper(WorldPacketList& data_list, char* text)
             {
                 char* pos = text;
@@ -2277,7 +2277,7 @@ void World::SendGlobalText(const char* text, WorldSession* self)
 
     while (char* line = ChatHandler::LineFromMessage(pos))
     {
-        ChatHandler::FillMessageData(&data, NULL, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, NULL, 0, line, NULL);
+        ChatHandler::FillMessageData(&data, nullptr, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, 0, line, nullptr);
         SendGlobalMessage(&data, self);
     }
 
@@ -2306,7 +2306,7 @@ void World::SendZoneMessage(uint32 zone, WorldPacket* packet, WorldSession* self
 void World::SendZoneText(uint32 zone, const char* text, WorldSession* self, uint32 team)
 {
     WorldPacket data;
-    ChatHandler::FillMessageData(&data, NULL, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, NULL, 0, text, NULL);
+    ChatHandler::FillMessageData(&data, nullptr, CHAT_MSG_SYSTEM, LANG_UNIVERSAL, nullptr, 0, text, nullptr);
     SendZoneMessage(zone, &data, self, team);
 }
 
@@ -2333,8 +2333,8 @@ void World::KickAllLess(AccountTypes sec)
 BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string duration, std::string reason, std::string author)
 {
     uint32 duration_secs = TimeStringToSecs(duration);
-    PreparedQueryResult resultAccounts = PreparedQueryResult(NULL); //used for kicking
-    PreparedStatement* stmt = NULL;
+    PreparedQueryResult resultAccounts = PreparedQueryResult(nullptr); //used for kicking
+    PreparedStatement* stmt = nullptr;
 
     ///- Update the database with ban information
     switch (mode)
@@ -2410,7 +2410,7 @@ BanReturn World::BanAccount(BanMode mode, std::string nameOrIP, std::string dura
 /// Remove a ban from an account or IP address
 bool World::RemoveBanAccount(BanMode mode, std::string nameOrIP)
 {
-    PreparedStatement* stmt = NULL;
+    PreparedStatement* stmt = nullptr;
     if (mode == BAN_IP)
     {
         stmt = LoginDatabase.GetPreparedStatement(LOGIN_DEL_IP_NOT_BANNED);
@@ -2439,7 +2439,7 @@ bool World::RemoveBanAccount(BanMode mode, std::string nameOrIP)
 /// Ban an account or ban an IP address, duration will be parsed using TimeStringToSecs if it is positive, otherwise permban
 BanReturn World::BanCharacter(std::string name, std::string duration, std::string reason, std::string author)
 {
-    Player* pBanned = sObjectAccessor->FindPlayerByName(name.c_str());
+    PlayerPtr pBanned = sObjectAccessor->FindPlayerByName(name.c_str());
     uint32 guid = 0;
 
     uint32 duration_secs = TimeStringToSecs(duration);
@@ -2480,7 +2480,7 @@ BanReturn World::BanCharacter(std::string name, std::string duration, std::strin
 /// Remove a ban from a character
 bool World::RemoveBanCharacter(std::string name)
 {
-    Player* pBanned = sObjectAccessor->FindPlayerByName(name.c_str());
+    PlayerPtr pBanned = sObjectAccessor->FindPlayerByName(name.c_str());
     uint32 guid = 0;
 
     /// Pick a player to ban if not online
@@ -2511,7 +2511,7 @@ bool World::RemoveBanCharacter(std::string name)
 void World::_UpdateGameTime()
 {
     ///- update the time
-    time_t thisTime = time(NULL);
+    time_t thisTime = time(nullptr);
     uint32 elapsed = uint32(thisTime - m_gameTime);
     m_gameTime = thisTime;
 
@@ -2565,7 +2565,7 @@ void World::ShutdownServ(uint32 time, uint32 options, uint8 exitcode)
 }
 
 /// Display a shutdown message to the user(s)
-void World::ShutdownMsg(bool show, Player* player)
+void World::ShutdownMsg(bool show, PlayerPtr player)
 {
     // not show messages for idle shutdown mode
     if (m_ShutdownMask & SHUTDOWN_MASK_IDLE)
@@ -2608,7 +2608,7 @@ void World::ShutdownCancel()
 }
 
 /// Send a server message to the user(s)
-void World::SendServerMessage(ServerMessageType type, const char *text, Player* player)
+void World::SendServerMessage(ServerMessageType type, const char *text, PlayerPtr player)
 {
     WorldPacket data(SMSG_SERVER_MESSAGE, 50);              // guess size
     data << uint32(type);
@@ -2624,7 +2624,7 @@ void World::SendServerMessage(ServerMessageType type, const char *text, Player* 
 void World::UpdateSessions(uint32 diff)
 {
     ///- Add new sessions
-    WorldSession* sess = NULL;
+    WorldSession* sess = nullptr;
     while (addSessQueue.next(sess))
         AddSession_ (sess);
 
@@ -2641,7 +2641,7 @@ void World::UpdateSessions(uint32 diff)
         if (!pSession->Update(diff, updater))    // As interval = 0
         {
             if (!RemoveQueuedPlayer(itr->second) && itr->second && getIntConfig(CONFIG_INTERVAL_DISCONNECT_TOLERANCE))
-                m_disconnects[itr->second->GetAccountId()] = time(NULL);
+                m_disconnects[itr->second->GetAccountId()] = time(nullptr);
             RemoveQueuedPlayer(pSession);
             m_sessions.erase(itr);
             delete pSession;
@@ -2653,9 +2653,9 @@ void World::UpdateSessions(uint32 diff)
 // This handles the issued and queued CLI commands
 void World::ProcessCliCommands()
 {
-    CliCommandHolder::Print* zprint = NULL;
-    void* callbackArg = NULL;
-    CliCommandHolder* command = NULL;
+    CliCommandHolder::Print* zprint = nullptr;
+    void* callbackArg = nullptr;
+    CliCommandHolder* command = nullptr;
     while (cliCmdQueue.next(command))
     {
         sLog->outInfo(LOG_FILTER_GENERAL, "CLI command under processing...");
@@ -2738,7 +2738,7 @@ void World::_UpdateRealmCharCount(PreparedQueryResult resultCharCount)
 void World::InitWeeklyQuestResetTime()
 {
     time_t wstime = uint64(sWorld->getWorldState(WS_WEEKLY_QUEST_RESET_TIME));
-    time_t curtime = time(NULL);
+    time_t curtime = time(nullptr);
     m_NextWeeklyQuestReset = wstime < curtime ? curtime : time_t(wstime);
 }
 
@@ -2757,7 +2757,7 @@ void World::InitDailyQuestResetTime()
 
     // client built-in time for reset is 6:00 AM
     // FIX ME: client not show day start time
-    time_t curTime = time(NULL);
+    time_t curTime = time(nullptr);
     tm localTm = *localtime(&curTime);
     localTm.tm_hour = 6;
     localTm.tm_min  = 0;
@@ -2780,10 +2780,10 @@ void World::InitRandomBGResetTime()
 {
     time_t bgtime = uint64(sWorld->getWorldState(WS_BG_DAILY_RESET_TIME));
     if (!bgtime)
-        m_NextRandomBGReset = time_t(time(NULL));         // game time not yet init
+        m_NextRandomBGReset = time_t(time(nullptr));         // game time not yet init
 
     // generate time by config
-    time_t curTime = time(NULL);
+    time_t curTime = time(nullptr);
     tm localTm = *localtime(&curTime);
     localTm.tm_hour = getIntConfig(CONFIG_RANDOM_BG_RESET_HOUR);
     localTm.tm_min = 0;
@@ -3064,7 +3064,7 @@ CharacterNameData const* World::GetCharacterNameData(uint32 guid) const
     if (itr != _characterNameDataMap.end())
         return &itr->second;
     else
-        return NULL;
+        return nullptr;
 }
 
 void World::UpdatePhaseDefinitions()

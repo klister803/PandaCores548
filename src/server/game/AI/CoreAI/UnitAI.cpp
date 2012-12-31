@@ -26,13 +26,13 @@
 #include "Spell.h"
 #include "CreatureAIImpl.h"
 
-void UnitAI::AttackStart(Unit* victim)
+void UnitAI::AttackStart(UnitPtr victim)
 {
     if (victim && me->Attack(victim, true))
         me->GetMotionMaster()->MoveChase(victim);
 }
 
-void UnitAI::AttackStartCaster(Unit* victim, float dist)
+void UnitAI::AttackStartCaster(UnitPtr victim, float dist)
 {
     if (victim && me->Attack(victim, false))
         me->GetMotionMaster()->MoveChase(victim, dist);
@@ -43,7 +43,7 @@ void UnitAI::DoMeleeAttackIfReady()
     if (me->HasUnitState(UNIT_STATE_CASTING))
         return;
 
-    Unit* victim = me->getVictim();
+    UnitPtr victim = me->getVictim();
     //Make sure our attack is ready and we aren't currently casting before checking distance
     if (me->isAttackReady() && me->IsWithinMeleeRange(victim))
     {
@@ -81,12 +81,12 @@ bool UnitAI::DoSpellAttackIfReady(uint32 spell)
     return true;
 }
 
-Unit* UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly, int32 aura)
+UnitPtr UnitAI::SelectTarget(SelectAggroTarget targetType, uint32 position, float dist, bool playerOnly, int32 aura)
 {
     return SelectTarget(targetType, position, DefaultTargetSelector(me, dist, playerOnly, aura));
 }
 
-void UnitAI::SelectTargetList(std::list<Unit*>& targetList, uint32 num, SelectAggroTarget targetType, float dist, bool playerOnly, int32 aura)
+void UnitAI::SelectTargetList(std::list<UnitPtr>& targetList, uint32 num, SelectAggroTarget targetType, float dist, bool playerOnly, int32 aura)
 {
     SelectTargetList(targetList, DefaultTargetSelector(me, dist, playerOnly, aura), num, targetType);
 }
@@ -101,10 +101,10 @@ void UnitAI::DoAddAuraToAllHostilePlayers(uint32 spellid)
 {
     if (me->isInCombat())
     {
-        std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
-        for (std::list<HostileReference*>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+        std::list<HostileReferencePtr>& threatlist = me->getThreatManager()->getThreatList();
+        for (std::list<HostileReferencePtr>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
         {
-            if (Unit* unit = Unit::GetUnit(*me, (*itr)->getUnitGuid()))
+            if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid()))
                 if (unit->GetTypeId() == TYPEID_PLAYER)
                     me->AddAura(spellid, unit);
         }
@@ -116,10 +116,10 @@ void UnitAI::DoCastToAllHostilePlayers(uint32 spellid, bool triggered)
 {
     if (me->isInCombat())
     {
-        std::list<HostileReference*>& threatlist = me->getThreatManager().getThreatList();
-        for (std::list<HostileReference*>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
+        std::list<HostileReferencePtr>& threatlist = me->getThreatManager()->getThreatList();
+        for (std::list<HostileReferencePtr>::iterator itr = threatlist.begin(); itr != threatlist.end(); ++itr)
         {
-            if (Unit* unit = Unit::GetUnit(*me, (*itr)->getUnitGuid()))
+            if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid()))
                 if (unit->GetTypeId() == TYPEID_PLAYER)
                     me->CastSpell(unit, spellid, triggered);
         }
@@ -129,7 +129,7 @@ void UnitAI::DoCastToAllHostilePlayers(uint32 spellid, bool triggered)
 
 void UnitAI::DoCast(uint32 spellId)
 {
-    Unit* target = NULL;
+    UnitPtr target = nullptr;
     //sLog->outError(LOG_FILTER_GENERAL, "aggre %u %u", spellId, (uint32)AISpellInfo[spellId].target);
     switch (AISpellInfo[spellId].target)
     {
@@ -225,7 +225,7 @@ void PlayerAI::OnCharmed(bool apply) { me->IsAIEnabled = apply; }
 
 void SimpleCharmedAI::UpdateAI(const uint32 /*diff*/)
 {
-  Creature* charmer = me->GetCharmer()->ToCreature();
+  CreaturePtr charmer = TO_CREATURE(me->GetCharmer());
 
     //kill self if charm aura has infinite duration
     if (charmer->IsInEvadeMode())
@@ -242,18 +242,18 @@ void SimpleCharmedAI::UpdateAI(const uint32 /*diff*/)
     if (!charmer->isInCombat())
         me->GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, me->GetFollowAngle());
 
-    Unit* target = me->getVictim();
+    UnitPtr target = me->getVictim();
     if (!target || !charmer->IsValidAttackTarget(target))
         AttackStart(charmer->SelectNearestTargetInAttackDistance());
 }
 
-SpellTargetSelector::SpellTargetSelector(Unit* caster, uint32 spellId) :
+SpellTargetSelector::SpellTargetSelector(UnitPtr caster, uint32 spellId) :
     _caster(caster), _spellInfo(sSpellMgr->GetSpellForDifficultyFromSpell(sSpellMgr->GetSpellInfo(spellId), caster))
 {
     ASSERT(_spellInfo);
 }
 
-bool SpellTargetSelector::operator()(Unit const* target) const
+bool SpellTargetSelector::operator()(constUnitPtr target) const
 {
     if (!target)
         return false;
@@ -290,7 +290,7 @@ bool SpellTargetSelector::operator()(Unit const* target) const
     return true;
 }
 
-bool NonTankTargetSelector::operator()(Unit const* target) const
+bool NonTankTargetSelector::operator()(constUnitPtr target) const
 {
     if (!target)
         return false;

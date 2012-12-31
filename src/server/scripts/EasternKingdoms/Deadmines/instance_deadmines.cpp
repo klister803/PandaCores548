@@ -54,7 +54,7 @@ class instance_deadmines : public InstanceMapScript
 
         struct instance_deadmines_InstanceMapScript : public InstanceScript
         {
-            instance_deadmines_InstanceMapScript(Map* map) : InstanceScript(map) {}
+            instance_deadmines_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
 
             uint64 FactoryDoorGUID;
             uint64 IronCladDoorGUID;
@@ -88,7 +88,7 @@ class instance_deadmines : public InstanceMapScript
                 if (!IronCladDoorGUID || !DefiasCannonGUID || !DoorLeverGUID)
                     return;
 
-                GameObject* pIronCladDoor = instance->GetGameObject(IronCladDoorGUID);
+                GameObjectPtr pIronCladDoor = instance->GetGameObject(IronCladDoorGUID);
                 if (!pIronCladDoor)
                     return;
 
@@ -127,11 +127,11 @@ class instance_deadmines : public InstanceMapScript
 
             void SummonCreatures()
             {
-                if (GameObject* pIronCladDoor = instance->GetGameObject(IronCladDoorGUID))
+                if (GameObjectPtr pIronCladDoor = instance->GetGameObject(IronCladDoorGUID))
                 {
-                    Creature* DefiasPirate1 = pIronCladDoor->SummonCreature(657, pIronCladDoor->GetPositionX() - 2, pIronCladDoor->GetPositionY()-7, pIronCladDoor->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    Creature* DefiasPirate2 = pIronCladDoor->SummonCreature(657, pIronCladDoor->GetPositionX() + 3, pIronCladDoor->GetPositionY()-6, pIronCladDoor->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
-                    Creature* DefiasCompanion = pIronCladDoor->SummonCreature(3450, pIronCladDoor->GetPositionX() + 2, pIronCladDoor->GetPositionY()-6, pIronCladDoor->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                    CreaturePtr DefiasPirate1 = pIronCladDoor->SummonCreature(657, pIronCladDoor->GetPositionX() - 2, pIronCladDoor->GetPositionY()-7, pIronCladDoor->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                    CreaturePtr DefiasPirate2 = pIronCladDoor->SummonCreature(657, pIronCladDoor->GetPositionX() + 3, pIronCladDoor->GetPositionY()-6, pIronCladDoor->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
+                    CreaturePtr DefiasCompanion = pIronCladDoor->SummonCreature(3450, pIronCladDoor->GetPositionX() + 2, pIronCladDoor->GetPositionY()-6, pIronCladDoor->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3000);
 
                     DefiasPirate1GUID = DefiasPirate1->GetGUID();
                     DefiasPirate2GUID = DefiasPirate2->GetGUID();
@@ -144,9 +144,9 @@ class instance_deadmines : public InstanceMapScript
                 if (!DefiasPirate1GUID || !DefiasPirate2GUID || !DefiasCompanionGUID)
                     return;
 
-                Creature* pDefiasPirate1 = instance->GetCreature(DefiasPirate1GUID);
-                Creature* pDefiasPirate2 = instance->GetCreature(DefiasPirate2GUID);
-                Creature* pDefiasCompanion = instance->GetCreature(DefiasCompanionGUID);
+                CreaturePtr pDefiasPirate1 = instance->GetCreature(DefiasPirate1GUID);
+                CreaturePtr pDefiasPirate2 = instance->GetCreature(DefiasPirate2GUID);
+                CreaturePtr pDefiasCompanion = instance->GetCreature(DefiasCompanionGUID);
                 if (!pDefiasPirate1 || !pDefiasPirate2 || !pDefiasCompanion)
                     return;
 
@@ -155,7 +155,7 @@ class instance_deadmines : public InstanceMapScript
                 MoveCreatureInside(pDefiasCompanion);
             }
 
-            void MoveCreatureInside(Creature* creature)
+            void MoveCreatureInside(CreaturePtr creature)
             {
                 creature->SetWalk(false);
                 creature->GetMotionMaster()->MovePoint(0, -102.7f, -655.9f, creature->GetPositionZ());
@@ -163,7 +163,7 @@ class instance_deadmines : public InstanceMapScript
 
             void ShootCannon()
             {
-                if (GameObject* pDefiasCannon = instance->GetGameObject(DefiasCannonGUID))
+                if (GameObjectPtr pDefiasCannon = instance->GetGameObject(DefiasCannonGUID))
                 {
                     pDefiasCannon->SetGoState(GO_STATE_ACTIVE);
                     DoPlaySound(pDefiasCannon, SOUND_CANNONFIRE);
@@ -172,7 +172,7 @@ class instance_deadmines : public InstanceMapScript
 
             void BlastOutDoor()
             {
-                if (GameObject* pIronCladDoor = instance->GetGameObject(IronCladDoorGUID))
+                if (GameObjectPtr pIronCladDoor = instance->GetGameObject(IronCladDoorGUID))
                 {
                     pIronCladDoor->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
                     DoPlaySound(pIronCladDoor, SOUND_DESTROYDOOR);
@@ -181,11 +181,11 @@ class instance_deadmines : public InstanceMapScript
 
             void LeverStucked()
             {
-                if (GameObject* pDoorLever = instance->GetGameObject(DoorLeverGUID))
+                if (GameObjectPtr pDoorLever = instance->GetGameObject(DoorLeverGUID))
                     pDoorLever->SetUInt32Value(GAMEOBJECT_FLAGS, 4);
             }
 
-            void OnGameObjectCreate(GameObject* go)
+            void OnGameObjectCreate(GameObjectPtr go)
             {
                 switch (go->GetEntry())
                 {
@@ -207,7 +207,7 @@ class instance_deadmines : public InstanceMapScript
                     break;
                 case EVENT_RHAHKZOR:
                     if (data == DONE)
-                        if (GameObject* go = instance->GetGameObject(FactoryDoorGUID))
+                        if (GameObjectPtr go = instance->GetGameObject(FactoryDoorGUID))
                             go->SetGoState(GO_STATE_ACTIVE);
                     break;
                 }
@@ -235,7 +235,7 @@ class instance_deadmines : public InstanceMapScript
                 return 0;
             }
 
-            void DoPlaySound(GameObject* unit, uint32 sound)
+            void DoPlaySound(GameObjectPtr unit, uint32 sound)
             {
                 WorldPacket data;
                 data.SetOpcode(SMSG_PLAY_SOUND);
@@ -243,7 +243,7 @@ class instance_deadmines : public InstanceMapScript
                 unit->SendMessageToSet(&data, false);
             }
 
-            void DoPlaySoundCreature(Unit* unit, uint32 sound)
+            void DoPlaySoundCreature(UnitPtr unit, uint32 sound)
             {
                 WorldPacket data;
                 data.SetOpcode(SMSG_PLAY_SOUND);
@@ -252,7 +252,7 @@ class instance_deadmines : public InstanceMapScript
             }
         };
 
-        InstanceScript* GetInstanceScript(InstanceMap* map) const
+        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
         {
             return new instance_deadmines_InstanceMapScript(map);
         }

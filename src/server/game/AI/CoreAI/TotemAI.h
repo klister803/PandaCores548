@@ -29,14 +29,14 @@ class TotemAI : public CreatureAI
 {
     public:
 
-        explicit TotemAI(Creature* c);
+        explicit TotemAI(CreaturePtr c);
 
-        void MoveInLineOfSight(Unit* who);
-        void AttackStart(Unit* victim);
+        void MoveInLineOfSight(UnitPtr who);
+        void AttackStart(UnitPtr victim);
         void EnterEvadeMode();
 
         void UpdateAI(uint32 const diff);
-        static int Permissible(Creature const* creature);
+        static int Permissible(constCreaturePtr creature);
 
     private:
         uint64 i_victimGuid;

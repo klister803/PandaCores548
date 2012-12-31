@@ -64,7 +64,7 @@ class instance_stratholme : public InstanceMapScript
 
         struct instance_stratholme_InstanceMapScript : public InstanceScript
         {
-            instance_stratholme_InstanceMapScript(Map* map) : InstanceScript(map)
+            instance_stratholme_InstanceMapScript(MapPtr map) : InstanceScript(map)
             {
             }
 
@@ -134,7 +134,7 @@ class instance_stratholme : public InstanceMapScript
                 if (!goGuid)
                     return;
 
-                if (GameObject* go = instance->GetGameObject(goGuid))
+                if (GameObjectPtr go = instance->GetGameObject(goGuid))
                 {
                     if (withRestoreTime)
                         go->UseDoorOrButton(10);
@@ -143,7 +143,7 @@ class instance_stratholme : public InstanceMapScript
                 }
             }
 
-            void OnCreatureCreate(Creature* creature)
+            void OnCreatureCreate(CreaturePtr creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -163,7 +163,7 @@ class instance_stratholme : public InstanceMapScript
                 }
             }
 
-            void OnCreatureRemove(Creature* creature)
+            void OnCreatureRemove(CreaturePtr creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -177,7 +177,7 @@ class instance_stratholme : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectCreate(GameObject* go)
+            void OnGameObjectCreate(GameObjectPtr go)
             {
                 switch (go->GetEntry())
                 {
@@ -250,7 +250,7 @@ class instance_stratholme : public InstanceMapScript
                                 break;
                             case DONE:
                                 EncounterState[0] = data;
-                                if (Creature* ysidaTrigger = instance->GetCreature(ysidaTriggerGUID))
+                                if (CreaturePtr ysidaTrigger = instance->GetCreature(ysidaTriggerGUID))
                                 {
                                     Position ysidaPos;
                                     ysidaTrigger->GetPosition(&ysidaPos);
@@ -289,7 +289,7 @@ class instance_stratholme : public InstanceMapScript
                             uint32 count = abomnationGUID.size();
                             for (std::set<uint64>::const_iterator i = abomnationGUID.begin(); i != abomnationGUID.end(); ++i)
                             {
-                                if (Creature* pAbom = instance->GetCreature(*i))
+                                if (CreaturePtr pAbom = instance->GetCreature(*i))
                                     if (!pAbom->isAlive())
                                         --count;
                             }
@@ -298,7 +298,7 @@ class instance_stratholme : public InstanceMapScript
                             {
                                 //a bit itchy, it should close the door after 10 secs, but it doesn't. skipping it for now.
                                 //UpdateGoState(ziggurat4GUID, 0, true);
-                                if (Creature* pBaron = instance->GetCreature(baronGUID))
+                                if (CreaturePtr pBaron = instance->GetCreature(baronGUID))
                                     pBaron->SummonCreature(C_RAMSTEIN, 4032.84f, -3390.24f, 119.73f, 4.71f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 1800000);
                                 sLog->outDebug(LOG_FILTER_TSCR, "Instance Stratholme: Ramstein spawned.");
                             }
@@ -327,7 +327,7 @@ class instance_stratholme : public InstanceMapScript
                                 Map::PlayerList const& players = instance->GetPlayers();
                                 if (!players.isEmpty())
                                     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                                        if (Player* player = itr->getSource())
+                                        if (PlayerPtr player = itr->getSource())
                                             if (player->GetQuestStatus(QUEST_DEAD_MAN_PLEA) == QUEST_STATUS_INCOMPLETE)
                                                 player->AreaExploredOrEventHappens(QUEST_DEAD_MAN_PLEA);
 
@@ -451,7 +451,7 @@ class instance_stratholme : public InstanceMapScript
                             sLog->outDebug(LOG_FILTER_TSCR, "Instance Stratholme: Baron run event reached end. Event has state %u.", GetData(TYPE_BARON_RUN));
                             break;
                         case EVENT_SLAUGHTER_SQUARE:
-                            if (Creature* baron = instance->GetCreature(baronGUID))
+                            if (CreaturePtr baron = instance->GetCreature(baronGUID))
                             {
                                 for (uint8 i = 0; i < 4; ++i)
                                     baron->SummonCreature(C_BLACK_GUARD, 4032.84f, -3390.24f, 119.73f, 4.71f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 1800000);
@@ -468,7 +468,7 @@ class instance_stratholme : public InstanceMapScript
             }
         };
 
-        InstanceScript* GetInstanceScript(InstanceMap* map) const
+        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
         {
             return new instance_stratholme_InstanceMapScript(map);
         }

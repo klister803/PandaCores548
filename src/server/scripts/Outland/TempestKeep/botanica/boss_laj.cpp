@@ -61,7 +61,7 @@ class boss_laj : public CreatureScript
 
         struct boss_lajAI : public ScriptedAI
         {
-            boss_lajAI(Creature* creature) : ScriptedAI(creature) {}
+            boss_lajAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
             bool CanSummon;
             uint32 Teleport_Timer;
@@ -156,11 +156,11 @@ class boss_laj : public CreatureScript
                 CanSummon = false;
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(CreaturePtr summon)
             {
                 if (summon && me->getVictim())
                     summon->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM, 0));
@@ -212,7 +212,7 @@ class boss_laj : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_lajAI(creature);
         }

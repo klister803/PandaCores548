@@ -52,14 +52,14 @@ class boss_attumen : public CreatureScript
 public:
     boss_attumen() : CreatureScript("boss_attumen") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_attumenAI (creature);
     }
 
     struct boss_attumenAI : public ScriptedAI
     {
-        boss_attumenAI(Creature* creature) : ScriptedAI(creature)
+        boss_attumenAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             Phase = 1;
 
@@ -89,23 +89,23 @@ public:
             ResetTimer = 2000;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(RAND(SAY_KILL1, SAY_KILL2), me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
-            if (Unit* pMidnight = Unit::GetUnit(*me, Midnight))
+            if (UnitPtr pMidnight = Unit::GetUnit(TO_WORLDOBJECT(me), Midnight))
                 pMidnight->Kill(pMidnight);
         }
 
         void UpdateAI(const uint32 diff);
 
-        void SpellHit(Unit* /*source*/, const SpellInfo* spell)
+        void SpellHit(UnitPtr /*source*/, const SpellInfo* spell)
         {
             if (spell->Mechanic == MECHANIC_DISARM)
                 DoScriptText(SAY_DISARMED, me);
@@ -119,14 +119,14 @@ class boss_midnight : public CreatureScript
 public:
     boss_midnight() : CreatureScript("boss_midnight") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_midnightAI(creature);
     }
 
     struct boss_midnightAI : public ScriptedAI
     {
-        boss_midnightAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_midnightAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint64 Attumen;
         uint8 Phase;
@@ -142,13 +142,13 @@ public:
             me->SetVisible(true);
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             if (Phase == 2)
             {
-                if (Unit* unit = Unit::GetUnit(*me, Attumen))
+                if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), Attumen))
                 DoScriptText(SAY_MIDNIGHT_KILL, unit);
             }
         }
@@ -161,7 +161,7 @@ public:
             if (Phase == 1 && HealthBelowPct(95))
             {
                 Phase = 2;
-                if (Creature* pAttumen = me->SummonCreature(SUMMON_ATTUMEN, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000))
+                if (CreaturePtr pAttumen = me->SummonCreature(SUMMON_ATTUMEN, 0.0f, 0.0f, 0.0f, 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 30000))
                 {
                     Attumen = pAttumen->GetGUID();
                     pAttumen->AI()->AttackStart(me->getVictim());
@@ -171,7 +171,7 @@ public:
             }
             else if (Phase == 2 && HealthBelowPct(25))
             {
-                if (Unit* pAttumen = Unit::GetUnit(*me, Attumen))
+                if (UnitPtr pAttumen = Unit::GetUnit(TO_WORLDOBJECT(me), Attumen))
                     Mount(pAttumen);
             }
             else if (Phase == 3)
@@ -183,7 +183,7 @@ public:
                         Mount_Timer = 0;
                         me->SetVisible(false);
                         me->GetMotionMaster()->MoveIdle();
-                        if (Unit* pAttumen = Unit::GetUnit(*me, Attumen))
+                        if (UnitPtr pAttumen = Unit::GetUnit(TO_WORLDOBJECT(me), Attumen))
                         {
                             pAttumen->SetDisplayId(MOUNTED_DISPLAYID);
                             pAttumen->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -202,13 +202,13 @@ public:
                 DoMeleeAttackIfReady();
         }
 
-        void Mount(Unit* pAttumen)
+        void Mount(UnitPtr pAttumen)
         {
             DoScriptText(SAY_MOUNT, pAttumen);
             Phase = 3;
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             pAttumen->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
-            float angle = me->GetAngle(pAttumen);
+            float angle = me->GetAngle(pAttumen.get());
             float distance = me->GetDistance2d(pAttumen);
             float newX = me->GetPositionX() + std::cos(angle)*(distance/2);
             float newY = me->GetPositionY() + std::sin(angle)*(distance/2);
@@ -227,7 +227,7 @@ public:
             Mount_Timer = 1000;
         }
 
-        void SetMidnight(Creature* pAttumen, uint64 value)
+        void SetMidnight(CreaturePtr pAttumen, uint64 value)
         {
             CAST_AI(boss_attumen::boss_attumenAI, pAttumen->AI())->Midnight = value;
         }
@@ -242,7 +242,7 @@ void boss_attumen::boss_attumenAI::UpdateAI(const uint32 diff)
         if (ResetTimer <= diff)
         {
             ResetTimer = 0;
-            Unit* pMidnight = Unit::GetUnit(*me, Midnight);
+            UnitPtr pMidnight = Unit::GetUnit(TO_WORLDOBJECT(me), Midnight);
             if (pMidnight)
             {
                 pMidnight->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -283,15 +283,15 @@ void boss_attumen::boss_attumenAI::UpdateAI(const uint32 diff)
     {
         if (ChargeTimer <= diff)
         {
-            Unit* target = NULL;
-            std::list<HostileReference*> t_list = me->getThreatManager().getThreatList();
-            std::vector<Unit*> target_list;
-            for (std::list<HostileReference*>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+            UnitPtr target = nullptr;
+            std::list<HostileReferencePtr> t_list = me->getThreatManager()->getThreatList();
+            std::vector<UnitPtr> target_list;
+            for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
             {
-                target = Unit::GetUnit(*me, (*itr)->getUnitGuid());
+                target = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid());
                 if (target && !target->IsWithinDist(me, ATTACK_DISTANCE, false))
                     target_list.push_back(target);
-                target = NULL;
+                target = nullptr;
             }
             if (!target_list.empty())
                 target = *(target_list.begin()+rand()%target_list.size());
@@ -304,7 +304,7 @@ void boss_attumen::boss_attumenAI::UpdateAI(const uint32 diff)
     {
         if (HealthBelowPct(25))
         {
-            Creature* pMidnight = Unit::GetCreature(*me, Midnight);
+            CreaturePtr pMidnight = Unit::GetCreature(TO_WORLDOBJECT(me), Midnight);
             if (pMidnight && pMidnight->GetTypeId() == TYPEID_UNIT)
             {
                 CAST_AI(boss_midnight::boss_midnightAI, (pMidnight->AI()))->Mount(me);

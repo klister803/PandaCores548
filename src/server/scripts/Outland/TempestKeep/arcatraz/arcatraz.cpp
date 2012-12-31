@@ -76,7 +76,7 @@ class npc_millhouse_manastorm : public CreatureScript
         }
         struct npc_millhouse_manastormAI : public ScriptedAI
         {
-            npc_millhouse_manastormAI(Creature* creature) : ScriptedAI(creature)
+            npc_millhouse_manastormAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -111,7 +111,7 @@ class npc_millhouse_manastorm : public CreatureScript
                 }
             }
 
-            void AttackStart(Unit* who)
+            void AttackStart(UnitPtr who)
             {
                 if (me->Attack(who, true))
                 {
@@ -122,14 +122,14 @@ class npc_millhouse_manastorm : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/){}
+            void EnterCombat(UnitPtr /*who*/){}
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 Talk(SAY_KILL);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 Talk(SAY_DEATH);
 
@@ -221,7 +221,7 @@ class npc_millhouse_manastorm : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new npc_millhouse_manastormAI(creature);
         }
@@ -280,7 +280,7 @@ class npc_warden_mellichar : public CreatureScript
 
         struct npc_warden_mellicharAI : public ScriptedAI
         {
-            npc_warden_mellicharAI(Creature* creature) : ScriptedAI(creature)
+            npc_warden_mellicharAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -308,9 +308,9 @@ class npc_warden_mellichar : public CreatureScript
                     instance->SetData(TYPE_HARBINGERSKYRISS, NOT_STARTED);
             }
 
-            void AttackStart(Unit* /*who*/) {}
+            void AttackStart(UnitPtr /*who*/) {}
 
-            void MoveInLineOfSight(Unit* who)
+            void MoveInLineOfSight(UnitPtr who)
             {
                 if (IsRunning)
                     return;
@@ -328,7 +328,7 @@ class npc_warden_mellichar : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 Talk(YELL_INTRO1);
                 DoCast(me, SPELL_BUBBLE_VISUAL);
@@ -514,7 +514,7 @@ class npc_warden_mellichar : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new npc_warden_mellicharAI(creature);
         }
@@ -538,7 +538,7 @@ class mob_zerekethvoidzone : public CreatureScript
         }
         struct mob_zerekethvoidzoneAI : public ScriptedAI
         {
-            mob_zerekethvoidzoneAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_zerekethvoidzoneAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
             void Reset()
             {
@@ -549,10 +549,10 @@ class mob_zerekethvoidzone : public CreatureScript
                 DoCast(me, SPELL_VOID_ZONE_DAMAGE);
             }
 
-            void EnterCombat(Unit* /*who*/) {}
+            void EnterCombat(UnitPtr /*who*/) {}
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_zerekethvoidzoneAI(creature);
         }

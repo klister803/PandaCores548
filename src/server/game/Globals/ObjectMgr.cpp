@@ -47,6 +47,7 @@
 #include "PoolMgr.h"
 #include "DB2Structure.h"
 #include "DB2Stores.h"
+#include "ClassFactory.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -73,7 +74,7 @@ std::string GetScriptsTableNameByType(ScriptsType type)
 
 ScriptMapMap* GetScriptsMapByType(ScriptsType type)
 {
-    ScriptMapMap* res = NULL;
+    ScriptMapMap* res = nullptr;
     switch (type)
     {
         case SCRIPTS_QUEST_END:     res = &sQuestEndScripts;    break;
@@ -196,16 +197,16 @@ LanguageDesc const* GetLanguageDescByID(uint32 lang)
             return &lang_description[i];
     }
 
-    return NULL;
+    return nullptr;
 }
 
-bool SpellClickInfo::IsFitToRequirements(Unit const* clicker, Unit const* clickee) const
+bool SpellClickInfo::IsFitToRequirements(constUnitPtr clicker, constUnitPtr clickee) const
 {
-    Player const* playerClicker = clicker->ToPlayer();
+    constPlayerPtr playerClicker = TO_CONST_PLAYER(clicker);
     if (!playerClicker)
         return true;
 
-    Unit const* summoner = NULL;
+    constUnitPtr summoner = nullptr;
     // Check summoners for party
     if (clickee->isSummon())
         summoner = clickee->ToTempSummon()->GetSummoner();
@@ -279,7 +280,7 @@ void ObjectMgr::LoadCreatureLocales()
 
     _creatureLocaleStore.clear();                              // need for reload case
 
-    QueryResult result = WorldDatabase.Query("SELECT entry, name_loc1, subname_loc1, name_loc2, subname_loc2, name_loc3, subname_loc3, name_loc4, subname_loc4, name_loc5, subname_loc5, name_loc6, subname_loc6, name_loc7, subname_loc7, name_loc8, subname_loc8 FROM locales_creature");
+    QueryResult result = WorldDatabase.Query("SELECT entry, name_loc1, subname_loc1, name_loc2, subname_loc2, name_loc3, subname_loc3, name_loc4, subname_loc4, name_loc5, subname_loc5, name_loc6, subname_loc6, name_loc7, subname_loc7, name_loc8, subname_loc8, name_loc9, subname_loc9, name_loc10, subname_loc10 FROM locales_creature");
 
     if (!result)
         return;
@@ -313,7 +314,8 @@ void ObjectMgr::LoadGossipMenuItemsLocales()
         "option_text_loc1, box_text_loc1, option_text_loc2, box_text_loc2, "
         "option_text_loc3, box_text_loc3, option_text_loc4, box_text_loc4, "
         "option_text_loc5, box_text_loc5, option_text_loc6, box_text_loc6, "
-        "option_text_loc7, box_text_loc7, option_text_loc8, box_text_loc8 "
+        "option_text_loc7, box_text_loc7, option_text_loc8, box_text_loc8, "
+        "option_text_loc9, box_text_loc9, option_text_loc10, box_text_loc10 "
         "FROM locales_gossip_menu_option");
 
     if (!result)
@@ -345,7 +347,7 @@ void ObjectMgr::LoadPointOfInterestLocales()
 
     _pointOfInterestLocaleStore.clear();                              // need for reload case
 
-    QueryResult result = WorldDatabase.Query("SELECT entry, icon_name_loc1, icon_name_loc2, icon_name_loc3, icon_name_loc4, icon_name_loc5, icon_name_loc6, icon_name_loc7, icon_name_loc8 FROM locales_points_of_interest");
+    QueryResult result = WorldDatabase.Query("SELECT entry, icon_name_loc1, icon_name_loc2, icon_name_loc3, icon_name_loc4, icon_name_loc5, icon_name_loc6, icon_name_loc7, icon_name_loc8, icon_name_loc9, icon_name_loc10 FROM locales_points_of_interest");
 
     if (!result)
         return;
@@ -682,7 +684,7 @@ void ObjectMgr::CheckCreatureTemplate(CreatureTemplate const* cInfo)
         sLog->outError(LOG_FILTER_SQL, "Creature (Entry: %u) has non-existing faction_H template (%u).", cInfo->Entry, cInfo->faction_H);
 
     // used later for scale
-    CreatureDisplayInfoEntry const* displayScaleEntry = NULL;
+    CreatureDisplayInfoEntry const* displayScaleEntry = nullptr;
 
     if (cInfo->Modelid1)
     {
@@ -963,7 +965,7 @@ CreatureAddon const* ObjectMgr::GetCreatureAddon(uint32 lowguid)
     if (itr != _creatureAddonStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 CreatureAddon const* ObjectMgr::GetCreatureTemplateAddon(uint32 entry)
@@ -972,7 +974,7 @@ CreatureAddon const* ObjectMgr::GetCreatureTemplateAddon(uint32 entry)
     if (itr != _creatureTemplateAddonStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 EquipmentInfo const* ObjectMgr::GetEquipmentInfo(uint32 entry)
@@ -981,7 +983,7 @@ EquipmentInfo const* ObjectMgr::GetEquipmentInfo(uint32 entry)
     if (itr != _equipmentInfoStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::LoadEquipmentTemplates()
@@ -1053,10 +1055,10 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelInfo(uint32 modelId)
     if (itr != _creatureModelStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
-uint32 ObjectMgr::ChooseDisplayId(uint32 /*team*/, const CreatureTemplate* cinfo, const CreatureData* data /*= NULL*/)
+uint32 ObjectMgr::ChooseDisplayId(uint32 /*team*/, const CreatureTemplate* cinfo, const CreatureData* data /*= nullptr*/)
 {
     // Load creature model (display id)
     uint32 display_id = 0;
@@ -1071,7 +1073,7 @@ uint32 ObjectMgr::ChooseDisplayId(uint32 /*team*/, const CreatureTemplate* cinfo
     return display_id;
 }
 
-void ObjectMgr::ChooseCreatureFlags(const CreatureTemplate* cinfo, uint32& npcflag, uint32& unit_flags, uint32& dynamicflags, const CreatureData* data /*= NULL*/)
+void ObjectMgr::ChooseCreatureFlags(const CreatureTemplate* cinfo, uint32& npcflag, uint32& unit_flags, uint32& dynamicflags, const CreatureData* data /*= nullptr*/)
 {
     npcflag = cinfo->npcflag;
     unit_flags = cinfo->unit_flags;
@@ -1094,7 +1096,7 @@ CreatureModelInfo const* ObjectMgr::GetCreatureModelRandomGender(uint32* display
 {
     CreatureModelInfo const* modelInfo = GetCreatureModelInfo(*displayID);
     if (!modelInfo)
-        return NULL;
+        return nullptr;
 
     // If a model for another gender exists, 50% chance to use it
     if (modelInfo->modelid_other_gender != 0 && urand(0, 1) == 0)
@@ -1587,7 +1589,7 @@ uint32 ObjectMgr::AddGOData(uint32 entry, uint32 mapId, float x, float y, float 
     if (!goinfo)
         return 0;
 
-    Map* map = sMapMgr->CreateBaseMap(mapId);
+    MapPtr map = sMapMgr->CreateBaseMap(mapId);
     if (!map)
         return 0;
 
@@ -1617,11 +1619,10 @@ uint32 ObjectMgr::AddGOData(uint32 entry, uint32 mapId, float x, float y, float 
     // We use spawn coords to spawn
     if (!map->Instanceable() && map->IsGridLoaded(x, y))
     {
-        GameObject* go = new GameObject;
+        GameObjectPtr go (new GameObject);
         if (!go->LoadGameObjectFromDB(guid, map))
         {
             sLog->outError(LOG_FILTER_GENERAL, "AddGOData: cannot add gameobject entry %u to map", entry);
-            delete go;
             return 0;
         }
     }
@@ -1647,16 +1648,15 @@ bool ObjectMgr::MoveCreData(uint32 guid, uint32 mapId, Position pos)
     AddCreatureToGrid(guid, &data);
 
     // Spawn if necessary (loaded grids only)
-    if (Map* map = sMapMgr->CreateBaseMap(mapId))
+    if (MapPtr map = sMapMgr->CreateBaseMap(mapId))
     {
         // We use spawn coords to spawn
         if (!map->Instanceable() && map->IsGridLoaded(data.posX, data.posY))
         {
-            Creature* creature = new Creature;
+            CreaturePtr creature = ClassFactory::ConstructCreature();
             if (!creature->LoadCreatureFromDB(guid, map))
             {
                 sLog->outError(LOG_FILTER_GENERAL, "AddCreature: cannot add creature entry %u to map", guid);
-                delete creature;
                 return false;
             }
         }
@@ -1699,16 +1699,15 @@ uint32 ObjectMgr::AddCreData(uint32 entry, uint32 /*team*/, uint32 mapId, float 
     AddCreatureToGrid(guid, &data);
 
     // Spawn if necessary (loaded grids only)
-    if (Map* map = sMapMgr->CreateBaseMap(mapId))
+    if (MapPtr map = sMapMgr->CreateBaseMap(mapId))
     {
         // We use spawn coords to spawn
         if (!map->Instanceable() && !map->IsRemovalGrid(x, y))
         {
-            Creature* creature = new Creature;
+            CreaturePtr creature = ClassFactory::ConstructCreature();
             if (!creature->LoadCreatureFromDB(guid, map))
             {
                 sLog->outError(LOG_FILTER_GENERAL, "AddCreature: cannot add creature entry %u to map", entry);
-                delete creature;
                 return 0;
             }
         }
@@ -1887,7 +1886,7 @@ void ObjectMgr::RemoveGameobjectFromGrid(uint32 guid, GameObjectData const* data
     }
 }
 
-Player* ObjectMgr::GetPlayerByLowGUID(uint32 lowguid) const
+PlayerPtr ObjectMgr::GetPlayerByLowGUID(uint32 lowguid) const
 {
     uint64 guid = MAKE_NEW_GUID(lowguid, 0, HIGHGUID_PLAYER);
     return ObjectAccessor::FindPlayer(guid);
@@ -1913,7 +1912,7 @@ uint64 ObjectMgr::GetPlayerGUIDByName(std::string name) const
 bool ObjectMgr::GetPlayerNameByGUID(uint64 guid, std::string &name) const
 {
     // prevent DB access for online player
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
     {
         name = player->GetName();
         return true;
@@ -1937,7 +1936,7 @@ bool ObjectMgr::GetPlayerNameByGUID(uint64 guid, std::string &name) const
 uint32 ObjectMgr::GetPlayerTeamByGUID(uint64 guid) const
 {
     // prevent DB access for online player
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
     {
         return Player::TeamForRace(player->getRace());
     }
@@ -1960,7 +1959,7 @@ uint32 ObjectMgr::GetPlayerTeamByGUID(uint64 guid) const
 uint32 ObjectMgr::GetPlayerAccountIdByGUID(uint64 guid) const
 {
     // prevent DB access for online player
-    if (Player* player = ObjectAccessor::FindPlayer(guid))
+    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
     {
         return player->GetSession()->GetAccountId();
     }
@@ -2003,7 +2002,7 @@ void ObjectMgr::LoadItemLocales()
 
     _itemLocaleStore.clear();                                 // need for reload case
 
-    QueryResult result = WorldDatabase.Query("SELECT entry, name_loc1, description_loc1, name_loc2, description_loc2, name_loc3, description_loc3, name_loc4, description_loc4, name_loc5, description_loc5, name_loc6, description_loc6, name_loc7, description_loc7, name_loc8, description_loc8 FROM locales_item");
+    QueryResult result = WorldDatabase.Query("SELECT entry, name_loc1, description_loc1, name_loc2, description_loc2, name_loc3, description_loc3, name_loc4, description_loc4, name_loc5, description_loc5, name_loc6, description_loc6, name_loc7, description_loc7, name_loc8, description_loc8, name_loc9, description_loc9, name_loc10, description_loc10 FROM locales_item");
 
     if (!result)
         return;
@@ -2033,7 +2032,7 @@ void FillItemDamageFields(float* minDamage, float* maxDamage, float* dps, uint32
     if (itemClass != ITEM_CLASS_WEAPON || quality > ITEM_QUALITY_ARTIFACT)
         return;
 
-    DBCStorage<ItemDamageEntry>* store = NULL;
+    DBCStorage<ItemDamageEntry>* store = nullptr;
     // get the right store here
     if (inventoryType > 0xD + 13)
         return;
@@ -2619,7 +2618,7 @@ ItemTemplate const* ObjectMgr::GetItemTemplate(uint32 entry)
     ItemTemplateContainer::const_iterator itr = _itemTemplateStore.find(entry);
     if (itr != _itemTemplateStore.end())
         return &(itr->second);
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::LoadVehicleTemplateAccessories()
@@ -2768,7 +2767,7 @@ void ObjectMgr::LoadPetLevelInfo()
 
         PetLevelInfo*& pInfoMapEntry = _petInfoStore[creature_id];
 
-        if (pInfoMapEntry == NULL)
+        if (pInfoMapEntry == nullptr)
             pInfoMapEntry = new PetLevelInfo[sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL)];
 
         // data for level 1 stored in [0] array element, ...
@@ -2820,7 +2819,7 @@ PetLevelInfo const* ObjectMgr::GetPetLevelInfo(uint32 creature_id, uint8 level) 
 
     PetLevelInfoContainer::const_iterator itr = _petInfoStore.find(creature_id);
     if (itr == _petInfoStore.end())
-        return NULL;
+        return nullptr;
 
     return &itr->second[level-1];                           // data for level 1 stored in [0] array element, ...
 }
@@ -3486,7 +3485,7 @@ void ObjectMgr::LoadQuests()
     for (QuestMap::iterator iter = _questTemplates.begin(); iter != _questTemplates.end(); ++iter)
     {
         // skip post-loading checks for disabled quests
-        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_QUEST, iter->first, NULL))
+        if (DisableMgr::IsDisabledFor(DISABLE_TYPE_QUEST, iter->first, nullptr))
             continue;
 
         Quest * qinfo = iter->second;
@@ -4243,7 +4242,9 @@ void ObjectMgr::LoadQuestLocales()
         "Title_loc5, Details_loc5, Objectives_loc5, OfferRewardText_loc5, RequestItemsText_loc5, EndText_loc5, CompletedText_loc5, ObjectiveText1_loc5, ObjectiveText2_loc5, ObjectiveText3_loc5, ObjectiveText4_loc5, QuestGiverTextWindow_loc5, QuestGiverTargetName_loc5, QuestTurnTextWindow_loc5, QuestTurnTargetName_loc5,"
         "Title_loc6, Details_loc6, Objectives_loc6, OfferRewardText_loc6, RequestItemsText_loc6, EndText_loc6, CompletedText_loc6, ObjectiveText1_loc6, ObjectiveText2_loc6, ObjectiveText3_loc6, ObjectiveText4_loc6, QuestGiverTextWindow_loc6, QuestGiverTargetName_loc6, QuestTurnTextWindow_loc6, QuestTurnTargetName_loc6,"
         "Title_loc7, Details_loc7, Objectives_loc7, OfferRewardText_loc7, RequestItemsText_loc7, EndText_loc7, CompletedText_loc7, ObjectiveText1_loc7, ObjectiveText2_loc7, ObjectiveText3_loc7, ObjectiveText4_loc7, QuestGiverTextWindow_loc7, QuestGiverTargetName_loc7, QuestTurnTextWindow_loc7, QuestTurnTargetName_loc7,"
-        "Title_loc8, Details_loc8, Objectives_loc8, OfferRewardText_loc8, RequestItemsText_loc8, EndText_loc8, CompletedText_loc8, ObjectiveText1_loc8, ObjectiveText2_loc8, ObjectiveText3_loc8, ObjectiveText4_loc8, QuestGiverTextWindow_loc8, QuestGiverTargetName_loc8, QuestTurnTextWindow_loc8, QuestTurnTargetName_loc8"
+        "Title_loc8, Details_loc8, Objectives_loc8, OfferRewardText_loc8, RequestItemsText_loc8, EndText_loc8, CompletedText_loc8, ObjectiveText1_loc8, ObjectiveText2_loc8, ObjectiveText3_loc8, ObjectiveText4_loc8, QuestGiverTextWindow_loc8, QuestGiverTargetName_loc8, QuestTurnTextWindow_loc8, QuestTurnTargetName_loc8,"
+        "Title_loc9, Details_loc9, Objectives_loc9, OfferRewardText_loc9, RequestItemsText_loc9, EndText_loc9, CompletedText_loc9, ObjectiveText1_loc9, ObjectiveText2_loc9, ObjectiveText3_loc9, ObjectiveText4_loc9, QuestGiverTextWindow_loc9, QuestGiverTargetName_loc9, QuestTurnTextWindow_loc9, QuestTurnTargetName_loc9,"
+        "Title_loc10, Details_loc10, Objectives_loc10, OfferRewardText_loc10, RequestItemsText_loc10, EndText_loc10, CompletedText_loc10, ObjectiveText1_loc10, ObjectiveText2_loc10, ObjectiveText3_loc10, ObjectiveText4_loc10, QuestGiverTextWindow_loc10, QuestGiverTargetName_loc10, QuestTurnTextWindow_loc10, QuestTurnTargetName_loc10"
         " FROM locales_quest");
 
     if (!result)
@@ -4895,7 +4896,7 @@ PageText const* ObjectMgr::GetPageText(uint32 pageEntry)
     if (itr != _pageTextStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::LoadPageTextLocales()
@@ -4904,7 +4905,7 @@ void ObjectMgr::LoadPageTextLocales()
 
     _pageTextLocaleStore.clear();                             // need for reload case
 
-    QueryResult result = WorldDatabase.Query("SELECT entry, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8 FROM locales_page_text");
+    QueryResult result = WorldDatabase.Query("SELECT entry, text_loc1, text_loc2, text_loc3, text_loc4, text_loc5, text_loc6, text_loc7, text_loc8, text_loc9, text_loc10 FROM locales_page_text");
 
     if (!result)
         return;
@@ -4971,7 +4972,7 @@ InstanceTemplate const* ObjectMgr::GetInstanceTemplate(uint32 mapID)
     if (itr != _instanceTemplateStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::LoadInstanceEncounters()
@@ -5059,7 +5060,7 @@ GossipText const* ObjectMgr::GetGossipText(uint32 Text_ID) const
     GossipTextContainer::const_iterator itr = _gossipTextStore.find(Text_ID);
     if (itr != _gossipTextStore.end())
         return &itr->second;
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::LoadGossipText()
@@ -5119,15 +5120,17 @@ void ObjectMgr::LoadNpcTextLocales()
 
     _npcTextLocaleStore.clear();                              // need for reload case
 
-    QueryResult result = WorldDatabase.Query("SELECT entry, "
-        "Text0_0_loc1, Text0_1_loc1, Text1_0_loc1, Text1_1_loc1, Text2_0_loc1, Text2_1_loc1, Text3_0_loc1, Text3_1_loc1, Text4_0_loc1, Text4_1_loc1, Text5_0_loc1, Text5_1_loc1, Text6_0_loc1, Text6_1_loc1, Text7_0_loc1, Text7_1_loc1, "
-        "Text0_0_loc2, Text0_1_loc2, Text1_0_loc2, Text1_1_loc2, Text2_0_loc2, Text2_1_loc2, Text3_0_loc2, Text3_1_loc1, Text4_0_loc2, Text4_1_loc2, Text5_0_loc2, Text5_1_loc2, Text6_0_loc2, Text6_1_loc2, Text7_0_loc2, Text7_1_loc2, "
-        "Text0_0_loc3, Text0_1_loc3, Text1_0_loc3, Text1_1_loc3, Text2_0_loc3, Text2_1_loc3, Text3_0_loc3, Text3_1_loc1, Text4_0_loc3, Text4_1_loc3, Text5_0_loc3, Text5_1_loc3, Text6_0_loc3, Text6_1_loc3, Text7_0_loc3, Text7_1_loc3, "
-        "Text0_0_loc4, Text0_1_loc4, Text1_0_loc4, Text1_1_loc4, Text2_0_loc4, Text2_1_loc4, Text3_0_loc4, Text3_1_loc1, Text4_0_loc4, Text4_1_loc4, Text5_0_loc4, Text5_1_loc4, Text6_0_loc4, Text6_1_loc4, Text7_0_loc4, Text7_1_loc4, "
-        "Text0_0_loc5, Text0_1_loc5, Text1_0_loc5, Text1_1_loc5, Text2_0_loc5, Text2_1_loc5, Text3_0_loc5, Text3_1_loc1, Text4_0_loc5, Text4_1_loc5, Text5_0_loc5, Text5_1_loc5, Text6_0_loc5, Text6_1_loc5, Text7_0_loc5, Text7_1_loc5, "
-        "Text0_0_loc6, Text0_1_loc6, Text1_0_loc6, Text1_1_loc6, Text2_0_loc6, Text2_1_loc6, Text3_0_loc6, Text3_1_loc1, Text4_0_loc6, Text4_1_loc6, Text5_0_loc6, Text5_1_loc6, Text6_0_loc6, Text6_1_loc6, Text7_0_loc6, Text7_1_loc6, "
-        "Text0_0_loc7, Text0_1_loc7, Text1_0_loc7, Text1_1_loc7, Text2_0_loc7, Text2_1_loc7, Text3_0_loc7, Text3_1_loc1, Text4_0_loc7, Text4_1_loc7, Text5_0_loc7, Text5_1_loc7, Text6_0_loc7, Text6_1_loc7, Text7_0_loc7, Text7_1_loc7, "
-        "Text0_0_loc8, Text0_1_loc8, Text1_0_loc8, Text1_1_loc8, Text2_0_loc8, Text2_1_loc8, Text3_0_loc8, Text3_1_loc1, Text4_0_loc8, Text4_1_loc8, Text5_0_loc8, Text5_1_loc8, Text6_0_loc8, Text6_1_loc8, Text7_0_loc8, Text7_1_loc8 "
+    QueryResult result = WorldDatabase.Query("SELECT entry, " 
+        "Text0_0_loc1,  Text0_1_loc1,  Text1_0_loc1,  Text1_1_loc1,  Text2_0_loc1,  Text2_1_loc1,  Text3_0_loc1,  Text3_1_loc1,  Text4_0_loc1,  Text4_1_loc1,  Text5_0_loc1,  Text5_1_loc1,  Text6_0_loc1,  Text6_1_loc1,  Text7_0_loc1,  Text7_1_loc1,  Text8_0_loc1,   Text8_1_loc1,   Text9_0_loc1,   Text9_1_loc1, "
+        "Text0_0_loc2,  Text0_1_loc2,  Text1_0_loc2,  Text1_1_loc2,  Text2_0_loc2,  Text2_1_loc2,  Text3_0_loc2,  Text3_1_loc1,  Text4_0_loc2,  Text4_1_loc2,  Text5_0_loc2,  Text5_1_loc2,  Text6_0_loc2,  Text6_1_loc2,  Text7_0_loc2,  Text7_1_loc2,  Text8_0_loc2,   Text8_1_loc2,   Text9_0_loc2,   Text9_1_loc2, "
+        "Text0_0_loc3,  Text0_1_loc3,  Text1_0_loc3,  Text1_1_loc3,  Text2_0_loc3,  Text2_1_loc3,  Text3_0_loc3,  Text3_1_loc1,  Text4_0_loc3,  Text4_1_loc3,  Text5_0_loc3,  Text5_1_loc3,  Text6_0_loc3,  Text6_1_loc3,  Text7_0_loc3,  Text7_1_loc3,  Text8_0_loc3,   Text8_1_loc3,   Text9_0_loc3,   Text9_1_loc3, "
+        "Text0_0_loc4,  Text0_1_loc4,  Text1_0_loc4,  Text1_1_loc4,  Text2_0_loc4,  Text2_1_loc4,  Text3_0_loc4,  Text3_1_loc1,  Text4_0_loc4,  Text4_1_loc4,  Text5_0_loc4,  Text5_1_loc4,  Text6_0_loc4,  Text6_1_loc4,  Text7_0_loc4,  Text7_1_loc4,  Text8_0_loc4,   Text8_1_loc4,   Text9_0_loc4,   Text9_1_loc4, "
+        "Text0_0_loc5,  Text0_1_loc5,  Text1_0_loc5,  Text1_1_loc5,  Text2_0_loc5,  Text2_1_loc5,  Text3_0_loc5,  Text3_1_loc1,  Text4_0_loc5,  Text4_1_loc5,  Text5_0_loc5,  Text5_1_loc5,  Text6_0_loc5,  Text6_1_loc5,  Text7_0_loc5,  Text7_1_loc5,  Text8_0_loc5,   Text8_1_loc5,   Text9_0_loc5,   Text9_1_loc5, "
+        "Text0_0_loc6,  Text0_1_loc6,  Text1_0_loc6,  Text1_1_loc6,  Text2_0_loc6,  Text2_1_loc6,  Text3_0_loc6,  Text3_1_loc1,  Text4_0_loc6,  Text4_1_loc6,  Text5_0_loc6,  Text5_1_loc6,  Text6_0_loc6,  Text6_1_loc6,  Text7_0_loc6,  Text7_1_loc6,  Text8_0_loc6,   Text8_1_loc6,   Text9_0_loc6,   Text9_1_loc6, "
+        "Text0_0_loc7,  Text0_1_loc7,  Text1_0_loc7,  Text1_1_loc7,  Text2_0_loc7,  Text2_1_loc7,  Text3_0_loc7,  Text3_1_loc1,  Text4_0_loc7,  Text4_1_loc7,  Text5_0_loc7,  Text5_1_loc7,  Text6_0_loc7,  Text6_1_loc7,  Text7_0_loc7,  Text7_1_loc7,  Text8_0_loc7,   Text8_1_loc7,   Text9_0_loc7,   Text9_1_loc7, "
+        "Text0_0_loc8,  Text0_1_loc8,  Text1_0_loc8,  Text1_1_loc8,  Text2_0_loc8,  Text2_1_loc8,  Text3_0_loc8,  Text3_1_loc1,  Text4_0_loc8,  Text4_1_loc8,  Text5_0_loc8,  Text5_1_loc8,  Text6_0_loc8,  Text6_1_loc8,  Text7_0_loc8,  Text7_1_loc8,  Text8_0_loc8,   Text8_1_loc8,   Text9_0_loc8,   Text9_1_loc8, "
+        "Text0_0_loc9,  Text0_1_loc9,  Text1_0_loc9,  Text1_1_loc9,  Text2_0_loc9,  Text2_1_loc9,  Text3_0_loc9,  Text3_1_loc9,  Text4_0_loc9,  Text4_1_loc9,  Text5_0_loc9,  Text5_1_loc9,  Text6_0_loc9,  Text6_1_loc9,  Text7_0_loc9,  Text7_1_loc9,  Text8_0_loc9,   Text8_1_loc9,   Text9_0_loc9,   Text9_1_loc9, "
+        "Text0_0_loc10, Text0_1_loc10, Text1_0_loc10, Text1_1_loc10, Text2_0_loc10, Text2_1_loc10, Text3_0_loc10, Text3_1_loc10, Text4_0_loc10, Text4_1_loc10, Text5_0_loc10, Text5_1_loc10, Text6_0_loc10, Text6_1_loc10, Text7_0_loc10, Text7_1_loc10, Text8_0_loc10,  Text8_1_loc10,  Text9_0_loc10,  Text9_1_loc10 "
         " FROM locales_npc_text");
 
     if (!result)
@@ -5160,7 +5163,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
 {
     uint32 oldMSTime = getMSTime();
 
-    time_t curTime = time(NULL);
+    time_t curTime = time(nullptr);
     tm* lt = localtime(&curTime);
     uint64 basetime(curTime);
     sLog->outInfo(LOG_FILTER_GENERAL, "Returning mails current time: hour: %d, minute: %d, second: %d ", lt->tm_hour, lt->tm_min, lt->tm_sec);
@@ -5214,7 +5217,7 @@ void ObjectMgr::ReturnOrDeleteOldMails(bool serverUp)
         m->checked        = fields[7].GetUInt8();
         m->mailTemplateId = fields[8].GetInt16();
 
-        Player* player = NULL;
+        PlayerPtr player = nullptr;
         if (serverUp)
             player = ObjectAccessor::FindPlayer((uint64)m->receiver);
 
@@ -5589,7 +5592,7 @@ WorldSafeLocsEntry const* ObjectMgr::GetDefaultGraveYard(uint32 team)
         return sWorldSafeLocsStore.LookupEntry(HORDE_GRAVEYARD);
     else if (team == ALLIANCE)
         return sWorldSafeLocsStore.LookupEntry(ALLIANCE_GRAVEYARD);
-    else return NULL;
+    else return nullptr;
 }
 
 WorldSafeLocsEntry const* ObjectMgr::GetClosestGraveYard(float x, float y, float z, uint32 MapId, uint32 team)
@@ -5627,15 +5630,15 @@ WorldSafeLocsEntry const* ObjectMgr::GetClosestGraveYard(float x, float y, float
     // at corpse map
     bool foundNear = false;
     float distNear = 10000;
-    WorldSafeLocsEntry const* entryNear = NULL;
+    WorldSafeLocsEntry const* entryNear = nullptr;
 
     // at entrance map for corpse map
     bool foundEntr = false;
     float distEntr = 10000;
-    WorldSafeLocsEntry const* entryEntr = NULL;
+    WorldSafeLocsEntry const* entryEntr = nullptr;
 
     // some where other
-    WorldSafeLocsEntry const* entryFar = NULL;
+    WorldSafeLocsEntry const* entryFar = nullptr;
 
     MapEntry const* mapEntry = sMapStore.LookupEntry(MapId);
 
@@ -5728,7 +5731,7 @@ GraveYardData const* ObjectMgr::FindGraveYardData(uint32 id, uint32 zoneId)
             return &itr->second;
     }
 
-    return NULL;
+    return nullptr;
 }
 
 bool ObjectMgr::AddGraveYardLink(uint32 id, uint32 zoneId, uint32 team, bool persist /*= true*/)
@@ -5967,14 +5970,14 @@ AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
     uint32 parentId = 0;
     const MapEntry* mapEntry = sMapStore.LookupEntry(Map);
     if (!mapEntry || mapEntry->entrance_map < 0)
-        return NULL;
+        return nullptr;
 
     if (mapEntry->IsDungeon())
     {
         const InstanceTemplate* iTemplate = sObjectMgr->GetInstanceTemplate(Map);
 
         if (!iTemplate)
-            return NULL;
+            return nullptr;
 
         parentId = iTemplate->Parent;
         useParentDbValue = true;
@@ -5988,7 +5991,7 @@ AreaTrigger const* ObjectMgr::GetGoBackTrigger(uint32 Map) const
             if (atEntry && atEntry->mapid == Map)
                 return &itr->second;
         }
-    return NULL;
+    return nullptr;
 }
 
 /**
@@ -6005,7 +6008,7 @@ AreaTrigger const* ObjectMgr::GetMapEntranceTrigger(uint32 Map) const
                 return &itr->second;
         }
     }
-    return NULL;
+    return nullptr;
 }
 
 void ObjectMgr::SetHighestGuids()
@@ -6162,9 +6165,9 @@ void ObjectMgr::LoadGameObjectLocales()
     _gameObjectLocaleStore.clear();                           // need for reload case
 
     QueryResult result = WorldDatabase.Query("SELECT entry, "
-        "name_loc1, name_loc2, name_loc3, name_loc4, name_loc5, name_loc6, name_loc7, name_loc8, "
+        "name_loc1, name_loc2, name_loc3, name_loc4, name_loc5, name_loc6, name_loc7, name_loc8, name_loc9, name_loc10, "
         "castbarcaption_loc1, castbarcaption_loc2, castbarcaption_loc3, castbarcaption_loc4, "
-        "castbarcaption_loc5, castbarcaption_loc6, castbarcaption_loc7, castbarcaption_loc8 FROM locales_gameobject");
+        "castbarcaption_loc5, castbarcaption_loc6, castbarcaption_loc7, castbarcaption_loc8, castbarcaption_loc9, castbarcaption_loc10 FROM locales_gameobject");
 
     if (!result)
         return;
@@ -6574,10 +6577,9 @@ void ObjectMgr::LoadCorpses()
             continue;
         }
 
-        Corpse* corpse = new Corpse(type);
+        CorpsePtr corpse (new Corpse(type));
         if (!corpse->LoadCorpseFromDB(guid, fields))
         {
-            delete corpse;
             continue;
         }
 
@@ -7444,7 +7446,7 @@ bool ObjectMgr::LoadTrinityStrings(const char* table, int32 min_value, int32 max
             ++itr;
     }
 
-    QueryResult result = WorldDatabase.PQuery("SELECT entry, content_default, content_loc1, content_loc2, content_loc3, content_loc4, content_loc5, content_loc6, content_loc7, content_loc8 FROM %s", table);
+    QueryResult result = WorldDatabase.PQuery("SELECT entry, content_default, content_loc1, content_loc2, content_loc3, content_loc4, content_loc5, content_loc6, content_loc7, content_loc8, content_loc9, content_loc10 FROM %s", table);
 
     if (!result)
     {
@@ -7681,18 +7683,18 @@ GameTele const* ObjectMgr::GetGameTele(const std::string& name) const
     // explicit name case
     std::wstring wname;
     if (!Utf8toWStr(name, wname))
-        return NULL;
+        return nullptr;
 
     // converting string that we try to find to lower case
     wstrToLower(wname);
 
     // Alternative first GameTele what contains wnameLow as substring in case no GameTele location found
-    const GameTele* alt = NULL;
+    const GameTele* alt = nullptr;
     for (GameTeleContainer::const_iterator itr = _gameTeleStore.begin(); itr != _gameTeleStore.end(); ++itr)
     {
         if (itr->second.wnameLow == wname)
             return &itr->second;
-        else if (alt == NULL && itr->second.wnameLow.find(wname) != std::wstring::npos)
+        else if (alt == nullptr && itr->second.wnameLow.find(wname) != std::wstring::npos)
             alt = &itr->second;
     }
 
@@ -7966,7 +7968,7 @@ int ObjectMgr::LoadReferenceVendor(int32 vendor, int32 item, uint8 type, std::se
             uint32 ExtendedCost = fields[3].GetUInt32();
             uint8  type         = fields[4].GetUInt8();
 
-            if (!IsVendorItemValid(vendor, item_id, maxcount, incrtime, ExtendedCost, type, NULL, skip_vendors))
+            if (!IsVendorItemValid(vendor, item_id, maxcount, incrtime, ExtendedCost, type, nullptr, skip_vendors))
                 continue;
 
             VendorItemData& vList = _cacheVendorItemStore[vendor];
@@ -8017,7 +8019,7 @@ void ObjectMgr::LoadVendors()
             uint32 ExtendedCost = fields[4].GetUInt32();
             uint8  type         = fields[5].GetUInt8();
 
-            if (!IsVendorItemValid(entry, item_id, maxcount, incrtime, ExtendedCost, type, NULL, &skip_vendors))
+            if (!IsVendorItemValid(entry, item_id, maxcount, incrtime, ExtendedCost, type, nullptr, &skip_vendors))
                 continue;
 
             VendorItemData& vList = _cacheVendorItemStore[entry];
@@ -8178,7 +8180,7 @@ bool ObjectMgr::RemoveVendorItem(uint32 entry, uint32 item, uint8 type, bool per
     return true;
 }
 
-bool ObjectMgr::IsVendorItemValid(uint32 vendor_entry, uint32 id, int32 maxcount, uint32 incrtime, uint32 ExtendedCost, uint8 type, Player* player, std::set<uint32>* skip_vendors, uint32 ORnpcflag) const
+bool ObjectMgr::IsVendorItemValid(uint32 vendor_entry, uint32 id, int32 maxcount, uint32 incrtime, uint32 ExtendedCost, uint8 type, PlayerPtr player, std::set<uint32>* skip_vendors, uint32 ORnpcflag) const
 {
     CreatureTemplate const* cInfo = sObjectMgr->GetCreatureTemplate(vendor_entry);
     if (!cInfo)
@@ -8781,7 +8783,7 @@ GameObjectTemplate const* ObjectMgr::GetGameObjectTemplate(uint32 entry)
     if (itr != _gameObjectTemplateStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
 CreatureTemplate const* ObjectMgr::GetCreatureTemplate(uint32 entry)
@@ -8790,12 +8792,12 @@ CreatureTemplate const* ObjectMgr::GetCreatureTemplate(uint32 entry)
     if (itr != _creatureTemplateStore.end())
         return &(itr->second);
 
-    return NULL;
+    return nullptr;
 }
 
-VehicleAccessoryList const* ObjectMgr::GetVehicleAccessoryList(Vehicle* veh) const
+VehicleAccessoryList const* ObjectMgr::GetVehicleAccessoryList(VehiclePtr veh) const
 {
-    if (Creature* cre = veh->GetBase()->ToCreature())
+    if (CreaturePtr cre = TO_CREATURE(veh->GetBase()))
     {
         // Give preference to GUID-based accessories
         VehicleAccessoryContainer::const_iterator itr = _vehicleAccessoryStore.find(cre->GetDBTableGUIDLow());
@@ -8807,5 +8809,5 @@ VehicleAccessoryList const* ObjectMgr::GetVehicleAccessoryList(Vehicle* veh) con
     VehicleAccessoryContainer::const_iterator itr = _vehicleTemplateAccessoryStore.find(veh->GetCreatureEntry());
     if (itr != _vehicleTemplateAccessoryStore.end())
         return &itr->second;
-    return NULL;
+    return nullptr;
 }

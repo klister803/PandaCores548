@@ -51,14 +51,14 @@ class boss_moorabi : public CreatureScript
 public:
     boss_moorabi() : CreatureScript("boss_moorabi") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_moorabiAI(creature);
     }
 
     struct boss_moorabiAI : public ScriptedAI
     {
-        boss_moorabiAI(Creature* creature) : ScriptedAI(creature)
+        boss_moorabiAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -84,7 +84,7 @@ public:
                 instance->SetData(DATA_MOORABI_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             DoCast(me, SPELL_MOJO_FRENZY, true);
@@ -152,7 +152,7 @@ public:
             return 0;
         }
 
-         void JustDied(Unit* /*killer*/)
+         void JustDied(UnitPtr /*killer*/)
          {
             DoScriptText(SAY_DEATH, me);
 
@@ -160,7 +160,7 @@ public:
                 instance->SetData(DATA_MOORABI_EVENT, DONE);
         }
 
-        void KilledUnit(Unit* victim)
+        void KilledUnit(UnitPtr victim)
         {
             if (victim == me)
                 return;
@@ -178,12 +178,12 @@ class achievement_less_rabi : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(Player* /*player*/, Unit* target)
+        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
         {
             if (!target)
                 return false;
 
-            if (Creature* Moorabi = target->ToCreature())
+            if (CreaturePtr Moorabi = TO_CREATURE(target))
                 if (Moorabi->AI()->GetData(DATA_LESS_RABI))
                     return true;
 

@@ -61,7 +61,7 @@ bool Weather::Update(uint32 diff)
         }
     }
 
-    sScriptMgr->OnWeatherUpdate(this, diff);
+    sScriptMgr->OnWeatherUpdate(THIS_WEATHER, diff);
     return true;
 }
 
@@ -189,7 +189,7 @@ bool Weather::ReGenerate()
     return m_type != old_type || m_grade != old_grade;
 }
 
-void Weather::SendWeatherUpdateToPlayer(Player* player)
+void Weather::SendWeatherUpdateToPlayer(PlayerPtr player)
 {
     WorldPacket data(SMSG_WEATHER, (4+4+4));
 
@@ -200,7 +200,7 @@ void Weather::SendWeatherUpdateToPlayer(Player* player)
 /// Send the new weather to all players in the zone
 bool Weather::UpdateWeather()
 {
-    Player* player = sWorld->FindPlayerInZone(m_zone);
+    PlayerPtr player = sWorld->FindPlayerInZone(m_zone);
     if (!player)
         return false;
 
@@ -260,7 +260,7 @@ bool Weather::UpdateWeather()
     }
     sLog->outInfo(LOG_FILTER_GENERAL, "Change the weather of zone %u to %s.", m_zone, wthstr);
 
-    sScriptMgr->OnWeatherChange(this, state, m_grade);
+    sScriptMgr->OnWeatherChange(THIS_WEATHER, state, m_grade);
     return true;
 }
 

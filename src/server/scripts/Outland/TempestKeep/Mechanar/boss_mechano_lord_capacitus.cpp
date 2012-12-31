@@ -53,12 +53,12 @@ class spell_capacitus_polarity_charge : public SpellScriptLoader
                 return true;
             }
 
-            void HandleTargets(std::list<WorldObject*>& targetList)
+            void HandleTargets(std::list<WorldObjectPtr>& targetList)
             {
                 uint8 count = 0;
-                for (std::list<WorldObject*>::iterator ihit = targetList.begin(); ihit != targetList.end(); ++ihit)
+                for (std::list<WorldObjectPtr>::iterator ihit = targetList.begin(); ihit != targetList.end(); ++ihit)
                     if ((*ihit)->GetGUID() != GetCaster()->GetGUID())
-                        if (Player* target = (*ihit)->ToPlayer())
+                        if (PlayerPtr target = TO_PLAYER(*ihit))
                             if (target->HasAura(GetTriggeringSpell()->Id))
                                 ++count;
 
@@ -80,7 +80,7 @@ class spell_capacitus_polarity_charge : public SpellScriptLoader
                 if (!GetTriggeringSpell())
                     return;
 
-                Unit* target = GetHitUnit();
+                UnitPtr target = GetHitUnit();
 
                 if (target->HasAura(GetTriggeringSpell()->Id))
                     SetHitDamage(0);
@@ -117,10 +117,10 @@ class spell_capacitus_polarity_shift : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                Unit* target = GetHitUnit();
-                Unit* caster = GetCaster();
+                UnitPtr target = GetHitUnit();
+                UnitPtr caster = GetCaster();
 
-                target->CastSpell(target, roll_chance_i(50) ? SPELL_POSITIVE_POLARITY : SPELL_NEGATIVE_POLARITY, true, NULL, NULL, caster->GetGUID());
+                target->CastSpell(target, roll_chance_i(50) ? SPELL_POSITIVE_POLARITY : SPELL_NEGATIVE_POLARITY, true, nullptr, nullptr, caster->GetGUID());
             }
 
             void Register()

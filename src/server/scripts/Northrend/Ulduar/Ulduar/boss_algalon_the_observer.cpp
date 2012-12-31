@@ -240,7 +240,7 @@ Position const BrannOutroPos[3] =
 class ActivateLivingConstellation : public BasicEvent
 {
     public:
-        ActivateLivingConstellation(Unit* owner) : _owner(owner), _instance(owner->GetInstanceScript())
+        ActivateLivingConstellation(UnitPtr owner) : _owner(owner), _instance(owner->GetInstanceScript())
         {
         }
 
@@ -249,49 +249,49 @@ class ActivateLivingConstellation : public BasicEvent
             if (!_instance || _instance->GetBossState(BOSS_ALGALON) != IN_PROGRESS)
                 return true;    // delete event
 
-            _owner->CastSpell((Unit*)NULL, SPELL_TRIGGER_3_ADDS, TRIGGERED_FULL_MASK);
+            _owner->CastSpell(std::shared_ptr<Unit>(), SPELL_TRIGGER_3_ADDS, TRIGGERED_FULL_MASK);
             _owner->m_Events.AddEvent(this, execTime + urand(45000, 50000));
             return false;
         }
 
     private:
-        Unit* _owner;
+        UnitPtr _owner;
         InstanceScript* _instance;
 };
 
 class CosmicSmashDamageEvent : public BasicEvent
 {
     public:
-        CosmicSmashDamageEvent(Unit* caster) : _caster(caster)
+        CosmicSmashDamageEvent(UnitPtr caster) : _caster(caster)
         {
         }
 
         bool Execute(uint64 /*execTime*/, uint32 /*diff*/)
         {
-            _caster->CastSpell((Unit*)NULL, SPELL_COSMIC_SMASH_TRIGGERED, TRIGGERED_FULL_MASK);
+            _caster->CastSpell(std::shared_ptr<Unit>(), SPELL_COSMIC_SMASH_TRIGGERED, TRIGGERED_FULL_MASK);
             return true;
         }
 
     private:
-        Unit* _caster;
+        UnitPtr _caster;
 };
 
 class SummonUnleashedDarkMatter : public BasicEvent
 {
     public:
-        SummonUnleashedDarkMatter(Unit* caster) : _caster(caster)
+        SummonUnleashedDarkMatter(UnitPtr caster) : _caster(caster)
         {
         }
 
         bool Execute(uint64 execTime, uint32 /*diff*/)
         {
-            _caster->CastSpell((Unit*)NULL, SPELL_SUMMON_UNLEASHED_DARK_MATTER, TRIGGERED_FULL_MASK);
+            _caster->CastSpell(std::shared_ptr<Unit>(), SPELL_SUMMON_UNLEASHED_DARK_MATTER, TRIGGERED_FULL_MASK);
             _caster->m_Events.AddEvent(this, execTime + 30000);
             return false;
         }
 
     private:
-        Unit* _caster;
+        UnitPtr _caster;
 };
 
 class boss_algalon_the_observer : public CreatureScript
@@ -301,7 +301,7 @@ class boss_algalon_the_observer : public CreatureScript
 
         struct boss_algalon_the_observerAI : public BossAI
         {
-            boss_algalon_the_observerAI(Creature* creature) : BossAI(creature, BOSS_ALGALON)
+            boss_algalon_the_observerAI(CreaturePtr creature) : BossAI(creature, BOSS_ALGALON)
             {
                 _firstPull = true;
                 _fedOnTears = false;
@@ -316,7 +316,7 @@ class boss_algalon_the_observer : public CreatureScript
                 _hasYelled = false;
             }
 
-            void KilledUnit(Unit* victim)
+            void KilledUnit(UnitPtr victim)
             {
                 if (victim->GetTypeId() == TYPEID_UNIT)
                 {
@@ -342,7 +342,7 @@ class boss_algalon_the_observer : public CreatureScript
                         DoCast(me, SPELL_RIDE_THE_LIGHTNING, true);
                         me->GetMotionMaster()->MovePoint(POINT_ALGALON_LAND, AlgalonLandPos);
                         me->SetHomePosition(AlgalonLandPos);
-                        Movement::MoveSplineInit init(*me);
+                        Movement::MoveSplineInit init(TO_UNIT(me));
                         init.MoveTo(AlgalonLandPos.GetPositionX(), AlgalonLandPos.GetPositionY(), AlgalonLandPos.GetPositionZ());
                         init.SetOrientationFixed(true);
                         init.Launch();
@@ -382,7 +382,7 @@ class boss_algalon_the_observer : public CreatureScript
                 return type == DATA_HAS_FED_ON_TEARS ? _fedOnTears : 1;
             }
 
-            void EnterCombat(Unit* /*target*/)
+            void EnterCombat(UnitPtr /*target*/)
             {
                 uint32 introDelay = 0;
                 me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_IMMUNE_TO_NPC);
@@ -399,7 +399,7 @@ class boss_algalon_the_observer : public CreatureScript
                 {
                     _firstPull = false;
                     Talk(SAY_ALGALON_START_TIMER);
-                    if (Creature* brann = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_BRANN_BRONZEBEARD_ALG)))
+                    if (CreaturePtr brann = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_BRANN_BRONZEBEARD_ALG)))
                         brann->AI()->DoAction(ACTION_FINISH_INTRO);
 
                     me->setActive(true);
@@ -418,9 +418,9 @@ class boss_algalon_the_observer : public CreatureScript
                 events.ScheduleEvent(EVENT_ASCEND_TO_THE_HEAVENS, 360000 + introDelay);
                 events.ScheduleEvent(EVENT_COSMIC_SMASH, 25000 + introDelay);
 
-                std::list<Creature*> stalkers;
+                std::list<CreaturePtr> stalkers;
                 me->GetCreatureListWithEntryInGrid(stalkers, NPC_ALGALON_STALKER, 200.0f);
-                for (std::list<Creature*>::iterator itr = stalkers.begin(); itr != stalkers.end(); ++itr)
+                for (std::list<CreaturePtr>::iterator itr = stalkers.begin(); itr != stalkers.end(); ++itr)
                     (*itr)->m_Events.KillAllEvents(true);
             }
 
@@ -446,7 +446,7 @@ class boss_algalon_the_observer : public CreatureScript
                 }
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(CreaturePtr summon)
             {
                 summons.Summon(summon);
                 switch (summon->GetEntry())
@@ -461,9 +461,9 @@ class boss_algalon_the_observer : public CreatureScript
                         break;
                     case NPC_BLACK_HOLE:
                         summon->SetReactState(REACT_PASSIVE);
-                        summon->CastSpell((Unit*)NULL, SPELL_BLACK_HOLE_TRIGGER, TRIGGERED_FULL_MASK);
+                        summon->CastSpell(std::shared_ptr<Unit>(), SPELL_BLACK_HOLE_TRIGGER, TRIGGERED_FULL_MASK);
                         summon->CastSpell(summon, SPELL_CONSTELLATION_PHASE_TRIGGER, TRIGGERED_FULL_MASK);
-                        summon->CastSpell((Unit*)NULL, SPELL_BLACK_HOLE_EXPLOSION);
+                        summon->CastSpell(std::shared_ptr<Unit>(), SPELL_BLACK_HOLE_EXPLOSION);
                         summon->CastSpell(summon, SPELL_SUMMON_VOID_ZONE_VISUAL, TRIGGERED_FULL_MASK);
                         break;
                     case NPC_ALGALON_VOID_ZONE_VISUAL_STALKER:
@@ -481,7 +481,7 @@ class boss_algalon_the_observer : public CreatureScript
                         summon->CastSpell(summon, SPELL_SUMMON_VOID_ZONE_VISUAL, TRIGGERED_FULL_MASK);
                         break;
                     case NPC_UNLEASHED_DARK_MATTER:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, NonTankTargetSelector(me)))
+                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, NonTankTargetSelector(me)))
                             if (summon->Attack(target, true))
                                 summon->GetMotionMaster()->MoveChase(target);
                         break;
@@ -496,7 +496,7 @@ class boss_algalon_the_observer : public CreatureScript
                 me->SetSheath(SHEATH_STATE_UNARMED);
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            void DamageTaken(UnitPtr /*attacker*/, uint32& damage)
             {
                 if (_fightWon)
                 {
@@ -513,12 +513,12 @@ class boss_algalon_the_observer : public CreatureScript
                     summons.DespawnEntry(NPC_BLACK_HOLE);
                     summons.DespawnEntry(NPC_ALGALON_VOID_ZONE_VISUAL_STALKER);
                     events.CancelEvent(EVENT_SUMMON_COLLAPSING_STAR);
-                    std::list<Creature*> stalkers;
+                    std::list<CreaturePtr> stalkers;
                     me->GetCreatureListWithEntryInGrid(stalkers, NPC_ALGALON_STALKER, 200.0f);
-                    for (std::list<Creature*>::iterator itr = stalkers.begin(); itr != stalkers.end(); ++itr)
+                    for (std::list<CreaturePtr>::iterator itr = stalkers.begin(); itr != stalkers.end(); ++itr)
                         (*itr)->m_Events.KillAllEvents(true);
                     for (uint32 i = 0; i < COLLAPSING_STAR_COUNT; ++i)
-                        if (Creature* wormHole = DoSummon(NPC_WORM_HOLE, CollapsingStarPos[i], TEMPSUMMON_MANUAL_DESPAWN))
+                        if (CreaturePtr wormHole = DoSummon(NPC_WORM_HOLE, CollapsingStarPos[i], TEMPSUMMON_MANUAL_DESPAWN))
                             wormHole->m_Events.AddEvent(new SummonUnleashedDarkMatter(wormHole), wormHole->m_Events.CalculateTime(i >= 2 ? 8000 : 6000));
                 }
                 else if ((int32(me->GetHealth()) - int32(damage)) < CalculatePct<int32>(int32(me->GetMaxHealth()), 2.5f) && !_fightWon)
@@ -582,17 +582,17 @@ class boss_algalon_the_observer : public CreatureScript
                             //! Workaround for Creature::_IsTargetAcceptable returning false
                             //! for creatures that start combat in REACT_PASSIVE and UNIT_FLAG_NOT_SELECTABLE
                             //! causing them to immediately evade
-                            if (!me->getThreatManager().isThreatListEmpty())
-                                AttackStart(me->getThreatManager().getHostilTarget());
+                            if (!me->getThreatManager()->isThreatListEmpty())
+                                AttackStart(me->getThreatManager()->getHostilTarget());
                             for (uint32 i = 0; i < LIVING_CONSTELLATION_COUNT; ++i)
-                                if (Creature* summon = DoSummon(NPC_LIVING_CONSTELLATION, ConstellationPos[i], 0, TEMPSUMMON_DEAD_DESPAWN))
+                                if (CreaturePtr summon = DoSummon(NPC_LIVING_CONSTELLATION, ConstellationPos[i], 0, TEMPSUMMON_DEAD_DESPAWN))
                                     summon->SetReactState(REACT_PASSIVE);
 
-                            std::list<Creature*> stalkers;
+                            std::list<CreaturePtr> stalkers;
                             me->GetCreatureListWithEntryInGrid(stalkers, NPC_ALGALON_STALKER, 200.0f);
                             if (!stalkers.empty())
                             {
-                                Unit* stalker = Trinity::Containers::SelectRandomContainerElement(stalkers);
+                                UnitPtr stalker = Trinity::Containers::SelectRandomContainerElement(stalkers);
                                 stalker->m_Events.AddEvent(new ActivateLivingConstellation(stalker), stalker->m_Events.CalculateTime(urand(45000, 50000)));
                             }
                             break;
@@ -617,9 +617,9 @@ class boss_algalon_the_observer : public CreatureScript
                             Talk(SAY_ALGALON_BIG_BANG);
                             Talk(EMOTE_ALGALON_BIG_BANG);
                             events.SetPhase(PHASE_BIG_BANG);
-                            std::list<Creature*> constellations;
+                            std::list<CreaturePtr> constellations;
                             me->GetCreatureListWithEntryInGrid(constellations, NPC_LIVING_CONSTELLATION, 200.0f);
-                            for (std::list<Creature*>::iterator itr = constellations.begin(); itr != constellations.end(); ++itr)
+                            for (std::list<CreaturePtr>::iterator itr = constellations.begin(); itr != constellations.end(); ++itr)
                                 (*itr)->AI()->DoAction(ACTION_BIG_BANG);
                             DoCastAOE(SPELL_BIG_BANG);
                             events.ScheduleEvent(EVENT_BIG_BANG, 90500);
@@ -665,7 +665,7 @@ class boss_algalon_the_observer : public CreatureScript
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             break;
                         case EVENT_OUTRO_5:
-                            if (Creature* brann = DoSummon(NPC_BRANN_BRONZBEARD_ALG, BrannOutroPos[0], 131500, TEMPSUMMON_TIMED_DESPAWN))
+                            if (CreaturePtr brann = DoSummon(NPC_BRANN_BRONZBEARD_ALG, BrannOutroPos[0], 131500, TEMPSUMMON_TIMED_DESPAWN))
                                 brann->AI()->DoAction(ACTION_OUTRO);
                             break;
                         case EVENT_OUTRO_6:
@@ -703,7 +703,7 @@ class boss_algalon_the_observer : public CreatureScript
             bool _hasYelled;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetUlduarAI<boss_algalon_the_observerAI>(creature);
         }
@@ -716,7 +716,7 @@ class npc_living_constellation : public CreatureScript
 
         struct npc_living_constellationAI : public CreatureAI
         {
-            npc_living_constellationAI(Creature* creature) : CreatureAI(creature)
+            npc_living_constellationAI(CreaturePtr creature) : CreatureAI(creature)
             {
             }
 
@@ -737,9 +737,9 @@ class npc_living_constellation : public CreatureScript
                 switch (action)
                 {
                     case ACTION_ACTIVATE_STAR:
-                        if (Creature* algalon = me->FindNearestCreature(NPC_ALGALON, 200.0f))
+                        if (CreaturePtr algalon = me->FindNearestCreature(NPC_ALGALON, 200.0f))
                         {
-                            if (Unit* target = algalon->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, NonTankTargetSelector(algalon)))
+                            if (UnitPtr target = algalon->AI()->SelectTarget(SELECT_TARGET_RANDOM, 0, NonTankTargetSelector(algalon)))
                             {
                                 me->SetReactState(REACT_AGGRESSIVE);
                                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -757,7 +757,7 @@ class npc_living_constellation : public CreatureScript
                 }
             }
 
-            void SpellHit(Unit* caster, SpellInfo const* spell)
+            void SpellHit(UnitPtr caster, SpellInfo const* spell)
             {
                 if (spell->Id != SPELL_CONSTELLATION_PHASE_EFFECT || caster->GetTypeId() != TYPEID_UNIT)
                     return;
@@ -765,7 +765,7 @@ class npc_living_constellation : public CreatureScript
                 me->DespawnOrUnsummon(1);
                 if (InstanceScript* instance = me->GetInstanceScript())
                     instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, EVENT_ID_SUPERMASSIVE_START);
-                caster->CastSpell((Unit*)NULL, SPELL_BLACK_HOLE_CREDIT, TRIGGERED_FULL_MASK);
+                caster->CastSpell(std::shared_ptr<Unit>(), SPELL_BLACK_HOLE_CREDIT, TRIGGERED_FULL_MASK);
                 caster->ToCreature()->DespawnOrUnsummon(1);
             }
 
@@ -796,7 +796,7 @@ class npc_living_constellation : public CreatureScript
             bool _isActive;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetUlduarAI<npc_living_constellationAI>(creature);
         }
@@ -809,24 +809,24 @@ class npc_collapsing_star : public CreatureScript
 
         struct npc_collapsing_starAI : public PassiveAI
         {
-            npc_collapsing_starAI(Creature* creature) : PassiveAI(creature)
+            npc_collapsing_starAI(CreaturePtr creature) : PassiveAI(creature)
             {
                 _dying = false;
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(CreaturePtr summon)
             {
                 if (summon->GetEntry() != NPC_BLACK_HOLE)
                     return;
 
-                if (TempSummon* summ = me->ToTempSummon())
-                    if (Creature* algalon = ObjectAccessor::GetCreature(*me, summ->GetSummonerGUID()))
+                if (TempSummonPtr summ = me->ToTempSummon())
+                    if (CreaturePtr algalon = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), summ->GetSummonerGUID()))
                         algalon->AI()->JustSummoned(summon);
 
                 me->DespawnOrUnsummon(1);
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            void DamageTaken(UnitPtr /*attacker*/, uint32& damage)
             {
                 if (_dying)
                 {
@@ -846,7 +846,7 @@ class npc_collapsing_star : public CreatureScript
             bool _dying;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetUlduarAI<npc_collapsing_starAI>(creature);
         }
@@ -859,7 +859,7 @@ class npc_brann_bronzebeard_algalon : public CreatureScript
 
         struct npc_brann_bronzebeard_algalonAI : public CreatureAI
         {
-            npc_brann_bronzebeard_algalonAI(Creature* creature) : CreatureAI(creature)
+            npc_brann_bronzebeard_algalonAI(CreaturePtr creature) : CreatureAI(creature)
             {
             }
 
@@ -932,7 +932,7 @@ class npc_brann_bronzebeard_algalon : public CreatureScript
                                 me->GetMotionMaster()->MovePoint(_currentPoint, BrannIntroWaypoint[_currentPoint]);
                             break;
                         case EVENT_SUMMON_ALGALON:
-                            if (Creature* algalon = me->GetMap()->SummonCreature(NPC_ALGALON, AlgalonSummonPos))
+                            if (CreaturePtr algalon = me->GetMap()->SummonCreature(NPC_ALGALON, AlgalonSummonPos))
                                 algalon->AI()->DoAction(ACTION_START_INTRO);
                             break;
                         case EVENT_BRANN_OUTRO_1:
@@ -950,7 +950,7 @@ class npc_brann_bronzebeard_algalon : public CreatureScript
             uint32 _currentPoint;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetUlduarAI<npc_brann_bronzebeard_algalonAI>(creature);
         }
@@ -963,11 +963,11 @@ class go_celestial_planetarium_access : public GameObjectScript
 
         struct go_celestial_planetarium_accessAI : public GameObjectAI
         {
-            go_celestial_planetarium_accessAI(GameObject* go) : GameObjectAI(go)
+            go_celestial_planetarium_accessAI(GameObjectPtr go) : GameObjectAI(go)
             {
             }
 
-            bool GossipHello(Player* player)
+            bool GossipHello(PlayerPtr player)
             {
                 bool hasKey = true;
                 if (LockEntry const* lock = sLockStore.LookupEntry(go->GetGOInfo()->goober.lockId))
@@ -992,16 +992,16 @@ class go_celestial_planetarium_access : public GameObjectScript
                 // Start Algalon event
                 go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
                 _events.ScheduleEvent(EVENT_DESPAWN_CONSOLE, 5000);
-                if (Creature* brann = go->SummonCreature(NPC_BRANN_BRONZBEARD_ALG, BrannIntroSpawnPos))
+                if (CreaturePtr brann = go->SummonCreature(NPC_BRANN_BRONZBEARD_ALG, BrannIntroSpawnPos))
                     brann->AI()->DoAction(ACTION_START_INTRO);
 
                 if (InstanceScript* instance = go->GetInstanceScript())
                 {
                     instance->SetData(DATA_ALGALON_SUMMON_STATE, 1);
-                    if (GameObject* sigil = ObjectAccessor::GetGameObject(*go, instance->GetData64(DATA_SIGILDOOR_01)))
+                    if (GameObjectPtr sigil = ObjectAccessor::GetGameObject(TO_CONST_WORLDOBJECT(go), instance->GetData64(DATA_SIGILDOOR_01)))
                         sigil->SetGoState(GO_STATE_ACTIVE);
 
-                    if (GameObject* sigil = ObjectAccessor::GetGameObject(*go, instance->GetData64(DATA_SIGILDOOR_02)))
+                    if (GameObjectPtr sigil = ObjectAccessor::GetGameObject(TO_CONST_WORLDOBJECT(go), instance->GetData64(DATA_SIGILDOOR_02)))
                         sigil->SetGoState(GO_STATE_ACTIVE);
                 }
 
@@ -1029,7 +1029,7 @@ class go_celestial_planetarium_access : public GameObjectScript
             EventMap _events;
         };
 
-        GameObjectAI* GetAI(GameObject* go) const
+        GameObjectAI* GetAI(GameObjectPtr go) const
         {
             return GetUlduarAI<go_celestial_planetarium_accessAI>(go);
         }
@@ -1076,17 +1076,17 @@ class spell_algalon_phase_punch : public SpellScriptLoader
 class NotVictimFilter
 {
     public:
-        NotVictimFilter(Unit* caster) : _victim(caster->getVictim())
+        NotVictimFilter(UnitPtr caster) : _victim(caster->getVictim())
         {
         }
 
-        bool operator()(WorldObject* target)
+        bool operator()(WorldObjectPtr target)
         {
             return target != _victim;
         }
 
     private:
-        Unit* _victim;
+        UnitPtr _victim;
 };
 
 class spell_algalon_arcane_barrage : public SpellScriptLoader
@@ -1098,7 +1098,7 @@ class spell_algalon_arcane_barrage : public SpellScriptLoader
         {
             PrepareSpellScript(spell_algalon_arcane_barrage_SpellScript);
 
-            void SelectTarget(std::list<WorldObject*>& targets)
+            void SelectTarget(std::list<WorldObjectPtr>& targets)
             {
                 targets.remove_if(NotVictimFilter(GetCaster()));
             }
@@ -1118,7 +1118,7 @@ class spell_algalon_arcane_barrage : public SpellScriptLoader
 class ActiveConstellationFilter
 {
     public:
-        bool operator()(WorldObject* target) const
+        bool operator()(WorldObjectPtr target) const
         {
             return target->ToUnit() && target->ToUnit()->GetAI() && target->ToUnit()->GetAI()->GetData(0);
         }
@@ -1133,7 +1133,7 @@ class spell_algalon_trigger_3_adds : public SpellScriptLoader
         {
             PrepareSpellScript(spell_algalon_trigger_3_adds_SpellScript);
 
-            void SelectTarget(std::list<WorldObject*>& targets)
+            void SelectTarget(std::list<WorldObjectPtr>& targets)
             {
                 targets.remove_if(ActiveConstellationFilter());
             }
@@ -1141,7 +1141,7 @@ class spell_algalon_trigger_3_adds : public SpellScriptLoader
             void HandleDummy(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                Creature* target = GetHitCreature();
+                CreaturePtr target = GetHitCreature();
                 if (!target)
                     return;
 
@@ -1172,7 +1172,7 @@ class spell_algalon_collapse : public SpellScriptLoader
             void HandlePeriodic(constAuraEffectPtr /*aurEff*/)
             {
                 PreventDefaultAction();
-                GetTarget()->DealDamage(GetTarget(), GetTarget()->CountPctFromMaxHealth(1), NULL, NODAMAGE);
+                GetTarget()->DealDamage(GetTarget(), GetTarget()->CountPctFromMaxHealth(1), nullptr, NODAMAGE);
             }
 
             void Register()
@@ -1202,7 +1202,7 @@ class spell_algalon_big_bang : public SpellScriptLoader
                 return true;
             }
 
-            void CountTargets(std::list<WorldObject*>& targets)
+            void CountTargets(std::list<WorldObjectPtr>& targets)
             {
                 _targetCount = targets.size();
             }
@@ -1348,7 +1348,7 @@ class achievement_he_feeds_on_your_tears : public AchievementCriteriaScript
     public:
         achievement_he_feeds_on_your_tears() : AchievementCriteriaScript("achievement_he_feeds_on_your_tears") { }
 
-        bool OnCheck(Player* /*source*/, Unit* target)
+        bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
         {
             return !target->GetAI()->GetData(DATA_HAS_FED_ON_TEARS);
         }

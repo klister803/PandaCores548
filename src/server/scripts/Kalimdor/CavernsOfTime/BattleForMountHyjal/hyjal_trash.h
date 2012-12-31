@@ -25,13 +25,13 @@
 
 struct hyjal_trashAI : public npc_escortAI
 {
-    hyjal_trashAI(Creature* creature);
+    hyjal_trashAI(CreaturePtr creature);
 
     void UpdateAI(const uint32 diff);
 
-    void JustDied(Unit* /*killer*/);
+    void JustDied(UnitPtr /*killer*/);
 
-    void DamageTaken(Unit* done_by, uint32 &damage);
+    void DamageTaken(UnitPtr done_by, uint32 &damage);
 
     public:
         InstanceScript* instance;

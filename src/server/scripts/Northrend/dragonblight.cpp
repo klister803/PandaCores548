@@ -48,7 +48,7 @@ class npc_alexstrasza_wr_gate : public CreatureScript
 public:
     npc_alexstrasza_wr_gate() : CreatureScript("npc_alexstrasza_wr_gate") { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -60,7 +60,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr /*CreaturePtr/, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -104,8 +104,8 @@ public:
         {
             uint32 roll = rand() % 2;
 
-            Creature* tree = GetHitCreature();
-            Player* player = GetCaster()->ToPlayer();
+            CreaturePtr tree = GetHitCreature();
+            PlayerPtr player = TO_PLAYER(GetCaster());
 
             if (!tree || !player)
                 return;
@@ -149,7 +149,7 @@ public:
 
         void HandleDummy(SpellEffIndex /*effIndex*/)
         {
-            Creature* lothalor = GetHitCreature();
+            CreaturePtr lothalor = GetHitCreature();
             if (!lothalor || lothalor->GetEntry() != NPC_LOTHALOR)
                 return;
 
@@ -189,7 +189,7 @@ class npc_wyrmrest_defender : public CreatureScript
 public:
     npc_wyrmrest_defender() : CreatureScript("npc_wyrmrest_defender") { }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     { 
         if (player->GetQuestStatus(QUEST_DEFENDING_WYRMREST_TEMPLE) == QUEST_STATUS_INCOMPLETE)
         {
@@ -202,7 +202,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*uiSender*/, uint32 action)
+    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*uiSender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)

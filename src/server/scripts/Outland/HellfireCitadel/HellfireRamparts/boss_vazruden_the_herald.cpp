@@ -83,7 +83,7 @@ class boss_nazan : public CreatureScript
 
         struct boss_nazanAI : public ScriptedAI
         {
-            boss_nazanAI(Creature* creature) : ScriptedAI(creature)
+            boss_nazanAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 VazrudenGUID = 0;
                 flight = true;
@@ -105,9 +105,9 @@ class boss_nazan : public CreatureScript
                 Turn_Timer = 0;
             }
 
-            void EnterCombat(Unit* /*who*/) {}
+            void EnterCombat(UnitPtr /*who*/) {}
 
-            void JustSummoned(Creature* summoned)
+            void JustSummoned(CreaturePtr summoned)
             {
                 if (summoned && summoned->GetEntry() == ENTRY_LIQUID_FIRE)
                 {
@@ -118,7 +118,7 @@ class boss_nazan : public CreatureScript
                 }
             }
 
-            void SpellHitTarget(Unit* target, const SpellInfo* entry)
+            void SpellHitTarget(UnitPtr target, const SpellInfo* entry)
             {
                 if (target && entry->Id == uint32(SPELL_FIREBALL))
                     me->SummonCreature(ENTRY_LIQUID_FIRE, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), target->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 30000);
@@ -131,7 +131,7 @@ class boss_nazan : public CreatureScript
 
                 if (Fireball_Timer <= diff)
                 {
-                    if (Unit* victim = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (UnitPtr victim = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(victim, DUNGEON_MODE(SPELL_FIREBALL, SPELL_FIREBALL_H), true);
                     Fireball_Timer = urand(4000, 7000);
                 }
@@ -140,7 +140,7 @@ class boss_nazan : public CreatureScript
 
                 if (flight) // phase 1 - the flight
                 {
-                    Creature* Vazruden = Unit::GetCreature(*me, VazrudenGUID);
+                    CreaturePtr Vazruden = Unit::GetCreature(TO_WORLDOBJECT(me), VazrudenGUID);
                     if (Fly_Timer < diff || !(Vazruden && Vazruden->isAlive() && Vazruden->HealthAbovePct(20)))
                     {
                         flight = false;
@@ -149,7 +149,7 @@ class boss_nazan : public CreatureScript
                         me->SetDisableGravity(false);
                         me->SetWalk(true);
                         me->GetMotionMaster()->Clear();
-                        if (Unit* victim = SelectTarget(SELECT_TARGET_NEAREST, 0))
+                        if (UnitPtr victim = SelectTarget(SELECT_TARGET_NEAREST, 0))
                             me->AI()->AttackStart(victim);
                         DoStartMovement(me->getVictim());
                         DoScriptText(EMOTE, me);
@@ -195,7 +195,7 @@ class boss_nazan : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_nazanAI(creature);
         }
@@ -211,7 +211,7 @@ class boss_vazruden : public CreatureScript
         }
         struct boss_vazrudenAI : public ScriptedAI
         {
-            boss_vazrudenAI(Creature* creature) : ScriptedAI(creature)
+            boss_vazrudenAI(CreaturePtr creature) : ScriptedAI(creature)
             {
             }
 
@@ -226,18 +226,18 @@ class boss_vazruden : public CreatureScript
                 WipeSaid = false;
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
             }
 
-            void KilledUnit(Unit* who)
+            void KilledUnit(UnitPtr who)
             {
                 if (who && who->GetEntry() != ENTRY_VAZRUDEN)
                     DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), me);
             }
 
-            void JustDied(Unit* killer)
+            void JustDied(UnitPtr killer)
             {
                 if (killer && killer != me)
                     DoScriptText(SAY_DIE, me);
@@ -263,7 +263,7 @@ class boss_vazruden : public CreatureScript
 
                 if (Revenge_Timer <= diff)
                 {
-                    if (Unit* victim = me->getVictim())
+                    if (UnitPtr victim = me->getVictim())
                         DoCast(victim, DUNGEON_MODE(SPELL_REVENGE, SPELL_REVENGE_H));
                     Revenge_Timer = 5000;
                 }
@@ -273,7 +273,7 @@ class boss_vazruden : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_vazrudenAI(creature);
         }
@@ -290,7 +290,7 @@ class boss_vazruden_the_herald : public CreatureScript
 
         struct boss_vazruden_the_heraldAI : public ScriptedAI
         {
-            boss_vazruden_the_heraldAI(Creature* creature) : ScriptedAI(creature)
+            boss_vazruden_the_heraldAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 summoned = false;
                 sentryDown = false;
@@ -320,7 +320,7 @@ class boss_vazruden_the_herald : public CreatureScript
             {
                 if (summoned)
                 {
-                    Creature* Nazan = Unit::GetCreature(*me, NazanGUID);
+                    CreaturePtr Nazan = Unit::GetCreature(TO_WORLDOBJECT(me), NazanGUID);
                     if (!Nazan)
                         Nazan = me->FindNearestCreature(ENTRY_NAZAN, 5000);
                     if (Nazan)
@@ -329,7 +329,7 @@ class boss_vazruden_the_herald : public CreatureScript
                         NazanGUID = 0;
                     }
 
-                    Creature* Vazruden = Unit::GetCreature(*me, VazrudenGUID);
+                    CreaturePtr Vazruden = Unit::GetCreature(TO_WORLDOBJECT(me), VazrudenGUID);
                     if (!Vazruden)
                         Vazruden = me->FindNearestCreature(ENTRY_VAZRUDEN, 5000);
                     if (Vazruden)
@@ -347,9 +347,9 @@ class boss_vazruden_the_herald : public CreatureScript
             {
                 if (!summoned)
                 {
-                    if (Creature* Vazruden = me->SummonCreature(ENTRY_VAZRUDEN, VazrudenMiddle[0], VazrudenMiddle[1], VazrudenMiddle[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 6000000))
+                    if (CreaturePtr Vazruden = me->SummonCreature(ENTRY_VAZRUDEN, VazrudenMiddle[0], VazrudenMiddle[1], VazrudenMiddle[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 6000000))
                         VazrudenGUID = Vazruden->GetGUID();
-                    if (Creature* Nazan = me->SummonCreature(ENTRY_NAZAN, VazrudenMiddle[0], VazrudenMiddle[1], VazrudenMiddle[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 6000000))
+                    if (CreaturePtr Nazan = me->SummonCreature(ENTRY_NAZAN, VazrudenMiddle[0], VazrudenMiddle[1], VazrudenMiddle[2], 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 6000000))
                         NazanGUID = Nazan->GetGUID();
                     summoned = true;
                     me->SetVisible(false);
@@ -357,7 +357,7 @@ class boss_vazruden_the_herald : public CreatureScript
                 }
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 if (phase == 0)
                 {
@@ -367,11 +367,11 @@ class boss_vazruden_the_herald : public CreatureScript
                 }
             }
 
-            void JustSummoned(Creature* summoned)
+            void JustSummoned(CreaturePtr summoned)
             {
                 if (!summoned)
                     return;
-                Unit* victim = me->getVictim();
+                UnitPtr victim = me->getVictim();
                 if (summoned->GetEntry() == ENTRY_NAZAN)
                 {
                     CAST_AI(boss_nazan::boss_nazanAI, summoned->AI())->VazrudenGUID = VazrudenGUID;
@@ -385,7 +385,7 @@ class boss_vazruden_the_herald : public CreatureScript
                         summoned->AI()->AttackStart(victim);
             }
 
-            void SentryDownBy(Unit* killer)
+            void SentryDownBy(UnitPtr killer)
             {
                 if (sentryDown)
                 {
@@ -425,8 +425,8 @@ class boss_vazruden_the_herald : public CreatureScript
                 default: // adds do the job now
                     if (check <= diff)
                     {
-                        Creature* Nazan = Unit::GetCreature(*me, NazanGUID);
-                        Creature* Vazruden = Unit::GetCreature(*me, VazrudenGUID);
+                        CreaturePtr Nazan = Unit::GetCreature(TO_WORLDOBJECT(me), NazanGUID);
+                        CreaturePtr Vazruden = Unit::GetCreature(TO_WORLDOBJECT(me), VazrudenGUID);
                         if ((Nazan && Nazan->isAlive()) || (Vazruden && Vazruden->isAlive()))
                         {
                             if ((Nazan && Nazan->getVictim()) || (Vazruden && Vazruden->getVictim()))
@@ -441,7 +441,7 @@ class boss_vazruden_the_herald : public CreatureScript
                         else if (!lootSpawned)
                         {
                             me->SummonGameObject(DUNGEON_MODE(ENTRY_REINFORCED_FEL_IRON_CHEST, ENTRY_REINFORCED_FEL_IRON_CHEST_H), VazrudenMiddle[0], VazrudenMiddle[1], VazrudenMiddle[2], 0, 0, 0, 0, 0, 0);
-                            me->SetLootRecipient(NULL); // don't think this is necessary..
+                            me->SetLootRecipient(nullptr); // don't think this is necessary..
                             //me->Kill(me);
                             lootSpawned = true;
                         }
@@ -454,7 +454,7 @@ class boss_vazruden_the_herald : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_vazruden_the_heraldAI(creature);
         }
@@ -470,7 +470,7 @@ class mob_hellfire_sentry : public CreatureScript
         }
         struct mob_hellfire_sentryAI : public ScriptedAI
         {
-            mob_hellfire_sentryAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_hellfire_sentryAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
             uint32 KidneyShot_Timer;
 
@@ -479,11 +479,11 @@ class mob_hellfire_sentry : public CreatureScript
                 KidneyShot_Timer = urand(3000, 7000);
             }
 
-            void EnterCombat(Unit* /*who*/) {}
+            void EnterCombat(UnitPtr /*who*/) {}
 
-            void JustDied(Unit* killer)
+            void JustDied(UnitPtr killer)
             {
-                if (Creature* herald = me->FindNearestCreature(ENTRY_VAZRUDEN_HERALD, 150))
+                if (CreaturePtr herald = me->FindNearestCreature(ENTRY_VAZRUDEN_HERALD, 150))
                     CAST_AI(boss_vazruden_the_herald::boss_vazruden_the_heraldAI, herald->AI())->SentryDownBy(killer);
             }
 
@@ -494,7 +494,7 @@ class mob_hellfire_sentry : public CreatureScript
 
                 if (KidneyShot_Timer <= diff)
                 {
-                    if (Unit* victim = me->getVictim())
+                    if (UnitPtr victim = me->getVictim())
                         DoCast(victim, SPELL_KIDNEY_SHOT);
                     KidneyShot_Timer = 20000;
                 }
@@ -504,7 +504,7 @@ class mob_hellfire_sentry : public CreatureScript
                 DoMeleeAttackIfReady();
             }
         };
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_hellfire_sentryAI(creature);
         }

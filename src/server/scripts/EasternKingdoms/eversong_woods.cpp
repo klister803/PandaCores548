@@ -101,14 +101,14 @@ class npc_second_trial_paladin : public CreatureScript
 public:
     npc_second_trial_paladin() : CreatureScript("npc_second_trial_paladin") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_secondTrialAI (creature);
     }
 
     struct npc_secondTrialAI : public ScriptedAI
     {
-        npc_secondTrialAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_secondTrialAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 timer;
         uint8  questPhase;
@@ -163,7 +163,7 @@ public:
           }
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -175,7 +175,7 @@ public:
                     me->setFaction(FACTION_HOSTILE);
                     questPhase = 0;
 
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     {
                         me->AddThreat(target, 5000000.0f);
                         AttackStart(target);
@@ -242,14 +242,14 @@ public:
             summonerGuid = summonerguid;
         }
 
-        void KilledUnit(Unit* Killed)
+        void KilledUnit(UnitPtr Killed)
         {
             if (Killed->GetTypeId() == TYPEID_PLAYER)
                 if (CAST_PLR(Killed)->GetQuestStatus(QUEST_SECOND_TRIAL) == QUEST_STATUS_INCOMPLETE)
                     CAST_PLR(Killed)->FailQuest(QUEST_SECOND_TRIAL);
         }
 
-        void JustDied(Unit* killer);
+        void JustDied(UnitPtr killer);
     };
 };
 
@@ -262,7 +262,7 @@ class npc_second_trial_controller : public CreatureScript
 public:
     npc_second_trial_controller() : CreatureScript("npc_second_trial_controller") { }
 
-    bool OnQuestAccept(Player* /*player*/, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(PlayerPtr /*Player*/, CreaturePtr creature, Quest const* quest)
     {
         // One Player exclusive quest, wait for user go activation
         if (quest->GetQuestId() == QUEST_SECOND_TRIAL)
@@ -271,7 +271,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(Player* player, Creature* creature)
+    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
     {
         // quest only available if not already started
         // Quest_template flag is set to : QUEST_FLAGS_EVENT
@@ -288,14 +288,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new master_kelerun_bloodmournAI (creature);
     }
 
     struct master_kelerun_bloodmournAI : public ScriptedAI
     {
-        master_kelerun_bloodmournAI(Creature* creature) : ScriptedAI(creature) {}
+        master_kelerun_bloodmournAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint8  questPhase;
         uint8  paladinPhase;
@@ -312,7 +312,7 @@ public:
                 paladinGuid[i] = 0;
         }
 
-        void EnterCombat(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -329,7 +329,7 @@ public:
             {
                 if (timer <= diff)
                 {
-                    if (Creature* paladinSpawn = Unit::GetCreature((*me), paladinGuid[paladinPhase]))
+                    if (CreaturePtr paladinSpawn = Unit::GetCreature(TO_WORLDOBJECT(me), paladinGuid[paladinPhase]))
                     {
                         CAST_AI(npc_second_trial_paladin::npc_secondTrialAI, paladinSpawn->AI())->Activate(me->GetGUID());
 
@@ -370,7 +370,7 @@ public:
             if (questPhase == 1)
             { // no player check, quest can be finished as group, so no complex PlayerGUID/group search code
                 for (uint8 i = 0; i < 4; ++i)
-                if (Creature* summoned = DoSpawnCreature(PaladinEntry[i], SpawnPosition[i].x, SpawnPosition[i].y, SpawnPosition[i].z, SpawnPosition[i].o, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000))
+                if (CreaturePtr summoned = DoSpawnCreature(PaladinEntry[i], SpawnPosition[i].x, SpawnPosition[i].y, SpawnPosition[i].z, SpawnPosition[i].o, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 180000))
                     paladinGuid[i] = summoned->GetGUID();
 
                 timer = OFFSET_NEXT_ATTACK;
@@ -391,22 +391,22 @@ public:
             }
         }
 
-        void SummonedCreatureDespawn(Creature* /*c*/) {}
+        void SummonedCreatureDespawn(CreaturePtr /*c*/) {}
     };
 };
 
-void npc_second_trial_paladin::npc_secondTrialAI::JustDied(Unit* Killer)
+void npc_second_trial_paladin::npc_secondTrialAI::JustDied(UnitPtr Killer)
 {
     if (Killer->GetTypeId() == TYPEID_PLAYER)
     {
-        if (Creature* summoner = Unit::GetCreature((*me), summonerGuid))
+        if (CreaturePtr summoner = Unit::GetCreature(TO_WORLDOBJECT(me), summonerGuid))
             CAST_AI(npc_second_trial_controller::master_kelerun_bloodmournAI, summoner->AI())->SecondTrialKill();
 
         // last kill quest complete for group
         if (me->GetEntry() == CHAMPION_SUNSTRIKER)
         {
             if (Killer->GetTypeId() == TYPEID_PLAYER)
-                Killer->ToPlayer()->GroupEventHappens(QUEST_SECOND_TRIAL, Killer);
+                TO_PLAYER(Killer)->GroupEventHappens(QUEST_SECOND_TRIAL, Killer);
         }
     }
 }
@@ -419,10 +419,10 @@ class go_second_trial : public GameObjectScript
 public:
     go_second_trial() : GameObjectScript("go_second_trial") { }
 
-    bool OnGossipHello(Player* /*player*/, GameObject* go)
+    bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
     {
         // find spawn :: master_kelerun_bloodmourn
-        if (Creature* creature = go->FindNearestCreature(MASTER_KELERUN_BLOODMOURN, 30.0f))
+        if (CreaturePtr creature = go->FindNearestCreature(MASTER_KELERUN_BLOODMOURN, 30.0f))
            CAST_AI(npc_second_trial_controller::master_kelerun_bloodmournAI, creature->AI())->StartEvent();
 
         return true;
@@ -442,7 +442,7 @@ class npc_apprentice_mirveda : public CreatureScript
 public:
     npc_apprentice_mirveda() : CreatureScript("npc_apprentice_mirveda") { }
 
-    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
+    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_UNEXPECTED_RESULT)
         {
@@ -452,14 +452,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_apprentice_mirvedaAI (creature);
     }
 
     struct npc_apprentice_mirvedaAI : public ScriptedAI
     {
-        npc_apprentice_mirvedaAI(Creature* creature) : ScriptedAI(creature), Summons(me) {}
+        npc_apprentice_mirvedaAI(CreaturePtr creature) : ScriptedAI(creature), Summons(me) {}
 
         uint32 KillCount;
         uint64 PlayerGUID;
@@ -474,31 +474,31 @@ public:
             Summon = false;
         }
 
-        void EnterCombat(Unit* /*who*/){}
+        void EnterCombat(UnitPtr /*who*/){}
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->AI()->AttackStart(me);
             Summons.Summon(summoned);
         }
 
-        void SummonedCreatureDespawn(Creature* summoned)
+        void SummonedCreatureDespawn(CreaturePtr summoned)
         {
             Summons.Despawn(summoned);
             ++KillCount;
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (PlayerGUID)
-                if (Player* player = Unit::GetPlayer(*me, PlayerGUID))
+                if (PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID))
                     player->FailQuest(QUEST_UNEXPECTED_RESULT);
         }
 
         void UpdateAI(const uint32 /*diff*/)
         {
             if (KillCount >= 3 && PlayerGUID)
-                if (Player* player = Unit::GetPlayer(*me, PlayerGUID))
+                if (PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID))
                     player->CompleteQuest(QUEST_UNEXPECTED_RESULT);
 
             if (Summon)
@@ -542,14 +542,14 @@ class npc_infused_crystal : public CreatureScript
 public:
     npc_infused_crystal() : CreatureScript("npc_infused_crystal") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_infused_crystalAI (creature);
     }
 
     struct npc_infused_crystalAI : public Scripted_NoMovementAI
     {
-        npc_infused_crystalAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
+        npc_infused_crystalAI(CreaturePtr creature) : Scripted_NoMovementAI(creature) {}
 
         uint32 EndTimer;
         uint32 WaveTimer;
@@ -566,7 +566,7 @@ public:
             WaveTimer = 0;
         }
 
-        void MoveInLineOfSight(Unit* who)
+        void MoveInLineOfSight(UnitPtr who)
         {
             if (!Progress && who->GetTypeId() == TYPEID_PLAYER && me->IsWithinDistInMap(who, 10.0f))
             {
@@ -580,15 +580,15 @@ public:
             }
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
             summoned->AI()->AttackStart(me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (PlayerGUID && !Completed)
-                if (Player* player = Unit::GetPlayer(*me, PlayerGUID))
+                if (PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID))
                     CAST_PLR(player)->FailQuest(QUEST_POWERING_OUR_DEFENSES);
         }
 
@@ -599,10 +599,10 @@ public:
                 DoScriptText(EMOTE, me);
                 Completed = true;
                 if (PlayerGUID)
-                    if (Player* player = Unit::GetPlayer(*me, PlayerGUID))
+                    if (PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID))
                         CAST_PLR(player)->CompleteQuest(QUEST_POWERING_OUR_DEFENSES);
 
-                me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
                 me->RemoveCorpse();
             } else EndTimer -= diff;
 

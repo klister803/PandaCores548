@@ -47,7 +47,7 @@ ACE_Service_Type_Impl::~ACE_Service_Type_Impl (void)
   ACE_TRACE ("ACE_Service_Type_Impl::~ACE_Service_Type_Impl");
 
   // It's ok to call this, even though we may have already deleted it
-  // in the fini() method since it would then be NULL.
+  // in the fini() method since it would then be nullptr.
   delete [] const_cast <ACE_TCHAR *> (this->name_);
 }
 

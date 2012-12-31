@@ -44,7 +44,7 @@ class go_main_chambers_access_panel : public GameObjectScript
 public:
     go_main_chambers_access_panel() : GameObjectScript("go_main_chambers_access_panel") { }
 
-    bool OnGossipHello(Player* /*player*/, GameObject* go)
+    bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
     {
         InstanceScript* instance = go->GetInstanceScript();
 
@@ -67,14 +67,14 @@ class instance_steam_vault : public InstanceMapScript
 public:
     instance_steam_vault() : InstanceMapScript("instance_steam_vault", 545) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_steam_vault_InstanceMapScript(map);
     }
 
     struct instance_steam_vault_InstanceMapScript : public InstanceScript
     {
-        instance_steam_vault_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_steam_vault_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
 
@@ -107,7 +107,7 @@ public:
             return false;
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
               switch (creature->GetEntry())
             {
@@ -117,7 +117,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {

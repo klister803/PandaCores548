@@ -80,7 +80,7 @@ class boss_ragnaros : public CreatureScript
 
         struct boss_ragnarosAI : public BossAI
         {
-            boss_ragnarosAI(Creature* creature) : BossAI(creature, BOSS_RAGNAROS)
+            boss_ragnarosAI(CreaturePtr creature) : BossAI(creature, BOSS_RAGNAROS)
             {
                 _introState = 0;
                 me->SetReactState(REACT_PASSIVE);
@@ -97,7 +97,7 @@ class boss_ragnaros : public CreatureScript
                 me->SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
             }
 
-            void EnterCombat(Unit* victim)
+            void EnterCombat(UnitPtr victim)
             {
                 BossAI::EnterCombat(victim);
                 events.ScheduleEvent(EVENT_ERUPTION, 15000);
@@ -109,7 +109,7 @@ class boss_ragnaros : public CreatureScript
                 events.ScheduleEvent(EVENT_SUBMERGE, 180000);
             }
 
-            void KilledUnit(Unit* /*victim*/)
+            void KilledUnit(UnitPtr /*victim*/)
             {
                 if (urand(0, 99) < 25)
                     DoScriptText(SAY_KILL, me);
@@ -148,7 +148,7 @@ class boss_ragnaros : public CreatureScript
                         case EVENT_INTRO_4:
                             DoScriptText(SAY_ARRIVAL5_RAG, me);
                             if (instance)
-                                if (Creature* executus = Unit::GetCreature(*me, instance->GetData64(BOSS_MAJORDOMO_EXECUTUS)))
+                                if (CreaturePtr executus = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(BOSS_MAJORDOMO_EXECUTUS)))
                                     me->Kill(executus);
                             break;
                         case EVENT_INTRO_5:
@@ -173,7 +173,7 @@ class boss_ragnaros : public CreatureScript
                             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             me->SetUInt32Value(UNIT_NPC_EMOTESTATE, 0);
                             me->HandleEmoteCommand(EMOTE_ONESHOT_EMERGE);
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 AttackStart(target);
                             instance->SetData(DATA_RAGNAROS_ADDS, 0);
 
@@ -260,8 +260,8 @@ class boss_ragnaros : public CreatureScript
 
                                         // summon 8 elementals
                                         for (uint8 i = 0; i < 8; ++i)
-                                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                                                if (Creature* summoned = me->SummonCreature(12143, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 900000))
+                                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                                                if (CreaturePtr summoned = me->SummonCreature(12143, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 900000))
                                                     summoned->AI()->AttackStart(target);
 
                                         _hasSubmergedOnce = true;
@@ -275,8 +275,8 @@ class boss_ragnaros : public CreatureScript
                                         DoScriptText(SAY_REINFORCEMENTS2, me);
 
                                         for (uint8 i = 0; i < 8; ++i)
-                                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                                                if (Creature* summoned = me->SummonCreature(12143, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 900000))
+                                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                                                if (CreaturePtr summoned = me->SummonCreature(12143, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 900000))
                                                     summoned->AI()->AttackStart(target);
 
                                         _isBanished = true;
@@ -304,7 +304,7 @@ class boss_ragnaros : public CreatureScript
             bool _isBanished;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_ragnarosAI(creature);
         }
@@ -317,12 +317,12 @@ class mob_son_of_flame : public CreatureScript
 
         struct mob_son_of_flameAI : public ScriptedAI //didnt work correctly in EAI for me...
         {
-            mob_son_of_flameAI(Creature* creature) : ScriptedAI(creature)
+            mob_son_of_flameAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 if (instance)
                     instance->SetData(DATA_RAGNAROS_ADDS, 1);
@@ -340,7 +340,7 @@ class mob_son_of_flame : public CreatureScript
             InstanceScript* instance;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_son_of_flameAI(creature);
         }

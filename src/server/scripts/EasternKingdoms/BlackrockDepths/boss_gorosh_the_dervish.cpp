@@ -30,14 +30,14 @@ class boss_gorosh_the_dervish : public CreatureScript
 public:
     boss_gorosh_the_dervish() : CreatureScript("boss_gorosh_the_dervish") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_gorosh_the_dervishAI (creature);
     }
 
     struct boss_gorosh_the_dervishAI : public ScriptedAI
     {
-        boss_gorosh_the_dervishAI(Creature* creature) : ScriptedAI(creature) {}
+        boss_gorosh_the_dervishAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         uint32 WhirlWind_Timer;
         uint32 MortalStrike_Timer;
@@ -48,7 +48,7 @@ public:
             MortalStrike_Timer = 22000;
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
         }
 

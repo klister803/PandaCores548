@@ -38,33 +38,33 @@ class boss_mother_smolderweb : public CreatureScript
 public:
     boss_mother_smolderweb() : CreatureScript("boss_mother_smolderweb") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_mothersmolderwebAI(creature);
     }
 
     struct boss_mothersmolderwebAI : public BossAI
     {
-        boss_mothersmolderwebAI(Creature* creature) : BossAI(creature, DATA_MOTHER_SMOLDERWEB) {}
+        boss_mothersmolderwebAI(CreaturePtr creature) : BossAI(creature, DATA_MOTHER_SMOLDERWEB) {}
 
         void Reset()
         {
             _Reset();
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_CRYSTALIZE,   20 * IN_MILLISECONDS);
             events.ScheduleEvent(EVENT_MOTHERS_MILK, 10 * IN_MILLISECONDS);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             _JustDied();
         }
 
-        void DamageTaken(Unit* /*done_by*/, uint32 &damage)
+        void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
         {
             if (me->GetHealth() <= damage)
                 DoCast(me, SPELL_SUMMON_SPIRE_SPIDERLING, true);

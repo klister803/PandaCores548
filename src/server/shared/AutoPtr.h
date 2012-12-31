@@ -35,12 +35,12 @@ namespace Trinity
 
             operator bool() const
             {
-                return ACE_Strong_Bound_Ptr<Pointer, Lock>::get() != NULL;
+                return ACE_Strong_Bound_Ptr<Pointer, Lock>::get() != nullptr;
             }
 
             bool operator !() const
             {
-                return ACE_Strong_Bound_Ptr<Pointer, Lock>::get() == NULL;
+                return ACE_Strong_Bound_Ptr<Pointer, Lock>::get() == nullptr;
             }
 
             bool operator !=(Pointer* x) const

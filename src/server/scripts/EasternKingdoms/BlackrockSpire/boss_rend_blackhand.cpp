@@ -39,21 +39,21 @@ class boss_rend_blackhand : public CreatureScript
 public:
     boss_rend_blackhand() : CreatureScript("boss_rend_blackhand") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_rend_blackhandAI(creature);
     }
 
     struct boss_rend_blackhandAI : public BossAI
     {
-        boss_rend_blackhandAI(Creature* creature) : BossAI(creature, DATA_WARCHIEF_REND_BLACKHAND) {}
+        boss_rend_blackhandAI(CreaturePtr creature) : BossAI(creature, DATA_WARCHIEF_REND_BLACKHAND) {}
 
         void Reset()
         {
             _Reset();
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_WHIRLWIND,  20 * IN_MILLISECONDS);
@@ -61,7 +61,7 @@ public:
             events.ScheduleEvent(EVENT_THUNDERCLAP, 9 * IN_MILLISECONDS);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             _JustDied();
         }

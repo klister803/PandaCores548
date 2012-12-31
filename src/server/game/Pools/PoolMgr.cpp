@@ -21,6 +21,7 @@
 #include "ObjectMgr.h"
 #include "Log.h"
 #include "MapManager.h"
+#include "ClassFactory.h"
 
 ////////////////////////////////////////////////////////////
 // template class ActivePoolData
@@ -177,7 +178,7 @@ PoolObject* PoolGroup<T>::RollOne(ActivePoolData& spawns, uint32 triggerFrom)
            return &EqualChanced[index];
     }
 
-    return NULL;
+    return nullptr;
 }
 
 // Main method to despawn a creature or gameobject in a pool
@@ -221,7 +222,7 @@ void PoolGroup<Creature>::Despawn1Object(uint32 guid)
     {
         sObjectMgr->RemoveCreatureFromGrid(guid, data);
 
-        if (Creature* creature = ObjectAccessor::GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)NULL))
+        if (CreaturePtr creature = ObjectAccessor::GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_UNIT), (Creature*)nullptr))
             creature->AddObjectToRemoveList();
     }
 }
@@ -234,7 +235,7 @@ void PoolGroup<GameObject>::Despawn1Object(uint32 guid)
     {
         sObjectMgr->RemoveGameobjectFromGrid(guid, data);
 
-        if (GameObject* pGameobject = ObjectAccessor::GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL))
+        if (GameObjectPtr pGameobject = ObjectAccessor::GetObjectInWorld(MAKE_NEW_GUID(guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)nullptr))
             pGameobject->AddObjectToRemoveList();
     }
 }
@@ -360,17 +361,14 @@ void PoolGroup<Creature>::Spawn1Object(PoolObject* obj)
         sObjectMgr->AddCreatureToGrid(obj->guid, data);
 
         // Spawn if necessary (loaded grids only)
-        Map* map = sMapMgr->CreateBaseMap(data->mapid);
+        MapPtr map = sMapMgr->CreateBaseMap(data->mapid);
         // We use spawn coords to spawn
         if (!map->Instanceable() && map->IsGridLoaded(data->posX, data->posY))
         {
-            Creature* creature = new Creature;
+            CreaturePtr creature = ClassFactory::ConstructCreature();
             //sLog->outDebug(LOG_FILTER_POOLSYS, "Spawning creature %u", guid);
             if (!creature->LoadCreatureFromDB(obj->guid, map))
-            {
-                delete creature;
                 return;
-            }
         }
     }
 }
@@ -384,17 +382,14 @@ void PoolGroup<GameObject>::Spawn1Object(PoolObject* obj)
         sObjectMgr->AddGameobjectToGrid(obj->guid, data);
         // Spawn if necessary (loaded grids only)
         // this base map checked as non-instanced and then only existed
-        Map* map = sMapMgr->CreateBaseMap(data->mapid);
+        MapPtr map = sMapMgr->CreateBaseMap(data->mapid);
         // We use current coords to unspawn, not spawn coords since creature can have changed grid
         if (!map->Instanceable() && map->IsGridLoaded(data->posX, data->posY))
         {
-            GameObject* pGameobject = new GameObject;
+            GameObjectPtr pGameobject (new GameObject);
             //sLog->outDebug(LOG_FILTER_POOLSYS, "Spawning gameobject %u", guid);
             if (!pGameobject->LoadGameObjectFromDB(obj->guid, map, false))
-            {
-                delete pGameobject;
                 return;
-            }
             else
             {
                 if (pGameobject->isSpawnedByDefault())
@@ -510,7 +505,7 @@ template <>
 void PoolGroup<Creature>::ReSpawn1Object(PoolObject* obj)
 {
     if (CreatureData const* data = sObjectMgr->GetCreatureData(obj->guid))
-        if (Creature* creature = ObjectAccessor::GetObjectInWorld(MAKE_NEW_GUID(obj->guid, data->id, HIGHGUID_UNIT), (Creature*)NULL))
+        if (CreaturePtr creature = ObjectAccessor::GetObjectInWorld(MAKE_NEW_GUID(obj->guid, data->id, HIGHGUID_UNIT), (Creature*)nullptr))
             creature->GetMap()->AddToMap(creature);
 }
 
@@ -519,7 +514,7 @@ template <>
 void PoolGroup<GameObject>::ReSpawn1Object(PoolObject* obj)
 {
     if (GameObjectData const* data = sObjectMgr->GetGOData(obj->guid))
-        if (GameObject* pGameobject = ObjectAccessor::GetObjectInWorld(MAKE_NEW_GUID(obj->guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)NULL))
+        if (GameObjectPtr pGameobject = ObjectAccessor::GetObjectInWorld(MAKE_NEW_GUID(obj->guid, data->id, HIGHGUID_GAMEOBJECT), (GameObject*)nullptr))
             pGameobject->GetMap()->AddToMap(pGameobject);
 }
 

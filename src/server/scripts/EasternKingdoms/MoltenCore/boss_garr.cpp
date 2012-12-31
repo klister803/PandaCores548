@@ -53,11 +53,11 @@ class boss_garr : public CreatureScript
 
         struct boss_garrAI : public BossAI
         {
-            boss_garrAI(Creature* creature) : BossAI(creature, BOSS_GARR)
+            boss_garrAI(CreaturePtr creature) : BossAI(creature, BOSS_GARR)
             {
             }
 
-            void EnterCombat(Unit* victim)
+            void EnterCombat(UnitPtr victim)
             {
                 BossAI::EnterCombat(victim);
                 events.ScheduleEvent(EVENT_ANTIMAGIC_PULSE, 25000);
@@ -95,7 +95,7 @@ class boss_garr : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_garrAI(creature);
         }
@@ -108,7 +108,7 @@ class mob_firesworn : public CreatureScript
 
         struct mob_fireswornAI : public ScriptedAI
         {
-            mob_fireswornAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_fireswornAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
             uint32 immolateTimer;
 
@@ -117,7 +117,7 @@ class mob_firesworn : public CreatureScript
                 immolateTimer = 4000;                              //These times are probably wrong
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            void DamageTaken(UnitPtr /*attacker*/, uint32& damage)
             {
                 uint32 const health10pct = me->CountPctFromMaxHealth(10);
                 uint32 health = me->GetHealth();
@@ -136,7 +136,7 @@ class mob_firesworn : public CreatureScript
 
                 if (immolateTimer <= diff)
                 {
-                     if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                     if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_IMMOLATE);
                     immolateTimer = urand(5000, 10000);
                 }
@@ -147,7 +147,7 @@ class mob_firesworn : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_fireswornAI(creature);
         }

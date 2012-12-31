@@ -65,7 +65,7 @@ void WorldSession::HandleGuildFinderAddRecruit(WorldPacket& recvPacket)
     if (!(guildInterests & ALL_INTERESTS) || guildInterests > ALL_INTERESTS)
         return;
 
-    MembershipRequest request = MembershipRequest(GetPlayer()->GetGUIDLow(), guildLowGuid, availability, classRoles, guildInterests, comment, time(NULL));
+    MembershipRequest request = MembershipRequest(GetPlayer()->GetGUIDLow(), guildLowGuid, availability, classRoles, guildInterests, comment, time(nullptr));
     sGuildFinderMgr->AddMembershipRequest(guildLowGuid, request);
 }
 
@@ -88,7 +88,7 @@ void WorldSession::HandleGuildFinderBrowse(WorldPacket& recvPacket)
     if (playerLevel > sWorld->getIntConfig(CONFIG_MAX_PLAYER_LEVEL) || playerLevel < 1)
         return;
 
-    Player* player = GetPlayer();
+    PlayerPtr player = GetPlayer();
 
     LFGuildPlayer settings(player->GetGUIDLow(), classRoles, availability, guildInterests, ANY_FINDER_LEVEL);
     LFGuildStore guildList = sGuildFinderMgr->GetGuildsMatchingSetting(settings, player->GetTeamId());
@@ -108,7 +108,7 @@ void WorldSession::HandleGuildFinderBrowse(WorldPacket& recvPacket)
     for (LFGuildStore::const_iterator itr = guildList.begin(); itr != guildList.end(); ++itr)
     {
         LFGuildSettings guildSettings = itr->second;
-        Guild* guild = sGuildMgr->GetGuildById(itr->first);
+        GuildPtr guild = sGuildMgr->GetGuildById(itr->first);
 
         ObjectGuid guildGUID = ObjectGuid(guild->GetGUID());
         
@@ -188,7 +188,7 @@ void WorldSession::HandleGuildFinderGetApplications(WorldPacket& /*recvPacket*/)
         ByteBuffer bufferData(54 * applicationsCount);
         for (std::list<MembershipRequest>::const_iterator itr = applicatedGuilds.begin(); itr != applicatedGuilds.end(); ++itr)
         {
-            Guild* guild = sGuildMgr->GetGuildById(itr->GetGuildId());
+            GuildPtr guild = sGuildMgr->GetGuildById(itr->GetGuildId());
             LFGuildSettings guildSettings = sGuildFinderMgr->GetGuildSettings(itr->GetGuildId());
             MembershipRequest request = *itr;
 
@@ -210,9 +210,9 @@ void WorldSession::HandleGuildFinderGetApplications(WorldPacket& /*recvPacket*/)
             bufferData.WriteString(guild->GetName());
             bufferData.WriteByteSeq(guildGuid[1]);
             bufferData.WriteByteSeq(guildGuid[6]);
-            bufferData << uint32(request.GetExpiryTime() - time(NULL)); // Time left to application expiry (seconds)
+            bufferData << uint32(request.GetExpiryTime() - time(nullptr)); // Time left to application expiry (seconds)
             bufferData.WriteString(request.GetComment());
-            bufferData << uint32(time(NULL) - request.GetSubmitTime()); // Time since application (seconds)
+            bufferData << uint32(time(nullptr) - request.GetSubmitTime()); // Time since application (seconds)
             bufferData.WriteByteSeq(guildGuid[0]);
             bufferData << uint32(guildSettings.GetClassRoles());
             bufferData << uint32(guildSettings.GetInterests());
@@ -237,7 +237,7 @@ void WorldSession::HandleGuildFinderGetRecruits(WorldPacket& recvPacket)
     uint32 unkTime = 0;
     //recvPacket >> unkTime;
 
-    Player* player = GetPlayer();
+    PlayerPtr player = GetPlayer();
     if (!player->GetGuildId())
         return;
 
@@ -266,10 +266,10 @@ void WorldSession::HandleGuildFinderGetRecruits(WorldPacket& recvPacket)
         
         dataBuffer << int32(request.GetAvailability());
         dataBuffer.WriteByteSeq(playerGuid[1]);
-        dataBuffer << int32(time(NULL) <= request.GetExpiryTime());
+        dataBuffer << int32(time(nullptr) <= request.GetExpiryTime());
         dataBuffer << int32(request.GetInterests());
         dataBuffer << int32(request.GetClassRoles());
-        dataBuffer << int32(time(NULL) - request.GetSubmitTime()); // Time in seconds since application submitted.
+        dataBuffer << int32(time(nullptr) - request.GetSubmitTime()); // Time in seconds since application submitted.
         dataBuffer.WriteString(request.GetName());
         dataBuffer.WriteByteSeq(playerGuid[4]);
         dataBuffer.WriteByteSeq(playerGuid[6]);
@@ -277,7 +277,7 @@ void WorldSession::HandleGuildFinderGetRecruits(WorldPacket& recvPacket)
         dataBuffer.WriteByteSeq(playerGuid[7]);
         dataBuffer.WriteString(request.GetComment());
         dataBuffer << int32(request.GetLevel());
-        dataBuffer << int32(request.GetExpiryTime() - time(NULL)); // TIme in seconds until application expires.
+        dataBuffer << int32(request.GetExpiryTime() - time(nullptr)); // TIme in seconds until application expires.
         dataBuffer.WriteByteSeq(playerGuid[2]);
         dataBuffer.WriteByteSeq(playerGuid[0]);
         dataBuffer << int32(request.GetClass());
@@ -286,7 +286,7 @@ void WorldSession::HandleGuildFinderGetRecruits(WorldPacket& recvPacket)
 
     data.FlushBits();
     data.append(dataBuffer);
-    data << uint32(time(NULL)); // Unk time
+    data << uint32(time(nullptr)); // Unk time
 
     player->SendDirectMessage(&data);
 }
@@ -295,13 +295,13 @@ void WorldSession::HandleGuildFinderPostRequest(WorldPacket& recvPacket)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_LF_GUILD_POST_REQUEST"); // Empty opcode
 
-    Player* player = GetPlayer();
+    PlayerPtr player = GetPlayer();
 
     if (!player->GetGuildId()) // Player must be in guild
         return;
 
     bool isGuildMaster = true;
-    if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId()))
+    if (GuildPtr guild = sGuildMgr->GetGuildById(player->GetGuildId()))
         if (guild->GetLeaderGUID() != player->GetGUID())
             isGuildMaster = false;
 
@@ -372,12 +372,12 @@ void WorldSession::HandleGuildFinderSetGuildPost(WorldPacket& recvPacket)
     if (!(level & ALL_GUILDFINDER_LEVELS) || level > ALL_GUILDFINDER_LEVELS)
         return;
 
-    Player* player = GetPlayer();
+    PlayerPtr player = GetPlayer();
 
     if (!player->GetGuildId()) // Player must be in guild
         return;
 
-    if (Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId())) // Player must be guild master
+    if (GuildPtr guild = sGuildMgr->GetGuildById(player->GetGuildId())) // Player must be guild master
         if (guild->GetLeaderGUID() != player->GetGUID())
             return;
 

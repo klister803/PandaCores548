@@ -59,11 +59,11 @@ class boss_toravon : public CreatureScript
 
         struct boss_toravonAI : public BossAI
         {
-            boss_toravonAI(Creature* creature) : BossAI(creature, DATA_TORAVON)
+            boss_toravonAI(CreaturePtr creature) : BossAI(creature, DATA_TORAVON)
             {
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 DoCast(me, SPELL_FROZEN_MALLET);
 
@@ -97,7 +97,7 @@ class boss_toravon : public CreatureScript
                             events.ScheduleEvent(EVENT_WHITEOUT, 38000);
                             break;
                         case EVENT_FREEZING_GROUND:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                                 DoCast(target, SPELL_FREEZING_GROUND);
                             events.ScheduleEvent(EVENT_FREEZING_GROUND, 20000);
                             break;
@@ -110,7 +110,7 @@ class boss_toravon : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_toravonAI(creature);
         }
@@ -126,14 +126,14 @@ class mob_frost_warder : public CreatureScript
 
         struct mob_frost_warderAI : public ScriptedAI
         {
-            mob_frost_warderAI(Creature* creature) : ScriptedAI(creature) {}
+            mob_frost_warderAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
             void Reset()
             {
                 events.Reset();
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 DoZoneInCombat();
 
@@ -165,7 +165,7 @@ class mob_frost_warder : public CreatureScript
             EventMap events;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_frost_warderAI(creature);
         }
@@ -181,7 +181,7 @@ public:
 
     struct mob_frozen_orbAI : public ScriptedAI
     {
-        mob_frozen_orbAI(Creature* creature) : ScriptedAI(creature)
+        mob_frozen_orbAI(CreaturePtr creature) : ScriptedAI(creature)
         {
         }
 
@@ -191,7 +191,7 @@ public:
             killTimer = 60000; // if after this time there is no victim -> destroy!
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoZoneInCombat();
         }
@@ -220,7 +220,7 @@ public:
         bool done;
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_frozen_orbAI(creature);
     }
@@ -236,7 +236,7 @@ class mob_frozen_orb_stalker : public CreatureScript
 
         struct mob_frozen_orb_stalkerAI : public Scripted_NoMovementAI
         {
-            mob_frozen_orb_stalkerAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            mob_frozen_orb_stalkerAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
             {
                 creature->SetVisible(false);
                 creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE|UNIT_FLAG_DISABLE_MOVE);
@@ -252,7 +252,7 @@ class mob_frozen_orb_stalker : public CreatureScript
                     return;
 
                 spawned = true;
-                Unit* toravon = me->GetCreature(*me, instance ? instance->GetData64(DATA_TORAVON) : 0);
+                UnitPtr toravon = me->GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_TORAVON) : 0);
                 if (!toravon)
                     return;
 
@@ -271,7 +271,7 @@ class mob_frozen_orb_stalker : public CreatureScript
             bool spawned;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_frozen_orb_stalkerAI(creature);
         }

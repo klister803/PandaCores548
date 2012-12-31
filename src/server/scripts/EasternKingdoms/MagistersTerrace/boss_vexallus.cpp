@@ -65,14 +65,14 @@ class boss_vexallus : public CreatureScript
 public:
     boss_vexallus() : CreatureScript("boss_vexallus") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new boss_vexallusAI (creature);
     };
 
     struct boss_vexallusAI : public ScriptedAI
     {
-        boss_vexallusAI(Creature* creature) : ScriptedAI(creature)
+        boss_vexallusAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -97,18 +97,18 @@ public:
                 instance->SetData(DATA_VEXALLUS_EVENT, NOT_STARTED);
         }
 
-        void KilledUnit(Unit* /*victim*/)
+        void KilledUnit(UnitPtr /*victim*/)
         {
             DoScriptText(SAY_KILL, me);
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             if (instance)
                 instance->SetData(DATA_VEXALLUS_EVENT, DONE);
         }
 
-        void EnterCombat(Unit* /*who*/)
+        void EnterCombat(UnitPtr /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -116,9 +116,9 @@ public:
                 instance->SetData(DATA_VEXALLUS_EVENT, IN_PROGRESS);
         }
 
-        void JustSummoned(Creature* summoned)
+        void JustSummoned(CreaturePtr summoned)
         {
-            if (Unit* temp = SelectTarget(SELECT_TARGET_RANDOM, 0))
+            if (UnitPtr temp = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 summoned->GetMotionMaster()->MoveFollow(temp, 0, 0);
 
             //spells are SUMMON_TYPE_GUARDIAN, so using setOwner should be ok
@@ -164,7 +164,7 @@ public:
 
                 if (ChainLightningTimer <= diff)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_CHAIN_LIGHTNING);
 
                     ChainLightningTimer = 8000;
@@ -172,7 +172,7 @@ public:
 
                 if (ArcaneShockTimer <= diff)
                 {
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     if (target)
                         DoCast(target, SPELL_ARCANE_SHOCK);
 
@@ -200,29 +200,29 @@ class mob_pure_energy : public CreatureScript
 public:
     mob_pure_energy() : CreatureScript("mob_pure_energy") { }
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new mob_pure_energyAI (creature);
     };
 
     struct mob_pure_energyAI : public ScriptedAI
     {
-        mob_pure_energyAI(Creature* creature) : ScriptedAI(creature) {}
+        mob_pure_energyAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         void Reset() {}
 
-        void JustDied(Unit* slayer)
+        void JustDied(UnitPtr slayer)
         {
-            if (Unit* temp = me->GetOwner())
+            if (UnitPtr temp = me->GetOwner())
             {
                 if (temp && temp->isAlive())
                     slayer->CastSpell(slayer, SPELL_ENERGY_FEEDBACK, true, 0, 0, temp->GetGUID());
             }
         }
 
-        void EnterCombat(Unit* /*who*/) {}
-        void MoveInLineOfSight(Unit* /*who*/) {}
-        void AttackStart(Unit* /*who*/) {}
+        void EnterCombat(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void AttackStart(UnitPtr /*who*/) {}
     };
 
 };

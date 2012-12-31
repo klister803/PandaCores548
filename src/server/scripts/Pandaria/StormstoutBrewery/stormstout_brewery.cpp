@@ -26,7 +26,7 @@ class spell_stormstout_brewery_habanero_beer : public SpellScriptLoader
                 if (!GetCaster())
                     return;
 
-                std::list<Creature*> creatureList;
+                std::list<CreaturePtr> creatureList;
 
                 GetCreatureListWithEntryInGrid(creatureList, GetCaster(), NPC_BARREL, 10.0f);
 
@@ -44,7 +44,7 @@ class spell_stormstout_brewery_habanero_beer : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (Unit* caster = GetCaster())
+                if (UnitPtr caster = GetCaster())
                     if (caster->ToCreature())
                         caster->ToCreature()->ForcedDespawn(1000);
             }

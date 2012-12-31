@@ -96,7 +96,7 @@ class instance_icecrown_citadel : public InstanceMapScript
 
         struct instance_icecrown_citadel_InstanceMapScript : public InstanceScript
         {
-            instance_icecrown_citadel_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
+            instance_icecrown_citadel_InstanceMapScript(InstanceMapPtr map) : InstanceScript(map)
             {
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doorData);
@@ -187,9 +187,9 @@ class instance_icecrown_citadel : public InstanceMapScript
                 IsOrbWhispererEligible = true;
                 ColdflameJetsState = NOT_STARTED;
                 AreGunshipsSpawned = false;
-                m_GunshipMain   = NULL;
-                m_GunshipSecond = NULL;
-                m_ZeppelinHorde = NULL;
+                m_GunshipMain   = nullptr;
+                m_GunshipSecond = nullptr;
+                m_ZeppelinHorde = nullptr;
                 
                 m_blood_doorGUID = 0;
                 m_ice_doorGUID = 0;
@@ -207,16 +207,13 @@ class instance_icecrown_citadel : public InstanceMapScript
                 sMapMgr->m_Transports.erase(m_GunshipMain);
                 sMapMgr->m_Transports.erase(m_GunshipSecond);
 
-                delete m_GunshipMain;
-                delete m_GunshipSecond;
-
-                m_GunshipMain = NULL;
-                m_GunshipSecond = NULL;
+                m_GunshipMain = nullptr;
+                m_GunshipSecond = nullptr;
             }
 
-            Transport* MakeTransport(uint32 gobentry,uint32 period,std::string nametransport, std::string scriptname)
+            TransportPtr MakeTransport(uint32 gobentry,uint32 period,std::string nametransport, std::string scriptname)
             {
-                Transport *t = new Transport(period, sObjectMgr->GetScriptId(scriptname.c_str()));
+                TransportPtr t (new Transport(period, sObjectMgr->GetScriptId(scriptname.c_str())));
 
                 uint32 entry = gobentry;
                 std::string name = nametransport;
@@ -225,16 +222,14 @@ class instance_icecrown_citadel : public InstanceMapScript
 
                 if (!goinfo)
                 {
-                    delete t;
-                    return NULL;
+                    return nullptr;
                 }
                 std::set<uint32> mapsUsed;
                 
                 if (!t->GenerateWaypoints(goinfo->moTransport.taxiPathId, mapsUsed))
                     // skip transports with empty waypoints list
                 {
-                    delete t;
-                    return NULL;
+                    return nullptr;
                 }
 
                 float x, y, z, o;
@@ -248,8 +243,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 // creates the Gameobject
                 if (!t->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT),entry, mapid, x, y, z, o, 100, 0))
                 {
-                    delete t;
-                    return NULL;
+                    return nullptr;
                 }
 
                 t->SetMap(instance);
@@ -266,18 +260,16 @@ class instance_icecrown_citadel : public InstanceMapScript
                 return t;
             }
 
-            void OnDestroy(InstanceMap * pMap)
+            void OnDestroy(InstanceMapPtr pMap)
             {
-                printf("void OnDestroy(InstanceMap * pMap)\n");
+                printf("void OnDestroy(InstanceMapPtr pMap)\n");
                 sMapMgr->m_Transports.erase(m_GunshipMain);
                 sMapMgr->m_Transports.erase(m_GunshipSecond);
-                delete m_GunshipMain;
-                delete m_GunshipSecond;
-                m_GunshipMain = NULL;
-                m_GunshipSecond = NULL;
+                m_GunshipMain = nullptr;
+                m_GunshipSecond = nullptr;
             }
 
-            Creature * SpawnTransportNpc(Transport * pTransport, uint32 npc_entry = 0, float TransOffsetX = 0, float TransOffsetY = 0, float TransOffsetZ = 0, float TransOffsetO = 0, uint32 emote = 0)
+            CreaturePtr SpawnTransportNpc(TransportPtr pTransport, uint32 npc_entry = 0, float TransOffsetX = 0, float TransOffsetY = 0, float TransOffsetZ = 0, float TransOffsetO = 0, uint32 emote = 0)
             {
                 uint8 MAX_GUNSHIP_ARTILLEURS  = !instance->Is25ManRaid() ? 2: 4;
                 uint8 MAX_GUNSHIP_TIREURS     = !instance->Is25ManRaid() ? 4: 8;
@@ -289,7 +281,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                     QueryResult npc_transport = WorldDatabase.PQuery("SELECT npc_entry, TransOffsetX, TransOffsetY, TransOffsetZ, TransOffsetO, emote, guid FROM creature_transport WHERE transport_entry = '%u' ORDER BY guid", pTransport->GetEntry());
 
                     if(!npc_transport)
-                        return NULL;
+                        return nullptr;
 
                     do
                     {
@@ -369,7 +361,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         if (!mustBeSpawned)
                             continue;
 
-                        if (Creature * Passenger = pTransport->AddNPCPassengerCreature(fields[6].GetUInt32(), fields[0].GetFloat(), fields[1].GetFloat(), fields[2].GetFloat(), fields[3].GetFloat(),fields[4].GetUInt32(),fields[5].GetUInt32()))
+                        if (CreaturePtr Passenger = pTransport->AddNPCPassengerCreature(fields[6].GetUInt32(), fields[0].GetFloat(), fields[1].GetFloat(), fields[2].GetFloat(), fields[3].GetFloat(),fields[4].GetUInt32(),fields[5].GetUInt32()))
                         {
                             // EVENT ALLIANCE
                             if(pTransport->GetEntry() == TRANSPORT_A_THE_SKYBREAKER)
@@ -555,7 +547,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 else
                     return pTransport->AddNPCPassengerCreature(0/*tGuid*/, npc_entry, TransOffsetX, TransOffsetY, TransOffsetZ, TransOffsetO, emote);
 
-                 return NULL;
+                 return nullptr;
             }
 
             void FillInitialWorldStates(WorldPacket& data)
@@ -567,7 +559,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 data << uint32(WORLDSTATE_ATTEMPTS_MAX)       << uint32(50);
             }
 
-            void OnPlayerEnter(Player* player)
+            void OnPlayerEnter(PlayerPtr player)
             {
                 if (!TeamInInstance)
                     TeamInInstance = player->GetTeam();
@@ -599,7 +591,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 SendTransportInit(player);
             }
 
-            void SendTransportInit(Player *player)
+            void SendTransportInit(PlayerPtr player)
             {
                 if(!m_GunshipMain || !m_GunshipSecond)
                     return;
@@ -612,13 +604,13 @@ class instance_icecrown_citadel : public InstanceMapScript
                 player->GetSession()->SendPacket(&packet);
             }
 
-            void OnCreatureCreate(Creature* creature)
+            void OnCreatureCreate(CreaturePtr creature)
             {
                 if (!TeamInInstance)
                 {
                     Map::PlayerList const &players = instance->GetPlayers();
                     if (!players.isEmpty())
-                        if (Player* player = players.begin()->getSource())
+                        if (PlayerPtr player = players.begin()->getSource())
                             TeamInInstance = player->GetTeam();
                 }
 
@@ -808,13 +800,13 @@ class instance_icecrown_citadel : public InstanceMapScript
                 return entry;
             }
 
-            void OnCreatureRemove(Creature* creature)
+            void OnCreatureRemove(CreaturePtr creature)
             {
                 if (creature->GetEntry() == NPC_FROST_FREEZE_TRAP)
                     ColdflameJetGUIDs.erase(creature->GetGUID());
             }
 
-            void OnCreatureDeath(Creature* creature)
+            void OnCreatureDeath(CreaturePtr creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -823,7 +815,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                     case NPC_YMIRJAR_FROSTBINDER:
                     case NPC_YMIRJAR_HUNTRESS:
                     case NPC_YMIRJAR_WARLORD:
-                        if (Creature* crok = instance->GetCreature(CrokScourgebaneGUID))
+                        if (CreaturePtr crok = instance->GetCreature(CrokScourgebaneGUID))
                             crok->AI()->SetGUID(creature->GetGUID(), ACTION_VRYKUL_DEATH);
                         break;
                     default:
@@ -831,7 +823,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectCreate(GameObject* go)
+            void OnGameObjectCreate(GameObjectPtr go)
             {
                 switch (go->GetEntry())
                 {
@@ -996,7 +988,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectRemove(GameObject* go)
+            void OnGameObjectRemove(GameObjectPtr go)
             {
                 switch (go->GetEntry())
                 {
@@ -1066,7 +1058,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         EnnemyGunshipNPCGUID = data;
                         break;
                     case DATA_GUNSHIP_ADD_RESPAWN:
-                        if (Creature * c = instance->GetCreature(data))
+                        if (CreaturePtr c = instance->GetCreature(data))
                         {
                             uint32 TimeToRespawn = getMSTime() + 35000;
                             creatureEntryAndGuid entryAndGuid = { data, c->GetEntry() };
@@ -1200,7 +1192,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                     case DATA_LADY_DEATHWHISPER:
                         if (state == DONE)
                         {
-                            if (GameObject* elevator = instance->GetGameObject(LadyDeathwisperElevatorGUID))
+                            if (GameObjectPtr elevator = instance->GetGameObject(LadyDeathwisperElevatorGUID))
                             {
                                 elevator->SetUInt32Value(GAMEOBJECT_LEVEL, 0);
                                 elevator->SetGoState(GO_STATE_READY);
@@ -1213,7 +1205,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                             case DONE:
                                 DoRespawnGameObject(DeathbringersCacheGUID, 7*DAY);
                             case NOT_STARTED:
-                                if (GameObject* teleporter = instance->GetGameObject(SaurfangTeleportGUID))
+                                if (GameObjectPtr teleporter = instance->GetGameObject(SaurfangTeleportGUID))
                                 {
                                     HandleGameObject(SaurfangTeleportGUID, true, teleporter);
                                     teleporter->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_IN_USE);
@@ -1229,9 +1221,9 @@ class instance_icecrown_citadel : public InstanceMapScript
                             if (GetBossState(DATA_ROTFACE) == DONE)
                             {
                                 HandleGameObject(PutricideCollisionGUID, true);
-                                if (GameObject* go = instance->GetGameObject(PutricideGateGUIDs[0]))
+                                if (GameObjectPtr go = instance->GetGameObject(PutricideGateGUIDs[0]))
                                     go->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
-                                if (GameObject* go = instance->GetGameObject(PutricideGateGUIDs[1]))
+                                if (GameObjectPtr go = instance->GetGameObject(PutricideGateGUIDs[1]))
                                     go->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
                             }
                             else
@@ -1245,9 +1237,9 @@ class instance_icecrown_citadel : public InstanceMapScript
                             if (GetBossState(DATA_FESTERGUT) == DONE)
                             {
                                 HandleGameObject(PutricideCollisionGUID, true);
-                                if (GameObject* go = instance->GetGameObject(PutricideGateGUIDs[0]))
+                                if (GameObjectPtr go = instance->GetGameObject(PutricideGateGUIDs[0]))
                                     go->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
-                                if (GameObject* go = instance->GetGameObject(PutricideGateGUIDs[1]))
+                                if (GameObjectPtr go = instance->GetGameObject(PutricideGateGUIDs[1]))
                                     go->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
                             }
                             else
@@ -1264,7 +1256,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                                 --HeroicAttempts;
                                 DoUpdateWorldState(WORLDSTATE_ATTEMPTS_REMAINING, HeroicAttempts);
                                 if (!HeroicAttempts)
-                                    if (Creature* putricide = instance->GetCreature(ProfessorPutricideGUID))
+                                    if (CreaturePtr putricide = instance->GetCreature(ProfessorPutricideGUID))
                                         putricide->DespawnOrUnsummon();
 
                                 HandleGameObject(PlagueSigilGUID, false);
@@ -1280,7 +1272,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                                 --HeroicAttempts;
                                 DoUpdateWorldState(WORLDSTATE_ATTEMPTS_REMAINING, HeroicAttempts);
                                 if (!HeroicAttempts)
-                                    if (Creature* bq = instance->GetCreature(BloodQueenLanaThelGUID))
+                                    if (CreaturePtr bq = instance->GetCreature(BloodQueenLanaThelGUID))
                                         bq->DespawnOrUnsummon();
 
                                 HandleGameObject(BloodwingSigilGUID, false);
@@ -1302,7 +1294,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                                 --HeroicAttempts;
                                 DoUpdateWorldState(WORLDSTATE_ATTEMPTS_REMAINING, HeroicAttempts);
                                 if (!HeroicAttempts)
-                                    if (Creature* sindra = instance->GetCreature(SindragosaGUID))
+                                    if (CreaturePtr sindra = instance->GetCreature(SindragosaGUID))
                                         sindra->DespawnOrUnsummon();
 
                                 HandleGameObject(FrostwingSigilGUID, false);
@@ -1313,9 +1305,9 @@ class instance_icecrown_citadel : public InstanceMapScript
                     {
                         // set the platform as active object to dramatically increase visibility range
                         // note: "active" gameobjects do not block grid unloading
-                        if (GameObject* precipice = instance->GetGameObject(ArthasPrecipiceGUID))
+                        if (GameObjectPtr precipice = instance->GetGameObject(ArthasPrecipiceGUID))
                             precipice->setActive(state == IN_PROGRESS);
-                        if (GameObject* platform = instance->GetGameObject(ArthasPlatformGUID))
+                        if (GameObjectPtr platform = instance->GetGameObject(ArthasPlatformGUID))
                             platform->setActive(state == IN_PROGRESS);
 
                         if (instance->IsHeroic())
@@ -1325,18 +1317,18 @@ class instance_icecrown_citadel : public InstanceMapScript
                                 --HeroicAttempts;
                                 DoUpdateWorldState(WORLDSTATE_ATTEMPTS_REMAINING, HeroicAttempts);
                                 if (!HeroicAttempts)
-                                    if (Creature* theLichKing = instance->GetCreature(TheLichKingGUID))
+                                    if (CreaturePtr theLichKing = instance->GetCreature(TheLichKingGUID))
                                         theLichKing->DespawnOrUnsummon();
                             }
                         }
 
                         if (state == DONE)
                         {
-                            if (GameObject* bolvar = instance->GetGameObject(FrozenBolvarGUID))
+                            if (GameObjectPtr bolvar = instance->GetGameObject(FrozenBolvarGUID))
                                 bolvar->SetRespawnTime(7 * DAY);
-                            if (GameObject* pillars = instance->GetGameObject(PillarsChainedGUID))
+                            if (GameObjectPtr pillars = instance->GetGameObject(PillarsChainedGUID))
                                 pillars->SetRespawnTime(7 * DAY);
-                            if (GameObject* pillars = instance->GetGameObject(PillarsUnchainedGUID))
+                            if (GameObjectPtr pillars = instance->GetGameObject(PillarsUnchainedGUID))
                                 pillars->SetRespawnTime(7 * DAY);
                         }
                         break;
@@ -1406,7 +1398,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                             case (uint32)ACTION_KILL_CAPTAIN:
                                 CaptainCount--;
                                 if(!CaptainCount)
-                                    if (Creature* Svalna = instance->GetCreature(GetData64(DATA_SISTER_SVALNA)))
+                                    if (CreaturePtr Svalna = instance->GetCreature(GetData64(DATA_SISTER_SVALNA)))
                                         Svalna->AI()->DoAction(0);
                                 break;
                         }
@@ -1435,7 +1427,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                                     if (!FrostwyrmCount)
                                     {
                                         instance->LoadGrid(SindragosaSpawnPos.GetPositionX(), SindragosaSpawnPos.GetPositionY());
-                                        if (Creature* boss = instance->SummonCreature(NPC_SINDRAGOSA, SindragosaSpawnPos))
+                                        if (CreaturePtr boss = instance->SummonCreature(NPC_SINDRAGOSA, SindragosaSpawnPos))
                                             boss->AI()->DoAction(ACTION_START_FROSTWYRM);
                                     }
                                 }
@@ -1461,7 +1453,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                                 {
                                     --SpinestalkerTrashCount;
                                     if (!SpinestalkerTrashCount)
-                                        if (Creature* spinestalk = instance->GetCreature(SpinestalkerGUID))
+                                        if (CreaturePtr spinestalk = instance->GetCreature(SpinestalkerGUID))
                                             spinestalk->AI()->DoAction(ACTION_START_FROSTWYRM);
                                 }
                                 break;
@@ -1486,7 +1478,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                                 {
                                     --RimefangTrashCount;
                                     if (!RimefangTrashCount)
-                                        if (Creature* rime = instance->GetCreature(RimefangGUID))
+                                        if (CreaturePtr rime = instance->GetCreature(RimefangGUID))
                                             rime->AI()->DoAction(ACTION_START_FROSTWYRM);
                                 }
                                 break;
@@ -1537,7 +1529,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 }
             }
 
-            bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
+            bool CheckAchievementCriteriaMeet(uint32 criteria_id, constPlayerPtr /*source*/, constUnitPtr /*target*/, uint32 /*miscvalue1*/)
             {
                 switch (criteria_id)
                 {
@@ -1582,7 +1574,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 return false;
             }
 
-            bool CheckRequiredBosses(uint32 bossId, Player const* player = NULL) const
+            bool CheckRequiredBosses(uint32 bossId, constPlayerPtr player = nullptr) const
             {
                 if (player && player->isGameMaster())
                     return true;
@@ -1818,7 +1810,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                             {
                                 BloodQuickeningState = DONE;
                                 DoUpdateWorldState(WORLDSTATE_SHOW_TIMER, 0);
-                                if (Creature* bq = instance->GetCreature(BloodQueenLanaThelGUID))
+                                if (CreaturePtr bq = instance->GetCreature(BloodQueenLanaThelGUID))
                                     bq->AI()->DoAction(ACTION_KILL_MINCHAR);
                             }
                             SaveToDB();
@@ -1826,24 +1818,24 @@ class instance_icecrown_citadel : public InstanceMapScript
                         }
                         case EVENT_QUAKE_SHATTER:
                         {
-                            if (GameObject* platform = instance->GetGameObject(ArthasPlatformGUID))
+                            if (GameObjectPtr platform = instance->GetGameObject(ArthasPlatformGUID))
                                 platform->SetDestructibleState(GO_DESTRUCTIBLE_DAMAGED);
-                            if (GameObject* edge = instance->GetGameObject(FrozenThroneEdgeGUID))
+                            if (GameObjectPtr edge = instance->GetGameObject(FrozenThroneEdgeGUID))
                                 edge->SetGoState(GO_STATE_ACTIVE);
-                            if (GameObject* wind = instance->GetGameObject(FrozenThroneWindGUID))
+                            if (GameObjectPtr wind = instance->GetGameObject(FrozenThroneWindGUID))
                                 wind->SetGoState(GO_STATE_READY);
-                            if (GameObject* warning = instance->GetGameObject(FrozenThroneWarningGUID))
+                            if (GameObjectPtr warning = instance->GetGameObject(FrozenThroneWarningGUID))
                                 warning->SetGoState(GO_STATE_READY);
-                            if (Creature* theLichKing = instance->GetCreature(TheLichKingGUID))
+                            if (CreaturePtr theLichKing = instance->GetCreature(TheLichKingGUID))
                                 theLichKing->AI()->DoAction(ACTION_RESTORE_LIGHT);
                             break;
                         }
                         case EVENT_REBUILD_PLATFORM:
-                            if (GameObject* platform = instance->GetGameObject(ArthasPlatformGUID))
+                            if (GameObjectPtr platform = instance->GetGameObject(ArthasPlatformGUID))
                                 platform->SetDestructibleState(GO_DESTRUCTIBLE_REBUILDING);
-                            if (GameObject* edge = instance->GetGameObject(FrozenThroneEdgeGUID))
+                            if (GameObjectPtr edge = instance->GetGameObject(FrozenThroneEdgeGUID))
                                 edge->SetGoState(GO_STATE_READY);
-                            if (GameObject* wind = instance->GetGameObject(FrozenThroneWindGUID))
+                            if (GameObjectPtr wind = instance->GetGameObject(FrozenThroneWindGUID))
                                 wind->SetGoState(GO_STATE_ACTIVE);
                             break;
                         default:
@@ -1910,8 +1902,8 @@ class instance_icecrown_citadel : public InstanceMapScript
 
             void DoGunshipEventIntro()
             {
-                Creature * FriendCommander = instance->GetCreature(GunshipcommanderGUID);
-                Creature * EnnemyCommander = instance->GetCreature(GunshipennemycommanderGUID);
+                CreaturePtr FriendCommander = instance->GetCreature(GunshipcommanderGUID);
+                CreaturePtr EnnemyCommander = instance->GetCreature(GunshipennemycommanderGUID);
 
                 if (!FriendCommander || !EnnemyCommander)
                     return;
@@ -2007,7 +1999,7 @@ class instance_icecrown_citadel : public InstanceMapScript
 
                         uint8 MAX_GUNSHIP_CANONS      = !instance->Is25ManRaid() ? 2: 4;
                         uint32 CanonsEntry = 0;
-                        Position const * CanonsPosition = NULL;
+                        Position const * CanonsPosition = nullptr;
 
                         if (TeamInInstance == ALLIANCE)
                         {
@@ -2022,7 +2014,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         
                         for (uint8 i = 0; i < MAX_GUNSHIP_CANONS; i++)
                         {
-                            if (Creature * canon = SpawnTransportNpc(m_GunshipMain, CanonsEntry, CanonsPosition[i].GetPositionX(), CanonsPosition[i].GetPositionY(), CanonsPosition[i].GetPositionZ(), CanonsPosition[i].GetOrientation()))
+                            if (CreaturePtr canon = SpawnTransportNpc(m_GunshipMain, CanonsEntry, CanonsPosition[i].GetPositionX(), CanonsPosition[i].GetPositionY(), CanonsPosition[i].GetPositionZ(), CanonsPosition[i].GetOrientation()))
                             {
                                 GunshipCanons[i] = canon->GetGUID();
                             }
@@ -2033,13 +2025,13 @@ class instance_icecrown_citadel : public InstanceMapScript
                         break;
                     }
                     case 9:
-                        if (Creature* GunshipCommander = instance->GetCreature(GunshipcommanderGUID))
+                        if (CreaturePtr GunshipCommander = instance->GetCreature(GunshipcommanderGUID))
                             GunshipCommander->AI()->DoAction(ACTION_START_FIGHT);
 
-                        if (Creature* FriendGunshipNpc = instance->GetCreature(FriendGunshipNPCGUID))
+                        if (CreaturePtr FriendGunshipNpc = instance->GetCreature(FriendGunshipNPCGUID))
                             FriendGunshipNpc->AI()->DoAction(ACTION_ADD_ENCOUNTER_GUNSHIP);
 
-                        if (Creature* EnnemyGunshipNpc = instance->GetCreature(EnnemyGunshipNPCGUID))
+                        if (CreaturePtr EnnemyGunshipNpc = instance->GetCreature(EnnemyGunshipNPCGUID))
                             EnnemyGunshipNpc->AI()->DoAction(ACTION_ADD_ENCOUNTER_GUNSHIP);
 
                         GunshipFirstIceMageBool = false;
@@ -2063,8 +2055,8 @@ class instance_icecrown_citadel : public InstanceMapScript
 
             void DoPortalEvent()
             {
-                Creature* commander = instance->GetCreature(GunshipcommanderGUID);
-                Creature* Ennemycommander = instance->GetCreature(GunshipennemycommanderGUID);
+                CreaturePtr commander = instance->GetCreature(GunshipcommanderGUID);
+                CreaturePtr Ennemycommander = instance->GetCreature(GunshipennemycommanderGUID);
                 
                 if (!commander || !Ennemycommander)
                     return;
@@ -2098,8 +2090,8 @@ class instance_icecrown_citadel : public InstanceMapScript
                 {
                     case 1:
                     {
-                        Creature * portal = m_GunshipMain->AddNPCPassengerCreature(0, NPC_GUNSHIP_PORTAL, x, y, z, o);
-                        //Creature * portal = commander->SummonCreature(NPC_GUNSHIP_PORTAL, x, y, z, o);
+                        CreaturePtr portal = m_GunshipMain->AddNPCPassengerCreature(0, NPC_GUNSHIP_PORTAL, x, y, z, o);
+                        //CreaturePtr portal = commander->SummonCreature(NPC_GUNSHIP_PORTAL, x, y, z, o);
 
                         if (portal)
                         {
@@ -2115,13 +2107,13 @@ class instance_icecrown_citadel : public InstanceMapScript
 
                         // Set cast visual
                         for (uint8 i = 0; i < 2; i++)
-                            if (Creature * pMage = instance->GetCreature(GunshipMages[i]))
+                            if (CreaturePtr pMage = instance->GetCreature(GunshipMages[i]))
                                 pMage->CastSpell(pMage, 75427);
 
-                        if (Creature* FriendGunshipNpc = instance->GetCreature(FriendGunshipNPCGUID))
+                        if (CreaturePtr FriendGunshipNpc = instance->GetCreature(FriendGunshipNPCGUID))
                             FriendGunshipNpc->AI()->DoAction(ACTION_ADD_ENCOUNTER_GUNSHIP);
 
-                        if (Creature* EnnemyGunshipNpc = instance->GetCreature(EnnemyGunshipNPCGUID))
+                        if (CreaturePtr EnnemyGunshipNpc = instance->GetCreature(EnnemyGunshipNPCGUID))
                             EnnemyGunshipNpc->AI()->DoAction(ACTION_ADD_ENCOUNTER_GUNSHIP);
 
                         GunshipPortalTimer = 5000;
@@ -2154,12 +2146,12 @@ class instance_icecrown_citadel : public InstanceMapScript
                     }
                     case 6:
                     {
-                        if (Creature * pCreature = instance->GetCreature(PortalGUID))
+                        if (CreaturePtr pCreature = instance->GetCreature(PortalGUID))
                             pCreature->RemoveFromWorld();
                         
                         // Remove cast visual
                         for (uint8 i = 0; i < 2; i++)
-                            if (Creature * pMage = instance->GetCreature(GunshipMages[i]))
+                            if (CreaturePtr pMage = instance->GetCreature(GunshipMages[i]))
                                 pMage->RemoveAurasDueToSpell(75427);
 
                         GunshipPortalTimer = 100;
@@ -2172,17 +2164,17 @@ class instance_icecrown_citadel : public InstanceMapScript
 
                 if (npcToAdd)
                 {
-                    if (Creature* soldier = m_GunshipMain->AddNPCPassengerCreature(0, npcToAdd, x, y, z, o))
-                    //if (Creature* soldier = commander->SummonCreature(npcToAdd, x, y, z, o))
+                    if (CreaturePtr soldier = m_GunshipMain->AddNPCPassengerCreature(0, npcToAdd, x, y, z, o))
+                    //if (CreaturePtr soldier = commander->SummonCreature(npcToAdd, x, y, z, o))
                     {
-                        Transport * Friendtransport = ObjectAccessor::GetTransport(*commander, FriendGunshipGUID);
+                        TransportPtr Friendtransport = ObjectAccessor::GetTransport(TO_CONST_WORLDOBJECT(commander), FriendGunshipGUID);
 
                         if (!Friendtransport)
                             return;
 
-                        std::set<Player*> pSet = Friendtransport->GetPassengers();
+                        std::set<PlayerPtr> pSet = Friendtransport->GetPassengers();
 
-                        Unit * pTarget = NULL;
+                        UnitPtr  pTarget = nullptr;
 
                         if (!pSet.empty())
                         {
@@ -2214,7 +2206,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         if(m_GunshipSecond)
                             m_GunshipSecond->BuildStartMovePacket(instance);
 
-                        if (Creature* EnnemyCommander = instance->GetCreature(GunshipennemycommanderGUID))
+                        if (CreaturePtr EnnemyCommander = instance->GetCreature(GunshipennemycommanderGUID))
                         {
                             if (TeamInInstance == ALLIANCE)
                                 DoScriptText(SAY_EVENT_VICTORY_A_H, EnnemyCommander);
@@ -2222,15 +2214,15 @@ class instance_icecrown_citadel : public InstanceMapScript
                                 DoScriptText(SAY_EVENT_VICTORY_H_A, EnnemyCommander);
                         }
 
-                        if (Creature* FriendGunshipNpc = instance->GetCreature(FriendGunshipNPCGUID))
+                        if (CreaturePtr FriendGunshipNpc = instance->GetCreature(FriendGunshipNPCGUID))
                             FriendGunshipNpc->AI()->DoAction(ACTION_REMOVE_ENCOUNTER_GUNSHIP);
 
-                        if (Creature* EnnemyGunshipNpc = instance->GetCreature(EnnemyGunshipNPCGUID))
+                        if (CreaturePtr EnnemyGunshipNpc = instance->GetCreature(EnnemyGunshipNPCGUID))
                             EnnemyGunshipNpc->AI()->DoAction(ACTION_REMOVE_ENCOUNTER_GUNSHIP);
 
                         for (uint8 i = 0; i < 4; i++)
                         {
-                            if (Creature* canon = instance->GetCreature(GunshipCanons[i]))
+                            if (CreaturePtr canon = instance->GetCreature(GunshipCanons[i]))
                             {
                                 canon->GetVehicleKit()->RemoveAllPassengers();
                                 canon->RemoveFromWorld();
@@ -2241,7 +2233,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         const Map::PlayerList &PlayerList = instance->GetPlayers();
                         if (!PlayerList.isEmpty())
                             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                                if (Player* player = i->getSource())
+                                if (PlayerPtr player = i->getSource())
                                 {
                                     player->DestroyItemCount(49278, 1, true, false); // delete le jetpack
                                     player->CombatStop();
@@ -2250,7 +2242,7 @@ class instance_icecrown_citadel : public InstanceMapScript
 
                         // Despawn Sergents & soldats
                         for (std::list<uint64>::iterator Itr = GunshipTempList.begin(); Itr != GunshipTempList.end(); Itr++)
-                            if (Creature * soldier = instance->GetCreature(*Itr))
+                            if (CreaturePtr soldier = instance->GetCreature(*Itr))
                                 soldier->Kill(soldier);
 
                         bool CanHaveBoardingAchievement = true;
@@ -2274,12 +2266,12 @@ class instance_icecrown_citadel : public InstanceMapScript
                         DoCastSpellOnPlayers(72959); // Haut-Faits (dummy)
                         GunshipTempList.clear();
 
-                        if (Creature * commander = instance->GetCreature(GunshipcommanderGUID))
+                        if (CreaturePtr commander = instance->GetCreature(GunshipcommanderGUID))
                         {
-                            if (Transport * Ennemytransport = ObjectAccessor::GetTransport(*commander, EnnemyGunshipGUID))
+                            if (TransportPtr Ennemytransport = ObjectAccessor::GetTransport(TO_CONST_WORLDOBJECT(commander), EnnemyGunshipGUID))
                             {
-                                std::set<Player*>::iterator Itr;
-                                std::set<Player*> pSet = Ennemytransport->GetPassengers();
+                                std::set<PlayerPtr>::iterator Itr;
+                                std::set<PlayerPtr> pSet = Ennemytransport->GetPassengers();
 
                                 for (Itr = pSet.begin(); Itr != pSet.end(); Itr++)
                                     (*Itr)->NearTeleportTo(-560.35f, 2202.73f, 539.28f, 6.25f);
@@ -2303,7 +2295,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                                         z = AllianceFlammePosition[i].GetPositionZ();
                                     }
 
-                                    if (Creature * fire = SpawnTransportNpc(Ennemytransport, NPC_FIRE_TRIGGER, x, y, z))
+                                    if (CreaturePtr fire = SpawnTransportNpc(Ennemytransport, NPC_FIRE_TRIGGER, x, y, z))
                                     {
                                         fire->AddAura(SPELL_FIRE_VISUAL, fire);
                                     }
@@ -2316,7 +2308,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         break;
                     }
                     case 2:
-                        if (Creature* Commander = instance->GetCreature(GunshipcommanderGUID))
+                        if (CreaturePtr Commander = instance->GetCreature(GunshipcommanderGUID))
                         {
                             if (TeamInInstance == ALLIANCE)
                                 DoScriptText(SAY_EVENT_VICTORY_A_A, Commander);
@@ -2348,7 +2340,7 @@ class instance_icecrown_citadel : public InstanceMapScript
             {
                 std::map<uint32, TypecreatureEntryAndGuid>::iterator Itr;
                 
-                Creature* EnnemyCommander = instance->GetCreature(GunshipennemycommanderGUID);
+                CreaturePtr EnnemyCommander = instance->GetCreature(GunshipennemycommanderGUID);
 
                 if (!EnnemyCommander)
                     return;
@@ -2360,7 +2352,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         if (Itr->second.entry == NPC_MAGE_A ||
                             Itr->second.entry == NPC_MAGE_H)
                         {
-                            Creature * c = instance->GetCreature(Itr->second.guid);
+                            CreaturePtr c = instance->GetCreature(Itr->second.guid);
 
                             // Seul ceux qui s'occupent du givre sont removed a leur mort et ne doivent pas etre respawn
                             if (!c)
@@ -2376,7 +2368,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                             }
                         }
 
-                        if (Creature * c = instance->GetCreature(Itr->second.guid))
+                        if (CreaturePtr c = instance->GetCreature(Itr->second.guid))
                         {
                             switch (Itr->second.entry)
                             {
@@ -2412,7 +2404,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 const Map::PlayerList &PlayerList = instance->GetPlayers();
                 if (!PlayerList.isEmpty())
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                        if (Player* player = i->getSource())
+                        if (PlayerPtr player = i->getSource())
                             if (player->isAlive())
                                 wipe = false;
 
@@ -2422,12 +2414,12 @@ class instance_icecrown_citadel : public InstanceMapScript
 
             void AddNewIceMage()
             {
-                Creature * commander = instance->GetCreature(GunshipcommanderGUID);
+                CreaturePtr commander = instance->GetCreature(GunshipcommanderGUID);
 
                 if (!commander)
                     return;
 
-                Transport * Ennemytransport = ObjectAccessor::GetTransport(*commander, EnnemyGunshipGUID);
+                TransportPtr Ennemytransport = ObjectAccessor::GetTransport(TO_CONST_WORLDOBJECT(commander), EnnemyGunshipGUID);
 
                 if (!Ennemytransport)
                     return;
@@ -2450,12 +2442,12 @@ class instance_icecrown_citadel : public InstanceMapScript
                     z = AllyIceMageSpawnPosition.GetPositionZ();
                 }
 
-                std::list<Unit*>::iterator Itr;
+                std::list<UnitPtr>::iterator Itr;
 
                 if (GetData(DATA_GUNSHIP_ICE_CANON_EVENT) == IN_PROGRESS)
                     return;
 
-                if (Creature * mage = SpawnTransportNpc(Ennemytransport, NewMageEntry, x, y, z))
+                if (CreaturePtr mage = SpawnTransportNpc(Ennemytransport, NewMageEntry, x, y, z))
                 {
                     mage->AI()->DoAction(ACTION_SET_CANON_SPELL);
                     GunshipTempList.push_back(mage->GetGUID());
@@ -2472,7 +2464,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                 {
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                     {
-                        if (Player* player = i->getSource())
+                        if (PlayerPtr player = i->getSource())
                         {
                             player->Kill(player);
                         }
@@ -2481,47 +2473,47 @@ class instance_icecrown_citadel : public InstanceMapScript
 
                 for (uint8 i = 0; i < 4; i++)
                 {
-                    if (Creature * canon = instance->GetCreature(GunshipCanons[i]))
+                    if (CreaturePtr canon = instance->GetCreature(GunshipCanons[i]))
                     {
                         canon->GetVehicleKit()->RemoveAllPassengers();
                         canon->RemoveFromWorld();
                     }
                 }
 
-                if (Creature* c = instance->GetCreature(FriendGunshipNPCGUID))
+                if (CreaturePtr c = instance->GetCreature(FriendGunshipNPCGUID))
                 {
                     if (TeamInInstance == ALLIANCE)
                     {
-                        if (Transport * Friendtransport = ObjectAccessor::GetTransport(*c, FriendGunshipGUID))
+                        if (TransportPtr Friendtransport = ObjectAccessor::GetTransport(TO_CONST_WORLDOBJECT(c), FriendGunshipGUID))
                             Friendtransport->Relocate(-459.10f, 2466.31f, 169.79f);
                     
-                        if (Transport * Ennemytransport = ObjectAccessor::GetTransport(*c, EnnemyGunshipGUID))
+                        if (TransportPtr Ennemytransport = ObjectAccessor::GetTransport(TO_CONST_WORLDOBJECT(c), EnnemyGunshipGUID))
                             Ennemytransport->Relocate(-69.12f, 1992.20f, 584.49f);
                     }
                     else
                     {
-                        if (Transport * Friendtransport = ObjectAccessor::GetTransport(*c, FriendGunshipGUID))
+                        if (TransportPtr Friendtransport = ObjectAccessor::GetTransport(TO_CONST_WORLDOBJECT(c), FriendGunshipGUID))
                             Friendtransport->Relocate(-447.69f, 1916.79f, 180.46f);
                     
-                        if (Transport * Ennemytransport = ObjectAccessor::GetTransport(*c, EnnemyGunshipGUID))
+                        if (TransportPtr Ennemytransport = ObjectAccessor::GetTransport(TO_CONST_WORLDOBJECT(c), EnnemyGunshipGUID))
                             Ennemytransport->Relocate(-94.64f, 2609.88f, 431.07f);
                     }
                 }
 
-                if (Creature* FriendGunshipCommander = instance->GetCreature(GunshipcommanderGUID))
+                if (CreaturePtr FriendGunshipCommander = instance->GetCreature(GunshipcommanderGUID))
                 {
                     FriendGunshipCommander->AI()->DoAction(ACTION_WIPE);
                     FriendGunshipCommander->CastSpell(FriendGunshipCommander, 76010, true); // NON-BLIZZLIKE, visuel d'explosion
                 }
 
-                if (Creature* FriendGunshipNpc = instance->GetCreature(FriendGunshipNPCGUID))
+                if (CreaturePtr FriendGunshipNpc = instance->GetCreature(FriendGunshipNPCGUID))
                     FriendGunshipNpc->SetHealth(FriendGunshipNpc->GetMaxHealth());
 
-                if (Creature* EnnemyGunshipNpc = instance->GetCreature(EnnemyGunshipNPCGUID))
+                if (CreaturePtr EnnemyGunshipNpc = instance->GetCreature(EnnemyGunshipNPCGUID))
                     EnnemyGunshipNpc->SetHealth(EnnemyGunshipNpc->GetMaxHealth());
 
                 for (std::list<uint64>::iterator Itr = GunshipTempList.begin(); Itr != GunshipTempList.end(); Itr++)
-                    if (Unit* tempCreature = instance->GetCreature(*Itr))
+                    if (UnitPtr tempCreature = instance->GetCreature(*Itr))
                          tempCreature->RemoveFromWorld();
 
                 GunshipTempList.clear();
@@ -2547,36 +2539,36 @@ class instance_icecrown_citadel : public InstanceMapScript
                 PortalGUID = 0;
             }
 
-            void ProcessEvent(WorldObject* /*source*/, uint32 eventId)
+            void ProcessEvent(WorldObjectPtr /*source*/, uint32 eventId)
             {
                 switch (eventId)
                 {
                     case EVENT_QUAKE:
-                        if (GameObject* warning = instance->GetGameObject(FrozenThroneWarningGUID))
+                        if (GameObjectPtr warning = instance->GetGameObject(FrozenThroneWarningGUID))
                             warning->SetGoState(GO_STATE_ACTIVE);
                         Events.ScheduleEvent(EVENT_QUAKE_SHATTER, 5000);
                         break;
                     case EVENT_SECOND_REMORSELESS_WINTER:
-                        if (GameObject* platform = instance->GetGameObject(ArthasPlatformGUID))
+                        if (GameObjectPtr platform = instance->GetGameObject(ArthasPlatformGUID))
                         {
                             platform->SetDestructibleState(GO_DESTRUCTIBLE_DESTROYED);
                             Events.ScheduleEvent(EVENT_REBUILD_PLATFORM, 1500);
                         }
                         break;
                     case EVENT_TELEPORT_TO_FROSMOURNE: // Harvest Soul (normal mode)
-                        if (Creature* terenas = instance->SummonCreature(NPC_TERENAS_MENETHIL_FROSTMOURNE, TerenasSpawn, NULL, 63000))
+                        if (CreaturePtr terenas = instance->SummonCreature(NPC_TERENAS_MENETHIL_FROSTMOURNE, TerenasSpawn, nullptr, 63000))
                         {
                             terenas->AI()->DoAction(ACTION_FROSTMOURNE_INTRO);
-                            std::list<Creature*> triggers;
+                            std::list<CreaturePtr> triggers;
                             GetCreatureListWithEntryInGrid(triggers, terenas, NPC_WORLD_TRIGGER_INFINITE_AOI, 100.0f);
                             if (!triggers.empty())
                             {
                                 triggers.sort(Trinity::ObjectDistanceOrderPred(terenas, false));
-                                Unit* visual = triggers.front();
+                                UnitPtr visual = triggers.front();
                                 visual->CastSpell(visual, SPELL_FROSTMOURNE_TELEPORT_VISUAL, true);
                             }
 
-                            if (Creature* warden = instance->SummonCreature(NPC_SPIRIT_WARDEN, SpiritWardenSpawn, NULL, 63000))
+                            if (CreaturePtr warden = instance->SummonCreature(NPC_SPIRIT_WARDEN, SpiritWardenSpawn, nullptr, 63000))
                             {
                                 terenas->AI()->AttackStart(warden);
                                 warden->AddThreat(terenas, 300000.0f);
@@ -2688,7 +2680,7 @@ class instance_icecrown_citadel : public InstanceMapScript
             bool IsOrbWhispererEligible;
 
             bool AreGunshipsSpawned;
-            Transport *m_GunshipMain, *m_GunshipSecond, *m_ZeppelinHorde;
+            TransportPtr m_GunshipMain, m_GunshipSecond, m_ZeppelinHorde;
             uint32 m_GunshipMainHP, m_GunshipSecondHP;
                 
             uint64 m_blood_doorGUID;
@@ -2698,7 +2690,7 @@ class instance_icecrown_citadel : public InstanceMapScript
             std::list<uint64> BloodQueen_BloodBolt_TargetsList;
         };
 
-        InstanceScript* GetInstanceScript(InstanceMap* map) const
+        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
         {
             return new instance_icecrown_citadel_InstanceMapScript(map);
         }
@@ -2721,9 +2713,9 @@ uint32 GetPhase(const EventMap &em)
     }
 }
 
-void LeaveOnlyPlayers(std::list<Unit*> &targets)
+void LeaveOnlyPlayers(std::list<UnitPtr> &targets)
 {
-    for (std::list<Unit*>::iterator itr = targets.begin(); itr != targets.end();)
+    for (std::list<UnitPtr>::iterator itr = targets.begin(); itr != targets.end();)
     {
         if ((*itr)->GetTypeId() != TYPEID_PLAYER)
             targets.erase(itr++);
@@ -2731,9 +2723,9 @@ void LeaveOnlyPlayers(std::list<Unit*> &targets)
             ++itr;
     }
 
-    std::list<Unit*>::iterator itr = targets.begin();
+    std::list<UnitPtr>::iterator itr = targets.begin();
     std::advance(itr, urand(0, targets.size()-1));
-    Unit* target = *itr;
+    UnitPtr target = *itr;
     targets.clear();
     targets.push_back(target);
 }
@@ -2741,7 +2733,7 @@ void LeaveOnlyPlayers(std::list<Unit*> &targets)
 class TeleportToFrozenThrone : public BasicEvent
 {
     public:
-        TeleportToFrozenThrone(Player *player, uint8 attempts): pPlayer(player), attemptsLeft(attempts) { }
+        TeleportToFrozenThrone(PlayerPtr player, uint8 attempts): pPlayer(player), attemptsLeft(attempts) { }
 
         bool Execute(uint64 /*eventTime*/, uint32 /*updateTime*/)
         {
@@ -2751,11 +2743,11 @@ class TeleportToFrozenThrone : public BasicEvent
             return true;
         }
     private:
-        Player *pPlayer;
+        PlayerPtr pPlayer;
         uint8 attemptsLeft;
 };
 
-void TeleportPlayerToFrozenThrone(Player *player)
+void TeleportPlayerToFrozenThrone(PlayerPtr player)
 {
     player->m_Events.AddEvent(new TeleportToFrozenThrone(player, 2), player->m_Events.CalculateTime(uint64(5000)));
 }
@@ -2766,7 +2758,7 @@ TPlayerList GetPlayersInTheMap(Map *pMap)
     const Map::PlayerList &PlayerList = pMap->GetPlayers();
     if (!PlayerList.isEmpty())
         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-            if (Player* player = i->getSource())
+            if (PlayerPtr player = i->getSource())
                 players.push_back(player);
     return players;
 }
@@ -2782,39 +2774,39 @@ TPlayerList GetAttackablePlayersInTheMap(Map *pMap)
     return players;
 }
 
-void UnsummonSpecificCreaturesNearby(Creature* ref, uint32 entry, float radius)
+void UnsummonSpecificCreaturesNearby(CreaturePtr ref, uint32 entry, float radius)
 {
-    std::list<Creature*> allCreaturesWithEntry;
+    std::list<CreaturePtr> allCreaturesWithEntry;
     GetCreatureListWithEntryInGrid(allCreaturesWithEntry, ref, entry, radius);
 
-    for(std::list<Creature*>::iterator itr = allCreaturesWithEntry.begin(); itr != allCreaturesWithEntry.end(); ++itr)
+    for(std::list<CreaturePtr>::iterator itr = allCreaturesWithEntry.begin(); itr != allCreaturesWithEntry.end(); ++itr)
     {
-        Creature* candidate = *itr;
+        CreaturePtr candidate = *itr;
 
         if (!candidate)
             continue;
 
-        if (TempSummon* summon = candidate->ToTempSummon())
+        if (TempSummonPtr summon = candidate->ToTempSummon())
             summon->DespawnOrUnsummon();
     }
 }
 
-void CheckPlayerDamage(Unit* pUnit, uint32 & damage)
+void CheckPlayerDamage(UnitPtr pUnit, uint32 & damage)
 {
     if (pUnit->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if (pUnit->ToPlayer()->GetSession()->GetSecurity() >= SEC_MODERATOR)
+    if (TO_PLAYER(pUnit)->GetSession()->GetSecurity() >= SEC_MODERATOR)
         return;
 
     if (damage > MAX_PLAYER_DAMAGES)
     {
-        sWorld->BanAccount(BAN_CHARACTER, pUnit->ToPlayer()->GetName(), "-1", "Depasse les 400.000 degats dans ICC", "terminapig");
+        sWorld->BanAccount(BAN_CHARACTER, TO_PLAYER(pUnit)->GetName(), "-1", "Depasse les 400.000 degats dans ICC", "terminapig");
         damage = 0;
     }
     else if (damage > MAX_PLAYER_DAMAGES_LOG)
     {
-        sWorld->BanAccount(BAN_CHARACTER, pUnit->ToPlayer()->GetName(), "1s", "Depasse les 300.000 degats dans ICC", "terminapig");
+        sWorld->BanAccount(BAN_CHARACTER, TO_PLAYER(pUnit)->GetName(), "1s", "Depasse les 300.000 degats dans ICC", "terminapig");
         damage = 0;
     }
 }

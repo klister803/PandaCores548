@@ -398,7 +398,7 @@ ACE_Get_Opt::short_option_i (void)
       if (oli[2] == ':')
         {
           // Takes an optional argument, and since short option args must
-          // must follow directly in the same argument, a NULL nextchar_
+          // must follow directly in the same argument, a nullptr nextchar_
           // means we didn't get one.
           if (*this->nextchar_ != '\0')
             {

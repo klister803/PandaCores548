@@ -44,14 +44,14 @@ class instance_shadow_labyrinth : public InstanceMapScript
 public:
     instance_shadow_labyrinth() : InstanceMapScript("instance_shadow_labyrinth", 555) { }
 
-    InstanceScript* GetInstanceScript(InstanceMap* map) const
+    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
     {
         return new instance_shadow_labyrinth_InstanceMapScript(map);
     }
 
     struct instance_shadow_labyrinth_InstanceMapScript : public InstanceScript
     {
-        instance_shadow_labyrinth_InstanceMapScript(Map* map) : InstanceScript(map) {}
+        instance_shadow_labyrinth_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         std::string str_data;
@@ -82,7 +82,7 @@ public:
             return false;
         }
 
-        void OnGameObjectCreate(GameObject* go)
+        void OnGameObjectCreate(GameObjectPtr go)
         {
             switch (go->GetEntry())
             {
@@ -99,7 +99,7 @@ public:
             }
         }
 
-        void OnCreatureCreate(Creature* creature)
+        void OnCreatureCreate(CreaturePtr creature)
         {
             switch (creature->GetEntry())
             {

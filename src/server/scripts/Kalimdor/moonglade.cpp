@@ -60,7 +60,7 @@ public:
 
     struct npc_omenAI : public ScriptedAI
     {
-        npc_omenAI(Creature* creature) : ScriptedAI(creature)
+        npc_omenAI(CreaturePtr creature) : ScriptedAI(creature)
         {
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
             me->GetMotionMaster()->MovePoint(1, 7549.977f, -2855.137f, 456.9678f);
@@ -77,24 +77,24 @@ public:
             {
                 me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
-                if (Player* player = me->SelectNearestPlayer(40.0f))
+                if (PlayerPtr player = me->SelectNearestPlayer(40.0f))
                     AttackStart(player);
             }
         }
 
-        void EnterCombat(Unit* /*attacker*/)
+        void EnterCombat(UnitPtr /*attacker*/)
         {
             events.Reset();
             events.ScheduleEvent(EVENT_CAST_CLEAVE, urand(3000, 5000));
             events.ScheduleEvent(EVENT_CAST_STARFALL, urand(8000, 10000));
         }
 
-        void JustDied(Unit* /*killer*/)
+        void JustDied(UnitPtr /*killer*/)
         {
             DoCast(SPELL_OMEN_SUMMON_SPOTLIGHT);
         }
 
-        void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
+        void SpellHit(UnitPtr /*caster*/, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_ELUNE_CANDLE)
             {
@@ -119,7 +119,7 @@ public:
                     events.ScheduleEvent(EVENT_CAST_CLEAVE, urand(8000, 10000));
                     break;
                 case EVENT_CAST_STARFALL:
-                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_OMEN_STARFALL);
                     events.ScheduleEvent(EVENT_CAST_STARFALL, urand(14000, 16000));
                     break;
@@ -129,7 +129,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_omenAI(creature);
     }
@@ -142,7 +142,7 @@ public:
 
     struct npc_giant_spotlightAI : public ScriptedAI
     {
-        npc_giant_spotlightAI(Creature* creature) : ScriptedAI(creature) {}
+        npc_giant_spotlightAI(CreaturePtr creature) : ScriptedAI(creature) {}
 
         EventMap events;
 
@@ -158,13 +158,13 @@ public:
 
             if (events.ExecuteEvent() == EVENT_DESPAWN)
             {
-                if (GameObject* trap = me->FindNearestGameObject(GO_ELUNE_TRAP_1, 5.0f))
+                if (GameObjectPtr trap = me->FindNearestGameObject(GO_ELUNE_TRAP_1, 5.0f))
                     trap->RemoveFromWorld();
 
-                if (GameObject* trap = me->FindNearestGameObject(GO_ELUNE_TRAP_2, 5.0f))
+                if (GameObjectPtr trap = me->FindNearestGameObject(GO_ELUNE_TRAP_2, 5.0f))
                     trap->RemoveFromWorld();
 
-                if (Creature* omen = me->FindNearestCreature(NPC_OMEN, 5.0f, false))
+                if (CreaturePtr omen = me->FindNearestCreature(NPC_OMEN, 5.0f, false))
                     omen->DespawnOrUnsummon();
 
                 me->DespawnOrUnsummon();
@@ -172,7 +172,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(Creature* creature) const
+    CreatureAI* GetAI(CreaturePtr creature) const
     {
         return new npc_giant_spotlightAI(creature);
     }

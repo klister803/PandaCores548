@@ -90,7 +90,7 @@ class boss_general_zarithrian : public CreatureScript
 
         struct boss_general_zarithrianAI : public BossAI
         {
-            boss_general_zarithrianAI(Creature* creature) : BossAI(creature, DATA_GENERAL_ZARITHRIAN)
+            boss_general_zarithrianAI(CreaturePtr creature) : BossAI(creature, DATA_GENERAL_ZARITHRIAN)
             {
             }
 
@@ -101,7 +101,7 @@ class boss_general_zarithrian : public CreatureScript
                     me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 _EnterCombat();
                 Talk(SAY_AGGRO);
@@ -118,18 +118,18 @@ class boss_general_zarithrian : public CreatureScript
             }
 
             // Override to not set adds in combat yet.
-            void JustSummoned(Creature* summon)
+            void JustSummoned(CreaturePtr summon)
             {
                 summons.Summon(summon);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 _JustDied();
                 Talk(SAY_DEATH);
             }
 
-            void KilledUnit(Unit* victim)
+            void KilledUnit(UnitPtr victim)
             {
                 if (victim->GetTypeId() == TYPEID_PLAYER)
                     Talk(SAY_KILL);
@@ -158,9 +158,9 @@ class boss_general_zarithrian : public CreatureScript
                     {
                         case EVENT_SUMMON_ADDS:
                         {
-                            if (Creature* stalker1 = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_ZARITHIAN_SPAWN_STALKER_1)))
+                            if (CreaturePtr stalker1 = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_ZARITHIAN_SPAWN_STALKER_1)))
                                 stalker1->AI()->DoCast(stalker1, SPELL_SUMMON_FLAMECALLER);
-                            if (Creature* stalker2 = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_ZARITHIAN_SPAWN_STALKER_2)))
+                            if (CreaturePtr stalker2 = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_ZARITHIAN_SPAWN_STALKER_2)))
                                 stalker2->AI()->DoCast(stalker2, SPELL_SUMMON_FLAMECALLER);
                             Talk(SAY_ADDS);
                             events.ScheduleEvent(EVENT_SUMMON_ADDS, 42000);
@@ -182,7 +182,7 @@ class boss_general_zarithrian : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetRubySanctumAI<boss_general_zarithrianAI>(creature);
         }
@@ -195,7 +195,7 @@ class npc_onyx_flamecaller : public CreatureScript
 
         struct npc_onyx_flamecallerAI : public npc_escortAI
         {
-            npc_onyx_flamecallerAI(Creature* creature) : npc_escortAI(creature)
+            npc_onyx_flamecallerAI(CreaturePtr creature) : npc_escortAI(creature)
             {
                 _instance = creature->GetInstanceScript();
                 npc_escortAI::SetDespawnAtEnd(false);
@@ -209,7 +209,7 @@ class npc_onyx_flamecaller : public CreatureScript
                 Start(true, true);
             }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 _events.Reset();
                 _events.ScheduleEvent(EVENT_BLAST_NOVA, urand(20000, 30000));
@@ -221,10 +221,10 @@ class npc_onyx_flamecaller : public CreatureScript
                 // Prevent EvadeMode
             }
 
-            void IsSummonedBy(Unit* /*summoner*/)
+            void IsSummonedBy(UnitPtr /*summoner*/)
             {
                 // Let Zarithrian count as summoner. _instance cant be null since we got GetRubySanctumAI
-                if (Creature* zarithrian = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_GENERAL_ZARITHRIAN)))
+                if (CreaturePtr zarithrian = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_GENERAL_ZARITHRIAN)))
                     zarithrian->AI()->JustSummoned(me);
             }
 
@@ -294,7 +294,7 @@ class npc_onyx_flamecaller : public CreatureScript
             uint8 _lavaGoutCount;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return GetRubySanctumAI<npc_onyx_flamecallerAI>(creature);
         }

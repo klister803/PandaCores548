@@ -28,7 +28,7 @@ class MapReference : public Reference<Map, Player>
         void targetObjectBuildLink()
         {
             // called from link()
-            getTarget()->m_mapRefManager.insertFirst(this);
+            getTarget()->m_mapRefManager.insertFirst(shared_from_this());
             getTarget()->m_mapRefManager.incSize();
         }
         void targetObjectDestroyLink()
@@ -44,10 +44,10 @@ class MapReference : public Reference<Map, Player>
     public:
         MapReference() : Reference<Map, Player>() {}
         ~MapReference() { unlink(); }
-        MapReference* next() { return (MapReference*)Reference<Map, Player>::next(); }
-        MapReference const* next() const { return (MapReference const*)Reference<Map, Player>::next(); }
-        MapReference* nockeck_prev() { return (MapReference*)Reference<Map, Player>::nocheck_prev(); }
-        MapReference const* nocheck_prev() const { return (MapReference const*)Reference<Map, Player>::nocheck_prev(); }
+        std::shared_ptr<MapReference> next() { return CAST(MapReference,(Reference<Map, Player>::next())); }
+        std::shared_ptr<const MapReference> next() const { return CAST(const MapReference,(Reference<Map, Player>::next())); }
+        std::shared_ptr<MapReference> nockeck_prev() { return CAST(MapReference,(Reference<Map, Player>::nocheck_prev())); }
+        std::shared_ptr<const MapReference> nocheck_prev() const { return CAST(const MapReference,(Reference<Map, Player>::nocheck_prev())); }
 };
 #endif
 

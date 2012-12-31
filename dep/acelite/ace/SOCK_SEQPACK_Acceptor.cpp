@@ -114,7 +114,7 @@ ACE_SOCK_SEQPACK_Acceptor::accept (ACE_SOCK_SEQPACK_Association &new_association
     return -1;
   else
     {
-      // On Win32 the third parameter to <accept> must be a NULL
+      // On Win32 the third parameter to <accept> must be a nullptr
       // pointer if we want to ignore the client's address.
       int *len_ptr = 0;
       sockaddr *addr = 0;

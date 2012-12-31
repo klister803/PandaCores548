@@ -67,14 +67,14 @@ class boss_bronjahm : public CreatureScript
 
         struct boss_bronjahmAI : public BossAI
         {
-            boss_bronjahmAI(Creature* creature) : BossAI(creature, DATA_BRONJAHM)
+            boss_bronjahmAI(CreaturePtr creature) : BossAI(creature, DATA_BRONJAHM)
             {
                 DoCast(me, SPELL_SOULSTORM_CHANNEL, true);
             }
 
             void InitializeAI()
             {
-                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FoSScriptName))
+                if (!instance || TO_INSTANCEMAP(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FoSScriptName))
                     me->IsAIEnabled = false;
                 else if (!me->isDead())
                     Reset();
@@ -96,7 +96,7 @@ class boss_bronjahm : public CreatureScript
                DoCast(me, SPELL_SOULSTORM_CHANNEL, true);
            }
 
-            void EnterCombat(Unit* /*who*/)
+            void EnterCombat(UnitPtr /*who*/)
             {
                 DoScriptText(SAY_AGGRO, me);
                 me->RemoveAurasDueToSpell(SPELL_SOULSTORM_CHANNEL);
@@ -104,20 +104,20 @@ class boss_bronjahm : public CreatureScript
                 instance->SetBossState(DATA_BRONJAHM, IN_PROGRESS);
             }
 
-            void JustDied(Unit* /*killer*/)
+            void JustDied(UnitPtr /*killer*/)
             {
                 DoScriptText(SAY_DEATH, me);
 
                 instance->SetBossState(DATA_BRONJAHM, DONE);
             }
 
-            void KilledUnit(Unit* who)
+            void KilledUnit(UnitPtr who)
             {
                 if (who->GetTypeId() == TYPEID_PLAYER)
                     DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
             }
 
-            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
             {
                 if (events.GetPhaseMask() & (1 << PHASE_1) && !HealthAbovePct(30))
                 {
@@ -128,7 +128,7 @@ class boss_bronjahm : public CreatureScript
                 }
             }
 
-            void JustSummoned(Creature* summon)
+            void JustSummoned(CreaturePtr summon)
             {
                 summons.Summon(summon);
                 summon->SetReactState(REACT_PASSIVE);
@@ -161,7 +161,7 @@ class boss_bronjahm : public CreatureScript
                             events.ScheduleEvent(EVENT_SHADOW_BOLT, 2000);
                             break;
                         case EVENT_CORRUPT_SOUL:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
                             {
                                 DoScriptText(SAY_CORRUPT_SOUL, me);
                                 DoCast(target, SPELL_CORRUPT_SOUL);
@@ -174,7 +174,7 @@ class boss_bronjahm : public CreatureScript
                             me->CastSpell(me, SPELL_SOULSTORM, false);
                             break;
                         case EVENT_FEAR:
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
                                 me->CastCustomSpell(SPELL_FEAR, SPELLVALUE_MAX_TARGETS, 1, target, false);
                             events.ScheduleEvent(EVENT_FEAR, urand(8000, 12000), 0, PHASE_2);
                             break;
@@ -187,7 +187,7 @@ class boss_bronjahm : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new boss_bronjahmAI(creature);
         }
@@ -200,7 +200,7 @@ class mob_corrupted_soul_fragment : public CreatureScript
 
         struct mob_corrupted_soul_fragmentAI : public ScriptedAI
         {
-            mob_corrupted_soul_fragmentAI(Creature* creature) : ScriptedAI(creature)
+            mob_corrupted_soul_fragmentAI(CreaturePtr creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
@@ -212,13 +212,13 @@ class mob_corrupted_soul_fragment : public CreatureScript
 
                 if (instance)
                 {
-                    if (TempSummon* summ = me->ToTempSummon())
+                    if (TempSummonPtr summ = me->ToTempSummon())
                     {
                         uint64 BronjahmGUID = instance->GetData64(DATA_BRONJAHM);
                         if (GUID_LOPART(BronjahmGUID) != id)
                             return;
 
-                        if (Creature* bronjahm = ObjectAccessor::GetCreature(*me, BronjahmGUID))
+                        if (CreaturePtr bronjahm = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), BronjahmGUID))
                             me->CastSpell(bronjahm, SPELL_CONSUME_SOUL, true);
 
                         summ->UnSummon();
@@ -230,7 +230,7 @@ class mob_corrupted_soul_fragment : public CreatureScript
             InstanceScript* instance;
         };
 
-        CreatureAI* GetAI(Creature* creature) const
+        CreatureAI* GetAI(CreaturePtr creature) const
         {
             return new mob_corrupted_soul_fragmentAI(creature);
         }
@@ -359,16 +359,16 @@ class spell_bronjahm_soulstorm_visual : public SpellScriptLoader
 class DistanceCheck
 {
     public:
-        explicit DistanceCheck(Unit* _caster) : caster(_caster) { }
+        explicit DistanceCheck(UnitPtr _caster) : caster(_caster) { }
 
-        bool operator() (WorldObject* unit) const
+        bool operator() (WorldObjectPtr unit) const
         {
-            if (caster->GetExactDist2d(unit) <= 10.0f)
+            if (caster->GetExactDist2d(unit.get()) <= 10.0f)
                 return true;
             return false;
         }
 
-        Unit* caster;
+        UnitPtr caster;
 };
 
 class spell_bronjahm_soulstorm_targeting : public SpellScriptLoader
@@ -380,14 +380,14 @@ class spell_bronjahm_soulstorm_targeting : public SpellScriptLoader
         {
             PrepareSpellScript(spell_bronjahm_soulstorm_targeting_SpellScript);
 
-            void FilterTargetsInitial(std::list<WorldObject*>& targets)
+            void FilterTargetsInitial(std::list<WorldObjectPtr>& targets)
             {
                 targets.remove_if(DistanceCheck(GetCaster()));
                 sharedTargets = targets;
             }
 
             // use the same target for first and second effect
-            void FilterTargetsSubsequent(std::list<WorldObject*>& targets)
+            void FilterTargetsSubsequent(std::list<WorldObjectPtr>& targets)
             {
                 targets = sharedTargets;
             }
@@ -398,7 +398,7 @@ class spell_bronjahm_soulstorm_targeting : public SpellScriptLoader
                 OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_bronjahm_soulstorm_targeting_SpellScript::FilterTargetsSubsequent, EFFECT_2, TARGET_UNIT_DEST_AREA_ENEMY);
             }
 
-            std::list<WorldObject*> sharedTargets;
+            std::list<WorldObjectPtr> sharedTargets;
         };
 
         SpellScript* GetSpellScript() const
