@@ -231,6 +231,12 @@ public:
             return true;
         }
 
+        ticket->SetCompleted(true);
+
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        ticket->SaveToDB(trans);
+        CharacterDatabase.CommitTransaction(trans);
+
         if (PlayerPtr player = ticket->GetPlayer())
             if (player->IsInWorld())
                 ticket->SendResponse(player->GetSession());

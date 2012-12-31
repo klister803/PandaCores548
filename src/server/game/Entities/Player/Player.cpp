@@ -79,6 +79,7 @@
 #include "BattlefieldMgr.h"
 #include "BattlefieldMgr.h"
 #include "ClassFactory.h"
+#include "TicketMgr.h"
 
 #define ZONE_UPDATE_INTERVAL (1*IN_MILLISECONDS)
 
@@ -17962,6 +17963,10 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     if (mustResurrectFromUnlock)
         ResurrectPlayer(1, true);
+
+    if (GmTicket* ticket = sTicketMgr->GetTicketByPlayer(GetGUID()))
+        if (!ticket->IsClosed() && ticket->IsCompleted())
+            ticket->SendResponse(GetSession());
 
     return true;
 }

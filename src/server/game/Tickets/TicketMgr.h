@@ -128,6 +128,7 @@ public:
     void SetComment(const std::string& comment) { _comment = comment; }
     void SetViewed() { _viewed = true; }
     void SetUnassigned();
+    void SetCompleted(bool complete) { _completed = complete; }
 
     void AppendResponse(const std::string& response) { _response += response; }
 
