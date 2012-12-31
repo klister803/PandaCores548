@@ -29,7 +29,7 @@ class achievement_resilient_victory : public AchievementCriteriaScript
     public:
         achievement_resilient_victory() : AchievementCriteriaScript("achievement_resilient_victory") { }
 
-        bool OnCheck(PlayerPtr source, UnitPtr /*target*/)
+        bool OnCheck(Player* source, Unit* /*target*/)
         {
             Battleground* bg = source->GetBattleground();
             if (!bg)
@@ -50,7 +50,7 @@ class achievement_bg_control_all_nodes : public AchievementCriteriaScript
     public:
         achievement_bg_control_all_nodes() : AchievementCriteriaScript("achievement_bg_control_all_nodes") { }
 
-        bool OnCheck(PlayerPtr source, UnitPtr /*target*/)
+        bool OnCheck(Player* source, Unit* /*target*/)
         {
             Battleground* bg = source->GetBattleground();
             if (!bg)
@@ -68,12 +68,12 @@ class achievement_save_the_day : public AchievementCriteriaScript
     public:
         achievement_save_the_day() : AchievementCriteriaScript("achievement_save_the_day") { }
 
-        bool OnCheck(PlayerPtr source, UnitPtr target)
+        bool OnCheck(Player* source, Unit* target)
         {
             if (!target)
                 return false;
 
-            if (constPlayerPtr player = TO_PLAYER(target))
+            if (Player const* player = target->ToPlayer())
             {
                 Battleground* bg = source->GetBattleground();
                 if (!bg)
@@ -94,7 +94,7 @@ class achievement_bg_ic_resource_glut : public AchievementCriteriaScript
     public:
         achievement_bg_ic_resource_glut() : AchievementCriteriaScript("achievement_bg_ic_resource_glut") { }
 
-        bool OnCheck(PlayerPtr source, UnitPtr /*target*/)
+        bool OnCheck(Player* source, Unit* /*target*/)
         {
             if (source->HasAura(SPELL_OIL_REFINERY) && source->HasAura(SPELL_QUARRY))
                 return true;
@@ -108,9 +108,9 @@ class achievement_bg_ic_glaive_grave : public AchievementCriteriaScript
     public:
         achievement_bg_ic_glaive_grave() : AchievementCriteriaScript("achievement_bg_ic_glaive_grave") { }
 
-        bool OnCheck(PlayerPtr source, UnitPtr /*target*/)
+        bool OnCheck(Player* source, Unit* /*target*/)
         {
-            if (CreaturePtr vehicle = source->GetVehicleCreatureBase())
+            if (Creature* vehicle = source->GetVehicleCreatureBase())
             {
                 if (vehicle->GetEntry() == NPC_GLAIVE_THROWER_H ||  vehicle->GetEntry() == NPC_GLAIVE_THROWER_A)
                     return true;
@@ -125,9 +125,9 @@ class achievement_bg_ic_mowed_down : public AchievementCriteriaScript
     public:
         achievement_bg_ic_mowed_down() : AchievementCriteriaScript("achievement_bg_ic_mowed_down") { }
 
-        bool OnCheck(PlayerPtr source, UnitPtr /*target*/)
+        bool OnCheck(Player* source, Unit* /*target*/)
         {
-            if (CreaturePtr vehicle = source->GetVehicleCreatureBase())
+            if (Creature* vehicle = source->GetVehicleCreatureBase())
             {
                 if (vehicle->GetEntry() == NPC_KEEP_CANNON)
                     return true;
@@ -142,9 +142,9 @@ class achievement_bg_sa_artillery : public AchievementCriteriaScript
     public:
         achievement_bg_sa_artillery() : AchievementCriteriaScript("achievement_bg_sa_artillery") { }
 
-        bool OnCheck(PlayerPtr source, UnitPtr /*target*/)
+        bool OnCheck(Player* source, Unit* /*target*/)
         {
-            if (CreaturePtr vehicle = source->GetVehicleCreatureBase())
+            if (Creature* vehicle = source->GetVehicleCreatureBase())
             {
                 if (vehicle->GetEntry() == NPC_ANTI_PERSONNAL_CANNON)
                     return true;
@@ -162,9 +162,9 @@ class achievement_arena_kills : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(PlayerPtr source, UnitPtr /*target*/)
+        bool OnCheck(Player* source, Unit* /*target*/)
         {
-            // this checks GetBattleground() for nullptr already
+            // this checks GetBattleground() for NULL already
             if (!source->InArena())
                 return false;
 
@@ -180,12 +180,12 @@ class achievement_sickly_gazelle : public AchievementCriteriaScript
 public:
     achievement_sickly_gazelle() : AchievementCriteriaScript("achievement_sickly_gazelle") { }
 
-    bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
+    bool OnCheck(Player* /*source*/, Unit* target)
     {
         if (!target)
             return false;
 
-        if (PlayerPtr victim = TO_PLAYER(target))
+        if (Player* victim = target->ToPlayer())
             if (victim->IsMounted())
                 return true;
 
@@ -198,7 +198,7 @@ class achievement_everything_counts : public AchievementCriteriaScript
     public:
         achievement_everything_counts() : AchievementCriteriaScript("achievement_everything_counts") { }
 
-        bool OnCheck(PlayerPtr source, UnitPtr /*target*/)
+        bool OnCheck(Player* source, Unit* /*target*/)
         {
             Battleground* bg = source->GetBattleground();
             if (!bg)
@@ -219,7 +219,7 @@ class achievement_bg_av_perfection : public AchievementCriteriaScript
     public:
         achievement_bg_av_perfection() : AchievementCriteriaScript("achievement_bg_av_perfection") { }
 
-        bool OnCheck(PlayerPtr source, UnitPtr /*target*/)
+        bool OnCheck(Player* source, Unit* /*target*/)
         {
             Battleground* bg = source->GetBattleground();
             if (!bg)
@@ -242,7 +242,7 @@ class achievement_bg_sa_defense_of_ancients : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(PlayerPtr player, UnitPtr /*target*/)
+        bool OnCheck(Player* player, Unit* /*target*/)
         {
             if (!player)
                 return false;
@@ -276,7 +276,7 @@ class achievement_tilted : public AchievementCriteriaScript
     public:
         achievement_tilted() : AchievementCriteriaScript("achievement_tilted") {}
 
-        bool OnCheck(PlayerPtr player, UnitPtr /*target*/)
+        bool OnCheck(Player* player, Unit* /*target*/)
         {
             if (!player)
                 return false;
@@ -297,7 +297,7 @@ class achievement_not_even_a_scratch : public AchievementCriteriaScript
     public:
         achievement_not_even_a_scratch() : AchievementCriteriaScript("achievement_not_even_a_scratch") { }
 
-        bool OnCheck(PlayerPtr source, UnitPtr /*target*/)
+        bool OnCheck(Player* source, Unit* /*target*/)
         {
             if (!source)
                 return false;

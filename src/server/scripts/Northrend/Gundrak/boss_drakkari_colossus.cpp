@@ -79,7 +79,7 @@ class boss_drakkari_colossus : public CreatureScript
 
         struct boss_drakkari_colossusAI : public BossAI
         {
-            boss_drakkari_colossusAI(CreaturePtr creature) : BossAI(creature, DATA_DRAKKARI_COLOSSUS_EVENT)
+            boss_drakkari_colossusAI(Creature* creature) : BossAI(creature, DATA_DRAKKARI_COLOSSUS_EVENT)
             {
                 me->SetReactState(REACT_PASSIVE);
                 introDone = false;
@@ -112,7 +112,7 @@ class boss_drakkari_colossus : public CreatureScript
                 instance->SetData(DATA_DRAKKARI_COLOSSUS_EVENT, NOT_STARTED);
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 _EnterCombat();
 
@@ -123,7 +123,7 @@ class boss_drakkari_colossus : public CreatureScript
                 instance->SetData(DATA_DRAKKARI_COLOSSUS_EVENT, IN_PROGRESS);
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
 
@@ -171,7 +171,7 @@ class boss_drakkari_colossus : public CreatureScript
                 }
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& damage)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
             {
                 if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
                     damage = 0;
@@ -231,7 +231,7 @@ class boss_drakkari_colossus : public CreatureScript
                     DoMeleeAttackIfReady();
             }
 
-            void JustSummoned(CreaturePtr summon)
+            void JustSummoned(Creature* summon)
             {
                summon->SetInCombatWithZone();
 
@@ -244,7 +244,7 @@ class boss_drakkari_colossus : public CreatureScript
             bool introDone;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_drakkari_colossusAI(creature);
         }
@@ -257,7 +257,7 @@ class boss_drakkari_elemental : public CreatureScript
 
         struct boss_drakkari_elementalAI : public ScriptedAI
         {
-            boss_drakkari_elementalAI(CreaturePtr creature) : ScriptedAI(creature)
+            boss_drakkari_elementalAI(Creature* creature) : ScriptedAI(creature)
             {
                 DoCast(me, SPELL_ELEMENTAL_SPAWN_EFFECT);
                 instance = creature->GetInstanceScript();
@@ -271,14 +271,14 @@ class boss_drakkari_elemental : public CreatureScript
                 me->AddAura(SPELL_MOJO_VOLLEY, me);
             }
 
-            void JustDied(UnitPtr killer)
+            void JustDied(Unit* killer)
             {
                 if (killer == me)
                     return;
 
                 if (instance)
                 {
-                    if (CreaturePtr colossus = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_DRAKKARI_COLOSSUS)))
+                    if (Creature* colossus = Unit::GetCreature(*me, instance->GetData64(DATA_DRAKKARI_COLOSSUS)))
                         killer->Kill(colossus);
                 }
             }
@@ -299,7 +299,7 @@ class boss_drakkari_elemental : public CreatureScript
                     {
                         case EVENT_SURGE:
                             DoCast(SPELL_SURGE_VISUAL);
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
                                 DoCast(target, SPELL_SURGE);
                             events.ScheduleEvent(EVENT_SURGE, urand(5000, 15000));
                             break;
@@ -317,7 +317,7 @@ class boss_drakkari_elemental : public CreatureScript
                         DoCast(SPELL_SURGE_VISUAL);
                         if (instance)
                         {
-                            if (CreaturePtr colossus = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_DRAKKARI_COLOSSUS)))
+                            if (Creature* colossus = Unit::GetCreature(*me, instance->GetData64(DATA_DRAKKARI_COLOSSUS)))
                                 // what if the elemental is more than 80 yards from drakkari colossus ?
                                 DoCast(colossus, SPELL_MERGE, true);
                         }
@@ -325,11 +325,11 @@ class boss_drakkari_elemental : public CreatureScript
                 }
            }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& damage)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
             {
                 if (HealthBelowPct(50) && instance)
                 {
-                    if (CreaturePtr colossus = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_DRAKKARI_COLOSSUS)))
+                    if (Creature* colossus = Unit::GetCreature(*me, instance->GetData64(DATA_DRAKKARI_COLOSSUS)))
                     {
                         if (colossus->AI()->GetData(DATA_COLOSSUS_PHASE) ==  COLOSSUS_PHASE_FIRST_ELEMENTAL_SUMMON)
                         {
@@ -360,11 +360,11 @@ class boss_drakkari_elemental : public CreatureScript
                 me->DespawnOrUnsummon();
             }
 
-            void SpellHitTarget(UnitPtr target, SpellInfo const* spell)
+            void SpellHitTarget(Unit* target, SpellInfo const* spell)
             {
                 if (spell->Id == SPELL_MERGE)
                 {
-                    if (CreaturePtr colossus = TO_CREATURE(target))
+                    if (Creature* colossus = target->ToCreature())
                     {
                         colossus->AI()->DoAction(ACTION_UNFREEZE_COLOSSUS);
                         me->DespawnOrUnsummon();
@@ -377,7 +377,7 @@ class boss_drakkari_elemental : public CreatureScript
             InstanceScript* instance;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_drakkari_elementalAI(creature);
         }
@@ -388,14 +388,14 @@ class npc_living_mojo : public CreatureScript
 public:
     npc_living_mojo() : CreatureScript("npc_living_mojo") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_living_mojoAI (creature);
     }
 
     struct npc_living_mojoAI : public ScriptedAI
     {
-        npc_living_mojoAI(CreaturePtr creature) : ScriptedAI(creature)
+        npc_living_mojoAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -406,15 +406,15 @@ public:
             mojoPuddleTimer = 7*IN_MILLISECONDS;
         }
 
-        void MoveMojos(CreaturePtr boss)
+        void MoveMojos(Creature* boss)
         {
-            std::list<CreaturePtr> mojosList;
+            std::list<Creature*> mojosList;
             boss->GetCreatureListWithEntryInGrid(mojosList, me->GetEntry(), 12.0f);
             if (!mojosList.empty())
             {
-                for (std::list<CreaturePtr>::const_iterator itr = mojosList.begin(); itr != mojosList.end(); ++itr)
+                for (std::list<Creature*>::const_iterator itr = mojosList.begin(); itr != mojosList.end(); ++itr)
                 {
-                    if (CreaturePtr mojo = *itr)
+                    if (Creature* mojo = *itr)
                         mojo->GetMotionMaster()->MovePoint(1, boss->GetHomePosition().GetPositionX(), boss->GetHomePosition().GetPositionY(), boss->GetHomePosition().GetPositionZ());
                 }
             }
@@ -427,7 +427,7 @@ public:
 
             if (id == 1)
             {
-                if (CreaturePtr colossus = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
+                if (Creature* colossus = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
                 {
                     colossus->AI()->DoAction(ACTION_UNFREEZE_COLOSSUS);
                     if (!colossus->AI()->GetData(DATA_INTRO_DONE))
@@ -438,13 +438,13 @@ public:
             }
         }
 
-        void AttackStart(UnitPtr attacker)
+        void AttackStart(Unit* attacker)
         {
             if (me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
                 return;
 
             // we do this checks to see if the creature is one of the creatures that sorround the boss
-            if (CreaturePtr colossus = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
+            if (Creature* colossus = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_DRAKKARI_COLOSSUS) : 0))
             {
                 Position homePosition;
                 me->GetHomePosition().GetPosition(&homePosition);

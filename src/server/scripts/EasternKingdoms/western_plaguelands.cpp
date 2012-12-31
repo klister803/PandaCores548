@@ -51,7 +51,7 @@ class npcs_dithers_and_arbington : public CreatureScript
 public:
     npcs_dithers_and_arbington() : CreatureScript("npcs_dithers_and_arbington") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -83,7 +83,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -124,7 +124,7 @@ class npc_myranda_the_hag : public CreatureScript
 public:
     npc_myranda_the_hag() : CreatureScript("npc_myranda_the_hag") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr /*CreaturePtr/, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF + 1)
@@ -135,7 +135,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -163,30 +163,30 @@ class npc_the_scourge_cauldron : public CreatureScript
 public:
     npc_the_scourge_cauldron() : CreatureScript("npc_the_scourge_cauldron") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_the_scourge_cauldronAI (creature);
     }
 
     struct npc_the_scourge_cauldronAI : public ScriptedAI
     {
-        npc_the_scourge_cauldronAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_the_scourge_cauldronAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset() {}
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void DoDie()
         {
             //summoner dies here
-            me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+            me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             //override any database `spawntimesecs` to prevent duplicated summons
             uint32 rTime = me->GetRespawnDelay();
             if (rTime<600)
                 me->SetRespawnDelay(600);
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!who || who->GetTypeId() != TYPEID_PLAYER)
                 return;
@@ -247,16 +247,16 @@ class npc_andorhal_tower : public CreatureScript
 public:
     npc_andorhal_tower() : CreatureScript("npc_andorhal_tower") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_andorhal_towerAI (creature);
     }
 
     struct npc_andorhal_towerAI : public Scripted_NoMovementAI
     {
-        npc_andorhal_towerAI(CreaturePtr creature) : Scripted_NoMovementAI(creature) {}
+        npc_andorhal_towerAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!who || who->GetTypeId() != TYPEID_PLAYER)
                 return;
@@ -293,7 +293,7 @@ class npc_anchorite_truuen : public CreatureScript
 public:
     npc_anchorite_truuen() : CreatureScript("npc_anchorite_truuen") { }
 
-    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
     {
         npc_escortAI* pEscortAI = CAST_AI(npc_anchorite_truuen::npc_anchorite_truuenAI, creature->AI());
 
@@ -302,29 +302,29 @@ public:
         return false;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_anchorite_truuenAI(creature);
     }
 
     struct npc_anchorite_truuenAI : public npc_escortAI
     {
-        npc_anchorite_truuenAI(CreaturePtr creature) : npc_escortAI(creature) { }
+        npc_anchorite_truuenAI(Creature* creature) : npc_escortAI(creature) { }
 
         uint32 m_uiChatTimer;
 
         uint64 UghostGUID;
         uint64 TheldanisGUID;
 
-        CreaturePtr Ughost;
-        CreaturePtr Theldanis;
+        Creature* Ughost;
+        Creature* Theldanis;
 
         void Reset()
         {
             m_uiChatTimer = 7000;
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             if (summoned->GetEntry() == NPC_GHOUL)
                 summoned->AI()->AttackStart(me);
@@ -332,7 +332,7 @@ public:
 
         void WaypointReached(uint32 waypointId)
         {
-            PlayerPtr player = GetPlayerForEscort();
+            Player* player = GetPlayerForEscort();
 
             switch (waypointId)
             {
@@ -379,11 +379,11 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/){}
+        void EnterCombat(Unit* /*who*/){}
 
-         void JustDied(UnitPtr /*killer*/)
+         void JustDied(Unit* /*killer*/)
         {
-            if (PlayerPtr player = GetPlayerForEscort())
+            if (Player* player = GetPlayerForEscort())
                 player->FailQuest(QUEST_TOMB_LIGHTBRINGER);
         }
 

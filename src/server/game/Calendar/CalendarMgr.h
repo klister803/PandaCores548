@@ -54,7 +54,7 @@ class CalendarMgr
         void SendCalendarEventModeratorStatusAlert(CalendarInvite const& invite);
 
     private:
-        CalendarEvent* CheckPermisions(uint64 eventId, PlayerPtr player, uint64 inviteId, CalendarModerationRank minRank);
+        CalendarEvent* CheckPermisions(uint64 eventId, Player* player, uint64 inviteId, CalendarModerationRank minRank);
 
         bool AddEvent(CalendarEvent const& calendarEvent);
         bool RemoveEvent(uint64 eventId);

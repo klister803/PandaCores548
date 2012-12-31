@@ -30,11 +30,11 @@ inline LPTSTR ErrorMessage(DWORD dw)
     FormatMessage(
         FORMAT_MESSAGE_ALLOCATE_BUFFER |
         FORMAT_MESSAGE_FROM_SYSTEM,
-        nullptr,
+        NULL,
         dw,
         MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
         (LPTSTR) &lpMsgBuf,
-        0, nullptr);
+        0, NULL);
     return (LPTSTR)lpMsgBuf;
 }
 
@@ -87,7 +87,7 @@ PEXCEPTION_POINTERS pExceptionInfo)
 
     TCHAR crash_folder_path[MAX_PATH];
     sprintf(crash_folder_path, "%s\\%s", module_folder_name, CrashFolder);
-    if (!CreateDirectory(crash_folder_path, nullptr))
+    if (!CreateDirectory(crash_folder_path, NULL))
     {
         if (GetLastError() != ERROR_ALREADY_EXISTS)
             return 0;
@@ -159,7 +159,7 @@ BOOL WheatyExceptionReport::_GetProcessorName(TCHAR* sProcessorName, DWORD maxco
         return FALSE;
     TCHAR szTmp[2048];
     DWORD cntBytes = sizeof(szTmp);
-    lRet = ::RegQueryValueEx(hKey, _T("ProcessorNameString"), nullptr, nullptr,
+    lRet = ::RegQueryValueEx(hKey, _T("ProcessorNameString"), NULL, NULL,
         (LPBYTE)szTmp, &cntBytes);
     if (lRet != ERROR_SUCCESS)
         return FALSE;
@@ -507,7 +507,7 @@ PEXCEPTION_POINTERS pExceptionInfo)
 
     CONTEXT trashableContext = *pCtx;
 
-    WriteStackDetails(&trashableContext, false, nullptr);
+    WriteStackDetails(&trashableContext, false, NULL);
     printTracesForAllThreads();
 
 //    #ifdef _M_IX86                                          // X86 Only!
@@ -516,7 +516,7 @@ PEXCEPTION_POINTERS pExceptionInfo)
     _tprintf(_T("Local Variables And Parameters\r\n"));
 
     trashableContext = *pCtx;
-    WriteStackDetails(&trashableContext, true, nullptr);
+    WriteStackDetails(&trashableContext, true, NULL);
 
     _tprintf(_T("========================\r\n"));
     _tprintf(_T("Global Variables\r\n"));
@@ -688,7 +688,7 @@ bool bWriteVariables, HANDLE pThreadHandle)                                     
         // Get the next stack frame
         if (! StackWalk64(dwMachineType,
             m_hProcess,
-            pThreadHandle != nullptr ? pThreadHandle : GetCurrentThread(),
+            pThreadHandle != NULL ? pThreadHandle : GetCurrentThread(),
             &sf,
             pContext,
             0,

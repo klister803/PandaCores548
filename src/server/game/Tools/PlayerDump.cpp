@@ -267,8 +267,8 @@ void StoreGUID(QueryResult result, uint32 data, uint32 field, std::set<uint32>& 
 // Writing - High-level functions
 bool PlayerDumpWriter::DumpTable(std::string& dump, uint32 guid, char const*tableFrom, char const*tableTo, DumpTableType type)
 {
-    GUIDs const* guids = nullptr;
-    char const* fieldname = nullptr;
+    GUIDs const* guids = NULL;
+    char const* fieldname = NULL;
 
     switch (type)
     {
@@ -392,11 +392,11 @@ DumpReturn PlayerDumpWriter::WriteDump(const std::string& file, uint32 guid)
 
 void fixNULLfields(std::string &line)
 {
-    std::string nullString("'nullptr'");
+    std::string nullString("'NULL'");
     size_t pos = line.find(nullString);
     while (pos != std::string::npos)
     {
-        line.replace(pos, nullString.length(), "nullptr");
+        line.replace(pos, nullString.length(), "NULL");
         pos = line.find(nullString);
     }
 }
@@ -411,7 +411,7 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
     if (!fin)
         return DUMP_FILE_OPEN_ERROR;
 
-    QueryResult result = QueryResult(nullptr);
+    QueryResult result = QueryResult(NULL);
     char newguid[20], chraccount[20], newpetid[20], currpetid[20], lastpetid[20];
 
     // make sure the same guid doesn't already exist and is safe to use

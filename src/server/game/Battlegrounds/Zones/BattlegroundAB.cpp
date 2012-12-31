@@ -27,7 +27,6 @@
 #include "Object.h"
 #include "Player.h"
 #include "Util.h"
-#include "SpellAuraEffects.h"
 
 BattlegroundAB::BattlegroundAB()
 {
@@ -88,13 +87,13 @@ void BattlegroundAB::PostUpdateImpl(uint32 diff)
                     if (teamIndex == 0)
                     {
                         // FIXME: team and node names not localized
-                        SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_ALLIANCE, nullptr, LANG_BG_AB_ALLY, _GetNodeNameId(node));
+                        SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_ALLIANCE, NULL, LANG_BG_AB_ALLY, _GetNodeNameId(node));
                         PlaySoundToAll(BG_AB_SOUND_NODE_CAPTURED_ALLIANCE);
                     }
                     else
                     {
                         // FIXME: team and node names not localized
-                        SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_HORDE, nullptr, LANG_BG_AB_HORDE, _GetNodeNameId(node));
+                        SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_HORDE, NULL, LANG_BG_AB_HORDE, _GetNodeNameId(node));
                         PlaySoundToAll(BG_AB_SOUND_NODE_CAPTURED_HORDE);
                     }
                 }
@@ -197,7 +196,7 @@ void BattlegroundAB::StartingEventOpenDoors()
     StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, AB_EVENT_START_BATTLE);
 }
 
-void BattlegroundAB::AddPlayer(PlayerPtr player)
+void BattlegroundAB::AddPlayer(Player* player)
 {
     Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in the constructor
@@ -206,12 +205,12 @@ void BattlegroundAB::AddPlayer(PlayerPtr player)
     PlayerScores[player->GetGUID()] = sc;
 }
 
-void BattlegroundAB::RemovePlayer(PlayerPtr /*Player*/, uint64 /*guid*/, uint32 /*team*/)
+void BattlegroundAB::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
 {
 
 }
 
-void BattlegroundAB::HandleAreaTrigger(PlayerPtr Source, uint32 Trigger)
+void BattlegroundAB::HandleAreaTrigger(Player* Source, uint32 Trigger)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -374,7 +373,7 @@ void BattlegroundAB::_NodeOccupied(uint8 node, Team team)
 
     if (node >= BG_AB_DYNAMIC_NODES_COUNT)//only dynamic nodes, no start points
         return;
-    CreaturePtr trigger = BgCreatures[node+7] ? GetBGCreature(node+7) : nullptr;//0-6 spirit guides
+    Creature* trigger = BgCreatures[node+7] ? GetBGCreature(node+7) : NULL;//0-6 spirit guides
     if (!trigger)
         trigger = AddCreature(WORLD_TRIGGER, node+7, team, BG_AB_NodePositions[node][0], BG_AB_NodePositions[node][1], BG_AB_NodePositions[node][2], BG_AB_NodePositions[node][3]);
 
@@ -395,16 +394,16 @@ void BattlegroundAB::_NodeDeOccupied(uint8 node)
 
     //remove bonus honor aura trigger creature when node is lost
     if (node < BG_AB_DYNAMIC_NODES_COUNT)//only dynamic nodes, no start points
-        DelCreature(node+7);//nullptr checks are in DelCreature! 0-6 spirit guides
+        DelCreature(node+7);//NULL checks are in DelCreature! 0-6 spirit guides
 
     // Those who are waiting to resurrect at this node are taken to the closest own node's graveyard
     std::vector<uint64> ghost_list = m_ReviveQueue[BgCreatures[node]];
     if (!ghost_list.empty())
     {
-        WorldSafeLocsEntry const* ClosestGrave = nullptr;
+        WorldSafeLocsEntry const* ClosestGrave = NULL;
         for (std::vector<uint64>::const_iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
         {
-            PlayerPtr player = ObjectAccessor::FindPlayer(*itr);
+            Player* player = ObjectAccessor::FindPlayer(*itr);
             if (!player)
                 continue;
 
@@ -423,13 +422,13 @@ void BattlegroundAB::_NodeDeOccupied(uint8 node)
 }
 
 /* Invoked if a player used a banner as a gameobject */
-void BattlegroundAB::EventPlayerClickedOnFlag(PlayerPtr source, GameObjectPtr /*target_obj*/)
+void BattlegroundAB::EventPlayerClickedOnFlag(Player* source, GameObject* /*target_obj*/)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
 
     uint8 node = BG_AB_NODE_STABLES;
-    GameObjectPtr obj = GetBgMap()->GetGameObject(BgObjects[node*8+7]);
+    GameObject* obj = GetBgMap()->GetGameObject(BgObjects[node*8+7]);
     while ((node < BG_AB_DYNAMIC_NODES_COUNT) && ((!obj) || (!source->IsWithinDistInMap(obj, 10))))
     {
         ++node;
@@ -543,9 +542,9 @@ void BattlegroundAB::EventPlayerClickedOnFlag(PlayerPtr source, GameObjectPtr /*
     {
         // FIXME: team and node names not localized
         if (teamIndex == BG_TEAM_ALLIANCE)
-            SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_ALLIANCE, nullptr, LANG_BG_AB_ALLY, _GetNodeNameId(node));
+            SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_ALLIANCE, NULL, LANG_BG_AB_ALLY, _GetNodeNameId(node));
         else
-            SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_HORDE, nullptr, LANG_BG_AB_HORDE, _GetNodeNameId(node));
+            SendMessage2ToAll(LANG_BG_AB_NODE_TAKEN, CHAT_MSG_BG_SYSTEM_HORDE, NULL, LANG_BG_AB_HORDE, _GetNodeNameId(node));
     }
     PlaySoundToAll(sound);
 }
@@ -635,7 +634,7 @@ void BattlegroundAB::EndBattleground(uint32 winner)
     Battleground::EndBattleground(winner);
 }
 
-WorldSafeLocsEntry const* BattlegroundAB::GetClosestGraveYard(PlayerPtr player)
+WorldSafeLocsEntry const* BattlegroundAB::GetClosestGraveYard(Player* player)
 {
     BattlegroundTeamId teamIndex = GetTeamIndexByTeamId(player->GetTeam());
 
@@ -645,7 +644,7 @@ WorldSafeLocsEntry const* BattlegroundAB::GetClosestGraveYard(PlayerPtr player)
         if (m_Nodes[i] == teamIndex + 3)
             nodes.push_back(i);
 
-    WorldSafeLocsEntry const* good_entry = nullptr;
+    WorldSafeLocsEntry const* good_entry = NULL;
     // If so, select the closest node to place ghost on
     if (!nodes.empty())
     {
@@ -674,7 +673,7 @@ WorldSafeLocsEntry const* BattlegroundAB::GetClosestGraveYard(PlayerPtr player)
     return good_entry;
 }
 
-void BattlegroundAB::UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor)
+void BattlegroundAB::UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor)
 {
     BattlegroundScoreMap::iterator itr = PlayerScores.find(Source->GetGUID());
     if (itr == PlayerScores.end())                         // player not found...

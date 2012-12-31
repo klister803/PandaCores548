@@ -71,14 +71,14 @@ class boss_dathrohan_balnazzar : public CreatureScript
 public:
     boss_dathrohan_balnazzar() : CreatureScript("boss_dathrohan_balnazzar") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_dathrohan_balnazzarAI (creature);
     }
 
     struct boss_dathrohan_balnazzarAI : public ScriptedAI
     {
-        boss_dathrohan_balnazzarAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_dathrohan_balnazzarAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 m_uiCrusadersHammer_Timer;
         uint32 m_uiCrusaderStrike_Timer;
@@ -106,7 +106,7 @@ public:
                 me->UpdateEntry(NPC_DATHROHAN);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             static uint32 uiCount = sizeof(m_aSummonPoint)/sizeof(SummonDef);
 
@@ -116,7 +116,7 @@ public:
                 TEMPSUMMON_TIMED_DESPAWN, HOUR*IN_MILLISECONDS);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
@@ -187,7 +187,7 @@ public:
                 //PsychicScream
                 if (m_uiPsychicScream_Timer <= uiDiff)
                 {
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_PSYCHICSCREAM);
 
                     m_uiPsychicScream_Timer = 20000;
@@ -196,7 +196,7 @@ public:
                 //DeepSleep
                 if (m_uiDeepSleep_Timer <= uiDiff)
                 {
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_SLEEP);
 
                     m_uiDeepSleep_Timer = 15000;

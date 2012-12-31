@@ -6,14 +6,14 @@ class mob_tushui_trainee : public CreatureScript
     public:
         mob_tushui_trainee() : CreatureScript("mob_tushui_trainee") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_tushui_trainee_AI(creature);
         }
 
         struct mob_tushui_trainee_AI : public ScriptedAI
         {
-            mob_tushui_trainee_AI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_tushui_trainee_AI(Creature* creature) : ScriptedAI(creature)
             {
                 me->SetReactState(REACT_DEFENSIVE);
                 me->setFaction(2357);
@@ -21,9 +21,9 @@ class mob_tushui_trainee : public CreatureScript
             
             EventMap events;
             
-            void EnterCombat(UnitPtr unit) { }
+            void EnterCombat(Unit* unit) { }
 
-            void DamageTaken(UnitPtr pDoneBy, uint32 &uiDamage)
+            void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
             {
                 if((me->GetHealth() - uiDamage)*100/me->GetMaxHealth() < 20)
                 {
@@ -50,7 +50,7 @@ class mob_tushui_trainee : public CreatureScript
                 if(me->GetHealthPct() < 20)
                 {
                     if(me->getVictim() && me->getVictim()->GetTypeId() == TYPEID_PLAYER)
-                        TO_PLAYER(me->getVictim())->KilledMonsterCredit(54586, 0);
+                        ((Player*)me->getVictim())->KilledMonsterCredit(54586, 0);
                     me->CombatStop();
                     me->SetHealth(me->GetMaxHealth());
                     me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
@@ -68,14 +68,14 @@ class boss_jaomin_ro : public CreatureScript
 public:
     boss_jaomin_ro() : CreatureScript("boss_jaomin_ro") { }
     
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_jaomin_roAI(creature);
     }
     
     struct boss_jaomin_roAI : public ScriptedAI
     {
-        boss_jaomin_roAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_jaomin_roAI(Creature* creature) : ScriptedAI(creature)
         {
             me->SetReactState(REACT_DEFENSIVE);
             me->SetDisplayId(39755);
@@ -84,7 +84,7 @@ public:
         
         EventMap events;
         
-        void EnterCombat(UnitPtr unit)
+        void EnterCombat(Unit* unit)
         {
             events.ScheduleEvent(1, 11000);
             events.ScheduleEvent(3, 5000);
@@ -97,7 +97,7 @@ public:
             me->setFaction(14); //mechant!
         }
         
-        void DamageTaken(UnitPtr pDoneBy, uint32 &uiDamage)
+        void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
         {
             if(me->GetHealth() - uiDamage <= 1)
             {
@@ -149,7 +149,7 @@ public:
             {
                 me->SetDisplayId(39755);
                 if(me->getVictim() && me->getVictim()->GetTypeId() == TYPEID_PLAYER)
-                    TO_PLAYER(me->getVictim())->KilledMonsterCredit(me->GetEntry(), 0);
+                    ((Player*)me->getVictim())->KilledMonsterCredit(me->GetEntry(), 0);
                 me->CombatStop();
                 me->setFaction(2104);
                 me->SetHealth(me->GetMaxHealth());
@@ -163,16 +163,16 @@ class mob_attacker_dimwind : public CreatureScript
 {
 public:
     mob_attacker_dimwind() : CreatureScript("mob_attacker_dimwind") { }
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_attacker_dimwindAI(creature);
     }
     
     struct mob_attacker_dimwindAI : public ScriptedAI
     {
-    	mob_attacker_dimwindAI(CreaturePtr creature) : ScriptedAI(creature) {}
+    	mob_attacker_dimwindAI(Creature* creature) : ScriptedAI(creature) {}
     	
-        void DamageTaken(UnitPtr pDoneBy, uint32 &uiDamage)
+        void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
         {
             if(me->GetHealthPct() < 90 && pDoneBy && pDoneBy->ToCreature() && pDoneBy->ToCreature()->GetEntry() == 54785)
             {
@@ -187,7 +187,7 @@ class mob_min_dimwind : public CreatureScript
 public:
     mob_min_dimwind() : CreatureScript("mob_min_dimwind") { }
     
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_min_dimwindAI(creature);
     }
@@ -197,14 +197,14 @@ public:
         EventMap events;
         uint64 guidMob[4];
         
-        mob_min_dimwindAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_min_dimwindAI(Creature* creature) : ScriptedAI(creature)
         {
             for(int i = 0; i < 4; i++)
                 guidMob[i] = 0;
             ResetMobs();
         }
         
-        void DamageTaken(UnitPtr pDoneBy, uint32 &uiDamage)
+        void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
         {
             if(me->GetHealthPct() < 25 && pDoneBy && pDoneBy->ToCreature() && pDoneBy->ToCreature()->GetEntry() == 54130)
             {
@@ -220,7 +220,7 @@ public:
             {
                 if(guidMob[i] != 0)
                 {
-                    if (UnitPtr unit = sObjectAccessor->FindUnit(guidMob[i]))
+                    if (Unit* unit = sObjectAccessor->FindUnit(guidMob[i]))
                     {
                         if(unit->ToCreature())
                         {
@@ -246,14 +246,14 @@ public:
             {
                 if(guidMob[i] != 0)
                 {
-                    if (UnitPtr unit = sObjectAccessor->FindUnit(guidMob[i]))
+                    if (Unit* unit = sObjectAccessor->FindUnit(guidMob[i]))
                         if(unit->ToCreature())
                             unit->ToCreature()->DespawnOrUnsummon();
                     guidMob[i] = 0;
                 }
                 
                 me->HandleEmoteCommand(EMOTE_STATE_READY2H);
-                TempSummonPtr temp = me->SummonCreature(54130, me->GetPositionX()+rand()%5, me->GetPositionY()+2+rand()%5, me->GetPositionZ()+1, 3.3f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+                TempSummon* temp = me->SummonCreature(54130, me->GetPositionX()+rand()%5, me->GetPositionY()+2+rand()%5, me->GetPositionZ()+1, 3.3f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
                 if(temp)
                 {
                     guidMob[i] = temp->GetGUID();
@@ -278,11 +278,11 @@ public:
                     	me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_STAND);
                     	me->MonsterYell("Thank you!", LANG_UNIVERSAL, 0);
                         
-                        std::list<PlayerPtr> PlayerList;
+                        std::list<Player*> PlayerList;
                         Trinity::AnyPlayerInObjectRangeCheck checker(me, 50.0f);
                         Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, PlayerList, checker);
                         me->VisitNearbyWorldObject(50.0f, searcher);
-                        for (std::list<PlayerPtr>::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
+                        for (std::list<Player*>::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
                             (*itr)->KilledMonsterCredit(54855, 0);
                         
                         events.ScheduleEvent(2, 30000);
@@ -306,7 +306,7 @@ class mob_aysa : public CreatureScript
 public:
     mob_aysa() : CreatureScript("mob_aysa") { }
     
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_aysaAI(creature);
     }
@@ -314,29 +314,29 @@ public:
     struct mob_aysaAI : public ScriptedAI
     {
     	EventMap events;
-        std::list<PlayerPtr> playersInvolved;
-        TempSummonPtr lifei;
+        std::list<Player*> playersInvolved;
+        TempSummon* lifei;
         bool inCombat;
         uint32 timer;
         
-        mob_aysaAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_aysaAI(Creature* creature) : ScriptedAI(creature)
         {
             events.ScheduleEvent(1, 600); //Begin script
             inCombat = false;
             timer = 0;
-            lifei = nullptr;
+            lifei = NULL;
             me->SetReactState(REACT_DEFENSIVE);
             me->setFaction(2263);
         }
         
-        void DamageTaken(UnitPtr pDoneBy, uint32 &uiDamage)
+        void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
         {
             if(me->GetHealth() - uiDamage <=0)
             {
                 if(lifei)
                 {
                     lifei->UnSummon();
-                    lifei = nullptr;
+                    lifei = NULL;
                 }
                 
                 uiDamage = 0;
@@ -344,11 +344,11 @@ public:
                 me->SetHealth(me->GetMaxHealth());
                 me->SetReactState(REACT_DEFENSIVE);
                 
-                std::list<CreaturePtr> unitlist;
+                std::list<Creature*> unitlist;
                 Trinity::AllCreaturesOfEntryInRange check(me, 59637, 50.0f);
                 Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(me, unitlist, check);
                 me->VisitNearbyWorldObject(50.0f, searcher);
-                for (std::list<CreaturePtr>::const_iterator itr = unitlist.begin(); itr != unitlist.end(); ++itr)
+                for (std::list<Creature*>::const_iterator itr = unitlist.begin(); itr != unitlist.end(); ++itr)
                 	me->Kill(*itr);
                 	
                 events.ScheduleEvent(1, 20000);
@@ -362,11 +362,11 @@ public:
         {
             playersInvolved.clear();
             
-            std::list<PlayerPtr> PlayerList;
+            std::list<Player*> PlayerList;
             Trinity::AnyPlayerInObjectRangeCheck checker(me, 50.0f);
             Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, PlayerList, checker);
             me->VisitNearbyWorldObject(50.0f, searcher);
-            for (std::list<PlayerPtr>::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
+            for (std::list<Player*>::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
                 if(*itr && (*itr)->GetQuestStatus(29414) == QUEST_STATUS_INCOMPLETE)
                     playersInvolved.push_back(*itr);
         }
@@ -399,7 +399,7 @@ public:
                         updatePlayerList();
                         for(int i = 0; i < std::max((int)playersInvolved.size()*3,3); i++)
                         {
-                            TempSummonPtr temp = me->SummonCreature(59637, me->GetPositionX()+rand()%5, me->GetPositionY()+2+rand()%5, me->GetPositionZ()+1, 3.3f,TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+                            TempSummon* temp = me->SummonCreature(59637, me->GetPositionX()+rand()%5, me->GetPositionY()+2+rand()%5, me->GetPositionZ()+1, 3.3f,TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
                             if(temp)
                             {
                                 temp->AI()->AttackStart(me);
@@ -437,13 +437,13 @@ public:
                         if(timer == 85)
                         {
                             lifei->UnSummon();
-                            lifei = nullptr;
+                            lifei = NULL;
                         }
                         
                         updatePlayerList();
-                        for(std::list<PlayerPtr>::iterator itr = playersInvolved.begin(); itr != playersInvolved.end(); itr++)
+                        for(std::list<Player*>::iterator itr = playersInvolved.begin(); itr != playersInvolved.end(); itr++)
                         {
-                            PlayerPtr plr = *itr;
+                            Player* plr = *itr;
                             if(plr)
                             {
                                 if(!plr->HasAura(116421))
@@ -460,7 +460,7 @@ public:
                         if(lifei)
                         {
                             lifei->UnSummon();
-                            lifei = nullptr;
+                            lifei = NULL;
                         }
                         events.ScheduleEvent(1, 10000);
                         events.CancelEvent(2);
@@ -468,7 +468,7 @@ public:
                         me->MonsterSay("And so our path lays before us. Speak to Master Shang Xi, he will tell you what comes next.", LANG_UNIVERSAL, 0);
                         updatePlayerList();
                         me->SetReactState(REACT_DEFENSIVE);
-                        for(std::list<PlayerPtr>::iterator itr = playersInvolved.begin(); itr != playersInvolved.end(); itr++)
+                        for(std::list<Player*>::iterator itr = playersInvolved.begin(); itr != playersInvolved.end(); itr++)
                         {
                             (*itr)->KilledMonsterCredit(54856, 0);
                             (*itr)->RemoveAura(116421);
@@ -486,21 +486,21 @@ class boss_living_air : public CreatureScript
 public:
     boss_living_air() : CreatureScript("boss_living_air") { }
     
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_living_airAI(creature);
     }
     
     struct boss_living_airAI : public ScriptedAI
     {
-        boss_living_airAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_living_airAI(Creature* creature) : ScriptedAI(creature)
         {
             me->SetReactState(REACT_AGGRESSIVE);
         }
         
         EventMap events;
         
-        void EnterCombat(UnitPtr unit)
+        void EnterCombat(Unit* unit)
         {
             events.ScheduleEvent(1, 3000);
             events.ScheduleEvent(2, 5000);
@@ -537,27 +537,27 @@ class boss_li_fei : public CreatureScript
 public:
     boss_li_fei() : CreatureScript("boss_li_fei") { }
     
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_li_feiAI(creature);
     }
     
     struct boss_li_feiAI : public ScriptedAI
     {
-        boss_li_feiAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_li_feiAI(Creature* creature) : ScriptedAI(creature)
         {
             me->SetReactState(REACT_DEFENSIVE);
         }
         
         EventMap events;
         
-        void EnterCombat(UnitPtr unit)
+        void EnterCombat(Unit* unit)
         {
             events.ScheduleEvent(1, 3000);
             events.ScheduleEvent(2, 5000);
         }
         
-        void DamageTaken(UnitPtr pDoneBy, uint32 &uiDamage)
+        void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
         {
             if(me->GetHealth() - uiDamage <= 1)
             {
@@ -600,7 +600,7 @@ public:
             if(me->GetHealthPct() <= 10)
             {
                 if(me->getVictim() && me->getVictim()->GetTypeId() == TYPEID_PLAYER)
-                    TO_PLAYER(me->getVictim())->KilledMonsterCredit(me->GetEntry(), 0);
+                    ((Player*)me->getVictim())->KilledMonsterCredit(me->GetEntry(), 0);
                 me->CombatStop();
                 me->setFaction(7);
                 me->SetHealth(me->GetMaxHealth());

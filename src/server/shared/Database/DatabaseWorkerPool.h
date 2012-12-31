@@ -216,7 +216,7 @@ class DatabaseWorkerPool
 
         //! Directly executes an SQL query in string format that will block the calling thread until finished.
         //! Returns reference counted auto pointer, no need for manual memory management in upper level code.
-        QueryResult Query(const char* sql, MySQLConnection* conn = nullptr)
+        QueryResult Query(const char* sql, MySQLConnection* conn = NULL)
         {
             if (!conn)
                 conn = GetFreeConnection();
@@ -226,7 +226,7 @@ class DatabaseWorkerPool
             if (!result || !result->GetRowCount())
             {
                 delete result;
-                return QueryResult(nullptr);
+                return QueryResult(NULL);
             }
             result->NextRow();
             return QueryResult(result);
@@ -237,7 +237,7 @@ class DatabaseWorkerPool
         QueryResult PQuery(const char* sql, MySQLConnection* conn, ...)
         {
             if (!sql)
-                return QueryResult(nullptr);
+                return QueryResult(NULL);
 
             va_list ap;
             char szQuery[MAX_QUERY_LEN];
@@ -253,7 +253,7 @@ class DatabaseWorkerPool
         QueryResult PQuery(const char* sql, ...)
         {
             if (!sql)
-                return QueryResult(nullptr);
+                return QueryResult(NULL);
 
             va_list ap;
             char szQuery[MAX_QUERY_LEN];
@@ -280,7 +280,7 @@ class DatabaseWorkerPool
 
             {
                 delete ret;
-                return PreparedQueryResult(nullptr);
+                return PreparedQueryResult(NULL);
             }
             return PreparedQueryResult(ret);
         }
@@ -493,7 +493,7 @@ class DatabaseWorkerPool
             }
 
             //! This will be called when Celine Dion learns to sing
-            return nullptr;
+            return NULL;
         }
 
         char const* GetDatabaseName() const

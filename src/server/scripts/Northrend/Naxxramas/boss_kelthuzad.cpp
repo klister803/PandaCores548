@@ -253,11 +253,11 @@ const Position PosWeavers[MAX_WEAVERS] =
 };
 
 // predicate function to select not charmed target
-struct NotCharmedTargetSelector : public std::unary_function<UnitPtr, bool>
+struct NotCharmedTargetSelector : public std::unary_function<Unit*, bool>
 {
     NotCharmedTargetSelector() {}
 
-    bool operator()(constUnitPtr target) const
+    bool operator()(Unit const* target) const
     {
         return !target->isCharmed();
     }
@@ -270,7 +270,7 @@ public:
 
     struct boss_kelthuzadAI : public BossAI
     {
-        boss_kelthuzadAI(CreaturePtr creature) : BossAI(creature, BOSS_KELTHUZAD), spawns(creature)
+        boss_kelthuzadAI(Creature* creature) : BossAI(creature, BOSS_KELTHUZAD), spawns(creature)
         {
             uiFaction = me->getFaction();
         }
@@ -302,7 +302,7 @@ public:
             std::map<uint64, float>::const_iterator itr;
             for (itr = chained.begin(); itr != chained.end(); ++itr)
             {
-                if (PlayerPtr charmed = Unit::GetPlayer(TO_WORLDOBJECT(me), (*itr).first))
+                if (Player* charmed = Unit::GetPlayer(*me, (*itr).first))
                     charmed->SetObjectScale((*itr).second);
             }
 
@@ -314,7 +314,7 @@ public:
             if (instance)
                 instance->SetData(DATA_ABOMINATION_KILLED, 0);
 
-            if (GameObjectPtr pKTTrigger = me->GetMap()->GetGameObject(KTTriggerGUID))
+            if (GameObject* pKTTrigger = me->GetMap()->GetGameObject(KTTriggerGUID))
             {
                 pKTTrigger->ResetDoorOrButton();
                 pKTTrigger->SetPhaseMask(1, true);
@@ -322,7 +322,7 @@ public:
 
             for (uint8 i = 0; i <= 3; ++i)
             {
-                if (GameObjectPtr pPortal = me->GetMap()->GetGameObject(PortalsGUID[i]))
+                if (GameObject* pPortal = me->GetMap()->GetGameObject(PortalsGUID[i]))
                 {
                     if (!((pPortal->getLootState() == GO_READY) || (pPortal->getLootState() == GO_NOT_READY)))
                         pPortal->ResetDoorOrButton();
@@ -337,12 +337,12 @@ public:
             nWeaver = 0;
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             _JustDied();
             DoScriptText(SAY_DEATH, me);
@@ -350,13 +350,13 @@ public:
             std::map<uint64, float>::const_iterator itr;
             for (itr = chained.begin(); itr != chained.end(); ++itr)
             {
-                if (PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), (*itr).first))
+                if (Player* player = Unit::GetPlayer(*me, (*itr).first))
                     player->SetObjectScale((*itr).second);
             }
             chained.clear();
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             me->setFaction(uiFaction);
 
@@ -364,7 +364,7 @@ public:
             FindGameObjects();
             for (uint8 i = 0; i <= 3; ++i)
             {
-                if (GameObjectPtr pPortal = me->GetMap()->GetGameObject(PortalsGUID[i]))
+                if (GameObject* pPortal = me->GetMap()->GetGameObject(PortalsGUID[i]))
                     pPortal->ResetDoorOrButton();
             }
             DoCast(me, SPELL_KELTHUZAD_CHANNEL, false);
@@ -427,7 +427,7 @@ public:
                                 events.PopEvent();
                             break;
                         case EVENT_TRIGGER:
-                            if (GameObjectPtr pKTTrigger = me->GetMap()->GetGameObject(KTTriggerGUID))
+                            if (GameObject* pKTTrigger = me->GetMap()->GetGameObject(KTTriggerGUID))
                                 pKTTrigger->SetPhaseMask(2, true);
                             events.PopEvent();
                             break;
@@ -469,7 +469,7 @@ public:
 
                         for (uint8 i = 0; i <= 3; ++i)
                         {
-                            if (GameObjectPtr pPortal = me->GetMap()->GetGameObject(PortalsGUID[i]))
+                            if (GameObject* pPortal = me->GetMap()->GetGameObject(PortalsGUID[i]))
                             {
                                 if (pPortal->getLootState() == GO_READY)
                                     pPortal->UseDoorOrButton();
@@ -482,7 +482,7 @@ public:
                     if (uiGuardiansOfIcecrownTimer <= diff)
                     {
                         // TODO : Add missing text
-                        if (CreaturePtr pGuardian = DoSummon(NPC_ICECROWN, Pos[RAND(2, 5, 8, 11)]))
+                        if (Creature* pGuardian = DoSummon(NPC_ICECROWN, Pos[RAND(2, 5, 8, 11)]))
                             pGuardian->SetFloatValue(UNIT_FIELD_COMBATREACH, 2);
                         ++nGuardiansOfIcecrownCount;
                         uiGuardiansOfIcecrownTimer = 5000;
@@ -510,7 +510,7 @@ public:
                             uint32 count = urand(1, 3);
                             for (uint8 i = 1; i <= count; i++)
                             {
-                                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 200, true);
+                                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 200, true);
                                 if (target && !target->isCharmed() && (chained.find(target->GetGUID()) == chained.end()))
                                 {
                                     DoCast(target, SPELL_CHAINS_OF_KELTHUZAD);
@@ -530,7 +530,7 @@ public:
                             std::map<uint64, float>::iterator itr;
                             for (itr = chained.begin(); itr != chained.end();)
                             {
-                                if (UnitPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), (*itr).first))
+                                if (Unit* player = Unit::GetPlayer(*me, (*itr).first))
                                 {
                                     if (!player->isCharmed())
                                     {
@@ -542,7 +542,7 @@ public:
                                         continue;
                                     }
 
-                                    if (UnitPtr target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, NotCharmedTargetSelector()))
+                                    if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, NotCharmedTargetSelector()))
                                     {
                                         switch (player->getClass())
                                         {
@@ -606,9 +606,9 @@ public:
                         }
                         case EVENT_DETONATE:
                         {
-                            std::vector<UnitPtr> unitList;
-                            std::list<HostileReferencePtr> *threatList = &me->getThreatManager()->getThreatList();
-                            for (std::list<HostileReferencePtr>::const_iterator itr = threatList->begin(); itr != threatList->end(); ++itr)
+                            std::vector<Unit*> unitList;
+                            std::list<HostileReference*> *threatList = &me->getThreatManager().getThreatList();
+                            for (std::list<HostileReference*>::const_iterator itr = threatList->begin(); itr != threatList->end(); ++itr)
                             {
                                 if ((*itr)->getTarget()->GetTypeId() == TYPEID_PLAYER
                                     && (*itr)->getTarget()->getPowerType() == POWER_MANA
@@ -618,7 +618,7 @@ public:
 
                             if (!unitList.empty())
                             {
-                                std::vector<UnitPtr>::const_iterator itr = unitList.begin();
+                                std::vector<Unit*>::const_iterator itr = unitList.begin();
                                 advance(itr, rand()%unitList.size());
                                 DoCast(*itr, SPELL_MANA_DETONATION);
                                 DoScriptText(RAND(SAY_SPECIAL_1, SAY_SPECIAL_2, SAY_SPECIAL_3), me);
@@ -628,12 +628,12 @@ public:
                             break;
                         }
                         case EVENT_FISSURE:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_SHADOW_FISURE);
                             events.RepeatEvent(urand(10000, 45000));
                             break;
                         case EVENT_BLAST:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, RAID_MODE(1, 0), 0, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, RAID_MODE(1, 0), 0, true))
                                 DoCast(target, SPELL_FROST_BLAST);
                             if (rand()%2)
                                 DoScriptText(SAY_FROST_BLAST, me);
@@ -650,7 +650,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_kelthuzadAI (creature);
     }
@@ -662,7 +662,7 @@ class at_kelthuzad_center : public AreaTriggerScript
 public:
     at_kelthuzad_center() : AreaTriggerScript("at_kelthuzad_center") { }
 
-    bool OnTrigger(PlayerPtr player, const AreaTriggerEntry* /*at*/)
+    bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/)
     {
         if (player->isGameMaster())
             return false;
@@ -671,7 +671,7 @@ public:
         if (!instance || instance->IsEncounterInProgress() || instance->GetBossState(BOSS_KELTHUZAD) == DONE)
             return false;
 
-        CreaturePtr pKelthuzad = Unit::GetCreature(TO_WORLDOBJECT(player), instance->GetData64(DATA_KELTHUZAD));
+        Creature* pKelthuzad = Unit::GetCreature(*player, instance->GetData64(DATA_KELTHUZAD));
         if (!pKelthuzad)
             return false;
 
@@ -680,7 +680,7 @@ public:
             return false;
 
         pKelthuzadAI->AttackStart(player);
-        if (GameObjectPtr trigger = instance->instance->GetGameObject(instance->GetData64(DATA_KELTHUZAD_TRIGGER)))
+        if (GameObject* trigger = instance->instance->GetGameObject(instance->GetData64(DATA_KELTHUZAD_TRIGGER)))
         {
             if (trigger->getLootState() == GO_READY)
                 trigger->UseDoorOrButton();
@@ -689,7 +689,7 @@ public:
             // Otherwise, they attack immediately as KT is in combat.
             for (uint8 i = 0; i < MAX_ABOMINATIONS; ++i)
             {
-                if (CreaturePtr sum = trigger->SummonCreature(NPC_ABOMINATION, PosAbominations[i]))
+                if (Creature* sum = trigger->SummonCreature(NPC_ABOMINATION, PosAbominations[i]))
                 {
                     pKelthuzadAI->spawns.Summon(sum);
                     sum->GetMotionMaster()->MoveRandom(9.0f);
@@ -698,7 +698,7 @@ public:
             }
             for (uint8 i = 0; i < MAX_WASTES; ++i)
             {
-                if (CreaturePtr sum = trigger->SummonCreature(NPC_WASTE, PosWastes[i]))
+                if (Creature* sum = trigger->SummonCreature(NPC_WASTE, PosWastes[i]))
                 {
                     pKelthuzadAI->spawns.Summon(sum);
                     sum->GetMotionMaster()->MoveRandom(5.0f);
@@ -707,7 +707,7 @@ public:
             }
             for (uint8 i = 0; i < MAX_WEAVERS; ++i)
             {
-                if (CreaturePtr sum = trigger->SummonCreature(NPC_WEAVER, PosWeavers[i]))
+                if (Creature* sum = trigger->SummonCreature(NPC_WEAVER, PosWeavers[i]))
                 {
                     pKelthuzadAI->spawns.Summon(sum);
                     sum->GetMotionMaster()->MoveRandom(9.0f);
@@ -727,7 +727,7 @@ class npc_kelthuzad_abomination : public CreatureScript
 
         struct npc_kelthuzad_abominationAI : public ScriptedAI
         {
-            npc_kelthuzad_abominationAI(CreaturePtr creature) : ScriptedAI(creature)
+            npc_kelthuzad_abominationAI(Creature* creature) : ScriptedAI(creature)
             {
                 _instance = creature->GetInstanceScript();
             }
@@ -760,7 +760,7 @@ class npc_kelthuzad_abomination : public CreatureScript
                 }
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 if (_instance)
                     _instance->SetData(DATA_ABOMINATION_KILLED, _instance->GetData(DATA_ABOMINATION_KILLED) + 1);
@@ -771,7 +771,7 @@ class npc_kelthuzad_abomination : public CreatureScript
             EventMap _events;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_kelthuzad_abominationAI(creature);
         }
@@ -797,11 +797,11 @@ class spell_kelthuzad_detonate_mana : public SpellScriptLoader
             {
                 PreventDefaultAction();
 
-                UnitPtr target = GetTarget();
+                Unit* target = GetTarget();
                 if (int32 mana = int32(target->GetMaxPower(POWER_MANA) / 10))
                 {
                     mana = target->ModifyPower(POWER_MANA, -mana);
-                    target->CastCustomSpell(SPELL_MANA_DETONATION_DAMAGE, SPELLVALUE_BASE_POINT0, -mana * 10, target, true, nullptr, aurEff);
+                    target->CastCustomSpell(SPELL_MANA_DETONATION_DAMAGE, SPELLVALUE_BASE_POINT0, -mana * 10, target, true, NULL, aurEff);
                 }
             }
 
@@ -822,7 +822,7 @@ class achievement_just_cant_get_enough : public AchievementCriteriaScript
    public:
        achievement_just_cant_get_enough() : AchievementCriteriaScript("achievement_just_cant_get_enough") { }
 
-       bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
+       bool OnCheck(Player* /*player*/, Unit* target)
        {
            if (!target)
                return false;

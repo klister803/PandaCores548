@@ -55,7 +55,7 @@ class spell_dart : public SpellScriptLoader
                 }
             }
 
-            void SelectTarget(std::list<WorldObjectPtr>& targetList)
+            void SelectTarget(std::list<WorldObject*>& targetList)
             {
                 if (targetList.empty())
                 {
@@ -63,7 +63,7 @@ class spell_dart : public SpellScriptLoader
                     return;
                 }
                 //Select the two targets.
-                std::list<WorldObjectPtr> targets = targetList;
+                std::list<WorldObject*> targets = targetList;
                 for (auto object : targets)
                 {
                     if (object->ToCreature() && object->GetGUID() != GetCaster()->GetGUID())
@@ -74,17 +74,17 @@ class spell_dart : public SpellScriptLoader
                     else
                         targetList.remove(object);
                 }
-                std::list<WorldObjectPtr> lines = targetList;
+                std::list<WorldObject*> lines = targetList;
                 //See if we intersect with any players.
                 for (auto object : targets)
                 {
-                    if (TO_PLAYER(object))
+                    if (object->ToPlayer())
                     {
                         for (auto line : lines)
                         {
                             if (intersectionCircleSegment(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(),
                                 line->GetPositionX(), line->GetPositionY(), object->GetPositionX(), object->GetPositionY(), 2.5f))
-                                GetCaster()->DealDamage(TO_PLAYER(object), GetSpellInfo()->Effects[0].BasePoints, 0, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, GetSpellInfo());
+                                GetCaster()->DealDamage(object->ToPlayer(), GetSpellInfo()->Effects[0].BasePoints, 0, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, GetSpellInfo());
                         }
                     }
                 }
@@ -110,7 +110,7 @@ class mob_animated_staff : public CreatureScript
     public:
         mob_animated_staff() : CreatureScript("mob_animated_staff") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_animated_staff_AI(creature);
         }
@@ -141,7 +141,7 @@ class mob_animated_staff : public CreatureScript
 
         struct mob_animated_staff_AI : public ScriptedAI
         {
-            mob_animated_staff_AI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_animated_staff_AI(Creature* creature) : ScriptedAI(creature)
             {
                 me->SetDisplayId(42195);
                 me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, 76364);
@@ -162,7 +162,7 @@ class mob_animated_staff : public CreatureScript
                 me->AddAura(SPELL_PERMANENT_FEIGN_DEATH, me);
             }
 
-            void EnterCombat(UnitPtr unit)
+            void EnterCombat(Unit* unit)
             {
             }
 
@@ -188,15 +188,15 @@ class mob_animated_staff : public CreatureScript
                     case EVENT_SUMMON_RING_OF_FIRE:
                         {
                             events.ScheduleEvent(EVENT_UNSUMMON, 6000);
-                            UnitPtr target = nullptr;
-                            std::list<UnitPtr> units;
+                            Unit* target = nullptr;
+                            std::list<Unit*> units;
                             Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
 
                             if (!PlayerList.isEmpty())
                             {
                                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                                 {
-                                    PlayerPtr plr = i->getSource();
+                                    Player* plr = i->getSource();
                                     if( !plr)
                                         continue;
                                     if (plr->isAlive() && !plr->isGameMaster())
@@ -205,7 +205,7 @@ class mob_animated_staff : public CreatureScript
                             }
                             if (units.empty())
                                 return;
-                            std::list<UnitPtr>::iterator itr = units.begin();
+                            std::list<Unit*>::iterator itr = units.begin();
                             std::advance(itr, units.size() - 1);
                             target = *itr;
                             if (!target)
@@ -228,7 +228,7 @@ class mob_animated_staff : public CreatureScript
                         {
                             if (point == 21)
                             {
-                                TempSummonPtr tmp = me->SummonCreature(CREATURE_RING_OF_FIRE, _x, _y, me->GetMap()->GetHeight(0, _x, _y, me->GetPositionZ()));
+                                TempSummon* tmp = me->SummonCreature(CREATURE_RING_OF_FIRE, _x, _y, me->GetMap()->GetHeight(0, _x, _y, me->GetPositionZ()));
                                 if (tmp)
                                 {
                                     tmp->RemoveAura(SPELL_RING_OF_FIRE_0);
@@ -255,7 +255,7 @@ class mob_ring_of_fire : public CreatureScript
     public:
         mob_ring_of_fire() : CreatureScript("mob_ring_of_fire") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_ring_of_fire_AI(creature);
         }
@@ -268,7 +268,7 @@ class mob_ring_of_fire : public CreatureScript
 
         struct mob_ring_of_fire_AI : public ScriptedAI
         {
-            mob_ring_of_fire_AI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_ring_of_fire_AI(Creature* creature) : ScriptedAI(creature)
             {
                 me->setFaction(14);
                 me->SetReactState(REACT_PASSIVE);
@@ -283,7 +283,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
     public:
         boss_xin_the_weaponmaster() : CreatureScript("boss_xin_the_weaponmaster") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_xin_the_weaponmaster_AI(creature);
         }
@@ -300,11 +300,11 @@ class boss_xin_the_weaponmaster : public CreatureScript
 
         struct boss_xin_the_weaponmaster_AI : public BossAI
         {
-            boss_xin_the_weaponmaster_AI(CreaturePtr creature) : BossAI(creature, BOSS_XIN_THE_WEAPONMASTER)
+            boss_xin_the_weaponmaster_AI(Creature* creature) : BossAI(creature, BOSS_XIN_THE_WEAPONMASTER)
             {
             }
 
-            void EnterCombat(UnitPtr who)
+            void EnterCombat(Unit* who)
             {
                 events.ScheduleEvent(EVENT_RING_OF_FIRE, 3000);
             }

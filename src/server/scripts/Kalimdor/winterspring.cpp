@@ -40,7 +40,7 @@ class npc_rivern_frostwind : public CreatureScript
 public:
     npc_rivern_frostwind() : CreatureScript("npc_rivern_frostwind") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_TRADE)
@@ -49,7 +49,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());

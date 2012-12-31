@@ -59,7 +59,7 @@ class boss_golemagg : public CreatureScript
 
         struct boss_golemaggAI : public BossAI
         {
-            boss_golemaggAI(CreaturePtr creature) : BossAI(creature, BOSS_GOLEMAGG_THE_INCINERATOR)
+            boss_golemaggAI(Creature* creature) : BossAI(creature, BOSS_GOLEMAGG_THE_INCINERATOR)
             {
             }
 
@@ -69,13 +69,13 @@ class boss_golemagg : public CreatureScript
                 DoCast(me, SPELL_MAGMASPLASH, true);
             }
 
-            void EnterCombat(UnitPtr victim)
+            void EnterCombat(Unit* victim)
             {
                 BossAI::EnterCombat(victim);
                 events.ScheduleEvent(EVENT_PYROBLAST, 7000);
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
             {
                 if (!HealthBelowPct(10) || me->HasAura(SPELL_ENRAGE))
                     return;
@@ -99,7 +99,7 @@ class boss_golemagg : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_PYROBLAST:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_PYROBLAST);
                             events.ScheduleEvent(EVENT_PYROBLAST, 7000);
                             break;
@@ -116,7 +116,7 @@ class boss_golemagg : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_golemaggAI(creature);
         }
@@ -129,7 +129,7 @@ class mob_core_rager : public CreatureScript
 
         struct mob_core_ragerAI : public ScriptedAI
         {
-            mob_core_ragerAI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_core_ragerAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -139,12 +139,12 @@ class mob_core_rager : public CreatureScript
                 mangleTimer = 7*IN_MILLISECONDS;                 // These times are probably wrong
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
             {
                 if (HealthAbovePct(50) || !instance)
                     return;
 
-                if (CreaturePtr pGolemagg = instance->instance->GetCreature(instance->GetData64(BOSS_GOLEMAGG_THE_INCINERATOR)))
+                if (Creature* pGolemagg = instance->instance->GetCreature(instance->GetData64(BOSS_GOLEMAGG_THE_INCINERATOR)))
                 {
                     if (pGolemagg->isAlive())
                     {
@@ -177,7 +177,7 @@ class mob_core_rager : public CreatureScript
             uint32 mangleTimer;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_core_ragerAI(creature);
         }

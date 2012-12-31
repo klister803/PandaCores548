@@ -158,15 +158,15 @@ class Player;
 
 struct CalendarAction
 {
-        CalendarAction(): _action(CALENDAR_ACTION_NONE), _player(nullptr), _inviteId(0), _data(0)
+        CalendarAction(): _action(CALENDAR_ACTION_NONE), _player(NULL), _inviteId(0), _data(0)
         {
         }
 
         void SetAction(CalendarActionData data) { _action = data; }
         CalendarActionData GetAction() const { return _action; }
 
-        void SetPlayer(PlayerPtr player) { ASSERT(player); _player = player; }
-        PlayerPtr GetPlayer() const { return _player; }
+        void SetPlayer(Player* player) { ASSERT(player); _player = player; }
+        Player* GetPlayer() const { return _player; }
 
         void SetInviteId(uint64 id) { _inviteId = id; }
         uint64 GetInviteId() const { return _inviteId; }
@@ -181,7 +181,7 @@ struct CalendarAction
 
     private:
         CalendarActionData _action;
-        PlayerPtr _player;
+        Player* _player;
         uint64 _inviteId;
         uint32 _data;
 };

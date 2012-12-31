@@ -20,11 +20,7 @@
 #define TRANSPORTS_H
 
 #include "GameObject.h"
-#ifndef INCLUDES_FOR_SHARED_PTR
-# include "VehicleDefines.h"
-#else
-# include "../Entities/Vehicle/VehicleDefines.h"
-#endif
+#include "VehicleDefines.h"
 
 #include <map>
 #include <set>
@@ -41,17 +37,17 @@ class Transport : public GameObject, public TransportBase
         void RemoveFromWorld();
         bool GenerateWaypoints(uint32 pathid, std::set<uint32> &mapids);
         void Update(uint32 p_time);
-        bool AddPassenger(PlayerPtr passenger);
-        bool RemovePassenger(PlayerPtr passenger);
+        bool AddPassenger(Player* passenger);
+        bool RemovePassenger(Player* passenger);
 
-        void RemovePassenger(CreaturePtr passenger) { m_NPCPassengerSet.erase(passenger); }
+        void RemovePassenger(Creature* passenger) { m_NPCPassengerSet.erase(passenger); }
 
-        typedef std::set<PlayerPtr> PlayerSet;
+        typedef std::set<Player*> PlayerSet;
         PlayerSet const& GetPassengers() const { return m_passengers; }
 
-        typedef std::set<CreaturePtr> CreatureSet;
+        typedef std::set<Creature*> CreatureSet;
         CreatureSet m_NPCPassengerSet;
-        CreaturePtr AddNPCPassengerCreature(uint32 tguid, uint32 entry, float x, float y, float z, float o, uint32 anim=0);
+        Creature * AddNPCPassengerCreature(uint32 tguid, uint32 entry, float x, float y, float z, float o, uint32 anim=0);
         uint32 AddNPCPassenger(uint32 tguid, uint32 entry, float x, float y, float z, float o, uint32 anim=0);
         void UpdatePosition(MovementInfo* mi);
         void UpdateNPCPositions();
@@ -62,23 +58,23 @@ class Transport : public GameObject, public TransportBase
         /// This method transforms supplied global coordinates into local offsets
         void CalculatePassengerOffset(float& x, float& y, float& z, float& o);
 
-        void BuildStartMovePacket(constMapPtr targetMap);
-        void BuildStopMovePacket(constMapPtr targetMap);
+        void BuildStartMovePacket(Map const* targetMap);
+        void BuildStopMovePacket(Map const* targetMap);
         uint32 GetScriptId() const { return ScriptId; }
             
-        static float getX(float x, float y, TransportPtr trans)
+        static float getX(float x, float y, Transport* trans)
         { 
             return trans->GetPositionX() + (x * cos(trans->GetOrientation()) + y * sin(trans->GetOrientation() + float(M_PI)));
         }
-        static float getY(float x, float y, TransportPtr trans)
+        static float getY(float x, float y, Transport* trans)
         { 
             return trans->GetPositionY() + (y * cos(trans->GetOrientation()) + x * sin(trans->GetOrientation()));
         }
-        static float getZ(float z, TransportPtr trans)
+        static float getZ(float z, Transport* trans)
         {
             return z + trans->GetPositionZ();
         }
-        static float getO(float o, TransportPtr trans)
+        static float getO(float o, Transport* trans)
         {
             return o + trans->GetOrientation();
         }
@@ -121,7 +117,7 @@ class Transport : public GameObject, public TransportBase
 
     private:
         void TeleportTransport(uint32 newMapid, float x, float y, float z);
-        void UpdateForMap(constMapPtr map);
+        void UpdateForMap(Map const* map);
         void DoEventIfAny(WayPointMap::value_type const& node, bool departure);
         WayPointMap::const_iterator GetNextWayPoint();
 };

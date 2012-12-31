@@ -102,14 +102,14 @@ class boss_ymiron : public CreatureScript
 public:
     boss_ymiron() : CreatureScript("boss_ymiron") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_ymironAI(creature);
     }
 
     struct boss_ymironAI : public ScriptedAI
     {
-        boss_ymironAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_ymironAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             for (int i = 0; i < 4; ++i)
@@ -187,7 +187,7 @@ public:
                 instance->SetData(DATA_KING_YMIRON_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -195,7 +195,7 @@ public:
                 instance->SetData(DATA_KING_YMIRON_EVENT, IN_PROGRESS);
         }
 
-        void SpellHitTarget(UnitPtr who, SpellInfo const* spell)
+        void SpellHitTarget(Unit* who, SpellInfo const* spell)
         {
             if (who && who->GetTypeId() == TYPEID_PLAYER && spell->Id == 59302)
                 kingsBane = false;
@@ -217,7 +217,7 @@ public:
                 {
                     DoScriptText(ActiveBoat[m_uiActiveOrder[m_uiActivedNumber]].say, me);
                     DoCast(me, SPELL_CHANNEL_YMIRON_TO_SPIRIT); // should be on spirit
-                    if (CreaturePtr temp = me->SummonCreature(ActiveBoat[m_uiActiveOrder[m_uiActivedNumber]].npc, ActiveBoat[m_uiActiveOrder[m_uiActivedNumber]].SpawnX, ActiveBoat[m_uiActiveOrder[m_uiActivedNumber]].SpawnY, ActiveBoat[m_uiActiveOrder[m_uiActivedNumber]].SpawnZ, ActiveBoat[m_uiActiveOrder[m_uiActivedNumber]].SpawnO, TEMPSUMMON_CORPSE_DESPAWN, 0))
+                    if (Creature* temp = me->SummonCreature(ActiveBoat[m_uiActiveOrder[m_uiActivedNumber]].npc, ActiveBoat[m_uiActiveOrder[m_uiActivedNumber]].SpawnX, ActiveBoat[m_uiActiveOrder[m_uiActivedNumber]].SpawnY, ActiveBoat[m_uiActiveOrder[m_uiActivedNumber]].SpawnZ, ActiveBoat[m_uiActiveOrder[m_uiActivedNumber]].SpawnO, TEMPSUMMON_CORPSE_DESPAWN, 0))
                     {
                         m_uiActivedCreatureGUID = temp->GetGUID();
                         temp->CastSpell(me, SPELL_CHANNEL_SPIRIT_TO_YMIRON, true);
@@ -288,7 +288,7 @@ public:
                 if (m_bIsActiveWithBJORN && m_uiAbility_BJORN_Timer <= diff)
                 {
                     //DoCast(me, SPELL_SUMMON_SPIRIT_FOUNT); // works fine, but using summon has better control
-                    if (CreaturePtr temp = me->SummonCreature(CREATURE_SPIRIT_FOUNT, 385.0f + rand() % 10, -330.0f + rand() % 10, 104.756f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 180000))
+                    if (Creature* temp = me->SummonCreature(CREATURE_SPIRIT_FOUNT, 385.0f + rand() % 10, -330.0f + rand() % 10, 104.756f, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 180000))
                     {
                         temp->SetSpeed(MOVE_RUN, 0.4f);
                         temp->CastSpell(temp, DUNGEON_MODE(SPELL_SPIRIT_FOUNT, H_SPELL_SPIRIT_FOUNT), true);
@@ -320,9 +320,9 @@ public:
                     for (uint8 i = 0; i < 4; ++i)
                     {
                         //DoCast(me, SPELL_SUMMON_AVENGING_SPIRIT); // works fine, but using summon has better control
-                        if (CreaturePtr temp = me->SummonCreature(CREATURE_AVENGING_SPIRIT, x + rand() % 10, y + rand() % 10, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
+                        if (Creature* temp = me->SummonCreature(CREATURE_AVENGING_SPIRIT, x + rand() % 10, y + rand() % 10, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30000))
                         {
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             {
                                 temp->AddThreat(target, 0.0f);
                                 temp->AI()->AttackStart(target);
@@ -367,7 +367,7 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -378,7 +378,7 @@ public:
                 instance->SetData(DATA_KING_YMIRON_EVENT, DONE);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3, SAY_SLAY_4), me);
         }
@@ -386,7 +386,7 @@ public:
         void DespawnBoatGhosts(uint64 m_uiCreatureGUID)
         {
             if (m_uiCreatureGUID)
-                if (CreaturePtr temp = Unit::GetCreature(TO_WORLDOBJECT(me), m_uiCreatureGUID))
+                if (Creature* temp = Unit::GetCreature(*me, m_uiCreatureGUID))
                     temp->DisappearAndDie();
 
             m_uiCreatureGUID = 0;
@@ -402,12 +402,12 @@ class achievement_kings_bane : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
+        bool OnCheck(Player* /*player*/, Unit* target)
         {
             if (!target)
                 return false;
 
-            if (CreaturePtr Ymiron = TO_CREATURE(target))
+            if (Creature* Ymiron = target->ToCreature())
                 if (Ymiron->AI()->GetData(DATA_KINGS_BANE))
                     return true;
 

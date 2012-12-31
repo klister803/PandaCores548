@@ -19,7 +19,7 @@ class boss_gekkan : public CreatureScript
     public:
         boss_gekkan() : CreatureScript("boss_gekkan") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_gekkan_AI(creature);
         }
@@ -50,12 +50,12 @@ class boss_gekkan : public CreatureScript
 
         struct boss_gekkan_AI : public BossAI
         {
-            boss_gekkan_AI(CreaturePtr creature) : BossAI(creature, BOSS_GEKKAN)
+            boss_gekkan_AI(Creature* creature) : BossAI(creature, BOSS_GEKKAN)
             {
             }
             std::list<uint64> entourage;
 
-            void EnterCombat(UnitPtr who)
+            void EnterCombat(Unit* who)
             {
                 //Get the four adds.
                 if (me->GetInstanceScript())
@@ -65,11 +65,11 @@ class boss_gekkan : public CreatureScript
                 Talk(TALK_AGGRO);
             }
 
-            void JustDied(UnitPtr who)
+            void JustDied(Unit* who)
             {
                 for (auto guid : entourage)
                 {
-                    CreaturePtr c = me->GetMap()->GetCreature(guid);
+                    Creature* c = me->GetMap()->GetCreature(guid);
                     if (!c)
                         continue;
                     if (c->isAlive())
@@ -78,7 +78,7 @@ class boss_gekkan : public CreatureScript
                 Talk(TALK_DEATH);
             }
 
-            void KilledUnit(UnitPtr u)
+            void KilledUnit(Unit* u)
             {
                 Talk(TALK_KILLING);
             }
@@ -93,7 +93,7 @@ class boss_gekkan : public CreatureScript
                         uint64 dead_entourage = 0;
                         for (auto guid : entourage)
                         {
-                            CreaturePtr c = me->GetMap()->GetCreature(guid);
+                            Creature* c = me->GetMap()->GetCreature(guid);
                             if (!c)
                                 continue;
                             if (c->isDead())
@@ -130,7 +130,7 @@ class boss_gekkan : public CreatureScript
                             std::list<uint64>::iterator itr = entourage.begin();
                             std::advance(itr, urand(0, entourage.size() - 1));
                             uint64 guid = *itr;
-                            CreaturePtr c = me->GetMap()->GetCreature(guid);
+                            Creature* c = me->GetMap()->GetCreature(guid);
                             if (c)
                             {
                                 me->CastSpell(c, SPELL_RECKLESS_INSPIRATION, false);
@@ -152,7 +152,7 @@ class mob_glintrok_skulker : public CreatureScript
     public:
         mob_glintrok_skulker() : CreatureScript("mob_glintrok_skulker") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_glintrok_skulker_AI(creature);
         }
@@ -164,12 +164,12 @@ class mob_glintrok_skulker : public CreatureScript
 
         struct mob_glintrok_skulker_AI : public ScriptedAI
         {
-            mob_glintrok_skulker_AI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_glintrok_skulker_AI(Creature* creature) : ScriptedAI(creature)
             {
             }
             EventMap events;
 
-            void EnterCombat(UnitPtr unit)
+            void EnterCombat(Unit* unit)
             {
                 events.ScheduleEvent(1, 2000);
             }
@@ -202,7 +202,7 @@ class mob_glintrok_ironhide : public CreatureScript
     public:
         mob_glintrok_ironhide() : CreatureScript("mob_glintrok_ironhide") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_glintrok_ironhide_AI(creature);
         }
@@ -214,12 +214,12 @@ class mob_glintrok_ironhide : public CreatureScript
 
         struct mob_glintrok_ironhide_AI : public ScriptedAI
         {
-            mob_glintrok_ironhide_AI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_glintrok_ironhide_AI(Creature* creature) : ScriptedAI(creature)
             {
             }
             EventMap events;
 
-            void EnterCombat(UnitPtr unit)
+            void EnterCombat(Unit* unit)
             {
                 events.ScheduleEvent(1, 2000);
             }
@@ -252,7 +252,7 @@ class mob_glintrok_oracle : public CreatureScript
     public:
         mob_glintrok_oracle() : CreatureScript("mob_glintrok_oracle") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_glintrok_oracle_AI(creature);
         }
@@ -265,12 +265,12 @@ class mob_glintrok_oracle : public CreatureScript
 
         struct mob_glintrok_oracle_AI : public ScriptedAI
         {
-            mob_glintrok_oracle_AI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_glintrok_oracle_AI(Creature* creature) : ScriptedAI(creature)
             {
             }
             EventMap events;
 
-            void EnterCombat(UnitPtr unit)
+            void EnterCombat(Unit* unit)
             {
                 events.ScheduleEvent(1, 2000);
                 events.ScheduleEvent(2, 4000);
@@ -308,7 +308,7 @@ class mob_glintrok_hexxer : public CreatureScript
     public:
         mob_glintrok_hexxer() : CreatureScript("mob_glintrok_hexxer") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_glintrok_hexxer_AI(creature);
         }
@@ -321,12 +321,12 @@ class mob_glintrok_hexxer : public CreatureScript
 
         struct mob_glintrok_hexxer_AI : public ScriptedAI
         {
-            mob_glintrok_hexxer_AI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_glintrok_hexxer_AI(Creature* creature) : ScriptedAI(creature)
             {
             }
             EventMap events;
 
-            void EnterCombat(UnitPtr unit)
+            void EnterCombat(Unit* unit)
             {
                 events.ScheduleEvent(1, 2000);
                 events.ScheduleEvent(2, 4000);

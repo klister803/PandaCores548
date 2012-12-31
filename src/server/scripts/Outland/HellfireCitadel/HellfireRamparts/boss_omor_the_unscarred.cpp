@@ -61,7 +61,7 @@ class boss_omor_the_unscarred : public CreatureScript
 
         struct boss_omor_the_unscarredAI : public ScriptedAI
         {
-            boss_omor_the_unscarredAI(CreaturePtr creature) : ScriptedAI(creature)
+            boss_omor_the_unscarredAI(Creature* creature) : ScriptedAI(creature)
             {
                 SetCombatMovement(false);
             }
@@ -91,12 +91,12 @@ class boss_omor_the_unscarred : public CreatureScript
                 CanPullBack = false;
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
             }
 
-            void KilledUnit(UnitPtr /*victim*/)
+            void KilledUnit(Unit* /*victim*/)
             {
                 if (rand()%2)
                     return;
@@ -104,17 +104,17 @@ class boss_omor_the_unscarred : public CreatureScript
                 DoScriptText(SAY_KILL_1, me);
             }
 
-            void JustSummoned(CreaturePtr summoned)
+            void JustSummoned(Creature* summoned)
             {
                 DoScriptText(SAY_SUMMON, me);
 
-                if (UnitPtr random = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* random = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     summoned->AI()->AttackStart(random);
 
                 ++SummonedCount;
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 DoScriptText(SAY_DIE, me);
             }
@@ -141,7 +141,7 @@ class boss_omor_the_unscarred : public CreatureScript
                 {
                     if (ShadowWhip_Timer <= diff)
                     {
-                        if (PlayerPtr temp = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID))
+                        if (Player* temp = Unit::GetPlayer(*me, PlayerGUID))
                         {
                             //if unit dosen't have this flag, then no pulling back (script will attempt cast, even if orbital strike was resisted)
                             if (temp->HasUnitMovementFlag(MOVEMENTFLAG_FALLING_FAR))
@@ -160,7 +160,7 @@ class boss_omor_the_unscarred : public CreatureScript
                 else
                     if (OrbitalStrike_Timer <= diff)
                     {
-                        UnitPtr temp = nullptr;
+                        Unit* temp = NULL;
                         if (me->IsWithinMeleeRange(me->getVictim()))
                             temp = me->getVictim();
                         else temp = SelectTarget(SELECT_TARGET_RANDOM, 0);
@@ -193,7 +193,7 @@ class boss_omor_the_unscarred : public CreatureScript
                 {
                     DoScriptText(SAY_CURSE, me);
 
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
                         DoCast(target, SPELL_TREACHEROUS_AURA);
                         Aura_Timer = 8000+rand()%8000;
@@ -204,7 +204,7 @@ class boss_omor_the_unscarred : public CreatureScript
 
                 if (Shadowbolt_Timer <= diff)
                 {
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
                         if (target)
                             target = me->getVictim();
@@ -220,7 +220,7 @@ class boss_omor_the_unscarred : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_omor_the_unscarredAI(creature);
         }

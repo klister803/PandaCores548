@@ -27,10 +27,10 @@ class Unit;
 
 typedef std::set<uint64> GuidSet;
 
-class Vehicle : public TransportBase, public std::enable_shared_from_this<Vehicle>
+class Vehicle : public TransportBase
 {
     public:
-        explicit Vehicle(UnitPtr unit, VehicleEntry const* vehInfo, uint32 creatureEntry);
+        explicit Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry);
         virtual ~Vehicle();
 
         void Install();
@@ -40,19 +40,19 @@ class Vehicle : public TransportBase, public std::enable_shared_from_this<Vehicl
         void ApplyAllImmunities();
         void InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 type, uint32 summonTime);   //! May be called from scripts
 
-        UnitPtr GetBase() const { return _me; }
+        Unit* GetBase() const { return _me; }
         VehicleEntry const* GetVehicleInfo() const { return _vehicleInfo; }
         uint32 GetCreatureEntry() const { return _creatureEntry; }
 
         bool HasEmptySeat(int8 seatId) const;
-        UnitPtr GetPassenger(int8 seatId) const;
+        Unit* GetPassenger(int8 seatId) const;
         int8 GetNextEmptySeat(int8 seatId, bool next) const;
         uint8 GetAvailableSeatCount() const;
 
         bool CheckCustomCanEnter();
-        bool AddPassenger(UnitPtr passenger, int8 seatId = -1);
-        void EjectPassenger(UnitPtr passenger, UnitPtr controller);
-        void RemovePassenger(UnitPtr passenger);
+        bool AddPassenger(Unit* passenger, int8 seatId = -1);
+        void EjectPassenger(Unit* passenger, Unit* controller);
+        void RemovePassenger(Unit* passenger);
         void RelocatePassengers();
         void RemoveAllPassengers();
         void Dismiss();
@@ -61,10 +61,10 @@ class Vehicle : public TransportBase, public std::enable_shared_from_this<Vehicl
 
         SeatMap Seats;
 
-        VehicleSeatEntry const* GetSeatForPassenger(UnitPtr passenger);
+        VehicleSeatEntry const* GetSeatForPassenger(Unit* passenger);
 
     private:
-        SeatMap::iterator GetSeatIteratorForPassenger(UnitPtr passenger);
+        SeatMap::iterator GetSeatIteratorForPassenger(Unit* passenger);
         void InitMovementInfoForBase();
 
         /// This method transforms supplied transport offsets into global coordinates
@@ -73,7 +73,7 @@ class Vehicle : public TransportBase, public std::enable_shared_from_this<Vehicl
         /// This method transforms supplied global coordinates into local offsets
         void CalculatePassengerOffset(float& x, float& y, float& z, float& o);
 
-        UnitPtr _me;
+        Unit* _me;
         VehicleEntry const* _vehicleInfo;
         GuidSet vehiclePlayers;
         uint32 _usableSeatNum;         // Number of seats that match VehicleSeatEntry::UsableByPlayer, used for proper display flags

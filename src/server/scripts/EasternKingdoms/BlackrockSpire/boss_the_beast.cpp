@@ -39,21 +39,21 @@ class boss_the_beast : public CreatureScript
 public:
     boss_the_beast() : CreatureScript("boss_the_beast") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_thebeastAI(creature);
     }
 
     struct boss_thebeastAI : public BossAI
     {
-        boss_thebeastAI(CreaturePtr creature) : BossAI(creature, DATA_THE_BEAST) {}
+        boss_thebeastAI(Creature* creature) : BossAI(creature, DATA_THE_BEAST) {}
 
         void Reset()
         {
             _Reset();
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_FLAME_BREAK,     12 * IN_MILLISECONDS);
@@ -61,7 +61,7 @@ public:
             events.ScheduleEvent(EVENT_TERRIFYING_ROAR, 23 * IN_MILLISECONDS);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             _JustDied();
         }
@@ -85,7 +85,7 @@ public:
                         events.ScheduleEvent(EVENT_FLAME_BREAK, 10 * IN_MILLISECONDS);
                         break;
                     case EVENT_IMMOLATE:
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             DoCast(target, SPELL_IMMOLATE);
                         events.ScheduleEvent(EVENT_IMMOLATE, 8 * IN_MILLISECONDS);
                         break;

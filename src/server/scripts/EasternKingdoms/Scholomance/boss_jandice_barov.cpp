@@ -37,14 +37,14 @@ class boss_jandice_barov : public CreatureScript
 public:
     boss_jandice_barov() : CreatureScript("boss_jandice_barov") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_jandicebarovAI (creature);
     }
 
     struct boss_jandicebarovAI : public ScriptedAI
     {
-        boss_jandicebarovAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_jandicebarovAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 CurseOfBlood_Timer;
         uint32 Illusion_Timer;
@@ -60,13 +60,13 @@ public:
             Invisible = false;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
-        void SummonIllusions(UnitPtr victim)
+        void SummonIllusions(Unit* victim)
         {
-            if (CreaturePtr Illusion = DoSpawnCreature(11439, float(irand(-9, 9)), float(irand(-9, 9)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000))
+            if (Creature* Illusion = DoSpawnCreature(11439, float(irand(-9, 9)), float(irand(-9, 9)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 60000))
                 Illusion->AI()->AttackStart(victim);
         }
 
@@ -112,7 +112,7 @@ public:
                 DoModifyThreatPercent(me->getVictim(), -99);
 
                 //Summon 10 Illusions attacking random gamers
-                UnitPtr target = nullptr;
+                Unit* target = NULL;
                 for (uint8 i = 0; i < 10; ++i)
                 {
                     target = SelectTarget(SELECT_TARGET_RANDOM, 0);
@@ -159,14 +159,14 @@ class mob_illusionofjandicebarov : public CreatureScript
 public:
     mob_illusionofjandicebarov() : CreatureScript("mob_illusionofjandicebarov") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_illusionofjandicebarovAI (creature);
     }
 
     struct mob_illusionofjandicebarovAI : public ScriptedAI
     {
-        mob_illusionofjandicebarovAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        mob_illusionofjandicebarovAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 Cleave_Timer;
 
@@ -176,7 +176,7 @@ public:
             me->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_MASK_MAGIC, true);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 

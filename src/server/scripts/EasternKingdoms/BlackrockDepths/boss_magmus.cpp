@@ -35,14 +35,14 @@ class boss_magmus : public CreatureScript
 public:
     boss_magmus() : CreatureScript("boss_magmus") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_magmusAI (creature);
     }
 
     struct boss_magmusAI : public ScriptedAI
     {
-        boss_magmusAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_magmusAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 FieryBurst_Timer;
         uint32 WarStomp_Timer;
@@ -53,7 +53,7 @@ public:
             WarStomp_Timer =0;
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -81,7 +81,7 @@ public:
             DoMeleeAttackIfReady();
         }
         // When he die open door to last chamber
-        void JustDied(UnitPtr killer)
+        void JustDied(Unit* killer)
         {
             if (InstanceScript* instance = killer->GetInstanceScript())
                 instance->HandleGameObject(instance->GetData64(DATA_THRONE_DOOR), true);

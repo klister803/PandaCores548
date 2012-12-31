@@ -33,7 +33,7 @@
 
 void WorldSession::SendNameQueryOpcode(uint64 guid)
 {
-    PlayerPtr player = ObjectAccessor::FindPlayer(guid);
+    Player* player = ObjectAccessor::FindPlayer(guid);
     CharacterNameData const* nameData = sWorld->GetCharacterNameData(GUID_LOPART(guid));
 
     WorldPacket data(SMSG_NAME_QUERY_RESPONSE);
@@ -52,7 +52,7 @@ void WorldSession::SendNameQueryOpcode(uint64 guid)
     data << uint8(nameData->m_gender);
     data << uint8(nameData->m_class);
 
-    if (DeclinedName const* names = (player ? player->GetDeclinedNames() : nullptr))
+    if (DeclinedName const* names = (player ? player->GetDeclinedNames() : NULL))
     {
         data << uint8(1);                           // Name is declined
         for (uint8 i = 0; i < MAX_DECLINED_NAME_CASES; ++i)
@@ -83,8 +83,8 @@ void WorldSession::HandleQueryTimeOpcode(WorldPacket & /*recvData*/)
 void WorldSession::SendQueryTimeResponse()
 {
     WorldPacket data(SMSG_QUERY_TIME_RESPONSE, 4+4);
-    data << uint32(time(nullptr));
-    data << uint32(sWorld->GetNextDailyQuestsResetTime() - time(nullptr));
+    data << uint32(time(NULL));
+    data << uint32(sWorld->GetNextDailyQuestsResetTime() - time(NULL));
     SendPacket(&data);
 }
 
@@ -219,7 +219,7 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket& /*recvData*/)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_CORPSE_QUERY");
 
-    CorpsePtr corpse = GetPlayer()->GetCorpse();
+    Corpse* corpse = GetPlayer()->GetCorpse();
 
     if (!corpse)
     {
@@ -258,7 +258,7 @@ void WorldSession::HandleCorpseQueryOpcode(WorldPacket& /*recvData*/)
             if (corpseMapEntry->IsDungeon() && corpseMapEntry->entrance_map >= 0)
             {
                 // if corpse map have entrance
-                if (constMapPtr entranceMap = sMapMgr->CreateBaseMap(corpseMapEntry->entrance_map))
+                if (Map const* entranceMap = sMapMgr->CreateBaseMap(corpseMapEntry->entrance_map))
                 {
                     mapid = corpseMapEntry->entrance_map;
                     x = corpseMapEntry->entrance_x;

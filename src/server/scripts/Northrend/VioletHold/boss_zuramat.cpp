@@ -55,14 +55,14 @@ class boss_zuramat : public CreatureScript
 public:
     boss_zuramat() : CreatureScript("boss_zuramat") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_zuramatAI (creature);
     }
 
     struct boss_zuramatAI : public ScriptedAI
     {
-        boss_zuramatAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_zuramatAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -90,7 +90,7 @@ public:
             voidDance = true;
         }
 
-        void AttackStart(UnitPtr who)
+        void AttackStart(Unit* who)
         {
             if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                 return;
@@ -104,12 +104,12 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             if (instance)
             {
-                if (GameObjectPtr pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_ZURAMAT_CELL)))
+                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_ZURAMAT_CELL)))
                     if (pDoor->GetGoState() == GO_STATE_READY)
                     {
                         EnterEvadeMode();
@@ -122,7 +122,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -138,7 +138,7 @@ public:
 
             if (SpellVoidShiftTimer <= diff)
             {
-                 if (UnitPtr unit = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                 if (Unit* unit = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(unit, SPELL_VOID_SHIFT);
                 SpellVoidShiftTimer = 20000;
             } else SpellVoidShiftTimer -=diff;
@@ -152,7 +152,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void SummonedCreatureDies(CreaturePtr summoned, UnitPtr /*who*/)
+        void SummonedCreatureDies(Creature* summoned, Unit* /*who*/)
         {
             if (summoned->GetEntry() == CREATURE_VOID_SENTRY)
                 voidDance = false;
@@ -166,7 +166,7 @@ public:
             return 0;
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -185,7 +185,7 @@ public:
             }
         }
 
-        void KilledUnit(UnitPtr victim)
+        void KilledUnit(Unit* victim)
         {
             if (victim == me)
                 return;
@@ -193,7 +193,7 @@ public:
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2, SAY_SLAY_3), me);
         }
 
-        void JustSummoned(CreaturePtr summon)
+        void JustSummoned(Creature* summon)
         {
             summon->AI()->AttackStart(me->getVictim());
             summon->AI()->DoCastAOE(SPELL_ZURAMAT_ADD_2);
@@ -210,12 +210,12 @@ class achievement_void_dance : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
+        bool OnCheck(Player* /*player*/, Unit* target)
         {
             if (!target)
                 return false;
 
-            if (CreaturePtr Zuramat = TO_CREATURE(target))
+            if (Creature* Zuramat = target->ToCreature())
                 if (Zuramat->AI()->GetData(DATA_VOID_DANCE))
                     return true;
 

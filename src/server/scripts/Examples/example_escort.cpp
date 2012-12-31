@@ -66,12 +66,12 @@ class example_escort : public CreatureScript
         struct example_escortAI : public npc_escortAI
         {
             // CreatureAI functions
-            example_escortAI(CreaturePtr creature) : npc_escortAI(creature) { }
+            example_escortAI(Creature* creature) : npc_escortAI(creature) { }
 
             uint32 m_uiDeathCoilTimer;
             uint32 m_uiChatTimer;
 
-            void JustSummoned(CreaturePtr summoned)
+            void JustSummoned(Creature* summoned)
             {
                 summoned->AI()->AttackStart(me);
             }
@@ -89,7 +89,7 @@ class example_escort : public CreatureScript
                         me->SummonCreature(NPC_FELBOAR, me->GetPositionX()+5.0f, me->GetPositionY()+7.0f, me->GetPositionZ(), 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 3000);
                         break;
                     case 4:
-                        if (PlayerPtr player = GetPlayerForEscort())
+                        if (Player* player = GetPlayerForEscort())
                         {
                             //pTmpPlayer is the target of the text
                             DoScriptText(SAY_WP_3, me, player);
@@ -100,11 +100,11 @@ class example_escort : public CreatureScript
                 }
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 if (HasEscortState(STATE_ESCORT_ESCORTING))
                 {
-                    if (PlayerPtr player = GetPlayerForEscort())
+                    if (Player* player = GetPlayerForEscort())
                         DoScriptText(SAY_AGGRO1, me, player);
                 }
                 else
@@ -117,11 +117,11 @@ class example_escort : public CreatureScript
                 m_uiChatTimer = 4000;
             }
 
-            void JustDied(UnitPtr killer)
+            void JustDied(Unit* killer)
             {
                 if (HasEscortState(STATE_ESCORT_ESCORTING))
                 {
-                    if (PlayerPtr player = GetPlayerForEscort())
+                    if (Player* player = GetPlayerForEscort())
                     {
                         // not a likely case, code here for the sake of example
                         if (killer == me)
@@ -178,12 +178,12 @@ class example_escort : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new example_escortAI(creature);
         }
 
-        bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+        bool OnGossipHello(Player* player, Creature* creature)
         {
             player->TalkedToCreature(creature->GetEntry(), creature->GetGUID());
             player->PrepareGossipMenu(creature, 0);
@@ -197,7 +197,7 @@ class example_escort : public CreatureScript
             return true;
         }
 
-        bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
             npc_escortAI* pEscortAI = CAST_AI(example_escort::example_escortAI, creature->AI());

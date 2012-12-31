@@ -41,7 +41,7 @@ class boss_venoxis : public CreatureScript
 
         struct boss_venoxisAI : public BossAI
         {
-            boss_venoxisAI(CreaturePtr creature) : BossAI(creature, DATA_VENOXIS)
+            boss_venoxisAI(Creature* creature) : BossAI(creature, DATA_VENOXIS)
             {
             }
 
@@ -49,15 +49,15 @@ class boss_venoxis : public CreatureScript
             {
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
             {
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
             }
 
@@ -85,7 +85,7 @@ class boss_venoxis : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_venoxisAI(creature);
         }

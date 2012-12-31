@@ -60,14 +60,14 @@ class molten_flame : public CreatureScript
 public:
     molten_flame() : CreatureScript("molten_flame") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new molten_flameAI (creature);
     }
 
     struct molten_flameAI : public NullCreatureAI
     {
-        molten_flameAI(CreaturePtr creature) : NullCreatureAI(creature) {}
+        molten_flameAI(Creature* creature) : NullCreatureAI(creature) {}
 
         void InitializeAI()
         {
@@ -86,14 +86,14 @@ class boss_supremus : public CreatureScript
 public:
     boss_supremus() : CreatureScript("boss_supremus") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_supremusAI (creature);
     }
 
     struct boss_supremusAI : public ScriptedAI
     {
-        boss_supremusAI(CreaturePtr creature) : ScriptedAI(creature), summons(me)
+        boss_supremusAI(Creature* creature) : ScriptedAI(creature), summons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -121,7 +121,7 @@ public:
             summons.DespawnAll();
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (instance)
                 instance->SetData(DATA_SUPREMUSEVENT, IN_PROGRESS);
@@ -158,7 +158,7 @@ public:
             events.ScheduleEvent(EVENT_SWITCH_PHASE, 60000, GCD_CAST);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
             {
@@ -168,26 +168,26 @@ public:
             summons.DespawnAll();
         }
 
-        void JustSummoned(CreaturePtr summon)
+        void JustSummoned(Creature* summon)
         {
             summons.Summon(summon);
         }
 
-        void SummonedCreatureDespawn(CreaturePtr summon)
+        void SummonedCreatureDespawn(Creature* summon)
         {
             summons.Despawn(summon);
         }
 
-        UnitPtr CalculateHatefulStrikeTarget()
+        Unit* CalculateHatefulStrikeTarget()
         {
             uint32 health = 0;
-            UnitPtr target = nullptr;
+            Unit* target = NULL;
 
-            std::list<HostileReferencePtr>& m_threatlist = me->getThreatManager()->getThreatList();
-            std::list<HostileReferencePtr>::const_iterator i = m_threatlist.begin();
+            std::list<HostileReference*>& m_threatlist = me->getThreatManager().getThreatList();
+            std::list<HostileReference*>::const_iterator i = m_threatlist.begin();
             for (i = m_threatlist.begin(); i!= m_threatlist.end(); ++i)
             {
-                UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*i)->getUnitGuid());
+                Unit* unit = Unit::GetUnit(*me, (*i)->getUnitGuid());
                 if (unit && me->IsWithinMeleeRange(unit))
                 {
                     if (unit->GetHealth() > health)
@@ -221,13 +221,13 @@ public:
                         events.ScheduleEvent(EVENT_FLAME, 20000, GCD_CAST);
                         break;
                     case EVENT_HATEFUL_STRIKE:
-                        if (UnitPtr target = CalculateHatefulStrikeTarget())
+                        if (Unit* target = CalculateHatefulStrikeTarget())
                             DoCast(target, SPELL_HATEFUL_STRIKE);
                         events.DelayEvents(1000, GCD_CAST);
                         events.ScheduleEvent(EVENT_HATEFUL_STRIKE, 5000, GCD_CAST, PHASE_STRIKE);
                         break;
                     case EVENT_SWITCH_TARGET:
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
                         {
                             DoResetThreat();
                             me->AddThreat(target, 5000000.0f);
@@ -237,7 +237,7 @@ public:
                         break;
                     case EVENT_VOLCANO:
                     {
-                        UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 999, true);
+                        Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 999, true);
                         if (!target) target = me->getVictim();
                         if (target)
                         {
@@ -266,14 +266,14 @@ class npc_volcano : public CreatureScript
 public:
     npc_volcano() : CreatureScript("npc_volcano") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_volcanoAI (creature);
     }
 
     struct npc_volcanoAI : public Scripted_NoMovementAI
     {
-        npc_volcanoAI(CreaturePtr creature) : Scripted_NoMovementAI(creature) {}
+        npc_volcanoAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
         void Reset()
         {
@@ -285,9 +285,9 @@ public:
         }
         uint32 wait;
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
-        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) {}
 
         void DoAction(const int32 /*info*/)
         {

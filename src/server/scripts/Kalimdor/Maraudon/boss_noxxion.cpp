@@ -37,14 +37,14 @@ class boss_noxxion : public CreatureScript
 public:
     boss_noxxion() : CreatureScript("boss_noxxion") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_noxxionAI (creature);
     }
 
     struct boss_noxxionAI : public ScriptedAI
     {
-        boss_noxxionAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_noxxionAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 ToxicVolleyTimer;
         uint32 UppercutTimer;
@@ -61,11 +61,11 @@ public:
             Invisible = false;
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
-        void SummonAdds(UnitPtr victim)
+        void SummonAdds(Unit* victim)
         {
-            if (CreaturePtr Add = DoSpawnCreature(13456, float(irand(-7, 7)), float(irand(-7, 7)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 90000))
+            if (Creature* Add = DoSpawnCreature(13456, float(irand(-7, 7)), float(irand(-7, 7)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 90000))
                 Add->AI()->AttackStart(victim);
         }
 

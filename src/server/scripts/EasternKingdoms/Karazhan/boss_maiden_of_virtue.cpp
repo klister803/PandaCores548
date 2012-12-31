@@ -45,14 +45,14 @@ class boss_maiden_of_virtue : public CreatureScript
 public:
     boss_maiden_of_virtue() : CreatureScript("boss_maiden_of_virtue") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_maiden_of_virtueAI (creature);
     }
 
     struct boss_maiden_of_virtueAI : public ScriptedAI
     {
-        boss_maiden_of_virtueAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_maiden_of_virtueAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 Repentance_Timer;
         uint32 Holyfire_Timer;
@@ -73,18 +73,18 @@ public:
             Enraged = false;
         }
 
-        void KilledUnit(UnitPtr /*Victim*/)
+        void KilledUnit(Unit* /*Victim*/)
         {
             if (urand(0, 1) == 0)
                 DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
         }
@@ -116,7 +116,7 @@ public:
 
             if (Holyfire_Timer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_HOLYFIRE);
 
                     Holyfire_Timer = urand(8000, 23000);      //Anywhere from 8 to 23 seconds, good luck having several of those in a row!
@@ -124,7 +124,7 @@ public:
 
             if (Holywrath_Timer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_HOLYWRATH);
 
                 Holywrath_Timer = urand(20000, 25000);        //20-30 secs sounds nice

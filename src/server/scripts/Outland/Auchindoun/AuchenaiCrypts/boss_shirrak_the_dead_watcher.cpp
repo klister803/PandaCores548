@@ -46,14 +46,14 @@ class boss_shirrak_the_dead_watcher : public CreatureScript
 public:
     boss_shirrak_the_dead_watcher() : CreatureScript("boss_shirrak_the_dead_watcher") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_shirrak_the_dead_watcherAI (creature);
     }
 
     struct boss_shirrak_the_dead_watcherAI : public ScriptedAI
     {
-        boss_shirrak_the_dead_watcherAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_shirrak_the_dead_watcherAI(Creature* creature) : ScriptedAI(creature)
         {
         }
 
@@ -73,10 +73,10 @@ public:
             FocusedTargetGUID = 0;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         { }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             if (summoned && summoned->GetEntry() == ENTRY_FOCUS_FIRE)
             {
@@ -85,7 +85,7 @@ public:
                 summoned->SetLevel(me->getLevel());
                 summoned->AddUnitState(UNIT_STATE_ROOT);
 
-                if (UnitPtr pFocusedTarget = Unit::GetUnit(TO_WORLDOBJECT(me), FocusedTargetGUID))
+                if (Unit* pFocusedTarget = Unit::GetUnit(*me, FocusedTargetGUID))
                     summoned->AI()->AttackStart(pFocusedTarget);
             }
         }
@@ -96,10 +96,10 @@ public:
             if (Inhibitmagic_Timer <= diff)
             {
                 float dist;
-                MapPtr map = me->GetMap();
+                Map* map = me->GetMap();
                 Map::PlayerList const &PlayerList = map->GetPlayers();
                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                    if (PlayerPtr i_pl = i->getSource())
+                    if (Player* i_pl = i->getSource())
                         if (i_pl->isAlive() && (dist = i_pl->IsWithinDist(me, 45)))
                         {
                             i_pl->RemoveAurasDueToSpell(SPELL_INHIBITMAGIC);
@@ -137,7 +137,7 @@ public:
             if (FocusFire_Timer <= diff)
             {
                 // Summon Focus Fire & Emote
-                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1);
                 if (target && target->GetTypeId() == TYPEID_PLAYER && target->isAlive())
                 {
                     FocusedTargetGUID = target->GetGUID();
@@ -164,14 +164,14 @@ class mob_focus_fire : public CreatureScript
 public:
     mob_focus_fire() : CreatureScript("mob_focus_fire") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_focus_fireAI (creature);
     }
 
     struct mob_focus_fireAI : public ScriptedAI
     {
-        mob_focus_fireAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_focus_fireAI(Creature* creature) : ScriptedAI(creature)
         {
         }
 
@@ -184,7 +184,7 @@ public:
             fiery1 = fiery2 = true;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         { }
 
         void UpdateAI(const uint32 diff)

@@ -60,7 +60,7 @@ class boss_loatheb : public CreatureScript
 
         struct boss_loathebAI : public BossAI
         {
-            boss_loathebAI(CreaturePtr creature) : BossAI(creature, BOSS_LOATHEB)
+            boss_loathebAI(Creature* creature) : BossAI(creature, BOSS_LOATHEB)
             {
             }
 
@@ -71,7 +71,7 @@ class boss_loatheb : public CreatureScript
                 _sporeLoserData = true;
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 _EnterCombat();
                 events.ScheduleEvent(EVENT_NECROTIC_AURA, 17000);
@@ -80,7 +80,7 @@ class boss_loatheb : public CreatureScript
                 events.ScheduleEvent(EVENT_INEVITABLE_DOOM, 120000);
             }
 
-            void SummonedCreatureDies(CreaturePtr /*summon*/, UnitPtr /*killer*/)
+            void SummonedCreatureDies(Creature* /*summon*/, Unit* /*killer*/)
             {
                 _sporeLoserData = false;
             }
@@ -139,7 +139,7 @@ class boss_loatheb : public CreatureScript
             uint8 _doomCounter;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_loathebAI(creature);
         }
@@ -150,7 +150,7 @@ class achievement_spore_loser : public AchievementCriteriaScript
     public:
         achievement_spore_loser() : AchievementCriteriaScript("achievement_spore_loser") { }
 
-        bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
+        bool OnCheck(Player* /*source*/, Unit* target)
         {
             return target && target->GetAI()->GetData(DATA_ACHIEVEMENT_SPORE_LOSER);
         }

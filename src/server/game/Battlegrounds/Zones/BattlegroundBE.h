@@ -55,19 +55,19 @@ class BattlegroundBE : public Battleground
         ~BattlegroundBE();
 
         /* inherited from BattlegroundClass */
-        virtual void AddPlayer(PlayerPtr player);
+        virtual void AddPlayer(Player* player);
         virtual void StartingEventCloseDoors();
         virtual void StartingEventOpenDoors();
 
-        void RemovePlayer(PlayerPtr player, uint64 guid, uint32 team);
-        void HandleAreaTrigger(PlayerPtr Source, uint32 Trigger);
+        void RemovePlayer(Player* player, uint64 guid, uint32 team);
+        void HandleAreaTrigger(Player* Source, uint32 Trigger);
         bool SetupBattleground();
         virtual void Reset();
         virtual void FillInitialWorldStates(WorldPacket &d);
-        void HandleKillPlayer(PlayerPtr player, PlayerPtr killer);
-        bool HandlePlayerUnderMap(PlayerPtr player);
+        void HandleKillPlayer(Player* player, Player* killer);
+        bool HandlePlayerUnderMap(Player* player);
 
         /* Scorekeeping */
-        void UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor = true);
+        void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
 };
 #endif

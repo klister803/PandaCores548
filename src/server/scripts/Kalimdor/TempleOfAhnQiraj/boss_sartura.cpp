@@ -43,14 +43,14 @@ class boss_sartura : public CreatureScript
 public:
     boss_sartura() : CreatureScript("boss_sartura") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_sarturaAI (creature);
     }
 
     struct boss_sarturaAI : public ScriptedAI
     {
-        boss_sarturaAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_sarturaAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 WhirlWind_Timer;
         uint32 WhirlWindRandom_Timer;
@@ -80,17 +80,17 @@ public:
 
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
         }
 
-         void JustDied(UnitPtr /*killer*/)
+         void JustDied(Unit* /*killer*/)
          {
              DoScriptText(SAY_DEATH, me);
          }
 
-         void KilledUnit(UnitPtr /*victim*/)
+         void KilledUnit(Unit* /*victim*/)
          {
              DoScriptText(SAY_SLAY, me);
          }
@@ -106,7 +106,7 @@ public:
                 if (WhirlWindRandom_Timer <= diff)
                 {
                     //Attack random Gamers
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
                     {
                         me->AddThreat(target, 1.0f);
                         me->TauntApply(target);
@@ -134,7 +134,7 @@ public:
                 if (AggroReset_Timer <= diff)
                 {
                     //Attack random Gamers
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
                     {
                         me->AddThreat(target, 1.0f);
                         me->TauntApply(target);
@@ -186,14 +186,14 @@ class mob_sartura_royal_guard : public CreatureScript
 public:
     mob_sartura_royal_guard() : CreatureScript("mob_sartura_royal_guard") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_sartura_royal_guardAI (creature);
     }
 
     struct mob_sartura_royal_guardAI : public ScriptedAI
     {
-        mob_sartura_royal_guardAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        mob_sartura_royal_guardAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 WhirlWind_Timer;
         uint32 WhirlWindRandom_Timer;
@@ -218,7 +218,7 @@ public:
             AggroReset = false;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
@@ -241,7 +241,7 @@ public:
                 if (WhirlWindRandom_Timer <= diff)
                 {
                     //Attack random Gamers
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
                     {
                         me->AddThreat(target, 1.0f);
                         me->TauntApply(target);
@@ -262,7 +262,7 @@ public:
                 if (AggroReset_Timer <= diff)
                 {
                     //Attack random Gamers
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100.0f, true))
                     {
                         me->AddThreat(target, 1.0f);
                         me->TauntApply(target);

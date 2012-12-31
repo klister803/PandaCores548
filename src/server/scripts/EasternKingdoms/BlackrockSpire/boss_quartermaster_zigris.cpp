@@ -39,28 +39,28 @@ class quartermaster_zigris : public CreatureScript
 public:
     quartermaster_zigris() : CreatureScript("quartermaster_zigris") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_quatermasterzigrisAI(creature);
     }
 
     struct boss_quatermasterzigrisAI : public BossAI
     {
-        boss_quatermasterzigrisAI(CreaturePtr creature) : BossAI(creature, DATA_QUARTERMASTER_ZIGRIS) {}
+        boss_quatermasterzigrisAI(Creature* creature) : BossAI(creature, DATA_QUARTERMASTER_ZIGRIS) {}
 
         void Reset()
         {
             _Reset();
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_SHOOT,      1 * IN_MILLISECONDS);
             events.ScheduleEvent(EVENT_STUN_BOMB, 16 * IN_MILLISECONDS);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             _JustDied();
         }

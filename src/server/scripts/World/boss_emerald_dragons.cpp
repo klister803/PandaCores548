@@ -89,7 +89,7 @@ enum Events
 
 struct emerald_dragonAI : public WorldBossAI
 {
-    emerald_dragonAI(CreaturePtr creature) : WorldBossAI(creature)
+    emerald_dragonAI(Creature* creature) : WorldBossAI(creature)
     {
 //        me->m_CombatDistance = 12.0f;
 //        me->m_SightDistance  = 60.0f;
@@ -107,7 +107,7 @@ struct emerald_dragonAI : public WorldBossAI
     }
 
     // Target killed during encounter, mark them as suspectible for Aura Of Nature
-    void KilledUnit(UnitPtr who)
+    void KilledUnit(Unit* who)
     {
         who->CastSpell(who, SPELL_MARK_OF_NATURE, true);
     }
@@ -150,7 +150,7 @@ struct emerald_dragonAI : public WorldBossAI
         while (uint32 eventId = events.ExecuteEvent())
             ExecuteEvent(eventId);
 
-        if (UnitPtr target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, -50.0f, true))
+        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, -50.0f, true))
             DoCast(target, SPELL_SUMMON_PLAYER);
 
         DoMeleeAttackIfReady();
@@ -168,7 +168,7 @@ class npc_dream_fog : public CreatureScript
 
         struct npc_dream_fogAI : public ScriptedAI
         {
-            npc_dream_fogAI(CreaturePtr creature) : ScriptedAI(creature)
+            npc_dream_fogAI(Creature* creature) : ScriptedAI(creature)
             {
             }
 
@@ -185,7 +185,7 @@ class npc_dream_fog : public CreatureScript
                 if (!_roamTimer)
                 {
                     // Chase target, but don't attack - otherwise just roam around
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                     {
                         _roamTimer = urand(15000, 30000);
                         me->GetMotionMaster()->Clear(false);
@@ -209,7 +209,7 @@ class npc_dream_fog : public CreatureScript
             uint32 _roamTimer;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_dream_fogAI(creature);
         }
@@ -224,7 +224,7 @@ class DreamFogTargetSelector
     public:
         DreamFogTargetSelector() { }
 
-        bool operator()(WorldObjectPtr object) const
+        bool operator()(WorldObject* object) const
         {
             return object->ToUnit() && object->ToUnit()->HasAura(SPELL_SLEEP);
         }
@@ -239,7 +239,7 @@ class spell_dream_fog_sleep : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dream_fog_sleep_SpellScript);
 
-            void FilterTargets(std::list<WorldObjectPtr>& unitList)
+            void FilterTargets(std::list<WorldObject*>& unitList)
             {
                 unitList.remove_if(DreamFogTargetSelector());
             }
@@ -265,9 +265,9 @@ class MarkOfNatureTargetSelector
     public:
         MarkOfNatureTargetSelector() { }
 
-        bool operator()(WorldObjectPtr object) const
+        bool operator()(WorldObject* object) const
         {
-            if (UnitPtr unit = object->ToUnit())
+            if (Unit* unit = object->ToUnit())
                 // return anyone that isn't tagged or already under the influence of Aura of Nature
                 return !(unit->HasAura(SPELL_MARK_OF_NATURE) && !unit->HasAura(SPELL_AURA_OF_NATURE));
             return true;
@@ -292,7 +292,7 @@ class spell_mark_of_nature : public SpellScriptLoader
                 return true;
             }
 
-            void FilterTargets(std::list<WorldObjectPtr>& targets)
+            void FilterTargets(std::list<WorldObject*>& targets)
             {
                 targets.remove_if(MarkOfNatureTargetSelector());
             }
@@ -348,7 +348,7 @@ class boss_ysondre : public CreatureScript
 
         struct boss_ysondreAI : public emerald_dragonAI
         {
-            boss_ysondreAI(CreaturePtr creature) : emerald_dragonAI(creature)
+            boss_ysondreAI(Creature* creature) : emerald_dragonAI(creature)
             {
             }
 
@@ -360,14 +360,14 @@ class boss_ysondre : public CreatureScript
                 events.ScheduleEvent(EVENT_LIGHTNING_WAVE, 12000);
             }
 
-            void EnterCombat(UnitPtr who)
+            void EnterCombat(Unit* who)
             {
                 Talk(SAY_YSONDRE_AGGRO);
                 WorldBossAI::EnterCombat(who);
             }
 
             // Summon druid spirits on 75%, 50% and 25% health
-            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
             {
                 if (!HealthAbovePct(100 - 25 * _stage))
                 {
@@ -397,7 +397,7 @@ class boss_ysondre : public CreatureScript
             uint8   _stage;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_ysondreAI(creature);
         }
@@ -434,7 +434,7 @@ class boss_lethon : public CreatureScript
 
         struct boss_lethonAI : public emerald_dragonAI
         {
-            boss_lethonAI(CreaturePtr creature) : emerald_dragonAI(creature)
+            boss_lethonAI(Creature* creature) : emerald_dragonAI(creature)
             {
             }
 
@@ -446,13 +446,13 @@ class boss_lethon : public CreatureScript
                 events.ScheduleEvent(EVENT_SHADOW_BOLT_WHIRL, 10000);
             }
 
-            void EnterCombat(UnitPtr who)
+            void EnterCombat(Unit* who)
             {
                 Talk(SAY_LETHON_AGGRO);
                 WorldBossAI::EnterCombat(who);
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
             {
                 if (!HealthAbovePct(100 - 25 * _stage))
                 {
@@ -480,7 +480,7 @@ class boss_lethon : public CreatureScript
             uint8   _stage;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_lethonAI(creature);
         }
@@ -512,7 +512,7 @@ class boss_emeriss : public CreatureScript
 
         struct boss_emerissAI : public emerald_dragonAI
         {
-            boss_emerissAI(CreaturePtr creature) : emerald_dragonAI(creature)
+            boss_emerissAI(Creature* creature) : emerald_dragonAI(creature)
             {
             }
 
@@ -524,20 +524,20 @@ class boss_emeriss : public CreatureScript
                 events.ScheduleEvent(EVENT_VOLATILE_INFECTION, 12000);
             }
 
-            void KilledUnit(UnitPtr who)
+            void KilledUnit(Unit* who)
             {
                 if (who->GetTypeId() == TYPEID_PLAYER)
                     DoCast(who, SPELL_PUTRID_MUSHROOM, true);
                 emerald_dragonAI::KilledUnit(who);
             }
 
-            void EnterCombat(UnitPtr who)
+            void EnterCombat(Unit* who)
             {
                 Talk(SAY_EMERISS_AGGRO);
                 WorldBossAI::EnterCombat(who);
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
             {
                 if (!HealthAbovePct(100 - 25 * _stage))
                 {
@@ -565,7 +565,7 @@ class boss_emeriss : public CreatureScript
             uint8   _stage;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_emerissAI(creature);
         }
@@ -605,7 +605,7 @@ class boss_taerar : public CreatureScript
 
         struct boss_taerarAI : public emerald_dragonAI
         {
-            boss_taerarAI(CreaturePtr creature) : emerald_dragonAI(creature)
+            boss_taerarAI(Creature* creature) : emerald_dragonAI(creature)
             {
                 _stage = 1;
                 _shades = 0;
@@ -628,18 +628,18 @@ class boss_taerar : public CreatureScript
                 events.ScheduleEvent(EVENT_BELLOWING_ROAR, 30000);
             }
 
-            void EnterCombat(UnitPtr who)
+            void EnterCombat(Unit* who)
             {
                 Talk(SAY_TAERAR_AGGRO);
                 emerald_dragonAI::EnterCombat(who);
             }
 
-            void SummonedCreatureDies(CreaturePtr /*summon*/, UnitPtr /*killer*/)
+            void SummonedCreatureDies(Creature* /*summon*/, Unit* /*killer*/)
             {
                 --_shades;
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
             {
                 // At 75, 50 or 25 percent health, we need to activate the shades and go "banished"
                 // Note: _stage holds the amount of times they have been summoned
@@ -720,7 +720,7 @@ class boss_taerar : public CreatureScript
             uint8   _stage;                                 // check which "shade phase" we're at (75-50-25 percentage counters)
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_taerarAI(creature);
         }

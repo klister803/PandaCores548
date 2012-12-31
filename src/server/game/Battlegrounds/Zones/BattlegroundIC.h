@@ -863,33 +863,33 @@ class BattlegroundIC : public Battleground
         ~BattlegroundIC();
 
         /* inherited from BattlegroundClass */
-        virtual void AddPlayer(PlayerPtr player);
+        virtual void AddPlayer(Player* player);
         virtual void StartingEventCloseDoors();
         virtual void StartingEventOpenDoors();
         virtual void PostUpdateImpl(uint32 diff);
 
-        void RemovePlayer(PlayerPtr player, uint64 guid, uint32 team);
-        void HandleAreaTrigger(PlayerPtr Source, uint32 Trigger);
+        void RemovePlayer(Player* player, uint64 guid, uint32 team);
+        void HandleAreaTrigger(Player* Source, uint32 Trigger);
         bool SetupBattleground();
         void SpawnLeader(uint32 teamid);
-        void HandleKillUnit(CreaturePtr unit, PlayerPtr killer);
-        void HandleKillPlayer(PlayerPtr player, PlayerPtr killer);
+        void HandleKillUnit(Creature* unit, Player* killer);
+        void HandleKillPlayer(Player* player, Player* killer);
         void EndBattleground(uint32 winner);
-        void EventPlayerClickedOnFlag(PlayerPtr source, GameObjectPtr /*target_obj*/);
+        void EventPlayerClickedOnFlag(Player* source, GameObject* /*target_obj*/);
 
-        void EventPlayerDamagedGO(PlayerPtr /*Player*/, GameObjectPtr go, uint32 eventType);
-        void DestroyGate(PlayerPtr player, GameObjectPtr go);
+        void EventPlayerDamagedGO(Player* /*player*/, GameObject* go, uint32 eventType);
+        void DestroyGate(Player* player, GameObject* go);
 
-        virtual WorldSafeLocsEntry const* GetClosestGraveYard(PlayerPtr player);
+        virtual WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
 
         /* Scorekeeping */
-        void UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor = true);
+        void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
 
         void FillInitialWorldStates(WorldPacket& data);
 
         void DoAction(uint32 action, uint64 var);
 
-        virtual void HandlePlayerResurrect(PlayerPtr player);
+        virtual void HandlePlayerResurrect(Player* player);
 
         uint32 GetNodeState(uint8 nodeType) { return (uint8)nodePoint[nodeType].nodeState; }
 
@@ -904,8 +904,8 @@ class BattlegroundIC : public Battleground
         BG_IC_GateState GateStatus[6];
         ICNodePoint nodePoint[7];
 
-        TransportPtr gunshipAlliance;
-        TransportPtr gunshipHorde;
+        Transport* gunshipAlliance;
+        Transport* gunshipHorde;
 
         uint32 GetNextBanner(ICNodePoint* nodePoint, uint32 team, bool returnDefinitve);
 
@@ -956,7 +956,7 @@ class BattlegroundIC : public Battleground
         void UpdateNodeWorldState(ICNodePoint* nodePoint);
         void HandleCapturedNodes(ICNodePoint* nodePoint, bool recapture);
         void HandleContestedNodes(ICNodePoint* nodePoint);
-        TransportPtr CreateTransport(uint32 goEntry, uint32 period);
-        void SendTransportInit(PlayerPtr player);
+        Transport* CreateTransport(uint32 goEntry, uint32 period);
+        void SendTransportInit(Player* player);
 };
 #endif

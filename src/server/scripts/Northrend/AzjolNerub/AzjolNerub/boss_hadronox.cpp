@@ -52,7 +52,7 @@ public:
 
     struct boss_hadronoxAI : public ScriptedAI
     {
-        boss_hadronoxAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_hadronoxAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             fMaxDistance = 50.0f;
@@ -91,7 +91,7 @@ public:
         }
 
         //when Hadronox kills any enemy (that includes a party member) she will regain 10% of her HP if the target had Leech Poison on
-        void KilledUnit(UnitPtr Victim)
+        void KilledUnit(Unit* Victim)
         {
             // not sure if this aura check is correct, I think it is though
             if (!Victim || !Victim->HasAura(DUNGEON_MODE(SPELL_LEECH_POISON, H_SPELL_LEECH_POISON)) || !me->isAlive())
@@ -100,13 +100,13 @@ public:
             me->ModifyHealth(int32(me->CountPctFromMaxHealth(10)));
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
                 instance->SetData(DATA_HADRONOX_EVENT, DONE);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (instance)
                 instance->SetData(DATA_HADRONOX_EVENT, IN_PROGRESS);
@@ -159,7 +159,7 @@ public:
 
             if (uiAcidTimer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_ACID_CLOUD);
 
                 uiAcidTimer = urand(20*IN_MILLISECONDS, 30*IN_MILLISECONDS);
@@ -167,7 +167,7 @@ public:
 
             if (uiLeechTimer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_LEECH_POISON);
 
                 uiLeechTimer = urand(11*IN_MILLISECONDS, 14*IN_MILLISECONDS);
@@ -175,7 +175,7 @@ public:
 
             if (uiGrabTimer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0)) // Draws all players (and attacking Mobs) to itself.
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0)) // Draws all players (and attacking Mobs) to itself.
                     DoCast(target, SPELL_WEB_GRAB);
 
                 uiGrabTimer = urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS);
@@ -190,7 +190,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_hadronoxAI(creature);
     }

@@ -66,7 +66,7 @@ class boss_pathaleon_the_calculator : public CreatureScript
 
         struct boss_pathaleon_the_calculatorAI : public ScriptedAI
         {
-            boss_pathaleon_the_calculatorAI(CreaturePtr creature) : ScriptedAI(creature), summons(me)
+            boss_pathaleon_the_calculatorAI(Creature* creature) : ScriptedAI(creature), summons(me)
             {
             }
 
@@ -94,28 +94,28 @@ class boss_pathaleon_the_calculator : public CreatureScript
                 Counter = 0;
                 summons.DespawnAll();
             }
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoScriptText(SAY_AGGRO, me);
             }
 
-            void KilledUnit(UnitPtr /*victim*/)
+            void KilledUnit(Unit* /*victim*/)
             {
                 DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 DoScriptText(SAY_DEATH, me);
 
                 summons.DespawnAll();
             }
 
-            void JustSummoned(CreaturePtr summon)
+            void JustSummoned(Creature* summon)
             {
                 summons.Summon(summon);
             }
-            void SummonedCreatureDespawn(CreaturePtr summon)
+            void SummonedCreatureDespawn(Creature* summon)
             {
                 summons.Despawn(summon);
             }
@@ -130,8 +130,8 @@ class boss_pathaleon_the_calculator : public CreatureScript
                 {
                     for (uint8 i = 0; i < 3; ++i)
                     {
-                        UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
-                        CreaturePtr Wraith = me->SummonCreature(21062, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
+                        Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                        Creature* Wraith = me->SummonCreature(21062, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
                         if (target && Wraith)
                             Wraith->AI()->AttackStart(target);
                     }
@@ -159,7 +159,7 @@ class boss_pathaleon_the_calculator : public CreatureScript
 
                 if (Domination_Timer <= diff)
                 {
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                     {
                         DoScriptText(RAND(SAY_DOMINATION_1, SAY_DOMINATION_2), me);
                         DoCast(target, SPELL_DOMINATION);
@@ -193,7 +193,7 @@ class boss_pathaleon_the_calculator : public CreatureScript
             }
         };
 
-            CreatureAI* GetAI(CreaturePtr creature) const
+            CreatureAI* GetAI(Creature* creature) const
             {
                 return new boss_pathaleon_the_calculatorAI (creature);
             }
@@ -210,7 +210,7 @@ class mob_nether_wraith : public CreatureScript
 
         struct mob_nether_wraithAI : public ScriptedAI
         {
-            mob_nether_wraithAI(CreaturePtr creature) : ScriptedAI(creature) {}
+            mob_nether_wraithAI(Creature* creature) : ScriptedAI(creature) {}
 
             uint32 ArcaneMissiles_Timer;
             uint32 Detonation_Timer;
@@ -225,7 +225,7 @@ class mob_nether_wraith : public CreatureScript
                 Detonation = false;
             }
 
-            void EnterCombat(UnitPtr /*who*/) {}
+            void EnterCombat(Unit* /*who*/) {}
 
             void UpdateAI(const uint32 diff)
             {
@@ -234,7 +234,7 @@ class mob_nether_wraith : public CreatureScript
 
                 if (ArcaneMissiles_Timer <= diff)
                 {
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                         DoCast(target, SPELL_ARCANE_MISSILES);
                     else
                         DoCast(me->getVictim(), SPELL_ARCANE_MISSILES);
@@ -268,7 +268,7 @@ class mob_nether_wraith : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_nether_wraithAI (creature);
         }

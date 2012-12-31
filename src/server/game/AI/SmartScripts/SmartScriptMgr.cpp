@@ -28,7 +28,6 @@
 #include "ScriptedCreature.h"
 #include "GameEventMgr.h"
 #include "CreatureTextMgr.h"
-#include "SpellAuraEffects.h"
 
 #include "SmartScriptMgr.h"
 

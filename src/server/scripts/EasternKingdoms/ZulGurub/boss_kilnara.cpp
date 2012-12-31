@@ -40,7 +40,7 @@ class boss_kilnara : public CreatureScript
 
         struct boss_kilnaraAI : public BossAI
         {
-            boss_kilnaraAI(CreaturePtr creature) : BossAI(creature, DATA_KILNARA)
+            boss_kilnaraAI(Creature* creature) : BossAI(creature, DATA_KILNARA)
             {
             }
 
@@ -48,11 +48,11 @@ class boss_kilnara : public CreatureScript
             {
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
             }
 
@@ -80,7 +80,7 @@ class boss_kilnara : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_kilnaraAI(creature);
         }

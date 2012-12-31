@@ -28,17 +28,17 @@
 
 class Unit;
 
-class MovementGenerator : public std::enable_shared_from_this<MovementGenerator>
+class MovementGenerator
 {
     public:
         virtual ~MovementGenerator();
 
-        virtual void Initialize(UnitPtr) = 0;
-        virtual void Finalize(UnitPtr) = 0;
+        virtual void Initialize(Unit &) = 0;
+        virtual void Finalize(Unit &) = 0;
 
-        virtual void Reset(UnitPtr) = 0;
+        virtual void Reset(Unit &) = 0;
 
-        virtual bool Update(UnitPtr, const uint32& time_diff) = 0;
+        virtual bool Update(Unit &, const uint32& time_diff) = 0;
 
         virtual MovementGeneratorType GetMovementGeneratorType() = 0;
 
@@ -49,32 +49,32 @@ template<class T, class D>
 class MovementGeneratorMedium : public MovementGenerator
 {
     public:
-        void Initialize(UnitPtr u)
+        void Initialize(Unit &u)
         {
             //u->AssertIsType<T>();
-            (static_cast<D*>(this))->Initialize(CAST(T,u));
+            (static_cast<D*>(this))->Initialize(*((T*)&u));
         }
-        void Finalize(UnitPtr u)
+        void Finalize(Unit &u)
         {
             //u->AssertIsType<T>();
-            (static_cast<D*>(this))->Finalize(CAST(T,u));
+            (static_cast<D*>(this))->Finalize(*((T*)&u));
         }
-        void Reset(UnitPtr u)
+        void Reset(Unit &u)
         {
             //u->AssertIsType<T>();
-            (static_cast<D*>(this))->Reset(CAST(T,u));
+            (static_cast<D*>(this))->Reset(*((T*)&u));
         }
-        bool Update(UnitPtr u, const uint32& time_diff)
+        bool Update(Unit &u, const uint32& time_diff)
         {
             //u->AssertIsType<T>();
-            return (static_cast<D*>(this))->Update(CAST(T,u), time_diff);
+            return (static_cast<D*>(this))->Update(*((T*)&u), time_diff);
         }
     public:
         // will not link if not overridden in the generators
-        void Initialize(std::shared_ptr<T> u);
-        void Finalize(std::shared_ptr<T> u);
-        void Reset(std::shared_ptr<T> u);
-        bool Update(std::shared_ptr<T> u, const uint32& time_diff);
+        void Initialize(T &u);
+        void Finalize(T &u);
+        void Reset(T &u);
+        bool Update(T &u, const uint32& time_diff);
 };
 
 struct SelectableMovement : public FactoryHolder<MovementGenerator, MovementGeneratorType>

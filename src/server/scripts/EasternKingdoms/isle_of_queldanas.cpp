@@ -45,14 +45,14 @@ class npc_converted_sentry : public CreatureScript
 public:
     npc_converted_sentry() : CreatureScript("npc_converted_sentry") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_converted_sentryAI (creature);
     }
 
     struct npc_converted_sentryAI : public ScriptedAI
     {
-        npc_converted_sentryAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_converted_sentryAI(Creature* creature) : ScriptedAI(creature) {}
 
         bool Credit;
         uint32 Timer;
@@ -63,8 +63,8 @@ public:
             Timer = 2500;
         }
 
-        void MoveInLineOfSight(UnitPtr /*who*/) {}
-        void EnterCombat(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -80,7 +80,7 @@ public:
 
                     DoCast(me, SPELL_CONVERT_CREDIT);
                     if (me->isPet())
-                        TO_PET(me)->SetDuration(7500);
+                        me->ToPet()->SetDuration(7500);
                     Credit = true;
                 } else Timer -= diff;
             }
@@ -102,25 +102,25 @@ class npc_greengill_slave : public CreatureScript
 public:
     npc_greengill_slave() : CreatureScript("npc_greengill_slave") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_greengill_slaveAI(creature);
     }
 
     struct npc_greengill_slaveAI : public ScriptedAI
     {
-        npc_greengill_slaveAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_greengill_slaveAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 PlayerGUID;
 
-        void EnterCombat(UnitPtr /*who*/){}
+        void EnterCombat(Unit* /*who*/){}
 
         void Reset()
         {
         PlayerGUID = 0;
         }
 
-        void SpellHit(UnitPtr caster, const SpellInfo* spell)
+        void SpellHit(Unit* caster, const SpellInfo* spell)
         {
             if (!caster)
                 return;
@@ -130,12 +130,12 @@ public:
                 PlayerGUID = caster->GetGUID();
                 if (PlayerGUID)
                 {
-                    PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID);
+                    Player* player = Unit::GetPlayer(*me, PlayerGUID);
                     if (player && player->GetQuestStatus(QUESTG) == QUEST_STATUS_INCOMPLETE)
                         DoCast(player, 45110, true);
                 }
                 DoCast(me, ENRAGE);
-                UnitPtr Myrmidon = me->FindNearestCreature(DM, 70);
+                Unit* Myrmidon = me->FindNearestCreature(DM, 70);
                 if (Myrmidon)
                 {
                     me->AddThreat(Myrmidon, 100000.0f);

@@ -50,7 +50,7 @@ public:
 
     struct mob_water_elementalAI : public ScriptedAI
     {
-        mob_water_elementalAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        mob_water_elementalAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 waterBoltTimer;
         uint64 balindaGUID;
@@ -76,7 +76,7 @@ public:
             // check if creature is not outside of building
             if (resetTimer < diff)
             {
-                if (CreaturePtr pBalinda = Unit::GetCreature(TO_WORLDOBJECT(me), balindaGUID))
+                if (Creature* pBalinda = Unit::GetCreature(*me, balindaGUID))
                     if (me->GetDistance2d(pBalinda->GetHomePosition().GetPositionX(), pBalinda->GetHomePosition().GetPositionY()) > 50)
                         EnterEvadeMode();
                     resetTimer = 5 * IN_MILLISECONDS;
@@ -86,7 +86,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_water_elementalAI(creature);
     }
@@ -99,7 +99,7 @@ public:
 
     struct boss_balindaAI : public ScriptedAI
     {
-        boss_balindaAI(CreaturePtr creature) : ScriptedAI(creature), summons(me) {}
+        boss_balindaAI(Creature* creature) : ScriptedAI(creature), summons(me) {}
 
         uint32 arcaneExplosionTimer;
         uint32 coneOfColdTimer;
@@ -122,7 +122,7 @@ public:
             summons.DespawnAll();
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             Talk(YELL_AGGRO);
         }
@@ -132,7 +132,7 @@ public:
             Reset();
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             CAST_AI(mob_water_elemental::mob_water_elementalAI, summoned->AI())->balindaGUID = me->GetGUID();
             summoned->AI()->AttackStart(SelectTarget(SELECT_TARGET_RANDOM, 0, 50, true));
@@ -140,7 +140,7 @@ public:
             summons.Summon(summoned);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             summons.DespawnAll();
         }
@@ -196,7 +196,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_balindaAI(creature);
     }

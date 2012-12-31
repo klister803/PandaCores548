@@ -77,7 +77,7 @@ class boss_akilzon : public CreatureScript
 
         struct boss_akilzonAI : public ScriptedAI
         {
-            boss_akilzonAI(CreaturePtr creature) : ScriptedAI(creature)
+            boss_akilzonAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
                 memset(BirdGUIDs, 0, sizeof(BirdGUIDs));
@@ -128,7 +128,7 @@ class boss_akilzon : public CreatureScript
                 SetWeather(WEATHER_STATE_FINE, 0.0f);
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 me->MonsterYell(SAY_ONAGGRO, LANG_UNIVERSAL, 0);
                 DoPlaySoundToSet(me, SOUND_ONAGGRO);
@@ -137,7 +137,7 @@ class boss_akilzon : public CreatureScript
                     instance->SetData(DATA_AKILZONEVENT, IN_PROGRESS);
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 me->MonsterYell(SAY_ONDEATH, LANG_UNIVERSAL, 0);
                 DoPlaySoundToSet(me, SOUND_ONDEATH);
@@ -146,7 +146,7 @@ class boss_akilzon : public CreatureScript
                 DespawnSummons();
             }
 
-            void KilledUnit(UnitPtr /*victim*/)
+            void KilledUnit(Unit* /*victim*/)
             {
                 switch (urand(0, 1))
                 {
@@ -165,7 +165,7 @@ class boss_akilzon : public CreatureScript
             {
                 for (uint8 i = 0; i < 8; ++i)
                 {
-                    UnitPtr bird = Unit::GetUnit(TO_WORLDOBJECT(me), BirdGUIDs[i]);
+                    Unit* bird = Unit::GetUnit(*me, BirdGUIDs[i]);
                     if (bird && bird->isAlive())
                     {
                         bird->SetVisible(false);
@@ -176,7 +176,7 @@ class boss_akilzon : public CreatureScript
 
             void SetWeather(uint32 weather, float grade)
             {
-                MapPtr map = me->GetMap();
+                Map* map = me->GetMap();
                 if (!map->IsDungeon())
                     return;
 
@@ -186,7 +186,7 @@ class boss_akilzon : public CreatureScript
                 map->SendToPlayers(&data);
             }
 
-            void HandleStormSequence(UnitPtr Cloud) // 1: begin, 2-9: tick, 10: end
+            void HandleStormSequence(Unit* Cloud) // 1: begin, 2-9: tick, 10: end
             {
                 if (StormCount < 10 && StormCount > 1)
                 {
@@ -199,7 +199,7 @@ class boss_akilzon : public CreatureScript
                     Cell cell(p);
                     cell.SetNoCreate();
 
-                    std::list<UnitPtr> tempUnitMap;
+                    std::list<Unit*> tempUnitMap;
 
                     {
                         Trinity::AnyAoETargetUnitInObjectRangeCheck u_check(me, me, SIZE_OF_GRIDS);
@@ -208,14 +208,14 @@ class boss_akilzon : public CreatureScript
                         TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
                         TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyAoETargetUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
-                        cell.Visit(p, world_unit_searcher, *me->GetMap(), TO_CONST_WORLDOBJECT(me), SIZE_OF_GRIDS);
-                        cell.Visit(p, grid_unit_searcher, *me->GetMap(), TO_CONST_WORLDOBJECT(me), SIZE_OF_GRIDS);
+                        cell.Visit(p, world_unit_searcher, *me->GetMap(), *me, SIZE_OF_GRIDS);
+                        cell.Visit(p, grid_unit_searcher, *me->GetMap(), *me, SIZE_OF_GRIDS);
                     }
                     //dealdamege
-                    for (std::list<UnitPtr>::const_iterator i = tempUnitMap.begin(); i != tempUnitMap.end(); ++i)
+                    for (std::list<Unit*>::const_iterator i = tempUnitMap.begin(); i != tempUnitMap.end(); ++i)
                     {
                         if (!Cloud->IsWithinDist(*i, 6, false))
-                            Cloud->CastCustomSpell(*i, 43137, &bp0, nullptr, nullptr, true, 0, 0, me->GetGUID());
+                            Cloud->CastCustomSpell(*i, 43137, &bp0, NULL, NULL, true, 0, 0, me->GetGUID());
                     }
                     // visual
                     float x, y, z;
@@ -224,14 +224,14 @@ class boss_akilzon : public CreatureScript
                     {
                         x = 343.0f+rand()%60;
                         y = 1380.0f+rand()%60;
-                        if (UnitPtr trigger = me->SummonTrigger(x, y, z, 0, 2000))
+                        if (Unit* trigger = me->SummonTrigger(x, y, z, 0, 2000))
                         {
                             trigger->setFaction(35);
                             trigger->SetMaxHealth(100000);
                             trigger->SetHealth(100000);
                             trigger->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                             if (Cloud)
-                                Cloud->CastCustomSpell(trigger, /*43661*/43137, &bp0, nullptr, nullptr, true, 0, 0, Cloud->GetGUID());
+                                Cloud->CastCustomSpell(trigger, /*43661*/43137, &bp0, NULL, NULL, true, 0, 0, Cloud->GetGUID());
                         }
                     }
                 }
@@ -243,7 +243,7 @@ class boss_akilzon : public CreatureScript
                     me->InterruptNonMeleeSpells(false);
                     CloudGUID = 0;
                     if (Cloud)
-                        Cloud->DealDamage(Cloud, Cloud->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+                        Cloud->DealDamage(Cloud, Cloud->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                     SetWeather(WEATHER_STATE_FINE, 0.0f);
                     isRaining = false;
                 }
@@ -257,13 +257,13 @@ class boss_akilzon : public CreatureScript
 
                 if (StormCount)
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), CloudGUID);
+                    Unit* target = Unit::GetUnit(*me, CloudGUID);
                     if (!target || !target->isAlive())
                     {
                         EnterEvadeMode();
                         return;
                     }
-                    else if (UnitPtr Cyclone = Unit::GetUnit(TO_WORLDOBJECT(me), CycloneGUID))
+                    else if (Unit* Cyclone = Unit::GetUnit(*me, CycloneGUID))
                         Cyclone->CastSpell(target, 25160, true); // keep casting or...
 
                     if (StormSequenceTimer <= diff)
@@ -284,7 +284,7 @@ class boss_akilzon : public CreatureScript
 
                 if (StaticDisruption_Timer <= diff)
                 {
-                    UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                    Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1);
                     if (!target) target = me->getVictim();
                     TargetGUID = target->GetGUID();
                     DoCast(target, SPELL_STATIC_DISRUPTION, false);
@@ -297,7 +297,7 @@ class boss_akilzon : public CreatureScript
 
                 if (GustOfWind_Timer <= diff)
                 {
-                    UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                    Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1);
                     if (!target) target = me->getVictim();
                     DoCast(target, SPELL_GUST_OF_WIND);
                     GustOfWind_Timer = urand(20, 30) * 1000; //20 to 30 seconds(bosskillers)
@@ -317,7 +317,7 @@ class boss_akilzon : public CreatureScript
 
                 if (ElectricalStorm_Timer <= diff)
                 {
-                    UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50, true);
+                    Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50, true);
                     if (!target)
                     {
                         EnterEvadeMode();
@@ -332,7 +332,7 @@ class boss_akilzon : public CreatureScript
                         target->SetUnitMovementFlags(MOVEMENTFLAG_DISABLE_GRAVITY);
                         target->MonsterMoveWithSpeed(x, y, me->GetPositionZ()+15, 0);
                     }
-                    UnitPtr Cloud = me->SummonTrigger(x, y, me->GetPositionZ()+16, 0, 15000);
+                    Unit* Cloud = me->SummonTrigger(x, y, me->GetPositionZ()+16, 0, 15000);
                     if (Cloud)
                     {
                         CloudGUID = Cloud->GetGUID();
@@ -359,10 +359,10 @@ class boss_akilzon : public CreatureScript
 
                     for (uint8 i = 0; i < 8; ++i)
                     {
-                        UnitPtr bird = Unit::GetUnit(TO_WORLDOBJECT(me), BirdGUIDs[i]);
+                        Unit* bird = Unit::GetUnit(*me, BirdGUIDs[i]);
                         if (!bird) //they despawned on die
                         {
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             {
                                 x = target->GetPositionX() + irand(-10, 10);
                                 y = target->GetPositionY() + irand(-10, 10);
@@ -370,7 +370,7 @@ class boss_akilzon : public CreatureScript
                                 if (z > 95)
                                     z = 95.0f - urand(0, 5);
                             }
-                            CreaturePtr creature = me->SummonCreature(MOB_SOARING_EAGLE, x, y, z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
+                            Creature* creature = me->SummonCreature(MOB_SOARING_EAGLE, x, y, z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0);
                             if (creature)
                             {
                                 creature->AddThreat(me->getVictim(), 1.0f);
@@ -386,7 +386,7 @@ class boss_akilzon : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_akilzonAI(creature);
         }
@@ -399,7 +399,7 @@ class mob_akilzon_eagle : public CreatureScript
 
         struct mob_akilzon_eagleAI : public ScriptedAI
         {
-            mob_akilzon_eagleAI(CreaturePtr creature) : ScriptedAI(creature) { }
+            mob_akilzon_eagleAI(Creature* creature) : ScriptedAI(creature) { }
 
             uint32 EagleSwoop_Timer;
             bool arrived;
@@ -413,19 +413,19 @@ class mob_akilzon_eagle : public CreatureScript
                 me->SetUnitMovementFlags(MOVEMENTFLAG_DISABLE_GRAVITY);
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoZoneInCombat();
             }
 
-            void MoveInLineOfSight(UnitPtr /*who*/) {}
+            void MoveInLineOfSight(Unit* /*who*/) {}
 
             void MovementInform(uint32, uint32)
             {
                 arrived = true;
                 if (TargetGUID)
                 {
-                    if (UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), TargetGUID))
+                    if (Unit* target = Unit::GetUnit(*me, TargetGUID))
                         DoCast(target, SPELL_EAGLE_SWOOP, true);
                     TargetGUID = 0;
                     me->SetSpeed(MOVE_RUN, 1.2f);
@@ -442,7 +442,7 @@ class mob_akilzon_eagle : public CreatureScript
 
                 if (arrived)
                 {
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
                         float x, y, z;
                         if (EagleSwoop_Timer)
@@ -467,7 +467,7 @@ class mob_akilzon_eagle : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_akilzon_eagleAI(creature);
         }

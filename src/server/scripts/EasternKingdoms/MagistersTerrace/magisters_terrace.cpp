@@ -58,7 +58,7 @@ class npc_kalecgos : public CreatureScript
 public:
     npc_kalecgos() : CreatureScript("npc_kalecgos") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -87,7 +87,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -98,14 +98,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_kalecgosAI(creature);
     }
 
     struct npc_kalecgosAI : public ScriptedAI
     {
-        npc_kalecgosAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_kalecgosAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 m_uiTransformTimer;
 
@@ -130,7 +130,7 @@ public:
         // some targeting issues with the spell, so use this workaround as temporary solution
         void DoWorkaroundForQuestCredit()
         {
-            MapPtr map = me->GetMap();
+            Map* map = me->GetMap();
 
             if (!map || map->IsHeroic())
                 return;
@@ -144,7 +144,7 @@ public:
 
             for (Map::PlayerList::const_iterator i = lList.begin(); i != lList.end(); ++i)
             {
-                if (PlayerPtr player = i->getSource())
+                if (Player* player = i->getSource())
                 {
                     if (pSpell && pSpell->Effects[0].MiscValue)
                         player->KilledMonsterCredit(pSpell->Effects[0].MiscValue, 0);

@@ -38,15 +38,15 @@ enum eEscortState
 struct npc_escortAI : public ScriptedAI
 {
     public:
-        explicit npc_escortAI(CreaturePtr creature);
+        explicit npc_escortAI(Creature* creature);
         ~npc_escortAI() {}
 
         // CreatureAI functions
-        void AttackStart(UnitPtr who);
+        void AttackStart(Unit* who);
 
-        void MoveInLineOfSight(UnitPtr who);
+        void MoveInLineOfSight(Unit* who);
 
-        void JustDied(UnitPtr);
+        void JustDied(Unit*);
 
         void JustRespawned();
 
@@ -74,7 +74,7 @@ struct npc_escortAI : public ScriptedAI
         virtual void WaypointReached(uint32 pointId) = 0;
         virtual void WaypointStart(uint32 /*pointId*/) {}
 
-        void Start(bool isActiveAttacker = true, bool run = false, uint64 playerGUID = 0, Quest const* quest = nullptr, bool instantRespawn = false, bool canLoopPath = false, bool resetWaypoints = true);
+        void Start(bool isActiveAttacker = true, bool run = false, uint64 playerGUID = 0, Quest const* quest = NULL, bool instantRespawn = false, bool canLoopPath = false, bool resetWaypoints = true);
 
         void SetRun(bool on = true);
         void SetEscortPaused(bool on);
@@ -92,10 +92,10 @@ struct npc_escortAI : public ScriptedAI
         uint64 GetEventStarterGUID() { return m_uiPlayerGUID; }
 
     protected:
-        PlayerPtr GetPlayerForEscort() { return TO_PLAYER(Unit::GetUnit(TO_WORLDOBJECT(me), m_uiPlayerGUID)); }
+        Player* GetPlayerForEscort() { return (Player*)Unit::GetUnit(*me, m_uiPlayerGUID); }
 
     private:
-        bool AssistPlayerInCombat(UnitPtr who);
+        bool AssistPlayerInCombat(Unit* who);
         bool IsPlayerOrGroupInRange();
         void FillPointMovementListForCreature();
 

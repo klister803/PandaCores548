@@ -179,17 +179,17 @@ enum ProfessionSpells
 # formulas to calculate unlearning cost
 ###*/
 
-int32 DoLearnCost(PlayerPtr /*Player*/)                      //tailor, alchemy
+int32 DoLearnCost(Player* /*player*/)                      //tailor, alchemy
 {
     return 200000;
 }
 
-int32 DoHighUnlearnCost(PlayerPtr /*Player*/)                //tailor, alchemy
+int32 DoHighUnlearnCost(Player* /*player*/)                //tailor, alchemy
 {
     return 1500000;
 }
 
-int32 DoMedUnlearnCost(PlayerPtr player)                     //blacksmith, leatherwork
+int32 DoMedUnlearnCost(Player* player)                     //blacksmith, leatherwork
 {
     uint8 level = player->getLevel();
     if (level < 51)
@@ -200,7 +200,7 @@ int32 DoMedUnlearnCost(PlayerPtr player)                     //blacksmith, leath
         return 1000000;
 }
 
-int32 DoLowUnlearnCost(PlayerPtr player)                     //blacksmith
+int32 DoLowUnlearnCost(Player* player)                     //blacksmith
 {
     uint8 level = player->getLevel();
     if (level < 66)
@@ -209,7 +209,7 @@ int32 DoLowUnlearnCost(PlayerPtr player)                     //blacksmith
         return 100000;
 }
 
-void ProcessCastaction(PlayerPtr player, CreaturePtr creature, uint32 spellId, uint32 triggeredSpellId, int32 cost)
+void ProcessCastaction(Player* player, Creature* creature, uint32 spellId, uint32 triggeredSpellId, int32 cost)
 {
     if (!(spellId && player->HasSpell(spellId)) && player->HasEnoughMoney((int64)cost))
     {
@@ -225,7 +225,7 @@ void ProcessCastaction(PlayerPtr player, CreaturePtr creature, uint32 spellId, u
 # unlearning related profession spells
 ###*/
 
-bool EquippedOk(PlayerPtr player, uint32 spellId)
+bool EquippedOk(Player* player, uint32 spellId)
 {
     SpellInfo const* spell = sSpellMgr->GetSpellInfo(spellId);
     if (!spell)
@@ -237,7 +237,7 @@ bool EquippedOk(PlayerPtr player, uint32 spellId)
         if (!reqSpell)
             continue;
 
-        ItemPtr item = nullptr;
+        Item* item = NULL;
         for (uint8 j = EQUIPMENT_SLOT_START; j < EQUIPMENT_SLOT_END; ++j)
         {
             item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, j);
@@ -252,7 +252,7 @@ bool EquippedOk(PlayerPtr player, uint32 spellId)
     return true;
 }
 
-void ProfessionUnlearnSpells(PlayerPtr player, uint32 type)
+void ProfessionUnlearnSpells(Player* player, uint32 type)
 {
     switch (type)
     {
@@ -345,7 +345,7 @@ void ProfessionUnlearnSpells(PlayerPtr player, uint32 type)
     }
 }
 
-void ProcessUnlearnAction(PlayerPtr player, CreaturePtr creature, uint32 spellId, uint32 alternativeSpellId, int32 cost)
+void ProcessUnlearnAction(Player* player, Creature* creature, uint32 spellId, uint32 alternativeSpellId, int32 cost)
 {
     if (EquippedOk(player, spellId))
     {
@@ -361,7 +361,7 @@ void ProcessUnlearnAction(PlayerPtr player, CreaturePtr creature, uint32 spellId
             player->SendBuyError(BUY_ERR_NOT_ENOUGHT_MONEY, creature, 0, 0);
     }
     else
-        player->SendEquipError(EQUIP_ERR_CLIENT_LOCKED_OUT, nullptr, nullptr);
+        player->SendEquipError(EQUIP_ERR_CLIENT_LOCKED_OUT, NULL, NULL);
     player->CLOSE_GOSSIP_MENU();
 }
 
@@ -374,12 +374,12 @@ class npc_prof_alchemy : public CreatureScript
 public:
     npc_prof_alchemy() : CreatureScript("npc_prof_alchemy") { }
 
-    inline bool HasAlchemySpell(PlayerPtr player)
+    inline bool HasAlchemySpell(Player* player)
     {
         return (player->HasSpell(S_TRANSMUTE) || player->HasSpell(S_ELIXIR) || player->HasSpell(S_POTION));
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -422,7 +422,7 @@ public:
         return true;
     }
 
-    void SendActionMenu(PlayerPtr player, CreaturePtr creature, uint32 action)
+    void SendActionMenu(Player* player, Creature* creature, uint32 action)
     {
         switch (action)
         {
@@ -455,7 +455,7 @@ public:
         }
     }
 
-    void SendConfirmLearn(PlayerPtr player, CreaturePtr creature, uint32 action)
+    void SendConfirmLearn(Player* player, Creature* creature, uint32 action)
     {
         if (action)
         {
@@ -480,7 +480,7 @@ public:
         }
     }
 
-    void SendConfirmUnlearn(PlayerPtr player, CreaturePtr creature, uint32 action)
+    void SendConfirmUnlearn(Player* player, Creature* creature, uint32 action)
     {
         if (action)
         {
@@ -505,7 +505,7 @@ public:
         }
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 sender, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (sender)
@@ -539,12 +539,12 @@ class npc_prof_blacksmith : public CreatureScript
 public:
     npc_prof_blacksmith() : CreatureScript("npc_prof_blacksmith") { }
 
-    inline bool HasWeaponSub(PlayerPtr player)
+    inline bool HasWeaponSub(Player* player)
     {
         return (player->HasSpell(S_HAMMER) || player->HasSpell(S_AXE) || player->HasSpell(S_SWORD));
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -610,7 +610,7 @@ public:
         return true;
     }
 
-    void SendActionMenu(PlayerPtr player, CreaturePtr creature, uint32 action)
+    void SendActionMenu(Player* player, Creature* creature, uint32 action)
     {
         switch (action)
         {
@@ -676,7 +676,7 @@ public:
         }
     }
 
-    void SendConfirmLearn(PlayerPtr player, CreaturePtr creature, uint32 action)
+    void SendConfirmLearn(Player* player, Creature* creature, uint32 action)
     {
         if (action)
         {
@@ -701,7 +701,7 @@ public:
         }
     }
 
-    void SendConfirmUnlearn(PlayerPtr player, CreaturePtr creature, uint32 action)
+    void SendConfirmUnlearn(Player* player, Creature* creature, uint32 action)
     {
         if (action)
         {
@@ -735,7 +735,7 @@ public:
         }
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 sender, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (sender)
@@ -791,7 +791,7 @@ class npc_engineering_tele_trinket : public CreatureScript
 public:
     npc_engineering_tele_trinket() : CreatureScript("npc_engineering_tele_trinket") { }
 
-    bool CanLearn(PlayerPtr player, uint32 textId, uint32 altTextId, uint32 skillValue, uint32 reqSpellId, uint32 spellId, uint32& npcTextId)
+    bool CanLearn(Player* player, uint32 textId, uint32 altTextId, uint32 skillValue, uint32 reqSpellId, uint32 spellId, uint32& npcTextId)
     {
         bool res = false;
         npcTextId = textId;
@@ -805,7 +805,7 @@ public:
         return res;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         uint32 npcTextId = 0;
         std::string gossipItem;
@@ -845,7 +845,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 sender, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF + 1)
@@ -883,7 +883,7 @@ class npc_prof_leather : public CreatureScript
 public:
     npc_prof_leather() : CreatureScript("npc_prof_leather") { }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -920,7 +920,7 @@ public:
         return true;
     }
 
-    void SendActionMenu(PlayerPtr player, CreaturePtr creature, uint32 action)
+    void SendActionMenu(Player* player, Creature* creature, uint32 action)
     {
         switch (action)
         {
@@ -943,7 +943,7 @@ public:
         }
     }
 
-    void SendConfirmUnlearn(PlayerPtr player, CreaturePtr creature, uint32 action)
+    void SendConfirmUnlearn(Player* player, Creature* creature, uint32 action)
     {
         if (action)
         {
@@ -971,7 +971,7 @@ public:
         }
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 sender, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (sender)
@@ -1001,12 +1001,12 @@ class npc_prof_tailor : public CreatureScript
 public:
     npc_prof_tailor() : CreatureScript("npc_prof_tailor") { }
 
-    inline bool HasTailorSpell(PlayerPtr player)
+    inline bool HasTailorSpell(Player* player)
     {
         return (player->HasSpell(S_MOONCLOTH) || player->HasSpell(S_SHADOWEAVE) || player->HasSpell(S_SPELLFIRE));
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -1050,7 +1050,7 @@ public:
         return true;
     }
 
-    void SendActionMenu(PlayerPtr player, CreaturePtr creature, uint32 action)
+    void SendActionMenu(Player* player, Creature* creature, uint32 action)
     {
         switch (action)
         {
@@ -1083,7 +1083,7 @@ public:
         }
     }
 
-    void SendConfirmLearn(PlayerPtr player, CreaturePtr creature, uint32 action)
+    void SendConfirmLearn(Player* player, Creature* creature, uint32 action)
     {
         if (action)
         {
@@ -1108,7 +1108,7 @@ public:
         }
     }
 
-    void SendConfirmUnlearn(PlayerPtr player, CreaturePtr creature, uint32 action)
+    void SendConfirmUnlearn(Player* player, Creature* creature, uint32 action)
     {
         if (action)
         {
@@ -1133,7 +1133,7 @@ public:
         }
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 sender, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (sender)

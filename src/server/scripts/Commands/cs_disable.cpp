@@ -37,36 +37,36 @@ public:
     {
         static ChatCommand removeDisableCommandTable[] =
         {
-            { "spell",                  SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableSpellCommand,               "", nullptr },
-            { "quest",                  SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableQuestCommand,               "", nullptr },
-            { "map",                    SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableMapCommand,                 "", nullptr },
-            { "battleground",           SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableBattlegroundCommand,        "", nullptr },
-            { "achievement_criteria",   SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableAchievementCriteriaCommand, "", nullptr },
-            { "outdoorpvp",             SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableOutdoorPvPCommand,          "", nullptr },
-            { "vmap",                   SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableVmapCommand,                "", nullptr },
-            { nullptr,                     0,                      false,  nullptr,                                           "", nullptr }
+            { "spell",                  SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableSpellCommand,               "", NULL },
+            { "quest",                  SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableQuestCommand,               "", NULL },
+            { "map",                    SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableMapCommand,                 "", NULL },
+            { "battleground",           SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableBattlegroundCommand,        "", NULL },
+            { "achievement_criteria",   SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableAchievementCriteriaCommand, "", NULL },
+            { "outdoorpvp",             SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableOutdoorPvPCommand,          "", NULL },
+            { "vmap",                   SEC_ADMINISTRATOR,      true,   &HandleRemoveDisableVmapCommand,                "", NULL },
+            { NULL,                     0,                      false,  NULL,                                           "", NULL }
         };
         static ChatCommand addDisableCommandTable[] =
         {
-            { "spell",                  SEC_ADMINISTRATOR,      true,   &HandleAddDisableSpellCommand,                  "", nullptr },
-            { "quest",                  SEC_ADMINISTRATOR,      true,   &HandleAddDisableQuestCommand,                  "", nullptr },
-            { "map",                    SEC_ADMINISTRATOR,      true,   &HandleAddDisableMapCommand,                    "", nullptr },
-            { "battleground",           SEC_ADMINISTRATOR,      true,   &HandleAddDisableBattlegroundCommand,           "", nullptr },
-            { "achievement_criteria",   SEC_ADMINISTRATOR,      true,   &HandleAddDisableAchievementCriteriaCommand,    "", nullptr },
-            { "outdoorpvp",             SEC_ADMINISTRATOR,      true,   &HandleAddDisableOutdoorPvPCommand,             "", nullptr },
-            { "vmap",                   SEC_ADMINISTRATOR,      true,   &HandleAddDisableVmapCommand,                   "", nullptr },
-            { nullptr,                     0,                      false,  nullptr,                                           "", nullptr }
+            { "spell",                  SEC_ADMINISTRATOR,      true,   &HandleAddDisableSpellCommand,                  "", NULL },
+            { "quest",                  SEC_ADMINISTRATOR,      true,   &HandleAddDisableQuestCommand,                  "", NULL },
+            { "map",                    SEC_ADMINISTRATOR,      true,   &HandleAddDisableMapCommand,                    "", NULL },
+            { "battleground",           SEC_ADMINISTRATOR,      true,   &HandleAddDisableBattlegroundCommand,           "", NULL },
+            { "achievement_criteria",   SEC_ADMINISTRATOR,      true,   &HandleAddDisableAchievementCriteriaCommand,    "", NULL },
+            { "outdoorpvp",             SEC_ADMINISTRATOR,      true,   &HandleAddDisableOutdoorPvPCommand,             "", NULL },
+            { "vmap",                   SEC_ADMINISTRATOR,      true,   &HandleAddDisableVmapCommand,                   "", NULL },
+            { NULL,                     0,                      false,  NULL,                                           "", NULL }
         };
         static ChatCommand disableCommandTable[] =
         {
-            { "add",                    SEC_ADMINISTRATOR,      true,   nullptr,                                           "", addDisableCommandTable },
-            { "remove",                 SEC_ADMINISTRATOR,      true,   nullptr,                                           "", removeDisableCommandTable },
-            { nullptr,                     0,                      false,  nullptr,                                           "", nullptr }
+            { "add",                    SEC_ADMINISTRATOR,      true,   NULL,                                           "", addDisableCommandTable },
+            { "remove",                 SEC_ADMINISTRATOR,      true,   NULL,                                           "", removeDisableCommandTable },
+            { NULL,                     0,                      false,  NULL,                                           "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "disable",                SEC_ADMINISTRATOR,     false,   nullptr,                                           "", disableCommandTable },
-            { nullptr,                     0,                     false,   nullptr,                                           "", nullptr }
+            { "disable",                SEC_ADMINISTRATOR,     false,   NULL,                                           "", disableCommandTable },
+            { NULL,                     0,                     false,   NULL,                                           "", NULL }
         };
         return commandTable;
     }
@@ -77,10 +77,10 @@ public:
         if (!entryStr || !atoi(entryStr))
             return false;
 
-        char* flagsStr = strtok(nullptr, " ");
+        char* flagsStr = strtok(NULL, " ");
         uint8 flags = flagsStr ? uint8(atoi(flagsStr)) : 0;
 
-        char* commentStr = strtok(nullptr, "");
+        char* commentStr = strtok(NULL, "");
         if (!commentStr)
             return false;
 
@@ -172,7 +172,7 @@ public:
                 break;
         }
 
-        PreparedStatement* stmt = nullptr;
+        PreparedStatement* stmt = NULL;
         stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_DISABLES);
         stmt->setUInt32(0, entry);
         stmt->setUInt8(1, disableType);
@@ -287,7 +287,7 @@ public:
                 break;
         }
 
-        PreparedStatement* stmt = nullptr;
+        PreparedStatement* stmt = NULL;
         stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_DISABLES);
         stmt->setUInt32(0, entry);
         stmt->setUInt8(1, disableType);

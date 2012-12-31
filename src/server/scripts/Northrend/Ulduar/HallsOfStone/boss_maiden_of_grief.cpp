@@ -59,14 +59,14 @@ class boss_maiden_of_grief : public CreatureScript
 public:
     boss_maiden_of_grief() : CreatureScript("boss_maiden_of_grief") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_maiden_of_griefAI (creature);
     }
 
     struct boss_maiden_of_griefAI : public ScriptedAI
     {
-        boss_maiden_of_griefAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_maiden_of_griefAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = me->GetInstanceScript();
         }
@@ -92,13 +92,13 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
             if (instance)
             {
-                if (GameObjectPtr pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_MAIDEN_DOOR)))
+                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_MAIDEN_DOOR)))
                     if (pDoor->GetGoState() == GO_STATE_READY)
                     {
                         EnterEvadeMode();
@@ -120,7 +120,7 @@ public:
             {
                 if (PartingSorrowTimer <= diff)
                 {
-                    UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
 
                     if (target)
                         DoCast(target, SPELL_PARTING_SORROW);
@@ -145,7 +145,7 @@ public:
 
             if (PillarOfWoeTimer <= diff)
             {
-                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1);
 
                 if (target)
                     DoCast(target, SPELL_PILLAR_OF_WOE_N);
@@ -158,7 +158,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -166,7 +166,7 @@ public:
                 instance->SetData(DATA_MAIDEN_OF_GRIEF_EVENT, DONE);
         }
 
-        void KilledUnit(UnitPtr victim)
+        void KilledUnit(Unit* victim)
         {
             if (victim == me)
                 return;

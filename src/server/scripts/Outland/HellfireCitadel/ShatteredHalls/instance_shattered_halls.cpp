@@ -40,7 +40,7 @@ class instance_shattered_halls : public InstanceMapScript
         }
         struct instance_shattered_halls_InstanceMapScript : public InstanceScript
         {
-            instance_shattered_halls_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+            instance_shattered_halls_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
             uint32 m_auiEncounter[MAX_ENCOUNTER];
             uint64 nethekurseGUID;
@@ -54,7 +54,7 @@ class instance_shattered_halls : public InstanceMapScript
                 nethekurseDoorGUID = 0;
             }
 
-            void OnGameObjectCreate(GameObjectPtr go)
+            void OnGameObjectCreate(GameObject* go)
             {
                 switch (go->GetEntry())
                 {
@@ -64,7 +64,7 @@ class instance_shattered_halls : public InstanceMapScript
                 }
             }
 
-            void OnCreatureCreate(CreaturePtr creature)
+            void OnCreatureCreate(Creature* creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -112,7 +112,7 @@ class instance_shattered_halls : public InstanceMapScript
             }
         };
 
-        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
             return new instance_shattered_halls_InstanceMapScript(map);
         }

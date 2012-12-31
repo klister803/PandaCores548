@@ -20,7 +20,7 @@
 #include "Log.h"
 
 PreparedStatement::PreparedStatement(uint32 index) :
-m_stmt(nullptr),
+m_stmt(NULL),
 m_index(index)
 {
 }
@@ -193,7 +193,7 @@ void PreparedStatement::setString(const uint8 index, const std::string& value)
 
 MySQLPreparedStatement::MySQLPreparedStatement(MYSQL_STMT* stmt) :
 m_Mstmt(stmt),
-m_bind(nullptr)
+m_bind(NULL)
 {
     /// Initialize variable parameters
     m_paramCount = mysql_stmt_param_count(stmt);
@@ -223,9 +223,9 @@ void MySQLPreparedStatement::ClearParameters()
     for (uint32 i=0; i < m_paramCount; ++i)
     {
         delete m_bind[i].length;
-        m_bind[i].length = nullptr;
+        m_bind[i].length = NULL;
         delete[] (char*) m_bind[i].buffer;
-        m_bind[i].buffer = nullptr;
+        m_bind[i].buffer = NULL;
         m_paramsSet[i] = false;
     }
 }
@@ -354,7 +354,7 @@ void MySQLPreparedStatement::setValue(MYSQL_BIND* param, enum_field_types type, 
     param->buffer = new char[len];
     param->buffer_length = 0;
     param->is_null_value = 0;
-    param->length = nullptr;               // Only != nullptr for strings
+    param->length = NULL;               // Only != NULL for strings
     param->is_unsigned = isUnsigned;
 
     memcpy(param->buffer, value, len);
@@ -446,7 +446,7 @@ bool PreparedStatementTask::Execute()
         if (!result || !result->GetRowCount())
         {
             delete result;
-            m_result.set(PreparedQueryResult(nullptr));
+            m_result.set(PreparedQueryResult(NULL));
             return false;
         }
         m_result.set(PreparedQueryResult(result));

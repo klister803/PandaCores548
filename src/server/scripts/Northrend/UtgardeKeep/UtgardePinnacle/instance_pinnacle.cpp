@@ -40,14 +40,14 @@ class instance_utgarde_pinnacle : public InstanceMapScript
 public:
     instance_utgarde_pinnacle() : InstanceMapScript("instance_utgarde_pinnacle", 575) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_pinnacle(map);
     }
 
     struct instance_pinnacle : public InstanceScript
     {
-        instance_pinnacle(MapPtr map) : InstanceScript(map) {}
+        instance_pinnacle(Map* map) : InstanceScript(map) {}
 
         uint64 uiSvalaSorrowgrave;
         uint64 uiGortokPalehoof;
@@ -104,7 +104,7 @@ public:
             return false;
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -121,7 +121,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {

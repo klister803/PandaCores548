@@ -30,22 +30,22 @@ template <class TO, class FROM> class RefManager : public LinkedListHead
         RefManager() { }
         virtual ~RefManager() { clearReferences(); }
 
-        std::shared_ptr<Reference<TO, FROM>> getFirst() { return std::static_pointer_cast<Reference<TO,FROM>>(LinkedListHead::getFirst()); }
-        std::shared_ptr<const Reference<TO, FROM>> getFirst() const { return std::static_pointer_cast<const Reference<TO,FROM>>(LinkedListHead::getFirst()); }
-        std::shared_ptr<Reference<TO, FROM>> getLast() { return std::static_pointer_cast<Reference<TO,FROM>>(LinkedListHead::getLast()); }
-        std::shared_ptr<const Reference<TO, FROM>> getLast() const { return std::static_pointer_cast<const Reference<TO,FROM>>(LinkedListHead::getLast()); }
+        Reference<TO, FROM>* getFirst() { return ((Reference<TO, FROM>*) LinkedListHead::getFirst()); }
+        Reference<TO, FROM> const* getFirst() const { return ((Reference<TO, FROM> const*) LinkedListHead::getFirst()); }
+        Reference<TO, FROM>* getLast() { return ((Reference<TO, FROM>*) LinkedListHead::getLast()); }
+        Reference<TO, FROM> const* getLast() const { return ((Reference<TO, FROM> const*) LinkedListHead::getLast()); }
 
         iterator begin() { return iterator(getFirst()); }
-        iterator end() { return iterator(nullptr); }
+        iterator end() { return iterator(NULL); }
         iterator rbegin() { return iterator(getLast()); }
-        iterator rend() { return iterator(nullptr); }
+        iterator rend() { return iterator(NULL); }
 
         void clearReferences()
         {
-            std::shared_ptr<LinkedListElement> ref;
-            while ((ref = getFirst()) != nullptr)
+            LinkedListElement* ref;
+            while ((ref = getFirst()) != NULL)
             {
-                std::static_pointer_cast<Reference<TO,FROM>>(ref)->invalidate();
+                ((Reference<TO, FROM>*) ref)->invalidate();
                 ref->delink();                              // the delink might be already done by invalidate(), but doing it here again does not hurt and insures an empty list
             }
         }

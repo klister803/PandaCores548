@@ -31,14 +31,14 @@ class npc_dragonflayer_forge_master : public CreatureScript
 public:
     npc_dragonflayer_forge_master() : CreatureScript("npc_dragonflayer_forge_master") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_dragonflayer_forge_masterAI(creature);
     }
 
     struct npc_dragonflayer_forge_masterAI : public ScriptedAI
     {
-        npc_dragonflayer_forge_masterAI(CreaturePtr creature) : ScriptedAI(creature)
+        npc_dragonflayer_forge_masterAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             fm_Type = 0;
@@ -76,7 +76,7 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (fm_Type == 0)
                 fm_Type = GetForgeMasterType();
@@ -100,7 +100,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (fm_Type == 0)
                 fm_Type = GetForgeMasterType();
@@ -132,7 +132,7 @@ public:
 
             for (uint8 i = 0; i < 3; ++i)
             {
-                if (GameObjectPtr go = me->FindNearestGameObject(entry_search[i], 30))
+                if (GameObject* go = me->FindNearestGameObject(entry_search[i], 30))
                 {
                     if (me->IsWithinDist(go, diff, false))
                     {

@@ -45,14 +45,14 @@ class instance_sunken_temple : public InstanceMapScript
 public:
     instance_sunken_temple() : InstanceMapScript("instance_sunken_temple", 109) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_sunken_temple_InstanceMapScript(map);
     }
 
     struct instance_sunken_temple_InstanceMapScript : public InstanceScript
     {
-        instance_sunken_temple_InstanceMapScript(MapPtr map) : InstanceScript(map)
+        instance_sunken_temple_InstanceMapScript(Map* map) : InstanceScript(map)
         {
         }
 
@@ -93,7 +93,7 @@ public:
             s6 = false;
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -114,7 +114,7 @@ public:
              case GO_ATALAI_STATUE1:
                 if (!s1 && !s2 && !s3 && !s4 && !s5 && !s6)
                 {
-                    if (GameObjectPtr pAtalaiStatue1 = instance->GetGameObject(GOAtalaiStatue1))
+                    if (GameObject* pAtalaiStatue1 = instance->GetGameObject(GOAtalaiStatue1))
                         UseStatue(pAtalaiStatue1);
                     s1 = true;
                     State = 0;
@@ -123,7 +123,7 @@ public:
              case GO_ATALAI_STATUE2:
                 if (s1 && !s2 && !s3 && !s4 && !s5 && !s6)
                 {
-                    if (GameObjectPtr pAtalaiStatue2 = instance->GetGameObject(GOAtalaiStatue2))
+                    if (GameObject* pAtalaiStatue2 = instance->GetGameObject(GOAtalaiStatue2))
                         UseStatue(pAtalaiStatue2);
                     s2 = true;
                     State = 0;
@@ -132,7 +132,7 @@ public:
              case GO_ATALAI_STATUE3:
                 if (s1 && s2 && !s3 && !s4 && !s5 && !s6)
                 {
-                    if (GameObjectPtr pAtalaiStatue3 = instance->GetGameObject(GOAtalaiStatue3))
+                    if (GameObject* pAtalaiStatue3 = instance->GetGameObject(GOAtalaiStatue3))
                         UseStatue(pAtalaiStatue3);
                     s3 = true;
                     State = 0;
@@ -141,7 +141,7 @@ public:
              case GO_ATALAI_STATUE4:
                 if (s1 && s2 && s3 && !s4 && !s5 && !s6)
                 {
-                    if (GameObjectPtr pAtalaiStatue4 = instance->GetGameObject(GOAtalaiStatue4))
+                    if (GameObject* pAtalaiStatue4 = instance->GetGameObject(GOAtalaiStatue4))
                         UseStatue(pAtalaiStatue4);
                     s4 = true;
                     State = 0;
@@ -150,7 +150,7 @@ public:
              case GO_ATALAI_STATUE5:
                 if (s1 && s2 && s3 && s4 && !s5 && !s6)
                 {
-                    if (GameObjectPtr pAtalaiStatue5 = instance->GetGameObject(GOAtalaiStatue5))
+                    if (GameObject* pAtalaiStatue5 = instance->GetGameObject(GOAtalaiStatue5))
                         UseStatue(pAtalaiStatue5);
                     s5 = true;
                     State = 0;
@@ -159,7 +159,7 @@ public:
              case GO_ATALAI_STATUE6:
                 if (s1 && s2 && s3 && s4 && s5 && !s6)
                 {
-                    if (GameObjectPtr pAtalaiStatue6 = instance->GetGameObject(GOAtalaiStatue6))
+                    if (GameObject* pAtalaiStatue6 = instance->GetGameObject(GOAtalaiStatue6))
                         UseStatue(pAtalaiStatue6);
                     s6 = true;
                     State = 0;
@@ -168,14 +168,14 @@ public:
              }
          };
 
-        void UseStatue(GameObjectPtr go)
+        void UseStatue(GameObject* go)
         {
             go->SummonGameObject(GO_ATALAI_LIGHT1, go->GetPositionX(), go->GetPositionY(), go->GetPositionZ(), 0, 0, 0, 0, 0, 0);
             go->SetUInt32Value(GAMEOBJECT_FLAGS, 4);
         }
 
          /*
-         void UseLastStatue(GameObjectPtr go)
+         void UseLastStatue(GameObject* go)
          {
              AtalaiStatue1->SummonGameObject(GO_ATALAI_LIGHT2, AtalaiStatue1->GetPositionX(), AtalaiStatue1->GetPositionY(), AtalaiStatue1->GetPositionZ(), 0, 0, 0, 0, 0, 100000);
              AtalaiStatue2->SummonGameObject(GO_ATALAI_LIGHT2, AtalaiStatue2->GetPositionX(), AtalaiStatue2->GetPositionY(), AtalaiStatue2->GetPositionZ(), 0, 0, 0, 0, 0, 100000);

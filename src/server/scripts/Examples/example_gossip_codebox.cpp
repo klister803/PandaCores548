@@ -50,7 +50,7 @@ class example_gossip_codebox : public CreatureScript
         {
         }
 
-        bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+        bool OnGossipHello(Player* player, Creature* creature)
         {
             player->ADD_GOSSIP_ITEM_EXTENDED(0, GOSSIP_ITEM_1, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1, "", 0, true);
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_2, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+2);
@@ -60,7 +60,7 @@ class example_gossip_codebox : public CreatureScript
             return true;
         }
 
-        bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
             if (action == GOSSIP_ACTION_INFO_DEF+2)
@@ -72,7 +72,7 @@ class example_gossip_codebox : public CreatureScript
             return true;
         }
 
-        bool OnGossipSelectCode(PlayerPtr player, CreaturePtr creature, uint32 sender, uint32 action, const char* code)
+        bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code)
         {
             player->PlayerTalkClass->ClearMenus();
             if (sender == GOSSIP_SENDER_MAIN)

@@ -213,23 +213,23 @@ bool ItemCanGoIntoBag(ItemTemplate const* proto, ItemTemplate const* pBagProto);
 class Item : public Object
 {
     public:
-        static ItemPtr CreateItem(uint32 item, uint32 count, constPlayerPtr player = nullptr);
-        ItemPtr CloneItem(uint32 count, constPlayerPtr player = nullptr) const;
+        static Item* CreateItem(uint32 item, uint32 count, Player const* player = NULL);
+        Item* CloneItem(uint32 count, Player const* player = NULL) const;
 
         Item();
 
-        virtual bool Create(uint32 guidlow, uint32 itemid, constPlayerPtr owner);
+        virtual bool Create(uint32 guidlow, uint32 itemid, Player const* owner);
 
         ItemTemplate const* GetTemplate() const;
 
         uint64 GetOwnerGUID()    const { return GetUInt64Value(ITEM_FIELD_OWNER); }
         void SetOwnerGUID(uint64 guid) { SetUInt64Value(ITEM_FIELD_OWNER, guid); }
-        PlayerPtr GetOwner()const;
+        Player* GetOwner()const;
 
         void SetBinding(bool val) { ApplyModFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND, val); }
         bool IsSoulBound() const { return HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_SOULBOUND); }
         bool IsBoundAccountWide() const { return (GetTemplate()->Flags & ITEM_PROTO_FLAG_BIND_TO_ACCOUNT) != 0; }
-        bool IsBindedNotWith(constPlayerPtr player) const;
+        bool IsBindedNotWith(Player const* player) const;
         bool IsBoundByEnchant() const;
         virtual void SaveToDB(SQLTransaction& trans);
         virtual bool LoadFromDB(uint32 guid, uint64 owner_guid, Field* fields, uint32 entry);
@@ -240,8 +240,8 @@ class Item : public Object
         void SaveRefundDataToDB();
         void DeleteRefundDataFromDB(SQLTransaction* trans);
 
-        BagPtr ToBag() { if (IsBag()) return THIS_BAG; else return nullptr; }
-        constBagPtr ToBag() const { if (IsBag()) return THIS_CONST_BAG; else return nullptr; }
+        Bag* ToBag() { if (IsBag()) return reinterpret_cast<Bag*>(this); else return NULL; }
+        const Bag* ToBag() const { if (IsBag()) return reinterpret_cast<const Bag*>(this); else return NULL; }
 
         bool IsLocked() const { return !HasFlag(ITEM_FIELD_FLAGS, ITEM_FLAG_UNLOCKED); }
         bool IsBag() const { return GetTemplate()->InventoryType == INVTYPE_BAG; }
@@ -252,7 +252,7 @@ class Item : public Object
         void SetInTrade(bool b = true) { mb_in_trade = b; }
         bool IsInTrade() const { return mb_in_trade; }
 
-        bool HasEnchantRequiredSkill(constPlayerPtr player) const;
+        bool HasEnchantRequiredSkill(const Player* player) const;
         uint32 GetEnchantRequiredLevel() const;
 
         bool IsFitToSpellRequirements(SpellInfo const* spellInfo) const;
@@ -267,13 +267,13 @@ class Item : public Object
         InventoryResult CanBeMergedPartlyWith(ItemTemplate const* proto) const;
 
         uint8 GetSlot() const {return m_slot;}
-        BagPtr GetContainer() { return m_container; }
+        Bag* GetContainer() { return m_container; }
         uint8 GetBagSlot() const;
         void SetSlot(uint8 slot) { m_slot = slot; }
         uint16 GetPos() const { return uint16(GetBagSlot()) << 8 | GetSlot(); }
-        void SetContainer(BagPtr container) { m_container = container; }
+        void SetContainer(Bag* container) { m_container = container; }
 
-        bool IsInBag() const { return m_container != nullptr; }
+        bool IsInBag() const { return m_container != NULL; }
         bool IsEquipped() const;
 
         uint32 GetSkill();
@@ -285,7 +285,7 @@ class Item : public Object
         void UpdateItemSuffixFactor();
         static int32 GenerateItemRandomPropertyId(uint32 item_id);
         void SetEnchantment(EnchantmentSlot slot, uint32 id, uint32 duration, uint32 charges);
-        void SetEnchantmentDuration(EnchantmentSlot slot, uint32 duration, PlayerPtr owner);
+        void SetEnchantmentDuration(EnchantmentSlot slot, uint32 duration, Player* owner);
         void SetEnchantmentCharges(EnchantmentSlot slot, uint32 charges);
         void ClearEnchantment(EnchantmentSlot slot);
         uint32 GetEnchantmentId(EnchantmentSlot slot)       const { return GetUInt32Value(ITEM_FIELD_ENCHANTMENT_1_1 + slot*MAX_ENCHANTMENT_OFFSET + ENCHANTMENT_ID_OFFSET);}
@@ -295,21 +295,21 @@ class Item : public Object
         std::string const& GetText() const { return m_text; }
         void SetText(std::string const& text) { m_text = text; }
 
-        void SendTimeUpdate(PlayerPtr owner);
-        void UpdateDuration(PlayerPtr owner, uint32 diff);
+        void SendTimeUpdate(Player* owner);
+        void UpdateDuration(Player* owner, uint32 diff);
 
         // spell charges (signed but stored as unsigned)
         int32 GetSpellCharges(uint8 index/*0..5*/ = 0) const { return GetInt32Value(ITEM_FIELD_SPELL_CHARGES + index); }
         void  SetSpellCharges(uint8 index/*0..5*/, int32 value) { SetInt32Value(ITEM_FIELD_SPELL_CHARGES + index, value); }
 
-        LootPtr loot;
+        Loot loot;
         bool m_lootGenerated;
 
         // Update States
         ItemUpdateState GetState() const { return uState; }
-        void SetState(ItemUpdateState state, PlayerPtr forplayer = nullptr);
-        void AddToUpdateQueueOf(PlayerPtr player);
-        void RemoveFromUpdateQueueOf(PlayerPtr player);
+        void SetState(ItemUpdateState state, Player* forplayer = NULL);
+        void AddToUpdateQueueOf(Player* player);
+        void RemoveFromUpdateQueueOf(Player* player);
         bool IsInUpdateQueue() const { return uQueuePos != -1; }
         uint16 GetQueuePos() const { return uQueuePos; }
         void FSetState(ItemUpdateState state)               // forced
@@ -326,7 +326,7 @@ class Item : public Object
         bool IsRangedWeapon() const { return GetTemplate()->IsRangedWeapon(); }
 
         // Item Refund system
-        void SetNotRefundable(PlayerPtr owner, bool changestate = true, SQLTransaction* trans = nullptr);
+        void SetNotRefundable(Player* owner, bool changestate = true, SQLTransaction* trans = NULL);
         void SetRefundRecipient(uint32 pGuidLow) { m_refundRecipient = pGuidLow; }
         void SetPaidMoney(uint32 money) { m_paidMoney = money; }
         void SetPaidExtendedCost(uint32 iece) { m_paidExtendedCost = iece; }
@@ -334,13 +334,13 @@ class Item : public Object
         uint32 GetPaidMoney() { return m_paidMoney; }
         uint32 GetPaidExtendedCost() { return m_paidExtendedCost; }
 
-        void UpdatePlayedTime(PlayerPtr owner);
+        void UpdatePlayedTime(Player* owner);
         uint32 GetPlayedTime();
         bool IsRefundExpired();
 
         // Soulbound trade system
         void SetSoulboundTradeable(AllowedLooterSet& allowedLooters);
-        void ClearSoulboundTradeable(PlayerPtr currentOwner);
+        void ClearSoulboundTradeable(Player* currentOwner);
         bool CheckSoulboundTradeExpire();
 
         void BuildUpdate(UpdateDataMapType&);
@@ -349,7 +349,7 @@ class Item : public Object
 
         bool CanBeTransmogrified() const;
         bool CanTransmogrify() const;
-        static bool CanTransmogrifyItemWithItem(constItemPtr transmogrified, constItemPtr transmogrifier);
+        static bool CanTransmogrifyItemWithItem(Item const* transmogrified, Item const* transmogrifier);
         static uint32 GetSpecialPrice(ItemTemplate const* proto, uint32 minimumPrice = 10000);
         uint32 GetSpecialPrice(uint32 minimumPrice = 10000) const { return Item::GetSpecialPrice(GetTemplate(), minimumPrice); }
 
@@ -367,7 +367,7 @@ class Item : public Object
     private:
         std::string m_text;
         uint8 m_slot;
-        BagPtr m_container;
+        Bag* m_container;
         ItemUpdateState uState;
         int16 uQueuePos;
         bool mb_in_trade;                                   // true if item is currently in trade-window

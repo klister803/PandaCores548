@@ -34,30 +34,30 @@ void VisibleNotifier::SendToSelf()
 {
     // at this moment i_clientGUIDs have guids that not iterate at grid level checks
     // but exist one case when this possible and object not out of range: transports
-    if (TransportPtr transport = i_player->GetTransport())
+    if (Transport* transport = i_player.GetTransport())
         for (Transport::PlayerSet::const_iterator itr = transport->GetPassengers().begin();itr != transport->GetPassengers().end();++itr)
         {
             if (vis_guids.find((*itr)->GetGUID()) != vis_guids.end())
             {
                 vis_guids.erase((*itr)->GetGUID());
 
-                i_player->UpdateVisibilityOf((*itr), i_data, i_visibleNow);
+                i_player.UpdateVisibilityOf((*itr), i_data, i_visibleNow);
 
                 if (!(*itr)->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
-                    (*itr)->UpdateVisibilityOf(i_player);
+                    (*itr)->UpdateVisibilityOf(&i_player);
             }
         }
 
     for (Player::ClientGUIDs::const_iterator it = vis_guids.begin();it != vis_guids.end(); ++it)
     {
-        i_player->m_clientGUIDs.erase(*it);
+        i_player.m_clientGUIDs.erase(*it);
         i_data.AddOutOfRangeGUID(*it);
 
         if (IS_PLAYER_GUID(*it))
         {
-            PlayerPtr player = ObjectAccessor::FindPlayer(*it);
+            Player* player = ObjectAccessor::FindPlayer(*it);
             if (player && player->IsInWorld() && !player->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
-                player->UpdateVisibilityOf(i_player);
+                player->UpdateVisibilityOf(&i_player);
         }
     }
 
@@ -66,49 +66,49 @@ void VisibleNotifier::SendToSelf()
 
     WorldPacket packet;
     i_data.BuildPacket(&packet);
-    i_player->GetSession()->SendPacket(&packet);
+    i_player.GetSession()->SendPacket(&packet);
 
-    for (std::set<UnitPtr>::const_iterator it = i_visibleNow.begin(); it != i_visibleNow.end(); ++it)
-        i_player->SendInitialVisiblePackets(*it);
+    for (std::set<Unit*>::const_iterator it = i_visibleNow.begin(); it != i_visibleNow.end(); ++it)
+        i_player.SendInitialVisiblePackets(*it);
 }
 
-void VisibleChangesNotifier::Visit(std::shared_ptr<GridRefManager<Player>> &m)
+void VisibleChangesNotifier::Visit(PlayerMapType &m)
 {
-    for (GridRefManager<Player>::iterator iter = m->begin(); iter != m->end(); ++iter)
+    for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        if (iter->getSource() == i_object)
+        if (iter->getSource() == &i_object)
             continue;
 
-        iter->getSource()->UpdateVisibilityOf(i_object);
+        iter->getSource()->UpdateVisibilityOf(&i_object);
 
         if (!iter->getSource()->GetSharedVisionList().empty())
             for (SharedVisionList::const_iterator i = iter->getSource()->GetSharedVisionList().begin();
                 i != iter->getSource()->GetSharedVisionList().end(); ++i)
                 if ((*i)->m_seer == iter->getSource())
-                    (*i)->UpdateVisibilityOf(i_object);
+                    (*i)->UpdateVisibilityOf(&i_object);
     }
 }
 
-void VisibleChangesNotifier::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
+void VisibleChangesNotifier::Visit(CreatureMapType &m)
 {
-    for (GridRefManager<Creature>::iterator iter = m->begin(); iter != m->end(); ++iter)
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         if (!iter->getSource()->GetSharedVisionList().empty())
             for (SharedVisionList::const_iterator i = iter->getSource()->GetSharedVisionList().begin();
                 i != iter->getSource()->GetSharedVisionList().end(); ++i)
                 if ((*i)->m_seer == iter->getSource())
-                    (*i)->UpdateVisibilityOf(i_object);
+                    (*i)->UpdateVisibilityOf(&i_object);
 }
 
-void VisibleChangesNotifier::Visit(std::shared_ptr<GridRefManager<DynamicObject>> &m)
+void VisibleChangesNotifier::Visit(DynamicObjectMapType &m)
 {
-    for (GridRefManager<DynamicObject>::iterator iter = m->begin(); iter != m->end(); ++iter)
+    for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
         if (IS_PLAYER_GUID(iter->getSource()->GetCasterGUID()))
-            if (PlayerPtr caster = TO_PLAYER(iter->getSource()->GetCaster()))
+            if (Player* caster = (Player*)iter->getSource()->GetCaster())
                 if (caster->m_seer == iter->getSource())
-                    caster->UpdateVisibilityOf(i_object);
+                    caster->UpdateVisibilityOf(&i_object);
 }
 
-inline void CreatureUnitRelocationWorker(CreaturePtr c, UnitPtr u)
+inline void CreatureUnitRelocationWorker(Creature* c, Unit* u)
 {
     if (!u->isAlive() || !c->isAlive() || c == u || u->isInFlight())
         return;
@@ -118,92 +118,92 @@ inline void CreatureUnitRelocationWorker(CreaturePtr c, UnitPtr u)
             c->AI()->MoveInLineOfSight_Safe(u);
 }
 
-void PlayerRelocationNotifier::Visit(std::shared_ptr<GridRefManager<Player>> &m)
+void PlayerRelocationNotifier::Visit(PlayerMapType &m)
 {
-    for (GridRefManager<Player>::iterator iter = m->begin(); iter != m->end(); ++iter)
+    for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        PlayerPtr player = iter->getSource();
+        Player* player = iter->getSource();
 
         vis_guids.erase(player->GetGUID());
 
-        i_player->UpdateVisibilityOf(player, i_data, i_visibleNow);
+        i_player.UpdateVisibilityOf(player, i_data, i_visibleNow);
 
         if (player->m_seer->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
             continue;
 
-        player->UpdateVisibilityOf(i_player);
+        player->UpdateVisibilityOf(&i_player);
     }
 }
 
-void PlayerRelocationNotifier::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
+void PlayerRelocationNotifier::Visit(CreatureMapType &m)
 {
-    bool relocated_for_ai = (i_player == i_player->m_seer);
+    bool relocated_for_ai = (&i_player == i_player.m_seer);
 
-    for (GridRefManager<Creature>::iterator iter=m->begin(); iter != m->end(); ++iter)
+    for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
-        CreaturePtr c = iter->getSource();
+        Creature* c = iter->getSource();
 
         vis_guids.erase(c->GetGUID());
 
-        i_player->UpdateVisibilityOf(c, i_data, i_visibleNow);
+        i_player.UpdateVisibilityOf(c, i_data, i_visibleNow);
 
         if (relocated_for_ai && !c->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
-            CreatureUnitRelocationWorker(c, i_player);
+            CreatureUnitRelocationWorker(c, &i_player);
     }
 }
 
-void CreatureRelocationNotifier::Visit(std::shared_ptr<GridRefManager<Player>> &m)
+void CreatureRelocationNotifier::Visit(PlayerMapType &m)
 {
-    for (GridRefManager<Player>::iterator iter=m->begin(); iter != m->end(); ++iter)
+    for (PlayerMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
-        PlayerPtr player = iter->getSource();
+        Player* player = iter->getSource();
 
         if (!player->m_seer->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
-            player->UpdateVisibilityOf(i_creature);
+            player->UpdateVisibilityOf(&i_creature);
 
-        CreatureUnitRelocationWorker(i_creature, player);
+        CreatureUnitRelocationWorker(&i_creature, player);
     }
 }
 
-void CreatureRelocationNotifier::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
+void CreatureRelocationNotifier::Visit(CreatureMapType &m)
 {
-    if (!i_creature->isAlive())
+    if (!i_creature.isAlive())
         return;
 
-    for (GridRefManager<Creature>::iterator iter=m->begin(); iter != m->end(); ++iter)
+    for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
-        CreaturePtr c = iter->getSource();
-        CreatureUnitRelocationWorker(i_creature, c);
+        Creature* c = iter->getSource();
+        CreatureUnitRelocationWorker(&i_creature, c);
 
         if (!c->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
-            CreatureUnitRelocationWorker(c, i_creature);
+            CreatureUnitRelocationWorker(c, &i_creature);
     }
 }
 
-void DelayedUnitRelocation::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
+void DelayedUnitRelocation::Visit(CreatureMapType &m)
 {
-    for (GridRefManager<Creature>::iterator iter = m->begin(); iter != m->end(); ++iter)
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        CreaturePtr unit = iter->getSource();
+        Creature* unit = iter->getSource();
         if (!unit->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
             continue;
 
-        CreatureRelocationNotifier relocate(unit);
+        CreatureRelocationNotifier relocate(*unit);
 
         TypeContainerVisitor<CreatureRelocationNotifier, WorldTypeMapContainer > c2world_relocation(relocate);
         TypeContainerVisitor<CreatureRelocationNotifier, GridTypeMapContainer >  c2grid_relocation(relocate);
 
-        cell.Visit(p, c2world_relocation, i_map, TO_CONST_WORLDOBJECT(unit), i_radius);
-        cell.Visit(p, c2grid_relocation, i_map, TO_CONST_WORLDOBJECT(unit), i_radius);
+        cell.Visit(p, c2world_relocation, i_map, *unit, i_radius);
+        cell.Visit(p, c2grid_relocation, i_map, *unit, i_radius);
     }
 }
 
-void DelayedUnitRelocation::Visit(std::shared_ptr<GridRefManager<Player>> &m)
+void DelayedUnitRelocation::Visit(PlayerMapType &m)
 {
-    for (GridRefManager<Player>::iterator iter = m->begin(); iter != m->end(); ++iter)
+    for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        PlayerPtr player = iter->getSource();
-        constWorldObjectPtr viewPoint = player->m_seer;
+        Player* player = iter->getSource();
+        WorldObject const* viewPoint = player->m_seer;
 
         if (!viewPoint->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
             continue;
@@ -215,37 +215,37 @@ void DelayedUnitRelocation::Visit(std::shared_ptr<GridRefManager<Player>> &m)
         Cell cell2(pair2);
         //cell.SetNoCreate(); need load cells around viewPoint or player, that's why its commented
 
-        PlayerRelocationNotifier relocate(player);
+        PlayerRelocationNotifier relocate(*player);
         TypeContainerVisitor<PlayerRelocationNotifier, WorldTypeMapContainer > c2world_relocation(relocate);
         TypeContainerVisitor<PlayerRelocationNotifier, GridTypeMapContainer >  c2grid_relocation(relocate);
 
-        cell2.Visit(pair2, c2world_relocation, i_map, TO_CONST_WORLDOBJECT(viewPoint), i_radius);
-        cell2.Visit(pair2, c2grid_relocation, i_map, TO_CONST_WORLDOBJECT(viewPoint), i_radius);
+        cell2.Visit(pair2, c2world_relocation, i_map, *viewPoint, i_radius);
+        cell2.Visit(pair2, c2grid_relocation, i_map, *viewPoint, i_radius);
 
         relocate.SendToSelf();
     }
 }
 
-void AIRelocationNotifier::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
+void AIRelocationNotifier::Visit(CreatureMapType &m)
 {
-    for (GridRefManager<Creature>::iterator iter = m->begin(); iter != m->end(); ++iter)
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        CreaturePtr c = iter->getSource();
-        CreatureUnitRelocationWorker(c, i_unit);
+        Creature* c = iter->getSource();
+        CreatureUnitRelocationWorker(c, &i_unit);
         if (isCreature)
-            CreatureUnitRelocationWorker(TO_CREATURE(i_unit), c);
+            CreatureUnitRelocationWorker((Creature*)&i_unit, c);
     }
 }
 
-void MessageDistDeliverer::Visit(std::shared_ptr<GridRefManager<Player>> &m)
+void MessageDistDeliverer::Visit(PlayerMapType &m)
 {
-    for (GridRefManager<Player>::iterator iter = m->begin(); iter != m->end(); ++iter)
+    for (PlayerMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        PlayerPtr target = iter->getSource();
+        Player* target = iter->getSource();
         if (!target->InSamePhase(i_phaseMask))
             continue;
 
-        if (target->GetExactDist2dSq(i_source.get()) > i_distSq)
+        if (target->GetExactDist2dSq(i_source) > i_distSq)
             continue;
 
         // Send packet to all who are sharing the player's vision
@@ -262,15 +262,15 @@ void MessageDistDeliverer::Visit(std::shared_ptr<GridRefManager<Player>> &m)
     }
 }
 
-void MessageDistDeliverer::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
+void MessageDistDeliverer::Visit(CreatureMapType &m)
 {
-    for (GridRefManager<Creature>::iterator iter = m->begin(); iter != m->end(); ++iter)
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        CreaturePtr target = iter->getSource();
+        Creature* target = iter->getSource();
         if (!target->InSamePhase(i_phaseMask))
             continue;
 
-        if (target->GetExactDist2dSq(i_source.get()) > i_distSq)
+        if (target->GetExactDist2dSq(i_source) > i_distSq)
             continue;
 
         // Send packet to all who are sharing the creature's vision
@@ -284,21 +284,21 @@ void MessageDistDeliverer::Visit(std::shared_ptr<GridRefManager<Creature>> &m)
     }
 }
 
-void MessageDistDeliverer::Visit(std::shared_ptr<GridRefManager<DynamicObject>> &m)
+void MessageDistDeliverer::Visit(DynamicObjectMapType &m)
 {
-    for (GridRefManager<DynamicObject>::iterator iter = m->begin(); iter != m->end(); ++iter)
+    for (DynamicObjectMapType::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
-        DynamicObjectPtr target = iter->getSource();
+        DynamicObject* target = iter->getSource();
         if (!target->InSamePhase(i_phaseMask))
             continue;
 
-        if (target->GetExactDist2dSq(i_source.get()) > i_distSq)
+        if (target->GetExactDist2dSq(i_source) > i_distSq)
             continue;
 
         if (IS_PLAYER_GUID(target->GetCasterGUID()))
         {
             // Send packet back to the caster if the caster has vision of dynamic object
-            PlayerPtr caster = TO_PLAYER(target->GetCaster());
+            Player* caster = (Player*)target->GetCaster();
             if (caster && caster->m_seer == target)
                 SendPacket(caster);
         }
@@ -307,7 +307,7 @@ void MessageDistDeliverer::Visit(std::shared_ptr<GridRefManager<DynamicObject>> 
 
 /*
 void
-MessageDistDeliverer::VisitObject(PlayerPtr player)
+MessageDistDeliverer::VisitObject(Player* player)
 {
     if (!i_ownTeamOnly || (i_source.GetTypeId() == TYPEID_PLAYER && player->GetTeam() == ((Player&)i_source).GetTeam()))
     {
@@ -317,44 +317,44 @@ MessageDistDeliverer::VisitObject(PlayerPtr player)
 */
 
 template<class T>
-void ObjectUpdater::Visit(std::shared_ptr<GridRefManager<T>> &m)
+void ObjectUpdater::Visit(GridRefManager<T> &m)
 {
-    for (typename GridRefManager<T>::iterator iter = m->begin(); iter != m->end(); ++iter)
+    for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
     {
         if (iter->getSource()->IsInWorld())
             iter->getSource()->Update(i_timeDiff);
     }
 }
 
-bool AnyDeadUnitObjectInRangeCheck::operator()(PlayerPtr u)
+bool AnyDeadUnitObjectInRangeCheck::operator()(Player* u)
 {
     return !u->isAlive() && !u->HasAuraType(SPELL_AURA_GHOST) && i_searchObj->IsWithinDistInMap(u, i_range);
 }
 
-bool AnyDeadUnitObjectInRangeCheck::operator()(CorpsePtr u)
+bool AnyDeadUnitObjectInRangeCheck::operator()(Corpse* u)
 {
     return u->GetType() != CORPSE_BONES && i_searchObj->IsWithinDistInMap(u, i_range);
 }
 
-bool AnyDeadUnitObjectInRangeCheck::operator()(CreaturePtr u)
+bool AnyDeadUnitObjectInRangeCheck::operator()(Creature* u)
 {
     return !u->isAlive() && i_searchObj->IsWithinDistInMap(u, i_range);
 }
 
-bool AnyDeadUnitSpellTargetInRangeCheck::operator()(PlayerPtr u)
+bool AnyDeadUnitSpellTargetInRangeCheck::operator()(Player* u)
 {
     return AnyDeadUnitObjectInRangeCheck::operator()(u) && i_check(u);
 }
 
-bool AnyDeadUnitSpellTargetInRangeCheck::operator()(CorpsePtr u)
+bool AnyDeadUnitSpellTargetInRangeCheck::operator()(Corpse* u)
 {
     return AnyDeadUnitObjectInRangeCheck::operator()(u) && i_check(u);
 }
 
-bool AnyDeadUnitSpellTargetInRangeCheck::operator()(CreaturePtr u)
+bool AnyDeadUnitSpellTargetInRangeCheck::operator()(Creature* u)
 {
     return AnyDeadUnitObjectInRangeCheck::operator()(u) && i_check(u);
 }
 
-template void ObjectUpdater::Visit<GameObject>(std::shared_ptr<GameObjectMapType> &);
-template void ObjectUpdater::Visit<DynamicObject>(std::shared_ptr<GridRefManager<DynamicObject>> &);
+template void ObjectUpdater::Visit<GameObject>(GameObjectMapType &);
+template void ObjectUpdater::Visit<DynamicObject>(DynamicObjectMapType &);

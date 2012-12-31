@@ -2,18 +2,18 @@
  * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
- * THIS_CORPSE program is free software; you can redistribute it and/or modify it
+ * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 2 of the License, or (at your
  * option) any later version.
  *
- * THIS_CORPSE program is distributed in the hope that it will be useful, but WITHOUT
+ * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
  * more details.
  *
  * You should have received a copy of the GNU General Public License along
- * with THIS_CORPSE program. If not, see <http://www.gnu.org/licenses/>.
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "Common.h"
@@ -28,7 +28,6 @@
 
 Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES), m_type(type)
 {
-    loot = LootPtr(new Loot());
     m_objectType |= TYPEMASK_CORPSE;
     m_objectTypeId = TYPEID_CORPSE;
 
@@ -36,10 +35,10 @@ Corpse::Corpse(CorpseType type) : WorldObject(type != CORPSE_BONES), m_type(type
 
     m_valuesCount = CORPSE_END;
 
-    m_time = time(nullptr);
+    m_time = time(NULL);
 
     lootForBody = false;
-    lootRecipient = nullptr;
+    lootRecipient = NULL;
 }
 
 Corpse::~Corpse()
@@ -50,7 +49,7 @@ void Corpse::AddToWorld()
 {
     ///- Register the corpse for guid lookup
     if (!IsInWorld())
-        sObjectAccessor->AddObject(THIS_CORPSE);
+        sObjectAccessor->AddObject(this);
 
     Object::AddToWorld();
 }
@@ -59,19 +58,19 @@ void Corpse::RemoveFromWorld()
 {
     ///- Remove the corpse from the accessor
     if (IsInWorld())
-        sObjectAccessor->RemoveObject(THIS_CORPSE);
+        sObjectAccessor->RemoveObject(this);
 
     Object::RemoveFromWorld();
 }
 
-bool Corpse::Create(uint32 guidlow, MapPtr map)
+bool Corpse::Create(uint32 guidlow, Map* map)
 {
     SetMap(map);
     Object::_Create(guidlow, 0, HIGHGUID_CORPSE);
     return true;
 }
 
-bool Corpse::Create(uint32 guidlow, PlayerPtr owner)
+bool Corpse::Create(uint32 guidlow, Player* owner)
 {
     ASSERT(owner);
 
@@ -131,7 +130,7 @@ void Corpse::SaveToDB()
 void Corpse::DeleteBonesFromWorld()
 {
     ASSERT(GetType() == CORPSE_BONES);
-    CorpsePtr corpse = ObjectAccessor::GetCorpse(THIS_CONST_WORLDOBJECT, GetGUID());
+    Corpse* corpse = ObjectAccessor::GetCorpse(*this, GetGUID());
 
     if (!corpse)
     {
@@ -144,7 +143,7 @@ void Corpse::DeleteBonesFromWorld()
 
 void Corpse::DeleteFromDB(SQLTransaction& trans)
 {
-    PreparedStatement* stmt = nullptr;
+    PreparedStatement* stmt = NULL;
     if (GetType() == CORPSE_BONES)
     {
         // Only specific bones

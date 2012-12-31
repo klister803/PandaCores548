@@ -11,5 +11,3 @@
 #include "Opcodes.h"
 #include "SharedDefines.h"
 #include "ObjectMgr.h"
-#include "Group.h"
-#include "SpellAuras.h"

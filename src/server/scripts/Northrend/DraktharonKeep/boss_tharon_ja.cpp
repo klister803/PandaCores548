@@ -72,7 +72,7 @@ public:
 
     struct boss_tharon_jaAI : public ScriptedAI
     {
-        boss_tharon_jaAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_tharon_jaAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -101,7 +101,7 @@ public:
                 instance->SetData(DATA_THARON_JA_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -120,7 +120,7 @@ public:
                 case SKELETAL:
                     if (uiCurseOfLifeTimer < diff)
                     {
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             DoCast(target, SPELL_CURSE_OF_LIFE);
                         uiCurseOfLifeTimer = urand(10*IN_MILLISECONDS, 15*IN_MILLISECONDS);
                     } else uiCurseOfLifeTimer -= diff;
@@ -152,11 +152,11 @@ public:
                         DoScriptText(RAND(SAY_FLESH_1, SAY_FLESH_2), me);
                         me->SetDisplayId(MODEL_FLESH);
 
-                        std::list<UnitPtr> playerList;
+                        std::list<Unit*> playerList;
                         SelectTargetList(playerList, 5, SELECT_TARGET_TOPAGGRO, 0, true);
-                        for (std::list<UnitPtr>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                        for (std::list<Unit*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
                         {
-                            UnitPtr temp = (*itr);
+                            Unit* temp = (*itr);
                             me->AddAura(SPELL_GIFT_OF_THARON_JA, temp);
                             temp->SetDisplayId(MODEL_SKELETON);
                         }
@@ -170,14 +170,14 @@ public:
                 case FLESH:
                     if (uiLightningBreathTimer < diff)
                     {
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             DoCast(target, SPELL_LIGHTNING_BREATH);
                         uiLightningBreathTimer = urand(6*IN_MILLISECONDS, 7*IN_MILLISECONDS);
                     } else uiLightningBreathTimer -= diff;
 
                     if (uiEyeBeamTimer < diff)
                     {
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             DoCast(target, SPELL_EYE_BEAM);
                         uiEyeBeamTimer = urand(4*IN_MILLISECONDS, 6*IN_MILLISECONDS);
                     } else uiEyeBeamTimer -= diff;
@@ -207,11 +207,11 @@ public:
                         uiRainOfFireTimer = urand(14*IN_MILLISECONDS, 18*IN_MILLISECONDS);
                         uiShadowVolleyTimer = urand(8*IN_MILLISECONDS, 10*IN_MILLISECONDS);
 
-                        std::list<UnitPtr> playerList;
+                        std::list<Unit*> playerList;
                         SelectTargetList(playerList, 5, SELECT_TARGET_TOPAGGRO, 0, true);
-                        for (std::list<UnitPtr>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                        for (std::list<Unit*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
                         {
-                            UnitPtr temp = (*itr);
+                            Unit* temp = (*itr);
                             if (temp->HasAura(SPELL_GIFT_OF_THARON_JA))
                                 temp->RemoveAura(SPELL_GIFT_OF_THARON_JA);
                             temp->DeMorph();
@@ -221,12 +221,12 @@ public:
             }
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -236,7 +236,7 @@ public:
                 Map::PlayerList const &PlayerList = instance->instance->GetPlayers();
 
                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                    if (PlayerPtr player = i->getSource())
+                    if (Player* player = i->getSource())
                         player->DeMorph();
 
                 DoCast(me, SPELL_ACHIEVEMENT_CHECK);
@@ -246,7 +246,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_tharon_jaAI(creature);
     }

@@ -33,9 +33,9 @@ HostileRefManager::~HostileRefManager()
 // The victim is hated than by them as well
 // use for buffs and healing threat functionality
 
-void HostileRefManager::threatAssist(UnitPtr victim, float baseThreat, SpellInfo const* threatSpell)
+void HostileRefManager::threatAssist(Unit* victim, float baseThreat, SpellInfo const* threatSpell)
 {
-    HostileReferencePtr ref = getFirst();
+    HostileReference* ref = getFirst();
     float threat = ThreatCalcHelper::calcThreat(victim, iOwner, baseThreat, (threatSpell ? threatSpell->GetSchoolMask() : SPELL_SCHOOL_MASK_NORMAL), threatSpell);
     threat /= getSize();
     while (ref)
@@ -51,7 +51,7 @@ void HostileRefManager::threatAssist(UnitPtr victim, float baseThreat, SpellInfo
 
 void HostileRefManager::addTempThreat(float threat, bool apply)
 {
-    HostileReferencePtr ref = getFirst();
+    HostileReference* ref = getFirst();
 
     while (ref)
     {
@@ -71,7 +71,7 @@ void HostileRefManager::addTempThreat(float threat, bool apply)
 
 void HostileRefManager::addThreatPercent(int32 percent)
 {
-    HostileReferencePtr ref = getFirst();
+    HostileReference* ref = getFirst();
     while (ref)
     {
         ref->addThreatPercent(percent);
@@ -84,7 +84,7 @@ void HostileRefManager::addThreatPercent(int32 percent)
 
 void HostileRefManager::setOnlineOfflineState(bool isOnline)
 {
-    HostileReferencePtr ref = getFirst();
+    HostileReference* ref = getFirst();
     while (ref)
     {
         ref->setOnlineOfflineState(isOnline);
@@ -97,7 +97,7 @@ void HostileRefManager::setOnlineOfflineState(bool isOnline)
 
 void HostileRefManager::updateThreatTables()
 {
-    HostileReferencePtr ref = getFirst();
+    HostileReference* ref = getFirst();
     while (ref)
     {
         ref->updateOnlineStatus();
@@ -111,11 +111,12 @@ void HostileRefManager::updateThreatTables()
 
 void HostileRefManager::deleteReferences()
 {
-    HostileReferencePtr ref = getFirst();
+    HostileReference* ref = getFirst();
     while (ref)
     {
-        HostileReferencePtr nextRef = ref->next();
+        HostileReference* nextRef = ref->next();
         ref->removeReference();
+        delete ref;
         ref = nextRef;
     }
 }
@@ -125,13 +126,14 @@ void HostileRefManager::deleteReferences()
 
 void HostileRefManager::deleteReferencesForFaction(uint32 faction)
 {
-    HostileReferencePtr ref = getFirst();
+    HostileReference* ref = getFirst();
     while (ref)
     {
-        HostileReferencePtr nextRef = ref->next();
+        HostileReference* nextRef = ref->next();
         if (ref->getSource()->getOwner()->getFactionTemplateEntry()->faction == faction)
         {
             ref->removeReference();
+            delete ref;
         }
         ref = nextRef;
     }
@@ -140,15 +142,16 @@ void HostileRefManager::deleteReferencesForFaction(uint32 faction)
 //=================================================
 // delete one reference, defined by Unit
 
-void HostileRefManager::deleteReference(UnitPtr creature)
+void HostileRefManager::deleteReference(Unit* creature)
 {
-    HostileReferencePtr ref = getFirst();
+    HostileReference* ref = getFirst();
     while (ref)
     {
-        HostileReferencePtr nextRef = ref->next();
+        HostileReference* nextRef = ref->next();
         if (ref->getSource()->getOwner() == creature)
         {
             ref->removeReference();
+            delete ref;
             break;
         }
         ref = nextRef;
@@ -158,12 +161,12 @@ void HostileRefManager::deleteReference(UnitPtr creature)
 //=================================================
 // set state for one reference, defined by Unit
 
-void HostileRefManager::setOnlineOfflineState(UnitPtr creature, bool isOnline)
+void HostileRefManager::setOnlineOfflineState(Unit* creature, bool isOnline)
 {
-    HostileReferencePtr ref = getFirst();
+    HostileReference* ref = getFirst();
     while (ref)
     {
-        HostileReferencePtr nextRef = ref->next();
+        HostileReference* nextRef = ref->next();
         if (ref->getSource()->getOwner() == creature)
         {
             ref->setOnlineOfflineState(isOnline);
@@ -177,14 +180,15 @@ void HostileRefManager::setOnlineOfflineState(UnitPtr creature, bool isOnline)
 
 void HostileRefManager::UpdateVisibility()
 {
-    HostileReferencePtr ref = getFirst();
+    HostileReference* ref = getFirst();
     while (ref)
     {
-        HostileReferencePtr nextRef = ref->next();
+        HostileReference* nextRef = ref->next();
         if (!ref->getSource()->getOwner()->canSeeOrDetect(getOwner()))
         {
             nextRef = ref->next();
             ref->removeReference();
+            delete ref;
         }
         ref = nextRef;
     }

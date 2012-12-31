@@ -49,11 +49,11 @@ class boss_gehennas : public CreatureScript
 
         struct boss_gehennasAI : public BossAI
         {
-            boss_gehennasAI(CreaturePtr creature) : BossAI(creature, BOSS_GEHENNAS)
+            boss_gehennasAI(Creature* creature) : BossAI(creature, BOSS_GEHENNAS)
             {
             }
 
-            void EnterCombat(UnitPtr victim)
+            void EnterCombat(Unit* victim)
             {
                 BossAI::EnterCombat(victim);
                 events.ScheduleEvent(EVENT_GEHENNAS_CURSE, 12000);
@@ -80,12 +80,12 @@ class boss_gehennas : public CreatureScript
                             events.ScheduleEvent(EVENT_GEHENNAS_CURSE, urand(22000, 30000));
                             break;
                         case EVENT_RAIN_OF_FIRE:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_RAIN_OF_FIRE);
                             events.ScheduleEvent(EVENT_RAIN_OF_FIRE, urand(4000, 12000));
                             break;
                         case EVENT_SHADOW_BOLT:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                                 DoCast(target, SPELL_SHADOW_BOLT);
                             events.ScheduleEvent(EVENT_SHADOW_BOLT, 7000);
                             break;
@@ -98,7 +98,7 @@ class boss_gehennas : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_gehennasAI(creature);
         }

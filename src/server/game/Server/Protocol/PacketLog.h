@@ -39,7 +39,7 @@ class PacketLog
 
     public:
         void Initialize();
-        bool CanLogPacket() const { return (_file != nullptr); }
+        bool CanLogPacket() const { return (_file != NULL); }
         void LogPacket(WorldPacket const& packet, Direction direction);
 
     private:

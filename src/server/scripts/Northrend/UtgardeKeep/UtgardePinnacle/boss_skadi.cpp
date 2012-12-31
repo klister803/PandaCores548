@@ -162,14 +162,14 @@ class boss_skadi : public CreatureScript
 public:
     boss_skadi() : CreatureScript("boss_skadi") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_skadiAI (creature);
     }
 
     struct boss_skadiAI : public ScriptedAI
     {
-        boss_skadiAI(CreaturePtr creature) : ScriptedAI(creature), Summons(me)
+        boss_skadiAI(Creature* creature) : ScriptedAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
             m_uiGraufGUID = 0;
@@ -208,7 +208,7 @@ public:
 
             Summons.DespawnAll();
             me->SetSpeed(MOVE_FLIGHT, 3.0f);
-            if ((Unit::GetCreature(TO_WORLDOBJECT(me), m_uiGraufGUID) == nullptr) && !me->IsMounted())
+            if ((Unit::GetCreature(*me, m_uiGraufGUID) == NULL) && !me->IsMounted())
                  me->SummonCreature(CREATURE_GRAUF, Location[0].GetPositionX(), Location[0].GetPositionY(), Location[0].GetPositionZ(), 3.0f);
             if (instance)
             {
@@ -222,11 +222,11 @@ public:
             me->SetCanFly(false);
             me->Dismount();
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
-            if (!Unit::GetCreature(TO_WORLDOBJECT(me), m_uiGraufGUID))
+            if (!Unit::GetCreature(*me, m_uiGraufGUID))
                 me->SummonCreature(CREATURE_GRAUF, Location[0].GetPositionX(), Location[0].GetPositionY(), Location[0].GetPositionZ(), 3.0f);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -248,7 +248,7 @@ public:
             }
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             switch (summoned->GetEntry())
             {
@@ -260,25 +260,25 @@ public:
                 case CREATURE_YMIRJAR_HARPOONER:
                     summoned->setActive(true);
                     summoned->SetInCombatWithZone();
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         summoned->AI()->AttackStart(target);
                     break;
                 case CREATURE_TRIGGER:
-                    summoned->CastSpell(std::shared_ptr<Unit>(), SPELL_FREEZING_CLOUD, true);
+                    summoned->CastSpell((Unit*)NULL, SPELL_FREEZING_CLOUD, true);
                     summoned->DespawnOrUnsummon(10*IN_MILLISECONDS);
                     break;
             }
             Summons.Summon(summoned);
         }
 
-        void SummonedCreatureDespawn(CreaturePtr summoned)
+        void SummonedCreatureDespawn(Creature* summoned)
         {
             if (summoned->GetEntry() == CREATURE_GRAUF)
                 m_uiGraufGUID = 0;
             Summons.Despawn(summoned);
         }
 
-        void SpellHit(UnitPtr /*caster*/, const SpellInfo* spell)
+        void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_HARPOON_DAMAGE)
             {
@@ -288,7 +288,7 @@ public:
                     Phase = SKADI;
                     me->SetCanFly(false);
                     me->Dismount();
-                    if (CreaturePtr pGrauf = me->SummonCreature(CREATURE_GRAUF, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3*IN_MILLISECONDS))
+                    if (Creature* pGrauf = me->SummonCreature(CREATURE_GRAUF, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 3*IN_MILLISECONDS))
                     {
                         pGrauf->GetMotionMaster()->MoveFall();
                         pGrauf->HandleEmoteCommand(EMOTE_ONESHOT_FLYDEATH);
@@ -393,7 +393,7 @@ public:
 
                     if (m_uiPoisonedSpearTimer <= diff)
                     {
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                             DoCast(target, SPELL_POISONED_SPEAR);
                         m_uiPoisonedSpearTimer = 10000;
                     } else m_uiPoisonedSpearTimer -= diff;
@@ -409,7 +409,7 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
             Summons.DespawnAll();
@@ -417,7 +417,7 @@ public:
                 instance->SetData(DATA_SKADI_THE_RUTHLESS_EVENT, DONE);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), me);
         }
@@ -471,13 +471,13 @@ class go_harpoon_launcher : public GameObjectScript
 public:
     go_harpoon_launcher() : GameObjectScript("go_harpoon_launcher") { }
 
-    bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
+    bool OnGossipHello(Player* player, GameObject* go)
     {
         InstanceScript* instance = go->GetInstanceScript();
         if (!instance)
             return false;
 
-        if (CreaturePtr pSkadi = Unit::GetCreature(TO_WORLDOBJECT(go), instance->GetData64(DATA_SKADI_THE_RUTHLESS)))
+        if (Creature* pSkadi = Unit::GetCreature(*go, instance->GetData64(DATA_SKADI_THE_RUTHLESS)))
             player->CastSpell(pSkadi, SPELL_RAPID_FIRE, true);
 
         return false;

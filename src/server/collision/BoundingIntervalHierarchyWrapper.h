@@ -73,7 +73,7 @@ public:
         uint32 Idx = 0;
         const T * temp;
         if (m_obj2Idx.getRemove(&obj, temp, Idx))
-            m_objects[Idx] = nullptr;
+            m_objects[Idx] = NULL;
         else
             m_objects_to_push.remove(&obj);
     }

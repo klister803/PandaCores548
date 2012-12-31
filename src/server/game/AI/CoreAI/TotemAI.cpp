@@ -22,13 +22,12 @@
 #include "DBCStores.h"
 #include "ObjectAccessor.h"
 #include "SpellMgr.h"
-#include "SpellAuraEffects.h"
 
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "CellImpl.h"
 
-int TotemAI::Permissible(constCreaturePtr creature)
+int TotemAI::Permissible(Creature const* creature)
 {
     if (creature->isTotem())
         return PERMIT_BASE_PROACTIVE;
@@ -36,12 +35,12 @@ int TotemAI::Permissible(constCreaturePtr creature)
     return PERMIT_BASE_NO;
 }
 
-TotemAI::TotemAI(CreaturePtr c) : CreatureAI(c), i_victimGuid(0)
+TotemAI::TotemAI(Creature* c) : CreatureAI(c), i_victimGuid(0)
 {
     ASSERT(c->isTotem());
 }
 
-void TotemAI::MoveInLineOfSight(UnitPtr /*who*/)
+void TotemAI::MoveInLineOfSight(Unit* /*who*/)
 {
 }
 
@@ -52,14 +51,14 @@ void TotemAI::EnterEvadeMode()
 
 void TotemAI::UpdateAI(uint32 const /*diff*/)
 {
-    if (TO_TOTEM(me)->GetTotemType() != TOTEM_ACTIVE)
+    if (me->ToTotem()->GetTotemType() != TOTEM_ACTIVE)
         return;
 
     if (!me->isAlive() || me->IsNonMeleeSpellCasted(false))
         return;
 
     // Search spell
-    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(TO_TOTEM(me)->GetSpell());
+    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(me->ToTotem()->GetSpell());
     if (!spellInfo)
         return;
 
@@ -69,14 +68,14 @@ void TotemAI::UpdateAI(uint32 const /*diff*/)
     // SPELLMOD_RANGE not applied in this place just because not existence range mods for attacking totems
 
     // pointer to appropriate target if found any
-    UnitPtr victim = i_victimGuid ? ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(me), i_victimGuid) : nullptr;
+    Unit* victim = i_victimGuid ? ObjectAccessor::GetUnit(*me, i_victimGuid) : NULL;
 
     // Search victim if no, not attackable, or out of range, or friendly (possible in case duel end)
     if (!victim ||
         !victim->isTargetableForAttack() || !me->IsWithinDistInMap(victim, max_range) ||
         me->IsFriendlyTo(victim) || !me->canSeeOrDetect(victim))
     {
-        victim = nullptr;
+        victim = NULL;
         Trinity::NearestAttackableUnitInObjectRangeCheck u_check(me, me, max_range);
         Trinity::UnitLastSearcher<Trinity::NearestAttackableUnitInObjectRangeCheck> checker(me, victim, u_check);
         me->VisitNearbyObject(max_range, checker);
@@ -90,13 +89,13 @@ void TotemAI::UpdateAI(uint32 const /*diff*/)
 
         // attack
         me->SetInFront(victim);                         // client change orientation by self
-        me->CastSpell(victim, TO_TOTEM(me)->GetSpell(), false);
+        me->CastSpell(victim, me->ToTotem()->GetSpell(), false);
     }
     else
         i_victimGuid = 0;
 }
 
-void TotemAI::AttackStart(UnitPtr /*victim*/)
+void TotemAI::AttackStart(Unit* /*victim*/)
 {
     // Sentry totem sends ping on attack
     if (me->GetEntry() == SENTRY_TOTEM_ENTRY && me->GetOwner()->GetTypeId() == TYPEID_PLAYER)
@@ -105,6 +104,6 @@ void TotemAI::AttackStart(UnitPtr /*victim*/)
         data << me->GetGUID();
         data << me->GetPositionX();
         data << me->GetPositionY();
-        (TO_PLAYER(me->GetOwner()))->GetSession()->SendPacket(&data);
+        ((Player*)me->GetOwner())->GetSession()->SendPacket(&data);
     }
 }

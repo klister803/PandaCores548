@@ -48,14 +48,14 @@ class boss_silver_hand_bosses : public CreatureScript
 public:
     boss_silver_hand_bosses() : CreatureScript("boss_silver_hand_bosses") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_silver_hand_bossesAI (creature);
     }
 
     struct boss_silver_hand_bossesAI : public ScriptedAI
     {
-        boss_silver_hand_bossesAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_silver_hand_bossesAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -93,11 +93,11 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
-        void JustDied(UnitPtr killer)
+        void JustDied(Unit* killer)
         {
             if (!instance)
                 return;
@@ -123,7 +123,7 @@ public:
 
             if (instance->GetData(TYPE_SH_QUEST))
             {
-                if (PlayerPtr player = TO_PLAYER(killer))
+                if (Player* player = killer->ToPlayer())
                     player->KilledMonsterCredit(SH_QUEST_CREDIT, 0);
             }
         }

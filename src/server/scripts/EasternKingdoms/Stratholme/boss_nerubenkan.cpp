@@ -37,14 +37,14 @@ class boss_nerubenkan : public CreatureScript
 public:
     boss_nerubenkan() : CreatureScript("boss_nerubenkan") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_nerubenkanAI (creature);
     }
 
     struct boss_nerubenkanAI : public ScriptedAI
     {
-        boss_nerubenkanAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_nerubenkanAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = me->GetInstanceScript();
         }
@@ -64,19 +64,19 @@ public:
             RaiseUndeadScarab_Timer = 3000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
                 instance->SetData(TYPE_NERUB, IN_PROGRESS);
         }
 
-        void RaiseUndeadScarab(UnitPtr victim)
+        void RaiseUndeadScarab(Unit* victim)
         {
-            if (CreaturePtr pUndeadScarab = DoSpawnCreature(10876, float(irand(-9, 9)), float(irand(-9, 9)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 180000))
+            if (Creature* pUndeadScarab = DoSpawnCreature(10876, float(irand(-9, 9)), float(irand(-9, 9)), 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 180000))
                 if (pUndeadScarab->AI())
                     pUndeadScarab->AI()->AttackStart(victim);
         }

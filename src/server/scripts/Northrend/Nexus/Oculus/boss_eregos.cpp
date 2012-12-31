@@ -125,14 +125,14 @@ class boss_eregos : public CreatureScript
 public:
     boss_eregos() : CreatureScript("boss_eregos") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_eregosAI (creature);
     }
 
     struct boss_eregosAI : public BossAI
     {
-        boss_eregosAI(CreaturePtr creature) : BossAI(creature, DATA_EREGOS_EVENT) { }
+        boss_eregosAI(Creature* creature) : BossAI(creature, DATA_EREGOS_EVENT) { }
 
         void Reset()
         {
@@ -146,7 +146,7 @@ public:
             DoAction(ACTION_SET_NORMAL_EVENTS);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
 
@@ -189,7 +189,7 @@ public:
             events.ScheduleEvent(EVENT_SUMMON_LEY_WHELP, urand(15, 30) * IN_MILLISECONDS, 0, PHASE_NORMAL);
         }
 
-        void JustSummoned(CreaturePtr summon)
+        void JustSummoned(Creature* summon)
         {
             BossAI::JustSummoned(summon);
 
@@ -201,7 +201,7 @@ public:
             summon->GetMotionMaster()->MoveRandom(100.0f);
         }
 
-        void SummonedCreatureDespawn(CreaturePtr summon)
+        void SummonedCreatureDespawn(Creature* summon)
         {
             if (summon->GetEntry() != NPC_PLANAR_ANOMALY)
                 return;
@@ -210,7 +210,7 @@ public:
             summon->CastSpell(summon, SPELL_PLANAR_BLAST, true);
         }
 
-        void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
+        void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
         {
             if (!me->GetMap()->IsHeroic())
                 return;
@@ -269,7 +269,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             Talk(SAY_DEATH);
 
@@ -295,8 +295,8 @@ class spell_eregos_planar_shift : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (UnitPtr caster = GetCaster())
-                    if (CreaturePtr creatureCaster = TO_CREATURE(caster))
+                if (Unit* caster = GetCaster())
+                    if (Creature* creatureCaster = caster->ToCreature())
                         creatureCaster->AI()->DoAction(ACTION_SET_NORMAL_EVENTS);
             }
 
@@ -317,7 +317,7 @@ class achievement_gen_eregos_void : public AchievementCriteriaScript
 public:
     achievement_gen_eregos_void(char const* name, uint32 data) : AchievementCriteriaScript(name), _data(data) { }
 
-    bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
+    bool OnCheck(Player* /*player*/, Unit* target)
     {
         return target && target->GetAI()->GetData(_data);
     }

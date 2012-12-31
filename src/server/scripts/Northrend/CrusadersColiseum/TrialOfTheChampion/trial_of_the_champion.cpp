@@ -50,7 +50,7 @@ public:
 
     struct npc_announcer_toc5AI : public ScriptedAI
     {
-        npc_announcer_toc5AI(CreaturePtr creature) : ScriptedAI(creature)
+        npc_announcer_toc5AI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
 
@@ -127,7 +127,7 @@ public:
                     break;
                 case DATA_IN_POSITION: //movement done.
                     me->GetMotionMaster()->MovePoint(1, 735.81f, 661.92f, 412.39f);
-                    if (GameObjectPtr go = GameObject::GetGameObject(*me, instance->GetData64(DATA_MAIN_GATE)))
+                    if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_MAIN_GATE)))
                         instance->HandleGameObject(go->GetGUID(), false);
                     NextStep(10000, false, 3);
                     break;
@@ -148,7 +148,7 @@ public:
                         }
 
                         for (std::list<uint64>::const_iterator itr = TempList.begin(); itr != TempList.end(); ++itr)
-                            if (CreaturePtr summon = Unit::GetCreature(TO_WORLDOBJECT(me), *itr))
+                            if (Creature* summon = Unit::GetCreature(*me, *itr))
                                 AggroAllPlayers(summon);
                     }else if (uiLesserChampions == 9)
                         StartGrandChampionsAttack();
@@ -160,9 +160,9 @@ public:
 
         void StartGrandChampionsAttack()
         {
-            CreaturePtr pGrandChampion1 = Unit::GetCreature(TO_WORLDOBJECT(me), uiVehicle1GUID);
-            CreaturePtr pGrandChampion2 = Unit::GetCreature(TO_WORLDOBJECT(me), uiVehicle2GUID);
-            CreaturePtr pGrandChampion3 = Unit::GetCreature(TO_WORLDOBJECT(me), uiVehicle3GUID);
+            Creature* pGrandChampion1 = Unit::GetCreature(*me, uiVehicle1GUID);
+            Creature* pGrandChampion2 = Unit::GetCreature(*me, uiVehicle2GUID);
+            Creature* pGrandChampion3 = Unit::GetCreature(*me, uiVehicle3GUID);
 
             if (pGrandChampion1 && pGrandChampion2 && pGrandChampion3)
             {
@@ -215,7 +215,7 @@ public:
                     return;
             }
 
-            if (CreaturePtr pBoss = me->SummonCreature(VEHICLE_TO_SUMMON1, SpawnPosition))
+            if (Creature* pBoss = me->SummonCreature(VEHICLE_TO_SUMMON1, SpawnPosition))
             {
                 switch (uiSummonTimes)
                 {
@@ -223,8 +223,8 @@ public:
                     {
                         uiVehicle1GUID = pBoss->GetGUID();
                         uint64 uiGrandChampionBoss1 = 0;
-                        if (VehiclePtr pVehicle = pBoss->GetVehicleKit())
-                            if (UnitPtr unit = pVehicle->GetPassenger(0))
+                        if (Vehicle* pVehicle = pBoss->GetVehicleKit())
+                            if (Unit* unit = pVehicle->GetPassenger(0))
                                 uiGrandChampionBoss1 = unit->GetGUID();
                         if (instance)
                         {
@@ -238,8 +238,8 @@ public:
                     {
                         uiVehicle2GUID = pBoss->GetGUID();
                         uint64 uiGrandChampionBoss2 = 0;
-                        if (VehiclePtr pVehicle = pBoss->GetVehicleKit())
-                            if (UnitPtr unit = pVehicle->GetPassenger(0))
+                        if (Vehicle* pVehicle = pBoss->GetVehicleKit())
+                            if (Unit* unit = pVehicle->GetPassenger(0))
                                 uiGrandChampionBoss2 = unit->GetGUID();
                         if (instance)
                         {
@@ -253,8 +253,8 @@ public:
                     {
                         uiVehicle3GUID = pBoss->GetGUID();
                         uint64 uiGrandChampionBoss3 = 0;
-                        if (VehiclePtr pVehicle = pBoss->GetVehicleKit())
-                            if (UnitPtr unit = pVehicle->GetPassenger(0))
+                        if (Vehicle* pVehicle = pBoss->GetVehicleKit())
+                            if (Unit* unit = pVehicle->GetPassenger(0))
                                 uiGrandChampionBoss3 = unit->GetGUID();
                         if (instance)
                         {
@@ -270,7 +270,7 @@ public:
 
                 for (uint8 i = 0; i < 3; ++i)
                 {
-                    if (CreaturePtr pAdd = me->SummonCreature(VEHICLE_TO_SUMMON2, SpawnPosition, TEMPSUMMON_CORPSE_DESPAWN))
+                    if (Creature* pAdd = me->SummonCreature(VEHICLE_TO_SUMMON2, SpawnPosition, TEMPSUMMON_CORPSE_DESPAWN))
                     {
                         switch (uiSummonTimes)
                         {
@@ -311,11 +311,11 @@ public:
             {
                 for (uint8 i = 0; i < 3; ++i)
                 {
-                    if (CreaturePtr pTrash = me->SummonCreature(NPC_ARGENT_LIGHWIELDER, SpawnPosition))
+                    if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_LIGHWIELDER, SpawnPosition))
                         pTrash->AI()->SetData(i, 0);
-                    if (CreaturePtr pTrash = me->SummonCreature(NPC_ARGENT_MONK, SpawnPosition))
+                    if (Creature* pTrash = me->SummonCreature(NPC_ARGENT_MONK, SpawnPosition))
                         pTrash->AI()->SetData(i, 0);
-                    if (CreaturePtr pTrash = me->SummonCreature(NPC_PRIESTESS, SpawnPosition))
+                    if (Creature* pTrash = me->SummonCreature(NPC_PRIESTESS, SpawnPosition))
                         pTrash->AI()->SetData(i, 0);
                 }
             }
@@ -372,7 +372,7 @@ public:
             }
         }
 
-        void AggroAllPlayers(CreaturePtr temp)
+        void AggroAllPlayers(Creature* temp)
         {
             Map::PlayerList const &PlList = me->GetMap()->GetPlayers();
 
@@ -381,7 +381,7 @@ public:
 
             for (Map::PlayerList::const_iterator i = PlList.begin(); i != PlList.end(); ++i)
             {
-                if (PlayerPtr player = i->getSource())
+                if (Player* player = i->getSource())
                 {
                     if (player->isGameMaster())
                         continue;
@@ -419,7 +419,7 @@ public:
                         if (!Champion1List.empty())
                         {
                             for (std::list<uint64>::const_iterator itr = Champion1List.begin(); itr != Champion1List.end(); ++itr)
-                                if (CreaturePtr summon = Unit::GetCreature(TO_WORLDOBJECT(me), *itr))
+                                if (Creature* summon = Unit::GetCreature(*me, *itr))
                                     AggroAllPlayers(summon);
                             NextStep(0, false);
                         }
@@ -431,7 +431,7 @@ public:
                 return;
         }
 
-        void JustSummoned(CreaturePtr summon)
+        void JustSummoned(Creature* summon)
         {
             if (instance && instance->GetData(BOSS_GRAND_CHAMPIONS) == NOT_STARTED)
             {
@@ -440,7 +440,7 @@ public:
             }
         }
 
-        void SummonedCreatureDespawn(CreaturePtr summon)
+        void SummonedCreatureDespawn(Creature* summon)
         {
             switch (summon->GetEntry())
             {
@@ -460,12 +460,12 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_announcer_toc5AI(creature);
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         InstanceScript* instance = creature->GetInstanceScript();
 
@@ -490,7 +490,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)

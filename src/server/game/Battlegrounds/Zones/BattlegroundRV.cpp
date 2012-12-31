@@ -100,7 +100,7 @@ void BattlegroundRV::StartingEventOpenDoors()
     TogglePillarCollision();
 }
 
-void BattlegroundRV::AddPlayer(PlayerPtr player)
+void BattlegroundRV::AddPlayer(Player* player)
 {
     Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
@@ -112,7 +112,7 @@ void BattlegroundRV::AddPlayer(PlayerPtr player)
     UpdateWorldState(BG_RV_WORLD_STATE_H, GetAlivePlayersCountByTeam(HORDE));
 }
 
-void BattlegroundRV::RemovePlayer(PlayerPtr /*Player*/, uint64 /*guid*/, uint32 /*team*/)
+void BattlegroundRV::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
 {
     if (GetStatus() == STATUS_WAIT_LEAVE)
         return;
@@ -123,7 +123,7 @@ void BattlegroundRV::RemovePlayer(PlayerPtr /*Player*/, uint64 /*guid*/, uint32 
     CheckArenaWinConditions();
 }
 
-void BattlegroundRV::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
+void BattlegroundRV::HandleKillPlayer(Player* player, Player* killer)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -142,13 +142,13 @@ void BattlegroundRV::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
     CheckArenaWinConditions();
 }
 
-bool BattlegroundRV::HandlePlayerUnderMap(PlayerPtr player)
+bool BattlegroundRV::HandlePlayerUnderMap(Player* player)
 {
     player->TeleportTo(GetMapId(), 763.5f, -284, 28.276f, 2.422f, false);
     return true;
 }
 
-void BattlegroundRV::HandleAreaTrigger(PlayerPtr Source, uint32 Trigger)
+void BattlegroundRV::HandleAreaTrigger(Player* Source, uint32 Trigger)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -227,7 +227,7 @@ void BattlegroundRV::TogglePillarCollision()
 
     for (uint8 i = BG_RV_OBJECT_PILAR_1; i <= BG_RV_OBJECT_PILAR_COLLISION_4; ++i)
     {
-        if (GameObjectPtr gob = GetBgMap()->GetGameObject(BgObjects[i]))
+        if (GameObject* gob = GetBgMap()->GetGameObject(BgObjects[i]))
         {
             if (i >= BG_RV_OBJECT_PILAR_COLLISION_1)
             {
@@ -241,7 +241,7 @@ void BattlegroundRV::TogglePillarCollision()
             }
 
             for (BattlegroundPlayerMap::iterator itr = m_Players.begin(); itr != m_Players.end(); ++itr)
-                if (PlayerPtr player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER)))
+                if (Player* player = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER)))
                     gob->SendUpdateToPlayer(player);
         }
     }

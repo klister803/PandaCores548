@@ -49,7 +49,7 @@ class spell_love_is_in_the_air_romantic_picnic : public SpellScriptLoader
 
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                UnitPtr target = GetTarget();
+                Unit* target = GetTarget();
                 target->SetStandState(UNIT_STAND_STATE_SIT);
                 target->CastSpell(target, SPELL_MEAL_PERIODIC, false);
             }
@@ -57,8 +57,8 @@ class spell_love_is_in_the_air_romantic_picnic : public SpellScriptLoader
             void OnPeriodic(constAuraEffectPtr /*aurEff*/)
             {
                 // Every 5 seconds
-                UnitPtr target = GetTarget();
-                UnitPtr caster = GetCaster();
+                Unit* target = GetTarget();
+                Unit* caster = GetCaster();
 
                 // If our player is no longer sit, remove all auras
                 if (target->getStandState() != UNIT_STAND_STATE_SIT)
@@ -74,11 +74,11 @@ class spell_love_is_in_the_air_romantic_picnic : public SpellScriptLoader
                 bool foundSomeone = false;
                 // For nearby players, check if they have the same aura. If so, cast Romantic Picnic (45123)
                 // required by achievement and "hearts" visual
-                std::list<PlayerPtr> playerList;
+                std::list<Player*> playerList;
                 Trinity::AnyPlayerInObjectRangeCheck checker(target, INTERACTION_DISTANCE*2);
                 Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(target, playerList, checker);
                 target->VisitNearbyWorldObject(INTERACTION_DISTANCE*2, searcher);
-                for (std::list<PlayerPtr>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
+                for (std::list<Player*>::const_iterator itr = playerList.begin(); itr != playerList.end(); ++itr)
                 {
                     if ((*itr) != target && (*itr)->HasAura(GetId())) // && (*itr)->getStandState() == UNIT_STAND_STATE_SIT)
                     {

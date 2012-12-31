@@ -12,7 +12,7 @@ public:
 
     struct mob_serpent_spine_defenderAI : public Scripted_NoMovementAI
     {
-        mob_serpent_spine_defenderAI(CreaturePtr creature) : Scripted_NoMovementAI(creature) {}
+        mob_serpent_spine_defenderAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
         uint32 attackTimer;
 
@@ -21,7 +21,7 @@ public:
             attackTimer = 2500;
         }
 
-        void DamageDealt(UnitPtr /*target*/, uint32& damage, DamageEffectType /*damageType*/)
+        void DamageDealt(Unit* /*target*/, uint32& damage, DamageEffectType /*damageType*/)
         {
             damage = 0;
         }
@@ -32,7 +32,7 @@ public:
             {
                 if (attackTimer <= diff)
                 {
-                    if (UnitPtr target = me->SelectNearestTarget(5.0f))
+                    if (Unit* target = me->SelectNearestTarget(5.0f))
                         if (!target->IsFriendlyTo(me))
                             AttackStart(target);
                 }
@@ -42,7 +42,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_serpent_spine_defenderAI(creature);
     }

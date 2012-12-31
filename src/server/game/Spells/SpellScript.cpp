@@ -266,7 +266,7 @@ SpellScript::ObjectAreaTargetSelectHandler::ObjectAreaTargetSelectHandler(SpellO
     pObjectAreaTargetSelectHandlerScript = _pObjectAreaTargetSelectHandlerScript;
 }
 
-void SpellScript::ObjectAreaTargetSelectHandler::Call(SpellScript* spellScript, std::list<WorldObjectPtr>& targets)
+void SpellScript::ObjectAreaTargetSelectHandler::Call(SpellScript* spellScript, std::list<WorldObject*>& targets)
 {
     (spellScript->*pObjectAreaTargetSelectHandlerScript)(targets);
 }
@@ -277,7 +277,7 @@ SpellScript::ObjectTargetSelectHandler::ObjectTargetSelectHandler(SpellObjectTar
     pObjectTargetSelectHandlerScript = _pObjectTargetSelectHandlerScript;
 }
 
-void SpellScript::ObjectTargetSelectHandler::Call(SpellScript* spellScript, WorldObjectPtr& target)
+void SpellScript::ObjectTargetSelectHandler::Call(SpellScript* spellScript, WorldObject*& target)
 {
     (spellScript->*pObjectTargetSelectHandlerScript)(target);
 }
@@ -363,12 +363,12 @@ bool SpellScript::IsInEffectHook() const
     return (m_currentScriptState >= SPELL_SCRIPT_HOOK_EFFECT_LAUNCH && m_currentScriptState <= SPELL_SCRIPT_HOOK_EFFECT_HIT_TARGET);
 }
 
-UnitPtr SpellScript::GetCaster()
+Unit* SpellScript::GetCaster()
 {
      return m_spell->GetCaster();
 }
 
-UnitPtr SpellScript::GetOriginalCaster()
+Unit* SpellScript::GetOriginalCaster()
 {
      return m_spell->GetOriginalCaster();
 }
@@ -382,7 +382,7 @@ WorldLocation const* SpellScript::GetExplTargetDest()
 {
     if (m_spell->m_targets.HasDst())
         return m_spell->m_targets.GetDstPos();
-    return nullptr;
+    return NULL;
 }
 
 void SpellScript::SetExplTargetDest(WorldLocation& loc)
@@ -390,78 +390,78 @@ void SpellScript::SetExplTargetDest(WorldLocation& loc)
     m_spell->m_targets.SetDst(loc);
 }
 
-WorldObjectPtr SpellScript::GetExplTargetWorldObject()
+WorldObject* SpellScript::GetExplTargetWorldObject()
 {
     return m_spell->m_targets.GetObjectTarget();
 }
 
-UnitPtr SpellScript::GetExplTargetUnit()
+Unit* SpellScript::GetExplTargetUnit()
 {
     return m_spell->m_targets.GetUnitTarget();
 }
 
-GameObjectPtr SpellScript::GetExplTargetGObj()
+GameObject* SpellScript::GetExplTargetGObj()
 {
     return m_spell->m_targets.GetGOTarget();
 }
 
-ItemPtr SpellScript::GetExplTargetItem()
+Item* SpellScript::GetExplTargetItem()
 {
     return m_spell->m_targets.GetItemTarget();
 }
 
-UnitPtr SpellScript::GetHitUnit()
+Unit* SpellScript::GetHitUnit()
 {
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitUnit was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return nullptr;
+        return NULL;
     }
     return m_spell->unitTarget;
 }
 
-CreaturePtr SpellScript::GetHitCreature()
+Creature* SpellScript::GetHitCreature()
 {
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitCreature was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return nullptr;
+        return NULL;
     }
     if (m_spell->unitTarget)
-        return TO_CREATURE(m_spell->unitTarget);
+        return m_spell->unitTarget->ToCreature();
     else
-        return nullptr;
+        return NULL;
 }
 
-PlayerPtr SpellScript::GetHitPlayer()
+Player* SpellScript::GetHitPlayer()
 {
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitPlayer was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return nullptr;
+        return NULL;
     }
     if (m_spell->unitTarget)
-        return TO_PLAYER(m_spell->unitTarget);
+        return m_spell->unitTarget->ToPlayer();
     else
-        return nullptr;
+        return NULL;
 }
 
-ItemPtr SpellScript::GetHitItem()
+Item* SpellScript::GetHitItem()
 {
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitItem was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return nullptr;
+        return NULL;
     }
     return m_spell->itemTarget;
 }
 
-GameObjectPtr SpellScript::GetHitGObj()
+GameObject* SpellScript::GetHitGObj()
 {
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitGObj was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return nullptr;
+        return NULL;
     }
     return m_spell->gameObjTarget;
 }
@@ -471,7 +471,7 @@ WorldLocation* SpellScript::GetHitDest()
     if (!IsInEffectHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitGObj was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return nullptr;
+        return NULL;
     }
     return m_spell->destTarget;
 }
@@ -521,12 +521,12 @@ AuraPtr SpellScript::GetHitAura()
     if (!IsInTargetHook())
     {
         sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u`: function SpellScript::GetHitAura was called, but function has no effect in current hook!", m_scriptName->c_str(), m_scriptSpellId);
-        return nullptr;
+        return NULL;
     }
     if (!m_spell->m_spellAura)
-        return nullptr;
+        return NULLAURA;
     if (m_spell->m_spellAura->IsRemoved())
-        return nullptr;
+        return NULLAURA;
     return m_spell->m_spellAura;
 }
 
@@ -572,7 +572,7 @@ int32 SpellScript::GetEffectValue()
     return m_spell->damage;
 }
 
-ItemPtr SpellScript::GetCastItem()
+Item* SpellScript::GetCastItem()
 {
     return m_spell->m_CastItem;
 }
@@ -683,7 +683,7 @@ AuraScript::CheckAreaTargetHandler::CheckAreaTargetHandler(AuraCheckAreaTargetFn
     pHandlerScript = _pHandlerScript;
 }
 
-bool AuraScript::CheckAreaTargetHandler::Call(AuraScript* auraScript, UnitPtr _target)
+bool AuraScript::CheckAreaTargetHandler::Call(AuraScript* auraScript, Unit* _target)
 {
     return (auraScript->*pHandlerScript)(_target);
 }
@@ -817,13 +817,13 @@ void AuraScript::EffectManaShieldHandler::Call(AuraScript* auraScript, AuraEffec
 bool AuraScript::_Load(AuraPtr aura)
 {
     m_aura = aura;
-    _PrepareScriptCall((AuraScriptHookType)SPELL_SCRIPT_STATE_LOADING, nullptr);
+    _PrepareScriptCall((AuraScriptHookType)SPELL_SCRIPT_STATE_LOADING, NULL);
     bool load = Load();
     _FinishScriptCall();
     return load;
 }
 
-void AuraScript::_PrepareScriptCall(AuraScriptHookType hookType, constAuraApplicationPtr aurApp)
+void AuraScript::_PrepareScriptCall(AuraScriptHookType hookType, AuraApplication const* aurApp)
 {
     m_scriptStates.push(ScriptStateStore(m_currentScriptState, m_auraApplication, m_defaultActionPrevented));
     m_currentScriptState = hookType;
@@ -886,22 +886,22 @@ uint64 AuraScript::GetCasterGUID() const
     return m_aura->GetCasterGUID();
 }
 
-UnitPtr AuraScript::GetCaster() const
+Unit* AuraScript::GetCaster() const
 {
     return m_aura->GetCaster();
 }
 
-WorldObjectPtr AuraScript::GetOwner() const
+WorldObject* AuraScript::GetOwner() const
 {
     return m_aura->GetOwner();
 }
 
-UnitPtr AuraScript::GetUnitOwner() const
+Unit* AuraScript::GetUnitOwner() const
 {
     return m_aura->GetUnitOwner();
 }
 
-DynamicObjectPtr AuraScript::GetDynobjOwner() const
+DynamicObject* AuraScript::GetDynobjOwner() const
 {
     return m_aura->GetDynobjOwner();
 }
@@ -1031,7 +1031,7 @@ bool AuraScript::HasEffectType(AuraType type) const
     return m_aura->HasEffectType(type);
 }
 
-UnitPtr AuraScript::GetTarget() const
+Unit* AuraScript::GetTarget() const
 {
     switch (m_currentScriptState)
     {
@@ -1049,10 +1049,10 @@ UnitPtr AuraScript::GetTarget() const
             sLog->outError(LOG_FILTER_TSCR, "Script: `%s` Spell: `%u` AuraScript::GetTarget called in a hook in which the call won't have effect!", m_scriptName->c_str(), m_scriptSpellId);
     }
 
-    return nullptr;
+    return NULL;
 }
 
-constAuraApplicationPtr AuraScript::GetTargetApplication() const
+AuraApplication const* AuraScript::GetTargetApplication() const
 {
     return m_auraApplication;
 }

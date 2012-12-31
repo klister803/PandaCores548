@@ -59,14 +59,14 @@ class boss_herod : public CreatureScript
 public:
     boss_herod() : CreatureScript("boss_herod") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_herodAI(creature);
     }
 
     struct boss_herodAI : public ScriptedAI
     {
-        boss_herodAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_herodAI(Creature* creature) : ScriptedAI(creature) {}
 
         bool Enrage;
 
@@ -80,18 +80,18 @@ public:
             Whirlwind_Timer = 60000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             DoCast(me, SPELL_RUSHINGCHARGE);
         }
 
-         void KilledUnit(UnitPtr /*victim*/)
+         void KilledUnit(Unit* /*victim*/)
          {
              DoScriptText(SAY_KILL, me);
          }
 
-         void JustDied(UnitPtr /*killer*/)
+         void JustDied(Unit* /*killer*/)
          {
              for (uint8 i = 0; i < 20; ++i)
                  me->SummonCreature(ENTRY_SCARLET_TRAINEE, 1939.18f, -431.58f, 17.09f, 6.22f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000);
@@ -138,14 +138,14 @@ class mob_scarlet_trainee : public CreatureScript
 public:
     mob_scarlet_trainee() : CreatureScript("mob_scarlet_trainee") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_scarlet_traineeAI(creature);
     }
 
     struct mob_scarlet_traineeAI : public npc_escortAI
     {
-        mob_scarlet_traineeAI(CreaturePtr creature) : npc_escortAI(creature)
+        mob_scarlet_traineeAI(Creature* creature) : npc_escortAI(creature)
         {
             Start_Timer = urand(1000, 6000);
         }
@@ -159,7 +159,7 @@ public:
 
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {

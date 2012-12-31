@@ -37,14 +37,14 @@ class boss_lorekeeper_polkelt : public CreatureScript
 public:
     boss_lorekeeper_polkelt() : CreatureScript("boss_lorekeeper_polkelt") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_lorekeeperpolkeltAI (creature);
     }
 
     struct boss_lorekeeperpolkeltAI : public ScriptedAI
     {
-        boss_lorekeeperpolkeltAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_lorekeeperpolkeltAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 VolatileInfection_Timer;
         uint32 Darkplague_Timer;
@@ -59,7 +59,7 @@ public:
             NoxiousCatalyst_Timer = 35000;
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             InstanceScript* instance = me->GetInstanceScript();
             if (instance)
@@ -71,7 +71,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 

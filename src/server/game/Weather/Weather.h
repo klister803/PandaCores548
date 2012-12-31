@@ -61,7 +61,7 @@ enum WeatherState
 };
 
 /// Weather for one zone
-class Weather : public std::enable_shared_from_this<Weather>
+class Weather
 {
     public:
 
@@ -72,7 +72,7 @@ class Weather : public std::enable_shared_from_this<Weather>
         bool ReGenerate();
         bool UpdateWeather();
 
-        void SendWeatherUpdateToPlayer(PlayerPtr player);
+        void SendWeatherUpdateToPlayer(Player* player);
         void SetWeather(WeatherType type, float grade);
 
         /// For which zone is this weather?

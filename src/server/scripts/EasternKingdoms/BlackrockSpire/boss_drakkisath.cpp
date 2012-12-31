@@ -41,21 +41,21 @@ class boss_drakkisath : public CreatureScript
 public:
     boss_drakkisath() : CreatureScript("boss_drakkisath") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_drakkisathAI(creature);
     }
 
     struct boss_drakkisathAI : public BossAI
     {
-        boss_drakkisathAI(CreaturePtr creature) : BossAI(creature, DATA_GENERAL_DRAKKISATH) {}
+        boss_drakkisathAI(Creature* creature) : BossAI(creature, DATA_GENERAL_DRAKKISATH) {}
 
         void Reset()
         {
             _Reset();
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_FIRE_NOVA, 6 * IN_MILLISECONDS);
@@ -64,7 +64,7 @@ public:
             events.ScheduleEvent(EVENT_THUNDERCLAP,    17 * IN_MILLISECONDS);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             _JustDied();
         }

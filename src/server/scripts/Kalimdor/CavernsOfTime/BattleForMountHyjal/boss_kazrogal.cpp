@@ -47,14 +47,14 @@ class boss_kazrogal : public CreatureScript
 public:
     boss_kazrogal() : CreatureScript("boss_kazrogal") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_kazrogalAI (creature);
     }
 
     struct boss_kazrogalAI : public hyjal_trashAI
     {
-        boss_kazrogalAI(CreaturePtr creature) : hyjal_trashAI(creature)
+        boss_kazrogalAI(Creature* creature) : hyjal_trashAI(creature)
         {
             instance = creature->GetInstanceScript();
             go = false;
@@ -78,14 +78,14 @@ public:
                 instance->SetData(DATA_KAZROGALEVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (instance && IsEvent)
                 instance->SetData(DATA_KAZROGALEVENT, IN_PROGRESS);
             Talk(SAY_ONAGGRO);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             Talk(SAY_ONSLAY);
         }
@@ -94,13 +94,13 @@ public:
         {
             if (waypointId == 7 && instance)
             {
-                UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_THRALL));
+                Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_THRALL));
                 if (target && target->isAlive())
                     me->AddThreat(target, 0.0f);
             }
         }
 
-        void JustDied(UnitPtr killer)
+        void JustDied(Unit* killer)
         {
             hyjal_trashAI::JustDied(killer);
             if (instance && IsEvent)
@@ -169,9 +169,9 @@ public:
 class MarkTargetFilter
 {
     public:
-        bool operator()(WorldObjectPtr target) const
+        bool operator()(WorldObject* target) const
         {
-            if (UnitPtr unit = target->ToUnit())
+            if (Unit* unit = target->ToUnit())
                 return unit->getPowerType() != POWER_MANA;
             return false;
         }
@@ -186,7 +186,7 @@ class spell_mark_of_kazrogal : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mark_of_kazrogal_SpellScript);
 
-            void FilterTargets(std::list<WorldObjectPtr>& targets)
+            void FilterTargets(std::list<WorldObject*>& targets)
             {
                 targets.remove_if(MarkTargetFilter());
             }
@@ -210,11 +210,11 @@ class spell_mark_of_kazrogal : public SpellScriptLoader
 
             void OnPeriodic(constAuraEffectPtr aurEff)
             {
-                UnitPtr target = GetTarget();
+                Unit* target = GetTarget();
 
                 if (target->GetPower(POWER_MANA) == 0)
                 {
-                    target->CastSpell(target, SPELL_MARK_DAMAGE, true, nullptr, aurEff);
+                    target->CastSpell(target, SPELL_MARK_DAMAGE, true, NULL, aurEff);
                     // Remove aura
                     SetDuration(0);
                 }

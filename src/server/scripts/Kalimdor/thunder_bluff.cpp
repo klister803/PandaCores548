@@ -47,14 +47,14 @@ class npc_cairne_bloodhoof : public CreatureScript
 public:
     npc_cairne_bloodhoof() : CreatureScript("npc_cairne_bloodhoof") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_cairne_bloodhoofAI (creature);
     }
 
     struct npc_cairne_bloodhoofAI : public ScriptedAI
     {
-        npc_cairne_bloodhoofAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_cairne_bloodhoofAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 BerserkerChargeTimer;
         uint32 CleaveTimer;
@@ -71,7 +71,7 @@ public:
             UppercutTimer = 10000;
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -80,7 +80,7 @@ public:
 
             if (BerserkerChargeTimer <= diff)
             {
-                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (target)
                     DoCast(target, SPELL_BERSERKER_CHARGE);
                 BerserkerChargeTimer = 25000;

@@ -61,14 +61,14 @@ class npc_aeranas : public CreatureScript
 public:
     npc_aeranas() : CreatureScript("npc_aeranas") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_aeranasAI (creature);
     }
 
     struct npc_aeranasAI : public ScriptedAI
     {
-        npc_aeranasAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_aeranasAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 Faction_Timer;
         uint32 EnvelopingWinds_Timer;
@@ -148,14 +148,14 @@ class npc_ancestral_wolf : public CreatureScript
 public:
     npc_ancestral_wolf() : CreatureScript("npc_ancestral_wolf") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_ancestral_wolfAI(creature);
     }
 
     struct npc_ancestral_wolfAI : public npc_escortAI
     {
-        npc_ancestral_wolfAI(CreaturePtr creature) : npc_escortAI(creature)
+        npc_ancestral_wolfAI(Creature* creature) : npc_escortAI(creature)
         {
             if (creature->GetOwner() && creature->GetOwner()->GetTypeId() == TYPEID_PLAYER)
                 Start(false, false, creature->GetOwner()->GetGUID());
@@ -166,15 +166,15 @@ public:
             Reset();
         }
 
-        UnitPtr pRyga;
+        Unit* pRyga;
 
         void Reset()
         {
-            pRyga = nullptr;
+            pRyga = NULL;
             DoCast(me, SPELL_ANCESTRAL_WOLF_BUFF, true);
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!pRyga && who->GetTypeId() == TYPEID_UNIT && who->GetEntry() == NPC_RYGA && me->IsWithinDistInMap(who, 15.0f))
                 pRyga = who;
@@ -210,7 +210,7 @@ class go_haaleshi_altar : public GameObjectScript
 public:
     go_haaleshi_altar() : GameObjectScript("go_haaleshi_altar") { }
 
-    bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
+    bool OnGossipHello(Player* /*player*/, GameObject* go)
     {
         go->SummonCreature(C_AERANAS, -1321.79f, 4043.80f, 116.24f, 1.25f, TEMPSUMMON_TIMED_DESPAWN, 180000);
         return false;
@@ -233,7 +233,7 @@ class npc_naladu : public CreatureScript
 public:
     npc_naladu() : CreatureScript("npc_naladu") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -242,7 +242,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -272,7 +272,7 @@ class npc_tracy_proudwell : public CreatureScript
 public:
     npc_tracy_proudwell() : CreatureScript("npc_tracy_proudwell") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -292,7 +292,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -328,7 +328,7 @@ class npc_trollbane : public CreatureScript
 public:
     npc_trollbane() : CreatureScript("npc_trollbane") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -348,7 +348,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -381,7 +381,7 @@ class npc_wounded_blood_elf : public CreatureScript
 public:
     npc_wounded_blood_elf() : CreatureScript("npc_wounded_blood_elf") { }
 
-    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_ROAD_TO_FALCON_WATCH)
         {
@@ -395,18 +395,18 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_wounded_blood_elfAI(creature);
     }
 
     struct npc_wounded_blood_elfAI : public npc_escortAI
     {
-        npc_wounded_blood_elfAI(CreaturePtr creature) : npc_escortAI(creature) {}
+        npc_wounded_blood_elfAI(Creature* creature) : npc_escortAI(creature) {}
 
         void WaypointReached(uint32 waypointId)
         {
-            PlayerPtr player = GetPlayerForEscort();
+            Player* player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -440,13 +440,13 @@ public:
 
         void Reset() { }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (HasEscortState(STATE_ESCORT_ESCORTING))
                 DoScriptText(SAY_ELF_AGGRO, me);
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             summoned->AI()->AttackStart(me);
         }
@@ -469,14 +469,14 @@ class npc_fel_guard_hound : public CreatureScript
 public:
     npc_fel_guard_hound() : CreatureScript("npc_fel_guard_hound") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_fel_guard_houndAI(creature);
     }
 
     struct npc_fel_guard_houndAI : public ScriptedAI
     {
-        npc_fel_guard_houndAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_fel_guard_houndAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 uiCheckTimer;
         uint64 uiHelboarGUID;
@@ -492,12 +492,12 @@ public:
             if (uiType != POINT_MOTION_TYPE || uiId != 1)
                 return;
 
-            if (CreaturePtr pHelboar = me->GetCreature(TO_WORLDOBJECT(me), uiHelboarGUID))
+            if (Creature* pHelboar = me->GetCreature(*me, uiHelboarGUID))
             {
                 pHelboar->RemoveCorpse();
                 DoCast(SPELL_SUMMON_POO);
 
-                if (PlayerPtr owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
+                if (Player* owner = me->GetCharmerOrOwnerPlayerOrPlayerItself())
                     me->GetMotionMaster()->MoveFollow(owner, 0.0f, 0.0f);
             }
         }
@@ -506,7 +506,7 @@ public:
         {
             if (uiCheckTimer <= uiDiff)
             {
-                if (CreaturePtr pHelboar = me->FindNearestCreature(NPC_DERANGED_HELBOAR, 10.0f, false))
+                if (Creature* pHelboar = me->FindNearestCreature(NPC_DERANGED_HELBOAR, 10.0f, false))
                 {
                     if (pHelboar->GetGUID() != uiHelboarGUID && me->GetMotionMaster()->GetCurrentMovementGeneratorType() != POINT_MOTION_TYPE && !me->FindCurrentSpellBySpellId(SPELL_SUMMON_POO))
                     {

@@ -71,7 +71,7 @@ class boss_warchief_kargath_bladefist : public CreatureScript
 
         struct boss_warchief_kargath_bladefistAI : public ScriptedAI
         {
-            boss_warchief_kargath_bladefistAI(CreaturePtr creature) : ScriptedAI(creature)
+            boss_warchief_kargath_bladefistAI(Creature* creature) : ScriptedAI(creature)
             {
             }
 
@@ -109,12 +109,12 @@ class boss_warchief_kargath_bladefist : public CreatureScript
                 resetcheck_timer = 5000;
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), me);
             }
 
-            void JustSummoned(CreaturePtr summoned)
+            void JustSummoned(Creature* summoned)
             {
                 switch (summoned->GetEntry())
                 {
@@ -130,7 +130,7 @@ class boss_warchief_kargath_bladefist : public CreatureScript
                 }
             }
 
-            void KilledUnit(UnitPtr victim)
+            void KilledUnit(Unit* victim)
             {
                 if (victim->GetTypeId() == TYPEID_PLAYER)
                 {
@@ -138,7 +138,7 @@ class boss_warchief_kargath_bladefist : public CreatureScript
                 }
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 DoScriptText(SAY_DEATH, me);
                 removeAdds();
@@ -167,11 +167,11 @@ class boss_warchief_kargath_bladefist : public CreatureScript
             {
                 for (std::vector<uint64>::const_iterator itr = adds.begin(); itr!= adds.end(); ++itr)
                 {
-                    UnitPtr temp = Unit::GetUnit(TO_WORLDOBJECT(me), *itr);
+                    Unit* temp = Unit::GetUnit(*me, *itr);
                     if (temp && temp->isAlive())
                     {
                         (*temp).GetMotionMaster()->Clear(true);
-                        me->DealDamage(temp, temp->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+                        me->DealDamage(temp, temp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         CAST_CRE(temp)->RemoveCorpse();
                     }
                 }
@@ -179,11 +179,11 @@ class boss_warchief_kargath_bladefist : public CreatureScript
 
                 for (std::vector<uint64>::const_iterator itr = assassins.begin(); itr!= assassins.end(); ++itr)
                 {
-                    UnitPtr temp = Unit::GetUnit(TO_WORLDOBJECT(me), *itr);
+                    Unit* temp = Unit::GetUnit(*me, *itr);
                     if (temp && temp->isAlive())
                     {
                         (*temp).GetMotionMaster()->Clear(true);
-                        me->DealDamage(temp, temp->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+                        me->DealDamage(temp, temp->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         CAST_CRE(temp)->RemoveCorpse();
                     }
                 }
@@ -317,7 +317,7 @@ class boss_warchief_kargath_bladefist : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_warchief_kargath_bladefistAI(creature);
         }

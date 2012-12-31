@@ -93,14 +93,14 @@ class instance_zulfarrak : public InstanceMapScript
 public:
     instance_zulfarrak() : InstanceMapScript("instance_zulfarrak", 209) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_zulfarrak_InstanceMapScript(map);
     }
 
     struct instance_zulfarrak_InstanceMapScript : public InstanceScript
     {
-        instance_zulfarrak_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_zulfarrak_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 GahzRillaEncounter;
         uint64 ZumrahGUID;
@@ -133,7 +133,7 @@ public:
             waypoint = 0;
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -169,7 +169,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -310,7 +310,7 @@ public:
 
         void MoveNPCIfAlive(uint32 entry, float x, float y, float z, float o)
         {
-           if (CreaturePtr npc = instance->GetCreature(GetData64(entry)))
+           if (Creature* npc = instance->GetCreature(GetData64(entry)))
            {
                if (npc->isAlive())
                {
@@ -328,7 +328,7 @@ public:
                 if (pyramidSpawns[i][0] == (float)wave)
                 {
                     Position pos = {pyramidSpawns[i][2], pyramidSpawns[i][3], 8.87f, 0};
-                    TempSummonPtr ts = instance->SummonCreature(uint32(pyramidSpawns[i][1]), pos);
+                    TempSummon* ts = instance->SummonCreature(uint32(pyramidSpawns[i][1]), pos);
                     ts->GetMotionMaster()->MoveRandom(10);
                     addsAtBase.push_back(ts->GetGUID());
                 }
@@ -339,7 +339,7 @@ public:
         {
             for (std::list<uint64>::iterator itr = addsAtBase.begin(); itr != addsAtBase.end(); ++itr)
             {
-                if (CreaturePtr add = instance->GetCreature((*itr)))
+                if (Creature* add = instance->GetCreature((*itr)))
                 {
                     if (add->isAlive())
                         return false;
@@ -347,7 +347,7 @@ public:
             }
             for (std::list<uint64>::iterator itr = movedadds.begin(); itr != movedadds.end(); ++itr)
             {
-                if (CreaturePtr add = instance->GetCreature(((*itr))))
+                if (Creature* add = instance->GetCreature(((*itr))))
                 {
                     if (add->isAlive())
                         return false;
@@ -361,7 +361,7 @@ public:
             //pop a add from list, send him up the stairs...
             for (uint32 addCount = 0; addCount<count && !addsAtBase.empty(); addCount++)
             {
-                if (CreaturePtr add = instance->GetCreature(*addsAtBase.begin()))
+                if (Creature* add = instance->GetCreature(*addsAtBase.begin()))
                 {
                     add->GetMotionMaster()->MovePath(PATH_ADDS, false);
                     movedadds.push_back(add->GetGUID());

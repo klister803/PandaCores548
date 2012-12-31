@@ -31,7 +31,6 @@
 #include "InstanceSaveMgr.h"
 #include "ObjectMgr.h"
 #include "MovementStructures.h"
-#include "SpellAuraEffects.h"
 
 void WorldSession::HandleMoveWorldportAckOpcode(WorldPacket& /*recvPacket*/)
 {
@@ -66,7 +65,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     if (GetPlayer()->m_InstanceValid == false && !mInstance)
         GetPlayer()->m_InstanceValid = true;
 
-    MapPtr oldMap = GetPlayer()->GetMap();
+    Map* oldMap = GetPlayer()->GetMap();
     if (GetPlayer()->IsInWorld())
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "Player (Name %s) is still in world when teleported from map %u to new map %u", GetPlayer()->GetName(), oldMap->GetId(), loc.GetMapId());
@@ -74,7 +73,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     }
 
     // relocate the player to the teleport destination
-    MapPtr newMap = sMapMgr->CreateMap(loc.GetMapId(), GetPlayer());
+    Map* newMap = sMapMgr->CreateMap(loc.GetMapId(), GetPlayer());
     // the CanEnter checks are done in TeleporTo but conditions may change
     // while the player is in transit, for example the map may get full
     if (!newMap || !newMap->CanEnter(GetPlayer()))
@@ -127,8 +126,8 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         if (!_player->InBattleground())
         {
             // short preparations to continue flight
-            FlightPathMovementGeneratorPtr flight = STATIC_CAST(FlightPathMovementGenerator,(GetPlayer()->GetMotionMaster()->top()));
-            flight->Initialize(GetPlayer());
+            FlightPathMovementGenerator* flight = (FlightPathMovementGenerator*)(GetPlayer()->GetMotionMaster()->top());
+            flight->Initialize(*GetPlayer());
             return;
         }
 
@@ -138,7 +137,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     }
 
     // resurrect character at enter into instance where his corpse exist after add to map
-    CorpsePtr corpse = GetPlayer()->GetCorpse();
+    Corpse* corpse = GetPlayer()->GetCorpse();
     if (corpse && corpse->GetType() != CORPSE_BONES && corpse->GetMapId() == GetPlayer()->GetMapId())
     {
         if (mEntry->IsDungeon())
@@ -158,7 +157,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
             {
                 if (time_t timeReset = sInstanceSaveMgr->GetResetTimeFor(mEntry->MapID, diff))
                 {
-                    uint32 timeleft = uint32(timeReset - time(nullptr));
+                    uint32 timeleft = uint32(timeReset - time(NULL));
                     GetPlayer()->SendInstanceResetWarning(mEntry->MapID, diff, timeleft);
                 }
             }
@@ -207,7 +206,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Guid " UI64FMTD, uint64(guid));
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Flags %u, time %u", flags, time/IN_MILLISECONDS);
 
-    PlayerPtr plMover = TO_PLAYER(_player->m_mover);
+    Player* plMover = _player->m_mover->ToPlayer();
 
     if (!plMover || !plMover->IsBeingTeleportedNear())
         return;
@@ -251,11 +250,11 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 {
     uint16 opcode = recvPacket.GetOpcode();
 
-    UnitPtr mover = _player->m_mover;
+    Unit* mover = _player->m_mover;
 
-    ASSERT(mover != nullptr);                      // there must always be a mover
+    ASSERT(mover != NULL);                      // there must always be a mover
 
-    PlayerPtr plrMover = TO_PLAYER(mover);
+    Player* plrMover = mover->ToPlayer();
 
     // ignore, waiting processing in WorldSession::HandleMoveWorldportAckOpcode and WorldSession::HandleMoveTeleportAck
     if (plrMover && plrMover->IsBeingTeleported())
@@ -340,7 +339,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
                 if (!foundNewTransport)
                 {
-                    plrMover->m_transport = nullptr;
+                    plrMover->m_transport = NULL;
                     movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
                     movementInfo.t_time = 0;
                     movementInfo.t_seat = -1;
@@ -350,7 +349,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
 
         if (!mover->GetTransport() && !mover->GetVehicle())
         {
-            GameObjectPtr go = mover->GetMap()->GetGameObject(movementInfo.t_guid);
+            GameObject* go = mover->GetMap()->GetGameObject(movementInfo.t_guid);
             if (!go || go->GetGoType() != GAMEOBJECT_TYPE_TRANSPORT)
                 movementInfo.t_guid = 0;
         }
@@ -358,7 +357,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     else if (plrMover && plrMover->GetTransport())                // if we were on a transport, leave
     {
         plrMover->m_transport->RemovePassenger(plrMover);
-        plrMover->m_transport = nullptr;
+        plrMover->m_transport = NULL;
         movementInfo.t_pos.Relocate(0.0f, 0.0f, 0.0f, 0.0f);
         movementInfo.t_time = 0;
         movementInfo.t_seat = -1;
@@ -383,7 +382,7 @@ void WorldSession::HandleMovementOpcodes(WorldPacket& recvPacket)
     movementInfo.time = getMSTime();
     movementInfo.guid = mover->GetGUID();
     WorldSession::WriteMovementInfo(data, &movementInfo);
-    mover->SendMessageToSet(&data, TO_CONST_PLAYER(_player));
+    mover->SendMessageToSet(&data, _player);
 
     mover->m_movementInfo = movementInfo;
 
@@ -608,7 +607,7 @@ void WorldSession::ReadMovementInfo(WorldPacket& data, MovementInfo* mi)
     uint32 bitcounterLoop = 0;
 
     MovementStatusElements* sequence = GetMovementStatusElementsSequence(data.GetOpcode());
-    if (sequence == nullptr)
+    if (sequence == NULL)
     {
         sLog->outError(LOG_FILTER_NETWORKIO, "WorldSession::ReadMovementInfo: No movement sequence found for opcode 0x%04X", uint32(data.GetOpcode()));
         return;

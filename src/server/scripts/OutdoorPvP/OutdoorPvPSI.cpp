@@ -41,7 +41,7 @@ void OutdoorPvPSI::FillInitialWorldStates(WorldPacket &data)
     data << SI_SILITHYST_MAX << SI_MAX_RESOURCES;
 }
 
-void OutdoorPvPSI::SendRemoveWorldStates(PlayerPtr player)
+void OutdoorPvPSI::SendRemoveWorldStates(Player* player)
 {
     player->SendUpdateWorldState(SI_GATHERED_A, 0);
     player->SendUpdateWorldState(SI_GATHERED_H, 0);
@@ -67,21 +67,21 @@ bool OutdoorPvPSI::Update(uint32 /*diff*/)
     return false;
 }
 
-void OutdoorPvPSI::HandlePlayerEnterZone(PlayerPtr player, uint32 zone)
+void OutdoorPvPSI::HandlePlayerEnterZone(Player* player, uint32 zone)
 {
     if (player->GetTeam() == m_LastController)
         player->CastSpell(player, SI_CENARION_FAVOR, true);
     OutdoorPvP::HandlePlayerEnterZone(player, zone);
 }
 
-void OutdoorPvPSI::HandlePlayerLeaveZone(PlayerPtr player, uint32 zone)
+void OutdoorPvPSI::HandlePlayerLeaveZone(Player* player, uint32 zone)
 {
     // remove buffs
     player->RemoveAurasDueToSpell(SI_CENARION_FAVOR);
     OutdoorPvP::HandlePlayerLeaveZone(player, zone);
 }
 
-bool OutdoorPvPSI::HandleAreaTrigger(PlayerPtr player, uint32 trigger)
+bool OutdoorPvPSI::HandleAreaTrigger(Player* player, uint32 trigger)
 {
     switch (trigger)
     {
@@ -103,7 +103,7 @@ bool OutdoorPvPSI::HandleAreaTrigger(PlayerPtr player, uint32 trigger)
             // reward player
             player->CastSpell(player, SI_TRACES_OF_SILITHYST, true);
             // add 19 honor
-            player->RewardHonor(nullptr, 1, 19);
+            player->RewardHonor(NULL, 1, 19);
             // add 20 cenarion circle repu
             player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(609), 20);
             // complete quest
@@ -128,7 +128,7 @@ bool OutdoorPvPSI::HandleAreaTrigger(PlayerPtr player, uint32 trigger)
             // reward player
             player->CastSpell(player, SI_TRACES_OF_SILITHYST, true);
             // add 19 honor
-            player->RewardHonor(nullptr, 1, 19);
+            player->RewardHonor(NULL, 1, 19);
             // add 20 cenarion circle repu
             player->GetReputationMgr().ModifyReputation(sFactionStore.LookupEntry(609), 20);
             // complete quest
@@ -139,7 +139,7 @@ bool OutdoorPvPSI::HandleAreaTrigger(PlayerPtr player, uint32 trigger)
     return false;
 }
 
-bool OutdoorPvPSI::HandleDropFlag(PlayerPtr player, uint32 spellId)
+bool OutdoorPvPSI::HandleDropFlag(Player* player, uint32 spellId)
 {
     if (spellId == SI_SILITHYST_FLAG)
     {
@@ -155,18 +155,27 @@ bool OutdoorPvPSI::HandleDropFlag(PlayerPtr player, uint32 spellId)
                     if (player->GetDistance(atEntry->x, atEntry->y, atEntry->z) > 5.0f + atEntry->radius)
                     {
                         // he dropped it further, summon mound
-                        GameObjectPtr go (new GameObject);
-                        MapPtr map = player->GetMap();
+                        GameObject* go = new GameObject;
+                        Map* map = player->GetMap();
                         if (!map)
+                        {
+                            delete go;
                             return true;
+                        }
 
                         if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), SI_SILITHYST_MOUND, map, player->GetPhaseMask(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(), 0, 0, 0, 0, 100, GO_STATE_READY))
+                        {
+                            delete go;
                             return true;
+                        }
 
                         go->SetRespawnTime(0);
 
                         if (!map->AddToMap(go))
+                        {
+                            delete go;
                             return true;
+                        }
                     }
                 }
             }
@@ -180,18 +189,27 @@ bool OutdoorPvPSI::HandleDropFlag(PlayerPtr player, uint32 spellId)
                     if (player->GetDistance(atEntry->x, atEntry->y, atEntry->z) > 5.0f + atEntry->radius)
                     {
                         // he dropped it further, summon mound
-                        GameObjectPtr go (new GameObject);
-                        MapPtr map = player->GetMap();
+                        GameObject* go = new GameObject;
+                        Map* map = player->GetMap();
                         if (!map)
+                        {
+                            delete go;
                             return true;
+                        }
 
                         if (!go->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), SI_SILITHYST_MOUND, map, player->GetPhaseMask(), player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation(), 0, 0, 0, 0, 100, GO_STATE_READY))
+                        {
+                            delete go;
                             return true;
+                        }
 
                         go->SetRespawnTime(0);
 
                         if (!map->AddToMap(go))
+                        {
+                            delete go;
                             return true;
+                        }
                     }
                 }
             }
@@ -202,7 +220,7 @@ bool OutdoorPvPSI::HandleDropFlag(PlayerPtr player, uint32 spellId)
     return false;
 }
 
-bool OutdoorPvPSI::HandleCustomSpell(PlayerPtr player, uint32 spellId, GameObjectPtr go)
+bool OutdoorPvPSI::HandleCustomSpell(Player* player, uint32 spellId, GameObject* go)
 {
     if (!go || spellId != SI_SILITHYST_FLAG_GO_SPELL)
         return false;

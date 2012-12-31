@@ -265,12 +265,12 @@ class OPvPCapturePointNA : public OPvPCapturePoint
         void FillInitialWorldStates(WorldPacket & data);
 
         // used when player is activated/inactivated in the area
-        bool HandlePlayerEnter(PlayerPtr player);
-        void HandlePlayerLeave(PlayerPtr player);
+        bool HandlePlayerEnter(Player* player);
+        void HandlePlayerLeave(Player* player);
 
-        bool HandleCustomSpell(PlayerPtr player, uint32 spellId, GameObjectPtr go);
+        bool HandleCustomSpell(Player* player, uint32 spellId, GameObject* go);
 
-        int32 HandleOpenGo(PlayerPtr player, uint64 guid);
+        int32 HandleOpenGo(Player* player, uint64 guid);
 
         uint32 GetAliveGuardsCount();
         uint32 GetControllingFaction() const;
@@ -317,16 +317,16 @@ class OutdoorPvPNA : public OutdoorPvP
 
         bool SetupOutdoorPvP();
 
-        void HandlePlayerEnterZone(PlayerPtr player, uint32 zone);
-        void HandlePlayerLeaveZone(PlayerPtr player, uint32 zone);
+        void HandlePlayerEnterZone(Player* player, uint32 zone);
+        void HandlePlayerLeaveZone(Player* player, uint32 zone);
 
         bool Update(uint32 diff);
 
         void FillInitialWorldStates(WorldPacket &data);
 
-        void SendRemoveWorldStates(PlayerPtr player);
+        void SendRemoveWorldStates(Player* player);
 
-        void HandleKillImpl(PlayerPtr player, UnitPtr killed);
+        void HandleKillImpl(Player* player, Unit* killed);
 
     private:
 

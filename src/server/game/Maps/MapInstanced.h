@@ -23,17 +23,13 @@
 #include "InstanceSaveMgr.h"
 #include "DBCEnums.h"
 
-class ClassFactory;
-
 class MapInstanced : public Map
 {
-    friend class ClassFactory;
     friend class MapManager;
-    protected:
-        explicit MapInstanced(uint32 id, time_t expiry);
     public:
-        typedef UNORDERED_MAP< uint32, MapPtr> InstancedMaps;
+        typedef UNORDERED_MAP< uint32, Map*> InstancedMaps;
 
+        MapInstanced(uint32 id, time_t expiry);
         ~MapInstanced() {}
 
         // functions overwrite Map versions
@@ -41,13 +37,13 @@ class MapInstanced : public Map
         void DelayedUpdate(const uint32 diff);
         //void RelocationNotify();
         void UnloadAll();
-        bool CanEnter(PlayerPtr player);
+        bool CanEnter(Player* player);
 
-        MapPtr CreateInstanceForPlayer(const uint32 mapId, PlayerPtr player);
-        MapPtr FindInstanceMap(uint32 instanceId) const
+        Map* CreateInstanceForPlayer(const uint32 mapId, Player* player);
+        Map* FindInstanceMap(uint32 instanceId) const
         {
             InstancedMaps::const_iterator i = m_InstancedMaps.find(instanceId);
-            return(i == m_InstancedMaps.end() ? nullptr : i->second);
+            return(i == m_InstancedMaps.end() ? NULL : i->second);
         }
         bool DestroyInstance(InstancedMaps::iterator &itr);
 
@@ -68,8 +64,8 @@ class MapInstanced : public Map
         virtual void InitVisibilityDistance();
 
     private:
-        InstanceMapPtr CreateInstance(uint32 InstanceId, InstanceSave* save, Difficulty difficulty);
-        BattlegroundMapPtr CreateBattleground(uint32 InstanceId, Battleground* bg);
+        InstanceMap* CreateInstance(uint32 InstanceId, InstanceSave* save, Difficulty difficulty);
+        BattlegroundMap* CreateBattleground(uint32 InstanceId, Battleground* bg);
 
         InstancedMaps m_InstancedMaps;
 

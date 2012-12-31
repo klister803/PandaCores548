@@ -19,7 +19,7 @@
 
 Field::Field()
 {
-    data.value = nullptr;
+    data.value = NULL;
     data.type = MYSQL_TYPE_NULL;
     data.length = 0;
 }

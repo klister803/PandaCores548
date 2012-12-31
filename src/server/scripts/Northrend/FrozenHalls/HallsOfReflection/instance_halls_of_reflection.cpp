@@ -103,14 +103,14 @@ class instance_halls_of_reflection : public InstanceMapScript
 public:
     instance_halls_of_reflection() : InstanceMapScript("instance_halls_of_reflection", 668) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_halls_of_reflection_InstanceMapScript(map);
     }
 
     struct instance_halls_of_reflection_InstanceMapScript : public InstanceScript
     {
-        instance_halls_of_reflection_InstanceMapScript(MapPtr map) : InstanceScript(map) {};
+        instance_halls_of_reflection_InstanceMapScript(Map* map) : InstanceScript(map) {};
 
         uint64 uiFalric;
         uint64 uiMarwyn;
@@ -152,11 +152,11 @@ public:
                 uiEncounter[i] = NOT_STARTED;
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             Map::PlayerList const &players = instance->GetPlayers();
             if (!players.isEmpty())
-                if (PlayerPtr player = players.begin()->getSource())
+                if (Player* player = players.begin()->getSource())
                     uiTeamInInstance = player->GetTeam();
 
             switch (creature->GetEntry())
@@ -179,7 +179,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             // TODO: init state depending on encounters
             switch (go->GetEntry())
@@ -328,13 +328,13 @@ public:
                 case 2:
                 case 3:
                 case 4:
-                    if (CreaturePtr pFalric = instance->GetCreature(uiFalric))
+                    if (Creature* pFalric = instance->GetCreature(uiFalric))
                         SpawnWave(pFalric);
                     break;
                 case 5:
                     if (GetData(DATA_FALRIC_EVENT) == DONE)
                         events.ScheduleEvent(EVENT_NEXT_WAVE, 10000);
-                    else if (CreaturePtr pFalric = instance->GetCreature(uiFalric))
+                    else if (Creature* pFalric = instance->GetCreature(uiFalric))
                         if (pFalric->AI())
                             pFalric->AI()->DoAction(ACTION_ENTER_COMBAT);
                     break;
@@ -342,12 +342,12 @@ public:
                 case 7:
                 case 8:
                 case 9:
-                    if (CreaturePtr pMarwyn  = instance->GetCreature(uiMarwyn))
+                    if (Creature* pMarwyn  = instance->GetCreature(uiMarwyn))
                         SpawnWave(pMarwyn);
                     break;
                 case 10:
                     if (GetData(DATA_MARWYN_EVENT) != DONE) // wave should not have been started if DONE. Check anyway to avoid bug exploit!
-                        if (CreaturePtr pMarwyn = instance->GetCreature(uiMarwyn))
+                        if (Creature* pMarwyn = instance->GetCreature(uiMarwyn))
                             if (pMarwyn->AI())
                                 pMarwyn->AI()->DoAction(ACTION_ENTER_COMBAT);
                     break;
@@ -366,19 +366,19 @@ public:
             // TODO
             // in case of wipe, the event is normally restarted by jumping into the center of the room.
             // As I can't find a trigger area there, just respawn Jaina/Sylvanas so the event may be restarted.
-            if (CreaturePtr pJaina = instance->GetCreature(uiJainaPart1))
+            if (Creature* pJaina = instance->GetCreature(uiJainaPart1))
                 pJaina->Respawn();
-            if (CreaturePtr pSylvanas = instance->GetCreature(uiSylvanasPart1))
+            if (Creature* pSylvanas = instance->GetCreature(uiSylvanasPart1))
                 pSylvanas->Respawn();
 
-            if (CreaturePtr pFalric = instance->GetCreature(uiFalric))
+            if (Creature* pFalric = instance->GetCreature(uiFalric))
                 pFalric->SetVisible(false);
-            if (CreaturePtr pMarwyn = instance->GetCreature(uiMarwyn))
+            if (Creature* pMarwyn = instance->GetCreature(uiMarwyn))
                 pMarwyn->SetVisible(false);
         }
 
         // spawn a wave on behalf of the summoner.
-        void SpawnWave(CreaturePtr summoner)
+        void SpawnWave(Creature* summoner)
         {
             uint32 index;
 

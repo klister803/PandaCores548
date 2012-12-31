@@ -84,7 +84,7 @@ class boss_halazzi : public CreatureScript
 
         struct boss_halazziAI : public ScriptedAI
         {
-            boss_halazziAI(CreaturePtr creature) : ScriptedAI(creature)
+            boss_halazziAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -120,7 +120,7 @@ class boss_halazzi : public CreatureScript
                 EnterPhase(PHASE_LYNX);
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 if (instance)
                     instance->SetData(DATA_HALAZZIEVENT, IN_PROGRESS);
@@ -131,26 +131,26 @@ class boss_halazzi : public CreatureScript
                 EnterPhase(PHASE_LYNX);
             }
 
-            void JustSummoned(CreaturePtr summon)
+            void JustSummoned(Creature* summon)
             {
                 summon->AI()->AttackStart(me->getVictim());
                 if (summon->GetEntry() == MOB_SPIRIT_LYNX)
                     LynxGUID = summon->GetGUID();
             }
 
-            void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
+            void DamageTaken(Unit* /*done_by*/, uint32 &damage)
             {
                 if (damage >= me->GetHealth() && Phase != PHASE_ENRAGE)
                     damage = 0;
             }
 
-            void SpellHit(UnitPtr, const SpellInfo* spell)
+            void SpellHit(Unit*, const SpellInfo* spell)
             {
                 if (spell->Id == SPELL_TRANSFORM_SPLIT2)
                     EnterPhase(PHASE_HUMAN);
             }
 
-            void AttackStart(UnitPtr who)
+            void AttackStart(Unit* who)
             {
                 if (Phase != PHASE_MERGE) ScriptedAI::AttackStart(who);
             }
@@ -167,7 +167,7 @@ class boss_halazzi : public CreatureScript
                         me->Attack(me->getVictim(), true);
                         me->GetMotionMaster()->MoveChase(me->getVictim());
                     }
-                    if (CreaturePtr Lynx = Unit::GetCreature(TO_WORLDOBJECT(me), LynxGUID))
+                    if (Creature* Lynx = Unit::GetCreature(*me, LynxGUID))
                         Lynx->DisappearAndDie();
                     me->SetMaxHealth(600000);
                     me->SetHealth(600000 - 150000 * TransformCount);
@@ -190,7 +190,7 @@ class boss_halazzi : public CreatureScript
                     TotemTimer = 12000;
                     break;
                 case PHASE_MERGE:
-                    if (UnitPtr pLynx = Unit::GetUnit(TO_WORLDOBJECT(me), LynxGUID))
+                    if (Unit* pLynx = Unit::GetUnit(*me, LynxGUID))
                     {
                         me->MonsterYell(YELL_MERGE, LANG_UNIVERSAL, 0);
                         DoPlaySoundToSet(me, SOUND_MERGE);
@@ -259,7 +259,7 @@ class boss_halazzi : public CreatureScript
 
                     if (ShockTimer <= diff)
                     {
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         {
                             if (target->IsNonMeleeSpellCasted(false))
                                 DoCast(target, SPELL_EARTHSHOCK);
@@ -277,7 +277,7 @@ class boss_halazzi : public CreatureScript
                                 EnterPhase(PHASE_MERGE);
                             else
                             {
-                                UnitPtr Lynx = Unit::GetUnit(TO_WORLDOBJECT(me), LynxGUID);
+                                Unit* Lynx = Unit::GetUnit(*me, LynxGUID);
                                 if (Lynx && !Lynx->HealthAbovePct(20) /*Lynx->HealthBelowPct(10)*/)
                                     EnterPhase(PHASE_MERGE);
                             }
@@ -290,7 +290,7 @@ class boss_halazzi : public CreatureScript
                 {
                     if (CheckTimer <= diff)
                     {
-                        UnitPtr Lynx = Unit::GetUnit(TO_WORLDOBJECT(me), LynxGUID);
+                        Unit* Lynx = Unit::GetUnit(*me, LynxGUID);
                         if (Lynx)
                         {
                             Lynx->GetMotionMaster()->MoveFollow(me, 0, 0);
@@ -310,7 +310,7 @@ class boss_halazzi : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void KilledUnit(UnitPtr /*victim*/)
+            void KilledUnit(Unit* /*victim*/)
             {
                 switch (urand(0, 1))
                 {
@@ -326,7 +326,7 @@ class boss_halazzi : public CreatureScript
                 }
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 if (instance)
                     instance->SetData(DATA_HALAZZIEVENT, DONE);
@@ -336,7 +336,7 @@ class boss_halazzi : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_halazziAI(creature);
         }
@@ -354,7 +354,7 @@ class mob_halazzi_lynx : public CreatureScript
 
         struct mob_halazzi_lynxAI : public ScriptedAI
         {
-            mob_halazzi_lynxAI(CreaturePtr creature) : ScriptedAI(creature) {}
+            mob_halazzi_lynxAI(Creature* creature) : ScriptedAI(creature) {}
 
             uint32 FrenzyTimer;
             uint32 shredder_timer;
@@ -365,19 +365,19 @@ class mob_halazzi_lynx : public CreatureScript
                 shredder_timer = 4000;
             }
 
-            void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
+            void DamageTaken(Unit* /*done_by*/, uint32 &damage)
             {
                 if (damage >= me->GetHealth())
                     damage = 0;
             }
 
-            void AttackStart(UnitPtr who)
+            void AttackStart(Unit* who)
             {
                 if (!me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                     ScriptedAI::AttackStart(who);
             }
 
-            void EnterCombat(UnitPtr /*who*/) {/*DoZoneInCombat();*/}
+            void EnterCombat(Unit* /*who*/) {/*DoZoneInCombat();*/}
 
             void UpdateAI(const uint32 diff)
             {
@@ -401,7 +401,7 @@ class mob_halazzi_lynx : public CreatureScript
 
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_halazzi_lynxAI(creature);
         }

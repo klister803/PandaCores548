@@ -21,9 +21,8 @@
 #include "SpellInfo.h"
 #include "Vehicle.h"
 #include "ObjectAccessor.h"
-#include "SpellAuraEffects.h"
 
-int AggressorAI::Permissible(constCreaturePtr    creature)
+int AggressorAI::Permissible(const Creature* creature)
 {
     // have some hostile factions, it will be selected by IsHostileTo check at MoveInLineOfSight
     if (!creature->isCivilian() && !creature->IsNeutralToAll())
@@ -41,22 +40,22 @@ void AggressorAI::UpdateAI(const uint32 /*diff*/)
 }
 
 // some day we will delete these useless things
-int CombatAI::Permissible(constCreaturePtr  /*Creatur*/)
+int CombatAI::Permissible(const Creature* /*creature*/)
 {
     return PERMIT_BASE_NO;
 }
 
-int ArcherAI::Permissible(constCreaturePtr  /*Creature*/)
+int ArcherAI::Permissible(const Creature* /*creature*/)
 {
     return PERMIT_BASE_NO;
 }
 
-int TurretAI::Permissible(constCreaturePtr  /*Creature*/)
+int TurretAI::Permissible(const Creature* /*creature*/)
 {
     return PERMIT_BASE_NO;
 }
 
-int VehicleAI::Permissible(constCreaturePtr  /*Creature*/)
+int VehicleAI::Permissible(const Creature* /*creature*/)
 {
     return PERMIT_BASE_NO;
 }
@@ -75,14 +74,14 @@ void CombatAI::Reset()
     events.Reset();
 }
 
-void CombatAI::JustDied(UnitPtr killer)
+void CombatAI::JustDied(Unit* killer)
 {
     for (SpellVct::iterator i = spells.begin(); i != spells.end(); ++i)
         if (AISpellInfo[*i].condition == AICOND_DIE)
             me->CastSpell(killer, *i, true);
 }
 
-void CombatAI::EnterCombat(UnitPtr who)
+void CombatAI::EnterCombat(Unit* who)
 {
     for (SpellVct::iterator i = spells.begin(); i != spells.end(); ++i)
     {
@@ -128,7 +127,7 @@ void CasterAI::InitializeAI()
         m_attackDist = MELEE_RANGE;
 }
 
-void CasterAI::EnterCombat(UnitPtr who)
+void CasterAI::EnterCombat(Unit* who)
 {
     if (spells.empty())
         return;
@@ -180,7 +179,7 @@ void CasterAI::UpdateAI(const uint32 diff)
 //ArcherAI
 //////////////
 
-ArcherAI::ArcherAI(CreaturePtr c) : CreatureAI(c)
+ArcherAI::ArcherAI(Creature* c) : CreatureAI(c)
 {
     if (!me->m_spells[0])
         sLog->outError(LOG_FILTER_GENERAL, "ArcherAI set for creature (entry = %u) with spell1=0. AI will do nothing", me->GetEntry());
@@ -194,7 +193,7 @@ ArcherAI::ArcherAI(CreaturePtr c) : CreatureAI(c)
     me->m_SightDistance = me->m_CombatDistance;
 }
 
-void ArcherAI::AttackStart(UnitPtr who)
+void ArcherAI::AttackStart(Unit* who)
 {
     if (!who)
         return;
@@ -229,7 +228,7 @@ void ArcherAI::UpdateAI(const uint32 /*diff*/)
 //TurretAI
 //////////////
 
-TurretAI::TurretAI(CreaturePtr c) : CreatureAI(c)
+TurretAI::TurretAI(Creature* c) : CreatureAI(c)
 {
     if (!me->m_spells[0])
         sLog->outError(LOG_FILTER_GENERAL, "TurretAI set for creature (entry = %u) with spell1=0. AI will do nothing", me->GetEntry());
@@ -240,7 +239,7 @@ TurretAI::TurretAI(CreaturePtr c) : CreatureAI(c)
     me->m_SightDistance = me->m_CombatDistance;
 }
 
-bool TurretAI::CanAIAttack(constUnitPtr /*who*/) const
+bool TurretAI::CanAIAttack(const Unit* /*who*/) const
 {
     // TODO: use one function to replace it
     if (!me->IsWithinCombatRange(me->getVictim(), me->m_CombatDistance)
@@ -249,7 +248,7 @@ bool TurretAI::CanAIAttack(constUnitPtr /*who*/) const
     return true;
 }
 
-void TurretAI::AttackStart(UnitPtr who)
+void TurretAI::AttackStart(Unit* who)
 {
     if (who)
         me->Attack(who, false);
@@ -267,7 +266,7 @@ void TurretAI::UpdateAI(const uint32 /*diff*/)
 //VehicleAI
 //////////////
 
-VehicleAI::VehicleAI(CreaturePtr c) : CreatureAI(c), m_vehicle(c->GetVehicleKit()), m_IsVehicleInUse(false), m_ConditionsTimer(VEHICLE_CONDITION_CHECK_TIME)
+VehicleAI::VehicleAI(Creature* c) : CreatureAI(c), m_vehicle(c->GetVehicleKit()), m_IsVehicleInUse(false), m_ConditionsTimer(VEHICLE_CONDITION_CHECK_TIME)
 {
     LoadConditions();
     m_DoDismiss = false;
@@ -323,9 +322,9 @@ void VehicleAI::CheckConditions(const uint32 diff)
         if (!conditions.empty())
         {
             for (SeatMap::iterator itr = m_vehicle->Seats.begin(); itr != m_vehicle->Seats.end(); ++itr)
-                if (UnitPtr passenger = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(m_vehicle->GetBase()), itr->second.Passenger))
+                if (Unit* passenger = ObjectAccessor::GetUnit(*m_vehicle->GetBase(), itr->second.Passenger))
                 {
-                    if (PlayerPtr player = TO_PLAYER(passenger))
+                    if (Player* player = passenger->ToPlayer())
                     {
                         if (!sConditionMgr->IsObjectMeetToConditions(player, me, conditions))
                         {

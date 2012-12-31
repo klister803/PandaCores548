@@ -42,7 +42,7 @@ public:
 
     struct instance_ahnkahet_InstanceScript : public InstanceScript
     {
-        instance_ahnkahet_InstanceScript(MapPtr map) : InstanceScript(map) {}
+        instance_ahnkahet_InstanceScript(Map* map) : InstanceScript(map) {}
 
         uint64 Elder_Nadox;
         uint64 Prince_Taldaram;
@@ -95,7 +95,7 @@ public:
             return false;
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -108,7 +108,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -178,7 +178,7 @@ public:
                     vInitiands.clear();
                     for (std::set<uint64>::const_iterator itr = InitiandGUIDs.begin(); itr != InitiandGUIDs.end(); ++itr)
                     {
-                        CreaturePtr cr = instance->GetCreature(*itr);
+                        Creature* cr = instance->GetCreature(*itr);
                         if (cr && cr->isAlive())
                             vInitiands.push_back(*itr);
                     }
@@ -211,7 +211,7 @@ public:
                     {
                         for (std::set<uint64>::const_iterator itr = InitiandGUIDs.begin(); itr != InitiandGUIDs.end(); ++itr)
                         {
-                            CreaturePtr cr = instance->GetCreature(*itr);
+                            Creature* cr = instance->GetCreature(*itr);
                             if (cr && cr->isAlive())
                             {
                                 cr->SetVisible(false);
@@ -239,7 +239,7 @@ public:
                 case DATA_JEDOGA_RESET_INITIANDS:
                     for (std::set<uint64>::const_iterator itr = InitiandGUIDs.begin(); itr != InitiandGUIDs.end(); ++itr)
                     {
-                        CreaturePtr cr = instance->GetCreature(*itr);
+                        Creature* cr = instance->GetCreature(*itr);
                         if (cr)
                         {
                             cr->Respawn();
@@ -266,7 +266,7 @@ public:
                 case DATA_ALL_INITIAND_DEAD:
                     for (std::set<uint64>::const_iterator itr = InitiandGUIDs.begin(); itr != InitiandGUIDs.end(); ++itr)
                     {
-                        CreaturePtr cr = instance->GetCreature(*itr);
+                        Creature* cr = instance->GetCreature(*itr);
                         if (!cr || (cr && cr->isAlive()))
                             return 0;
                     }
@@ -328,7 +328,7 @@ public:
         }
     };
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
        return new instance_ahnkahet_InstanceScript(map);
     }

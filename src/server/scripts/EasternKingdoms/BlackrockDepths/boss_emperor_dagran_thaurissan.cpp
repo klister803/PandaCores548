@@ -37,14 +37,14 @@ class boss_emperor_dagran_thaurissan : public CreatureScript
 public:
     boss_emperor_dagran_thaurissan() : CreatureScript("boss_emperor_dagran_thaurissan") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_draganthaurissanAI (creature);
     }
 
     struct boss_draganthaurissanAI : public ScriptedAI
     {
-        boss_draganthaurissanAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_draganthaurissanAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = me->GetInstanceScript();
         }
@@ -61,20 +61,20 @@ public:
             //Counter= 0;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
             me->CallForHelp(VISIBLE_RANGE);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(SAY_SLAY, me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
-            if (CreaturePtr Moira = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance ? instance->GetData64(DATA_MOIRA) : 0))
+            if (Creature* Moira = ObjectAccessor::GetCreature(*me, instance ? instance->GetData64(DATA_MOIRA) : 0))
             {
                 Moira->AI()->EnterEvadeMode();
                 Moira->setFaction(35);
@@ -89,7 +89,7 @@ public:
 
             if (HandOfThaurissan_Timer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_HANDOFTHAURISSAN);
 
                 //3 Hands of Thaurissan will be casted

@@ -213,14 +213,14 @@ class boss_malygos : public CreatureScript
 public:
     boss_malygos() : CreatureScript("boss_malygos") {}
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_malygosAI(creature);
     }
 
     struct boss_malygosAI : public BossAI
     {
-        boss_malygosAI(CreaturePtr creature) : BossAI(creature, DATA_MALYGOS_EVENT)
+        boss_malygosAI(Creature* creature) : BossAI(creature, DATA_MALYGOS_EVENT)
         {
             // If we enter in combat when MovePoint generator is active, it overrwrites our homeposition
             _homePosition = creature->GetHomePosition();
@@ -305,10 +305,10 @@ public:
             summons.DespawnAll();
             // players that used Hover Disk are no in the aggro list
             me->SetInCombatWithZone();
-            std::list<HostileReferencePtr> &m_threatlist = me->getThreatManager()->getThreatList();
-            for (std::list<HostileReferencePtr>::const_iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
+            std::list<HostileReference*> &m_threatlist = me->getThreatManager().getThreatList();
+            for (std::list<HostileReference*>::const_iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
             {
-                if (UnitPtr target = (*itr)->getTarget())
+                if (Unit* target = (*itr)->getTarget())
                 {
                     if (target->GetTypeId() != TYPEID_PLAYER)
                         continue;
@@ -318,7 +318,7 @@ public:
                 }
             }
 
-            if (GameObjectPtr go = GameObject::GetGameObject(*me, instance->GetData64(DATA_PLATFORM)))
+            if (GameObject* go = GameObject::GetGameObject(*me, instance->GetData64(DATA_PLATFORM)))
                 go->SetFlag(GAMEOBJECT_FLAGS, GO_FLAG_DESTROYED); // In sniffs it has this flag, but i don't know how is applied.
 
             // pos sniffed
@@ -354,7 +354,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
 
@@ -371,7 +371,7 @@ public:
                 instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMED_START_EVENT);
         }
 
-        void KilledUnit(UnitPtr who)
+        void KilledUnit(Unit* who)
         {
             if (who->GetTypeId() != TYPEID_PLAYER)
                 return;
@@ -390,18 +390,18 @@ public:
             }
         }
 
-        void SpellHit(UnitPtr caster, const SpellInfo* spell)
+        void SpellHit(Unit* caster, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_POWER_SPARK_MALYGOS)
             {
-                if (CreaturePtr creature = TO_CREATURE(caster))
+                if (Creature* creature = caster->ToCreature())
                     creature->DespawnOrUnsummon();
 
                 Talk(SAY_BUFF_SPARK);
             }
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!me->isInCombat())
                 return;
@@ -475,12 +475,12 @@ public:
             {
                 // Starting position. One starts from the first waypoint and another from the last.
                 uint8 pos = !i ? MAX_HOVER_DISK_WAYPOINTS-1 : 0;
-                if (CreaturePtr summon = me->SummonCreature(NPC_HOVER_DISK_CASTER, HoverDiskWaypoints[pos]))
+                if (Creature* summon = me->SummonCreature(NPC_HOVER_DISK_CASTER, HoverDiskWaypoints[pos]))
                     if (summon->IsAIEnabled)
                         summon->AI()->DoAction(ACTION_HOVER_DISK_START_WP_1+i);
 
                 // not sure about its position.
-                if (CreaturePtr summon = me->SummonCreature(NPC_HOVER_DISK_MELEE, HoverDiskWaypoints[0]))
+                if (Creature* summon = me->SummonCreature(NPC_HOVER_DISK_MELEE, HoverDiskWaypoints[0]))
                     summon->SetInCombatWithZone();
             }
         }
@@ -596,9 +596,9 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        UnitPtr GetTargetPhaseThree()
+        Unit* GetTargetPhaseThree()
         {
-            UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+            Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
 
             // we are a drake
             if (target->GetVehicleKit())
@@ -607,15 +607,15 @@ public:
             // we are a player using a drake (or at least you should)
             if (target->GetTypeId() == TYPEID_PLAYER)
             {
-                if (UnitPtr base = target->GetVehicleBase())
+                if (Unit* base = target->GetVehicleBase())
                     return base;
             }
 
             // is a player falling from a vehicle?
-            return nullptr;
+            return NULL;
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             Talk(SAY_DEATH);
             _JustDied();
@@ -645,7 +645,7 @@ public:
 
         void HandleScript(SpellEffIndex /*effIndex*/)
         {
-            UnitPtr caster = GetCaster();
+            Unit* caster = GetCaster();
 
             if (!caster)
                 return;
@@ -681,14 +681,14 @@ class spell_malygos_vortex_visual : public SpellScriptLoader
 
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (UnitPtr caster = GetCaster())
+                if (Unit* caster = GetCaster())
                 {
-                    std::list<HostileReferencePtr> &m_threatlist = caster->getThreatManager()->getThreatList();
-                    for (std::list<HostileReferencePtr>::const_iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
+                    std::list<HostileReference*> &m_threatlist = caster->getThreatManager().getThreatList();
+                    for (std::list<HostileReference*>::const_iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
                     {
-                        if (UnitPtr target = (*itr)->getTarget())
+                        if (Unit* target = (*itr)->getTarget())
                         {
-                            PlayerPtr targetPlayer = TO_PLAYER(target);
+                            Player* targetPlayer = target->ToPlayer();
 
                             if (!targetPlayer || targetPlayer->isGameMaster())
                                 continue;
@@ -696,13 +696,13 @@ class spell_malygos_vortex_visual : public SpellScriptLoader
                             if (InstanceScript* instance = caster->GetInstanceScript())
                             {
                                 // teleport spell - i am not sure but might be it must be casted by each vehicle when its passenger leaves it
-                                if (CreaturePtr trigger = caster->GetMap()->GetCreature(instance->GetData64(DATA_TRIGGER)))
+                                if (Creature* trigger = caster->GetMap()->GetCreature(instance->GetData64(DATA_TRIGGER)))
                                     trigger->CastSpell(targetPlayer, SPELL_VORTEX_6, true);
                             }
                         }
                     }
 
-                    if (CreaturePtr malygos = TO_CREATURE(caster))
+                    if (Creature* malygos = caster->ToCreature())
                     {
                         // This is a hack, we have to re add players to the threat list because when they enter to the vehicles they are removed.
                         // Anyway even with this issue, the boss does not enter in evade mode - this prevents iterate an empty list in the next vortex execution.
@@ -735,14 +735,14 @@ class npc_portal_eoe: public CreatureScript
 public:
     npc_portal_eoe() : CreatureScript("npc_portal_eoe") {}
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_portal_eoeAI(creature);
     }
 
     struct npc_portal_eoeAI : public ScriptedAI
     {
-        npc_portal_eoeAI(CreaturePtr creature) : ScriptedAI(creature)
+        npc_portal_eoeAI(Creature* creature) : ScriptedAI(creature)
         {
             _instance = creature->GetInstanceScript();
         }
@@ -760,7 +760,7 @@ public:
 
             if (_instance)
             {
-                if (CreaturePtr malygos = Unit::GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(DATA_MALYGOS)))
+                if (Creature* malygos = Unit::GetCreature(*me, _instance->GetData64(DATA_MALYGOS)))
                 {
                     if (malygos->AI()->GetData(DATA_PHASE) != PHASE_ONE)
                     {
@@ -781,7 +781,7 @@ public:
                 _summonTimer -= diff;
         }
 
-        void JustSummoned(CreaturePtr summon)
+        void JustSummoned(Creature* summon)
         {
             summon->SetInCombatWithZone();
         }
@@ -798,14 +798,14 @@ class npc_power_spark: public CreatureScript
 public:
     npc_power_spark() : CreatureScript("npc_power_spark") {}
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_power_sparkAI(creature);
     }
 
     struct npc_power_sparkAI : public ScriptedAI
     {
-        npc_power_sparkAI(CreaturePtr creature) : ScriptedAI(creature)
+        npc_power_sparkAI(Creature* creature) : ScriptedAI(creature)
         {
             _instance = creature->GetInstanceScript();
 
@@ -823,7 +823,7 @@ public:
 
             if (_instance)
             {
-                if (CreaturePtr malygos = Unit::GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(DATA_MALYGOS)))
+                if (Creature* malygos = Unit::GetCreature(*me, _instance->GetData64(DATA_MALYGOS)))
                     me->GetMotionMaster()->MoveFollow(malygos, 0.0f, 0.0f);
             }
         }
@@ -833,7 +833,7 @@ public:
             if (!_instance)
                 return;
 
-            if (CreaturePtr malygos = Unit::GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(DATA_MALYGOS)))
+            if (Creature* malygos = Unit::GetCreature(*me, _instance->GetData64(DATA_MALYGOS)))
             {
                 if (malygos->AI()->GetData(DATA_PHASE) != PHASE_ONE)
                 {
@@ -852,7 +852,7 @@ public:
             }
         }
 
-        void DamageTaken(UnitPtr /*done_by*/, uint32& damage)
+        void DamageTaken(Unit* /*done_by*/, uint32& damage)
         {
             if (damage > me->GetMaxHealth())
             {
@@ -872,14 +872,14 @@ class npc_hover_disk : public CreatureScript
 public:
     npc_hover_disk() : CreatureScript("npc_hover_disk") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_hover_diskAI(creature);
     }
 
     struct npc_hover_diskAI : public npc_escortAI
     {
-        npc_hover_diskAI(CreaturePtr creature) : npc_escortAI(creature)
+        npc_hover_diskAI(Creature* creature) : npc_escortAI(creature)
         {
             if (me->GetEntry() == NPC_HOVER_DISK_CASTER)
                 me->SetReactState(REACT_PASSIVE);
@@ -889,7 +889,7 @@ public:
             _instance = creature->GetInstanceScript();
         }
 
-        void PassengerBoarded(UnitPtr unit, int8 /*seat*/, bool apply)
+        void PassengerBoarded(Unit* unit, int8 /*seat*/, bool apply)
         {
             if (apply)
             {
@@ -908,7 +908,7 @@ public:
                     // This will only be called if the passenger dies
                     if (_instance)
                     {
-                        if (CreaturePtr malygos = Unit::GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(DATA_MALYGOS)))
+                        if (Creature* malygos = Unit::GetCreature(*me, _instance->GetData64(DATA_MALYGOS)))
                             malygos->AI()->SetData(DATA_SUMMON_DEATHS, malygos->AI()->GetData(DATA_SUMMON_DEATHS)+1);
                     }
 
@@ -984,16 +984,16 @@ class npc_arcane_overload : public CreatureScript
 public:
     npc_arcane_overload() : CreatureScript("npc_arcane_overload") {}
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_arcane_overloadAI (creature);
     }
 
     struct npc_arcane_overloadAI : public ScriptedAI
     {
-        npc_arcane_overloadAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_arcane_overloadAI(Creature* creature) : ScriptedAI(creature) {}
 
-        void AttackStart(UnitPtr who)
+        void AttackStart(Unit* who)
         {
             DoStartNoMovement(who);
         }
@@ -1017,14 +1017,14 @@ class npc_wyrmrest_skytalon : public CreatureScript
 public:
     npc_wyrmrest_skytalon() : CreatureScript("npc_wyrmrest_skytalon") {}
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_wyrmrest_skytalonAI (creature);
     }
 
     struct npc_wyrmrest_skytalonAI : public NullCreatureAI
     {
-        npc_wyrmrest_skytalonAI(CreaturePtr creature) : NullCreatureAI(creature)
+        npc_wyrmrest_skytalonAI(Creature* creature) : NullCreatureAI(creature)
         {
             _instance = creature->GetInstanceScript();
 
@@ -1032,7 +1032,7 @@ public:
             _entered = false;
         }
 
-        void PassengerBoarded(UnitPtr /*Unit*/, int8 /*seat*/, bool apply)
+        void PassengerBoarded(Unit* /*unit*/, int8 /*seat*/, bool apply)
         {
             if (!apply)
                 me->DespawnOrUnsummon();
@@ -1044,13 +1044,13 @@ public:
             if (!_instance)
                 return;
 
-            if (UnitPtr summoner = me->ToTempSummon()->GetSummoner())
+            if (Unit* summoner = me->ToTempSummon()->GetSummoner())
             {
-                if (CreaturePtr malygos = Unit::GetCreature(TO_WORLDOBJECT(me), _instance->GetData64(DATA_MALYGOS)))
+                if (Creature* malygos = Unit::GetCreature(*me, _instance->GetData64(DATA_MALYGOS)))
                 {
                     summoner->CastSpell(me, SPELL_RIDE_RED_DRAGON, true);
-                    float victimThreat = malygos->getThreatManager()->getThreat(summoner);
-                    malygos->getThreatManager()->resetAllAggro();
+                    float victimThreat = malygos->getThreatManager().getThreat(summoner);
+                    malygos->getThreatManager().resetAllAggro();
                     malygos->AI()->AttackStart(me);
                     malygos->AddThreat(me, victimThreat);
                 }
@@ -1090,14 +1090,14 @@ class npc_alexstrasza_eoe : public CreatureScript
 public:
     npc_alexstrasza_eoe() : CreatureScript("npc_alexstrasza_eoe") {}
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_alexstrasza_eoeAI (creature);
     }
 
     struct npc_alexstrasza_eoeAI : public ScriptedAI
     {
-        npc_alexstrasza_eoeAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_alexstrasza_eoeAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset()
         {
@@ -1139,9 +1139,9 @@ class achievement_denyin_the_scion : public AchievementCriteriaScript
     public:
         achievement_denyin_the_scion() : AchievementCriteriaScript("achievement_denyin_the_scion") {}
 
-        bool OnCheck(PlayerPtr source, UnitPtr /*target*/)
+        bool OnCheck(Player* source, Unit* /*target*/)
         {
-            if (UnitPtr disk = source->GetVehicleBase())
+            if (Unit* disk = source->GetVehicleBase())
                 if (disk->GetEntry() == NPC_HOVER_DISK_CASTER || disk->GetEntry() == NPC_HOVER_DISK_MELEE)
                     return true;
             return false;

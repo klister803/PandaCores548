@@ -45,7 +45,7 @@ public:
 
     struct boss_drektharAI : public ScriptedAI
     {
-        boss_drektharAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_drektharAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 WhirlwindTimer;
         uint32 Whirlwind2Timer;
@@ -64,7 +64,7 @@ public:
             YellTimer         = urand(20 * IN_MILLISECONDS, 30 * IN_MILLISECONDS); //20 to 30 seconds
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             Talk(YELL_AGGRO);
         }
@@ -125,7 +125,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_drektharAI(creature);
     }

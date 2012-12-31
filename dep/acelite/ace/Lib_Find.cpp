@@ -42,7 +42,7 @@ extern "C" int LIB$FIND_IMAGE_SYMBOL(...);
  * ACE_Dynamic_Svc_Registrar class which registers full names and function
  * pointers with this singleton at the time the static ACE_Dynamic_Svc_Registrar
  * object is created in a (service) DLL.
- * By forcing the DLL to load using a common symbol ("nullptr") we trigger static
+ * By forcing the DLL to load using a common symbol ("NULL") we trigger static
  * object creation *before* the full names are referenced.
  * Symbol references will be resolved as follows on OpenVMS:
  * - first try directly from DLL using the RTL dlsym() function and if that fails;
@@ -133,7 +133,7 @@ ACE::ldfind (const ACE_TCHAR* filename,
   nameDsc.dsc$w_length = ACE_OS::strlen(filename);
   nameDsc.dsc$a_pointer = (char*)filename;
 
-  char symbol[] = "nullptr";
+  char symbol[] = "NULL";
   dsc$descriptor symbolDsc;
   symbolDsc.dsc$b_class = DSC$K_CLASS_S;
   symbolDsc.dsc$b_dtype = DSC$K_DTYPE_T;

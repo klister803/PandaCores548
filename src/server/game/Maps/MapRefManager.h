@@ -20,7 +20,6 @@
 #define _MAPREFMANAGER
 
 #include "RefManager.h"
-#include "../SharedPtrs/SharedPtrs.h"
 
 class MapReference;
 
@@ -30,17 +29,17 @@ class MapRefManager : public RefManager<Map, Player>
         typedef LinkedListHead::Iterator< MapReference > iterator;
         typedef LinkedListHead::Iterator< MapReference const > const_iterator;
 
-        std::shared_ptr<MapReference> getFirst() { return *((std::shared_ptr<MapReference>*)&RefManager<Map, Player>::getFirst()); }
-        std::shared_ptr<const MapReference> getFirst() const { return *((std::shared_ptr<const MapReference>*)&RefManager<Map, Player>::getFirst()); }
-        std::shared_ptr<MapReference> getLast() { return *((std::shared_ptr<MapReference>*)&RefManager<Map, Player>::getLast()); }
-        std::shared_ptr<const MapReference> getLast() const { return *((std::shared_ptr<const MapReference>*)&RefManager<Map, Player>::getLast()); }
+        MapReference* getFirst() { return (MapReference*)RefManager<Map, Player>::getFirst(); }
+        MapReference const* getFirst() const { return (MapReference const*)RefManager<Map, Player>::getFirst(); }
+        MapReference* getLast() { return (MapReference*)RefManager<Map, Player>::getLast(); }
+        MapReference const* getLast() const { return (MapReference const*)RefManager<Map, Player>::getLast(); }
 
         iterator begin() { return iterator(getFirst()); }
-        iterator end() { return iterator(nullptr); }
+        iterator end() { return iterator(NULL); }
         iterator rbegin() { return iterator(getLast()); }
-        iterator rend() { return iterator(nullptr); }
+        iterator rend() { return iterator(NULL); }
         const_iterator begin() const { return const_iterator(getFirst()); }
-        const_iterator end() const  { return const_iterator(nullptr); }
+        const_iterator end() const  { return const_iterator(NULL); }
 };
 #endif
 

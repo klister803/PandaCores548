@@ -38,14 +38,14 @@ class boss_azshir_the_sleepless : public CreatureScript
 public:
     boss_azshir_the_sleepless() : CreatureScript("boss_azshir_the_sleepless") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_azshir_the_sleeplessAI (creature);
     }
 
     struct boss_azshir_the_sleeplessAI : public ScriptedAI
     {
-        boss_azshir_the_sleeplessAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_azshir_the_sleeplessAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 SoulSiphon_Timer;
         uint32 CallOftheGrave_Timer;
@@ -58,7 +58,7 @@ public:
             Terrify_Timer = 20000;
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {

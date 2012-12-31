@@ -56,7 +56,7 @@ class Grid
 
         /** an object of interested enters the grid
          */
-        template<class SPECIFIC_OBJECT> void AddWorldObject(std::shared_ptr<SPECIFIC_OBJECT> obj)
+        template<class SPECIFIC_OBJECT> void AddWorldObject(SPECIFIC_OBJECT *obj)
         {
             i_objects.template insert<SPECIFIC_OBJECT>(obj);
             ASSERT(obj->IsInGrid());
@@ -109,7 +109,7 @@ class Grid
 
         /** Inserts a container type object into the grid.
          */
-        template<class SPECIFIC_OBJECT> void AddGridObject(std::shared_ptr<SPECIFIC_OBJECT> obj)
+        template<class SPECIFIC_OBJECT> void AddGridObject(SPECIFIC_OBJECT *obj)
         {
             i_container.template insert<SPECIFIC_OBJECT>(obj);
             ASSERT(obj->IsInGrid());

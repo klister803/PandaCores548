@@ -46,14 +46,14 @@ class boss_thorim : public CreatureScript
 public:
     boss_thorim() : CreatureScript("boss_thorim") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return GetUlduarAI<boss_thorimAI>(creature);
     }
 
     struct boss_thorimAI : public BossAI
     {
-        boss_thorimAI(CreaturePtr creature) : BossAI(creature, BOSS_THORIM)
+        boss_thorimAI(Creature* creature) : BossAI(creature, BOSS_THORIM)
         {
         }
 
@@ -68,18 +68,18 @@ public:
             _EnterEvadeMode();
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY_1, SAY_SLAY_2), me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
             _JustDied();
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2), me);
             _EnterCombat();

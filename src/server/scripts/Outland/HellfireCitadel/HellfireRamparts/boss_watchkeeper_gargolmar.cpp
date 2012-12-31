@@ -58,7 +58,7 @@ class boss_watchkeeper_gargolmar : public CreatureScript
 
         struct boss_watchkeeper_gargolmarAI : public ScriptedAI
         {
-            boss_watchkeeper_gargolmarAI(CreaturePtr creature) : ScriptedAI(creature)
+            boss_watchkeeper_gargolmarAI(Creature* creature) : ScriptedAI(creature)
             {
             }
 
@@ -79,12 +79,12 @@ class boss_watchkeeper_gargolmar : public CreatureScript
                 YelledForHeal = false;
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
             }
 
-            void MoveInLineOfSight(UnitPtr who)
+            void MoveInLineOfSight(Unit* who)
             {
                 if (!me->getVictim() && me->canCreatureAttack(who))
                 {
@@ -105,12 +105,12 @@ class boss_watchkeeper_gargolmar : public CreatureScript
                 }
             }
 
-            void KilledUnit(UnitPtr /*victim*/)
+            void KilledUnit(Unit* /*victim*/)
             {
                 DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), me);
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 DoScriptText(SAY_DIE, me);
             }
@@ -132,7 +132,7 @@ class boss_watchkeeper_gargolmar : public CreatureScript
                 {
                     DoScriptText(SAY_SURGE, me);
 
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_SURGE);
 
                     Surge_Timer = 5000+rand()%8000;
@@ -164,7 +164,7 @@ class boss_watchkeeper_gargolmar : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_watchkeeper_gargolmarAI(creature);
         }

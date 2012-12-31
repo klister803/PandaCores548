@@ -67,14 +67,14 @@ class instance_dark_portal : public InstanceMapScript
 public:
     instance_dark_portal() : InstanceMapScript("instance_dark_portal", 269) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_dark_portal_InstanceMapScript(map);
     }
 
     struct instance_dark_portal_InstanceMapScript : public InstanceScript
     {
-        instance_dark_portal_InstanceMapScript(MapPtr map) : InstanceScript(map)
+        instance_dark_portal_InstanceMapScript(Map* map) : InstanceScript(map)
         {
         }
 
@@ -125,7 +125,7 @@ public:
             return false;
         }
 
-        void OnPlayerEnter(PlayerPtr player)
+        void OnPlayerEnter(Player* player)
         {
             if (GetData(TYPE_MEDIVH) == IN_PROGRESS)
                 return;
@@ -133,7 +133,7 @@ public:
             player->SendUpdateWorldState(WORLD_STATE_BM, 0);
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             if (creature->GetEntry() == C_MEDIVH)
                 MedivhGUID = creature->GetGUID();
@@ -178,11 +178,11 @@ public:
 
                     if (!mShieldPercent)
                     {
-                        if (CreaturePtr pMedivh = instance->GetCreature(MedivhGUID))
+                        if (Creature* pMedivh = instance->GetCreature(MedivhGUID))
                         {
                             if (pMedivh->isAlive())
                             {
-                                pMedivh->DealDamage(pMedivh, pMedivh->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+                                pMedivh->DealDamage(pMedivh, pMedivh->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                                 m_auiEncounter[0] = FAIL;
                                 m_auiEncounter[1] = NOT_STARTED;
                             }
@@ -209,7 +209,7 @@ public:
                         {
                             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                             {
-                                if (PlayerPtr player = itr->getSource())
+                                if (Player* player = itr->getSource())
                                 {
                                     if (player->GetQuestStatus(QUEST_OPENING_PORTAL) == QUEST_STATUS_INCOMPLETE)
                                         player->AreaExploredOrEventHappens(QUEST_OPENING_PORTAL);
@@ -260,7 +260,7 @@ public:
             return 0;
         }
 
-        CreaturePtr SummonedPortalBoss(CreaturePtr me)
+        Creature* SummonedPortalBoss(Creature* me)
         {
             uint32 entry = RiftWaves[GetRiftWaveId()].PortalBoss;
 
@@ -275,16 +275,16 @@ public:
             //normalize Z-level if we can, if rift is not at ground level.
             pos.m_positionZ = std::max(me->GetMap()->GetHeight(pos.m_positionX, pos.m_positionY, MAX_HEIGHT), me->GetMap()->GetWaterLevel(pos.m_positionX, pos.m_positionY));
 
-            if (CreaturePtr summon = me->SummonCreature(entry, pos, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000))
+            if (Creature* summon = me->SummonCreature(entry, pos, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 600000))
                 return summon;
 
             sLog->outDebug(LOG_FILTER_TSCR, "Instance Dark Portal: What just happened there? No boss, no loot, no fun...");
-            return nullptr;
+            return NULL;
         }
 
         void DoSpawnPortal()
         {
-            if (CreaturePtr pMedivh = instance->GetCreature(MedivhGUID))
+            if (Creature* pMedivh = instance->GetCreature(MedivhGUID))
             {
                 uint8 tmp = urand(0, 2);
 
@@ -295,7 +295,7 @@ public:
 
                 CurrentRiftId = tmp;
 
-                CreaturePtr temp = pMedivh->SummonCreature(C_TIME_RIFT,
+                Creature* temp = pMedivh->SummonCreature(C_TIME_RIFT,
                     PortalLocation[tmp][0], PortalLocation[tmp][1], PortalLocation[tmp][2], PortalLocation[tmp][3],
                     TEMPSUMMON_CORPSE_DESPAWN, 0);
                 if (temp)
@@ -303,7 +303,7 @@ public:
                     temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     temp->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 
-                    if (CreaturePtr pBoss = SummonedPortalBoss(temp))
+                    if (Creature* pBoss = SummonedPortalBoss(temp))
                     {
                         if (pBoss->GetEntry() == C_AEONUS)
                             pBoss->AddThreat(pMedivh, 0.0f);

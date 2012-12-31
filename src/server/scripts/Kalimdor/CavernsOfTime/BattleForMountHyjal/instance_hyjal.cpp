@@ -47,14 +47,14 @@ class instance_hyjal : public InstanceMapScript
 public:
     instance_hyjal() : InstanceMapScript("instance_hyjal", 534) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_mount_hyjal_InstanceMapScript(map);
     }
 
     struct instance_mount_hyjal_InstanceMapScript : public InstanceScript
     {
-        instance_mount_hyjal_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_mount_hyjal_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         std::string str_data;
@@ -117,7 +117,7 @@ public:
             return false;
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -141,7 +141,7 @@ public:
             }
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -196,12 +196,12 @@ public:
 
                             ArchiYell = true;
 
-                            CreaturePtr creature = instance->GetCreature(Azgalor);
+                            Creature* creature = instance->GetCreature(Azgalor);
                             if (creature)
                             {
-                                CreaturePtr unit = creature->SummonCreature(21987, creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000);
+                                Creature* unit = creature->SummonCreature(21987, creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 10000);
 
-                                MapPtr map = creature->GetMap();
+                                Map* map = creature->GetMap();
                                 if (map->IsDungeon() && unit)
                                 {
                                     unit->SetVisible(false);

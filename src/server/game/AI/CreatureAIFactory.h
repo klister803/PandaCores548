@@ -35,14 +35,14 @@ struct CreatureAIFactory : public SelectableAI
 
     CreatureAI* Create(void*) const;
 
-    int Permit(constCreaturePtr c) const { return REAL_AI::Permissible(c); }
+    int Permit(const Creature* c) const { return REAL_AI::Permissible(c); }
 };
 
 template<class REAL_AI>
 inline CreatureAI*
 CreatureAIFactory<REAL_AI>::Create(void* data) const
 {
-    CreaturePtr creature = *((CreaturePtr*)data);
+    Creature* creature = reinterpret_cast<Creature*>(data);
     return (new REAL_AI(creature));
 }
 
@@ -63,14 +63,14 @@ struct GameObjectAIFactory : public SelectableGameObjectAI
 
     GameObjectAI* Create(void*) const;
 
-    int Permit(constGameObjectPtr g) const { return REAL_GO_AI::Permissible(g); }
+    int Permit(const GameObject* g) const { return REAL_GO_AI::Permissible(g); }
 };
 
 template<class REAL_GO_AI>
 inline GameObjectAI*
 GameObjectAIFactory<REAL_GO_AI>::Create(void* data) const
 {
-    GameObjectPtr go = *((GameObjectPtr*)data);
+    GameObject* go = reinterpret_cast<GameObject*>(data);
     return (new REAL_GO_AI(go));
 }
 

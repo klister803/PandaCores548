@@ -36,14 +36,14 @@ class boss_ebonroc : public CreatureScript
 public:
     boss_ebonroc() : CreatureScript("boss_ebonroc") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_ebonrocAI (creature);
     }
 
     struct boss_ebonrocAI : public ScriptedAI
     {
-        boss_ebonrocAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_ebonrocAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 ShadowFlame_Timer;
         uint32 WingBuffet_Timer;
@@ -58,7 +58,7 @@ public:
             Heal_Timer = 1000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoZoneInCombat();
         }

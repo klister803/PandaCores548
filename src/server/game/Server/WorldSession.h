@@ -268,12 +268,12 @@ class WorldSession
 
         AccountTypes GetSecurity() const { return _security; }
         uint32 GetAccountId() const { return _accountId; }
-        PlayerPtr GetPlayer() const { return _player; }
+        Player* GetPlayer() const { return _player; }
         std::string GetPlayerName(bool simple = true) const;
         uint32 GetGuidLow() const;
         void SetSecurity(AccountTypes security) { _security = security; }
         std::string const& GetRemoteAddress() { return m_Address; }
-        void SetPlayer(PlayerPtr player);
+        void SetPlayer(Player* player);
         uint8 Expansion() const { return m_expansion; }
 
         void InitWarden(BigNumber* k, std::string os);
@@ -314,9 +314,9 @@ class WorldSession
         void SendShowBank(uint64 guid);
         void SendTabardVendorActivate(uint64 guid);
         void SendSpiritResurrect();
-        void SendBindPoint(CreaturePtr npc);
+        void SendBindPoint(Creature* npc);
 
-        void SendAttackStop(constUnitPtr enemy);
+        void SendAttackStop(Unit const* enemy);
 
         void SendBattleGroundList(uint64 guid, BattlegroundTypeId bgTypeId);
 
@@ -358,7 +358,7 @@ class WorldSession
         //used with item_page table
         bool SendItemInfo(uint32 itemid, WorldPacket data);
         //auction
-        void SendAuctionHello(uint64 guid, CreaturePtr unit);
+        void SendAuctionHello(uint64 guid, Creature* unit);
         void SendAuctionCommandResult(AuctionEntry* auction, uint32 Action, uint32 ErrorCode, uint32 bidError = 0);
         void SendAuctionBidderNotification(uint32 location, uint32 auctionId, uint64 bidder, uint32 bidSum, uint32 diff, uint32 item_template);
         void SendAuctionOwnerNotification(AuctionEntry* auction);
@@ -370,9 +370,9 @@ class WorldSession
 
         //Taxi
         void SendTaxiStatus(uint64 guid);
-        void SendTaxiMenu(CreaturePtr unit);
+        void SendTaxiMenu(Creature* unit);
         void SendDoFlight(uint32 mountDisplayId, uint32 path, uint32 pathNode = 0);
-        bool SendLearnNewTaxiNode(CreaturePtr unit);
+        bool SendLearnNewTaxiNode(Creature* unit);
         void SendDiscoverNewTaxiNode(uint32 nodeid);
 
         // Guild/Arena Team
@@ -380,7 +380,7 @@ class WorldSession
         void SendNotInArenaTeamPacket(uint8 type);
         void SendPetitionShowList(uint64 guid);
 
-        void BuildPartyMemberStatsChangedPacket(PlayerPtr player, WorldPacket* data);
+        void BuildPartyMemberStatsChangedPacket(Player* player, WorldPacket* data);
 
         void DoLootRelease(uint64 lguid);
 
@@ -394,7 +394,7 @@ class WorldSession
 
         uint32 GetLatency() const { return m_latency; }
         void SetLatency(uint32 latency) { m_latency = latency; }
-        uint32 getDialogStatus(PlayerPtr player, ObjectPtr questgiver, uint32 defstatus);
+        uint32 getDialogStatus(Player* player, Object* questgiver, uint32 defstatus);
 
         time_t m_timeOutTime;
         void UpdateTimeOutTime(uint32 diff)
@@ -789,7 +789,7 @@ class WorldSession
         //Pet
         void HandlePetAction(WorldPacket& recvData);
         void HandlePetStopAttack(WorldPacket& recvData);
-        void HandlePetActionHelper(UnitPtr pet, uint64 guid1, uint16 spellid, uint16 flag, uint64 guid2, float x, float y, float z);
+        void HandlePetActionHelper(Unit* pet, uint64 guid1, uint16 spellid, uint16 flag, uint64 guid2, float x, float y, float z);
         void HandlePetNameQuery(WorldPacket& recvData);
         void HandlePetSetAction(WorldPacket& recvData);
         void HandlePetAbandon(WorldPacket& recvData);
@@ -962,7 +962,7 @@ class WorldSession
         void SendCalendarClearPendingAction();
         void SendCalendarRaidLockout(InstanceSave const* save, bool add);
         void SendCalendarRaidLockoutUpdated(InstanceSave const* save);
-        void SendCalendarCommandResult(CalendarError err, char const* param = nullptr);
+        void SendCalendarCommandResult(CalendarError err, char const* param = NULL);
 
         // Void Storage
         void HandleVoidStorageUnlock(WorldPacket& recvData);
@@ -1020,7 +1020,7 @@ class WorldSession
 
     private:
         // private trade methods
-        void moveItems(ItemPtr myItems[], ItemPtr hisItems[]);
+        void moveItems(Item* myItems[], Item* hisItems[]);
 
         // logging helper
         void LogUnexpectedOpcode(WorldPacket* packet, const char* status, const char *reason);
@@ -1037,7 +1037,7 @@ class WorldSession
         std::set<uint32> _allowedCharsToLogin;
 
         uint32 m_GUIDLow;                                   // set loggined or recently logout player (while m_playerRecentlyLogout set)
-        PlayerPtr _player;
+        Player* _player;
         WorldSocket* m_Socket;
         std::string m_Address;
 
@@ -1048,7 +1048,7 @@ class WorldSession
         typedef std::list<AddonInfo> AddonsList;
 
         // Warden
-        Warden* _warden;                                    // Remains nullptr if Warden system is not enabled by config
+        Warden* _warden;                                    // Remains NULL if Warden system is not enabled by config
 
         time_t _logoutTime;
         bool m_inQueue;                                     // session wait in auth.queue

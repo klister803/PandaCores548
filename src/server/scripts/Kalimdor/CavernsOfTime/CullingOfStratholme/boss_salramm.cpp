@@ -60,14 +60,14 @@ class boss_salramm : public CreatureScript
 public:
     boss_salramm() : CreatureScript("boss_salramm") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_salrammAI (creature);
     }
 
     struct boss_salrammAI : public ScriptedAI
     {
-        boss_salrammAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_salrammAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             if (instance)
@@ -94,7 +94,7 @@ public:
                  instance->SetData(DATA_SALRAMM_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -118,7 +118,7 @@ public:
             //Shadow bolt timer
             if (uiShadowBoltTimer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_SHADOW_BOLT);
                 uiShadowBoltTimer = urand(8000, 12000);
             } else uiShadowBoltTimer -= diff;
@@ -127,7 +127,7 @@ public:
             if (uiStealFleshTimer <= diff)
             {
                 DoScriptText(RAND(SAY_STEAL_FLESH_1, SAY_STEAL_FLESH_2, SAY_STEAL_FLESH_3), me);
-                if (UnitPtr random_pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* random_pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(random_pTarget, SPELL_STEAL_FLESH);
                 uiStealFleshTimer = 10000;
             } else uiStealFleshTimer -= diff;
@@ -136,7 +136,7 @@ public:
             if (uiSummonGhoulsTimer <= diff)
             {
                 DoScriptText(RAND(SAY_SUMMON_GHOULS_1, SAY_SUMMON_GHOULS_2), me);
-                if (UnitPtr random_pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* random_pTarget = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(random_pTarget, SPELL_SUMMON_GHOULS);
                 uiSummonGhoulsTimer = 10000;
             } else uiSummonGhoulsTimer -= diff;
@@ -144,7 +144,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -152,7 +152,7 @@ public:
                 instance->SetData(DATA_SALRAMM_EVENT, DONE);
         }
 
-        void KilledUnit(UnitPtr victim)
+        void KilledUnit(Unit* victim)
         {
             if (victim == me)
                 return;

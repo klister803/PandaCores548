@@ -25,66 +25,50 @@
 //============================================
 class LinkedListHead;
 
-class LinkedListElement : public std::enable_shared_from_this<LinkedListElement>
+class LinkedListElement
 {
     private:
         friend class LinkedListHead;
 
-        std::shared_ptr<LinkedListElement> iNext;
-        std::shared_ptr<LinkedListElement> iPrev;
+        LinkedListElement* iNext;
+        LinkedListElement* iPrev;
     public:
-        LinkedListElement(): iNext(nullptr), iPrev(nullptr) {}
+        LinkedListElement(): iNext(NULL), iPrev(NULL) {}
         ~LinkedListElement() { delink(); }
 
-        bool hasNext() const { return(iNext && iNext->iNext != nullptr); }
-        bool hasPrev() const { return(iPrev && iPrev->iPrev != nullptr); }
-        bool isInList() const { return(iNext != nullptr && iPrev != nullptr); }
+        bool hasNext() const { return(iNext && iNext->iNext != NULL); }
+        bool hasPrev() const { return(iPrev && iPrev->iPrev != NULL); }
+        bool isInList() const { return(iNext != NULL && iPrev != NULL); }
 
-        std::shared_ptr<LinkedListElement> next()       { return hasNext() ? iNext : nullptr; }
-        std::shared_ptr<const LinkedListElement> next() const { return hasNext() ? iNext : nullptr; }
-        std::shared_ptr<LinkedListElement> prev()       { return hasPrev() ? iPrev : nullptr; }
-        std::shared_ptr<const LinkedListElement> prev() const { return hasPrev() ? iPrev : nullptr; }
+        LinkedListElement      * next()       { return hasNext() ? iNext : NULL; }
+        LinkedListElement const* next() const { return hasNext() ? iNext : NULL; }
+        LinkedListElement      * prev()       { return hasPrev() ? iPrev : NULL; }
+        LinkedListElement const* prev() const { return hasPrev() ? iPrev : NULL; }
 
-        std::shared_ptr<LinkedListElement> nocheck_next()       { return iNext; }
-        std::shared_ptr<const LinkedListElement> nocheck_next() const { return iNext; }
-        std::shared_ptr<LinkedListElement> nocheck_prev()       { return iPrev; }
-        std::shared_ptr<const LinkedListElement> nocheck_prev() const { return iPrev; }
+        LinkedListElement      * nocheck_next()       { return iNext; }
+        LinkedListElement const* nocheck_next() const { return iNext; }
+        LinkedListElement      * nocheck_prev()       { return iPrev; }
+        LinkedListElement const* nocheck_prev() const { return iPrev; }
 
         void delink()
         {
             if (isInList())
             {
-                iNext->iPrev = iPrev; iPrev->iNext = iNext; iNext = nullptr; iPrev = nullptr;
+                iNext->iPrev = iPrev; iPrev->iNext = iNext; iNext = NULL; iPrev = NULL;
             }
         }
 
-        void insertBefore(std::shared_ptr<LinkedListElement> pElem)
+        void insertBefore(LinkedListElement* pElem)
         {
-            /*if (pElem->iNext.use_count() == 0)
-                pElem->iNext = std::shared_ptr<LinkedListElement>(new LinkedListElement());
-            if (pElem->iPrev.use_count() == 0)
-                pElem->iPrev = std::shared_ptr<LinkedListElement>(new LinkedListElement());
-            if (iPrev.use_count() == 0)
-                iPrev = std::shared_ptr<LinkedListElement>(new LinkedListElement());
-            if (iPrev->iNext.use_count() == 0)
-                iPrev->iNext = std::shared_ptr<LinkedListElement>(new LinkedListElement());*/
-            pElem->iNext = shared_from_this();
+            pElem->iNext = this;
             pElem->iPrev = iPrev;
             iPrev->iNext = pElem;
             iPrev = pElem;
         }
 
-        void insertAfter(std::shared_ptr<LinkedListElement> pElem)
+        void insertAfter(LinkedListElement* pElem)
         {
-            /*if (pElem->iNext.use_count() == 0)
-                pElem->iNext = std::shared_ptr<LinkedListElement>(new LinkedListElement());
-            if (pElem->iPrev.use_count() == 0)
-                pElem->iPrev = std::shared_ptr<LinkedListElement>(new LinkedListElement());
-            if (iNext.use_count() == 0)
-                iNext = std::shared_ptr<LinkedListElement>(new LinkedListElement());
-            if (iNext->iPrev.use_count() == 0)
-                iNext->iPrev = std::shared_ptr<LinkedListElement>(new LinkedListElement());*/
-            pElem->iPrev = shared_from_this();
+            pElem->iPrev = this;
             pElem->iNext = iNext;
             iNext->iPrev = pElem;
             iNext = pElem;
@@ -96,36 +80,34 @@ class LinkedListElement : public std::enable_shared_from_this<LinkedListElement>
 class LinkedListHead
 {
     private:
-        std::shared_ptr<LinkedListElement> iFirst;
-        std::shared_ptr<LinkedListElement> iLast;
+        LinkedListElement iFirst;
+        LinkedListElement iLast;
         uint32 iSize;
     public:
         LinkedListHead(): iSize(0)
         {
-            iFirst = std::shared_ptr<LinkedListElement>(new LinkedListElement());
-            iLast = std::shared_ptr<LinkedListElement>(new LinkedListElement());
             // create empty list
 
-            iFirst->iNext = iLast;
-            iLast->iPrev = iFirst;
+            iFirst.iNext = &iLast;
+            iLast.iPrev = &iFirst;
         }
 
-        bool isEmpty() const { return(!iFirst->iNext->isInList()); }
+        bool isEmpty() const { return(!iFirst.iNext->isInList()); }
 
-        std::shared_ptr<LinkedListElement> getFirst()       { return(isEmpty() ? nullptr : iFirst->iNext); }
-        std::shared_ptr<const LinkedListElement> getFirst() const { return(isEmpty() ? nullptr : iFirst->iNext); }
+        LinkedListElement      * getFirst()       { return(isEmpty() ? NULL : iFirst.iNext); }
+        LinkedListElement const* getFirst() const { return(isEmpty() ? NULL : iFirst.iNext); }
 
-        std::shared_ptr<LinkedListElement> getLast() { return(isEmpty() ? nullptr : iLast->iPrev); }
-        std::shared_ptr<const LinkedListElement> getLast() const  { return(isEmpty() ? nullptr : iLast->iPrev); }
+        LinkedListElement      * getLast() { return(isEmpty() ? NULL : iLast.iPrev); }
+        LinkedListElement const* getLast() const  { return(isEmpty() ? NULL : iLast.iPrev); }
 
-        void insertFirst(std::shared_ptr<LinkedListElement> pElem)
+        void insertFirst(LinkedListElement* pElem)
         {
-            iFirst->insertAfter(pElem);
+            iFirst.insertAfter(pElem);
         }
 
-        void insertLast(std::shared_ptr<LinkedListElement> pElem)
+        void insertLast(LinkedListElement* pElem)
         {
-            iLast->insertBefore(pElem);
+            iLast.insertBefore(pElem);
         }
 
         uint32 getSize() const
@@ -133,7 +115,7 @@ class LinkedListHead
             if (!iSize)
             {
                 uint32 result = 0;
-                std::shared_ptr<const LinkedListElement> e = getFirst();
+                LinkedListElement const* e = getFirst();
                 while (e)
                 {
                     ++result;
@@ -160,8 +142,6 @@ class LinkedListHead
                 typedef _Ty const*                          const_pointer;
                 typedef _Ty&                                reference;
                 typedef _Ty const &                         const_reference;
-                typedef std::shared_ptr<_Ty>                value_ptr;
-                typedef std::shared_ptr<const _Ty>          const_value_ptr;
 
                 Iterator() : _Ptr(0)
                 {                                           // construct with null node pointer
@@ -171,19 +151,15 @@ class LinkedListHead
                 {                                           // construct with node pointer _Pnode
                 }
 
-                Iterator(value_ptr _Pnode) : _Ptr(_Pnode)
-                {                                           // construct with node pointer _Pnode
-                }
-
                 Iterator& operator=(Iterator const &_Right)
                 {
                     _Ptr = _Right._Ptr;
                     return *this;
                 }
 
-                Iterator& operator=(const_value_ptr const &_Right)
+                Iterator& operator=(const_pointer const &_Right)
                 {
-                    _Ptr = NO_CONST(_Ty,_Right);
+                    _Ptr = pointer(_Right);
                     return *this;
                 }
 
@@ -192,7 +168,7 @@ class LinkedListHead
                     return *_Ptr;
                 }
 
-                value_ptr operator->()
+                pointer operator->()
                 {                                           // return pointer to class object
                     return _Ptr;
                 }
@@ -243,33 +219,23 @@ class LinkedListHead
                     return (!(*this == _Right));
                 }
 
-                bool operator==(reference _Right) const
+                bool operator==(const_reference _Right) const
                 {                                           // test for reference equality
-                    return (_Ptr.get() == &_Right);
+                    return (_Ptr == &_Right);
                 }
 
-                bool operator!=(reference _Right) const
+                bool operator!=(const_reference _Right) const
                 {                                           // test for reference equality
-                    return (_Ptr.get() != &_Right);
+                    return (_Ptr != &_Right);
                 }
 
-                /*bool operator==(const_value_ptr _Right) const
-                {                                           // test for shared_ptr equality
-                    return (_Ptr == _Right);
-                }
-
-                bool operator!=(const_value_ptr _Right) const
-                {                                           // test for shared_ptr equality
-                    return (_Ptr != _Right);
-                }*/
-
-                value_ptr _Mynode()
+                pointer _Mynode()
                 {                                           // return node pointer
                     return (_Ptr);
                 }
 
             protected:
-                value_ptr _Ptr;                               // pointer to node
+                pointer _Ptr;                               // pointer to node
         };
 
         typedef Iterator<LinkedListElement> iterator;

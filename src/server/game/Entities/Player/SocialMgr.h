@@ -114,7 +114,7 @@ class PlayerSocial
         void RemoveFromSocialList(uint32 friend_guid, bool ignore);
         void SetFriendNote(uint32 friendGuid, std::string note);
         // Packet send's
-        void SendSocialList(PlayerPtr player);
+        void SendSocialList(Player* player);
         // Misc
         bool HasFriend(uint32 friend_guid);
         bool HasIgnore(uint32 ignore_guid);
@@ -138,11 +138,11 @@ class SocialMgr
         // Misc
         void RemovePlayerSocial(uint32 guid) { m_socialMap.erase(guid); }
 
-        void GetFriendInfo(PlayerPtr player, uint32 friendGUID, FriendInfo &friendInfo);
+        void GetFriendInfo(Player* player, uint32 friendGUID, FriendInfo &friendInfo);
         // Packet management
         void MakeFriendStatusPacket(FriendsResult result, uint32 friend_guid, WorldPacket* data);
-        void SendFriendStatus(PlayerPtr player, FriendsResult result, uint32 friend_guid, bool broadcast);
-        void BroadcastToFriendListers(PlayerPtr player, WorldPacket* packet);
+        void SendFriendStatus(Player* player, FriendsResult result, uint32 friend_guid, bool broadcast);
+        void BroadcastToFriendListers(Player* player, WorldPacket* packet);
         // Loading
         PlayerSocial *LoadFromDB(PreparedQueryResult result, uint32 guid);
     private:

@@ -37,18 +37,18 @@ public:
     {
         static ChatCommand gmCommandTable[] =
         {
-            { "chat",           SEC_MODERATOR,      false, &HandleGMChatCommand,              "", nullptr },
-            { "fly",            SEC_ADMINISTRATOR,  false, &HandleGMFlyCommand,               "", nullptr },
-            { "ingame",         SEC_PLAYER,         true,  &HandleGMListIngameCommand,        "", nullptr },
-            { "list",           SEC_ADMINISTRATOR,  true,  &HandleGMListFullCommand,          "", nullptr },
-            { "visible",        SEC_MODERATOR,      false, &HandleGMVisibleCommand,           "", nullptr },
-            { "",               SEC_MODERATOR,      false, &HandleGMCommand,                  "", nullptr },
-            { nullptr,             0,                  false, nullptr,                              "", nullptr }
+            { "chat",           SEC_MODERATOR,      false, &HandleGMChatCommand,              "", NULL },
+            { "fly",            SEC_ADMINISTRATOR,  false, &HandleGMFlyCommand,               "", NULL },
+            { "ingame",         SEC_PLAYER,         true,  &HandleGMListIngameCommand,        "", NULL },
+            { "list",           SEC_ADMINISTRATOR,  true,  &HandleGMListFullCommand,          "", NULL },
+            { "visible",        SEC_MODERATOR,      false, &HandleGMVisibleCommand,           "", NULL },
+            { "",               SEC_MODERATOR,      false, &HandleGMCommand,                  "", NULL },
+            { NULL,             0,                  false, NULL,                              "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "gm",             SEC_MODERATOR,      false, nullptr,                     "", gmCommandTable },
-            { nullptr,             0,                  false, nullptr,                               "", nullptr }
+            { "gm",             SEC_MODERATOR,      false, NULL,                     "", gmCommandTable },
+            { NULL,             0,                  false, NULL,                               "", NULL }
         };
         return commandTable;
     }
@@ -92,7 +92,7 @@ public:
         if (!*args)
             return false;
 
-        PlayerPtr target =  handler->getSelectedPlayer();
+        Player* target =  handler->getSelectedPlayer();
         if (!target)
             target = handler->GetSession()->GetPlayer();
 
@@ -195,7 +195,7 @@ public:
 
         const uint32 VISUAL_AURA = 37800;
         std::string param = (char*)args;
-        PlayerPtr player = handler->GetSession()->GetPlayer();
+        Player* player = handler->GetSession()->GetPlayer();
 
         if (param == "on")
         {

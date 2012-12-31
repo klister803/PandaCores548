@@ -50,7 +50,7 @@ class npc_apothecary_hanes : public CreatureScript
 public:
     npc_apothecary_hanes() : CreatureScript("npc_apothecary_hanes") { }
 
-    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_TRAIL_OF_FIRE)
         {
@@ -70,7 +70,7 @@ public:
 
     struct npc_Apothecary_HanesAI : public npc_escortAI
     {
-        npc_Apothecary_HanesAI(CreaturePtr creature) : npc_escortAI(creature){}
+        npc_Apothecary_HanesAI(Creature* creature) : npc_escortAI(creature){}
         uint32 PotTimer;
 
         void Reset()
@@ -79,9 +79,9 @@ public:
             PotTimer = 10000; //10 sec cooldown on potion
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
-            if (PlayerPtr player = GetPlayerForEscort())
+            if (Player* player = GetPlayerForEscort())
                 player->FailQuest(QUEST_TRAIL_OF_FIRE);
         }
 
@@ -101,7 +101,7 @@ public:
 
         void WaypointReached(uint32 waypointId)
         {
-            PlayerPtr player = GetPlayerForEscort();
+            Player* player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -116,22 +116,22 @@ public:
                     me->DespawnOrUnsummon();
                     break;
                 case 5:
-                    if (UnitPtr Trigger = me->FindNearestCreature(NPC_HANES_FIRE_TRIGGER, 10.0f))
+                    if (Unit* Trigger = me->FindNearestCreature(NPC_HANES_FIRE_TRIGGER, 10.0f))
                         Trigger->CastSpell(Trigger, SPELL_COSMETIC_LOW_POLY_FIRE, false);
                     SetRun(false);
                     break;
                 case 6:
-                    if (UnitPtr Trigger = me->FindNearestCreature(NPC_HANES_FIRE_TRIGGER, 10.0f))
+                    if (Unit* Trigger = me->FindNearestCreature(NPC_HANES_FIRE_TRIGGER, 10.0f))
                         Trigger->CastSpell(Trigger, SPELL_COSMETIC_LOW_POLY_FIRE, false);
                     SetRun(true);
                     break;
                 case 8:
-                    if (UnitPtr Trigger = me->FindNearestCreature(NPC_HANES_FIRE_TRIGGER, 10.0f))
+                    if (Unit* Trigger = me->FindNearestCreature(NPC_HANES_FIRE_TRIGGER, 10.0f))
                         Trigger->CastSpell(Trigger, SPELL_COSMETIC_LOW_POLY_FIRE, false);
                     SetRun(false);
                     break;
                 case 9:
-                    if (UnitPtr Trigger = me->FindNearestCreature(NPC_HANES_FIRE_TRIGGER, 10.0f))
+                    if (Unit* Trigger = me->FindNearestCreature(NPC_HANES_FIRE_TRIGGER, 10.0f))
                         Trigger->CastSpell(Trigger, SPELL_COSMETIC_LOW_POLY_FIRE, false);
                     break;
                 case 10:
@@ -141,7 +141,7 @@ public:
                     SetRun(false);
                     break;
                 case 14:
-                    if (UnitPtr Trigger = me->FindNearestCreature(NPC_HANES_FIRE_TRIGGER, 10.0f))
+                    if (Unit* Trigger = me->FindNearestCreature(NPC_HANES_FIRE_TRIGGER, 10.0f))
                         Trigger->CastSpell(Trigger, SPELL_COSMETIC_LOW_POLY_FIRE, false);
                     SetRun(true);
                     break;
@@ -149,7 +149,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_Apothecary_HanesAI(creature);
     }
@@ -171,14 +171,14 @@ public:
 
     struct npc_plaguehound_trackerAI : public npc_escortAI
     {
-        npc_plaguehound_trackerAI(CreaturePtr creature) : npc_escortAI(creature) { }
+        npc_plaguehound_trackerAI(Creature* creature) : npc_escortAI(creature) { }
 
         void Reset()
         {
             uint64 summonerGUID = 0;
 
             if (me->isSummon())
-                if (UnitPtr summoner = me->ToTempSummon()->GetSummoner())
+                if (Unit* summoner = me->ToTempSummon()->GetSummoner())
                     if (summoner->GetTypeId() == TYPEID_PLAYER)
                         summonerGUID = summoner->GetGUID();
 
@@ -198,7 +198,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_plaguehound_trackerAI(creature);
     }
@@ -227,7 +227,7 @@ class npc_razael_and_lyana : public CreatureScript
 public:
     npc_razael_and_lyana() : CreatureScript("npc_razael_and_lyana") { }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -256,7 +256,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -296,7 +296,7 @@ class npc_mcgoyver : public CreatureScript
 public:
     npc_mcgoyver() : CreatureScript("npc_mcgoyver") { }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (player->GetQuestStatus(QUEST_WE_CAN_REBUILD_IT) == QUEST_STATUS_INCOMPLETE)
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM_MG_I, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
@@ -305,7 +305,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -350,7 +350,7 @@ class npc_daegarn : public CreatureScript
 public:
     npc_daegarn() : CreatureScript("npc_daegarn") { }
 
-    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, const Quest* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest)
     {
         if (quest->GetQuestId() == QUEST_DEFEAT_AT_RING)
         {
@@ -364,7 +364,7 @@ public:
     // TODO: make prisoners help (unclear if summoned or using npc's from surrounding cages (summon inside small cages?))
     struct npc_daegarnAI : public ScriptedAI
     {
-        npc_daegarnAI(CreaturePtr creature) : ScriptedAI(creature) { }
+        npc_daegarnAI(Creature* creature) : ScriptedAI(creature) { }
 
         bool bEventInProgress;
         uint64 uiPlayerGUID;
@@ -385,9 +385,9 @@ public:
             SummonGladiator(NPC_FIRJUS);
         }
 
-        void JustSummoned(CreaturePtr summon)
+        void JustSummoned(Creature* summon)
         {
-            if (PlayerPtr player = me->GetPlayer(TO_WORLDOBJECT(me), uiPlayerGUID))
+            if (Player* player = me->GetPlayer(*me, uiPlayerGUID))
             {
                 if (player->isAlive())
                 {
@@ -406,7 +406,7 @@ public:
             me->SummonCreature(uiEntry, afSummon[0], afSummon[1], afSummon[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 30*IN_MILLISECONDS);
         }
 
-        void SummonedCreatureDies(CreaturePtr summoned, UnitPtr /*killer*/)
+        void SummonedCreatureDies(Creature* summoned, Unit* /*killer*/)
         {
             uint32 uiEntry = 0;
 
@@ -423,7 +423,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_daegarnAI(creature);
     }

@@ -23,9 +23,8 @@
 #include <G3D/Vector3.h>
 #include <G3D/AABox.h>
 #include <G3D/Ray.h>
-#include <memory>
+
 #include "Define.h"
-#include "../SharedPtrs/SharedPtrs.h"
 
 namespace VMAP
 {
@@ -46,8 +45,8 @@ class GameObjectModel /*, public Intersectable*/
     float iScale;
     VMAP::WorldModel* iModel;
 
-    GameObjectModel() : phasemask(0), iModel(nullptr) {}
-    bool initialize(constGameObjectPtr go, const GameObjectDisplayInfoEntry& info);
+    GameObjectModel() : phasemask(0), iModel(NULL) {}
+    bool initialize(const GameObject& go, const GameObjectDisplayInfoEntry& info);
 
 public:
     std::string name;
@@ -66,7 +65,7 @@ public:
 
     bool intersectRay(const G3D::Ray& Ray, float& MaxDist, bool StopAtFirstHit, uint32 ph_mask) const;
 
-    static GameObjectModel* Create(constGameObjectPtr  go);
+    static GameObjectModel* Create(const GameObject& go);
 };
 
 #endif // _GAMEOBJECT_MODEL_H

@@ -39,14 +39,14 @@ class boss_shadow_hunter_voshgajin : public CreatureScript
 public:
     boss_shadow_hunter_voshgajin() : CreatureScript("boss_shadow_hunter_voshgajin") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_shadowvoshAI(creature);
     }
 
     struct boss_shadowvoshAI : public BossAI
     {
-        boss_shadowvoshAI(CreaturePtr creature) : BossAI(creature, DATA_SHADOW_HUNTER_VOSHGAJIN) {}
+        boss_shadowvoshAI(Creature* creature) : BossAI(creature, DATA_SHADOW_HUNTER_VOSHGAJIN) {}
 
         void Reset()
         {
@@ -54,7 +54,7 @@ public:
             //DoCast(me, SPELL_ICEARMOR, true);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_CURSE_OF_BLOOD, 2 * IN_MILLISECONDS);
@@ -62,7 +62,7 @@ public:
             events.ScheduleEvent(EVENT_CLEAVE, 14 * IN_MILLISECONDS);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             _JustDied();
         }
@@ -86,7 +86,7 @@ public:
                         events.ScheduleEvent(EVENT_CURSE_OF_BLOOD, 45 * IN_MILLISECONDS);
                         break;
                     case EVENT_HEX:
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                             DoCast(target, SPELL_HEX);
                         events.ScheduleEvent(EVENT_HEX, 15 * IN_MILLISECONDS);
                         break;

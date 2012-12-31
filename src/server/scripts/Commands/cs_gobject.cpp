@@ -38,43 +38,43 @@ public:
     {
         static ChatCommand gobjectAddCommandTable[] =
         {
-            { "temp",           SEC_GAMEMASTER,     false, &HandleGameObjectAddTempCommand,   "", nullptr },
-            { "",               SEC_GAMEMASTER,     false, &HandleGameObjectAddCommand,       "", nullptr },
-            { nullptr,             0,                  false, nullptr,                              "", nullptr }
+            { "temp",           SEC_GAMEMASTER,     false, &HandleGameObjectAddTempCommand,   "", NULL },
+            { "",               SEC_GAMEMASTER,     false, &HandleGameObjectAddCommand,       "", NULL },
+            { NULL,             0,                  false, NULL,                              "", NULL }
         };
         static ChatCommand gobjectSetCommandTable[] =
         {
-            { "phase",          SEC_GAMEMASTER,     false, &HandleGameObjectSetPhaseCommand,  "", nullptr },
-            { "state",          SEC_GAMEMASTER,     false, &HandleGameObjectSetStateCommand,  "", nullptr },
-            { nullptr,             0,                  false, nullptr,                              "", nullptr }
+            { "phase",          SEC_GAMEMASTER,     false, &HandleGameObjectSetPhaseCommand,  "", NULL },
+            { "state",          SEC_GAMEMASTER,     false, &HandleGameObjectSetStateCommand,  "", NULL },
+            { NULL,             0,                  false, NULL,                              "", NULL }
         };
         static ChatCommand gobjectCommandTable[] =
         {
-            { "activate",       SEC_GAMEMASTER,     false, &HandleGameObjectActivateCommand,  "", nullptr },
-            { "map_activate",   SEC_GAMEMASTER,     false, &HandleGameObjectActivateMapCommand, "", nullptr },
-            { "delete",         SEC_GAMEMASTER,     false, &HandleGameObjectDeleteCommand,    "", nullptr },
-            { "info",           SEC_GAMEMASTER,     false, &HandleGameObjectInfoCommand,      "", nullptr },
-            { "move",           SEC_GAMEMASTER,     false, &HandleGameObjectMoveCommand,      "", nullptr },
-            { "near",           SEC_GAMEMASTER,     false, &HandleGameObjectNearCommand,      "", nullptr },
-            { "target",         SEC_GAMEMASTER,     false, &HandleGameObjectTargetCommand,    "", nullptr },
-            { "turn",           SEC_GAMEMASTER,     false, &HandleGameObjectTurnCommand,      "", nullptr },
-            { "bindportal",     SEC_GAMEMASTER,     false, &HandleBindPortalCommand,          "", nullptr },
-            { "damage",         SEC_GAMEMASTER,     false, &HandleDamageObjectCommand,        "", nullptr },
-            { "add",            SEC_GAMEMASTER,     false, nullptr,            "", gobjectAddCommandTable },
-            { "set",            SEC_GAMEMASTER,     false, nullptr,            "", gobjectSetCommandTable },
-            { nullptr,          0,                  false, nullptr,                           "", nullptr }
+            { "activate",       SEC_GAMEMASTER,     false, &HandleGameObjectActivateCommand,  "", NULL },
+            { "map_activate",   SEC_GAMEMASTER,     false, &HandleGameObjectActivateMapCommand, "", NULL },
+            { "delete",         SEC_GAMEMASTER,     false, &HandleGameObjectDeleteCommand,    "", NULL },
+            { "info",           SEC_GAMEMASTER,     false, &HandleGameObjectInfoCommand,      "", NULL },
+            { "move",           SEC_GAMEMASTER,     false, &HandleGameObjectMoveCommand,      "", NULL },
+            { "near",           SEC_GAMEMASTER,     false, &HandleGameObjectNearCommand,      "", NULL },
+            { "target",         SEC_GAMEMASTER,     false, &HandleGameObjectTargetCommand,    "", NULL },
+            { "turn",           SEC_GAMEMASTER,     false, &HandleGameObjectTurnCommand,      "", NULL },
+            { "bindportal",     SEC_GAMEMASTER,     false, &HandleBindPortalCommand,          "", NULL },
+            { "damage",         SEC_GAMEMASTER,     false, &HandleDamageObjectCommand,        "", NULL },
+            { "add",            SEC_GAMEMASTER,     false, NULL,            "", gobjectAddCommandTable },
+            { "set",            SEC_GAMEMASTER,     false, NULL,            "", gobjectSetCommandTable },
+            { NULL,             0,                  false, NULL,                              "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "gobject",        SEC_GAMEMASTER,     false, nullptr,                "", gobjectCommandTable },
-            { nullptr,             0,                  false, nullptr,                               "", nullptr }
+            { "gobject",        SEC_GAMEMASTER,     false, NULL,                "", gobjectCommandTable },
+            { NULL,             0,                  false, NULL,                               "", NULL }
         };
         return commandTable;
     }
 
     static uint32 GetGuidLowFromArgsOrLastTargetedGo(ChatHandler* handler, char const* args)
     {
-        PlayerPtr player = handler->GetSession()->GetPlayer();
+        Player* player = handler->GetSession()->GetPlayer();
 
         if (*args)
         {
@@ -101,7 +101,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObjectPtr object = nullptr;
+        GameObject* object = NULL;
 
         // by DB guid
         if (GameObjectData const* goData = sObjectMgr->GetGOData(guidLow))
@@ -130,7 +130,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObjectPtr obj = nullptr;
+        GameObject* obj = NULL;
 
         // by DB guid
         if (GameObjectData const* go_data = sObjectMgr->GetGOData(guidLow))
@@ -170,7 +170,7 @@ public:
         if (!objectId)
             return false;
 
-        char* spawntimeSecs = strtok(nullptr, " ");
+        char* spawntimeSecs = strtok(NULL, " ");
 
         const GameObjectTemplate* objectInfo = sObjectMgr->GetGameObjectTemplate(objectId);
 
@@ -190,18 +190,21 @@ public:
             return false;
         }
 
-        PlayerPtr player = handler->GetSession()->GetPlayer();
+        Player* player = handler->GetSession()->GetPlayer();
         float x = float(player->GetPositionX());
         float y = float(player->GetPositionY());
         float z = float(player->GetPositionZ());
         float o = float(player->GetOrientation());
-        MapPtr map = player->GetMap();
+        Map* map = player->GetMap();
 
-        GameObjectPtr object (new GameObject);
+        GameObject* object = new GameObject;
         uint32 guidLow = sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT);
 
         if (!object->Create(guidLow, objectInfo->entry, map, player->GetPhaseMgr().GetPhaseMaskForSpawn(), x, y, z, o, 0.0f, 0.0f, 0.0f, 0.0f, 0, GO_STATE_READY))
+        {
+            delete object;
             return false;
+        }
 
         if (spawntimeSecs)
         {
@@ -214,7 +217,10 @@ public:
 
         // this will generate a new guid if the object is in an instance
         if (!object->LoadGameObjectFromDB(guidLow, map))
+        {
+            delete object;
             return false;
+        }
 
         // TODO: is it really necessary to add both the real and DB table guid here ?
         sObjectMgr->AddGameobjectToGrid(guidLow, sObjectMgr->GetGOData(guidLow));
@@ -237,9 +243,9 @@ public:
         if (!id)
             return false;
 
-        PlayerPtr player = handler->GetSession()->GetPlayer();
+        Player* player = handler->GetSession()->GetPlayer();
 
-        char* spawntime = strtok(nullptr, " ");
+        char* spawntime = strtok(NULL, " ");
         uint32 spawntm = 300;
 
         if (spawntime)
@@ -262,7 +268,7 @@ public:
 
     static bool HandleGameObjectTargetCommand(ChatHandler* handler, char const* args)
     {
-        PlayerPtr player = handler->GetSession()->GetPlayer();
+        Player* player = handler->GetSession()->GetPlayer();
         QueryResult result;
         GameEventMgr::ActiveEvents const& activeEventsList = sGameEventMgr->GetActiveEventList();
 
@@ -359,14 +365,14 @@ public:
             return false;
         }
 
-        GameObjectPtr target = handler->GetSession()->GetPlayer()->GetMap()->GetGameObject(MAKE_NEW_GUID(guidLow, id, HIGHGUID_GAMEOBJECT));
+        GameObject* target = handler->GetSession()->GetPlayer()->GetMap()->GetGameObject(MAKE_NEW_GUID(guidLow, id, HIGHGUID_GAMEOBJECT));
 
         handler->PSendSysMessage(LANG_GAMEOBJECT_DETAIL, guidLow, objectInfo->name.c_str(), guidLow, id, x, y, z, mapId, o, phase);
         player->SetLastTargetedGO(guidLow);
 
         if (target)
         {
-            int32 curRespawnDelay = int32(target->GetRespawnTimeEx() - time(nullptr));
+            int32 curRespawnDelay = int32(target->GetRespawnTimeEx() - time(NULL));
             if (curRespawnDelay < 0)
                 curRespawnDelay = 0;
 
@@ -386,7 +392,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObjectPtr object = nullptr;
+        GameObject* object = NULL;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -402,7 +408,7 @@ public:
         uint64 ownerGuid = object->GetOwnerGUID();
         if (ownerGuid)
         {
-            UnitPtr owner = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(handler->GetSession()->GetPlayer()), ownerGuid);
+            Unit* owner = ObjectAccessor::GetUnit(*handler->GetSession()->GetPlayer(), ownerGuid);
             if (!owner || !IS_PLAYER_GUID(ownerGuid))
             {
                 handler->PSendSysMessage(LANG_COMMAND_DELOBJREFERCREATURE, GUID_LOPART(ownerGuid), object->GetGUIDLow());
@@ -430,7 +436,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObjectPtr object = nullptr;
+        GameObject* object = NULL;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -443,14 +449,14 @@ public:
             return false;
         }
 
-        char* orientation = strtok(nullptr, " ");
+        char* orientation = strtok(NULL, " ");
         float o;
 
         if (orientation)
             o = (float)atof(orientation);
         else
         {
-            PlayerPtr player = handler->GetSession()->GetPlayer();
+            Player* player = handler->GetSession()->GetPlayer();
             o = player->GetOrientation();
         }
 
@@ -475,7 +481,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObjectPtr object = nullptr;
+        GameObject* object = NULL;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -488,13 +494,13 @@ public:
             return false;
         }
 
-        char* toX = strtok(nullptr, " ");
-        char* toY = strtok(nullptr, " ");
-        char* toZ = strtok(nullptr, " ");
+        char* toX = strtok(NULL, " ");
+        char* toY = strtok(NULL, " ");
+        char* toZ = strtok(NULL, " ");
 
         if (!toX)
         {
-            PlayerPtr player = handler->GetSession()->GetPlayer();
+            Player* player = handler->GetSession()->GetPlayer();
             object->Relocate(player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), object->GetOrientation());
             object->DestroyForNearbyPlayers();
             object->UpdateObjectVisibility();
@@ -536,7 +542,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObjectPtr object = nullptr;
+        GameObject* object = NULL;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
@@ -549,7 +555,7 @@ public:
             return false;
         }
 
-        char* phase = strtok (nullptr, " ");
+        char* phase = strtok (NULL, " ");
         uint32 phaseMask = phase ? atoi(phase) : 0;
         if (phaseMask == 0)
         {
@@ -568,7 +574,7 @@ public:
         float distance = (!*args) ? 10.0f : (float)(atof(args));
         uint32 count = 0;
 
-        PlayerPtr player = handler->GetSession()->GetPlayer();
+        Player* player = handler->GetSession()->GetPlayer();
 
         PreparedStatement* stmt = WorldDatabase.GetPreparedStatement(WORLD_SEL_GAMEOBJECT_NEAREST);
         stmt->setFloat(0, player->GetPositionX());
@@ -619,7 +625,7 @@ public:
 
         if (!*args)
         {
-            if (WorldObjectPtr object = handler->getSelectedObject())
+            if (WorldObject* object = handler->getSelectedObject())
                 entry = object->GetEntry();
             else
                 entry = atoi((char*)args);
@@ -654,7 +660,7 @@ public:
         if (!guidLow)
             return false;
 
-        GameObjectPtr object = nullptr;
+        GameObject* object = NULL;
 
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))
             object = handler->GetObjectGlobalyWithGuidOrNearWithDbGuid(guidLow, gameObjectData->id);
@@ -666,7 +672,7 @@ public:
             return false;
         }
 
-        char* type = strtok(nullptr, " ");
+        char* type = strtok(NULL, " ");
         if (!type)
             return false;
 
@@ -680,7 +686,7 @@ public:
             return true;
         }
 
-        char* state = strtok(nullptr, " ");
+        char* state = strtok(NULL, " ");
         if (!state)
             return false;
 
@@ -709,7 +715,7 @@ public:
         if (!handler->GetSession())
             return true;
 
-        PlayerPtr pPlayer = handler->GetSession()->GetPlayer();
+        Player* pPlayer = handler->GetSession()->GetPlayer();
 
         if (!pPlayer)
             return true;
@@ -746,12 +752,12 @@ public:
         if (!handler->GetSession())
             return false;
 
-        PlayerPtr pPlayer = handler->GetSession()->GetPlayer();
+        Player* pPlayer = handler->GetSession()->GetPlayer();
 
         if (!pPlayer)
             return false;
 
-        GameObjectPtr object = NULL;
+        GameObject* object = NULL;
 
         // by DB guid
         if (GameObjectData const* gameObjectData = sObjectMgr->GetGOData(guidLow))

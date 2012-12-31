@@ -2,18 +2,18 @@
  * Copyright (C) 2008-2012 TrinityCore <http://www.trinitycore.org/>
  * Copyright (C) 2005-2009 MaNGOS <http://getmangos.com/>
  *
- * THIS_VEHICLE program is free software; you can redistribute it and/or modify it
+ * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 2 of the License, or (at your
  * option) any later version.
  *
- * THIS_VEHICLE program is distributed in the hope that it will be useful, but WITHOUT
+ * This program is distributed in the hope that it will be useful, but WITHOUT
  * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
  * FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
  * more details.
  *
  * You should have received a copy of the GNU General Public License along
- * with THIS_VEHICLE program. If not, see <http://www.gnu.org/licenses/>.
+ * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
 #include "Common.h"
@@ -29,9 +29,8 @@
 #include "SpellMgr.h"
 #include "SpellInfo.h"
 #include "MoveSplineInit.h"
-#include "SpellAuraEffects.h"
 
-Vehicle::Vehicle(UnitPtr unit, VehicleEntry const* vehInfo, uint32 creatureEntry) : _me(unit), _vehicleInfo(vehInfo), _usableSeatNum(0), _creatureEntry(creatureEntry)
+Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) : _me(unit), _vehicleInfo(vehInfo), _usableSeatNum(0), _creatureEntry(creatureEntry)
 {
     for (uint32 i = 0; i < MAX_VEHICLE_SEATS; ++i)
     {
@@ -55,7 +54,7 @@ Vehicle::~Vehicle()
 
 void Vehicle::Install()
 {
-    if (CreaturePtr creature = TO_CREATURE(_me))
+    if (Creature* creature = _me->ToCreature())
     {
         switch (_vehicleInfo->m_powerType)
         {
@@ -93,7 +92,7 @@ void Vehicle::Install()
     }
 
     if (GetBase()->GetTypeId() == TYPEID_UNIT)
-        sScriptMgr->OnInstall(THIS_VEHICLE);
+        sScriptMgr->OnInstall(this);
 }
 
 void Vehicle::InstallAllAccessories(bool evading)
@@ -101,7 +100,7 @@ void Vehicle::InstallAllAccessories(bool evading)
     if (GetBase()->GetTypeId() == TYPEID_PLAYER || !evading)
         RemoveAllPassengers();   // We might have aura's saved in the DB with now invalid casters - remove
 
-    VehicleAccessoryList const* accessories = sObjectMgr->GetVehicleAccessoryList(THIS_VEHICLE);
+    VehicleAccessoryList const* accessories = sObjectMgr->GetVehicleAccessoryList(this);
     if (!accessories)
         return;
 
@@ -116,7 +115,7 @@ void Vehicle::Uninstall()
     RemoveAllPassengers();
 
     if (GetBase()->GetTypeId() == TYPEID_UNIT)
-        sScriptMgr->OnUninstall(THIS_VEHICLE);
+        sScriptMgr->OnUninstall(this);
 }
 
 void Vehicle::Reset(bool evading /*= false*/)
@@ -136,12 +135,12 @@ void Vehicle::Reset(bool evading /*= false*/)
     }
 
     if (GetBase()->GetTypeId() == TYPEID_UNIT)
-        sScriptMgr->OnReset(THIS_VEHICLE);
+        sScriptMgr->OnReset(this);
 }
 
 void Vehicle::ApplyAllImmunities()
 {
-    // THIS_VEHICLE couldn't be done in DB, because some spells have MECHANIC_NONE
+    // This couldn't be done in DB, because some spells have MECHANIC_NONE
 
     // Vehicles should be immune on Knockback ...
     _me->ApplySpellImmune(0, IMMUNITY_EFFECT, SPELL_EFFECT_KNOCK_BACK, true);
@@ -179,7 +178,7 @@ void Vehicle::ApplyAllImmunities()
         case 244: // Wintergrasp
         case 510: // Isle of Conquest
             _me->SetControlled(true, UNIT_STATE_ROOT);
-            // why we need to apply THIS_VEHICLE? we can simple add immunities to slow mechanic in DB
+            // why we need to apply this? we can simple add immunities to slow mechanic in DB
             _me->ApplySpellImmune(0, IMMUNITY_STATE, SPELL_AURA_MOD_DECREASE_SPEED, true);
             break;
         default:
@@ -196,7 +195,7 @@ void Vehicle::RemoveAllPassengers()
     // We don't need to iterate over Seats
     _me->RemoveAurasByType(SPELL_AURA_CONTROL_VEHICLE);
 
-    // Following the above logic, THIS_VEHICLE assertion should NEVER fail.
+    // Following the above logic, this assertion should NEVER fail.
     // Even in 'hacky' cases, there should at least be VEHICLE_SPELL_RIDE_HARDCODED on us.
     // SeatMap::const_iterator itr;
     // for (itr = Seats.begin(); itr != Seats.end(); ++itr)
@@ -211,13 +210,13 @@ bool Vehicle::HasEmptySeat(int8 seatId) const
     return !seat->second.Passenger;
 }
 
-UnitPtr Vehicle::GetPassenger(int8 seatId) const
+Unit* Vehicle::GetPassenger(int8 seatId) const
 {
     SeatMap::const_iterator seat = Seats.find(seatId);
     if (seat == Seats.end())
-        return nullptr;
+        return NULL;
 
-    return ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(GetBase()), seat->second.Passenger);
+    return ObjectAccessor::GetUnit(*GetBase(), seat->second.Passenger);
 }
 
 int8 Vehicle::GetNextEmptySeat(int8 seatId, bool next) const
@@ -251,7 +250,7 @@ int8 Vehicle::GetNextEmptySeat(int8 seatId, bool next) const
 void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 type, uint32 summonTime)
 {
     sLog->outDebug(LOG_FILTER_VEHICLES, "Vehicle: Installing accessory entry %u on vehicle entry %u (seat:%i)", entry, GetCreatureEntry(), seatId);
-    if (UnitPtr passenger = GetPassenger(seatId))
+    if (Unit* passenger = GetPassenger(seatId))
     {
         // already installed
         if (passenger->GetEntry() == entry)
@@ -265,10 +264,10 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 typ
             }
         }
         else
-            passenger->ExitVehicle(); // THIS_VEHICLE should not happen
+            passenger->ExitVehicle(); // this should not happen
     }
 
-    if (TempSummonPtr accessory = _me->SummonCreature(entry, *_me, TempSummonType(type), summonTime))
+    if (TempSummon* accessory = _me->SummonCreature(entry, *_me, TempSummonType(type), summonTime))
     {
         if (minion)
             accessory->AddUnitTypeMask(UNIT_MASK_ACCESSORY);
@@ -279,7 +278,7 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 typ
             return;
         }
 
-        // THIS_VEHICLE cannot be checked instantly like THIS_VEHICLE
+        // this cannot be checked instantly like this
         // spellsystem is delaying everything to next update tick
         //if (!accessory->IsOnVehicle(me))
         //{
@@ -288,7 +287,7 @@ void Vehicle::InstallAccessory(uint32 entry, int8 seatId, bool minion, uint8 typ
         //}
 
         if (GetBase()->GetTypeId() == TYPEID_UNIT)
-            sScriptMgr->OnInstallAccessory(THIS_VEHICLE, accessory);
+            sScriptMgr->OnInstallAccessory(this, accessory);
     }
 }
 
@@ -305,9 +304,9 @@ bool Vehicle::CheckCustomCanEnter()
     return false;
 }
 
-bool Vehicle::AddPassenger(UnitPtr unit, int8 seatId)
+bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
 {
-    if (unit->GetVehicle() != THIS_VEHICLE)
+    if (unit->GetVehicle() != this)
         return false;
 
     SeatMap::iterator seat;
@@ -328,7 +327,7 @@ bool Vehicle::AddPassenger(UnitPtr unit, int8 seatId)
 
         if (seat->second.Passenger)
         {
-            if (UnitPtr passenger = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(GetBase()), seat->second.Passenger))
+            if (Unit* passenger = ObjectAccessor::GetUnit(*GetBase(), seat->second.Passenger))
                 passenger->ExitVehicle();
             else
                 seat->second.Passenger = 0;
@@ -378,7 +377,7 @@ bool Vehicle::AddPassenger(UnitPtr unit, int8 seatId)
         unit->SendClearTarget();                                 // SMSG_BREAK_TARGET
         unit->SetControlled(true, UNIT_STATE_ROOT);              // SMSG_FORCE_ROOT - In some cases we send SMSG_SPLINE_MOVE_ROOT here (for creatures)
                                                                  // also adds MOVEMENTFLAG_ROOT
-        Movement::MoveSplineInit init(unit);
+        Movement::MoveSplineInit init(*unit);
         init.DisableTransportPathTransformations();
         init.MoveTo(veSeat->m_attachmentOffsetX, veSeat->m_attachmentOffsetY, veSeat->m_attachmentOffsetZ);
         init.SetFacing(0.0f);
@@ -397,14 +396,14 @@ bool Vehicle::AddPassenger(UnitPtr unit, int8 seatId)
     }
 
     if (GetBase()->GetTypeId() == TYPEID_UNIT)
-        sScriptMgr->OnAddPassenger(THIS_VEHICLE, unit, seatId);
+        sScriptMgr->OnAddPassenger(this, unit, seatId);
 
     return true;
 }
 
-void Vehicle::RemovePassenger(UnitPtr unit)
+void Vehicle::RemovePassenger(Unit* unit)
 {
-    if (unit->GetVehicle() != THIS_VEHICLE)
+    if (unit->GetVehicle() != this)
         return;
 
     SeatMap::iterator seat = GetSeatIteratorForPassenger(unit);
@@ -445,7 +444,7 @@ void Vehicle::RemovePassenger(UnitPtr unit)
         _me->CastSpell(unit, VEHICLE_SPELL_PARACHUTE, true);
 
     if (GetBase()->GetTypeId() == TYPEID_UNIT)
-        sScriptMgr->OnRemovePassenger(THIS_VEHICLE, unit);
+        sScriptMgr->OnRemovePassenger(this, unit);
 }
 
 //! Must be called after m_base::Relocate
@@ -456,7 +455,7 @@ void Vehicle::RelocatePassengers()
     // not sure that absolute position calculation is correct, it must depend on vehicle pitch angle
     for (SeatMap::const_iterator itr = Seats.begin(); itr != Seats.end(); ++itr)
     {
-        if (UnitPtr passenger = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(GetBase()), itr->second.Passenger))
+        if (Unit* passenger = ObjectAccessor::GetUnit(*GetBase(), itr->second.Passenger))
         {
             ASSERT(passenger->IsInWorld());
 
@@ -494,17 +493,17 @@ void Vehicle::InitMovementInfoForBase()
         _me->AddExtraUnitMovementFlag(MOVEMENTFLAG2_FULL_SPEED_PITCHING);
 }
 
-VehicleSeatEntry const* Vehicle::GetSeatForPassenger(UnitPtr passenger)
+VehicleSeatEntry const* Vehicle::GetSeatForPassenger(Unit* passenger)
 {
     SeatMap::iterator itr;
     for (itr = Seats.begin(); itr != Seats.end(); ++itr)
         if (itr->second.Passenger == passenger->GetGUID())
             return itr->second.SeatInfo;
 
-    return nullptr;
+    return NULL;
 }
 
-SeatMap::iterator Vehicle::GetSeatIteratorForPassenger(UnitPtr passenger)
+SeatMap::iterator Vehicle::GetSeatIteratorForPassenger(Unit* passenger)
 {
     SeatMap::iterator itr;
     for (itr = Seats.begin(); itr != Seats.end(); ++itr)

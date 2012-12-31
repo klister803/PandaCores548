@@ -109,14 +109,14 @@ class instance_naxxramas : public InstanceMapScript
 public:
     instance_naxxramas() : InstanceMapScript("instance_naxxramas", 533) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_naxxramas_InstanceMapScript(map);
     }
 
     struct instance_naxxramas_InstanceMapScript : public InstanceScript
     {
-        instance_naxxramas_InstanceMapScript(MapPtr map) : InstanceScript(map)
+        instance_naxxramas_InstanceMapScript(Map* map) : InstanceScript(map)
         {
             SetBossNumber(MAX_BOSS_NUMBER);
             LoadDoorData(doorData);
@@ -174,7 +174,7 @@ public:
             memset(portalsGUID, 0, sizeof(portalsGUID));
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -194,12 +194,12 @@ public:
             AddMinion(creature, true);
         }
 
-        void OnCreatureRemove(CreaturePtr creature)
+        void OnCreatureRemove(Creature* creature)
         {
             AddMinion(creature, false);
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             if (go->GetGOInfo()->displayId == 6785 || go->GetGOInfo()->displayId == 1287)
             {
@@ -243,7 +243,7 @@ public:
             AddDoor(go, true);
         }
 
-        void OnGameObjectRemove(GameObjectPtr go)
+        void OnGameObjectRemove(GameObject* go)
         {
             if (go->GetGOInfo()->displayId == 6785 || go->GetGOInfo()->displayId == 1287)
             {
@@ -258,7 +258,7 @@ public:
                 case GO_BIRTH:
                     if (sapphironGUID)
                     {
-                        if (CreaturePtr pSapphiron = instance->GetCreature(sapphironGUID))
+                        if (Creature* pSapphiron = instance->GetCreature(sapphironGUID))
                             pSapphiron->AI()->DoAction(DATA_SAPPHIRON_BIRTH);
                         return;
                     }
@@ -270,7 +270,7 @@ public:
             AddDoor(go, false);
         }
 
-        void OnUnitDeath(UnitPtr unit)
+        void OnUnitDeath(Unit* unit)
         {
             if (unit->GetTypeId() == TYPEID_PLAYER && IsEncounterInProgress())
             {
@@ -287,7 +287,7 @@ public:
                     HeiganErupt(value);
                     break;
                 case DATA_GOTHIK_GATE:
-                    if (GameObjectPtr gothikGate = instance->GetGameObject(gothikGateGUID))
+                    if (GameObject* gothikGate = instance->GetGameObject(gothikGateGUID))
                         gothikGate->SetGoState(GOState(value));
                     gothikDoorState = GOState(value);
                     break;
@@ -302,7 +302,7 @@ public:
                     }
                     else if (value == DONE)
                     {
-                        time_t now = time(nullptr);
+                        time_t now = time(NULL);
 
                         if (minHorsemenDiedTime == 0)
                             minHorsemenDiedTime = now;
@@ -374,7 +374,7 @@ public:
 
             if (id == BOSS_HORSEMEN && state == DONE)
             {
-                if (GameObjectPtr pHorsemenChest = instance->GetGameObject(horsemenChestGUID))
+                if (GameObject* pHorsemenChest = instance->GetGameObject(horsemenChestGUID))
                     pHorsemenChest->SetRespawnTime(pHorsemenChest->GetRespawnDelay());
             }
 
@@ -390,10 +390,10 @@ public:
 
                 for (std::set<uint64>::const_iterator itr = heiganEruptionGUID[i].begin(); itr != heiganEruptionGUID[i].end(); ++itr)
                 {
-                    if (GameObjectPtr pHeiganEruption = instance->GetGameObject(*itr))
+                    if (GameObject* pHeiganEruption = instance->GetGameObject(*itr))
                     {
                         pHeiganEruption->SendCustomAnim(pHeiganEruption->GetGoAnimProgress());
-                        pHeiganEruption->CastSpell(nullptr, SPELL_ERUPTION);
+                        pHeiganEruption->CastSpell(NULL, SPELL_ERUPTION);
                     }
                 }
             }
@@ -414,7 +414,7 @@ public:
             return true;
         }
 
-        bool CheckAchievementCriteriaMeet(uint32 criteria_id, constPlayerPtr /*source*/, constUnitPtr /*target = nullptr*/, uint32 /*miscvalue1 = 0*/)
+        bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target = NULL*/, uint32 /*miscvalue1 = 0*/)
         {
             switch (criteria_id)
             {

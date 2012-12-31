@@ -35,14 +35,14 @@ class boss_firemaw : public CreatureScript
 public:
     boss_firemaw() : CreatureScript("boss_firemaw") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_firemawAI (creature);
     }
 
     struct boss_firemawAI : public ScriptedAI
     {
-        boss_firemawAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_firemawAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 ShadowFlame_Timer;
         uint32 WingBuffet_Timer;
@@ -55,7 +55,7 @@ public:
             FlameBuffet_Timer = 5000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoZoneInCombat();
         }

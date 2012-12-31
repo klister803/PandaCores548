@@ -41,14 +41,14 @@ class boss_the_black_stalker : public CreatureScript
 public:
     boss_the_black_stalker() : CreatureScript("boss_the_black_stalker") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_the_black_stalkerAI (creature);
     }
 
     struct boss_the_black_stalkerAI : public ScriptedAI
     {
-        boss_the_black_stalkerAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_the_black_stalkerAI(Creature* creature) : ScriptedAI(creature)
         {
         }
 
@@ -74,14 +74,14 @@ public:
             Striders.clear();
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
-        void JustSummoned(CreaturePtr summon)
+        void JustSummoned(Creature* summon)
         {
             if (summon && summon->GetEntry() == ENTRY_SPORE_STRIDER)
             {
                 Striders.push_back(summon->GetGUID());
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                     summon->AI()->AttackStart(target);
                 else
                     if (me->getVictim())
@@ -89,10 +89,10 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             for (std::list<uint64>::const_iterator i = Striders.begin(); i != Striders.end(); ++i)
-                if (CreaturePtr strider = Unit::GetCreature(TO_WORLDOBJECT(me), *i))
+                if (Creature* strider = Unit::GetCreature(*me, *i))
                     strider->DisappearAndDie();
         }
 
@@ -126,7 +126,7 @@ public:
             {
                 if (LevitatedTarget_Timer <= diff)
                 {
-                    if (UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), LevitatedTarget))
+                    if (Unit* target = Unit::GetUnit(*me, LevitatedTarget))
                     {
                         if (!target->HasAura(SPELL_LEVITATE))
                         {
@@ -151,7 +151,7 @@ public:
             }
             if (Levitate_Timer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                 {
                     DoCast(target, SPELL_LEVITATE);
                     LevitatedTarget = target->GetGUID();
@@ -164,7 +164,7 @@ public:
             // Chain Lightning
             if (ChainLightning_Timer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_CHAIN_LIGHTNING);
                 ChainLightning_Timer = 7000;
             } else ChainLightning_Timer -= diff;
@@ -172,7 +172,7 @@ public:
             // Static Charge
             if (StaticCharge_Timer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true))
                     DoCast(target, SPELL_STATIC_CHARGE);
                 StaticCharge_Timer = 10000;
             } else StaticCharge_Timer -= diff;

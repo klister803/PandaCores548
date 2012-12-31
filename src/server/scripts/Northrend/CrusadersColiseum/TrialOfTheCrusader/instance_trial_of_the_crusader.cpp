@@ -34,7 +34,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
 
         struct instance_trial_of_the_crusader_InstanceMapScript : public InstanceScript
         {
-            instance_trial_of_the_crusader_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+            instance_trial_of_the_crusader_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
             uint32 EncounterStatus[MAX_ENCOUNTERS];
             uint32 TrialCounter;
@@ -115,7 +115,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                 return false;
             }
 
-            void OnPlayerEnter(PlayerPtr player)
+            void OnPlayerEnter(Player* player)
             {
                 if (instance->IsHeroic())
                 {
@@ -128,7 +128,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
             {
                 if (!guid)
                     return;
-                if (GameObjectPtr go = instance->GetGameObject(guid))
+                if (GameObject* go = instance->GetGameObject(guid))
                     go->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
             }
 
@@ -136,11 +136,11 @@ class instance_trial_of_the_crusader : public InstanceMapScript
             {
                 if (!guid)
                     return;
-                if (GameObjectPtr go = instance->GetGameObject(guid))
+                if (GameObject* go = instance->GetGameObject(guid))
                     go->SetGoState(GO_STATE_READY);
             }
 
-            void OnCreatureCreate(CreaturePtr creature)
+            void OnCreatureCreate(Creature* creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -193,7 +193,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectCreate(GameObjectPtr go)
+            void OnGameObjectCreate(GameObject* go)
             {
                 switch (go->GetEntry())
                 {
@@ -245,16 +245,16 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                 {
                     case TYPE_JARAXXUS:
                         // Cleanup Icehowl
-                        if (CreaturePtr icehowl = instance->GetCreature(IcehowlGUID))
+                        if (Creature* icehowl = instance->GetCreature(IcehowlGUID))
                             icehowl->DespawnOrUnsummon();
                         if (data == DONE)
                             EventStage = 2000;
                         break;
                     case TYPE_CRUSADERS:
                         // Cleanup Jaraxxus
-                        if (CreaturePtr jaraxxus = instance->GetCreature(JaraxxusGUID))
+                        if (Creature* jaraxxus = instance->GetCreature(JaraxxusGUID))
                             jaraxxus->DespawnOrUnsummon();
-                        if (CreaturePtr fizzlebang = instance->GetCreature(FizzlebangGUID))
+                        if (Creature* fizzlebang = instance->GetCreature(FizzlebangGUID))
                             fizzlebang->DespawnOrUnsummon();
                         switch (data)
                         {
@@ -276,7 +276,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                         break;
                     case TYPE_VALKIRIES:
                         // Cleanup chest
-                        if (GameObjectPtr cache = instance->GetGameObject(CrusadersCacheGUID))
+                        if (GameObject* cache = instance->GetGameObject(CrusadersCacheGUID))
                             cache->Delete();
                         switch (data)
                         {
@@ -331,9 +331,9 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                                                 tributeChest = GO_TRIBUTE_CHEST_25H_25;
                                 }
                                 if (tributeChest)
-                                    if (CreaturePtr tirion =  instance->GetCreature(TirionGUID))
+                                    if (Creature* tirion =  instance->GetCreature(TirionGUID))
                                         // need proper location.this one is guessed based on videos
-                                            if (GameObjectPtr chest = tirion->SummonGameObject(tributeChest, 643.814f, 136.027f, 141.295f, 0, 0, 0, 0, 0, 90000000))
+                                            if (GameObject* chest = tirion->SummonGameObject(tributeChest, 643.814f, 136.027f, 141.295f, 0, 0, 0, 0, 0, 90000000))
                                             chest->SetRespawnTime(chest->GetRespawnDelay());
                                 break;
                         }
@@ -425,7 +425,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
 
                     if (data == DONE || NeedSave == true)
                     {
-                        if (UnitPtr announcer = instance->GetCreature(GetData64(NPC_BARRENT)))
+                        if (Unit* announcer = instance->GetCreature(GetData64(NPC_BARRENT)))
                             announcer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
                         Save();
                     }
@@ -669,7 +669,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
                 OUT_LOAD_INST_DATA_COMPLETE;
             }
 
-            bool CheckAchievementCriteriaMeet(uint32 criteria_id, constPlayerPtr /*source*/, constUnitPtr /*target*/, uint32 /*miscvalue1*/)
+            bool CheckAchievementCriteriaMeet(uint32 criteria_id, Player const* /*source*/, Unit const* /*target*/, uint32 /*miscvalue1*/)
             {
                 switch (criteria_id)
                 {
@@ -705,7 +705,7 @@ class instance_trial_of_the_crusader : public InstanceMapScript
             }
         };
 
-        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
             return new instance_trial_of_the_crusader_InstanceMapScript(map);
         }

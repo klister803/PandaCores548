@@ -30,14 +30,14 @@ class boss_aku_mai : public CreatureScript
 public:
     boss_aku_mai() : CreatureScript("boss_aku_mai") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_aku_maiAI (creature);
     }
 
     struct boss_aku_maiAI : public ScriptedAI
     {
-        boss_aku_maiAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_aku_maiAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -55,13 +55,13 @@ public:
                 instance->SetData(TYPE_AKU_MAI, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (instance)
                 instance->SetData(TYPE_AKU_MAI, IN_PROGRESS);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
                 instance->SetData(TYPE_AKU_MAI, DONE);

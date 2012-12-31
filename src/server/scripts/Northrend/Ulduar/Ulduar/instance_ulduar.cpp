@@ -39,7 +39,7 @@ class instance_ulduar : public InstanceMapScript
 
         struct instance_ulduar_InstanceMapScript : public InstanceScript
         {
-            instance_ulduar_InstanceMapScript(InstanceMapPtr map) : InstanceScript(map) { }
+            instance_ulduar_InstanceMapScript(InstanceMap* map) : InstanceScript(map) { }
 
             std::string m_strInstData;
 
@@ -151,7 +151,7 @@ class instance_ulduar : public InstanceMapScript
                 packet << uint32(WORLD_STATE_ALGALON_DESPAWN_TIMER) << uint32(std::min<uint32>(_algalonTimer, 60));
             }
 
-            void OnPlayerEnter(PlayerPtr player)
+            void OnPlayerEnter(Player* player)
             {
                 if (!TeamInInstance)
                     TeamInInstance = player->GetTeam();
@@ -159,7 +159,7 @@ class instance_ulduar : public InstanceMapScript
                 if (_summonAlgalon)
                 {
                     _summonAlgalon = false;
-                    TempSummonPtr algalon = instance->SummonCreature(NPC_ALGALON, AlgalonLandPos);
+                    TempSummon* algalon = instance->SummonCreature(NPC_ALGALON, AlgalonLandPos);
                     if (_algalonTimer && _algalonTimer <= 60)
                         algalon->AI()->DoAction(ACTION_INIT_ALGALON);
                     else
@@ -167,13 +167,13 @@ class instance_ulduar : public InstanceMapScript
                 }
             }
 
-            void OnCreatureCreate(CreaturePtr creature)
+            void OnCreatureCreate(Creature* creature)
             {
                 if (!TeamInInstance)
                 {
                     Map::PlayerList const& Players = instance->GetPlayers();
                     if (!Players.isEmpty())
-                        if (PlayerPtr player = Players.begin()->getSource())
+                        if (Player* player = Players.begin()->getSource())
                             TeamInInstance = player->GetTeam();
                 }
 
@@ -302,13 +302,13 @@ class instance_ulduar : public InstanceMapScript
                     case NPC_ALGALON_STALKER_ASTEROID_TARGET_01:
                     case NPC_ALGALON_STALKER_ASTEROID_TARGET_02:
                     case NPC_UNLEASHED_DARK_MATTER:
-                        if (CreaturePtr algalon = instance->GetCreature(AlgalonGUID))
+                        if (Creature* algalon = instance->GetCreature(AlgalonGUID))
                             algalon->AI()->JustSummoned(creature);
                         break;
                 }
             }
 
-            void OnCreatureRemove(CreaturePtr creature)
+            void OnCreatureRemove(Creature* creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -319,7 +319,7 @@ class instance_ulduar : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectCreate(GameObjectPtr gameObject)
+            void OnGameObjectCreate(GameObject* gameObject)
             {
                 switch (gameObject->GetEntry())
                 {
@@ -430,7 +430,7 @@ class instance_ulduar : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectRemove(GameObjectPtr gameObject)
+            void OnGameObjectRemove(GameObject* gameObject)
             {
                 switch (gameObject->GetEntry())
                 {
@@ -448,9 +448,9 @@ class instance_ulduar : public InstanceMapScript
                 }
             }
 
-            void OnUnitDeath(UnitPtr unit)
+            void OnUnitDeath(Unit* unit)
             {
-                CreaturePtr creature = TO_CREATURE(unit);
+                Creature* creature = unit->ToCreature();
                 if (!creature)
                     return;
 
@@ -475,10 +475,10 @@ class instance_ulduar : public InstanceMapScript
                 }
             }
 
-            void ProcessEvent(WorldObjectPtr /*GameObjectPtr/, uint32 eventId)
+            void ProcessEvent(WorldObject* /*gameObject*/, uint32 eventId)
             {
                 // Flame Leviathan's Tower Event triggers
-                CreaturePtr FlameLeviathan = instance->GetCreature(LeviathanGUID);
+                Creature* FlameLeviathan = instance->GetCreature(LeviathanGUID);
                 if (FlameLeviathan && FlameLeviathan->isAlive()) // No leviathan, no event triggering ;)
                 {
                     switch (eventId)
@@ -528,7 +528,7 @@ class instance_ulduar : public InstanceMapScript
                     case BOSS_KOLOGARN:
                         if (state == DONE)
                         {
-                            if (GameObjectPtr gameObject = instance->GetGameObject(KologarnChestGUID))
+                            if (GameObject* gameObject = instance->GetGameObject(KologarnChestGUID))
                             {
                                 gameObject->SetRespawnTime(gameObject->GetRespawnDelay());
                                 gameObject->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
@@ -543,10 +543,10 @@ class instance_ulduar : public InstanceMapScript
                     case BOSS_HODIR:
                         if (state == DONE)
                         {
-                            if (GameObjectPtr HodirRareCache = instance->GetGameObject(HodirRareCacheGUID))
+                            if (GameObject* HodirRareCache = instance->GetGameObject(HodirRareCacheGUID))
                                 if (GetData(DATA_HODIR_RARE_CACHE))
                                     HodirRareCache->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
-                            if (GameObjectPtr HodirChest = instance->GetGameObject(HodirChestGUID))
+                            if (GameObject* HodirChest = instance->GetGameObject(HodirChestGUID))
                                 HodirChest->SetRespawnTime(HodirChest->GetRespawnDelay());
                             HandleGameObject(HodirDoorGUID, true);
                             HandleGameObject(HodirIceDoorGUID, true);
@@ -554,7 +554,7 @@ class instance_ulduar : public InstanceMapScript
                         break;
                     case BOSS_THORIM:
                         if (state == DONE)
-                            if (GameObjectPtr gameObject = instance->GetGameObject(ThorimChestGUID))
+                            if (GameObject* gameObject = instance->GetGameObject(ThorimChestGUID))
                                 gameObject->SetRespawnTime(gameObject->GetRespawnDelay());
                         break;
                     case BOSS_ALGALON:
@@ -564,14 +564,14 @@ class instance_ulduar : public InstanceMapScript
                             _events.CancelEvent(EVENT_DESPAWN_ALGALON);
                             DoUpdateWorldState(WORLD_STATE_ALGALON_TIMER_ENABLED, 0);
                             _algalonTimer = 61;
-                            if (GameObjectPtr gameObject = instance->GetGameObject(GiftOfTheObserverGUID))
+                            if (GameObject* gameObject = instance->GetGameObject(GiftOfTheObserverGUID))
                                 gameObject->SetRespawnTime(gameObject->GetRespawnDelay());
                             // get item level (recheck weapons)
                             Map::PlayerList const& players = instance->GetPlayers();
                             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                                if (PlayerPtr player = itr->getSource())
+                                if (Player* player = itr->getSource())
                                     for (uint8 slot = EQUIPMENT_SLOT_MAINHAND; slot <= EQUIPMENT_SLOT_RANGED; ++slot)
-                                        if (ItemPtr item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                                        if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                                             if (item->GetTemplate()->ItemLevel > _maxWeaponItemLevel)
                                                 _maxWeaponItemLevel = item->GetTemplate()->ItemLevel;
                         }
@@ -581,14 +581,14 @@ class instance_ulduar : public InstanceMapScript
                             Map::PlayerList const& players = instance->GetPlayers();
                             for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                             {
-                                if (PlayerPtr player = itr->getSource())
+                                if (Player* player = itr->getSource())
                                 {
                                     for (uint8 slot = EQUIPMENT_SLOT_START; slot < EQUIPMENT_SLOT_END; ++slot)
                                     {
                                         if (slot == EQUIPMENT_SLOT_TABARD || slot == EQUIPMENT_SLOT_BODY)
                                             continue;
 
-                                        if (ItemPtr item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
+                                        if (Item* item = player->GetItemByPos(INVENTORY_SLOT_BAG_0, slot))
                                         {
                                             if (slot >= EQUIPMENT_SLOT_MAINHAND && slot <= EQUIPMENT_SLOT_RANGED)
                                             {
@@ -616,9 +616,9 @@ class instance_ulduar : public InstanceMapScript
                         ColossusData = data;
                         if (data == 2)
                         {
-                            if (CreaturePtr Leviathan = instance->GetCreature(LeviathanGUID))
+                            if (Creature* Leviathan = instance->GetCreature(LeviathanGUID))
                                 Leviathan->AI()->DoAction(ACTION_MOVE_TO_CENTER_POSITION);
-                            if (GameObjectPtr gameObject = instance->GetGameObject(LeviathanGateGUID))
+                            if (GameObject* gameObject = instance->GetGameObject(LeviathanGateGUID))
                                 gameObject->SetGoState(GO_STATE_ACTIVE_ALTERNATIVE);
                             SaveToDB();
                         }
@@ -627,8 +627,8 @@ class instance_ulduar : public InstanceMapScript
                         HodirRareCacheData = data;
                         if (!HodirRareCacheData)
                         {
-                            if (CreaturePtr Hodir = instance->GetCreature(HodirGUID))
-                                if (GameObjectPtr gameObject = instance->GetGameObject(HodirRareCacheGUID))
+                            if (Creature* Hodir = instance->GetCreature(HodirGUID))
+                                if (GameObject* gameObject = instance->GetGameObject(HodirRareCacheGUID))
                                     Hodir->RemoveGameObject(gameObject, false);
                         }
                         break;
@@ -757,7 +757,7 @@ class instance_ulduar : public InstanceMapScript
                 return 0;
             }
 
-            bool CheckAchievementCriteriaMeet(uint32 criteriaId, constPlayerPtr , constUnitPtr /* = nullptr */, uint32 /* = 0 */)
+            bool CheckAchievementCriteriaMeet(uint32 criteriaId, Player const* , Unit const* /* = NULL */, uint32 /* = 0 */)
             {
                 switch (criteriaId)
                 {
@@ -850,7 +850,7 @@ class instance_ulduar : public InstanceMapScript
                             {
                                 DoUpdateWorldState(WORLD_STATE_ALGALON_TIMER_ENABLED, 0);
                                 _events.CancelEvent(EVENT_UPDATE_ALGALON_TIMER);
-                                if (CreaturePtr algalon = instance->GetCreature(AlgalonGUID))
+                                if (Creature* algalon = instance->GetCreature(AlgalonGUID))
                                     algalon->AI()->DoAction(EVENT_DESPAWN_ALGALON);
                             }
                             break;
@@ -867,7 +867,7 @@ class instance_ulduar : public InstanceMapScript
             uint32 _maxWeaponItemLevel;
         };
 
-        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
             return new instance_ulduar_InstanceMapScript(map);
         }

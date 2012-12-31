@@ -1552,29 +1552,29 @@ class BattlegroundAV : public Battleground
         ~BattlegroundAV();
 
         /* inherited from BattlegroundClass */
-        virtual void AddPlayer(PlayerPtr player);
+        virtual void AddPlayer(Player* player);
         virtual void StartingEventCloseDoors();
         virtual void StartingEventOpenDoors();
 
-        void RemovePlayer(PlayerPtr player, uint64 guid, uint32 team);
-        void HandleAreaTrigger(PlayerPtr Source, uint32 Trigger);
+        void RemovePlayer(Player* player, uint64 guid, uint32 team);
+        void HandleAreaTrigger(Player* Source, uint32 Trigger);
         bool SetupBattleground();
         virtual void ResetBGSubclass();
 
         /*general stuff*/
         void UpdateScore(uint16 team, int16 points);
-       void UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor = true);
+       void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
 
         /*handlestuff*/ //these are functions which get called from extern
-        virtual void EventPlayerClickedOnFlag(PlayerPtr source, GameObjectPtr target_obj);
-        void HandleKillPlayer(PlayerPtr player, PlayerPtr killer);
-        void HandleKillUnit(CreaturePtr unit, PlayerPtr killer);
-        void HandleQuestComplete(uint32 questid, PlayerPtr player);
+        virtual void EventPlayerClickedOnFlag(Player* source, GameObject* target_obj);
+        void HandleKillPlayer(Player* player, Player* killer);
+        void HandleKillUnit(Creature* unit, Player* killer);
+        void HandleQuestComplete(uint32 questid, Player* player);
         bool PlayerCanDoMineQuest(int32 GOId, uint32 team);
 
         void EndBattleground(uint32 winner);
 
-        virtual WorldSafeLocsEntry const* GetClosestGraveYard(PlayerPtr player);
+        virtual WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
 
         /* achievement req. */
         bool IsBothMinesControlledByTeam(uint32 team) const;
@@ -1584,8 +1584,8 @@ class BattlegroundAV : public Battleground
         virtual void PostUpdateImpl(uint32 diff);
 
         /* Nodes occupying */
-        void EventPlayerAssaultsPoint(PlayerPtr player, uint32 object);
-        void EventPlayerDefendsPoint(PlayerPtr player, uint32 object);
+        void EventPlayerAssaultsPoint(Player* player, uint32 object);
+        void EventPlayerDefendsPoint(Player* player, uint32 object);
         void EventPlayerDestroyedPoint(BG_AV_Nodes node);
 
         void AssaultNode(BG_AV_Nodes node, uint16 team);
@@ -1611,7 +1611,7 @@ class BattlegroundAV : public Battleground
         void UpdateNodeWorldState(BG_AV_Nodes node);
 
         /*general */
-        CreaturePtr AddAVCreature(uint16 cinfoid, uint16 type);
+        Creature* AddAVCreature(uint16 cinfoid, uint16 type);
         uint16 GetBonusHonor(uint8 kills); //TODO remove this when the core handles this right
 
         /*variables */

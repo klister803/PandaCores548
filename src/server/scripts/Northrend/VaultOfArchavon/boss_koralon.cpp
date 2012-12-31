@@ -57,11 +57,11 @@ class boss_koralon : public CreatureScript
 
         struct boss_koralonAI : public BossAI
         {
-            boss_koralonAI(CreaturePtr creature) : BossAI(creature, DATA_KORALON)
+            boss_koralonAI(Creature* creature) : BossAI(creature, DATA_KORALON)
             {
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoCast(me, SPELL_BURNING_FURY);
 
@@ -116,7 +116,7 @@ class boss_koralon : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_koralonAI(creature);
         }
@@ -132,7 +132,7 @@ class mob_flame_warder : public CreatureScript
 
         struct mob_flame_warderAI : public ScriptedAI
         {
-            mob_flame_warderAI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_flame_warderAI(Creature* creature) : ScriptedAI(creature)
             {
             }
 
@@ -141,7 +141,7 @@ class mob_flame_warder : public CreatureScript
                 events.Reset();
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoZoneInCombat();
 
@@ -184,7 +184,7 @@ class mob_flame_warder : public CreatureScript
             EventMap events;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_flame_warderAI(creature);
         }

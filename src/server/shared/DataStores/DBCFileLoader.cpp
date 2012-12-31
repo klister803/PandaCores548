@@ -23,7 +23,7 @@
 #include "DBCFileLoader.h"
 #include "Errors.h"
 
-DBCFileLoader::DBCFileLoader() : fieldsOffset(nullptr), data(nullptr), stringTable(nullptr)
+DBCFileLoader::DBCFileLoader() : fieldsOffset(NULL), data(NULL), stringTable(NULL)
 {
 
 }
@@ -34,7 +34,7 @@ bool DBCFileLoader::Load(const char* filename, const char* fmt)
     if (data)
     {
         delete [] data;
-        data = nullptr;
+        data = NULL;
     }
 
     FILE* f = fopen(filename, "rb");
@@ -188,7 +188,7 @@ char* DBCFileLoader::AutoProduceData(const char* format, uint32& records, char**
 
     typedef char* ptr;
     if (strlen(format) != fieldCount)
-        return nullptr;
+        return NULL;
 
     //get struct size and index pos
     int32 i;
@@ -249,7 +249,7 @@ char* DBCFileLoader::AutoProduceData(const char* format, uint32& records, char**
                     offset += sizeof(uint8);
                     break;
                 case FT_STRING:
-                    *((char**)(&dataTable[offset])) = nullptr;   // will replace non-empty or "" strings in AutoProduceStrings
+                    *((char**)(&dataTable[offset])) = NULL;   // will replace non-empty or "" strings in AutoProduceStrings
                     offset += sizeof(char*);
                     break;
                 case FT_LOGIC:
@@ -274,7 +274,7 @@ char* DBCFileLoader::AutoProduceData(const char* format, uint32& records, char**
 char* DBCFileLoader::AutoProduceStrings(const char* format, char* dataTable)
 {
     if (strlen(format) != fieldCount)
-        return nullptr;
+        return NULL;
 
     char* stringPool = new char[stringSize];
     memcpy(stringPool, stringTable, stringSize);

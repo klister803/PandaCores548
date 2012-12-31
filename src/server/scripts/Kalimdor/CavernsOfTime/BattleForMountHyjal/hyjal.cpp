@@ -52,7 +52,7 @@ class npc_jaina_proudmoore : public CreatureScript
 public:
     npc_jaina_proudmoore() : CreatureScript("npc_jaina_proudmoore") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         hyjalAI* ai = CAST_AI(hyjalAI, creature->AI());
@@ -77,7 +77,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         hyjalAI* ai = CAST_AI(hyjalAI, creature->AI());
         if (ai->EventBegun)
@@ -99,7 +99,7 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         hyjalAI* ai = new hyjalAI(creature);
 
@@ -128,7 +128,7 @@ class npc_thrall : public CreatureScript
 public:
     npc_thrall() : CreatureScript("npc_thrall") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         hyjalAI* ai = CAST_AI(hyjalAI, creature->AI());
@@ -154,7 +154,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         hyjalAI* ai = CAST_AI(hyjalAI, creature->AI());
         if (ai->EventBegun)
@@ -181,7 +181,7 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         hyjalAI* ai = new hyjalAI(creature);
 
@@ -206,7 +206,7 @@ class npc_tyrande_whisperwind : public CreatureScript
 public:
     npc_tyrande_whisperwind() : CreatureScript("npc_tyrande_whisperwind") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         hyjalAI* ai = new hyjalAI(creature);
         ai->Reset();
@@ -214,7 +214,7 @@ public:
         return ai;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF)
@@ -222,14 +222,14 @@ public:
                 ItemPosCountVec dest;
                 uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, ITEM_TEAR_OF_GODDESS, 1);
                 if (msg == EQUIP_ERR_OK)
-                if (ItemPtr item = player->StoreNewItem(dest, ITEM_TEAR_OF_GODDESS, true))
+                if (Item* item = player->StoreNewItem(dest, ITEM_TEAR_OF_GODDESS, true))
                          player->SendNewItem(item, 1, true, false, true);
                 player->SEND_GOSSIP_MENU(907, creature->GetGUID());
         }
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         hyjalAI* ai = CAST_AI(hyjalAI, creature->AI());
         uint32 AzgalorEvent = ai->GetInstanceData(DATA_AZGALOREVENT);

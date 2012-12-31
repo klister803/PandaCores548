@@ -49,7 +49,7 @@ public:
 
     struct boss_amanitarAI : public ScriptedAI
     {
-        boss_amanitarAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_amanitarAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             bFirstTime = true;
@@ -84,7 +84,7 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
             {
@@ -93,7 +93,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (instance)
                 instance->SetData(DATA_AMANITAR_EVENT, IN_PROGRESS);
@@ -105,7 +105,7 @@ public:
         {
             for (uint8 i = 0; i < 30; ++i)
             {
-                UnitPtr victim = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                Unit* victim = SelectTarget(SELECT_TARGET_RANDOM, 0);
 
                 if (victim)
                 {
@@ -133,7 +133,7 @@ public:
 
             if (uiRootTimer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_ENTANGLING_ROOTS);
                 uiRootTimer = urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS);
             } else uiRootTimer -= diff;
@@ -146,7 +146,7 @@ public:
 
             if (uiBoltTimer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_VENOM_BOLT_VOLLEY);
                 uiBoltTimer = urand(15*IN_MILLISECONDS, 30*IN_MILLISECONDS);
             } else uiBoltTimer -= diff;
@@ -155,7 +155,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_amanitarAI(creature);
     }
@@ -168,7 +168,7 @@ public:
 
     struct mob_amanitar_mushroomsAI : public Scripted_NoMovementAI
     {
-        mob_amanitar_mushroomsAI(CreaturePtr creature) : Scripted_NoMovementAI(creature) {}
+        mob_amanitar_mushroomsAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
         uint32 uiAuraTimer;
         uint32 uiDeathTimer;
@@ -184,7 +184,7 @@ public:
             uiDeathTimer = 30*IN_MILLISECONDS;
         }
 
-        void JustDied(UnitPtr killer)
+        void JustDied(Unit* killer)
         {
             if (!killer)
                 return;
@@ -196,8 +196,8 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
-        void AttackStart(UnitPtr /*victim*/) {}
+        void EnterCombat(Unit* /*who*/) {}
+        void AttackStart(Unit* /*victim*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -216,7 +216,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_amanitar_mushroomsAI(creature);
     }

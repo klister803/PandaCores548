@@ -61,14 +61,14 @@ class boss_loken : public CreatureScript
 public:
     boss_loken() : CreatureScript("boss_loken") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_lokenAI(creature);
     }
 
     struct boss_lokenAI : public ScriptedAI
     {
-        boss_lokenAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_lokenAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -96,7 +96,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             Talk(SAY_AGGRO);
 
@@ -107,7 +107,7 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             Talk(SAY_DEATH);
 
@@ -118,7 +118,7 @@ public:
             }
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             Talk(SAY_SLAY);
         }
@@ -144,7 +144,7 @@ public:
 
             if (m_uiArcLightning_Timer <= uiDiff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_ARC_LIGHTNING);
 
                 m_uiArcLightning_Timer = urand(15000, 16000);

@@ -28,19 +28,19 @@ private:
     ~GuildMgr();
 
 public:
-    typedef UNORDERED_MAP<uint32, GuildPtr> GuildContainer;
+    typedef UNORDERED_MAP<uint32, Guild*> GuildContainer;
 
-    GuildPtr GetGuildByLeader(uint64 guid) const;
-    GuildPtr GetGuildById(uint32 guildId) const;
-    GuildPtr GetGuildByGuid(uint64 guid) const;
-    GuildPtr GetGuildByName(const std::string& guildName) const;
+    Guild* GetGuildByLeader(uint64 guid) const;
+    Guild* GetGuildById(uint32 guildId) const;
+    Guild* GetGuildByGuid(uint64 guid) const;
+    Guild* GetGuildByName(const std::string& guildName) const;
     std::string GetGuildNameById(uint32 guildId) const;
 
     void LoadGuildXpForLevel();
     void LoadGuildRewards();
 
     void LoadGuilds();
-    void AddGuild(GuildPtr guild);
+    void AddGuild(Guild* guild);
     void RemoveGuild(uint32 guildId);
 
     void SaveGuilds();

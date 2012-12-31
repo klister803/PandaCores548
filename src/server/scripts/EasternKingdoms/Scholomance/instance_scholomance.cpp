@@ -43,14 +43,14 @@ class instance_scholomance : public InstanceMapScript
 public:
     instance_scholomance() : InstanceMapScript("instance_scholomance", 289) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_scholomance_InstanceMapScript(map);
     }
 
     struct instance_scholomance_InstanceMapScript : public InstanceScript
     {
-        instance_scholomance_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_scholomance_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         //Lord Alexei Barov, Doctor Theolen Krastinov, The Ravenian, Lorekeeper Polkelt, Instructor Malicia and the Lady Illucia Barov.
         bool IsBossDied[6];
@@ -82,7 +82,7 @@ public:
                 IsBossDied[i] = false;
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {

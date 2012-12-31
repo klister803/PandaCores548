@@ -47,21 +47,21 @@ class boss_highlord_omokk : public CreatureScript
 public:
     boss_highlord_omokk() : CreatureScript("boss_highlord_omokk") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_highlordomokkAI(creature);
     }
 
     struct boss_highlordomokkAI : public BossAI
     {
-        boss_highlordomokkAI(CreaturePtr creature) : BossAI(creature, DATA_OMOKK) {}
+        boss_highlordomokkAI(Creature* creature) : BossAI(creature, DATA_OMOKK) {}
 
         void Reset()
         {
             _Reset();
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_WARSTOMP, 15 * IN_MILLISECONDS);
@@ -73,7 +73,7 @@ public:
             events.ScheduleEvent(EVENT_SLOW, 24 * IN_MILLISECONDS);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             _JustDied();
         }

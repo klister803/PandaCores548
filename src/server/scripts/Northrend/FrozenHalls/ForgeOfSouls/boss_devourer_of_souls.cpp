@@ -126,13 +126,13 @@ class boss_devourer_of_souls : public CreatureScript
 
         struct boss_devourer_of_soulsAI : public BossAI
         {
-            boss_devourer_of_soulsAI(CreaturePtr creature) : BossAI(creature, DATA_DEVOURER_EVENT)
+            boss_devourer_of_soulsAI(Creature* creature) : BossAI(creature, DATA_DEVOURER_EVENT)
             {
             }
 
             void InitializeAI()
             {
-                if (!instance || TO_INSTANCEMAP(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FoSScriptName))
+                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(FoSScriptName))
                     me->IsAIEnabled = false;
                 else if (!me->isDead())
                     Reset();
@@ -153,7 +153,7 @@ class boss_devourer_of_souls : public CreatureScript
                 instance->SetData(DATA_DEVOURER_EVENT, NOT_STARTED);
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoScriptText(RAND(SAY_FACE_ANGER_AGGRO, SAY_FACE_DESIRE_AGGRO), me);
 
@@ -168,11 +168,11 @@ class boss_devourer_of_souls : public CreatureScript
                 instance->SetData(DATA_DEVOURER_EVENT, IN_PROGRESS);
             }
 
-            void DamageTaken(UnitPtr /*pDoneBy*/, uint32 &uiDamage)
+            void DamageTaken(Unit* /*pDoneBy*/, uint32 &uiDamage)
             {
                 if (mirroredSoulTarget && me->HasAura(SPELL_MIRRORED_SOUL))
                 {
-                    if (PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), mirroredSoulTarget))
+                    if (Player* player = Unit::GetPlayer(*me, mirroredSoulTarget))
                     {
                         if (player->GetAura(SPELL_MIRRORED_SOUL))
                         {
@@ -185,7 +185,7 @@ class boss_devourer_of_souls : public CreatureScript
                 }
             }
 
-            void KilledUnit(UnitPtr victim)
+            void KilledUnit(Unit* victim)
             {
                 if (victim->GetTypeId() != TYPEID_PLAYER)
                     return;
@@ -210,7 +210,7 @@ class boss_devourer_of_souls : public CreatureScript
                     DoScriptText(textId, me);
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 summons.DespawnAll();
 
@@ -228,7 +228,7 @@ class boss_devourer_of_souls : public CreatureScript
 
                 for (int8 i = 0; outroPositions[i].entry[entryIndex] != 0; ++i)
                 {
-                    if (CreaturePtr summon = me->SummonCreature(outroPositions[i].entry[entryIndex], spawnPoint, TEMPSUMMON_DEAD_DESPAWN))
+                    if (Creature* summon = me->SummonCreature(outroPositions[i].entry[entryIndex], spawnPoint, TEMPSUMMON_DEAD_DESPAWN))
                     {
                         summon->GetMotionMaster()->MovePoint(0, outroPositions[i].movePosition);
                         if (summon->GetEntry() == NPC_JAINA_PART2)
@@ -239,7 +239,7 @@ class boss_devourer_of_souls : public CreatureScript
                 }
             }
 
-            void SpellHitTarget(UnitPtr /*target*/, const SpellInfo* spell)
+            void SpellHitTarget(Unit* /*target*/, const SpellInfo* spell)
             {
                 if (spell->Id == H_SPELL_PHANTOM_BLAST)
                     threeFaced = false;
@@ -273,7 +273,7 @@ class boss_devourer_of_souls : public CreatureScript
                             events.ScheduleEvent(EVENT_PHANTOM_BLAST, 5000);
                             break;
                         case EVENT_MIRRORED_SOUL:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
                             {
                                 mirroredSoulTarget = target->GetGUID();
                                 DoCast(target, SPELL_MIRRORED_SOUL);
@@ -282,12 +282,12 @@ class boss_devourer_of_souls : public CreatureScript
                             events.ScheduleEvent(EVENT_MIRRORED_SOUL, urand(15000, 30000));
                             break;
                         case EVENT_WELL_OF_SOULS:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_WELL_OF_SOULS);
                             events.ScheduleEvent(EVENT_WELL_OF_SOULS, 20000);
                             break;
                         case EVENT_UNLEASHED_SOULS:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_UNLEASHED_SOULS);
                             me->SetDisplayId(DISPLAY_SORROW);
                             DoScriptText(RAND(SAY_FACE_ANGER_UNLEASH_SOUL, SAY_FACE_SORROW_UNLEASH_SOUL, SAY_FACE_DESIRE_UNLEASH_SOUL), me);
@@ -304,9 +304,9 @@ class boss_devourer_of_souls : public CreatureScript
                             DoScriptText(RAND(SAY_FACE_ANGER_WAILING_SOUL, SAY_FACE_DESIRE_WAILING_SOUL), me);
                             DoScriptText(EMOTE_WAILING_SOUL, me);
                             DoCast(me, SPELL_WAILING_SOULS_STARTING);
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             {
-                                me->SetOrientation(me->GetAngle(target.get()));
+                                me->SetOrientation(me->GetAngle(target));
                                 me->SendMovementFlagUpdate();
                                 DoCast(me, SPELL_WAILING_SOULS_BEAM);
                             }
@@ -367,7 +367,7 @@ class boss_devourer_of_souls : public CreatureScript
             uint64 mirroredSoulTarget;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_devourer_of_soulsAI(creature);
         }
@@ -380,12 +380,12 @@ class achievement_three_faced : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
+        bool OnCheck(Player* /*player*/, Unit* target)
         {
             if (!target)
                 return false;
 
-            if (CreaturePtr Devourer = TO_CREATURE(target))
+            if (Creature* Devourer = target->ToCreature())
                 if (Devourer->AI()->GetData(DATA_THREE_FACED))
                     return true;
 

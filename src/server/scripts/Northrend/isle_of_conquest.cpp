@@ -30,9 +30,9 @@ class npc_four_car_garage : public CreatureScript
 
         struct npc_four_car_garageAI : public NullCreatureAI
         {
-            npc_four_car_garageAI(CreaturePtr creature) : NullCreatureAI(creature) { }
+            npc_four_car_garageAI(Creature* creature) : NullCreatureAI(creature) { }
 
-            void PassengerBoarded(UnitPtr who, int8 /*seatId*/, bool apply)
+            void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
             {
                 if (apply)
                 {
@@ -63,7 +63,7 @@ class npc_four_car_garage : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_four_car_garageAI(creature);
         }

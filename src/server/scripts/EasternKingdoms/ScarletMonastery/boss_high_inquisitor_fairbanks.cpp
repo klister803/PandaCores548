@@ -41,14 +41,14 @@ class boss_high_inquisitor_fairbanks : public CreatureScript
 public:
     boss_high_inquisitor_fairbanks() : CreatureScript("boss_high_inquisitor_fairbanks") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_high_inquisitor_fairbanksAI (creature);
     }
 
     struct boss_high_inquisitor_fairbanksAI : public ScriptedAI
     {
-        boss_high_inquisitor_fairbanksAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_high_inquisitor_fairbanksAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 CurseOfBlood_Timer;
         uint32 DispelMagic_Timer;
@@ -71,7 +71,7 @@ public:
             me->SetUInt32Value(UNIT_FIELD_BYTES_1, 7);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             me->SetStandState(UNIT_STAND_STATE_STAND);
             me->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
@@ -93,7 +93,7 @@ public:
             //Fear_Timer
             if (Fear_Timer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                     DoCast(target, SPELL_FEAR);
 
                 Fear_Timer = 40000;
@@ -103,7 +103,7 @@ public:
             //Sleep_Timer
             if (Sleep_Timer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0))
                     DoCast(target, SPELL_SLEEP);
 
                 Sleep_Timer = 30000;
@@ -120,7 +120,7 @@ public:
             //Dispel_Timer
             if (Dispel_Timer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_DISPELMAGIC);
 
                 DispelMagic_Timer = 30000;

@@ -25,7 +25,7 @@
 #include "GameObject.h"
 #include "Miscellaneous/Language.h"
 #include "Player.h"
-#include "SpellAuraEffects.h"
+#include "SpellAuras.h"
 
 BattlegroundAV::BattlegroundAV()
 {
@@ -47,7 +47,7 @@ uint16 BattlegroundAV::GetBonusHonor(uint8 kills) //TODO: move this function to 
     return Trinity::Honor::hk_honor_at_level(m_MaxLevel, kills);
 }
 
-void BattlegroundAV::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
+void BattlegroundAV::HandleKillPlayer(Player* player, Player* killer)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -56,7 +56,7 @@ void BattlegroundAV::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
     UpdateScore(player->GetTeam(), -1);
 }
 
-void BattlegroundAV::HandleKillUnit(CreaturePtr unit, PlayerPtr killer)
+void BattlegroundAV::HandleKillUnit(Creature* unit, Player* killer)
 {
     sLog->outDebug(LOG_FILTER_BATTLEGROUND, "bg_av HandleKillUnit %i", unit->GetEntry());
     if (GetStatus() != STATUS_IN_PROGRESS)
@@ -103,7 +103,7 @@ void BattlegroundAV::HandleKillUnit(CreaturePtr unit, PlayerPtr killer)
         //spawn destroyed aura
         for (uint8 i=0; i <= 9; i++)
             SpawnBGObject(BG_AV_OBJECT_BURN_BUILDING_ALLIANCE+i, RESPAWN_IMMEDIATELY);
-        CreaturePtr creature = GetBGCreature(AV_CPLACE_HERALD);
+        Creature* creature = GetBGCreature(AV_CPLACE_HERALD);
         if (creature)
             YellToAll(creature, GetTrinityString(LANG_BG_AV_A_CAPTAIN_DEAD), LANG_UNIVERSAL);
         DelCreature(AV_CPLACE_TRIGGER16);
@@ -122,7 +122,7 @@ void BattlegroundAV::HandleKillUnit(CreaturePtr unit, PlayerPtr killer)
         //spawn destroyed aura
         for (uint8 i=0; i <= 9; i++)
             SpawnBGObject(BG_AV_OBJECT_BURN_BUILDING_HORDE+i, RESPAWN_IMMEDIATELY);
-        CreaturePtr creature = GetBGCreature(AV_CPLACE_HERALD);
+        Creature* creature = GetBGCreature(AV_CPLACE_HERALD);
         if (creature)
             YellToAll(creature, GetTrinityString(LANG_BG_AV_H_CAPTAIN_DEAD), LANG_UNIVERSAL);
         DelCreature(AV_CPLACE_TRIGGER18);
@@ -133,7 +133,7 @@ void BattlegroundAV::HandleKillUnit(CreaturePtr unit, PlayerPtr killer)
         ChangeMineOwner(AV_SOUTH_MINE, killer->GetTeam());
 }
 
-void BattlegroundAV::HandleQuestComplete(uint32 questid, PlayerPtr player)
+void BattlegroundAV::HandleQuestComplete(uint32 questid, Player* player)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;//maybe we should log this, cause this must be a cheater or a big bug
@@ -259,11 +259,11 @@ void BattlegroundAV::UpdateScore(uint16 team, int16 points)
     }
 }
 
-CreaturePtr BattlegroundAV::AddAVCreature(uint16 cinfoid, uint16 type)
+Creature* BattlegroundAV::AddAVCreature(uint16 cinfoid, uint16 type)
 {
     uint8 level;
     bool isStatic = false;
-    CreaturePtr creature = nullptr;
+    Creature* creature = NULL;
     ASSERT(type <= AV_CPLACE_MAX + AV_STATICCPLACE_MAX);
     if (type >= AV_CPLACE_MAX) //static
     {
@@ -279,7 +279,7 @@ CreaturePtr BattlegroundAV::AddAVCreature(uint16 cinfoid, uint16 type)
         level = (BG_AV_CreatureInfo[cinfoid][2] == BG_AV_CreatureInfo[cinfoid][3]) ? BG_AV_CreatureInfo[cinfoid][2] : urand(BG_AV_CreatureInfo[cinfoid][2], BG_AV_CreatureInfo[cinfoid][3]);
     }
     if (!creature)
-        return nullptr;
+        return NULL;
     if (creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_A_CAPTAIN][0] || creature->GetEntry() == BG_AV_CreatureInfo[AV_NPC_H_CAPTAIN][0])
         creature->SetRespawnDelay(RESPAWN_ONE_DAY); // TODO: look if this can be done by database + also add this for the wingcommanders
 
@@ -329,7 +329,7 @@ CreaturePtr BattlegroundAV::AddAVCreature(uint16 cinfoid, uint16 type)
     }
     if (triggerSpawnID && newFaction)
     {
-        if (CreaturePtr trigger = AddCreature(WORLD_TRIGGER, triggerSpawnID, BG_AV_CreatureInfo[creature->GetEntry()][1], BG_AV_CreaturePos[triggerSpawnID][0], BG_AV_CreaturePos[triggerSpawnID][1], BG_AV_CreaturePos[triggerSpawnID][2], BG_AV_CreaturePos[triggerSpawnID][3]))
+        if (Creature* trigger = AddCreature(WORLD_TRIGGER, triggerSpawnID, BG_AV_CreatureInfo[creature->GetEntry()][1], BG_AV_CreaturePos[triggerSpawnID][0], BG_AV_CreaturePos[triggerSpawnID][1], BG_AV_CreaturePos[triggerSpawnID][2], BG_AV_CreaturePos[triggerSpawnID][3]))
         {
             trigger->setFaction(newFaction);
             trigger->CastSpell(trigger, SPELL_HONORABLE_DEFENDER_25Y, false);
@@ -354,14 +354,14 @@ void BattlegroundAV::PostUpdateImpl(uint32 diff)
                 if (i == 0)
                 {
                     CastSpellOnTeam(AV_BUFF_A_CAPTAIN, ALLIANCE);
-                    CreaturePtr creature = GetBGCreature(AV_CPLACE_MAX + 61);
+                    Creature* creature = GetBGCreature(AV_CPLACE_MAX + 61);
                     if (creature)
                         YellToAll(creature, LANG_BG_AV_A_CAPTAIN_BUFF, LANG_COMMON);
                 }
                 else
                 {
                     CastSpellOnTeam(AV_BUFF_H_CAPTAIN, HORDE);
-                    CreaturePtr creature = GetBGCreature(AV_CPLACE_MAX + 59); //TODO: make the captains a dynamic creature
+                    Creature* creature = GetBGCreature(AV_CPLACE_MAX + 59); //TODO: make the captains a dynamic creature
                     if (creature)
                         YellToAll(creature, LANG_BG_AV_H_CAPTAIN_BUFF, LANG_ORCISH);
                 }
@@ -425,7 +425,7 @@ void BattlegroundAV::StartingEventOpenDoors()
     StartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, AV_EVENT_START_BATTLE);
 }
 
-void BattlegroundAV::AddPlayer(PlayerPtr player)
+void BattlegroundAV::AddPlayer(Player* player)
 {
     Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
@@ -476,7 +476,7 @@ void BattlegroundAV::EndBattleground(uint32 winner)
     Battleground::EndBattleground(winner);
 }
 
-void BattlegroundAV::RemovePlayer(PlayerPtr player, uint64 /*guid*/, uint32 /*team*/)
+void BattlegroundAV::RemovePlayer(Player* player, uint64 /*guid*/, uint32 /*team*/)
 {
    if (!player)
     {
@@ -489,7 +489,7 @@ void BattlegroundAV::RemovePlayer(PlayerPtr player, uint64 /*guid*/, uint32 /*te
     player->RemoveAurasDueToSpell(AV_BUFF_H_CAPTAIN);
 }
 
-void BattlegroundAV::HandleAreaTrigger(PlayerPtr Source, uint32 Trigger)
+void BattlegroundAV::HandleAreaTrigger(Player* Source, uint32 Trigger)
 {
     // this is wrong way to implement these things. On official it done by gameobject spell cast.
     if (GetStatus() != STATUS_IN_PROGRESS)
@@ -529,7 +529,7 @@ void BattlegroundAV::HandleAreaTrigger(PlayerPtr Source, uint32 Trigger)
         Source->CastSpell(Source, SpellId, true);
 }
 
-void BattlegroundAV::UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor)
+void BattlegroundAV::UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor)
 {
 
     BattlegroundScoreMap::iterator itr = PlayerScores.find(Source->GetGUID());
@@ -625,7 +625,7 @@ void BattlegroundAV::EventPlayerDestroyedPoint(BG_AV_Nodes node)
     else
         sprintf(buf, GetTrinityString(LANG_BG_AV_GRAVE_TAKEN), GetNodeName(node), (owner == ALLIANCE) ? GetTrinityString(LANG_BG_AV_ALLY) :GetTrinityString(LANG_BG_AV_HORDE));
 
-    CreaturePtr creature = GetBGCreature(AV_CPLACE_HERALD);
+    Creature* creature = GetBGCreature(AV_CPLACE_HERALD);
     if (creature)
         YellToAll(creature, buf, LANG_UNIVERSAL);
 }
@@ -705,7 +705,7 @@ void BattlegroundAV::ChangeMineOwner(uint8 mine, uint32 team, bool initial)
         m_Mine_Reclaim_Timer[mine]=AV_MINE_RECLAIM_TIMER;
         char buf[256];
         sprintf(buf, GetTrinityString(LANG_BG_AV_MINE_TAKEN), GetTrinityString((mine == AV_NORTH_MINE) ? LANG_BG_AV_MINE_NORTH : LANG_BG_AV_MINE_SOUTH), (team == ALLIANCE) ?  GetTrinityString(LANG_BG_AV_ALLY) : GetTrinityString(LANG_BG_AV_HORDE));
-        CreaturePtr creature = GetBGCreature(AV_CPLACE_HERALD);
+        Creature* creature = GetBGCreature(AV_CPLACE_HERALD);
         if (creature)
             YellToAll(creature, buf, LANG_UNIVERSAL);
     }
@@ -713,7 +713,7 @@ void BattlegroundAV::ChangeMineOwner(uint8 mine, uint32 team, bool initial)
     {
         if (mine == AV_SOUTH_MINE) //i think this gets called all the time
         {
-            if (CreaturePtr creature = GetBGCreature(AV_CPLACE_MINE_S_3))
+            if (Creature* creature = GetBGCreature(AV_CPLACE_MINE_S_3))
                 YellToAll(creature, LANG_BG_AV_S_MINE_BOSS_CLAIMS, LANG_UNIVERSAL);
         }
     }
@@ -761,7 +761,7 @@ void BattlegroundAV::PopulateNode(BG_AV_Nodes node)
 
     if (node >= BG_AV_NODES_MAX)//fail safe
         return;
-    CreaturePtr trigger = GetBGCreature(node + 302);//0-302 other creatures
+    Creature* trigger = GetBGCreature(node + 302);//0-302 other creatures
     if (!trigger)
        trigger = AddCreature(WORLD_TRIGGER, node + 302, owner, BG_AV_CreaturePos[node + 302][0], BG_AV_CreaturePos[node + 302][1], BG_AV_CreaturePos[node + 302][2], BG_AV_CreaturePos[node + 302][3]);
 
@@ -791,7 +791,7 @@ void BattlegroundAV::DePopulateNode(BG_AV_Nodes node)
 
     //remove bonus honor aura trigger creature when node is lost
     if (node < BG_AV_NODES_MAX)//fail safe
-        DelCreature(node + 302);//nullptr checks are in DelCreature! 0-302 spirit guides
+        DelCreature(node + 302);//NULL checks are in DelCreature! 0-302 spirit guides
 }
 
 BG_AV_Nodes BattlegroundAV::GetNodeThroughObject(uint32 object)
@@ -856,7 +856,7 @@ uint32 BattlegroundAV::GetObjectThroughNode(BG_AV_Nodes node)
 
 //called when using banner
 
-void BattlegroundAV::EventPlayerClickedOnFlag(PlayerPtr source, GameObjectPtr target_obj)
+void BattlegroundAV::EventPlayerClickedOnFlag(Player* source, GameObject* target_obj)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -884,7 +884,7 @@ void BattlegroundAV::EventPlayerClickedOnFlag(PlayerPtr source, GameObjectPtr ta
     }
 }
 
-void BattlegroundAV::EventPlayerDefendsPoint(PlayerPtr player, uint32 object)
+void BattlegroundAV::EventPlayerDefendsPoint(Player* player, uint32 object)
 {
     ASSERT(GetStatus() == STATUS_IN_PROGRESS);
     BG_AV_Nodes node = GetNodeThroughObject(object);
@@ -944,7 +944,7 @@ void BattlegroundAV::EventPlayerDefendsPoint(PlayerPtr player, uint32 object)
     //send a nice message to all :)
     char buf[256];
     sprintf(buf, GetTrinityString((IsTower(node)) ? LANG_BG_AV_TOWER_DEFENDED : LANG_BG_AV_GRAVE_DEFENDED), GetNodeName(node), (team == ALLIANCE) ?  GetTrinityString(LANG_BG_AV_ALLY) : GetTrinityString(LANG_BG_AV_HORDE));
-    CreaturePtr creature = GetBGCreature(AV_CPLACE_HERALD);
+    Creature* creature = GetBGCreature(AV_CPLACE_HERALD);
     if (creature)
         YellToAll(creature, buf, LANG_UNIVERSAL);
     //update the statistic for the defending player
@@ -955,7 +955,7 @@ void BattlegroundAV::EventPlayerDefendsPoint(PlayerPtr player, uint32 object)
         PlaySoundToAll((team == ALLIANCE)?AV_SOUND_ALLIANCE_GOOD:AV_SOUND_HORDE_GOOD);
 }
 
-void BattlegroundAV::EventPlayerAssaultsPoint(PlayerPtr player, uint32 object)
+void BattlegroundAV::EventPlayerAssaultsPoint(Player* player, uint32 object)
 {
     ASSERT(GetStatus() == STATUS_IN_PROGRESS);
 
@@ -1032,8 +1032,8 @@ void BattlegroundAV::EventPlayerAssaultsPoint(PlayerPtr player, uint32 object)
             std::vector<uint64> ghost_list = m_ReviveQueue[BgCreatures[node]];
             if (!ghost_list.empty())
             {
-                PlayerPtr waitingPlayer;  // player waiting at graveyard for resurrection
-                WorldSafeLocsEntry const* closestGrave = nullptr;
+                Player* waitingPlayer;  // player waiting at graveyard for resurrection
+                WorldSafeLocsEntry const* closestGrave = NULL;
                 for (std::vector<uint64>::iterator itr = ghost_list.begin(); itr != ghost_list.end(); ++itr)
                 {
                     waitingPlayer = ObjectAccessor::FindPlayer(*ghost_list.begin());
@@ -1058,7 +1058,7 @@ void BattlegroundAV::EventPlayerAssaultsPoint(PlayerPtr player, uint32 object)
     //send a nice message to all :)
     char buf[256];
     sprintf(buf, (IsTower(node)) ? GetTrinityString(LANG_BG_AV_TOWER_ASSAULTED) : GetTrinityString(LANG_BG_AV_GRAVE_ASSAULTED), GetNodeName(node),  (team == ALLIANCE) ?  GetTrinityString(LANG_BG_AV_ALLY) : GetTrinityString(LANG_BG_AV_HORDE));
-    CreaturePtr creature = GetBGCreature(AV_CPLACE_HERALD);
+    Creature* creature = GetBGCreature(AV_CPLACE_HERALD);
     if (creature)
         YellToAll(creature, buf, LANG_UNIVERSAL);
     //update the statistic for the assaulting player
@@ -1164,10 +1164,10 @@ void BattlegroundAV::SendMineWorldStates(uint32 mine)
         UpdateWorldState(BG_AV_MineWorldStates[mine2][prevowner], 0);
 }
 
-WorldSafeLocsEntry const* BattlegroundAV::GetClosestGraveYard(PlayerPtr player)
+WorldSafeLocsEntry const* BattlegroundAV::GetClosestGraveYard(Player* player)
 {
-    WorldSafeLocsEntry const* pGraveyard = nullptr;
-    WorldSafeLocsEntry const* entry = nullptr;
+    WorldSafeLocsEntry const* pGraveyard = NULL;
+    WorldSafeLocsEntry const* entry = NULL;
     float dist = 0;
     float minDist = 0;
     float x, y;

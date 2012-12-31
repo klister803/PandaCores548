@@ -27,9 +27,9 @@ class GameObject;
 
 namespace FactorySelector
 {
-    CreatureAI* selectAI(CreaturePtr);
-    std::shared_ptr<MovementGenerator> selectMovementGenerator(CreaturePtr);
-    GameObjectAI* SelectGameObjectAI(GameObjectPtr);
+    CreatureAI* selectAI(Creature*);
+    MovementGenerator* selectMovementGenerator(Creature*);
+    GameObjectAI* SelectGameObjectAI(GameObject*);
 }
 #endif
 

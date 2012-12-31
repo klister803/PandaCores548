@@ -85,11 +85,11 @@ ACE_Argv_Type_Converter::initialize (void)
   if (this->original_type_)
     {
       // Make a copy of argv in 'char'. type Create one more argv entry
-      // than original argc for the nullptr.
+      // than original argc for the NULL.
       ACE_NEW (char_argv_,
                char *[this->saved_argc_ + 1]);
       this->char_argv_[saved_argc_] = 0;  // last entry of argv is
-                                          // always a nullptr
+                                          // always a NULL
     }
   else
     {

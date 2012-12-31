@@ -265,12 +265,12 @@ Position const AllianceFlammePosition[7] =
 #define NPC_TIREUR                  (IS_TEAM_ALLIANCE ? NPC_TIREUR_H : NPC_TIREUR_A)
 #define NPC_ARTILLEUR               (IS_TEAM_ALLIANCE ? NPC_ARTILLEUR_H : NPC_ARTILLEUR_A)
 
-TransportPtr GetTransportByGUID(UnitPtr u, uint64 GUID)
+Transport * GetTransportByGUID(Unit* u, uint64 GUID)
 {
-    if (TransportPtr transport = ObjectAccessor::GetTransport(TO_CONST_WORLDOBJECT(u), GUID))
+    if (Transport * transport = ObjectAccessor::GetTransport(*u, GUID))
         return transport;
 
-    return nullptr;
+    return NULL;
 }
 
 class npc_gunship_commander : public CreatureScript
@@ -278,7 +278,7 @@ class npc_gunship_commander : public CreatureScript
 public:
     npc_gunship_commander() : CreatureScript("npc_gunship_commander") { }
 
-    bool OnGossipHello(PlayerPtr pPlayer, CreaturePtr pCreature)
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
         if (InstanceScript * instance = pCreature->GetInstanceScript())
         {
@@ -298,7 +298,7 @@ public:
         return false;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr pCreature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* pCreature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         player->CLOSE_GOSSIP_MENU();
@@ -313,14 +313,14 @@ public:
 		return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_gunship_commander_AI (pCreature);
     }
 
     struct npc_gunship_commander_AI : public ScriptedAI
     {
-        npc_gunship_commander_AI(CreaturePtr pCreature) : ScriptedAI(pCreature)
+        npc_gunship_commander_AI(Creature *pCreature) : ScriptedAI(pCreature)
         {
             pInstance = pCreature->GetInstanceScript();
             IsFriendlyCommander = true;
@@ -358,7 +358,7 @@ public:
             DoZoneInCombat();
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (!alreadyStartedFight)
             {
@@ -409,31 +409,31 @@ public:
             }
         }
 
-        void DamageDealt(UnitPtr /*victim*/, uint32& /*damage*/, DamageEffectType damageType)
+        void DamageDealt(Unit* /*victim*/, uint32& /*damage*/, DamageEffectType damageType)
         {
             if (damageType == DIRECT_DAMAGE)
                 AddBattleFury();
         }
 
-        void SpellHitTarget(UnitPtr /*target*/, SpellInfo const* spell)
+        void SpellHitTarget(Unit* /*target*/, SpellInfo const* spell)
         {
             if (spell->Id == SPELL_RENDING_THROW || spell->Id == SPELL_CLEAVE)
                 AddBattleFury();
         }
 
-        void DamageTaken(UnitPtr pDone_by, uint32& uiDamage)
+        void DamageTaken(Unit* pDone_by, uint32& uiDamage)
         {
             if(!pInstance)
                 return;
 
             if(IsFriendlyCommander)
             {
-                if (CreaturePtr FriendGunshipNpc = pInstance->instance->GetCreature(pInstance->GetData64(DATA_GUNSHIP_NPC_MAIN)))
+                if (Creature* FriendGunshipNpc = pInstance->instance->GetCreature(pInstance->GetData64(DATA_GUNSHIP_NPC_MAIN)))
                     me->DealDamage(FriendGunshipNpc, uiDamage);
             }
             else
             {
-                if (CreaturePtr EnnemyGunshipNpc = pInstance->instance->GetCreature(pInstance->GetData64(DATA_GUNSHIP_NPC_SECOND)))
+                if (Creature* EnnemyGunshipNpc = pInstance->instance->GetCreature(pInstance->GetData64(DATA_GUNSHIP_NPC_SECOND)))
                     me->DealDamage(EnnemyGunshipNpc, uiDamage / 10);
             }
 
@@ -443,7 +443,7 @@ public:
 
         bool CheckPlayerOnTransport()
         {
-            TransportPtr pTransport = nullptr;
+            Transport * pTransport = NULL;
 
             if (!pInstance)
                 return false;
@@ -456,7 +456,7 @@ public:
             if (!pTransport)
                 return false;
 
-            std::set<PlayerPtr> pSet = pTransport->GetPassengers();
+            std::set<Player*> pSet = pTransport->GetPassengers();
 
 
             if(pSet.empty()) // Stop l'attaque si personne sur le transport
@@ -475,7 +475,7 @@ public:
             }
             else
             {
-                if (UnitPtr  victim = me->getVictim())
+                if (Unit * victim = me->getVictim())
                 {
                     if (victim->GetTypeId() != TYPEID_PLAYER)
                     {
@@ -501,7 +501,7 @@ public:
 
             if (!checkPassed)
             {
-                PlayerPtr pPassenger = Trinity::Containers::SelectRandomContainerElement(pSet);
+                Player * pPassenger = Trinity::Containers::SelectRandomContainerElement(pSet);
 
                 if (!pPassenger)
                     if (me->isInCombat())
@@ -565,7 +565,7 @@ public:
 // Classe de base pour les adds
 struct npc_gunship_adds_AI : ScriptedAI
 {
-    npc_gunship_adds_AI(CreaturePtr pCreature) : ScriptedAI(pCreature)
+    npc_gunship_adds_AI(Creature *pCreature) : ScriptedAI(pCreature)
     {pInstance = pCreature->GetInstanceScript();}
 
     InstanceScript* pInstance;
@@ -590,7 +590,7 @@ struct npc_gunship_adds_AI : ScriptedAI
         me->setFaction(14);
     }
 
-    void JustDied(UnitPtr victim)
+    void JustDied(Unit *victim)
     {
         if (mustBeRespawned)
             pInstance->SetData64(DATA_GUNSHIP_ADD_RESPAWN, me->GetGUID());
@@ -623,17 +623,17 @@ struct npc_gunship_adds_AI : ScriptedAI
         }
     }
 
-    void DoTransportInCombat(TransportPtr pTransport)
+    void DoTransportInCombat(Transport* pTransport)
     {
         if(!pTransport)
             return;
 
-        std::set<PlayerPtr> pSet = pTransport->GetPassengers();
+        std::set<Player*> pSet = pTransport->GetPassengers();
 
         if(pSet.empty())
             return;
 
-        for(std::set<PlayerPtr>::iterator itr = pSet.begin(); itr != pSet.end(); ++itr)
+        for(std::set<Player*>::iterator itr = pSet.begin(); itr != pSet.end(); ++itr)
         {
             me->SetInCombatWith(*itr);
             (*itr)->SetInCombatWith(me);
@@ -641,7 +641,7 @@ struct npc_gunship_adds_AI : ScriptedAI
         }
     }
 
-    void IsSummonedBy(UnitPtr summoner)
+    void IsSummonedBy(Unit* summoner)
     {
         if(summoner)
             SummonerGUID = summoner->GetGUID();
@@ -657,9 +657,9 @@ struct npc_gunship_adds_AI : ScriptedAI
             RankTimer -= diff;
     }
 
-    bool CanSeeAlways(constWorldObjectPtr obj)
+    bool CanSeeAlways(WorldObject const* obj)
     {
-        if (TO_CONST_PLAYER(obj))
+        if (obj->ToPlayer())
             return true;
         else
             return false;
@@ -672,14 +672,14 @@ class npc_gunship : public CreatureScript
 public:
     npc_gunship() : CreatureScript("npc_gunship") { }
 
-    CreatureAI* GetAI(CreaturePtr pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_gunship_AI (pCreature);
     }
 
     struct npc_gunship_AI : public ScriptedAI
     {
-        npc_gunship_AI(CreaturePtr pCreature) : ScriptedAI(pCreature)
+        npc_gunship_AI(Creature *pCreature) : ScriptedAI(pCreature)
         {pInstance = pCreature->GetInstanceScript();}
 
         InstanceScript* pInstance;
@@ -691,12 +691,12 @@ public:
             me->SetReactState(REACT_PASSIVE);
         }
 
-        void MoveInLineOfSight(UnitPtr /*who*/)
+        void MoveInLineOfSight(Unit* /*who*/)
         {
             return;
         }
             
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             return;
         }
@@ -723,12 +723,12 @@ public:
             }
         }
 
-        void JustDied(UnitPtr victim)
+        void JustDied(Unit *victim)
         {}
 
-        void DamageTaken(UnitPtr pDone_by, uint32& uiDamage)
+        void DamageTaken(Unit* pDone_by, uint32& uiDamage)
         {
-            if (TO_PET(pDone_by) || TO_PLAYER(pDone_by))
+            if (pDone_by->ToPet() || pDone_by->ToPlayer())
             {
                 uiDamage = 0;
                 return;
@@ -748,7 +748,7 @@ public:
             }
         }
          
-        void SpellHit(UnitPtr /*caster*/, const SpellInfo * spell)
+        void SpellHit(Unit* /*caster*/, const SpellInfo * spell)
         {}
 
         void UpdateAI(const uint32 diff)
@@ -761,29 +761,29 @@ class npc_gunship_tireur : public CreatureScript
 public:
     npc_gunship_tireur() : CreatureScript("npc_gunship_tireur") { }
 
-    CreatureAI* GetAI(CreaturePtr pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_gunship_tireur_AI (pCreature);
     }
 
     struct npc_gunship_tireur_AI : public npc_gunship_adds_AI
     {
-        npc_gunship_tireur_AI(CreaturePtr pCreature) : npc_gunship_adds_AI(pCreature) {}
+        npc_gunship_tireur_AI(Creature *pCreature) : npc_gunship_adds_AI(pCreature) {}
 
-        TransportPtr FriendlyTransport;
+        Transport * FriendlyTransport;
 
         void Reset()
         {
             npc_gunship_adds_AI::Reset();
             events.ScheduleEvent(EVENT_TIR, CONFIG_TIR_TIMER);
 
-            FriendlyTransport = nullptr;
+            FriendlyTransport = NULL;
 
             if (pInstance)
                 FriendlyTransport = GetTransportByGUID(me, pInstance->GetData64(DATA_GUNSHIP_TRANSPORT_MAIN));
         }
 
-        void AttackStart(UnitPtr target)
+        void AttackStart(Unit* target)
         {
             if (!target)
                 return;
@@ -792,12 +792,12 @@ public:
                 DoStartNoMovement(target);
         }
 
-        void JustDied(UnitPtr victim)
+        void JustDied(Unit *victim)
         {
              npc_gunship_adds_AI::JustDied(victim);
         }
 
-        void IsSummonedBy(UnitPtr summoner)
+        void IsSummonedBy(Unit* summoner)
         {
             npc_gunship_adds_AI::IsSummonedBy(summoner);
         }
@@ -824,7 +824,7 @@ public:
 
                         DoTransportInCombat(FriendlyTransport);
 
-                        if(UnitPtr unit = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if(Unit* unit = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         {
                             if (unit->GetTransport() == me->GetTransport())
                             {
@@ -850,14 +850,14 @@ class npc_gunship_soldier : public CreatureScript
 public:
     npc_gunship_soldier() : CreatureScript("npc_gunship_soldier") { }
 
-    CreatureAI* GetAI(CreaturePtr pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_gunship_soldier_AI (pCreature);
     }
 
     struct npc_gunship_soldier_AI : public npc_gunship_adds_AI
     {
-        npc_gunship_soldier_AI(CreaturePtr pCreature) : npc_gunship_adds_AI(pCreature) {}
+        npc_gunship_soldier_AI(Creature *pCreature) : npc_gunship_adds_AI(pCreature) {}
 
         uint32 lastTimeAttackedByPlayer;
         bool PoixArdentScheduled;
@@ -876,23 +876,23 @@ public:
             mustBeRespawned = false;
 
             if (pInstance)
-                if (TransportPtr FriendlyTransport = GetTransportByGUID(me, pInstance->GetData64(DATA_GUNSHIP_TRANSPORT_MAIN)))
+                if (Transport * FriendlyTransport = GetTransportByGUID(me, pInstance->GetData64(DATA_GUNSHIP_TRANSPORT_MAIN)))
                     DoTransportInCombat(FriendlyTransport);
         }
 
-        void JustDied(UnitPtr victim)
+        void JustDied(Unit *victim)
         {
             npc_gunship_adds_AI::JustDied(victim);
         }
 
-        void IsSummonedBy(UnitPtr summoner)
+        void IsSummonedBy(Unit* summoner)
         {
             npc_gunship_adds_AI::IsSummonedBy(summoner);
 
             DoCast(me, SPELL_INVOCATION_VISUEL);
         }
 
-        void DamageTaken(UnitPtr pDone_by, uint32& uiDamage)
+        void DamageTaken(Unit* pDone_by, uint32& uiDamage)
         {
             if (pDone_by->GetTypeId() == TYPEID_PLAYER)
             {
@@ -923,11 +923,11 @@ public:
                 {
                     if (me->getVictim()->GetTransport()->GetGUID() != pInstance->GetData64(DATA_GUNSHIP_TRANSPORT_MAIN))
                     {
-                        if (TransportPtr FriendlyTransport = GetTransportByGUID(me, pInstance->GetData64(DATA_GUNSHIP_TRANSPORT_MAIN)))
+                        if (Transport * FriendlyTransport = GetTransportByGUID(me, pInstance->GetData64(DATA_GUNSHIP_TRANSPORT_MAIN)))
                         {
-                            std::set<PlayerPtr> players = FriendlyTransport->GetPassengers();
+                            std::set<Player*> players = FriendlyTransport->GetPassengers();
 
-                            CreaturePtr commander = me->GetMap()->GetCreature(pInstance->GetData64(DATA_GUNSHIP_COMMANDER));
+                            Creature * commander = me->GetMap()->GetCreature(pInstance->GetData64(DATA_GUNSHIP_COMMANDER));
 
                             if (!commander)
                                 return;
@@ -973,7 +973,7 @@ public:
                         events.ScheduleEvent(EVENT_TEMPETE_DE_LAME, CONFIG_TEMPETE_LAME_TIMER);
                         break;
                     case EVENT_POIX_ARDENTE:
-                        if (CreaturePtr pCommander = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), pInstance->GetData64(DATA_GUNSHIP_COMMANDER)))
+                        if (Creature * pCommander = ObjectAccessor::GetCreature(*me, pInstance->GetData64(DATA_GUNSHIP_COMMANDER)))
                             me->CastSpell(pCommander, SPELL_POIX_ARDENTE, false);
                         events.ScheduleEvent(EVENT_POIX_ARDENTE, CONFIG_POIX_TIMER);
                         break;
@@ -992,16 +992,16 @@ class npc_gunship_artilleur : public CreatureScript
 public:
     npc_gunship_artilleur() : CreatureScript("npc_gunship_artilleur") { }
 
-    CreatureAI* GetAI(CreaturePtr pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_gunship_artilleur_AI (pCreature);
     }
 
     struct npc_gunship_artilleur_AI : public npc_gunship_adds_AI
     {
-        npc_gunship_artilleur_AI(CreaturePtr pCreature) : npc_gunship_adds_AI(pCreature) {}
+        npc_gunship_artilleur_AI(Creature *pCreature) : npc_gunship_adds_AI(pCreature) {}
 
-        TransportPtr FriendlyTransport;
+        Transport * FriendlyTransport;
         uint64 targetGuid;
 
         void Reset()
@@ -1015,12 +1015,12 @@ public:
             events.ScheduleEvent(EVENT_MISSILE, CONFIG_MISSILE_TIMER);
         }
 
-        void JustDied(UnitPtr victim)
+        void JustDied(Unit *victim)
         {
              npc_gunship_adds_AI::JustDied(victim);
         }
 
-        void AttackStart(UnitPtr target)
+        void AttackStart(Unit* target)
         {
             if (!target)
                 return;
@@ -1029,7 +1029,7 @@ public:
                 DoStartNoMovement(target);
         }
 
-        void IsSummonedBy(UnitPtr summoner)
+        void IsSummonedBy(Unit* summoner)
         {
             npc_gunship_adds_AI::IsSummonedBy(summoner);
         }
@@ -1056,7 +1056,7 @@ public:
 
                         DoTransportInCombat(FriendlyTransport);
 
-                        if(UnitPtr unit = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if(Unit* unit = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         {
                             if (unit->GetTransport() == me->GetTransport())
                             {
@@ -1075,13 +1075,13 @@ public:
                     }
                     case EVENT_MISSILE_VISUAL:
                     {
-                        me->CastSpell(ObjectAccessor::GetPlayer(TO_CONST_WORLDOBJECT(me), targetGuid), SPELL_MISSILE_VISUAL, true);
+                        me->CastSpell(ObjectAccessor::GetPlayer(*me, targetGuid), SPELL_MISSILE_VISUAL, true);
                         events.CancelEvent(EVENT_MISSILE_VISUAL);
                         break;
                     }
                     case EVENT_MISSILE_DAMAGE_TRANS:
                     {
-                        if (CreaturePtr FriendGunshipNpc = pInstance->instance->GetCreature(pInstance->GetData64(DATA_GUNSHIP_NPC_MAIN)))
+                        if (Creature* FriendGunshipNpc = pInstance->instance->GetCreature(pInstance->GetData64(DATA_GUNSHIP_NPC_MAIN)))
                             me->DealDamage(FriendGunshipNpc, urand(6300, 7701));
                         events.CancelEvent(EVENT_MISSILE_DAMAGE_TRANS);
                         break;
@@ -1099,14 +1099,14 @@ class npc_gunship_sorcier_mage : public CreatureScript
 public:
     npc_gunship_sorcier_mage() : CreatureScript("npc_gunship_sorcier_mage") { }
 
-    CreatureAI* GetAI(CreaturePtr pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_gunship_sorcier_mage_AI (pCreature);
     }
 
     struct npc_gunship_sorcier_mage_AI : public npc_gunship_adds_AI
     {
-        npc_gunship_sorcier_mage_AI(CreaturePtr pCreature) : npc_gunship_adds_AI(pCreature)
+        npc_gunship_sorcier_mage_AI(Creature *pCreature) : npc_gunship_adds_AI(pCreature)
         {pInstance = pCreature->GetInstanceScript();}
 
         InstanceScript* pInstance;
@@ -1128,12 +1128,12 @@ public:
                 pInstance->SetData(DATA_GUNSHIP_PORTAL_MAGES, ACTION_ADD_MAGE);
         }
 
-        void MoveInLineOfSight(UnitPtr /*who*/)
+        void MoveInLineOfSight(Unit* /*who*/)
         {
             return;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             return;
         }
@@ -1152,7 +1152,7 @@ public:
             }
         }
 
-        void JustDied(UnitPtr victim)
+        void JustDied(Unit *victim)
         {
             if (!pInstance)
                 return;
@@ -1202,7 +1202,7 @@ public:
 
             if (!MovementDone)
             {
-                TransportPtr pTransport = GetTransportByGUID(me, pInstance->GetData64(DATA_GUNSHIP_TRANSPORT_SECOND));
+                Transport * pTransport = GetTransportByGUID(me, pInstance->GetData64(DATA_GUNSHIP_TRANSPORT_SECOND));
 
                 if (!pTransport)
                     return;
@@ -1230,14 +1230,14 @@ class npc_gunship_canon : public CreatureScript
 public:
     npc_gunship_canon() : CreatureScript("npc_gunship_canon") { }
 
-    CreatureAI* GetAI(CreaturePtr pCreature) const
+    CreatureAI* GetAI(Creature* pCreature) const
     {
         return new npc_gunship_canon_AI (pCreature);
     }
 
     struct npc_gunship_canon_AI : public ScriptedAI
     {
-        npc_gunship_canon_AI(CreaturePtr pCreature) : ScriptedAI(pCreature)
+        npc_gunship_canon_AI(Creature *pCreature) : ScriptedAI(pCreature)
         {pInstance = pCreature->GetInstanceScript();}
 
         InstanceScript* pInstance;
@@ -1246,20 +1246,20 @@ public:
         void Reset()
         {}
 
-        void JustDied(UnitPtr victim)
+        void JustDied(Unit *victim)
         {}
 
-        void MoveInLineOfSight(UnitPtr /*who*/)
+        void MoveInLineOfSight(Unit* /*who*/)
         {
             return;
         }
             
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             return;
         }
 
-        void DamageTaken(UnitPtr /*pDone_by*/, uint32& uiDamage)
+        void DamageTaken(Unit* /*pDone_by*/, uint32& uiDamage)
         {
 			uiDamage = 0; // Les canons ne peuvent pas mourir
         }
@@ -1278,7 +1278,7 @@ class npc_gunship_zafod : public CreatureScript
 public:
     npc_gunship_zafod() : CreatureScript("npc_gunship_zafod") { }
 
-    bool OnGossipHello(PlayerPtr pPlayer, CreaturePtr pCreature)
+    bool OnGossipHello(Player* pPlayer, Creature* pCreature)
     {
         if (pCreature->GetInstanceScript())
         {
@@ -1293,7 +1293,7 @@ public:
         return false;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr pCreature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* pCreature, uint32 /*sender*/, uint32 action)
     {
         player->AddItem(49278, 1);
         player->PlayerTalkClass->ClearMenus();
@@ -1310,7 +1310,7 @@ class transport_icc_gunship : public TransportScript
 public:
     transport_icc_gunship() : TransportScript("transport_icc_gunship") { }
 
-    void OnAddPassenger(TransportPtr transport, PlayerPtr player)
+    void OnAddPassenger(Transport* transport, Player* player)
     {
         switch(transport->GetEntry())
         {
@@ -1332,7 +1332,7 @@ public:
     }
 
     // Called when a player exits the transport.
-    void OnRemovePassenger(TransportPtr transport, PlayerPtr player)
+    void OnRemovePassenger(Transport* transport, Player* player)
     {
         switch(transport->GetEntry())
         {
@@ -1364,7 +1364,7 @@ class spell_gunship_canon_blast : public SpellScriptLoader
                 SetHitDamage(1500);
             }
 
-            void GetOnlyEnnemyGunshipTarget(std::list<WorldObjectPtr>& targets)
+            void GetOnlyEnnemyGunshipTarget(std::list<WorldObject*>& targets)
             {
                 targets.clear();
 
@@ -1372,7 +1372,7 @@ class spell_gunship_canon_blast : public SpellScriptLoader
                     return;
 
                 if (InstanceScript * pInstance = GetCaster()->GetInstanceScript())
-                    if (CreaturePtr EnnemyGunshipNpc = pInstance->instance->GetCreature(pInstance->GetData64(DATA_GUNSHIP_NPC_SECOND)))
+                    if (Creature* EnnemyGunshipNpc = pInstance->instance->GetCreature(pInstance->GetData64(DATA_GUNSHIP_NPC_SECOND)))
                         targets.push_back(EnnemyGunshipNpc);
             }
 
@@ -1398,7 +1398,7 @@ class spell_gunship_incinerating_blast : public SpellScriptLoader
         {
             PrepareSpellScript(spell_gunship_incinerating_blast_SpellScript);
 
-            void GetOnlyEnnemyGunshipTarget(std::list<WorldObjectPtr>& targets)
+            void GetOnlyEnnemyGunshipTarget(std::list<WorldObject*>& targets)
             {
                 targets.clear();
 
@@ -1406,7 +1406,7 @@ class spell_gunship_incinerating_blast : public SpellScriptLoader
                     return;
 
                 if (InstanceScript * pInstance = GetCaster()->GetInstanceScript())
-                    if (CreaturePtr EnnemyGunshipNpc = pInstance->instance->GetCreature(pInstance->GetData64(DATA_GUNSHIP_NPC_SECOND)))
+                    if (Creature* EnnemyGunshipNpc = pInstance->instance->GetCreature(pInstance->GetData64(DATA_GUNSHIP_NPC_SECOND)))
                         targets.push_back(EnnemyGunshipNpc);
             }
 
@@ -1441,9 +1441,9 @@ class spell_gunship_incinerating_blast : public SpellScriptLoader
 class CheckCanonOnly
 {
     public:
-        bool operator() (WorldObjectPtr target)
+        bool operator() (WorldObject* target)
         {
-            if (UnitPtr unit = target->ToUnit())
+            if (Unit* unit = target->ToUnit())
                 return unit->GetEntry() != NPC_CANON_A && unit->GetEntry() != NPC_CANON_H;
 
             return true;
@@ -1459,18 +1459,18 @@ class spell_gunship_behind_zero : public SpellScriptLoader
         {
             PrepareSpellScript(spell_gunship_behind_zero_SpellScript);
 
-            void resizeTargets(std::list<WorldObjectPtr>& targets)
+            void resizeTargets(std::list<WorldObject*>& targets)
             {
                 if (!GetCaster())
                     return;
 
                 targets.remove_if(CheckCanonOnly());
 
-                std::list<WorldObjectPtr>::iterator Itr;
+                std::list<WorldObject*>::iterator Itr;
 
                 for (Itr = targets.begin(); Itr != targets.end(); Itr++)
-                    if (UnitPtr target = (*Itr)->ToUnit())
-                        if (VehiclePtr canon = target->GetVehicleKit())
+                    if (Unit* target = (*Itr)->ToUnit())
+                        if (Vehicle * canon = target->GetVehicleKit())
                             canon->RemoveAllPassengers();
             }
 
@@ -1509,7 +1509,7 @@ class spell_poix_ardente : public SpellScriptLoader
 
                 if (InstanceScript * pInstance = GetCaster()->GetInstanceScript())
                 {
-                    if (CreaturePtr GunshipNpc = pInstance->instance->GetCreature(pInstance->GetData64(DATA_GUNSHIP_NPC_MAIN)))
+                    if (Creature* GunshipNpc = pInstance->instance->GetCreature(pInstance->GetData64(DATA_GUNSHIP_NPC_MAIN)))
                     {
                         GetCaster()->DealDamage(GunshipNpc, GetSpellValue()->EffectBasePoints[EFFECT_0]);
                     }

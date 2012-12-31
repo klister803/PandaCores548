@@ -51,14 +51,14 @@ class boss_cyanigosa : public CreatureScript
 public:
     boss_cyanigosa() : CreatureScript("boss_cyanigosa") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_cyanigosaAI (creature);
     }
 
     struct boss_cyanigosaAI : public ScriptedAI
     {
-        boss_cyanigosaAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_cyanigosaAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -82,7 +82,7 @@ public:
                 instance->SetData(DATA_CYANIGOSA_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -90,7 +90,7 @@ public:
                 instance->SetData(DATA_CYANIGOSA_EVENT, IN_PROGRESS);
         }
 
-        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -112,7 +112,7 @@ public:
 
             if (uiBlizzardTimer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_BLIZZARD);
                 uiBlizzardTimer = 15000;
             } else uiBlizzardTimer -= diff;
@@ -133,7 +133,7 @@ public:
             {
                 if (uiManaDestructionTimer <= diff)
                 {
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                         DoCast(target, SPELL_MANA_DESTRUCTION);
                     uiManaDestructionTimer = 30000;
                 } else uiManaDestructionTimer -= diff;
@@ -142,7 +142,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -150,7 +150,7 @@ public:
                 instance->SetData(DATA_CYANIGOSA_EVENT, DONE);
         }
 
-        void KilledUnit(UnitPtr victim)
+        void KilledUnit(Unit* victim)
         {
             if (victim == me)
                 return;
@@ -167,7 +167,7 @@ class achievement_defenseless : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
+        bool OnCheck(Player* /*player*/, Unit* target)
         {
             if (!target)
                 return false;

@@ -681,26 +681,26 @@ class spell_trigger_spell_from_caster : public SpellScriptLoader
 };
 
 template<class AI>
-CreatureAI* GetIcecrownCitadelAI(CreaturePtr creature)
+CreatureAI* GetIcecrownCitadelAI(Creature* creature)
 {
-    if (InstanceMapPtr instance = creature->GetMap()->ToInstanceMap())
+    if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
         if (instance->GetInstanceScript())
             if (instance->GetScriptId() == sObjectMgr->GetScriptId(ICCScriptName))
                 return new AI(creature);
-    return nullptr;
+    return NULL;
 }
 
-void CheckPlayerDamage(UnitPtr pUnit, uint32 & damage);
+void CheckPlayerDamage(Unit* pUnit, uint32 & damage);
 
 // Declaration
 extern Position const SindragosaSpawnPos;
 uint32 GetPhase(const EventMap &em);
-void TeleportPlayerToFrozenThrone(PlayerPtr player);
-void LeaveOnlyPlayers(std::list<UnitPtr> &targets);
-typedef std::list<PlayerPtr> TPlayerList;
-TPlayerList GetPlayersInTheMap(MapPtr pMap);
-TPlayerList GetAttackablePlayersInTheMap(MapPtr pMap);
+void TeleportPlayerToFrozenThrone(Player* player);
+void LeaveOnlyPlayers(std::list<Unit*> &targets);
+typedef std::list<Player*> TPlayerList;
+TPlayerList GetPlayersInTheMap(Map* pMap);
+TPlayerList GetAttackablePlayersInTheMap(Map* pMap);
 
-void UnsummonSpecificCreaturesNearby(CreaturePtr ref, uint32 entry, float radius);
+void UnsummonSpecificCreaturesNearby(Creature* ref, uint32 entry, float radius);
 
 #endif // DEF_ICECROWN_CITADEL_H

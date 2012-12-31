@@ -60,7 +60,7 @@ class instance_arcatraz : public InstanceMapScript
         }
         struct instance_arcatraz_InstanceMapScript : public InstanceScript
         {
-            instance_arcatraz_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+            instance_arcatraz_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
             uint32 m_auiEncounter[MAX_ENCOUNTER];
 
@@ -100,7 +100,7 @@ class instance_arcatraz : public InstanceMapScript
                 return false;
             }
 
-            void OnGameObjectCreate(GameObjectPtr go)
+            void OnGameObjectCreate(GameObject* go)
             {
                 switch (go->GetEntry())
                 {
@@ -142,7 +142,7 @@ class instance_arcatraz : public InstanceMapScript
                 }
             }
 
-            void OnCreatureCreate(CreaturePtr creature)
+            void OnCreatureCreate(Creature* creature)
             {
                 if (creature->GetEntry() == MELLICHAR)
                     MellicharGUID = creature->GetGUID();
@@ -158,7 +158,7 @@ class instance_arcatraz : public InstanceMapScript
                 case TYPE_DALLIAH:
                     if (data == DONE)
                     {
-                        if (GameObjectPtr go = instance->GetGameObject(Containment_Core_Security_Field_BetaGUID))
+                        if (GameObject* go = instance->GetGameObject(Containment_Core_Security_Field_BetaGUID))
                             go->UseDoorOrButton();
                     }
                     m_auiEncounter[1] = data;
@@ -166,7 +166,7 @@ class instance_arcatraz : public InstanceMapScript
                 case TYPE_SOCCOTHRATES:
                     if (data == DONE)
                     {
-                        if (GameObjectPtr go = instance->GetGameObject(Containment_Core_Security_Field_AlphaGUID))
+                        if (GameObject* go = instance->GetGameObject(Containment_Core_Security_Field_AlphaGUID))
                             go->UseDoorOrButton();
                     }
                     m_auiEncounter[2] = data;
@@ -184,14 +184,14 @@ class instance_arcatraz : public InstanceMapScript
                     break;
                 case TYPE_WARDEN_1:
                     if (data == IN_PROGRESS)
-                        if (GameObjectPtr go = instance->GetGameObject(Pod_AlphaGUID))
+                        if (GameObject* go = instance->GetGameObject(Pod_AlphaGUID))
                             go->UseDoorOrButton();
                     m_auiEncounter[4] = data;
                     break;
                 case TYPE_WARDEN_2:
                     if (data == IN_PROGRESS)
                     {
-                        if (GameObjectPtr go = instance->GetGameObject(Pod_BetaGUID))
+                        if (GameObject* go = instance->GetGameObject(Pod_BetaGUID))
                             go->UseDoorOrButton();
                     }
                     m_auiEncounter[5] = data;
@@ -199,7 +199,7 @@ class instance_arcatraz : public InstanceMapScript
                 case TYPE_WARDEN_3:
                     if (data == IN_PROGRESS)
                     {
-                        if (GameObjectPtr go = instance->GetGameObject(Pod_DeltaGUID))
+                        if (GameObject* go = instance->GetGameObject(Pod_DeltaGUID))
                             go->UseDoorOrButton();
                     }
                     m_auiEncounter[6] = data;
@@ -207,7 +207,7 @@ class instance_arcatraz : public InstanceMapScript
                 case TYPE_WARDEN_4:
                     if (data == IN_PROGRESS)
                     {
-                        if (GameObjectPtr go = instance->GetGameObject(Pod_GammaGUID))
+                        if (GameObject* go = instance->GetGameObject(Pod_GammaGUID))
                             go->UseDoorOrButton();
                     }
                     m_auiEncounter[7] = data;
@@ -215,7 +215,7 @@ class instance_arcatraz : public InstanceMapScript
                 case TYPE_WARDEN_5:
                     if (data == IN_PROGRESS)
                     {
-                        if (GameObjectPtr go = instance->GetGameObject(Pod_OmegaGUID))
+                        if (GameObject* go = instance->GetGameObject(Pod_OmegaGUID))
                             go->UseDoorOrButton();
                     }
                     m_auiEncounter[8] = data;
@@ -223,7 +223,7 @@ class instance_arcatraz : public InstanceMapScript
                 case TYPE_SHIELD_OPEN:
                     if (data == IN_PROGRESS)
                     {
-                        if (GameObjectPtr go = instance->GetGameObject(Wardens_ShieldGUID))
+                        if (GameObject* go = instance->GetGameObject(Wardens_ShieldGUID))
                             go->UseDoorOrButton();
                     }
                     break;
@@ -255,7 +255,7 @@ class instance_arcatraz : public InstanceMapScript
             }
         };
 
-        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
             return new instance_arcatraz_InstanceMapScript(map);
         }

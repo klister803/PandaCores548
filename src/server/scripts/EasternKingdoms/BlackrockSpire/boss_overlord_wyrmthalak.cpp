@@ -51,14 +51,14 @@ class boss_overlord_wyrmthalak : public CreatureScript
 public:
     boss_overlord_wyrmthalak() : CreatureScript("boss_overlord_wyrmthalak") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_overlordwyrmthalakAI(creature);
     }
 
     struct boss_overlordwyrmthalakAI : public BossAI
     {
-        boss_overlordwyrmthalakAI(CreaturePtr creature) : BossAI(creature, DATA_OVERLORD_WYRMTHALAK) {}
+        boss_overlordwyrmthalakAI(Creature* creature) : BossAI(creature, DATA_OVERLORD_WYRMTHALAK) {}
 
         bool Summoned;
 
@@ -68,7 +68,7 @@ public:
             Summoned = false;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_BLAST_WAVE, 20 * IN_MILLISECONDS);
@@ -77,7 +77,7 @@ public:
             events.ScheduleEvent(EVENT_KNOCK_AWAY, 12 * IN_MILLISECONDS);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             _JustDied();
         }
@@ -89,11 +89,11 @@ public:
 
             if (!Summoned && HealthBelowPct(51))
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                 {
-                    if (CreaturePtr warlord = me->SummonCreature(NPC_SPIRESTONE_WARLORD, SummonLocation1, TEMPSUMMON_TIMED_DESPAWN, 300 * IN_MILLISECONDS))
+                    if (Creature* warlord = me->SummonCreature(NPC_SPIRESTONE_WARLORD, SummonLocation1, TEMPSUMMON_TIMED_DESPAWN, 300 * IN_MILLISECONDS))
                         warlord->AI()->AttackStart(target);
-                    if (CreaturePtr berserker = me->SummonCreature(NPC_SMOLDERTHORN_BERSERKER, SummonLocation2, TEMPSUMMON_TIMED_DESPAWN, 300 * IN_MILLISECONDS))
+                    if (Creature* berserker = me->SummonCreature(NPC_SMOLDERTHORN_BERSERKER, SummonLocation2, TEMPSUMMON_TIMED_DESPAWN, 300 * IN_MILLISECONDS))
                         berserker->AI()->AttackStart(target);
                     Summoned = true;
                 }

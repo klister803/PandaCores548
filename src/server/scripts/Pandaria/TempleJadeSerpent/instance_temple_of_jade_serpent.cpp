@@ -134,7 +134,7 @@ class instance_temple_of_jade_serpent : public InstanceMapScript
 public:
     instance_temple_of_jade_serpent() : InstanceMapScript("instance_temple_of_jade_serpent", 960) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_temple_of_jade_serpent_InstanceMapScript(map);
     }
@@ -198,7 +198,7 @@ public:
         ** End of Sha of Doubt script.
         */
 
-        instance_temple_of_jade_serpent_InstanceMapScript(MapPtr map) : InstanceScript(map)
+        instance_temple_of_jade_serpent_InstanceMapScript(Map* map) : InstanceScript(map)
         {
             // Wise Mari script
             doorWiseMari = 0;
@@ -238,7 +238,7 @@ public:
         {
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -258,7 +258,7 @@ public:
         }
 
         
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             OnCreatureCreate_lorewalker_stonestep(creature);
             OnCreatureCreate_liu_flameheart(creature);
@@ -268,7 +268,7 @@ public:
             	wiseMariGUID = creature->GetGUID();
         }
 
-        void OnUnitDeath(UnitPtr unit)
+        void OnUnitDeath(Unit* unit)
         {
             OnUnitDeath_lorewalker_stonestep(unit);
             OnUnitDeath_liu_flameheat(unit);
@@ -300,11 +300,11 @@ public:
                 {
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                     {
-                        PlayerPtr plr = i->getSource();
+                        Player* plr = i->getSource();
                         if(!plr)
                             continue;
 
-                        UnitPtr wiseMari = Unit::GetUnit(plr, wiseMariGUID);
+                        Unit* wiseMari = Unit::GetUnit(*plr, wiseMariGUID);
                         if (!wiseMari)
                         	continue;
 
@@ -364,7 +364,7 @@ public:
                 return STATUS_NONE;
             case TYPE_LIU_FLAMEHEART_STATUS:
                 {
-                    CreaturePtr creature = instance->GetCreature(liuGuid);
+                    Creature* creature = instance->GetCreature(liuGuid);
                     if (creature == nullptr)
                         return 2;
 
@@ -389,11 +389,11 @@ public:
             return 0;
         }
 
-        void OnUnitDeath_wise_mari(UnitPtr unit)
+        void OnUnitDeath_wise_mari(Unit* unit)
         {
             if (unit->GetEntry() == CREATURE_WISE_MARI)
             {
-                GameObjectPtr go = instance->GetGameObject(doorWiseMari);
+                GameObject* go = instance->GetGameObject(doorWiseMari);
                 if (go != nullptr)
                     go->SetGoState(GOState::GO_STATE_ACTIVE);
             }
@@ -412,7 +412,7 @@ public:
                     ++countTank;
                 if (countDps + countHeal + countTank == countFigments)
                 {
-                    CreaturePtr sha_doubt = instance->GetCreature(sha_of_doubt_guid);
+                    Creature* sha_doubt = instance->GetCreature(sha_of_doubt_guid);
                     if (!sha_doubt)
                         return;
 
@@ -427,7 +427,7 @@ public:
                 break;
             }
         }
-        void OnCreatureCreate_sha_of_doubt(CreaturePtr creature)
+        void OnCreatureCreate_sha_of_doubt(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -438,7 +438,7 @@ public:
                 if (creature->ToTempSummon())
                 {
                     ++countFigments;
-                    UnitPtr summoner = creature->ToTempSummon()->GetSummoner();
+                    Unit* summoner = creature->ToTempSummon()->GetSummoner();
                     if (!summoner)
                         return;
                     summoner->AddAura(SPELL_FIGMENT_OF_DOUBT_2, creature);
@@ -447,16 +447,16 @@ public:
                     summoner->CastSpell(creature, SPELL_COPY_WEAPON, false);
                     summoner->CastSpell(creature, SPELL_COPY_WEAPON_2, false);
 
-                    UnitPtr caster = summoner;
-                    UnitPtr target = creature;
+                    Unit* caster = summoner;
+                    Unit* target = creature;
 
                     if (!caster)
                         return;
                     uint32 prevItem = target->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID);
-                    if (PlayerPtr player = TO_PLAYER(caster))
+                    if (Player* player = caster->ToPlayer())
 
                     {
-                        if (ItemPtr mainItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+                        if (Item* mainItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
                             target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, mainItem->GetEntry());
 
                     }
@@ -465,9 +465,9 @@ public:
 
                     prevItem = target->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID) + 1;
 
-                    if (PlayerPtr player = TO_PLAYER(caster))
+                    if (Player* player = caster->ToPlayer())
                     {
-                        if (ItemPtr offItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                        if (Item* offItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
                             target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, offItem->GetEntry());
                     }
                     else
@@ -475,9 +475,9 @@ public:
                     
                     prevItem = target->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID) + 2;
 
-                    if (PlayerPtr player = TO_PLAYER(caster))
+                    if (Player* player = caster->ToPlayer())
                     {
-                        if (ItemPtr rangedItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
+                        if (Item* rangedItem = player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_RANGED))
                             target->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 2, rangedItem->GetEntry());
                     }
                     else 
@@ -487,7 +487,7 @@ public:
             }
         }
 
-        void OnCreatureCreate_liu_flameheart(CreaturePtr creature)
+        void OnCreatureCreate_liu_flameheart(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -503,7 +503,7 @@ public:
                 break;
             }
         }
-        void OnUnitDeath_liu_flameheat(UnitPtr unit)
+        void OnUnitDeath_liu_flameheat(Unit* unit)
         {
             if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_MINION_OF_DOUBTS)
             {
@@ -518,7 +518,7 @@ public:
             }
             if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_YU_LON)
             {
-                CreaturePtr creature = instance->GetCreature(liuGuid);
+                Creature* creature = instance->GetCreature(liuGuid);
                 if (!creature)
                     return;
                 
@@ -531,7 +531,7 @@ public:
                     creature->GetAI()->DoAction(0);
 
                 //Open the door!
-                GameObjectPtr go = instance->GetGameObject(doorLiu);
+                GameObject* go = instance->GetGameObject(doorLiu);
                 if (go != nullptr)
                     go->SetGoState(GOState::GO_STATE_ACTIVE);
                 go = instance->GetGameObject(doorLiu_2);
@@ -551,13 +551,13 @@ public:
         }
         void IsWipe_liu_flameheart()
         {
-            CreaturePtr liu = instance->GetCreature(liuGuid);
+            Creature* liu = instance->GetCreature(liuGuid);
             if (liu)
                 liu->ForcedDespawn();
 
             for (auto guid : mobs_liu)
             {
-                CreaturePtr crea = instance->GetCreature(guid);
+                Creature* crea = instance->GetCreature(guid);
                 if (crea == nullptr)
                     continue;
                 crea->Respawn();
@@ -571,7 +571,7 @@ public:
             {
             case TYPE_SET_SCROLL_SELECTABLE:
                 {
-                    CreaturePtr c = instance->GetCreature(scroll);
+                    Creature* c = instance->GetCreature(scroll);
                     if (c == nullptr)
                         return;
                     c->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -582,7 +582,7 @@ public:
                     return;
                 for (auto guid : suns)
                 {
-                    CreaturePtr creature = instance->GetCreature(guid);
+                    Creature* creature = instance->GetCreature(guid);
                     if (!creature)
                         continue;
 
@@ -592,7 +592,7 @@ public:
                 }
                 for (auto guid : sun_triggers)
                 {
-                    CreaturePtr creature = instance->GetCreature(guid);
+                    Creature* creature = instance->GetCreature(guid);
                     if (!creature)
                         continue;
 
@@ -604,7 +604,7 @@ public:
                 break;
             case TYPE_LOREWALKER_STONESTEP_TALK_AFTER_ZAO:
                 {
-                    CreaturePtr creature = instance->GetCreature(lorewalkter_stonestep);
+                    Creature* creature = instance->GetCreature(lorewalkter_stonestep);
                     if (!creature)
                         return;
                     if (creature->GetAI())
@@ -617,13 +617,13 @@ public:
                 if (eventStatus_numberSunDefeated == 5)
                 {
                     eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_ZAO_COMBAT;
-                    CreaturePtr zao = instance->GetCreature(zao_sunseeker);
+                    Creature* zao = instance->GetCreature(zao_sunseeker);
                     if (!zao)
                         return;
 
                     for (auto guid : sha_summoned)
                     {
-                        CreaturePtr creature = instance->GetCreature(guid);
+                        Creature* creature = instance->GetCreature(guid);
                         if (!creature)
                             continue;
                         creature->Respawn(true);
@@ -634,7 +634,7 @@ public:
                     //Stop the fire tornados.
                     for (auto guid : sunfires)
                     {
-                        CreaturePtr creature = instance->GetCreature(guid);
+                        Creature* creature = instance->GetCreature(guid);
                         if (!creature)
                             continue;
 
@@ -646,7 +646,7 @@ public:
                 break;
             }
         }
-        void OnCreatureCreate_lorewalker_stonestep(CreaturePtr creature)
+        void OnCreatureCreate_lorewalker_stonestep(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -732,15 +732,15 @@ public:
                 break;
             }
         }
-        void OnUnitDeath_lorewalker_stonestep(UnitPtr unit)
+        void OnUnitDeath_lorewalker_stonestep(Unit* unit)
         {
             if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_STRIFE)
             {
-                if (CreaturePtr peril = instance->GetCreature(guidPeril))
+                if (Creature* peril = instance->GetCreature(guidPeril))
                 {
                     if (peril->isDead())
                     {
-                        GameObjectPtr go = instance->GetGameObject(door_lorewalker);
+                        GameObject* go = instance->GetGameObject(door_lorewalker);
                         if (go != nullptr)
                             go->SetGoState(GOState::GO_STATE_ACTIVE);
                         eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_FINISH;
@@ -751,7 +751,7 @@ public:
                         {
                             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                             {
-                                PlayerPtr plr = i->getSource();
+                                Player* plr = i->getSource();
                                 if( !plr)
                                     continue;
                                 plr->CastSpell(plr, SPELL_LOREWALKER_ALACRITY, false);
@@ -762,11 +762,11 @@ public:
             }
             if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_PERIL)
             {
-                if (CreaturePtr strife = instance->GetCreature(guidStrife))
+                if (Creature* strife = instance->GetCreature(guidStrife))
                 {
                     if (strife->isDead())
                     {
-                        GameObjectPtr go = instance->GetGameObject(door_lorewalker);
+                        GameObject* go = instance->GetGameObject(door_lorewalker);
                         if (go != nullptr)
                             go->SetGoState(GOState::GO_STATE_ACTIVE);
                         eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_FINISH;
@@ -777,7 +777,7 @@ public:
                         {
                             for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                             {
-                                PlayerPtr plr = i->getSource();
+                                Player* plr = i->getSource();
                                 if( !plr)
                                     continue;
                                 plr->CastSpell(plr, SPELL_LOREWALKER_ALACRITY, false);
@@ -788,7 +788,7 @@ public:
             }
             if (unit->ToCreature() && unit->ToCreature()->GetEntry() == CREATURE_ZAO_SUNSEEKER)
             {
-                GameObjectPtr go = instance->GetGameObject(door_lorewalker);
+                GameObject* go = instance->GetGameObject(door_lorewalker);
                 if (go != nullptr)
                     go->SetGoState(GOState::GO_STATE_ACTIVE);
                 eventStatus_lorewalkter_stonestep = STATUS_LOREWALKER_STONESTEP_FINISH;
@@ -799,7 +799,7 @@ public:
                 {
                     for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                     {
-                        PlayerPtr plr = i->getSource();
+                        Player* plr = i->getSource();
                         if( !plr)
                             continue;
                         plr->CastSpell(plr, SPELL_LOREWALKER_ALACRITY, false);
@@ -827,7 +827,7 @@ public:
 
                 if (eventChoosen == EVENT_LOREWALKER_STONESTEP_SUNS)
                 {
-                    CreaturePtr lorewalker = instance->GetCreature(lorewalkter_stonestep);
+                    Creature* lorewalker = instance->GetCreature(lorewalkter_stonestep);
                     if (lorewalker && lorewalker->GetAI())
                         lorewalker->GetAI()->DoAction(STATUS_LOREWALKER_STONESTEP_SPAWN_SUNS);
                     
@@ -838,7 +838,7 @@ public:
                     {
                         if (guid == lorewalkter_stonestep)
                             continue;
-                        CreaturePtr c = instance->GetCreature(guid);
+                        Creature* c = instance->GetCreature(guid);
                         if (c == nullptr)
                             continue;
 
@@ -850,7 +850,7 @@ public:
                         c->ForcedDespawn(2000);
                     }
 
-                    TempSummonPtr sum = nullptr;
+                    TempSummon* sum = nullptr;
                     //Suns
                     sum = unit->SummonCreature(CREATURE_SUN, 830.067f, -2466.660f, 179.240f);
                     sum = unit->SummonCreature(CREATURE_SUN, 836.632f, -2467.159f, 178.139f);
@@ -872,7 +872,7 @@ public:
 
                     for (auto guid : sunfires)
                     {
-                        CreaturePtr c = instance->GetCreature(guid);
+                        Creature* c = instance->GetCreature(guid);
                         if (c == nullptr)
                             continue;
                         c->CastSpell(c, 67422, false); //Blustering Vortex, Fire vortex display
@@ -880,11 +880,11 @@ public:
                 }
                 else if (eventChoosen == EVENT_LOREWALKER_STONESTEP_TRIAL)
                 {
-                    CreaturePtr lorewalker = instance->GetCreature(lorewalkter_stonestep);
+                    Creature* lorewalker = instance->GetCreature(lorewalkter_stonestep);
                     if (lorewalker && lorewalker->GetAI())
                         lorewalker->GetAI()->DoAction(TYPE_GET_EVENT_LOREWALKER_STONESTEP);
 
-                    TempSummonPtr sum = nullptr;
+                    TempSummon* sum = nullptr;
                     sum = unit->SummonCreature(CREATURE_STRIFE, 847.530f, -2469.184f, 174.960f);
                     if (sum != nullptr)
                         sum->SetFacingTo(1.525f);
@@ -896,7 +896,7 @@ public:
         }
         void Wipe_lorewalker_stonestep()
         {
-            CreaturePtr creature = instance->GetCreature(lorewalkter_stonestep);
+            Creature* creature = instance->GetCreature(lorewalkter_stonestep);
             if (creature)
             {
                 creature->Respawn();
@@ -957,7 +957,7 @@ public:
             sha_summoned.clear();
             for (auto guid : sunfires)
             {
-                CreaturePtr c = instance->GetCreature(guid);
+                Creature* c = instance->GetCreature(guid);
                 if (c == nullptr)
                     continue;
                 c->RemoveAura(67422);

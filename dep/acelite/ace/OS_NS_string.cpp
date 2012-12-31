@@ -103,7 +103,7 @@ ACE_OS::strerror (int errnum)
 #else /* ACE_LACKS_STRERROR */
   // Adapt to the various ways that strerror() indicates a bad errnum.
   // Most modern systems set errno to EINVAL. Some older platforms return
-  // a pointer to a nullptr string. This code makes the behavior more consistent
+  // a pointer to a NULL string. This code makes the behavior more consistent
   // across platforms. On a bad errnum, we make a string with the error number
   // and set errno to EINVAL.
   ACE_Errno_Guard g (errno);

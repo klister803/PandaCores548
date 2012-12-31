@@ -42,7 +42,7 @@ class npc_rathis_tomber : public CreatureScript
 public:
     npc_rathis_tomber() : CreatureScript("npc_rathis_tomber") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_TRADE)
@@ -50,7 +50,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -93,11 +93,11 @@ public:
 
     struct npc_ranger_lilathaAI : public npc_escortAI
     {
-        npc_ranger_lilathaAI(CreaturePtr creature) : npc_escortAI(creature) {}
+        npc_ranger_lilathaAI(Creature* creature) : npc_escortAI(creature) {}
 
         void WaypointReached(uint32 waypointId)
         {
-            PlayerPtr player = GetPlayerForEscort();
+            Player* player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -105,7 +105,7 @@ public:
             {
                 case 0:
                     me->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
-                    if (GameObjectPtr Cage = me->FindNearestGameObject(GO_CAGE, 20))
+                    if (GameObject* Cage = me->FindNearestGameObject(GO_CAGE, 20))
                         Cage->SetGoState(GO_STATE_ACTIVE);
                     DoScriptText(SAY_START, me, player);
                     break;
@@ -119,8 +119,8 @@ public:
                 case 18:
                     {
                         DoScriptText(SAY_PROGRESS3, me, player);
-                        CreaturePtr Summ1 = me->SummonCreature(16342, 7627.083984f, -7532.538086f, 152.128616f, 1.082733f, TEMPSUMMON_DEAD_DESPAWN, 0);
-                        CreaturePtr Summ2 = me->SummonCreature(16343, 7620.432129f, -7532.550293f, 152.454865f, 0.827478f, TEMPSUMMON_DEAD_DESPAWN, 0);
+                        Creature* Summ1 = me->SummonCreature(16342, 7627.083984f, -7532.538086f, 152.128616f, 1.082733f, TEMPSUMMON_DEAD_DESPAWN, 0);
+                        Creature* Summ2 = me->SummonCreature(16343, 7620.432129f, -7532.550293f, 152.454865f, 0.827478f, TEMPSUMMON_DEAD_DESPAWN, 0);
                         if (Summ1 && Summ2)
                         {
                             Summ1->Attack(me, true);
@@ -146,7 +146,7 @@ public:
                 case 33:
                     me->SetOrientation(5.858011f);
                     DoScriptText(SAY_END2, me, player);
-                    UnitPtr CaptainHelios = me->FindNearestCreature(NPC_CAPTAIN_HELIOS, 50);
+                    Unit* CaptainHelios = me->FindNearestCreature(NPC_CAPTAIN_HELIOS, 50);
                     if (CaptainHelios)
                         DoScriptText(SAY_CAPTAIN_ANSWER, CaptainHelios, player);
                     break;
@@ -155,12 +155,12 @@ public:
 
         void Reset()
         {
-            if (GameObjectPtr Cage = me->FindNearestGameObject(GO_CAGE, 20))
+            if (GameObject* Cage = me->FindNearestGameObject(GO_CAGE, 20))
                 Cage->SetGoState(GO_STATE_READY);
         }
     };
 
-    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_ESCAPE_FROM_THE_CATACOMBS)
         {
@@ -172,7 +172,7 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_ranger_lilathaAI(creature);
     }

@@ -113,14 +113,14 @@ class boss_felmyst : public CreatureScript
 public:
     boss_felmyst() : CreatureScript("boss_felmyst") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_felmystAI(creature);
     }
 
     struct boss_felmystAI : public ScriptedAI
     {
-        boss_felmystAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_felmystAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -153,7 +153,7 @@ public:
                 instance->SetData(DATA_FELMYST_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             events.ScheduleEvent(EVENT_BERSERK, 600000);
 
@@ -167,19 +167,19 @@ public:
                 instance->SetData(DATA_FELMYST_EVENT, IN_PROGRESS);
         }
 
-        void AttackStart(UnitPtr who)
+        void AttackStart(Unit* who)
         {
             if (phase != PHASE_FLIGHT)
                 ScriptedAI::AttackStart(who);
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (phase != PHASE_FLIGHT)
                 ScriptedAI::MoveInLineOfSight(who);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(YELL_KILL1, YELL_KILL2), me);
         }
@@ -189,7 +189,7 @@ public:
             DoScriptText(YELL_BIRTH, me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(YELL_DEATH, me);
 
@@ -197,7 +197,7 @@ public:
                 instance->SetData(DATA_FELMYST_EVENT, DONE);
         }
 
-        void SpellHit(UnitPtr caster, const SpellInfo* spell)
+        void SpellHit(Unit* caster, const SpellInfo* spell)
         {
             // workaround for linked aura
             /*if (spell->Id == SPELL_VAPOR_FORCE)
@@ -209,18 +209,18 @@ public:
             {
                 float x, y, z;
                 caster->GetPosition(x, y, z);
-                if (UnitPtr summon = me->SummonCreature(MOB_DEAD, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000))
+                if (Unit* summon = me->SummonCreature(MOB_DEAD, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 5000))
                 {
                     summon->SetMaxHealth(caster->GetMaxHealth());
                     summon->SetHealth(caster->GetMaxHealth());
                     summon->CastSpell(summon, SPELL_FOG_CHARM, true);
                     summon->CastSpell(summon, SPELL_FOG_CHARM2, true);
                 }
-                me->DealDamage(caster, caster->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+                me->DealDamage(caster, caster->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
             }
         }
 
-        void JustSummoned(CreaturePtr summon)
+        void JustSummoned(Creature* summon)
         {
             if (summon->GetEntry() == MOB_DEAD)
             {
@@ -236,7 +236,7 @@ public:
                 events.ScheduleEvent(EVENT_FLIGHT_SEQUENCE, 1);
         }
 
-        void DamageTaken(UnitPtr, uint32 &damage)
+        void DamageTaken(Unit*, uint32 &damage)
         {
             if (phase != PHASE_GROUND && damage >= me->GetHealth())
                 damage = 0;
@@ -287,9 +287,9 @@ public:
                 break;
             case 2:
             {
-                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150, true);
+                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150, true);
                 if (!target)
-                    target = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_PLAYER_GUID) : 0);
+                    target = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_PLAYER_GUID) : 0);
 
                 if (!target)
                 {
@@ -297,7 +297,7 @@ public:
                     return;
                 }
 
-                CreaturePtr Vapor = me->SummonCreature(MOB_VAPOR, target->GetPositionX()-5+rand()%10, target->GetPositionY()-5+rand()%10, target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 9000);
+                Creature* Vapor = me->SummonCreature(MOB_VAPOR, target->GetPositionX()-5+rand()%10, target->GetPositionY()-5+rand()%10, target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 9000);
                 if (Vapor)
                 {
                     Vapor->AI()->AttackStart(target);
@@ -314,9 +314,9 @@ public:
                 DespawnSummons(MOB_VAPOR_TRAIL);
                 //DoCast(me, SPELL_VAPOR_SELECT); need core support
 
-                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150, true);
+                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150, true);
                 if (!target)
-                    target = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_PLAYER_GUID) : 0);
+                    target = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_PLAYER_GUID) : 0);
 
                 if (!target)
                 {
@@ -325,7 +325,7 @@ public:
                 }
 
                 //target->CastSpell(target, SPELL_VAPOR_SUMMON, true); need core support
-                CreaturePtr pVapor = me->SummonCreature(MOB_VAPOR, target->GetPositionX()-5+rand()%10, target->GetPositionY()-5+rand()%10, target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 9000);
+                Creature* pVapor = me->SummonCreature(MOB_VAPOR, target->GetPositionX()-5+rand()%10, target->GetPositionY()-5+rand()%10, target->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN, 9000);
                 if (pVapor)
                 {
                     if (pVapor->AI())
@@ -344,9 +344,9 @@ public:
                 break;
             case 5:
             {
-                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150, true);
+                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150, true);
                 if (!target)
-                    target = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_PLAYER_GUID) : 0);
+                    target = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_PLAYER_GUID) : 0);
 
                 if (!target)
                 {
@@ -364,7 +364,7 @@ public:
             case 6:
                 me->SetOrientation(me->GetAngle(breathX, breathY));
                 me->StopMoving();
-                //DoTextEmote("takes a deep breath.", nullptr);
+                //DoTextEmote("takes a deep breath.", NULL);
                 events.ScheduleEvent(EVENT_FLIGHT_SEQUENCE, 10000);
                 break;
             case 7:
@@ -387,7 +387,7 @@ public:
                     uiFlightCount = 4;
                 break;
             case 9:
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                     DoStartMovement(target);
                 else
                 {
@@ -441,7 +441,7 @@ public:
                         events.ScheduleEvent(EVENT_GAS_NOVA, urand(20000, 25000));
                         break;
                     case EVENT_ENCAPSULATE:
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 150, true))
                             DoCast(target, SPELL_ENCAPSULATE_CHANNEL, false);
                         events.ScheduleEvent(EVENT_ENCAPSULATE, urand(25000, 30000));
                         break;
@@ -470,7 +470,7 @@ public:
                             float x, y, z;
                             me->GetPosition(x, y, z);
                             me->UpdateGroundPositionZ(x, y, z);
-                            if (CreaturePtr Fog = me->SummonCreature(MOB_VAPOR_TRAIL, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
+                            if (Creature* Fog = me->SummonCreature(MOB_VAPOR_TRAIL, x, y, z, 0, TEMPSUMMON_TIMED_DESPAWN, 10000))
                             {
                                 Fog->RemoveAurasDueToSpell(SPELL_TRAIL_TRIGGER);
                                 Fog->CastSpell(Fog, SPELL_FOG_TRIGGER, true);
@@ -485,7 +485,7 @@ public:
 
         void DespawnSummons(uint32 entry)
         {
-            std::list<CreaturePtr> templist;
+            std::list<Creature*> templist;
             float x, y, z;
             me->GetPosition(x, y, z);
 
@@ -496,9 +496,9 @@ public:
             Trinity::AllCreaturesOfEntryInRange check(me, entry, 100);
             Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(me, templist, check);
             TypeContainerVisitor<Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange>, GridTypeMapContainer> cSearcher(searcher);
-            cell.Visit(pair, cSearcher, *(me->GetMap()), TO_CONST_WORLDOBJECT(me), me->GetGridActivationRange());
+            cell.Visit(pair, cSearcher, *(me->GetMap()), *me, me->GetGridActivationRange());
 
-            for (std::list<CreaturePtr>::const_iterator i = templist.begin(); i != templist.end(); ++i)
+            for (std::list<Creature*>::const_iterator i = templist.begin(); i != templist.end(); ++i)
             {
                 if (entry == MOB_VAPOR_TRAIL && phase == PHASE_FLIGHT)
                 {
@@ -520,20 +520,20 @@ class mob_felmyst_vapor : public CreatureScript
 public:
     mob_felmyst_vapor() : CreatureScript("mob_felmyst_vapor") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_felmyst_vaporAI(creature);
     }
 
     struct mob_felmyst_vaporAI : public ScriptedAI
     {
-        mob_felmyst_vaporAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_felmyst_vaporAI(Creature* creature) : ScriptedAI(creature)
         {
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             me->SetSpeed(MOVE_RUN, 0.8f);
         }
         void Reset() {}
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoZoneInCombat();
             //DoCast(me, SPELL_VAPOR_FORCE, true); core bug
@@ -541,7 +541,7 @@ public:
         void UpdateAI(const uint32 /*diff*/)
         {
             if (!me->getVictim())
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     AttackStart(target);
         }
     };
@@ -553,14 +553,14 @@ class mob_felmyst_trail : public CreatureScript
 public:
     mob_felmyst_trail() : CreatureScript("mob_felmyst_trail") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_felmyst_trailAI(creature);
     }
 
     struct mob_felmyst_trailAI : public ScriptedAI
     {
-        mob_felmyst_trailAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_felmyst_trailAI(Creature* creature) : ScriptedAI(creature)
         {
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             DoCast(me, SPELL_TRAIL_TRIGGER, true);
@@ -568,9 +568,9 @@ public:
             me->SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, 0.01f); // core bug
         }
         void Reset() {}
-        void EnterCombat(UnitPtr /*who*/) {}
-        void AttackStart(UnitPtr /*who*/) {}
-        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
+        void AttackStart(Unit* /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) {}
         void UpdateAI(const uint32 /*diff*/) {}
     };
 

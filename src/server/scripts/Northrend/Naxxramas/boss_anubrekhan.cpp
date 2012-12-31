@@ -57,14 +57,14 @@ class boss_anubrekhan : public CreatureScript
 public:
     boss_anubrekhan() : CreatureScript("boss_anubrekhan") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_anubrekhanAI (creature);
     }
 
     struct boss_anubrekhanAI : public BossAI
     {
-        boss_anubrekhanAI(CreaturePtr creature) : BossAI(creature, BOSS_ANUBREKHAN) {}
+        boss_anubrekhanAI(Creature* creature) : BossAI(creature, BOSS_ANUBREKHAN) {}
 
         bool hasTaunted;
 
@@ -90,17 +90,17 @@ public:
             }
         }
 
-        void KilledUnit(UnitPtr victim)
+        void KilledUnit(Unit* victim)
         {
             //Force the player to spawn corpse scarabs via spell, TODO: Check percent chance for scarabs, 20% at the moment
             if (!(rand()%5))
                 if (victim->GetTypeId() == TYPEID_PLAYER)
-                    victim->CastSpell(victim, SPELL_SUMMON_CORPSE_SCARABS_PLR, true, nullptr, nullptr, me->GetGUID());
+                    victim->CastSpell(victim, SPELL_SUMMON_CORPSE_SCARABS_PLR, true, NULL, NULL, me->GetGUID());
 
             DoScriptText(SAY_SLAY, me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             _JustDied();
 
@@ -108,7 +108,7 @@ public:
             if (instance)
                 instance->DoStartTimedAchievement(ACHIEVEMENT_TIMED_TYPE_EVENT, ACHIEV_TIMED_START_EVENT);
         }
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
             DoScriptText(SAY_AGGRO, me);
@@ -120,7 +120,7 @@ public:
                 events.ScheduleEvent(EVENT_SPAWN_GUARDIAN_NORMAL, urand(15000, 20000));
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!hasTaunted && me->IsWithinDistInMap(who, 60.0f) && who->GetTypeId() == TYPEID_PLAYER)
             {
@@ -130,7 +130,7 @@ public:
             ScriptedAI::MoveInLineOfSight(who);
         }
 
-        void SummonedCreatureDespawn(CreaturePtr summon)
+        void SummonedCreatureDespawn(Creature* summon)
         {
             BossAI::SummonedCreatureDespawn(summon);
 
@@ -138,7 +138,7 @@ public:
             if (!me->isAlive() || summon->isAlive() || summon->GetEntry() != MOB_CRYPT_GUARD)
                 return;
 
-            summon->CastSpell(summon, SPELL_SUMMON_CORPSE_SCARABS_MOB, true, nullptr, nullptr, me->GetGUID());
+            summon->CastSpell(summon, SPELL_SUMMON_CORPSE_SCARABS_MOB, true, NULL, NULL, me->GetGUID());
         }
 
         void UpdateAI(const uint32 diff)
@@ -156,7 +156,7 @@ public:
                         //Cast Impale on a random target
                         //Do NOT cast it when we are afflicted by locust swarm
                         if (!me->HasAura(RAID_MODE(SPELL_LOCUST_SWARM_10, SPELL_LOCUST_SWARM_25)))
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, RAID_MODE(SPELL_IMPALE_10, SPELL_IMPALE_25));
                         events.ScheduleEvent(EVENT_IMPALE, urand(10000, 20000));
                         break;

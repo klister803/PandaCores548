@@ -32,10 +32,10 @@ class LFGPlayerScript : public PlayerScript
         LFGPlayerScript();
 
         // Player Hooks
-        void OnLevelChanged(PlayerPtr player, uint8 oldLevel);
-        void OnLogout(PlayerPtr player);
-        void OnLogin(PlayerPtr player);
-        void OnBindToInstance(PlayerPtr player, Difficulty difficulty, uint32 mapId, bool permanent);
+        void OnLevelChanged(Player* player, uint8 oldLevel);
+        void OnLogout(Player* player);
+        void OnLogin(Player* player);
+        void OnBindToInstance(Player* player, Difficulty difficulty, uint32 mapId, bool permanent);
 };
 
 class LFGGroupScript : public GroupScript
@@ -44,9 +44,9 @@ class LFGGroupScript : public GroupScript
         LFGGroupScript();
 
         // Group Hooks
-        void OnAddMember(GroupPtr group, uint64 guid);
-        void OnRemoveMember(GroupPtr group, uint64 guid, RemoveMethod method, uint64 kicker, char const* reason);
-        void OnDisband(GroupPtr group);
-        void OnChangeLeader(GroupPtr group, uint64 newLeaderGuid, uint64 oldLeaderGuid);
-        void OnInviteMember(GroupPtr group, uint64 guid);
+        void OnAddMember(Group* group, uint64 guid);
+        void OnRemoveMember(Group* group, uint64 guid, RemoveMethod method, uint64 kicker, char const* reason);
+        void OnDisband(Group* group);
+        void OnChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid);
+        void OnInviteMember(Group* group, uint64 guid);
 };

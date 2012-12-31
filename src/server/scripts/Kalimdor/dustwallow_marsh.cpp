@@ -59,12 +59,12 @@ class npc_stinky : public CreatureScript
 public:
    npc_stinky() : CreatureScript("npc_stinky") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_stinkyAI(creature);
     }
 
-    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
     {
          if (quest->GetQuestId() == QUEST_STINKYS_ESCAPE_H || quest->GetQuestId() == QUEST_STINKYS_ESCAPE_A)
          {
@@ -81,11 +81,11 @@ public:
 
     struct npc_stinkyAI : public npc_escortAI
     {
-       npc_stinkyAI(CreaturePtr creature) : npc_escortAI(creature) { }
+       npc_stinkyAI(Creature* creature) : npc_escortAI(creature) { }
 
         void WaypointReached(uint32 waypointId)
         {
-            PlayerPtr player = GetPlayerForEscort();
+            Player* player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -128,16 +128,16 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             DoScriptText(SAY_ATTACKED_1, me, who);
         }
 
         void Reset() {}
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
-            PlayerPtr player = GetPlayerForEscort();
+            Player* player = GetPlayerForEscort();
             if (player && HasEscortState(STATE_ESCORT_ESCORTING))
             {
                 if (player->GetQuestStatus(QUEST_STINKYS_ESCAPE_H))
@@ -234,7 +234,7 @@ class spell_ooze_zap_channel_end : public SpellScriptLoader
             void HandleDummy(SpellEffIndex effIndex)
             {
                 PreventHitDefaultEffect(effIndex);
-                if (PlayerPtr player = TO_PLAYER(GetCaster()))
+                if (Player* player = GetCaster()->ToPlayer())
                     player->CastSpell(player, SPELL_OOZE_CHANNEL_CREDIT, true);
                 GetHitUnit()->Kill(GetHitUnit());
             }
@@ -267,11 +267,11 @@ class spell_energize_aoe : public SpellScriptLoader
                 return true;
             }
 
-            void FilterTargets(std::list<WorldObjectPtr>& targets)
+            void FilterTargets(std::list<WorldObject*>& targets)
             {
-                for (std::list<WorldObjectPtr>::iterator itr = targets.begin(); itr != targets.end();)
+                for (std::list<WorldObject*>::iterator itr = targets.begin(); itr != targets.end();)
                 {
-                    if ((*itr)->GetTypeId() == TYPEID_PLAYER && TO_PLAYER(*itr)->GetQuestStatus(GetSpellInfo()->Effects[EFFECT_1].CalcValue()) == QUEST_STATUS_INCOMPLETE)
+                    if ((*itr)->GetTypeId() == TYPEID_PLAYER && (*itr)->ToPlayer()->GetQuestStatus(GetSpellInfo()->Effects[EFFECT_1].CalcValue()) == QUEST_STATUS_INCOMPLETE)
                         ++itr;
                     else
                         targets.erase(itr++);
@@ -314,9 +314,9 @@ class go_blackhoof_cage : public GameObjectScript
 public:
     go_blackhoof_cage() : GameObjectScript("go_blackhoof_cage") { }
 
-    bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
+    bool OnGossipHello(Player* player, GameObject* go)
     {
-        if (CreaturePtr prisoner = go->FindNearestCreature(NPC_THERAMORE_PRISONER, 1.0f))
+        if (Creature* prisoner = go->FindNearestCreature(NPC_THERAMORE_PRISONER, 1.0f))
         {
             go->UseDoorOrButton();
             if (player)

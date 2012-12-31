@@ -44,20 +44,20 @@ class mob_webbed_creature : public CreatureScript
 public:
     mob_webbed_creature() : CreatureScript("mob_webbed_creature") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_webbed_creatureAI (creature);
     }
 
     struct mob_webbed_creatureAI : public ScriptedAI
     {
-        mob_webbed_creatureAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        mob_webbed_creatureAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset() {}
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
-        void JustDied(UnitPtr killer)
+        void JustDied(Unit* killer)
         {
             uint32 spawnCreatureID = 0;
 
@@ -65,7 +65,7 @@ public:
             {
                 case 0:
                     spawnCreatureID = 17681;
-                    if (PlayerPtr player = TO_PLAYER(killer))
+                    if (Player* player = killer->ToPlayer())
                         player->KilledMonsterCredit(spawnCreatureID, 0);
                     break;
                 case 1:
@@ -99,7 +99,7 @@ class npc_captured_sunhawk_agent : public CreatureScript
 public:
     npc_captured_sunhawk_agent() : CreatureScript("npc_captured_sunhawk_agent") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -132,7 +132,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (player->HasAura(31609) && player->GetQuestStatus(9756) == QUEST_STATUS_INCOMPLETE)
         {
@@ -165,9 +165,9 @@ class go_princess_stillpines_cage : public GameObjectScript
 public:
     go_princess_stillpines_cage() : GameObjectScript("go_princess_stillpines_cage") { }
 
-    bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
+    bool OnGossipHello(Player* player, GameObject* go)
     {
-        if (CreaturePtr stillpine = go->FindNearestCreature(NPC_PRINCESS_STILLPINE, 25, true))
+        if (Creature* stillpine = go->FindNearestCreature(NPC_PRINCESS_STILLPINE, 25, true))
         {
             go->SetGoState(GO_STATE_ACTIVE);
             stillpine->GetMotionMaster()->MovePoint(1, go->GetPositionX(), go->GetPositionY()-15, go->GetPositionZ());
@@ -184,7 +184,7 @@ public:
 
     struct npc_princess_stillpineAI : public ScriptedAI
     {
-        npc_princess_stillpineAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_princess_stillpineAI(Creature* creature) : ScriptedAI(creature) {}
 
         void MovementInform(uint32 type, uint32 id)
         {
@@ -196,7 +196,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_princess_stillpineAI(creature);
     }

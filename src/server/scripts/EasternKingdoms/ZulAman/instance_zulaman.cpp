@@ -62,7 +62,7 @@ class instance_zulaman : public InstanceMapScript
 
         struct instance_zulaman_InstanceMapScript : public InstanceScript
         {
-            instance_zulaman_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+            instance_zulaman_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
             uint64 HarkorsSatchelGUID;
             uint64 TanzarsTrunkGUID;
@@ -116,7 +116,7 @@ class instance_zulaman : public InstanceMapScript
                 return false;
             }
 
-            void OnCreatureCreate(CreaturePtr creature)
+            void OnCreatureCreate(Creature* creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -129,7 +129,7 @@ class instance_zulaman : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectCreate(GameObjectPtr go)
+            void OnGameObjectCreate(GameObject* go)
             {
                 switch (go->GetEntry())
                 {
@@ -159,9 +159,9 @@ class instance_zulaman : public InstanceMapScript
                     return;
 
                 Map::PlayerList::const_iterator i = PlayerList.begin();
-                if (PlayerPtr i_pl = i->getSource())
+                if (Player* i_pl = i->getSource())
                 {
-                    if (UnitPtr Hostage = i_pl->SummonCreature(HostageInfo[num].npc, HostageInfo[num].x, HostageInfo[num].y, HostageInfo[num].z, HostageInfo[num].o, TEMPSUMMON_DEAD_DESPAWN, 0))
+                    if (Unit* Hostage = i_pl->SummonCreature(HostageInfo[num].npc, HostageInfo[num].x, HostageInfo[num].y, HostageInfo[num].z, HostageInfo[num].o, TEMPSUMMON_DEAD_DESPAWN, 0))
                     {
                         Hostage->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                         Hostage->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -319,7 +319,7 @@ class instance_zulaman : public InstanceMapScript
             }
         };
 
-        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
             return new instance_zulaman_InstanceMapScript(map);
         }

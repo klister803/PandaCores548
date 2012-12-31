@@ -117,7 +117,7 @@ class AuctionHouseObject
     AuctionEntry* GetAuction(uint32 id) const
     {
         AuctionEntryMap::const_iterator itr = AuctionsMap.find(id);
-        return itr != AuctionsMap.end() ? itr->second : nullptr;
+        return itr != AuctionsMap.end() ? itr->second : NULL;
     }
 
     void AddAuction(AuctionEntry* auction);
@@ -126,9 +126,9 @@ class AuctionHouseObject
 
     void Update();
 
-    void BuildListBidderItems(WorldPacket& data, PlayerPtr player, uint32& count, uint32& totalcount);
-    void BuildListOwnerItems(WorldPacket& data, PlayerPtr player, uint32& count, uint32& totalcount);
-    void BuildListAuctionItems(WorldPacket& data, PlayerPtr player,
+    void BuildListBidderItems(WorldPacket& data, Player* player, uint32& count, uint32& totalcount);
+    void BuildListOwnerItems(WorldPacket& data, Player* player, uint32& count, uint32& totalcount);
+    void BuildListAuctionItems(WorldPacket& data, Player* player,
         std::wstring const& searchedname, uint32 listfrom, uint8 levelmin, uint8 levelmax, uint8 usable,
         uint32 inventoryType, uint32 itemClass, uint32 itemSubClass, uint32 quality,
         uint32& count, uint32& totalcount);
@@ -150,18 +150,18 @@ class AuctionHouseMgr
 
     public:
 
-        typedef UNORDERED_MAP<uint32, ItemPtr> ItemMap;
+        typedef UNORDERED_MAP<uint32, Item*> ItemMap;
 
         AuctionHouseObject* GetAuctionsMap(uint32 factionTemplateId);
         AuctionHouseObject* GetBidsMap(uint32 factionTemplateId);
 
-        ItemPtr GetAItem(uint32 id)
+        Item* GetAItem(uint32 id)
         {
             ItemMap::const_iterator itr = mAitems.find(id);
             if (itr != mAitems.end())
                 return itr->second;
 
-            return nullptr;
+            return NULL;
         }
 
         //auction messages
@@ -169,10 +169,10 @@ class AuctionHouseMgr
         void SendAuctionSalePendingMail(AuctionEntry* auction, SQLTransaction& trans);
         void SendAuctionSuccessfulMail(AuctionEntry* auction, SQLTransaction& trans);
         void SendAuctionExpiredMail(AuctionEntry* auction, SQLTransaction& trans);
-        void SendAuctionOutbiddedMail(AuctionEntry* auction, uint32 newPrice, PlayerPtr newBidder, SQLTransaction& trans);
-        void SendAuctionCancelledToBidderMail(AuctionEntry* auction, SQLTransaction& trans, ItemPtr item);
+        void SendAuctionOutbiddedMail(AuctionEntry* auction, uint32 newPrice, Player* newBidder, SQLTransaction& trans);
+        void SendAuctionCancelledToBidderMail(AuctionEntry* auction, SQLTransaction& trans, Item* item);
 
-        static uint32 GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, ItemPtr pItem, uint32 count);
+        static uint32 GetAuctionDeposit(AuctionHouseEntry const* entry, uint32 time, Item* pItem, uint32 count);
         static AuctionHouseEntry const* GetAuctionHouseEntry(uint32 factionTemplateId);
 
     public:
@@ -184,7 +184,7 @@ class AuctionHouseMgr
         void LoadAuctionItems();
         void LoadAuctions();
 
-        void AddAItem(ItemPtr it);
+        void AddAItem(Item* it);
         bool RemoveAItem(uint32 id);
 
         void Update();

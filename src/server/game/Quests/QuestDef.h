@@ -204,7 +204,7 @@ class Quest
     friend class ObjectMgr;
     public:
         Quest(Field* questRecord);
-        uint32 XPValue(PlayerPtr player) const;
+        uint32 XPValue(Player* player) const;
 
         bool HasFlag(uint32 flag) const { return (Flags & flag) != 0; }
         void SetFlag(uint32 flag) { Flags |= flag; }
@@ -330,7 +330,7 @@ class Quest
         uint32 GetRewCurrencyCount() const { return m_rewCurrencyCount; }
         uint32 GetReqCurrencyCount() const { return m_reqCurrencyCount; }
 
-        void BuildExtraQuestInfo(WorldPacket& data, PlayerPtr player) const;
+        void BuildExtraQuestInfo(WorldPacket& data, Player* player) const;
 
         typedef std::vector<int32> PrevQuests;
         PrevQuests prevQuests;

@@ -38,14 +38,14 @@ class boss_houndmaster_loksey : public CreatureScript
 public:
     boss_houndmaster_loksey() : CreatureScript("boss_houndmaster_loksey") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_houndmaster_lokseyAI (creature);
     }
 
     struct boss_houndmaster_lokseyAI : public ScriptedAI
     {
-        boss_houndmaster_lokseyAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_houndmaster_lokseyAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 BloodLust_Timer;
 
@@ -54,7 +54,7 @@ public:
             BloodLust_Timer = 20000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
         }

@@ -64,7 +64,7 @@ class boss_archaedas : public CreatureScript
 
         struct boss_archaedasAI : public ScriptedAI
         {
-            boss_archaedasAI(CreaturePtr creature) : ScriptedAI(creature)
+            boss_archaedasAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
@@ -97,7 +97,7 @@ class boss_archaedas : public CreatureScript
 
             void ActivateMinion(uint64 uiGuid, bool flag)
             {
-                UnitPtr minion = Unit::GetUnit(TO_WORLDOBJECT(me), uiGuid);
+                Unit* minion = Unit::GetUnit(*me, uiGuid);
 
                 if (minion && minion->isAlive())
                 {
@@ -109,14 +109,14 @@ class boss_archaedas : public CreatureScript
                 }
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 me->setFaction(14);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
             }
 
-            void SpellHit(UnitPtr /*caster*/, const SpellInfo* spell)
+            void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
             {
                 // Being woken up from the altar, start the awaken sequence
                 if (spell == sSpellMgr->GetSpellInfo(SPELL_ARCHAEDAS_AWAKEN))
@@ -128,7 +128,7 @@ class boss_archaedas : public CreatureScript
                 }
             }
 
-            void KilledUnit(UnitPtr /*victim*/)
+            void KilledUnit(Unit* /*victim*/)
             {
                 me->MonsterYell(SAY_KILL, LANG_UNIVERSAL, 0);
                 DoPlaySoundToSet(me, SOUND_KILL);
@@ -146,7 +146,7 @@ class boss_archaedas : public CreatureScript
                 } else if (bWakingUp && iAwakenTimer <= 0)
                 {
                     bWakingUp = false;
-                    AttackStart(Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(0)));
+                    AttackStart(Unit::GetUnit(*me, instance->GetData64(0)));
                     return;     // dont want to continue until we finish the AttackStart method
                 }
 
@@ -200,7 +200,7 @@ class boss_archaedas : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied (UnitPtr /*killer*/)
+            void JustDied (Unit* /*killer*/)
             {
                 if (instance)
                 {
@@ -210,7 +210,7 @@ class boss_archaedas : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_archaedasAI(creature);
         }
@@ -236,7 +236,7 @@ class mob_archaedas_minions : public CreatureScript
 
         struct mob_archaedas_minionsAI : public ScriptedAI
         {
-            mob_archaedas_minionsAI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_archaedas_minionsAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
@@ -262,7 +262,7 @@ class mob_archaedas_minions : public CreatureScript
                 me->RemoveAllAuras();
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 me->setFaction (14);
                 me->RemoveAllAuras();
@@ -271,7 +271,7 @@ class mob_archaedas_minions : public CreatureScript
                 bAmIAwake = true;
             }
 
-            void SpellHit (UnitPtr /*caster*/, const SpellInfo* spell) {
+            void SpellHit (Unit* /*caster*/, const SpellInfo* spell) {
                 // time to wake up, start animation
                 if (spell == sSpellMgr->GetSpellInfo(SPELL_ARCHAEDAS_AWAKEN))
                 {
@@ -280,7 +280,7 @@ class mob_archaedas_minions : public CreatureScript
                 }
             }
 
-            void MoveInLineOfSight(UnitPtr who)
+            void MoveInLineOfSight(Unit* who)
             {
                 if (bAmIAwake)
                     ScriptedAI::MoveInLineOfSight(who);
@@ -297,7 +297,7 @@ class mob_archaedas_minions : public CreatureScript
                 {
                     bWakingUp = false;
                     bAmIAwake = true;
-                    // AttackStart(Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(0))); // whoWokeArchaedasGUID
+                    // AttackStart(Unit::GetUnit(*me, instance->GetData64(0))); // whoWokeArchaedasGUID
                     return;     // dont want to continue until we finish the AttackStart method
                 }
 
@@ -309,7 +309,7 @@ class mob_archaedas_minions : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_archaedas_minionsAI(creature);
         }
@@ -335,7 +335,7 @@ class mob_stonekeepers : public CreatureScript
 
         struct mob_stonekeepersAI : public ScriptedAI
         {
-            mob_stonekeepersAI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_stonekeepersAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
@@ -350,7 +350,7 @@ class mob_stonekeepers : public CreatureScript
                 me->RemoveAllAuras();
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 me->setFaction(14);
                 me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
@@ -366,7 +366,7 @@ class mob_stonekeepers : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied(UnitPtr /*attacker*/)
+            void JustDied(Unit* /*attacker*/)
             {
                 DoCast (me, SPELL_SELF_DESTRUCT, true);
                 if (instance)
@@ -374,7 +374,7 @@ class mob_stonekeepers : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_stonekeepersAI(creature);
         }
@@ -398,7 +398,7 @@ class go_altar_of_archaedas : public GameObjectScript
         {
         }
 
-        bool OnGossipHello(PlayerPtr player, GameObjectPtr /*go*/)
+        bool OnGossipHello(Player* player, GameObject* /*go*/)
         {
             InstanceScript* instance = player->GetInstanceScript();
             if (!instance)
@@ -429,7 +429,7 @@ class go_altar_of_the_keepers : public GameObjectScript
         {
         }
 
-        bool OnGossipHello(PlayerPtr player, GameObjectPtr /*go*/)
+        bool OnGossipHello(Player* player, GameObject* /*go*/)
         {
             InstanceScript* instance = player->GetInstanceScript();
             if (!instance)

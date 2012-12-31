@@ -22,12 +22,11 @@
 #include "Log.h"
 #include "ObjectAccessor.h"
 #include "CreatureAIImpl.h"
-#include "SpellAuraEffects.h"
 
 #define REACTOR_VISIBLE_RANGE (26.46f)
 
 int
-ReactorAI::Permissible(constCreaturePtr creature)
+ReactorAI::Permissible(const Creature* creature)
 {
     if (creature->isCivilian() || creature->IsNeutralToAll())
         return PERMIT_BASE_REACTIVE;
@@ -36,7 +35,7 @@ ReactorAI::Permissible(constCreaturePtr creature)
 }
 
 void
-ReactorAI::MoveInLineOfSight(UnitPtr)
+ReactorAI::MoveInLineOfSight(Unit*)
 {
 }
 

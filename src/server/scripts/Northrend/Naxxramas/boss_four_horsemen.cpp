@@ -90,14 +90,14 @@ class boss_four_horsemen : public CreatureScript
 public:
     boss_four_horsemen() : CreatureScript("boss_four_horsemen") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_four_horsemenAI (creature);
     }
 
     struct boss_four_horsemenAI : public BossAI
     {
-        boss_four_horsemenAI(CreaturePtr creature) : BossAI(creature, BOSS_HORSEMEN)
+        boss_four_horsemenAI(Creature* creature) : BossAI(creature, BOSS_HORSEMEN)
         {
             id = Horsemen(0);
             for (uint8 i = 0; i < 4; ++i)
@@ -122,7 +122,7 @@ public:
         void Reset()
         {
             if (!encounterActionReset)
-                DoEncounteraction(nullptr, false, true, false);
+                DoEncounteraction(NULL, false, true, false);
 
             if (instance)
                 instance->SetData(DATA_HORSEMEN0 + id, NOT_STARTED);
@@ -140,15 +140,15 @@ public:
             _Reset();
         }
 
-        bool DoEncounteraction(UnitPtr who, bool attack, bool reset, bool checkAllDead)
+        bool DoEncounteraction(Unit* who, bool attack, bool reset, bool checkAllDead)
         {
             if (!instance)
                 return false;
 
-            CreaturePtr Thane = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_THANE));
-            CreaturePtr Lady = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_LADY));
-            CreaturePtr Baron = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_BARON));
-            CreaturePtr Sir = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_SIR));
+            Creature* Thane = Unit::GetCreature(*me, instance->GetData64(DATA_THANE));
+            Creature* Lady = Unit::GetCreature(*me, instance->GetData64(DATA_LADY));
+            Creature* Baron = Unit::GetCreature(*me, instance->GetData64(DATA_BARON));
+            Creature* Sir = Unit::GetCreature(*me, instance->GetData64(DATA_SIR));
 
             if (Thane && Lady && Baron && Sir)
             {
@@ -233,7 +233,7 @@ public:
                 movementCompleted = true;
                 me->SetReactState(REACT_AGGRESSIVE);
 
-                UnitPtr eventStarter = Unit::GetUnit(TO_WORLDOBJECT(me), uiEventStarterGUID);
+                Unit* eventStarter = Unit::GetUnit(*me, uiEventStarterGUID);
 
                 if (eventStarter && me->IsValidAttackTarget(eventStarter))
                     AttackStart(eventStarter);
@@ -257,23 +257,23 @@ public:
         }
 
         // switch to "who" if nearer than current target.
-        void SelectNearestTarget(UnitPtr who)
+        void SelectNearestTarget(Unit* who)
         {
             if (me->getVictim() && me->GetDistanceOrder(who, me->getVictim()) && me->IsValidAttackTarget(who))
             {
-                me->getThreatManager()->modifyThreatPercent(me->getVictim(), -100);
+                me->getThreatManager().modifyThreatPercent(me->getVictim(), -100);
                 me->AddThreat(who, 1000000.0f);
             }
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             BossAI::MoveInLineOfSight(who);
             if (caster)
                 SelectNearestTarget(who);
         }
 
-        void AttackStart(UnitPtr who)
+        void AttackStart(Unit* who)
         {
             if (!movementCompleted && !movementStarted)
             {
@@ -292,7 +292,7 @@ public:
             }
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             if (!(rand()%5))
             {
@@ -303,7 +303,7 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             events.Reset();
             summons.DespawnAll();
@@ -311,7 +311,7 @@ public:
             if (instance)
                 instance->SetData(DATA_HORSEMEN0 + id, DONE);
 
-            if (instance && DoEncounteraction(nullptr, false, false, true))
+            if (instance && DoEncounteraction(NULL, false, false, true))
             {
                 instance->SetBossState(BOSS_HORSEMEN, DONE);
                 instance->SaveToDB();
@@ -324,7 +324,7 @@ public:
             DoScriptText(SAY_DEATH[id], me);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
 
@@ -370,7 +370,7 @@ public:
 
                         if (caster)
                         {
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f))
                                 DoCast(target, SPELL_PRIMARY(id));
                         }
                         else
@@ -415,7 +415,7 @@ class spell_four_horsemen_mark : public SpellScriptLoader
 
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (UnitPtr caster = GetCaster())
+                if (Unit* caster = GetCaster())
                 {
                     int32 damage;
                     switch (GetStackAmount())

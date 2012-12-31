@@ -52,7 +52,7 @@ class instance_magtheridons_lair : public InstanceMapScript
 
         struct instance_magtheridons_lair_InstanceMapScript : public InstanceScript
         {
-            instance_magtheridons_lair_InstanceMapScript(MapPtr map) : InstanceScript(map)
+            instance_magtheridons_lair_InstanceMapScript(Map* map) : InstanceScript(map)
             {
             }
 
@@ -88,7 +88,7 @@ class instance_magtheridons_lair : public InstanceMapScript
                 return false;
             }
 
-            void OnCreatureCreate(CreaturePtr creature)
+            void OnCreatureCreate(Creature* creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -101,7 +101,7 @@ class instance_magtheridons_lair : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectCreate(GameObjectPtr go)
+            void OnGameObjectCreate(GameObject* go)
             {
                 switch (go->GetEntry())
                 {
@@ -153,7 +153,7 @@ class instance_magtheridons_lair : public InstanceMapScript
                             m_auiEncounter[1] = NOT_STARTED;
                             for (std::set<uint64>::const_iterator i = ChannelerGUID.begin(); i != ChannelerGUID.end(); ++i)
                             {
-                                if (CreaturePtr Channeler = instance->GetCreature(*i))
+                                if (Creature* Channeler = instance->GetCreature(*i))
                                 {
                                     if (Channeler->isAlive())
                                         Channeler->AI()->EnterEvadeMode();
@@ -172,12 +172,12 @@ class instance_magtheridons_lair : public InstanceMapScript
                             // Let all five channelers aggro.
                             for (std::set<uint64>::const_iterator i = ChannelerGUID.begin(); i != ChannelerGUID.end(); ++i)
                             {
-                                CreaturePtr Channeler = instance->GetCreature(*i);
+                                Creature* Channeler = instance->GetCreature(*i);
                                 if (Channeler && Channeler->isAlive())
                                     Channeler->AI()->AttackStart(Channeler->SelectNearestTarget(999));
                             }
                             // Release Magtheridon after two minutes.
-                            CreaturePtr Magtheridon = instance->GetCreature(MagtheridonGUID);
+                            Creature* Magtheridon = instance->GetCreature(MagtheridonGUID);
                             if (Magtheridon && Magtheridon->isAlive())
                             {
                                 Magtheridon->MonsterTextEmote(EMOTE_BONDS_WEAKEN, 0);
@@ -189,7 +189,7 @@ class instance_magtheridons_lair : public InstanceMapScript
                     case DONE: // Add buff and check if all channelers are dead.
                         for (std::set<uint64>::const_iterator i = ChannelerGUID.begin(); i != ChannelerGUID.end(); ++i)
                         {
-                            CreaturePtr Channeler = instance->GetCreature(*i);
+                            Creature* Channeler = instance->GetCreature(*i);
                             if (Channeler && Channeler->isAlive())
                             {
                                 //Channeler->CastSpell(Channeler, SPELL_SOUL_TRANSFER, true);
@@ -224,7 +224,7 @@ class instance_magtheridons_lair : public InstanceMapScript
                 {
                     if (CageTimer <= diff)
                     {
-                        CreaturePtr Magtheridon = instance->GetCreature(MagtheridonGUID);
+                        Creature* Magtheridon = instance->GetCreature(MagtheridonGUID);
                         if (Magtheridon && Magtheridon->isAlive())
                         {
                             Magtheridon->ClearUnitState(UNIT_STATE_STUNNED);
@@ -240,7 +240,7 @@ class instance_magtheridons_lair : public InstanceMapScript
                     {
                         for (std::set<uint64>::const_iterator i = ChannelerGUID.begin(); i != ChannelerGUID.end(); ++i)
                         {
-                            if (CreaturePtr Channeler = instance->GetCreature(*i))
+                            if (Creature* Channeler = instance->GetCreature(*i))
                             {
                                 if (Channeler->isAlive())
                                     Channeler->AI()->EnterEvadeMode();
@@ -254,7 +254,7 @@ class instance_magtheridons_lair : public InstanceMapScript
             }
         };
 
-        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
             return new instance_magtheridons_lair_InstanceMapScript(map);
         }

@@ -54,7 +54,7 @@ class boss_elder_nadox : public CreatureScript
 
         struct boss_elder_nadoxAI : public ScriptedAI
         {
-            boss_elder_nadoxAI(CreaturePtr creature) : ScriptedAI(creature)
+            boss_elder_nadoxAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -88,7 +88,7 @@ class boss_elder_nadox : public CreatureScript
                     instance->SetData(DATA_ELDER_NADOX_EVENT, NOT_STARTED);
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 Talk(SAY_AGGRO);
 
@@ -96,12 +96,12 @@ class boss_elder_nadox : public CreatureScript
                     instance->SetData(DATA_ELDER_NADOX_EVENT, IN_PROGRESS);
             }
 
-            void KilledUnit(UnitPtr /*who*/)
+            void KilledUnit(Unit* /*who*/)
             {
                 Talk(SAY_SLAY);
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 Talk(SAY_DEATH);
 
@@ -140,7 +140,7 @@ class boss_elder_nadox : public CreatureScript
                 {
                     if (uiRagueTimer <= diff)
                     {
-                        if (CreaturePtr Swarmer = me->FindNearestCreature(MOB_AHNKAHAR_SWARMER, 35.0f))
+                        if (Creature* Swarmer = me->FindNearestCreature(MOB_AHNKAHAR_SWARMER, 35.0f))
                         {
                             DoCast(Swarmer, H_SPELL_BROOD_RAGE, true);
                             uiRagueTimer = 15000;
@@ -191,7 +191,7 @@ class boss_elder_nadox : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_elder_nadoxAI(creature);
         }
@@ -210,7 +210,7 @@ class mob_ahnkahar_nerubian : public CreatureScript
 
         struct mob_ahnkahar_nerubianAI : public ScriptedAI
         {
-            mob_ahnkahar_nerubianAI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_ahnkahar_nerubianAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -225,14 +225,14 @@ class mob_ahnkahar_nerubian : public CreatureScript
                 uiSprintTimer = 10000;
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 if (me->GetEntry() == MOB_AHNKAHAR_GUARDIAN_ENTRY)
-                    if (CreaturePtr Nadox = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_ELDER_NADOX)))
+                    if (Creature* Nadox = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_ELDER_NADOX)))
                         Nadox->AI()->DoAction(ACTION_AHNKAHAR_GUARDIAN_DEAD);
             }
 
-            void EnterCombat(UnitPtr /*who*/) {}
+            void EnterCombat(Unit* /*who*/) {}
 
             void UpdateAI(uint32 const diff)
             {
@@ -258,7 +258,7 @@ class mob_ahnkahar_nerubian : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_ahnkahar_nerubianAI(creature);
         }
@@ -272,19 +272,19 @@ public:
 
     struct mob_nadox_eggsAI : public Scripted_NoMovementAI
     {
-        mob_nadox_eggsAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
+        mob_nadox_eggsAI(Creature* creature) : Scripted_NoMovementAI(creature)
         {
             creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE | UNIT_FLAG_NON_ATTACKABLE);
             creature->UpdateAllStats();
         }
         void Reset() {}
-        void EnterCombat(UnitPtr /*who*/) {}
-        void AttackStart(UnitPtr /*victim*/) {}
-        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
+        void AttackStart(Unit* /*victim*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) {}
         void UpdateAI(const uint32 /*diff*/) {}
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_nadox_eggsAI(creature);
     }
@@ -295,12 +295,12 @@ class achievement_respect_your_elders : public AchievementCriteriaScript
     public:
         achievement_respect_your_elders() : AchievementCriteriaScript("achievement_respect_your_elders") {}
 
-        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
+        bool OnCheck(Player* /*player*/, Unit* target)
         {
             if (!target)
                 return false;
 
-            if (CreaturePtr Nadox = TO_CREATURE(target))
+            if (Creature* Nadox = target->ToCreature())
                 if (Nadox->AI()->GetData(DATA_RESPECT_YOUR_ELDERS))
                     return true;
 

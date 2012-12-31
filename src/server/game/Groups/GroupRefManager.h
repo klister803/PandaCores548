@@ -28,8 +28,8 @@ class GroupReference;
 class GroupRefManager : public RefManager<Group, Player>
 {
     public:
-        GroupReferencePtr getFirst() { return std::static_pointer_cast<GroupReference>(RefManager<Group, Player>::getFirst()); }
-        constGroupReferencePtr getFirst() const { return std::static_pointer_cast<const GroupReference>(RefManager<Group, Player>::getFirst()); }
+        GroupReference* getFirst() { return ((GroupReference*)RefManager<Group, Player>::getFirst()); }
+        GroupReference const* getFirst() const { return ((GroupReference const*)RefManager<Group, Player>::getFirst()); }
 };
 #endif
 

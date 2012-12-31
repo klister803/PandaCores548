@@ -34,13 +34,13 @@ public:
     {
         static ChatCommand achievementCommandTable[] =
         {
-            { "add",            SEC_ADMINISTRATOR,  false,  &HandleAchievementAddCommand,      "", nullptr },
-            { nullptr,             0,                  false,  nullptr,                              "", nullptr }
+            { "add",            SEC_ADMINISTRATOR,  false,  &HandleAchievementAddCommand,      "", NULL },
+            { NULL,             0,                  false,  NULL,                              "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "achievement",    SEC_ADMINISTRATOR,  false, nullptr,            "", achievementCommandTable },
-            { nullptr,             0,                  false, nullptr,                               "", nullptr }
+            { "achievement",    SEC_ADMINISTRATOR,  false, NULL,            "", achievementCommandTable },
+            { NULL,             0,                  false, NULL,                               "", NULL }
         };
         return commandTable;
     }
@@ -59,7 +59,7 @@ public:
                 return false;
         }
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);

@@ -22,9 +22,8 @@
 #include "ObjectAccessor.h"
 #include "World.h"
 #include "CreatureAIImpl.h"
-#include "SpellAuraEffects.h"
 
-int GuardAI::Permissible(constCreaturePtr creature)
+int GuardAI::Permissible(Creature const* creature)
 {
     if (creature->isGuard())
         return PERMIT_BASE_SPECIAL;
@@ -32,17 +31,17 @@ int GuardAI::Permissible(constCreaturePtr creature)
     return PERMIT_BASE_NO;
 }
 
-GuardAI::GuardAI(CreaturePtr creature) : ScriptedAI(creature)
+GuardAI::GuardAI(Creature* creature) : ScriptedAI(creature)
 {
 }
 
-bool GuardAI::CanSeeAlways(constWorldObjectPtr obj)
+bool GuardAI::CanSeeAlways(WorldObject const* obj)
 {
     if (!obj->isType(TYPEMASK_UNIT))
         return false;
 
-    std::list<HostileReferencePtr> threatList = me->getThreatManager()->getThreatList();
-    for (std::list<HostileReferencePtr>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
+    std::list<HostileReference*> threatList = me->getThreatManager().getThreatList();
+    for (std::list<HostileReference*>::const_iterator itr = threatList.begin(); itr != threatList.end(); ++itr)
         if ((*itr)->getUnitGuid() == obj->GetGUID())
             return true;
 
@@ -70,8 +69,8 @@ void GuardAI::EnterEvadeMode()
         me->GetMotionMaster()->MoveTargetedHome();
 }
 
-void GuardAI::JustDied(UnitPtr killer)
+void GuardAI::JustDied(Unit* killer)
 {
-    if (PlayerPtr player = killer->GetCharmerOrOwnerPlayerOrPlayerItself())
+    if (Player* player = killer->GetCharmerOrOwnerPlayerOrPlayerItself())
         me->SendZoneUnderAttackMessage(player);
 }

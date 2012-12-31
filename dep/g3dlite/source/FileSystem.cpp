@@ -37,7 +37,7 @@
 
 namespace G3D {
 
-static FileSystem* common = nullptr;
+static FileSystem* common = NULL;
 
 FileSystem& FileSystem::instance() {
     init();
@@ -46,16 +46,16 @@ FileSystem& FileSystem::instance() {
 
 
 void FileSystem::init() {
-    if (common == nullptr) {
+    if (common == NULL) {
         common = new FileSystem();
     }
 }
 
 
 void FileSystem::cleanup() {
-    if (common != nullptr) {
+    if (common != NULL) {
         delete common;
-        common = nullptr;
+        common = NULL;
     }
 }
 
@@ -81,7 +81,7 @@ bool FileSystem::Dir::contains(const std::string& f) const {
     
 void FileSystem::Dir::computeZipListing(const std::string& zipfile, const std::string& pathInsideZipfile) {
 #if _HAVE_ZIP /* G3DFIX: Use ZIP-library only if defined */
-    struct zip* z = zip_open( FilePath::removeTrailingSlash(zipfile).c_str(), ZIP_CHECKCONS, nullptr );
+    struct zip* z = zip_open( FilePath::removeTrailingSlash(zipfile).c_str(), ZIP_CHECKCONS, NULL );
     debugAssert(z);
 
     int count = zip_get_num_files( z );
@@ -128,7 +128,7 @@ void FileSystem::Dir::computeZipListing(const std::string& zipfile, const std::s
     }
     
     zip_close(z);
-    z = nullptr;
+    z = NULL;
 #endif
 }
 
@@ -186,7 +186,7 @@ FileSystem::Dir& FileSystem::getContents(const std::string& path, bool forceUpda
                     DIR* listing = opendir(key.c_str());
                     debugAssertM(listing, "opendir failed on '" + key + "'");
                     struct dirent* entry = readdir(listing);
-                    while (entry != nullptr) {
+                    while (entry != NULL) {
                         if ((strcmp(entry->d_name, "..") != 0) && (strcmp(entry->d_name, ".") != 0)) {
                             Entry& e = dir.nodeArray.next();
                             e.name = entry->d_name;
@@ -213,8 +213,8 @@ FileSystem::Dir& FileSystem::getContents(const std::string& path, bool forceUpda
                         entry = readdir(listing);
                     }
                     closedir(listing);
-                    listing = nullptr;
-                    entry = nullptr;
+                    listing = NULL;
+                    entry = NULL;
 #               endif
             }
 
@@ -285,7 +285,7 @@ bool FileSystem::_isZipfile(const std::string& filename) {
     }
     
     FILE* f = fopen(FilePath::removeTrailingSlash(filename).c_str(), "r");
-    if (f == nullptr) {
+    if (f == NULL) {
         return false;
     }
     uint8 header[4];
@@ -531,8 +531,8 @@ int64 FileSystem::_size(const std::string& filename) {
         if (zipfileExists(filename, zip, contents)) {
             int64 requiredMem;
             
-            struct zip *z = zip_open( zip.c_str(), ZIP_CHECKCONS, nullptr );
-            debugAssertM(z != nullptr, zip + ": zip open failed.");
+            struct zip *z = zip_open( zip.c_str(), ZIP_CHECKCONS, NULL );
+            debugAssertM(z != NULL, zip + ": zip open failed.");
             {
                 struct zip_stat info;
                 zip_stat_init( &info );    // Docs unclear if zip_stat_init is required.
@@ -607,7 +607,7 @@ const Array<std::string>& FileSystem::_drives() {
         char bufData[bufSize];
         GetLogicalDriveStringsA(bufSize, bufData);
 
-        // Drive list is a series of nullptr-terminated strings, itself terminated with a nullptr.
+        // Drive list is a series of NULL-terminated strings, itself terminated with a NULL.
         for (int i = 0; bufData[i] != '\0'; ++i) {
             const char* thisString = bufData + i;
             m_winDrive.append(toLower(thisString));

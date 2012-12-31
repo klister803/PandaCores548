@@ -203,7 +203,7 @@ WardenCheck* WardenCheckMgr::GetWardenDataById(uint16 Id)
     if (Id < CheckStore.size())
         return CheckStore[Id];
 
-    return nullptr;
+    return NULL;
 }
 
 WardenCheckResult* WardenCheckMgr::GetWardenResultById(uint16 Id)
@@ -211,5 +211,5 @@ WardenCheckResult* WardenCheckMgr::GetWardenResultById(uint16 Id)
     CheckResultContainer::const_iterator itr = CheckResultStore.find(Id);
     if (itr != CheckResultStore.end())
         return itr->second;
-    return nullptr;
+    return NULL;
 }

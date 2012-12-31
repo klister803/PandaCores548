@@ -14,41 +14,41 @@ class boss_ook_ook : public CreatureScript
     public:
         boss_ook_ook() : CreatureScript("boss_ook_ook") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_ook_ook_AI(creature);
         }
 
         struct boss_ook_ook_AI : public BossAI
         {
-            boss_ook_ook_AI(CreaturePtr creature) : BossAI(creature, DATA_OOK_OOK)
+            boss_ook_ook_AI(Creature* creature) : BossAI(creature, DATA_OOK_OOK)
             {}
 
             void Reset()
             {}
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {}
 
             void DoAction(const int32 action)
             {
             }
 
-            void KilledUnit(UnitPtr /*victim*/)
+            void KilledUnit(Unit* /*victim*/)
             {
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
             {
 
             }
 
-            void MoveInLineOfSight(UnitPtr who)
+            void MoveInLineOfSight(Unit* who)
             {}
 
             void UpdateAI(const uint32 diff)
@@ -67,14 +67,14 @@ class npc_barrel : public CreatureScript
     public:
         npc_barrel() : CreatureScript("npc_barrel") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_barrel_AI(creature);
         }
 
         struct npc_barrel_AI : public ScriptedAI
         {
-            npc_barrel_AI(CreaturePtr creature) : ScriptedAI(creature)
+            npc_barrel_AI(Creature* creature) : ScriptedAI(creature)
             {}
 
             void Reset()
@@ -106,7 +106,7 @@ class npc_barrel : public CreatureScript
 
             bool CheckIfAgainstUnit()
             {
-                if (me->SelectNearbyTarget(nullptr, 1.0f))
+                if (me->SelectNearbyTarget(NULL, 1.0f))
                     return true;
 
                 return false;
@@ -114,7 +114,7 @@ class npc_barrel : public CreatureScript
 
             void DoExplode()
             {
-                if (VehiclePtr barrel = me->GetVehicleKit())
+                if (Vehicle* barrel = me->GetVehicleKit())
                     barrel->RemoveAllPassengers();
 
                 me->Kill(me);
@@ -141,7 +141,7 @@ class spell_ook_ook_barrel_ride : public SpellScriptLoader
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 if (GetTarget())
-                    if (UnitPtr barrelBase = GetTarget())
+                    if (Unit* barrelBase = GetTarget())
                         barrelBase->GetMotionMaster()->MoveIdle();
             }
 
@@ -166,7 +166,7 @@ class spell_ook_ook_barrel : public SpellScriptLoader
         {
             PrepareAuraScript(spell_ook_ook_barrel_AuraScript);
 
-            bool CheckIfAgainstWall(UnitPtr caster)
+            bool CheckIfAgainstWall(Unit* caster)
             {                
                 float x = caster->GetPositionX() + (2 * cos(caster->GetOrientation()));
                 float y = caster->GetPositionY() + (2 * sin(caster->GetOrientation()));
@@ -177,9 +177,9 @@ class spell_ook_ook_barrel : public SpellScriptLoader
                 return false;
             }
 
-            bool CheckIfAgainstUnit(UnitPtr caster)
+            bool CheckIfAgainstUnit(Unit* caster)
             {
-                if (caster->SelectNearbyTarget(nullptr, 1.0f))
+                if (caster->SelectNearbyTarget(NULL, 1.0f))
                     return true;
 
                 return false;
@@ -187,17 +187,17 @@ class spell_ook_ook_barrel : public SpellScriptLoader
 
             void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
             {
-                UnitPtr caster = GetCaster();
+                Unit* caster = GetCaster();
                 if (!caster)
                     return;
 
                 if (CheckIfAgainstWall(caster) || CheckIfAgainstUnit(caster))
                 {
-                    if (VehiclePtr barrel = caster->GetVehicle())
+                    if (Vehicle* barrel = caster->GetVehicle())
                     {
                         barrel->RemoveAllPassengers();
 
-                        if (UnitPtr barrelBase = barrel->GetBase())
+                        if (Unit* barrelBase = barrel->GetBase())
                         {
                             barrelBase->CastSpell(barrelBase, SPELL_BAREL_EXPLOSION, true);
                             barrelBase->Kill(barrelBase);

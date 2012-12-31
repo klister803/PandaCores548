@@ -41,7 +41,7 @@ class DynamicObject : public WorldObject, public GridObject<DynamicObject>
         void AddToWorld();
         void RemoveFromWorld();
 
-        bool CreateDynamicObject(uint32 guidlow, UnitPtr caster, uint32 spellId, Position const& pos, float radius, DynamicObjectType type);
+        bool CreateDynamicObject(uint32 guidlow, Unit* caster, uint32 spellId, Position const& pos, float radius, DynamicObjectType type);
         void Update(uint32 p_time);
         void Remove();
         void SetDuration(int32 newDuration);
@@ -51,7 +51,7 @@ class DynamicObject : public WorldObject, public GridObject<DynamicObject>
         void RemoveAura();
         void SetCasterViewpoint();
         void RemoveCasterViewpoint();
-        UnitPtr GetCaster() const { return _caster; }
+        Unit* GetCaster() const { return _caster; }
         void BindToCaster();
         void UnbindFromCaster();
         uint32 GetSpellId() const {  return GetUInt32Value(DYNAMICOBJECT_SPELLID); }
@@ -67,7 +67,7 @@ class DynamicObject : public WorldObject, public GridObject<DynamicObject>
     protected:
         AuraPtr _aura;
         AuraPtr _removedAura;
-        UnitPtr _caster;
+        Unit* _caster;
         int32 _duration; // for non-aura dynobjects
         bool _isViewpoint;
 };

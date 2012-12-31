@@ -122,7 +122,7 @@ System::System() :
     m_cpuArch("Uninitialized"),
     m_operatingSystem("Uninitialized"),
     m_version("Uninitialized"),
-    m_outOfMemoryCallback(nullptr),
+    m_outOfMemoryCallback(NULL),
     m_realWorldGetTickTime0(0),
     m_highestCPUIDFunction(0) {
 
@@ -203,7 +203,7 @@ void System::init() {
 
         SYSTEM_INFO systemInfo;
         GetSystemInfo(&systemInfo);
-        const char* arch = nullptr;
+        const char* arch = NULL;
         switch (systemInfo.wProcessorArchitecture) {
         case PROCESSOR_ARCHITECTURE_INTEL:
             arch = "Intel";
@@ -358,7 +358,7 @@ std::string System::findDataFile
 
     // Now check where we previously found this file.
     std::string* last = lastFound.getPointer(full);
-    if (last != nullptr) {
+    if (last != NULL) {
         if (FileSystem::exists(*last)) {
             // Even if cwd has changed the file is still present.
             // We won't notice if it has been deleted, however.
@@ -387,10 +387,10 @@ std::string System::findDataFile
         }
 
 #       ifdef G3D_WIN32
-        if (g3dPath == nullptr) {
+        if (g3dPath == NULL) {
             // If running the demos under visual studio from the G3D.sln file,
             // this will locate the data directory.
-            const char* paths[] = {"../data-files/", "../../data-files/", "../../../data-files/", nullptr};
+            const char* paths[] = {"../data-files/", "../../data-files/", "../../../data-files/", NULL};
             for (int i = 0; paths[i]; ++i) {
                 if (FileSystem::exists(pathConcat(paths[i], "G3D-DATA-README.TXT"))) {
                     g3dPath = paths[i];
@@ -714,7 +714,7 @@ std::string System::currentProgramFilename() {
 
 #   ifdef G3D_WIN32
     {
-        GetModuleFileNameA(nullptr, filename, sizeof(filename));
+        GetModuleFileNameA(NULL, filename, sizeof(filename));
     } 
 #   elif defined(G3D_OSX)
     {
@@ -742,7 +742,7 @@ std::string System::currentProgramFilename() {
             
         debugAssert((int)sizeof(filename) > ret);
             
-        // Ensure proper nullptr termination
+        // Ensure proper NULL termination
         filename[ret] = 0;      
     }
     #endif
@@ -824,7 +824,7 @@ bool System::consoleKeyPressed() {
             tcgetattr(STDIN, &term);
             term.c_lflag &= ~ICANON;
             tcsetattr(STDIN, TCSANOW, &term);
-            setbuf(stdin, nullptr);
+            setbuf(stdin, NULL);
             initialized = true;
         }
 
@@ -844,7 +844,7 @@ bool System::consoleKeyPressed() {
             timeout.tv_sec  = 0;
             timeout.tv_usec = 0;
 
-            return select(STDIN + 1, &rdset, nullptr, nullptr, &timeout);
+            return select(STDIN + 1, &rdset, NULL, NULL, &timeout);
         #endif
     #endif
 }
@@ -873,11 +873,11 @@ void System::initTime() {
         m_realWorldGetTickTime0 = (RealTime)t.time - t.timezone * G3D::MINUTE + (t.dstflag ? G3D::HOUR : 0);
 
     #else
-        gettimeofday(&m_start, nullptr);
+        gettimeofday(&m_start, NULL);
         // "sse" = "seconds since epoch".  The time
         // function returns the seconds since the epoch
         // GMT (perhaps more correctly called UTC). 
-        time_t gmt = ::time(nullptr);
+        time_t gmt = ::time(NULL);
         
         // No call to free or delete is needed, but subsequent
         // calls to asctime, ctime, mktime, etc. might overwrite
@@ -909,7 +909,7 @@ RealTime System::time() {
         // actually uses RDTSC when on systems that support it, otherwise
         // it uses the system clock.
         struct timeval now;
-        gettimeofday(&now, nullptr);
+        gettimeofday(&now, NULL);
 
         return (now.tv_sec  - instance().m_start.tv_sec) +
             (now.tv_usec - instance().m_start.tv_usec) / 1e6
@@ -952,7 +952,7 @@ private:
         void*           ptr;
         size_t          bytes;
 
-        inline MemBlock() : ptr(nullptr), bytes(0) {}
+        inline MemBlock() : ptr(NULL), bytes(0) {}
         inline MemBlock(void* p, size_t b) : ptr(p), bytes(b) {}
     };
 
@@ -1008,7 +1008,7 @@ private:
 #endif //-------------------------------------------old mutex
 
     /** 
-     Malloc out of the tiny heap. Returns nullptr if allocation failed.
+     Malloc out of the tiny heap. Returns NULL if allocation failed.
      */
     inline void* tinyMalloc(size_t bytes) {
         // Note that we ignore the actual byte size
@@ -1016,7 +1016,7 @@ private:
         (void)bytes;
         assert(tinyBufferSize >= bytes);
 
-        void* ptr = nullptr;
+        void* ptr = NULL;
 
         if (tinyPoolSize > 0) {
             --tinyPoolSize;
@@ -1032,8 +1032,8 @@ private:
                 }
 #           endif
 
-            // nullptr out the entry to help detect corruption
-            tinyPool[tinyPoolSize] = nullptr;
+            // NULL out the entry to help detect corruption
+            tinyPool[tinyPoolSize] = NULL;
         }
 
         return ptr;
@@ -1060,7 +1060,7 @@ private:
             }
 #       endif
 
-        assert(tinyPool[tinyPoolSize] == nullptr);
+        assert(tinyPool[tinyPoolSize] == NULL);
 
         // Put the pointer back into the free list
         tinyPool[tinyPoolSize] = ptr;
@@ -1071,14 +1071,14 @@ private:
     void flushPool(MemBlock* pool, int& poolSize) {
         for (int i = 0; i < poolSize; ++i) {
             ::free(pool[i].ptr);
-            pool[i].ptr = nullptr;
+            pool[i].ptr = NULL;
             pool[i].bytes = 0;
         }
         poolSize = 0;
     }
 
 
-    /**  Allocate out of a specific pool->  Return nullptr if no suitable 
+    /**  Allocate out of a specific pool->  Return NULL if no suitable 
          memory was found. 
     
          */
@@ -1103,7 +1103,7 @@ private:
             }
         }
 
-        return nullptr;
+        return NULL;
     }
 
 public:
@@ -1132,7 +1132,7 @@ public:
         bytesAllocated       = true;
 
         tinyPoolSize         = 0;
-        tinyHeap             = nullptr;
+        tinyHeap             = NULL;
 
         smallPoolSize        = 0;
 
@@ -1151,7 +1151,7 @@ public:
 #       ifdef G3D_WIN32
             InitializeCriticalSection(&mutex);
 #       else
-            pthread_mutex_init(&mutex, nullptr);
+            pthread_mutex_init(&mutex, NULL);
 #       endif
 #endif        ///---------------------------------- old mutex
     }
@@ -1170,7 +1170,7 @@ public:
 
     
     void* realloc(void* ptr, size_t bytes) {
-        if (ptr == nullptr) {
+        if (ptr == NULL) {
             return malloc(bytes);
         }
 
@@ -1244,7 +1244,7 @@ public:
             if (ptr) {
                 ++mallocsFromMedPool;
                 unlock();
-                debugAssertM(ptr != nullptr, "BufferPool::malloc returned nullptr");
+                debugAssertM(ptr != NULL, "BufferPool::malloc returned NULL");
                 return ptr;
             }
         }
@@ -1258,34 +1258,34 @@ public:
         // since malloc already added its own header).
         void* ptr = ::malloc(REALBLOCK_SIZE(bytes));
 
-        if (ptr == nullptr) {
+        if (ptr == NULL) {
             // Flush memory pools to try and recover space
             flushPool(smallPool, smallPoolSize);
             flushPool(medPool, medPoolSize);
             ptr = ::malloc(REALBLOCK_SIZE(bytes));
         }
 
-        if (ptr == nullptr) {
-            if ((System::outOfMemoryCallback() != nullptr) &&
+        if (ptr == NULL) {
+            if ((System::outOfMemoryCallback() != NULL) &&
                 (System::outOfMemoryCallback()(REALBLOCK_SIZE(bytes), true) == true)) {
                 // Re-attempt the malloc
                 ptr = ::malloc(REALBLOCK_SIZE(bytes));
             }
         }
 
-        if (ptr == nullptr) {
-            if (System::outOfMemoryCallback() != nullptr) {
+        if (ptr == NULL) {
+            if (System::outOfMemoryCallback() != NULL) {
                 // Notify the application
                 System::outOfMemoryCallback()(REALBLOCK_SIZE(bytes), false);
             }
 #           ifdef G3D_DEBUG
-            debugPrintf("::malloc(%d) returned nullptr\n", (int)REALBLOCK_SIZE(bytes));
+            debugPrintf("::malloc(%d) returned NULL\n", (int)REALBLOCK_SIZE(bytes));
 #           endif
-            debugAssertM(ptr != nullptr, 
-                         "::malloc returned nullptr. Either the "
+            debugAssertM(ptr != NULL, 
+                         "::malloc returned NULL. Either the "
                          "operating system is out of memory or the "
                          "heap is corrupt.");
-            return nullptr;
+            return NULL;
         }
 
         *(uint32*)ptr = bytes;
@@ -1295,7 +1295,7 @@ public:
 
 
     void free(void* ptr) {
-        if (ptr == nullptr) {
+        if (ptr == NULL) {
             // Free does nothing on null pointers
             return;
         }
@@ -1366,7 +1366,7 @@ public:
 // Dynamically allocated because we need to ensure that
 // the buffer pool is still around when the last global variable 
 // is deallocated.
-static BufferPool* bufferpool = nullptr;
+static BufferPool* bufferpool = NULL;
 
 std::string System::mallocPerformance() {    
 #ifndef NO_BUFFERPOOL
@@ -1420,7 +1420,7 @@ void* System::malloc(size_t bytes) {
 void* System::calloc(size_t n, size_t x) {
 #ifndef NO_BUFFERPOOL
     void* b = System::malloc(n * x);
-    debugAssertM(b != nullptr, "System::malloc returned nullptr");
+    debugAssertM(b != NULL, "System::malloc returned NULL");
     debugAssertM(isValidHeapPointer(b), "System::malloc returned an invalid pointer");
     System::memset(b, 0, n * x);
     return b;
@@ -1463,8 +1463,8 @@ void* System::alignedMalloc(size_t bytes, size_t alignment) {
     size_t truePtr = (size_t)System::malloc(totalBytes);
 
     if (truePtr == 0) {
-        // malloc returned nullptr
-        return nullptr;
+        // malloc returned NULL
+        return NULL;
     }
 
     debugAssert(isValidHeapPointer((void*)truePtr));
@@ -1503,7 +1503,7 @@ void* System::alignedMalloc(size_t bytes, size_t alignment) {
 
 
 void System::alignedFree(void* _ptr) {
-    if (_ptr == nullptr) {
+    if (_ptr == NULL) {
         return;
     }
 
@@ -1630,7 +1630,7 @@ void System::describeSystem(
 
 void System::setClipboardText(const std::string& s) {
 #   ifdef G3D_WIN32
-        if (OpenClipboard(nullptr)) {
+        if (OpenClipboard(NULL)) {
             HGLOBAL hMem = GlobalAlloc(GHND | GMEM_DDESHARE, s.size() + 1);
             if (hMem) {
                 char *pMem = (char*)GlobalLock(hMem);
@@ -1652,7 +1652,7 @@ std::string System::getClipboardText() {
     std::string s;
 
 #   ifdef G3D_WIN32
-        if (OpenClipboard(nullptr)) {
+        if (OpenClipboard(NULL)) {
             HANDLE h = GetClipboardData(CF_TEXT);
 
             if (h) {
@@ -1660,7 +1660,7 @@ std::string System::getClipboardText() {
                 if (temp) {
     	            s = temp;
                 }
-                temp = nullptr;
+                temp = NULL;
                 GlobalUnlock(h);
             }
             CloseClipboard();

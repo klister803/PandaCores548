@@ -60,14 +60,14 @@ class instance_shadowfang_keep : public InstanceMapScript
 public:
     instance_shadowfang_keep() : InstanceMapScript("instance_shadowfang_keep", 33) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_shadowfang_keep_InstanceMapScript(map);
     }
 
     struct instance_shadowfang_keep_InstanceMapScript : public InstanceScript
     {
-        instance_shadowfang_keep_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_shadowfang_keep_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         std::string str_data;
@@ -99,7 +99,7 @@ public:
             uiTimer = 0;
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -109,7 +109,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -133,8 +133,8 @@ public:
 
         void DoSpeech()
         {
-            CreaturePtr pAda = instance->GetCreature(uiAdaGUID);
-            CreaturePtr pAsh = instance->GetCreature(uiAshGUID);
+            Creature* pAda = instance->GetCreature(uiAdaGUID);
+            Creature* pAsh = instance->GetCreature(uiAshGUID);
 
             if (pAda && pAda->isAlive() && pAsh && pAsh->isAlive())
             {
@@ -239,7 +239,7 @@ public:
             if (GetData(TYPE_FENRUS) != DONE)
                 return;
 
-            CreaturePtr pArchmage = instance->GetCreature(uiArchmageArugalGUID);
+            Creature* pArchmage = instance->GetCreature(uiArchmageArugalGUID);
 
             if (!pArchmage || !pArchmage->isAlive())
                 return;
@@ -252,7 +252,7 @@ public:
                     {
                     case 1:
                         {
-                            CreaturePtr summon = pArchmage->SummonCreature(pArchmage->GetEntry(), SpawnLocation[4], TEMPSUMMON_TIMED_DESPAWN, 10000);
+                            Creature* summon = pArchmage->SummonCreature(pArchmage->GetEntry(), SpawnLocation[4], TEMPSUMMON_TIMED_DESPAWN, 10000);
                             summon = pArchmage->SummonCreature(pArchmage->GetEntry(), SpawnLocation[4], TEMPSUMMON_TIMED_DESPAWN, 10000);
                             summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                             summon->SetReactState(REACT_DEFENSIVE);

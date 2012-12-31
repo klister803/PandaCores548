@@ -88,8 +88,8 @@ class spell_sha_frozen_power : public SpellScriptLoader
 
             void HandleAfterHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
-                    if (UnitPtr target = GetHitUnit())
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
                         if (_player->HasAura(SPELL_SHA_FROZEN_POWER))
                             _player->CastSpell(target, SPELL_SHA_FROST_SHOCK_FREEZE, true);
             }
@@ -119,13 +119,13 @@ class spell_sha_spirit_link : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (UnitPtr caster = GetCaster())
+                if (Unit* caster = GetCaster())
                 {
                     if (caster->GetEntry() == 53006)
                     {
-                        if (PlayerPtr _player = TO_PLAYER(caster->GetOwner()))
+                        if (Player* _player = caster->GetOwner()->ToPlayer())
                         {
-                            std::list<UnitPtr> memberList;
+                            std::list<Unit*> memberList;
                             _player->GetPartyMembers(memberList);
 
                             float totalRaidHealthPct = 0;
@@ -173,11 +173,11 @@ class spell_sha_mana_tide : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (UnitPtr target = GetHitUnit())
+                if (Unit* target = GetHitUnit())
                 {
-                    if (PlayerPtr _player = TO_PLAYER(GetCaster()->GetOwner()))
+                    if (Player* _player = GetCaster()->GetOwner()->ToPlayer())
                     {
-                        AuraApplicationPtr aura = target->GetAuraApplication(SPELL_SHA_MANA_TIDE, GetCaster()->GetGUID());
+                        AuraApplication* aura = target->GetAuraApplication(SPELL_SHA_MANA_TIDE, GetCaster()->GetGUID());
 
                         aura->GetBase()->GetEffect(0)->ChangeAmount(0);
 
@@ -220,9 +220,9 @@ public:
 
         void HandleOnHit()
         {
-            if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+            if (Player* _player = GetCaster()->ToPlayer())
                 if (_player->HasAura(51564))
-                    if (UnitPtr target = GetHitUnit())
+                    if (Unit* target = GetHitUnit())
                         _player->CastSpell(_player, SPELL_SHA_TIDAL_WAVES, true);
         }
 
@@ -257,8 +257,8 @@ class spell_sha_fire_nova : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
-                    if (UnitPtr target = GetHitUnit())
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
                         if (target->HasAura(SPELL_SHA_FLAME_SHOCK))
                             _player->CastSpell(target, SPELL_SHA_FIRE_NOVA_TRIGGERED, true);
             }
@@ -294,11 +294,11 @@ class spell_sha_unleash_elements : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (UnitPtr target = GetHitUnit())
+                    if (Unit* target = GetHitUnit())
                     {
-                        ItemPtr weapons[2];
+                        Item *weapons[2];
                         weapons[0] = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
                         weapons[1] = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
 
@@ -375,9 +375,9 @@ public:
 
         void HandleOnHit()
         {
-            if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+            if (Player* _player = GetCaster()->ToPlayer())
             {
-                if (UnitPtr target = GetHitUnit())
+                if (Unit* target = GetHitUnit())
                 {
                     if (roll_chance_i(60) && _player->HasAura(88764))
                     {
@@ -426,8 +426,8 @@ public:
         void HandleFulmination(SpellEffIndex /*effIndex*/)
         {
             // make caster cast a spell on a unit target of effect
-            UnitPtr target = GetHitUnit();
-            UnitPtr caster = GetCaster();
+            Unit *target = GetHitUnit();
+            Unit *caster = GetCaster();
             if(!target || !caster)
                 return;
 
@@ -449,7 +449,7 @@ public:
             int32 basePoints = caster->CalculateSpellDamage(target, GetSpellInfo(), 0);
             uint32 damage = usedCharges * caster->SpellDamageBonusDone(target, GetSpellInfo(), basePoints, SPELL_DIRECT_DAMAGE);
 
-            caster->CastCustomSpell(SPELL_SHA_FULMINATION_TRIGGERED, SPELLVALUE_BASE_POINT0, damage, target, true, nullptr, fulminationAura);
+            caster->CastCustomSpell(SPELL_SHA_FULMINATION_TRIGGERED, SPELLVALUE_BASE_POINT0, damage, target, true, NULL, fulminationAura);
             lightningShield->SetCharges(lsCharges - usedCharges);
         }
 
@@ -481,7 +481,7 @@ class spell_sha_lava_surge : public SpellScriptLoader
                 // 20% chance to reset the cooldown of Lavaburst and make the next to be instantly casted
                 if (GetCaster())
                 {
-                    if (PlayerPtr _player = GetCaster()->THIS_PLAYER())
+                    if (Player* _player = GetCaster()->ToPlayer())
                     {
                         if (_player->HasAura(77756))
                         {
@@ -526,8 +526,8 @@ class spell_sha_healing_stream : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()->GetOwner()))
-                    if (UnitPtr target = GetHitUnit())
+                if (Player* _player = GetCaster()->GetOwner()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
                         // Glyph of Healing Stream Totem
                         if (target->GetGUID() != _player->GetGUID() && _player->HasAura(55456))
                             _player->CastSpell(target, SPELL_SHA_GLYPH_OF_HEALING_STREAM, true);
@@ -565,9 +565,9 @@ class spell_sha_static_shock : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    UnitPtr target = GetHitUnit();
+                    Unit* target = GetHitUnit();
 
                     // While have Lightning Shield active
                     if (target && _player->HasAura(324) && _player->HasAura(51527))
@@ -622,9 +622,9 @@ class spell_sha_elemental_blast : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (UnitPtr target = GetExplTargetUnit())
+                    if (Unit* target = GetExplTargetUnit())
                     {
                         _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_FROST_VISUAL, true);
                         _player->CastSpell(target, SPELL_SHA_ELEMENTAL_BLAST_NATURE_VISUAL, true);
@@ -634,13 +634,13 @@ class spell_sha_elemental_blast : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
                     int32 randomEffect = irand(0, 2);
 
                     _player->CastSpell(_player, SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS, true);
 
-                    AuraApplicationPtr aura = _player->GetAuraApplication(SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS, _player->GetGUID());
+                    AuraApplication* aura = _player->GetAuraApplication(SPELL_SHA_ELEMENTAL_BLAST_RATING_BONUS, _player->GetGUID());
 
                     if (aura)
                     {
@@ -704,8 +704,8 @@ class spell_sha_earthquake_tick : public SpellScriptLoader
             void HandleOnHit()
             {
                 // With a 10% chance of knocking down affected targets
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
-                    if (UnitPtr target = GetHitUnit())
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
                         if (roll_chance_i(10))
                             _player->CastSpell(target, SPELL_SHA_EARTHQUAKE_KNOCKING_DOWN, true);
             }
@@ -734,7 +734,7 @@ class spell_sha_earthquake : public SpellScriptLoader
 
             void OnTick(constAuraEffectPtr aurEff)
             {
-                if (DynamicObjectPtr dynObj = GetCaster()->GetDynObject(SPELL_SHA_EARTHQUAKE))
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_EARTHQUAKE))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_EARTHQUAKE_TICK, true);
             }
 
@@ -762,7 +762,7 @@ class spell_sha_healing_rain : public SpellScriptLoader
 
             void OnTick(constAuraEffectPtr aurEff)
             {
-                if (DynamicObjectPtr dynObj = GetCaster()->GetDynObject(SPELL_SHA_HEALING_RAIN))
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_SHA_HEALING_RAIN))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_SHA_HEALING_RAIN_TICK, true);
             }
 
@@ -797,7 +797,7 @@ class spell_sha_ascendance : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_NONE)
                     {
@@ -813,7 +813,7 @@ class spell_sha_ascendance : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
                     switch(_player->GetSpecializationId(_player->GetActiveSpec()))
                     {
@@ -850,7 +850,7 @@ class EarthenPowerTargetSelector
     public:
         EarthenPowerTargetSelector() { }
 
-        bool operator() (WorldObjectPtr target)
+        bool operator() (WorldObject* target)
         {
             if (!target->ToUnit())
                 return true;
@@ -871,7 +871,7 @@ class spell_sha_earthen_power : public SpellScriptLoader
         {
             PrepareSpellScript(spell_sha_earthen_power_SpellScript);
 
-            void FilterTargets(std::list<WorldObjectPtr>& unitList)
+            void FilterTargets(std::list<WorldObject*>& unitList)
             {
                 unitList.remove_if(EarthenPowerTargetSelector());
             }
@@ -904,7 +904,7 @@ class spell_sha_bloodlust : public SpellScriptLoader
                 return true;
             }
 
-            void RemoveInvalidTargets(std::list<WorldObjectPtr>& targets)
+            void RemoveInvalidTargets(std::list<WorldObject*>& targets)
             {
                 targets.remove_if(Trinity::UnitAuraCheck(true, SHAMAN_SPELL_SATED));
                 targets.remove_if(Trinity::UnitAuraCheck(true, HUNTER_SPELL_INSANITY));
@@ -913,7 +913,7 @@ class spell_sha_bloodlust : public SpellScriptLoader
 
             void ApplyDebuff()
             {
-                if (UnitPtr target = GetHitUnit())
+                if (Unit* target = GetHitUnit())
                     target->CastSpell(target, SHAMAN_SPELL_SATED, true);
             }
 
@@ -948,7 +948,7 @@ class spell_sha_heroism : public SpellScriptLoader
                 return true;
             }
 
-            void RemoveInvalidTargets(std::list<WorldObjectPtr>& targets)
+            void RemoveInvalidTargets(std::list<WorldObject*>& targets)
             {
                 targets.remove_if(Trinity::UnitAuraCheck(true, SHAMAN_SPELL_EXHAUSTION));
                 targets.remove_if(Trinity::UnitAuraCheck(true, HUNTER_SPELL_INSANITY));
@@ -957,7 +957,7 @@ class spell_sha_heroism : public SpellScriptLoader
 
             void ApplyDebuff()
             {
-                if (UnitPtr target = GetHitUnit())
+                if (Unit* target = GetHitUnit())
                     target->CastSpell(target, SHAMAN_SPELL_EXHAUSTION, true);
             }
 
@@ -1001,7 +1001,7 @@ class spell_sha_ancestral_awakening_proc : public SpellScriptLoader
             {
                 int32 damage = GetEffectValue();
                 if (GetCaster() && GetHitUnit())
-                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, nullptr, nullptr, true);
+                    GetCaster()->CastCustomSpell(GetHitUnit(), SPELL_ANCESTRAL_AWAKENING_PROC, &damage, NULL, NULL, true);
             }
 
             void Register()
@@ -1035,9 +1035,9 @@ class spell_sha_lava_lash : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (UnitPtr target = GetHitUnit())
+                    if (Unit* target = GetHitUnit())
                     {
                         int32 hitDamage = GetHitDamage();
                         if (_player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
@@ -1047,7 +1047,7 @@ class spell_sha_lava_lash : public SpellScriptLoader
                                 AddPct(hitDamage, 40);
 
                             // Your Lava Lash ability will consume Searing Flame effect, dealing 20% increased damage for each application
-                            if (AuraApplicationPtr searingFlame = _player->GetAuraApplication(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE))
+                            if (AuraApplication* searingFlame = _player->GetAuraApplication(SPELL_SHA_SEARING_FLAMES_DAMAGE_DONE))
                             {
                                 searingFlameAmount = searingFlame->GetBase()->GetStackAmount();
                                 searingFlameAmount *= 8;
@@ -1064,7 +1064,7 @@ class spell_sha_lava_lash : public SpellScriptLoader
                             {
                                 if (target->HasAura(SPELL_SHA_FLAME_SHOCK))
                                 {
-                                    std::list<UnitPtr> targetList;
+                                    std::list<Unit*> targetList;
 
                                     _player->GetAttackableUnitListInRange(_player, targetList, 12.0f);
 

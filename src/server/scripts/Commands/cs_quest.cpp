@@ -35,23 +35,23 @@ public:
     {
         static ChatCommand questCommandTable[] =
         {
-            { "add",            SEC_ADMINISTRATOR,  false, &HandleQuestAdd,                    "", nullptr },
-            { "complete",       SEC_ADMINISTRATOR,  false, &HandleQuestComplete,               "", nullptr },
-            { "remove",         SEC_ADMINISTRATOR,  false, &HandleQuestRemove,                 "", nullptr },
-            { "reward",         SEC_ADMINISTRATOR,  false, &HandleQuestReward,                 "", nullptr },
-            { nullptr,             SEC_PLAYER,         false, nullptr,                               "", nullptr }
+            { "add",            SEC_ADMINISTRATOR,  false, &HandleQuestAdd,                    "", NULL },
+            { "complete",       SEC_ADMINISTRATOR,  false, &HandleQuestComplete,               "", NULL },
+            { "remove",         SEC_ADMINISTRATOR,  false, &HandleQuestRemove,                 "", NULL },
+            { "reward",         SEC_ADMINISTRATOR,  false, &HandleQuestReward,                 "", NULL },
+            { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "quest",          SEC_ADMINISTRATOR,  false, nullptr,                  "", questCommandTable },
-            { nullptr,             SEC_PLAYER,         false, nullptr,                               "", nullptr }
+            { "quest",          SEC_ADMINISTRATOR,  false, NULL,                  "", questCommandTable },
+            { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
         return commandTable;
     }
 
     static bool HandleQuestAdd(ChatHandler* handler, const char* args)
     {
-        PlayerPtr player = handler->getSelectedPlayer();
+        Player* player = handler->getSelectedPlayer();
         if (!player)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -90,7 +90,7 @@ public:
         // ok, normal (creature/GO starting) quest
         if (player->CanAddQuest(quest, true))
         {
-            player->AddQuest(quest, nullptr);
+            player->AddQuest(quest, NULL);
 
             if (player->CanCompleteQuest(entry))
                 player->CompleteQuest(entry);
@@ -101,7 +101,7 @@ public:
 
     static bool HandleQuestRemove(ChatHandler* handler, const char* args)
     {
-        PlayerPtr player = handler->getSelectedPlayer();
+        Player* player = handler->getSelectedPlayer();
         if (!player)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -148,7 +148,7 @@ public:
 
     static bool HandleQuestComplete(ChatHandler* handler, const char* args)
     {
-        PlayerPtr player = handler->getSelectedPlayer();
+        Player* player = handler->getSelectedPlayer();
         if (!player)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -188,7 +188,7 @@ public:
             uint8 msg = player->CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, id, count-curItemCount);
             if (msg == EQUIP_ERR_OK)
             {
-                ItemPtr item = player->StoreNewItem(dest, id, true);
+                Item* item = player->StoreNewItem(dest, id, true);
                 player->SendNewItem(item, count-curItemCount, true, false);
             }
         }
@@ -248,7 +248,7 @@ public:
 
     static bool HandleQuestReward(ChatHandler* handler, char const* args)
     {
-        PlayerPtr player = handler->getSelectedPlayer();
+        Player* player = handler->getSelectedPlayer();
         if (!player)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);

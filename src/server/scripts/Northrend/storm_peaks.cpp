@@ -41,7 +41,7 @@ public:
 
     struct npc_agnetta_tyrsdottarAI : public ScriptedAI
     {
-        npc_agnetta_tyrsdottarAI(CreaturePtr creature) : ScriptedAI(creature) { }
+        npc_agnetta_tyrsdottarAI(Creature* creature) : ScriptedAI(creature) { }
 
         void Reset()
         {
@@ -49,12 +49,12 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_agnetta_tyrsdottarAI(creature);
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (player->GetQuestStatus(QUEST_ITS_THAT_YOUR_GOBLIN) == QUEST_STATUS_INCOMPLETE)
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_AGNETTA, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
@@ -63,7 +63,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -96,7 +96,7 @@ class npc_frostborn_scout : public CreatureScript
 public:
     npc_frostborn_scout() : CreatureScript("npc_frostborn_scout") { }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
 
         if (player->GetQuestStatus(QUEST_MISSING_SCOUTS) == QUEST_STATUS_INCOMPLETE)
@@ -108,7 +108,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -155,7 +155,7 @@ class npc_thorim : public CreatureScript
 public:
     npc_thorim() : CreatureScript("npc_thorim") { }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -168,7 +168,7 @@ public:
         return false;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -216,7 +216,7 @@ public:
 
     struct npc_victorious_challengerAI : public ScriptedAI
     {
-        npc_victorious_challengerAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_victorious_challengerAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 SunderArmorTimer;
         uint32 RendTimer;
@@ -250,14 +250,14 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             me->RestoreFaction();
         }
 
     };
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -272,7 +272,7 @@ public:
         return false;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -285,7 +285,7 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_victorious_challengerAI(creature);
     }
@@ -314,7 +314,7 @@ class npc_loklira_crone : public CreatureScript
 public:
     npc_loklira_crone() : CreatureScript("npc_loklira_crone") { }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -328,7 +328,7 @@ public:
         return false;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -374,11 +374,11 @@ public:
 
     struct npc_injured_goblinAI : public npc_escortAI
     {
-        npc_injured_goblinAI(CreaturePtr creature) : npc_escortAI(creature) { }
+        npc_injured_goblinAI(Creature* creature) : npc_escortAI(creature) { }
 
         void WaypointReached(uint32 waypointId)
         {
-            PlayerPtr player = GetPlayerForEscort();
+            Player* player = GetPlayerForEscort();
             if (!player)
                 return;
 
@@ -393,13 +393,13 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void Reset() {}
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
-            PlayerPtr player = GetPlayerForEscort();
+            Player* player = GetPlayerForEscort();
             if (HasEscortState(STATE_ESCORT_ESCORTING) && player)
                 player->FailQuest(QUEST_BITTER_DEPARTURE);
         }
@@ -413,12 +413,12 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_injured_goblinAI(creature);
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -433,7 +433,7 @@ public:
         return true;
     }
 
-    bool OnQuestAccept(PlayerPtr /*Player*/, CreaturePtr creature, Quest const* quest)
+    bool OnQuestAccept(Player* /*player*/, Creature* creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_BITTER_DEPARTURE)
             DoScriptText(SAY_QUEST_ACCEPT, creature);
@@ -441,7 +441,7 @@ public:
         return false;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         npc_escortAI* pEscortAI = CAST_AI(npc_injured_goblin::npc_injured_goblinAI, creature->AI());
@@ -467,7 +467,7 @@ class npc_roxi_ramrocket : public CreatureScript
 public:
     npc_roxi_ramrocket() : CreatureScript("npc_roxi_ramrocket") { }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         //Quest Menu
         if (creature->isQuestGiver())
@@ -486,7 +486,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -523,7 +523,7 @@ public:
 
     struct npc_brunnhildar_prisonerAI : public ScriptedAI
     {
-        npc_brunnhildar_prisonerAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_brunnhildar_prisonerAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 drakeGUID;
         uint16 enter_timer;
@@ -543,7 +543,7 @@ public:
             if (!drakeGUID)
                 return;
 
-            CreaturePtr drake = Unit::GetCreature(TO_WORLDOBJECT(me), drakeGUID);
+            Creature* drake = Unit::GetCreature(*me, drakeGUID);
             if (!drake)
             {
                 drakeGUID = 0;
@@ -569,12 +569,12 @@ public:
                 enter_timer -= diff;
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!who || !drakeGUID)
                 return;
 
-            CreaturePtr drake = Unit::GetCreature(TO_WORLDOBJECT(me), drakeGUID);
+            Creature* drake = Unit::GetCreature(*me, drakeGUID);
             if (!drake)
             {
                 drakeGUID = 0;
@@ -599,7 +599,7 @@ public:
             {
                 if (who->ToCreature()->GetEntry() == NPC_QUEST_GIVER && me->IsWithinDist(who, 15.0f, false))
                 {
-                    UnitPtr rider = drake->GetVehicleKit()->GetPassenger(0);
+                    Unit* rider = drake->GetVehicleKit()->GetPassenger(0);
                     if (!rider)
                         return;
 
@@ -615,8 +615,8 @@ public:
                         drake->GetVehicleKit()->HasEmptySeat(3))
                     {
                         // not working rider->CastSpell(rider, SPELL_KILL_CREDIT_DRAKE, true);
-                        if (TO_PLAYER(rider))
-                            TO_PLAYER(rider)->KilledMonsterCredit(29709, 0);
+                        if (rider->ToPlayer())
+                            rider->ToPlayer()->KilledMonsterCredit(29709, 0);
 
                         drake->DespawnOrUnsummon(0);
                     }
@@ -624,7 +624,7 @@ public:
             }
         }
 
-        void SpellHit(UnitPtr hitter, const SpellInfo* spell)
+        void SpellHit(Unit* hitter, const SpellInfo* spell)
         {
             if (!hitter || !spell)
                 return;
@@ -645,7 +645,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_brunnhildar_prisonerAI(creature);
     }
@@ -658,13 +658,13 @@ public:
 
     struct npc_icefangAI : public npc_escortAI
     {
-        npc_icefangAI(CreaturePtr creature) : npc_escortAI(creature) {}
+        npc_icefangAI(Creature* creature) : npc_escortAI(creature) {}
 
-        void AttackStart(UnitPtr /*who*/) {}
-        void EnterCombat(UnitPtr /*who*/) {}
+        void AttackStart(Unit* /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
         void EnterEvadeMode() {}
 
-        void PassengerBoarded(UnitPtr who, int8 /*seatId*/, bool apply)
+        void PassengerBoarded(Unit* who, int8 /*seatId*/, bool apply)
         {
             if (who->GetTypeId() == TYPEID_PLAYER)
             {
@@ -677,7 +677,7 @@ public:
         {
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
         }
 
@@ -694,7 +694,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_icefangAI (creature);
     }
@@ -713,9 +713,9 @@ class npc_hyldsmeet_protodrake : public CreatureScript
         class npc_hyldsmeet_protodrakeAI : public CreatureAI
         {
             public:
-                npc_hyldsmeet_protodrakeAI(CreaturePtr creature) : CreatureAI(creature), _accessoryRespawnTimer(0), _vehicleKit(creature->GetVehicleKit()) {}
+                npc_hyldsmeet_protodrakeAI(Creature* creature) : CreatureAI(creature), _accessoryRespawnTimer(0), _vehicleKit(creature->GetVehicleKit()) {}
 
-                void PassengerBoarded(UnitPtr who, int8 /*seat*/, bool apply)
+                void PassengerBoarded(Unit* who, int8 /*seat*/, bool apply)
                 {
                     if (apply)
                         return;
@@ -739,10 +739,10 @@ class npc_hyldsmeet_protodrake : public CreatureScript
 
             private:
                 uint32 _accessoryRespawnTimer;
-                VehiclePtr _vehicleKit;
+                Vehicle* _vehicleKit;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_hyldsmeet_protodrakeAI (creature);
         }

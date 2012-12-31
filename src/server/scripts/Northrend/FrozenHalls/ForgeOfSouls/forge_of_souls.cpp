@@ -77,7 +77,7 @@ public:
 
     struct npc_sylvanas_fosAI : public ScriptedAI
     {
-        npc_sylvanas_fosAI(CreaturePtr creature) : ScriptedAI(creature)
+        npc_sylvanas_fosAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = me->GetInstanceScript();
             me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -160,7 +160,7 @@ public:
         }
     };
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -174,7 +174,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -190,7 +190,7 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_sylvanas_fosAI(creature);
     }
@@ -203,7 +203,7 @@ public:
 
     struct npc_jaina_fosAI: public ScriptedAI
     {
-        npc_jaina_fosAI(CreaturePtr creature) : ScriptedAI(creature)
+        npc_jaina_fosAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = me->GetInstanceScript();
             me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -297,7 +297,7 @@ public:
         }
     };
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -311,7 +311,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -327,7 +327,7 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_jaina_fosAI(creature);
     }

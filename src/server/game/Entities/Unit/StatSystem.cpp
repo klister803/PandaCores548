@@ -63,7 +63,7 @@ bool Player::UpdateStats(Stats stat)
 
     if (stat == STAT_STAMINA || stat == STAT_INTELLECT || stat == STAT_STRENGTH)
     {
-        PetPtr pet = GetPet();
+        Pet* pet = GetPet();
         if (pet)
             pet->UpdateStats(stat);
     }
@@ -168,14 +168,14 @@ bool Player::UpdateAllStats()
             }
             else
             {
-                ItemPtr mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                ItemPtr offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+                Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
                 if (mainItem && mainItem->GetTemplate()->Class == ITEM_CLASS_WEAPON && offItem && offItem->GetTemplate()->Class == ITEM_CLASS_WEAPON)
                     trigger = 108977;
             }
 
             if (trigger)
-                CastSpell(THIS_UNIT, trigger, true);
+                CastSpell(this, trigger, true);
         }
     }
 
@@ -203,7 +203,7 @@ void Player::UpdateResistances(uint32 school)
         float value  = GetTotalAuraModValue(UnitMods(UNIT_MOD_RESISTANCE_START + school));
         SetResistance(SpellSchools(school), int32(value));
 
-        PetPtr pet = GetPet();
+        Pet* pet = GetPet();
         if (pet)
             pet->UpdateResistances(school);
     }
@@ -240,7 +240,7 @@ void Player::UpdateArmor()
 
     SetArmor(int32(value));
 
-    PetPtr pet = GetPet();
+    Pet* pet = GetPet();
     if (pet)
         pet->UpdateArmor();
 
@@ -360,8 +360,8 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
     else
     {
         int32 ApBySpellPct = 0;
-        int32 spellPower = THIS_PLAYER()->GetBaseSpellPowerBonus(); // SpellPower from Weapon
-        spellPower += std::max(0, int32(THIS_PLAYER()->GetStat(STAT_INTELLECT)) - 10); // SpellPower from intellect
+        int32 spellPower = ToPlayer()->GetBaseSpellPowerBonus(); // SpellPower from Weapon
+        spellPower += std::max(0, int32(ToPlayer()->GetStat(STAT_INTELLECT)) - 10); // SpellPower from intellect
 
         AuraEffectList const& APbySpell = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT);
         for (AuraEffectList::const_iterator iter = APbySpell.begin(); iter != APbySpell.end(); ++iter)
@@ -375,7 +375,7 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
             SetFloatValue(index_mult, attPowerMultiplier);          //UNIT_FIELD_(RANGED)_ATTACK_POWER_MULTIPLIER field
     }
 
-    PetPtr pet = GetPet();                                //update pet's AP
+    Pet* pet = GetPet();                                //update pet's AP
     //automatically update weapon damage after attack power modification
     if (ranged)
     {
@@ -427,7 +427,7 @@ void Player::CalculateMinMaxDamage(WeaponAttackType attType, bool normalized, bo
     if (IsInFeralForm())                                    //check if player is druid and in cat or bear forms
     {
         float weaponSpeed = BASE_ATTACK_TIME / 1000.f;
-        if (ItemPtr weapon = GetWeaponForAttack(BASE_ATTACK, true))
+        if (Item* weapon = GetWeaponForAttack(BASE_ATTACK, true))
             weaponSpeed =  weapon->GetTemplate()->Delay / 1000;
 
         if (GetShapeshiftForm() == FORM_CAT)
@@ -720,7 +720,7 @@ void Player::UpdateExpertise(WeaponAttackType attack)
 {
     float expertise = GetRatingBonusValue(CR_EXPERTISE);
 
-    ItemPtr weapon = GetWeaponForAttack(attack, true);
+    Item* weapon = GetWeaponForAttack(attack, true);
 
     AuraEffectList const& expAuras = GetAuraEffectsByType(SPELL_AURA_MOD_EXPERTISE);
     for (AuraEffectList::const_iterator itr = expAuras.begin(); itr != expAuras.end(); ++itr)
@@ -1012,7 +1012,7 @@ bool Guardian::UpdateStats(Stats stat)
     ApplyStatBuffMod(stat, m_statFromOwner[stat], false);
     float ownersBonus = 0.0f;
 
-    UnitPtr owner = GetOwner();
+    Unit* owner = GetOwner();
     // Handle Death Knight Glyphs and Talents
     float mod = 0.75f;
     if (IsPetGhoul() && (stat == STAT_STAMINA || stat == STAT_STRENGTH))
@@ -1024,7 +1024,7 @@ bool Guardian::UpdateStats(Stats stat)
             default: break;
         }
         // Ravenous Dead
-        constAuraEffectPtr aurEff = nullptr;
+        constAuraEffectPtr aurEff = NULL;
         // Check just if owner has Ravenous Dead since it's effect is not an aura
         aurEff = owner->GetAuraEffect(SPELL_AURA_MOD_TOTAL_STAT_PERCENTAGE, SPELLFAMILY_DEATHKNIGHT, 3010, 0);
         if (aurEff)
@@ -1194,7 +1194,7 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
     else
         val = 2 * GetStat(STAT_STRENGTH) - 20.0f;
 
-    UnitPtr owner = GetOwner();
+    Unit* owner = GetOwner();
     if (owner && owner->GetTypeId() == TYPEID_PLAYER)
     {
         if (isHunterPet())                      //hunter pets benefit from owner's attack power

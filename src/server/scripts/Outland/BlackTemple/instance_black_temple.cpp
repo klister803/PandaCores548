@@ -46,14 +46,14 @@ class instance_black_temple : public InstanceMapScript
 public:
     instance_black_temple() : InstanceMapScript("instance_black_temple", 564) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_black_temple_InstanceMapScript(map);
     }
 
     struct instance_black_temple_InstanceMapScript : public InstanceScript
     {
-        instance_black_temple_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_black_temple_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         std::string str_data;
@@ -125,7 +125,7 @@ public:
             return false;
         }
 
-        PlayerPtr GetPlayerInMap()
+        Player* GetPlayerInMap()
         {
             Map::PlayerList const& players = instance->GetPlayers();
 
@@ -133,16 +133,16 @@ public:
             {
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 {
-                    if (PlayerPtr player = itr->getSource())
+                    if (Player* player = itr->getSource())
                         return player;
                 }
             }
 
             sLog->outDebug(LOG_FILTER_TSCR, "Instance Black Temple: GetPlayerInMap, but PlayerList is empty!");
-            return nullptr;
+            return NULL;
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -161,7 +161,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {

@@ -38,14 +38,14 @@ class boss_instructor_malicia : public CreatureScript
 public:
     boss_instructor_malicia() : CreatureScript("boss_instructor_malicia") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_instructormaliciaAI (creature);
     }
 
     struct boss_instructormaliciaAI : public ScriptedAI
     {
-        boss_instructormaliciaAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_instructormaliciaAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 CallOfGraves_Timer;
         uint32 Corruption_Timer;
@@ -66,7 +66,7 @@ public:
             TouchCounter = 0;
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             InstanceScript* instance = me->GetInstanceScript();
             if (instance)
@@ -78,7 +78,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
@@ -97,7 +97,7 @@ public:
             //Corruption_Timer
             if (Corruption_Timer <= diff)
             {
-                UnitPtr target = nullptr;
+                Unit* target = NULL;
                 target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (target) DoCast(target, SPELL_CORRUPTION);
 

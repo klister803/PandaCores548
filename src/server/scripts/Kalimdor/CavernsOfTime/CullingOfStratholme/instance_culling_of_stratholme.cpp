@@ -42,14 +42,14 @@ class instance_culling_of_stratholme : public InstanceMapScript
     public:
         instance_culling_of_stratholme() : InstanceMapScript("instance_culling_of_stratholme", 595) { }
 
-        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
             return new instance_culling_of_stratholme_InstanceMapScript(map);
         }
 
         struct instance_culling_of_stratholme_InstanceMapScript : public InstanceScript
         {
-            instance_culling_of_stratholme_InstanceMapScript(MapPtr map) : InstanceScript(map)
+            instance_culling_of_stratholme_InstanceMapScript(Map* map) : InstanceScript(map)
             {
                 _arthasGUID = 0;
                 _meathookGUID = 0;
@@ -85,7 +85,7 @@ class instance_culling_of_stratholme : public InstanceMapScript
                 data << uint32(WORLDSTATE_TIME_GUARDIAN_SHOW) << uint32(0);
             }
 
-            void OnCreatureCreate(CreaturePtr creature)
+            void OnCreatureCreate(Creature* creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -113,7 +113,7 @@ class instance_culling_of_stratholme : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectCreate(GameObjectPtr go)
+            void OnGameObjectCreate(GameObject* go)
             {
                 switch (go->GetEntry())
                 {
@@ -166,7 +166,7 @@ class instance_culling_of_stratholme : public InstanceMapScript
                                 break;
                             case DONE:
                                 HandleGameObject(_exitGateGUID, true);
-                                if (GameObjectPtr go = instance->GetGameObject(_malGanisChestGUID))
+                                if (GameObject* go = instance->GetGameObject(_malGanisChestGUID))
                                     go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_INTERACT_COND);
                                 break;
                         }
@@ -178,13 +178,13 @@ class instance_culling_of_stratholme : public InstanceMapScript
                         _crateCount = data;
                         if (_crateCount == 5)
                         {
-                            if (CreaturePtr bunny = instance->GetCreature(_genericBunnyGUID))
+                            if (Creature* bunny = instance->GetCreature(_genericBunnyGUID))
                                 bunny->CastSpell(bunny, SPELL_CRATES_CREDIT, true);
 
                             // Summon Chromie and global whisper
-                            if (CreaturePtr chromie = instance->SummonCreature(NPC_CHROMIE_2, ChromieSummonPos))
+                            if (Creature* chromie = instance->SummonCreature(NPC_CHROMIE_2, ChromieSummonPos))
                                 if (!instance->GetPlayers().isEmpty())
-                                    if (PlayerPtr player = instance->GetPlayers().getFirst()->getSource())
+                                    if (Player* player = instance->GetPlayers().getFirst()->getSource())
                                         sCreatureTextMgr->SendChat(chromie, SAY_CRATES_COMPLETED, player->GetGUID(), CHAT_MSG_ADDON, LANG_ADDON, TEXT_RANGE_MAP);
                         }
                         DoUpdateWorldState(WORLDSTATE_CRATES_REVEALED, _crateCount);

@@ -43,7 +43,7 @@ class boss_ironaya : public CreatureScript
 
         struct boss_ironayaAI : public ScriptedAI
         {
-            boss_ironayaAI(CreaturePtr creature) : ScriptedAI(creature) {}
+            boss_ironayaAI(Creature* creature) : ScriptedAI(creature) {}
 
             uint32 uiArcingTimer;
             bool bHasCastedWstomp;
@@ -56,7 +56,7 @@ class boss_ironaya : public CreatureScript
                 bHasCastedWstomp = false;
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoScriptText(SAY_AGGRO, me);
             }
@@ -73,7 +73,7 @@ class boss_ironaya : public CreatureScript
                     DoCast(me->getVictim(), SPELL_KNOCKAWAY, true);
 
                     // current aggro target is knocked away pick new target
-                    UnitPtr target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0);
+                    Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0);
 
                     if (!target || target == me->getVictim())
                         target = SelectTarget(SELECT_TARGET_TOPAGGRO, 1);
@@ -102,7 +102,7 @@ class boss_ironaya : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_ironayaAI(creature);
         }

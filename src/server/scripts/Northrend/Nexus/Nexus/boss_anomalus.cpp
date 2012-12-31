@@ -70,7 +70,7 @@ class boss_anomalus : public CreatureScript
 
         struct boss_anomalusAI : public ScriptedAI
         {
-            boss_anomalusAI(CreaturePtr creature) : ScriptedAI(creature)
+            boss_anomalusAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
@@ -94,7 +94,7 @@ class boss_anomalus : public CreatureScript
                     instance->SetData(DATA_ANOMALUS_EVENT, NOT_STARTED);
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoScriptText(SAY_AGGRO, me);
 
@@ -102,7 +102,7 @@ class boss_anomalus : public CreatureScript
                     instance->SetData(DATA_ANOMALUS_EVENT, IN_PROGRESS);
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 DoScriptText(SAY_DEATH, me);
 
@@ -118,7 +118,7 @@ class boss_anomalus : public CreatureScript
                 return 0;
             }
 
-            void SummonedCreatureDies(CreaturePtr summoned, UnitPtr /*who*/)
+            void SummonedCreatureDies(Creature* summoned, Unit* /*who*/)
             {
                 if (summoned->GetEntry() == MOB_CHAOTIC_RIFT)
                     chaosTheory = false;
@@ -140,7 +140,7 @@ class boss_anomalus : public CreatureScript
                 {
                     if (uiChaoticRiftGUID)
                     {
-                        CreaturePtr Rift = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), uiChaoticRiftGUID);
+                        Creature* Rift = ObjectAccessor::GetCreature(*me, uiChaoticRiftGUID);
                         if (Rift && Rift->isDead())
                         {
                             me->RemoveAurasDueToSpell(SPELL_RIFT_SHIELD);
@@ -157,10 +157,10 @@ class boss_anomalus : public CreatureScript
                     Phase = 1;
                     DoScriptText(SAY_SHIELD, me);
                     DoCast(me, SPELL_RIFT_SHIELD);
-                    if (CreaturePtr Rift = me->SummonCreature(MOB_CHAOTIC_RIFT, RiftLocation[urand(0, 5)], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000))
+                    if (Creature* Rift = me->SummonCreature(MOB_CHAOTIC_RIFT, RiftLocation[urand(0, 5)], TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000))
                     {
                         //DoCast(Rift, SPELL_CHARGE_RIFT);
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             Rift->AI()->AttackStart(target);
                         uiChaoticRiftGUID = Rift->GetGUID();
                         DoScriptText(SAY_RIFT, me);
@@ -169,7 +169,7 @@ class boss_anomalus : public CreatureScript
 
                 if (uiSparkTimer <= diff)
                 {
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_SPARK);
                     uiSparkTimer = 5000;
                 }
@@ -180,7 +180,7 @@ class boss_anomalus : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_anomalusAI(creature);
         }
@@ -193,7 +193,7 @@ class mob_chaotic_rift : public CreatureScript
 
         struct mob_chaotic_riftAI : public Scripted_NoMovementAI
         {
-            mob_chaotic_riftAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
+            mob_chaotic_riftAI(Creature* creature) : Scripted_NoMovementAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
@@ -220,8 +220,8 @@ class mob_chaotic_rift : public CreatureScript
 
                 if (uiChaoticEnergyBurstTimer <= diff)
                 {
-                    CreaturePtr Anomalus = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_ANOMALUS));
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    Creature* Anomalus = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_ANOMALUS));
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     {
                         if (Anomalus && Anomalus->HasAura(SPELL_RIFT_SHIELD))
                             DoCast(target, SPELL_CHARGED_CHAOTIC_ENERGY_BURST);
@@ -235,10 +235,10 @@ class mob_chaotic_rift : public CreatureScript
 
                 if (uiSummonCrazedManaWraithTimer <= diff)
                 {
-                    if (CreaturePtr Wraith = me->SummonCreature(MOB_CRAZED_MANA_WRAITH, me->GetPositionX() + 1, me->GetPositionY() + 1, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000))
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (Creature* Wraith = me->SummonCreature(MOB_CRAZED_MANA_WRAITH, me->GetPositionX() + 1, me->GetPositionY() + 1, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             Wraith->AI()->AttackStart(target);
-                    CreaturePtr Anomalus = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_ANOMALUS));
+                    Creature* Anomalus = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_ANOMALUS));
                     if (Anomalus && Anomalus->HasAura(SPELL_RIFT_SHIELD))
                         uiSummonCrazedManaWraithTimer = 5000;
                     else
@@ -249,7 +249,7 @@ class mob_chaotic_rift : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_chaotic_riftAI(creature);
         }
@@ -262,12 +262,12 @@ class achievement_chaos_theory : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
+        bool OnCheck(Player* /*player*/, Unit* target)
         {
             if (!target)
                 return false;
 
-            if (CreaturePtr Anomalus = TO_CREATURE(target))
+            if (Creature* Anomalus = target->ToCreature())
                 if (Anomalus->AI()->GetData(DATA_CHAOS_THEORY))
                     return true;
 

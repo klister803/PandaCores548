@@ -186,7 +186,7 @@ Any::Data* Any::Data::create(Any::Type t) {
 
 
 void Any::Data::destroy(Data* d) {
-    if (d != nullptr) {
+    if (d != NULL) {
         d->~Data();
         MemoryManager::create()->free(d);
     }
@@ -199,26 +199,26 @@ Any::Data::~Data() {
     // Destruct but do not deallocate children
     switch (type) {
     case STRING:
-        debugAssert(value.s != nullptr);
+        debugAssert(value.s != NULL);
         value.s->~basic_string();
         break;
 
     case ARRAY:
-        debugAssert(value.a != nullptr);
+        debugAssert(value.a != NULL);
         value.a->~Array();
         break;
 
     case TABLE:
-        debugAssert(value.t != nullptr);
+        debugAssert(value.t != NULL);
         value.t->~Table();
         break;
 
     default:
-        // All other types should have a nullptr value pointer (i.e., they were used just for name and comment fields)
-        debugAssertM(value.s == nullptr, "Corrupt Any::Data::Value");
+        // All other types should have a NULL value pointer (i.e., they were used just for name and comment fields)
+        debugAssertM(value.s == NULL, "Corrupt Any::Data::Value");
     }
 
-    value.s = nullptr;
+    value.s = NULL;
 }
 
 
@@ -231,7 +231,7 @@ bool Any::containsKey(const std::string& x) const {
     Any* a = m_data->value.t->getPointer(x);
 
     // Don't return true for placeholder objects
-    return (a != nullptr) && (! a->isPlaceholder());
+    return (a != NULL) && (! a->isPlaceholder());
 }
 
 
@@ -240,7 +240,7 @@ void Any::dropReference() {
         // This was the last reference to the shared data
         Data::destroy(m_data);
     }
-    m_data = nullptr;
+    m_data = NULL;
 }
 
 
@@ -255,44 +255,44 @@ void Any::ensureMutable() {
 }
 
 
-Any::Any() : m_type(NONE), m_data(nullptr) {
+Any::Any() : m_type(NONE), m_data(NULL) {
 }
 
 
-Any::Any(TextInput& t) : m_type(NONE), m_data(nullptr) {
+Any::Any(TextInput& t) : m_type(NONE), m_data(NULL) {
     deserialize(t);
 }
 
 
-Any::Any(const Any& x) : m_type(NONE), m_data(nullptr) {
+Any::Any(const Any& x) : m_type(NONE), m_data(NULL) {
     x.beforeRead();
     *this = x;
 }
 
 
-Any::Any(double x) : m_type(NUMBER), m_simpleValue(x), m_data(nullptr) {
+Any::Any(double x) : m_type(NUMBER), m_simpleValue(x), m_data(NULL) {
 }
 
 
 #ifdef G3D_32BIT
-Any::Any(int64 x) : m_type(NUMBER), m_simpleValue((double)x), m_data(nullptr) {
+Any::Any(int64 x) : m_type(NUMBER), m_simpleValue((double)x), m_data(NULL) {
 }
 #endif    // G3D_32BIT
 
 
-Any::Any(long x) : m_type(NUMBER), m_simpleValue((double)x), m_data(nullptr) {
+Any::Any(long x) : m_type(NUMBER), m_simpleValue((double)x), m_data(NULL) {
 }
 
 
-Any::Any(int x) : m_type(NUMBER), m_simpleValue((double)x), m_data(nullptr) {
+Any::Any(int x) : m_type(NUMBER), m_simpleValue((double)x), m_data(NULL) {
 }
 
 
-Any::Any(short x) : m_type(NUMBER), m_simpleValue((double)x), m_data(nullptr) {
+Any::Any(short x) : m_type(NUMBER), m_simpleValue((double)x), m_data(NULL) {
 }
 
 
-Any::Any(bool x) : m_type(BOOLEAN), m_simpleValue(x), m_data(nullptr) {
+Any::Any(bool x) : m_type(BOOLEAN), m_simpleValue(x), m_data(NULL) {
 }
 
 
@@ -301,8 +301,8 @@ Any::Any(const std::string& s) : m_type(STRING), m_data(Data::create(STRING)) {
 }
 
 
-Any::Any(const char* s) : m_type(STRING), m_data(nullptr) {
-    if (s == nullptr) {
+Any::Any(const char* s) : m_type(STRING), m_data(NULL) {
+    if (s == NULL) {
         m_type = NONE;
     } else {
         ensureData();
@@ -311,7 +311,7 @@ Any::Any(const char* s) : m_type(STRING), m_data(nullptr) {
 }
 
 
-Any::Any(Type t, const std::string& name) : m_type(t), m_data(nullptr) {
+Any::Any(Type t, const std::string& name) : m_type(t), m_data(NULL) {
     alwaysAssertM(t == ARRAY || t == TABLE, "Can only create ARRAY or TABLE from Type enum.");
 
     ensureData();
@@ -347,7 +347,7 @@ Any& Any::operator=(const Any& x) {
     m_type        = x.m_type;
     m_simpleValue = x.m_simpleValue;
 
-    if (x.m_data != nullptr) {
+    if (x.m_data != NULL) {
         x.m_data->referenceCount.increment();
         m_data = x.m_data;
     }
@@ -414,7 +414,7 @@ const std::string& Any::comment() const {
     beforeRead();
 
     static const std::string blank;
-    if (m_data != nullptr) {
+    if (m_data != NULL) {
         return m_data->comment;
     } else {
         return blank;
@@ -459,7 +459,7 @@ bool Any::boolean() const {
 const std::string& Any::name() const {
     beforeRead();
     static const std::string blank;
-    if (m_data != nullptr) {
+    if (m_data != NULL) {
         return m_data->name;
     } else {
         return blank;
@@ -524,7 +524,7 @@ void Any::clear() {
 const Any& Any::operator[](int i) const {
     beforeRead();
     verifyType(ARRAY);
-    debugAssert(m_data != nullptr);
+    debugAssert(m_data != NULL);
     Array<Any>& array = *(m_data->value.a);
     return array[i];
 }
@@ -542,7 +542,7 @@ Any& Any::next() {
 Any& Any::operator[](int i) {
     beforeRead();
     verifyType(ARRAY);
-    debugAssert(m_data != nullptr);
+    debugAssert(m_data != NULL);
     Array<Any>& array = *(m_data->value.a);
     return array[i];
 }
@@ -551,7 +551,7 @@ Any& Any::operator[](int i) {
 const Array<Any>& Any::array() const {
     beforeRead();
     verifyType(ARRAY);
-    debugAssert(m_data != nullptr);
+    debugAssert(m_data != NULL);
     return *(m_data->value.a);
 }
 
@@ -559,7 +559,7 @@ const Array<Any>& Any::array() const {
 void Any::append(const Any& x0) {
     beforeRead();
     verifyType(ARRAY);
-    debugAssert(m_data != nullptr);
+    debugAssert(m_data != NULL);
     m_data->value.a->append(x0);
 }
 
@@ -591,7 +591,7 @@ void Any::append(const Any& x0, const Any& x1, const Any& x2, const Any& x3) {
 const Table<std::string, Any>& Any::table() const {
     beforeRead();
     verifyType(TABLE);
-    debugAssert(m_data != nullptr);
+    debugAssert(m_data != NULL);
     return *(m_data->value.t);
 }
 
@@ -599,10 +599,10 @@ const Table<std::string, Any>& Any::table() const {
 const Any& Any::operator[](const std::string& x) const {
     beforeRead();
     verifyType(TABLE);
-    debugAssert(m_data != nullptr);
+    debugAssert(m_data != NULL);
     const Table<std::string, Any>& table = *(m_data->value.t);
     Any* value = table.getPointer(x);
-    if (value == nullptr) {
+    if (value == NULL) {
         KeyNotFound e;
         if (m_data) {
             e.filename  = m_data->source.filename;
@@ -641,7 +641,7 @@ void Any::set(const std::string& k, const Any& v) {
     beforeRead();
     v.beforeRead();
     verifyType(TABLE);
-    debugAssert(m_data != nullptr);
+    debugAssert(m_data != NULL);
     Table<std::string, Any>& table = *(m_data->value.t);
     table.set(k, v);
 }
@@ -676,14 +676,14 @@ bool Any::operator==(const Any& x) const {
         return (m_simpleValue.n == x.m_simpleValue.n);
 
     case STRING:
-        debugAssert(m_data != nullptr);
+        debugAssert(m_data != NULL);
         return (*(m_data->value.s) == *(x.m_data->value.s));
 
     case TABLE: {
         if (size() != x.size()) {
             return false;
         }
-        debugAssert(m_data != nullptr);
+        debugAssert(m_data != NULL);
         if (m_data->name != x.m_data->name) {
             return false;
         }
@@ -703,7 +703,7 @@ bool Any::operator==(const Any& x) const {
         if (size() != x.size()) {
             return false;
         }
-        debugAssert(m_data != nullptr);
+        debugAssert(m_data != NULL);
         if (m_data->name != x.m_data->name) {
             return false;
         }
@@ -835,12 +835,12 @@ void Any::serialize(TextOutput& to) const {
         break;
 
     case STRING:
-        debugAssert(m_data != nullptr);
+        debugAssert(m_data != NULL);
         to.writeString(*(m_data->value.s));
         break;
 
     case TABLE: {
-        debugAssert(m_data != nullptr);
+        debugAssert(m_data != NULL);
         if (! m_data->name.empty()) {
             if (needsQuotes(m_data->name)) {
                 to.writeString(m_data->name);
@@ -877,7 +877,7 @@ void Any::serialize(TextOutput& to) const {
     }
 
     case ARRAY: {
-        debugAssert(m_data != nullptr);
+        debugAssert(m_data != NULL);
         if (! m_data->name.empty()) {
             // For arrays, leave no trailing space between the name and the paren
             to.writeSymbol(format("%s(", m_data->name.c_str()));
@@ -1096,7 +1096,7 @@ void Any::deserialize(TextInput& ti, Token& token) {
 
 
 void Any::ensureData() {
-    if (m_data == nullptr) {
+    if (m_data == NULL) {
         m_data = Data::create(m_type);
     }
 }
@@ -1162,7 +1162,7 @@ void Any::deserializeBody(TextInput& ti, Token& token) {
         }
 
         // Pointer the value being read
-        Any a = nullptr;
+        Any a = NULL;
         std::string key;
         
         if (m_type == TABLE) {

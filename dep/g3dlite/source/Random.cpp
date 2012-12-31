@@ -18,7 +18,7 @@ Random& Random::common() {
     return r;
 }
 
-Random::Random(void* x) : state(nullptr), m_threadsafe(false) {
+Random::Random(void* x) : state(NULL), m_threadsafe(false) {
     (void)x;
 }
 
@@ -36,7 +36,7 @@ Random::Random(uint32 seed, bool threadsafe) : m_threadsafe(threadsafe) {
 
 Random::~Random() {
     delete[] state;
-    state = nullptr;
+    state = NULL;
 }
 
 

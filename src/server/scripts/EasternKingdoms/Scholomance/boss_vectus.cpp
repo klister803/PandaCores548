@@ -39,14 +39,14 @@ class boss_vectus : public CreatureScript
 public:
     boss_vectus() : CreatureScript("boss_vectus") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_vectusAI (creature);
     }
 
     struct boss_vectusAI : public ScriptedAI
     {
-        boss_vectusAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_vectusAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 m_uiFireShield_Timer;
         uint32 m_uiBlastWave_Timer;

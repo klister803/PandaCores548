@@ -37,9 +37,9 @@
 MySQLConnection::MySQLConnection(MySQLConnectionInfo& connInfo) :
 m_reconnecting(false),
 m_prepareError(false),
-m_queue(nullptr),
-m_worker(nullptr),
-m_Mysql(nullptr),
+m_queue(NULL),
+m_worker(NULL),
+m_Mysql(NULL),
 m_connectionInfo(connInfo),
 m_connectionFlags(CONNECTION_SYNCH)
 {
@@ -49,7 +49,7 @@ MySQLConnection::MySQLConnection(ACE_Activation_Queue* queue, MySQLConnectionInf
 m_reconnecting(false),
 m_prepareError(false),
 m_queue(queue),
-m_Mysql(nullptr),
+m_Mysql(NULL),
 m_connectionInfo(connInfo),
 m_connectionFlags(CONNECTION_ASYNC)
 {
@@ -78,7 +78,7 @@ void MySQLConnection::Close()
 bool MySQLConnection::Open()
 {
     MYSQL *mysqlInit;
-    mysqlInit = mysql_init(nullptr);
+    mysqlInit = mysql_init(NULL);
     if (!mysqlInit)
     {
         sLog->outError(LOG_FILTER_SQL, "Could not initialize Mysql connection to database `%s`", m_connectionInfo.database.c_str());
@@ -292,15 +292,15 @@ bool MySQLConnection::_Query(PreparedStatement* stmt, MYSQL_RES **pResult, uint6
 ResultSet* MySQLConnection::Query(const char* sql)
 {
     if (!sql)
-        return nullptr;
+        return NULL;
 
-    MYSQL_RES *result = nullptr;
-    MYSQL_FIELD *fields = nullptr;
+    MYSQL_RES *result = NULL;
+    MYSQL_FIELD *fields = NULL;
     uint64 rowCount = 0;
     uint32 fieldCount = 0;
 
     if (!_Query(sql, &result, &fields, &rowCount, &fieldCount))
-        return nullptr;
+        return NULL;
 
     return new ResultSet(result, fields, rowCount, fieldCount);
 }
@@ -433,7 +433,7 @@ void MySQLConnection::PrepareStatement(uint32 index, const char* sql, Connection
     // to save memory that will not be used.
     if (!(m_connectionFlags & flags))
     {
-        m_stmts[index] = nullptr;
+        m_stmts[index] = NULL;
         return;
     }
 
@@ -463,12 +463,12 @@ void MySQLConnection::PrepareStatement(uint32 index, const char* sql, Connection
 
 PreparedResultSet* MySQLConnection::Query(PreparedStatement* stmt)
 {
-    MYSQL_RES *result = nullptr;
+    MYSQL_RES *result = NULL;
     uint64 rowCount = 0;
     uint32 fieldCount = 0;
 
     if (!_Query(stmt, &result, &rowCount, &fieldCount))
-        return nullptr;
+        return NULL;
 
     if (mysql_more_results(m_Mysql))
     {

@@ -245,14 +245,14 @@ class boss_kalecgos_kj : public CreatureScript
 public:
     boss_kalecgos_kj() : CreatureScript("boss_kalecgos_kj") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_kalecgos_kjAI (creature);
     }
 
     struct boss_kalecgos_kjAI : public ScriptedAI
     {
-        boss_kalecgos_kjAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_kalecgos_kjAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -270,14 +270,14 @@ public:
             me->setActive(true);
 
             for (uint8 i = 0; i < 4; ++i)
-                if (GameObjectPtr pOrb = GetOrb(i))
+                if (GameObject* pOrb = GetOrb(i))
                     pOrb->SetGoType(GAMEOBJECT_TYPE_BUTTON);
         }
 
-        GameObjectPtr GetOrb(int32 index)
+        GameObject* GetOrb(int32 index)
         {
             if (!instance)
-                return nullptr;
+                return NULL;
 
             switch (index)
             {
@@ -291,20 +291,20 @@ public:
                     return instance->instance->GetGameObject(instance->GetData64(DATA_ORB_OF_THE_BLUE_DRAGONFLIGHT_4));
             }
 
-            return nullptr;
+            return NULL;
         }
 
         void ResetOrbs()
         {
             me->RemoveDynObject(SPELL_RING_OF_BLUE_FLAMES);
             for (uint8 i = 0; i < 4; ++i)
-                if (GameObjectPtr pOrb = GetOrb(i))
+                if (GameObject* pOrb = GetOrb(i))
                     pOrb->SetUInt32Value(GAMEOBJECT_FACTION, 0);
         }
 
         void EmpowerOrb(bool all)
         {
-            GameObjectPtr pOrbEmpowered = GetOrb(OrbsEmpowered);
+            GameObject* pOrbEmpowered = GetOrb(OrbsEmpowered);
             if (!pOrbEmpowered)
                 return;
 
@@ -313,7 +313,7 @@ public:
                 me->RemoveDynObject(SPELL_RING_OF_BLUE_FLAMES);
                 for (uint8 i = 0; i < 4; ++i)
                 {
-                    if (GameObjectPtr pOrb = GetOrb(i))
+                    if (GameObject* pOrb = GetOrb(i))
                     {
                         pOrb->CastSpell(me, SPELL_RING_OF_BLUE_FLAMES);
                         pOrb->SetUInt32Value(GAMEOBJECT_FACTION, 35);
@@ -325,7 +325,7 @@ public:
             }
             else
             {
-                if (GameObjectPtr pOrb = GetOrb(urand(0, 3)))
+                if (GameObject* pOrb = GetOrb(urand(0, 3)))
                 {
                     pOrb->CastSpell(me, SPELL_RING_OF_BLUE_FLAMES);
                     pOrb->SetUInt32Value(GAMEOBJECT_FACTION, 35);
@@ -355,7 +355,7 @@ public:
             me->RemoveDynObject(SPELL_RING_OF_BLUE_FLAMES);
             for (uint8 i = 0; i < 4; ++i)
             {
-                if (GameObjectPtr pOrb = GetOrb(i))
+                if (GameObject* pOrb = GetOrb(i))
                 {
                     if (pOrb->GetUInt32Value(GAMEOBJECT_FACTION) == 35)
                     {
@@ -375,7 +375,7 @@ class go_orb_of_the_blue_flight : public GameObjectScript
 public:
     go_orb_of_the_blue_flight() : GameObjectScript("go_orb_of_the_blue_flight") { }
 
-    bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
+    bool OnGossipHello(Player* player, GameObject* go)
     {
         if (go->GetUInt32Value(GAMEOBJECT_FACTION) == 35)
         {
@@ -384,7 +384,7 @@ public:
             player->CastSpell(player, SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT, false);
             go->SetUInt32Value(GAMEOBJECT_FACTION, 0);
 
-            if (CreaturePtr pKalec = Unit::GetCreature(TO_WORLDOBJECT(player), instance->GetData64(DATA_KALECGOS_KJ)))
+            if (Creature* pKalec = Unit::GetCreature(*player, instance->GetData64(DATA_KALECGOS_KJ)))
                 CAST_AI(boss_kalecgos_kj::boss_kalecgos_kjAI, pKalec->AI())->SetRingOfBlueFlames();
 
             go->Refresh();
@@ -400,14 +400,14 @@ class mob_kiljaeden_controller : public CreatureScript
 public:
     mob_kiljaeden_controller() : CreatureScript("mob_kiljaeden_controller") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_kiljaeden_controllerAI (creature);
     }
 
     struct mob_kiljaeden_controllerAI : public Scripted_NoMovementAI
     {
-        mob_kiljaeden_controllerAI(CreaturePtr creature) : Scripted_NoMovementAI(creature), summons(me)
+        mob_kiljaeden_controllerAI(Creature* creature) : Scripted_NoMovementAI(creature), summons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -436,7 +436,7 @@ public:
             phase = PHASE_DECEIVERS;
 
             if (instance)
-                if (CreaturePtr pKalecKJ = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_KALECGOS_KJ)))
+                if (Creature* pKalecKJ = Unit::GetCreature((*me), instance->GetData64(DATA_KALECGOS_KJ)))
                     CAST_AI(boss_kalecgos_kj::boss_kalecgos_kjAI, pKalecKJ->AI())->ResetOrbs();
             deceiverDeathCount = 0;
             bSummonedDeceivers = false;
@@ -445,7 +445,7 @@ public:
             summons.DespawnAll();
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             switch (summoned->GetEntry())
             {
@@ -501,14 +501,14 @@ class boss_kiljaeden : public CreatureScript
 public:
     boss_kiljaeden() : CreatureScript("boss_kiljaeden") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_kiljaedenAI (creature);
     }
 
     struct boss_kiljaedenAI : public Scripted_NoMovementAI
     {
-        boss_kiljaedenAI(CreaturePtr creature) : Scripted_NoMovementAI(creature), summons(me)
+        boss_kiljaedenAI(Creature* creature) : Scripted_NoMovementAI(creature), summons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -571,7 +571,7 @@ public:
 
             if (instance)
             {
-                if (CreaturePtr pKalec = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_KALECGOS_KJ)))
+                if (Creature* pKalec = Unit::GetCreature(*me, instance->GetData64(DATA_KALECGOS_KJ)))
                     pKalec->RemoveDynObject(SPELL_RING_OF_BLUE_FLAMES);
             }
             me->SetFloatValue(UNIT_FIELD_COMBATREACH, 12);
@@ -598,7 +598,7 @@ public:
                 TimerIsDeactivated[TIMER_SUMMON_SHILEDORB] = true;
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             if (summoned->GetEntry() == CREATURE_ARMAGEDDON_TARGET)
             {
@@ -613,7 +613,7 @@ public:
             summons.Summon(summoned);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_KJ_DEATH, me);
             summons.DespawnAll();
@@ -622,7 +622,7 @@ public:
                 instance->SetData(DATA_KILJAEDEN_EVENT, DONE);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_KJ_SLAY1, SAY_KJ_SLAY2), me);
         }
@@ -635,12 +635,12 @@ public:
             // Reset the controller
             if (instance)
             {
-                if (CreaturePtr pControl = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_KILJAEDEN_CONTROLLER)))
+                if (Creature* pControl = Unit::GetCreature(*me, instance->GetData64(DATA_KILJAEDEN_CONTROLLER)))
                     CAST_AI(mob_kiljaeden_controller::mob_kiljaeden_controllerAI, pControl->AI())->Reset();
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoZoneInCombat();
         }
@@ -662,11 +662,11 @@ public:
             DoScriptText(RAND(SAY_KJ_REFLECTION1, SAY_KJ_REFLECTION2), me);
             for (uint8 i = 0; i < 4; ++i)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true, -SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true, -SPELL_VENGEANCE_OF_THE_BLUE_FLIGHT))
                 {
                     float x, y, z;
                     target->GetPosition(x, y, z);
-                    if (CreaturePtr pSinisterReflection = me->SummonCreature(CREATURE_SINISTER_REFLECTION, x, y, z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
+                    if (Creature* pSinisterReflection = me->SummonCreature(CREATURE_SINISTER_REFLECTION, x, y, z, 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
                     {
                         pSinisterReflection->SetDisplayId(target->GetDisplayId());
                         pSinisterReflection->AI()->AttackStart(target);
@@ -719,10 +719,10 @@ public:
                             {
                                 SpeechTimer = 0;
                                 if (instance)
-                                    if (CreaturePtr pSpeechCreature = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(Speeches[speechCount].creature)))
+                                    if (Creature* pSpeechCreature = Unit::GetCreature(*me, instance->GetData64(Speeches[speechCount].creature)))
                                         DoScriptText(Speeches[speechCount].textid, pSpeechCreature);
                                 if (speechCount == 12)
-                                    if (CreaturePtr pAnveena =  Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_ANVEENA)))
+                                    if (Creature* pAnveena =  Unit::GetCreature(*me, instance->GetData64(DATA_ANVEENA)))
                                         pAnveena->CastSpell(me, SPELL_SACRIFICE_OF_ANVEENA, false);
                                         //   ChangeTimers(true, 10000); // Kil should do an emote while screaming without attacking for 10 seconds
                                 if (speechCount == speechPhaseEnd)
@@ -742,7 +742,7 @@ public:
                         case TIMER_LEGION_LIGHTNING:
                             if (!me->IsNonMeleeSpellCasted(false))
                             {
-                                UnitPtr pRandomPlayer = nullptr;
+                                Unit* pRandomPlayer = NULL;
 
                                 me->RemoveAurasDueToSpell(SPELL_SOUL_FLAY);
                                 for (uint8 z = 0; z < 6; ++z)
@@ -822,7 +822,7 @@ public:
                             break;
                         case TIMER_ORBS_EMPOWER: //Phase 3
                             if (instance)
-                                if (CreaturePtr pKalec = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_KALECGOS_KJ)))
+                                if (Creature* pKalec = Unit::GetCreature(*me, instance->GetData64(DATA_KALECGOS_KJ)))
                                 {
                                     switch (Phase)
                                     {
@@ -838,7 +838,7 @@ public:
                             TimerIsDeactivated[TIMER_ORBS_EMPOWER] = true;
                             break;
                         case TIMER_ARMAGEDDON: //Phase 4
-                            UnitPtr target = nullptr;
+                            Unit* target = NULL;
                             for (uint8 z = 0; z < 6; ++z)
                             {
                                 target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
@@ -909,14 +909,14 @@ class mob_hand_of_the_deceiver : public CreatureScript
 public:
     mob_hand_of_the_deceiver() : CreatureScript("mob_hand_of_the_deceiver") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_hand_of_the_deceiverAI (creature);
     }
 
     struct mob_hand_of_the_deceiverAI : public ScriptedAI
     {
-        mob_hand_of_the_deceiverAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_hand_of_the_deceiverAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -935,29 +935,29 @@ public:
                 instance->SetData(DATA_KILJAEDEN_EVENT, NOT_STARTED);
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             summoned->setFaction(me->getFaction());
             summoned->SetLevel(me->getLevel());
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             if (instance)
             {
                 instance->SetData(DATA_KILJAEDEN_EVENT, IN_PROGRESS);
-                if (CreaturePtr pControl = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_KILJAEDEN_CONTROLLER)))
+                if (Creature* pControl = Unit::GetCreature(*me, instance->GetData64(DATA_KILJAEDEN_CONTROLLER)))
                     pControl->AddThreat(who, 1.0f);
             }
             me->InterruptNonMeleeSpells(true);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (!instance)
                 return;
 
-            if (CreaturePtr pControl = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_KILJAEDEN_CONTROLLER)))
+            if (Creature* pControl = Unit::GetCreature(*me, instance->GetData64(DATA_KILJAEDEN_CONTROLLER)))
                 ++(CAST_AI(mob_kiljaeden_controller::mob_kiljaeden_controllerAI, pControl->AI())->deceiverDeathCount);
         }
 
@@ -985,12 +985,12 @@ public:
             // Felfire Portal - Creatres a portal, that spawns Volatile Felfire Fiends, which do suicide bombing.
             if (FelfirePortalTimer <= diff)
             {
-                if (CreaturePtr pPortal = DoSpawnCreature(CREATURE_FELFIRE_PORTAL, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 20000))
+                if (Creature* pPortal = DoSpawnCreature(CREATURE_FELFIRE_PORTAL, 0, 0, 0, 0, TEMPSUMMON_TIMED_DESPAWN, 20000))
                 {
-                    std::list<HostileReferencePtr>::iterator itr;
-                    for (itr = me->getThreatManager()->getThreatList().begin(); itr != me->getThreatManager()->getThreatList().end(); ++itr)
+                    std::list<HostileReference*>::iterator itr;
+                    for (itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr)
                     {
-                        UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid());
+                        Unit* unit = Unit::GetUnit(*me, (*itr)->getUnitGuid());
                         if (unit)
                             pPortal->AddThreat(unit, 1.0f);
                     }
@@ -1010,14 +1010,14 @@ class mob_felfire_portal : public CreatureScript
 public:
     mob_felfire_portal() : CreatureScript("mob_felfire_portal") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_felfire_portalAI (creature);
     }
 
     struct mob_felfire_portalAI : public Scripted_NoMovementAI
     {
-        mob_felfire_portalAI(CreaturePtr creature) : Scripted_NoMovementAI(creature) {}
+        mob_felfire_portalAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
         uint32 uiSpawnFiendTimer;
 
@@ -1027,7 +1027,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE|UNIT_FLAG_NON_ATTACKABLE);
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             summoned->setFaction(me->getFaction());
             summoned->SetLevel(me->getLevel());
@@ -1040,7 +1040,7 @@ public:
 
             if (uiSpawnFiendTimer <= diff)
             {
-                if (CreaturePtr pFiend = DoSpawnCreature(CREATURE_VOLATILE_FELFIRE_FIEND, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 20000))
+                if (Creature* pFiend = DoSpawnCreature(CREATURE_VOLATILE_FELFIRE_FIEND, 0, 0, 0, 0, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 20000))
                     pFiend->AddThreat(SelectTarget(SELECT_TARGET_RANDOM, 0), 100000.0f);
                 uiSpawnFiendTimer = urand(4000, 8000);
             } else uiSpawnFiendTimer -= diff;
@@ -1055,14 +1055,14 @@ class mob_volatile_felfire_fiend : public CreatureScript
 public:
     mob_volatile_felfire_fiend() : CreatureScript("mob_volatile_felfire_fiend") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_volatile_felfire_fiendAI (creature);
     }
 
     struct mob_volatile_felfire_fiendAI : public ScriptedAI
     {
-        mob_volatile_felfire_fiendAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        mob_volatile_felfire_fiendAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 uiExplodeTimer;
 
@@ -1074,7 +1074,7 @@ public:
             bLockedTarget = false;
         }
 
-        void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
+        void DamageTaken(Unit* /*done_by*/, uint32 &damage)
         {
             if (damage > me->GetHealth())
                 DoCast(me, SPELL_FELFIRE_FISSION, true);
@@ -1113,14 +1113,14 @@ class mob_armageddon : public CreatureScript
 public:
     mob_armageddon() : CreatureScript("mob_armageddon") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_armageddonAI (creature);
     }
 
     struct mob_armageddonAI : public Scripted_NoMovementAI
     {
-        mob_armageddonAI(CreaturePtr creature) : Scripted_NoMovementAI(creature) {}
+        mob_armageddonAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
         uint8 spell;
         uint32 uiTimer;
@@ -1168,14 +1168,14 @@ class mob_shield_orb : public CreatureScript
 public:
     mob_shield_orb() : CreatureScript("mob_shield_orb") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_shield_orbAI (creature);
     }
 
     struct mob_shield_orbAI : public ScriptedAI
     {
-        mob_shield_orbAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_shield_orbAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -1233,7 +1233,7 @@ public:
 
             if (uiTimer <= diff)
             {
-                if (UnitPtr random = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_PLAYER_GUID) : 0))
+                if (Unit* random = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_PLAYER_GUID) : 0))
                     DoCast(random, SPELL_SHADOW_BOLT, false);
                 uiTimer = urand(500, 1000);
             } else uiTimer -= diff;
@@ -1256,14 +1256,14 @@ class mob_sinster_reflection : public CreatureScript
 public:
     mob_sinster_reflection() : CreatureScript("mob_sinster_reflection") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_sinster_reflectionAI (creature);
     }
 
     struct mob_sinster_reflectionAI : public ScriptedAI
     {
-        mob_sinster_reflectionAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        mob_sinster_reflectionAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint8 victimClass;
         uint32 uiTimer[3];

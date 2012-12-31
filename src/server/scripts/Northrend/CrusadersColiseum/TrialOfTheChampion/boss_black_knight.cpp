@@ -81,7 +81,7 @@ public:
 
     struct boss_black_knightAI : public ScriptedAI
     {
-        boss_black_knightAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_black_knightAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -140,14 +140,14 @@ public:
 
             for (std::list<uint64>::const_iterator itr = SummonList.begin(); itr != SummonList.end(); ++itr)
             {
-                if (CreaturePtr temp = Unit::GetCreature(TO_WORLDOBJECT(me), *itr))
+                if (Creature* temp = Unit::GetCreature(*me, *itr))
                     if (temp)
                         temp->DisappearAndDie();
             }
             SummonList.clear();
         }
 
-        void JustSummoned(CreaturePtr summon)
+        void JustSummoned(Creature* summon)
         {
             SummonList.push_back(summon->GetGUID());
             summon->AI()->AttackStart(me->getVictim());
@@ -198,7 +198,7 @@ public:
                         {
                             if (uiDeathRespiteTimer <= uiDiff)
                             {
-                                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                                 {
                                     if (target && target->isAlive())
                                         DoCast(target, SPELL_DEATH_RESPITE);
@@ -226,7 +226,7 @@ public:
                             }
                             if (uiDesecration <= uiDiff)
                             {
-                                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                                 {
                                     if (target && target->isAlive())
                                         DoCast(target, SPELL_DESECRATION);
@@ -253,7 +253,7 @@ public:
                     } else uiDeathBiteTimer -= uiDiff;
                     if (uiMarkedDeathTimer <= uiDiff)
                     {
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                         {
                             if (target && target->isAlive())
                                 DoCast(target, SPELL_MARKED_DEATH);
@@ -268,7 +268,7 @@ public:
                 DoMeleeAttackIfReady();
         }
 
-        void DamageTaken(UnitPtr /*pDoneBy*/, uint32& uiDamage)
+        void DamageTaken(Unit* /*pDoneBy*/, uint32& uiDamage)
         {
             if (uiDamage > me->GetHealth() && uiPhase <= PHASE_SKELETON)
             {
@@ -289,7 +289,7 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoCast(me, SPELL_KILL_CREDIT);
 
@@ -298,7 +298,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_black_knightAI (creature);
     }
@@ -311,7 +311,7 @@ public:
 
     struct npc_risen_ghoulAI : public ScriptedAI
     {
-        npc_risen_ghoulAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_risen_ghoulAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 uiAttackTimer;
 
@@ -327,7 +327,7 @@ public:
 
             if (uiAttackTimer <= uiDiff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
                 {
                     if (target && target->isAlive())
                         DoCast(target, (SPELL_LEAP));
@@ -339,7 +339,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_risen_ghoulAI(creature);
     }
@@ -352,9 +352,9 @@ public:
 
     struct npc_black_knight_skeletal_gryphonAI : public npc_escortAI
     {
-        npc_black_knight_skeletal_gryphonAI(CreaturePtr creature) : npc_escortAI(creature)
+        npc_black_knight_skeletal_gryphonAI(Creature* creature) : npc_escortAI(creature)
         {
-            Start(false, true, 0, nullptr);
+            Start(false, true, 0, NULL);
         }
 
         void WaypointReached(uint32 /*waypointId*/)
@@ -372,7 +372,7 @@ public:
 
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_black_knight_skeletal_gryphonAI(creature);
     }

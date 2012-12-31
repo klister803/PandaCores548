@@ -81,7 +81,7 @@ bool OutdoorPvPHP::SetupOutdoorPvP()
     return true;
 }
 
-void OutdoorPvPHP::HandlePlayerEnterZone(PlayerPtr player, uint32 zone)
+void OutdoorPvPHP::HandlePlayerEnterZone(Player* player, uint32 zone)
 {
     // add buffs
     if (player->GetTeam() == ALLIANCE)
@@ -97,7 +97,7 @@ void OutdoorPvPHP::HandlePlayerEnterZone(PlayerPtr player, uint32 zone)
     OutdoorPvP::HandlePlayerEnterZone(player, zone);
 }
 
-void OutdoorPvPHP::HandlePlayerLeaveZone(PlayerPtr player, uint32 zone)
+void OutdoorPvPHP::HandlePlayerLeaveZone(Player* player, uint32 zone)
 {
     // remove buffs
     if (player->GetTeam() == ALLIANCE)
@@ -131,7 +131,7 @@ bool OutdoorPvPHP::Update(uint32 diff)
     return changed;
 }
 
-void OutdoorPvPHP::SendRemoveWorldStates(PlayerPtr player)
+void OutdoorPvPHP::SendRemoveWorldStates(Player* player)
 {
     player->SendUpdateWorldState(HP_UI_TOWER_DISPLAY_A, 0);
     player->SendUpdateWorldState(HP_UI_TOWER_DISPLAY_H, 0);
@@ -250,8 +250,8 @@ void OPvPCapturePointHP::ChangeState()
         break;
     }
 
-    GameObjectPtr flag = HashMapHolder<GameObject>::Find(m_capturePointGUID);
-    GameObjectPtr flag2 = HashMapHolder<GameObject>::Find(m_Objects[m_TowerType]);
+    GameObject* flag = HashMapHolder<GameObject>::Find(m_capturePointGUID);
+    GameObject* flag2 = HashMapHolder<GameObject>::Find(m_Objects[m_TowerType]);
     if (flag)
     {
         flag->SetGoArtKit(artkit);
@@ -307,7 +307,7 @@ void OPvPCapturePointHP::FillInitialWorldStates(WorldPacket &data)
     }
 }
 
-bool OPvPCapturePointHP::HandlePlayerEnter(PlayerPtr player)
+bool OPvPCapturePointHP::HandlePlayerEnter(Player* player)
 {
     if (OPvPCapturePoint::HandlePlayerEnter(player))
     {
@@ -320,20 +320,20 @@ bool OPvPCapturePointHP::HandlePlayerEnter(PlayerPtr player)
     return false;
 }
 
-void OPvPCapturePointHP::HandlePlayerLeave(PlayerPtr player)
+void OPvPCapturePointHP::HandlePlayerLeave(Player* player)
 {
     player->SendUpdateWorldState(HP_UI_TOWER_SLIDER_DISPLAY, 0);
     OPvPCapturePoint::HandlePlayerLeave(player);
 }
 
-void OutdoorPvPHP::HandleKillImpl(PlayerPtr player, UnitPtr killed)
+void OutdoorPvPHP::HandleKillImpl(Player* player, Unit* killed)
 {
     if (killed->GetTypeId() != TYPEID_PLAYER)
         return;
 
-    if (player->GetTeam() == ALLIANCE && TO_PLAYER(killed)->GetTeam() != ALLIANCE)
+    if (player->GetTeam() == ALLIANCE && killed->ToPlayer()->GetTeam() != ALLIANCE)
         player->CastSpell(player, AlliancePlayerKillReward, true);
-    else if (player->GetTeam() == HORDE && TO_PLAYER(killed)->GetTeam() != HORDE)
+    else if (player->GetTeam() == HORDE && killed->ToPlayer()->GetTeam() != HORDE)
         player->CastSpell(player, HordePlayerKillReward, true);
 }
 

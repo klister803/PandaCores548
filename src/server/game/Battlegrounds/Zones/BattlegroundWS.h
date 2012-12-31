@@ -163,7 +163,7 @@ class BattlegroundWS : public Battleground
         ~BattlegroundWS();
 
         /* inherited from BattlegroundClass */
-        virtual void AddPlayer(PlayerPtr player);
+        virtual void AddPlayer(Player* player);
         virtual void StartingEventCloseDoors();
         virtual void StartingEventOpenDoors();
 
@@ -183,22 +183,22 @@ class BattlegroundWS : public Battleground
         uint8 GetFlagState(uint32 team)             { return _flagState[GetTeamIndexByTeamId(team)]; }
 
         /* Battleground Events */
-        virtual void EventPlayerDroppedFlag(PlayerPtr Source);
-        virtual void EventPlayerClickedOnFlag(PlayerPtr Source, GameObjectPtr target_obj);
-        virtual void EventPlayerCapturedFlag(PlayerPtr Source);
+        virtual void EventPlayerDroppedFlag(Player* Source);
+        virtual void EventPlayerClickedOnFlag(Player* Source, GameObject* target_obj);
+        virtual void EventPlayerCapturedFlag(Player* Source);
 
-        void RemovePlayer(PlayerPtr player, uint64 guid, uint32 team);
-        void HandleAreaTrigger(PlayerPtr Source, uint32 Trigger);
-        void HandleKillPlayer(PlayerPtr player, PlayerPtr killer);
+        void RemovePlayer(Player* player, uint64 guid, uint32 team);
+        void HandleAreaTrigger(Player* Source, uint32 Trigger);
+        void HandleKillPlayer(Player* player, Player* killer);
         bool SetupBattleground();
         virtual void Reset();
         void EndBattleground(uint32 winner);
-        virtual WorldSafeLocsEntry const* GetClosestGraveYard(PlayerPtr player);
+        virtual WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
 
         void UpdateFlagState(uint32 team, uint32 value);
         void SetLastFlagCapture(uint32 team)                { _lastFlagCaptureTeam = team; }
         void UpdateTeamScore(uint32 team);
-        void UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor = true);
+        void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
         void SetDroppedFlagGUID(uint64 guid, uint32 TeamID)  { m_DroppedFlagGUID[GetTeamIndexByTeamId(TeamID)] = guid;}
         uint64 GetDroppedFlagGUID(uint32 TeamID)             { return m_DroppedFlagGUID[GetTeamIndexByTeamId(TeamID)];}
         virtual void FillInitialWorldStates(WorldPacket& data);

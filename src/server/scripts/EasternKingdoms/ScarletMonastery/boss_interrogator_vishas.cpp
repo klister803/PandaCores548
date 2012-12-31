@@ -46,14 +46,14 @@ class boss_interrogator_vishas : public CreatureScript
 public:
     boss_interrogator_vishas() : CreatureScript("boss_interrogator_vishas") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_interrogator_vishasAI (creature);
     }
 
     struct boss_interrogator_vishasAI : public ScriptedAI
     {
-        boss_interrogator_vishasAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_interrogator_vishasAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = me->GetInstanceScript();
         }
@@ -69,23 +69,23 @@ public:
             ShadowWordPain_Timer = 5000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
         }
 
-        void KilledUnit(UnitPtr /*Victim*/)
+        void KilledUnit(Unit* /*Victim*/)
         {
             DoScriptText(SAY_KILL, me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (!instance)
                 return;
 
             //Any other Actions to do with vorrel? setStandState?
-            if (UnitPtr vorrel = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_VORREL)))
+            if (Unit* vorrel = Unit::GetUnit(*me, instance->GetData64(DATA_VORREL)))
                 DoScriptText(SAY_TRIGGER_VORREL, vorrel);
         }
 

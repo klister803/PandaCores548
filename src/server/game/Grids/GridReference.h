@@ -31,7 +31,7 @@ class GridReference : public Reference<GridRefManager<OBJECT>, OBJECT>
         void targetObjectBuildLink()
         {
             // called from link()
-            this->getTarget()->insertFirst(shared_from_this());
+            this->getTarget()->insertFirst(this);
             this->getTarget()->incSize();
         }
         void targetObjectDestroyLink()
@@ -47,7 +47,7 @@ class GridReference : public Reference<GridRefManager<OBJECT>, OBJECT>
     public:
         GridReference() : Reference<GridRefManager<OBJECT>, OBJECT>() {}
         ~GridReference() { this->unlink(); }
-        std::shared_ptr<GridReference> next() { return std::static_pointer_cast<GridReference>(Reference<GridRefManager<OBJECT>, OBJECT>::next()); }
+        GridReference* next() { return (GridReference*)Reference<GridRefManager<OBJECT>, OBJECT>::next(); }
 };
 #endif
 

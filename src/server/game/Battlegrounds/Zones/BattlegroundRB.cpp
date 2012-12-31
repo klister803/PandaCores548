@@ -43,7 +43,7 @@ void BattlegroundRB::StartingEventOpenDoors()
 {
 }
 
-void BattlegroundRB::AddPlayer(PlayerPtr player)
+void BattlegroundRB::AddPlayer(Player* player)
 {
     Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
@@ -52,18 +52,18 @@ void BattlegroundRB::AddPlayer(PlayerPtr player)
     PlayerScores[player->GetGUID()] = sc;
 }
 
-void BattlegroundRB::RemovePlayer(PlayerPtr /*Player*/, uint64 /*guid*/, uint32 /*team*/)
+void BattlegroundRB::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
 {
 }
 
-void BattlegroundRB::HandleAreaTrigger(PlayerPtr /*Source*/, uint32 /*Trigger*/)
+void BattlegroundRB::HandleAreaTrigger(Player* /*Source*/, uint32 /*Trigger*/)
 {
     // this is wrong way to implement these things. On official it done by gameobject spell cast.
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
 }
 
-void BattlegroundRB::UpdatePlayerScore(PlayerPtr Source, uint32 type, uint32 value, bool doAddHonor)
+void BattlegroundRB::UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor)
 {
     std::map<uint64, BattlegroundScore*>::iterator itr = PlayerScores.find(Source->GetGUID());
 

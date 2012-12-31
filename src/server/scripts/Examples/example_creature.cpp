@@ -92,7 +92,7 @@ class example_creature : public CreatureScript
         {
             // *** HANDLED FUNCTION ***
             //This is the constructor, called only once when the Creature is first created
-            example_creatureAI(CreaturePtr creature) : ScriptedAI(creature) {}
+            example_creatureAI(Creature* creature) : ScriptedAI(creature) {}
 
             // *** CUSTOM VARIABLES ****
             //These variables are for use only by this individual script.
@@ -123,7 +123,7 @@ class example_creature : public CreatureScript
 
             // *** HANDLED FUNCTION ***
             // Enter Combat called once per combat
-            void EnterCombat(UnitPtr who)
+            void EnterCombat(Unit* who)
             {
                 //Say some stuff
                 DoScriptText(SAY_AGGRO, me, who);
@@ -132,7 +132,7 @@ class example_creature : public CreatureScript
             // *** HANDLED FUNCTION ***
             // Attack Start is called when victim change (including at start of combat)
             // By default, attack who and start movement toward the victim.
-            //void AttackStart(UnitPtr who)
+            //void AttackStart(Unit* who)
             //{
             //    ScriptedAI::AttackStart(who);
             //}
@@ -146,7 +146,7 @@ class example_creature : public CreatureScript
 
             // *** HANDLED FUNCTION ***
             //Our Receive emote function
-            void ReceiveEmote(PlayerPtr /*Player*/, uint32 uiTextEmote)
+            void ReceiveEmote(Player* /*player*/, uint32 uiTextEmote)
             {
                 me->HandleEmoteCommand(uiTextEmote);
 
@@ -260,12 +260,12 @@ class example_creature : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new example_creatureAI(creature);
         }
 
-        bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+        bool OnGossipHello(Player* player, Creature* creature)
         {
             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_ITEM, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
             player->SEND_GOSSIP_MENU(907, creature->GetGUID());
@@ -273,7 +273,7 @@ class example_creature : public CreatureScript
             return true;
         }
 
-        bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
         {
             player->PlayerTalkClass->ClearMenus();
             if (action == GOSSIP_ACTION_INFO_DEF+1)

@@ -50,13 +50,13 @@ class instance_molten_core : public InstanceMapScript
 
         struct instance_molten_core_InstanceMapScript : public InstanceScript
         {
-            instance_molten_core_InstanceMapScript(MapPtr map) : InstanceScript(map)
+            instance_molten_core_InstanceMapScript(Map* map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
                 _golemaggTheIncineratorGUID = 0;
                 _majordomoExecutusGUID = 0;
                 _cacheOfTheFirelordGUID = 0;
-                _executusSchedule = nullptr;
+                _executusSchedule = NULL;
                 _deadBossCount = 0;
                 _ragnarosAddDeaths = 0;
                 _isLoading = false;
@@ -68,17 +68,17 @@ class instance_molten_core : public InstanceMapScript
                 delete _executusSchedule;
             }
 
-            void OnPlayerEnter(PlayerPtr /*Player*/)
+            void OnPlayerEnter(Player* /*player*/)
             {
                 if (_executusSchedule)
                 {
                     SummonMajordomoExecutus(*_executusSchedule);
                     delete _executusSchedule;
-                    _executusSchedule = nullptr;
+                    _executusSchedule = NULL;
                 }
             }
 
-            void OnCreatureCreate(CreaturePtr creature)
+            void OnCreatureCreate(Creature* creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -93,7 +93,7 @@ class instance_molten_core : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectCreate(GameObjectPtr go)
+            void OnGameObjectCreate(GameObject* go)
             {
                 switch (go->GetEntry())
                 {
@@ -178,7 +178,7 @@ class instance_molten_core : public InstanceMapScript
                     instance->SummonCreature(NPC_FLAMEWAKER_ELITE, SummonPositions[7]);
                     instance->SummonCreature(NPC_FLAMEWAKER_ELITE, SummonPositions[8]);
                 }
-                else if (TempSummonPtr summon = instance->SummonCreature(NPC_MAJORDOMO_EXECUTUS, RagnarosTelePos))
+                else if (TempSummon* summon = instance->SummonCreature(NPC_MAJORDOMO_EXECUTUS, RagnarosTelePos))
                         summon->AI()->DoAction(ACTION_START_RAGNAROS_ALT);
             }
 
@@ -251,7 +251,7 @@ class instance_molten_core : public InstanceMapScript
             bool _summonedExecutus;
         };
 
-        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
             return new instance_molten_core_InstanceMapScript(map);
         }

@@ -68,7 +68,7 @@ EndScriptData */
 #define SPELL_SPELLSHIELD       33054
 #define SPELL_BLAST_WAVE        33061
 
-bool CheckAllBossDied(InstanceScript* instance, CreaturePtr me)
+bool CheckAllBossDied(InstanceScript* instance, Creature* me)
 {
     if (!instance || !me)
         return false;
@@ -79,11 +79,11 @@ bool CheckAllBossDied(InstanceScript* instance, CreaturePtr me)
     uint64 OlmGUID = 0;
     uint64 KroshGUID = 0;
 
-    CreaturePtr Maulgar = nullptr;
-    CreaturePtr Kiggler = nullptr;
-    CreaturePtr Blindeye = nullptr;
-    CreaturePtr Olm = nullptr;
-    CreaturePtr Krosh = nullptr;
+    Creature* Maulgar = NULL;
+    Creature* Kiggler = NULL;
+    Creature* Blindeye = NULL;
+    Creature* Olm = NULL;
+    Creature* Krosh = NULL;
 
     MaulgarGUID = instance->GetData64(DATA_MAULGAR);
     KigglerGUID = instance->GetData64(DATA_KIGGLERTHECRAZED);
@@ -91,11 +91,11 @@ bool CheckAllBossDied(InstanceScript* instance, CreaturePtr me)
     OlmGUID = instance->GetData64(DATA_OLMTHESUMMONER);
     KroshGUID = instance->GetData64(DATA_KROSHFIREHAND);
 
-    Maulgar = (Unit::GetCreature(TO_WORLDOBJECT(me), MaulgarGUID));
-    Kiggler = (Unit::GetCreature(TO_WORLDOBJECT(me), KigglerGUID));
-    Blindeye = (Unit::GetCreature(TO_WORLDOBJECT(me), BlindeyeGUID));
-    Olm = (Unit::GetCreature(TO_WORLDOBJECT(me), OlmGUID));
-    Krosh = (Unit::GetCreature(TO_WORLDOBJECT(me), KroshGUID));
+    Maulgar = (Unit::GetCreature((*me), MaulgarGUID));
+    Kiggler = (Unit::GetCreature((*me), KigglerGUID));
+    Blindeye = (Unit::GetCreature((*me), BlindeyeGUID));
+    Olm = (Unit::GetCreature((*me), OlmGUID));
+    Krosh = (Unit::GetCreature((*me), KroshGUID));
 
     if (!Maulgar || !Kiggler || !Blindeye || !Olm || !Krosh)
         return false;
@@ -112,14 +112,14 @@ class boss_high_king_maulgar : public CreatureScript
 public:
     boss_high_king_maulgar() : CreatureScript("boss_high_king_maulgar") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_high_king_maulgarAI (creature);
     }
 
     struct boss_high_king_maulgarAI : public ScriptedAI
     {
-        boss_high_king_maulgarAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_high_king_maulgarAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             for (uint8 i = 0; i < 4; ++i)
@@ -150,12 +150,12 @@ public:
 
             Phase2 = false;
 
-            CreaturePtr creature = nullptr;
+            Creature* creature = NULL;
             for (uint8 i = 0; i < 4; ++i)
             {
                 if (Council[i])
                 {
-                    creature = (Unit::GetCreature(TO_WORLDOBJECT(me), Council[i]));
+                    creature = (Unit::GetCreature((*me), Council[i]));
                     if (creature && !creature->isAlive())
                     {
                         creature->Respawn();
@@ -169,12 +169,12 @@ public:
                 instance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2, SAY_SLAY3), me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -187,7 +187,7 @@ public:
                 DoScriptText(RAND(SAY_OGRE_DEATH1, SAY_OGRE_DEATH2, SAY_OGRE_DEATH3, SAY_OGRE_DEATH4), me);
            }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             StartEvent(who);
         }
@@ -204,7 +204,7 @@ public:
             }
         }
 
-        void StartEvent(UnitPtr who)
+        void StartEvent(Unit* who)
         {
             if (!instance)
                 return;
@@ -224,7 +224,7 @@ public:
             //Only if not incombat check if the event is started
             if (!me->isInCombat() && instance && instance->GetData(DATA_MAULGAREVENT))
             {
-                UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAREVENT_TANK));
+                Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_MAULGAREVENT_TANK));
 
                 if (target)
                 {
@@ -281,7 +281,7 @@ public:
                 //Charging_Timer
                 if (Charging_Timer <= diff)
                 {
-                    UnitPtr target = nullptr;
+                    Unit* target = NULL;
                     target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (target)
                     {
@@ -311,14 +311,14 @@ class boss_olm_the_summoner : public CreatureScript
 public:
     boss_olm_the_summoner() : CreatureScript("boss_olm_the_summoner") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_olm_the_summonerAI (creature);
     }
 
     struct boss_olm_the_summonerAI : public ScriptedAI
     {
-        boss_olm_the_summonerAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_olm_the_summonerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -340,7 +340,7 @@ public:
                 instance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
         }
 
-        void AttackStart(UnitPtr who)
+        void AttackStart(Unit* who)
         {
             if (!who)
                 return;
@@ -355,7 +355,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             if (instance)
             {
@@ -364,12 +364,12 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
             {
-                CreaturePtr Maulgar = nullptr;
-                Maulgar = (Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAR)));
+                Creature* Maulgar = NULL;
+                Maulgar = (Unit::GetCreature((*me), instance->GetData64(DATA_MAULGAR)));
 
                 if (Maulgar)
                     CAST_AI(boss_high_king_maulgar::boss_high_king_maulgarAI, Maulgar->AI())->AddDeath();
@@ -384,7 +384,7 @@ public:
             //Only if not incombat check if the event is started
             if (!me->isInCombat() && instance && instance->GetData(DATA_MAULGAREVENT))
             {
-                UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAREVENT_TANK));
+                Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_MAULGAREVENT_TANK));
 
                 if (target)
                 {
@@ -420,7 +420,7 @@ public:
             //DeathCoil Timer /need correct timer
             if (DeathCoil_Timer <= diff)
             {
-                UnitPtr target = nullptr;
+                Unit* target = NULL;
                 target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (target)
                     DoCast(target, SPELL_DEATH_COIL);
@@ -439,14 +439,14 @@ class boss_kiggler_the_crazed : public CreatureScript
 public:
     boss_kiggler_the_crazed() : CreatureScript("boss_kiggler_the_crazed") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_kiggler_the_crazedAI (creature);
     }
 
     struct boss_kiggler_the_crazedAI : public ScriptedAI
     {
-        boss_kiggler_the_crazedAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_kiggler_the_crazedAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -470,7 +470,7 @@ public:
                 instance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             if (instance)
             {
@@ -479,12 +479,12 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
             {
-                CreaturePtr Maulgar = nullptr;
-                Maulgar = (Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAR)));
+                Creature* Maulgar = NULL;
+                Maulgar = (Unit::GetCreature((*me), instance->GetData64(DATA_MAULGAR)));
 
                 if (Maulgar)
                     CAST_AI(boss_high_king_maulgar::boss_high_king_maulgarAI, Maulgar->AI())->AddDeath();
@@ -499,7 +499,7 @@ public:
             //Only if not incombat check if the event is started
             if (!me->isInCombat() && instance && instance->GetData(DATA_MAULGAREVENT))
             {
-                UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAREVENT_TANK));
+                Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_MAULGAREVENT_TANK));
 
                 if (target)
                 {
@@ -521,7 +521,7 @@ public:
             //GreaterPolymorph_Timer
             if (GreaterPolymorph_Timer <= diff)
             {
-                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (target)
                     DoCast(target, SPELL_GREATER_POLYMORPH);
 
@@ -561,14 +561,14 @@ class boss_blindeye_the_seer : public CreatureScript
 public:
     boss_blindeye_the_seer() : CreatureScript("boss_blindeye_the_seer") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_blindeye_the_seerAI (creature);
     }
 
     struct boss_blindeye_the_seerAI : public ScriptedAI
     {
-        boss_blindeye_the_seerAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_blindeye_the_seerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -590,7 +590,7 @@ public:
                 instance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             if (instance)
             {
@@ -599,12 +599,12 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
             {
-                CreaturePtr Maulgar = nullptr;
-                Maulgar = (Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAR)));
+                Creature* Maulgar = NULL;
+                Maulgar = (Unit::GetCreature((*me), instance->GetData64(DATA_MAULGAR)));
 
                 if (Maulgar)
                     CAST_AI(boss_high_king_maulgar::boss_high_king_maulgarAI, Maulgar->AI())->AddDeath();
@@ -619,7 +619,7 @@ public:
             //Only if not incombat check if the event is started
             if (!me->isInCombat() && instance && instance->GetData(DATA_MAULGAREVENT))
             {
-                UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAREVENT_TANK));
+                Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_MAULGAREVENT_TANK));
 
                 if (target)
                 {
@@ -671,14 +671,14 @@ class boss_krosh_firehand : public CreatureScript
 public:
     boss_krosh_firehand() : CreatureScript("boss_krosh_firehand") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_krosh_firehandAI (creature);
     }
 
     struct boss_krosh_firehandAI : public ScriptedAI
     {
-        boss_krosh_firehandAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_krosh_firehandAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -700,7 +700,7 @@ public:
                 instance->SetData(DATA_MAULGAREVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             if (instance)
             {
@@ -709,12 +709,12 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
             {
-                CreaturePtr Maulgar = nullptr;
-                Maulgar = (Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAR)));
+                Creature* Maulgar = NULL;
+                Maulgar = (Unit::GetCreature((*me), instance->GetData64(DATA_MAULGAR)));
 
                 if (Maulgar)
                     CAST_AI(boss_high_king_maulgar::boss_high_king_maulgarAI, Maulgar->AI())->AddDeath();
@@ -729,7 +729,7 @@ public:
             //Only if not incombat check if the event is started
             if (!me->isInCombat() && instance && instance->GetData(DATA_MAULGAREVENT))
             {
-                UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_MAULGAREVENT_TANK));
+                Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_MAULGAREVENT_TANK));
 
                 if (target)
                 {
@@ -766,16 +766,16 @@ public:
             //BlastWave_Timer
             if (BlastWave_Timer <= diff)
             {
-                UnitPtr target = nullptr;
-                std::list<HostileReferencePtr> t_list = me->getThreatManager()->getThreatList();
-                std::vector<UnitPtr> target_list;
-                for (std::list<HostileReferencePtr>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
+                Unit* target = NULL;
+                std::list<HostileReference*> t_list = me->getThreatManager().getThreatList();
+                std::vector<Unit*> target_list;
+                for (std::list<HostileReference*>::const_iterator itr = t_list.begin(); itr!= t_list.end(); ++itr)
                 {
-                    target = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid());
+                    target = Unit::GetUnit(*me, (*itr)->getUnitGuid());
                                                                 //15 yard radius minimum
                     if (target && target->IsWithinDist(me, 15, false))
                         target_list.push_back(target);
-                    target = nullptr;
+                    target = NULL;
                 }
                 if (!target_list.empty())
                     target = *(target_list.begin()+rand()%target_list.size());

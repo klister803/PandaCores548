@@ -137,8 +137,8 @@ struct LfgPlayerBoot;
 typedef std::set<uint64> LfgGuidSet;
 typedef std::list<uint64> LfgGuidList;
 typedef std::map<uint8, LfgGuidList> LfgGuidListMap;
-typedef std::set<PlayerPtr> PlayerSet;
-typedef std::list<PlayerPtr> LfgPlayerList;
+typedef std::set<Player*> PlayerSet;
+typedef std::list<Player*> LfgPlayerList;
 typedef std::multimap<uint32, LfgReward const*> LfgRewardMap;
 typedef std::pair<LfgRewardMap::const_iterator, LfgRewardMap::const_iterator> LfgRewardMapBounds;
 typedef std::map<std::string, LfgAnswer> LfgCompatibleMap;
@@ -276,12 +276,12 @@ class LFGMgr
 
         // Reward
         void LoadRewards();
-        void RewardDungeonDoneFor(const uint32 dungeonId, PlayerPtr player);
+        void RewardDungeonDoneFor(const uint32 dungeonId, Player* player);
         LfgReward const* GetRandomDungeonReward(uint32 dungeon, uint8 level);
 
         // Queue
-        void Join(PlayerPtr player, uint8 roles, const LfgDungeonSet& dungeons, const std::string& comment);
-        void Leave(PlayerPtr player, GroupPtr grp = nullptr);
+        void Join(Player* player, uint8 roles, const LfgDungeonSet& dungeons, const std::string& comment);
+        void Leave(Player* player, Group* grp = NULL);
 
         // Role Check
         void UpdateRoleCheck(uint64 gguid, uint64 guid = 0, uint8 roles = ROLE_NONE);
@@ -291,16 +291,16 @@ class LFGMgr
 
         // Teleportation
         void LoadEntrancePositions();
-        void TeleportPlayer(PlayerPtr player, bool out, bool fromOpcode = false);
+        void TeleportPlayer(Player* player, bool out, bool fromOpcode = false);
 
         // Vote kick
-        void InitBoot(GroupPtr grp, uint64 kguid, uint64 vguid, std::string reason);
-        void UpdateBoot(PlayerPtr player, bool accept);
-        void OfferContinue(GroupPtr grp);
+        void InitBoot(Group* grp, uint64 kguid, uint64 vguid, std::string reason);
+        void UpdateBoot(Player* player, bool accept);
+        void OfferContinue(Group* grp);
 
         HolidayIds GetDungeonSeason(uint32 dungeonId);
 
-        void InitializeLockedDungeons(PlayerPtr player);
+        void InitializeLockedDungeons(Player* player);
 
         void _LoadFromDB(Field* fields, uint64 guid);
         void _SaveToDB(uint64 guid, uint32 db_guid);
@@ -320,7 +320,7 @@ class LFGMgr
         void SetRoles(uint64 guid, uint8 roles);
         void SetSelectedDungeons(uint64 guid, const LfgDungeonSet& dungeons);
 
-        void SendUpdateStatus(PlayerPtr, const std::string&, const LfgDungeonSet& selectedDungeons, bool join, bool quit);
+        void SendUpdateStatus(Player*, const std::string&, const LfgDungeonSet& selectedDungeons, bool join, bool quit);
 
         LfgQueueInfo* GetLfgQueueInfo(uint64 guid) const
         {
@@ -328,7 +328,7 @@ class LFGMgr
             if(itr != m_QueueInfoMap.end())
                 return itr->second;
 
-            return nullptr;
+            return NULL;
         }
 
     private:

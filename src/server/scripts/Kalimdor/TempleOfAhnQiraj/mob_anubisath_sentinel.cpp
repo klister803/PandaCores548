@@ -61,7 +61,7 @@ class mob_anubisath_sentinel : public CreatureScript
 public:
     mob_anubisath_sentinel() : CreatureScript("mob_anubisath_sentinel") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new aqsentinelAI (creature);
     }
@@ -87,7 +87,7 @@ public:
             }
         }
 
-        aqsentinelAI(CreaturePtr creature) : ScriptedAI(creature)
+        aqsentinelAI(Creature* creature) : ScriptedAI(creature)
         {
             ClearBuddyList();
             abselected = 0;                                     // just initialization of variable
@@ -117,7 +117,7 @@ public:
             }
         }
 
-        void GiveBuddyMyList(CreaturePtr c)
+        void GiveBuddyMyList(Creature* c)
         {
             aqsentinelAI* cai = CAST_AI(aqsentinelAI, (c)->AI());
             for (int i=0; i<3; ++i)
@@ -129,15 +129,15 @@ public:
         void SendMyListToBuddies()
         {
             for (int i=0; i<3; ++i)
-                if (CreaturePtr pNearby = Unit::GetCreature(TO_WORLDOBJECT(me), NearbyGUID[i]))
+                if (Creature* pNearby = Unit::GetCreature(*me, NearbyGUID[i]))
                     GiveBuddyMyList(pNearby);
         }
 
-        void CallBuddiesToAttack(UnitPtr who)
+        void CallBuddiesToAttack(Unit* who)
         {
             for (int i=0; i<3; ++i)
             {
-                CreaturePtr c = Unit::GetCreature(TO_WORLDOBJECT(me), NearbyGUID[i]);
+                Creature* c = Unit::GetCreature(*me, NearbyGUID[i]);
                 if (c)
                 {
                     if (!c->isInCombat())
@@ -150,15 +150,15 @@ public:
             }
         }
 
-        void AddSentinelsNear(UnitPtr /*nears*/)
+        void AddSentinelsNear(Unit* /*nears*/)
         {
-            std::list<CreaturePtr> assistList;
+            std::list<Creature*> assistList;
             me->GetCreatureListWithEntryInGrid(assistList, 15264, 70.0f);
 
             if (assistList.empty())
                 return;
 
-            for (std::list<CreaturePtr>::const_iterator iter = assistList.begin(); iter != assistList.end(); ++iter)
+            for (std::list<Creature*>::const_iterator iter = assistList.begin(); iter != assistList.end(); ++iter)
                 AddBuddyToList((*iter)->GetGUID());
         }
 
@@ -178,7 +178,7 @@ public:
             return 0;                                           // should never happen
         }
 
-        void GetOtherSentinels(UnitPtr who)
+        void GetOtherSentinels(Unit* who)
         {
             bool *chosenAbilities = new bool[9];
             memset(chosenAbilities, 0, 9*sizeof(bool));
@@ -192,7 +192,7 @@ public:
                 if (!NearbyGUID[bli])
                     break;
 
-                CreaturePtr pNearby = Unit::GetCreature(TO_WORLDOBJECT(me), NearbyGUID[bli]);
+                Creature* pNearby = Unit::GetCreature(*me, NearbyGUID[bli]);
                 if (!pNearby)
                     break;
 
@@ -218,7 +218,7 @@ public:
                 {
                     if (!NearbyGUID[i])
                         continue;
-                    if (CreaturePtr pNearby = Unit::GetCreature(TO_WORLDOBJECT(me), NearbyGUID[i]))
+                    if (Creature* pNearby = Unit::GetCreature(*me, NearbyGUID[i]))
                     {
                         if (pNearby->isDead())
                             pNearby->Respawn();
@@ -234,7 +234,7 @@ public:
             me->AddAura(id, me);
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             if (gatherOthersWhenAggro)
                 GetOtherSentinels(who);
@@ -243,11 +243,11 @@ public:
             DoZoneInCombat();
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             for (int ni=0; ni<3; ++ni)
             {
-                CreaturePtr sent = Unit::GetCreature(TO_WORLDOBJECT(me), NearbyGUID[ni]);
+                Creature* sent = Unit::GetCreature(*me, NearbyGUID[ni]);
                 if (!sent)
                     continue;
                 if (sent->isDead())

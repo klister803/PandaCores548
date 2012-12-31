@@ -73,7 +73,7 @@ class boss_baltharus_the_warborn : public CreatureScript
 
         struct boss_baltharus_the_warbornAI : public BossAI
         {
-            boss_baltharus_the_warbornAI(CreaturePtr creature) : BossAI(creature, DATA_BALTHARUS_THE_WARBORN)
+            boss_baltharus_the_warbornAI(Creature* creature) : BossAI(creature, DATA_BALTHARUS_THE_WARBORN)
             {
                 _introDone = false;
             }
@@ -112,7 +112,7 @@ class boss_baltharus_the_warborn : public CreatureScript
                 }
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 me->InterruptNonMeleeSpells(false);
                 _EnterCombat();
@@ -124,28 +124,28 @@ class boss_baltharus_the_warborn : public CreatureScript
                 Talk(SAY_AGGRO);
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 _JustDied();
                 Talk(SAY_DEATH);
-                if (CreaturePtr xerestrasza = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_XERESTRASZA)))
+                if (Creature* xerestrasza = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_XERESTRASZA)))
                     xerestrasza->AI()->DoAction(ACTION_BALTHARUS_DEATH);
             }
 
-            void KilledUnit(UnitPtr victim)
+            void KilledUnit(Unit* victim)
             {
                 if (victim->GetTypeId() == TYPEID_PLAYER)
                     Talk(SAY_KILL);
             }
 
-            void JustSummoned(CreaturePtr summon)
+            void JustSummoned(Creature* summon)
             {
                 summons.Summon(summon);
                 summon->SetHealth(me->GetHealth());
                 summon->CastSpell(summon, SPELL_SPAWN_EFFECT, true);
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& damage)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
             {
                 if (GetDifficulty() == MAN10_DIFFICULTY)
                 {
@@ -185,7 +185,7 @@ class boss_baltharus_the_warborn : public CreatureScript
                             Talk(SAY_BALTHARUS_INTRO);
                             break;
                         case EVENT_OOC_CHANNEL:
-                            if (CreaturePtr channelTarget = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_CRYSTAL_CHANNEL_TARGET)))
+                            if (Creature* channelTarget = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_CRYSTAL_CHANNEL_TARGET)))
                                 DoCast(channelTarget, SPELL_BARRIER_CHANNEL);
                             events.ScheduleEvent(EVENT_OOC_CHANNEL, 7000, 0, PHASE_INTRO);
                             break;
@@ -199,7 +199,7 @@ class boss_baltharus_the_warborn : public CreatureScript
                             break;
                         case EVENT_ENERVATING_BRAND:
                             for (uint8 i = 0; i < RAID_MODE<uint8>(4, 8, 8, 10); i++)
-                                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true))
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true))
                                     DoCast(target, SPELL_ENERVATING_BRAND);
                             events.ScheduleEvent(EVENT_ENERVATING_BRAND, 26000, 0, PHASE_COMBAT);
                             break;
@@ -216,7 +216,7 @@ class boss_baltharus_the_warborn : public CreatureScript
             bool _introDone;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return GetRubySanctumAI<boss_baltharus_the_warbornAI>(creature);
         }
@@ -229,12 +229,12 @@ class npc_baltharus_the_warborn_clone : public CreatureScript
 
         struct npc_baltharus_the_warborn_cloneAI : public ScriptedAI
         {
-            npc_baltharus_the_warborn_cloneAI(CreaturePtr creature) : ScriptedAI(creature),
+            npc_baltharus_the_warborn_cloneAI(Creature* creature) : ScriptedAI(creature),
                 _instance(creature->GetInstanceScript())
             {
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoZoneInCombat();
                 _events.Reset();
@@ -243,18 +243,18 @@ class npc_baltharus_the_warborn_clone : public CreatureScript
                 _events.ScheduleEvent(EVENT_ENERVATING_BRAND, urand(10000, 15000));
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& damage)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
             {
                 // Setting DATA_BALTHARUS_SHARED_HEALTH to 0 when killed would bug the boss.
                 if (_instance && me->GetHealth() > damage)
                     _instance->SetData(DATA_BALTHARUS_SHARED_HEALTH, me->GetHealth() - damage);
             }
 
-            void JustDied(UnitPtr killer)
+            void JustDied(Unit* killer)
             {
                 // This is here because DamageTaken wont trigger if the damage is deadly.
                 if (_instance)
-                    if (CreaturePtr baltharus = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), _instance->GetData64(DATA_BALTHARUS_THE_WARBORN)))
+                    if (Creature* baltharus = ObjectAccessor::GetCreature(*me, _instance->GetData64(DATA_BALTHARUS_THE_WARBORN)))
                         killer->Kill(baltharus);
             }
 
@@ -285,7 +285,7 @@ class npc_baltharus_the_warborn_clone : public CreatureScript
                            break;
                         case EVENT_ENERVATING_BRAND:
                             for (uint8 i = 0; i < RAID_MODE<uint8>(4, 8, 8, 10); i++)
-                                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true))
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 45.0f, true))
                                     DoCast(target, SPELL_ENERVATING_BRAND);
                             _events.ScheduleEvent(EVENT_ENERVATING_BRAND, 26000);
                             break;
@@ -302,7 +302,7 @@ class npc_baltharus_the_warborn_clone : public CreatureScript
             InstanceScript* _instance;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return GetRubySanctumAI<npc_baltharus_the_warborn_cloneAI>(creature);
         }
@@ -319,9 +319,9 @@ class spell_baltharus_enervating_brand_trigger : public SpellScriptLoader
 
             void CheckDistance()
             {
-                if (UnitPtr caster = GetOriginalCaster())
+                if (Unit* caster = GetOriginalCaster())
                 {
-                    if (UnitPtr target = GetHitUnit())
+                    if (Unit* target = GetHitUnit())
                         target->CastSpell(caster, SPELL_SIPHONED_MIGHT, true);
                 }
             }

@@ -36,7 +36,7 @@ public:
 
     struct generic_creatureAI : public ScriptedAI
     {
-        generic_creatureAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        generic_creatureAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 GlobalCooldown;      //This variable acts like the global cooldown that players have (1.5 seconds)
         uint32 BuffTimer;           //This variable keeps track of buffs
@@ -49,7 +49,7 @@ public:
             IsSelfRooted = false;
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             if (!me->IsWithinMeleeRange(who))
                 IsSelfRooted = true;
@@ -96,7 +96,7 @@ public:
                 if (me->isAttackReady() && !me->IsNonMeleeSpellCasted(false))
                 {
                     bool Healing = false;
-                    SpellInfo const* info = nullptr;
+                    SpellInfo const* info = NULL;
 
                     //Select a healing spell if less than 30% hp
                     if (HealthBelowPct(30))
@@ -127,7 +127,7 @@ public:
                 if (!me->IsNonMeleeSpellCasted(false))
                 {
                     bool Healing = false;
-                    SpellInfo const* info = nullptr;
+                    SpellInfo const* info = NULL;
 
                     //Select a healing spell if less than 30% hp ONLY 33% of the time
                     if (HealthBelowPct(30) && rand() % 3 == 0)
@@ -163,7 +163,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new generic_creatureAI(creature);
     }
@@ -176,9 +176,9 @@ public:
 
     struct trigger_periodicAI : public NullCreatureAI
     {
-        trigger_periodicAI(CreaturePtr creature) : NullCreatureAI(creature)
+        trigger_periodicAI(Creature* creature) : NullCreatureAI(creature)
         {
-            spell = me->m_spells[0] ? sSpellMgr->GetSpellInfo(me->m_spells[0]) : nullptr;
+            spell = me->m_spells[0] ? sSpellMgr->GetSpellInfo(me->m_spells[0]) : NULL;
             interval = me->GetAttackTime(BASE_ATTACK);
             timer = interval;
         }
@@ -199,7 +199,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new trigger_periodicAI(creature);
     }
@@ -212,15 +212,15 @@ public:
 
     struct trigger_deathAI : public NullCreatureAI
     {
-        trigger_deathAI(CreaturePtr creature) : NullCreatureAI(creature) {}
-        void JustDied(UnitPtr killer)
+        trigger_deathAI(Creature* creature) : NullCreatureAI(creature) {}
+        void JustDied(Unit* killer)
         {
             if (me->m_spells[0])
                 me->CastSpell(killer, me->m_spells[0], true);
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new trigger_deathAI(creature);
     }

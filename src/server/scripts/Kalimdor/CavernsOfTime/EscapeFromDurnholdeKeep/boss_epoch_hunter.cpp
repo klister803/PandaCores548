@@ -48,14 +48,14 @@ class boss_epoch_hunter : public CreatureScript
 public:
     boss_epoch_hunter() : CreatureScript("boss_epoch_hunter") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_epoch_hunterAI (creature);
     }
 
     struct boss_epoch_hunterAI : public ScriptedAI
     {
-        boss_epoch_hunterAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_epoch_hunterAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -75,17 +75,17 @@ public:
             Mda_Timer = 40000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2), me);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -120,7 +120,7 @@ public:
 
             if (WingBuffet_Timer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_WING_BUFFET);
                 WingBuffet_Timer = 25000+rand()%10000;
             } else WingBuffet_Timer -= diff;

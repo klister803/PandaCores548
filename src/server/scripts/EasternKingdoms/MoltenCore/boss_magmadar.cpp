@@ -55,7 +55,7 @@ class boss_magmadar : public CreatureScript
 
         struct boss_magmadarAI : public BossAI
         {
-            boss_magmadarAI(CreaturePtr creature) : BossAI(creature, BOSS_MAGMADAR)
+            boss_magmadarAI(Creature* creature) : BossAI(creature, BOSS_MAGMADAR)
             {
             }
 
@@ -65,7 +65,7 @@ class boss_magmadar : public CreatureScript
                 DoCast(me, SPELL_MAGMA_SPIT, true);
             }
 
-            void EnterCombat(UnitPtr victim)
+            void EnterCombat(Unit* victim)
             {
                 BossAI::EnterCombat(victim);
                 events.ScheduleEvent(EVENT_FRENZY, 30000);
@@ -97,7 +97,7 @@ class boss_magmadar : public CreatureScript
                             events.ScheduleEvent(EVENT_PANIC, 35000);
                             break;
                         case EVENT_LAVA_BOMB:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_LAVA_BOMB))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_LAVA_BOMB))
                                 DoCast(target, SPELL_LAVA_BOMB);
                             events.ScheduleEvent(EVENT_LAVA_BOMB, 12000);
                             break;
@@ -110,7 +110,7 @@ class boss_magmadar : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_magmadarAI(creature);
         }

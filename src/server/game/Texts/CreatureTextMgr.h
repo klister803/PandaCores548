@@ -89,21 +89,21 @@ class CreatureTextMgr
         void LoadCreatureTextLocales();
         CreatureTextMap  const& GetTextMap() const { return mTextMap; }
 
-        void SendSound(CreaturePtr source, uint32 sound, ChatMsg msgType, uint64 whisperGuid, TextRange range, Team team, bool gmOnly);
-        void SendEmote(UnitPtr source, uint32 emote);
+        void SendSound(Creature* source, uint32 sound, ChatMsg msgType, uint64 whisperGuid, TextRange range, Team team, bool gmOnly);
+        void SendEmote(Unit* source, uint32 emote);
 
         //if sent, returns the 'duration' of the text else 0 if error
-        uint32 SendChat(CreaturePtr source, uint8 textGroup, uint64 whisperGuid = 0, ChatMsg msgType = CHAT_MSG_ADDON, Language language = LANG_ADDON, TextRange range = TEXT_RANGE_NORMAL, uint32 sound = 0, Team team = TEAM_OTHER, bool gmOnly = false, PlayerPtr srcPlr = nullptr);
+        uint32 SendChat(Creature* source, uint8 textGroup, uint64 whisperGuid = 0, ChatMsg msgType = CHAT_MSG_ADDON, Language language = LANG_ADDON, TextRange range = TEXT_RANGE_NORMAL, uint32 sound = 0, Team team = TEAM_OTHER, bool gmOnly = false, Player* srcPlr = NULL);
         bool TextExist(uint32 sourceEntry, uint8 textGroup);
         std::string GetLocalizedChatString(uint32 entry, uint8 textGroup, uint32 id, LocaleConstant locale) const;
 
         template<class Builder>
-        void SendChatPacket(WorldObjectPtr source, Builder const& builder, ChatMsg msgType, uint64 whisperGuid = 0, TextRange range = TEXT_RANGE_NORMAL, Team team = TEAM_OTHER, bool gmOnly = false) const;
+        void SendChatPacket(WorldObject* source, Builder const& builder, ChatMsg msgType, uint64 whisperGuid = 0, TextRange range = TEXT_RANGE_NORMAL, Team team = TEAM_OTHER, bool gmOnly = false) const;
     private:
-        CreatureTextRepeatIds GetRepeatGroup(CreaturePtr source, uint8 textGroup);
-        void SetRepeatId(CreaturePtr source, uint8 textGroup, uint8 id);
+        CreatureTextRepeatIds GetRepeatGroup(Creature* source, uint8 textGroup);
+        void SetRepeatId(Creature* source, uint8 textGroup, uint8 id);
 
-        void SendNonChatPacket(WorldObjectPtr source, WorldPacket* data, ChatMsg msgType, uint64 whisperGuid, TextRange range, Team team, bool gmOnly) const;
+        void SendNonChatPacket(WorldObject* source, WorldPacket* data, ChatMsg msgType, uint64 whisperGuid, TextRange range, Team team, bool gmOnly) const;
         float GetRangeForChatType(ChatMsg msgType) const;
 
         CreatureTextMap mTextMap;
@@ -119,7 +119,7 @@ class CreatureTextLocalizer
     public:
         CreatureTextLocalizer(Builder const& builder, ChatMsg msgType) : _builder(builder), _msgType(msgType)
         {
-            _packetCache.resize(TOTAL_LOCALES, nullptr);
+            _packetCache.resize(TOTAL_LOCALES, NULL);
         }
 
         ~CreatureTextLocalizer()
@@ -132,7 +132,7 @@ class CreatureTextLocalizer
             }
         }
 
-        void operator()(PlayerPtr player)
+        void operator()(Player* player)
         {
             LocaleConstant loc_idx = player->GetSession()->GetSessionDbLocaleIndex();
             WorldPacket* messageTemplate;
@@ -172,7 +172,7 @@ class CreatureTextLocalizer
 };
 
 template<class Builder>
-void CreatureTextMgr::SendChatPacket(WorldObjectPtr source, Builder const& builder, ChatMsg msgType, uint64 whisperGuid, TextRange range, Team team, bool gmOnly) const
+void CreatureTextMgr::SendChatPacket(WorldObject* source, Builder const& builder, ChatMsg msgType, uint64 whisperGuid, TextRange range, Team team, bool gmOnly) const
 {
     if (!source)
         return;
@@ -186,7 +186,7 @@ void CreatureTextMgr::SendChatPacket(WorldObjectPtr source, Builder const& build
         {
             if (range == TEXT_RANGE_NORMAL) //ignores team and gmOnly
             {
-                PlayerPtr player = ObjectAccessor::FindPlayer(whisperGuid);
+                Player* player = ObjectAccessor::FindPlayer(whisperGuid);
                 if (!player || !player->GetSession())
                     return;
 
@@ -231,7 +231,7 @@ void CreatureTextMgr::SendChatPacket(WorldObjectPtr source, Builder const& build
         {
             SessionMap const& smap = sWorld->GetAllSessions();
             for (SessionMap::const_iterator iter = smap.begin(); iter != smap.end(); ++iter)
-                if (PlayerPtr player = iter->second->GetPlayer())
+                if (Player* player = iter->second->GetPlayer())
                     if (player->GetSession()  && (!team || Team(player->GetTeam()) == team) && (!gmOnly || player->isGameMaster()))
                         localizer(player);
             return;

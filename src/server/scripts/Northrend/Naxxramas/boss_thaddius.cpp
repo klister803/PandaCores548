@@ -113,14 +113,14 @@ class boss_thaddius : public CreatureScript
 public:
     boss_thaddius() : CreatureScript("boss_thaddius") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_thaddiusAI (creature);
     }
 
     struct boss_thaddiusAI : public BossAI
     {
-        boss_thaddiusAI(CreaturePtr creature) : BossAI(creature, BOSS_THADDIUS)
+        boss_thaddiusAI(Creature* creature) : BossAI(creature, BOSS_THADDIUS)
         {
             // init is a bit tricky because thaddius shall track the life of both adds, but not if there was a wipe
             // and, in particular, if there was a crash after both adds were killed (should not respawn)
@@ -128,11 +128,11 @@ public:
             // Moreover, the adds may not yet be spawn. So just track down the status if mob is spawn
             // and each mob will send its status at reset (meaning that it is alive)
             checkFeugenAlive = false;
-            if (CreaturePtr pFeugen = me->GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_FEUGEN)))
+            if (Creature* pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
                 checkFeugenAlive = pFeugen->isAlive();
 
             checkStalaggAlive = false;
-            if (CreaturePtr pStalagg = me->GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_STALAGG)))
+            if (Creature* pStalagg = me->GetCreature(*me, instance->GetData64(DATA_STALAGG)))
                 checkStalaggAlive = pStalagg->isAlive();
 
             if (!checkFeugenAlive && !checkStalaggAlive)
@@ -152,13 +152,13 @@ public:
         bool polaritySwitch;
         uint32 uiAddsTimer;
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             if (!(rand()%5))
                 DoScriptText(SAY_SLAY, me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             _JustDied();
             DoScriptText(SAY_DEATH, me);
@@ -195,7 +195,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
             DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
@@ -204,7 +204,7 @@ public:
             events.ScheduleEvent(EVENT_BERSERK, 360000);
         }
 
-        void DamageTaken(UnitPtr /*pDoneBy*/, uint32 & /*uiDamage*/)
+        void DamageTaken(Unit* /*pDoneBy*/, uint32 & /*uiDamage*/)
         {
             me->SetReactState(REACT_AGGRESSIVE);
         }
@@ -236,13 +236,13 @@ public:
                     if (!checkStalaggAlive)
                     {
                         if (instance)
-                            if (CreaturePtr pStalagg = me->GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_STALAGG)))
+                            if (Creature* pStalagg = me->GetCreature(*me, instance->GetData64(DATA_STALAGG)))
                                 pStalagg->Respawn();
                     }
                     else
                     {
                         if (instance)
-                            if (CreaturePtr pFeugen = me->GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_FEUGEN)))
+                            if (Creature* pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
                                 pFeugen->Respawn();
                     }
                 }
@@ -288,14 +288,14 @@ class mob_stalagg : public CreatureScript
 public:
     mob_stalagg() : CreatureScript("mob_stalagg") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_stalaggAI(creature);
     }
 
     struct mob_stalaggAI : public ScriptedAI
     {
-        mob_stalaggAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_stalaggAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -308,22 +308,22 @@ public:
         void Reset()
         {
             if (instance)
-                if (CreaturePtr pThaddius = me->GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_THADDIUS)))
+                if (Creature* pThaddius = me->GetCreature(*me, instance->GetData64(DATA_THADDIUS)))
                     if (pThaddius->AI())
                         pThaddius->AI()->DoAction(ACTION_STALAGG_RESET);
             powerSurgeTimer = urand(20000, 25000);
             magneticPullTimer = 20000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoCast(SPELL_STALAGG_TESLA);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
-                if (CreaturePtr pThaddius = me->GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_THADDIUS)))
+                if (Creature* pThaddius = me->GetCreature(*me, instance->GetData64(DATA_THADDIUS)))
                     if (pThaddius->AI())
                         pThaddius->AI()->DoAction(ACTION_STALAGG_DIED);
         }
@@ -335,20 +335,20 @@ public:
 
             if (magneticPullTimer <= uiDiff)
             {
-                if (CreaturePtr pFeugen = me->GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_FEUGEN)))
+                if (Creature* pFeugen = me->GetCreature(*me, instance->GetData64(DATA_FEUGEN)))
                 {
-                    UnitPtr pStalaggVictim = me->getVictim();
-                    UnitPtr pFeugenVictim = pFeugen->getVictim();
+                    Unit* pStalaggVictim = me->getVictim();
+                    Unit* pFeugenVictim = pFeugen->getVictim();
 
                     if (pFeugenVictim && pStalaggVictim)
                     {
                         // magnetic pull is not working. So just jump.
 
                         // reset aggro to be sure that feugen will not follow the jump
-                        pFeugen->getThreatManager()->modifyThreatPercent(pFeugenVictim, -100);
+                        pFeugen->getThreatManager().modifyThreatPercent(pFeugenVictim, -100);
                         pFeugenVictim->JumpTo(me, 0.3f);
 
-                        me->getThreatManager()->modifyThreatPercent(pStalaggVictim, -100);
+                        me->getThreatManager().modifyThreatPercent(pStalaggVictim, -100);
                         pStalaggVictim->JumpTo(pFeugen, 0.3f);
                     }
                 }
@@ -374,14 +374,14 @@ class mob_feugen : public CreatureScript
 public:
     mob_feugen() : CreatureScript("mob_feugen") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_feugenAI(creature);
     }
 
     struct mob_feugenAI : public ScriptedAI
     {
-        mob_feugenAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_feugenAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -393,21 +393,21 @@ public:
         void Reset()
         {
             if (instance)
-                if (CreaturePtr pThaddius = me->GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_THADDIUS)))
+                if (Creature* pThaddius = me->GetCreature(*me, instance->GetData64(DATA_THADDIUS)))
                     if (pThaddius->AI())
                         pThaddius->AI()->DoAction(ACTION_FEUGEN_RESET);
             staticFieldTimer = 5000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoCast(SPELL_FEUGEN_TESLA);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
-                if (CreaturePtr pThaddius = me->GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_THADDIUS)))
+                if (Creature* pThaddius = me->GetCreature(*me, instance->GetData64(DATA_THADDIUS)))
                     if (pThaddius->AI())
                         pThaddius->AI()->DoAction(ACTION_FEUGEN_DIED);
         }
@@ -456,12 +456,12 @@ class spell_thaddius_pos_neg_charge : public SpellScriptLoader
                 return GetCaster()->GetTypeId() == TYPEID_UNIT;
             }
 
-            void HandleTargets(std::list<WorldObjectPtr>& targets)
+            void HandleTargets(std::list<WorldObject*>& targets)
             {
                 uint8 count = 0;
-                for (std::list<WorldObjectPtr>::iterator ihit = targets.begin(); ihit != targets.end(); ++ihit)
+                for (std::list<WorldObject*>::iterator ihit = targets.begin(); ihit != targets.end(); ++ihit)
                     if ((*ihit)->GetGUID() != GetCaster()->GetGUID())
-                        if (PlayerPtr target = TO_PLAYER(*ihit))
+                        if (Player* target = (*ihit)->ToPlayer())
                             if (target->HasAura(GetTriggeringSpell()->Id))
                                 ++count;
 
@@ -483,8 +483,8 @@ class spell_thaddius_pos_neg_charge : public SpellScriptLoader
                 if (!GetTriggeringSpell())
                     return;
 
-                UnitPtr target = GetHitUnit();
-                UnitPtr caster = GetCaster();
+                Unit* target = GetHitUnit();
+                Unit* caster = GetCaster();
 
                 if (target->HasAura(GetTriggeringSpell()->Id))
                     SetHitDamage(0);
@@ -526,9 +526,9 @@ class spell_thaddius_polarity_shift : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /* effIndex */)
             {
-                UnitPtr caster = GetCaster();
-                if (UnitPtr target = GetHitUnit())
-                    target->CastSpell(target, roll_chance_i(50) ? SPELL_POSITIVE_POLARITY : SPELL_NEGATIVE_POLARITY, true, nullptr, nullptr, caster->GetGUID());
+                Unit* caster = GetCaster();
+                if (Unit* target = GetHitUnit())
+                    target->CastSpell(target, roll_chance_i(50) ? SPELL_POSITIVE_POLARITY : SPELL_NEGATIVE_POLARITY, true, NULL, NULL, caster->GetGUID());
             }
 
             void Register()
@@ -548,7 +548,7 @@ class achievement_polarity_switch : public AchievementCriteriaScript
     public:
         achievement_polarity_switch() : AchievementCriteriaScript("achievement_polarity_switch") { }
 
-        bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
+        bool OnCheck(Player* /*source*/, Unit* target)
         {
             return target && target->GetAI()->GetData(DATA_POLARITY_SWITCH);
         }

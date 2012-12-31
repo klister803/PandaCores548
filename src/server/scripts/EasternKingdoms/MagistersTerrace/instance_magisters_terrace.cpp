@@ -60,14 +60,14 @@ class instance_magisters_terrace : public InstanceMapScript
 public:
     instance_magisters_terrace() : InstanceMapScript("instance_magisters_terrace", 585) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_magisters_terrace_InstanceMapScript(map);
     }
 
     struct instance_magisters_terrace_InstanceMapScript : public InstanceScript
     {
-        instance_magisters_terrace_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_magisters_terrace_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 Encounter[MAX_ENCOUNTER];
         uint32 DelrissaDeathCount;
@@ -168,7 +168,7 @@ public:
             }
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -184,7 +184,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {

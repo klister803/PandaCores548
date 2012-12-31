@@ -49,14 +49,14 @@ class boss_aeonus : public CreatureScript
 public:
     boss_aeonus() : CreatureScript("boss_aeonus") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_aeonusAI (creature);
     }
 
     struct boss_aeonusAI : public ScriptedAI
     {
-        boss_aeonusAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_aeonusAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -74,12 +74,12 @@ public:
             Frenzy_Timer = 30000+rand()%15000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             //Despawn Time Keeper
             if (who->GetTypeId() == TYPEID_UNIT && who->GetEntry() == C_TIME_KEEPER)
@@ -87,14 +87,14 @@ public:
                 if (me->IsWithinDistInMap(who, 20.0f))
                 {
                     DoScriptText(SAY_BANISH, me);
-                    me->DealDamage(who, who->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+                    me->DealDamage(who, who->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 }
             }
 
             ScriptedAI::MoveInLineOfSight(who);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -105,7 +105,7 @@ public:
              }
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }

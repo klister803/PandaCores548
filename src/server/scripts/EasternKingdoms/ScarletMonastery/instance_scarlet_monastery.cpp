@@ -42,14 +42,14 @@ class instance_scarlet_monastery : public InstanceMapScript
 public:
     instance_scarlet_monastery() : InstanceMapScript("instance_scarlet_monastery", 189) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_scarlet_monastery_InstanceMapScript(map);
     }
 
     struct instance_scarlet_monastery_InstanceMapScript : public InstanceScript
     {
-        instance_scarlet_monastery_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_scarlet_monastery_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint64 PumpkinShrineGUID;
         uint64 HorsemanGUID;
@@ -78,7 +78,7 @@ public:
             DoorHighInquisitorGUID = 0;
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -87,7 +87,7 @@ public:
             }
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -121,7 +121,7 @@ public:
                 {
                     for (std::set<uint64>::const_iterator itr = HorsemanAdds.begin(); itr != HorsemanAdds.end(); ++itr)
                     {
-                        CreaturePtr add = instance->GetCreature(*itr);
+                        Creature* add = instance->GetCreature(*itr);
                         if (add && add->isAlive())
                             add->Kill(add);
                     }

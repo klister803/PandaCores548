@@ -33,7 +33,7 @@ class instance_ruby_sanctum : public InstanceMapScript
 
         struct instance_ruby_sanctum_InstanceMapScript : public InstanceScript
         {
-            instance_ruby_sanctum_InstanceMapScript(InstanceMapPtr map) : InstanceScript(map)
+            instance_ruby_sanctum_InstanceMapScript(InstanceMap* map) : InstanceScript(map)
             {
                 SetBossNumber(EncounterCount);
                 LoadDoorData(doorData);
@@ -51,7 +51,7 @@ class instance_ruby_sanctum : public InstanceMapScript
                 memset(BurningTreeGUID, 0, 4*sizeof(uint64));
             }
 
-            void OnCreatureCreate(CreaturePtr creature)
+            void OnCreatureCreate(Creature* creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -86,7 +86,7 @@ class instance_ruby_sanctum : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectCreate(GameObjectPtr go)
+            void OnGameObjectCreate(GameObject* go)
             {
                 switch (go->GetEntry())
                 {
@@ -126,7 +126,7 @@ class instance_ruby_sanctum : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectRemove(GameObjectPtr go)
+            void OnGameObjectRemove(GameObject* go)
             {
                 switch (go->GetEntry())
                 {
@@ -189,7 +189,7 @@ class instance_ruby_sanctum : public InstanceMapScript
                         if (state == DONE && GetBossState(DATA_SAVIANA_RAGEFIRE) == DONE)
                         {
                             HandleGameObject(FlameWallsGUID, true);
-                            if (CreaturePtr zarithrian = instance->GetCreature(GeneralZarithrianGUID))
+                            if (Creature* zarithrian = instance->GetCreature(GeneralZarithrianGUID))
                                 zarithrian->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
                         }
                         break;
@@ -199,7 +199,7 @@ class instance_ruby_sanctum : public InstanceMapScript
                         if (state == DONE && GetBossState(DATA_BALTHARUS_THE_WARBORN) == DONE)
                         {
                             HandleGameObject(FlameWallsGUID, true);
-                            if (CreaturePtr zarithrian = instance->GetCreature(GeneralZarithrianGUID))
+                            if (Creature* zarithrian = instance->GetCreature(GeneralZarithrianGUID))
                                 zarithrian->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC | UNIT_FLAG_NOT_SELECTABLE);
                         }
                         break;
@@ -209,7 +209,7 @@ class instance_ruby_sanctum : public InstanceMapScript
                             HandleGameObject(FlameWallsGUID, state != IN_PROGRESS);
                         /*
                         if (state == DONE)
-                            if (CreaturePtr halionController = instance->SummonCreature(NPC_HALION_CONTROLLER, HalionControllerSpawnPos))
+                            if (Creature* halionController = instance->SummonCreature(NPC_HALION_CONTROLLER, HalionControllerSpawnPos))
                                 halionController->AI()->DoAction(ACTION_INTRO_HALION);
                         */
                         break;
@@ -308,7 +308,7 @@ class instance_ruby_sanctum : public InstanceMapScript
             uint32 BaltharusSharedHealth;
         };
 
-        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
             return new instance_ruby_sanctum_InstanceMapScript(map);
         }

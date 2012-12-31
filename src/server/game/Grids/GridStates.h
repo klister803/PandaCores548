@@ -41,31 +41,31 @@ class GridState
         unsigned int i_Magic;
 #endif
         virtual ~GridState() {};
-        virtual void Update(Map &, NGridTypePtr&, GridInfo &, const uint32 t_diff) const = 0;
+        virtual void Update(Map &, NGridType&, GridInfo &, const uint32 t_diff) const = 0;
 };
 
 class InvalidState : public GridState
 {
     public:
-        void Update(Map &, NGridTypePtr&, GridInfo &, const uint32 t_diff) const;
+        void Update(Map &, NGridType &, GridInfo &, const uint32 t_diff) const;
 };
 
 class ActiveState : public GridState
 {
     public:
-        void Update(Map &, NGridTypePtr&, GridInfo &, const uint32 t_diff) const;
+        void Update(Map &, NGridType &, GridInfo &, const uint32 t_diff) const;
 };
 
 class IdleState : public GridState
 {
     public:
-        void Update(Map &, NGridTypePtr &, GridInfo &, const uint32 t_diff) const;
+        void Update(Map &, NGridType &, GridInfo &, const uint32 t_diff) const;
 };
 
 class RemovalState : public GridState
 {
     public:
-        void Update(Map &, NGridTypePtr &, GridInfo &, const uint32 t_diff) const;
+        void Update(Map &, NGridType &, GridInfo &, const uint32 t_diff) const;
 };
 #endif
 

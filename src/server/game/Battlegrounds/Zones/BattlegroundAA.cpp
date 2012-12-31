@@ -47,7 +47,7 @@ void BattlegroundAA::StartingEventOpenDoors()
 {
 }
 
-void BattlegroundAA::AddPlayer(PlayerPtr player)
+void BattlegroundAA::AddPlayer(Player* player)
 {
     Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
@@ -56,16 +56,16 @@ void BattlegroundAA::AddPlayer(PlayerPtr player)
     PlayerScores[player->GetGUID()] = sc;
 }
 
-void BattlegroundAA::RemovePlayer(PlayerPtr /*Player*/, uint64 /*guid*/, uint32 /*team*/)
+void BattlegroundAA::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
 {
 }
 
-void BattlegroundAA::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
+void BattlegroundAA::HandleKillPlayer(Player* player, Player* killer)
 {
     Battleground::HandleKillPlayer(player, killer);
 }
 
-void BattlegroundAA::HandleAreaTrigger(PlayerPtr /*Source*/, uint32 /*Trigger*/)
+void BattlegroundAA::HandleAreaTrigger(Player* /*Source*/, uint32 /*Trigger*/)
 {
 }
 

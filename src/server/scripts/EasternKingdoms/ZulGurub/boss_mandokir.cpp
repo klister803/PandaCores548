@@ -40,21 +40,21 @@ class boss_mandokir : public CreatureScript
 
         struct boss_mandokirAI : public BossAI
         {
-            boss_mandokirAI(CreaturePtr creature) : BossAI(creature, DATA_MANDOKIR) { }
+            boss_mandokirAI(Creature* creature) : BossAI(creature, DATA_MANDOKIR) { }
 
             void Reset()
             {
             }
 
-            void KilledUnit(UnitPtr victim)
+            void KilledUnit(Unit* victim)
             {
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
             }
 
@@ -82,7 +82,7 @@ class boss_mandokir : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_mandokirAI(creature);
         }

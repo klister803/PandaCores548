@@ -54,7 +54,7 @@ class WaypointMgr
             if (itr != _waypointStore.end())
                 return &itr->second;
 
-            return nullptr;
+            return NULL;
         }
 
     private:

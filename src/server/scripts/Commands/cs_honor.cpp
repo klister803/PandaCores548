@@ -35,22 +35,22 @@ public:
     {
         static ChatCommand honorAddCommandTable[] =
         {
-            { "kill",           SEC_GAMEMASTER,     false, &HandleHonorAddKillCommand,         "", nullptr },
-            { "",               SEC_GAMEMASTER,     false, &HandleHonorAddCommand,             "", nullptr },
-            { nullptr,             0,                  false, nullptr,                               "", nullptr }
+            { "kill",           SEC_GAMEMASTER,     false, &HandleHonorAddKillCommand,         "", NULL },
+            { "",               SEC_GAMEMASTER,     false, &HandleHonorAddCommand,             "", NULL },
+            { NULL,             0,                  false, NULL,                               "", NULL }
         };
 
         static ChatCommand honorCommandTable[] =
         {
-            { "add",            SEC_GAMEMASTER,     false, nullptr,               "", honorAddCommandTable },
-            { "update",         SEC_GAMEMASTER,     false, &HandleHonorUpdateCommand,          "", nullptr },
-            { nullptr,             0,                  false, nullptr,                               "", nullptr }
+            { "add",            SEC_GAMEMASTER,     false, NULL,               "", honorAddCommandTable },
+            { "update",         SEC_GAMEMASTER,     false, &HandleHonorUpdateCommand,          "", NULL },
+            { NULL,             0,                  false, NULL,                               "", NULL }
         };
 
         static ChatCommand commandTable[] =
         {
-            { "honor",          SEC_GAMEMASTER,     false, nullptr,                  "", honorCommandTable },
-            { nullptr,             0,                  false, nullptr,                               "", nullptr }
+            { "honor",          SEC_GAMEMASTER,     false, NULL,                  "", honorCommandTable },
+            { NULL,             0,                  false, NULL,                               "", NULL }
         };
         return commandTable;
     }
@@ -60,7 +60,7 @@ public:
         if (!*args)
             return false;
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -73,13 +73,13 @@ public:
             return false;
 
         uint32 amount = (uint32)atoi(args);
-        target->RewardHonor(nullptr, 1, amount);
+        target->RewardHonor(NULL, 1, amount);
         return true;
     }
 
     static bool HandleHonorAddKillCommand(ChatHandler* handler, char const* /*args*/)
     {
-        UnitPtr target = handler->getSelectedUnit();
+        Unit* target = handler->getSelectedUnit();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -88,7 +88,7 @@ public:
         }
 
         // check online security
-        if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(TO_PLAYER(target), 0))
+        if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity((Player*)target, 0))
             return false;
 
         handler->GetSession()->GetPlayer()->RewardHonor(target, 1);
@@ -97,7 +97,7 @@ public:
 
     static bool HandleHonorUpdateCommand(ChatHandler* handler, char const* /*args*/)
     {
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);

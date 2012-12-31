@@ -71,15 +71,15 @@ class DBCStorage
     typedef std::list<char*> StringPoolList;
     public:
         explicit DBCStorage(const char *f) :
-            fmt(f), nCount(0), fieldCount(0), dataTable(nullptr)
+            fmt(f), nCount(0), fieldCount(0), dataTable(NULL)
         {
-            indexTable.asT = nullptr;
+            indexTable.asT = NULL;
         }
         ~DBCStorage() { Clear(); }
 
         T const* LookupEntry(uint32 id) const
         {
-            return (id >= nCount) ? nullptr : indexTable.asT[id];
+            return (id >= nCount) ? NULL : indexTable.asT[id];
         }
         uint32  GetNumRows() const { return nCount; }
         char const* GetFormat() const { return fmt; }
@@ -94,8 +94,8 @@ class DBCStorage
 
             uint32 sqlRecordCount = 0;
             uint32 sqlHighestIndex = 0;
-            Field* fields = nullptr;
-            QueryResult result = QueryResult(nullptr);
+            Field* fields = NULL;
+            QueryResult result = QueryResult(NULL);
             // Load data from sql
             if (sql)
             {
@@ -225,14 +225,14 @@ class DBCStorage
                             return false;
                         }
 
-                        fields = nullptr;
+                        fields = NULL;
                         ++rowIndex;
                     }while (result->NextRow());
                 }
             }
 
-            // error in dbc file at loading if nullptr
-            return indexTable.asT != nullptr;
+            // error in dbc file at loading if NULL
+            return indexTable.asT != NULL;
         }
 
         bool LoadStringsFrom(char const* fn)
@@ -257,9 +257,9 @@ class DBCStorage
                 return;
 
             delete[] ((char*)indexTable.asT);
-            indexTable.asT = nullptr;
+            indexTable.asT = NULL;
             delete[] ((char*)dataTable);
-            dataTable = nullptr;
+            dataTable = NULL;
 
             while (!stringPoolList.empty())
             {

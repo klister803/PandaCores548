@@ -1244,7 +1244,7 @@ struct SmartScriptHolder
 
 typedef UNORDERED_MAP<uint32, WayPoint*> WPPath;
 
-typedef std::list<WorldObjectPtr> ObjectList;
+typedef std::list<WorldObject*> ObjectList;
 typedef UNORDERED_MAP<uint32, ObjectList*> ObjectListMap;
 
 class SmartWaypointMgr
@@ -1336,7 +1336,7 @@ class SmartAIMgr
         {
             if (!data)
             {
-                sLog->outError(LOG_FILTER_SQL, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u Parameter can not be nullptr, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
+                sLog->outError(LOG_FILTER_SQL, "SmartAIMgr: Entry %d SourceType %u Event %u Action %u Parameter can not be NULL, skipped.", e.entryOrGuid, e.GetScriptType(), e.event_id, e.GetActionType());
                 return false;
             }
             return true;

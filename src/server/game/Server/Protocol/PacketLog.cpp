@@ -20,7 +20,7 @@
 #include "ByteBuffer.h"
 #include "WorldPacket.h"
 
-PacketLog::PacketLog() : _file(nullptr)
+PacketLog::PacketLog() : _file(NULL)
 {
     Initialize();
 }
@@ -30,7 +30,7 @@ PacketLog::~PacketLog()
     if (_file)
         fclose(_file);
 
-    _file = nullptr;
+    _file = NULL;
 }
 
 void PacketLog::Initialize()
@@ -51,7 +51,7 @@ void PacketLog::LogPacket(WorldPacket const& packet, Direction direction)
     ByteBuffer data(4+4+4+1+packet.size());
     data << int32(packet.GetOpcode());
     data << int32(packet.size());
-    data << uint32(time(nullptr));
+    data << uint32(time(NULL));
     data << uint8(direction);
 
     for (uint32 i = 0; i < packet.size(); i++)

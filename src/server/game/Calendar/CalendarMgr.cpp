@@ -19,29 +19,29 @@
 
 DROP TABLE IF EXISTS `calendar_events`;
 CREATE TABLE IF NOT EXISTS `calendar_events` (
-  `id` int(11) unsigned NOT nullptr DEFAULT '0',
-  `creator` int(11) unsigned NOT nullptr DEFAULT '0',
-  `title` varchar(255) NOT nullptr DEFAULT '',
-  `description` varchar(255) NOT nullptr DEFAULT '',
-  `type` tinyint(1) unsigned NOT nullptr DEFAULT '4',
-  `dungeon` tinyint(3) NOT nullptr DEFAULT '-1',
-  `eventtime` int(10) unsigned NOT nullptr DEFAULT '0',
-  `flags` int(10) unsigned NOT nullptr DEFAULT '0',
-  `repeatable` tinyint(1) unsigned NOT nullptr DEFAULT '0',
-  `time2` int(10) unsigned NOT nullptr DEFAULT '0',
+  `id` int(11) unsigned NOT NULL DEFAULT '0',
+  `creator` int(11) unsigned NOT NULL DEFAULT '0',
+  `title` varchar(255) NOT NULL DEFAULT '',
+  `description` varchar(255) NOT NULL DEFAULT '',
+  `type` tinyint(1) unsigned NOT NULL DEFAULT '4',
+  `dungeon` tinyint(3) NOT NULL DEFAULT '-1',
+  `eventtime` int(10) unsigned NOT NULL DEFAULT '0',
+  `flags` int(10) unsigned NOT NULL DEFAULT '0',
+  `repeatable` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `time2` int(10) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`)
 );
 
 DROP TABLE IF EXISTS `calendar_invites`;
 CREATE TABLE IF NOT EXISTS `calendar_invites` (
-  `id` int(11) unsigned NOT nullptr DEFAULT '0',
-  `event` int(11) unsigned NOT nullptr DEFAULT '0',
-  `invitee` int(11) unsigned NOT nullptr DEFAULT '0',
-  `sender` int(11) unsigned NOT nullptr DEFAULT '0',
-  `status` tinyint(1) unsigned NOT nullptr DEFAULT '0',
-  `statustime` int(10) unsigned NOT nullptr DEFAULT '0',
-  `rank` tinyint(1) unsigned NOT nullptr DEFAULT '0',
-  `text` varchar(255) NOT nullptr DEFAULT '',
+  `id` int(11) unsigned NOT NULL DEFAULT '0',
+  `event` int(11) unsigned NOT NULL DEFAULT '0',
+  `invitee` int(11) unsigned NOT NULL DEFAULT '0',
+  `sender` int(11) unsigned NOT NULL DEFAULT '0',
+  `status` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `statustime` int(10) unsigned NOT NULL DEFAULT '0',
+  `rank` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  `text` varchar(255) NOT NULL DEFAULT '',
   PRIMARY KEY (`id`)
 );
 */
@@ -100,7 +100,7 @@ CalendarInvite* CalendarMgr::GetInvite(uint64 inviteId)
         return &(itr->second);
 
     sLog->outError(LOG_FILTER_CALENDAR, "CalendarMgr::GetInvite: [" UI64FMTD "] not found!", inviteId);
-    return nullptr;
+    return NULL;
 }
 
 CalendarEvent* CalendarMgr::GetEvent(uint64 eventId)
@@ -110,7 +110,7 @@ CalendarEvent* CalendarMgr::GetEvent(uint64 eventId)
         return &(itr->second);
 
     sLog->outError(LOG_FILTER_CALENDAR, "CalendarMgr::GetEvent: [" UI64FMTD "] not found!", eventId);
-    return nullptr;
+    return NULL;
 }
 
 uint64 CalendarMgr::GetFreeEventId()
@@ -180,41 +180,41 @@ void CalendarMgr::LoadFromDB()
     */
 }
 
-CalendarEvent* CalendarMgr::CheckPermisions(uint64 eventId, PlayerPtr player, uint64 inviteId, CalendarModerationRank minRank)
+CalendarEvent* CalendarMgr::CheckPermisions(uint64 eventId, Player* player, uint64 inviteId, CalendarModerationRank minRank)
 {
     if (!player)
-        return nullptr;    // CALENDAR_ERROR_INTERNAL
+        return NULL;    // CALENDAR_ERROR_INTERNAL
 
     CalendarEvent* calendarEvent = GetEvent(eventId);
     if (!calendarEvent)
     {
         player->GetSession()->SendCalendarCommandResult(CALENDAR_ERROR_EVENT_INVALID);
-        return nullptr;
+        return NULL;
     }
 
     CalendarInvite* invite = GetInvite(inviteId);
     if (!invite)
     {
         player->GetSession()->SendCalendarCommandResult(CALENDAR_ERROR_NO_INVITE);
-        return nullptr;
+        return NULL;
     }
 
     if (!calendarEvent->HasInvite(inviteId))
     {
         player->GetSession()->SendCalendarCommandResult(CALENDAR_ERROR_NOT_INVITED);
-        return nullptr;
+        return NULL;
     }
 
     if (invite->GetEventId() != calendarEvent->GetEventId() || invite->GetInvitee() != player->GetGUID())
     {
         player->GetSession()->SendCalendarCommandResult(CALENDAR_ERROR_INTERNAL);
-        return nullptr;
+        return NULL;
     }
 
     if (invite->GetRank() < minRank)
     {
         player->GetSession()->SendCalendarCommandResult(CALENDAR_ERROR_PERMISSIONS);
-        return nullptr;
+        return NULL;
     }
 
     return calendarEvent;
@@ -355,7 +355,7 @@ void CalendarMgr::AddAction(CalendarAction const& action)
 
             CalendarInvite newInvite(GetFreeInviteId());
             newInvite.SetStatus(status);
-            newInvite.SetStatusTime(uint32(time(nullptr)));
+            newInvite.SetStatusTime(uint32(time(NULL)));
             newInvite.SetEventId(eventId);
             newInvite.SetInvitee(action.GetPlayer()->GetGUID());
             newInvite.SetSenderGUID(action.GetPlayer()->GetGUID());
@@ -370,7 +370,7 @@ void CalendarMgr::AddAction(CalendarAction const& action)
             uint64 eventId = action.Invite.GetEventId();
             uint64 inviteId = action.Invite.GetInviteId();
 
-            CalendarEvent* calendarEvent = nullptr;
+            CalendarEvent* calendarEvent = NULL;
             if (action.GetInviteId() != action.Invite.GetInviteId())
                 calendarEvent = CheckPermisions(eventId, action.GetPlayer(), action.GetInviteId(), CALENDAR_RANK_MODERATOR);
             else
@@ -390,7 +390,7 @@ void CalendarMgr::AddAction(CalendarAction const& action)
             uint64 eventId = action.Invite.GetEventId();
             uint64 inviteId = action.Invite.GetInviteId();
 
-            CalendarEvent* calendarEvent = nullptr;
+            CalendarEvent* calendarEvent = NULL;
             if (action.GetInviteId() != action.Invite.GetInviteId())
                 calendarEvent = CheckPermisions(eventId, action.GetPlayer(), action.GetInviteId(), CALENDAR_RANK_OWNER);
             else
@@ -540,54 +540,54 @@ bool CalendarMgr::RemovePlayerInvite(uint64 guid, uint64 inviteId)
 
 void CalendarMgr::SendCalendarEvent(CalendarEvent const& calendarEvent, CalendarSendEventType type)
 {
-    if (PlayerPtr player = ObjectAccessor::FindPlayer(calendarEvent.GetCreatorGUID()))
+    if (Player* player = ObjectAccessor::FindPlayer(calendarEvent.GetCreatorGUID()))
         player->GetSession()->SendCalendarEvent(calendarEvent, type);
 }
 
 void CalendarMgr::SendCalendarEventInvite(CalendarInvite const& invite, bool pending)
 {
-    if (PlayerPtr player = ObjectAccessor::FindPlayer(invite.GetSenderGUID()))
+    if (Player* player = ObjectAccessor::FindPlayer(invite.GetSenderGUID()))
         player->GetSession()->SendCalendarEventInvite(invite, pending);
 }
 
 void CalendarMgr::SendCalendarEventInviteAlert(CalendarEvent const& calendarEvent, CalendarInvite const& invite)
 {
-    if (PlayerPtr player = ObjectAccessor::FindPlayer(invite.GetInvitee()))
+    if (Player* player = ObjectAccessor::FindPlayer(invite.GetInvitee()))
         player->GetSession()->SendCalendarEventInviteAlert(calendarEvent, invite);
 }
 
 void CalendarMgr::SendCalendarEventUpdateAlert(uint64 guid, CalendarEvent const& calendarEvent, CalendarSendEventType type)
 {
-    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
+    if (Player* player = ObjectAccessor::FindPlayer(guid))
         player->GetSession()->SendCalendarEventUpdateAlert(calendarEvent, type);
 }
 
 void CalendarMgr::SendCalendarEventStatus(uint64 guid, CalendarEvent const& calendarEvent, CalendarInvite const& invite)
 {
-    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
+    if (Player* player = ObjectAccessor::FindPlayer(guid))
         player->GetSession()->SendCalendarEventStatus(calendarEvent, invite);
 }
 
 void CalendarMgr::SendCalendarEventRemovedAlert(uint64 guid, CalendarEvent const& calendarEvent)
 {
-    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
+    if (Player* player = ObjectAccessor::FindPlayer(guid))
         player->GetSession()->SendCalendarEventRemovedAlert(calendarEvent);
 }
 
 void CalendarMgr::SendCalendarEventInviteRemoveAlert(uint64 guid, CalendarEvent const& calendarEvent, CalendarInviteStatus status)
 {
-    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
+    if (Player* player = ObjectAccessor::FindPlayer(guid))
         player->GetSession()->SendCalendarEventInviteRemoveAlert(calendarEvent, status);
 }
 
 void CalendarMgr::SendCalendarEventInviteRemove(uint64 guid, CalendarInvite const& invite, uint32 flags)
 {
-    if (PlayerPtr player = ObjectAccessor::FindPlayer(guid))
+    if (Player* player = ObjectAccessor::FindPlayer(guid))
         player->GetSession()->SendCalendarEventInviteRemove(invite, flags);
 }
 
 void CalendarMgr::SendCalendarEventModeratorStatusAlert(CalendarInvite const& invite)
 {
-    if (PlayerPtr player = ObjectAccessor::FindPlayer(invite.GetInvitee()))
+    if (Player* player = ObjectAccessor::FindPlayer(invite.GetInvitee()))
         player->GetSession()->SendCalendarEventModeratorStatusAlert(invite);
 }

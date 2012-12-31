@@ -59,7 +59,7 @@ void BattlegroundRL::StartingEventOpenDoors()
         SpawnBGObject(i, 60);
 }
 
-void BattlegroundRL::AddPlayer(PlayerPtr player)
+void BattlegroundRL::AddPlayer(Player* player)
 {
     Battleground::AddPlayer(player);
     //create score and add it to map, default values are set in constructor
@@ -70,7 +70,7 @@ void BattlegroundRL::AddPlayer(PlayerPtr player)
     UpdateArenaWorldState();
 }
 
-void BattlegroundRL::RemovePlayer(PlayerPtr /*Player*/, uint64 /*guid*/, uint32 /*team*/)
+void BattlegroundRL::RemovePlayer(Player* /*player*/, uint64 /*guid*/, uint32 /*team*/)
 {
     if (GetStatus() == STATUS_WAIT_LEAVE)
         return;
@@ -79,7 +79,7 @@ void BattlegroundRL::RemovePlayer(PlayerPtr /*Player*/, uint64 /*guid*/, uint32 
     CheckArenaWinConditions();
 }
 
-void BattlegroundRL::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
+void BattlegroundRL::HandleKillPlayer(Player* player, Player* killer)
 {
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
@@ -96,13 +96,13 @@ void BattlegroundRL::HandleKillPlayer(PlayerPtr player, PlayerPtr killer)
     CheckArenaWinConditions();
 }
 
-bool BattlegroundRL::HandlePlayerUnderMap(PlayerPtr player)
+bool BattlegroundRL::HandlePlayerUnderMap(Player* player)
 {
     player->TeleportTo(GetMapId(), 1285.810547f, 1667.896851f, 39.957642f, player->GetOrientation(), false);
     return true;
 }
 
-void BattlegroundRL::HandleAreaTrigger(PlayerPtr Source, uint32 Trigger)
+void BattlegroundRL::HandleAreaTrigger(Player* Source, uint32 Trigger)
 {
     // this is wrong way to implement these things. On official it done by gameobject spell cast.
     if (GetStatus() != STATUS_IN_PROGRESS)

@@ -28,10 +28,10 @@ class Creature;
 class AggressorAI : public CreatureAI
 {
     public:
-        explicit AggressorAI(CreaturePtr c) : CreatureAI(c) {}
+        explicit AggressorAI(Creature* c) : CreatureAI(c) {}
 
         void UpdateAI(const uint32);
-        static int Permissible(constCreaturePtr);
+        static int Permissible(const Creature*);
 };
 
 typedef std::vector<uint32> SpellVct;
@@ -39,14 +39,14 @@ typedef std::vector<uint32> SpellVct;
 class CombatAI : public CreatureAI
 {
     public:
-        explicit CombatAI(CreaturePtr c) : CreatureAI(c) {}
+        explicit CombatAI(Creature* c) : CreatureAI(c) {}
 
         void InitializeAI();
         void Reset();
-        void EnterCombat(UnitPtr who);
-        void JustDied(UnitPtr killer);
+        void EnterCombat(Unit* who);
+        void JustDied(Unit* killer);
         void UpdateAI(const uint32 diff);
-        static int Permissible(constCreaturePtr);
+        static int Permissible(const Creature*);
     protected:
         EventMap events;
         SpellVct spells;
@@ -55,11 +55,11 @@ class CombatAI : public CreatureAI
 class CasterAI : public CombatAI
 {
     public:
-        explicit CasterAI(CreaturePtr c) : CombatAI(c) { m_attackDist = MELEE_RANGE; }
+        explicit CasterAI(Creature* c) : CombatAI(c) { m_attackDist = MELEE_RANGE; }
         void InitializeAI();
-        void AttackStart(UnitPtr victim) { AttackStartCaster(victim, m_attackDist); }
+        void AttackStart(Unit* victim) { AttackStartCaster(victim, m_attackDist); }
         void UpdateAI(const uint32 diff);
-        void EnterCombat(UnitPtr /*who*/);
+        void EnterCombat(Unit* /*who*/);
     private:
         float m_attackDist;
 };
@@ -67,11 +67,11 @@ class CasterAI : public CombatAI
 struct ArcherAI : public CreatureAI
 {
     public:
-        explicit ArcherAI(CreaturePtr c);
-        void AttackStart(UnitPtr who);
+        explicit ArcherAI(Creature* c);
+        void AttackStart(Unit* who);
         void UpdateAI(const uint32 diff);
 
-        static int Permissible(constCreaturePtr);
+        static int Permissible(const Creature*);
     protected:
         float m_minRange;
 };
@@ -79,12 +79,12 @@ struct ArcherAI : public CreatureAI
 struct TurretAI : public CreatureAI
 {
     public:
-        explicit TurretAI(CreaturePtr c);
-        bool CanAIAttack(constUnitPtr who) const;
-        void AttackStart(UnitPtr who);
+        explicit TurretAI(Creature* c);
+        bool CanAIAttack(const Unit* who) const;
+        void AttackStart(Unit* who);
         void UpdateAI(const uint32 diff);
 
-        static int Permissible(constCreaturePtr);
+        static int Permissible(const Creature*);
     protected:
         float m_minRange;
 };
@@ -94,17 +94,17 @@ struct TurretAI : public CreatureAI
 struct VehicleAI : public CreatureAI
 {
     public:
-        explicit VehicleAI(CreaturePtr c);
+        explicit VehicleAI(Creature* c);
 
         void UpdateAI(const uint32 diff);
-        static int Permissible(constCreaturePtr);
+        static int Permissible(const Creature*);
         void Reset();
-        void MoveInLineOfSight(UnitPtr) {}
-        void AttackStart(UnitPtr) {}
+        void MoveInLineOfSight(Unit*) {}
+        void AttackStart(Unit*) {}
         void OnCharmed(bool apply);
 
     private:
-        VehiclePtr m_vehicle;
+        Vehicle* m_vehicle;
         bool m_IsVehicleInUse;
         void LoadConditions();
         void CheckConditions(const uint32 diff);

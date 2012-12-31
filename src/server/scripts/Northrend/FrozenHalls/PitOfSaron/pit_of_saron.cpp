@@ -45,7 +45,7 @@ class mob_ymirjar_flamebearer : public CreatureScript
 
         struct mob_ymirjar_flamebearerAI: public ScriptedAI
         {
-            mob_ymirjar_flamebearerAI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_ymirjar_flamebearerAI(Creature* creature) : ScriptedAI(creature)
             {
             }
 
@@ -54,7 +54,7 @@ class mob_ymirjar_flamebearer : public CreatureScript
                 _events.Reset();
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 _events.ScheduleEvent(EVENT_FIREBALL, 4000);
                 _events.ScheduleEvent(EVENT_TACTICAL_BLINK, 15000);
@@ -75,12 +75,12 @@ class mob_ymirjar_flamebearer : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_FIREBALL:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_FIREBALL);
                             _events.RescheduleEvent(EVENT_FIREBALL, 5000);
                             break;
                         case EVENT_TACTICAL_BLINK:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_TACTICAL_BLINK);
                             DoCast(me, SPELL_HELLFIRE);
                             _events.RescheduleEvent(EVENT_TACTICAL_BLINK, 12000);
@@ -97,7 +97,7 @@ class mob_ymirjar_flamebearer : public CreatureScript
             EventMap _events;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_ymirjar_flamebearerAI(creature);
         }
@@ -110,7 +110,7 @@ class mob_iceborn_protodrake : public CreatureScript
 
         struct mob_iceborn_protodrakeAI: public ScriptedAI
         {
-            mob_iceborn_protodrakeAI(CreaturePtr creature) : ScriptedAI(creature), _vehicle(creature->GetVehicleKit())
+            mob_iceborn_protodrakeAI(Creature* creature) : ScriptedAI(creature), _vehicle(creature->GetVehicleKit())
             {
                 ASSERT(_vehicle);
             }
@@ -120,7 +120,7 @@ class mob_iceborn_protodrake : public CreatureScript
                 _frostBreathCooldown = 5000;
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 _vehicle->RemoveAllPassengers();
             }
@@ -142,11 +142,11 @@ class mob_iceborn_protodrake : public CreatureScript
             }
 
         private:
-            VehiclePtr _vehicle;
+            Vehicle* _vehicle;
             uint32 _frostBreathCooldown;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_iceborn_protodrakeAI(creature);
         }
@@ -159,7 +159,7 @@ class mob_geist_ambusher : public CreatureScript
 
         struct mob_geist_ambusherAI: public ScriptedAI
         {
-            mob_geist_ambusherAI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_geist_ambusherAI(Creature* creature) : ScriptedAI(creature)
             {
             }
 
@@ -168,7 +168,7 @@ class mob_geist_ambusher : public CreatureScript
                 _leapingFaceMaulCooldown = 9000;
             }
 
-            void EnterCombat(UnitPtr who)
+            void EnterCombat(Unit* who)
             {
                 if (who->GetTypeId() != TYPEID_PLAYER)
                     return;
@@ -185,7 +185,7 @@ class mob_geist_ambusher : public CreatureScript
 
                 if (_leapingFaceMaulCooldown < diff)
                 {
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 5.0f, true))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 5.0f, true))
                         DoCast(target, SPELL_LEAPING_FACE_MAUL);
                     _leapingFaceMaulCooldown = urand(9000, 14000);
                 }
@@ -199,7 +199,7 @@ class mob_geist_ambusher : public CreatureScript
             uint32 _leapingFaceMaulCooldown;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_geist_ambusherAI(creature);
         }

@@ -31,7 +31,7 @@ namespace WeatherMgr
 
 namespace
 {
-    typedef UNORDERED_MAP<uint32, std::shared_ptr<Weather>> WeatherMap;
+    typedef UNORDERED_MAP<uint32, Trinity::AutoPtr<Weather, ACE_Null_Mutex> > WeatherMap;
     typedef UNORDERED_MAP<uint32, WeatherData> WeatherZoneMap;
 
     WeatherMap m_weathers;
@@ -40,15 +40,15 @@ namespace
     WeatherData const* GetWeatherData(uint32 zone_id)
     {
         WeatherZoneMap::const_iterator itr = mWeatherZoneMap.find(zone_id);
-        return (itr != mWeatherZoneMap.end()) ? &itr->second : nullptr;
+        return (itr != mWeatherZoneMap.end()) ? &itr->second : NULL;
     }
 }
 
 /// Find a Weather object by the given zoneid
-WeatherPtr FindWeather(uint32 id)
+Weather* FindWeather(uint32 id)
 {
     WeatherMap::const_iterator itr = m_weathers.find(id);
-    return (itr != m_weathers.end()) ? itr->second : 0;
+    return (itr != m_weathers.end()) ? itr->second.get() : 0;
 }
 
 /// Remove a Weather object for the given zoneid
@@ -62,16 +62,16 @@ void RemoveWeather(uint32 id)
 }
 
 /// Add a Weather object to the list
-WeatherPtr AddWeather(uint32 zone_id)
+Weather* AddWeather(uint32 zone_id)
 {
     WeatherData const* weatherChances = GetWeatherData(zone_id);
 
     // zone does not have weather, ignore
     if (!weatherChances)
-        return nullptr;
+        return NULL;
 
-    WeatherPtr w (new Weather(zone_id, weatherChances));
-    //m_weathers[w->GetZone()].reset(&*w);
+    Weather* w = new Weather(zone_id, weatherChances);
+    m_weathers[w->GetZone()].reset(w);
     w->ReGenerate();
     w->UpdateWeather();
 
@@ -141,7 +141,7 @@ void LoadWeatherData()
 
 }
 
-void SendFineWeatherUpdateToPlayer(PlayerPtr player)
+void SendFineWeatherUpdateToPlayer(Player* player)
 {
     WorldPacket data(SMSG_WEATHER, (4+4+4));
 

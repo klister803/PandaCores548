@@ -33,14 +33,14 @@ class instance_trial_of_the_champion : public InstanceMapScript
 public:
     instance_trial_of_the_champion() : InstanceMapScript("instance_trial_of_the_champion", 650) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_trial_of_the_champion_InstanceMapScript(map);
     }
 
     struct instance_trial_of_the_champion_InstanceMapScript : public InstanceScript
     {
-        instance_trial_of_the_champion_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_trial_of_the_champion_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
 
@@ -100,14 +100,14 @@ public:
             return false;
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             Map::PlayerList const &players = instance->GetPlayers();
             uint32 TeamInInstance = 0;
 
             if (!players.isEmpty())
             {
-                if (PlayerPtr player = players.begin()->getSource())
+                if (Player* player = players.begin()->getSource())
                     TeamInInstance = player->GetTeam();
             }
 
@@ -151,7 +151,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -173,7 +173,7 @@ public:
                     uiMovementDone = uiData;
                     if (uiMovementDone == 3)
                     {
-                        if (CreaturePtr pAnnouncer =  instance->GetCreature(uiAnnouncerGUID))
+                        if (Creature* pAnnouncer =  instance->GetCreature(uiAnnouncerGUID))
                             pAnnouncer->AI()->SetData(DATA_IN_POSITION, 0);
                     }
                     break;
@@ -182,14 +182,14 @@ public:
                     if (uiData == IN_PROGRESS)
                     {
                         for (std::list<uint64>::const_iterator itr = VehicleList.begin(); itr != VehicleList.end(); ++itr)
-                            if (CreaturePtr summon = instance->GetCreature(*itr))
+                            if (Creature* summon = instance->GetCreature(*itr))
                                 summon->RemoveFromWorld();
                     }else if (uiData == DONE)
                     {
                         ++uiGrandChampionsDeaths;
                         if (uiGrandChampionsDeaths == 3)
                         {
-                            if (CreaturePtr pAnnouncer =  instance->GetCreature(uiAnnouncerGUID))
+                            if (Creature* pAnnouncer =  instance->GetCreature(uiAnnouncerGUID))
                             {
                                 pAnnouncer->GetMotionMaster()->MovePoint(0, 748.309f, 619.487f, 411.171f);
                                 pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -202,7 +202,7 @@ public:
                     uiArgentSoldierDeaths = uiData;
                     if (uiArgentSoldierDeaths == 9)
                     {
-                        if (CreaturePtr pBoss =  instance->GetCreature(uiArgentChampionGUID))
+                        if (Creature* pBoss =  instance->GetCreature(uiArgentChampionGUID))
                         {
                             pBoss->GetMotionMaster()->MovePoint(0, 746.88f, 618.74f, 411.06f);
                             pBoss->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -212,7 +212,7 @@ public:
                     break;
                 case BOSS_ARGENT_CHALLENGE_E:
                     m_auiEncounter[1] = uiData;
-                    if (CreaturePtr pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
+                    if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
                     {
                         pAnnouncer->GetMotionMaster()->MovePoint(0, 748.309f, 619.487f, 411.171f);
                         pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
@@ -221,7 +221,7 @@ public:
                     break;
                 case BOSS_ARGENT_CHALLENGE_P:
                     m_auiEncounter[2] = uiData;
-                    if (CreaturePtr pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
+                    if (Creature* pAnnouncer = instance->GetCreature(uiAnnouncerGUID))
                     {
                         pAnnouncer->GetMotionMaster()->MovePoint(0, 748.309f, 619.487f, 411.171f);
                         pAnnouncer->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);

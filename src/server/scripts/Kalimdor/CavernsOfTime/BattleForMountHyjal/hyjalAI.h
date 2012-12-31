@@ -177,17 +177,17 @@ const Yells ThrallQuotes[]=
 
 struct hyjalAI : public npc_escortAI
 {
-    hyjalAI(CreaturePtr creature);
+    hyjalAI(Creature* creature);
 
     void Reset();                                           // Generically used to reset our variables. Do *not* call in EnterEvadeMode as this may make problems if the raid is still in combat
 
     void EnterEvadeMode();                                  // Send creature back to spawn location and evade.
 
-    void EnterCombat(UnitPtr /*who*/);                                  // Used to reset cooldowns for our spells and to inform the raid that we're under attack
+    void EnterCombat(Unit* /*who*/);                                  // Used to reset cooldowns for our spells and to inform the raid that we're under attack
 
     void UpdateAI(const uint32 diff);                       // Called to summon waves, check for boss deaths and to cast our spells.
 
-    void JustDied(UnitPtr /*killer*/);                             // Called on death, informs the raid that they have failed.
+    void JustDied(Unit* /*killer*/);                             // Called on death, informs the raid that they have failed.
 
     void SetFaction(uint32 _faction)                        // Set the faction to either Alliance or Horde in Hyjal
     {
@@ -198,20 +198,20 @@ struct hyjalAI : public npc_escortAI
 
     void SpawnVeins();
     void DeSpawnVeins();
-    void JustSummoned(CreaturePtr summoned);
-    void SummonedCreatureDespawn(CreaturePtr summoned);
+    void JustSummoned(Creature* summoned);
+    void SummonedCreatureDespawn(Creature* summoned);
     void HideNearPos(float x, float y);
     void RespawnNearPos(float x, float y);
     void WaypointReached(uint32 waypointId);
     void DoOverrun(uint32 faction, const uint32 diff);
-    void MoveInLineOfSight(UnitPtr who);
+    void MoveInLineOfSight(Unit* who);
 
     void SummonCreature(uint32 entry, float Base[4][3]);    // Summons a creature for that wave in that base
 
                                                             // Summons the next wave, calls SummonCreature
     void SummonNextWave(const Wave wave[18], uint32 Count, float Base[4][3]);
 
-    void StartEvent(PlayerPtr player);                        // Begins the event by gossip click
+    void StartEvent(Player* player);                        // Begins the event by gossip click
 
     uint32 GetInstanceData(uint32 Event);                   // Gets instance data for this instance, used to check if raid has gotten past a certain point and can access the next phase
 

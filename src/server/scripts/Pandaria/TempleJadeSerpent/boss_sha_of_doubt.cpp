@@ -80,14 +80,14 @@ class boss_sha_of_doubt : public CreatureScript
     public:
         boss_sha_of_doubt() : CreatureScript("boss_sha_of_doubt") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_sha_of_doubt_AI(creature);
         }
 
         struct boss_sha_of_doubt_AI : public BossAI
         {
-            boss_sha_of_doubt_AI(CreaturePtr creature) : BossAI(creature, BOSS_SHA_OF_DOUBT)
+            boss_sha_of_doubt_AI(Creature* creature) : BossAI(creature, BOSS_SHA_OF_DOUBT)
             {
                 me->CastSpell(me, SPELL_INVISIBILITY_DETECTION, false);
             }
@@ -100,17 +100,17 @@ class boss_sha_of_doubt : public CreatureScript
                 _Reset();
             }
 
-            void KilledUnit(UnitPtr u)
+            void KilledUnit(Unit* u)
             {
                 Talk(TALK_SLAY_01 + urand(0, 1));
             }
 
-            void JustDied(UnitPtr u)
+            void JustDied(Unit* u)
             {
                 Talk(TALK_DEATH);
             }
 
-            void EnterCombat(UnitPtr unit)
+            void EnterCombat(Unit* unit)
             {
                 Talk(TALK_AGGRO);
                 events.ScheduleEvent(EVENT_WITHER_WILL, 5000);
@@ -154,7 +154,7 @@ class boss_sha_of_doubt : public CreatureScript
                             {
                                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                                 {
-                                    PlayerPtr plr = i->getSource();
+                                    Player* plr = i->getSource();
                                     if( !plr)
                                         continue;
                                     plr->CastSpell(plr, SPELL_FIGMENT_OF_DOUBT_3, false);
@@ -178,7 +178,7 @@ class mob_figment_of_doubt : public CreatureScript
     public:
         mob_figment_of_doubt() : CreatureScript("mob_figment_of_doubt") { }
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_figment_of_doubt_AI(creature);
         }
@@ -192,7 +192,7 @@ class mob_figment_of_doubt : public CreatureScript
 
         struct mob_figment_of_doubt_AI : public ScriptedAI
         {
-            mob_figment_of_doubt_AI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_figment_of_doubt_AI(Creature* creature) : ScriptedAI(creature)
             {
                 me->CastSpell(me, SPELL_GROW, false);
                 Classes cl = Classes(me->GetInstanceScript()->GetData(TYPE_CLASS_FIGMENT));
@@ -204,7 +204,7 @@ class mob_figment_of_doubt : public CreatureScript
             EventMap events;
             Classes _class;
 
-            void JustDied(UnitPtr killer)
+            void JustDied(Unit* killer)
             {
                 me->CastSpell(me, SPELL_DROWNED_STATE, false);
                 me->RemoveAura(SPELL_GATHERING_DOUBT);
@@ -212,7 +212,7 @@ class mob_figment_of_doubt : public CreatureScript
                 me->GetInstanceScript()->SetData(TYPE_CLASS_FIGMENT_DIE, _class);
             }
 
-            void EnterCombat(UnitPtr u)
+            void EnterCombat(Unit* u)
             {
                 me->CastSpell(me, SPELL_GATHERING_DOUBT, false);
                 events.ScheduleEvent(EVENT_GATHERING_DOUBT, 1000);
@@ -258,7 +258,7 @@ class mob_figment_of_doubt : public CreatureScript
                             uint64 guid_sha_of_doubt = me->GetInstanceScript()->GetData64(CREATURE_SHA_OF_DOUBT);
                             if (guid_sha_of_doubt != 0)
                             {
-                                CreaturePtr creature = me->GetMap()->GetCreature(guid_sha_of_doubt);
+                                Creature* creature = me->GetMap()->GetCreature(guid_sha_of_doubt);
                                 if (!creature)
                                     return;
 

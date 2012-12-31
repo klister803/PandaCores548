@@ -42,7 +42,7 @@ template<class T, class P>
 class PathMovementBase
 {
     public:
-        PathMovementBase() : i_path(nullptr), i_currentNode(0) {}
+        PathMovementBase() : i_path(NULL), i_currentNode(0) {}
         virtual ~PathMovementBase() {};
 
         // template pattern, not defined .. override required
@@ -64,20 +64,20 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
     public:
         WaypointMovementGenerator(uint32 _path_id = 0, bool _repeating = true)
             : i_nextMoveTime(0), m_isArrivalDone(false), path_id(_path_id), repeating(_repeating)  {}
-        ~WaypointMovementGenerator() { i_path = nullptr; }
-        void Initialize(CreaturePtr);
-        void Finalize(CreaturePtr);
-        void Reset(CreaturePtr);
-        bool Update(CreaturePtr, const uint32 &diff);
+        ~WaypointMovementGenerator() { i_path = NULL; }
+        void Initialize(Creature &);
+        void Finalize(Creature &);
+        void Reset(Creature &);
+        bool Update(Creature &, const uint32 &diff);
 
-        void MovementInform(CreaturePtr);
+        void MovementInform(Creature &);
 
         MovementGeneratorType GetMovementGeneratorType() { return WAYPOINT_MOTION_TYPE; }
 
         // now path movement implmementation
-        void LoadPath(CreaturePtr c);
+        void LoadPath(Creature &c);
 
-        bool GetResetPosition(CreaturePtr, float& x, float& y, float& z);
+        bool GetResetPosition(Creature&, float& x, float& y, float& z);
 
     private:
 
@@ -91,10 +91,10 @@ class WaypointMovementGenerator<Creature> : public MovementGeneratorMedium< Crea
             return i_nextMoveTime.Passed();
         }
 
-        void OnArrived(CreaturePtr);
-        bool StartMove(CreaturePtr);
+        void OnArrived(Creature&);
+        bool StartMove(Creature&);
 
-        void StartMoveNow(CreaturePtr creature)
+        void StartMoveNow(Creature& creature)
         {
             i_nextMoveTime.Reset(0);
             StartMove(creature);
@@ -118,10 +118,10 @@ class FlightPathMovementGenerator : public MovementGeneratorMedium< Player, Flig
             i_path = &pathnodes;
             i_currentNode = startNode;
         }
-        void Initialize(PlayerPtr);
-        void Reset(PlayerPtr);
-        void Finalize(PlayerPtr);
-        bool Update(PlayerPtr, const uint32&);
+        void Initialize(Player &);
+        void Reset(Player &);
+        void Finalize(Player &);
+        bool Update(Player &, const uint32&);
         MovementGeneratorType GetMovementGeneratorType() { return FLIGHT_MOTION_TYPE; }
 
         TaxiPathNodeList const& GetPath() { return *i_path; }
@@ -129,9 +129,9 @@ class FlightPathMovementGenerator : public MovementGeneratorMedium< Player, Flig
         bool HasArrived() const { return (i_currentNode >= i_path->size()); }
         void SetCurrentNodeAfterTeleport();
         void SkipCurrentNode() { ++i_currentNode; }
-        void DoEventIfAny(PlayerPtr player, TaxiPathNodeEntry const& node, bool departure);
+        void DoEventIfAny(Player& player, TaxiPathNodeEntry const& node, bool departure);
 
-        bool GetResetPosition(PlayerPtr, float& x, float& y, float& z);
+        bool GetResetPosition(Player&, float& x, float& y, float& z);
 
         void InitEndGridInfo();
         void PreloadEndGrid();

@@ -52,11 +52,11 @@ class boss_baron_geddon : public CreatureScript
 
         struct boss_baron_geddonAI : public BossAI
         {
-            boss_baron_geddonAI(CreaturePtr creature) : BossAI(creature, BOSS_BARON_GEDDON)
+            boss_baron_geddonAI(Creature* creature) : BossAI(creature, BOSS_BARON_GEDDON)
             {
             }
 
-            void EnterCombat(UnitPtr victim)
+            void EnterCombat(Unit* victim)
             {
                 BossAI::EnterCombat(victim);
                 events.ScheduleEvent(EVENT_INFERNO, 45000);
@@ -92,12 +92,12 @@ class boss_baron_geddon : public CreatureScript
                             events.ScheduleEvent(EVENT_INFERNO, 45000);
                             break;
                         case EVENT_IGNITE_MANA:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_IGNITE_MANA))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_IGNITE_MANA))
                                 DoCast(target, SPELL_IGNITE_MANA);
                             events.ScheduleEvent(EVENT_IGNITE_MANA, 30000);
                             break;
                         case EVENT_LIVING_BOMB:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                                 DoCast(target, SPELL_LIVING_BOMB);
                             events.ScheduleEvent(EVENT_LIVING_BOMB, 35000);
                             break;
@@ -110,7 +110,7 @@ class boss_baron_geddon : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_baron_geddonAI (creature);
         }

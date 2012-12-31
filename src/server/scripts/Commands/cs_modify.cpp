@@ -36,45 +36,45 @@ public:
     {
         static ChatCommand modifyspeedCommandTable[] =
         {
-            { "fly",            SEC_MODERATOR,      false, &HandleModifyFlyCommand,           "", nullptr },
-            { "all",            SEC_MODERATOR,      false, &HandleModifyASpeedCommand,        "", nullptr },
-            { "walk",           SEC_MODERATOR,      false, &HandleModifySpeedCommand,         "", nullptr },
-            { "backwalk",       SEC_MODERATOR,      false, &HandleModifyBWalkCommand,         "", nullptr },
-            { "swim",           SEC_MODERATOR,      false, &HandleModifySwimCommand,          "", nullptr },
-            { "",               SEC_MODERATOR,      false, &HandleModifyASpeedCommand,        "", nullptr },
-            { nullptr,             0,                  false, nullptr,                              "", nullptr }
+            { "fly",            SEC_MODERATOR,      false, &HandleModifyFlyCommand,           "", NULL },
+            { "all",            SEC_MODERATOR,      false, &HandleModifyASpeedCommand,        "", NULL },
+            { "walk",           SEC_MODERATOR,      false, &HandleModifySpeedCommand,         "", NULL },
+            { "backwalk",       SEC_MODERATOR,      false, &HandleModifyBWalkCommand,         "", NULL },
+            { "swim",           SEC_MODERATOR,      false, &HandleModifySwimCommand,          "", NULL },
+            { "",               SEC_MODERATOR,      false, &HandleModifyASpeedCommand,        "", NULL },
+            { NULL,             0,                  false, NULL,                              "", NULL }
         };
         static ChatCommand modifyCommandTable[] =
         {
-            { "hp",             SEC_MODERATOR,      false, &HandleModifyHPCommand,            "", nullptr },
-            { "mana",           SEC_MODERATOR,      false, &HandleModifyManaCommand,          "", nullptr },
-            { "rage",           SEC_MODERATOR,      false, &HandleModifyRageCommand,          "", nullptr },
-            { "runicpower",     SEC_MODERATOR,      false, &HandleModifyRunicPowerCommand,    "", nullptr },
-            { "energy",         SEC_MODERATOR,      false, &HandleModifyEnergyCommand,        "", nullptr },
-            { "money",          SEC_MODERATOR,      false, &HandleModifyMoneyCommand,         "", nullptr },
-            { "scale",          SEC_MODERATOR,      false, &HandleModifyScaleCommand,         "", nullptr },
-            { "bit",            SEC_MODERATOR,      false, &HandleModifyBitCommand,           "", nullptr },
-            { "faction",        SEC_MODERATOR,      false, &HandleModifyFactionCommand,       "", nullptr },
-            { "spell",          SEC_MODERATOR,      false, &HandleModifySpellCommand,         "", nullptr },
-            { "talentpoints",   SEC_MODERATOR,      false, &HandleModifyTalentCommand,        "", nullptr },
-            { "mount",          SEC_MODERATOR,      false, &HandleModifyMountCommand,         "", nullptr },
-            { "honor",          SEC_MODERATOR,      false, &HandleModifyHonorCommand,         "", nullptr },
-            { "reputation",     SEC_GAMEMASTER,     false, &HandleModifyRepCommand,           "", nullptr },
-            { "drunk",          SEC_MODERATOR,      false, &HandleModifyDrunkCommand,         "", nullptr },
-            { "standstate",     SEC_GAMEMASTER,     false, &HandleModifyStandStateCommand,    "", nullptr },
-            { "phase",          SEC_ADMINISTRATOR,  false, &HandleModifyPhaseCommand,         "", nullptr },
-            { "gender",         SEC_GAMEMASTER,     false, &HandleModifyGenderCommand,        "", nullptr },
-            { "power",          SEC_GAMEMASTER,     false, &HandleModifyPowerCommand,         "", nullptr },
-            { "currency",       SEC_GAMEMASTER,     false, &HandleModifyCurrencyCommand,      "", nullptr },
-            { "speed",          SEC_MODERATOR,      false, nullptr,           "", modifyspeedCommandTable },
-            { nullptr,          0,                  false, nullptr,                           "", nullptr }
+            { "hp",             SEC_MODERATOR,      false, &HandleModifyHPCommand,            "", NULL },
+            { "mana",           SEC_MODERATOR,      false, &HandleModifyManaCommand,          "", NULL },
+            { "rage",           SEC_MODERATOR,      false, &HandleModifyRageCommand,          "", NULL },
+            { "runicpower",     SEC_MODERATOR,      false, &HandleModifyRunicPowerCommand,    "", NULL },
+            { "energy",         SEC_MODERATOR,      false, &HandleModifyEnergyCommand,        "", NULL },
+            { "money",          SEC_MODERATOR,      false, &HandleModifyMoneyCommand,         "", NULL },
+            { "scale",          SEC_MODERATOR,      false, &HandleModifyScaleCommand,         "", NULL },
+            { "bit",            SEC_MODERATOR,      false, &HandleModifyBitCommand,           "", NULL },
+            { "faction",        SEC_MODERATOR,      false, &HandleModifyFactionCommand,       "", NULL },
+            { "spell",          SEC_MODERATOR,      false, &HandleModifySpellCommand,         "", NULL },
+            { "talentpoints",   SEC_MODERATOR,      false, &HandleModifyTalentCommand,        "", NULL },
+            { "mount",          SEC_MODERATOR,      false, &HandleModifyMountCommand,         "", NULL },
+            { "honor",          SEC_MODERATOR,      false, &HandleModifyHonorCommand,         "", NULL },
+            { "reputation",     SEC_GAMEMASTER,     false, &HandleModifyRepCommand,           "", NULL },
+            { "drunk",          SEC_MODERATOR,      false, &HandleModifyDrunkCommand,         "", NULL },
+            { "standstate",     SEC_GAMEMASTER,     false, &HandleModifyStandStateCommand,    "", NULL },
+            { "phase",          SEC_ADMINISTRATOR,  false, &HandleModifyPhaseCommand,         "", NULL },
+            { "gender",         SEC_GAMEMASTER,     false, &HandleModifyGenderCommand,        "", NULL },
+            { "power",          SEC_GAMEMASTER,     false, &HandleModifyPowerCommand,         "", NULL },
+            { "currency",       SEC_GAMEMASTER,     false, &HandleModifyCurrencyCommand,      "", NULL },
+            { "speed",          SEC_MODERATOR,      false, NULL,           "", modifyspeedCommandTable },
+            { NULL,             0,                  false, NULL,                                           "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "morph",          SEC_GAMEMASTER,     false, &HandleModifyMorphCommand,          "", nullptr },
-            { "demorph",        SEC_GAMEMASTER,     false, &HandleDeMorphCommand,              "", nullptr },
-            { "modify",         SEC_MODERATOR,      false, nullptr,                 "", modifyCommandTable },
-            { nullptr,             0,                  false, nullptr,                               "", nullptr }
+            { "morph",          SEC_GAMEMASTER,     false, &HandleModifyMorphCommand,          "", NULL },
+            { "demorph",        SEC_GAMEMASTER,     false, &HandleDeMorphCommand,              "", NULL },
+            { "modify",         SEC_MODERATOR,      false, NULL,                 "", modifyCommandTable },
+            { NULL,             0,                  false, NULL,                               "", NULL }
         };
         return commandTable;
     }
@@ -95,7 +95,7 @@ public:
             return false;
         }
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -132,7 +132,7 @@ public:
             return false;
         }
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -164,7 +164,7 @@ public:
         // if (!pmana)
         //     return false;
 
-        // char* pmanaMax = strtok(nullptr, " ");
+        // char* pmanaMax = strtok(NULL, " ");
         // if (!pmanaMax)
         //     return false;
 
@@ -181,7 +181,7 @@ public:
             return false;
         }
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -215,7 +215,7 @@ public:
         // if (!pmana)
         //     return false;
 
-        // char* pmanaMax = strtok(nullptr, " ");
+        // char* pmanaMax = strtok(NULL, " ");
         // if (!pmanaMax)
         //     return false;
 
@@ -232,7 +232,7 @@ public:
             return false;
         }
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -270,7 +270,7 @@ public:
             return false;
         }
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -296,7 +296,7 @@ public:
 
         char* pfactionid = handler->extractKeyFromLink((char*)args, "Hfaction");
 
-        CreaturePtr target = handler->getSelectedCreature();
+        Creature* target = handler->getSelectedCreature();
         if (!target)
         {
             handler->SendSysMessage(LANG_SELECT_CREATURE);
@@ -327,13 +327,13 @@ public:
         uint32 factionid = atoi(pfactionid);
         uint32 flag;
 
-        char *pflag = strtok(nullptr, " ");
+        char *pflag = strtok(NULL, " ");
         if (!pflag)
             flag = target->GetUInt32Value(UNIT_FIELD_FLAGS);
         else
             flag = atoi(pflag);
 
-        char* pnpcflag = strtok(nullptr, " ");
+        char* pnpcflag = strtok(NULL, " ");
 
         uint32 npcflag;
         if (!pnpcflag)
@@ -341,7 +341,7 @@ public:
         else
             npcflag = atoi(pnpcflag);
 
-        char* pdyflag = strtok(nullptr, " ");
+        char* pdyflag = strtok(NULL, " ");
 
         uint32  dyflag;
         if (!pdyflag)
@@ -376,17 +376,17 @@ public:
         if (!pspellflatid)
             return false;
 
-        char* pop = strtok(nullptr, " ");
+        char* pop = strtok(NULL, " ");
         if (!pop)
             return false;
 
-        char* pval = strtok(nullptr, " ");
+        char* pval = strtok(NULL, " ");
         if (!pval)
             return false;
 
         uint16 mark;
 
-        char* pmark = strtok(nullptr, " ");
+        char* pmark = strtok(NULL, " ");
 
         uint8 spellflatid = atoi(pspellflatid);
         uint8 op   = atoi(pop);
@@ -396,8 +396,8 @@ public:
         else
             mark = atoi(pmark);
 
-        PlayerPtr target = handler->getSelectedPlayer();
-        if (target == nullptr)
+        Player* target = handler->getSelectedPlayer();
+        if (target == NULL)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
             handler->SetSentErrorMessage(true);
@@ -432,7 +432,7 @@ public:
         if (tp < 0)
             return false;
 
-        UnitPtr target = handler->getSelectedUnit();
+        Unit* target = handler->getSelectedUnit();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -443,21 +443,21 @@ public:
         if (target->GetTypeId() == TYPEID_PLAYER)
         {
             // check online security
-            if (handler->HasLowerSecurity(TO_PLAYER(target), 0))
+            if (handler->HasLowerSecurity(target->ToPlayer(), 0))
                 return false;
-            TO_PLAYER(target)->SetFreeTalentPoints(tp);
-            TO_PLAYER(target)->SendTalentsInfoData(false);
+            target->ToPlayer()->SetFreeTalentPoints(tp);
+            target->ToPlayer()->SendTalentsInfoData(false);
             return true;
         }
         else if (target->ToCreature()->isPet())
         {
-            UnitPtr owner = target->GetOwner();
-            if (owner && owner->GetTypeId() == TYPEID_PLAYER && (TO_PET(target))->IsPermanentPetFor(TO_PLAYER(owner)))
+            Unit* owner = target->GetOwner();
+            if (owner && owner->GetTypeId() == TYPEID_PLAYER && ((Pet*)target)->IsPermanentPetFor(owner->ToPlayer()))
             {
                 // check online security
-                if (handler->HasLowerSecurity(TO_PLAYER(owner), 0))
+                if (handler->HasLowerSecurity(owner->ToPlayer(), 0))
                     return false;
-                TO_PLAYER(owner)->SendTalentsInfoData(true);
+                owner->ToPlayer()->SendTalentsInfoData(true);
                 return true;
             }
         }
@@ -482,7 +482,7 @@ public:
             return false;
         }
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -530,7 +530,7 @@ public:
             return false;
         }
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -575,7 +575,7 @@ public:
             return false;
         }
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -620,7 +620,7 @@ public:
             return false;
         }
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -665,7 +665,7 @@ public:
             return false;
         }
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -700,7 +700,7 @@ public:
             return false;
         }
 
-        UnitPtr target = handler->getSelectedUnit();
+        Unit* target = handler->getSelectedUnit();
         if (!target)
         {
             handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
@@ -708,7 +708,7 @@ public:
             return false;
         }
 
-        if (PlayerPtr player = TO_PLAYER(target))
+        if (Player* player = target->ToPlayer())
         {
             // check online security
             if (handler->HasLowerSecurity(player, 0))
@@ -950,7 +950,7 @@ public:
             return false;
         }
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -1024,7 +1024,7 @@ public:
         if (!*args)
             return false;
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -1086,7 +1086,7 @@ public:
         if (!*args)
             return false;
 
-        UnitPtr target = handler->getSelectedUnit();
+        Unit* target = handler->getSelectedUnit();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -1095,14 +1095,14 @@ public:
         }
 
         // check online security
-        if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(TO_PLAYER(target), 0))
+        if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(target->ToPlayer(), 0))
             return false;
 
         char* pField = strtok((char*)args, " ");
         if (!pField)
             return false;
 
-        char* pBit = strtok(nullptr, " ");
+        char* pBit = strtok(NULL, " ");
         if (!pBit)
             return false;
 
@@ -1140,7 +1140,7 @@ public:
         if (!*args)
             return false;
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -1170,7 +1170,7 @@ public:
         if (drunklevel > 100)
             drunklevel = 100;
 
-        if (PlayerPtr target = handler->getSelectedPlayer())
+        if (Player* target = handler->getSelectedPlayer())
             target->SetDrunkValue(drunklevel);
 
         return true;
@@ -1181,7 +1181,7 @@ public:
         if (!*args)
             return false;
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_PLAYER_NOT_FOUND);
@@ -1200,7 +1200,7 @@ public:
         uint32 factionId = atoi(factionTxt);
 
         int32 amount = 0;
-        char *rankTxt = strtok(nullptr, " ");
+        char *rankTxt = strtok(NULL, " ");
         if (!factionTxt || !rankTxt)
             return false;
 
@@ -1229,7 +1229,7 @@ public:
 
                 if (wrank.substr(0, wrankStr.size()) == wrankStr)
                 {
-                    char *deltaTxt = strtok(nullptr, " ");
+                    char *deltaTxt = strtok(NULL, " ");
                     if (deltaTxt)
                     {
                         int32 delta = atoi(deltaTxt);
@@ -1283,12 +1283,12 @@ public:
 
         uint16 display_id = (uint16)atoi((char*)args);
 
-        UnitPtr target = handler->getSelectedUnit();
+        Unit* target = handler->getSelectedUnit();
         if (!target)
             target = handler->GetSession()->GetPlayer();
 
         // check online security
-        else if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(TO_PLAYER(target), 0))
+        else if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(target->ToPlayer(), 0))
             return false;
 
         target->SetDisplayId(display_id);
@@ -1304,11 +1304,11 @@ public:
 
         uint32 phasemask = (uint32)atoi((char*)args);
 
-        UnitPtr target = handler->getSelectedUnit();	
+        Unit* target = handler->getSelectedUnit();	
         if (target)	
         {	
             if (target->GetTypeId() == TYPEID_PLAYER)	
-                target->THIS_PLAYER()->GetPhaseMgr().SetCustomPhase(phasemask);	
+                target->ToPlayer()->GetPhaseMgr().SetCustomPhase(phasemask);	
             else	
                 target->SetPhaseMask(phasemask, true);	
         }	
@@ -1335,7 +1335,7 @@ public:
         if (!*args)
             return false;
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
 
         if (!target)
         {
@@ -1397,12 +1397,12 @@ public:
             return false;
 
         char* power_str = strtok((char*)args, " ");
-        char* value_str = strtok(nullptr, " ");
+        char* value_str = strtok(NULL, " ");
 
         if (!power_str || !value_str)
             return false;
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
 
         if (!target)
         {
@@ -1425,12 +1425,12 @@ public:
 //demorph player or unit
     static bool HandleDeMorphCommand(ChatHandler* handler, const char* /*args*/)
     {
-        UnitPtr target = handler->getSelectedUnit();
+        Unit* target = handler->getSelectedUnit();
         if (!target)
             target = handler->GetSession()->GetPlayer();
 
         // check online security
-        else if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(TO_PLAYER(target), 0))
+        else if (target->GetTypeId() == TYPEID_PLAYER && handler->HasLowerSecurity(target->ToPlayer(), 0))
             return false;
 
         target->DeMorph();
@@ -1442,7 +1442,7 @@ public:
         if (!*args)
             return false;
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->PSendSysMessage(LANG_PLAYER_NOT_FOUND);

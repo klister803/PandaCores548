@@ -33,12 +33,12 @@ void WorldSession::HandleAttackSwingOpcode(WorldPacket& recvData)
 
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Recvd CMSG_ATTACKSWING Message guidlow:%u guidhigh:%u", GUID_LOPART(guid), GUID_HIPART(guid));
 
-    UnitPtr pEnemy = ObjectAccessor::GetUnit(TO_CONST_WORLDOBJECT(_player), guid);
+    Unit* pEnemy = ObjectAccessor::GetUnit(*_player, guid);
 
     if (!pEnemy)
     {
         // stop attack state at client
-        SendAttackStop(nullptr);
+        SendAttackStop(NULL);
         return;
     }
 
@@ -52,7 +52,7 @@ void WorldSession::HandleAttackSwingOpcode(WorldPacket& recvData)
     //! Client explicitly checks the following before sending CMSG_ATTACKSWING packet,
     //! so we'll place the same check here. Note that it might be possible to reuse this snippet
     //! in other places as well.
-    if (VehiclePtr vehicle = _player->GetVehicle())
+    if (Vehicle* vehicle = _player->GetVehicle())
     {
         VehicleSeatEntry const* seat = vehicle->GetSeatForPassenger(_player);
         ASSERT(seat);
@@ -87,7 +87,7 @@ void WorldSession::HandleSetSheathedOpcode(WorldPacket& recvData)
     GetPlayer()->SetSheath(SheathState(sheathed));
 }
 
-void WorldSession::SendAttackStop(constUnitPtr enemy)
+void WorldSession::SendAttackStop(Unit const* enemy)
 {
     WorldPacket data(SMSG_ATTACKSTOP, (8+8+4));             // we guess size
     data.append(GetPlayer()->GetPackGUID());

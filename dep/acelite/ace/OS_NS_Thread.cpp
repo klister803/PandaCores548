@@ -4226,7 +4226,7 @@ ACE_OS::thr_create (ACE_THR_FUNC func,
   // was PTHREAD_INHERIT_SCHED, then it certainly inherited its
   // parent's priority.  If it was PTHREAD_EXPLICIT_SCHED, then "attr"
   // was initialized by the SunOS ::pthread_attr_init () to contain
-  // nullptr for the priority, which indicated to SunOS ::pthread_create
+  // NULL for the priority, which indicated to SunOS ::pthread_create
   // () to inherit the parent priority.)
   if (priority == 0)
     {

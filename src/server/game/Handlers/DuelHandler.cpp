@@ -28,7 +28,6 @@
 #include "GameObject.h"
 #include "ObjectAccessor.h"
 #include "ObjectMgr.h"
-#include "SpellAuraEffects.h"
 
 void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
 {
@@ -40,14 +39,14 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
     uint8 byteOrder[8] = {3, 4, 1, 5, 0, 2, 7, 6};
     recvPacket.ReadBytesSeq(guid, byteOrder);
 
-    PlayerPtr caster = GetPlayer();
-    UnitPtr unitTarget = nullptr;
+    Player* caster = GetPlayer();
+    Unit* unitTarget = NULL;
 
-    unitTarget = sObjectAccessor->GetUnit(TO_CONST_WORLDOBJECT(caster), guid);
+    unitTarget = sObjectAccessor->GetUnit(*caster, guid);
 
     if (!unitTarget || caster->GetTypeId() != TYPEID_PLAYER || unitTarget->GetTypeId() != TYPEID_PLAYER)
         return;
-    PlayerPtr target = TO_PLAYER(unitTarget);
+    Player* target = unitTarget->ToPlayer();
     // caster or target already have requested duel
     if (caster->duel || target->duel || !target->GetSocial() || target->GetSocial()->HasIgnore(caster->GetGUIDLow()))
         return;
@@ -68,11 +67,11 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
     }
 
     //CREATE DUEL FLAG OBJECT
-    GameObjectPtr pGameObj (new GameObject);
+    GameObject* pGameObj = new GameObject;
 
     uint32 gameobject_id = 21680;//m_spellInfo->Effects[effIndex].MiscValue;
 
-    MapPtr map = caster->GetMap();
+    Map* map = caster->GetMap();
     if (!pGameObj->Create(sObjectMgr->GenerateLowGuid(HIGHGUID_GAMEOBJECT), gameobject_id,
         map, caster->GetPhaseMask(),
         caster->GetPositionX()+(unitTarget->GetPositionX()-caster->GetPositionX())/2,
@@ -125,8 +124,8 @@ void WorldSession::HandleSendDuelRequest(WorldPacket& recvPacket)
 void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
 {
     uint64 guid;
-    PlayerPtr player;
-    PlayerPtr plTarget;
+    Player* player;
+    Player* plTarget;
 
     recvPacket >> guid;
 
@@ -143,7 +142,7 @@ void WorldSession::HandleDuelAcceptedOpcode(WorldPacket& recvPacket)
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Player 1 is: %u (%s)", player->GetGUIDLow(), player->GetName());
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Player 2 is: %u (%s)", plTarget->GetGUIDLow(), plTarget->GetName());
 
-    time_t now = time(nullptr);
+    time_t now = time(NULL);
     player->duel->startTimer = now;
     plTarget->duel->startTimer = now;
 

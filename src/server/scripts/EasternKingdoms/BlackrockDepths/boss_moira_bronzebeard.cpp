@@ -34,14 +34,14 @@ class boss_moira_bronzebeard : public CreatureScript
 public:
     boss_moira_bronzebeard() : CreatureScript("boss_moira_bronzebeard") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_moira_bronzebeardAI (creature);
     }
 
     struct boss_moira_bronzebeardAI : public ScriptedAI
     {
-        boss_moira_bronzebeardAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_moira_bronzebeardAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 Heal_Timer;
         uint32 MindBlast_Timer;
@@ -56,7 +56,7 @@ public:
             Smite_Timer = 8000;
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {

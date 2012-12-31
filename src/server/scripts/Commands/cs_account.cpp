@@ -35,27 +35,27 @@ public:
     {
         static ChatCommand accountSetCommandTable[] =
         {
-            { "addon",          SEC_ADMINISTRATOR,  true,  &HandleAccountSetAddonCommand,     "", nullptr },
-            { "gmlevel",        SEC_CONSOLE,        true,  &HandleAccountSetGmLevelCommand,   "", nullptr },
-            { "password",       SEC_CONSOLE,        true,  &HandleAccountSetPasswordCommand,  "", nullptr },
-            { nullptr,             SEC_PLAYER,         false, nullptr,                              "", nullptr }
+            { "addon",          SEC_ADMINISTRATOR,  true,  &HandleAccountSetAddonCommand,     "", NULL },
+            { "gmlevel",        SEC_CONSOLE,        true,  &HandleAccountSetGmLevelCommand,   "", NULL },
+            { "password",       SEC_CONSOLE,        true,  &HandleAccountSetPasswordCommand,  "", NULL },
+            { NULL,             SEC_PLAYER,         false, NULL,                              "", NULL }
         };
         static ChatCommand accountCommandTable[] =
         {
-            { "addon",          SEC_MODERATOR,      false, &HandleAccountAddonCommand,        "", nullptr },
-            { "create",         SEC_CONSOLE,        true,  &HandleAccountCreateCommand,       "", nullptr },
-            { "delete",         SEC_CONSOLE,        true,  &HandleAccountDeleteCommand,       "", nullptr },
-            { "onlinelist",     SEC_CONSOLE,        true,  &HandleAccountOnlineListCommand,   "", nullptr },
-            { "lock",           SEC_PLAYER,         false, &HandleAccountLockCommand,         "", nullptr },
-            { "set",            SEC_ADMINISTRATOR,  true,  nullptr,            "", accountSetCommandTable },
-            { "password",       SEC_PLAYER,         false, &HandleAccountPasswordCommand,     "", nullptr },
-            { "",               SEC_PLAYER,         false, &HandleAccountCommand,             "", nullptr },
-            { nullptr,             SEC_PLAYER,         false, nullptr,                              "", nullptr }
+            { "addon",          SEC_MODERATOR,      false, &HandleAccountAddonCommand,        "", NULL },
+            { "create",         SEC_CONSOLE,        true,  &HandleAccountCreateCommand,       "", NULL },
+            { "delete",         SEC_CONSOLE,        true,  &HandleAccountDeleteCommand,       "", NULL },
+            { "onlinelist",     SEC_CONSOLE,        true,  &HandleAccountOnlineListCommand,   "", NULL },
+            { "lock",           SEC_PLAYER,         false, &HandleAccountLockCommand,         "", NULL },
+            { "set",            SEC_ADMINISTRATOR,  true,  NULL,            "", accountSetCommandTable },
+            { "password",       SEC_PLAYER,         false, &HandleAccountPasswordCommand,     "", NULL },
+            { "",               SEC_PLAYER,         false, &HandleAccountCommand,             "", NULL },
+            { NULL,             SEC_PLAYER,         false, NULL,                              "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "account",        SEC_PLAYER,         true,  nullptr,     "", accountCommandTable  },
-            { nullptr,             SEC_PLAYER,         false, nullptr,                     "", nullptr }
+            { "account",        SEC_PLAYER,         true,  NULL,     "", accountCommandTable  },
+            { NULL,             SEC_PLAYER,         false, NULL,                     "", NULL }
         };
         return commandTable;
     }
@@ -100,7 +100,7 @@ public:
 
         ///- %Parse the command line arguments
         char* accountName = strtok((char*)args, " ");
-        char* password = strtok(nullptr, " ");
+        char* password = strtok(NULL, " ");
         if (!accountName || !password)
             return false;
 
@@ -168,7 +168,7 @@ public:
         /// Commands not recommended call from chat, but support anyway
         /// can delete only for account with less security
         /// This is also reject self apply in fact
-        if (handler->HasLowerSecurityAccount(nullptr, accountId, true))
+        if (handler->HasLowerSecurityAccount(NULL, accountId, true))
             return false;
 
         AccountOpResult result = AccountMgr::DeleteAccount(accountId);
@@ -290,8 +290,8 @@ public:
         }
 
         char* oldPassword = strtok((char*)args, " ");
-        char* newPassword = strtok(nullptr, " ");
-        char* passwordConfirmation = strtok(nullptr, " ");
+        char* newPassword = strtok(NULL, " ");
+        char* passwordConfirmation = strtok(NULL, " ");
 
         if (!oldPassword || !newPassword || !passwordConfirmation)
         {
@@ -345,7 +345,7 @@ public:
     {
         ///- Get the command line arguments
         char* account = strtok((char*)args, " ");
-        char* exp = strtok(nullptr, " ");
+        char* exp = strtok(NULL, " ");
 
         if (!account)
             return false;
@@ -355,7 +355,7 @@ public:
 
         if (!exp)
         {
-            PlayerPtr player = handler->getSelectedPlayer();
+            Player* player = handler->getSelectedPlayer();
             if (!player)
                 return false;
 
@@ -386,7 +386,7 @@ public:
         // Let set addon state only for lesser (strong) security level
         // or to self account
         if (handler->GetSession() && handler->GetSession()->GetAccountId() != accountId &&
-            handler->HasLowerSecurityAccount(nullptr, accountId, true))
+            handler->HasLowerSecurityAccount(NULL, accountId, true))
             return false;
 
         int expansion = atoi(exp); //get int anyway (0 if error)
@@ -414,8 +414,8 @@ public:
         uint32 targetSecurity = 0;
         uint32 gm = 0;
         char* arg1 = strtok((char*)args, " ");
-        char* arg2 = strtok(nullptr, " ");
-        char* arg3 = strtok(nullptr, " ");
+        char* arg2 = strtok(NULL, " ");
+        char* arg3 = strtok(NULL, " ");
         bool isAccountNameGiven = true;
 
         if (arg1 && !arg3)
@@ -450,7 +450,7 @@ public:
             return false;
         }
 
-        // handler->getSession() == nullptr only for console
+        // handler->getSession() == NULL only for console
         targetAccountId = (isAccountNameGiven) ? AccountMgr::GetId(targetAccountName) : handler->getSelectedPlayer()->GetSession()->GetAccountId();
         int32 gmRealmID = (isAccountNameGiven) ? atoi(arg3) : atoi(arg2);
         uint32 playerSecurity;
@@ -538,8 +538,8 @@ public:
 
         ///- Get the command line arguments
         char* account = strtok((char*)args, " ");
-        char* password = strtok(nullptr, " ");
-        char* passwordConfirmation = strtok(nullptr, " ");
+        char* password = strtok(NULL, " ");
+        char* passwordConfirmation = strtok(NULL, " ");
 
         if (!account || !password || !passwordConfirmation)
             return false;
@@ -562,7 +562,7 @@ public:
 
         /// can set password only for target with less security
         /// This is also reject self apply in fact
-        if (handler->HasLowerSecurityAccount(nullptr, targetAccountId, true))
+        if (handler->HasLowerSecurityAccount(NULL, targetAccountId, true))
             return false;
 
         if (strcmp(password, passwordConfirmation))

@@ -71,7 +71,7 @@ struct OutdoorPvPData;
 #define VISIBLE_RANGE       166.0f                          //MAX visible range (size of grid)
 
 // Generic scripting text function.
-void DoScriptText(int32 textEntry, WorldObjectPtr pSource, UnitPtr target = nullptr);
+void DoScriptText(int32 textEntry, WorldObject* pSource, Unit* target = NULL);
 
 /*
     TODO: Add more script type classes.
@@ -187,7 +187,7 @@ template<class TObject> class UpdatableScript
 
     public:
 
-        virtual void OnUpdate(std::shared_ptr<TObject> /*obj*/, uint32 /*diff*/) { }
+        virtual void OnUpdate(TObject* /*obj*/, uint32 /*diff*/) { }
 };
 
 class SpellScriptLoader : public ScriptObject
@@ -201,10 +201,10 @@ class SpellScriptLoader : public ScriptObject
         bool IsDatabaseBound() const { return true; }
 
         // Should return a fully valid SpellScript pointer.
-        virtual SpellScript* GetSpellScript() const { return nullptr; }
+        virtual SpellScript* GetSpellScript() const { return NULL; }
 
         // Should return a fully valid AuraScript pointer.
-        virtual AuraScript* GetAuraScript() const { return nullptr; }
+        virtual AuraScript* GetAuraScript() const { return NULL; }
 };
 
 class ServerScript : public ScriptObject
@@ -298,7 +298,7 @@ class FormulaScript : public ScriptObject
         virtual void OnBaseGainCalculation(uint32& /*gain*/, uint8 /*playerLevel*/, uint8 /*mobLevel*/, ContentLevels /*content*/) { }
 
         // Called after calculating experience gain.
-        virtual void OnGainCalculation(uint32& /*gain*/, PlayerPtr /*Player*/, UnitPtr /*Unit*/) { }
+        virtual void OnGainCalculation(uint32& /*gain*/, Player* /*player*/, Unit* /*unit*/) { }
 
         // Called when calculating the experience rate for group experience.
         virtual void OnGroupRateCalculation(float& /*rate*/, uint32 /*count*/, bool /*isRaid*/) { }
@@ -319,29 +319,29 @@ template<class TMap> class MapScript : public UpdatableScript<TMap>
 
     public:
 
-        // Gets the MapEntry structure associated with this script. Can return nullptr.
+        // Gets the MapEntry structure associated with this script. Can return NULL.
         MapEntry const* GetEntry() { return _mapEntry; }
 
         // Called when the map is created.
-        virtual void OnCreate(constMapPtr /*Map*/) { }
+        virtual void OnCreate(TMap* /*map*/) { }
 
         // Called just before the map is destroyed.
-        virtual void OnDestroy(constMapPtr /*Map*/) { }
+        virtual void OnDestroy(TMap* /*map*/) { }
 
         // Called when a grid map is loaded.
-        virtual void OnLoadGridMap(constMapPtr /*Map*/, GridMap* /*gMap*/, uint32 /*gx*/, uint32 /*gy*/) { }
+        virtual void OnLoadGridMap(TMap* /*map*/, GridMap* /*gmap*/, uint32 /*gx*/, uint32 /*gy*/) { }
 
         // Called when a grid map is unloaded.
-        virtual void OnUnloadGridMap(constMapPtr /*Map*/, GridMap* /*gMap*/, uint32 /*gx*/, uint32 /*gy*/)  { }
+        virtual void OnUnloadGridMap(TMap* /*map*/, GridMap* /*gmap*/, uint32 /*gx*/, uint32 /*gy*/)  { }
 
         // Called when a player enters the map.
-        virtual void OnPlayerEnter(constMapPtr /*Map*/, PlayerPtr /*Player*/) { }
+        virtual void OnPlayerEnter(TMap* /*map*/, Player* /*player*/) { }
 
         // Called when a player leaves the map.
-        virtual void OnPlayerLeave(constMapPtr /*Map*/, PlayerPtr /*Player*/) { }
+        virtual void OnPlayerLeave(TMap* /*map*/, Player* /*player*/) { }
 
         // Called on every map update tick.
-        virtual void OnUpdate(constMapPtr /*Map*/, uint32 /*diff*/) { }
+        virtual void OnUpdate(TMap* /*map*/, uint32 /*diff*/) { }
 };
 
 class WorldMapScript : public ScriptObject, public MapScript<Map>
@@ -362,7 +362,7 @@ class InstanceMapScript : public ScriptObject, public MapScript<InstanceMap>
         bool IsDatabaseBound() const { return true; }
 
         // Gets an InstanceScript object for this instance.
-        virtual InstanceScript* GetInstanceScript(InstanceMapPtr /*Map*/) const { return nullptr; }
+        virtual InstanceScript* GetInstanceScript(InstanceMap* /*map*/) const { return NULL; }
 };
 
 class BattlegroundMapScript : public ScriptObject, public MapScript<BattlegroundMap>
@@ -383,16 +383,16 @@ class ItemScript : public ScriptObject
         bool IsDatabaseBound() const { return true; }
 
         // Called when a dummy spell effect is triggered on the item.
-        virtual bool OnDummyEffect(UnitPtr /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/, ItemPtr /*target*/) { return false; }
+        virtual bool OnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/, Item* /*target*/) { return false; }
 
         // Called when a player accepts a quest from the item.
-        virtual bool OnQuestAccept(PlayerPtr /*Player*/, ItemPtr /*Item*/, Quest const* /*quest*/) { return false; }
+        virtual bool OnQuestAccept(Player* /*player*/, Item* /*item*/, Quest const* /*quest*/) { return false; }
 
         // Called when a player uses the item.
-        virtual bool OnUse(PlayerPtr /*Player*/, ItemPtr /*Item*/, SpellCastTargets const& /*targets*/) { return false; }
+        virtual bool OnUse(Player* /*player*/, Item* /*item*/, SpellCastTargets const& /*targets*/) { return false; }
 
         // Called when the item expires (is destroyed).
-        virtual bool OnExpire(PlayerPtr /*Player*/, ItemTemplate const* /*proto*/) { return false; }
+        virtual bool OnExpire(Player* /*player*/, ItemTemplate const* /*proto*/) { return false; }
 };
 
 class CreatureScript : public ScriptObject, public UpdatableScript<Creature>
@@ -406,34 +406,34 @@ class CreatureScript : public ScriptObject, public UpdatableScript<Creature>
         bool IsDatabaseBound() const { return true; }
 
         // Called when a dummy spell effect is triggered on the creature.
-        virtual bool OnDummyEffect(UnitPtr /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/, CreaturePtr /*target*/) { return false; }
+        virtual bool OnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/, Creature* /*target*/) { return false; }
 
         // Called when a player opens a gossip dialog with the creature.
-        virtual bool OnGossipHello(PlayerPtr /*Player*/, CreaturePtr /*Creature*/) { return false; }
+        virtual bool OnGossipHello(Player* /*player*/, Creature* /*creature*/) { return false; }
 
         // Called when a player selects a gossip item in the creature's gossip menu.
-        virtual bool OnGossipSelect(PlayerPtr /*Player*/, CreaturePtr /*Creature*/, uint32 /*sender*/, uint32 /*action*/) { return false; }
+        virtual bool OnGossipSelect(Player* /*player*/, Creature* /*creature*/, uint32 /*sender*/, uint32 /*action*/) { return false; }
 
         // Called when a player selects a gossip with a code in the creature's gossip menu.
-        virtual bool OnGossipSelectCode(PlayerPtr /*Player*/, CreaturePtr /*Creature*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { return false; }
+        virtual bool OnGossipSelectCode(Player* /*player*/, Creature* /*creature*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { return false; }
 
         // Called when a player accepts a quest from the creature.
-        virtual bool OnQuestAccept(PlayerPtr /*Player*/, CreaturePtr /*Creature*/, Quest const* /*quest*/) { return false; }
+        virtual bool OnQuestAccept(Player* /*player*/, Creature* /*creature*/, Quest const* /*quest*/) { return false; }
 
         // Called when a player selects a quest in the creature's quest menu.
-        virtual bool OnQuestSelect(PlayerPtr /*Player*/, CreaturePtr /*Creature*/, Quest const* /*quest*/) { return false; }
+        virtual bool OnQuestSelect(Player* /*player*/, Creature* /*creature*/, Quest const* /*quest*/) { return false; }
 
         // Called when a player completes a quest with the creature.
-        virtual bool OnQuestComplete(PlayerPtr /*Player*/, CreaturePtr /*Creature*/, Quest const* /*quest*/) { return false; }
+        virtual bool OnQuestComplete(Player* /*player*/, Creature* /*creature*/, Quest const* /*quest*/) { return false; }
 
         // Called when a player selects a quest reward.
-        virtual bool OnQuestReward(PlayerPtr /*Player*/, CreaturePtr /*Creature*/, Quest const* /*quest*/, uint32 /*opt*/) { return false; }
+        virtual bool OnQuestReward(Player* /*player*/, Creature* /*creature*/, Quest const* /*quest*/, uint32 /*opt*/) { return false; }
 
         // Called when the dialog status between a player and the creature is requested.
-        virtual uint32 GetDialogStatus(PlayerPtr /*Player*/, CreaturePtr /*Creature*/) { return 100; }
+        virtual uint32 GetDialogStatus(Player* /*player*/, Creature* /*creature*/) { return 100; }
 
         // Called when a CreatureAI object is needed for the creature.
-        virtual CreatureAI* GetAI(CreaturePtr /*Creature*/) const { return nullptr; }
+        virtual CreatureAI* GetAI(Creature* /*creature*/) const { return NULL; }
 };
 
 class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
@@ -447,40 +447,40 @@ class GameObjectScript : public ScriptObject, public UpdatableScript<GameObject>
         bool IsDatabaseBound() const { return true; }
 
         // Called when a dummy spell effect is triggered on the gameobject.
-        virtual bool OnDummyEffect(UnitPtr /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/, GameObjectPtr /*target*/) { return false; }
+        virtual bool OnDummyEffect(Unit* /*caster*/, uint32 /*spellId*/, SpellEffIndex /*effIndex*/, GameObject* /*target*/) { return false; }
 
         // Called when a player opens a gossip dialog with the gameobject.
-        virtual bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr /*go*/) { return false; }
+        virtual bool OnGossipHello(Player* /*player*/, GameObject* /*go*/) { return false; }
 
         // Called when a player selects a gossip item in the gameobject's gossip menu.
-        virtual bool OnGossipSelect(PlayerPtr /*Player*/, GameObjectPtr /*go*/, uint32 /*sender*/, uint32 /*action*/) { return false; }
+        virtual bool OnGossipSelect(Player* /*player*/, GameObject* /*go*/, uint32 /*sender*/, uint32 /*action*/) { return false; }
 
         // Called when a player selects a gossip with a code in the gameobject's gossip menu.
-        virtual bool OnGossipSelectCode(PlayerPtr /*Player*/, GameObjectPtr /*go*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { return false; }
+        virtual bool OnGossipSelectCode(Player* /*player*/, GameObject* /*go*/, uint32 /*sender*/, uint32 /*action*/, const char* /*code*/) { return false; }
 
         // Called when a player accepts a quest from the gameobject.
-        virtual bool OnQuestAccept(PlayerPtr /*Player*/, GameObjectPtr /*go*/, Quest const* /*quest*/) { return false; }
+        virtual bool OnQuestAccept(Player* /*player*/, GameObject* /*go*/, Quest const* /*quest*/) { return false; }
 
         // Called when a player selects a quest reward.
-        virtual bool OnQuestReward(PlayerPtr /*Player*/, GameObjectPtr /*go*/, Quest const* /*quest*/, uint32 /*opt*/) { return false; }
+        virtual bool OnQuestReward(Player* /*player*/, GameObject* /*go*/, Quest const* /*quest*/, uint32 /*opt*/) { return false; }
 
         // Called when the dialog status between a player and the gameobject is requested.
-        virtual uint32 GetDialogStatus(PlayerPtr /*Player*/, GameObjectPtr /*go*/) { return 100; }
+        virtual uint32 GetDialogStatus(Player* /*player*/, GameObject* /*go*/) { return 100; }
 
         // Called when the game object is destroyed (destructible buildings only).
-        virtual void OnDestroyed(GameObjectPtr /*go*/, PlayerPtr /*Player*/) { }
+        virtual void OnDestroyed(GameObject* /*go*/, Player* /*player*/) { }
 
         // Called when the game object is damaged (destructible buildings only).
-        virtual void OnDamaged(GameObjectPtr /*go*/, PlayerPtr /*Player*/) { }
+        virtual void OnDamaged(GameObject* /*go*/, Player* /*player*/) { }
 
         // Called when the game object loot state is changed.
-        virtual void OnLootStateChanged(GameObjectPtr /*go*/, uint32 /*state*/, UnitPtr /*Unit*/) { }
+        virtual void OnLootStateChanged(GameObject* /*go*/, uint32 /*state*/, Unit* /*unit*/) { }
 
         // Called when the game object state is changed.
-        virtual void OnGameObjectStateChanged(GameObjectPtr /*go*/, uint32 /*state*/) { }
+        virtual void OnGameObjectStateChanged(GameObject* /*go*/, uint32 /*state*/) { }
 
         // Called when a GameObjectAI object is needed for the gameobject.
-        virtual GameObjectAI* GetAI(GameObjectPtr /*go*/) const { return nullptr; }
+        virtual GameObjectAI* GetAI(GameObject* /*go*/) const { return NULL; }
 };
 
 class AreaTriggerScript : public ScriptObject
@@ -494,7 +494,7 @@ class AreaTriggerScript : public ScriptObject
         bool IsDatabaseBound() const { return true; }
 
         // Called when the area trigger is activated by a player.
-        virtual bool OnTrigger(PlayerPtr /*Player*/, AreaTriggerEntry const* /*trigger*/) { return false; }
+        virtual bool OnTrigger(Player* /*player*/, AreaTriggerEntry const* /*trigger*/) { return false; }
 };
 
 class BattlegroundScript : public ScriptObject
@@ -548,7 +548,7 @@ class WeatherScript : public ScriptObject, public UpdatableScript<Weather>
         bool IsDatabaseBound() const { return true; }
 
         // Called when the weather changes in the zone this script is associated with.
-        virtual void OnChange(WeatherPtr /*Weather*/, WeatherState /*state*/, float /*grade*/) { }
+        virtual void OnChange(Weather* /*weather*/, WeatherState /*state*/, float /*grade*/) { }
 };
 
 class AuctionHouseScript : public ScriptObject
@@ -595,22 +595,22 @@ class VehicleScript : public ScriptObject
     public:
 
         // Called after a vehicle is installed.
-        virtual void OnInstall(VehiclePtr /*veh*/) { }
+        virtual void OnInstall(Vehicle* /*veh*/) { }
 
         // Called after a vehicle is uninstalled.
-        virtual void OnUninstall(VehiclePtr /*veh*/) { }
+        virtual void OnUninstall(Vehicle* /*veh*/) { }
 
         // Called when a vehicle resets.
-        virtual void OnReset(VehiclePtr /*veh*/) { }
+        virtual void OnReset(Vehicle* /*veh*/) { }
 
         // Called after an accessory is installed in a vehicle.
-        virtual void OnInstallAccessory(VehiclePtr /*veh*/, CreaturePtr /*accessory*/) { }
+        virtual void OnInstallAccessory(Vehicle* /*veh*/, Creature* /*accessory*/) { }
 
         // Called after a passenger is added to a vehicle.
-        virtual void OnAddPassenger(VehiclePtr /*veh*/, UnitPtr /*passenger*/, int8 /*seatId*/) { }
+        virtual void OnAddPassenger(Vehicle* /*veh*/, Unit* /*passenger*/, int8 /*seatId*/) { }
 
         // Called after a passenger is removed from a vehicle.
-        virtual void OnRemovePassenger(VehiclePtr /*veh*/, UnitPtr /*passenger*/) { }
+        virtual void OnRemovePassenger(Vehicle* /*veh*/, Unit* /*passenger*/) { }
 };
 
 class DynamicObjectScript : public ScriptObject, public UpdatableScript<DynamicObject>
@@ -631,16 +631,16 @@ class TransportScript : public ScriptObject, public UpdatableScript<Transport>
         bool IsDatabaseBound() const { return true; }
 
         // Called when a player boards the transport.
-        virtual void OnAddPassenger(TransportPtr /*Transport*/, PlayerPtr /*Player*/) { }
+        virtual void OnAddPassenger(Transport* /*transport*/, Player* /*player*/) { }
 
         // Called when a creature boards the transport.
-        virtual void OnAddCreaturePassenger(TransportPtr /*Transport*/, CreaturePtr /*Creature*/) { }
+        virtual void OnAddCreaturePassenger(Transport* /*transport*/, Creature* /*creature*/) { }
 
         // Called when a player exits the transport.
-        virtual void OnRemovePassenger(TransportPtr /*Transport*/, PlayerPtr /*Player*/) { }
+        virtual void OnRemovePassenger(Transport* /*transport*/, Player* /*player*/) { }
 
         // Called when a transport moves.
-        virtual void OnRelocate(TransportPtr /*Transport*/, uint32 /*waypointId*/, uint32 /*mapId*/, float /*x*/, float /*y*/, float /*z*/) { }
+        virtual void OnRelocate(Transport* /*transport*/, uint32 /*waypointId*/, uint32 /*mapId*/, float /*x*/, float /*y*/, float /*z*/) { }
 };
 
 class AchievementCriteriaScript : public ScriptObject
@@ -654,7 +654,7 @@ class AchievementCriteriaScript : public ScriptObject
         bool IsDatabaseBound() const { return true; }
 
         // Called when an additional criteria is checked.
-        virtual bool OnCheck(PlayerPtr source, UnitPtr target) = 0;
+        virtual bool OnCheck(Player* source, Unit* target) = 0;
 };
 
 class PlayerScript : public ScriptObject
@@ -666,77 +666,77 @@ class PlayerScript : public ScriptObject
     public:
 
         // Called when a player kills another player
-        virtual void OnPVPKill(PlayerPtr /*killer*/, PlayerPtr /*killed*/) { }
+        virtual void OnPVPKill(Player* /*killer*/, Player* /*killed*/) { }
 
         // Called when a player kills a creature
-        virtual void OnCreatureKill(PlayerPtr /*killer*/, CreaturePtr /*killed*/) { }
+        virtual void OnCreatureKill(Player* /*killer*/, Creature* /*killed*/) { }
 
         // Called when a player is killed by a creature
-        virtual void OnPlayerKilledByCreature(CreaturePtr /*killer*/, PlayerPtr /*killed*/) { }
+        virtual void OnPlayerKilledByCreature(Creature* /*killer*/, Player* /*killed*/) { }
 
         // Called when a player's level changes (right before the level is applied)
-        virtual void OnLevelChanged(PlayerPtr /*Player*/, uint8 /*newLevel*/) { }
+        virtual void OnLevelChanged(Player* /*player*/, uint8 /*newLevel*/) { }
 
         // Called when a player's free talent points change (right before the change is applied)
-        virtual void OnFreeTalentPointsChanged(PlayerPtr /*Player*/, uint32 /*points*/) { }
+        virtual void OnFreeTalentPointsChanged(Player* /*player*/, uint32 /*points*/) { }
 
         // Called when a player's talent points are reset (right before the reset is done)
-        virtual void OnTalentsReset(PlayerPtr /*Player*/, bool /*noCost*/) { }
+        virtual void OnTalentsReset(Player* /*player*/, bool /*noCost*/) { }
 
         // Called when a player's money is modified (before the modification is done)
-        virtual void OnMoneyChanged(PlayerPtr /*Player*/, int64& /*amount*/) { }
+        virtual void OnMoneyChanged(Player* /*player*/, int64& /*amount*/) { }
 
         // Called when a player gains XP (before anything is given)
-        virtual void OnGiveXP(PlayerPtr /*Player*/, uint32& /*amount*/, UnitPtr /*victim*/) { }
+        virtual void OnGiveXP(Player* /*player*/, uint32& /*amount*/, Unit* /*victim*/) { }
 
         // Called when a player's reputation changes (before it is actually changed)
-        virtual void OnReputationChange(PlayerPtr /*Player*/, uint32 /*factionId*/, int32& /*standing*/, bool /*incremental*/) { }
+        virtual void OnReputationChange(Player* /*player*/, uint32 /*factionId*/, int32& /*standing*/, bool /*incremental*/) { }
 
         // Called when a duel is requested
-        virtual void OnDuelRequest(PlayerPtr /*target*/, PlayerPtr /*challenger*/) { }
+        virtual void OnDuelRequest(Player* /*target*/, Player* /*challenger*/) { }
 
         // Called when a duel starts (after 3s countdown)
-        virtual void OnDuelStart(PlayerPtr /*player1*/, PlayerPtr /*player2*/) { }
+        virtual void OnDuelStart(Player* /*player1*/, Player* /*player2*/) { }
 
         // Called when a duel ends
-        virtual void OnDuelEnd(PlayerPtr /*winner*/, PlayerPtr /*loser*/, DuelCompleteType /*type*/) { }
+        virtual void OnDuelEnd(Player* /*winner*/, Player* /*loser*/, DuelCompleteType /*type*/) { }
 
         // The following methods are called when a player sends a chat message.
-        virtual void OnChat(PlayerPtr /*Player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/) { }
+        virtual void OnChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/) { }
 
-        virtual void OnChat(PlayerPtr /*Player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, PlayerPtr /*receiver*/) { }
+        virtual void OnChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, Player* /*receiver*/) { }
 
-        virtual void OnChat(PlayerPtr /*Player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, GroupPtr /*Group*/) { }
+        virtual void OnChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, Group* /*group*/) { }
 
-        virtual void OnChat(PlayerPtr /*Player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, GuildPtr /*Guild*/) { }
+        virtual void OnChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, Guild* /*guild*/) { }
 
-        virtual void OnChat(PlayerPtr /*Player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, Channel* /*channel*/) { }
+        virtual void OnChat(Player* /*player*/, uint32 /*type*/, uint32 /*lang*/, std::string& /*msg*/, Channel* /*channel*/) { }
 
         // Both of the below are called on emote opcodes.
-        virtual void OnEmote(PlayerPtr /*Player*/, uint32 /*emote*/) { }
+        virtual void OnEmote(Player* /*player*/, uint32 /*emote*/) { }
 
-        virtual void OnTextEmote(PlayerPtr /*Player*/, uint32 /*textEmote*/, uint32 /*emoteNum*/, uint64 /*guid*/) { }
+        virtual void OnTextEmote(Player* /*player*/, uint32 /*textEmote*/, uint32 /*emoteNum*/, uint64 /*guid*/) { }
 
         // Called in Spell::Cast.
-        virtual void OnSpellCast(PlayerPtr /*Player*/, Spell* /*spell*/, bool /*skipCheck*/) { }
+        virtual void OnSpellCast(Player* /*player*/, Spell* /*spell*/, bool /*skipCheck*/) { }
 
         // Called when a player logs in.
-        virtual void OnLogin(PlayerPtr /*Player*/) { }
+        virtual void OnLogin(Player* /*player*/) { }
 
         // Called when a player logs out.
-        virtual void OnLogout(PlayerPtr /*Player*/) { }
+        virtual void OnLogout(Player* /*player*/) { }
 
         // Called when a player is created.
-        virtual void OnCreate(PlayerPtr /*Player*/) { }
+        virtual void OnCreate(Player* /*player*/) { }
 
         // Called when a player is deleted.
         virtual void OnDelete(uint64 /*guid*/) { }
 
         // Called when a player is bound to an instance
-        virtual void OnBindToInstance(PlayerPtr /*Player*/, Difficulty /*difficulty*/, uint32 /*mapId*/, bool /*permanent*/) { }
+        virtual void OnBindToInstance(Player* /*player*/, Difficulty /*difficulty*/, uint32 /*mapId*/, bool /*permanent*/) { }
 
         // Called when a player switches to a new zone
-        virtual void OnUpdateZone(PlayerPtr /*Player*/, uint32 /*newZone*/, uint32 /*newArea*/) { }
+        virtual void OnUpdateZone(Player* /*player*/, uint32 /*newZone*/, uint32 /*newArea*/) { }
 };
 
 class GuildScript : public ScriptObject
@@ -750,36 +750,36 @@ class GuildScript : public ScriptObject
         bool IsDatabaseBound() const { return false; }
 
         // Called when a member is added to the guild.
-        virtual void OnAddMember(GuildPtr /*Guild*/, PlayerPtr /*Player*/, uint8& /*plRank*/) { }
+        virtual void OnAddMember(Guild* /*guild*/, Player* /*player*/, uint8& /*plRank*/) { }
 
         // Called when a member is removed from the guild.
-        virtual void OnRemoveMember(GuildPtr /*Guild*/, PlayerPtr /*Player*/, bool /*isDisbanding*/, bool /*isKicked*/) { }
+        virtual void OnRemoveMember(Guild* /*guild*/, Player* /*player*/, bool /*isDisbanding*/, bool /*isKicked*/) { }
 
         // Called when the guild MOTD (message of the day) changes.
-        virtual void OnMOTDChanged(GuildPtr /*Guild*/, const std::string& /*newMotd*/) { }
+        virtual void OnMOTDChanged(Guild* /*guild*/, const std::string& /*newMotd*/) { }
 
         // Called when the guild info is altered.
-        virtual void OnInfoChanged(GuildPtr /*Guild*/, const std::string& /*newInfo*/) { }
+        virtual void OnInfoChanged(Guild* /*guild*/, const std::string& /*newInfo*/) { }
 
         // Called when a guild is created.
-        virtual void OnCreate(GuildPtr /*Guild*/, PlayerPtr /*leader*/, const std::string& /*name*/) { }
+        virtual void OnCreate(Guild* /*guild*/, Player* /*leader*/, const std::string& /*name*/) { }
 
         // Called when a guild is disbanded.
-        virtual void OnDisband(GuildPtr /*Guild*/) { }
+        virtual void OnDisband(Guild* /*guild*/) { }
 
         // Called when a guild member withdraws money from a guild bank.
-        virtual void OnMemberWitdrawMoney(GuildPtr /*Guild*/, PlayerPtr /*Player*/, uint32& /*amount*/, bool /*isRepair*/) { }
+        virtual void OnMemberWitdrawMoney(Guild* /*guild*/, Player* /*player*/, uint32& /*amount*/, bool /*isRepair*/) { }
 
         // Called when a guild member deposits money in a guild bank.
-        virtual void OnMemberDepositMoney(GuildPtr /*Guild*/, PlayerPtr /*Player*/, uint32& /*amount*/) { }
+        virtual void OnMemberDepositMoney(Guild* /*guild*/, Player* /*player*/, uint32& /*amount*/) { }
 
         // Called when a guild member moves an item in a guild bank.
-        virtual void OnItemMove(GuildPtr /*Guild*/, PlayerPtr /*Player*/, ItemPtr /*pItem*/, bool /*isSrcBank*/, uint8 /*srcContainer*/, uint8 /*srcSlotId*/,
+        virtual void OnItemMove(Guild* /*guild*/, Player* /*player*/, Item* /*pItem*/, bool /*isSrcBank*/, uint8 /*srcContainer*/, uint8 /*srcSlotId*/,
             bool /*isDestBank*/, uint8 /*destContainer*/, uint8 /*destSlotId*/) { }
 
-        virtual void OnEvent(GuildPtr /*Guild*/, uint8 /*eventType*/, uint32 /*playerGuid1*/, uint32 /*playerGuid2*/, uint8 /*newRank*/) { }
+        virtual void OnEvent(Guild* /*guild*/, uint8 /*eventType*/, uint32 /*playerGuid1*/, uint32 /*playerGuid2*/, uint8 /*newRank*/) { }
 
-        virtual void OnBankEvent(GuildPtr /*Guild*/, uint8 /*eventType*/, uint8 /*tabId*/, uint32 /*playerGuid*/, uint32 /*itemOrMoney*/, uint16 /*itemStackCount*/, uint8 /*destTabId*/) { }
+        virtual void OnBankEvent(Guild* /*guild*/, uint8 /*eventType*/, uint8 /*tabId*/, uint32 /*playerGuid*/, uint32 /*itemOrMoney*/, uint16 /*itemStackCount*/, uint8 /*destTabId*/) { }
 };
 
 class GroupScript : public ScriptObject
@@ -793,19 +793,19 @@ class GroupScript : public ScriptObject
         bool IsDatabaseBound() const { return false; }
 
         // Called when a member is added to a group.
-        virtual void OnAddMember(GroupPtr /*Group*/, uint64 /*guid*/) { }
+        virtual void OnAddMember(Group* /*group*/, uint64 /*guid*/) { }
 
         // Called when a member is invited to join a group.
-        virtual void OnInviteMember(GroupPtr /*Group*/, uint64 /*guid*/) { }
+        virtual void OnInviteMember(Group* /*group*/, uint64 /*guid*/) { }
 
         // Called when a member is removed from a group.
-        virtual void OnRemoveMember(GroupPtr /*Group*/, uint64 /*guid*/, RemoveMethod /*method*/, uint64 /*kicker*/, const char* /*reason*/) { }
+        virtual void OnRemoveMember(Group* /*group*/, uint64 /*guid*/, RemoveMethod /*method*/, uint64 /*kicker*/, const char* /*reason*/) { }
 
         // Called when the leader of a group is changed.
-        virtual void OnChangeLeader(GroupPtr /*Group*/, uint64 /*newLeaderGuid*/, uint64 /*oldLeaderGuid*/) { }
+        virtual void OnChangeLeader(Group* /*group*/, uint64 /*newLeaderGuid*/, uint64 /*oldLeaderGuid*/) { }
 
         // Called when a group is disbanded.
-        virtual void OnDisband(GroupPtr /*Group*/) { }
+        virtual void OnDisband(Group* /*group*/) { }
 };
 
 // Placed here due to ScriptRegistry::AddScript dependency.
@@ -871,63 +871,63 @@ class ScriptMgr
         void OnColorCodeCalculation(XPColorChar& color, uint8 playerLevel, uint8 mobLevel);
         void OnZeroDifferenceCalculation(uint8& diff, uint8 playerLevel);
         void OnBaseGainCalculation(uint32& gain, uint8 playerLevel, uint8 mobLevel, ContentLevels content);
-        void OnGainCalculation(uint32& gain, PlayerPtr player, UnitPtr unit);
+        void OnGainCalculation(uint32& gain, Player* player, Unit* unit);
         void OnGroupRateCalculation(float& rate, uint32 count, bool isRaid);
 
     public: /* MapScript */
 
-        void OnCreateMap(MapPtr map);
-        void OnDestroyMap(MapPtr map);
-        void OnLoadGridMap(MapPtr map, GridMap* gmap, uint32 gx, uint32 gy);
-        void OnUnloadGridMap(MapPtr map, GridMap* gmap, uint32 gx, uint32 gy);
-        void OnPlayerEnterMap(MapPtr map, PlayerPtr player);
-        void OnPlayerLeaveMap(MapPtr map, PlayerPtr player);
-        void OnMapUpdate(MapPtr map, uint32 diff);
+        void OnCreateMap(Map* map);
+        void OnDestroyMap(Map* map);
+        void OnLoadGridMap(Map* map, GridMap* gmap, uint32 gx, uint32 gy);
+        void OnUnloadGridMap(Map* map, GridMap* gmap, uint32 gx, uint32 gy);
+        void OnPlayerEnterMap(Map* map, Player* player);
+        void OnPlayerLeaveMap(Map* map, Player* player);
+        void OnMapUpdate(Map* map, uint32 diff);
 
     public: /* InstanceMapScript */
 
-        InstanceScript* CreateInstanceData(InstanceMapPtr map);
+        InstanceScript* CreateInstanceData(InstanceMap* map);
 
     public: /* ItemScript */
 
-        bool OnDummyEffect(UnitPtr caster, uint32 spellId, SpellEffIndex effIndex, ItemPtr target);
-        bool OnQuestAccept(PlayerPtr player, ItemPtr item, Quest const* quest);
-        bool OnItemUse(PlayerPtr player, ItemPtr item, SpellCastTargets const& targets);
-        bool OnItemExpire(PlayerPtr player, ItemTemplate const* proto);
+        bool OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effIndex, Item* target);
+        bool OnQuestAccept(Player* player, Item* item, Quest const* quest);
+        bool OnItemUse(Player* player, Item* item, SpellCastTargets const& targets);
+        bool OnItemExpire(Player* player, ItemTemplate const* proto);
 
     public: /* CreatureScript */
 
-        bool OnDummyEffect(UnitPtr caster, uint32 spellId, SpellEffIndex effIndex, CreaturePtr target);
-        bool OnGossipHello(PlayerPtr player, CreaturePtr creature);
-        bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 sender, uint32 action);
-        bool OnGossipSelectCode(PlayerPtr player, CreaturePtr creature, uint32 sender, uint32 action, const char* code);
-        bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest);
-        bool OnQuestSelect(PlayerPtr player, CreaturePtr creature, Quest const* quest);
-        bool OnQuestComplete(PlayerPtr player, CreaturePtr creature, Quest const* quest);
-        bool OnQuestReward(PlayerPtr player, CreaturePtr creature, Quest const* quest, uint32 opt);
-        uint32 GetDialogStatus(PlayerPtr player, CreaturePtr creature);
-        CreatureAI* GetCreatureAI(CreaturePtr creature);
-        void OnCreatureUpdate(CreaturePtr creature, uint32 diff);
+        bool OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effIndex, Creature* target);
+        bool OnGossipHello(Player* player, Creature* creature);
+        bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action);
+        bool OnGossipSelectCode(Player* player, Creature* creature, uint32 sender, uint32 action, const char* code);
+        bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest);
+        bool OnQuestSelect(Player* player, Creature* creature, Quest const* quest);
+        bool OnQuestComplete(Player* player, Creature* creature, Quest const* quest);
+        bool OnQuestReward(Player* player, Creature* creature, Quest const* quest, uint32 opt);
+        uint32 GetDialogStatus(Player* player, Creature* creature);
+        CreatureAI* GetCreatureAI(Creature* creature);
+        void OnCreatureUpdate(Creature* creature, uint32 diff);
 
     public: /* GameObjectScript */
 
-        bool OnDummyEffect(UnitPtr caster, uint32 spellId, SpellEffIndex effIndex, GameObjectPtr target);
-        bool OnGossipHello(PlayerPtr player, GameObjectPtr go);
-        bool OnGossipSelect(PlayerPtr player, GameObjectPtr go, uint32 sender, uint32 action);
-        bool OnGossipSelectCode(PlayerPtr player, GameObjectPtr go, uint32 sender, uint32 action, const char* code);
-        bool OnQuestAccept(PlayerPtr player, GameObjectPtr go, Quest const* quest);
-        bool OnQuestReward(PlayerPtr player, GameObjectPtr go, Quest const* quest, uint32 opt);
-        uint32 GetDialogStatus(PlayerPtr player, GameObjectPtr go);
-        void OnGameObjectDestroyed(GameObjectPtr go, PlayerPtr player);
-        void OnGameObjectDamaged(GameObjectPtr go, PlayerPtr player);
-        void OnGameObjectLootStateChanged(GameObjectPtr go, uint32 state, UnitPtr unit);
-        void OnGameObjectStateChanged(GameObjectPtr go, uint32 state);
-        void OnGameObjectUpdate(GameObjectPtr go, uint32 diff);
-        GameObjectAI* GetGameObjectAI(GameObjectPtr go);
+        bool OnDummyEffect(Unit* caster, uint32 spellId, SpellEffIndex effIndex, GameObject* target);
+        bool OnGossipHello(Player* player, GameObject* go);
+        bool OnGossipSelect(Player* player, GameObject* go, uint32 sender, uint32 action);
+        bool OnGossipSelectCode(Player* player, GameObject* go, uint32 sender, uint32 action, const char* code);
+        bool OnQuestAccept(Player* player, GameObject* go, Quest const* quest);
+        bool OnQuestReward(Player* player, GameObject* go, Quest const* quest, uint32 opt);
+        uint32 GetDialogStatus(Player* player, GameObject* go);
+        void OnGameObjectDestroyed(GameObject* go, Player* player);
+        void OnGameObjectDamaged(GameObject* go, Player* player);
+        void OnGameObjectLootStateChanged(GameObject* go, uint32 state, Unit* unit);
+        void OnGameObjectStateChanged(GameObject* go, uint32 state);
+        void OnGameObjectUpdate(GameObject* go, uint32 diff);
+        GameObjectAI* GetGameObjectAI(GameObject* go);
 
     public: /* AreaTriggerScript */
 
-        bool OnAreaTrigger(PlayerPtr player, AreaTriggerEntry const* trigger);
+        bool OnAreaTrigger(Player* player, AreaTriggerEntry const* trigger);
 
     public: /* BattlegroundScript */
 
@@ -943,8 +943,8 @@ class ScriptMgr
 
     public: /* WeatherScript */
 
-        void OnWeatherChange(WeatherPtr weather, WeatherState state, float grade);
-        void OnWeatherUpdate(WeatherPtr weather, uint32 diff);
+        void OnWeatherChange(Weather* weather, WeatherState state, float grade);
+        void OnWeatherUpdate(Weather* weather, uint32 diff);
 
     public: /* AuctionHouseScript */
 
@@ -959,80 +959,80 @@ class ScriptMgr
 
     public: /* VehicleScript */
 
-        void OnInstall(VehiclePtr veh);
-        void OnUninstall(VehiclePtr veh);
-        void OnReset(VehiclePtr veh);
-        void OnInstallAccessory(VehiclePtr veh, CreaturePtr accessory);
-        void OnAddPassenger(VehiclePtr veh, UnitPtr passenger, int8 seatId);
-        void OnRemovePassenger(VehiclePtr veh, UnitPtr passenger);
+        void OnInstall(Vehicle* veh);
+        void OnUninstall(Vehicle* veh);
+        void OnReset(Vehicle* veh);
+        void OnInstallAccessory(Vehicle* veh, Creature* accessory);
+        void OnAddPassenger(Vehicle* veh, Unit* passenger, int8 seatId);
+        void OnRemovePassenger(Vehicle* veh, Unit* passenger);
 
     public: /* DynamicObjectScript */
 
-        void OnDynamicObjectUpdate(DynamicObjectPtr dynobj, uint32 diff);
+        void OnDynamicObjectUpdate(DynamicObject* dynobj, uint32 diff);
 
     public: /* TransportScript */
 
-        void OnAddPassenger(TransportPtr transport, PlayerPtr player);
-        void OnAddCreaturePassenger(TransportPtr transport, CreaturePtr creature);
-        void OnRemovePassenger(TransportPtr transport, PlayerPtr player);
-        void OnTransportUpdate(TransportPtr transport, uint32 diff);
-        void OnRelocate(TransportPtr transport, uint32 waypointId, uint32 mapId, float x, float y, float z);
+        void OnAddPassenger(Transport* transport, Player* player);
+        void OnAddCreaturePassenger(Transport* transport, Creature* creature);
+        void OnRemovePassenger(Transport* transport, Player* player);
+        void OnTransportUpdate(Transport* transport, uint32 diff);
+        void OnRelocate(Transport* transport, uint32 waypointId, uint32 mapId, float x, float y, float z);
 
     public: /* AchievementCriteriaScript */
 
-        bool OnCriteriaCheck(AchievementCriteriaData const* data, PlayerPtr source, UnitPtr target);
+        bool OnCriteriaCheck(AchievementCriteriaData const* data, Player* source, Unit* target);
 
     public: /* PlayerScript */
 
-        void OnPVPKill(PlayerPtr killer, PlayerPtr killed);
-        void OnCreatureKill(PlayerPtr killer, CreaturePtr killed);
-        void OnPlayerKilledByCreature(CreaturePtr killer, PlayerPtr killed);
-        void OnPlayerLevelChanged(PlayerPtr player, uint8 oldLevel);
-        void OnPlayerFreeTalentPointsChanged(PlayerPtr player, uint32 newPoints);
-        void OnPlayerTalentsReset(PlayerPtr player, bool noCost);
-        void OnPlayerMoneyChanged(PlayerPtr player, int64& amount);
-        void OnGivePlayerXP(PlayerPtr player, uint32& amount, UnitPtr victim);
-        void OnPlayerReputationChange(PlayerPtr player, uint32 factionID, int32& standing, bool incremental);
-        void OnPlayerDuelRequest(PlayerPtr target, PlayerPtr challenger);
-        void OnPlayerDuelStart(PlayerPtr player1, PlayerPtr player2);
-        void OnPlayerDuelEnd(PlayerPtr winner, PlayerPtr loser, DuelCompleteType type);
-        void OnPlayerChat(PlayerPtr player, uint32 type, uint32 lang, std::string& msg);
-        void OnPlayerChat(PlayerPtr player, uint32 type, uint32 lang, std::string& msg, PlayerPtr receiver);
-        void OnPlayerChat(PlayerPtr player, uint32 type, uint32 lang, std::string& msg, GroupPtr group);
-        void OnPlayerChat(PlayerPtr player, uint32 type, uint32 lang, std::string& msg, GuildPtr guild);
-        void OnPlayerChat(PlayerPtr player, uint32 type, uint32 lang, std::string& msg, Channel* channel);
-        void OnPlayerEmote(PlayerPtr player, uint32 emote);
-        void OnPlayerTextEmote(PlayerPtr player, uint32 textEmote, uint32 emoteNum, uint64 guid);
-        void OnPlayerSpellCast(PlayerPtr player, Spell* spell, bool skipCheck);
-        void OnPlayerLogin(PlayerPtr player);
-        void OnPlayerLogout(PlayerPtr player);
-        void OnPlayerCreate(PlayerPtr player);
+        void OnPVPKill(Player* killer, Player* killed);
+        void OnCreatureKill(Player* killer, Creature* killed);
+        void OnPlayerKilledByCreature(Creature* killer, Player* killed);
+        void OnPlayerLevelChanged(Player* player, uint8 oldLevel);
+        void OnPlayerFreeTalentPointsChanged(Player* player, uint32 newPoints);
+        void OnPlayerTalentsReset(Player* player, bool noCost);
+        void OnPlayerMoneyChanged(Player* player, int64& amount);
+        void OnGivePlayerXP(Player* player, uint32& amount, Unit* victim);
+        void OnPlayerReputationChange(Player* player, uint32 factionID, int32& standing, bool incremental);
+        void OnPlayerDuelRequest(Player* target, Player* challenger);
+        void OnPlayerDuelStart(Player* player1, Player* player2);
+        void OnPlayerDuelEnd(Player* winner, Player* loser, DuelCompleteType type);
+        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg);
+        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Player* receiver);
+        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Group* group);
+        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Guild* guild);
+        void OnPlayerChat(Player* player, uint32 type, uint32 lang, std::string& msg, Channel* channel);
+        void OnPlayerEmote(Player* player, uint32 emote);
+        void OnPlayerTextEmote(Player* player, uint32 textEmote, uint32 emoteNum, uint64 guid);
+        void OnPlayerSpellCast(Player* player, Spell* spell, bool skipCheck);
+        void OnPlayerLogin(Player* player);
+        void OnPlayerLogout(Player* player);
+        void OnPlayerCreate(Player* player);
         void OnPlayerDelete(uint64 guid);
-        void OnPlayerBindToInstance(PlayerPtr player, Difficulty difficulty, uint32 mapid, bool permanent);
-        void OnPlayerUpdateZone(PlayerPtr player, uint32 newZone, uint32 newArea);
+        void OnPlayerBindToInstance(Player* player, Difficulty difficulty, uint32 mapid, bool permanent);
+        void OnPlayerUpdateZone(Player* player, uint32 newZone, uint32 newArea);
 
     public: /* GuildScript */
 
-        void OnGuildAddMember(GuildPtr guild, PlayerPtr player, uint8& plRank);
-        void OnGuildRemoveMember(GuildPtr guild, PlayerPtr player, bool isDisbanding, bool isKicked);
-        void OnGuildMOTDChanged(GuildPtr guild, const std::string& newMotd);
-        void OnGuildInfoChanged(GuildPtr guild, const std::string& newInfo);
-        void OnGuildCreate(GuildPtr guild, PlayerPtr leader, const std::string& name);
-        void OnGuildDisband(GuildPtr guild);
-        void OnGuildMemberWitdrawMoney(GuildPtr guild, PlayerPtr player, uint32 &amount, bool isRepair);
-        void OnGuildMemberDepositMoney(GuildPtr guild, PlayerPtr player, uint32 &amount);
-        void OnGuildItemMove(GuildPtr guild, PlayerPtr player, ItemPtr pItem, bool isSrcBank, uint8 srcContainer, uint8 srcSlotId,
+        void OnGuildAddMember(Guild* guild, Player* player, uint8& plRank);
+        void OnGuildRemoveMember(Guild* guild, Player* player, bool isDisbanding, bool isKicked);
+        void OnGuildMOTDChanged(Guild* guild, const std::string& newMotd);
+        void OnGuildInfoChanged(Guild* guild, const std::string& newInfo);
+        void OnGuildCreate(Guild* guild, Player* leader, const std::string& name);
+        void OnGuildDisband(Guild* guild);
+        void OnGuildMemberWitdrawMoney(Guild* guild, Player* player, uint32 &amount, bool isRepair);
+        void OnGuildMemberDepositMoney(Guild* guild, Player* player, uint32 &amount);
+        void OnGuildItemMove(Guild* guild, Player* player, Item* pItem, bool isSrcBank, uint8 srcContainer, uint8 srcSlotId,
             bool isDestBank, uint8 destContainer, uint8 destSlotId);
-        void OnGuildEvent(GuildPtr guild, uint8 eventType, uint32 playerGuid1, uint32 playerGuid2, uint8 newRank);
-        void OnGuildBankEvent(GuildPtr guild, uint8 eventType, uint8 tabId, uint32 playerGuid, uint32 itemOrMoney, uint16 itemStackCount, uint8 destTabId);
+        void OnGuildEvent(Guild* guild, uint8 eventType, uint32 playerGuid1, uint32 playerGuid2, uint8 newRank);
+        void OnGuildBankEvent(Guild* guild, uint8 eventType, uint8 tabId, uint32 playerGuid, uint32 itemOrMoney, uint16 itemStackCount, uint8 destTabId);
 
     public: /* GroupScript */
 
-        void OnGroupAddMember(GroupPtr group, uint64 guid);
-        void OnGroupInviteMember(GroupPtr group, uint64 guid);
-        void OnGroupRemoveMember(GroupPtr group, uint64 guid, RemoveMethod method, uint64 kicker, const char* reason);
-        void OnGroupChangeLeader(GroupPtr group, uint64 newLeaderGuid, uint64 oldLeaderGuid);
-        void OnGroupDisband(GroupPtr group);
+        void OnGroupAddMember(Group* group, uint64 guid);
+        void OnGroupInviteMember(Group* group, uint64 guid);
+        void OnGroupRemoveMember(Group* group, uint64 guid, RemoveMethod method, uint64 kicker, const char* reason);
+        void OnGroupChangeLeader(Group* group, uint64 newLeaderGuid, uint64 oldLeaderGuid);
+        void OnGroupDisband(Group* group);
 
     public: /* Scheduled scripts */
 

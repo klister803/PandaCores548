@@ -69,14 +69,14 @@ class boss_ionar : public CreatureScript
 public:
     boss_ionar() : CreatureScript("boss_ionar") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_ionarAI(creature);
     }
 
     struct boss_ionarAI : public ScriptedAI
     {
-        boss_ionarAI(CreaturePtr creature) : ScriptedAI(creature), lSparkList(creature)
+        boss_ionarAI(Creature* creature) : ScriptedAI(creature), lSparkList(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -118,7 +118,7 @@ public:
                 instance->SetData(TYPE_IONAR, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             Talk(SAY_AGGRO);
 
@@ -126,7 +126,7 @@ public:
                 instance->SetData(TYPE_IONAR, IN_PROGRESS);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             Talk(SAY_DEATH);
 
@@ -136,12 +136,12 @@ public:
                 instance->SetData(TYPE_IONAR, DONE);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             Talk(SAY_SLAY);
         }
 
-        void SpellHit(UnitPtr /*caster*/, const SpellInfo* spell)
+        void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_DISPERSE)
             {
@@ -169,7 +169,7 @@ public:
 
             for (std::list<uint64>::const_iterator itr = lSparkList.begin(); itr != lSparkList.end(); ++itr)
             {
-                if (CreaturePtr pSpark = Unit::GetCreature(TO_WORLDOBJECT(me), *itr))
+                if (Creature* pSpark = Unit::GetCreature(*me, *itr))
                 {
                     if (pSpark->isAlive())
                     {
@@ -183,13 +183,13 @@ public:
             }
         }
 
-        void DamageTaken(UnitPtr /*pDoneBy*/, uint32 &uiDamage)
+        void DamageTaken(Unit* /*pDoneBy*/, uint32 &uiDamage)
         {
             if (!me->IsVisible())
                 uiDamage = 0;
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             if (summoned->GetEntry() == NPC_SPARK_OF_IONAR)
             {
@@ -197,7 +197,7 @@ public:
 
                 summoned->CastSpell(summoned, DUNGEON_MODE(SPELL_SPARK_VISUAL_TRIGGER, H_SPELL_SPARK_VISUAL_TRIGGER), true);
 
-                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (target)
                 {
                     summoned->SetInCombatWith(target);
@@ -207,7 +207,7 @@ public:
             }
         }
 
-        void SummonedCreatureDespawn(CreaturePtr summoned)
+        void SummonedCreatureDespawn(Creature* summoned)
         {
             if (summoned->GetEntry() == NPC_SPARK_OF_IONAR)
                 lSparkList.Despawn(summoned);
@@ -255,7 +255,7 @@ public:
 
             if (uiStaticOverloadTimer <= uiDiff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_STATIC_OVERLOAD);
 
                 uiStaticOverloadTimer = urand(5*IN_MILLISECONDS, 6*IN_MILLISECONDS);
@@ -299,14 +299,14 @@ class mob_spark_of_ionar : public CreatureScript
 public:
     mob_spark_of_ionar() : CreatureScript("mob_spark_of_ionar") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_spark_of_ionarAI(creature);
     }
 
     struct mob_spark_of_ionarAI : public ScriptedAI
     {
-        mob_spark_of_ionarAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_spark_of_ionarAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -330,7 +330,7 @@ public:
                 me->DespawnOrUnsummon();
         }
 
-        void DamageTaken(UnitPtr /*pDoneBy*/, uint32 &uiDamage)
+        void DamageTaken(Unit* /*pDoneBy*/, uint32 &uiDamage)
         {
             uiDamage = 0;
         }
@@ -349,7 +349,7 @@ public:
             {
                 if (instance)
                 {
-                    CreaturePtr pIonar = instance->instance->GetCreature(instance->GetData64(DATA_IONAR));
+                    Creature* pIonar = instance->instance->GetCreature(instance->GetData64(DATA_IONAR));
                     if (pIonar && pIonar->isAlive())
                     {
                         if (me->GetDistance(pIonar) > DATA_MAX_SPARK_DISTANCE)

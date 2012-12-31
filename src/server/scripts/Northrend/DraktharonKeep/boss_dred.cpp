@@ -52,7 +52,7 @@ class boss_dred : public CreatureScript
 
         struct boss_dredAI : public ScriptedAI
         {
-            boss_dredAI(CreaturePtr creature) : ScriptedAI(creature)
+            boss_dredAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
@@ -80,7 +80,7 @@ class boss_dred : public CreatureScript
                 uiRaptorCallTimer    = urand(20000, 25000);
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 if (instance)
                     instance->SetData(DATA_DRED_EVENT, IN_PROGRESS);
@@ -162,14 +162,14 @@ class boss_dred : public CreatureScript
                 return 0;
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 if (instance)
                     instance->SetData(DATA_DRED_EVENT, DONE);
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_dredAI(creature);
         }
@@ -182,7 +182,7 @@ class npc_drakkari_gutripper : public CreatureScript
 
         struct npc_drakkari_gutripperAI : public ScriptedAI
         {
-            npc_drakkari_gutripperAI(CreaturePtr creature) : ScriptedAI(creature)
+            npc_drakkari_gutripperAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
@@ -212,14 +212,14 @@ class npc_drakkari_gutripper : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
-                if (CreaturePtr Dred = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_DRED)))
+                if (Creature* Dred = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_DRED)))
                     Dred->AI()->DoAction(ACTION_RAPTOR_KILLED);
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_drakkari_gutripperAI(creature);
         }
@@ -232,7 +232,7 @@ class npc_drakkari_scytheclaw : public CreatureScript
 
         struct npc_drakkari_scytheclawAI : public ScriptedAI
         {
-            npc_drakkari_scytheclawAI(CreaturePtr creature) : ScriptedAI(creature)
+            npc_drakkari_scytheclawAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = me->GetInstanceScript();
             }
@@ -262,14 +262,14 @@ class npc_drakkari_scytheclaw : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
-                if (CreaturePtr Dred = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(me), instance->GetData64(DATA_DRED)))
+                if (Creature* Dred = ObjectAccessor::GetCreature(*me, instance->GetData64(DATA_DRED)))
                     Dred->AI()->DoAction(ACTION_RAPTOR_KILLED);
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_drakkari_scytheclawAI(creature);
         }
@@ -282,12 +282,12 @@ class achievement_king_dred : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
+        bool OnCheck(Player* /*player*/, Unit* target)
         {
             if (!target)
                 return false;
 
-            if (CreaturePtr Dred = TO_CREATURE(target))
+            if (Creature* Dred = target->ToCreature())
                 if (Dred->AI()->GetData(DATA_KING_DRED) >= 6)
                     return true;
 

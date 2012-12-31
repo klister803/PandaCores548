@@ -87,13 +87,13 @@ class boss_garfrost : public CreatureScript
 
         struct boss_garfrostAI : public BossAI
         {
-            boss_garfrostAI(CreaturePtr creature) : BossAI(creature, DATA_GARFROST)
+            boss_garfrostAI(Creature* creature) : BossAI(creature, DATA_GARFROST)
             {
             }
 
             void InitializeAI()
             {
-                if (!instance || TO_INSTANCEMAP(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
+                if (!instance || static_cast<InstanceMap*>(me->GetMap())->GetScriptId() != sObjectMgr->GetScriptId(PoSScriptName))
                     me->IsAIEnabled = false;
                 else if (!me->isDead())
                     Reset();
@@ -109,7 +109,7 @@ class boss_garfrost : public CreatureScript
                 instance->SetBossState(DATA_GARFROST, NOT_STARTED);
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 Talk(SAY_AGGRO);
                 DoCast(me, SPELL_PERMAFROST);
@@ -119,23 +119,23 @@ class boss_garfrost : public CreatureScript
                 instance->SetBossState(DATA_GARFROST, IN_PROGRESS);
             }
 
-            void KilledUnit(UnitPtr victim)
+            void KilledUnit(Unit* victim)
             {
                 if (victim->GetTypeId() == TYPEID_PLAYER)
                     Talk(SAY_SLAY);
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 Talk(SAY_DEATH);
 
-                if (CreaturePtr tyrannus = me->GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_TYRANNUS)))
+                if (Creature* tyrannus = me->GetCreature(*me, instance->GetData64(DATA_TYRANNUS)))
                     DoScriptText(SAY_TYRANNUS_DEATH, tyrannus);
 
                 instance->SetBossState(DATA_GARFROST, DONE);
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& /*uiDamage*/)
+            void DamageTaken(Unit* /*attacker*/, uint32& /*uiDamage*/)
             {
                 if (events.GetPhaseMask() & PHASE_ONE_MASK && !HealthAbovePct(66))
                 {
@@ -177,12 +177,12 @@ class boss_garfrost : public CreatureScript
                 events.ScheduleEvent(EVENT_RESUME_ATTACK, 5000);
             }
 
-            void SpellHitTarget(UnitPtr target, const SpellInfo* spell)
+            void SpellHitTarget(Unit* target, const SpellInfo* spell)
             {
                 if (spell->Id == SPELL_PERMAFROST_HELPER)
                 {
                     AuraPtr aura = target->GetAura(SPELL_PERMAFROST_HELPER);
-                    if (aura != nullptr)
+                    if (aura != NULLAURA)
                         _permafrostStack = std::max<uint32>(_permafrostStack, aura->GetStackAmount());
                 }
             }
@@ -207,7 +207,7 @@ class boss_garfrost : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_THROW_SARONITE:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             {
                                 Talk(SAY_THROW_SARONITE, target->GetGUID());
                                 DoCast(target, SPELL_THROW_SARONITE);
@@ -219,7 +219,7 @@ class boss_garfrost : public CreatureScript
                             events.ScheduleEvent(EVENT_CHILLING_WAVE, 40000, 0, PHASE_TWO);
                             break;
                         case EVENT_DEEP_FREEZE:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                             {
                                 Talk(SAY_CAST_DEEP_FREEZE, target->GetGUID());
                                 DoCast(target, SPELL_DEEP_FREEZE);
@@ -252,7 +252,7 @@ class boss_garfrost : public CreatureScript
             uint32 _permafrostStack;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_garfrostAI(creature);
         }
@@ -275,15 +275,15 @@ class spell_garfrost_permafrost : public SpellScriptLoader
 
             void PreventHitByLoS()
             {
-                if (UnitPtr target = GetHitUnit())
+                if (Unit* target = GetHitUnit())
                 {
-                    UnitPtr caster = GetCaster();
+                    Unit* caster = GetCaster();
                     //Temporary Line of Sight Check
-                    std::list<GameObjectPtr> blockList;
+                    std::list<GameObject*> blockList;
                     caster->GetGameObjectListWithEntryInGrid(blockList, GO_SARONITE_ROCK, 100.0f);
                     if (!blockList.empty())
                     {
-                        for (std::list<GameObjectPtr>::const_iterator itr = blockList.begin(); itr != blockList.end(); ++itr)
+                        for (std::list<GameObject*>::const_iterator itr = blockList.begin(); itr != blockList.end(); ++itr)
                         {
                             if (!(*itr)->IsInvisibleDueToDespawn())
                             {
@@ -305,7 +305,7 @@ class spell_garfrost_permafrost : public SpellScriptLoader
 
             void RestoreImmunity()
             {
-                if (UnitPtr target = GetHitUnit())
+                if (Unit* target = GetHitUnit())
                 {
                     target->ApplySpellImmune(GetSpellInfo()->Id, IMMUNITY_ID, GetSpellInfo()->Id, false);
                     if (prevented)
@@ -333,10 +333,10 @@ class achievement_doesnt_go_to_eleven : public AchievementCriteriaScript
     public:
         achievement_doesnt_go_to_eleven() : AchievementCriteriaScript("achievement_doesnt_go_to_eleven") { }
 
-        bool OnCheck(PlayerPtr /*source*/, UnitPtr target)
+        bool OnCheck(Player* /*source*/, Unit* target)
         {
             if (target)
-                if (CreaturePtr garfrost = TO_CREATURE(target))
+                if (Creature* garfrost = target->ToCreature())
                     if (garfrost->AI()->GetData(ACHIEV_DOESNT_GO_TO_ELEVEN) <= 10)
                         return true;
 

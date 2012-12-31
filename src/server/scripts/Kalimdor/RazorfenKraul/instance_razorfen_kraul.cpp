@@ -34,14 +34,14 @@ class instance_razorfen_kraul : public InstanceMapScript
 public:
     instance_razorfen_kraul() : InstanceMapScript("instance_razorfen_kraul", 47) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_razorfen_kraul_InstanceMapScript(map);
     }
 
     struct instance_razorfen_kraul_InstanceMapScript : public InstanceScript
     {
-        instance_razorfen_kraul_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_razorfen_kraul_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint64 DoorWardGUID;
         int WardKeeperDeath;
@@ -52,7 +52,7 @@ public:
             DoorWardGUID = 0;
         }
 
-        PlayerPtr GetPlayerInMap()
+        Player* GetPlayerInMap()
         {
             Map::PlayerList const& players = instance->GetPlayers();
 
@@ -60,15 +60,15 @@ public:
             {
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 {
-                    if (PlayerPtr player = itr->getSource())
+                    if (Player* player = itr->getSource())
                         return player;
                 }
             }
             sLog->outDebug(LOG_FILTER_TSCR, "Instance Razorfen Kraul: GetPlayerInMap, but PlayerList is empty!");
-            return nullptr;
+            return NULL;
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -79,7 +79,7 @@ public:
         void Update(uint32 /*diff*/)
         {
             if (WardKeeperDeath == WARD_KEEPERS_NR)
-                if (GameObjectPtr go = instance->GetGameObject(DoorWardGUID))
+                if (GameObject* go = instance->GetGameObject(DoorWardGUID))
                 {
                     go->SetUInt32Value(GAMEOBJECT_FLAGS, 33);
                     go->SetGoState(GO_STATE_ACTIVE);

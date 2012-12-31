@@ -17,7 +17,6 @@
 
 #include "Common.h"
 #include "GuildMgr.h"
-#include "ClassFactory.h"
 
 GuildMgr::GuildMgr()
 {
@@ -26,9 +25,11 @@ GuildMgr::GuildMgr()
 
 GuildMgr::~GuildMgr()
 {
+    for (GuildContainer::iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
+        delete itr->second;
 }
 
-void GuildMgr::AddGuild(GuildPtr guild)
+void GuildMgr::AddGuild(Guild* guild)
 {
     GuildStore[guild->GetId()] = guild;
 }
@@ -55,16 +56,16 @@ uint32 GuildMgr::GenerateGuildId()
 }
 
 // Guild collection
-GuildPtr GuildMgr::GetGuildById(uint32 guildId) const
+Guild* GuildMgr::GetGuildById(uint32 guildId) const
 {
     GuildContainer::const_iterator itr = GuildStore.find(guildId);
     if (itr != GuildStore.end())
         return itr->second;
 
-    return nullptr;
+    return NULL;
 }
 
-GuildPtr GuildMgr::GetGuildByGuid(uint64 guid) const
+Guild* GuildMgr::GetGuildByGuid(uint64 guid) const
 {
     // Full guids are only used when receiving/sending data to client
     // everywhere else guild id is used
@@ -72,10 +73,10 @@ GuildPtr GuildMgr::GetGuildByGuid(uint64 guid) const
         if (uint32 guildId = GUID_LOPART(guid))
             return GetGuildById(guildId);
 
-    return nullptr;
+    return NULL;
 }
 
-GuildPtr GuildMgr::GetGuildByName(const std::string& guildName) const
+Guild* GuildMgr::GetGuildByName(const std::string& guildName) const
 {
     std::string search = guildName;
     std::transform(search.begin(), search.end(), search.begin(), ::toupper);
@@ -86,24 +87,24 @@ GuildPtr GuildMgr::GetGuildByName(const std::string& guildName) const
         if (search == gname)
             return itr->second;
     }
-    return nullptr;
+    return NULL;
 }
 
 std::string GuildMgr::GetGuildNameById(uint32 guildId) const
 {
-    if (GuildPtr guild = GetGuildById(guildId))
+    if (Guild* guild = GetGuildById(guildId))
         return guild->GetName();
 
     return "";
 }
 
-GuildPtr GuildMgr::GetGuildByLeader(uint64 guid) const
+Guild* GuildMgr::GetGuildByLeader(uint64 guid) const
 {
     for (GuildContainer::const_iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
         if (itr->second->GetLeaderGUID() == guid)
             return itr->second;
 
-    return nullptr;
+    return NULL;
 }
 
 uint32 GuildMgr::GetXPForGuildLevel(uint8 level) const
@@ -151,10 +152,11 @@ void GuildMgr::LoadGuilds()
             do
             {
                 Field* fields = result->Fetch();
-                GuildPtr guild = ClassFactory::ConstructGuild();
+                Guild* guild = new Guild();
 
                 if (!guild->LoadFromDB(fields))
                 {
+                    delete guild;
                     continue;
                 }
                 AddGuild(guild);
@@ -190,7 +192,7 @@ void GuildMgr::LoadGuilds()
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
 
-                if (GuildPtr guild = GetGuildById(guildId))
+                if (Guild* guild = GetGuildById(guildId))
                     guild->LoadRankFromDB(fields);
 
                 ++count;
@@ -234,7 +236,7 @@ void GuildMgr::LoadGuilds()
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
 
-                if (GuildPtr guild = GetGuildById(guildId))
+                if (Guild* guild = GetGuildById(guildId))
                     guild->LoadMemberFromDB(fields);
 
                 ++count;
@@ -268,7 +270,7 @@ void GuildMgr::LoadGuilds()
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
 
-                if (GuildPtr guild = GetGuildById(guildId))
+                if (Guild* guild = GetGuildById(guildId))
                     guild->LoadBankRightFromDB(fields);
 
                 ++count;
@@ -301,7 +303,7 @@ void GuildMgr::LoadGuilds()
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
 
-                if (GuildPtr guild = GetGuildById(guildId))
+                if (Guild* guild = GetGuildById(guildId))
                     guild->LoadEventLogFromDB(fields);
 
                 ++count;
@@ -335,7 +337,7 @@ void GuildMgr::LoadGuilds()
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
 
-                if (GuildPtr guild = GetGuildById(guildId))
+                if (Guild* guild = GetGuildById(guildId))
                     guild->LoadBankEventLogFromDB(fields);
 
                 ++count;
@@ -369,7 +371,7 @@ void GuildMgr::LoadGuilds()
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[0].GetUInt32();
 
-                if (GuildPtr guild = GetGuildById(guildId))
+                if (Guild* guild = GetGuildById(guildId))
                     guild->LoadBankTabFromDB(fields);
 
                 ++count;
@@ -405,7 +407,7 @@ void GuildMgr::LoadGuilds()
                 Field* fields = result->Fetch();
                 uint32 guildId = fields[11].GetUInt32();
 
-                if (GuildPtr guild = GetGuildById(guildId))
+                if (Guild* guild = GetGuildById(guildId))
                     guild->LoadBankItemFromDB(fields);
 
                 ++count;
@@ -450,12 +452,13 @@ void GuildMgr::LoadGuilds()
 
         for (GuildContainer::iterator itr = GuildStore.begin(); itr != GuildStore.end(); ++itr)
         {
-            GuildPtr guild = itr->second;
+            Guild* guild = itr->second;
             if (guild)
             {
                 if (!guild->Validate())
                 {
                     RemoveGuild(guild->GetId());
+                    delete guild;
                 }
             }
         }

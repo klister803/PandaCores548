@@ -244,7 +244,7 @@ static int net_data_is_ready(my_socket sd)
 
   tv.tv_sec= tv.tv_usec= 0;
 
-  if ((res= select((int) (sd + 1), &sfds, nullptr, nullptr, &tv)) < 0)
+  if ((res= select((int) (sd + 1), &sfds, NULL, NULL, &tv)) < 0)
     return 0;
   else
     return test(res ? FD_ISSET(sd, &sfds) : 0);

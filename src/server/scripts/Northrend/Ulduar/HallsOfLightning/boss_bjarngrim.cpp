@@ -85,14 +85,14 @@ class boss_bjarngrim : public CreatureScript
 public:
     boss_bjarngrim() : CreatureScript("boss_bjarngrim") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_bjarngrimAI(creature);
     }
 
     struct boss_bjarngrimAI : public ScriptedAI
     {
-        boss_bjarngrimAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_bjarngrimAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             m_uiStance = STANCE_DEFENSIVE;
@@ -152,7 +152,7 @@ public:
 
             for (uint8 i = 0; i < 2; ++i)
             {
-                if (CreaturePtr pStormforgedLieutenant = (Unit::GetCreature(TO_WORLDOBJECT(me), m_auiStormforgedLieutenantGUID[i])))
+                if (Creature* pStormforgedLieutenant = (Unit::GetCreature((*me), m_auiStormforgedLieutenantGUID[i])))
                 {
                     if (!pStormforgedLieutenant->isAlive())
                         pStormforgedLieutenant->Respawn();
@@ -182,7 +182,7 @@ public:
             ScriptedAI::EnterEvadeMode();
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             Talk(SAY_AGGRO);
 
@@ -193,12 +193,12 @@ public:
                 instance->SetData(TYPE_BJARNGRIM, IN_PROGRESS);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             Talk(SAY_SLAY);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             Talk(SAY_DEATH);
 
@@ -377,14 +377,14 @@ class mob_stormforged_lieutenant : public CreatureScript
 public:
     mob_stormforged_lieutenant() : CreatureScript("mob_stormforged_lieutenant") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_stormforged_lieutenantAI(creature);
     }
 
     struct mob_stormforged_lieutenantAI : public ScriptedAI
     {
-        mob_stormforged_lieutenantAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_stormforged_lieutenantAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -400,11 +400,11 @@ public:
             m_uiRenewSteel_Timer = urand(10000, 11000);
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             if (instance)
             {
-                if (CreaturePtr pBjarngrim = instance->instance->GetCreature(instance->GetData64(DATA_BJARNGRIM)))
+                if (Creature* pBjarngrim = instance->instance->GetCreature(instance->GetData64(DATA_BJARNGRIM)))
                 {
                     if (pBjarngrim->isAlive() && !pBjarngrim->getVictim())
                         pBjarngrim->AI()->AttackStart(who);
@@ -430,7 +430,7 @@ public:
             {
                 if (instance)
                 {
-                    if (CreaturePtr pBjarngrim = instance->instance->GetCreature(instance->GetData64(DATA_BJARNGRIM)))
+                    if (Creature* pBjarngrim = instance->instance->GetCreature(instance->GetData64(DATA_BJARNGRIM)))
                     {
                         if (pBjarngrim->isAlive())
                             DoCast(pBjarngrim, SPELL_RENEW_STEEL_N);

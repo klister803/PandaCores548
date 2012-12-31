@@ -27,18 +27,18 @@ class FleeingMovementGenerator : public MovementGeneratorMedium< T, FleeingMovem
     public:
         FleeingMovementGenerator(uint64 fright) : i_frightGUID(fright), i_nextCheckTime(0) {}
 
-        void Initialize(std::shared_ptr<T>);
-        void Finalize(std::shared_ptr<T>);
-        void Reset(std::shared_ptr<T>);
-        bool Update(std::shared_ptr<T>, const uint32 &);
+        void Initialize(T &);
+        void Finalize(T &);
+        void Reset(T &);
+        bool Update(T &, const uint32 &);
 
         MovementGeneratorType GetMovementGeneratorType() { return FLEEING_MOTION_TYPE; }
 
     private:
-        void _setTargetLocation(std::shared_ptr<T> owner);
-        bool _getPoint(std::shared_ptr<T> owner, float &x, float &y, float &z);
-        bool _setMoveData(std::shared_ptr<T> owner);
-        void _Init(std::shared_ptr<T>);
+        void _setTargetLocation(T &owner);
+        bool _getPoint(T &owner, float &x, float &y, float &z);
+        bool _setMoveData(T &owner);
+        void _Init(T &);
 
         bool is_water_ok   :1;
         bool is_land_ok    :1;
@@ -62,8 +62,8 @@ class TimedFleeingMovementGenerator : public FleeingMovementGenerator<Creature>
             i_totalFleeTime(time) {}
 
         MovementGeneratorType GetMovementGeneratorType() { return TIMED_FLEEING_MOTION_TYPE; }
-        bool Update(UnitPtr, const uint32&);
-        void Finalize(UnitPtr);
+        bool Update(Unit &, const uint32&);
+        void Finalize(Unit &);
 
     private:
         TimeTracker i_totalFleeTime;

@@ -54,14 +54,14 @@ class boss_epoch : public CreatureScript
 public:
     boss_epoch() : CreatureScript("boss_epoch") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_epochAI (creature);
     }
 
     struct boss_epochAI : public ScriptedAI
     {
-        boss_epochAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_epochAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -89,7 +89,7 @@ public:
                 instance->SetData(DATA_EPOCH_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -105,7 +105,7 @@ public:
 
             if (uiCurseOfExertionTimer < diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_CURSE_OF_EXERTION);
                 uiCurseOfExertionTimer = 9300;
             } else uiCurseOfExertionTimer -= diff;
@@ -132,7 +132,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -140,7 +140,7 @@ public:
                 instance->SetData(DATA_EPOCH_EVENT, DONE);
         }
 
-        void KilledUnit(UnitPtr victim)
+        void KilledUnit(Unit* victim)
         {
             if (victim == me)
                 return;

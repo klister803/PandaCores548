@@ -107,14 +107,14 @@ class boss_entropius : public CreatureScript
 public:
     boss_entropius() : CreatureScript("boss_entropius") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_entropiusAI (creature);
     }
 
     struct boss_entropiusAI : public ScriptedAI
     {
-        boss_entropiusAI(CreaturePtr creature) : ScriptedAI(creature), Summons(me)
+        boss_entropiusAI(Creature* creature) : ScriptedAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -135,7 +135,7 @@ public:
                 instance->SetData(DATA_MURU_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoCastAOE(SPELL_NEGATIVE_ENERGY_E, true);
             DoCast(me, SPELL_ENTROPIUS_SPAWN, false);
@@ -144,7 +144,7 @@ public:
                 instance->SetData(DATA_MURU_EVENT, IN_PROGRESS);
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             switch (summoned->GetEntry())
             {
@@ -162,7 +162,7 @@ public:
             Summons.Summon(summoned);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             Summons.DespawnAll();
 
@@ -182,7 +182,7 @@ public:
 
             if (BlackHoleSummonTimer <= diff)
             {
-                UnitPtr random = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
+                Unit* random = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
                 if (!random)
                     return;
 
@@ -207,14 +207,14 @@ class boss_muru : public CreatureScript
 public:
     boss_muru() : CreatureScript("boss_muru") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_muruAI (creature);
     }
 
     struct boss_muruAI : public Scripted_NoMovementAI
     {
-        boss_muruAI(CreaturePtr creature) : Scripted_NoMovementAI(creature), Summons(me)
+        boss_muruAI(Creature* creature) : Scripted_NoMovementAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -247,7 +247,7 @@ public:
                 instance->SetData(DATA_MURU_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoCastAOE(SPELL_NEGATIVE_ENERGY, false);
 
@@ -255,7 +255,7 @@ public:
                 instance->SetData(DATA_MURU_EVENT, IN_PROGRESS);
         }
 
-        void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
+        void DamageTaken(Unit* /*done_by*/, uint32 &damage)
         {
             if (damage > me->GetHealth() && Phase == 1)
             {
@@ -269,7 +269,7 @@ public:
                 damage = 0;
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             switch (summoned->GetEntry())
             {
@@ -372,14 +372,14 @@ class npc_muru_portal : public CreatureScript
 public:
     npc_muru_portal() : CreatureScript("npc_muru_portal") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_muru_portalAI (creature);
     }
 
     struct npc_muru_portalAI : public Scripted_NoMovementAI
     {
-        npc_muru_portalAI(CreaturePtr creature) : Scripted_NoMovementAI(creature), Summons(me)
+        npc_muru_portalAI(Creature* creature) : Scripted_NoMovementAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -405,16 +405,16 @@ public:
             Summons.DespawnAll();
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             if (instance)
-                if (PlayerPtr Target = Unit::GetPlayer(TO_WORLDOBJECT(me), instance->GetData64(DATA_PLAYER_GUID)))
+                if (Player* Target = Unit::GetPlayer(*me, instance->GetData64(DATA_PLAYER_GUID)))
                     summoned->AI()->AttackStart(Target);
 
             Summons.Summon(summoned);
         }
 
-        void SpellHit(UnitPtr /*caster*/, const SpellInfo* Spell)
+        void SpellHit(Unit* /*caster*/, const SpellInfo* Spell)
         {
             float x, y, z, o;
             me->GetHomePosition(x, y, z, o);
@@ -456,14 +456,14 @@ class npc_dark_fiend : public CreatureScript
 public:
     npc_dark_fiend() : CreatureScript("npc_dark_fiend") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_dark_fiendAI (creature);
     }
 
     struct npc_dark_fiendAI : public ScriptedAI
     {
-        npc_dark_fiendAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_dark_fiendAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 WaitTimer;
         bool InAction;
@@ -476,7 +476,7 @@ public:
             me->AddUnitState(UNIT_STATE_STUNNED);
         }
 
-        void SpellHit(UnitPtr /*caster*/, const SpellInfo* Spell)
+        void SpellHit(Unit* /*caster*/, const SpellInfo* Spell)
         {
             for (uint8 i = 0; i < 3; ++i)
                 if (Spell->Effects[i].Effect == 38)
@@ -519,14 +519,14 @@ class npc_void_sentinel : public CreatureScript
 public:
     npc_void_sentinel() : CreatureScript("npc_void_sentinel") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_void_sentinelAI (creature);
     }
 
     struct npc_void_sentinelAI : public ScriptedAI
     {
-        npc_void_sentinelAI(CreaturePtr creature) : ScriptedAI(creature){}
+        npc_void_sentinelAI(Creature* creature) : ScriptedAI(creature){}
 
         uint32 PulseTimer;
         uint32 VoidBlastTimer;
@@ -541,7 +541,7 @@ public:
             DoTeleportTo(x, y, 71);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             for (uint8 i = 0; i < 8; ++i)
                 me->SummonCreature(CREATURE_VOID_SPAWN, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), float(rand()%6), TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, 180000);
@@ -575,14 +575,14 @@ class npc_blackhole : public CreatureScript
 public:
     npc_blackhole() : CreatureScript("npc_blackhole") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_blackholeAI (creature);
     }
 
     struct npc_blackholeAI : public ScriptedAI
     {
-        npc_blackholeAI(CreaturePtr creature) : ScriptedAI(creature)
+        npc_blackholeAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -608,7 +608,7 @@ public:
         {
             if (SpellTimer <= diff)
             {
-                UnitPtr Victim = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_PLAYER_GUID) : 0);
+                Unit* Victim = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_PLAYER_GUID) : 0);
                 switch (NeedForAHack)
                 {
                     case 0:
@@ -632,7 +632,7 @@ public:
                     case 3:
                         SpellTimer = urand(400, 900);
                         NeedForAHack = 1;
-                        if (UnitPtr Temp = me->getVictim())
+                        if (Unit* Temp = me->getVictim())
                         {
                             if (Temp->GetPositionZ() > 73 && Victim)
                                 AttackStart(Victim);

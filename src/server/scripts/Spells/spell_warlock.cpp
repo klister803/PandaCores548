@@ -78,7 +78,7 @@ class spell_warl_demonic_gateway : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                     _player->CastSpell(_player, WARLOCK_SPAWN_PURPLE_DEMONIC_GATEWAY, true);
             }
 
@@ -106,7 +106,7 @@ class spell_warl_rain_of_fire : public SpellScriptLoader
 
             void OnTick(constAuraEffectPtr aurEff)
             {
-                if (DynamicObjectPtr dynObj = GetCaster()->GetDynObject(WARLOCK_RAIN_OF_FIRE))
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(WARLOCK_RAIN_OF_FIRE))
                     GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), WARLOCK_RAIN_OF_FIRE_TRIGGERED, true);
             }
 
@@ -134,7 +134,7 @@ class spell_warl_chaos_bolt : public SpellScriptLoader
 
             void HandleAfterCast()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                     if (_player->HasAura(WARLOCK_BACKDRAFT) && _player->HasAura(WARLOCK_PYROCLASM))
                         _player->RemoveAura(WARLOCK_BACKDRAFT);
             }
@@ -163,9 +163,9 @@ class spell_warl_ember_tap : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (UnitPtr target = GetHitUnit())
+                    if (Unit* target = GetHitUnit())
                     {
                         int32 healAmount;
                         float pct;
@@ -209,8 +209,8 @@ class spell_warl_fire_and_brimstone : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
-                    if (UnitPtr target = GetHitUnit())
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
                         if (_player->HasAura(WARLOCK_FIRE_AND_BRIMSTONE))
                             _player->RemoveAura(WARLOCK_FIRE_AND_BRIMSTONE);
             }
@@ -239,9 +239,9 @@ class spell_warl_conflagrate_aura : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (UnitPtr target = GetHitUnit())
+                    if (Unit* target = GetHitUnit())
                     {
                         if (!target->HasAura(WARLOCK_IMMOLATE))
                             if (AuraPtr conflagrate = target->GetAura(WARLOCK_CONFLAGRATE))
@@ -313,9 +313,9 @@ class spell_warl_burning_embers : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (UnitPtr target = GetHitUnit())
+                    if (Unit* target = GetHitUnit())
                     {
                         if (GetSpell()->IsCritForTarget(target))
                             _player->SetPower(POWER_BURNING_EMBERS, _player->GetPower(POWER_BURNING_EMBERS) + 2);
@@ -349,9 +349,9 @@ class spell_warl_fel_flame : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (UnitPtr target = GetHitUnit())
+                    if (Unit* target = GetHitUnit())
                     {
                         // Increases the duration of Corruption and Unstable Affliction by 6s
                         if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION)
@@ -432,7 +432,7 @@ class spell_warl_drain_life : public SpellScriptLoader
 
             void OnTick(constAuraEffectPtr aurEff)
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
                     // Restoring 2% of the caster's total health every 1s
                     int32 basepoints = _player->GetMaxHealth() / 50;
@@ -487,13 +487,13 @@ class spell_warl_soul_harverst : public SpellScriptLoader
 
                 if (update >= 1000)
                 {
-                    if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                    if (Player* _player = GetCaster()->ToPlayer())
                     {
                         if (!_player->isInCombat() && !_player->InArena())
                         {
                             _player->SetHealth(_player->GetHealth() + int32(_player->GetMaxHealth() / 50));
 
-                            if (PetPtr pet = _player->GetPet())
+                            if (Pet* pet = _player->GetPet())
                                 pet->SetHealth(pet->GetHealth() + int32(pet->GetMaxHealth() / 50));
                         }
                     }
@@ -533,7 +533,7 @@ class spell_warl_life_tap : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
                     int32 healthCost = int32(_player->GetMaxHealth() * 0.15f);
 
@@ -567,7 +567,7 @@ class spell_warl_harvest_life : public SpellScriptLoader
 
             void OnTick(constAuraEffectPtr aurEff)
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
                     // Restoring 3-4.5% of the caster's total health every 1s
                     int32 basepoints = int32(frand(0.03f, 0.045f) * _player->GetMaxHealth());
@@ -605,14 +605,14 @@ class spell_warl_fear : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (PlayerPtr _player = TO_PLAYER(GetCaster()))
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (UnitPtr target = GetHitUnit())
+                    if (Unit* target = GetHitUnit())
                     {
                         if (_player->HasAura(WARLOCK_GLYPH_OF_FEAR))
                         {
                             _player->CastSpell(target, WARLOCK_GLYPH_OF_FEAR_EFFECT, true);
-                            _player->AddSpellCooldown(5782, 0, time(nullptr) + 5);
+                            _player->AddSpellCooldown(5782, 0, time(NULL) + 5);
                         }
                         else
                             _player->CastSpell(target, WARLOCK_FEAR_EFFECT, true);
@@ -653,7 +653,7 @@ public:
             // Casting Banish on a banished target will cancel the effect
             // Check if the target already has Banish, if so, do nothing.
 
-            if (UnitPtr target = GetHitUnit())
+            if (Unit* target = GetHitUnit())
             {
                 if (target->GetAuraEffect(SPELL_AURA_SCHOOL_IMMUNITY, SPELLFAMILY_WARLOCK, 0, 0x08000000, 0))
                 {
@@ -707,7 +707,7 @@ class spell_warl_demonic_empowerment : public SpellScriptLoader
 
             void HandleScriptEffect(SpellEffIndex /*effIndex*/)
             {
-                if (CreaturePtr targetCreature = GetHitCreature())
+                if (Creature* targetCreature = GetHitCreature())
                 {
                     if (targetCreature->isPet())
                     {
@@ -721,7 +721,7 @@ class spell_warl_demonic_empowerment : public SpellScriptLoader
                         {
                             SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER);
                             int32 hp = int32(targetCreature->CountPctFromMaxHealth(GetCaster()->CalculateSpellDamage(targetCreature, spellInfo, 0)));
-                            targetCreature->CastCustomSpell(targetCreature, WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER, &hp, nullptr, nullptr, true);
+                            targetCreature->CastCustomSpell(targetCreature, WARLOCK_DEMONIC_EMPOWERMENT_VOIDWALKER, &hp, NULL, NULL, true);
                             //unitTarget->CastSpell(unitTarget, 54441, true);
                             break;
                         }
@@ -790,7 +790,7 @@ class spell_warl_everlasting_affliction : public SpellScriptLoader
 
             void HandleScriptEffect(SpellEffIndex /*effIndex*/)
             {
-                if (UnitPtr unitTarget = GetHitUnit())
+                if (Unit* unitTarget = GetHitUnit())
                     // Refresh corruption on target
                     if (AuraEffectPtr aur = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_WARLOCK, 0x2, 0, 0, GetCaster()->GetGUID()))
                         aur->GetBase()->RefreshDuration();
@@ -817,7 +817,7 @@ class spell_warl_seed_of_corruption : public SpellScriptLoader
         {
             PrepareSpellScript(spell_warl_seed_of_corruption_SpellScript);
 
-            void FilterTargets(std::list<WorldObjectPtr>& targets)
+            void FilterTargets(std::list<WorldObject*>& targets)
             {
                 if (GetExplTargetUnit())
                     targets.remove(GetExplTargetUnit());
@@ -858,10 +858,10 @@ class spell_warl_soulshatter : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                UnitPtr caster = GetCaster();
-                if (UnitPtr target = GetHitUnit())
+                Unit* caster = GetCaster();
+                if (Unit* target = GetHitUnit())
                 {
-                    if (target->CanHaveThreatList() && target->getThreatManager()->getThreat(caster) > 0.0f)
+                    if (target->CanHaveThreatList() && target->getThreatManager().getThreat(caster) > 0.0f)
                         caster->CastSpell(target, SPELL_SOULSHATTER, true);
                 }
             }
@@ -898,7 +898,7 @@ class spell_warl_demonic_circle_summon : public SpellScriptLoader
 
             void HandleDummyTick(constAuraEffectPtr /*aurEff*/)
             {
-                if (GameObjectPtr circle = GetTarget()->GetGameObject(GetId()))
+                if (GameObject* circle = GetTarget()->GetGameObject(GetId()))
                 {
                     // Here we check if player is in demonic circle teleport range, if so add
                     // WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST; allowing him to cast the WARLOCK_DEMONIC_CIRCLE_TELEPORT.
@@ -940,9 +940,9 @@ class spell_warl_demonic_circle_teleport : public SpellScriptLoader
 
             void HandleTeleport(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (PlayerPtr player = TO_PLAYER(GetTarget()))
+                if (Player* player = GetTarget()->ToPlayer())
                 {
-                    if (GameObjectPtr circle = player->GetGameObject(WARLOCK_DEMONIC_CIRCLE_SUMMON))
+                    if (GameObject* circle = player->GetGameObject(WARLOCK_DEMONIC_CIRCLE_SUMMON))
                     {
                         player->NearTeleportTo(circle->GetPositionX(), circle->GetPositionY(), circle->GetPositionZ(), circle->GetOrientation());
                         player->RemoveMovementImpairingAuras();
@@ -997,10 +997,10 @@ class spell_warl_haunt : public SpellScriptLoader
 
             void HandleRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
-                if (UnitPtr caster = GetCaster())
+                if (Unit* caster = GetCaster())
                 {
                     int32 amount = aurEff->GetAmount();
-                    GetTarget()->CastCustomSpell(caster, WARLOCK_HAUNT_HEAL, &amount, nullptr, nullptr, true, nullptr, aurEff, GetCasterGUID());
+                    GetTarget()->CastCustomSpell(caster, WARLOCK_HAUNT_HEAL, &amount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
                 }
             }
 
@@ -1039,12 +1039,12 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
             void HandleDispel(DispelInfo* dispelInfo)
             {
-                if (UnitPtr caster = GetCaster())
+                if (Unit* caster = GetCaster())
                     if (constAuraEffectPtr aurEff = GetEffect(EFFECT_0))
                     {
                         int32 damage = aurEff->GetAmount() * 9;
                         // backfire damage and silence
-                        caster->CastCustomSpell(dispelInfo->GetDispeller(), WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, nullptr, nullptr, true, nullptr, aurEff);
+                        caster->CastCustomSpell(dispelInfo->GetDispeller(), WARLOCK_UNSTABLE_AFFLICTION_DISPEL, &damage, NULL, NULL, true, NULL, aurEff);
                     }
             }
 
@@ -1090,8 +1090,8 @@ class spell_warl_curse_of_doom : public SpellScriptLoader
                 if (removeMode != AURA_REMOVE_BY_DEATH || !IsExpired())
                     return;
 
-                if (TO_PLAYER(GetCaster())->isHonorOrXPTarget(GetTarget()))
-                    GetCaster()->CastSpell(GetTarget(), WARLOCK_CURSE_OF_DOOM_EFFECT, true, nullptr, aurEff);
+                if (GetCaster()->ToPlayer()->isHonorOrXPTarget(GetTarget()))
+                    GetCaster()->CastSpell(GetTarget(), WARLOCK_CURSE_OF_DOOM_EFFECT, true, NULL, aurEff);
             }
 
             void Register()
@@ -1117,11 +1117,11 @@ public:
 
             void ApplyEffect(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            UnitPtr caster = GetCaster();
+            Unit* caster = GetCaster();
             if (!caster)
                 return;
 
-            UnitPtr target = GetTarget();
+            Unit* target = GetTarget();
             if (caster->HasAura(WARLOCK_IMPROVED_HEALTH_FUNNEL_R2))
                 target->CastSpell(target, WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2, true);
             else if (caster->HasAura(WARLOCK_IMPROVED_HEALTH_FUNNEL_R1))
@@ -1130,7 +1130,7 @@ public:
 
         void RemoveEffect(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
         {
-            UnitPtr target = GetTarget();
+            Unit* target = GetTarget();
             target->RemoveAurasDueToSpell(WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R1);
             target->RemoveAurasDueToSpell(WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2);
 

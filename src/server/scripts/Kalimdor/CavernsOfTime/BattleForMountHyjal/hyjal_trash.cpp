@@ -174,7 +174,7 @@ float HordeOverrunWP[21][3]=//waypoints in the horde base used in the end in the
     {5429.91f, -2718.44f, 1493.42f}//20 end 2
 };
 
-hyjal_trashAI::hyjal_trashAI(CreaturePtr creature) : npc_escortAI(creature)
+hyjal_trashAI::hyjal_trashAI(Creature* creature) : npc_escortAI(creature)
 {
     instance = creature->GetInstanceScript();
     IsEvent = false;
@@ -189,7 +189,7 @@ hyjal_trashAI::hyjal_trashAI(CreaturePtr creature) : npc_escortAI(creature)
     Reset();
 }
 
-void hyjal_trashAI::DamageTaken(UnitPtr done_by, uint32 &damage)
+void hyjal_trashAI::DamageTaken(Unit* done_by, uint32 &damage)
 {
     if (done_by->GetTypeId() == TYPEID_PLAYER || (done_by->GetTypeId() == TYPEID_UNIT && CAST_CRE(done_by)->isPet()))
     {
@@ -396,7 +396,7 @@ void hyjal_trashAI::UpdateAI(const uint32 /*diff*/)
     }
 }
 
-void hyjal_trashAI::JustDied(UnitPtr /*killer*/)
+void hyjal_trashAI::JustDied(Unit* /*killer*/)
 {
     if (!instance)
         return;
@@ -415,7 +415,7 @@ public:
 
     struct mob_giant_infernalAI : public hyjal_trashAI
     {
-        mob_giant_infernalAI(CreaturePtr creature) : hyjal_trashAI(creature)
+        mob_giant_infernalAI(Creature* creature) : hyjal_trashAI(creature)
         {
             instance = creature->GetInstanceScript();
             meteor = false;//call once!
@@ -443,7 +443,7 @@ public:
             imol = false;
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void WaypointReached(uint32 waypointId)
         {
@@ -451,7 +451,7 @@ public:
             {
                 if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_THRALL));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_THRALL));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
@@ -471,7 +471,7 @@ public:
             {
                 float x, y, z;
                 me->GetPosition(x, y, z);
-                CreaturePtr trigger = me->SummonCreature(NPC_TRIGGER, x+8, y+8, z+25+rand()%10, me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 1000);
+                Creature* trigger = me->SummonCreature(NPC_TRIGGER, x+8, y+8, z+25+rand()%10, me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN, 1000);
                 if (trigger)
                 {
                     trigger->SetVisible(false);
@@ -492,7 +492,7 @@ public:
                     {
                         if (instance->GetData(DATA_ALLIANCE_RETREAT) && !instance->GetData(DATA_HORDE_RETREAT))
                         {
-                            UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_THRALL));
+                            Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_THRALL));
                             if (target && target->isAlive())
                                 me->AddThreat(target, 0.0f);
                         } else if (instance->GetData(DATA_ALLIANCE_RETREAT) && instance->GetData(DATA_HORDE_RETREAT)){
@@ -535,7 +535,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_giant_infernalAI(creature);
     }
@@ -546,14 +546,14 @@ class mob_abomination : public CreatureScript
 public:
     mob_abomination() : CreatureScript("mob_abomination") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_abominationAI(creature);
     }
 
     struct mob_abominationAI : public hyjal_trashAI
     {
-        mob_abominationAI(CreaturePtr creature) : hyjal_trashAI(creature)
+        mob_abominationAI(Creature* creature) : hyjal_trashAI(creature)
         {
             instance = creature->GetInstanceScript();
             go = false;
@@ -573,13 +573,13 @@ public:
             {
                 if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_THRALL));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_THRALL));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
                 else
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_JAINAPROUDMOORE));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
@@ -594,7 +594,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -644,14 +644,14 @@ class mob_ghoul : public CreatureScript
 public:
     mob_ghoul() : CreatureScript("mob_ghoul") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_ghoulAI(creature);
     }
 
     struct mob_ghoulAI : public hyjal_trashAI
     {
-        mob_ghoulAI(CreaturePtr creature) : hyjal_trashAI(creature)
+        mob_ghoulAI(Creature* creature) : hyjal_trashAI(creature)
         {
             instance = creature->GetInstanceScript();
             go = false;
@@ -675,13 +675,13 @@ public:
             {
                 if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_THRALL));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_THRALL));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
                 else
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_JAINAPROUDMOORE));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
@@ -697,7 +697,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -746,14 +746,14 @@ class mob_necromancer : public CreatureScript
 public:
     mob_necromancer() : CreatureScript("mob_necromancer") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_necromancerAI(creature);
     }
 
     struct mob_necromancerAI : public hyjal_trashAI
     {
-        mob_necromancerAI(CreaturePtr creature) : hyjal_trashAI(creature), summons(me)
+        mob_necromancerAI(Creature* creature) : hyjal_trashAI(creature), summons(me)
         {
             instance = creature->GetInstanceScript();
             go = false;
@@ -770,15 +770,15 @@ public:
             summons.DespawnAll();
         }
 
-        void JustSummoned(CreaturePtr summon)
+        void JustSummoned(Creature* summon)
         {
-            UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true);
+            Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 30, true);
             if (target && summon)
                 summon->Attack(target, false);
             summons.Summon(summon);
         }
 
-        void SummonedCreatureDespawn(CreaturePtr summon)
+        void SummonedCreatureDespawn(Creature* summon)
         {
             summons.Despawn(summon);
         }
@@ -789,20 +789,20 @@ public:
             {
                 if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_THRALL));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_THRALL));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
                 else
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_JAINAPROUDMOORE));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
             }
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             switch (urand(0, 2))
             {
@@ -820,7 +820,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -873,14 +873,14 @@ class mob_banshee : public CreatureScript
 public:
     mob_banshee() : CreatureScript("mob_banshee") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_bansheeAI(creature);
     }
 
     struct mob_bansheeAI : public hyjal_trashAI
     {
-        mob_bansheeAI(CreaturePtr creature) : hyjal_trashAI(creature)
+        mob_bansheeAI(Creature* creature) : hyjal_trashAI(creature)
         {
             instance = creature->GetInstanceScript();
             go = false;
@@ -905,20 +905,20 @@ public:
             {
                 if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_THRALL));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_THRALL));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
                 else
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_JAINAPROUDMOORE));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -976,14 +976,14 @@ class mob_crypt_fiend : public CreatureScript
 public:
     mob_crypt_fiend() : CreatureScript("mob_crypt_fiend") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_crypt_fiendAI(creature);
     }
 
     struct mob_crypt_fiendAI : public hyjal_trashAI
     {
-        mob_crypt_fiendAI(CreaturePtr creature) : hyjal_trashAI(creature)
+        mob_crypt_fiendAI(Creature* creature) : hyjal_trashAI(creature)
         {
             instance = creature->GetInstanceScript();
             go = false;
@@ -1004,20 +1004,20 @@ public:
             {
                 if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_THRALL));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_THRALL));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
                 else
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_JAINAPROUDMOORE));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -1066,14 +1066,14 @@ class mob_fel_stalker : public CreatureScript
 public:
     mob_fel_stalker() : CreatureScript("mob_fel_stalker") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_fel_stalkerAI(creature);
     }
 
     struct mob_fel_stalkerAI : public hyjal_trashAI
     {
-        mob_fel_stalkerAI(CreaturePtr creature) : hyjal_trashAI(creature)
+        mob_fel_stalkerAI(Creature* creature) : hyjal_trashAI(creature)
         {
             instance = creature->GetInstanceScript();
             go = false;
@@ -1094,20 +1094,20 @@ public:
             {
                 if (instance->GetData(DATA_ALLIANCE_RETREAT))//2.alliance boss down, attack thrall
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_THRALL));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_THRALL));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
                 else
                 {
-                    UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_JAINAPROUDMOORE));
+                    Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_JAINAPROUDMOORE));
                     if (target && target->isAlive())
                         me->AddThreat(target, 0.0f);
                 }
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -1156,14 +1156,14 @@ class mob_frost_wyrm : public CreatureScript
 public:
     mob_frost_wyrm() : CreatureScript("mob_frost_wyrm") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_frost_wyrmAI(creature);
     }
 
     struct mob_frost_wyrmAI : public hyjal_trashAI
     {
-        mob_frost_wyrmAI(CreaturePtr creature) : hyjal_trashAI(creature)
+        mob_frost_wyrmAI(Creature* creature) : hyjal_trashAI(creature)
         {
             instance = creature->GetInstanceScript();
             go = false;
@@ -1185,7 +1185,7 @@ public:
         {
             if (waypointId == 2 && instance && !IsOverrun)
             {
-                UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_THRALL));
+                Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_THRALL));
                 if (target && target->isAlive())
                 {
                     me->AddThreat(target, 0.0f);
@@ -1194,7 +1194,7 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance && IsEvent)
                 instance->SetData(DATA_TRASH, 0);//signal trash is dead
@@ -1206,7 +1206,7 @@ public:
             me->SetPosition(x, y, z, 0);
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -1268,14 +1268,14 @@ class mob_gargoyle : public CreatureScript
 public:
     mob_gargoyle() : CreatureScript("mob_gargoyle") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_gargoyleAI(creature);
     }
 
     struct mob_gargoyleAI : public hyjal_trashAI
     {
-        mob_gargoyleAI(CreaturePtr creature) : hyjal_trashAI(creature)
+        mob_gargoyleAI(Creature* creature) : hyjal_trashAI(creature)
         {
             instance = creature->GetInstanceScript();
             go = false;
@@ -1302,7 +1302,7 @@ public:
         {
             if (waypointId == 2 && instance && !IsOverrun)
             {
-                UnitPtr target = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_THRALL));
+                Unit* target = Unit::GetUnit(*me, instance->GetData64(DATA_THRALL));
                 if (target && target->isAlive())
                 {
                     me->AddThreat(target, 0.0f);
@@ -1311,7 +1311,7 @@ public:
             }
         }
 
-        void JustDied(UnitPtr killer)
+        void JustDied(Unit* killer)
         {
             float x, y, z;
             me->GetPosition(x, y, z);
@@ -1369,7 +1369,7 @@ public:
                 forcemove = false;
                 if (forcemove)
                 {
-                    UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                    Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (target)
                         me->Attack(target, false);
                 }
@@ -1404,21 +1404,21 @@ class alliance_rifleman : public CreatureScript
 public:
     alliance_rifleman() : CreatureScript("alliance_rifleman") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new alliance_riflemanAI(creature);
     }
 
     struct alliance_riflemanAI : public Scripted_NoMovementAI
     {
-        alliance_riflemanAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
+        alliance_riflemanAI(Creature* creature) : Scripted_NoMovementAI(creature)
         {
             Reset();
         }
 
         uint32 ExplodeTimer;
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
         }
 
@@ -1427,7 +1427,7 @@ public:
             ExplodeTimer = 5000+rand()%5000;
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!who || me->getVictim())
                 return;
@@ -1440,7 +1440,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 

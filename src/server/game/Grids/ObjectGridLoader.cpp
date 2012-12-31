@@ -27,16 +27,15 @@
 #include "World.h"
 #include "CellImpl.h"
 #include "CreatureAI.h"
-#include "ClassFactory.h"
 
-void ObjectGridEvacuator::Visit(std::shared_ptr<CreatureMapType> &m)
+void ObjectGridEvacuator::Visit(CreatureMapType &m)
 {
     // creature in unloading grid can have respawn point in another grid
     // if it will be unloaded then it will not respawn in original grid until unload/load original grid
     // move to respawn point to prevent this case. For player view in respawn grid this will be normal respawn.
-    for (CreatureMapType::iterator iter = m->begin(); iter != m->end();)
+    for (CreatureMapType::iterator iter = m.begin(); iter != m.end();)
     {
-        CreaturePtr c = iter->getSource();
+        Creature* c = iter->getSource();
         ++iter;
 
         ASSERT(!c->isPet() && "ObjectGridRespawnMover must not be called for pets");
@@ -53,23 +52,23 @@ class ObjectWorldLoader
             : i_cell(gloader.i_cell), i_grid(gloader.i_grid), i_map(gloader.i_map), i_corpses (0)
             {}
 
-        void Visit(std::shared_ptr<CorpseMapType> &m);
+        void Visit(CorpseMapType &m);
 
-        template<class T> void Visit(std::shared_ptr<GridRefManager<T>>&) { }
+        template<class T> void Visit(GridRefManager<T>&) { }
 
     private:
         Cell i_cell;
-        NGridTypePtr &i_grid;
-        MapPtr i_map;
+        NGridType &i_grid;
+        Map* i_map;
     public:
         uint32 i_corpses;
 };
 
-template<class T> void ObjectGridLoader::SetObjectCell(std::shared_ptr<T> /*obj*/, CellCoord const& /*cellCoord*/)
+template<class T> void ObjectGridLoader::SetObjectCell(T* /*obj*/, CellCoord const& /*cellCoord*/)
 {
 }
 
-template<> void ObjectGridLoader::SetObjectCell(CreaturePtr obj, CellCoord const& cellCoord)
+template<> void ObjectGridLoader::SetObjectCell(Creature* obj, CellCoord const& cellCoord)
 {
     Cell cell(cellCoord);
 
@@ -77,7 +76,7 @@ template<> void ObjectGridLoader::SetObjectCell(CreaturePtr obj, CellCoord const
 }
 
 template <class T>
-void AddObjectHelper(CellCoord &cell, std::shared_ptr<GridRefManager<T>>& m, uint32 &count, MapPtr map, std::shared_ptr<T> obj)
+void AddObjectHelper(CellCoord &cell, GridRefManager<T> &m, uint32 &count, Map* map, T *obj)
 {
     obj->AddToGrid(m);
     ObjectGridLoader::SetObjectCell(obj, cell);
@@ -89,15 +88,16 @@ void AddObjectHelper(CellCoord &cell, std::shared_ptr<GridRefManager<T>>& m, uin
 }
 
 template <class T>
-void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, std::shared_ptr<GridRefManager<T>> &m, uint32 &count, MapPtr map)
+void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, GridRefManager<T> &m, uint32 &count, Map* map)
 {
     for (CellGuidSet::const_iterator i_guid = guid_set.begin(); i_guid != guid_set.end(); ++i_guid)
     {
-        std::shared_ptr<T> obj = ClassFactory::ConstructClass<T>();
+        T* obj = new T;
         uint32 guid = *i_guid;
         //sLog->outInfo(LOG_FILTER_GENERAL, "DEBUG: LoadHelper from table: %s for (guid: %u) Loading", table, guid);
         if (!obj->LoadFromDB(guid, map))
         {
+            delete obj;
             continue;
         }
 
@@ -105,7 +105,7 @@ void LoadHelper(CellGuidSet const& guid_set, CellCoord &cell, std::shared_ptr<Gr
     }
 }
 
-void LoadHelper(CellCorpseSet const& cell_corpses, CellCoord &cell, std::shared_ptr<CorpseMapType> &m, uint32 &count, MapPtr map)
+void LoadHelper(CellCorpseSet const& cell_corpses, CellCoord &cell, CorpseMapType &m, uint32 &count, Map* map)
 {
     if (cell_corpses.empty())
         return;
@@ -117,7 +117,7 @@ void LoadHelper(CellCorpseSet const& cell_corpses, CellCoord &cell, std::shared_
 
         uint32 player_guid = itr->first;
 
-        CorpsePtr obj = sObjectAccessor->GetCorpseForPlayerGUID(player_guid);
+        Corpse* obj = sObjectAccessor->GetCorpseForPlayerGUID(player_guid);
         if (!obj)
             continue;
 
@@ -137,21 +137,21 @@ void LoadHelper(CellCorpseSet const& cell_corpses, CellCoord &cell, std::shared_
     }
 }
 
-void ObjectGridLoader::Visit(std::shared_ptr<GameObjectMapType> &m)
+void ObjectGridLoader::Visit(GameObjectMapType &m)
 {
     CellCoord cellCoord = i_cell.GetCellCoord();
     CellObjectGuids const& cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetSpawnMode(), cellCoord.GetId());
     LoadHelper(cell_guids.gameobjects, cellCoord, m, i_gameObjects, i_map);
 }
 
-void ObjectGridLoader::Visit(std::shared_ptr<CreatureMapType> &m)
+void ObjectGridLoader::Visit(CreatureMapType &m)
 {
     CellCoord cellCoord = i_cell.GetCellCoord();
     CellObjectGuids const& cell_guids = sObjectMgr->GetCellObjectGuids(i_map->GetId(), i_map->GetSpawnMode(), cellCoord.GetId());
     LoadHelper(cell_guids.creatures, cellCoord, m, i_creatures, i_map);
 }
 
-void ObjectWorldLoader::Visit(std::shared_ptr<CorpseMapType> &m)
+void ObjectWorldLoader::Visit(CorpseMapType &m)
 {
     CellCoord cellCoord = i_cell.GetCellCoord();
     // corpses are always added to spawn mode 0 and they are spawned by their instance id
@@ -173,27 +173,27 @@ void ObjectGridLoader::LoadN(void)
             //Load creatures and game objects
             {
                 TypeContainerVisitor<ObjectGridLoader, GridTypeMapContainer> visitor(*this);
-                i_grid->VisitGrid(x, y, visitor);
+                i_grid.VisitGrid(x, y, visitor);
             }
 
             //Load corpses (not bones)
             {
                 ObjectWorldLoader worker(*this);
                 TypeContainerVisitor<ObjectWorldLoader, WorldTypeMapContainer> visitor(worker);
-                i_grid->VisitGrid(x, y, visitor);
+                i_grid.VisitGrid(x, y, visitor);
                 i_corpses += worker.i_corpses;
             }
         }
     }
-    sLog->outDebug(LOG_FILTER_MAPS, "%u GameObjects, %u Creatures, and %u Corpses/Bones loaded for grid %u on map %u", i_gameObjects, i_creatures, i_corpses, i_grid->GetGridId(), i_map->GetId());
+    sLog->outDebug(LOG_FILTER_MAPS, "%u GameObjects, %u Creatures, and %u Corpses/Bones loaded for grid %u on map %u", i_gameObjects, i_creatures, i_corpses, i_grid.GetGridId(), i_map->GetId());
 }
 
 template<class T>
-void ObjectGridUnloader::Visit(std::shared_ptr<GridRefManager<T>> &m)
+void ObjectGridUnloader::Visit(GridRefManager<T> &m)
 {
-    for (typename GridRefManager<T>::iterator itr = m->begin(); itr != m->end(); ++itr)
+    while (!m.isEmpty())
     {
-        std::shared_ptr<T> obj = m->getFirst()->getSource();
+        T *obj = m.getFirst()->getSource();
         // if option set then object already saved at this moment
         if (!sWorld->getBoolConfig(CONFIG_SAVE_RESPAWN_TIME_IMMEDIATELY))
             obj->SaveRespawnTime();
@@ -203,15 +203,14 @@ void ObjectGridUnloader::Visit(std::shared_ptr<GridRefManager<T>> &m)
         //TODO: Check if that script has the correct logic. Do we really need to summons something before deleting?
         obj->CleanupsBeforeDelete();
         ///- object will get delinked from the manager when deleted
-
+        delete obj;
     }
-    m->clearReferences();
 }
 
-void ObjectGridStoper::Visit(std::shared_ptr<CreatureMapType> &m)
+void ObjectGridStoper::Visit(CreatureMapType &m)
 {
     // stop any fights at grid de-activation and remove dynobjects created at cast by creatures
-    for (CreatureMapType::iterator iter=m->begin(); iter != m->end(); ++iter)
+    for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
         iter->getSource()->RemoveAllDynObjects();
         if (iter->getSource()->isInCombat())
@@ -224,17 +223,17 @@ void ObjectGridStoper::Visit(std::shared_ptr<CreatureMapType> &m)
 }
 
 template<class T>
-void ObjectGridCleaner::Visit(std::shared_ptr<GridRefManager<T>> &m)
+void ObjectGridCleaner::Visit(GridRefManager<T> &m)
 {
-    for (typename GridRefManager<T>::iterator iter = m->begin(); iter != m->end(); ++iter)
+    for (typename GridRefManager<T>::iterator iter = m.begin(); iter != m.end(); ++iter)
         iter->getSource()->CleanupsBeforeDelete();
 }
 
-template void ObjectGridUnloader::Visit(std::shared_ptr<CreatureMapType> &);
-template void ObjectGridUnloader::Visit(std::shared_ptr<GameObjectMapType> &);
-template void ObjectGridUnloader::Visit(std::shared_ptr<DynamicObjectMapType> &);
-template void ObjectGridUnloader::Visit(std::shared_ptr<CorpseMapType> &);
-template void ObjectGridCleaner::Visit(std::shared_ptr<CreatureMapType> &);
-template void ObjectGridCleaner::Visit<GameObject>(std::shared_ptr<GameObjectMapType> &);
-template void ObjectGridCleaner::Visit<DynamicObject>(std::shared_ptr<DynamicObjectMapType> &);
-template void ObjectGridCleaner::Visit<Corpse>(std::shared_ptr<CorpseMapType> &);
+template void ObjectGridUnloader::Visit(CreatureMapType &);
+template void ObjectGridUnloader::Visit(GameObjectMapType &);
+template void ObjectGridUnloader::Visit(DynamicObjectMapType &);
+template void ObjectGridUnloader::Visit(CorpseMapType &);
+template void ObjectGridCleaner::Visit(CreatureMapType &);
+template void ObjectGridCleaner::Visit<GameObject>(GameObjectMapType &);
+template void ObjectGridCleaner::Visit<DynamicObject>(DynamicObjectMapType &);
+template void ObjectGridCleaner::Visit<Corpse>(CorpseMapType &);

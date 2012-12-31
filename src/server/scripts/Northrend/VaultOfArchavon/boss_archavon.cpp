@@ -60,11 +60,11 @@ class boss_archavon : public CreatureScript
 
         struct boss_archavonAI : public BossAI
         {
-            boss_archavonAI(CreaturePtr creature) : BossAI(creature, DATA_ARCHAVON)
+            boss_archavonAI(Creature* creature) : BossAI(creature, DATA_ARCHAVON)
             {
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 events.ScheduleEvent(EVENT_ROCK_SHARDS, 15000);
                 events.ScheduleEvent(EVENT_CHOKING_CLOUD, 30000);
@@ -90,12 +90,12 @@ class boss_archavon : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_ROCK_SHARDS:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_ROCK_SHARDS);
                             events.ScheduleEvent(EVENT_ROCK_SHARDS, 15000);
                             break;
                         case EVENT_CHOKING_CLOUD:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_CRUSHING_LEAP, true); //10y~80y, ignore range
                             events.ScheduleEvent(EVENT_CHOKING_CLOUD, 30000);
                             break;
@@ -120,7 +120,7 @@ class boss_archavon : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_archavonAI(creature);
         }
@@ -136,7 +136,7 @@ class mob_archavon_warder : public CreatureScript
 
         struct mob_archavon_warderAI : public ScriptedAI //npc 32353
         {
-            mob_archavon_warderAI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_archavon_warderAI(Creature* creature) : ScriptedAI(creature)
             {
             }
 
@@ -150,7 +150,7 @@ class mob_archavon_warder : public CreatureScript
                 events.ScheduleEvent(EVENT_WHIRL, 7500);
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoZoneInCombat();
             }
@@ -170,7 +170,7 @@ class mob_archavon_warder : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_ROCK_SHOWER:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_ROCK_SHOWER);
                             events.ScheduleEvent(EVENT_ROCK_SHARDS, 6000);
                             break;
@@ -191,7 +191,7 @@ class mob_archavon_warder : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_archavon_warderAI(creature);
         }

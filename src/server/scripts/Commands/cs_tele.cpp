@@ -37,17 +37,17 @@ public:
     {
         static ChatCommand teleCommandTable[] =
         {
-            { "add",            SEC_ADMINISTRATOR,  false, &HandleTeleAddCommand,             "", nullptr },
-            { "del",            SEC_ADMINISTRATOR,  true,  &HandleTeleDelCommand,             "", nullptr },
-            { "name",           SEC_MODERATOR,      true,  &HandleTeleNameCommand,            "", nullptr },
-            { "group",          SEC_MODERATOR,      false, &HandleTeleGroupCommand,           "", nullptr },
-            { "",               SEC_MODERATOR,      false, &HandleTeleCommand,                "", nullptr },
-            { nullptr,             0,                  false, nullptr,                              "", nullptr }
+            { "add",            SEC_ADMINISTRATOR,  false, &HandleTeleAddCommand,             "", NULL },
+            { "del",            SEC_ADMINISTRATOR,  true,  &HandleTeleDelCommand,             "", NULL },
+            { "name",           SEC_MODERATOR,      true,  &HandleTeleNameCommand,            "", NULL },
+            { "group",          SEC_MODERATOR,      false, &HandleTeleGroupCommand,           "", NULL },
+            { "",               SEC_MODERATOR,      false, &HandleTeleCommand,                "", NULL },
+            { NULL,             0,                  false, NULL,                              "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "tele",           SEC_MODERATOR,      false, nullptr,                   "", teleCommandTable },
-            { nullptr,             0,                  false, nullptr,                               "", nullptr }
+            { "tele",           SEC_MODERATOR,      false, NULL,                   "", teleCommandTable },
+            { NULL,             0,                  false, NULL,                               "", NULL }
         };
         return commandTable;
     }
@@ -57,7 +57,7 @@ public:
         if (!*args)
             return false;
 
-        PlayerPtr player = handler->GetSession()->GetPlayer();
+        Player* player = handler->GetSession()->GetPlayer();
         if (!player)
             return false;
 
@@ -120,7 +120,7 @@ public:
         if (!teleStr)
             return false;
 
-        PlayerPtr target;
+        Player* target;
         uint64 target_guid;
         std::string target_name;
         if (!handler->extractPlayerTarget(nameStr, &target, &target_guid, &target_name))
@@ -195,7 +195,7 @@ public:
         else
         {
             // check offline security
-            if (handler->HasLowerSecurity(nullptr, target_guid))
+            if (handler->HasLowerSecurity(NULL, target_guid))
                 return false;
 
             std::string nameLink = handler->playerLink(target_name);
@@ -214,7 +214,7 @@ public:
         if (!*args)
             return false;
 
-        PlayerPtr target = handler->getSelectedPlayer();
+        Player* target = handler->getSelectedPlayer();
         if (!target)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
@@ -245,7 +245,7 @@ public:
 
         std::string nameLink = handler->GetNameLink(target);
 
-        GroupPtr grp = target->GetGroup();
+        Group* grp = target->GetGroup();
         if (!grp)
         {
             handler->PSendSysMessage(LANG_NOT_IN_GROUP, nameLink.c_str());
@@ -253,9 +253,9 @@ public:
             return false;
         }
 
-        for (GroupReferencePtr itr = grp->GetFirstMember(); itr != nullptr; itr = itr->next())
+        for (GroupReference* itr = grp->GetFirstMember(); itr != NULL; itr = itr->next())
         {
-            PlayerPtr player = itr->getSource();
+            Player* player = itr->getSource();
 
             if (!player || !player->GetSession())
                 continue;
@@ -297,7 +297,7 @@ public:
         if (!*args)
             return false;
 
-        PlayerPtr me = handler->GetSession()->GetPlayer();
+        Player* me = handler->GetSession()->GetPlayer();
 
         // id, or string, or [name] Shift-click form |color|Htele:id|h[name]|h|r
         GameTele const* tele = handler->extractGameTeleFromLink((char*)args);

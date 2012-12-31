@@ -42,14 +42,14 @@ class npc_lazy_peon : public CreatureScript
 public:
     npc_lazy_peon() : CreatureScript("npc_lazy_peon") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_lazy_peonAI(creature);
     }
 
     struct npc_lazy_peonAI : public ScriptedAI
     {
-        npc_lazy_peonAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_lazy_peonAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 PlayerGUID;
 
@@ -69,15 +69,15 @@ public:
                 work = true;
         }
 
-        void SpellHit(UnitPtr caster, const SpellInfo* spell)
+        void SpellHit(Unit* caster, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_AWAKEN_PEON && caster->GetTypeId() == TYPEID_PLAYER
                 && CAST_PLR(caster)->GetQuestStatus(QUEST_LAZY_PEONS) == QUEST_STATUS_INCOMPLETE)
             {
-                TO_PLAYER(caster)->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
+                caster->ToPlayer()->KilledMonsterCredit(me->GetEntry(), me->GetGUID());
                 DoScriptText(SAY_SPELL_HIT, me, caster);
                 me->RemoveAllAuras();
-                if (GameObjectPtr Lumberpile = me->FindNearestGameObject(GO_LUMBERPILE, 20))
+                if (GameObject* Lumberpile = me->FindNearestGameObject(GO_LUMBERPILE, 20))
                     me->GetMotionMaster()->MovePoint(1, Lumberpile->GetPositionX()-1, Lumberpile->GetPositionY(), Lumberpile->GetPositionZ());
             }
         }
@@ -134,7 +134,7 @@ class spell_voodoo : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 uint32 spellid = RAND(SPELL_BREW, SPELL_GHOSTLY, RAND(SPELL_HEX1, SPELL_HEX2, SPELL_HEX3), SPELL_GROW, SPELL_LAUNCH);
-                if (UnitPtr target = GetHitUnit())
+                if (Unit* target = GetHitUnit())
                     GetCaster()->CastSpell(target, spellid, false);
             }
 

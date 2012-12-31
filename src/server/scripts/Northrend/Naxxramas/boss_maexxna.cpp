@@ -63,18 +63,18 @@ class boss_maexxna : public CreatureScript
 public:
     boss_maexxna() : CreatureScript("boss_maexxna") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_maexxnaAI (creature);
     }
 
     struct boss_maexxnaAI : public BossAI
     {
-        boss_maexxnaAI(CreaturePtr creature) : BossAI(creature, BOSS_MAEXXNA) {}
+        boss_maexxnaAI(Creature* creature) : BossAI(creature, BOSS_MAEXXNA) {}
 
         bool enraged;
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
             enraged = false;
@@ -106,12 +106,12 @@ public:
                         // TODO : Add missing text
                         for (uint8 i = 0; i < RAID_MODE(1, 2); ++i)
                         {
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0, true, -SPELL_WEB_WRAP))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0, true, -SPELL_WEB_WRAP))
                             {
                                 target->RemoveAura(RAID_MODE(SPELL_WEB_SPRAY_10, SPELL_WEB_SPRAY_25));
                                 uint8 pos = rand()%MAX_POS_WRAP;
                                 target->GetMotionMaster()->MoveJump(PosWrap[pos].GetPositionX(), PosWrap[pos].GetPositionY(), PosWrap[pos].GetPositionZ(), 20, 20);
-                                if (CreaturePtr wrap = DoSummon(MOB_WEB_WRAP, PosWrap[pos], 0, TEMPSUMMON_CORPSE_DESPAWN))
+                                if (Creature* wrap = DoSummon(MOB_WEB_WRAP, PosWrap[pos], 0, TEMPSUMMON_CORPSE_DESPAWN))
                                     wrap->AI()->SetGUID(target->GetGUID());
                             }
                         }
@@ -154,14 +154,14 @@ class mob_webwrap : public CreatureScript
 public:
     mob_webwrap() : CreatureScript("mob_webwrap") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_webwrapAI (creature);
     }
 
     struct mob_webwrapAI : public NullCreatureAI
     {
-        mob_webwrapAI(CreaturePtr creature) : NullCreatureAI(creature), victimGUID(0) {}
+        mob_webwrapAI(Creature* creature) : NullCreatureAI(creature), victimGUID(0) {}
 
         uint64 victimGUID;
 
@@ -169,14 +169,14 @@ public:
         {
             victimGUID = guid;
             if (me->m_spells[0] && victimGUID)
-                if (UnitPtr victim = Unit::GetUnit(TO_WORLDOBJECT(me), victimGUID))
-                    victim->CastSpell(victim, me->m_spells[0], true, nullptr, nullptr, me->GetGUID());
+                if (Unit* victim = Unit::GetUnit(*me, victimGUID))
+                    victim->CastSpell(victim, me->m_spells[0], true, NULL, NULL, me->GetGUID());
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (me->m_spells[0] && victimGUID)
-                if (UnitPtr victim = Unit::GetUnit(TO_WORLDOBJECT(me), victimGUID))
+                if (Unit* victim = Unit::GetUnit(*me, victimGUID))
                     victim->RemoveAurasDueToSpell(me->m_spells[0], me->GetGUID());
         }
     };

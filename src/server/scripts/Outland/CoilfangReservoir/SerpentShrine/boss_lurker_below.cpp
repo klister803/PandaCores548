@@ -72,14 +72,14 @@ class boss_the_lurker_below : public CreatureScript
 public:
     boss_the_lurker_below() : CreatureScript("boss_the_lurker_below") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_the_lurker_belowAI (creature);
     }
 
     struct boss_the_lurker_belowAI : public Scripted_NoMovementAI
     {
-        boss_the_lurker_belowAI(CreaturePtr creature) : Scripted_NoMovementAI(creature), Summons(me)
+        boss_the_lurker_belowAI(Creature* creature) : Scripted_NoMovementAI(creature), Summons(me)
         {
             instance = creature->GetInstanceScript();
         }
@@ -140,7 +140,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
             {
@@ -151,14 +151,14 @@ public:
             Summons.DespawnAll();
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             if (instance)
                 instance->SetData(DATA_THELURKERBELOWEVENT, IN_PROGRESS);
             Scripted_NoMovementAI::EnterCombat(who);
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!CanStartEvent) // boss is invisible, don't attack
                 return;
@@ -213,7 +213,7 @@ public:
                 return;
             }
 
-            if (me->getThreatManager()->getThreatList().empty()) // check if should evade
+            if (me->getThreatManager().getThreatList().empty()) // check if should evade
             {
                 if (me->isInCombat())
                     EnterEvadeMode();
@@ -250,7 +250,7 @@ public:
                 if (CheckTimer <= diff)//check if there are players in melee range
                 {
                     InRange = false;
-                    MapPtr map = me->GetMap();
+                    Map* map = me->GetMap();
                     Map::PlayerList const &PlayerList = map->GetPlayers();
                     if (!PlayerList.isEmpty())
                     {
@@ -265,13 +265,13 @@ public:
 
                 if (RotTimer)
                 {
-                    MapPtr map = me->GetMap();
+                    Map* map = me->GetMap();
                     if (map->IsDungeon())
                     {
                         Map::PlayerList const &PlayerList = map->GetPlayers();
                         for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                         {
-                            if (i->getSource() && i->getSource()->isAlive() && me->HasInArc(float(diff/20000*M_PI*2), i->getSource().get()) && me->IsWithinDist(i->getSource(), SPOUT_DIST) && !i->getSource()->IsInWater())
+                            if (i->getSource() && i->getSource()->isAlive() && me->HasInArc(float(diff/20000*M_PI*2), i->getSource()) && me->IsWithinDist(i->getSource(), SPOUT_DIST) && !i->getSource()->IsInWater())
                                 DoCast(i->getSource(), SPELL_SPOUT, true); // only knock back players in arc, in 100yards, not in water
                         }
                     }
@@ -291,7 +291,7 @@ public:
 
                 if (GeyserTimer <= diff)
                 {
-                    UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                    Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1);
                     if (!target && me->getVictim())
                         target = me->getVictim();
                     if (target)
@@ -303,7 +303,7 @@ public:
                 {
                     if (WaterboltTimer <= diff)
                     {
-                        UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                        Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                         if (!target && me->getVictim())
                             target = me->getVictim();
                         if (target)
@@ -334,7 +334,7 @@ public:
                     return;
                 } else PhaseTimer-=diff;
 
-                if (me->getThreatManager()->getThreatList().empty()) // check if should evade
+                if (me->getThreatManager().getThreatList().empty()) // check if should evade
                 {
                     EnterEvadeMode();
                     return;
@@ -348,7 +348,7 @@ public:
                     me->SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                     // spawn adds
                     for (uint8 i = 0; i < 9; ++i)
-                        if (CreaturePtr summoned = me->SummonCreature(i < 6 ? MOB_COILFANG_AMBUSHER : MOB_COILFANG_GUARDIAN, AddPos[i][0], AddPos[i][1], AddPos[i][2], 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
+                        if (Creature* summoned = me->SummonCreature(i < 6 ? MOB_COILFANG_AMBUSHER : MOB_COILFANG_GUARDIAN, AddPos[i][0], AddPos[i][1], AddPos[i][2], 0, TEMPSUMMON_CORPSE_DESPAWN, 0))
                             Summons.Summon(summoned);
                     Spawned = true;
                 }
@@ -362,14 +362,14 @@ class mob_coilfang_ambusher : public CreatureScript
 public:
     mob_coilfang_ambusher() : CreatureScript("mob_coilfang_ambusher") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_coilfang_ambusherAI (creature);
     }
 
     struct mob_coilfang_ambusherAI : public Scripted_NoMovementAI
     {
-        mob_coilfang_ambusherAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
+        mob_coilfang_ambusherAI(Creature* creature) : Scripted_NoMovementAI(creature)
         {
         }
 
@@ -382,7 +382,7 @@ public:
             ShootBowTimer = 4000;
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!who || me->getVictim())
                 return;
@@ -405,8 +405,8 @@ public:
             if (ShootBowTimer <= diff)
             {
                 int bp0 = 1100;
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
-                    me->CastCustomSpell(target, SPELL_SHOOT, &bp0, nullptr, nullptr, true);
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    me->CastCustomSpell(target, SPELL_SHOOT, &bp0, NULL, NULL, true);
                 ShootBowTimer = 4000+rand()%5000;
                 MultiShotTimer += 1500; // add global cooldown
             } else ShootBowTimer -= diff;
@@ -420,7 +420,7 @@ class go_strange_pool : public GameObjectScript
     public:
         go_strange_pool() : GameObjectScript("go_strange_pool") {}
 
-        bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
+        bool OnGossipHello(Player* player, GameObject* go)
         {
             // 25%
             if (InstanceScript* instanceScript = go->GetInstanceScript())

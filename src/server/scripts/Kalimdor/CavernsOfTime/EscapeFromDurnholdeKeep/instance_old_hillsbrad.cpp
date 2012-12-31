@@ -44,14 +44,14 @@ class instance_old_hillsbrad : public InstanceMapScript
 public:
     instance_old_hillsbrad() : InstanceMapScript("instance_old_hillsbrad", 560) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_old_hillsbrad_InstanceMapScript(map);
     }
 
     struct instance_old_hillsbrad_InstanceMapScript : public InstanceScript
     {
-        instance_old_hillsbrad_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_old_hillsbrad_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
         uint32 mBarrelCount;
@@ -72,7 +72,7 @@ public:
             EpochGUID        = 0;
         }
 
-        PlayerPtr GetPlayerInMap()
+        Player* GetPlayerInMap()
         {
             Map::PlayerList const& players = instance->GetPlayers();
 
@@ -80,13 +80,13 @@ public:
             {
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 {
-                    if (PlayerPtr player = itr->getSource())
+                    if (Player* player = itr->getSource())
                         return player;
                 }
             }
 
             sLog->outDebug(LOG_FILTER_TSCR, "Instance Old Hillsbrad: GetPlayerInMap, but PlayerList is empty!");
-            return nullptr;
+            return NULL;
         }
 
         void UpdateQuestCredit()
@@ -97,13 +97,13 @@ public:
             {
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 {
-                    if (PlayerPtr player = itr->getSource())
+                    if (Player* player = itr->getSource())
                         player->KilledMonsterCredit(LODGE_QUEST_TRIGGER, 0);
                 }
             }
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -121,7 +121,7 @@ public:
 
         void SetData(uint32 type, uint32 data)
         {
-            PlayerPtr player = GetPlayerInMap();
+            Player* player = GetPlayerInMap();
 
             if (!player)
             {

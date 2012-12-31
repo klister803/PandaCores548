@@ -37,41 +37,41 @@ public:
     {
         static ChatCommand unbanCommandTable[] =
         {
-            { "account",        SEC_ADMINISTRATOR,  true,  &HandleUnBanAccountCommand,          "", nullptr },
-            { "character",      SEC_ADMINISTRATOR,  true,  &HandleUnBanCharacterCommand,        "", nullptr },
-            { "playeraccount",  SEC_ADMINISTRATOR,  true,  &HandleUnBanAccountByCharCommand,    "", nullptr },
-            { "ip",             SEC_ADMINISTRATOR,  true,  &HandleUnBanIPCommand,               "", nullptr },
-            { nullptr,             0,                  false, nullptr,                                "", nullptr }
+            { "account",        SEC_ADMINISTRATOR,  true,  &HandleUnBanAccountCommand,          "", NULL },
+            { "character",      SEC_ADMINISTRATOR,  true,  &HandleUnBanCharacterCommand,        "", NULL },
+            { "playeraccount",  SEC_ADMINISTRATOR,  true,  &HandleUnBanAccountByCharCommand,    "", NULL },
+            { "ip",             SEC_ADMINISTRATOR,  true,  &HandleUnBanIPCommand,               "", NULL },
+            { NULL,             0,                  false, NULL,                                "", NULL }
         };
         static ChatCommand banlistCommandTable[] =
         {
-            { "account",        SEC_ADMINISTRATOR,  true,  &HandleBanListAccountCommand,        "", nullptr },
-            { "character",      SEC_ADMINISTRATOR,  true,  &HandleBanListCharacterCommand,      "", nullptr },
-            { "ip",             SEC_ADMINISTRATOR,  true,  &HandleBanListIPCommand,             "", nullptr },
-            { nullptr,             0,                  false, nullptr,                                "", nullptr }
+            { "account",        SEC_ADMINISTRATOR,  true,  &HandleBanListAccountCommand,        "", NULL },
+            { "character",      SEC_ADMINISTRATOR,  true,  &HandleBanListCharacterCommand,      "", NULL },
+            { "ip",             SEC_ADMINISTRATOR,  true,  &HandleBanListIPCommand,             "", NULL },
+            { NULL,             0,                  false, NULL,                                "", NULL }
         };
         static ChatCommand baninfoCommandTable[] =
         {
-            { "account",        SEC_ADMINISTRATOR,  true,  &HandleBanInfoAccountCommand,        "", nullptr },
-            { "character",      SEC_ADMINISTRATOR,  true,  &HandleBanInfoCharacterCommand,      "", nullptr },
-            { "ip",             SEC_ADMINISTRATOR,  true,  &HandleBanInfoIPCommand,             "", nullptr },
-            { nullptr,             0,                  false, nullptr,                                "", nullptr }
+            { "account",        SEC_ADMINISTRATOR,  true,  &HandleBanInfoAccountCommand,        "", NULL },
+            { "character",      SEC_ADMINISTRATOR,  true,  &HandleBanInfoCharacterCommand,      "", NULL },
+            { "ip",             SEC_ADMINISTRATOR,  true,  &HandleBanInfoIPCommand,             "", NULL },
+            { NULL,             0,                  false, NULL,                                "", NULL }
         };
         static ChatCommand banCommandTable[] =
         {
-            { "account",        SEC_ADMINISTRATOR,  true,  &HandleBanAccountCommand,            "", nullptr },
-            { "character",      SEC_ADMINISTRATOR,  true,  &HandleBanCharacterCommand,          "", nullptr },
-            { "playeraccount",  SEC_ADMINISTRATOR,  true,  &HandleBanAccountByCharCommand,      "", nullptr },
-            { "ip",             SEC_ADMINISTRATOR,  true,  &HandleBanIPCommand,                 "", nullptr },
-            { nullptr,             0,                  false, nullptr,                                "", nullptr }
+            { "account",        SEC_ADMINISTRATOR,  true,  &HandleBanAccountCommand,            "", NULL },
+            { "character",      SEC_ADMINISTRATOR,  true,  &HandleBanCharacterCommand,          "", NULL },
+            { "playeraccount",  SEC_ADMINISTRATOR,  true,  &HandleBanAccountByCharCommand,      "", NULL },
+            { "ip",             SEC_ADMINISTRATOR,  true,  &HandleBanIPCommand,                 "", NULL },
+            { NULL,             0,                  false, NULL,                                "", NULL }
         };
         static ChatCommand commandTable[] =
         {
-            { "ban",            SEC_ADMINISTRATOR,  true,  nullptr,                                "", banCommandTable },
-            { "baninfo",        SEC_ADMINISTRATOR,  true,  nullptr,                                "", baninfoCommandTable },
-            { "banlist",        SEC_ADMINISTRATOR,  true,  nullptr,                                "", banlistCommandTable },
-            { "unban",          SEC_ADMINISTRATOR,  true,  nullptr,                                "", unbanCommandTable },
-            { nullptr,             0,                  false, nullptr,                                "", nullptr }
+            { "ban",            SEC_ADMINISTRATOR,  true,  NULL,                                "", banCommandTable },
+            { "baninfo",        SEC_ADMINISTRATOR,  true,  NULL,                                "", baninfoCommandTable },
+            { "banlist",        SEC_ADMINISTRATOR,  true,  NULL,                                "", banlistCommandTable },
+            { "unban",          SEC_ADMINISTRATOR,  true,  NULL,                                "", unbanCommandTable },
+            { NULL,             0,                  false, NULL,                                "", NULL }
         };
         return commandTable;
     }
@@ -92,11 +92,11 @@ public:
 
         std::string name = nameStr;
 
-        char* durationStr = strtok(nullptr, " ");
+        char* durationStr = strtok(NULL, " ");
         if (!durationStr || !atoi(durationStr))
             return false;
 
-        char* reasonStr = strtok(nullptr, "");
+        char* reasonStr = strtok(NULL, "");
         if (!reasonStr)
             return false;
 
@@ -151,11 +151,11 @@ public:
 
         std::string nameOrIP = cnameOrIP;
 
-        char* durationStr = strtok(nullptr, " ");
+        char* durationStr = strtok(NULL, " ");
         if (!durationStr || !atoi(durationStr))
             return false;
 
-        char* reasonStr = strtok(nullptr, "");
+        char* reasonStr = strtok(NULL, "");
         if (!reasonStr)
             return false;
 
@@ -256,7 +256,7 @@ public:
 
             time_t unbanDate = time_t(fields[3].GetUInt32());
             bool active = false;
-            if (fields[2].GetBool() && (fields[1].GetUInt64() == uint64(0) || unbanDate >= time(nullptr)))
+            if (fields[2].GetBool() && (fields[1].GetUInt64() == uint64(0) || unbanDate >= time(NULL)))
                 active = true;
             bool permanent = (fields[1].GetUInt64() == uint64(0));
             std::string banTime = permanent ? handler->GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(fields[1].GetUInt64(), true);
@@ -273,7 +273,7 @@ public:
         if (!*args)
             return false;
 
-        PlayerPtr target = sObjectAccessor->FindPlayerByName(args);
+        Player* target = sObjectAccessor->FindPlayerByName(args);
         uint32 targetGuid = 0;
         std::string name(args);
 
@@ -309,7 +309,7 @@ public:
             Field* fields = result->Fetch();
             time_t unbanDate = time_t(fields[3].GetUInt32());
             bool active = false;
-            if (fields[2].GetUInt8() && (!fields[1].GetUInt32() || unbanDate >= time(nullptr)))
+            if (fields[2].GetUInt8() && (!fields[1].GetUInt32() || unbanDate >= time(NULL)))
                 active = true;
             bool permanent = (fields[1].GetUInt32() == uint32(0));
             std::string banTime = permanent ? handler->GetTrinityString(LANG_BANINFO_INFINITE) : secsToTimeString(fields[1].GetUInt32(), true);

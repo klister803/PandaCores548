@@ -55,7 +55,7 @@ public:
 
     struct boss_gythAI : public BossAI
     {
-        boss_gythAI(CreaturePtr creature) : BossAI(creature, DATA_GYTH)
+        boss_gythAI(Creature* creature) : BossAI(creature, DATA_GYTH)
         {
             DoCast(me, SPELL_SELF_ROOT_FOREVER);
         }
@@ -71,7 +71,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
             events.ScheduleEvent(EVENT_SUMMON_DRAGON_PACK, 3 * IN_MILLISECONDS);
@@ -79,7 +79,7 @@ public:
             events.ScheduleEvent(EVENT_AGGRO, 60 * IN_MILLISECONDS);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             _JustDied();
         }
@@ -87,8 +87,8 @@ public:
         void SummonCreatureWithRandomTarget(uint32 creatureId, uint8 count)
         {
             for (uint8 n = 0; n < count; n++)
-                if (UnitPtr Summoned = me->SummonCreature(creatureId, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 240 * IN_MILLISECONDS))
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
+                if (Unit* Summoned = me->SummonCreature(creatureId, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), 0, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 240 * IN_MILLISECONDS))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 50.0f, true))
                         Summoned->AddThreat(target, 250.0f);
         }
 
@@ -168,7 +168,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_gythAI(creature);
     }

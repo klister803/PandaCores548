@@ -61,14 +61,14 @@ class boss_magus_telestra : public CreatureScript
 public:
     boss_magus_telestra() : CreatureScript("boss_magus_telestra") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_magus_telestraAI (creature);
     }
 
     struct boss_magus_telestraAI : public ScriptedAI
     {
-        boss_magus_telestraAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_magus_telestraAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -120,7 +120,7 @@ public:
                 instance->SetData(DATA_MAGUS_TELESTRA_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -128,7 +128,7 @@ public:
                 instance->SetData(DATA_MAGUS_TELESTRA_EVENT, IN_PROGRESS);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -136,7 +136,7 @@ public:
                 instance->SetData(DATA_MAGUS_TELESTRA_EVENT, DONE);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(SAY_KILL, me);
         }
@@ -165,7 +165,7 @@ public:
 
         uint64 SplitPersonality(uint32 entry)
         {
-            if (CreaturePtr Summoned = me->SummonCreature(entry, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1*IN_MILLISECONDS))
+            if (Creature* Summoned = me->SummonCreature(entry, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation(), TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1*IN_MILLISECONDS))
             {
                 switch (entry)
                 {
@@ -185,14 +185,14 @@ public:
                         break;
                     }
                 }
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     Summoned->AI()->AttackStart(target);
                 return Summoned->GetGUID();
             }
             return 0;
         }
 
-        void SummonedCreatureDespawn(CreaturePtr summon)
+        void SummonedCreatureDespawn(Creature* summon)
         {
             if (summon->isAlive())
                 return;
@@ -304,7 +304,7 @@ public:
 
             if (uiIceNovaTimer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
                     DoCast(target, SPELL_ICE_NOVA, false);
                     uiCooldown = 1500;
@@ -314,7 +314,7 @@ public:
 
             if (uiGravityWellTimer <= diff)
             {
-                if (UnitPtr target = me->getVictim())
+                if (Unit* target = me->getVictim())
                 {
                     DoCast(target, SPELL_GRAVITY_WELL);
                     uiCooldown = 6*IN_MILLISECONDS;
@@ -324,7 +324,7 @@ public:
 
             if (uiFireBombTimer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                 {
                     DoCast(target, SPELL_FIREBOMB, false);
                     uiCooldown = 2*IN_MILLISECONDS;
@@ -345,12 +345,12 @@ class achievement_split_personality : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
+        bool OnCheck(Player* /*player*/, Unit* target)
         {
             if (!target)
                 return false;
 
-            if (CreaturePtr Telestra = TO_CREATURE(target))
+            if (Creature* Telestra = target->ToCreature())
                 if (Telestra->AI()->GetData(DATA_SPLIT_PERSONALITY) == 2)
                     return true;
 

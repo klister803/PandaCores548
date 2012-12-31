@@ -72,14 +72,14 @@ class boss_nefarian : public CreatureScript
 public:
     boss_nefarian() : CreatureScript("boss_nefarian") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_nefarianAI (creature);
     }
 
     struct boss_nefarianAI : public ScriptedAI
     {
-        boss_nefarianAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_nefarianAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 ShadowFlame_Timer;
         uint32 BellowingRoar_Timer;
@@ -104,7 +104,7 @@ public:
             DespawnTimer = 5000;
         }
 
-        void KilledUnit(UnitPtr Victim)
+        void KilledUnit(Unit* Victim)
         {
             if (rand()%5)
                 return;
@@ -112,12 +112,12 @@ public:
             DoScriptText(SAY_SLAY, me, Victim);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             DoScriptText(RAND(SAY_XHEALTH, SAY_AGGRO, SAY_SHADOWFLAME), me);
 

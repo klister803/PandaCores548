@@ -29,9 +29,9 @@ OutdoorPvPNA::OutdoorPvPNA()
     m_TypeId = OUTDOOR_PVP_NA;
 }
 
-void OutdoorPvPNA::HandleKillImpl(PlayerPtr player, UnitPtr killed)
+void OutdoorPvPNA::HandleKillImpl(Player* player, Unit* killed)
 {
-    if (killed->GetTypeId() == TYPEID_PLAYER && player->GetTeam() != TO_PLAYER(killed)->GetTeam())
+    if (killed->GetTypeId() == TYPEID_PLAYER && player->GetTeam() != killed->ToPlayer()->GetTeam())
     {
         player->KilledMonsterCredit(NA_CREDIT_MARKER, 0); // 0 guid, btw it isn't even used in killedmonster function :S
         if (player->GetTeam() == ALLIANCE)
@@ -63,7 +63,7 @@ uint32 OPvPCapturePointNA::GetAliveGuardsCount()
         case NA_NPC_GUARD_13:
         case NA_NPC_GUARD_14:
         case NA_NPC_GUARD_15:
-            if (constCreaturePtr const cr = HashMapHolder<Creature>::Find(itr->second))
+            if (Creature const* const cr = HashMapHolder<Creature>::Find(itr->second))
                 if (cr->isAlive())
                     ++cnt;
             break;
@@ -81,7 +81,7 @@ uint32 OPvPCapturePointNA::GetControllingFaction() const
 
 void OPvPCapturePointNA::SpawnNPCsForTeam(uint32 team)
 {
-    const creature_type * creatures = nullptr;
+    const creature_type * creatures = NULL;
     if (team == ALLIANCE)
         creatures=AllianceControlNPCs;
     else if (team == HORDE)
@@ -100,7 +100,7 @@ void OPvPCapturePointNA::DeSpawnNPCs()
 
 void OPvPCapturePointNA::SpawnGOsForTeam(uint32 team)
 {
-    const go_type * gos = nullptr;
+    const go_type * gos = NULL;
     if (team == ALLIANCE)
         gos=AllianceControlGOs;
     else if (team == HORDE)
@@ -179,7 +179,7 @@ void OPvPCapturePointNA::FactionTakeOver(uint32 team)
     UpdateWyvernRoostWorldState(NA_ROOST_E);
 }
 
-bool OPvPCapturePointNA::HandlePlayerEnter(PlayerPtr player)
+bool OPvPCapturePointNA::HandlePlayerEnter(Player* player)
 {
     if (OPvPCapturePoint::HandlePlayerEnter(player))
     {
@@ -192,7 +192,7 @@ bool OPvPCapturePointNA::HandlePlayerEnter(PlayerPtr player)
     return false;
 }
 
-void OPvPCapturePointNA::HandlePlayerLeave(PlayerPtr player)
+void OPvPCapturePointNA::HandlePlayerLeave(Player* player)
 {
     player->SendUpdateWorldState(NA_UI_TOWER_SLIDER_DISPLAY, 0);
     OPvPCapturePoint::HandlePlayerLeave(player);
@@ -221,7 +221,7 @@ bool OutdoorPvPNA::SetupOutdoorPvP()
     return true;
 }
 
-void OutdoorPvPNA::HandlePlayerEnterZone(PlayerPtr player, uint32 zone)
+void OutdoorPvPNA::HandlePlayerEnterZone(Player* player, uint32 zone)
 {
     // add buffs
     if (player->GetTeam() == m_obj->GetControllingFaction())
@@ -229,7 +229,7 @@ void OutdoorPvPNA::HandlePlayerEnterZone(PlayerPtr player, uint32 zone)
     OutdoorPvP::HandlePlayerEnterZone(player, zone);
 }
 
-void OutdoorPvPNA::HandlePlayerLeaveZone(PlayerPtr player, uint32 zone)
+void OutdoorPvPNA::HandlePlayerLeaveZone(Player* player, uint32 zone)
 {
     // remove buffs
     player->RemoveAurasDueToSpell(NA_CAPTURE_BUFF);
@@ -293,7 +293,7 @@ void OPvPCapturePointNA::FillInitialWorldStates(WorldPacket &data)
     data << NA_MAP_HALAA_ALLIANCE << uint32(bool(m_HalaaState & HALAA_A));
 }
 
-void OutdoorPvPNA::SendRemoveWorldStates(PlayerPtr player)
+void OutdoorPvPNA::SendRemoveWorldStates(Player* player)
 {
     player->SendUpdateWorldState(NA_UI_HORDE_GUARDS_SHOW, 0);
     player->SendUpdateWorldState(NA_UI_ALLIANCE_GUARDS_SHOW, 0);
@@ -330,7 +330,7 @@ bool OutdoorPvPNA::Update(uint32 diff)
     return m_obj->Update(diff);
 }
 
-bool OPvPCapturePointNA::HandleCustomSpell(PlayerPtr player, uint32 spellId, GameObjectPtr /*go*/)
+bool OPvPCapturePointNA::HandleCustomSpell(Player* player, uint32 spellId, GameObject* /*go*/)
 {
     std::vector<uint32> nodes;
     nodes.resize(2);
@@ -393,7 +393,7 @@ bool OPvPCapturePointNA::HandleCustomSpell(PlayerPtr player, uint32 spellId, Gam
             return true;
         }
 
-        ItemPtr item = player->StoreNewItem(dest, itemid, true);
+        Item* item = player->StoreNewItem(dest, itemid, true);
 
         if (count > 0 && item)
         {
@@ -405,12 +405,12 @@ bool OPvPCapturePointNA::HandleCustomSpell(PlayerPtr player, uint32 spellId, Gam
     return false;
 }
 
-int32 OPvPCapturePointNA::HandleOpenGo(PlayerPtr player, uint64 guid)
+int32 OPvPCapturePointNA::HandleOpenGo(Player* player, uint64 guid)
 {
     int32 retval = OPvPCapturePoint::HandleOpenGo(player, guid);
     if (retval >= 0)
     {
-        const go_type * gos = nullptr;
+        const go_type * gos = NULL;
         if (m_ControllingFaction == ALLIANCE)
             gos=AllianceControlGOs;
         else if (m_ControllingFaction == HORDE)
@@ -600,7 +600,7 @@ void OPvPCapturePointNA::ChangeState()
         break;
     }
 
-    GameObjectPtr flag = HashMapHolder<GameObject>::Find(m_capturePointGUID);
+    GameObject* flag = HashMapHolder<GameObject>::Find(m_capturePointGUID);
     if (flag)
     {
         flag->SetGoArtKit(artkit);

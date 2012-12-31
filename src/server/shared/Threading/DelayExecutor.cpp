@@ -88,7 +88,7 @@ int DelayExecutor::activate(int num_threads, ACE_Method_Request* pre_svc_hook, A
 
 int DelayExecutor::execute(ACE_Method_Request* new_req)
 {
-    if (new_req == nullptr)
+    if (new_req == NULL)
         return -1;
 
     if (queue_.enqueue(new_req, (ACE_Time_Value*)&ACE_Time_Value::zero) == -1)

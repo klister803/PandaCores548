@@ -27,7 +27,7 @@ class go_shadowforge_brazier : public GameObjectScript
 public:
     go_shadowforge_brazier() : GameObjectScript("go_shadowforge_brazier") { }
 
-    bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
+    bool OnGossipHello(Player* /*player*/, GameObject* go)
     {
         if (InstanceScript* instance = go->GetInstanceScript())
         {
@@ -80,7 +80,7 @@ class at_ring_of_law : public AreaTriggerScript
 public:
     at_ring_of_law() : AreaTriggerScript("at_ring_of_law") { }
 
-    bool OnTrigger(PlayerPtr player, const AreaTriggerEntry* /*at*/)
+    bool OnTrigger(Player* player, const AreaTriggerEntry* /*at*/)
     {
         if (InstanceScript* instance = player->GetInstanceScript())
         {
@@ -113,14 +113,14 @@ class npc_grimstone : public CreatureScript
 public:
     npc_grimstone() : CreatureScript("npc_grimstone") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_grimstoneAI(creature);
     }
 
     struct npc_grimstoneAI : public npc_escortAI
     {
-        npc_grimstoneAI(CreaturePtr creature) : npc_escortAI(creature)
+        npc_grimstoneAI(Creature* creature) : npc_escortAI(creature)
         {
             instance = creature->GetInstanceScript();
             MobSpawnId = rand()%6;
@@ -161,7 +161,7 @@ public:
         //TODO: move them to center
         void SummonRingMob()
         {
-            if (CreaturePtr tmp = me->SummonCreature(RingMob[MobSpawnId], 608.960f, -235.322f, -53.907f, 1.857f, TEMPSUMMON_DEAD_DESPAWN, 0))
+            if (Creature* tmp = me->SummonCreature(RingMob[MobSpawnId], 608.960f, -235.322f, -53.907f, 1.857f, TEMPSUMMON_DEAD_DESPAWN, 0))
                 RingMobGUID[MobCount] = tmp->GetGUID();
 
             ++MobCount;
@@ -173,7 +173,7 @@ public:
         //TODO: move them to center
         void SummonRingBoss()
         {
-            if (CreaturePtr tmp = me->SummonCreature(RingBoss[rand()%6], 644.300f, -175.989f, -53.739f, 3.418f, TEMPSUMMON_DEAD_DESPAWN, 0))
+            if (Creature* tmp = me->SummonCreature(RingBoss[rand()%6], 644.300f, -175.989f, -53.739f, 3.418f, TEMPSUMMON_DEAD_DESPAWN, 0))
                 RingBossGUID = tmp->GetGUID();
 
             MobDeath_Timer = 2500;
@@ -233,7 +233,7 @@ public:
 
                     if (RingBossGUID)
                     {
-                        CreaturePtr boss = Unit::GetCreature(TO_WORLDOBJECT(me), RingBossGUID);
+                        Creature* boss = Unit::GetCreature(*me, RingBossGUID);
                         if (boss && !boss->isAlive() && boss->isDead())
                         {
                             RingBossGUID = 0;
@@ -246,7 +246,7 @@ public:
 
                     for (uint8 i = 0; i < MAX_MOB_AMOUNT; ++i)
                     {
-                        CreaturePtr mob = Unit::GetCreature(TO_WORLDOBJECT(me), RingMobGUID[i]);
+                        Creature* mob = Unit::GetCreature(*me, RingMobGUID[i]);
                         if (mob && !mob->isAlive() && mob->isDead())
                         {
                             RingMobGUID[i] = 0;
@@ -350,14 +350,14 @@ class mob_phalanx : public CreatureScript
 public:
     mob_phalanx() : CreatureScript("mob_phalanx") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_phalanxAI (creature);
     }
 
     struct mob_phalanxAI : public ScriptedAI
     {
-        mob_phalanxAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        mob_phalanxAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 ThunderClap_Timer;
         uint32 FireballVolley_Timer;
@@ -428,7 +428,7 @@ class npc_kharan_mighthammer : public CreatureScript
 public:
     npc_kharan_mighthammer() : CreatureScript("npc_kharan_mighthammer") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -477,7 +477,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -522,7 +522,7 @@ class npc_lokhtos_darkbargainer : public CreatureScript
 public:
     npc_lokhtos_darkbargainer() : CreatureScript("npc_lokhtos_darkbargainer") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF + 1)
@@ -536,7 +536,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -575,7 +575,7 @@ class npc_dughal_stormwing : public CreatureScript
 public:
     npc_dughal_stormwing() : CreatureScript("npc_dughal_stormwing") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         npc_dughal_stormwingAI* dughal_stormwingAI = new npc_dughal_stormwingAI(creature);
 
@@ -586,7 +586,7 @@ public:
         return dughal_stormwingAI;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 sender, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF + 1)
@@ -599,7 +599,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (player->GetQuestStatus(QUEST_JAIL_BREAK) == QUEST_STATUS_INCOMPLETE && instance->GetData(DATA_QUEST_JAIL_BREAK) == ENCOUNTER_STATE_IN_PROGRESS)
         {
@@ -611,7 +611,7 @@ public:
 
     struct npc_dughal_stormwingAI : public npc_escortAI
     {
-        npc_dughal_stormwingAI(CreaturePtr creature) : npc_escortAI(creature) {}
+        npc_dughal_stormwingAI(Creature* creature) : npc_escortAI(creature) {}
 
         void WaypointReached(uint32 waypointId)
         {
@@ -632,10 +632,10 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr who) {}
+        void EnterCombat(Unit* who) {}
         void Reset() {}
 
-        void JustDied(UnitPtr killer)
+        void JustDied(Unit* killer)
         {
             if (IsBeingEscorted && killer == me)
             {
@@ -681,13 +681,13 @@ public:
 #define MOB_ENTRY_REGINALD_WINDSOR  9682
 
 /*
-PlayerPtr playerStart;
+Player* playerStart;
 class npc_marshal_windsor : public CreatureScript
 {
 public:
     npc_marshal_windsor() : CreatureScript("npc_marshal_windsor") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         npc_marshal_windsorAI* marshal_windsorAI = new npc_marshal_windsorAI(creature);
 
@@ -715,7 +715,7 @@ public:
         return marshal_windsorAI;
     }
 
-    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
     {
         if (quest->GetQuestId() == 4322)
         {
@@ -732,7 +732,7 @@ public:
 
     struct npc_marshal_windsorAI : public npc_escortAI
     {
-        npc_marshal_windsorAI(CreaturePtr creature) : npc_escortAI(creature)
+        npc_marshal_windsorAI(Creature* creature) : npc_escortAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -782,7 +782,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             switch (urand(0, 2))
             {
@@ -800,7 +800,7 @@ public:
 
         void Reset() {}
 
-        void JustDied(UnitPtr slayer)
+        void JustDied(Unit* slayer)
         {
             instance->SetData(DATA_QUEST_JAIL_BREAK, ENCOUNTER_STATE_FAILED);
         }
@@ -867,7 +867,7 @@ class npc_marshal_reginald_windsor : public CreatureScript
 public:
     npc_marshal_reginald_windsor() : CreatureScript("npc_marshal_reginald_windsor") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         npc_marshal_reginald_windsorAI* marshal_reginald_windsorAI = new npc_marshal_reginald_windsorAI(creature);
 
@@ -912,7 +912,7 @@ public:
 
     struct npc_marshal_reginald_windsorAI : public npc_escortAI
     {
-        npc_marshal_reginald_windsorAI(CreaturePtr creature) : npc_escortAI(creature)
+        npc_marshal_reginald_windsorAI(Creature* creature) : npc_escortAI(creature)
         {
         }
 
@@ -974,7 +974,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (HasEscortState(STATE_ESCORT_ESCORTING))
                 return;
@@ -993,7 +993,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             switch (urand(0, 2))
             {
@@ -1010,7 +1010,7 @@ public:
         }
         void Reset() {}
 
-        void JustDied(UnitPtr slayer)
+        void JustDied(Unit* slayer)
         {
             instance->SetData(DATA_QUEST_JAIL_BREAK, ENCOUNTER_STATE_FAILED);
         }
@@ -1076,7 +1076,7 @@ class npc_tobias_seecher : public CreatureScript
 public:
     npc_tobias_seecher() : CreatureScript("npc_tobias_seecher") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         npc_tobias_seecherAI* tobias_seecherAI = new npc_tobias_seecherAI(creature);
 
@@ -1089,7 +1089,7 @@ public:
         return tobias_seecherAI;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 sender, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF + 1)
@@ -1102,7 +1102,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (player->GetQuestStatus(QUEST_JAIL_BREAK) == QUEST_STATUS_INCOMPLETE && instance->GetData(DATA_QUEST_JAIL_BREAK) == ENCOUNTER_STATE_IN_PROGRESS)
         {
@@ -1114,12 +1114,12 @@ public:
 
     struct npc_tobias_seecherAI : public npc_escortAI
     {
-        npc_tobias_seecherAI(CreaturePtr creature) : npc_escortAI(creature) {}
+        npc_tobias_seecherAI(Creature* creature) : npc_escortAI(creature) {}
 
-        void EnterCombat(UnitPtr who) {}
+        void EnterCombat(Unit* who) {}
         void Reset() {}
 
-        void JustDied(UnitPtr killer)
+        void JustDied(Unit* killer)
         {
             if (IsBeingEscorted && killer == me)
             {
@@ -1194,7 +1194,7 @@ class npc_rocknot : public CreatureScript
 public:
     npc_rocknot() : CreatureScript("npc_rocknot") { }
 
-    bool OnQuestReward(PlayerPtr /*Player*/, CreaturePtr creature, Quest const* quest, uint32 /*Item*/)
+    bool OnQuestReward(Player* /*player*/, Creature* creature, Quest const* quest, uint32 /*item*/)
     {
         InstanceScript* instance = creature->GetInstanceScript();
         if (!instance)
@@ -1224,14 +1224,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_rocknotAI(creature);
     }
 
     struct npc_rocknotAI : public npc_escortAI
     {
-        npc_rocknotAI(CreaturePtr creature) : npc_escortAI(creature)
+        npc_rocknotAI(Creature* creature) : npc_escortAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -1252,7 +1252,7 @@ public:
 
         void DoGo(uint32 id, uint32 state)
         {
-            if (GameObjectPtr go = instance->instance->GetGameObject(instance->GetData64(id)))
+            if (GameObject* go = instance->instance->GetGameObject(instance->GetData64(id)))
                 go->SetGoState((GOState)state);
         }
 
@@ -1305,7 +1305,7 @@ public:
                     DoGo(DATA_GO_BAR_KEG_TRAP, 0);               //doesn't work very well, leaving code here for future
                     //spell by trap has effect61, this indicate the bar go hostile
 
-                    if (UnitPtr tmp = Unit::GetUnit(TO_WORLDOBJECT(me), instance->GetData64(DATA_PHALANX)))
+                    if (Unit* tmp = Unit::GetUnit(*me, instance->GetData64(DATA_PHALANX)))
                         tmp->setFaction(14);
 
                     //for later, this event(s) has alot more to it.

@@ -37,14 +37,14 @@ class boss_maleki_the_pallid : public CreatureScript
 public:
     boss_maleki_the_pallid() : CreatureScript("boss_maleki_the_pallid") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_maleki_the_pallidAI (creature);
     }
 
     struct boss_maleki_the_pallidAI : public ScriptedAI
     {
-        boss_maleki_the_pallidAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_maleki_the_pallidAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = me->GetInstanceScript();
         }
@@ -62,11 +62,11 @@ public:
             DrainLife_Timer = 31000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
                 instance->SetData(TYPE_PALLID, IN_PROGRESS);

@@ -107,7 +107,7 @@ struct Cell
         uint32 All;
     } data;
 
-    template<class T, class CONTAINER> void Visit(CellCoord const&, TypeContainerVisitor<T, CONTAINER>& visitor, Map &, constWorldObjectPtr, float) const;
+    template<class T, class CONTAINER> void Visit(CellCoord const&, TypeContainerVisitor<T, CONTAINER>& visitor, Map &, WorldObject const&, float) const;
     template<class T, class CONTAINER> void Visit(CellCoord const&, TypeContainerVisitor<T, CONTAINER>& visitor, Map &, float, float, float) const;
 
     static CellArea CalculateCellArea(float x, float y, float radius);

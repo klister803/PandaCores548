@@ -39,14 +39,14 @@ class boss_ouro : public CreatureScript
 public:
     boss_ouro() : CreatureScript("boss_ouro") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_ouroAI (creature);
     }
 
     struct boss_ouroAI : public ScriptedAI
     {
-        boss_ouroAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_ouroAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 Sweep_Timer;
         uint32 SandBlast_Timer;
@@ -71,7 +71,7 @@ public:
             Submerged = false;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoCast(me->getVictim(), SPELL_BIRTH);
         }
@@ -112,7 +112,7 @@ public:
             //ChangeTarget_Timer
             if (Submerged && ChangeTarget_Timer <= diff)
             {
-                UnitPtr target = nullptr;
+                Unit* target = NULL;
                 target = SelectTarget(SELECT_TARGET_RANDOM, 0);
 
                 if (target)

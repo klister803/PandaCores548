@@ -31,14 +31,14 @@ class boss_moragg : public CreatureScript
 public:
     boss_moragg() : CreatureScript("boss_moragg") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_moraggAI (creature);
     }
 
     struct boss_moraggAI : public ScriptedAI
     {
-        boss_moraggAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_moraggAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -62,11 +62,11 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (instance)
             {
-                if (GameObjectPtr pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_MORAGG_CELL)))
+                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_MORAGG_CELL)))
                     if (pDoor->GetGoState() == GO_STATE_READY)
                    {
                         EnterEvadeMode();
@@ -79,7 +79,7 @@ public:
             }
         }
 
-        void AttackStart(UnitPtr who)
+        void AttackStart(Unit* who)
         {
             if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                 return;
@@ -93,7 +93,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 diff)
         {
@@ -103,7 +103,7 @@ public:
 
             if (uiOpticLinkTimer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_OPTIC_LINK);
                 uiOpticLinkTimer = 15000;
             } else uiOpticLinkTimer -= diff;
@@ -116,7 +116,7 @@ public:
 
             DoMeleeAttackIfReady();
         }
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
             {

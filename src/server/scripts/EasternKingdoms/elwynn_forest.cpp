@@ -28,14 +28,14 @@ class npc_stormwind_infantry : public CreatureScript
 public:
     npc_stormwind_infantry() : CreatureScript("npc_stormwind_infantry") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_stormwind_infantryAI (creature);
     }
 
     struct npc_stormwind_infantryAI : public ScriptedAI
     {
-        npc_stormwind_infantryAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_stormwind_infantryAI(Creature* creature) : ScriptedAI(creature) {}
 
         bool HasATarget;
 
@@ -44,24 +44,24 @@ public:
             HasATarget = false;
         }
 
-        void DamageTaken(UnitPtr doneBy, uint32& damage)
+        void DamageTaken(Unit* doneBy, uint32& damage)
         {
             if (doneBy->ToCreature())
                 if (me->GetHealth() <= damage || me->GetHealthPct() <= 80.0f)
                     damage = 0;
         }
 
-        void DamageDealt(UnitPtr target, uint32& damage, DamageEffectType damageType)
+        void DamageDealt(Unit* target, uint32& damage, DamageEffectType damageType)
         {
             if (target->ToCreature())
                 if (target->GetHealth() <= damage || target->GetHealthPct() <= 70.0f)
                     damage = 0;
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (me->GetDistance(who) < 5.0f)
-                if (CreaturePtr creature = TO_CREATURE(who))
+                if (Creature* creature = who->ToCreature())
                     if (creature->GetEntry() == NPC_WOLF)
                         if (!HasATarget)
                             if (who->Attack(me, true))
@@ -92,19 +92,19 @@ class npc_stormwind_injured_soldier : public CreatureScript
 public:
     npc_stormwind_injured_soldier() : CreatureScript("npc_stormwind_injured_soldier") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_stormwind_injured_soldierAI (creature);
     }
 
     struct npc_stormwind_injured_soldierAI : public ScriptedAI
     {
-        npc_stormwind_injured_soldierAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_stormwind_injured_soldierAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset()
         {}
 
-        void OnSpellClick(UnitPtr Clicker)
+        void OnSpellClick(Unit* Clicker)
         {
             me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
             me->RemoveFlag(UNIT_FIELD_BYTES_1, UNIT_STAND_STATE_DEAD);
@@ -112,7 +112,7 @@ public:
             me->SetRespawnDelay(10);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             return;
         }
@@ -145,7 +145,7 @@ public:
 
     struct npc_training_dummy_start_zonesAI : Scripted_NoMovementAI
     {
-        npc_training_dummy_start_zonesAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
+        npc_training_dummy_start_zonesAI(Creature* creature) : Scripted_NoMovementAI(creature)
         {}
 
         uint32 resetTimer;
@@ -166,22 +166,22 @@ public:
             Reset();
         }
 
-        void DamageTaken(UnitPtr doneBy, uint32& damage)
+        void DamageTaken(Unit* doneBy, uint32& damage)
         {
             resetTimer = 5000;
             damage = 0;
 
             if (doneBy->HasAura(SPELL_AUTORITE))
-                if (TO_PLAYER(doneBy))
-                    TO_PLAYER(doneBy)->KilledMonsterCredit(44175, 0);
+                if (doneBy->ToPlayer())
+                    doneBy->ToPlayer()->KilledMonsterCredit(44175, 0);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             return;
         }
 
-        void SpellHit(UnitPtr Caster, const SpellInfo* Spell)
+        void SpellHit(Unit* Caster, const SpellInfo* Spell)
         {
             switch (Spell->Id)
             {
@@ -195,8 +195,8 @@ public:
                 case SPELL_CORRUPTION_2:
                 case SPELL_CORRUPTION_3:
                 case SPELL_PAUME_TIGRE:
-                    if (TO_PLAYER(Caster))
-                        TO_PLAYER(Caster)->KilledMonsterCredit(44175, 0);
+                    if (Caster->ToPlayer())
+                        Caster->ToPlayer()->KilledMonsterCredit(44175, 0);
                     break;
                 default:
                     break;
@@ -219,10 +219,10 @@ public:
             else
                 resetTimer -= diff;
         }
-        void MoveInLineOfSight(UnitPtr /*who*/){return;}
+        void MoveInLineOfSight(Unit* /*who*/){return;}
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_training_dummy_start_zonesAI(creature);
     }
@@ -244,8 +244,8 @@ class spell_quest_fear_no_evil : public SpellScriptLoader
             void OnDummy(SpellEffIndex /*effIndex*/)
             {
                 if (GetCaster())
-                    if (TO_PLAYER(GetCaster()))
-                        TO_PLAYER(GetCaster())->KilledMonsterCredit(50047, 0);
+                    if (GetCaster()->ToPlayer())
+                        GetCaster()->ToPlayer()->KilledMonsterCredit(50047, 0);
             }
 
             void Register()
@@ -286,9 +286,9 @@ class spell_quest_extincteur : public SpellScriptLoader
                 if (!GetCaster())
                     return;
 
-                if (CreaturePtr fire = GetCaster()->FindNearestCreature(42940, 5.0f, true))
+                if (Creature* fire = GetCaster()->FindNearestCreature(42940, 5.0f, true))
                 {
-                    if (PlayerPtr player = TO_PLAYER(GetCaster()))
+                    if (Player* player = GetCaster()->ToPlayer())
                         player->KilledMonsterCredit(42940, 0);
 
                     fire->ForcedDespawn();

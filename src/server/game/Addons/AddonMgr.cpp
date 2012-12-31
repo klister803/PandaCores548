@@ -90,7 +90,7 @@ SavedAddon const* GetAddonInfo(const std::string& name)
             return &addon;
     }
 
-    return nullptr;
+    return NULL;
 }
 
 } // Namespace

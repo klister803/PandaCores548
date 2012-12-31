@@ -71,14 +71,14 @@ class boss_volkhan : public CreatureScript
 public:
     boss_volkhan() : CreatureScript("boss_volkhan") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_volkhanAI(creature);
     }
 
     struct boss_volkhanAI : public ScriptedAI
     {
-        boss_volkhanAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_volkhanAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -122,7 +122,7 @@ public:
                 instance->SetData(TYPE_VOLKHAN, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             Talk(SAY_AGGRO);
 
@@ -130,7 +130,7 @@ public:
                 instance->SetData(TYPE_VOLKHAN, IN_PROGRESS);
         }
 
-        void AttackStart(UnitPtr who)
+        void AttackStart(Unit* who)
         {
             if (me->Attack(who, true))
             {
@@ -143,7 +143,7 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             Talk(SAY_DEATH);
             DespawnGolem();
@@ -156,7 +156,7 @@ public:
                 AchievementEntry const* AchievShatterResistant = sAchievementStore.LookupEntry(ACHIEVEMENT_SHATTER_RESISTANT);
                 if (AchievShatterResistant)
                 {
-                    MapPtr map = me->GetMap();
+                    Map* map = me->GetMap();
                     if (map && map->IsDungeon())
                     {
                         Map::PlayerList const &players = map->GetPlayers();
@@ -167,7 +167,7 @@ public:
             }
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             Talk(SAY_SLAY);
         }
@@ -179,7 +179,7 @@ public:
 
             for (std::list<uint64>::const_iterator itr = m_lGolemGUIDList.begin(); itr != m_lGolemGUIDList.end(); ++itr)
             {
-                if (CreaturePtr temp = Unit::GetCreature(TO_WORLDOBJECT(me), *itr))
+                if (Creature* temp = Unit::GetCreature(*me, *itr))
                 {
                     if (temp->isAlive())
                         temp->DespawnOrUnsummon();
@@ -196,7 +196,7 @@ public:
 
             for (std::list<uint64>::const_iterator itr = m_lGolemGUIDList.begin(); itr != m_lGolemGUIDList.end(); ++itr)
             {
-                if (CreaturePtr temp = Unit::GetCreature(TO_WORLDOBJECT(me), *itr))
+                if (Creature* temp = Unit::GetCreature(*me, *itr))
                 {
                     // Only shatter brittle golems
                     if (temp->isAlive() && temp->GetEntry() == NPC_BRITTLE_GOLEM)
@@ -208,17 +208,17 @@ public:
             }
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             if (summoned->GetEntry() == NPC_MOLTEN_GOLEM)
             {
                 m_lGolemGUIDList.push_back(summoned->GetGUID());
 
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     summoned->GetMotionMaster()->MoveFollow(target, 0.0f, 0.0f);
 
                 // Why healing when just summoned?
-                summoned->CastSpell(summoned, DUNGEON_MODE(SPELL_HEAT_N, SPELL_HEAT_H), false, nullptr, nullptr, me->GetGUID());
+                summoned->CastSpell(summoned, DUNGEON_MODE(SPELL_HEAT_N, SPELL_HEAT_H), false, NULL, NULL, me->GetGUID());
             }
         }
 
@@ -317,7 +317,7 @@ public:
 
                 case 3:
                     // 3 - Cast Temper on the Anvil
-                    if (UnitPtr target = GetClosestCreatureWithEntry(me, NPC_VOLKHAN_ANVIL, 1000.0f, true))
+                    if (Unit* target = GetClosestCreatureWithEntry(me, NPC_VOLKHAN_ANVIL, 1000.0f, true))
                     {
                         me->SetOrientation(2.29f);
                         DoCast(target, SPELL_TEMPER, false);
@@ -331,7 +331,7 @@ public:
                     // 4 - Wait for delay to expire
                     if (m_uiDelay_Timer <= uiDiff)
                     {
-                        if (UnitPtr target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0))
                         {
                             me->SetReactState(REACT_AGGRESSIVE);
                             me->SetInCombatWith(target);
@@ -345,7 +345,7 @@ public:
 
                 case 5:
                     // 5 - Spawn the Golems
-                    if (CreaturePtr creatureTarget = GetClosestCreatureWithEntry(me, NPC_VOLKHAN_ANVIL, 1000.0f, true))
+                    if (Creature* creatureTarget = GetClosestCreatureWithEntry(me, NPC_VOLKHAN_ANVIL, 1000.0f, true))
                         for (uint8 i = 0; i < MAX_GOLEM; ++i)
                             me->CastSpell(creatureTarget, SPELL_SUMMON_MOLTEN_GOLEM, true);
 
@@ -368,14 +368,14 @@ class mob_molten_golem : public CreatureScript
 public:
     mob_molten_golem() : CreatureScript("mob_molten_golem") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_molten_golemAI(creature);
     }
 
     struct mob_molten_golemAI : public ScriptedAI
     {
-        mob_molten_golemAI(CreaturePtr creature) : ScriptedAI(creature) { }
+        mob_molten_golemAI(Creature* creature) : ScriptedAI(creature) { }
 
         bool m_bIsFrozen;
 
@@ -392,7 +392,7 @@ public:
             m_uiImmolation_Timer = 5000;
         }
 
-        void AttackStart(UnitPtr who)
+        void AttackStart(Unit* who)
         {
             if (me->Attack(who, true))
             {
@@ -405,7 +405,7 @@ public:
             }
         }
 
-        void DamageTaken(UnitPtr /*pDoneBy*/, uint32 &uiDamage)
+        void DamageTaken(Unit* /*pDoneBy*/, uint32 &uiDamage)
         {
             if (uiDamage > me->GetHealth())
             {
@@ -424,7 +424,7 @@ public:
             }
         }
 
-        void SpellHit(UnitPtr /*pCaster*/, const SpellInfo* pSpell)
+        void SpellHit(Unit* /*pCaster*/, const SpellInfo* pSpell)
         {
             // This is the dummy effect of the spells
             if (pSpell->Id == SPELL_SHATTER_N || pSpell->Id == SPELL_SHATTER_H)

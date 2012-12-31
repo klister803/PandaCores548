@@ -51,14 +51,14 @@ class boss_meathook : public CreatureScript
 public:
     boss_meathook() : CreatureScript("boss_meathook") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_meathookAI (creature);
     }
 
     struct boss_meathookAI : public ScriptedAI
     {
-        boss_meathookAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_meathookAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             if (instance)
@@ -81,7 +81,7 @@ public:
                 instance->SetData(DATA_MEATHOOK_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -109,7 +109,7 @@ public:
 
             if (uiChainTimer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                     DoCast(target, SPELL_CONSTRICTING_CHAINS); //anyone but the tank
                 uiChainTimer = urand(2000, 4000);
             } else uiChainTimer -= diff;
@@ -117,7 +117,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -125,7 +125,7 @@ public:
                 instance->SetData(DATA_MEATHOOK_EVENT, DONE);
         }
 
-        void KilledUnit(UnitPtr victim)
+        void KilledUnit(Unit* victim)
         {
             if (victim == me)
                 return;

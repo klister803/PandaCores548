@@ -32,23 +32,23 @@ class ObjectGridLoader
     friend class ObjectWorldLoader;
 
     public:
-        ObjectGridLoader(NGridTypePtr &grid, MapPtr map, const Cell &cell)
+        ObjectGridLoader(NGridType &grid, Map* map, const Cell &cell)
             : i_cell(cell), i_grid(grid), i_map(map), i_gameObjects(0), i_creatures(0), i_corpses (0)
             {}
 
-        void Visit(std::shared_ptr<GameObjectMapType> &m);
-        void Visit(std::shared_ptr<CreatureMapType> &m);
-        void Visit(std::shared_ptr<CorpseMapType> &) const {}
-        void Visit(std::shared_ptr<DynamicObjectMapType>&) const {}
+        void Visit(GameObjectMapType &m);
+        void Visit(CreatureMapType &m);
+        void Visit(CorpseMapType &) const {}
+        void Visit(DynamicObjectMapType&) const {}
 
         void LoadN(void);
 
-        template<class T> static void SetObjectCell(std::shared_ptr<T> obj, CellCoord const& cellCoord);
+        template<class T> static void SetObjectCell(T* obj, CellCoord const& cellCoord);
 
     private:
         Cell i_cell;
-        NGridTypePtr &i_grid;
-        MapPtr i_map;
+        NGridType &i_grid;
+        Map* i_map;
         uint32 i_gameObjects;
         uint32 i_creatures;
         uint32 i_corpses;
@@ -58,29 +58,29 @@ class ObjectGridLoader
 class ObjectGridStoper
 {
     public:
-        void Visit(std::shared_ptr<CreatureMapType> &m);
-        template<class T> void Visit(std::shared_ptr<GridRefManager<T>> &) {}
+        void Visit(CreatureMapType &m);
+        template<class T> void Visit(GridRefManager<T> &) {}
 };
 
 //Move the foreign creatures back to respawn positions before unloading the NGrid
 class ObjectGridEvacuator
 {
     public:
-        void Visit(std::shared_ptr<CreatureMapType> &m);
-        template<class T> void Visit(std::shared_ptr<GridRefManager<T>> &) {}
+        void Visit(CreatureMapType &m);
+        template<class T> void Visit(GridRefManager<T> &) {}
 };
 
 //Clean up and remove from world
 class ObjectGridCleaner
 {
     public:
-        template<class T> void Visit(std::shared_ptr<GridRefManager<T>> &);
+        template<class T> void Visit(GridRefManager<T> &);
 };
 
 //Delete objects before deleting NGrid
 class ObjectGridUnloader
 {
     public:
-        template<class T> void Visit(std::shared_ptr<GridRefManager<T>> &m);
+        template<class T> void Visit(GridRefManager<T> &m);
 };
 #endif

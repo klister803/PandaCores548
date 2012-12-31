@@ -43,22 +43,22 @@ class boss_commander_stoutbeard : public CreatureScript
 public:
     boss_commander_stoutbeard() : CreatureScript("boss_commander_stoutbeard") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_commander_stoutbeardAI (creature);
     }
 
     struct boss_commander_stoutbeardAI : public ScriptedAI
     {
-        boss_commander_stoutbeardAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_commander_stoutbeardAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset() {}
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
         }
-        void AttackStart(UnitPtr /*who*/) {}
-        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void AttackStart(Unit* /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) {}
         void UpdateAI(const uint32 /*diff*/)
         {
             //Return since we have no target
@@ -67,7 +67,7 @@ public:
 
             DoMeleeAttackIfReady();
         }
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
         }

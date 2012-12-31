@@ -24,8 +24,8 @@
 #include "CreatureAIImpl.h"
 #include "InstanceScript.h"
 
-#define CAST_PLR(a)     (TO_PLAYER(a))
-#define CAST_CRE(a)     (TO_CREATURE(a))
+#define CAST_PLR(a)     (dynamic_cast<Player*>(a))
+#define CAST_CRE(a)     (dynamic_cast<Creature*>(a))
 #define CAST_AI(a, b)   (dynamic_cast<a*>(b))
 
 class InstanceScript;
@@ -33,9 +33,9 @@ class InstanceScript;
 class SummonList : public std::list<uint64>
 {
     public:
-        explicit SummonList(CreaturePtr creature) : me(creature) {}
-        void Summon(CreaturePtr summon) { push_back(summon->GetGUID()); }
-        void Despawn(CreaturePtr summon) { remove(summon->GetGUID()); }
+        explicit SummonList(Creature* creature) : me(creature) {}
+        void Summon(Creature* summon) { push_back(summon->GetGUID()); }
+        void Despawn(Creature* summon) { remove(summon->GetGUID()); }
         void DespawnEntry(uint32 entry);
         void DespawnAll();
 
@@ -46,7 +46,7 @@ class SummonList : public std::list<uint64>
             Trinity::Containers::RandomResizeList<uint64, Predicate>(listCopy, predicate, max);
             for (iterator i = listCopy.begin(); i != listCopy.end(); )
             {
-                CreaturePtr summon = Unit::GetCreature(TO_WORLDOBJECT(me), *i++);
+                Creature* summon = Unit::GetCreature(*me, *i++);
                 if (summon && summon->IsAIEnabled)
                     summon->AI()->DoAction(info);
             }
@@ -56,7 +56,7 @@ class SummonList : public std::list<uint64>
         void RemoveNotExisting();
         bool HasEntry(uint32 entry);
     private:
-        CreaturePtr me;
+        Creature* me;
 };
 
 class EntryCheckPredicate
@@ -77,38 +77,38 @@ class DummyEntryCheckPredicate
 
 struct ScriptedAI : public CreatureAI
 {
-    explicit ScriptedAI(CreaturePtr creature);
+    explicit ScriptedAI(Creature* creature);
     virtual ~ScriptedAI() {}
 
     // *************
     //CreatureAI Functions
     // *************
 
-    void AttackStartNoMove(UnitPtr target);
+    void AttackStartNoMove(Unit* target);
 
     // Called at any Damage from any attacker (before damage apply)
-    void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/) {}
+    void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/) {}
 
     //Called at World update tick
     virtual void UpdateAI(uint32 const diff);
 
     //Called at creature death
-    void JustDied(UnitPtr /*killer*/) {}
+    void JustDied(Unit* /*killer*/) {}
 
     //Called at creature killing another unit
-    void KilledUnit(UnitPtr /*victim*/) {}
+    void KilledUnit(Unit* /*victim*/) {}
 
     // Called when the creature summon successfully other creature
-    void JustSummoned(CreaturePtr /*summon*/) {}
+    void JustSummoned(Creature* /*summon*/) {}
 
     // Called when a summoned creature is despawned
-    void SummonedCreatureDespawn(CreaturePtr /*summon*/) {}
+    void SummonedCreatureDespawn(Creature* /*summon*/) {}
 
     // Called when hit by a spell
-    void SpellHit(UnitPtr /*caster*/, SpellInfo const* /*spell*/) {}
+    void SpellHit(Unit* /*caster*/, SpellInfo const* /*spell*/) {}
 
     // Called when spell hits a target
-    void SpellHitTarget(UnitPtr /*target*/, SpellInfo const* /*spell*/) {}
+    void SpellHitTarget(Unit* /*target*/, SpellInfo const* /*spell*/) {}
 
     //Called at waypoint reached or PointMovement end
     void MovementInform(uint32 /*type*/, uint32 /*id*/) {}
@@ -121,7 +121,7 @@ struct ScriptedAI : public CreatureAI
     // *************
 
     //Pointer to creature we are manipulating
-    CreaturePtr me;
+    Creature* me;
 
     //For fleeing
     bool IsFleeing;
@@ -134,60 +134,60 @@ struct ScriptedAI : public CreatureAI
     void Reset() {}
 
     //Called at creature aggro either by MoveInLOS or Attack Start
-    void EnterCombat(UnitPtr /*victim*/) {}
+    void EnterCombat(Unit* /*victim*/) {}
 
     // *************
     //AI Helper Functions
     // *************
 
     //Start movement toward victim
-    void DoStartMovement(UnitPtr target, float distance = 0.0f, float angle = 0.0f);
+    void DoStartMovement(Unit* target, float distance = 0.0f, float angle = 0.0f);
 
     //Start no movement on victim
-    void DoStartNoMovement(UnitPtr target);
+    void DoStartNoMovement(Unit* target);
 
     //Stop attack of current victim
     void DoStopAttack();
 
     //Cast spell by spell info
-    void DoCastSpell(UnitPtr target, SpellInfo const* spellInfo, bool triggered = false);
+    void DoCastSpell(Unit* target, SpellInfo const* spellInfo, bool triggered = false);
 
     //Plays a sound to all nearby players
-    void DoPlaySoundToSet(WorldObjectPtr source, uint32 soundId);
+    void DoPlaySoundToSet(WorldObject* source, uint32 soundId);
 
     //Drops all threat to 0%. Does not remove players from the threat list
     void DoResetThreat();
 
-    float DoGetThreat(UnitPtr unit);
-    void DoModifyThreatPercent(UnitPtr unit, int32 pct);
+    float DoGetThreat(Unit* unit);
+    void DoModifyThreatPercent(Unit* unit, int32 pct);
 
     void DoTeleportTo(float x, float y, float z, uint32 time = 0);
     void DoTeleportTo(float const pos[4]);
 
     //Teleports a player without dropping threat (only teleports to same map)
-    void DoTeleportPlayer(UnitPtr unit, float x, float y, float z, float o);
+    void DoTeleportPlayer(Unit* unit, float x, float y, float z, float o);
     void DoTeleportAll(float x, float y, float z, float o);
 
     //Returns friendly unit with the most amount of hp missing from max hp
-    UnitPtr DoSelectLowestHpFriendly(float range, uint32 minHPDiff = 1);
+    Unit* DoSelectLowestHpFriendly(float range, uint32 minHPDiff = 1);
 
     //Returns a list of friendly CC'd units within range
-    std::list<CreaturePtr> DoFindFriendlyCC(float range);
+    std::list<Creature*> DoFindFriendlyCC(float range);
 
     //Returns a list of all friendly units missing a specific buff within range
-    std::list<CreaturePtr> DoFindFriendlyMissingBuff(float range, uint32 spellId);
+    std::list<Creature*> DoFindFriendlyMissingBuff(float range, uint32 spellId);
 
     //Return a player with at least minimumRange from me
-    PlayerPtr GetPlayerAtMinimumRange(float minRange);
+    Player* GetPlayerAtMinimumRange(float minRange);
 
     //Spawns a creature relative to me
-    CreaturePtr DoSpawnCreature(uint32 entry, float offsetX, float offsetY, float offsetZ, float angle, uint32 type, uint32 despawntime);
+    Creature* DoSpawnCreature(uint32 entry, float offsetX, float offsetY, float offsetZ, float angle, uint32 type, uint32 despawntime);
 
     bool HealthBelowPct(uint32 pct) const { return me->HealthBelowPct(pct); }
     bool HealthAbovePct(uint32 pct) const { return me->HealthAbovePct(pct); }
 
     //Returns spells that meet the specified criteria from the creatures spell list
-    SpellInfo const* SelectSpell(UnitPtr target, uint32 school, uint32 mechanic, SelectTargetType targets, uint32 powerCostMin, uint32 powerCostMax, float rangeMin, float rangeMax, SelectEffect effect);
+    SpellInfo const* SelectSpell(Unit* target, uint32 school, uint32 mechanic, SelectTargetType targets, uint32 powerCostMin, uint32 powerCostMax, float rangeMin, float rangeMax, SelectEffect effect);
 
     void SetEquipmentSlots(bool loadDefault, int32 mainHand = EQUIP_NO_CHANGE, int32 offHand = EQUIP_NO_CHANGE, int32 ranged = EQUIP_NO_CHANGE);
 
@@ -271,24 +271,24 @@ struct ScriptedAI : public CreatureAI
 
 struct Scripted_NoMovementAI : public ScriptedAI
 {
-    Scripted_NoMovementAI(CreaturePtr creature) : ScriptedAI(creature) {}
+    Scripted_NoMovementAI(Creature* creature) : ScriptedAI(creature) {}
     virtual ~Scripted_NoMovementAI() {}
 
     //Called at each attack of me by any victim
-    void AttackStart(UnitPtr target);
+    void AttackStart(Unit* target);
 };
 
 class BossAI : public ScriptedAI
 {
     public:
-        BossAI(CreaturePtr creature, uint32 bossId);
+        BossAI(Creature* creature, uint32 bossId);
         virtual ~BossAI() {}
 
         InstanceScript* const instance;
         BossBoundaryMap const* GetBoundary() const { return _boundary; }
 
-        void JustSummoned(CreaturePtr summon);
-        void SummonedCreatureDespawn(CreaturePtr summon);
+        void JustSummoned(Creature* summon);
+        void SummonedCreatureDespawn(Creature* summon);
 
         virtual void UpdateAI(uint32 const diff);
 
@@ -299,8 +299,8 @@ class BossAI : public ScriptedAI
         virtual void ExecuteEvent(uint32 const /*eventId*/) { }
 
         void Reset() { _Reset(); }
-        void EnterCombat(UnitPtr /*who*/) { _EnterCombat(); }
-        void JustDied(UnitPtr /*killer*/) { _JustDied(); }
+        void EnterCombat(Unit* /*who*/) { _EnterCombat(); }
+        void JustDied(Unit* /*killer*/) { _JustDied(); }
         void JustReachedHome() { _JustReachedHome(); }
 
     protected:
@@ -318,7 +318,7 @@ class BossAI : public ScriptedAI
             return false;
         }
 
-        bool CheckBoundary(UnitPtr who);
+        bool CheckBoundary(Unit* who);
         void TeleportCheaters();
 
         EventMap events;
@@ -332,11 +332,11 @@ class BossAI : public ScriptedAI
 class WorldBossAI : public ScriptedAI
 {
     public:
-        WorldBossAI(CreaturePtr creature);
+        WorldBossAI(Creature* creature);
         virtual ~WorldBossAI() {}
 
-        void JustSummoned(CreaturePtr summon);
-        void SummonedCreatureDespawn(CreaturePtr summon);
+        void JustSummoned(Creature* summon);
+        void SummonedCreatureDespawn(Creature* summon);
 
         virtual void UpdateAI(uint32 const diff);
 
@@ -347,8 +347,8 @@ class WorldBossAI : public ScriptedAI
         virtual void ExecuteEvent(uint32 const /*eventId*/) { }
 
         void Reset() { _Reset(); }
-        void EnterCombat(UnitPtr /*who*/) { _EnterCombat(); }
-        void JustDied(UnitPtr /*killer*/) { _JustDied(); }
+        void EnterCombat(Unit* /*who*/) { _EnterCombat(); }
+        void JustDied(Unit* /*killer*/) { _JustDied(); }
 
     protected:
         void _Reset();
@@ -360,10 +360,10 @@ class WorldBossAI : public ScriptedAI
 };
 
 // SD2 grid searchers.
-CreaturePtr GetClosestCreatureWithEntry(WorldObjectPtr source, uint32 entry, float maxSearchRange, bool alive = true);
-GameObjectPtr GetClosestGameObjectWithEntry(WorldObjectPtr source, uint32 entry, float maxSearchRange);
-void GetCreatureListWithEntryInGrid(std::list<CreaturePtr>& list, WorldObjectPtr source, uint32 entry, float maxSearchRange);
-void GetGameObjectListWithEntryInGrid(std::list<GameObjectPtr>& list, WorldObjectPtr source, uint32 entry, float maxSearchRange);
-void GetPositionWithDistInOrientation(UnitPtr pUnit, float dist, float& x, float& y);
+Creature* GetClosestCreatureWithEntry(WorldObject* source, uint32 entry, float maxSearchRange, bool alive = true);
+GameObject* GetClosestGameObjectWithEntry(WorldObject* source, uint32 entry, float maxSearchRange);
+void GetCreatureListWithEntryInGrid(std::list<Creature*>& list, WorldObject* source, uint32 entry, float maxSearchRange);
+void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& list, WorldObject* source, uint32 entry, float maxSearchRange);
+void GetPositionWithDistInOrientation(Unit* pUnit, float dist, float& x, float& y);
 
 #endif // SCRIPTEDCREATURE_H_

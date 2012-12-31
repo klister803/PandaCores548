@@ -37,7 +37,7 @@ class item_defias_gunpowder : public ItemScript
 public:
     item_defias_gunpowder() : ItemScript("item_defias_gunpowder") { }
 
-    bool OnUse(PlayerPtr player, ItemPtr item, SpellCastTargets const& targets)
+    bool OnUse(Player* player, Item* item, SpellCastTargets const& targets)
     {
         InstanceScript* instance = player->GetInstanceScript();
 

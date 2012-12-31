@@ -27,7 +27,7 @@ class instance_zulgurub : public InstanceMapScript
 
         struct instance_zulgurub_InstanceMapScript : public InstanceScript
         {
-            instance_zulgurub_InstanceMapScript(MapPtr map) : InstanceScript(map)
+            instance_zulgurub_InstanceMapScript(Map* map) : InstanceScript(map)
             {
                 SetBossNumber(EncounterCount);
                 venoxisGUID     = 0;
@@ -41,7 +41,7 @@ class instance_zulgurub : public InstanceMapScript
                 grilekGUID      = 0;
             }
 
-            void OnCreatureCreate(CreaturePtr creature)
+            void OnCreatureCreate(Creature* creature)
             {
                 switch (creature->GetEntry())
                 {
@@ -205,7 +205,7 @@ class instance_zulgurub : public InstanceMapScript
              uint64 grilekGUID;
         };
 
-        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
             return new instance_zulgurub_InstanceMapScript(map);
         }

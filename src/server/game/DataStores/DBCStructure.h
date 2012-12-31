@@ -1815,8 +1815,8 @@ struct SpellTotem
 {
     SpellTotem()
     {
-        totems[0] = nullptr;
-        totems[1] = nullptr;
+        totems[0] = NULL;
+        totems[1] = NULL;
     }
     SpellTotemsEntry const* totems[MAX_SPELL_TOTEMS];
 };
@@ -2071,14 +2071,14 @@ struct SpellReagent
 {
     SpellReagent()
     {
-        reagents[0] = nullptr;
-        reagents[1] = nullptr;
-        reagents[2] = nullptr;
-        reagents[3] = nullptr;
-        reagents[4] = nullptr;
-        reagents[5] = nullptr;
-        reagents[6] = nullptr;
-        reagents[7] = nullptr;
+        reagents[0] = NULL;
+        reagents[1] = NULL;
+        reagents[2] = NULL;
+        reagents[3] = NULL;
+        reagents[4] = NULL;
+        reagents[5] = NULL;
+        reagents[6] = NULL;
+        reagents[7] = NULL;
     }
     SpellReagentsEntry const* reagents[MAX_SPELL_REAGENTS];
 };
@@ -2485,7 +2485,7 @@ typedef std::map<uint32, TaxiPathSetForSource> TaxiPathSetBySource;
 
 struct TaxiPathNodePtr
 {
-    TaxiPathNodePtr() : i_ptr(nullptr) {}
+    TaxiPathNodePtr() : i_ptr(NULL) {}
     TaxiPathNodePtr(TaxiPathNodeEntry const* ptr) : i_ptr(ptr) {}
     TaxiPathNodeEntry const* i_ptr;
     operator TaxiPathNodeEntry const& () const { return *i_ptr; }

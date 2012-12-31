@@ -45,7 +45,7 @@ class boss_kurinnaxx : public CreatureScript
 
         struct boss_kurinnaxxAI : public BossAI
         {
-            boss_kurinnaxxAI(CreaturePtr creature) : BossAI(creature, BOSS_KURINNAXX)
+            boss_kurinnaxxAI(Creature* creature) : BossAI(creature, BOSS_KURINNAXX)
             {
             }
 
@@ -59,7 +59,7 @@ class boss_kurinnaxx : public CreatureScript
                 events.ScheduleEvent(EVENT_WIDE_SLASH, 11000);
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& /*damage*/)
+            void DamageTaken(Unit* /*attacker*/, uint32& /*damage*/)
             {
                 if (!_enraged && HealthBelowPct(30))
                 {
@@ -87,9 +87,9 @@ class boss_kurinnaxx : public CreatureScript
                             events.ScheduleEvent(EVENT_MORTAL_WOUND, 8000);
                             break;
                         case EVENT_SANDTRAP:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true))
                                 target->CastSpell(target, SPELL_SANDTRAP, true);
-                            else if (UnitPtr victim = me->getVictim())
+                            else if (Unit* victim = me->getVictim())
                                 victim->CastSpell(victim, SPELL_SANDTRAP, true);
                             events.ScheduleEvent(EVENT_SANDTRAP, urand(5000, 15000));
                             break;
@@ -112,7 +112,7 @@ class boss_kurinnaxx : public CreatureScript
                 bool _enraged;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_kurinnaxxAI (creature);
         }

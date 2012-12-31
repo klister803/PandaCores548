@@ -74,7 +74,7 @@ class boss_emalon : public CreatureScript
 
         struct boss_emalonAI : public BossAI
         {
-            boss_emalonAI(CreaturePtr creature) : BossAI(creature, DATA_EMALON)
+            boss_emalonAI(Creature* creature) : BossAI(creature, DATA_EMALON)
             {
             }
 
@@ -86,22 +86,22 @@ class boss_emalon : public CreatureScript
                     me->SummonCreature(MOB_TEMPEST_MINION, TempestMinions[i], TEMPSUMMON_CORPSE_DESPAWN, 0);
             }
 
-            void JustSummoned(CreaturePtr summoned)
+            void JustSummoned(Creature* summoned)
             {
                 BossAI::JustSummoned(summoned);
 
-                // AttackStart has nullptr-check for victim
+                // AttackStart has NULL-check for victim
                 if (summoned->AI())
                     summoned->AI()->AttackStart(me->getVictim());
             }
 
-            void EnterCombat(UnitPtr who)
+            void EnterCombat(Unit* who)
             {
                 if (!summons.empty())
                 {
                     for (std::list<uint64>::const_iterator itr = summons.begin(); itr != summons.end(); ++itr)
                     {
-                        CreaturePtr minion = Unit::GetCreature(TO_WORLDOBJECT(me), *itr);
+                        Creature* minion = Unit::GetCreature(*me, *itr);
                         if (minion && minion->isAlive() && !minion->getVictim() && minion->AI())
                             minion->AI()->AttackStart(who);
                     }
@@ -130,7 +130,7 @@ class boss_emalon : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_CHAIN_LIGHTNING:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                                 DoCast(target, SPELL_CHAIN_LIGHTNING);
                             events.ScheduleEvent(EVENT_CHAIN_LIGHTNING, 25000);
                             break;
@@ -141,7 +141,7 @@ class boss_emalon : public CreatureScript
                         case EVENT_OVERCHARGE:
                             if (!summons.empty())
                             {
-                                CreaturePtr minion = Unit::GetCreature(TO_WORLDOBJECT(me), Trinity::Containers::SelectRandomContainerElement(summons));
+                                Creature* minion = Unit::GetCreature(*me, Trinity::Containers::SelectRandomContainerElement(summons));
                                 if (minion && minion->isAlive())
                                 {
                                     minion->CastSpell(me, SPELL_OVERCHARGED, true);
@@ -164,7 +164,7 @@ class boss_emalon : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_emalonAI(creature);
         }
@@ -180,7 +180,7 @@ class mob_tempest_minion : public CreatureScript
 
         struct mob_tempest_minionAI : public ScriptedAI
         {
-            mob_tempest_minionAI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_tempest_minionAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -191,9 +191,9 @@ class mob_tempest_minion : public CreatureScript
                 OverchargedTimer = 0;
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
-                if (CreaturePtr emalon = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_EMALON) : 0))
+                if (Creature* emalon = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EMALON) : 0))
                 {
                     if (emalon->isAlive())
                     {
@@ -203,12 +203,12 @@ class mob_tempest_minion : public CreatureScript
                 }
             }
 
-            void EnterCombat(UnitPtr who)
+            void EnterCombat(Unit* who)
             {
                 DoZoneInCombat();
                 events.ScheduleEvent(EVENT_SHOCK, 20000);
 
-                if (CreaturePtr pEmalon = Unit::GetCreature(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_EMALON) : 0))
+                if (Creature* pEmalon = Unit::GetCreature(*me, instance ? instance->GetData64(DATA_EMALON) : 0))
                 {
                     if (!pEmalon->getVictim() && pEmalon->AI())
                         pEmalon->AI()->AttackStart(who);
@@ -264,7 +264,7 @@ class mob_tempest_minion : public CreatureScript
             uint32 OverchargedTimer;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_tempest_minionAI(creature);
         }

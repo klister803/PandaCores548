@@ -84,7 +84,7 @@ class Unit;
 struct GossipMenuItems;
 class OutdoorPvP;
 
-typedef std::set<PlayerPtr> PlayerSet;
+typedef std::set<Player*> PlayerSet;
 
 class OPvPCapturePoint
 {
@@ -103,15 +103,15 @@ class OPvPCapturePoint
         void SendObjectiveComplete(uint32 id, uint64 guid);
 
         // used when player is activated/inactivated in the area
-        virtual bool HandlePlayerEnter(PlayerPtr player);
-        virtual void HandlePlayerLeave(PlayerPtr player);
+        virtual bool HandlePlayerEnter(Player* player);
+        virtual void HandlePlayerLeave(Player* player);
 
         // checks if player is in range of a capture credit marker
-        bool IsInsideObjective(PlayerPtr player) const;
+        bool IsInsideObjective(Player* player) const;
 
-        virtual bool HandleCustomSpell(PlayerPtr player, uint32 spellId, GameObjectPtr go);
+        virtual bool HandleCustomSpell(Player* player, uint32 spellId, GameObject* go);
 
-        virtual int32 HandleOpenGo(PlayerPtr player, uint64 guid);
+        virtual int32 HandleOpenGo(Player* player, uint64 guid);
 
         // returns true if the state of the objective has changed, in this case, the OutdoorPvP must send a world state ui update.
         virtual bool Update(uint32 diff);
@@ -122,17 +122,17 @@ class OPvPCapturePoint
 
         virtual void SendChangePhase();
 
-        virtual bool HandleGossipOption(PlayerPtr player, uint64 guid, uint32 gossipid);
+        virtual bool HandleGossipOption(Player* player, uint64 guid, uint32 gossipid);
 
-        virtual bool CanTalkTo(PlayerPtr player, CreaturePtr c, GossipMenuItems const& gso);
+        virtual bool CanTalkTo(Player* player, Creature* c, GossipMenuItems const& gso);
 
-        virtual bool HandleDropFlag(PlayerPtr player, uint32 spellId);
+        virtual bool HandleDropFlag(Player* player, uint32 spellId);
 
         virtual void DeleteSpawns();
 
         uint32 m_capturePointGUID;
 
-        GameObjectPtr m_capturePoint;
+        GameObject* m_capturePoint;
 
         void AddGO(uint32 type, uint32 guid, uint32 entry = 0);
         void AddCre(uint32 type, uint32 guid, uint32 entry = 0);
@@ -207,20 +207,20 @@ class OutdoorPvP : public ZoneScript
         virtual void FillInitialWorldStates(WorldPacket & /*data*/) {}
 
         // called when a player triggers an areatrigger
-        virtual bool HandleAreaTrigger(PlayerPtr player, uint32 trigger);
+        virtual bool HandleAreaTrigger(Player* player, uint32 trigger);
 
         // called on custom spell
-        virtual bool HandleCustomSpell(PlayerPtr player, uint32 spellId, GameObjectPtr go);
+        virtual bool HandleCustomSpell(Player* player, uint32 spellId, GameObject* go);
 
         // called on go use
-        virtual bool HandleOpenGo(PlayerPtr player, uint64 guid);
+        virtual bool HandleOpenGo(Player* player, uint64 guid);
 
         // setup stuff
         virtual bool SetupOutdoorPvP() {return true;}
 
-        void OnGameObjectCreate(GameObjectPtr go);
-        void OnGameObjectRemove(GameObjectPtr go);
-        void OnCreatureCreate(CreaturePtr) {}
+        void OnGameObjectCreate(GameObject* go);
+        void OnGameObjectRemove(GameObject* go);
+        void OnCreatureCreate(Creature*) {}
 
         // send world state update to all players present
         void SendUpdateWorldState(uint32 field, uint32 value);
@@ -229,22 +229,22 @@ class OutdoorPvP : public ZoneScript
         virtual bool Update(uint32 diff);
 
         // handle npc/player kill
-        virtual void HandleKill(PlayerPtr killer, UnitPtr killed);
-        virtual void HandleKillImpl(PlayerPtr /*killer*/, UnitPtr /*killed*/) {}
+        virtual void HandleKill(Player* killer, Unit* killed);
+        virtual void HandleKillImpl(Player* /*killer*/, Unit* /*killed*/) {}
 
         // checks if player is in range of a capture credit marker
-        bool IsInsideObjective(PlayerPtr player) const;
+        bool IsInsideObjective(Player* player) const;
 
         // awards rewards for player kill
-        virtual void AwardKillBonus(PlayerPtr /*Player*/) {}
+        virtual void AwardKillBonus(Player* /*player*/) {}
 
         uint32 GetTypeId() {return m_TypeId;}
 
-        virtual bool HandleDropFlag(PlayerPtr player, uint32 spellId);
+        virtual bool HandleDropFlag(Player* player, uint32 spellId);
 
-        virtual bool HandleGossipOption(PlayerPtr player, uint64 guid, uint32 gossipid);
+        virtual bool HandleGossipOption(Player* player, uint64 guid, uint32 gossipid);
 
-        virtual bool CanTalkTo(PlayerPtr player, CreaturePtr c, GossipMenuItems const& gso);
+        virtual bool CanTalkTo(Player* player, Creature* c, GossipMenuItems const& gso);
 
         void TeamApplyBuff(TeamId team, uint32 spellId, uint32 spellId2 = 0);
 
@@ -260,14 +260,14 @@ class OutdoorPvP : public ZoneScript
         bool m_sendUpdate;
 
         // world state stuff
-        virtual void SendRemoveWorldStates(PlayerPtr /*Player*/) {}
+        virtual void SendRemoveWorldStates(Player* /*player*/) {}
 
         void BroadcastPacket(WorldPacket & data) const;
 
-        virtual void HandlePlayerEnterZone(PlayerPtr player, uint32 zone);
-        virtual void HandlePlayerLeaveZone(PlayerPtr player, uint32 zone);
+        virtual void HandlePlayerEnterZone(Player* player, uint32 zone);
+        virtual void HandlePlayerLeaveZone(Player* player, uint32 zone);
 
-        virtual void HandlePlayerResurrects(PlayerPtr player, uint32 zone);
+        virtual void HandlePlayerResurrects(Player* player, uint32 zone);
 
         void AddCapturePoint(OPvPCapturePoint* cp)
         {
@@ -279,12 +279,12 @@ class OutdoorPvP : public ZoneScript
             OutdoorPvP::OPvPCapturePointMap::const_iterator itr = m_capturePoints.find(lowguid);
             if (itr != m_capturePoints.end())
                 return itr->second;
-            return nullptr;
+            return NULL;
         }
 
         void RegisterZone(uint32 zoneid);
 
-        bool HasPlayer(PlayerPtr player) const;
+        bool HasPlayer(Player* player) const;
 
         void TeamCastSpell(TeamId team, int32 spellId);
 };

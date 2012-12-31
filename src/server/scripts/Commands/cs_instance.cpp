@@ -38,17 +38,17 @@ public:
     {
         static ChatCommand instanceCommandTable[] =
         {
-            { "listbinds",      SEC_ADMINISTRATOR,  false,  &HandleInstanceListBindsCommand,    "", nullptr },
-            { "unbind",         SEC_ADMINISTRATOR,  false,  &HandleInstanceUnbindCommand,       "", nullptr },
-            { "stats",          SEC_ADMINISTRATOR,  true,   &HandleInstanceStatsCommand,        "", nullptr },
-            { "savedata",       SEC_ADMINISTRATOR,  false,  &HandleInstanceSaveDataCommand,     "", nullptr },
-            { nullptr,             0,                  false,  nullptr,                               "", nullptr }
+            { "listbinds",      SEC_ADMINISTRATOR,  false,  &HandleInstanceListBindsCommand,    "", NULL },
+            { "unbind",         SEC_ADMINISTRATOR,  false,  &HandleInstanceUnbindCommand,       "", NULL },
+            { "stats",          SEC_ADMINISTRATOR,  true,   &HandleInstanceStatsCommand,        "", NULL },
+            { "savedata",       SEC_ADMINISTRATOR,  false,  &HandleInstanceSaveDataCommand,     "", NULL },
+            { NULL,             0,                  false,  NULL,                               "", NULL }
         };
 
         static ChatCommand commandTable[] =
         {
-            { "instance",       SEC_ADMINISTRATOR,  true,   nullptr,                               "", instanceCommandTable },
-            { nullptr,             0,                  false,  nullptr,                               "", nullptr }
+            { "instance",       SEC_ADMINISTRATOR,  true,   NULL,                               "", instanceCommandTable },
+            { NULL,             0,                  false,  NULL,                               "", NULL }
         };
 
         return commandTable;
@@ -68,7 +68,7 @@ public:
 
     static bool HandleInstanceListBindsCommand(ChatHandler* handler, char const* /*args*/)
     {
-        PlayerPtr player = handler->getSelectedPlayer();
+        Player* player = handler->getSelectedPlayer();
         if (!player)
             player = handler->GetSession()->GetPlayer();
 
@@ -79,7 +79,7 @@ public:
             for (Player::BoundInstancesMap::const_iterator itr = binds.begin(); itr != binds.end(); ++itr)
             {
                 InstanceSave* save = itr->second.save;
-                std::string timeleft = GetTimeString(save->GetResetTime() - time(nullptr));
+                std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
                 handler->PSendSysMessage("map: %d inst: %d perm: %s diff: %d canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty(), save->CanReset() ? "yes" : "no", timeleft.c_str());
                 counter++;
             }
@@ -87,7 +87,7 @@ public:
         handler->PSendSysMessage("player binds: %d", counter);
 
         counter = 0;
-        if (GroupPtr group = player->GetGroup())
+        if (Group* group = player->GetGroup())
         {
             for (uint8 i = 0; i < MAX_DIFFICULTY; ++i)
             {
@@ -95,7 +95,7 @@ public:
                 for (Group::BoundInstancesMap::const_iterator itr = binds.begin(); itr != binds.end(); ++itr)
                 {
                     InstanceSave* save = itr->second.save;
-                    std::string timeleft = GetTimeString(save->GetResetTime() - time(nullptr));
+                    std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
                     handler->PSendSysMessage("map: %d inst: %d perm: %s diff: %d canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no",  save->GetDifficulty(), save->CanReset() ? "yes" : "no", timeleft.c_str());
                     counter++;
                 }
@@ -111,12 +111,12 @@ public:
         if (!*args)
             return false;
 
-        PlayerPtr player = handler->getSelectedPlayer();
+        Player* player = handler->getSelectedPlayer();
         if (!player)
             player = handler->GetSession()->GetPlayer();
 
         char* map = strtok((char*)args, " ");
-        char* pDiff = strtok(nullptr, " ");
+        char* pDiff = strtok(NULL, " ");
         int8 diff = -1;
         if (pDiff)
             diff = atoi(pDiff);
@@ -138,7 +138,7 @@ public:
                 InstanceSave* save = itr->second.save;
                 if (itr->first != player->GetMapId() && (!MapId || MapId == itr->first) && (diff == -1 || diff == save->GetDifficulty()))
                 {
-                    std::string timeleft = GetTimeString(save->GetResetTime() - time(nullptr));
+                    std::string timeleft = GetTimeString(save->GetResetTime() - time(NULL));
                     handler->PSendSysMessage("unbinding map: %d inst: %d perm: %s diff: %d canReset: %s TTR: %s", itr->first, save->GetInstanceId(), itr->second.perm ? "yes" : "no", save->GetDifficulty(), save->CanReset() ? "yes" : "no", timeleft.c_str());
                     player->UnbindInstance(itr, Difficulty(i));
                     counter++;
@@ -165,8 +165,8 @@ public:
 
     static bool HandleInstanceSaveDataCommand(ChatHandler* handler, char const* /*args*/)
     {
-        PlayerPtr player = handler->GetSession()->GetPlayer();
-        MapPtr map = player->GetMap();
+        Player* player = handler->GetSession()->GetPlayer();
+        Map* map = player->GetMap();
         if (!map->IsDungeon())
         {
             handler->PSendSysMessage("Map is not a dungeon.");
@@ -174,14 +174,14 @@ public:
             return false;
         }
 
-        if (!TO_INSTANCEMAP(map)->GetInstanceScript())
+        if (!((InstanceMap*)map)->GetInstanceScript())
         {
             handler->PSendSysMessage("Map has no instance data.");
             handler->SetSentErrorMessage(true);
             return false;
         }
 
-        TO_INSTANCEMAP(map)->GetInstanceScript()->SaveToDB();
+        ((InstanceMap*)map)->GetInstanceScript()->SaveToDB();
 
         return true;
     }

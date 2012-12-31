@@ -204,7 +204,7 @@ ACE_Token_Manager::token_waiting_for (const ACE_TCHAR *client_id)
         return temp->int_id_;
     }
 
-  // nothing was found, return nullptr.
+  // nothing was found, return NULL.
   return 0;
 }
 

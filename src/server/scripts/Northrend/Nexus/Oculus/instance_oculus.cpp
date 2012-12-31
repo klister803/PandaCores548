@@ -33,14 +33,14 @@ class instance_oculus : public InstanceMapScript
 public:
     instance_oculus() : InstanceMapScript("instance_oculus", 578) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_oculus_InstanceMapScript(map);
     }
 
     struct instance_oculus_InstanceMapScript : public InstanceScript
     {
-        instance_oculus_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_oculus_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         void Initialize()
         {
@@ -60,9 +60,9 @@ public:
             gameObjectList.clear();
         }
 
-        void OnUnitDeath(UnitPtr unit)
+        void OnUnitDeath(Unit* unit)
         {
-            CreaturePtr creature = TO_CREATURE(unit);
+            Creature* creature = unit->ToCreature();
             if (!creature)
                 return;
 
@@ -72,11 +72,11 @@ public:
              DoUpdateWorldState(WORLD_STATE_CENTRIFUGE_CONSTRUCT_AMOUNT, --centrifugueConstructCounter);
 
              if (!centrifugueConstructCounter)
-                if (CreaturePtr varos = instance->GetCreature(varosGUID))
+                if (Creature* varos = instance->GetCreature(varosGUID))
                     varos->RemoveAllAuras();
         }
 
-        void OnPlayerEnter(PlayerPtr player)
+        void OnPlayerEnter(Player* player)
         {
             if (GetBossState(DATA_DRAKOS_EVENT) == DONE && GetBossState(DATA_VAROS_EVENT) != DONE)
             {
@@ -89,21 +89,21 @@ public:
             }
         }
 
-        void ProcessEvent(WorldObjectPtr /*Unit*/, uint32 eventId)
+        void ProcessEvent(WorldObject* /*unit*/, uint32 eventId)
         {
             if (eventId != EVENT_CALL_DRAGON)
                 return;
 
-            CreaturePtr varos = instance->GetCreature(varosGUID);
+            Creature* varos = instance->GetCreature(varosGUID);
 
             if (!varos)
                 return;
 
-            if (CreaturePtr drake = varos->SummonCreature(NPC_AZURE_RING_GUARDIAN, varos->GetPositionX(), varos->GetPositionY(), varos->GetPositionZ()+40))
+            if (Creature* drake = varos->SummonCreature(NPC_AZURE_RING_GUARDIAN, varos->GetPositionX(), varos->GetPositionY(), varos->GetPositionZ()+40))
                 drake->AI()->DoAction(ACTION_CALL_DRAGON_EVENT);
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -126,7 +126,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -216,7 +216,7 @@ public:
 
             for (std::list<uint64>::const_iterator itr = gameObjectList.begin(); itr != gameObjectList.end(); ++itr)
             {
-                if (GameObjectPtr go = instance->GetGameObject(*itr))
+                if (GameObject* go = instance->GetGameObject(*itr))
                     go->SetGoState(GO_STATE_ACTIVE);
             }
         }

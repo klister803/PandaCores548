@@ -63,11 +63,11 @@ class boss_sulfuron : public CreatureScript
 
         struct boss_sulfuronAI : public BossAI
         {
-            boss_sulfuronAI(CreaturePtr creature) : BossAI(creature, BOSS_SULFURON_HARBINGER)
+            boss_sulfuronAI(Creature* creature) : BossAI(creature, BOSS_SULFURON_HARBINGER)
             {
             }
 
-            void EnterCombat(UnitPtr victim)
+            void EnterCombat(Unit* victim)
             {
                 BossAI::EnterCombat(victim);
                 events.ScheduleEvent(EVENT_DARK_STRIKE, 10000);
@@ -101,7 +101,7 @@ class boss_sulfuron : public CreatureScript
                             break;
                         case EVENT_INSPIRE:
                         {
-                            std::list<CreaturePtr> healers = DoFindFriendlyMissingBuff(45.0f, SPELL_INSPIRE);
+                            std::list<Creature*> healers = DoFindFriendlyMissingBuff(45.0f, SPELL_INSPIRE);
                             if (!healers.empty())
                                 DoCast(Trinity::Containers::SelectRandomContainerElement(healers), SPELL_INSPIRE);
 
@@ -114,7 +114,7 @@ class boss_sulfuron : public CreatureScript
                             events.ScheduleEvent(EVENT_KNOCKDOWN, urand(12000, 15000));
                             break;
                         case EVENT_FLAMESPEAR:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                                 DoCast(target, SPELL_FLAMESPEAR);
                             events.ScheduleEvent(EVENT_FLAMESPEAR, urand(12000, 16000));
                             break;
@@ -127,7 +127,7 @@ class boss_sulfuron : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_sulfuronAI(creature);
         }
@@ -140,7 +140,7 @@ class mob_flamewaker_priest : public CreatureScript
 
         struct mob_flamewaker_priestAI : public ScriptedAI
         {
-            mob_flamewaker_priestAI(CreaturePtr creature) : ScriptedAI(creature)
+            mob_flamewaker_priestAI(Creature* creature) : ScriptedAI(creature)
             {
             }
 
@@ -149,12 +149,12 @@ class mob_flamewaker_priest : public CreatureScript
                 events.Reset();
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 events.Reset();
             }
 
-            void EnterCombat(UnitPtr victim)
+            void EnterCombat(Unit* victim)
             {
                 ScriptedAI::EnterCombat(victim);
                 events.ScheduleEvent(EVENT_HEAL, urand(15000, 30000));
@@ -177,17 +177,17 @@ class mob_flamewaker_priest : public CreatureScript
                     switch (eventId)
                     {
                         case EVENT_HEAL:
-                            if (UnitPtr target = DoSelectLowestHpFriendly(60.0f, 1))
+                            if (Unit* target = DoSelectLowestHpFriendly(60.0f, 1))
                                 DoCast(target, SPELL_HEAL);
                             events.ScheduleEvent(EVENT_HEAL, urand(15000, 20000));
                             break;
                         case EVENT_SHADOW_WORD_PAIN:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_SHADOWWORDPAIN))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_SHADOWWORDPAIN))
                                 DoCast(target, SPELL_SHADOWWORDPAIN);
                             events.ScheduleEvent(EVENT_SHADOW_WORD_PAIN, urand(18000, 26000));
                             break;
                         case EVENT_IMMOLATE:
-                            if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_IMMOLATE))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true, -SPELL_IMMOLATE))
                                 DoCast(target, SPELL_IMMOLATE);
                             events.ScheduleEvent(EVENT_IMMOLATE, urand(15000, 25000));
                             break;
@@ -203,7 +203,7 @@ class mob_flamewaker_priest : public CreatureScript
             EventMap events;
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_flamewaker_priestAI(creature);
         }

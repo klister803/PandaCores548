@@ -33,7 +33,6 @@
 #include "Language.h"
 #include "WorldPacket.h"
 #include "Group.h"
-#include "ClassFactory.h"
 
 extern GridState* si_GridStates[];                          // debugging code, should be deleted some day
 
@@ -95,22 +94,22 @@ void MapManager::checkAndCorrectGridStatesArray()
         ++i_GridStateErrorCount;
 }
 
-MapPtr MapManager::CreateBaseMap(uint32 id)
+Map* MapManager::CreateBaseMap(uint32 id)
 {
-    MapPtr map = FindBaseMap(id);
+    Map* map = FindBaseMap(id);
 
-    if (map == nullptr)
+    if (map == NULL)
     {
         TRINITY_GUARD(ACE_Thread_Mutex, Lock);
 
         const MapEntry* entry = sMapStore.LookupEntry(id);
         if (entry && entry->Instanceable())
         {
-            map = ClassFactory::ConstructMapInstanced(id, i_gridCleanUpDelay);
+            map = new MapInstanced(id, i_gridCleanUpDelay);
         }
         else
         {
-            map = ClassFactory::ConstructMap(id, i_gridCleanUpDelay, 0, NONE_DIFFICULTY);
+            map = new Map(id, i_gridCleanUpDelay, 0, NONE_DIFFICULTY);
             map->LoadRespawnTimes();
         }
         i_maps[id] = map;
@@ -120,37 +119,37 @@ MapPtr MapManager::CreateBaseMap(uint32 id)
     return map;
 }
 
-MapPtr MapManager::FindBaseNonInstanceMap(uint32 mapId) const
+Map* MapManager::FindBaseNonInstanceMap(uint32 mapId) const
 {
-    MapPtr map = FindBaseMap(mapId);
+    Map* map = FindBaseMap(mapId);
     if (map && map->Instanceable())
-        return nullptr;
+        return NULL;
     return map;
 }
 
-MapPtr MapManager::CreateMap(uint32 id, PlayerPtr player)
+Map* MapManager::CreateMap(uint32 id, Player* player)
 {
-    MapPtr m = CreateBaseMap(id);
+    Map* m = CreateBaseMap(id);
 
     if (m && m->Instanceable())
-        m = TO_MAPINSTANCED(m)->CreateInstanceForPlayer(id, player);
+        m = ((MapInstanced*)m)->CreateInstanceForPlayer(id, player);
 
     return m;
 }
 
-MapPtr MapManager::FindMap(uint32 mapid, uint32 instanceId) const
+Map* MapManager::FindMap(uint32 mapid, uint32 instanceId) const
 {
-    MapPtr map = FindBaseMap(mapid);
+    Map* map = FindBaseMap(mapid);
     if (!map)
-        return nullptr;
+        return NULL;
 
     if (!map->Instanceable())
-        return instanceId == 0 ? map : nullptr;
+        return instanceId == 0 ? map : NULL;
 
-    return TO_MAPINSTANCED(map)->FindInstanceMap(instanceId);
+    return ((MapInstanced*)map)->FindInstanceMap(instanceId);
 }
 
-bool MapManager::CanPlayerEnter(uint32 mapid, PlayerPtr player, bool loginCheck)
+bool MapManager::CanPlayerEnter(uint32 mapid, Player* player, bool loginCheck)
 {
     MapEntry const* entry = sMapStore.LookupEntry(mapid);
     if (!entry)
@@ -184,7 +183,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, PlayerPtr player, bool loginCheck)
 
     char const* mapName = entry->name;
 
-    GroupPtr group = player->GetGroup();
+    Group* group = player->GetGroup();
     if (entry->IsRaid())
     {
         // can only enter in a raid group
@@ -200,7 +199,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, PlayerPtr player, bool loginCheck)
 
     if (!player->isAlive())
     {
-        if (CorpsePtr corpse = player->GetCorpse())
+        if (Corpse* corpse = player->GetCorpse())
         {
             // let enter in ghost mode in instance that connected to inner instance with corpse
             uint32 corpseMap = corpse->GetMapId();
@@ -233,7 +232,7 @@ bool MapManager::CanPlayerEnter(uint32 mapid, PlayerPtr player, bool loginCheck)
     {
         InstanceGroupBind* boundInstance = group->GetBoundInstance(entry);
         if (boundInstance && boundInstance->save)
-            if (MapPtr boundMap = sMapMgr->FindMap(mapid, boundInstance->save->GetInstanceId()))
+            if (Map* boundMap = sMapMgr->FindMap(mapid, boundInstance->save->GetInstanceId()))
                 if (!loginCheck && !boundMap->CanEnter(player))
                     return false;
             /*
@@ -325,11 +324,13 @@ void MapManager::UnloadAll()
     for (TransportSet::iterator i = m_Transports.begin(); i != m_Transports.end(); ++i)
     {
         (*i)->RemoveFromWorld();
+        delete *i;
     }
 
     for (MapMapType::iterator iter = i_maps.begin(); iter != i_maps.end();)
     {
         iter->second->UnloadAll();
+        delete iter->second;
         i_maps.erase(iter++);
     }
 
@@ -346,10 +347,10 @@ uint32 MapManager::GetNumInstances()
     uint32 ret = 0;
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
     {
-        MapPtr map = itr->second;
+        Map* map = itr->second;
         if (!map->Instanceable())
             continue;
-        MapInstanced::InstancedMaps &maps = TO_MAPINSTANCED(NO_CONST(Map,map))->GetInstancedMaps();
+        MapInstanced::InstancedMaps &maps = ((MapInstanced*)map)->GetInstancedMaps();
         for (MapInstanced::InstancedMaps::iterator mitr = maps.begin(); mitr != maps.end(); ++mitr)
             if (mitr->second->IsDungeon()) ret++;
     }
@@ -363,13 +364,13 @@ uint32 MapManager::GetNumPlayersInInstances()
     uint32 ret = 0;
     for (MapMapType::iterator itr = i_maps.begin(); itr != i_maps.end(); ++itr)
     {
-        MapPtr map = itr->second;
+        Map* map = itr->second;
         if (!map->Instanceable())
             continue;
-        MapInstanced::InstancedMaps &maps = TO_MAPINSTANCED(map)->GetInstancedMaps();
+        MapInstanced::InstancedMaps &maps = ((MapInstanced*)map)->GetInstancedMaps();
         for (MapInstanced::InstancedMaps::iterator mitr = maps.begin(); mitr != maps.end(); ++mitr)
             if (mitr->second->IsDungeon())
-                ret += TO_INSTANCEMAP(mitr->second)->GetPlayers().getSize();
+                ret += ((InstanceMap*)mitr->second)->GetPlayers().getSize();
     }
     return ret;
 }

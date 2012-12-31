@@ -49,14 +49,14 @@ class boss_razorgore : public CreatureScript
 public:
     boss_razorgore() : CreatureScript("boss_razorgore") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_razorgoreAI (creature);
     }
 
     struct boss_razorgoreAI : public ScriptedAI
     {
-        boss_razorgoreAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_razorgoreAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 Cleave_Timer;
         uint32 WarStomp_Timer;
@@ -71,12 +71,12 @@ public:
             Conflagration_Timer = 12000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoZoneInCombat();
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
         }
@@ -121,7 +121,7 @@ public:
 
             // Aura Check. If the gamer is affected by confliguration we attack a random gamer.
             if (me->getVictim() && me->getVictim()->HasAura(SPELL_CONFLAGRATION))
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 100, true))
                     me->TauntApply(target);
 
             DoMeleeAttackIfReady();

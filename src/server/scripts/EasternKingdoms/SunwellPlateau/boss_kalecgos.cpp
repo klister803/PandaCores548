@@ -109,14 +109,14 @@ class boss_kalecgos : public CreatureScript
 public:
     boss_kalecgos() : CreatureScript("boss_kalecgos") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_kalecgosAI (creature);
     }
 
     struct boss_kalecgosAI : public ScriptedAI
     {
-        boss_kalecgosAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_kalecgosAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             SathGUID = 0;
@@ -153,7 +153,7 @@ public:
                 instance->SetData(DATA_KALECGOS_EVENT, NOT_STARTED);
             }
 
-            if (CreaturePtr Sath = Unit::GetCreature(TO_WORLDOBJECT(me), SathGUID))
+            if (Creature* Sath = Unit::GetCreature(*me, SathGUID))
                 Sath->AI()->EnterEvadeMode();
 
             me->setFaction(14);
@@ -252,13 +252,13 @@ public:
                     }
                     if (HealthBelowPct(10) && !isEnraged)
                     {
-                        if (CreaturePtr Sath = Unit::GetCreature(TO_WORLDOBJECT(me), SathGUID))
+                        if (Creature* Sath = Unit::GetCreature(*me, SathGUID))
                             Sath->AI()->DoAction(DO_ENRAGE);
                         DoAction(DO_ENRAGE);
                     }
                     if (!isBanished && HealthBelowPct(1))
                     {
-                        if (CreaturePtr Sath = Unit::GetCreature(TO_WORLDOBJECT(me), SathGUID))
+                        if (Creature* Sath = Unit::GetCreature(*me, SathGUID))
                         {
                             if (Sath->HasAura(SPELL_BANISH))
                             {
@@ -304,9 +304,9 @@ public:
 
                 if (SpectralBlastTimer <= diff)
                 {
-                    std::list<HostileReferencePtr> &m_threatlist = me->getThreatManager()->getThreatList();
-                    std::list<UnitPtr> targetList;
-                    for (std::list<HostileReferencePtr>::const_iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
+                    std::list<HostileReference*> &m_threatlist = me->getThreatManager().getThreatList();
+                    std::list<Unit*> targetList;
+                    for (std::list<HostileReference*>::const_iterator itr = m_threatlist.begin(); itr!= m_threatlist.end(); ++itr)
                         if ((*itr)->getTarget() && (*itr)->getTarget()->GetTypeId() == TYPEID_PLAYER && (*itr)->getTarget()->GetGUID() != me->getVictim()->GetGUID() && !(*itr)->getTarget()->HasAura(AURA_SPECTRAL_EXHAUSTION) && (*itr)->getTarget()->GetPositionZ() > me->GetPositionZ()-5)
                             targetList.push_back((*itr)->getTarget());
                     if (targetList.empty())
@@ -314,7 +314,7 @@ public:
                         SpectralBlastTimer = 1000;
                         return;
                     }
-                    std::list<UnitPtr>::const_iterator i = targetList.begin();
+                    std::list<Unit*>::const_iterator i = targetList.begin();
                     advance(i, rand()%targetList.size());
                     if ((*i))
                     {
@@ -327,7 +327,7 @@ public:
             }
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (bJustReset)//boss is invisible, don't attack
                 return;
@@ -340,13 +340,13 @@ public:
             }
         }
 
-        void DamageTaken(UnitPtr done_by, uint32 &damage)
+        void DamageTaken(Unit* done_by, uint32 &damage)
         {
             if (damage >= me->GetHealth() && done_by != me)
                 damage = 0;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             me->SetStandState(UNIT_STAND_STATE_STAND);
             DoScriptText(SAY_EVIL_AGGRO, me);
@@ -356,7 +356,7 @@ public:
                 instance->SetData(DATA_KALECGOS_EVENT, IN_PROGRESS);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_EVIL_SLAY1, SAY_EVIL_SLAY2), me);
         }
@@ -375,7 +375,7 @@ public:
                 {
                     for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                     {
-                        PlayerPtr player = itr->getSource();
+                        Player* player = itr->getSource();
                         if (player)
                             me->GetMap()->ToInstanceMap()->PermBindAllPlayers(player);
                     }
@@ -439,7 +439,7 @@ class boss_kalec : public CreatureScript
 public:
     boss_kalec() : CreatureScript("boss_kalec") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_kalecAI (creature);
     }
@@ -457,7 +457,7 @@ public:
 
         bool isEnraged; // if demon is enraged
 
-        boss_kalecAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_kalecAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -475,7 +475,7 @@ public:
             isEnraged = false;
         }
 
-        void DamageTaken(UnitPtr done_by, uint32 &damage)
+        void DamageTaken(Unit* done_by, uint32 &damage)
         {
             if (done_by->GetGUID() != SathGUID)
                 damage = 0;
@@ -541,10 +541,10 @@ class kalecgos_teleporter : public GameObjectScript
 public:
     kalecgos_teleporter() : GameObjectScript("kalecgos_teleporter") { }
 
-    bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
+    bool OnGossipHello(Player* player, GameObject* go)
     {
         uint8 SpectralPlayers = 0;
-        MapPtr map = go->GetMap();
+        Map* map = go->GetMap();
         if (!map->IsDungeon())
             return true;
 
@@ -569,14 +569,14 @@ class boss_sathrovarr : public CreatureScript
 public:
     boss_sathrovarr() : CreatureScript("boss_sathrovarr") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_sathrovarrAI (creature);
     }
 
     struct boss_sathrovarrAI : public ScriptedAI
     {
-        boss_sathrovarrAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_sathrovarrAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
             KalecGUID = 0;
@@ -608,7 +608,7 @@ public:
             }
             if (KalecGUID)
             {
-                if (CreaturePtr Kalec = Unit::GetCreature(TO_WORLDOBJECT(me), KalecGUID))
+                if (Creature* Kalec = Unit::GetCreature(*me, KalecGUID))
                     Kalec->setDeathState(JUST_DIED);
                 KalecGUID = 0;
             }
@@ -625,9 +625,9 @@ public:
             TeleportAllPlayersBack();
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
-            if (CreaturePtr Kalec = me->SummonCreature(MOB_KALEC, me->GetPositionX() + 10, me->GetPositionY() + 5, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0))
+            if (Creature* Kalec = me->SummonCreature(MOB_KALEC, me->GetPositionX() + 10, me->GetPositionY() + 5, me->GetPositionZ(), 0, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 0))
             {
                 KalecGUID = Kalec->GetGUID();
                 me->CombatStart(Kalec);
@@ -637,18 +637,18 @@ public:
             DoScriptText(SAY_SATH_AGGRO, me);
         }
 
-        void DamageTaken(UnitPtr done_by, uint32 &damage)
+        void DamageTaken(Unit* done_by, uint32 &damage)
         {
             if (damage >= me->GetHealth() && done_by != me)
                 damage = 0;
         }
 
-        void KilledUnit(UnitPtr target)
+        void KilledUnit(Unit* target)
         {
             if (target->GetGUID() == KalecGUID)
             {
                 TeleportAllPlayersBack();
-                if (CreaturePtr Kalecgos = Unit::GetCreature(TO_WORLDOBJECT(me), KalecgosGUID))
+                if (Creature* Kalecgos = Unit::GetCreature(*me, KalecgosGUID))
                 {
                     CAST_AI(boss_kalecgos::boss_kalecgosAI, Kalecgos->AI())->TalkTimer = 1;
                     CAST_AI(boss_kalecgos::boss_kalecgosAI, Kalecgos->AI())->isFriendly = false;
@@ -659,12 +659,12 @@ public:
             DoScriptText(RAND(SAY_SATH_SLAY1, SAY_SATH_SLAY2), me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_SATH_DEATH, me);
             me->SetPosition(me->GetPositionX(), me->GetPositionY(), DRAGON_REALM_Z, me->GetOrientation());
             TeleportAllPlayersBack();
-            if (CreaturePtr Kalecgos = Unit::GetCreature(TO_WORLDOBJECT(me), KalecgosGUID))
+            if (Creature* Kalecgos = Unit::GetCreature(*me, KalecgosGUID))
             {
                 CAST_AI(boss_kalecgos::boss_kalecgosAI, Kalecgos->AI())->TalkTimer = 1;
                 CAST_AI(boss_kalecgos::boss_kalecgosAI, Kalecgos->AI())->isFriendly = true;
@@ -676,7 +676,7 @@ public:
 
         void TeleportAllPlayersBack()
         {
-            MapPtr map = me->GetMap();
+            Map* map = me->GetMap();
             if (!map->IsDungeon())
                 return;
 
@@ -715,20 +715,20 @@ public:
 
             if (CheckTimer <= diff)
             {
-                CreaturePtr Kalec = Unit::GetCreature(TO_WORLDOBJECT(me), KalecGUID);
+                Creature* Kalec = Unit::GetCreature(*me, KalecGUID);
                 if (!Kalec || (Kalec && !Kalec->isAlive()))
                 {
-                    if (CreaturePtr Kalecgos = Unit::GetCreature(TO_WORLDOBJECT(me), KalecgosGUID))
+                    if (Creature* Kalecgos = Unit::GetCreature(*me, KalecgosGUID))
                         Kalecgos->AI()->EnterEvadeMode();
                         return;
                 }
                 if (HealthBelowPct(10) && !isEnraged)
                 {
-                    if (CreaturePtr Kalecgos = Unit::GetCreature(TO_WORLDOBJECT(me), KalecgosGUID))
+                    if (Creature* Kalecgos = Unit::GetCreature(*me, KalecgosGUID))
                         Kalecgos->AI()->DoAction(DO_ENRAGE);
                     DoAction(DO_ENRAGE);
                 }
-                CreaturePtr Kalecgos = Unit::GetCreature(TO_WORLDOBJECT(me), KalecgosGUID);
+                Creature* Kalecgos = Unit::GetCreature(*me, KalecgosGUID);
                 if (Kalecgos)
                 {
                     if (!Kalecgos->isInCombat())
@@ -761,13 +761,13 @@ public:
 
             if (ResetThreat <= diff)
             {
-                for (std::list<HostileReferencePtr>::const_iterator itr = me->getThreatManager()->getThreatList().begin(); itr != me->getThreatManager()->getThreatList().end(); ++itr)
+                for (std::list<HostileReference*>::const_iterator itr = me->getThreatManager().getThreatList().begin(); itr != me->getThreatManager().getThreatList().end(); ++itr)
                 {
-                    if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), (*itr)->getUnitGuid()))
+                    if (Unit* unit = Unit::GetUnit(*me, (*itr)->getUnitGuid()))
                     {
                         if (unit->GetPositionZ() > me->GetPositionZ()+5)
                         {
-                            me->getThreatManager()->modifyThreatPercent(unit, -100);
+                            me->getThreatManager().modifyThreatPercent(unit, -100);
                         }
                     }
                 }
@@ -783,7 +783,7 @@ public:
 
             if (AgonyCurseTimer <= diff)
             {
-                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (!target) target = me->getVictim();
                 DoCast(target, SPELL_AGONY_CURSE);
                 AgonyCurseTimer = 20000;

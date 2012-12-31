@@ -63,14 +63,14 @@ class npc_medivh_bm : public CreatureScript
 public:
     npc_medivh_bm() : CreatureScript("npc_medivh_bm") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_medivh_bmAI (creature);
     }
 
     struct npc_medivh_bmAI : public ScriptedAI
     {
-        npc_medivh_bmAI(CreaturePtr creature) : ScriptedAI(creature)
+        npc_medivh_bmAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -99,7 +99,7 @@ public:
             DoCast(me, SPELL_PORTAL_RUNE, true);
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!instance)
                 return;
@@ -133,7 +133,7 @@ public:
             }
         }
 
-        void AttackStart(UnitPtr /*who*/)
+        void AttackStart(Unit* /*who*/)
         {
             //if (instance && instance->GetData(TYPE_MEDIVH) == IN_PROGRESS)
             //return;
@@ -141,9 +141,9 @@ public:
             //ScriptedAI::AttackStart(who);
         }
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
-        void SpellHit(UnitPtr /*caster*/, const SpellInfo* spell)
+        void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
         {
             if (SpellCorrupt_Timer)
                 return;
@@ -155,7 +155,7 @@ public:
                 SpellCorrupt_Timer = 3000;
         }
 
-        void JustDied(UnitPtr killer)
+        void JustDied(Unit* killer)
         {
             if (killer->GetEntry() == me->GetEntry())
                 return;
@@ -210,7 +210,7 @@ public:
                     //if we reach this it means event was running but at some point reset.
                     if (instance->GetData(TYPE_MEDIVH) == NOT_STARTED)
                     {
-                        me->DealDamage(me, me->GetHealth(), nullptr, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, nullptr, false);
+                        me->DealDamage(me, me->GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                         me->RemoveCorpse();
                         me->Respawn();
                         return;
@@ -256,14 +256,14 @@ class npc_time_rift : public CreatureScript
 public:
     npc_time_rift() : CreatureScript("npc_time_rift") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_time_riftAI (creature);
     }
 
     struct npc_time_riftAI : public ScriptedAI
     {
-        npc_time_riftAI(CreaturePtr creature) : ScriptedAI(creature)
+        npc_time_riftAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -293,7 +293,7 @@ public:
             else mWaveId = 1;
 
         }
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
         void DoSummonAtRift(uint32 creature_entry)
         {
@@ -313,8 +313,8 @@ public:
             //normalize Z-level if we can, if rift is not at ground level.
             pos.m_positionZ = std::max(me->GetMap()->GetHeight(pos.m_positionX, pos.m_positionY, MAX_HEIGHT), me->GetMap()->GetWaterLevel(pos.m_positionX, pos.m_positionY));
 
-            if (UnitPtr Summon = DoSummon(creature_entry, pos, 30000, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT))
-                if (UnitPtr temp = Unit::GetUnit(TO_WORLDOBJECT(me), instance ? instance->GetData64(DATA_MEDIVH) : 0))
+            if (Unit* Summon = DoSummon(creature_entry, pos, 30000, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT))
+                if (Unit* temp = Unit::GetUnit(*me, instance ? instance->GetData64(DATA_MEDIVH) : 0))
                     Summon->AddThreat(temp, 0.0f);
         }
 
@@ -372,7 +372,7 @@ class npc_saat : public CreatureScript
 public:
     npc_saat() : CreatureScript("npc_saat") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -383,7 +383,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());

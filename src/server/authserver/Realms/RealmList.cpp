@@ -20,7 +20,7 @@
 #include "RealmList.h"
 #include "Database/DatabaseEnv.h"
 
-RealmList::RealmList() : m_UpdateInterval(0), m_NextUpdateTime(time(nullptr)) { }
+RealmList::RealmList() : m_UpdateInterval(0), m_NextUpdateTime(time(NULL)) { }
 
 // Load the realm list from the database
 void RealmList::Initialize(uint32 updateInterval)
@@ -54,10 +54,10 @@ void RealmList::UpdateRealm(uint32 ID, const std::string& name, const std::strin
 void RealmList::UpdateIfNeed()
 {
     // maybe disabled or updated recently
-    if (!m_UpdateInterval || m_NextUpdateTime > time(nullptr))
+    if (!m_UpdateInterval || m_NextUpdateTime > time(NULL))
         return;
 
-    m_NextUpdateTime = time(nullptr) + m_UpdateInterval;
+    m_NextUpdateTime = time(NULL) + m_UpdateInterval;
 
     // Clears Realm list
     m_realms.clear();

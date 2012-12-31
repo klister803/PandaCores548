@@ -35,14 +35,14 @@ class boss_eck : public CreatureScript
 public:
     boss_eck() : CreatureScript("boss_eck") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_eckAI (creature);
     }
 
     struct boss_eckAI : public ScriptedAI
     {
-        boss_eckAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_eckAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -69,7 +69,7 @@ public:
                 instance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (instance)
                 instance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, IN_PROGRESS);
@@ -95,7 +95,7 @@ public:
 
             if (uiSpringTimer <= diff)
             {
-                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1);
                 if (target && target->GetTypeId() == TYPEID_PLAYER)
                 {
                     DoCast(target, RAND(SPELL_ECK_SPRING_1, SPELL_ECK_SPRING_2));
@@ -125,7 +125,7 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
                 instance->SetData(DATA_ECK_THE_FEROCIOUS_EVENT, DONE);
@@ -139,21 +139,21 @@ class npc_ruins_dweller : public CreatureScript
 public:
     npc_ruins_dweller() : CreatureScript("npc_ruins_dweller") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_ruins_dwellerAI (creature);
     }
 
     struct npc_ruins_dwellerAI : public ScriptedAI
     {
-        npc_ruins_dwellerAI(CreaturePtr creature) : ScriptedAI(creature)
+        npc_ruins_dwellerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
 
         InstanceScript* instance;
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
             {

@@ -45,7 +45,7 @@ bool BasicStatementTask::Execute()
         if (!result || !result->GetRowCount())
         {
             delete result;
-            m_result.set(QueryResult(nullptr));
+            m_result.set(QueryResult(NULL));
             return false;
         }
         result->NextRow();

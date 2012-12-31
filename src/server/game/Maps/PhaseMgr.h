@@ -85,7 +85,7 @@ typedef UNORDERED_MAP<uint32 /*spellId*/, PhaseInfo> PhaseInfoContainer;
 
 struct PhaseData
 {
-    PhaseData(PlayerPtr _player) : player(_player), _PhasemaskThroughDefinitions(0), _PhasemaskThroughAuras(0), _CustomPhasemask(0) {}
+    PhaseData(Player* _player) : player(_player), _PhasemaskThroughDefinitions(0), _PhasemaskThroughAuras(0), _CustomPhasemask(0) {}
 
     uint32 _PhasemaskThroughDefinitions;
     uint32 _PhasemaskThroughAuras;
@@ -105,7 +105,7 @@ struct PhaseData
     void SendPhaseshiftToPlayer();
 
 private:
-    PlayerPtr player;
+    Player* player;
     std::list<PhaseDefinition const*> activePhaseDefinitions;
     PhaseInfoContainer spellPhaseInfo;
 };
@@ -125,7 +125,7 @@ private:
 class PhaseMgr
 {
 public:
-    PhaseMgr(PlayerPtr _player);
+    PhaseMgr(Player* _player);
     ~PhaseMgr() {}
 
     uint32 GetCurrentPhasemask() { return phaseData.GetCurrentPhasemask(); };
@@ -138,8 +138,8 @@ public:
     void Update();
 
     // Aura phase effects
-    void RegisterPhasingAuraEffect(constAuraEffectPtr auraEffect);
-    void UnRegisterPhasingAuraEffect(constAuraEffectPtr auraEffect);
+    void RegisterPhasingAuraEffect(AuraEffect const* auraEffect);
+    void UnRegisterPhasingAuraEffect(AuraEffect const* auraEffect);
 
     // Update flags (delayed phasing)
     void AddUpdateFlag(PhaseUpdateFlag const updateFlag) { _UpdateFlags |= updateFlag; }
@@ -149,7 +149,7 @@ public:
     void SetCustomPhase(uint32 const phaseMask);
 
     // Debug
-    void SendDebugReportToPlayer(const PlayerPtr debugger);
+    void SendDebugReportToPlayer(Player* const debugger);
 
     static bool IsConditionTypeSupported(ConditionTypes const conditionType);
 
@@ -165,7 +165,7 @@ private:
     PhaseDefinitionStore const* _PhaseDefinitionStore;
     SpellPhaseStore const* _SpellPhaseStore;
 
-    PlayerPtr player;
+    Player* player;
     PhaseData phaseData;
     uint8 _UpdateFlags;
 };

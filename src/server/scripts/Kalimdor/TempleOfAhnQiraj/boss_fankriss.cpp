@@ -43,14 +43,14 @@ class boss_fankriss : public CreatureScript
 public:
     boss_fankriss() : CreatureScript("boss_fankriss") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_fankrissAI (creature);
     }
 
     struct boss_fankrissAI : public ScriptedAI
     {
-        boss_fankrissAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_fankrissAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 MortalWound_Timer;
         uint32 SpawnHatchlings_Timer;
@@ -59,8 +59,8 @@ public:
         float RandX;
         float RandY;
 
-        CreaturePtr Hatchling;
-        CreaturePtr Spawn;
+        Creature* Hatchling;
+        Creature* Spawn;
 
         void Reset()
         {
@@ -69,7 +69,7 @@ public:
             SpawnSpawns_Timer = urand(15000, 45000);
         }
 
-        void SummonSpawn(UnitPtr victim)
+        void SummonSpawn(Unit* victim)
         {
             if (!victim)
                 return;
@@ -93,7 +93,7 @@ public:
                 Spawn->AI()->AttackStart(victim);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
@@ -137,7 +137,7 @@ public:
             {
                 if (SpawnHatchlings_Timer <= diff)
                 {
-                    UnitPtr target = nullptr;
+                    Unit* target = NULL;
                     target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                     if (target && target->GetTypeId() == TYPEID_PLAYER)
                     {

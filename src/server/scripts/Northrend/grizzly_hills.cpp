@@ -58,7 +58,7 @@ public:
 
     struct npc_emilyAI : public npc_escortAI
     {
-        npc_emilyAI(CreaturePtr creature) : npc_escortAI(creature) { }
+        npc_emilyAI(Creature* creature) : npc_escortAI(creature) { }
 
         uint32 m_uiChatTimer;
 
@@ -67,9 +67,9 @@ public:
 
         bool Completed;
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
-            if (CreaturePtr Mrfloppy = GetClosestCreatureWithEntry(me, NPC_MRFLOPPY, 50.0f))
+            if (Creature* Mrfloppy = GetClosestCreatureWithEntry(me, NPC_MRFLOPPY, 50.0f))
                 summoned->AI()->AttackStart(Mrfloppy);
             else
                 summoned->AI()->AttackStart(me->getVictim());
@@ -77,63 +77,63 @@ public:
 
         void WaypointReached(uint32 waypointId)
         {
-            PlayerPtr player = GetPlayerForEscort();
+            Player* player = GetPlayerForEscort();
             if (!player)
                 return;
 
             switch (waypointId)
             {
                 case 9:
-                    if (CreaturePtr Mrfloppy = GetClosestCreatureWithEntry(me, NPC_MRFLOPPY, 100.0f))
+                    if (Creature* Mrfloppy = GetClosestCreatureWithEntry(me, NPC_MRFLOPPY, 100.0f))
                         MrfloppyGUID = Mrfloppy->GetGUID();
                     break;
                 case 10:
-                    if (Unit::GetCreature(TO_WORLDOBJECT(me), MrfloppyGUID))
+                    if (Unit::GetCreature(*me, MrfloppyGUID))
                     {
                         DoScriptText(SAY_WORGHAGGRO1, me);
                         me->SummonCreature(NPC_HUNGRY_WORG, me->GetPositionX()+5, me->GetPositionY()+2, me->GetPositionZ()+1, 3.229f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000);
                     }
                     break;
                 case 11:
-                    if (CreaturePtr Mrfloppy = Unit::GetCreature(TO_WORLDOBJECT(me), MrfloppyGUID))
+                    if (Creature* Mrfloppy = Unit::GetCreature(*me, MrfloppyGUID))
                         Mrfloppy->GetMotionMaster()->MoveFollow(me, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
                     break;
                 case 17:
-                    if (CreaturePtr Mrfloppy = Unit::GetCreature(TO_WORLDOBJECT(me), MrfloppyGUID))
+                    if (Creature* Mrfloppy = Unit::GetCreature(*me, MrfloppyGUID))
                         Mrfloppy->GetMotionMaster()->MovePoint(0, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ());
                     DoScriptText(SAY_WORGRAGGRO3, me);
-                    if (CreaturePtr RWORG = me->SummonCreature(NPC_RAVENOUS_WORG, me->GetPositionX()+10, me->GetPositionY()+8, me->GetPositionZ()+2, 3.229f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000))
+                    if (Creature* RWORG = me->SummonCreature(NPC_RAVENOUS_WORG, me->GetPositionX()+10, me->GetPositionY()+8, me->GetPositionZ()+2, 3.229f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 120000))
                     {
                         RWORG->setFaction(35);
                         RWORGGUID = RWORG->GetGUID();
                     }
                     break;
                 case 18:
-                    if (CreaturePtr Mrfloppy = Unit::GetCreature(TO_WORLDOBJECT(me), MrfloppyGUID))
+                    if (Creature* Mrfloppy = Unit::GetCreature(*me, MrfloppyGUID))
                     {
-                        if (CreaturePtr RWORG = Unit::GetCreature(TO_WORLDOBJECT(me), RWORGGUID))
+                        if (Creature* RWORG = Unit::GetCreature(*me, RWORGGUID))
                             RWORG->GetMotionMaster()->MovePoint(0, Mrfloppy->GetPositionX(), Mrfloppy->GetPositionY(), Mrfloppy->GetPositionZ());
                         DoCast(Mrfloppy, SPELL_MRFLOPPY);
                     }
                     break;
                 case 19:
-                    if (CreaturePtr Mrfloppy = Unit::GetCreature(TO_WORLDOBJECT(me), MrfloppyGUID))
+                    if (Creature* Mrfloppy = Unit::GetCreature(*me, MrfloppyGUID))
                     {
                         if (Mrfloppy->HasAura(SPELL_MRFLOPPY, 0))
                         {
-                            if (CreaturePtr RWORG = Unit::GetCreature(TO_WORLDOBJECT(me), RWORGGUID))
+                            if (Creature* RWORG = Unit::GetCreature(*me, RWORGGUID))
                                 Mrfloppy->EnterVehicle(RWORG);
                         }
                     }
                     break;
                 case 20:
-                    if (CreaturePtr RWORG = Unit::GetCreature(TO_WORLDOBJECT(me), RWORGGUID))
+                    if (Creature* RWORG = Unit::GetCreature(*me, RWORGGUID))
                         RWORG->HandleEmoteCommand(34);
                     break;
                 case 21:
-                    if (CreaturePtr Mrfloppy = Unit::GetCreature(TO_WORLDOBJECT(me), MrfloppyGUID))
+                    if (Creature* Mrfloppy = Unit::GetCreature(*me, MrfloppyGUID))
                     {
-                        if (CreaturePtr RWORG = Unit::GetCreature(TO_WORLDOBJECT(me), RWORGGUID))
+                        if (Creature* RWORG = Unit::GetCreature(*me, RWORGGUID))
                         {
                             RWORG->Kill(Mrfloppy);
                             Mrfloppy->ExitVehicle();
@@ -144,11 +144,11 @@ public:
                     }
                     break;
                 case 22:
-                    if (CreaturePtr Mrfloppy = Unit::GetCreature(TO_WORLDOBJECT(me), MrfloppyGUID))
+                    if (Creature* Mrfloppy = Unit::GetCreature(*me, MrfloppyGUID))
                     {
                         if (Mrfloppy->isDead())
                         {
-                            if (CreaturePtr RWORG = Unit::GetCreature(TO_WORLDOBJECT(me), RWORGGUID))
+                            if (Creature* RWORG = Unit::GetCreature(*me, RWORGGUID))
                                 RWORG->DisappearAndDie();
                             me->GetMotionMaster()->MovePoint(0, Mrfloppy->GetPositionX(), Mrfloppy->GetPositionY(), Mrfloppy->GetPositionZ());
                             Mrfloppy->setDeathState(ALIVE);
@@ -171,13 +171,13 @@ public:
                     break;
                 case 27:
                     me->DisappearAndDie();
-                    if (CreaturePtr Mrfloppy = Unit::GetCreature(TO_WORLDOBJECT(me), MrfloppyGUID))
+                    if (Creature* Mrfloppy = Unit::GetCreature(*me, MrfloppyGUID))
                         Mrfloppy->DisappearAndDie();
                     break;
             }
         }
 
-        void EnterCombat(UnitPtr /*Who*/)
+        void EnterCombat(Unit* /*Who*/)
         {
             DoScriptText(SAY_RANDOMAGGRO, me);
         }
@@ -203,12 +203,12 @@ public:
         }
     };
 
-    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_PERILOUS_ADVENTURE)
         {
             DoScriptText(SAY_QUEST_ACCEPT, creature);
-            if (CreaturePtr Mrfloppy = GetClosestCreatureWithEntry(creature, NPC_MRFLOPPY, 180.0f))
+            if (Creature* Mrfloppy = GetClosestCreatureWithEntry(creature, NPC_MRFLOPPY, 180.0f))
                 Mrfloppy->GetMotionMaster()->MoveFollow(creature, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
             if (npc_escortAI* pEscortAI = CAST_AI(npc_emily::npc_emilyAI, (creature->AI())))
@@ -217,7 +217,7 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_emilyAI(creature);
     }
@@ -231,7 +231,7 @@ public:
 
     struct npc_mrfloppyAI : public ScriptedAI
     {
-        npc_mrfloppyAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_mrfloppyAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 EmilyGUID;
         uint64 RWORGGUID;
@@ -239,9 +239,9 @@ public:
 
         void Reset() {}
 
-        void EnterCombat(UnitPtr Who)
+        void EnterCombat(Unit* Who)
         {
-            if (CreaturePtr Emily = GetClosestCreatureWithEntry(me, NPC_EMILY, 50.0f))
+            if (Creature* Emily = GetClosestCreatureWithEntry(me, NPC_EMILY, 50.0f))
             {
                 switch (Who->GetEntry())
                 {
@@ -259,7 +259,7 @@ public:
 
         void EnterEvadeMode() {}
 
-        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 /*diff*/)
         {
@@ -268,7 +268,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_mrfloppyAI(creature);
     }
@@ -296,7 +296,7 @@ public:
 
     struct npc_outhouse_bunnyAI : public ScriptedAI
     {
-        npc_outhouse_bunnyAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_outhouse_bunnyAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint8 m_counter;
         uint8 m_gender;
@@ -313,7 +313,7 @@ public:
                 m_gender = uiData;
         }
 
-        void SpellHit(UnitPtr pCaster, const SpellInfo* pSpell)
+        void SpellHit(Unit* pCaster, const SpellInfo* pSpell)
         {
              if (pSpell->Id == SPELL_OUTHOUSE_GROANS)
              {
@@ -337,7 +337,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_outhouse_bunnyAI(creature);
     }
@@ -357,7 +357,7 @@ public:
 
     struct npc_tallhorn_stagAI : public ScriptedAI
     {
-        npc_tallhorn_stagAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_tallhorn_stagAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint8 m_uiPhase;
 
@@ -382,7 +382,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_tallhorn_stagAI(creature);
     }
@@ -402,7 +402,7 @@ public:
 
     struct npc_amberpine_woodsmanAI : public ScriptedAI
     {
-        npc_amberpine_woodsmanAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_amberpine_woodsmanAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint8 m_uiPhase;
         uint32 m_uiTimer;
@@ -448,7 +448,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_amberpine_woodsmanAI(creature);
     }
@@ -474,7 +474,7 @@ public:
 
     struct npc_wounded_skirmisherAI : public ScriptedAI
     {
-        npc_wounded_skirmisherAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_wounded_skirmisherAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint64 uiPlayerGUID;
 
@@ -492,12 +492,12 @@ public:
                 me->DespawnOrUnsummon(DespawnTimer);
         }
 
-        void SpellHit(UnitPtr caster, const SpellInfo* spell)
+        void SpellHit(Unit* caster, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_RENEW_SKIRMISHER && caster->GetTypeId() == TYPEID_PLAYER
-                && TO_PLAYER(caster)->GetQuestStatus(12288) == QUEST_STATUS_INCOMPLETE)
+                && caster->ToPlayer()->GetQuestStatus(12288) == QUEST_STATUS_INCOMPLETE)
             {
-                TO_PLAYER(caster)->KilledMonsterCredit(CREDIT_NPC, 0);
+                caster->ToPlayer()->KilledMonsterCredit(CREDIT_NPC, 0);
                 DoScriptText(RAND(RANDOM_SAY_1, RANDOM_SAY_2, RANDOM_SAY_3), caster);
                 if (me->IsStandState())
                     me->GetMotionMaster()->MovePoint(1, me->GetPositionX()+7, me->GetPositionY()+7, me->GetPositionZ());
@@ -518,7 +518,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_wounded_skirmisherAI(creature);
     }
@@ -541,14 +541,14 @@ class npc_lightning_sentry : public CreatureScript
 public:
     npc_lightning_sentry() : CreatureScript("npc_lightning_sentry") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_lightning_sentryAI(creature);
     }
 
     struct npc_lightning_sentryAI : public ScriptedAI
     {
-        npc_lightning_sentryAI(CreaturePtr creature) : ScriptedAI(creature) { }
+        npc_lightning_sentryAI(Creature* creature) : ScriptedAI(creature) { }
 
         uint32 uiChargedSentryTotem;
 
@@ -573,15 +573,15 @@ public:
             DoMeleeAttackIfReady();
         }
 
-        void JustDied(UnitPtr killer)
+        void JustDied(Unit* killer)
         {
-            if (TO_PLAYER(killer) && TO_PLAYER(killer)->GetTypeId() == TYPEID_PLAYER)
+            if (killer->ToPlayer() && killer->ToPlayer()->GetTypeId() == TYPEID_PLAYER)
             {
                 if (me->FindNearestCreature(NPC_WAR_GOLEM, 10.0f, true))
                 {
-                    if (TO_PLAYER(killer)->GetQuestStatus(QUEST_OR_MAYBE_WE_DONT_A) == QUEST_STATUS_INCOMPLETE ||
-                        TO_PLAYER(killer)->GetQuestStatus(QUEST_OR_MAYBE_WE_DONT_H) == QUEST_STATUS_INCOMPLETE)
-                        TO_PLAYER(killer)->KilledMonsterCredit(NPC_WAR_GOLEM, 0);
+                    if (killer->ToPlayer()->GetQuestStatus(QUEST_OR_MAYBE_WE_DONT_A) == QUEST_STATUS_INCOMPLETE ||
+                        killer->ToPlayer()->GetQuestStatus(QUEST_OR_MAYBE_WE_DONT_H) == QUEST_STATUS_INCOMPLETE)
+                        killer->ToPlayer()->KilledMonsterCredit(NPC_WAR_GOLEM, 0);
                 }
             }
         }
@@ -610,7 +610,7 @@ class npc_venture_co_straggler : public CreatureScript
 
         struct npc_venture_co_stragglerAI : public ScriptedAI
         {
-            npc_venture_co_stragglerAI(CreaturePtr creature) : ScriptedAI(creature) { }
+            npc_venture_co_stragglerAI(Creature* creature) : ScriptedAI(creature) { }
 
             uint64 uiPlayerGUID;
             uint32 uiRunAwayTimer;
@@ -631,7 +631,7 @@ class npc_venture_co_straggler : public CreatureScript
             {
                 if (uiPlayerGUID && uiRunAwayTimer <= uiDiff)
                 {
-                    if (PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), uiPlayerGUID))
+                    if (Player* player = Unit::GetPlayer(*me, uiPlayerGUID))
                     {
                         switch (uiTimer)
                         {
@@ -676,7 +676,7 @@ class npc_venture_co_straggler : public CreatureScript
                 DoMeleeAttackIfReady();
             }
 
-            void SpellHit(UnitPtr caster, SpellInfo const* spell)
+            void SpellHit(Unit* caster, SpellInfo const* spell)
             {
                 if (spell->Id == SPELL_SMOKE_BOMB && caster->GetTypeId() == TYPEID_PLAYER)
                 {
@@ -689,7 +689,7 @@ class npc_venture_co_straggler : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_venture_co_stragglerAI(creature);
         }

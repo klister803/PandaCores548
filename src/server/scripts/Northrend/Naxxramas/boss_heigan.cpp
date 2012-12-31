@@ -52,21 +52,21 @@ class boss_heigan : public CreatureScript
 public:
     boss_heigan() : CreatureScript("boss_heigan") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_heiganAI (creature);
     }
 
     struct boss_heiganAI : public BossAI
     {
-        boss_heiganAI(CreaturePtr creature) : BossAI(creature, BOSS_HEIGAN) {}
+        boss_heiganAI(Creature* creature) : BossAI(creature, BOSS_HEIGAN) {}
 
         uint32 eruptSection;
         bool eruptDirection;
         bool safetyDance;
         Phases phase;
 
-        void KilledUnit(UnitPtr who)
+        void KilledUnit(Unit* who)
         {
             if (!(rand()%5))
                 DoScriptText(SAY_SLAY, me);
@@ -88,13 +88,13 @@ public:
             return 0;
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             _JustDied();
             DoScriptText(SAY_DEATH, me);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             _EnterCombat();
             DoScriptText(SAY_AGGRO, me);
@@ -185,13 +185,13 @@ class spell_heigan_eruption : public SpellScriptLoader
 
             void HandleScript(SpellEffIndex /*eff*/)
             {
-                UnitPtr caster = GetCaster();
+                Unit* caster = GetCaster();
                 if (!caster || !GetHitPlayer())
                     return;
 
                 if (GetHitDamage() >= int32(GetHitPlayer()->GetHealth()))
                     if (InstanceScript* instance = caster->GetInstanceScript())
-                        if (CreaturePtr Heigan = ObjectAccessor::GetCreature(TO_CONST_WORLDOBJECT(caster), instance->GetData64(DATA_HEIGAN)))
+                        if (Creature* Heigan = ObjectAccessor::GetCreature(*caster, instance->GetData64(DATA_HEIGAN)))
                             Heigan->AI()->SetData(DATA_SAFETY_DANCE, 0);
             }
 
@@ -214,12 +214,12 @@ class achievement_safety_dance : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
+        bool OnCheck(Player* /*player*/, Unit* target)
         {
             if (!target)
                 return false;
 
-            if (CreaturePtr Heigan = TO_CREATURE(target))
+            if (Creature* Heigan = target->ToCreature())
                 if (Heigan->AI()->GetData(DATA_SAFETY_DANCE))
                     return true;
 

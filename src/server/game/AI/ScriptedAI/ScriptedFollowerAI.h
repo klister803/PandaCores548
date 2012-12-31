@@ -21,27 +21,27 @@ enum eFollowState
 class FollowerAI : public ScriptedAI
 {
     public:
-        explicit FollowerAI(CreaturePtr creature);
+        explicit FollowerAI(Creature* creature);
         ~FollowerAI() {}
 
         //virtual void WaypointReached(uint32 uiPointId) = 0;
 
         void MovementInform(uint32 motionType, uint32 pointId);
 
-        void AttackStart(UnitPtr);
+        void AttackStart(Unit*);
 
-        void MoveInLineOfSight(UnitPtr);
+        void MoveInLineOfSight(Unit*);
 
         void EnterEvadeMode();
 
-        void JustDied(UnitPtr);
+        void JustDied(Unit*);
 
         void JustRespawned();
 
         void UpdateAI(const uint32);                        //the "internal" update, calls UpdateFollowerAI()
         virtual void UpdateFollowerAI(const uint32);        //used when it's needed to add code in update (abilities, scripted events, etc)
 
-        void StartFollow(PlayerPtr player, uint32 factionForFollower = 0, const Quest* quest = NULL);
+        void StartFollow(Player* player, uint32 factionForFollower = 0, const Quest* quest = NULL);
 
         void SetFollowPaused(bool bPaused);                 //if special event require follow mode to hold/resume during the follow
         void SetFollowComplete(bool bWithEndEvent = false);
@@ -49,13 +49,13 @@ class FollowerAI : public ScriptedAI
         bool HasFollowState(uint32 uiFollowState) { return (m_uiFollowState & uiFollowState); }
 
     protected:
-        PlayerPtr GetLeaderForFollower();
+        Player* GetLeaderForFollower();
 
     private:
         void AddFollowState(uint32 uiFollowState) { m_uiFollowState |= uiFollowState; }
         void RemoveFollowState(uint32 uiFollowState) { m_uiFollowState &= ~uiFollowState; }
 
-        bool AssistPlayerInCombat(UnitPtr who);
+        bool AssistPlayerInCombat(Unit* who);
 
         uint64 m_uiLeaderGUID;
         uint32 m_uiUpdateFollowTimer;

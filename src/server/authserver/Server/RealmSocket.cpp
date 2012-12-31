@@ -31,7 +31,7 @@ RealmSocket::Session::Session(void) {}
 
 RealmSocket::Session::~Session(void) { }
 
-RealmSocket::RealmSocket(void) : input_buffer_(4096), session_(nullptr), _remoteAddress()
+RealmSocket::RealmSocket(void) : input_buffer_(4096), session_(NULL), _remoteAddress()
 {
     reference_counting_policy().value(ACE_Event_Handler::Reference_Counting_Policy::ENABLED);
 
@@ -159,7 +159,7 @@ ssize_t RealmSocket::noblk_send(ACE_Message_Block &message_block)
 
 bool RealmSocket::send(const char *buf, size_t len)
 {
-    if (buf == nullptr || len == 0)
+    if (buf == NULL || len == 0)
         return true;
 
     ACE_Data_Block db(len, ACE_Message_Block::MB_DATA, (const char*)buf, 0, 0, ACE_Message_Block::DONT_DELETE, 0);
@@ -272,7 +272,7 @@ int RealmSocket::handle_input(ACE_HANDLE)
 
     input_buffer_.wr_ptr((size_t)n);
 
-    if (session_ != nullptr)
+    if (session_ != NULL)
     {
         session_->OnRead();
         input_buffer_.crunch();
@@ -284,7 +284,7 @@ int RealmSocket::handle_input(ACE_HANDLE)
 
 void RealmSocket::set_session(Session* session)
 {
-    if (session_ != nullptr)
+    if (session_ != NULL)
         delete session_;
 
     session_ = session;

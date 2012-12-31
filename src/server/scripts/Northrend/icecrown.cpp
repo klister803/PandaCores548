@@ -62,7 +62,7 @@ class npc_arete : public CreatureScript
 public:
     npc_arete() : CreatureScript("npc_arete") { }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -78,7 +78,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -139,7 +139,7 @@ class npc_squire_david : public CreatureScript
 public:
     npc_squire_david() : CreatureScript("npc_squire_david") { }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (player->GetQuestStatus(QUEST_THE_ASPIRANT_S_CHALLENGE_H) == QUEST_STATUS_INCOMPLETE ||
             player->GetQuestStatus(QUEST_THE_ASPIRANT_S_CHALLENGE_A) == QUEST_STATUS_INCOMPLETE)//We need more info about it.
@@ -152,7 +152,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -182,7 +182,7 @@ public:
 
     struct npc_argent_valiantAI : public ScriptedAI
     {
-        npc_argent_valiantAI(CreaturePtr creature) : ScriptedAI(creature)
+        npc_argent_valiantAI(Creature* creature) : ScriptedAI(creature)
         {
             creature->GetMotionMaster()->MovePoint(0, 8599.258f, 963.951f, 547.553f);
             creature->setFaction(35); //wrong faction in db?
@@ -205,7 +205,7 @@ public:
             me->setFaction(14);
         }
 
-        void DamageTaken(UnitPtr pDoneBy, uint32& uiDamage)
+        void DamageTaken(Unit* pDoneBy, uint32& uiDamage)
         {
             if (uiDamage > me->GetHealth() && pDoneBy->GetTypeId() == TYPEID_PLAYER)
             {
@@ -239,7 +239,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_argent_valiantAI(creature);
     }
@@ -265,9 +265,9 @@ public:
 
     struct npc_guardian_pavilionAI : public Scripted_NoMovementAI
     {
-        npc_guardian_pavilionAI(CreaturePtr creature) : Scripted_NoMovementAI(creature) {}
+        npc_guardian_pavilionAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (me->GetAreaId() != AREA_SUNREAVER_PAVILION && me->GetAreaId() != AREA_SILVER_COVENANT_PAVILION)
                 return;
@@ -278,7 +278,7 @@ public:
             if (who->HasAura(SPELL_TRESPASSER_H) || who->HasAura(SPELL_TRESPASSER_A))
                 return;
 
-            if (TO_PLAYER(who)->GetTeamId() == TEAM_ALLIANCE)
+            if (who->ToPlayer()->GetTeamId() == TEAM_ALLIANCE)
                 who->CastSpell(who, SPELL_TRESPASSER_H, true);
             else
                 who->CastSpell(who, SPELL_TRESPASSER_A, true);
@@ -286,7 +286,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_guardian_pavilionAI(creature);
     }
@@ -310,19 +310,19 @@ public:
 
     struct npc_vereth_the_cunningAI : public ScriptedAI
     {
-        npc_vereth_the_cunningAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_vereth_the_cunningAI(Creature* creature) : ScriptedAI(creature) {}
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             ScriptedAI::MoveInLineOfSight(who);
 
             if (who->GetEntry() == NPC_LITHE_STALKER && me->IsWithinDistInMap(who, 10.0f))
             {
-                if (UnitPtr owner = who->GetCharmer())
+                if (Unit* owner = who->GetCharmer())
                 {
                     if (who->HasAura(SPELL_SUBDUED_LITHE_STALKER))
                         {
-                            TO_PLAYER(owner)->KilledMonsterCredit(NPC_GEIST_RETURN_BUNNY_KC, 0);
+                            owner->ToPlayer()->KilledMonsterCredit(NPC_GEIST_RETURN_BUNNY_KC, 0);
                             who->ToCreature()->DisappearAndDie();
 
                     }
@@ -331,7 +331,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_vereth_the_cunningAI(creature);
     }
@@ -371,7 +371,7 @@ class npc_tournament_training_dummy : public CreatureScript
 
         struct npc_tournament_training_dummyAI : Scripted_NoMovementAI
         {
-            npc_tournament_training_dummyAI(CreaturePtr creature) : Scripted_NoMovementAI(creature) {}
+            npc_tournament_training_dummyAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
 
             EventMap events;
             bool isVulnerable;
@@ -405,13 +405,13 @@ class npc_tournament_training_dummy : public CreatureScript
                 Reset();
             }
 
-            void DamageTaken(UnitPtr /*attacker*/, uint32& damage)
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
             {
                 damage = 0;
                 events.RescheduleEvent(EVENT_DUMMY_RESET, 10000);
             }
 
-            void SpellHit(UnitPtr caster, SpellInfo const* spell)
+            void SpellHit(Unit* caster, SpellInfo const* spell)
             {
                 switch (me->GetEntry())
                 {
@@ -425,7 +425,7 @@ class npc_tournament_training_dummy : public CreatureScript
                         {
                             DoCast(caster, SPELL_MELEE_CREDIT, true);
 
-                            if (UnitPtr target = caster->GetVehicleBase())
+                            if (Unit* target = caster->GetVehicleBase())
                                 DoCast(target, SPELL_COUNTERATTACK, true);
                         }
                         break;
@@ -483,10 +483,10 @@ class npc_tournament_training_dummy : public CreatureScript
                     me->SetControlled(true, UNIT_STATE_STUNNED);
             }
 
-            void MoveInLineOfSight(UnitPtr /*who*/){}
+            void MoveInLineOfSight(Unit* /*who*/){}
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_tournament_training_dummyAI(creature);
         }

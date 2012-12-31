@@ -54,7 +54,7 @@ public:
 
     struct guard_genericAI : public GuardAI
     {
-        guard_genericAI(CreaturePtr creature) : GuardAI(creature) {}
+        guard_genericAI(Creature* creature) : GuardAI(creature) {}
 
         void Reset()
         {
@@ -62,7 +62,7 @@ public:
             buffTimer = 0;
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             if (me->GetEntry() == NPC_CENARION_HOLD_INFANTRY)
                 DoScriptText(RAND(SAY_GUARD_SIL_AGGRO1, SAY_GUARD_SIL_AGGRO2, SAY_GUARD_SIL_AGGRO3), me, who);
@@ -112,7 +112,7 @@ public:
                 if (me->IsWithinMeleeRange(me->getVictim()))
                 {
                     bool healing = false;
-                    SpellInfo const* info = nullptr;
+                    SpellInfo const* info = NULL;
 
                     //Select a healing spell if less than 30% hp
                     if (me->HealthBelowPct(30))
@@ -148,7 +148,7 @@ public:
                 if (!me->IsNonMeleeSpellCasted(false))
                 {
                     bool healing = false;
-                    SpellInfo const* info = nullptr;
+                    SpellInfo const* info = NULL;
 
                     //Select a healing spell if less than 30% hp ONLY 33% of the time
                     if (me->HealthBelowPct(30) && 33 > urand(0, 99))
@@ -219,7 +219,7 @@ public:
             }
         }
 
-        void ReceiveEmote(PlayerPtr player, uint32 textEmote)
+        void ReceiveEmote(Player* player, uint32 textEmote)
         {
             switch (me->GetEntry())
             {
@@ -242,7 +242,7 @@ public:
         uint32 buffTimer;
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
        return new guard_genericAI(creature);
     }
@@ -263,7 +263,7 @@ public:
 
     struct guard_shattrath_scryerAI : public GuardAI
     {
-        guard_shattrath_scryerAI(CreaturePtr creature) : GuardAI(creature) {}
+        guard_shattrath_scryerAI(Creature* creature) : GuardAI(creature) {}
 
         void Reset()
         {
@@ -282,7 +282,7 @@ public:
             {
                 if (exileTimer <= diff)
                 {
-                    if (UnitPtr temp = Unit::GetUnit(TO_WORLDOBJECT(me), playerGUID))
+                    if (Unit* temp = Unit::GetUnit(*me, playerGUID))
                     {
                         temp->CastSpell(temp, SPELL_EXILE, true);
                         temp->CastSpell(temp, SPELL_BANISH_TELEPORT, true);
@@ -294,7 +294,7 @@ public:
             }
             else if (banishTimer <= diff)
             {
-                UnitPtr temp = me->getVictim();
+                Unit* temp = me->getVictim();
                 if (temp && temp->GetTypeId() == TYPEID_PLAYER)
                 {
                     DoCast(temp, SPELL_BANISHED_SHATTRATH_A);
@@ -315,7 +315,7 @@ public:
         bool canTeleport;
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new guard_shattrath_scryerAI(creature);
     }
@@ -328,7 +328,7 @@ public:
 
     struct guard_shattrath_aldorAI : public GuardAI
     {
-        guard_shattrath_aldorAI(CreaturePtr creature) : GuardAI(creature) {}
+        guard_shattrath_aldorAI(Creature* creature) : GuardAI(creature) {}
 
         void Reset()
         {
@@ -347,7 +347,7 @@ public:
             {
                 if (exileTimer <= diff)
                 {
-                    if (UnitPtr temp = Unit::GetUnit(TO_WORLDOBJECT(me), playerGUID))
+                    if (Unit* temp = Unit::GetUnit(*me, playerGUID))
                     {
                         temp->CastSpell(temp, SPELL_EXILE, true);
                         temp->CastSpell(temp, SPELL_BANISH_TELEPORT, true);
@@ -359,7 +359,7 @@ public:
             }
             else if (banishTimer <= diff)
             {
-                UnitPtr temp = me->getVictim();
+                Unit* temp = me->getVictim();
                 if (temp && temp->GetTypeId() == TYPEID_PLAYER)
                 {
                     DoCast(temp, SPELL_BANISHED_SHATTRATH_S);
@@ -379,7 +379,7 @@ public:
         bool canTeleport;
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new guard_shattrath_aldorAI(creature);
     }

@@ -55,7 +55,7 @@ public:
 
     struct npc_mageguard_dalaranAI : public Scripted_NoMovementAI
     {
-        npc_mageguard_dalaranAI(CreaturePtr creature) : Scripted_NoMovementAI(creature)
+        npc_mageguard_dalaranAI(Creature* creature) : Scripted_NoMovementAI(creature)
         {
             creature->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             creature->ApplySpellImmune(0, IMMUNITY_DAMAGE, SPELL_SCHOOL_NORMAL, true);
@@ -64,11 +64,11 @@ public:
 
         void Reset(){}
 
-        void EnterCombat(UnitPtr /*who*/){}
+        void EnterCombat(Unit* /*who*/){}
 
-        void AttackStart(UnitPtr /*who*/){}
+        void AttackStart(Unit* /*who*/){}
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!who || !who->IsInWorld() || who->GetZoneId() != 4395)
                 return;
@@ -76,7 +76,7 @@ public:
             if (!me->IsWithinDist(who, 65.0f, false))
                 return;
 
-            PlayerPtr player = who->GetCharmerOrOwnerPlayerOrPlayerItself();
+            Player* player = who->GetCharmerOrOwnerPlayerOrPlayerItself();
 
             if (!player || player->isGameMaster() || player->IsBeingTeleported() ||
                 // If player has Disguise aura for quest A Meeting With The Magister or An Audience With The Arcanist, do not teleport it away but let it pass
@@ -118,7 +118,7 @@ public:
         void UpdateAI(const uint32 /*diff*/){}
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_mageguard_dalaranAI(creature);
     }
@@ -140,7 +140,7 @@ class npc_hira_snowdawn : public CreatureScript
 public:
     npc_hira_snowdawn() : CreatureScript("npc_hira_snowdawn") { }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (!creature->isVendor() || !creature->isTrainer())
             return false;
@@ -155,7 +155,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_TRAIN)

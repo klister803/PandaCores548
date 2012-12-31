@@ -37,7 +37,7 @@ class instance_ramparts : public InstanceMapScript
 
         struct instance_ramparts_InstanceMapScript : public InstanceScript
         {
-            instance_ramparts_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+            instance_ramparts_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
             uint32 m_auiEncounter[MAX_ENCOUNTER];
             uint64 m_uiChestNGUID;
@@ -52,7 +52,7 @@ class instance_ramparts : public InstanceMapScript
                 m_uiChestHGUID = 0;
             }
 
-            void OnGameObjectCreate(GameObjectPtr go)
+            void OnGameObjectCreate(GameObject* go)
             {
                 switch (go->GetEntry())
                 {
@@ -91,7 +91,7 @@ class instance_ramparts : public InstanceMapScript
             }
         };
 
-        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
             return new instance_ramparts_InstanceMapScript(map);
         }

@@ -48,14 +48,14 @@ class mob_naga_distiller : public CreatureScript
 public:
     mob_naga_distiller() : CreatureScript("mob_naga_distiller") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_naga_distillerAI (creature);
     }
 
     struct mob_naga_distillerAI : public ScriptedAI
     {
-        mob_naga_distillerAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_naga_distillerAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -78,9 +78,9 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/) { }
+        void EnterCombat(Unit* /*who*/) { }
 
-        void StartRageGen(UnitPtr /*caster*/)
+        void StartRageGen(Unit* /*caster*/)
         {
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
@@ -91,7 +91,7 @@ public:
                 instance->SetData(TYPE_DISTILLER, IN_PROGRESS);
         }
 
-        void DamageTaken(UnitPtr /*done_by*/, uint32 &damage)
+        void DamageTaken(Unit* /*done_by*/, uint32 &damage)
         {
             if (me->GetHealth() <= damage)
                 if (instance)
@@ -106,14 +106,14 @@ class boss_warlord_kalithresh : public CreatureScript
 public:
     boss_warlord_kalithresh() : CreatureScript("boss_warlord_kalithresh") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_warlord_kalithreshAI (creature);
     }
 
     struct boss_warlord_kalithreshAI : public ScriptedAI
     {
-        boss_warlord_kalithreshAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_warlord_kalithreshAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -136,7 +136,7 @@ public:
                 instance->SetData(TYPE_WARLORD_KALITHRESH, NOT_STARTED);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(RAND(SAY_AGGRO1, SAY_AGGRO2, SAY_AGGRO3), me);
 
@@ -144,12 +144,12 @@ public:
                 instance->SetData(TYPE_WARLORD_KALITHRESH, IN_PROGRESS);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }
 
-        void SpellHit(UnitPtr /*caster*/, const SpellInfo* spell)
+        void SpellHit(Unit* /*caster*/, const SpellInfo* spell)
         {
             //hack :(
             if (spell->Id == SPELL_WARLORDS_RAGE_PROC)
@@ -158,7 +158,7 @@ public:
                         me->RemoveAurasDueToSpell(SPELL_WARLORDS_RAGE_PROC);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -173,7 +173,7 @@ public:
 
             if (Rage_Timer <= diff)
             {
-                if (CreaturePtr distiller = me->FindNearestCreature(17954, 100.0f))
+                if (Creature* distiller = me->FindNearestCreature(17954, 100.0f))
                 {
                     DoScriptText(SAY_REGEN, me);
                     DoCast(me, SPELL_WARLORDS_RAGE);
@@ -192,7 +192,7 @@ public:
             //Impale_Timer
             if (Impale_Timer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_IMPALE);
 
                 Impale_Timer = 7500+rand()%5000;

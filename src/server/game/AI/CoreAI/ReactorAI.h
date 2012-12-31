@@ -27,12 +27,12 @@ class ReactorAI : public CreatureAI
 {
     public:
 
-        explicit ReactorAI(CreaturePtr c) : CreatureAI(c) {}
+        explicit ReactorAI(Creature* c) : CreatureAI(c) {}
 
-        void MoveInLineOfSight(UnitPtr);
+        void MoveInLineOfSight(Unit*);
 
         void UpdateAI(const uint32);
-        static int Permissible(constCreaturePtr);
+        static int Permissible(const Creature*);
 };
 #endif
 

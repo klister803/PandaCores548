@@ -75,14 +75,14 @@ class boss_ichoron : public CreatureScript
 public:
     boss_ichoron() : CreatureScript("boss_ichoron") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_ichoronAI (creature);
     }
 
     struct boss_ichoronAI : public ScriptedAI
     {
-        boss_ichoronAI(CreaturePtr creature) : ScriptedAI(creature), m_waterElements(creature)
+        boss_ichoronAI(Creature* creature) : ScriptedAI(creature), m_waterElements(creature)
         {
             instance  = creature->GetInstanceScript();
         }
@@ -118,7 +118,7 @@ public:
             }
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_AGGRO, me);
 
@@ -126,7 +126,7 @@ public:
 
             if (instance)
             {
-                if (GameObjectPtr pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_ICHORON_CELL)))
+                if (GameObject* pDoor = instance->instance->GetGameObject(instance->GetData64(DATA_ICHORON_CELL)))
                     if (pDoor->GetGoState() == GO_STATE_READY)
                     {
                         EnterEvadeMode();
@@ -139,7 +139,7 @@ public:
             }
         }
 
-        void AttackStart(UnitPtr who)
+        void AttackStart(Unit* who)
         {
             if (me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC) || me->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE))
                 return;
@@ -205,7 +205,7 @@ public:
             return 0;
         }
 
-        void MoveInLineOfSight(UnitPtr /*who*/) {}
+        void MoveInLineOfSight(Unit* /*who*/) {}
 
         void UpdateAI(const uint32 uiDiff)
         {
@@ -246,7 +246,7 @@ public:
                         if (!m_waterElements.empty())
                         {
                             for (std::list<uint64>::const_iterator itr = m_waterElements.begin(); itr != m_waterElements.end(); ++itr)
-                                if (CreaturePtr temp = Unit::GetCreature(TO_WORLDOBJECT(me), *itr))
+                                if (Creature* temp = Unit::GetCreature(*me, *itr))
                                     if (temp->isAlive())
                                     {
                                         bIsWaterElementsAlive = true;
@@ -275,7 +275,7 @@ public:
             }
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoScriptText(SAY_DEATH, me);
 
@@ -302,7 +302,7 @@ public:
             }
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             if (summoned)
             {
@@ -313,7 +313,7 @@ public:
             }
         }
 
-        void SummonedCreatureDespawn(CreaturePtr summoned)
+        void SummonedCreatureDespawn(Creature* summoned)
         {
             if (summoned)
             {
@@ -322,7 +322,7 @@ public:
             }
         }
 
-        void KilledUnit(UnitPtr victim)
+        void KilledUnit(Unit* victim)
         {
             if (victim == me)
                 return;
@@ -337,14 +337,14 @@ class mob_ichor_globule : public CreatureScript
 public:
     mob_ichor_globule() : CreatureScript("mob_ichor_globule") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_ichor_globuleAI (creature);
     }
 
     struct mob_ichor_globuleAI : public ScriptedAI
     {
-        mob_ichor_globuleAI(CreaturePtr creature) : ScriptedAI(creature)
+        mob_ichor_globuleAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -359,7 +359,7 @@ public:
             DoCast(me, SPELL_WATER_GLOBULE);
         }
 
-        void AttackStart(UnitPtr /*who*/)
+        void AttackStart(Unit* /*who*/)
         {
             return;
         }
@@ -370,7 +370,7 @@ public:
             {
                 if (instance)
                 {
-                    if (CreaturePtr pIchoron = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_ICHORON)))
+                    if (Creature* pIchoron = Unit::GetCreature(*me, instance->GetData64(DATA_ICHORON)))
                     {
                         if (me->IsWithinDist(pIchoron, 2.0f, false))
                         {
@@ -385,10 +385,10 @@ public:
             else uiRangeCheck_Timer -= uiDiff;
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             DoCast(me, SPELL_SPLASH);
-            if (CreaturePtr pIchoron = Unit::GetCreature(TO_WORLDOBJECT(me), instance->GetData64(DATA_ICHORON)))
+            if (Creature* pIchoron = Unit::GetCreature(*me, instance->GetData64(DATA_ICHORON)))
                 if (pIchoron->AI())
                     pIchoron->AI()->DoAction(ACTION_WATER_ELEMENT_KILLED);
         }
@@ -403,12 +403,12 @@ class achievement_dehydration : public AchievementCriteriaScript
         {
         }
 
-        bool OnCheck(PlayerPtr /*Player*/, UnitPtr target)
+        bool OnCheck(Player* /*player*/, Unit* target)
         {
             if (!target)
                 return false;
 
-            if (CreaturePtr Ichoron = TO_CREATURE(target))
+            if (Creature* Ichoron = target->ToCreature())
                 if (Ichoron->AI()->GetData(DATA_DEHYDRATION))
                     return true;
 

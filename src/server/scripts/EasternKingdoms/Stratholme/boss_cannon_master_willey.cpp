@@ -82,14 +82,14 @@ class boss_cannon_master_willey : public CreatureScript
 public:
     boss_cannon_master_willey() : CreatureScript("boss_cannon_master_willey") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_cannon_master_willeyAI (creature);
     }
 
     struct boss_cannon_master_willeyAI : public ScriptedAI
     {
-        boss_cannon_master_willeyAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_cannon_master_willeyAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 KnockAway_Timer;
         uint32 Pummel_Timer;
@@ -104,7 +104,7 @@ public:
             SummonRifleman_Timer = 15000;
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             me->SummonCreature(11054, ADD_1X, ADD_1Y, ADD_1Z, ADD_1O, TEMPSUMMON_TIMED_DESPAWN, 240000);
             me->SummonCreature(11054, ADD_2X, ADD_2Y, ADD_2Z, ADD_2O, TEMPSUMMON_TIMED_DESPAWN, 240000);
@@ -115,7 +115,7 @@ public:
             me->SummonCreature(11054, ADD_9X, ADD_9Y, ADD_9Z, ADD_9O, TEMPSUMMON_TIMED_DESPAWN, 240000);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 

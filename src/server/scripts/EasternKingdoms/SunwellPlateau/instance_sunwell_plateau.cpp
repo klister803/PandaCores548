@@ -43,14 +43,14 @@ class instance_sunwell_plateau : public InstanceMapScript
 public:
     instance_sunwell_plateau() : InstanceMapScript("instance_sunwell_plateau", 580) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_sunwell_plateau_InstanceMapScript(map);
     }
 
     struct instance_sunwell_plateau_InstanceMapScript : public InstanceScript
     {
-        instance_sunwell_plateau_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_sunwell_plateau_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[MAX_ENCOUNTER];
 
@@ -121,7 +121,7 @@ public:
             return false;
         }
 
-        PlayerPtr GetPlayerInMap()
+        Player* GetPlayerInMap()
         {
             Map::PlayerList const& players = instance->GetPlayers();
 
@@ -129,17 +129,17 @@ public:
             {
                 for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
                 {
-                    PlayerPtr player = itr->getSource();
+                    Player* player = itr->getSource();
                     if (player && !player->HasAura(45839, 0))
                             return player;
                 }
             }
 
             sLog->outDebug(LOG_FILTER_TSCR, "Instance Sunwell Plateau: GetPlayerInMap, but PlayerList is empty!");
-            return nullptr;
+            return NULL;
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -159,7 +159,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -213,7 +213,7 @@ public:
                 case DATA_ANVEENA:              return Anveena;
                 case DATA_KALECGOS_KJ:          return KalecgosKJ;
                 case DATA_PLAYER_GUID:
-                    PlayerPtr Target = GetPlayerInMap();
+                    Player* Target = GetPlayerInMap();
                     return Target->GetGUID();
             }
             return 0;

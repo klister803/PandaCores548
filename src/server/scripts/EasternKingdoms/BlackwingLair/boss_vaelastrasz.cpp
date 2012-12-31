@@ -53,7 +53,7 @@ class boss_vaelastrasz : public CreatureScript
 public:
     boss_vaelastrasz() : CreatureScript("boss_vaelastrasz") { }
 
-    void SendDefaultMenu(PlayerPtr player, CreaturePtr creature, uint32 action)
+    void SendDefaultMenu(Player* player, Creature* creature, uint32 action)
     {
         if (action == GOSSIP_ACTION_INFO_DEF + 1)               //Fight time
         {
@@ -62,7 +62,7 @@ public:
         }
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 sender, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 sender, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (sender == GOSSIP_SENDER_MAIN)
@@ -71,7 +71,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -82,14 +82,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_vaelAI (creature);
     }
 
     struct boss_vaelAI : public ScriptedAI
     {
-        boss_vaelAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_vaelAI(Creature* creature) : ScriptedAI(creature)
         {
             creature->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
             creature->setFaction(35);
@@ -123,7 +123,7 @@ public:
             DoingSpeech = false;
         }
 
-        void BeginSpeech(UnitPtr target)
+        void BeginSpeech(Unit* target)
         {
             //Stand up and begin speach
             PlayerGUID = target->GetGUID();
@@ -138,7 +138,7 @@ public:
             me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP);
         }
 
-        void KilledUnit(UnitPtr victim)
+        void KilledUnit(Unit* victim)
         {
             if (rand()%5)
                 return;
@@ -146,7 +146,7 @@ public:
             DoScriptText(SAY_KILLTARGET, me, victim);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoCast(me, SPELL_ESSENCEOFTHERED);
             DoZoneInCombat();
@@ -178,9 +178,9 @@ public:
                             break;
                         case 2:
                             me->setFaction(103);
-                            if (PlayerGUID && Unit::GetUnit(TO_WORLDOBJECT(me), PlayerGUID))
+                            if (PlayerGUID && Unit::GetUnit(*me, PlayerGUID))
                             {
-                                AttackStart(Unit::GetUnit(TO_WORLDOBJECT(me), PlayerGUID));
+                                AttackStart(Unit::GetUnit(*me, PlayerGUID));
                                 DoCast(me, SPELL_ESSENCEOFTHERED);
                             }
                             SpeechTimer = 0;
@@ -218,7 +218,7 @@ public:
             //BurningAdrenalineCaster_Timer
             if (BurningAdrenalineCaster_Timer <= diff)
             {
-                UnitPtr target = nullptr;
+                Unit* target = NULL;
 
                 uint8 i = 0;
                 while (i < 3)   // max 3 tries to get a random target with power_mana

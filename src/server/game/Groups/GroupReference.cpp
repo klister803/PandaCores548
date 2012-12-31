@@ -22,7 +22,7 @@
 void GroupReference::targetObjectBuildLink()
 {
     // called from link()
-    getTarget()->LinkMember(std::static_pointer_cast<GroupReference>(shared_from_this()));
+    getTarget()->LinkMember(this);
 }
 
 void GroupReference::targetObjectDestroyLink()

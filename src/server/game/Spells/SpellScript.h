@@ -155,8 +155,8 @@ class SpellScript : public _SpellScript
             typedef void(CLASSNAME::*SpellEffectFnType)(SpellEffIndex); \
             typedef void(CLASSNAME::*SpellHitFnType)(); \
             typedef void(CLASSNAME::*SpellCastFnType)(); \
-            typedef void(CLASSNAME::*SpellObjectAreaTargetSelectFnType)(std::list<WorldObjectPtr>&); \
-            typedef void(CLASSNAME::*SpellObjectTargetSelectFnType)(WorldObjectPtr&);
+            typedef void(CLASSNAME::*SpellObjectAreaTargetSelectFnType)(std::list<WorldObject*>&); \
+            typedef void(CLASSNAME::*SpellObjectTargetSelectFnType)(WorldObject*&);
 
         SPELLSCRIPT_FUNCTION_TYPE_DEFINES(SpellScript)
 
@@ -213,7 +213,7 @@ class SpellScript : public _SpellScript
         {
             public:
                 ObjectAreaTargetSelectHandler(SpellObjectAreaTargetSelectFnType _pObjectAreaTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType);
-                void Call(SpellScript* spellScript, std::list<WorldObjectPtr>& targets);
+                void Call(SpellScript* spellScript, std::list<WorldObject*>& targets);
             private:
                 SpellObjectAreaTargetSelectFnType pObjectAreaTargetSelectHandlerScript;
         };
@@ -222,7 +222,7 @@ class SpellScript : public _SpellScript
         {
             public:
                 ObjectTargetSelectHandler(SpellObjectTargetSelectFnType _pObjectTargetSelectHandlerScript, uint8 _effIndex, uint16 _targetType);
-                void Call(SpellScript* spellScript, WorldObjectPtr& targets);
+                void Call(SpellScript* spellScript, WorldObject*& targets);
             private:
                 SpellObjectTargetSelectFnType pObjectTargetSelectHandlerScript;
         };
@@ -288,12 +288,12 @@ class SpellScript : public _SpellScript
         #define SpellHitFn(F) HitHandlerFunction(&F)
 
         // example: OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(class::function, EffectIndexSpecifier, TargetsNameSpecifier);
-        // where function is void function(std::list<WorldObjectPtr>& targets)
+        // where function is void function(std::list<WorldObject*>& targets)
         HookList<ObjectAreaTargetSelectHandler> OnObjectAreaTargetSelect;
         #define SpellObjectAreaTargetSelectFn(F, I, N) ObjectAreaTargetSelectHandlerFunction(&F, I, N)
 
         // example: OnObjectTargetSelect += SpellObjectTargetSelectFn(class::function, EffectIndexSpecifier, TargetsNameSpecifier);
-        // where function is void function(WorldObjectPtr& target)
+        // where function is void function(WorldObject*& target)
         HookList<ObjectTargetSelectHandler> OnObjectTargetSelect;
         #define SpellObjectTargetSelectFn(F, I, N) ObjectTargetSelectHandlerFunction(&F, I, N)
 
@@ -316,8 +316,8 @@ class SpellScript : public _SpellScript
         // methods allowing interaction with Spell object
         //
         // methods useable during all spell handling phases
-        UnitPtr GetCaster();
-        UnitPtr GetOriginalCaster();
+        Unit* GetCaster();
+        Unit* GetOriginalCaster();
         SpellInfo const* GetSpellInfo();
         SpellValue const* GetSpellValue();
 
@@ -327,39 +327,39 @@ class SpellScript : public _SpellScript
         // examples:
         // -shadowstep - explicit target is the unit you want to go behind of
         // -chain heal - explicit target is the unit to be healed first
-        // -holy nova/arcane explosion - explicit target = nullptr because target you are selecting doesn't affect how spell targets are selected
+        // -holy nova/arcane explosion - explicit target = NULL because target you are selecting doesn't affect how spell targets are selected
         // you can determine if spell requires explicit targets by dbc columns:
         // - Targets - mask of explicit target types
         // - ImplicitTargetXX set to TARGET_XXX_TARGET_YYY, _TARGET_ here means that explicit target is used by the effect, so spell needs one too
 
-        // returns: WorldLocation which was selected as a spell destination or nullptr
+        // returns: WorldLocation which was selected as a spell destination or NULL
         WorldLocation const* GetExplTargetDest();
 
         void SetExplTargetDest(WorldLocation& loc);
 
-        // returns: WorldObject which was selected as an explicit spell target or nullptr if there's no target
-        WorldObjectPtr GetExplTargetWorldObject();
+        // returns: WorldObject which was selected as an explicit spell target or NULL if there's no target
+        WorldObject* GetExplTargetWorldObject();
 
-        // returns: Unit which was selected as an explicit spell target or nullptr if there's no target
-        UnitPtr GetExplTargetUnit();
+        // returns: Unit which was selected as an explicit spell target or NULL if there's no target
+        Unit* GetExplTargetUnit();
 
-        // returns: GameObject which was selected as an explicit spell target or nullptr if there's no target
-        GameObjectPtr GetExplTargetGObj();
+        // returns: GameObject which was selected as an explicit spell target or NULL if there's no target
+        GameObject* GetExplTargetGObj();
 
-        // returns: Item which was selected as an explicit spell target or nullptr if there's no target
-        ItemPtr GetExplTargetItem();
+        // returns: Item which was selected as an explicit spell target or NULL if there's no target
+        Item* GetExplTargetItem();
 
         // methods useable only during spell hit on target, or during spell launch on target:
-        // returns: target of current effect if it was Unit otherwise nullptr
-        UnitPtr GetHitUnit();
-        // returns: target of current effect if it was Creature otherwise nullptr
-        CreaturePtr GetHitCreature();
-        // returns: target of current effect if it was Player otherwise nullptr
-        PlayerPtr GetHitPlayer();
-        // returns: target of current effect if it was Item otherwise nullptr
-        ItemPtr GetHitItem();
-        // returns: target of current effect if it was GameObject otherwise nullptr
-        GameObjectPtr GetHitGObj();
+        // returns: target of current effect if it was Unit otherwise NULL
+        Unit* GetHitUnit();
+        // returns: target of current effect if it was Creature otherwise NULL
+        Creature* GetHitCreature();
+        // returns: target of current effect if it was Player otherwise NULL
+        Player* GetHitPlayer();
+        // returns: target of current effect if it was Item otherwise NULL
+        Item* GetHitItem();
+        // returns: target of current effect if it was GameObject otherwise NULL
+        GameObject* GetHitGObj();
         // returns: destination of current effect
         WorldLocation* GetHitDest();
         // setter/getter for for damage done by spell to target of spell hit
@@ -393,7 +393,7 @@ class SpellScript : public _SpellScript
         int32 GetEffectValue();
 
         // returns: cast item if present.
-        ItemPtr GetCastItem();
+        Item* GetCastItem();
 
         // Creates item. Calls Spell::DoCreateItem method.
         void CreateItem(uint32 effIndex, uint32 itemId);
@@ -441,7 +441,7 @@ class AuraScript : public _SpellScript
     public:
 
     #define AURASCRIPT_FUNCTION_TYPE_DEFINES(CLASSNAME) \
-        typedef bool(CLASSNAME::*AuraCheckAreaTargetFnType)(UnitPtr target); \
+        typedef bool(CLASSNAME::*AuraCheckAreaTargetFnType)(Unit* target); \
         typedef void(CLASSNAME::*AuraDispelFnType)(DispelInfo* dispelInfo); \
         typedef void(CLASSNAME::*AuraEffectApplicationModeFnType)(constAuraEffectPtr, AuraEffectHandleModes); \
         typedef void(CLASSNAME::*AuraEffectPeriodicFnType)(constAuraEffectPtr); \
@@ -458,7 +458,7 @@ class AuraScript : public _SpellScript
         {
             public:
                 CheckAreaTargetHandler(AuraCheckAreaTargetFnType pHandlerScript);
-                bool Call(AuraScript* auraScript, UnitPtr target);
+                bool Call(AuraScript* auraScript, Unit* target);
             private:
                 AuraCheckAreaTargetFnType pHandlerScript;
         };
@@ -567,25 +567,25 @@ class AuraScript : public _SpellScript
         #define PrepareAuraScript(CLASSNAME) AURASCRIPT_FUNCTION_TYPE_DEFINES(CLASSNAME) AURASCRIPT_FUNCTION_CAST_DEFINES(CLASSNAME)
 
     public:
-        AuraScript() : _SpellScript(), m_aura(nullptr), m_auraApplication(nullptr), m_defaultActionPrevented(false)
+        AuraScript() : _SpellScript(), m_aura(NULL), m_auraApplication(NULL), m_defaultActionPrevented(false)
         {}
         bool _Validate(SpellInfo const* entry);
         bool _Load(AuraPtr aura);
-        void _PrepareScriptCall(AuraScriptHookType hookType, constAuraApplicationPtr aurApp = nullptr);
+        void _PrepareScriptCall(AuraScriptHookType hookType, AuraApplication const* aurApp = NULL);
         void _FinishScriptCall();
         bool _IsDefaultActionPrevented();
     private:
         AuraPtr m_aura;
-        constAuraApplicationPtr m_auraApplication;
+        AuraApplication const* m_auraApplication;
         bool m_defaultActionPrevented;
 
         class ScriptStateStore
         {
         public:
             uint8 _currentScriptState;
-            constAuraApplicationPtr _auraApplication;
+            AuraApplication const* _auraApplication;
             bool _defaultActionPrevented;
-            ScriptStateStore(uint8 currentScriptState, constAuraApplicationPtr auraApplication, bool defaultActionPrevented)
+            ScriptStateStore(uint8 currentScriptState, AuraApplication const* auraApplication, bool defaultActionPrevented)
                 : _currentScriptState(currentScriptState), _auraApplication(auraApplication), _defaultActionPrevented(defaultActionPrevented)
             {}
         };
@@ -599,7 +599,7 @@ class AuraScript : public _SpellScript
         //
         // executed when area aura checks if it can be applied on target
         // example: OnEffectApply += AuraEffectApplyFn(class::function);
-        // where function is: bool function (UnitPtr target);
+        // where function is: bool function (Unit* target);
         HookList<CheckAreaTargetHandler> DoCheckAreaTarget;
         #define AuraCheckAreaTargetFn(F) CheckAreaTargetFunction(&F)
 
@@ -707,14 +707,14 @@ class AuraScript : public _SpellScript
 
         // returns guid of object which casted the aura (m_originalCaster of the Spell class)
         uint64 GetCasterGUID() const;
-        // returns unit which casted the aura or nullptr if not avalible (caster logged out for example)
-        UnitPtr GetCaster() const;
+        // returns unit which casted the aura or NULL if not avalible (caster logged out for example)
+        Unit* GetCaster() const;
         // returns object on which aura was casted, target for non-area auras, area aura source for area auras
-        WorldObjectPtr GetOwner() const;
-        // returns owner if it's unit or unit derived object, nullptr otherwise (only for persistent area auras nullptr is returned)
-        UnitPtr GetUnitOwner() const;
-        // returns owner if it's dynobj, nullptr otherwise
-        DynamicObjectPtr GetDynobjOwner() const;
+        WorldObject* GetOwner() const;
+        // returns owner if it's unit or unit derived object, NULL otherwise (only for persistent area auras NULL is returned)
+        Unit* GetUnitOwner() const;
+        // returns owner if it's dynobj, NULL otherwise
+        DynamicObject* GetDynobjOwner() const;
 
         // removes aura with remove mode (see AuraRemoveMode enum)
         void Remove(uint32 removeMode = 0);
@@ -758,7 +758,7 @@ class AuraScript : public _SpellScript
 
         // check if aura has effect of given effindex
         bool HasEffect(uint8 effIndex) const;
-        // returns aura effect of given effect index or nullptr
+        // returns aura effect of given effect index or NULL
         AuraEffectPtr GetEffect(uint8 effIndex) const;
 
         // check if aura has effect of given aura type
@@ -768,14 +768,14 @@ class AuraScript : public _SpellScript
         virtual void SetData(uint32 type, uint32 data) {}
 
         // AuraScript interface - functions which are redirecting to AuraApplication class
-        // Do not call these in hooks in which AuraApplication is not avalible, otherwise result will differ from expected (the functions will return nullptr)
+        // Do not call these in hooks in which AuraApplication is not avalible, otherwise result will differ from expected (the functions will return NULL)
 
         // returns currently processed target of an aura
-        // Return value does not need to be nullptr-checked, the only situation this will (always)
-        // return nullptr is when the call happens in an unsupported hook, in other cases, it is always valid
-        UnitPtr GetTarget() const;
+        // Return value does not need to be NULL-checked, the only situation this will (always)
+        // return NULL is when the call happens in an unsupported hook, in other cases, it is always valid
+        Unit* GetTarget() const;
         // returns AuraApplication object of currently processed target
-        constAuraApplicationPtr GetTargetApplication() const;
+        AuraApplication const* GetTargetApplication() const;
 };
 
 //

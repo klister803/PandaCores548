@@ -32,14 +32,14 @@ class instance_nexus : public InstanceMapScript
 public:
     instance_nexus() : InstanceMapScript("instance_nexus", 576) { }
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_nexus_InstanceMapScript(map);
     }
 
     struct instance_nexus_InstanceMapScript : public InstanceScript
     {
-        instance_nexus_InstanceMapScript(MapPtr map) : InstanceScript(map) {}
+        instance_nexus_InstanceMapScript(Map* map) : InstanceScript(map) {}
 
         uint32 m_auiEncounter[NUMBER_OF_ENCOUNTERS];
 
@@ -63,14 +63,14 @@ public:
             TelestrasContainmentSphere = 0;
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             Map::PlayerList const &players = instance->GetPlayers();
             uint32 TeamInInstance = 0;
 
             if (!players.isEmpty())
             {
-                if (PlayerPtr player = players.begin()->getSource())
+                if (Player* player = players.begin()->getSource())
                     TeamInInstance = player->GetTeam();
             }
             switch (creature->GetEntry())
@@ -125,7 +125,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -173,7 +173,7 @@ public:
                 {
                     if (data == DONE)
                     {
-                        GameObjectPtr Sphere = instance->GetGameObject(TelestrasContainmentSphere);
+                        GameObject* Sphere = instance->GetGameObject(TelestrasContainmentSphere);
                         if (Sphere)
                             Sphere->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                     }
@@ -184,7 +184,7 @@ public:
                 {
                     if (data == DONE)
                     {
-                        if (GameObjectPtr Sphere = instance->GetGameObject(AnomalusContainmentSphere))
+                        if (GameObject* Sphere = instance->GetGameObject(AnomalusContainmentSphere))
                             Sphere->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                     }
                     m_auiEncounter[1] = data;
@@ -194,7 +194,7 @@ public:
                 {
                     if (data == DONE)
                     {
-                        if (GameObjectPtr Sphere = instance->GetGameObject(OrmoroksContainmentSphere))
+                        if (GameObject* Sphere = instance->GetGameObject(OrmoroksContainmentSphere))
                             Sphere->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                     }
                     m_auiEncounter[2] = data;

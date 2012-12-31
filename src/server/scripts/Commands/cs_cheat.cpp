@@ -36,22 +36,22 @@ public:
 
         static ChatCommand cheatCommandTable[] =
         {
-            { "god", SEC_GAMEMASTER, false, &HandleGodModeCheatCommand, "", nullptr },
-            { "casttime", SEC_GAMEMASTER, false, &HandleCasttimeCheatCommand, "", nullptr },
-            { "cooldown", SEC_GAMEMASTER, false, &HandleCoolDownCheatCommand, "", nullptr },
-            { "power", SEC_GAMEMASTER, false, &HandlePowerCheatCommand, "", nullptr },
-            { "waterwalk", SEC_GAMEMASTER, false, &HandleWaterWalkCheatCommand, "", nullptr },
-            { "status", SEC_GAMEMASTER,     false, &HandleCheatStatusCommand, "", nullptr },
-            { "taxi", SEC_GAMEMASTER, false, &HandleTaxiCheatCommand, "", nullptr },
-            { "explore", SEC_GAMEMASTER, false, &HandleExploreCheatCommand, "", nullptr },
-            { nullptr, 0, false, nullptr, "", nullptr }
+            { "god", SEC_GAMEMASTER, false, &HandleGodModeCheatCommand, "", NULL },
+            { "casttime", SEC_GAMEMASTER, false, &HandleCasttimeCheatCommand, "", NULL },
+            { "cooldown", SEC_GAMEMASTER, false, &HandleCoolDownCheatCommand, "", NULL },
+            { "power", SEC_GAMEMASTER, false, &HandlePowerCheatCommand, "", NULL },
+            { "waterwalk", SEC_GAMEMASTER, false, &HandleWaterWalkCheatCommand, "", NULL },
+            { "status", SEC_GAMEMASTER,     false, &HandleCheatStatusCommand, "", NULL },
+            { "taxi", SEC_GAMEMASTER, false, &HandleTaxiCheatCommand, "", NULL },
+            { "explore", SEC_GAMEMASTER, false, &HandleExploreCheatCommand, "", NULL },
+            { NULL, 0, false, NULL, "", NULL }
 
         };
 
         static ChatCommand commandTable[] =
         {
-            { "cheat", SEC_GAMEMASTER, false, nullptr, "", cheatCommandTable },
-            { nullptr, 0, false, nullptr, "", nullptr }
+            { "cheat", SEC_GAMEMASTER, false, NULL, "", cheatCommandTable },
+            { NULL, 0, false, NULL, "", NULL }
         };
         return commandTable;
     }
@@ -162,7 +162,7 @@ public:
 
     static bool HandleCheatStatusCommand(ChatHandler* handler, const char* /*args*/)
     {
-        PlayerPtr player = handler->GetSession()->GetPlayer();
+        Player* player = handler->GetSession()->GetPlayer();
         const char* enabled = "enabled";
         const char* disabled = "disabled";
         handler->SendSysMessage(LANG_COMMAND_CHEAT_STATUS);
@@ -219,7 +219,7 @@ public:
 
         std::string argstr = (char*)args;
 
-        PlayerPtr chr = handler->getSelectedPlayer();
+        Player* chr = handler->getSelectedPlayer();
 
         if (!chr)
             chr = handler->GetSession()->GetPlayer();
@@ -257,8 +257,8 @@ public:
 
         int flag = atoi((char*)args);
 
-        PlayerPtr chr = handler->getSelectedPlayer();
-        if (chr == nullptr)
+        Player* chr = handler->getSelectedPlayer();
+        if (chr == NULL)
         {
             handler->SendSysMessage(LANG_NO_CHAR_SELECTED);
             handler->SetSentErrorMessage(true);

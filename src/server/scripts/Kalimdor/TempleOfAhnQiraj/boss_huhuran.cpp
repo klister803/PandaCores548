@@ -41,14 +41,14 @@ class boss_huhuran : public CreatureScript
 public:
     boss_huhuran() : CreatureScript("boss_huhuran") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_huhuranAI (creature);
     }
 
     struct boss_huhuranAI : public ScriptedAI
     {
-        boss_huhuranAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_huhuranAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 Frenzy_Timer;
         uint32 Wyvern_Timer;
@@ -73,7 +73,7 @@ public:
             Berserk = false;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
         }
 
@@ -96,7 +96,7 @@ public:
             // Wyvern Timer
             if (Wyvern_Timer <= diff)
             {
-                if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                     DoCast(target, SPELL_WYVERNSTING);
                 Wyvern_Timer = urand(15000, 32000);
             } else Wyvern_Timer -= diff;

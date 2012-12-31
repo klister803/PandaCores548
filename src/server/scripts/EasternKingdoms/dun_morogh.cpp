@@ -28,23 +28,23 @@ class npc_gnomeregan_survivor : public CreatureScript
 public:
     npc_gnomeregan_survivor() : CreatureScript("npc_gnomeregan_survivor") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_gnomeregan_survivorAI (creature);
     }
 
     struct npc_gnomeregan_survivorAI : public ScriptedAI
     {
-        npc_gnomeregan_survivorAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_gnomeregan_survivorAI(Creature* creature) : ScriptedAI(creature) {}
         
         void Reset() {}
 
-        void SpellHit(UnitPtr Caster, const SpellInfo* Spell)
+        void SpellHit(Unit* Caster, const SpellInfo* Spell)
         {
             if (Spell->Id == 86264)
             {
-                if (TO_PLAYER(Caster))
-                    TO_PLAYER(Caster)->KilledMonsterCredit(46268, 0);
+                if (Caster->ToPlayer())
+                    Caster->ToPlayer()->KilledMonsterCredit(46268, 0);
 
                 me->ForcedDespawn(1000);
                 me->SetRespawnDelay(15);
@@ -62,21 +62,21 @@ class npc_flying_target_machin : public CreatureScript
 public:
     npc_flying_target_machin() : CreatureScript("npc_flying_target_machin") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_flying_target_machinAI (creature);
     }
 
     struct npc_flying_target_machinAI : public ScriptedAI
     {
-        npc_flying_target_machinAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_flying_target_machinAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset()
         {
             me->SetSpeed(MOVE_FLIGHT, 0.5f);
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             return;
         }
@@ -95,10 +95,10 @@ class npc_carvo_blastbolt : public CreatureScript
 public:
     npc_carvo_blastbolt() : CreatureScript("npc_carvo_blastbolt") { }
 
-    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
     {
         if (quest->GetQuestId() == QUEST_WITHDRAW_TO_THE_LOADING_ROOM)
-            CreaturePtr imunAgent = creature->SummonCreature(NPC_IMUN_AGENT, -4985.93f, 776.91f, 288.48f, 3.06f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
+            Creature * imunAgent = creature->SummonCreature(NPC_IMUN_AGENT, -4985.93f, 776.91f, 288.48f, 3.06f, TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID());
 
         return true;
     }
@@ -115,7 +115,7 @@ public:
 
     struct npc_imun_agent_escortAI : public npc_escortAI
     {
-        npc_imun_agent_escortAI(CreaturePtr creature) : npc_escortAI(creature){}
+        npc_imun_agent_escortAI(Creature* creature) : npc_escortAI(creature){}
 
         uint32 IntroTimer;
 
@@ -148,7 +148,7 @@ public:
         }
     };
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_imun_agent_escortAI(creature);
     }
@@ -165,28 +165,28 @@ class npc_sanitron : public CreatureScript
 public:
     npc_sanitron() : CreatureScript("npc_sanitron") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_sanitronAI (creature);
     }
 
     struct npc_sanitronAI : public ScriptedAI
     {
-        npc_sanitronAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_sanitronAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 timer;
         uint8 phase;
-        UnitPtr Passenger;
+        Unit* Passenger;
         
         void Reset()
         {
             timer = 0;
             phase = 0;
-            Passenger = nullptr;
+            Passenger = NULL;
             me->SetWalk(true);
         }
 
-        void PassengerBoarded(UnitPtr who, int8 seatId, bool apply)
+        void PassengerBoarded(Unit* who, int8 seatId, bool apply)
         {
             timer = 3000;
             phase = 1;
@@ -206,14 +206,14 @@ public:
                     timer = 5000;
                     ++phase;
 
-                    std::list<CreaturePtr> canonList;
+                    std::list<Creature*> canonList;
                     GetCreatureListWithEntryInGrid(canonList, me, 46208, 50.0f);
 
                     for (auto canon : canonList)
                         canon->CastSpell(me, 1000, false);
 
-                    if (TO_PLAYER(Passenger))
-                        TO_PLAYER(Passenger)->AreaExploredOrEventHappens(27635); // Decontamination
+                    if (Passenger->ToPlayer())
+                        Passenger->ToPlayer()->AreaExploredOrEventHappens(27635); // Decontamination
 
                     break;
                 }
@@ -269,14 +269,14 @@ class npc_canon_propre : public CreatureScript
 public:
     npc_canon_propre() : CreatureScript("npc_canon_propre") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_canon_propreAI (creature);
     }
 
     struct npc_canon_propreAI : public ScriptedAI
     {
-        npc_canon_propreAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_canon_propreAI(Creature* creature) : ScriptedAI(creature) {}
 
         bool hasPassenger;
 
@@ -290,7 +290,7 @@ public:
             if (hasPassenger)
                 return;
 
-            if (CreaturePtr imunAgent = me->FindNearestCreature(45847, 10.0f))
+            if (Creature* imunAgent = me->FindNearestCreature(45847, 10.0f))
             {
                 if (me->GetVehicleKit())
                 {
@@ -313,7 +313,7 @@ class npc_gnomeregan_torben : public CreatureScript
 public:
     npc_gnomeregan_torben() : CreatureScript("npc_gnomeregan_torben") { }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_TEXT, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
         player->SEND_GOSSIP_MENU(1, creature->GetGUID());
@@ -321,7 +321,7 @@ public:
         return true;
     }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         if (action == GOSSIP_ACTION_INFO_DEF+1)
@@ -342,14 +342,14 @@ class npc_gnomeregan_recrue : public CreatureScript
 public:
     npc_gnomeregan_recrue() : CreatureScript("npc_gnomeregan_recrue") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_gnomeregan_recrueAI (creature);
     }
 
     struct npc_gnomeregan_recrueAI : public ScriptedAI
     {
-        npc_gnomeregan_recrueAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_gnomeregan_recrueAI(Creature* creature) : ScriptedAI(creature) {}
 
         bool hasTarget;
 
@@ -358,14 +358,14 @@ public:
             hasTarget = false;
         }
 
-        void DamageTaken(UnitPtr doneBy, uint32& damage)
+        void DamageTaken(Unit* doneBy, uint32& damage)
         {
             if (doneBy->ToCreature())
                 if (me->GetHealth() <= damage || me->GetHealthPct() <= 80.0f)
                     damage = 0;
         }
 
-        void DamageDealt(UnitPtr target, uint32& damage, DamageEffectType damageType)
+        void DamageDealt(Unit* target, uint32& damage, DamageEffectType damageType)
         {
             if (target->ToCreature())
                 if (target->GetHealth() <= damage || target->GetHealthPct() <= 70.0f)
@@ -383,7 +383,7 @@ public:
             float x = 0, y = 0;
             GetPositionWithDistInOrientation(me, 2.5f, x, y);
 
-            if (CreaturePtr LivingInfection = me->SummonCreature(42185, x, y, me->GetPositionZ()))
+            if (Creature* LivingInfection = me->SummonCreature(42185, x, y, me->GetPositionZ()))
             {
                 LivingInfection->setFaction(16);
                 LivingInfection->SetFacingToObject(me);

@@ -24,8 +24,8 @@
 
 DB2FileLoader::DB2FileLoader()
 {
-    data = nullptr;
-    fieldsOffset = nullptr;
+    data = NULL;
+    fieldsOffset = NULL;
 }
 
 bool DB2FileLoader::Load(const char *filename, const char *fmt)
@@ -34,7 +34,7 @@ bool DB2FileLoader::Load(const char *filename, const char *fmt)
     if (data)
     {
         delete [] data;
-        data=nullptr;
+        data=NULL;
     }
 
     FILE * f = fopen(filename, "rb");
@@ -236,7 +236,7 @@ char* DB2FileLoader::AutoProduceData(const char* format, uint32& records, char**
 
     typedef char * ptr;
     if (strlen(format) != fieldCount)
-        return nullptr;
+        return NULL;
 
     //get struct size and index pos
     int32 i;
@@ -295,7 +295,7 @@ char* DB2FileLoader::AutoProduceData(const char* format, uint32& records, char**
                     offset += 1;
                     break;
                 case FT_STRING:
-                    *((char**)(&dataTable[offset])) = nullptr;   // will be replaces non-empty or "" strings in AutoProduceStrings
+                    *((char**)(&dataTable[offset])) = NULL;   // will be replaces non-empty or "" strings in AutoProduceStrings
                     offset += sizeof(char*);
                     break;
             }
@@ -310,7 +310,7 @@ static char const* const nullStr = "";
 char* DB2FileLoader::AutoProduceStringsArrayHolders(const char* format, char* dataTable)
 {
     if (strlen(format) != fieldCount)
-        return nullptr;
+        return NULL;
 
     // we store flat holders pool as single memory block
     size_t stringFields = GetFormatStringsFields(format);
@@ -368,7 +368,7 @@ char* DB2FileLoader::AutoProduceStringsArrayHolders(const char* format, char* da
 char* DB2FileLoader::AutoProduceStrings(const char* format, char* dataTable)
 {
     if (strlen(format) != fieldCount)
-        return nullptr;
+        return NULL;
 
     char* stringPool= new char[stringSize];
     memcpy(stringPool, stringTable, stringSize);

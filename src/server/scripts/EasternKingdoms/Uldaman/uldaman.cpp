@@ -54,7 +54,7 @@ class mob_jadespine_basilisk : public CreatureScript
 
         struct mob_jadespine_basiliskAI : public ScriptedAI
         {
-            mob_jadespine_basiliskAI(CreaturePtr creature) : ScriptedAI(creature) {}
+            mob_jadespine_basiliskAI(Creature* creature) : ScriptedAI(creature) {}
 
             uint32 uiCslumberTimer;
 
@@ -63,7 +63,7 @@ class mob_jadespine_basilisk : public CreatureScript
                 uiCslumberTimer = 2000;
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
             }
 
@@ -82,7 +82,7 @@ class mob_jadespine_basilisk : public CreatureScript
                     //Stop attacking target thast asleep and pick new target
                     uiCslumberTimer = 28000;
 
-                    UnitPtr target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0);
+                    Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0);
 
                     if (!target || target == me->getVictim())
                         target = SelectTarget(SELECT_TARGET_RANDOM, 0, 100, true);
@@ -96,7 +96,7 @@ class mob_jadespine_basilisk : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new mob_jadespine_basiliskAI(creature);
         }
@@ -111,7 +111,7 @@ class go_keystone_chamber : public GameObjectScript
 public:
     go_keystone_chamber() : GameObjectScript("go_keystone_chamber") { }
 
-    bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
+    bool OnGossipHello(Player* /*player*/, GameObject* go)
     {
         if (InstanceScript* instance = go->GetInstanceScript())
             instance->SetData(DATA_IRONAYA_SEAL, IN_PROGRESS); //door animation and save state.
@@ -135,7 +135,7 @@ class AreaTrigger_at_map_chamber : public AreaTriggerScript
         {
         }
 
-        bool OnTrigger(PlayerPtr player, AreaTriggerEntry const* /*trigger*/)
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
         {
             if (player->GetQuestStatus(QUEST_HIDDEN_CHAMBER) == QUEST_STATUS_INCOMPLETE)
                 player->AreaExploredOrEventHappens(QUEST_HIDDEN_CHAMBER);

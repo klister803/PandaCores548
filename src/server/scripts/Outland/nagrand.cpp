@@ -58,7 +58,7 @@ class npc_greatmother_geyah : public CreatureScript
 public:
     npc_greatmother_geyah() : CreatureScript("npc_greatmother_geyah") { }
 
-    bool OnGossipSelect(PlayerPtr player, CreaturePtr creature, uint32 /*sender*/, uint32 action)
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
     {
         player->PlayerTalkClass->ClearMenus();
         switch (action)
@@ -119,7 +119,7 @@ public:
         return true;
     }
 
-    bool OnGossipHello(PlayerPtr player, CreaturePtr creature)
+    bool OnGossipHello(Player* player, Creature* creature)
     {
         if (creature->isQuestGiver())
             player->PrepareQuestMenu(creature->GetGUID());
@@ -176,7 +176,7 @@ class npc_maghar_captive : public CreatureScript
 public:
     npc_maghar_captive() : CreatureScript("npc_maghar_captive") { }
 
-    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, const Quest* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest)
     {
         if (quest->GetQuestId() == QUEST_TOTEM_KARDASH_H)
         {
@@ -197,14 +197,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_maghar_captiveAI(creature);
     }
 
     struct npc_maghar_captiveAI : public npc_escortAI
     {
-        npc_maghar_captiveAI(CreaturePtr creature) : npc_escortAI(creature) { Reset(); }
+        npc_maghar_captiveAI(Creature* creature) : npc_escortAI(creature) { Reset(); }
 
         uint32 m_uiChainLightningTimer;
         uint32 m_uiHealTimer;
@@ -217,7 +217,7 @@ public:
             m_uiFrostShockTimer = 6000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoCast(me, SPELL_EARTHBIND_TOTEM, false);
         }
@@ -229,7 +229,7 @@ public:
                 case 7:
                     DoScriptText(SAY_MAG_MORE, me);
 
-                    if (CreaturePtr temp = me->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushB[0], m_afAmbushB[1], m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000))
+                    if (Creature* temp = me->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushB[0], m_afAmbushB[1], m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000))
                         DoScriptText(SAY_MAG_MORE_REPLY, temp);
 
                     me->SummonCreature(NPC_MURK_PUTRIFIER, m_afAmbushB[0]-2.5f, m_afAmbushB[1]-2.5f, m_afAmbushB[2], 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 25000);
@@ -239,7 +239,7 @@ public:
                 case 16:
                     DoScriptText(SAY_MAG_COMPLETE, me);
 
-                    if (PlayerPtr player = GetPlayerForEscort())
+                    if (Player* player = GetPlayerForEscort())
                         player->GroupEventHappens(QUEST_TOTEM_KARDASH_H, me);
 
                     SetRun();
@@ -247,7 +247,7 @@ public:
             }
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             if (summoned->GetEntry() == NPC_MURK_BRUTE)
                 DoScriptText(SAY_MAG_NO_ESCAPE, summoned);
@@ -261,7 +261,7 @@ public:
 
         }
 
-        void SpellHitTarget(UnitPtr /*target*/, const SpellInfo* pSpell)
+        void SpellHitTarget(Unit* /*target*/, const SpellInfo* pSpell)
         {
             if (pSpell->Id == SPELL_CHAIN_LIGHTNING)
             {
@@ -319,20 +319,20 @@ class npc_creditmarker_visit_with_ancestors : public CreatureScript
 public:
     npc_creditmarker_visit_with_ancestors() : CreatureScript("npc_creditmarker_visit_with_ancestors") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_creditmarker_visit_with_ancestorsAI (creature);
     }
 
     struct npc_creditmarker_visit_with_ancestorsAI : public ScriptedAI
     {
-        npc_creditmarker_visit_with_ancestorsAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_creditmarker_visit_with_ancestorsAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset() {}
 
-        void EnterCombat(UnitPtr /*who*/) {}
+        void EnterCombat(Unit* /*who*/) {}
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (!who)
                 return;
@@ -384,11 +384,11 @@ class go_corkis_prison : public GameObjectScript
 public:
   go_corkis_prison() : GameObjectScript("go_corkis_prison") { }
 
-  bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
+  bool OnGossipHello(Player* player, GameObject* go)
   {
       if (go->GetEntry() == GO_CORKIS_PRISON)
       {
-          if (CreaturePtr corki = go->FindNearestCreature(NPC_CORKI, 25, true))
+          if (Creature* corki = go->FindNearestCreature(NPC_CORKI, 25, true))
           {
               go->SetGoState(GO_STATE_READY);
               corki->GetMotionMaster()->MovePoint(1, go->GetPositionX()+5, go->GetPositionY(), go->GetPositionZ());
@@ -399,7 +399,7 @@ public:
 
       if (go->GetEntry() == GO_CORKIS_PRISON_2)
       {
-          if (CreaturePtr corki = go->FindNearestCreature(NPC_CORKI_2, 25, true))
+          if (Creature* corki = go->FindNearestCreature(NPC_CORKI_2, 25, true))
           {
               go->SetGoState(GO_STATE_READY);
               corki->GetMotionMaster()->MovePoint(1, go->GetPositionX()-5, go->GetPositionY(), go->GetPositionZ());
@@ -410,7 +410,7 @@ public:
 
       if (go->GetEntry() == GO_CORKIS_PRISON_3)
       {
-          if (CreaturePtr corki = go->FindNearestCreature(NPC_CORKI_3, 25, true))
+          if (Creature* corki = go->FindNearestCreature(NPC_CORKI_3, 25, true))
           {
               go->SetGoState(GO_STATE_READY);
               corki->GetMotionMaster()->MovePoint(1, go->GetPositionX()+4, go->GetPositionY(), go->GetPositionZ());
@@ -427,14 +427,14 @@ class npc_corki : public CreatureScript
 public:
   npc_corki() : CreatureScript("npc_corki") { }
 
-  CreatureAI* GetAI(CreaturePtr creature) const
+  CreatureAI* GetAI(Creature* creature) const
   {
       return new npc_corkiAI(creature);
   }
 
   struct npc_corkiAI : public ScriptedAI
   {
-      npc_corkiAI(CreaturePtr creature) : ScriptedAI(creature) {}
+      npc_corkiAI(Creature* creature) : ScriptedAI(creature) {}
 
       uint32 Say_Timer;
       bool ReleasedFromCage;
@@ -511,7 +511,7 @@ class npc_kurenai_captive : public CreatureScript
 public:
     npc_kurenai_captive() : CreatureScript("npc_kurenai_captive") { }
 
-    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, const Quest* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest)
     {
         if (quest->GetQuestId() == QUEST_TOTEM_KARDASH_A)
         {
@@ -529,14 +529,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_kurenai_captiveAI(creature);
     }
 
     struct npc_kurenai_captiveAI : public npc_escortAI
     {
-        npc_kurenai_captiveAI(CreaturePtr creature) : npc_escortAI(creature) { }
+        npc_kurenai_captiveAI(Creature* creature) : npc_escortAI(creature) { }
 
         uint32 ChainLightningTimer;
         uint32 HealTimer;
@@ -549,17 +549,17 @@ public:
             FrostShockTimer = 6000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoCast(me, SPELL_KUR_EARTHBIND_TOTEM, false);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (!HasEscortState(STATE_ESCORT_ESCORTING))
                 return;
 
-            if (PlayerPtr player = GetPlayerForEscort())
+            if (Player* player = GetPlayerForEscort())
             {
                 if (player->GetQuestStatus(QUEST_TOTEM_KARDASH_A) != QUEST_STATUS_COMPLETE)
                     player->FailQuest(QUEST_TOTEM_KARDASH_A);
@@ -586,7 +586,7 @@ public:
                 {
                     Talk(SAY_KUR_COMPLETE);
 
-                    if (PlayerPtr player = GetPlayerForEscort())
+                    if (Player* player = GetPlayerForEscort())
                         player->GroupEventHappens(QUEST_TOTEM_KARDASH_A, me);
 
                     SetRun();
@@ -595,7 +595,7 @@ public:
             }
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
             if (summoned->GetEntry() == NPC_KUR_MURK_BRUTE)
                 Talk(SAY_KUR_NO_ESCAPE);
@@ -609,7 +609,7 @@ public:
             summoned->AI()->AttackStart(me);
         }
 
-        void SpellHitTarget(UnitPtr /*target*/, const SpellInfo* spell)
+        void SpellHitTarget(Unit* /*target*/, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_KUR_CHAIN_LIGHTNING)
             {
@@ -679,12 +679,12 @@ class go_warmaul_prison : public GameObjectScript
     public:
         go_warmaul_prison() : GameObjectScript("go_warmaul_prison") { }
 
-        bool OnGossipHello(PlayerPtr player, GameObjectPtr go)
+        bool OnGossipHello(Player* player, GameObject* go)
         {
             if (player->GetQuestStatus(QUEST_FINDING_THE_SURVIVORS) != QUEST_STATUS_INCOMPLETE)
                 return false;
 
-            if (CreaturePtr prisoner = go->FindNearestCreature(NPC_MAGHAR_PRISONER, 5.0f))
+            if (Creature* prisoner = go->FindNearestCreature(NPC_MAGHAR_PRISONER, 5.0f))
             {
                 go->UseDoorOrButton();
                 player->KilledMonsterCredit(NPC_MAGHAR_PRISONER, 0);

@@ -53,7 +53,7 @@ class boss_the_maker : public CreatureScript
 
         struct boss_the_makerAI : public ScriptedAI
         {
-            boss_the_makerAI(CreaturePtr creature) : ScriptedAI(creature)
+            boss_the_makerAI(Creature* creature) : ScriptedAI(creature)
             {
                 instance = creature->GetInstanceScript();
             }
@@ -79,7 +79,7 @@ class boss_the_maker : public CreatureScript
                 instance->HandleGameObject(instance->GetData64(DATA_DOOR2), true);
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
                 DoScriptText(RAND(SAY_AGGRO_1, SAY_AGGRO_2, SAY_AGGRO_3), me);
 
@@ -90,12 +90,12 @@ class boss_the_maker : public CreatureScript
                 instance->HandleGameObject(instance->GetData64(DATA_DOOR2), false);
             }
 
-            void KilledUnit(UnitPtr /*victim*/)
+            void KilledUnit(Unit* /*victim*/)
             {
                 DoScriptText(RAND(SAY_KILL_1, SAY_KILL_2), me);
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 DoScriptText(SAY_DIE, me);
 
@@ -123,7 +123,7 @@ class boss_the_maker : public CreatureScript
 
                 if (ExplodingBreaker_Timer <= diff)
                 {
-                    if (UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0))
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0))
                         DoCast(target, SPELL_EXPLODING_BREAKER);
                     ExplodingBreaker_Timer = 4000+rand()%8000;
                 }
@@ -133,7 +133,7 @@ class boss_the_maker : public CreatureScript
                 /* // Disabled until Core Support for mind control
                 if (domination_timer_timer <= diff)
                 {
-                UnitPtr target;
+                Unit* target;
                 target = SelectUnit(SELECT_TARGET_RANDOM, 0);
 
                 DoCast(target, SPELL_DOMINATION);
@@ -154,7 +154,7 @@ class boss_the_maker : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_the_makerAI(creature);
         }

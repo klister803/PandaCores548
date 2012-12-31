@@ -34,7 +34,7 @@ public:
 
     struct instance_azjol_nerub_InstanceScript : public InstanceScript
     {
-        instance_azjol_nerub_InstanceScript(MapPtr map) : InstanceScript(map) {}
+        instance_azjol_nerub_InstanceScript(Map* map) : InstanceScript(map) {}
 
         uint64 uiKrikthir;
         uint64 uiHadronox;
@@ -71,7 +71,7 @@ public:
             return false;
         }
 
-        void OnCreatureCreate(CreaturePtr creature)
+        void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
@@ -84,7 +84,7 @@ public:
             }
         }
 
-        void OnGameObjectCreate(GameObjectPtr go)
+        void OnGameObjectCreate(GameObject* go)
         {
             switch (go->GetEntry())
             {
@@ -205,7 +205,7 @@ public:
         }
     };
 
-    InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+    InstanceScript* GetInstanceScript(InstanceMap* map) const
     {
         return new instance_azjol_nerub_InstanceScript(map);
     }

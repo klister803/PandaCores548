@@ -50,14 +50,14 @@ class npc_crusade_persuaded : public CreatureScript
 public:
     npc_crusade_persuaded() : CreatureScript("npc_crusade_persuaded") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_crusade_persuadedAI (creature);
     }
 
     struct npc_crusade_persuadedAI : public ScriptedAI
     {
-        npc_crusade_persuadedAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_crusade_persuadedAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 uiSpeech_timer;
         uint32 uiSpeech_counter;
@@ -72,7 +72,7 @@ public:
             me->RestoreFaction();
         }
 
-        void SpellHit(UnitPtr caster, const SpellInfo* spell)
+        void SpellHit(Unit* caster, const SpellInfo* spell)
         {
             if (spell->Id == SPELL_PERSUASIVE_STRIKE && caster->GetTypeId() == TYPEID_PLAYER && me->isAlive() && !uiSpeech_counter)
             {
@@ -103,7 +103,7 @@ public:
             {
                 if (uiSpeech_timer <= diff)
                 {
-                    PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), uiPlayerGUID);
+                    Player* player = Unit::GetPlayer(*me, uiPlayerGUID);
                     if (!player)
                     {
                         EnterEvadeMode();
@@ -199,7 +199,7 @@ class npc_koltira_deathweaver : public CreatureScript
 public:
     npc_koltira_deathweaver() : CreatureScript("npc_koltira_deathweaver") { }
 
-    bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, const Quest* quest)
+    bool OnQuestAccept(Player* player, Creature* creature, const Quest* quest)
     {
         if (quest->GetQuestId() == QUEST_BREAKOUT)
         {
@@ -211,14 +211,14 @@ public:
         return true;
     }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_koltira_deathweaverAI(creature);
     }
 
     struct npc_koltira_deathweaverAI : public npc_escortAI
     {
-        npc_koltira_deathweaverAI(CreaturePtr creature) : npc_escortAI(creature)
+        npc_koltira_deathweaverAI(Creature* creature) : npc_escortAI(creature)
         {
             me->SetReactState(REACT_DEFENSIVE);
         }
@@ -276,9 +276,9 @@ public:
             }
         }
 
-        void JustSummoned(CreaturePtr summoned)
+        void JustSummoned(Creature* summoned)
         {
-            if (PlayerPtr player = GetPlayerForEscort())
+            if (Player* player = GetPlayerForEscort())
                 summoned->AI()->AttackStart(player);
 
             if (summoned->GetEntry() == NPC_HIGH_INQUISITOR_VALROTH)
@@ -326,7 +326,7 @@ public:
                             break;
                         case 4:
                         {
-                            CreaturePtr temp = Unit::GetCreature(TO_WORLDOBJECT(me), m_uiValrothGUID);
+                            Creature* temp = Unit::GetCreature(*me, m_uiValrothGUID);
 
                             if (!temp || !temp->isAlive())
                             {
@@ -380,14 +380,14 @@ class mob_scarlet_courier : public CreatureScript
 public:
     mob_scarlet_courier() : CreatureScript("mob_scarlet_courier") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_scarlet_courierAI (creature);
     }
 
     struct mob_scarlet_courierAI : public ScriptedAI
     {
-        mob_scarlet_courierAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        mob_scarlet_courierAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 uiStage;
         uint32 uiStage_timer;
@@ -399,7 +399,7 @@ public:
             uiStage_timer = 3000;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             DoScriptText(SAY_TREE2, me);
             me->Dismount();
@@ -425,7 +425,7 @@ public:
                     {
                     case 1:
                         me->SetWalk(true);
-                        if (GameObjectPtr tree = me->FindNearestGameObject(GO_INCONSPICUOUS_TREE, 40.0f))
+                        if (GameObject* tree = me->FindNearestGameObject(GO_INCONSPICUOUS_TREE, 40.0f))
                         {
                             DoScriptText(SAY_TREE1, me);
                             float x, y, z;
@@ -434,8 +434,8 @@ public:
                         }
                         break;
                     case 2:
-                        if (GameObjectPtr tree = me->FindNearestGameObject(GO_INCONSPICUOUS_TREE, 40.0f))
-                            if (UnitPtr unit = tree->GetOwner())
+                        if (GameObject* tree = me->FindNearestGameObject(GO_INCONSPICUOUS_TREE, 40.0f))
+                            if (Unit* unit = tree->GetOwner())
                                 AttackStart(unit);
                         break;
                     }
@@ -474,14 +474,14 @@ class mob_high_inquisitor_valroth : public CreatureScript
 public:
     mob_high_inquisitor_valroth() : CreatureScript("mob_high_inquisitor_valroth") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_high_inquisitor_valrothAI (creature);
     }
 
     struct mob_high_inquisitor_valrothAI : public ScriptedAI
     {
-        mob_high_inquisitor_valrothAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        mob_high_inquisitor_valrothAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 uiRenew_timer;
         uint32 uiInquisitor_Penance_timer;
@@ -494,7 +494,7 @@ public:
             uiValroth_Smite_timer = 1000;
         }
 
-        void EnterCombat(UnitPtr who)
+        void EnterCombat(Unit* who)
         {
             DoScriptText(SAY_VALROTH2, me);
             DoCast(who, SPELL_VALROTH_SMITE);
@@ -532,7 +532,7 @@ public:
                 DoScriptText(RAND(SAY_VALROTH3, SAY_VALROTH4, SAY_VALROTH5), me);
         }
 
-        void JustDied(UnitPtr killer)
+        void JustDied(Unit* killer)
         {
             DoScriptText(SAY_VALROTH6, me);
             killer->CastSpell(me, SPELL_SUMMON_VALROTH_REMAINS, true);
@@ -610,14 +610,14 @@ class npc_a_special_surprise : public CreatureScript
 public:
     npc_a_special_surprise() : CreatureScript("npc_a_special_surprise") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_a_special_surpriseAI(creature);
     }
 
     struct npc_a_special_surpriseAI : public ScriptedAI
     {
-        npc_a_special_surpriseAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        npc_a_special_surpriseAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 ExecuteSpeech_Timer;
         uint32 ExecuteSpeech_Counter;
@@ -632,7 +632,7 @@ public:
             me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
         }
 
-        bool MeetQuestCondition(PlayerPtr player)
+        bool MeetQuestCondition(Player* player)
         {
             switch (me->GetEntry())
             {
@@ -681,12 +681,12 @@ public:
             return false;
         }
 
-        void MoveInLineOfSight(UnitPtr who)
+        void MoveInLineOfSight(Unit* who)
         {
             if (PlayerGUID || who->GetTypeId() != TYPEID_PLAYER || !who->IsWithinDist(me, INTERACTION_DISTANCE))
                 return;
 
-            if (MeetQuestCondition(TO_PLAYER(who)))
+            if (MeetQuestCondition(who->ToPlayer()))
                 PlayerGUID = who->GetGUID();
         }
 
@@ -696,7 +696,7 @@ public:
             {
                 if (ExecuteSpeech_Timer <= diff)
                 {
-                    PlayerPtr player = Unit::GetPlayer(TO_WORLDOBJECT(me), PlayerGUID);
+                    Player* player = Unit::GetPlayer(*me, PlayerGUID);
 
                     if (!player)
                     {
@@ -720,7 +720,7 @@ public:
                                 case 6: DoScriptText(SAY_EXEC_THINK_7, me, player); break;
                                 case 7: DoScriptText(SAY_EXEC_LISTEN_1, me, player); break;
                                 case 8:
-                                    if (CreaturePtr Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
+                                    if (Creature* Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
                                         DoScriptText(SAY_PLAGUEFIST, Plaguefist, player);
                                     break;
                                 case 9:
@@ -750,7 +750,7 @@ public:
                                 case 6: DoScriptText(SAY_EXEC_THINK_8, me, player); break;
                                 case 7: DoScriptText(SAY_EXEC_LISTEN_1, me, player); break;
                                 case 8:
-                                    if (CreaturePtr Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
+                                    if (Creature* Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
                                         DoScriptText(SAY_PLAGUEFIST, Plaguefist, player);
                                     break;
                                 case 9:
@@ -780,7 +780,7 @@ public:
                                 case 6: DoScriptText(SAY_EXEC_THINK_5, me, player); break;
                                 case 7: DoScriptText(SAY_EXEC_LISTEN_2, me, player); break;
                                 case 8:
-                                    if (CreaturePtr Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
+                                    if (Creature* Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
                                         DoScriptText(SAY_PLAGUEFIST, Plaguefist, player);
                                     break;
                                 case 9:
@@ -810,7 +810,7 @@ public:
                                 case 6: DoScriptText(SAY_EXEC_THINK_2, me, player); break;
                                 case 7: DoScriptText(SAY_EXEC_LISTEN_1, me, player); break;
                                 case 8:
-                                    if (CreaturePtr Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
+                                    if (Creature* Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
                                         DoScriptText(SAY_PLAGUEFIST, Plaguefist, player);
                                     break;
                                 case 9:
@@ -840,7 +840,7 @@ public:
                                 case 6: DoScriptText(SAY_EXEC_THINK_1, me, player); break;
                                 case 7: DoScriptText(SAY_EXEC_LISTEN_3, me, player); break;
                                 case 8:
-                                    if (CreaturePtr Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
+                                    if (Creature* Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
                                         DoScriptText(SAY_PLAGUEFIST, Plaguefist, player);
                                     break;
                                 case 9:
@@ -870,7 +870,7 @@ public:
                                 case 6: DoScriptText(SAY_EXEC_THINK_9, me, player); break;
                                 case 7: DoScriptText(SAY_EXEC_LISTEN_1, me, player); break;
                                 case 8:
-                                    if (CreaturePtr Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
+                                    if (Creature* Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
                                         DoScriptText(SAY_PLAGUEFIST, Plaguefist, player);
                                     break;
                                 case 9:
@@ -900,7 +900,7 @@ public:
                                 case 6: DoScriptText(SAY_EXEC_THINK_6, me, player); break;
                                 case 7: DoScriptText(SAY_EXEC_LISTEN_1, me, player); break;
                                 case 8:
-                                    if (CreaturePtr Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
+                                    if (Creature* Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
                                         DoScriptText(SAY_PLAGUEFIST, Plaguefist, player);
                                     break;
                                 case 9:
@@ -930,7 +930,7 @@ public:
                                 case 6: DoScriptText(SAY_EXEC_THINK_10, me, player); break;
                                 case 7: DoScriptText(SAY_EXEC_LISTEN_4, me, player); break;
                                 case 8:
-                                    if (CreaturePtr Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
+                                    if (Creature* Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
                                         DoScriptText(SAY_PLAGUEFIST, Plaguefist, player);
                                     break;
                                 case 9:
@@ -960,7 +960,7 @@ public:
                                 case 6: DoScriptText(SAY_EXEC_THINK_3, me, player); break;
                                 case 7: DoScriptText(SAY_EXEC_LISTEN_1, me, player); break;
                                 case 8:
-                                    if (CreaturePtr Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
+                                    if (Creature* Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
                                         DoScriptText(SAY_PLAGUEFIST, Plaguefist, player);
                                     break;
                                 case 9:
@@ -990,7 +990,7 @@ public:
                                 case 6: DoScriptText(SAY_EXEC_THINK_4, me, player); break;
                                 case 7: DoScriptText(SAY_EXEC_LISTEN_1, me, player); break;
                                 case 8:
-                                    if (CreaturePtr Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
+                                    if (Creature* Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
                                         DoScriptText(SAY_PLAGUEFIST, Plaguefist, player);
                                     break;
                                 case 9:

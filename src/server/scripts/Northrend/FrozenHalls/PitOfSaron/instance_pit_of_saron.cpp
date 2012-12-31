@@ -38,7 +38,7 @@ class instance_pit_of_saron : public InstanceMapScript
 
         struct instance_pit_of_saron_InstanceScript : public InstanceScript
         {
-            instance_pit_of_saron_InstanceScript(MapPtr map) : InstanceScript(map)
+            instance_pit_of_saron_InstanceScript(Map* map) : InstanceScript(map)
             {
                 SetBossNumber(MAX_ENCOUNTER);
                 LoadDoorData(Doors);
@@ -52,19 +52,19 @@ class instance_pit_of_saron : public InstanceMapScript
                 _teamInInstance = 0;
             }
 
-            void OnPlayerEnter(PlayerPtr player)
+            void OnPlayerEnter(Player* player)
             {
                 if (!_teamInInstance)
                     _teamInInstance = player->GetTeam();
             }
 
-            void OnCreatureCreate(CreaturePtr creature)
+            void OnCreatureCreate(Creature* creature)
             {
                 if (!_teamInInstance)
                 {
                     Map::PlayerList const &players = instance->GetPlayers();
                     if (!players.isEmpty())
-                        if (PlayerPtr player = players.begin()->getSource())
+                        if (Player* player = players.begin()->getSource())
                             _teamInInstance = player->GetTeam();
                 }
 
@@ -163,7 +163,7 @@ class instance_pit_of_saron : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectCreate(GameObjectPtr go)
+            void OnGameObjectCreate(GameObject* go)
             {
                 switch (go->GetEntry())
                 {
@@ -174,7 +174,7 @@ class instance_pit_of_saron : public InstanceMapScript
                 }
             }
 
-            void OnGameObjectRemove(GameObjectPtr go)
+            void OnGameObjectRemove(GameObject* go)
             {
                 switch (go->GetEntry())
                 {
@@ -195,7 +195,7 @@ class instance_pit_of_saron : public InstanceMapScript
                     case DATA_GARFROST:
                         if (state == DONE)
                         {
-                            if (CreaturePtr summoner = instance->GetCreature(_garfrostGUID))
+                            if (Creature* summoner = instance->GetCreature(_garfrostGUID))
                             {
                                 if (_teamInInstance == ALLIANCE)
                                     summoner->SummonCreature(NPC_MARTIN_VICTUS_1, SlaveLeaderPos, TEMPSUMMON_MANUAL_DESPAWN);
@@ -207,7 +207,7 @@ class instance_pit_of_saron : public InstanceMapScript
                     case DATA_TYRANNUS:
                         if (state == DONE)
                         {
-                            if (CreaturePtr summoner = instance->GetCreature(_tyrannusGUID))
+                            if (Creature* summoner = instance->GetCreature(_tyrannusGUID))
                             {
                                 if (_teamInInstance == ALLIANCE)
                                     summoner->SummonCreature(NPC_JAINA_PART2, EventLeaderPos2, TEMPSUMMON_MANUAL_DESPAWN);
@@ -321,7 +321,7 @@ class instance_pit_of_saron : public InstanceMapScript
             uint32 _teamInInstance;
         };
 
-        InstanceScript* GetInstanceScript(InstanceMapPtr map) const
+        InstanceScript* GetInstanceScript(InstanceMap* map) const
         {
             return new instance_pit_of_saron_InstanceScript(map);
         }

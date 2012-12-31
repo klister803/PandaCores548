@@ -115,13 +115,13 @@ enum WorldStatesRS
 };
 
 template<class AI>
-CreatureAI* GetRubySanctumAI(CreaturePtr creature)
+CreatureAI* GetRubySanctumAI(Creature* creature)
 {
-    if (InstanceMapPtr instance = creature->GetMap()->ToInstanceMap())
+    if (InstanceMap* instance = creature->GetMap()->ToInstanceMap())
         if (instance->GetInstanceScript())
             if (instance->GetScriptId() == sObjectMgr->GetScriptId(RSScriptName))
                 return new AI(creature);
-    return nullptr;
+    return NULL;
 }
 
 #endif // RUBY_SANCTUM_H_

@@ -71,7 +71,7 @@ class npc_torek : public CreatureScript
 
         struct npc_torekAI : public npc_escortAI
         {
-            npc_torekAI(CreaturePtr creature) : npc_escortAI(creature) {}
+            npc_torekAI(Creature* creature) : npc_escortAI(creature) {}
 
             uint32 Rend_Timer;
             uint32 Thunderclap_Timer;
@@ -79,7 +79,7 @@ class npc_torek : public CreatureScript
 
             void WaypointReached(uint32 waypointId)
             {
-                if (PlayerPtr player = GetPlayerForEscort())
+                if (Player* player = GetPlayerForEscort())
                 {
                     switch (waypointId)
                     {
@@ -114,11 +114,11 @@ class npc_torek : public CreatureScript
                 Completed = false;
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
             }
 
-            void JustSummoned(CreaturePtr summoned)
+            void JustSummoned(Creature* summoned)
             {
                 summoned->AI()->AttackStart(me);
             }
@@ -144,12 +144,12 @@ class npc_torek : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_torekAI(creature);
         }
 
-        bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
+        bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
         {
             if (quest->GetQuestId() == QUEST_TOREK_ASSULT)
             {
@@ -197,11 +197,11 @@ class npc_ruul_snowhoof : public CreatureScript
 
         struct npc_ruul_snowhoofAI : public npc_escortAI
         {
-            npc_ruul_snowhoofAI(CreaturePtr creature) : npc_escortAI(creature) { }
+            npc_ruul_snowhoofAI(Creature* creature) : npc_escortAI(creature) { }
 
             void WaypointReached(uint32 waypointId)
             {
-                PlayerPtr player = GetPlayerForEscort();
+                Player* player = GetPlayerForEscort();
                 if (!player)
                     return;
 
@@ -209,7 +209,7 @@ class npc_ruul_snowhoof : public CreatureScript
                 {
                     case 0:
                         me->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
-                        if (GameObjectPtr Cage = me->FindNearestGameObject(GO_CAGE, 20))
+                        if (GameObject* Cage = me->FindNearestGameObject(GO_CAGE, 20))
                             Cage->SetGoState(GO_STATE_ACTIVE);
                         break;
                     case 13:
@@ -228,15 +228,15 @@ class npc_ruul_snowhoof : public CreatureScript
                 }
             }
 
-            void EnterCombat(UnitPtr /*who*/) {}
+            void EnterCombat(Unit* /*who*/) {}
 
             void Reset()
             {
-                if (GameObjectPtr Cage = me->FindNearestGameObject(GO_CAGE, 20))
+                if (GameObject* Cage = me->FindNearestGameObject(GO_CAGE, 20))
                     Cage->SetGoState(GO_STATE_READY);
             }
 
-            void JustSummoned(CreaturePtr summoned)
+            void JustSummoned(Creature* summoned)
             {
                 summoned->AI()->AttackStart(me);
             }
@@ -247,12 +247,12 @@ class npc_ruul_snowhoof : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_ruul_snowhoofAI(creature);
         }
 
-        bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
+        bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
         {
             if (quest->GetQuestId() == QUEST_FREEDOM_TO_RUUL)
             {
@@ -318,20 +318,20 @@ class npc_muglash : public CreatureScript
 
         struct npc_muglashAI : public npc_escortAI
         {
-            npc_muglashAI(CreaturePtr creature) : npc_escortAI(creature) { }
+            npc_muglashAI(Creature* creature) : npc_escortAI(creature) { }
 
             uint8 WaveId;
             uint32 EventTimer;
             bool IsBrazierExtinguished;
 
-            void JustSummoned(CreaturePtr summoned)
+            void JustSummoned(Creature* summoned)
             {
                 summoned->AI()->AttackStart(me);
             }
 
             void WaypointReached(uint32 waypointId)
             {
-                if (PlayerPtr player = GetPlayerForEscort())
+                if (Player* player = GetPlayerForEscort())
                 {
                     switch (waypointId)
                     {
@@ -341,7 +341,7 @@ class npc_muglash : public CreatureScript
                         case 24:
                             DoScriptText(SAY_MUG_BRAZIER, me, player);
 
-                            if (GameObjectPtr go = GetClosestGameObjectWithEntry(me, GO_NAGA_BRAZIER, INTERACTION_DISTANCE*2))
+                            if (GameObject* go = GetClosestGameObjectWithEntry(me, GO_NAGA_BRAZIER, INTERACTION_DISTANCE*2))
                             {
                                 go->RemoveFlag(GAMEOBJECT_FLAGS, GO_FLAG_NOT_SELECTABLE);
                                 SetEscortPaused(true);
@@ -361,9 +361,9 @@ class npc_muglash : public CreatureScript
                 }
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
-                if (PlayerPtr player = GetPlayerForEscort())
+                if (Player* player = GetPlayerForEscort())
                     if (HasEscortState(STATE_ESCORT_PAUSED))
                     {
                         if (urand(0, 1))
@@ -379,10 +379,10 @@ class npc_muglash : public CreatureScript
                 IsBrazierExtinguished = false;
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
                 if (HasEscortState(STATE_ESCORT_ESCORTING))
-                    if (PlayerPtr player = GetPlayerForEscort())
+                    if (Player* player = GetPlayerForEscort())
                         player->FailQuest(QUEST_VORSHA);
             }
 
@@ -433,12 +433,12 @@ class npc_muglash : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_muglashAI(creature);
         }
 
-        bool OnQuestAccept(PlayerPtr player, CreaturePtr creature, Quest const* quest)
+        bool OnQuestAccept(Player* player, Creature* creature, Quest const* quest)
         {
             if (quest->GetQuestId() == QUEST_VORSHA)
             {
@@ -459,9 +459,9 @@ class go_naga_brazier : public GameObjectScript
     public:
         go_naga_brazier() : GameObjectScript("go_naga_brazier") { }
 
-        bool OnGossipHello(PlayerPtr /*Player*/, GameObjectPtr go)
+        bool OnGossipHello(Player* /*player*/, GameObject* go)
         {
-            if (CreaturePtr creature = GetClosestCreatureWithEntry(go, NPC_MUGLASH, INTERACTION_DISTANCE*2))
+            if (Creature* creature = GetClosestCreatureWithEntry(go, NPC_MUGLASH, INTERACTION_DISTANCE*2))
             {
                 if (npc_muglash::npc_muglashAI* pEscortAI = CAST_AI(npc_muglash::npc_muglashAI, creature->AI()))
                 {

@@ -34,7 +34,7 @@ bool SQLQueryHolder::SetQuery(size_t index, const char *sql)
     element.element.query = strdup(sql);
 
     SQLResultSetUnion result;
-    result.qresult = nullptr;
+    result.qresult = NULL;
 
     m_queries[index] = SQLResultPair(element, result);
     return true;
@@ -77,7 +77,7 @@ bool SQLQueryHolder::SetPreparedQuery(size_t index, PreparedStatement* stmt)
     element.element.stmt = stmt;
 
     SQLResultSetUnion result;
-    result.presult = nullptr;
+    result.presult = NULL;
 
     m_queries[index] = SQLResultPair(element, result);
     return true;
@@ -90,13 +90,13 @@ QueryResult SQLQueryHolder::GetResult(size_t index)
     {
         ResultSet* result = m_queries[index].second.qresult;
         if (!result || !result->GetRowCount())
-            return QueryResult(nullptr);
+            return QueryResult(NULL);
 
         result->NextRow();
         return QueryResult(result);
     }
     else
-        return QueryResult(nullptr);
+        return QueryResult(NULL);
 }
 
 PreparedQueryResult SQLQueryHolder::GetPreparedResult(size_t index)
@@ -106,12 +106,12 @@ PreparedQueryResult SQLQueryHolder::GetPreparedResult(size_t index)
     {
         PreparedResultSet* result = m_queries[index].second.presult;
         if (!result || !result->GetRowCount())
-            return PreparedQueryResult(nullptr);
+            return PreparedQueryResult(NULL);
 
         return PreparedQueryResult(result);
     }
     else
-        return PreparedQueryResult(nullptr);
+        return PreparedQueryResult(NULL);
 }
 
 void SQLQueryHolder::SetResult(size_t index, ResultSet* result)
@@ -119,7 +119,7 @@ void SQLQueryHolder::SetResult(size_t index, ResultSet* result)
     if (result && !result->GetRowCount())
     {
          delete result;
-         result = nullptr;
+         result = NULL;
     }
     /// store the result in the holder
     if (index < m_queries.size())
@@ -131,7 +131,7 @@ void SQLQueryHolder::SetPreparedResult(size_t index, PreparedResultSet* result)
     if (result && !result->GetRowCount())
     {
         delete result;
-        result = nullptr;
+        result = NULL;
     }
     /// store the result in the holder
     if (index < m_queries.size())

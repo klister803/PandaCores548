@@ -2020,7 +2020,7 @@ MovementStatusElements* GetMovementStatusElementsSequence(Opcodes opcode)
             break;
     }
 
-    return nullptr;
+    return NULL;
 }
 
 #endif

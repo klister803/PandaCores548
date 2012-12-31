@@ -35,14 +35,14 @@ class boss_timmy_the_cruel : public CreatureScript
 public:
     boss_timmy_the_cruel() : CreatureScript("boss_timmy_the_cruel") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_timmy_the_cruelAI (creature);
     }
 
     struct boss_timmy_the_cruelAI : public ScriptedAI
     {
-        boss_timmy_the_cruelAI(CreaturePtr creature) : ScriptedAI(creature) {}
+        boss_timmy_the_cruelAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 RavenousClaw_Timer;
         bool HasYelled;
@@ -53,7 +53,7 @@ public:
             HasYelled = false;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (!HasYelled)
             {

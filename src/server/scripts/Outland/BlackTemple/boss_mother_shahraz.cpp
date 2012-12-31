@@ -84,14 +84,14 @@ class boss_mother_shahraz : public CreatureScript
 public:
     boss_mother_shahraz() : CreatureScript("boss_mother_shahraz") { }
 
-    CreatureAI* GetAI(CreaturePtr creature) const
+    CreatureAI* GetAI(Creature* creature) const
     {
         return new boss_shahrazAI (creature);
     }
 
     struct boss_shahrazAI : public ScriptedAI
     {
-        boss_shahrazAI(CreaturePtr creature) : ScriptedAI(creature)
+        boss_shahrazAI(Creature* creature) : ScriptedAI(creature)
         {
             instance = creature->GetInstanceScript();
         }
@@ -136,7 +136,7 @@ public:
             Enraged = false;
         }
 
-        void EnterCombat(UnitPtr /*who*/)
+        void EnterCombat(Unit* /*who*/)
         {
             if (instance)
                 instance->SetData(DATA_MOTHERSHAHRAZEVENT, IN_PROGRESS);
@@ -145,12 +145,12 @@ public:
             DoScriptText(SAY_AGGRO, me);
         }
 
-        void KilledUnit(UnitPtr /*victim*/)
+        void KilledUnit(Unit* /*victim*/)
         {
             DoScriptText(RAND(SAY_SLAY1, SAY_SLAY2), me);
         }
 
-        void JustDied(UnitPtr /*killer*/)
+        void JustDied(Unit* /*killer*/)
         {
             if (instance)
                 instance->SetData(DATA_MOTHERSHAHRAZEVENT, DONE);
@@ -166,7 +166,7 @@ public:
             float Z = TeleportPoint[random].z;
             for (uint8 i = 0; i < 3; ++i)
             {
-                UnitPtr unit = SelectTarget(SELECT_TARGET_RANDOM, 1);
+                Unit* unit = SelectTarget(SELECT_TARGET_RANDOM, 1);
                 if (unit && unit->isAlive() && (unit->GetTypeId() == TYPEID_PLAYER))
                 {
                     TargetGUID[i] = unit->GetGUID();
@@ -191,7 +191,7 @@ public:
             //Randomly cast one beam.
             if (BeamTimer <= diff)
             {
-                UnitPtr target = SelectTarget(SELECT_TARGET_RANDOM, 0);
+                Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0);
                 if (!target || !target->isAlive())
                     return;
 
@@ -250,7 +250,7 @@ public:
                     {
                         if (TargetGUID[i])
                         {
-                            if (UnitPtr unit = Unit::GetUnit(TO_WORLDOBJECT(me), TargetGUID[i]))
+                            if (Unit* unit = Unit::GetUnit(*me, TargetGUID[i]))
                                 unit->CastSpell(unit, SPELL_ATTRACTION, true);
                             TargetGUID[i] = 0;
                         }

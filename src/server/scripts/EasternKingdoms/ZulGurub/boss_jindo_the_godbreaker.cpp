@@ -39,7 +39,7 @@ class boss_jindo_the_godbreaker : public CreatureScript
 
         struct boss_jindo_the_godbreakerAI : public BossAI
         {
-            boss_jindo_the_godbreakerAI(CreaturePtr creature) : BossAI(creature, DATA_JINDO)
+            boss_jindo_the_godbreakerAI(Creature* creature) : BossAI(creature, DATA_JINDO)
             {
             }
 
@@ -47,11 +47,11 @@ class boss_jindo_the_godbreaker : public CreatureScript
             {
             }
 
-            void EnterCombat(UnitPtr /*who*/)
+            void EnterCombat(Unit* /*who*/)
             {
             }
 
-            void JustDied(UnitPtr /*killer*/)
+            void JustDied(Unit* /*killer*/)
             {
             }
 
@@ -79,7 +79,7 @@ class boss_jindo_the_godbreaker : public CreatureScript
             }
         };
 
-        CreatureAI* GetAI(CreaturePtr creature) const
+        CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_jindo_the_godbreakerAI(creature);
         }
