@@ -894,6 +894,16 @@ class spell_dk_death_gate_teleport : public SpellScriptLoader
         {
             PrepareSpellScript(spell_dk_death_gate_teleport_SpellScript);
 
+            SpellCastResult CheckClass()
+            {
+                if (GetCaster()->getClass() != CLASS_DEATH_KNIGHT)
+                {
+                    SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_MUST_BE_DEATH_KNIGHT);
+                    return SPELL_FAILED_CUSTOM_ERROR;
+                }
+                return SPELL_CAST_OK;
+            }
+
             void HandleAfterCast()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -902,6 +912,7 @@ class spell_dk_death_gate_teleport : public SpellScriptLoader
 
             void Register()
             {
+                OnCheckCast += SpellCheckCastFn(spell_dk_death_gate_teleport_SpellScript::CheckClass);
                 AfterCast += SpellCastFn(spell_dk_death_gate_teleport_SpellScript::HandleAfterCast);
             }
         };
