@@ -260,9 +260,9 @@ class instance_icecrown_citadel : public InstanceMapScript
                 return t;
             }
 
-            void OnDestroy(InstanceMap * pMap)
+            void OnDestroy(InstanceMapPtr pMap)
             {
-                printf("void OnDestroy(InstanceMap * pMap)\n");
+                printf("void OnDestroy(InstanceMapPtr pMap)\n");
                 sMapMgr->m_Transports.erase(m_GunshipMain);
                 sMapMgr->m_Transports.erase(m_GunshipSecond);
                 m_GunshipMain = nullptr;

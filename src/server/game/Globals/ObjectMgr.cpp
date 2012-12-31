@@ -315,7 +315,7 @@ void ObjectMgr::LoadGossipMenuItemsLocales()
         "option_text_loc3, box_text_loc3, option_text_loc4, box_text_loc4, "
         "option_text_loc5, box_text_loc5, option_text_loc6, box_text_loc6, "
         "option_text_loc7, box_text_loc7, option_text_loc8, box_text_loc8, "
-        "option_text_loc9, box_text_loc9, option_text_loc10, box_text_loc10, "
+        "option_text_loc9, box_text_loc9, option_text_loc10, box_text_loc10 "
         "FROM locales_gossip_menu_option");
 
     if (!result)
@@ -5120,17 +5120,17 @@ void ObjectMgr::LoadNpcTextLocales()
 
     _npcTextLocaleStore.clear();                              // need for reload case
 
-    QueryResult result = WorldDatabase.Query("SELECT entry, "
-        "Text0_0_loc1, Text0_1_loc1, Text1_0_loc1, Text1_1_loc1, Text2_0_loc1, Text2_1_loc1, Text3_0_loc1, Text3_1_loc1, Text4_0_loc1, Text4_1_loc1, Text5_0_loc1, Text5_1_loc1, Text6_0_loc1, Text6_1_loc1, Text7_0_loc1, Text7_1_loc1, "
-        "Text0_0_loc2, Text0_1_loc2, Text1_0_loc2, Text1_1_loc2, Text2_0_loc2, Text2_1_loc2, Text3_0_loc2, Text3_1_loc1, Text4_0_loc2, Text4_1_loc2, Text5_0_loc2, Text5_1_loc2, Text6_0_loc2, Text6_1_loc2, Text7_0_loc2, Text7_1_loc2, "
-        "Text0_0_loc3, Text0_1_loc3, Text1_0_loc3, Text1_1_loc3, Text2_0_loc3, Text2_1_loc3, Text3_0_loc3, Text3_1_loc1, Text4_0_loc3, Text4_1_loc3, Text5_0_loc3, Text5_1_loc3, Text6_0_loc3, Text6_1_loc3, Text7_0_loc3, Text7_1_loc3, "
-        "Text0_0_loc4, Text0_1_loc4, Text1_0_loc4, Text1_1_loc4, Text2_0_loc4, Text2_1_loc4, Text3_0_loc4, Text3_1_loc1, Text4_0_loc4, Text4_1_loc4, Text5_0_loc4, Text5_1_loc4, Text6_0_loc4, Text6_1_loc4, Text7_0_loc4, Text7_1_loc4, "
-        "Text0_0_loc5, Text0_1_loc5, Text1_0_loc5, Text1_1_loc5, Text2_0_loc5, Text2_1_loc5, Text3_0_loc5, Text3_1_loc1, Text4_0_loc5, Text4_1_loc5, Text5_0_loc5, Text5_1_loc5, Text6_0_loc5, Text6_1_loc5, Text7_0_loc5, Text7_1_loc5, "
-        "Text0_0_loc6, Text0_1_loc6, Text1_0_loc6, Text1_1_loc6, Text2_0_loc6, Text2_1_loc6, Text3_0_loc6, Text3_1_loc1, Text4_0_loc6, Text4_1_loc6, Text5_0_loc6, Text5_1_loc6, Text6_0_loc6, Text6_1_loc6, Text7_0_loc6, Text7_1_loc6, "
-        "Text0_0_loc7, Text0_1_loc7, Text1_0_loc7, Text1_1_loc7, Text2_0_loc7, Text2_1_loc7, Text3_0_loc7, Text3_1_loc1, Text4_0_loc7, Text4_1_loc7, Text5_0_loc7, Text5_1_loc7, Text6_0_loc7, Text6_1_loc7, Text7_0_loc7, Text7_1_loc7, "
-        "Text0_0_loc8, Text0_1_loc8, Text1_0_loc8, Text1_1_loc8, Text2_0_loc8, Text2_1_loc8, Text3_0_loc8, Text3_1_loc1, Text4_0_loc8, Text4_1_loc8, Text5_0_loc8, Text5_1_loc8, Text6_0_loc8, Text6_1_loc8, Text7_0_loc8, Text7_1_loc8, "
-        "Text0_0_loc9, Text0_1_loc9, Text1_0_loc9, Text1_1_loc9, Text2_0_loc9, Text2_1_loc9, Text3_0_loc9, Text3_1_loc9, Text4_0_loc9, Text4_1_loc9, Text5_0_loc9, Text5_1_loc9, Text6_0_loc9, Text6_1_loc9, Text7_0_loc9, Text7_1_loc9,  "
-        "Text0_0_loc10, Text0_1_loc10, Text1_0_loc10, Text1_1_loc10, Text2_0_loc10, Text2_1_loc10, Text3_0_loc10, Text3_1_loc10, Text4_0_loc10, Text4_1_loc10, Text5_0_loc10, Text5_1_loc10, Text6_0_loc10, Text6_1_loc10, Text7_0_loc10, Text7_1_loc10  "
+    QueryResult result = WorldDatabase.Query("SELECT entry, " 
+        "Text0_0_loc1,  Text0_1_loc1,  Text1_0_loc1,  Text1_1_loc1,  Text2_0_loc1,  Text2_1_loc1,  Text3_0_loc1,  Text3_1_loc1,  Text4_0_loc1,  Text4_1_loc1,  Text5_0_loc1,  Text5_1_loc1,  Text6_0_loc1,  Text6_1_loc1,  Text7_0_loc1,  Text7_1_loc1,  Text8_0_loc1,   Text8_1_loc1,   Text9_0_loc1,   Text9_1_loc1, "
+        "Text0_0_loc2,  Text0_1_loc2,  Text1_0_loc2,  Text1_1_loc2,  Text2_0_loc2,  Text2_1_loc2,  Text3_0_loc2,  Text3_1_loc1,  Text4_0_loc2,  Text4_1_loc2,  Text5_0_loc2,  Text5_1_loc2,  Text6_0_loc2,  Text6_1_loc2,  Text7_0_loc2,  Text7_1_loc2,  Text8_0_loc2,   Text8_1_loc2,   Text9_0_loc2,   Text9_1_loc2, "
+        "Text0_0_loc3,  Text0_1_loc3,  Text1_0_loc3,  Text1_1_loc3,  Text2_0_loc3,  Text2_1_loc3,  Text3_0_loc3,  Text3_1_loc1,  Text4_0_loc3,  Text4_1_loc3,  Text5_0_loc3,  Text5_1_loc3,  Text6_0_loc3,  Text6_1_loc3,  Text7_0_loc3,  Text7_1_loc3,  Text8_0_loc3,   Text8_1_loc3,   Text9_0_loc3,   Text9_1_loc3, "
+        "Text0_0_loc4,  Text0_1_loc4,  Text1_0_loc4,  Text1_1_loc4,  Text2_0_loc4,  Text2_1_loc4,  Text3_0_loc4,  Text3_1_loc1,  Text4_0_loc4,  Text4_1_loc4,  Text5_0_loc4,  Text5_1_loc4,  Text6_0_loc4,  Text6_1_loc4,  Text7_0_loc4,  Text7_1_loc4,  Text8_0_loc4,   Text8_1_loc4,   Text9_0_loc4,   Text9_1_loc4, "
+        "Text0_0_loc5,  Text0_1_loc5,  Text1_0_loc5,  Text1_1_loc5,  Text2_0_loc5,  Text2_1_loc5,  Text3_0_loc5,  Text3_1_loc1,  Text4_0_loc5,  Text4_1_loc5,  Text5_0_loc5,  Text5_1_loc5,  Text6_0_loc5,  Text6_1_loc5,  Text7_0_loc5,  Text7_1_loc5,  Text8_0_loc5,   Text8_1_loc5,   Text9_0_loc5,   Text9_1_loc5, "
+        "Text0_0_loc6,  Text0_1_loc6,  Text1_0_loc6,  Text1_1_loc6,  Text2_0_loc6,  Text2_1_loc6,  Text3_0_loc6,  Text3_1_loc1,  Text4_0_loc6,  Text4_1_loc6,  Text5_0_loc6,  Text5_1_loc6,  Text6_0_loc6,  Text6_1_loc6,  Text7_0_loc6,  Text7_1_loc6,  Text8_0_loc6,   Text8_1_loc6,   Text9_0_loc6,   Text9_1_loc6, "
+        "Text0_0_loc7,  Text0_1_loc7,  Text1_0_loc7,  Text1_1_loc7,  Text2_0_loc7,  Text2_1_loc7,  Text3_0_loc7,  Text3_1_loc1,  Text4_0_loc7,  Text4_1_loc7,  Text5_0_loc7,  Text5_1_loc7,  Text6_0_loc7,  Text6_1_loc7,  Text7_0_loc7,  Text7_1_loc7,  Text8_0_loc7,   Text8_1_loc7,   Text9_0_loc7,   Text9_1_loc7, "
+        "Text0_0_loc8,  Text0_1_loc8,  Text1_0_loc8,  Text1_1_loc8,  Text2_0_loc8,  Text2_1_loc8,  Text3_0_loc8,  Text3_1_loc1,  Text4_0_loc8,  Text4_1_loc8,  Text5_0_loc8,  Text5_1_loc8,  Text6_0_loc8,  Text6_1_loc8,  Text7_0_loc8,  Text7_1_loc8,  Text8_0_loc8,   Text8_1_loc8,   Text9_0_loc8,   Text9_1_loc8, "
+        "Text0_0_loc9,  Text0_1_loc9,  Text1_0_loc9,  Text1_1_loc9,  Text2_0_loc9,  Text2_1_loc9,  Text3_0_loc9,  Text3_1_loc9,  Text4_0_loc9,  Text4_1_loc9,  Text5_0_loc9,  Text5_1_loc9,  Text6_0_loc9,  Text6_1_loc9,  Text7_0_loc9,  Text7_1_loc9,  Text8_0_loc9,   Text8_1_loc9,   Text9_0_loc9,   Text9_1_loc9, "
+        "Text0_0_loc10, Text0_1_loc10, Text1_0_loc10, Text1_1_loc10, Text2_0_loc10, Text2_1_loc10, Text3_0_loc10, Text3_1_loc10, Text4_0_loc10, Text4_1_loc10, Text5_0_loc10, Text5_1_loc10, Text6_0_loc10, Text6_1_loc10, Text7_0_loc10, Text7_1_loc10, Text8_0_loc10,  Text8_1_loc10,  Text9_0_loc10,  Text9_1_loc10 "
         " FROM locales_npc_text");
 
     if (!result)
@@ -6165,7 +6165,7 @@ void ObjectMgr::LoadGameObjectLocales()
     _gameObjectLocaleStore.clear();                           // need for reload case
 
     QueryResult result = WorldDatabase.Query("SELECT entry, "
-        "name_loc1, name_loc2, name_loc3, name_loc4, name_loc5, name_loc6, name_loc7, name_loc8, "
+        "name_loc1, name_loc2, name_loc3, name_loc4, name_loc5, name_loc6, name_loc7, name_loc8, name_loc9, name_loc10, "
         "castbarcaption_loc1, castbarcaption_loc2, castbarcaption_loc3, castbarcaption_loc4, "
         "castbarcaption_loc5, castbarcaption_loc6, castbarcaption_loc7, castbarcaption_loc8, castbarcaption_loc9, castbarcaption_loc10 FROM locales_gameobject");
 
