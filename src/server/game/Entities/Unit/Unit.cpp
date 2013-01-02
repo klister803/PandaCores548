@@ -9606,7 +9606,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
             float manapct = float(GetPower(POWER_MANA)) / float(GetMaxPower(POWER_MANA)) * 100.0f;
             float bonus = 0;
-            bonus = CalculatePct((1 + (100.0f - manapct)), Mastery);
+            bonus = (1.5f * Mastery * manapct) / 100.0f;
 
             DoneTotalMod += bonus;
         }
