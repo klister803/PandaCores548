@@ -53,6 +53,39 @@ enum DeathKnightSpells
     DK_SPELL_PILLAR_OF_FROST                    = 51271,
     DK_SPELL_SOUL_REAPER_HASTE                  = 114868,
     DK_SPELL_SOUL_REAPER_DAMAGE                 = 114867,
+    DK_SPELL_REMORSELESS_WINTER_STUN            = 115001,
+    DK_SPELL_REMORSELESS_WINTER                 = 115000,
+};
+
+// Remorseless Winter - 115000
+class spell_dk_remorseless_winter : public SpellScriptLoader
+{
+    public:
+        spell_dk_remorseless_winter() : SpellScriptLoader("spell_dk_remorseless_winter") { }
+
+        class spell_dk_remorseless_winter_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_remorseless_winter_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (AuraPtr remorselessWinter = target->GetAura(DK_SPELL_REMORSELESS_WINTER))
+                            if (remorselessWinter->GetStackAmount() == 5 && !target->HasAura(DK_SPELL_REMORSELESS_WINTER_STUN))
+                                _player->CastSpell(target, DK_SPELL_REMORSELESS_WINTER_STUN, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_remorseless_winter_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_remorseless_winter_SpellScript();
+        }
 };
 
 // Soul Reaper - 130736 (unholy) or 130735 (frost) or 114866 (blood)
@@ -1249,6 +1282,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_remorseless_winter();
     new spell_dk_soul_reaper();
     new spell_dk_pillar_of_frost();
     new spell_dk_blood_charges();
