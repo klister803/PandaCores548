@@ -9505,10 +9505,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         DoneTotalMod += PowerJcJ;
     }
 
-    // Shatter : Increase damage done against frozen targets by 50%
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && HasAura(12982) && victim->HasAuraState(AURA_STATE_FROZEN))
-        DoneTotalMod += 0.5;
-
     // Custom MoP Script
     // 76658 - Mastery : Essence of the Viper
     if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
@@ -9610,7 +9606,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
             float manapct = float(GetPower(POWER_MANA)) / float(GetMaxPower(POWER_MANA)) * 100.0f;
             float bonus = 0;
-            bonus = CalculatePct((1 + (100.0f - manapct)), Mastery);
+            bonus = (1.5f * Mastery * manapct) / 100.0f;
 
             DoneTotalMod += bonus;
         }
@@ -10172,7 +10168,8 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         case  911:
                             if (!victim->HasAuraState(AURA_STATE_FROZEN, spellProto, this))
                                 break;
-                            crit_chance*=2;
+                            crit_chance *= 2; // double the critical chance against frozen targets
+                            crit_chance += 50.0f; // plus an additional 50%
                             break;
                         case 7917: // Glyph of Shadowburn
                             if (victim->HasAuraState(AURA_STATE_HEALTHLESS_35_PERCENT, spellProto, this))
