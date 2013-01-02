@@ -3282,6 +3282,66 @@ class npc_spirit_link_totem : public CreatureScript
     }
 };
 
+/*######
+# npc_ring_of_frost
+######*/
+
+class npc_ring_of_frost : public CreatureScript
+{
+public:
+    npc_ring_of_frost() : CreatureScript("npc_ring_of_frost") { }
+
+    struct npc_ring_of_frostAI : public ScriptedAI
+    {
+        uint32 frostStunTimer;
+
+        npc_ring_of_frostAI(Creature* creature) : ScriptedAI(creature)
+        {
+            frostStunTimer = 500;
+
+            Player* owner = creature->GetOwner()->ToPlayer();
+
+            if (owner)
+                if (creature->GetEntry() == 44199)
+                    owner->CastSpell(creature, 82691, true);
+
+            if (owner)
+            {
+                creature->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner->GetGUID());
+                creature->SetUInt32Value(UNIT_CREATED_BY_SPELL, 113724);
+                creature->AddUnitState(UNIT_STATE_ROOT);
+                //creature->SetReactState(ReactStates::REACT_PASSIVE);
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            Player* owner = me->GetOwner()->ToPlayer();
+
+            if (!owner)
+                return;
+
+            if (!UpdateVictim())
+                return;
+
+            if (frostStunTimer <= diff)
+            {
+                owner->CastSpell(me, 82691, true);
+                frostStunTimer = 6000;
+            }
+            else
+                frostStunTimer -= diff;
+
+            DoMeleeAttackIfReady();
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_ring_of_frostAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3321,4 +3381,5 @@ void AddSC_npcs_special()
     new npc_capacitor_totem();
     new npc_feral_spirit();
     new npc_spirit_link_totem();
+    new npc_ring_of_frost();
 }

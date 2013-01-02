@@ -49,7 +49,37 @@ enum MageSpells
     SPELL_MAGE_TEMPORAL_DISPLACEMENT             = 80354,
     HUNTER_SPELL_INSANITY                        = 95809,
     SPELL_SHAMAN_SATED                           = 57724,
-    SPELL_SHAMAN_EXHAUSTED                       = 57723
+    SPELL_SHAMAN_EXHAUSTED                       = 57723,
+    SPELL_MAGE_RING_OF_FROST_STUN                = 82691,
+};
+
+// Ring of Frost (Stun) - 82691
+class spell_mage_ring_of_frost_stun : public SpellScriptLoader
+{
+    public:
+        spell_mage_ring_of_frost_stun() : SpellScriptLoader("spell_mage_ring_of_frost_stun") { }
+
+        class spell_mage_ring_of_frost_stun_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_ring_of_frost_stun_SpellScript);
+
+            void HandleBeforeHit()
+            {
+                if (Unit* target = GetHitUnit())
+                    if (target->HasAura(SPELL_MAGE_RING_OF_FROST_STUN))
+                        return;
+            }
+
+            void Register()
+            {
+                BeforeHit += SpellHitFn(spell_mage_ring_of_frost_stun_SpellScript::HandleBeforeHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_ring_of_frost_stun_SpellScript();
+        }
 };
 
 // Time Warp - 80353
@@ -562,6 +592,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_ring_of_frost_stun();
     new spell_mage_time_warp();
     new spell_mage_alter_time_overrided();
     new spell_mage_alter_time();
