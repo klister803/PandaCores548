@@ -65,6 +65,75 @@ enum MonkSpells
     SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE        = 116709,
     SPELL_MONK_CHI_BURST_DAMAGE                 = 130651,
     SPELL_MONK_CHI_BURST_HEAL                   = 130654,
+    SPELL_MONK_ZEN_SPHERE_DAMAGE                = 124098,
+    SPELL_MONK_ZEN_SPHERE_HEAL                  = 124081,
+    SPELL_MONK_ZEN_SPHERE_DETONATE_HEAL         = 124101,
+    SPELL_MONK_ZEN_SPHERE_DETONATE_DAMAGE       = 125033,
+};
+
+// Zen Sphere - 124081
+class spell_monk_zen_sphere : public SpellScriptLoader
+{
+    public:
+        spell_monk_zen_sphere() : SpellScriptLoader("spell_monk_zen_sphere") { }
+
+        class spell_monk_zen_sphere_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_zen_sphere_SpellScript);
+
+            void HandleBeforeHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->HasAura(SPELL_MONK_ZEN_SPHERE_HEAL))
+                        {
+                            _player->CastSpell(_player, SPELL_MONK_ZEN_SPHERE_DETONATE_HEAL, true);
+                            _player->CastSpell(_player, SPELL_MONK_ZEN_SPHERE_DETONATE_DAMAGE, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                BeforeHit += SpellHitFn(spell_monk_zen_sphere_SpellScript::HandleBeforeHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_zen_sphere_SpellScript();
+        }
+};
+
+// Zen Sphere - 124081
+class spell_monk_zen_sphere_hot : public SpellScriptLoader
+{
+    public:
+        spell_monk_zen_sphere_hot() : SpellScriptLoader("spell_monk_zen_sphere_hot") { }
+
+        class spell_monk_zen_sphere_hot_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_zen_sphere_hot_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->CastSpell(_player, SPELL_MONK_ZEN_SPHERE_DAMAGE, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_zen_sphere_hot_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_zen_sphere_hot_AuraScript();
+        }
 };
 
 // Chi Burst - 123986
@@ -1076,6 +1145,8 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_zen_sphere();
+    new spell_monk_zen_sphere_hot();
     new spell_monk_chi_burst();
     new spell_monk_energizing_brew();
     new spell_monk_spear_hand_strike();
