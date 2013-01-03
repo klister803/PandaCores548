@@ -3299,7 +3299,7 @@ public:
         {
             frostStunTimer = 500;
 
-            Player* owner = creature->GetOwner()->ToPlayer();
+            Unit* owner = creature->GetOwner();
 
             if (owner)
                 if (creature->GetEntry() == 44199)
@@ -3316,7 +3316,7 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
-            Player* owner = me->GetOwner()->ToPlayer();
+            Unit* owner = me->GetOwner();
 
             if (!owner)
                 return;
