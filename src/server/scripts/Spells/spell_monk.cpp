@@ -65,6 +65,35 @@ enum MonkSpells
     SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE        = 116709
 };
 
+// Energizing Brew - 115288
+class spell_monk_energizing_brew : public SpellScriptLoader
+{
+    public:
+        spell_monk_energizing_brew() : SpellScriptLoader("spell_monk_energizing_brew") { }
+
+        class spell_monk_energizing_brew_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_energizing_brew_SpellScript);
+
+            SpellCastResult CheckFight()
+            {
+                if (!GetCaster()->isInCombat())
+                    return SPELL_FAILED_CASTER_AURASTATE;
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_monk_energizing_brew_SpellScript::CheckFight);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_energizing_brew_SpellScript();
+        }
+};
+
 // Spear Hand Strike - 116705
 class spell_monk_spear_hand_strike : public SpellScriptLoader
 {
@@ -995,6 +1024,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_energizing_brew();
     new spell_monk_spear_hand_strike();
     new spell_monk_tigereye_brew();
     new spell_monk_tigers_lust();
