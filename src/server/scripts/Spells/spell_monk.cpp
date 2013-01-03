@@ -69,6 +69,46 @@ enum MonkSpells
     SPELL_MONK_ZEN_SPHERE_HEAL                  = 124081,
     SPELL_MONK_ZEN_SPHERE_DETONATE_HEAL         = 124101,
     SPELL_MONK_ZEN_SPHERE_DETONATE_DAMAGE       = 125033,
+    SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH   = 122281,
+};
+
+// Called by : Fortifying Brew - 115203, Chi Brew - 115399, Elusive Brew - 115308, Tigereye Brew - 116740
+// Purifying Brew - 119582, Mana Tea - 115294, Thunder Focus Tea - 116680 and Energizing Brew - 115288
+// Healing Elixirs - 122280
+class spell_monk_healing_elixirs : public SpellScriptLoader
+{
+    public:
+        spell_monk_healing_elixirs() : SpellScriptLoader("spell_monk_healing_elixirs") { }
+
+        class spell_monk_healing_elixirs_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_healing_elixirs_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    int32 bp = 10;
+
+                    if (!_player->HasSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH))
+                    {
+                        _player->CastCustomSpell(_player, SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, &bp, NULL, NULL, true);
+                        // This effect cannot occur more than once per 18s
+                        _player->AddSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, 0, time(NULL) + 18);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_healing_elixirs_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_healing_elixirs_SpellScript();
+        }
 };
 
 // Zen Sphere - 124081
@@ -1145,6 +1185,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_healing_elixirs();
     new spell_monk_zen_sphere();
     new spell_monk_zen_sphere_hot();
     new spell_monk_chi_burst();
