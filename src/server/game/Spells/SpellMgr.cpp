@@ -2638,6 +2638,10 @@ void SpellMgr::LoadSpellClassInfo()
         if(!classEntry)
             continue;
 
+        // Swift Flight Form
+        if (ClassID == CLASS_DRUID)
+            mSpellClassInfo[ClassID].push_back(40120);
+
         // Dark Soul
         if (ClassID == CLASS_WARLOCK)
             mSpellClassInfo[ClassID].push_back(77801);
@@ -3123,6 +3127,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 82691: // Ring of Frost - stun
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
+                break;
             case 12975: // Last Stand
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
                 break;
