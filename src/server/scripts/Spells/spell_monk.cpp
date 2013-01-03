@@ -62,7 +62,59 @@ enum MonkSpells
     SPELL_MONK_CRACKLING_JADE_LIGHTNING         = 117952,
     SPELL_MONK_TIGEREYE_BREW                    = 116740,
     SPELL_MONK_TIGEREYE_BREW_STACKS             = 125195,
-    SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE        = 116709
+    SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE        = 116709,
+    SPELL_MONK_CHI_BURST_DAMAGE                 = 130651,
+    SPELL_MONK_CHI_BURST_HEAL                   = 130654,
+};
+
+// Chi Burst - 123986
+class spell_monk_chi_burst : public SpellScriptLoader
+{
+    public:
+        spell_monk_chi_burst() : SpellScriptLoader("spell_monk_chi_burst") { }
+
+        class spell_monk_chi_burst_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_chi_burst_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        std::list<Unit*> tempUnitMap;
+                        _player->GetAttackableUnitListInRange(_player, tempUnitMap, _player->GetDistance(target));
+
+                        // Chi Burst will always heal the Monk
+                        _player->CastSpell(_player, SPELL_MONK_CHI_BURST_HEAL, true);
+                        _player->CastSpell(target, SPELL_MONK_CHI_BURST_DAMAGE, true);
+
+                        for (auto itr : tempUnitMap)
+                        {
+                            if (itr->GetGUID() == _player->GetGUID())
+                                continue;
+
+                            if (!itr->IsInBetween(_player, target, 1.0f))
+                                continue;
+
+                            uint32 spell = _player->IsValidAttackTarget(itr) ? SPELL_MONK_CHI_BURST_DAMAGE : SPELL_MONK_CHI_BURST_HEAL;
+                            _player->CastSpell(itr, spell, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_chi_burst_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_chi_burst_SpellScript();
+        }
 };
 
 // Energizing Brew - 115288
@@ -1024,6 +1076,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_chi_burst();
     new spell_monk_energizing_brew();
     new spell_monk_spear_hand_strike();
     new spell_monk_tigereye_brew();
