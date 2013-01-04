@@ -234,20 +234,20 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectUnused,                                   //163 SPELL_EFFECT_163  unused
     &Spell::EffectRemoveAura,                               //164 SPELL_EFFECT_REMOVE_AURA
     &Spell::EffectNULL,                                     //165 SPELL_EFFECT_165
-    &Spell::EffectNULL,                                     //166 SPELL_EFFECT_166
+    &Spell::EffectGiveCurrency,                             //166 SPELL_EFFECT_GIVE_CURRENCY
     &Spell::EffectNULL,                                     //167 SPELL_EFFECT_167
     &Spell::EffectNULL,                                     //168 SPELL_EFFECT_168
     &Spell::EffectNULL,                                     //169 SPELL_EFFECT_169
     &Spell::EffectNULL,                                     //170 SPELL_EFFECT_170
     &Spell::EffectNULL,                                     //171 SPELL_EFFECT_171
-    &Spell::EffectNULL,                                     //172 SPELL_EFFECT_172
-    &Spell::EffectNULL,                                     //173 SPELL_EFFECT_173
+    &Spell::EffectNULL,                                     //172 SPELL_EFFECT_RESURRECT_WITH_AURA see 312e8509dddf910a5ab199d646c5a4d237d5fda9
+    &Spell::EffectNULL,                                     //173 SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB
     &Spell::EffectNULL,                                     //174 SPELL_EFFECT_174
     &Spell::EffectUnused,                                   //175 SPELL_EFFECT_175  unused
     &Spell::EffectNULL,                                     //176 SPELL_EFFECT_176
     &Spell::EffectNULL,                                     //177 SPELL_EFFECT_177
     &Spell::EffectUnused,                                   //178 SPELL_EFFECT_178 unused
-    &Spell::EffectNULL,                                     //179 SPELL_EFFECT_179
+    &Spell::EffectNULL,                                     //179 SPELL_EFFECT_CREATE_AREATRIGGER
     &Spell::EffectUnused,                                   //180 SPELL_EFFECT_180 unused
     &Spell::EffectUnlearnTalent,                            //181 SPELL_EFFECT_UNLEARN_TALENT
     &Spell::EffectNULL,                                     //182 SPELL_EFFECT_182
@@ -6053,6 +6053,17 @@ void Spell::EffectRemoveAura(SpellEffIndex effIndex)
         return;
     // there may be need of specifying casterguid of removed auras
     unitTarget->RemoveAurasDueToSpell(m_spellInfo->Effects[effIndex].TriggerSpell);
+}
+
+void Spell::EffectGiveCurrency(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    if (!unitTarget || unitTarget->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    unitTarget->ToPlayer()->ModifyCurrency(m_spellInfo->Effects[effIndex].MiscValue, damage);
 }
 
 void Spell::EffectCastButtons(SpellEffIndex effIndex)

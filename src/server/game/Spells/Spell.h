@@ -337,6 +337,7 @@ class Spell
         void EffectRemoveAura(SpellEffIndex effIndex);
         void EffectCastButtons(SpellEffIndex effIndex);
         void EffectRechargeManaGem(SpellEffIndex effIndex);
+        void EffectGiveCurrency(SpellEffIndex effIndex);
         void EffectUnlearnTalent(SpellEffIndex effIndex);
         int32 CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier);
 
