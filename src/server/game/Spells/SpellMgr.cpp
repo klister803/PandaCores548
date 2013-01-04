@@ -3127,6 +3127,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 122128: // Divine Star (shadow)
+            case 110745: // Divine Star (other)
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
+                spellInfo->Effects[1].RadiusEntry = sSpellRadiusStore.LookupEntry(29);
+                break;
             case 82691: // Ring of Frost - stun
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(13);
                 break;
