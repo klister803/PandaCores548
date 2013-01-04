@@ -14070,13 +14070,16 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (aura)
             aura->GetBase()->DropCharge();
     }
+
     // Hack Fix Shooting Stars - Drop charge
     if (GetTypeId() == TYPEID_PLAYER && HasAura(93400) && getClass() == CLASS_DRUID && procSpell && procSpell->Id == 78674)
         if (AuraPtr aura = GetAura(93400))
             RemoveAura(93400);
+
     // Fix Drop charge for Killing Machine
     if (GetTypeId() == TYPEID_PLAYER && HasAura(51124) && getClass() == CLASS_DEATH_KNIGHT && procSpell && (procSpell->Id == 49020 || procSpell->Id == 49143))
         RemoveAura(51124);
+
     // Hack Fix Immolate - Critical strikes generate burning embers
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 348 && procExtra & PROC_EX_CRITICAL_HIT)
         if (roll_chance_i(50))
@@ -14086,6 +14089,22 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 42223)
         if (roll_chance_i(30))
             SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
+
+    // Summon Shadowy Apparitions when Shadow Word : Pain is crit
+    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 589 && HasAura(78203) && procExtra & PROC_EX_CRITICAL_HIT)
+    {
+        CastSpell(this, 87426, true);
+        std::list<Creature*> shadowylist;
+
+        GetCreatureListWithEntryInGrid(shadowylist, 61966, 1.0f);
+
+        for (auto itr : shadowylist)
+        {
+            if(UnitAI* ai =  itr->GetAI())
+                ai->SetGUID(target->GetGUID());
+            itr->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+        }
+    }
 
     ProcTriggeredList procTriggered;
     // Fill procTriggered list
