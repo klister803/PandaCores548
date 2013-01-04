@@ -23,7 +23,7 @@
 #include "ObjectMgr.h"
 #include "AccountMgr.h"
 
-#define DUMP_TABLE_COUNT 30
+#define DUMP_TABLE_COUNT 32
 struct DumpTable
 {
     char const* name;
@@ -34,13 +34,13 @@ static DumpTable dumpTables[DUMP_TABLE_COUNT] =
 {
     { "characters",                       DTT_CHARACTER  },
     { "character_account_data",           DTT_CHAR_TABLE },
-    { "account_achievement",              DTT_CHAR_TABLE },
     { "character_achievement",            DTT_CHAR_TABLE },
     { "character_achievement_progress",   DTT_CHAR_TABLE },
     { "character_action",                 DTT_CHAR_TABLE },
     { "character_aura",                   DTT_CHAR_TABLE },
+    { "character_aura_effect",            DTT_CHAR_TABLE },
     { "character_currency",               DTT_CHAR_TABLE },
-    { "character_cuf_profiles",           DTT_CHAR_TABLE },
+    //{ "character_cuf_profiles",           DTT_CHAR_TABLE },
     { "character_declinedname",           DTT_CHAR_TABLE },
     { "character_equipmentsets",          DTT_EQSET_TABLE},
     { "character_gifts",                  DTT_ITEM_GIFT  },
@@ -51,15 +51,18 @@ static DumpTable dumpTables[DUMP_TABLE_COUNT] =
     { "character_pet_declinedname",       DTT_PET        },
     { "character_queststatus",            DTT_CHAR_TABLE },
     { "character_queststatus_rewarded",   DTT_CHAR_TABLE },
+    { "character_rates",                  DTT_CHAR_TABLE },
     { "character_reputation",             DTT_CHAR_TABLE },
     { "character_skills",                 DTT_CHAR_TABLE },
     { "character_spell",                  DTT_CHAR_TABLE },
     { "character_spell_cooldown",         DTT_CHAR_TABLE },
     { "character_talent",                 DTT_CHAR_TABLE },
+    { "character_void_storage",           DTT_VS_TABLE   },
     { "item_instance",                    DTT_ITEM       },
     { "mail",                             DTT_MAIL       },
     { "mail_items",                       DTT_MAIL_ITEM  },
     { "pet_aura",                         DTT_PET_TABLE  },
+    { "pet_aura_effect",                  DTT_PET_TABLE  },
     { "pet_spell",                        DTT_PET_TABLE  },
     { "pet_spell_cooldown",               DTT_PET_TABLE  },
 };
@@ -278,6 +281,7 @@ bool PlayerDumpWriter::DumpTable(std::string& dump, uint32 guid, char const*tabl
         case DTT_PET_TABLE: fieldname = "guid";      guids = &pets;  break;
         case DTT_MAIL:      fieldname = "receiver";                  break;
         case DTT_MAIL_ITEM: fieldname = "mail_id";   guids = &mails; break;
+        case DTT_VS_TABLE:  fieldname = "playerGuid";                break;
         default:            fieldname = "guid";                      break;
     }
 
@@ -549,18 +553,30 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account, s
                     PreparedQueryResult result = CharacterDatabase.Query(stmt);
 
                     if (result)
-                        if (!changenth(line, 38, "1"))       // characters.at_login set to "rename on login"
+                        if (!changenth(line, 41, "1"))       // characters.at_login set to "rename on login"
                             ROLLBACK(DUMP_FILE_BROKEN);
                 }
                 else if (!changenth(line, 3, name.c_str())) // characters.name
                     ROLLBACK(DUMP_FILE_BROKEN);
 
                 const char null[5] = "NULL";
-                if (!changenth(line, 63, null))             // characters.deleteInfos_Account
+                if (!changenth(line, 68, null))             // characters.deleteInfos_Account
                     ROLLBACK(DUMP_FILE_BROKEN);
-                if (!changenth(line, 64, null))             // characters.deleteInfos_Name
+                if (!changenth(line, 69, null))             // characters.deleteInfos_Name
                     ROLLBACK(DUMP_FILE_BROKEN);
-                if (!changenth(line, 65, null))             // characters.deleteDate
+                if (!changenth(line, 70, null))             // characters.deleteDate
+                    ROLLBACK(DUMP_FILE_BROKEN);
+                break;
+            }
+            case DTT_VS_TABLE:
+            {
+                uint64 newItemIdNum = sObjectMgr->GenerateVoidStorageItemId();
+                char newItemId[20];
+                snprintf(newItemId, 20, "%u", newItemIdNum);
+
+                if (!changenth(line, 1, newItemId))           // character_void_storage.itemId update
+                    ROLLBACK(DUMP_FILE_BROKEN);
+                if (!changenth(line, 2, newguid))           // character_void_storage.playerGuid update
                     ROLLBACK(DUMP_FILE_BROKEN);
                 break;
             }

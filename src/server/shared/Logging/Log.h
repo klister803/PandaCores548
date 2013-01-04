@@ -67,8 +67,9 @@ class Log
 
         void EnableDBAppenders();
         static std::string GetTimestampStr();
-
+        
         void SetRealmID(uint32 id);
+        uint32 GetRealmID() const { return realm; }
 
     private:
         void vlog(LogFilterType f, LogLevel level, char const* str, va_list argptr);

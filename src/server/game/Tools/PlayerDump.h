@@ -32,6 +32,7 @@ enum DumpTableType
                                                             // character_queststatus, character_queststatus_rewarded, character_reputation,
                                                             // character_spell, character_spell_cooldown, character_ticket, character_talent.
                                                             // character_cuf_profiles, character_currency
+    DTT_VS_TABLE,       // Void Storage Table <- playerGuid
 
     DTT_EQSET_TABLE,    // <- guid                          // character_equipmentsets
 
