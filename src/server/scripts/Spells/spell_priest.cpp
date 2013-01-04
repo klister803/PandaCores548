@@ -48,6 +48,93 @@ enum PriestSpells
     PRIEST_INNER_WILL                           = 73413,
     PRIEST_INNER_FIRE                           = 588,
     PRIEST_NPC_SHADOWY_APPARITION               = 61966,
+    PRIEST_SPELL_HALO_HEAL                      = 120696,
+};
+
+// Halo (shadow) - 120696 and Halo - 120692 : Heal
+class spell_pri_halo_heal : public SpellScriptLoader
+{
+    public:
+        spell_pri_halo_heal() : SpellScriptLoader("spell_pri_halo_heal") { }
+
+        class spell_pri_halo_heal_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_halo_heal_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        float Distance = _player->GetDistance(target);
+                        float var1 = pow((((Distance - 25) / 2)), 4);
+                        float var2 = pow(1.01f, (- 1 * var1));
+                        float percentage = 2 * (0.5f * var2 + 0.1f + 0.015f * Distance);
+                        int32 damage = int32(GetHitHeal() * percentage);
+
+                        SetHitHeal(damage);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_halo_heal_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_halo_heal_SpellScript;
+        }
+};
+
+// Halo (shadow) - 120517 and Halo - 120644 : Damage
+class spell_pri_halo_damage : public SpellScriptLoader
+{
+    public:
+        spell_pri_halo_damage() : SpellScriptLoader("spell_pri_halo_damage") { }
+
+        class spell_pri_halo_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_halo_damage_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        float Distance = _player->GetDistance(target);
+                        float var1 = pow((((Distance - 25) / 2)), 4);
+                        float var2 = pow(1.01f, (- 1 * var1));
+                        float percentage = 2 * (0.5f * var2 + 0.1f + 0.015f * Distance);
+                        int32 damage = int32(GetHitDamage() * percentage);
+
+                        if (target->GetGUID() == _player->GetGUID())
+                            SetHitDamage(0);
+                        if (!_player->IsValidAttackTarget(target))
+                        {
+                            SetHitDamage(0);
+                            _player->CastSpell(target, PRIEST_SPELL_HALO_HEAL, true);
+                        }
+
+                        SetHitDamage(damage);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_halo_damage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_halo_damage_SpellScript;
+        }
 };
 
 // Shadowy Apparition - 87426
@@ -735,6 +822,8 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_halo_heal();
+    new spell_pri_halo_damage();
     new spell_pri_shadowy_apparition();
     new spell_pri_inner_fire_or_will();
     new spell_pri_leap_of_faith();
