@@ -191,11 +191,6 @@ namespace Trinity
                     KillXpRate = sWorld->getRate(RATE_XP_KILL);
 
                 gain = uint32(gain * KillXpRate);
-
-                if (player->HasAura(78632))
-                    gain *= 1.10;
-                else if (player->HasAura(78631))
-                    gain *= 1.05;
             }
 
             sScriptMgr->OnGainCalculation(gain, player, u);
