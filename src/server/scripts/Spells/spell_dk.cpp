@@ -354,25 +354,32 @@ class spell_dk_unholy_presence : public SpellScriptLoader
     public:
         spell_dk_unholy_presence() : SpellScriptLoader("spell_dk_unholy_presence") { }
 
-        class spell_dk_unholy_presence_SpellScript : public SpellScript
+        class spell_dk_unholy_presence_AuraScript : public AuraScript
         {
-            PrepareSpellScript(spell_dk_unholy_presence_SpellScript);
+            PrepareAuraScript(spell_dk_unholy_presence_AuraScript);
 
-            void HandleAfterCast()
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Player* _player = GetTarget()->ToPlayer())
+                    _player->UpdateAllRunesRegen();
+            }
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
                     _player->UpdateAllRunesRegen();
             }
 
             void Register()
             {
-                AfterCast += SpellCastFn(spell_dk_unholy_presence_SpellScript::HandleAfterCast);
+                OnEffectApply += AuraEffectApplyFn(spell_dk_unholy_presence_AuraScript::OnApply, EFFECT_1, SPELL_AURA_MOD_INCREASE_SPEED, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_dk_unholy_presence_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_MOD_INCREASE_SPEED, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
-        SpellScript* GetSpellScript() const
+        AuraScript* GetAuraScript() const
         {
-            return new spell_dk_unholy_presence_SpellScript();
+            return new spell_dk_unholy_presence_AuraScript();
         }
 };
 

@@ -43,6 +43,37 @@ enum WarriorSpells
     WARRIOR_SPELL_GLYPH_OF_MORTAL_STRIKE        = 58368,
     WARRIOR_SPELL_SWORD_AND_BOARD               = 50227,
     WARRIOR_SPELL_SHIELD_SLAM                   = 23922,
+    WARRIOR_SPELL_ALLOW_RAGING_BLOW             = 131116,
+};
+
+// Called by the proc of Enrage - 12880
+// Raging Blow (allow to use it) - 131116
+class spell_warr_raging_blow : public SpellScriptLoader
+{
+    public:
+        spell_warr_raging_blow() : SpellScriptLoader("spell_warr_raging_blow") { }
+
+        class spell_warr_raging_blow_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_raging_blow_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARRIOR_FURY && _player->getLevel() >= 30)
+                        _player->CastSpell(_player, WARRIOR_SPELL_ALLOW_RAGING_BLOW, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_raging_blow_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_raging_blow_SpellScript();
+        }
 };
 
 // Called by Devastate - 20243
@@ -694,6 +725,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_raging_blow();
     new spell_warr_sword_and_board();
     new spell_warr_mortal_strike();
     new spell_warr_rallying_cry();

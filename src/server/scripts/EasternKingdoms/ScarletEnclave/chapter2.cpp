@@ -676,6 +676,15 @@ public:
                     if (player->GetQuestStatus(12746) == QUEST_STATUS_INCOMPLETE)
                         return true;
                     break;
+                case 49355:                                     // Seigneur Haford
+                    if (player->GetQuestStatus(28649) == QUEST_STATUS_INCOMPLETE)
+                        return true;
+                    break;
+                case 49356:                                     // Gally Grossetache
+                    if (player->GetQuestStatus(28650) == QUEST_STATUS_INCOMPLETE)
+                        return true;
+                    break;
+                    
             }
 
             return false;
@@ -708,6 +717,67 @@ public:
 
                     switch (player->getRace())
                     {
+                        // TODO : exactly text for goblin & worgen
+                        case RACE_GOBLIN:
+                            switch (ExecuteSpeech_Counter)
+                            {
+                                case 0: DoScriptText(SAY_EXEC_START_1, me, player); break;
+                                case 1: me->SetStandState(UNIT_STAND_STATE_STAND); break;
+                                case 2: DoScriptText(SAY_EXEC_PROG_5, me, player); break;
+                                case 3: DoScriptText(SAY_EXEC_NAME_1, me, player); break;
+                                case 4: DoScriptText(SAY_EXEC_RECOG_1, me, player); break;
+                                case 5: DoScriptText(SAY_EXEC_NOREM_5, me, player); break;
+                                case 6: DoScriptText(SAY_EXEC_THINK_7, me, player); break;
+                                case 7: DoScriptText(SAY_EXEC_LISTEN_1, me, player); break;
+                                case 8:
+                                    if (Creature* Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
+                                        DoScriptText(SAY_PLAGUEFIST, Plaguefist, player);
+                                    break;
+                                case 9:
+                                    DoScriptText(SAY_EXEC_TIME_6, me, player);
+                                    me->SetStandState(UNIT_STAND_STATE_KNEEL);
+                                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+                                    break;
+                                case 10:
+                                    DoScriptText(SAY_EXEC_WAITING, me, player);
+                                    break;
+                                case 11:
+                                    DoScriptText(EMOTE_DIES, me);
+                                    me->setDeathState(JUST_DIED);
+                                    me->SetHealth(0);
+                                    return;
+                            }
+                            break;
+                        case RACE_WORGEN:
+                            switch (ExecuteSpeech_Counter)
+                            {
+                                case 0: DoScriptText(SAY_EXEC_START_1, me, player); break;
+                                case 1: me->SetStandState(UNIT_STAND_STATE_STAND); break;
+                                case 2: DoScriptText(SAY_EXEC_PROG_5, me, player); break;
+                                case 3: DoScriptText(SAY_EXEC_NAME_1, me, player); break;
+                                case 4: DoScriptText(SAY_EXEC_RECOG_1, me, player); break;
+                                case 5: DoScriptText(SAY_EXEC_NOREM_5, me, player); break;
+                                case 6: DoScriptText(SAY_EXEC_THINK_7, me, player); break;
+                                case 7: DoScriptText(SAY_EXEC_LISTEN_1, me, player); break;
+                                case 8:
+                                    if (Creature* Plaguefist = GetClosestCreatureWithEntry(me, NPC_PLAGUEFIST, 85.0f))
+                                        DoScriptText(SAY_PLAGUEFIST, Plaguefist, player);
+                                    break;
+                                case 9:
+                                    DoScriptText(SAY_EXEC_TIME_6, me, player);
+                                    me->SetStandState(UNIT_STAND_STATE_KNEEL);
+                                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+                                    break;
+                                case 10:
+                                    DoScriptText(SAY_EXEC_WAITING, me, player);
+                                    break;
+                                case 11:
+                                    DoScriptText(EMOTE_DIES, me);
+                                    me->setDeathState(JUST_DIED);
+                                    me->SetHealth(0);
+                                    return;
+                            }
+                            break;
                         case RACE_HUMAN:
                             switch (ExecuteSpeech_Counter)
                             {
