@@ -2011,36 +2011,6 @@ public:
     }
 };
 
-class spell_item_enohar_explosive_arrows : public SpellScriptLoader
-{
-    public:
-        spell_item_enohar_explosive_arrows() : SpellScriptLoader("spell_item_enohar_explosive_arrows") { }
-
-        class spell_item_enohar_explosive_arrows_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_item_enohar_explosive_arrows_SpellScript);
-
-            void HandleScript(SpellEffIndex effIndex)
-            {
-                Unit* caster = GetCaster();
-                Unit* target = GetHitUnit();
-
-                if(caster && target)
-                    caster->DealDamage(target, target->GetHealth());
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_item_enohar_explosive_arrows_SpellScript::HandleScript, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_item_enohar_explosive_arrows_SpellScript();
-        }
-};
-
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -2093,5 +2063,4 @@ void AddSC_item_spell_scripts()
     new spell_item_chicken_cover();
     new spell_item_muisek_vessel();
     new spell_item_greatmothers_soulcatcher();
-    new spell_item_enohar_explosive_arrows();
 }
