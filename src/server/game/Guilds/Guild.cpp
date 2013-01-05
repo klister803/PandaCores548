@@ -2245,7 +2245,7 @@ void Guild::SendLoginInfo(WorldSession* session)
 
     for (uint32 i = 0; i < sGuildPerkSpellsStore.GetNumRows(); ++i)
         if (GuildPerkSpellsEntry const* entry = sGuildPerkSpellsStore.LookupEntry(i))
-            if (entry->Level >= GetLevel())
+            if (entry->Level <= GetLevel())
                 session->GetPlayer()->learnSpell(entry->SpellId, true);
 
     SendGuildReputationWeeklyCap(session);
@@ -2581,7 +2581,7 @@ bool Guild::AddMember(uint64 guid, uint8 rankId)
         {
             for (uint32 i = 0; i < sGuildPerkSpellsStore.GetNumRows(); ++i)
                 if (GuildPerkSpellsEntry const* entry = sGuildPerkSpellsStore.LookupEntry(i))
-                    if (entry->Level >= GetLevel())
+                    if (entry->Level <= GetLevel())
                         player->learnSpell(entry->SpellId, true);
         }
 
@@ -2649,8 +2649,7 @@ void Guild::DeleteMember(uint64 guid, bool isDisbanding, bool isKicked)
         player->SetGuildLevel(0);
         for (uint32 i = 0; i < sGuildPerkSpellsStore.GetNumRows(); ++i)
             if (GuildPerkSpellsEntry const* entry = sGuildPerkSpellsStore.LookupEntry(i))
-                if (entry->Level >= GetLevel())     
-                    player->removeSpell(entry->SpellId, false, false);
+                player->removeSpell(entry->SpellId, false, false);
 
         if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
             player->GetReputationMgr().SetReputation(factionEntry, 0);
