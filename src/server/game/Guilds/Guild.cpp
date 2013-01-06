@@ -1942,12 +1942,20 @@ void Guild::HandleRemoveRank(WorldSession* session, uint32 rankId)
         stmt->setUInt8(1, rankId);
         CharacterDatabase.Execute(stmt);
         // Delete rank
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_RANK);
+        stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_RANKS);
         stmt->setUInt32(0, m_id);
-        stmt->setUInt8(1, rankId);
         CharacterDatabase.Execute(stmt);
 
-        m_ranks.erase(m_ranks.begin() + rankId-1);
+        m_ranks.erase(m_ranks.begin() + rankId);
+
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+        // Restruct m_ranks
+        for (uint8 i = 0; i < m_ranks.size(); ++i)
+        {
+            m_ranks[i].SetId(i);
+            m_ranks[i].SaveToDB(trans);
+        }
+        CharacterDatabase.CommitTransaction(trans);
 
         HandleQuery(session);
         HandleRoster();                                             // Broadcast for tab rights update
