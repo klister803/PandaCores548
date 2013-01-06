@@ -1013,7 +1013,7 @@ InventoryResult Guild::BankMoveItemData::CanStore(Item* pItem, bool swap)
         return EQUIP_ERR_DROP_BOUND_ITEM;
 
     // Make sure destination bank tab exists
-    if (m_container >= m_pGuild->_GetPurchasedTabsSize())
+    if (m_container >= m_pGuild->GetPurchasedTabsSize())
         return EQUIP_ERR_WRONG_BAG_TYPE;
 
     // Slot explicitely specified. Check it.
@@ -1531,7 +1531,7 @@ void Guild::HandleSetRankInfo(WorldSession* session, uint32 rankId, const std::s
 
 void Guild::HandleBuyBankTab(WorldSession* session, uint8 tabId)
 {
-    if (tabId != _GetPurchasedTabsSize())
+    if (tabId != GetPurchasedTabsSize())
         return;
 
     uint32 tabCost = _GetGuildBankTabPrice(tabId) * GOLD;
@@ -1551,6 +1551,24 @@ void Guild::HandleBuyBankTab(WorldSession* session, uint8 tabId)
     HandleRoster();                                         // Broadcast for tab rights update
     SendBankList(session, tabId, false, true);
     HandleGuildRanks(session);
+}
+
+void Guild::HandleSpellEffectBuyBankTab(WorldSession* session, uint8 tabId)
+{
+    if (tabId != GetPurchasedTabsSize())
+        return;
+
+    Player* player = session->GetPlayer();
+    if (!_CreateNewBankTab())
+        return;
+
+    _SetRankBankMoneyPerDay(player->GetRank(), uint32(GUILD_WITHDRAW_MONEY_UNLIMITED));
+    _SetRankBankTabRightsAndSlots(player->GetRank(), tabId, GuildBankRightsAndSlots(GUILD_BANK_RIGHT_FULL, uint32(GUILD_WITHDRAW_SLOT_UNLIMITED)));
+    HandleRoster();                                         // Broadcast for tab rights update
+    SendBankList(session, tabId, false, true);
+    HandleGuildRanks(session);
+
+    GetAchievementMgr().UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_BUY_GUILD_BANK_SLOTS, tabId + 1, 0, 0, player);
 }
 
 void Guild::HandleInviteMember(WorldSession* session, const std::string& name)
@@ -2068,7 +2086,7 @@ void Guild::SendEventLog(WorldSession* session) const
 void Guild::SendBankLog(WorldSession* session, uint8 tabId) const
 {
     // GUILD_BANK_MAX_TABS send by client for money log
-    if (tabId < _GetPurchasedTabsSize() || tabId == GUILD_BANK_MAX_TABS)
+    if (tabId < GetPurchasedTabsSize() || tabId == GUILD_BANK_MAX_TABS)
     {
         LogHolder const* log = m_bankEventLog[tabId];
         WorldPacket data(SMSG_GUILD_BANK_LOG_QUERY_RESULT, log->GetSize() * (4 * 4 + 1) + 1 + 1);
@@ -2095,7 +2113,7 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
                     ++itemCount;
 
     data.WriteBits(itemCount, 20);
-    data.WriteBits(withTabInfo ? _GetPurchasedTabsSize() : 0, 22);
+    data.WriteBits(withTabInfo ? GetPurchasedTabsSize() : 0, 22);
     if (withContent && _MemberHasTabRights(session->GetPlayer()->GetGUID(), tabId, GUILD_BANK_RIGHT_VIEW_TAB))
     {
         if (BankTab const* tab = GetBankTab(tabId))
@@ -2136,7 +2154,7 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
     data.WriteBit(0);
     if (withTabInfo)
     {
-        for (uint8 i = 0; i < _GetPurchasedTabsSize(); ++i)
+        for (uint8 i = 0; i < GetPurchasedTabsSize(); ++i)
         {
             data.WriteBits(m_bankTabs[i]->GetName().length(), 7);
             data.WriteBits(m_bankTabs[i]->GetIcon().length(), 9);
@@ -2147,7 +2165,7 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
 
     if (withTabInfo)
     {
-        for (uint8 i = 0; i < _GetPurchasedTabsSize(); ++i)
+        for (uint8 i = 0; i < GetPurchasedTabsSize(); ++i)
         {
             data.WriteString(m_bankTabs[i]->GetIcon());
             data.WriteString(m_bankTabs[i]->GetName());
@@ -2180,7 +2198,7 @@ void Guild::SendPermissions(WorldSession* session) const
     WorldPacket data(SMSG_GUILD_PERMISSIONS_QUERY_RESULTS, 4 * 15 + 1);
     data << uint32(_GetMemberRemainingMoney(guid));
     data << uint32(_GetRankRights(rankId));
-    data << uint32(_GetPurchasedTabsSize());
+    data << uint32(GetPurchasedTabsSize());
     data << uint32(rankId);
     /*data << uint32(rankId);
     data << uint32(_GetPurchasedTabsSize());
@@ -2245,7 +2263,7 @@ void Guild::SendLoginInfo(WorldSession* session)
 
     for (uint32 i = 0; i < sGuildPerkSpellsStore.GetNumRows(); ++i)
         if (GuildPerkSpellsEntry const* entry = sGuildPerkSpellsStore.LookupEntry(i))
-            if (entry->Level >= GetLevel())
+            if (entry->Level <= GetLevel())
                 session->GetPlayer()->learnSpell(entry->SpellId, true);
 
     SendGuildReputationWeeklyCap(session);
@@ -2345,7 +2363,7 @@ bool Guild::LoadBankEventLogFromDB(Field* fields)
 {
     uint8 dbTabId = fields[1].GetUInt8();
     bool isMoneyTab = (dbTabId == GUILD_BANK_MONEY_LOGS_TAB);
-    if (dbTabId < _GetPurchasedTabsSize() || isMoneyTab)
+    if (dbTabId < GetPurchasedTabsSize() || isMoneyTab)
     {
         uint8 tabId = isMoneyTab ? uint8(GUILD_BANK_MAX_TABS) : dbTabId;
         LogHolder* pLog = m_bankEventLog[tabId];
@@ -2384,7 +2402,7 @@ bool Guild::LoadBankEventLogFromDB(Field* fields)
 bool Guild::LoadBankTabFromDB(Field* fields)
 {
     uint8 tabId = fields[1].GetUInt8();
-    if (tabId >= _GetPurchasedTabsSize())
+    if (tabId >= GetPurchasedTabsSize())
     {
         sLog->outError(LOG_FILTER_GUILD, "Invalid tab (tabId: %u) in guild bank, skipped.", tabId);
         return false;
@@ -2395,7 +2413,7 @@ bool Guild::LoadBankTabFromDB(Field* fields)
 bool Guild::LoadBankItemFromDB(Field* fields)
 {
     uint8 tabId = fields[12].GetUInt8();
-    if (tabId >= _GetPurchasedTabsSize())
+    if (tabId >= GetPurchasedTabsSize())
     {
         sLog->outError(LOG_FILTER_GUILD, "Invalid tab for item (GUID: %u, id: #%u) in guild bank, skipped.",
             fields[14].GetUInt32(), fields[15].GetUInt32());
@@ -2581,7 +2599,7 @@ bool Guild::AddMember(uint64 guid, uint8 rankId)
         {
             for (uint32 i = 0; i < sGuildPerkSpellsStore.GetNumRows(); ++i)
                 if (GuildPerkSpellsEntry const* entry = sGuildPerkSpellsStore.LookupEntry(i))
-                    if (entry->Level >= GetLevel())
+                    if (entry->Level <= GetLevel())
                         player->learnSpell(entry->SpellId, true);
         }
 
@@ -2649,8 +2667,7 @@ void Guild::DeleteMember(uint64 guid, bool isDisbanding, bool isKicked)
         player->SetGuildLevel(0);
         for (uint32 i = 0; i < sGuildPerkSpellsStore.GetNumRows(); ++i)
             if (GuildPerkSpellsEntry const* entry = sGuildPerkSpellsStore.LookupEntry(i))
-                if (entry->Level >= GetLevel())     
-                    player->removeSpell(entry->SpellId, false, false);
+                player->removeSpell(entry->SpellId, false, false);
 
         if (FactionEntry const* factionEntry = sFactionStore.LookupEntry(REP_GUILD))
             player->GetReputationMgr().SetReputation(factionEntry, 0);
@@ -2682,8 +2699,8 @@ bool Guild::IsMember(uint64 guid)
 // Bank (items move)
 void Guild::SwapItems(Player* player, uint8 tabId, uint8 slotId, uint8 destTabId, uint8 destSlotId, uint32 splitedAmount)
 {
-    if (tabId >= _GetPurchasedTabsSize() || slotId >= GUILD_BANK_MAX_SLOTS ||
-        destTabId >= _GetPurchasedTabsSize() || destSlotId >= GUILD_BANK_MAX_SLOTS)
+    if (tabId >= GetPurchasedTabsSize() || slotId >= GUILD_BANK_MAX_SLOTS ||
+        destTabId >= GetPurchasedTabsSize() || destSlotId >= GUILD_BANK_MAX_SLOTS)
         return;
 
     if (tabId == destTabId && slotId == destSlotId)
@@ -2696,7 +2713,7 @@ void Guild::SwapItems(Player* player, uint8 tabId, uint8 slotId, uint8 destTabId
 
 void Guild::SwapItemsWithInventory(Player* player, bool toChar, uint8 tabId, uint8 slotId, uint8 playerBag, uint8 playerSlotId, uint32 splitedAmount)
 {
-    if ((slotId >= GUILD_BANK_MAX_SLOTS && slotId != NULL_SLOT) || tabId >= _GetPurchasedTabsSize())
+    if ((slotId >= GUILD_BANK_MAX_SLOTS && slotId != NULL_SLOT) || tabId >= GetPurchasedTabsSize())
         return;
 
     BankMoveItemData bankData(this, player, tabId, slotId);
@@ -2729,10 +2746,10 @@ void Guild::_CreateLogHolders()
 
 bool Guild::_CreateNewBankTab()
 {
-    if (_GetPurchasedTabsSize() >= GUILD_BANK_MAX_TABS)
+    if (GetPurchasedTabsSize() >= GUILD_BANK_MAX_TABS)
         return false;
 
-    uint8 tabId = _GetPurchasedTabsSize();                      // Next free id
+    uint8 tabId = GetPurchasedTabsSize();                      // Next free id
     m_bankTabs.push_back(new BankTab(m_id, tabId));
 
     PreparedStatement* stmt = NULL;
@@ -2783,7 +2800,7 @@ void Guild::_CreateRank(const std::string& name, uint32 rights)
     m_ranks.push_back(info);
 
     SQLTransaction trans = CharacterDatabase.BeginTransaction();
-    for (uint8 i = 0; i < _GetPurchasedTabsSize(); ++i)
+    for (uint8 i = 0; i < GetPurchasedTabsSize(); ++i)
     {
         // Create bank rights with default values
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_GUILD_BANK_RIGHT_DEFAULT);
@@ -2822,7 +2839,7 @@ bool Guild::_IsLeader(Player* player) const
 
 void Guild::_DeleteBankItems(SQLTransaction& trans, bool removeItemsFromDB)
 {
-    for (uint8 tabId = 0; tabId < _GetPurchasedTabsSize(); ++tabId)
+    for (uint8 tabId = 0; tabId < GetPurchasedTabsSize(); ++tabId)
     {
         m_bankTabs[tabId]->Delete(trans, removeItemsFromDB);
         delete m_bankTabs[tabId];
@@ -2878,7 +2895,7 @@ void Guild::_SetRankBankMoneyPerDay(uint32 rankId, uint32 moneyPerDay)
 
 void Guild::_SetRankBankTabRightsAndSlots(uint32 rankId, uint8 tabId, GuildBankRightsAndSlots rightsAndSlots, bool saveToDB)
 {
-    if (tabId >= _GetPurchasedTabsSize())
+    if (tabId >= GetPurchasedTabsSize())
         return;
 
     if (RankInfo* rankInfo = GetRankInfo(rankId))
@@ -2914,7 +2931,7 @@ inline uint32 Guild::_GetRankBankMoneyPerDay(uint32 rankId) const
 
 inline uint32 Guild::_GetRankBankTabSlotsPerDay(uint32 rankId, uint8 tabId) const
 {
-    if (tabId < _GetPurchasedTabsSize())
+    if (tabId < GetPurchasedTabsSize())
         if (const RankInfo* rankInfo = GetRankInfo(rankId))
             return rankInfo->GetBankTabSlotsPerDay(tabId);
     return 0;

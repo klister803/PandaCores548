@@ -241,7 +241,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //170 SPELL_EFFECT_170
     &Spell::EffectNULL,                                     //171 SPELL_EFFECT_171
     &Spell::EffectNULL,                                     //172 SPELL_EFFECT_RESURRECT_WITH_AURA see 312e8509dddf910a5ab199d646c5a4d237d5fda9
-    &Spell::EffectNULL,                                     //173 SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB
+    &Spell::EffectBuyGuilkBankTab,                          //173 SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB
     &Spell::EffectNULL,                                     //174 SPELL_EFFECT_174
     &Spell::EffectUnused,                                   //175 SPELL_EFFECT_175  unused
     &Spell::EffectNULL,                                     //176 SPELL_EFFECT_176
@@ -6308,4 +6308,24 @@ int32 Spell::CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultip
     }
 
     return irand(int32(minDamage * coeff), int32(maxDamage * coeff));
+}
+
+void Spell::EffectBuyGuilkBankTab(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
+        return;
+
+    if (m_caster->GetTypeId() != TYPEID_PLAYER)
+        return;
+
+    uint32 guildId= m_caster->ToPlayer()->GetGuildId();
+    Guild* guild = sGuildMgr->GetGuildById (guildId);
+    
+    if (!guild)
+        return;
+
+    if (guild->GetLeaderGUID() != m_caster->GetGUID())
+        return;
+
+    guild->HandleSpellEffectBuyBankTab(m_caster->ToPlayer()->GetSession(), damage-1);
 }

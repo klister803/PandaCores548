@@ -711,6 +711,7 @@ public:
     void HandleSetMemberNote(WorldSession* session, std::string const& note, uint64 guid, bool isPublic);
     void HandleSetRankInfo(WorldSession* session, uint32 rankId, const std::string& name, uint32 rights, uint32 moneyPerDay, GuildBankRightsAndSlotsVec rightsAndSlots);
     void HandleBuyBankTab(WorldSession* session, uint8 tabId);
+    void HandleSpellEffectBuyBankTab(WorldSession* session, uint8 tabId);
     void HandleInviteMember(WorldSession* session, const std::string& name);
     void HandleAcceptMember(WorldSession* session);
     void HandleLeaveMember(WorldSession* session);
@@ -792,6 +793,8 @@ public:
 
     EmblemInfo const& GetEmblemInfo() const { return m_emblemInfo; }
 
+    inline uint8 GetPurchasedTabsSize() const { return uint8(m_bankTabs.size()); }
+
 protected:
     uint32 m_id;
     std::string m_name;
@@ -826,7 +829,6 @@ private:
     inline bool _HasRankRight(Player* player, uint32 right) const { return (_GetRankRights(player->GetRank()) & right) != GR_RIGHT_EMPTY; }
     inline uint32 _GetLowestRankId() const { return uint32(m_ranks.size() - 1); }
 
-    inline uint8 _GetPurchasedTabsSize() const { return uint8(m_bankTabs.size()); }
     inline BankTab* GetBankTab(uint8 tabId) { return tabId < m_bankTabs.size() ? m_bankTabs[tabId] : NULL; }
     inline const BankTab* GetBankTab(uint8 tabId) const { return tabId < m_bankTabs.size() ? m_bankTabs[tabId] : NULL; }
 
