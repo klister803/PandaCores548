@@ -526,7 +526,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
                 dataBuff << uint32(quest->RequiredNpcOrGoCount[i]);
                 dataBuff << uint32(0);
                 dataBuff << questObjectiveText[i];
-                dataBuff << uint8(0);
+                dataBuff << uint8(i); // objective index
                 dataBuff << uint8(0);
             }
             else
@@ -536,7 +536,7 @@ void PlayerMenu::SendQuestQueryResponse(Quest const* quest) const
                 dataBuff << uint32(quest->RequiredNpcOrGoCount[i]);
                 dataBuff << uint32(0);
                 dataBuff << questObjectiveText[i];
-                dataBuff << uint8(0);
+                dataBuff << uint8(i); // objective index
                 dataBuff << uint8(0);
             }
             ++count;
