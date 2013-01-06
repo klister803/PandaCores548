@@ -282,6 +282,33 @@ void Guild::RankInfo::SaveToDB(SQLTransaction& trans) const
     CharacterDatabase.ExecuteOrAppend(trans, stmt);
 }
 
+void Guild::RankInfo::UpdateId(uint32 newId)
+{
+    SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
+    PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_MEMBERS_RANK);
+    stmt->setUInt8 (0, newId);
+    stmt->setUInt32(1, m_guildId);
+    stmt->setUInt8 (2, m_rankId);
+    CharacterDatabase.ExecuteOrAppend(trans, stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_RANK_ID);
+    stmt->setUInt8 (0, newId);
+    stmt->setUInt32(1, m_guildId);
+    stmt->setUInt8 (2, m_rankId);
+    CharacterDatabase.ExecuteOrAppend(trans, stmt);
+
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_GUILD_BANK_RIGHTS_ID);
+    stmt->setUInt8 (0, newId);
+    stmt->setUInt32(1, m_guildId);
+    stmt->setUInt8 (2, m_rankId);
+    CharacterDatabase.ExecuteOrAppend(trans, stmt);
+
+    CharacterDatabase.CommitTransaction(trans);
+
+    SetId(newId);
+}
+
 void Guild::RankInfo::SetName(const std::string& name)
 {
     if (m_name == name)
@@ -1936,18 +1963,27 @@ void Guild::HandleRemoveRank(WorldSession* session, uint32 rankId)
         SendCommandResult(session, GUILD_INVITE_S, ERR_GUILD_PERMISSIONS);
     else
     {
+        SQLTransaction trans = CharacterDatabase.BeginTransaction();
+
         // Delete bank rights for rank
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_BANK_RIGHTS_FOR_RANK);
         stmt->setUInt32(0, m_id);
         stmt->setUInt8(1, rankId);
-        CharacterDatabase.Execute(stmt);
+        CharacterDatabase.ExecuteOrAppend(trans, stmt);
         // Delete rank
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_GUILD_RANK);
         stmt->setUInt32(0, m_id);
         stmt->setUInt8(1, rankId);
-        CharacterDatabase.Execute(stmt);
+        CharacterDatabase.ExecuteOrAppend(trans, stmt);
 
-        m_ranks.erase(m_ranks.begin() + rankId-1);
+        CharacterDatabase.CommitTransaction(trans);
+
+        m_ranks.erase(m_ranks.begin() + rankId);
+
+        // Restruct m_ranks
+        for (uint8 i = 0; i < m_ranks.size(); ++i)
+            if (m_ranks[i].GetId() != i)
+                m_ranks[i].UpdateId(i);
 
         HandleQuery(session);
         HandleRoster();                                             // Broadcast for tab rights update
