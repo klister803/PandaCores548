@@ -7794,8 +7794,7 @@ uint32 Player::_GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const
    {
        case CURRENCY_TYPE_CONQUEST_POINTS:
        {
-           // TODO: implement
-           cap = 0;
+           cap = 400000;
            break;
        }
        case CURRENCY_TYPE_HONOR_POINTS:
@@ -7811,6 +7810,12 @@ uint32 Player::_GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const
            if (justicecap > 0)
                cap = justicecap;
            break;
+       }
+
+       case CURRENCY_TYPE_VALOR_POINTS:
+       {
+    	   cap = 300000;
+    	   break;
        }
    }
 
