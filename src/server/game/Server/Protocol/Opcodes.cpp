@@ -250,7 +250,7 @@ void InitOpcodes()
     DEFINE_OPCODE_HANDLER(CMSG_GUILD_CHANGE_NAME_REQUEST,               STATUS_UNHANDLED, PROCESS_INPLACE,      &WorldSession::Handle_NULL                     );
     DEFINE_OPCODE_HANDLER(CMSG_GUILD_DECLINE,                           STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleGuildDeclineOpcode        );
     DEFINE_OPCODE_HANDLER(CMSG_GUILD_DEL_RANK,                          STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleGuildDelRankOpcode        );
-    DEFINE_OPCODE_HANDLER(CMSG_GUILD_DISBAND,                           STATUS_UNHANDLED, PROCESS_THREADUNSAFE, &WorldSession::HandleGuildDisbandOpcode        );
+    DEFINE_OPCODE_HANDLER(CMSG_GUILD_DISBAND,                           STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleGuildDisbandOpcode        );
     DEFINE_OPCODE_HANDLER(CMSG_GUILD_EVENT_LOG_QUERY,                   STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleGuildEventLogQueryOpcode);
     DEFINE_OPCODE_HANDLER(CMSG_GUILD_INFO_TEXT,                         STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleGuildChangeInfoTextOpcode );
     DEFINE_OPCODE_HANDLER(CMSG_GUILD_INVITE,                            STATUS_LOGGEDIN,  PROCESS_THREADUNSAFE, &WorldSession::HandleGuildInviteOpcode         );

@@ -56,6 +56,7 @@
 #include "DB2Stores.h"
 #include "Battlefield.h"
 #include "BattlefieldMgr.h"
+#include "GuildMgr.h"
 
 extern pEffect SpellEffects[TOTAL_SPELL_EFFECTS];
 
@@ -5439,6 +5440,26 @@ SpellCastResult Spell::CheckCast(bool strict)
                         if (bg->GetStatus() == STATUS_IN_PROGRESS)
                             return SPELL_FAILED_NOT_IN_BATTLEGROUND;
                 break;
+            case SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB:
+            {
+                Player* player = m_caster->ToPlayer();
+
+                if (!player)
+                    return SPELL_FAILED_DONT_REPORT;
+
+                Guild* guild = sGuildMgr->GetGuildById(player->GetGuildId());
+                
+                if (!guild)
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+
+                if (guild->GetPurchasedTabsSize() >= GetSpellInfo()->Effects[0].BasePoints)
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+                
+                if (guild->GetPurchasedTabsSize() < GetSpellInfo()->Effects[0].BasePoints - 1)
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+
+                break;
+            }
             default:
                 break;
         }

@@ -746,8 +746,11 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
 
     const float discountMod = _player->GetReputationPriceDiscount(vendor);
     uint8 count = 0;
+    uint8 realCount = 0;
     for (uint8 slot = 0; slot < rawItemCount; ++slot)
     {
+        count++;
+
         VendorItem const* vendorItem = vendorItems->GetItem(slot);
         if (!vendorItem) continue;
 
@@ -806,7 +809,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             itemsData << uint32(vendorItem->Type);     // 1 is items, 2 is currency
             itemsData << uint32(itemTemplate->BuyCount);
             itemsData << uint32(vendorItem->item);
-            itemsData << uint32(count++ + 1);        // client expects counting to start at 1
+            itemsData << uint32(count);        // client expects counting to start at 1
             itemsData << int32(leftInStock);
             if (vendorItem->ExtendedCost != 0)
             {
@@ -818,6 +821,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             enablers.push_back(1);                 // unk bit
             enablers.push_back(1);                 // unk bit
             itemsData << uint32(itemTemplate->DisplayInfoID);
+            realCount++;
         }
         else if (vendorItem->Type == ITEM_VENDOR_TYPE_CURRENCY)
         {
@@ -837,7 +841,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             itemsData << uint32(vendorItem->Type);    // 1 is items, 2 is currency
             itemsData << uint32(vendorItem->maxcount * precision);
             itemsData << uint32(vendorItem->item);
-            itemsData << uint32(count++ + 1);        // client expects counting to start at 1
+            itemsData << uint32(count);        // client expects counting to start at 1
             itemsData << int32(-1);
             if (vendorItem->ExtendedCost != 0)
             {
@@ -849,6 +853,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
             enablers.push_back(1);                    // unk bit
             enablers.push_back(1);                    // unk bit
             itemsData << uint32(0);                   // displayId
+            realCount++;
         }
         // else error
     }
@@ -860,7 +865,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     uint8 bitOrder[8] = {5, 4, 2, 1, 6, 7, 3, 0};
     data.WriteBitInOrder(guid, bitOrder);
 
-    data.WriteBits(count, 21); // item count
+    data.WriteBits(realCount, 21); // item count
 
 
     for (std::vector<bool>::const_iterator itr = enablers.begin(); itr != enablers.end(); ++itr)
@@ -879,7 +884,7 @@ void WorldSession::SendListInventory(uint64 vendorGuid)
     data.WriteByteSeq(guid[5]);
     data.WriteByteSeq(guid[2]);
 
-    data << uint8(count == 0); // unk byte, item count 0: 1, item count != 0: 0 or some "random" value below 300
+    data << uint8(realCount == 0); // unk byte, item count 0: 1, item count != 0: 0 or some "random" value below 300
 
     SendPacket(&data);
 }

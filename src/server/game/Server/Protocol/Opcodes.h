@@ -253,7 +253,7 @@ enum Opcodes
     CMSG_GUILD_DEL_RANK                               = 0x786,  // 5.0.5 16048
     CMSG_GUILD_CHANGE_NAME_RANK                       = 0x5A6,  // 5.0.5 16048
     CMSG_GUILD_DEMOTE                                 = 0x000,  // 5.0.5 16048 Deprecated
-    CMSG_GUILD_DISBAND                                = 0x514,  // 5.0.5 16048
+    CMSG_GUILD_DISBAND                                = 0x062,  // 5.0.5 16048
     CMSG_GUILD_EVENT_LOG_QUERY                        = 0x6C3,  // 5.0.5 16048
     CMSG_GUILD_INFO                                   = 0x000,  // Not found in 4.3.4
     CMSG_GUILD_INFO_TEXT                              = 0x7E2,  // 5.0.5 16048

@@ -335,9 +335,12 @@ class Spell
         void EffectActivateSpec(SpellEffIndex effIndex);
         void EffectPlayerNotification(SpellEffIndex effIndex);
         void EffectRemoveAura(SpellEffIndex effIndex);
+        void EffectDamageFromMaxHealthPCT(SpellEffIndex effIndex);
         void EffectCastButtons(SpellEffIndex effIndex);
         void EffectRechargeManaGem(SpellEffIndex effIndex);
+        void EffectGiveCurrency(SpellEffIndex effIndex);
         void EffectUnlearnTalent(SpellEffIndex effIndex);
+        void EffectBuyGuilkBankTab(SpellEffIndex effIndex);
         int32 CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier);
 
         typedef std::set<AuraPtr> UsedSpellMods;
