@@ -525,6 +525,7 @@ private:
 
         uint32 GetId() const { return m_rankId; }
         void SetId(uint32 id) { m_rankId = id; }
+        void UpdateId(uint32 newId);
 
         std::string GetName() const { return m_name; }
         void SetName(const std::string& name);
