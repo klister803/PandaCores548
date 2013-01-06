@@ -20,6 +20,7 @@
 #include "ModelInstance.h"
 #include "VMapDefinitions.h"
 #include "MapTree.h"
+#include <LockedVector.h>
 
 using G3D::Vector3;
 using G3D::Ray;
@@ -31,7 +32,7 @@ template<> struct BoundsTrait<VMAP::GroupModel>
 
 namespace VMAP
 {
-    bool IntersectTriangle(const MeshTriangle &tri, std::vector<Vector3>::const_iterator points, const G3D::Ray &ray, float &distance)
+    bool IntersectTriangle(const MeshTriangle &tri, ACE_Based::LockedVector<Vector3>::const_iterator points, const G3D::Ray &ray, float &distance)
     {
         static const float EPS = 1e-5f;
 
@@ -84,7 +85,7 @@ namespace VMAP
     class TriBoundFunc
     {
         public:
-            TriBoundFunc(std::vector<Vector3> &vert): vertices(vert.begin()) {}
+            TriBoundFunc(ACE_Based::LockedVector<Vector3> &vert): vertices(vert.begin()) {}
             void operator()(const MeshTriangle &tri, G3D::AABox &out) const
             {
                 G3D::Vector3 lo = vertices[tri.idx0];
@@ -96,7 +97,7 @@ namespace VMAP
                 out = G3D::AABox(lo, hi);
             }
         protected:
-            const std::vector<Vector3>::const_iterator vertices;
+            const ACE_Based::LockedVector<Vector3>::const_iterator vertices;
     };
 
     // ===================== WmoLiquid ==================================
@@ -247,7 +248,7 @@ namespace VMAP
             iLiquid = new WmoLiquid(*other.iLiquid);
     }
 
-    void GroupModel::setMeshData(std::vector<Vector3> &vert, std::vector<MeshTriangle> &tri)
+    void GroupModel::setMeshData(ACE_Based::LockedVector<Vector3> &vert, ACE_Based::LockedVector<MeshTriangle> &tri)
     {
         vertices.swap(vert);
         triangles.swap(tri);
@@ -346,7 +347,7 @@ namespace VMAP
 
     struct GModelRayCallback
     {
-        GModelRayCallback(const std::vector<MeshTriangle> &tris, const std::vector<Vector3> &vert):
+        GModelRayCallback(const ACE_Based::LockedVector<MeshTriangle> &tris, const ACE_Based::LockedVector<Vector3> &vert):
             vertices(vert.begin()), triangles(tris.begin()), hit(false) {}
         bool operator()(const G3D::Ray& ray, uint32 entry, float& distance, bool /*pStopAtFirstHit*/)
         {
@@ -354,8 +355,8 @@ namespace VMAP
             if (result)  hit=true;
             return hit;
         }
-        std::vector<Vector3>::const_iterator vertices;
-        std::vector<MeshTriangle>::const_iterator triangles;
+        ACE_Based::LockedVector<Vector3>::const_iterator vertices;
+        ACE_Based::LockedVector<MeshTriangle>::const_iterator triangles;
         bool hit;
     };
 
@@ -399,7 +400,7 @@ namespace VMAP
 
     // ===================== WorldModel ==================================
 
-    void WorldModel::setGroupModels(std::vector<GroupModel> &models)
+    void WorldModel::setGroupModels(ACE_Based::LockedVector<GroupModel> &models)
     {
         groupModels.swap(models);
         groupTree.build(groupModels, BoundsTrait<GroupModel>::getBounds, 1);
@@ -407,14 +408,14 @@ namespace VMAP
 
     struct WModelRayCallBack
     {
-        WModelRayCallBack(const std::vector<GroupModel> &mod): models(mod.begin()), hit(false) {}
+        WModelRayCallBack(const ACE_Based::LockedVector<GroupModel> &mod): models(mod.begin()), hit(false) {}
         bool operator()(const G3D::Ray& ray, uint32 entry, float& distance, bool pStopAtFirstHit)
         {
             bool result = models[entry].IntersectRay(ray, distance, pStopAtFirstHit);
             if (result)  hit=true;
             return hit;
         }
-        std::vector<GroupModel>::const_iterator models;
+        ACE_Based::LockedVector<GroupModel>::const_iterator models;
         bool hit;
     };
 
@@ -432,10 +433,10 @@ namespace VMAP
 
     class WModelAreaCallback {
         public:
-            WModelAreaCallback(const std::vector<GroupModel> &vals, const Vector3 &down):
+            WModelAreaCallback(const ACE_Based::LockedVector<GroupModel> &vals, const Vector3 &down):
                 prims(vals.begin()), hit(vals.end()), minVol(G3D::inf()), zDist(G3D::inf()), zVec(down) {}
-            std::vector<GroupModel>::const_iterator prims;
-            std::vector<GroupModel>::const_iterator hit;
+            ACE_Based::LockedVector<GroupModel>::const_iterator prims;
+            ACE_Based::LockedVector<GroupModel>::const_iterator hit;
             float minVol;
             float zDist;
             Vector3 zVec;

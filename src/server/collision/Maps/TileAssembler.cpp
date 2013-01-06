@@ -25,6 +25,7 @@
 #include <iomanip>
 #include <sstream>
 #include <iomanip>
+#include <LockedVector.h>
 
 using G3D::Vector3;
 using G3D::AABox;
@@ -75,7 +76,7 @@ namespace VMAP
         for (MapData::iterator map_iter = mapData.begin(); map_iter != mapData.end() && success; ++map_iter)
         {
             // build global map tree
-            std::vector<ModelSpawn*> mapSpawns;
+            ACE_Based::LockedVector<ModelSpawn*> mapSpawns;
             UniqueEntryMap::iterator entry;
             printf("Calculating model bounds for map %u...\n", map_iter->first);
             for (entry = map_iter->second->UniqueEntries.begin(); entry != map_iter->second->UniqueEntries.end(); ++entry)
@@ -261,7 +262,7 @@ namespace VMAP
 
         for (uint32 g=0; g<groups; ++g) // should be only one for M2 files...
         {
-            std::vector<Vector3>& vertices = raw_model.groupsArray[g].vertexArray;
+        	ACE_Based::LockedVector<Vector3>& vertices = raw_model.groupsArray[g].vertexArray;
 
             if (vertices.empty())
             {
@@ -311,7 +312,7 @@ namespace VMAP
         model.setRootWmoID(raw_model.RootWMOID);
         if (!raw_model.groupsArray.empty())
         {
-            std::vector<GroupModel> groupsArray;
+        	ACE_Based::LockedVector<GroupModel> groupsArray;
 
             uint32 groups = raw_model.groupsArray.size();
             for (uint32 g = 0; g < groups; ++g)
@@ -367,7 +368,7 @@ namespace VMAP
             bool boundEmpty = true;
             for (uint32 g = 0; g < raw_model.groupsArray.size(); ++g)
             {
-                std::vector<Vector3>& vertices = raw_model.groupsArray[g].vertexArray;
+            	ACE_Based::LockedVector<Vector3>& vertices = raw_model.groupsArray[g].vertexArray;
 
                 uint32 nvectors = vertices.size();
                 for (uint32 i = 0; i < nvectors; ++i)

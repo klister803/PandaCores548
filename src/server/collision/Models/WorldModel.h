@@ -24,7 +24,7 @@
 #include <G3D/AABox.h>
 #include <G3D/Ray.h>
 #include "BoundingIntervalHierarchy.h"
-
+#include <LockedVector.h>
 #include "Define.h"
 
 namespace VMAP
@@ -79,7 +79,7 @@ namespace VMAP
             ~GroupModel() { delete iLiquid; }
 
             //! pass mesh data to object and create BIH. Passed vectors get get swapped with old geometry!
-            void setMeshData(std::vector<Vector3> &vert, std::vector<MeshTriangle> &tri);
+            void setMeshData(ACE_Based::LockedVector<Vector3> &vert, ACE_Based::LockedVector<MeshTriangle> &tri);
             void setLiquidData(WmoLiquid*& liquid) { iLiquid = liquid; liquid = NULL; }
             bool IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit) const;
             bool IsInsideObject(const Vector3 &pos, const Vector3 &down, float &z_dist) const;
@@ -94,8 +94,8 @@ namespace VMAP
             G3D::AABox iBound;
             uint32 iMogpFlags;// 0x8 outdor; 0x2000 indoor
             uint32 iGroupWMOID;
-            std::vector<Vector3> vertices;
-            std::vector<MeshTriangle> triangles;
+            ACE_Based::LockedVector<Vector3> vertices;
+            ACE_Based::LockedVector<MeshTriangle> triangles;
             BIH meshTree;
             WmoLiquid* iLiquid;
     };
@@ -106,7 +106,7 @@ namespace VMAP
             WorldModel(): RootWMOID(0) {}
 
             //! pass group models to WorldModel and create BIH. Passed vector is swapped with old geometry!
-            void setGroupModels(std::vector<GroupModel> &models);
+            void setGroupModels(ACE_Based::LockedVector<GroupModel> &models);
             void setRootWmoID(uint32 id) { RootWMOID = id; }
             bool IntersectRay(const G3D::Ray &ray, float &distance, bool stopAtFirstHit) const;
             bool IntersectPoint(const G3D::Vector3 &p, const G3D::Vector3 &down, float &dist, AreaInfo &info) const;
@@ -115,7 +115,7 @@ namespace VMAP
             bool readFile(const std::string &filename);
         protected:
             uint32 RootWMOID;
-            std::vector<GroupModel> groupModels;
+            ACE_Based::LockedVector<GroupModel> groupModels;
             BIH groupTree;
     };
 } // namespace VMAP
