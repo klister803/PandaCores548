@@ -3127,6 +3127,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 132158: // Nature's Swiftness
+                spellInfo->ProcCharges = 1;
+                break;
             case 127630: // Cascade - damage trigger
             case 120786: // Cascade - heal trigger
                 spellInfo->Effects[1].TargetA = TARGET_UNIT_TARGET_ANY;
