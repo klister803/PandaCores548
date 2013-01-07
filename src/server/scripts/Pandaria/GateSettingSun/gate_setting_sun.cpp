@@ -5,6 +5,12 @@
 
 #include "gate_setting_sun.h"
 
+enum spells
+{
+    SPELL_MANTID_MUNITION_EXPLOSION     = 107153,
+    SPELL_EXPLOSE_GATE                  = 115456,
+};
+
 class mob_serpent_spine_defender : public CreatureScript
 {
 public:
