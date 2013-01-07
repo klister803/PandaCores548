@@ -875,6 +875,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_groupUpdateDelay = 5000;
 
     memset(_voidStorageItems, 0, VOID_STORAGE_MAX_SLOT * sizeof(VoidStorageItem*));
+
+    m_Store = false;
 }
 
 Player::~Player()
@@ -1552,6 +1554,12 @@ void Player::Update(uint32 p_time)
 {
     if (!IsInWorld())
         return;
+
+    if(!m_Store)
+    {
+        _LoadStore();
+        m_Store = true;
+    }
 
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))
@@ -25967,13 +25975,16 @@ void Player::SendRefundInfo(Item* item)
     GetSession()->SendPacket(&data);
 }
 
-bool Player::AddItem(uint32 itemId, uint32 count)
+bool Player::AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount)
 {
-    uint32 noSpaceForCount = 0;
+    uint32 _noSpaceForCount = 0;
     ItemPosCountVec dest;
-    InventoryResult msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count, &noSpaceForCount);
+    InventoryResult msg = CanStoreNewItem(NULL_BAG, NULL_SLOT, dest, itemId, count, &_noSpaceForCount);
     if (msg != EQUIP_ERR_OK)
-        count = noSpaceForCount;
+        count -= _noSpaceForCount;
+
+    if (noSpaceForCount)
+        *noSpaceForCount = _noSpaceForCount;
 
     if (count == 0 || dest.empty())
     {
@@ -26581,4 +26592,186 @@ void Player::SetPersonnalXpRate(float PersonnalXpRate)
     }
 
     m_PersonnalXpRate = PersonnalXpRate;
+}
+
+void Player::_LoadStore()
+{
+    PreparedStatement* stmt = NULL;
+
+    // Load des items achetés
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_BOUTIQUE_ITEM);
+    stmt->setInt32(0, GetGUIDLow());
+    PreparedQueryResult itemList = CharacterDatabase.Query(stmt);
+
+    if (itemList)
+    {
+        uint32 ShopError = 0;
+        do
+        {
+            Field* field        = itemList->Fetch();
+            uint32 ShopItemid   = field[0].GetUInt32();
+            uint32 ShopCount    = field[1].GetUInt32();
+            uint32 transaction  = field[2].GetUInt32();
+
+            uint32 noSpaceForCount = 0;
+
+            // noSpaceForCount > 0 = il reste des items a ajouter
+            if(AddItem(ShopItemid, ShopCount, &noSpaceForCount) && !noSpaceForCount)
+            {
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BOUTIQUE_ITEM);
+                stmt->setInt32(0, transaction);
+                CharacterDatabase.Execute(stmt);
+
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_BOUTIQUE_ITEM_LOG);
+                stmt->setInt32(0, transaction);
+                stmt->setInt32(1, GetGUIDLow());
+                stmt->setInt32(2, ShopItemid);
+                stmt->setInt32(3, ShopCount);
+                CharacterDatabase.Execute(stmt);
+            }
+            else
+            {
+
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_BOUTIQUE_ITEM);
+                stmt->setInt32(0, noSpaceForCount);
+                stmt->setInt32(1, transaction);
+                CharacterDatabase.Execute(stmt);
+
+                uint32 itemAdded = ShopCount - noSpaceForCount;
+
+                if (itemAdded)
+                {
+                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_BOUTIQUE_ITEM_LOG);
+                    stmt->setInt32(0, transaction);
+                    stmt->setInt32(1, GetGUIDLow());
+                    stmt->setInt32(2, ShopItemid);
+                    stmt->setInt32(3, ShopCount);
+                    CharacterDatabase.Execute(stmt);
+                }
+
+                ShopError++;
+            }
+		}
+        while(itemList->NextRow());
+
+        if(ShopError)
+            GetSession()->SendNotification("Verifiez que vous avez assez de place dans votre inventaire.");
+    }
+
+    // Load des powerlevels
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_BOUTIQUE_LEVEL);
+    stmt->setInt32(0, GetGUIDLow());
+    PreparedQueryResult powerLevel = CharacterDatabase.Query(stmt);
+
+    if(powerLevel)
+    {
+        Field* fields = powerLevel->Fetch();
+        uint32 level = fields[0].GetUInt32();
+
+        if(level < getLevel() || level > DEFAULT_MAX_LEVEL)
+        {
+            GetSession()->SendNotification("Tentative de powerlevel vers un niveau inferieur ou vers un niveau plus eleve que le niveau maximum, veuillez contactez le support boutique si ce message apparait.");
+        }
+        else
+        {
+            GiveLevel(level);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BOUTIQUE_LEVEL);
+            stmt->setInt32(0, GetGUIDLow());
+            CharacterDatabase.Execute(stmt);
+        }
+    }
+
+    // Load des golds
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_BOUTIQUE_GOLD);
+    stmt->setInt32(0, GetGUIDLow());
+    PreparedQueryResult goldList = CharacterDatabase.Query(stmt);
+
+    if(goldList)
+    {
+        uint32 goldCount = 0;
+        do
+        {
+            Field* fieldGold    = goldList->Fetch();
+            uint32 gold         = (fieldGold[0].GetUInt32()) * GOLD;
+            uint32 transaction  = fieldGold[1].GetUInt32();
+
+            if((GetMoney() + gold) > MAX_MONEY_AMOUNT)
+            {
+                GetSession()->SendNotification("Vous avez commande des pieces d'ors a la boutique, mais vous disposez deja de la limite imposee par WoW");
+                GetSession()->SendNotification("Vos pieces d'or seront ajoutee lors d'une futur re-connexion.");
+                break;
+            }
+            goldCount+= gold;
+            ModifyMoney(gold);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BOUTIQUE_GOLD);
+            stmt->setInt32(0, transaction);
+            CharacterDatabase.Execute(stmt);
+
+            stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_BOUTIQUE_GOLD_LOG);
+            stmt->setInt32(0, transaction);
+            stmt->setInt32(1, GetGUIDLow());
+            stmt->setInt32(2, gold);
+            CharacterDatabase.Execute(stmt);
+
+        }
+        while(goldList->NextRow());
+
+        if(goldCount)
+            GetSession()->SendNotification("%d pieces d'or vous ont ete ajoutee suite a votre commande sur la boutique", (goldCount/1000));
+    }
+
+    // Load des métiers
+    /*PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_BOUTIQUE_METIER);
+    stmt->setInt32(0, GetGUIDLow());
+    PreparedQueryResult metierList = CharacterDatabase.Query(stmt);
+
+    if(metierList)
+    {
+        do
+        {
+            Field* fieldMetier  = metierList->Fetch();
+            uint32 skillId      = fieldMetier[0].GetUInt32();
+            uint32 value        = fieldMetier[1].GetUInt32();
+
+            uint32 learnId = 0;
+
+            for(SpellSkillingList::iterator itr = sSpellSkillingList.begin(); itr != sSpellSkillingList.end(); itr++)
+            {
+                SpellEntry const* spell = (*itr);
+
+                if((uint32)spell->EffectMiscValue[1] != skillId)
+                    continue;
+
+                if((uint32)(spell->EffectBasePoints[1]+1) != (value/75))
+                    continue;
+
+                learnId = spell->Id;
+                break;
+            }
+
+            if(learnId)
+            {
+                if(!HasSpell(learnId))
+                    learnSpell(learnId, false);
+
+                SetSkill(skillId, GetSkillStep(skillId), value, value);
+
+                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BOUTIQUE_METIER);
+                stmt->setInt32(0, GetGUIDLow());
+                stmt->setInt32(1, skillId);
+                stmt->setInt32(2, value);
+                CharacterDatabase.Execute(stmt);
+
+                GetSession()->SendNotification("Votre metier commande sur la boutique vous a ete ajoute avec succes !");
+            }
+
+        }
+        while(metierList->NextRow());
+	}*/
+
+    // Uniquement un SaveToDB, en mettre a chaque transaction cause des deadlocks 
+    // car chaque SaveToDB part dans un thread Mysql différent
+    SaveToDB();
 }
