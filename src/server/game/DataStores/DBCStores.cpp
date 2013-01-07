@@ -327,7 +327,7 @@ void LoadDBCStores(const std::string& dataPath)
         }
     }
 
-    LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementStore,            dbcPath, "Achievement.dbc"/*, &CustomAchievementfmt, &CustomAchievementIndex*/);//14545
+    LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementStore,            dbcPath, "Achievement.dbc", &CustomAchievementfmt, &CustomAchievementIndex);//14545
     LoadDBC(availableDbcLocales, bad_dbc_files, sAchievementCriteriaStore,    dbcPath, "Achievement_Criteria.dbc");//14545
     
     // N'est pas delete au cas ou on arrive un jour a recupere le nom, ils sont pour le moment tous en inconnus
@@ -873,6 +873,27 @@ uint32 GetVirtualMapForMapAndZone(uint32 mapid, uint32 zoneId)
         return wma->virtual_map_id >= 0 ? wma->virtual_map_id : wma->map_id;
 
     return mapid;
+}
+
+uint32 GetMaxLevelForExpansion(uint32 expansion)
+{
+    switch (expansion)
+    {
+        case CONTENT_1_60:
+            return 60;
+        case CONTENT_61_70:
+            return 70;
+        case CONTENT_71_80:
+            return 80;
+        case CONTENT_81_85:
+            return 85;
+        case CONTENT_86_90:
+            return 90;
+        default:
+            break;
+
+    }
+    return 0;
 }
 
 /*
