@@ -3310,7 +3310,6 @@ public:
                 creature->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner->GetGUID());
                 creature->SetUInt32Value(UNIT_CREATED_BY_SPELL, 113724);
                 creature->AddUnitState(UNIT_STATE_ROOT);
-                //creature->SetReactState(ReactStates::REACT_PASSIVE);
             }
         }
 
@@ -3331,14 +3330,78 @@ public:
             }
             else
                 frostStunTimer -= diff;
-
-            DoMeleeAttackIfReady();
         }
     };
 
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_ring_of_frostAI(creature);
+    }
+};
+
+/*######
+# npc_shadowy_apparition
+######*/
+
+class npc_shadowy_apparition : public CreatureScript
+{
+public:
+    npc_shadowy_apparition() : CreatureScript("npc_shadowy_apparition") { }
+
+    struct npc_shadowy_apparitionAI : public ScriptedAI
+    {
+        uint64 targetGUID;
+
+        npc_shadowy_apparitionAI(Creature* creature) : ScriptedAI(creature)
+        {
+            targetGUID = 0;
+            Unit* owner = creature->GetOwner();
+
+            if (owner)
+            {
+                if (creature->GetEntry() == 61966)
+                {
+                    owner->CastSpell(creature, 87213, true); // Clone player skin
+                    creature->CastSpell(creature, 87427, true); // Shadow aura
+                    creature->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner->GetGUID());
+                    creature->SetUInt32Value(UNIT_CREATED_BY_SPELL, 113724);
+                    creature->SetReactState(ReactStates::REACT_PASSIVE);
+                }
+            }
+        }
+
+        void SetGUID(uint64 guid, int32)
+        {
+            targetGUID = guid;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            Unit* owner = me->GetOwner();
+
+            if (!owner)
+                return;
+
+            if (!me->HasAura(87213))
+                owner->CastSpell(me, 87213, true); // Clone player skin
+            else if (!me->HasAura(87427))
+                me->CastSpell(me, 87427, true); // Shadow aura
+
+            if (Unit* target = Unit::GetCreature(*me, targetGUID))
+            {
+                if (target->GetDistance(me) < 2.0f)
+                {
+                    me->CastSpell(target, 87532, true); // Death Damage
+                    me->CastSpell(me, 87529, true); // Death visual
+                    me->ForcedDespawn();
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_shadowy_apparitionAI(creature);
     }
 };
 
@@ -3382,4 +3445,5 @@ void AddSC_npcs_special()
     new npc_feral_spirit();
     new npc_spirit_link_totem();
     new npc_ring_of_frost();
+    new npc_shadowy_apparition();
 }

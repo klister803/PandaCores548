@@ -567,6 +567,9 @@ class spell_warl_harvest_life : public SpellScriptLoader
 
             void OnTick(constAuraEffectPtr aurEff)
             {
+                if (!GetCaster())
+                    return;
+
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     // Restoring 3-4.5% of the caster's total health every 1s

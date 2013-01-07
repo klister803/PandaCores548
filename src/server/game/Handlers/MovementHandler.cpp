@@ -45,7 +45,7 @@ void WorldSession::HandleMoveWorldportAckOpcode()
         return;
 
     GetPlayer()->SetSemaphoreTeleportFar(false);
-    GetPlayer()->SetIgnoreMovementCount(3);
+    GetPlayer()->SetIgnoreMovementCount(5);
 
     // get the teleport destination
     WorldLocation const loc = GetPlayer()->GetTeleportDest();
@@ -119,6 +119,15 @@ void WorldSession::HandleMoveWorldportAckOpcode()
     }
 
     GetPlayer()->SendInitialPacketsAfterAddToMap();
+
+    // Update position client-side to avoid undermap
+    WorldPacket data(SMSG_MOVE_UPDATE);
+    _player->m_movementInfo.time = getMSTime();
+    _player->m_movementInfo.pos.m_positionX = loc.m_positionX;
+    _player->m_movementInfo.pos.m_positionY = loc.m_positionY;
+    _player->m_movementInfo.pos.m_positionZ = loc.m_positionZ;
+    WorldSession::WriteMovementInfo(data, &_player->m_movementInfo);
+    _player->GetSession()->SendPacket(&data);
 
     // flight fast teleport case
     if (GetPlayer()->GetMotionMaster()->GetCurrentMovementGeneratorType() == FLIGHT_MOTION_TYPE)
@@ -215,7 +224,7 @@ void WorldSession::HandleMoveTeleportAck(WorldPacket& recvPacket)
         return;
 
     plMover->SetSemaphoreTeleportNear(false);
-    plMover->SetIgnoreMovementCount(3);
+    plMover->SetIgnoreMovementCount(5);
 
     uint32 old_zone = plMover->GetZoneId();
 
