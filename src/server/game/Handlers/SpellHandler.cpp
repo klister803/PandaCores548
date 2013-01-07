@@ -564,6 +564,16 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellId = newSpellInfo->Id;
         }
     }
+    // Cascade (shadow) - 127632 and Cascade - 121135
+    if (spellInfo->Id == 121135 && _player->HasAura(15473))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(127632);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
     // Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
     if (spellInfo->Id == 126892 && _player->HasAura(126896))
     {
