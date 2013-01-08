@@ -10245,11 +10245,6 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                            break;
                         }
                     break;
-                    case SPELLFAMILY_ROGUE:
-                        // Shiv-applied poisons can't crit
-                        if (FindCurrentSpellBySpellId(5938))
-                            crit_chance = 0.0f;
-                        break;
                     case SPELLFAMILY_SHAMAN:
                         // Lava Burst
                         if (spellProto->Id == 51505 || spellProto->Id == 77451)
