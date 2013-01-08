@@ -197,7 +197,11 @@ class spell_monk_chi_burst : public SpellScriptLoader
 
                         // Chi Burst will always heal the Monk
                         _player->CastSpell(_player, SPELL_MONK_CHI_BURST_HEAL, true);
-                        _player->CastSpell(target, SPELL_MONK_CHI_BURST_DAMAGE, true);
+
+                        if (_player->IsValidAttackTarget(target))
+                            _player->CastSpell(target, SPELL_MONK_CHI_BURST_DAMAGE, true);
+                        else
+                            _player->CastSpell(target, SPELL_MONK_CHI_BURST_HEAL, true);
 
                         for (auto itr : tempUnitMap)
                         {
