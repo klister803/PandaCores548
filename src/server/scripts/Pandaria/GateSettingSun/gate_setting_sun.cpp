@@ -54,7 +54,27 @@ public:
     }
 };
 
+//8359
+class AreaTrigger_at_first_door : public AreaTriggerScript
+{
+    public:
+        AreaTrigger_at_first_door() : AreaTriggerScript("at_first_door") {}
+
+        bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
+        {
+            if (!player->GetInstanceScript())
+                return false;
+
+            if (player->GetInstanceScript()->GetData(DATA_OPEN_FIRST_DOOR))
+                return false;
+
+            player->GetInstanceScript()->SetData(DATA_OPEN_FIRST_DOOR, 1);
+            return false;
+        }
+};
+
 void AddSC_gate_setting_sun()
 {
     new mob_serpent_spine_defender();
+    new AreaTrigger_at_first_door();
 }
