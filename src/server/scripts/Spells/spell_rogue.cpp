@@ -37,6 +37,50 @@ enum RogueSpells
     ROGUE_SPELL_CRIPPLING_POISON                 = 3408,
     ROGUE_SPELL_LEECHING_POISON                  = 108211,
     ROGUE_SPELL_PARALYTIC_POISON                 = 108215,
+    ROGUE_SPELL_DEBILITATING_POISON              = 115196,
+    ROGUE_SPELL_MIND_PARALYSIS                   = 115194,
+    ROGUE_SPELL_LEECH_VITALITY                   = 116921,
+    ROGUE_SPELL_PARTIAL_PARALYSIS                = 115197,
+};
+
+// Shiv - 5938
+class spell_rog_shiv : public SpellScriptLoader
+{
+    public:
+        spell_rog_shiv() : SpellScriptLoader("spell_rog_shiv") { }
+
+        class spell_rog_shiv_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_shiv_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
+                            _player->CastSpell(target, ROGUE_SPELL_DEBILITATING_POISON, true);
+                        else if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
+                            _player->CastSpell(target, ROGUE_SPELL_MIND_PARALYSIS, true);
+                        else if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
+                            _player->CastSpell(_player, ROGUE_SPELL_LEECH_VITALITY, true);
+                        else if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
+                            _player->CastSpell(target, ROGUE_SPELL_PARTIAL_PARALYSIS, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_shiv_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_shiv_SpellScript();
+        }
 };
 
 // All Poisons
@@ -337,47 +381,6 @@ public:
     }
 };
 
-class spell_rog_shiv : public SpellScriptLoader
-{
-    public:
-        spell_rog_shiv() : SpellScriptLoader("spell_rog_shiv") { }
-
-        class spell_rog_shiv_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_rog_shiv_SpellScript);
-
-            bool Load()
-            {
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
-            }
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(ROGUE_SPELL_SHIV_TRIGGERED))
-                    return false;
-                return true;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                Unit* caster = GetCaster();
-                if (Unit* unitTarget = GetHitUnit())
-                    caster->CastSpell(unitTarget, ROGUE_SPELL_SHIV_TRIGGERED, true);
-            }
-
-            void Register()
-            {
-                // add dummy effect spell handler to Shiv
-                OnEffectHitTarget += SpellEffectFn(spell_rog_shiv_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_rog_shiv_SpellScript();
-        }
-};
-
 class spell_rog_deadly_poison : public SpellScriptLoader
 {
     public:
@@ -504,12 +507,12 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_shiv();
     new spell_rog_poisons();
     new spell_rog_recuperate();
     new spell_rog_nerves_of_steel();
     new spell_rog_preparation();
     new spell_rog_prey_on_the_weak();
-    new spell_rog_shiv();
     new spell_rog_deadly_poison();
     new spell_rog_shadowstep();
 }
