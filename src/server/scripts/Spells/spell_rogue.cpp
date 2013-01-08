@@ -98,83 +98,73 @@ class spell_rog_poisons : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (GetSpellInfo()->Id == ROGUE_SPELL_DEADLY_POISON)
+                    switch (GetSpellInfo()->Id)
                     {
-                        if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
-                    }
-                    else if (GetSpellInfo()->Id == ROGUE_SPELL_WOUND_POISON)
-                    {
-                        if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
-                    }
-                    else if (GetSpellInfo()->Id == ROGUE_SPELL_MIND_NUMBLING_POISON)
-                    {
-                        if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
-                    }
-                    else if (GetSpellInfo()->Id == ROGUE_SPELL_CRIPPLING_POISON)
-                    {
-                        if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
-                    }
-                    else if (GetSpellInfo()->Id == ROGUE_SPELL_LEECHING_POISON)
-                    {
-                        if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
-                    }
-                    else
-                    {
-                        if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
-                        if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
-                            _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
+                        case ROGUE_SPELL_WOUND_POISON:
+                        {
+                            if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
+                            break;
+                        }
+                        case ROGUE_SPELL_MIND_NUMBLING_POISON:
+                        {
+                            if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
+                            break;
+                        }
+                        case ROGUE_SPELL_CRIPPLING_POISON:
+                        {
+                            if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
+                            break;
+                        }
+                        case ROGUE_SPELL_LEECHING_POISON:
+                        {
+                            if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
+                            break;
+                        }
+                        case ROGUE_SPELL_PARALYTIC_POISON:
+                        {
+                            if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
+                            break;
+                        }
+                        case ROGUE_SPELL_DEADLY_POISON:
+                        default:
+                            break;
                     }
                 }
             }
