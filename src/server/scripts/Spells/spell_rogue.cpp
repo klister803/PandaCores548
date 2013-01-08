@@ -29,7 +29,42 @@ enum RogueSpells
 {
     ROGUE_SPELL_SHIV_TRIGGERED                   = 5940,
     ROGUE_SPELL_GLYPH_OF_PREPARATION             = 56819,
-    ROGUE_SPELL_PREY_ON_THE_WEAK                 = 58670
+    ROGUE_SPELL_PREY_ON_THE_WEAK                 = 58670,
+    ROGUE_SPELL_RECUPERATE                       = 73651,
+};
+
+// Recuperate - 73651
+class spell_rog_recuperate : public SpellScriptLoader
+{
+    public:
+        spell_rog_recuperate() : SpellScriptLoader("spell_rog_recuperate") { }
+
+        class spell_rog_recuperate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_recuperate_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (AuraPtr recuperate = _player->GetAura(ROGUE_SPELL_RECUPERATE))
+                    {
+                        int32 bp = _player->CountPctFromMaxHealth(3);
+                        recuperate->GetEffect(0)->ChangeAmount(bp);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_recuperate_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_recuperate_SpellScript();
+        }
 };
 
 // 31130 - Nerves of Steel
@@ -355,6 +390,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_recuperate();
     new spell_rog_nerves_of_steel();
     new spell_rog_preparation();
     new spell_rog_prey_on_the_weak();

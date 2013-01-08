@@ -389,7 +389,7 @@ class spell_dru_astral_communion : public SpellScriptLoader
 
             void OnTick(constAuraEffectPtr aurEff)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Player* _player = GetTarget()->ToPlayer())
                 {
                     int32 eclipse = 25; // 20 Solar or Lunar energy
 
