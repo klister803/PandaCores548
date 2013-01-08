@@ -88,7 +88,7 @@ class npc_barrel : public CreatureScript
                     return;
 
                 float x = 0, y = 0;
-                GetPositionWithDistInOrientation(me, 5.0f, x, y);
+                GetPositionWithDistInOrientation(me, 5.0f, me->GetOrientation(), x, y);
             
                 me->GetMotionMaster()->MovePoint(100, x, y, me->GetPositionZ());
             }
@@ -96,7 +96,7 @@ class npc_barrel : public CreatureScript
             bool CheckIfAgainstWall()
             {                
                 float x = 0, y = 0;
-                GetPositionWithDistInOrientation(me, 5.0f, x, y);
+                GetPositionWithDistInOrientation(me, 5.0f,  me->GetOrientation(),x, y);
 
                 if (!me->IsWithinLOS(x, y, me->GetPositionZ()))
                     return true;

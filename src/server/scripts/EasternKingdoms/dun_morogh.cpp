@@ -381,7 +381,7 @@ public:
             }
 
             float x = 0, y = 0;
-            GetPositionWithDistInOrientation(me, 2.5f, x, y);
+            GetPositionWithDistInOrientation(me, 2.5f, me->GetOrientation(), x, y);
 
             if (Creature* LivingInfection = me->SummonCreature(42185, x, y, me->GetPositionZ()))
             {

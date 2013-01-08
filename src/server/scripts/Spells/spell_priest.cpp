@@ -49,6 +49,244 @@ enum PriestSpells
     PRIEST_INNER_FIRE                           = 588,
     PRIEST_NPC_SHADOWY_APPARITION               = 61966,
     PRIEST_SPELL_HALO_HEAL                      = 120696,
+    PRIEST_CASCADE_SHADOW_DAMAGE                = 127628,
+    PRIEST_CASCADE_SHADOW_HEAL                  = 127629,
+    PRIEST_CASCADE_HOLY_DAMAGE                  = 120785,
+    PRIEST_CASCADE_HOLY_HEAL                    = 121148,
+    PRIEST_CASCADE_SHADOW_MISSILE               = 127627,
+    PRIEST_CASCADE_HOLY_MISSILE                 = 121146,
+    PRIEST_CASCADE_INVISIBLE_AURA               = 120840,
+    PRIEST_CASCADE_DAMAGE_TRIGGER               = 127630,
+    PRIEST_CASCADE_HEAL_TRIGGER                 = 120786,
+    PRIEST_SHADOWFORM_STANCE                    = 15473,
+};
+
+// Cascade - 127630 (damage trigger) or Cascade - 120786 (heal trigger)
+class spell_pri_cascade_second : public SpellScriptLoader
+{
+    public:
+        spell_pri_cascade_second() : SpellScriptLoader("spell_pri_cascade_second") { }
+
+        class spell_pri_cascade_second_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_cascade_second_SpellScript);
+
+            std::list<Unit*> checkAuras;
+            std::list<Unit*> targetList;
+            int32 affectedUnits;
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        affectedUnits = 0;
+
+                        _player->GetAttackableUnitListInRange(_player, targetList, 40.0f);
+
+                        for (auto itr : targetList)
+                        {
+                            if (itr->HasAura(PRIEST_CASCADE_INVISIBLE_AURA))
+                                if (itr->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster())
+                                    if (itr->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster()->GetGUID() == _player->GetGUID())
+                                        affectedUnits++;
+                        }
+
+                        // Stop the script if the max targets is reached ...
+                        if (affectedUnits >= 15)
+                            return;
+
+                        checkAuras = targetList;
+
+                        for (auto itr : checkAuras)
+                        {
+                            if (itr->HasAura(PRIEST_CASCADE_INVISIBLE_AURA))
+                                if (itr->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster())
+                                    if (itr->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster()->GetGUID() == _player->GetGUID())
+                                        targetList.remove(itr);
+
+                            if (!itr->IsWithinLOSInMap(_player))
+                                targetList.remove(itr);
+
+                            if (!itr->isInFront(_player))
+                                targetList.remove(itr);
+
+                            if (itr->GetGUID() == _player->GetGUID())
+                                targetList.remove(itr);
+
+                            // damage
+                            if (GetSpellInfo()->Id == 127630)
+                                if (!_player->IsValidAttackTarget(itr))
+                                    targetList.remove(itr);
+
+                            // heal
+                            if (GetSpellInfo()->Id == 120786)
+                                if (_player->IsValidAttackTarget(itr))
+                                    targetList.remove(itr);
+                        }
+
+                        // ... or if there are no targets reachable
+                        if (targetList.size() == 0)
+                            return;
+
+                        // Each bound hit twice more targets up to 8 for the same bound
+                        Trinity::Containers::RandomResizeList(targetList, (affectedUnits * 2));
+
+                        for (auto itr : targetList)
+                        {
+                            if (_player->HasAura(PRIEST_SHADOWFORM_STANCE))
+                            {
+                                switch (GetSpellInfo()->Id)
+                                {
+                                    // damage
+                                    case 127630:
+                                        target->CastSpell(itr, PRIEST_CASCADE_SHADOW_DAMAGE, true, 0, 0, _player->GetGUID());
+                                        break;
+                                    // heal
+                                    case 120786:
+                                        target->CastSpell(itr, PRIEST_CASCADE_SHADOW_MISSILE, true, 0, 0, _player->GetGUID());
+                                        target->CastSpell(itr, PRIEST_CASCADE_SHADOW_HEAL, true, 0, 0, _player->GetGUID());
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                switch (GetSpellInfo()->Id)
+                                {
+                                    // damage
+                                    case 127630:
+                                        target->CastSpell(itr, PRIEST_CASCADE_HOLY_DAMAGE, true, 0, 0, _player->GetGUID());
+                                        break;
+                                    // heal
+                                    case 120786:
+                                        target->CastSpell(itr, PRIEST_CASCADE_HOLY_MISSILE, true, 0, 0, _player->GetGUID());
+                                        target->CastSpell(itr, PRIEST_CASCADE_HOLY_HEAL, true, 0, 0, _player->GetGUID());
+                                        break;
+                                    default:
+                                        break;
+                                }
+                            }
+
+                            _player->CastSpell(itr, PRIEST_CASCADE_INVISIBLE_AURA, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_cascade_second_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_cascade_second_SpellScript;
+        }
+};
+
+// Cascade - 120785 (holy damage) or Cascade - 127628 (shadow damage) or Cascade - 127627 (shadow missile) or Cascade - 121146 (holy missile)
+class spell_pri_cascade_trigger : public SpellScriptLoader
+{
+    public:
+        spell_pri_cascade_trigger() : SpellScriptLoader("spell_pri_cascade_trigger") { }
+
+        class spell_pri_cascade_trigger_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_cascade_trigger_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetOriginalCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        // Trigger for SpellScript
+                        if (_player->IsValidAttackTarget(target))
+                            _player->CastSpell(target, PRIEST_CASCADE_DAMAGE_TRIGGER, true); // Only damage
+                        else
+                            _player->CastSpell(target, PRIEST_CASCADE_HEAL_TRIGGER, true); // Only heal
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_cascade_trigger_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_cascade_trigger_SpellScript;
+        }
+};
+
+// Cascade (shadow) - 127632 and Cascade - 121135
+class spell_pri_cascade_first : public SpellScriptLoader
+{
+    public:
+        spell_pri_cascade_first() : SpellScriptLoader("spell_pri_cascade_first") { }
+
+        class spell_pri_cascade_first_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_cascade_first_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        switch (GetSpellInfo()->Id)
+                        {
+                            case 127632:
+                            {
+                                // First missile
+                                if (_player->IsValidAttackTarget(target))
+                                    _player->CastSpell(target, PRIEST_CASCADE_SHADOW_DAMAGE, true, 0, 0, _player->GetGUID());
+                                else
+                                {
+                                    _player->CastSpell(target, PRIEST_CASCADE_SHADOW_MISSILE, true, 0, 0, _player->GetGUID());
+                                    _player->CastSpell(target, PRIEST_CASCADE_SHADOW_HEAL, true, 0, 0, _player->GetGUID());
+                                }
+
+                                break;
+                            }
+                            case 121135:
+                            {
+                                // First missile
+                                if (_player->IsValidAttackTarget(target))
+                                    _player->CastSpell(target, PRIEST_CASCADE_HOLY_DAMAGE, true, 0, 0, _player->GetGUID());
+                                else
+                                {
+                                    _player->CastSpell(target, PRIEST_CASCADE_HOLY_MISSILE, true, 0, 0, _player->GetGUID());
+                                    _player->CastSpell(target, PRIEST_CASCADE_HOLY_HEAL, true, 0, 0, _player->GetGUID());
+                                }
+
+                                break;
+                            }
+                        }
+
+                        // Invisible aura : Each target cannot be hit more than once time
+                        _player->CastSpell(target, PRIEST_CASCADE_INVISIBLE_AURA, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_cascade_first_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_cascade_first_SpellScript;
+        }
 };
 
 // Halo (shadow) - 120696 and Halo - 120692 : Heal
@@ -822,6 +1060,9 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_cascade_second();
+    new spell_pri_cascade_trigger();
+    new spell_pri_cascade_first();
     new spell_pri_halo_heal();
     new spell_pri_halo_damage();
     new spell_pri_shadowy_apparition();

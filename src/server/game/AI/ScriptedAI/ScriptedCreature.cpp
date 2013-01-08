@@ -667,8 +667,8 @@ void GetGameObjectListWithEntryInGrid(std::list<GameObject*>& list, WorldObject*
     source->GetGameObjectListWithEntryInGrid(list, entry, maxSearchRange);
 }
 
-void GetPositionWithDistInOrientation(Unit* pUnit, float dist, float& x, float& y)
+void GetPositionWithDistInOrientation(Unit* pUnit, float dist, float orientation, float& x, float& y)
 {
-    x = pUnit->GetPositionX() + (dist * cos(pUnit->GetOrientation()));
-    y = pUnit->GetPositionY() + (dist * sin(pUnit->GetOrientation()));
+    x = pUnit->GetPositionX() + (dist * cos(orientation));
+    y = pUnit->GetPositionY() + (dist * sin(orientation));
 }

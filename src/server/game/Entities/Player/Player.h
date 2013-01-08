@@ -1499,7 +1499,7 @@ class Player : public Unit, public GridObject<Player>
         void LoadCorpse();
         void LoadPet();
 
-        bool AddItem(uint32 itemId, uint32 count);
+        bool AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount = NULL);
 
         uint32 m_stableSlots;
 
@@ -2722,6 +2722,8 @@ class Player : public Unit, public GridObject<Player>
         void SetIgnoreMovementCount(uint8 count) { m_ignoreMovementCount = count; }
         uint8 GetIgnoreMovementCount() const { return m_ignoreMovementCount; }
 
+        void _LoadStore();
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
@@ -3069,6 +3071,8 @@ class Player : public Unit, public GridObject<Player>
         uint8  m_ignoreMovementCount;
 
         uint32 m_groupUpdateDelay;
+
+        bool m_Store;
 };
 
 void AddItemsSetItem(Player*player, Item* item);
