@@ -144,20 +144,12 @@ class spell_rog_poisons : public SpellScriptLoader
                     {
                         case ROGUE_SPELL_WOUND_POISON:
                         {
-                            if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
-                            if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
-                            if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
-                            if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
+                            if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
                             break;
                         }
                         case ROGUE_SPELL_MIND_NUMBLING_POISON:
                         {
-                            if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
                             if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
                                 _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
                             if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
@@ -168,12 +160,8 @@ class spell_rog_poisons : public SpellScriptLoader
                         }
                         case ROGUE_SPELL_CRIPPLING_POISON:
                         {
-                            if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
                             if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
                                 _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
-                            if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
                             if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
                                 _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
                             if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
@@ -182,8 +170,6 @@ class spell_rog_poisons : public SpellScriptLoader
                         }
                         case ROGUE_SPELL_LEECHING_POISON:
                         {
-                            if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
                             if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
                                 _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
                             if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
@@ -194,8 +180,6 @@ class spell_rog_poisons : public SpellScriptLoader
                         }
                         case ROGUE_SPELL_PARALYTIC_POISON:
                         {
-                            if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
-                                _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
                             if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
                                 _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
                             if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
@@ -205,6 +189,11 @@ class spell_rog_poisons : public SpellScriptLoader
                             break;
                         }
                         case ROGUE_SPELL_DEADLY_POISON:
+                        {
+                            if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
+                                _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
+                            break;
+                        }
                         default:
                             break;
                     }
