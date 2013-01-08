@@ -2757,6 +2757,10 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
         if (m_spellInfo->Id == 115072 && m_preCastSpell == 101545)
             return;
 
+        // Fan of Knives - 51723 apply wrong aura on ennemies (Killing Spree - 51690)
+        if (m_spellInfo->Id == 51723 && m_preCastSpell == 51690)
+            return;
+
         if (sSpellMgr->GetSpellInfo(m_preCastSpell))
             // Blizz seems to just apply aura without bothering to cast
             m_caster->AddAura(m_preCastSpell, unit);

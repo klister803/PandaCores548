@@ -29,7 +29,112 @@ enum RogueSpells
 {
     ROGUE_SPELL_SHIV_TRIGGERED                   = 5940,
     ROGUE_SPELL_GLYPH_OF_PREPARATION             = 56819,
-    ROGUE_SPELL_PREY_ON_THE_WEAK                 = 58670
+    ROGUE_SPELL_PREY_ON_THE_WEAK                 = 58670,
+    ROGUE_SPELL_RECUPERATE                       = 73651,
+    ROGUE_SPELL_DEADLY_POISON                    = 2823,
+    ROGUE_SPELL_WOUND_POISON                     = 8679,
+    ROGUE_SPELL_MIND_NUMBLING_POISON             = 5761,
+    ROGUE_SPELL_CRIPPLING_POISON                 = 3408,
+};
+
+// All Poisons
+// Deadly Poison - 2823, Wound Poison - 8679, Mind-numbing Poison - 5761 or Crippling Poison - 3408
+class spell_rog_poisons : public SpellScriptLoader
+{
+    public:
+        spell_rog_poisons() : SpellScriptLoader("spell_rog_poisons") { }
+
+        class spell_rog_poisons_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_poisons_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (GetSpellInfo()->Id == ROGUE_SPELL_DEADLY_POISON)
+                    {
+                        if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
+                    }
+                    else if (GetSpellInfo()->Id == ROGUE_SPELL_WOUND_POISON)
+                    {
+                        if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
+                    }
+                    else if (GetSpellInfo()->Id == ROGUE_SPELL_MIND_NUMBLING_POISON)
+                    {
+                        if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
+                    }
+                    else
+                    {
+                        if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_poisons_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_poisons_SpellScript();
+        }
+};
+
+// Recuperate - 73651
+class spell_rog_recuperate : public SpellScriptLoader
+{
+    public:
+        spell_rog_recuperate() : SpellScriptLoader("spell_rog_recuperate") { }
+
+        class spell_rog_recuperate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_recuperate_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (AuraPtr recuperate = _player->GetAura(ROGUE_SPELL_RECUPERATE))
+                    {
+                        int32 bp = _player->CountPctFromMaxHealth(3);
+                        recuperate->GetEffect(0)->ChangeAmount(bp);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_recuperate_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_recuperate_SpellScript();
+        }
 };
 
 // 31130 - Nerves of Steel
@@ -355,6 +460,8 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_poisons();
+    new spell_rog_recuperate();
     new spell_rog_nerves_of_steel();
     new spell_rog_preparation();
     new spell_rog_prey_on_the_weak();

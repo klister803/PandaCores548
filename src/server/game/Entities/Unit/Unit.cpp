@@ -7958,11 +7958,11 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
             if (!procSpell)
                 return false;
 
-            if (!(procEx & PROC_EX_CRITICAL_HIT) || !(procEx & PROC_EX_BLOCK))
+            if (procEx != PROC_EX_CRITICAL_HIT && procEx != PROC_EX_BLOCK)
                 return false;
 
             // Mortal Strike, Bloodthirst and Colossus Smash critical strikes and critical blocks Enrage you
-            if (procSpell->Id != 12294 || procSpell->Id != 23881 || procSpell->Id != 86346)
+            if (procSpell->Id != 12294 && procSpell->Id != 23881 && procSpell->Id != 86346)
                 return false;
 
             break;

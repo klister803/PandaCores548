@@ -1677,16 +1677,22 @@ void Player::Update(uint32 p_time)
                         if (getAttackTimer(OFF_ATTACK) < ATTACK_DISPLAY_DELAY)
                             setAttackTimer(OFF_ATTACK, ATTACK_DISPLAY_DELAY);
 
-                    // do attack if player doesn't have Ascendance for Enhanced Shamans
-                    if (!HasAura(114051))
+                    // do attack if player doesn't have Ascendance for Enhanced Shamans or Shadow Blades for rogues
+                    if (!HasAura(114051) && !HasAura(121471))
                     {
-                    AttackerStateUpdate(victim, BASE_ATTACK);
-                    resetAttackTimer(BASE_ATTACK);
+                        AttackerStateUpdate(victim, BASE_ATTACK);
+                        resetAttackTimer(BASE_ATTACK);
                     }
                     // Custom MoP Script - Wind Lash
-                    else
+                    else if (HasAura(114051))
                     {
                         CastSpell(victim, 114089, true);
+                        resetAttackTimer(BASE_ATTACK);
+                    }
+                    // Shadow Blade - Main Hand
+                    else if (HasAura(121471))
+                    {
+                        CastSpell(victim, 121473, true);
                         resetAttackTimer(BASE_ATTACK);
                     }
                 }
@@ -1704,16 +1710,22 @@ void Player::Update(uint32 p_time)
                     if (getAttackTimer(BASE_ATTACK) < ATTACK_DISPLAY_DELAY)
                         setAttackTimer(BASE_ATTACK, ATTACK_DISPLAY_DELAY);
 
-                    // do attack if player doesn't have Ascendance for Enhanced Shamans
-                    if (!HasAura(114051))
+                    // do attack if player doesn't have Ascendance for Enhanced Shamans or Shadow Blades for rogues
+                    if (!HasAura(114051) && !HasAura(121471))
                     {
                         AttackerStateUpdate(victim, OFF_ATTACK);
                         resetAttackTimer(OFF_ATTACK);
                     }
                     // Custom MoP Script - Wind Lash Off-Hand
-                    else
+                    else if (HasAura(114051))
                     {
                         CastSpell(victim, 114093, true);
+                        resetAttackTimer(OFF_ATTACK);
+                    }
+                    // Shadow Blades - Off Hand
+                    else if (HasAura(121471))
+                    {
+                        CastSpell(victim, 121474, true);
                         resetAttackTimer(OFF_ATTACK);
                     }
                 }

@@ -1913,7 +1913,8 @@ void WorldSession::SendSetPhaseShift(std::set<uint32> const& phaseIds, std::set<
     for (std::set<uint32>::const_iterator itr = phaseIds.begin(); itr != phaseIds.end(); ++itr)
         data << uint16(*itr); // Most of phase id on retail sniff have 0x8000 mask
 
-    data << uint32(0); // flags, 0x18 most of time on retail sniff
+    // 0x8 or 0x10 is related to areatrigger, if we send flags 0x00 areatrigger doesn't work in some case
+    data << uint32(0x18); // flags, 0x18 most of time on retail sniff
 
     data << uint32(0);                          // Inactive terrain swaps, may switch with active terrain
     //for (uint8 i = 0; i < inactiveSwapsCount; ++i)
