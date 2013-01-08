@@ -37,10 +37,52 @@ enum RogueSpells
     ROGUE_SPELL_CRIPPLING_POISON                 = 3408,
     ROGUE_SPELL_LEECHING_POISON                  = 108211,
     ROGUE_SPELL_PARALYTIC_POISON                 = 108215,
+    ROGUE_SPELL_PARALYTIC_POISON_DEBUFF          = 113952,
     ROGUE_SPELL_DEBILITATING_POISON              = 115196,
     ROGUE_SPELL_MIND_PARALYSIS                   = 115194,
     ROGUE_SPELL_LEECH_VITALITY                   = 116921,
     ROGUE_SPELL_PARTIAL_PARALYSIS                = 115197,
+    ROGUE_SPELL_TOTAL_PARALYSIS                  = 3609,
+};
+
+// Paralytic Poison - 113952
+class spell_rog_paralytic_poison : public SpellScriptLoader
+{
+    public:
+        spell_rog_paralytic_poison() : SpellScriptLoader("spell_rog_paralytic_poison") { }
+
+        class spell_rog_paralytic_poison_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_paralytic_poison_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (AuraPtr paralyticPoison = target->GetAura(ROGUE_SPELL_PARALYTIC_POISON_DEBUFF))
+                        {
+                            if (paralyticPoison->GetStackAmount() == 5 && !target->HasAura(ROGUE_SPELL_TOTAL_PARALYSIS))
+                            {
+                                _player->CastSpell(target, ROGUE_SPELL_TOTAL_PARALYSIS, true);
+                                target->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON_DEBUFF);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_paralytic_poison_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_paralytic_poison_SpellScript();
+        }
 };
 
 // Shiv - 5938
@@ -497,6 +539,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_paralytic_poison();
     new spell_rog_shiv();
     new spell_rog_poisons();
     new spell_rog_recuperate();
