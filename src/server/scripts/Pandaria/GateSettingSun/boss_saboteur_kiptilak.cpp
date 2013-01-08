@@ -59,31 +59,35 @@ class boss_saboteur_kiptilak : public CreatureScript
 
         struct boss_saboteur_kiptilakAI : public BossAI
         {
-            boss_saboteur_kiptilakAI(Creature* creature) : BossAI(creature, DATA_KIPTILAK), _summons(me)
+            boss_saboteur_kiptilakAI(Creature* creature) : BossAI(creature, DATA_KIPTILAK)
             {
                 instance = creature->GetInstanceScript();
             }
 
             InstanceScript* instance;
-            EventMap _events;
-            SummonList _summons;
 
             uint8 WorldInFlamesEvents;
 
             void Reset()
             {
-                _events.Reset();
+                _Reset();
                 
-                _events.ScheduleEvent(EVENT_EXPLOSIVES, urand(7500,  10000));
-                _events.ScheduleEvent(EVENT_SABOTAGE,   urand(22500, 30000));
+                events.ScheduleEvent(EVENT_EXPLOSIVES, urand(7500,  10000));
+                events.ScheduleEvent(EVENT_SABOTAGE,   urand(22500, 30000));
 
                 WorldInFlamesEvents = 0;
-
-                _summons.DespawnAll();
             }
 
             void EnterCombat(Unit* /*who*/)
-            {}
+            {
+                _EnterCombat();
+            }
+
+            void JustReachedHome()
+            {
+                instance->SetBossState(DATA_KIPTILAK, FAIL);
+                summons.DespawnAll();
+            }
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
@@ -129,7 +133,7 @@ class boss_saboteur_kiptilak : public CreatureScript
                 if (summoned->GetEntry() == NPC_STABLE_MUNITION)
                     summoned->AddAura(SPELL_MUNITION_STABLE, summoned);
 
-                _summons.Summon(summoned);
+                summons.Summon(summoned);
             }
 
             void UpdateAI(const uint32 diff)
@@ -137,21 +141,21 @@ class boss_saboteur_kiptilak : public CreatureScript
                 if (!UpdateVictim())
                     return;
 
-                _events.Update(diff);
+                events.Update(diff);
 
-                switch(_events.ExecuteEvent())
+                switch(events.ExecuteEvent())
                 {
                     case EVENT_EXPLOSIVES:
                         for (uint8 i = 0; i < 3; ++i)
                             me->CastSpell(frand(702, 740), frand(2292, 2320), 388.5f, SPELL_PLANT_EXPLOSIVE, true);
 
-                        _events.ScheduleEvent(EVENT_EXPLOSIVES, urand(7500,  10000));
+                        events.ScheduleEvent(EVENT_EXPLOSIVES, urand(7500,  10000));
                         break;
                     case EVENT_SABOTAGE:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
                             me->CastSpell(me, SPELL_SABOTAGE, true);
 
-                        _events.ScheduleEvent(EVENT_SABOTAGE,   urand(22500, 30000));
+                        events.ScheduleEvent(EVENT_SABOTAGE,   urand(22500, 30000));
                         break;
                     default:
                         break;
@@ -162,7 +166,7 @@ class boss_saboteur_kiptilak : public CreatureScript
 
             void JustDied(Unit* /*killer*/)
             {
-                _summons.DespawnAll();
+                _JustDied();
             }
         };
 

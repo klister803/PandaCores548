@@ -3499,6 +3499,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 106334:
                 spellInfo->AttributesEx3 &= ~ SPELL_ATTR3_ONLY_TARGET_PLAYERS;
                 break;
+            case 107153:
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(16);
+                break;
             default:
                 break;
             }
