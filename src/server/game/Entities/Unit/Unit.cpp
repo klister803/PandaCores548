@@ -589,6 +589,21 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         else if (victim->HasAura(116888))
             return 0;
     }
+    // Leeching Poison - 112961 each attack heal the player for 10% of the damage
+    if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_ROGUE && damage != 0)
+    {
+        if (AuraPtr leechingPoison = victim->GetAura(112961))
+        {
+            if (leechingPoison->GetCaster())
+            {
+                if (leechingPoison->GetCaster()->GetGUID() == GetGUID())
+                {
+                    int32 bp = damage / 10;
+                    CastCustomSpell(this, 112974, &bp, NULL, NULL, true);
+                }
+            }
+        }
+    }
     // Spirit Hunt - 58879 : Feral Spirit heal their owner for 150% of their damage
     if (GetTypeId() == TYPEID_UNIT && GetEntry() == 29264 && damage > 0)
     {
