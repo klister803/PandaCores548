@@ -36,10 +36,11 @@ enum RogueSpells
     ROGUE_SPELL_MIND_NUMBLING_POISON             = 5761,
     ROGUE_SPELL_CRIPPLING_POISON                 = 3408,
     ROGUE_SPELL_LEECHING_POISON                  = 108211,
+    ROGUE_SPELL_PARALYTIC_POISON                 = 108215,
 };
 
 // All Poisons
-// Deadly Poison - 2823, Wound Poison - 8679, Mind-numbing Poison - 5761, Leeching Poison - 108211 or Crippling Poison - 3408
+// Deadly Poison - 2823, Wound Poison - 8679, Mind-numbing Poison - 5761, Leeching Poison - 108211, Paralytic Poison - 108215 or Crippling Poison - 3408
 class spell_rog_poisons : public SpellScriptLoader
 {
     public:
@@ -63,6 +64,8 @@ class spell_rog_poisons : public SpellScriptLoader
                             _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
                         if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
                             _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
                     }
                     else if (GetSpellInfo()->Id == ROGUE_SPELL_WOUND_POISON)
                     {
@@ -74,6 +77,8 @@ class spell_rog_poisons : public SpellScriptLoader
                             _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
                         if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
                             _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
                     }
                     else if (GetSpellInfo()->Id == ROGUE_SPELL_MIND_NUMBLING_POISON)
                     {
@@ -85,6 +90,8 @@ class spell_rog_poisons : public SpellScriptLoader
                             _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
                         if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
                             _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
                     }
                     else if (GetSpellInfo()->Id == ROGUE_SPELL_CRIPPLING_POISON)
                     {
@@ -96,6 +103,21 @@ class spell_rog_poisons : public SpellScriptLoader
                             _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
                         if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
                             _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
+                    }
+                    else if (GetSpellInfo()->Id == ROGUE_SPELL_LEECHING_POISON)
+                    {
+                        if (_player->HasAura(ROGUE_SPELL_WOUND_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_WOUND_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_MIND_NUMBLING_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_MIND_NUMBLING_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_DEADLY_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_PARALYTIC_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_PARALYTIC_POISON);
                     }
                     else
                     {
@@ -107,6 +129,8 @@ class spell_rog_poisons : public SpellScriptLoader
                             _player->RemoveAura(ROGUE_SPELL_DEADLY_POISON);
                         if (_player->HasAura(ROGUE_SPELL_CRIPPLING_POISON))
                             _player->RemoveAura(ROGUE_SPELL_CRIPPLING_POISON);
+                        if (_player->HasAura(ROGUE_SPELL_LEECHING_POISON))
+                            _player->RemoveAura(ROGUE_SPELL_LEECHING_POISON);
                     }
                 }
             }
