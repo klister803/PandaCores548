@@ -395,10 +395,8 @@ class spell_pal_word_of_glory : public SpellScriptLoader
 
                         int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
 
-                        if (holyPower > 3)
-                            holyPower = 3;
-                        else if (holyPower == 0)
-                            holyPower = 1;
+                        if (holyPower > 2)
+                            holyPower = 2;
 
                         _player->CastSpell(unitTarget, PALADIN_SPELL_WORD_OF_GLORY_HEAL, true);
 
@@ -408,7 +406,7 @@ class spell_pal_word_of_glory : public SpellScriptLoader
 
                             if (aura)
                             {
-                                aura->GetEffect(0)->ChangeAmount(aura->GetEffect(0)->GetAmount() * holyPower);
+                                aura->GetEffect(0)->ChangeAmount(aura->GetEffect(0)->GetAmount() * (holyPower + 1));
                                 aura->SetNeedClientUpdateForTargets();
                             }
                         }
@@ -1051,6 +1049,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_inquisition();
     new spell_pal_execution_sentence();
     new spell_pal_lights_hammer();
     new spell_pal_holy_prism_visual();
