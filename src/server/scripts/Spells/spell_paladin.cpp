@@ -67,6 +67,52 @@ enum PaladinSpells
     PALADIN_SPELL_ARCING_LIGHT_DAMAGE            = 114919,
     PALADIN_SPELL_EXECUTION_SENTENCE             = 114916,
     PALADIN_SPELL_STAY_OF_EXECUTION              = 114917,
+    PALADIN_SPELL_INQUISITION                    = 84963,
+};
+
+// Inquisition - 84963
+class spell_pal_inquisition : public SpellScriptLoader
+{
+    public:
+        spell_pal_inquisition() : SpellScriptLoader("spell_pal_inquisition") { }
+
+        class spell_pal_inquisition_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_inquisition_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (AuraPtr inquisition = _player->GetAura(PALADIN_SPELL_INQUISITION))
+                    {
+                        int32 holyPower = _player->GetPower(POWER_HOLY_POWER);
+
+                        if (holyPower > 2)
+                            holyPower = 2;
+
+                        int32 maxDuration = inquisition->GetMaxDuration();
+                        int32 newDuration = inquisition->GetDuration() + maxDuration * holyPower;
+                        inquisition->SetDuration(newDuration);
+
+                        if (newDuration > maxDuration)
+                            inquisition->SetMaxDuration(newDuration);
+
+                        _player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) - holyPower);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_inquisition_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_inquisition_SpellScript();
+        }
 };
 
 // Execution Sentence - 114157
