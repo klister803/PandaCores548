@@ -57,6 +57,136 @@ enum PaladinSpells
     PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY_DAMAGE  = 115522,
     PALADIN_SPELL_CONSECRATION_AREA_DUMMY        = 81298,
     PALADIN_SPELL_CONSECRATION_DAMAGE            = 81297,
+    PALADIN_SPELL_HOLY_PRISM_ALLIES              = 114871,
+    PALADIN_SPELL_HOLY_PRISM_ENNEMIES            = 114852,
+    PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL       = 114862,
+    PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL_2     = 114870,
+    PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL         = 121551,
+    PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL_2       = 121552,
+};
+
+// called by Holy Prism (damage) - 114852 or Holy Prism (heal) - 114871
+// Holy Prism visual for other targets
+class spell_pal_holy_prism_visual : public SpellScriptLoader
+{
+    public:
+        spell_pal_holy_prism_visual() : SpellScriptLoader("spell_pal_holy_prism_visual") { }
+
+        class spell_pal_holy_prism_visual_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_holy_prism_visual_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->IsValidAttackTarget(target))
+                        {
+                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL_2, true);
+                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL_2, true);
+                        }
+                        else
+                        {
+                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL_2, true);
+                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL_2, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_holy_prism_visual_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_holy_prism_visual_SpellScript();
+        }
+};
+
+// called by Holy Prism (visual damage) - 114862 or Holy Prism (visual heal) - 121551
+// Holy Prism (damage) - 114852 or Holy Prism (heal) - 114871
+class spell_pal_holy_prism_effect : public SpellScriptLoader
+{
+    public:
+        spell_pal_holy_prism_effect() : SpellScriptLoader("spell_pal_holy_prism_effect") { }
+
+        class spell_pal_holy_prism_effect_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_holy_prism_effect_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        // damage
+                        if (GetSpellInfo()->Id == 114862)
+                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_ENNEMIES, true);
+                        // heal
+                        else if (GetSpellInfo()->Id == 121551)
+                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_ALLIES, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_holy_prism_effect_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_holy_prism_effect_SpellScript();
+        }
+};
+
+// Holy Prism - 114165
+class spell_pal_holy_prism : public SpellScriptLoader
+{
+    public:
+        spell_pal_holy_prism() : SpellScriptLoader("spell_pal_holy_prism") { }
+
+        class spell_pal_holy_prism_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_holy_prism_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->IsValidAttackTarget(target))
+                        {
+                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL, true);
+                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL_2, true);
+                        }
+                        else
+                        {
+                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL, true);
+                            _player->CastSpell(target, PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL_2, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_holy_prism_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_holy_prism_SpellScript();
+        }
 };
 
 // Consecration - 26573 (periodic dummy)
@@ -799,6 +929,9 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_holy_prism_visual();
+    new spell_pal_holy_prism_effect();
+    new spell_pal_holy_prism();
     new spell_pal_consecration();
     new spell_pal_consecration_area();
     new spell_pal_word_of_glory();
