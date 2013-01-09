@@ -609,6 +609,7 @@ void AddSC_boss_ook_ook();
 void AddSC_instance_gate_setting_sun();       // Gate of the Setting Sun
 void AddSC_gate_setting_sun();
 void AddSC_boss_saboteur_kiptilak();
+void AddSC_boss_striker_gadok();
 
 //Mogu'Shan Palace
 void AddSC_instance_mogu_shan_palace();
@@ -1275,6 +1276,7 @@ void AddPandarieScripts()
     AddSC_instance_gate_setting_sun();          // Gate of the Setting Sun
     AddSC_gate_setting_sun();
     AddSC_boss_saboteur_kiptilak();
+    AddSC_boss_striker_gadok();
 #endif
 }
 

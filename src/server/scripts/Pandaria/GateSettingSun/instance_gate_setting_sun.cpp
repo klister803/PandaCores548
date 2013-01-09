@@ -1,5 +1,5 @@
 /*
-    Dungeon : Stormstout Brewery 85-87
+    Dungeon : Gate of the Setting Sun 90-90
     Instance General Script
 */
 
@@ -37,6 +37,7 @@ public:
         uint64 raigonnGuid;
 
         uint64 firstDoorGuid;
+        std::vector<uint64> mantidBombsGUID;
 
         uint32 dataStorage[MAX_DATA];
 
@@ -56,6 +57,7 @@ public:
             firstDoorGuid   = 0;
 
             memset(dataStorage, 0, MAX_DATA * sizeof(uint32));
+            mantidBombsGUID.clear();
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -78,8 +80,11 @@ public:
                     firstDoorGuid = go->GetGUID();
                     break;
                 case GO_KIPTILAK_WALLS:
-                case GO_KIPTILAK_EXIT_DOOR :
+                case GO_KIPTILAK_EXIT_DOOR:
                     AddDoor(go, true);
+                    return;
+                case GO_KIPTILAK_MANTID_BOMBS:
+                    mantidBombsGUID.push_back(go->GetGUID());
                     return;
                 default:
                     return;
@@ -90,6 +95,21 @@ public:
         {
             if (!InstanceScript::SetBossState(id, state))
                 return false;
+
+            switch (id)
+            {
+                case DATA_KIPTILAK:
+                {
+                    if (state == DONE)
+                        for (auto itr: mantidBombsGUID)
+                            if (GameObject* bomb = instance->GetGameObject(itr))
+                                bomb->SetPhaseMask(32768, true); // Set Invisible
+
+                    break;
+                }
+                default:
+                    break;
+            }
 
             return true;
         }

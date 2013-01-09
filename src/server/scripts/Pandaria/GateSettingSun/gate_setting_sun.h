@@ -1,5 +1,5 @@
 /*
-    Dungeon : Stormstout Brewery 85-87
+    Dungeon : Gate of the Setting Sun 90-90
     Instance General Script
 */
 
@@ -28,23 +28,34 @@ enum DataTypes
 
 enum CreaturesIds
 {
-    NPC_KIPTILAK    = 56906,
-    NPC_GADOK       = 56589,
-    NPC_RIMOK       = 56636,
-    NPC_RAIGONN     = 56877,
+    NPC_KIPTILAK                = 56906,
+    NPC_GADOK                   = 56589,
+    NPC_RIMOK                   = 56636,
+    NPC_RAIGONN                 = 56877,
 
-    NPC_STABLE_MUNITION     = 56917,
+    // Kip'Tilak
+    NPC_STABLE_MUNITION         = 56917,
 
-    NPC_EXPLOSION_BUNNY_N   = 56911,
-    NPC_EXPLOSION_BUNNY_S   = 56918,
-    NPC_EXPLOSION_BUNNY_E   = 56919,
-    NPC_EXPLOSION_BUNNY_W   = 56920,
+    NPC_EXPLOSION_BUNNY_N_M     = 56911,
+    NPC_EXPLOSION_BUNNY_S_M     = 56918,
+    NPC_EXPLOSION_BUNNY_E_M     = 56919,
+    NPC_EXPLOSION_BUNNY_W_M     = 56920,
+
+    NPC_EXPLOSION_BUNNY_N_P     = 59205,
+    NPC_EXPLOSION_BUNNY_S_P     = 59206,
+    NPC_EXPLOSION_BUNNY_E_P     = 59207,
+    NPC_EXPLOSION_BUNNY_W_P     = 59208,
+
+    // Gadok
+    NPC_STALKER_NORTH_SOUTH     = 56932,
+    NPC_STALKER_WEST_EAST       = 56913
 };
 
 enum ObjectsIds
 {
     GO_KIPTILAK_ENTRANCE_DOOR   = 212982,
     GO_KIPTILAK_WALLS           = 214629,
+    GO_KIPTILAK_MANTID_BOMBS    = 215757,
     GO_KIPTILAK_EXIT_DOOR       = 212983
 };
 
