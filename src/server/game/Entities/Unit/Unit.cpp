@@ -3442,6 +3442,15 @@ void Unit::_RemoveNoStackAurasDueToAura(AuraPtr aura)
         if (aura->CanStackWith(i->second->GetBase()))
             continue;
 
+        // Hack fix remove seal by consecration
+        if ((i->second->GetBase()->GetId() == 105361 ||
+            i->second->GetBase()->GetId() == 101423 ||
+            i->second->GetBase()->GetId() == 31801 ||
+            i->second->GetBase()->GetId() == 20165 ||
+            i->second->GetBase()->GetId() == 20164)
+            && spellProto->Id == 26573)
+            continue;
+
         RemoveAura(i, AURA_REMOVE_BY_DEFAULT);
         if (i == m_appliedAuras.end())
             break;
