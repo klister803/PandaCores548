@@ -589,6 +589,21 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         else if (victim->HasAura(116888))
             return 0;
     }
+    // Leeching Poison - 112961 each attack heal the player for 10% of the damage
+    if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_ROGUE && damage != 0)
+    {
+        if (AuraPtr leechingPoison = victim->GetAura(112961))
+        {
+            if (leechingPoison->GetCaster())
+            {
+                if (leechingPoison->GetCaster()->GetGUID() == GetGUID())
+                {
+                    int32 bp = damage / 10;
+                    CastCustomSpell(this, 112974, &bp, NULL, NULL, true);
+                }
+            }
+        }
+    }
     // Spirit Hunt - 58879 : Feral Spirit heal their owner for 150% of their damage
     if (GetTypeId() == TYPEID_UNIT && GetEntry() == 29264 && damage > 0)
     {
@@ -7958,11 +7973,11 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
             if (!procSpell)
                 return false;
 
-            if (!(procEx & PROC_EX_CRITICAL_HIT) || !(procEx & PROC_EX_BLOCK))
+            if (procEx != PROC_EX_CRITICAL_HIT && procEx != PROC_EX_BLOCK)
                 return false;
 
             // Mortal Strike, Bloodthirst and Colossus Smash critical strikes and critical blocks Enrage you
-            if (procSpell->Id != 12294 || procSpell->Id != 23881 || procSpell->Id != 86346)
+            if (procSpell->Id != 12294 && procSpell->Id != 23881 && procSpell->Id != 86346)
                 return false;
 
             break;

@@ -3127,6 +3127,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 132158: // Nature's Swiftness
+                spellInfo->ProcCharges = 1;
+                break;
             case 127630: // Cascade - damage trigger
             case 120786: // Cascade - heal trigger
                 spellInfo->Effects[1].TargetA = TARGET_UNIT_TARGET_ANY;
@@ -3431,8 +3434,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = 8;
                 break;
             case 76838:  // Mastery : Strikes of Opportunity
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 8;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[1].BasePoints = 8;
                 break;
             case 76856:  // Mastery : Unshackled Fury
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
@@ -3495,6 +3498,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 // Wise Mari Wash Away
             case 106334:
                 spellInfo->AttributesEx3 &= ~ SPELL_ATTR3_ONLY_TARGET_PLAYERS;
+                break;
+            case 107153:
+                spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(16);
                 break;
             default:
                 break;
