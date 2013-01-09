@@ -63,6 +63,43 @@ enum PaladinSpells
     PALADIN_SPELL_HOLY_PRISM_DAMAGE_VISUAL_2     = 114870,
     PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL         = 121551,
     PALADIN_SPELL_HOLY_PRISM_HEAL_VISUAL_2       = 121552,
+    PALADIN_NPC_LIGHTS_HAMMER                    = 59738,
+    PALADIN_SPELL_ARCING_LIGHT_HEAL              = 119952,
+    PALADIN_SPELL_ARCING_LIGHT_DAMAGE            = 114919,
+};
+
+// Light's Hammer (periodic dummy for npc) - 114918
+class spell_pal_lights_hammer : public SpellScriptLoader
+{
+    public:
+        spell_pal_lights_hammer() : SpellScriptLoader("spell_pal_lights_hammer") { }
+
+        class spell_pal_lights_hammer_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_lights_hammer_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                {
+                    if (GetCaster()->GetOwner())
+                    {
+                        GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_HEAL, true, 0, 0, GetCaster()->GetOwner()->GetGUID());
+                        GetCaster()->CastSpell(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(), GetCaster()->GetPositionZ(), PALADIN_SPELL_ARCING_LIGHT_DAMAGE, true, 0, 0, GetCaster()->GetOwner()->GetGUID());
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_pal_lights_hammer_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_lights_hammer_AuraScript();
+        }
 };
 
 // called by Holy Prism (damage) - 114852 or Holy Prism (heal) - 114871
@@ -929,6 +966,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_lights_hammer();
     new spell_pal_holy_prism_visual();
     new spell_pal_holy_prism_effect();
     new spell_pal_holy_prism();
