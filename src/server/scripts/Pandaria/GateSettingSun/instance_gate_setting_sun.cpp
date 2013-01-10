@@ -1,5 +1,5 @@
 /*
-    Dungeon : Stormstout Brewery 85-87
+    Dungeon : Gate of the Setting Sun 90-90
     Instance General Script
 */
 
@@ -10,12 +10,12 @@
 
 DoorData const doorData[] =
 {
-    {GO_KIPTILAK_ENTRANCE_DOOR,             DATA_KIPTILAK,              DOOR_TYPE_ROOM,         BOUNDARY_E   },
     {GO_KIPTILAK_WALLS,                     DATA_KIPTILAK,              DOOR_TYPE_ROOM,         BOUNDARY_E   },
     {GO_KIPTILAK_WALLS,                     DATA_KIPTILAK,              DOOR_TYPE_ROOM,         BOUNDARY_N   },
     {GO_KIPTILAK_WALLS,                     DATA_KIPTILAK,              DOOR_TYPE_ROOM,         BOUNDARY_S   },
     {GO_KIPTILAK_WALLS,                     DATA_KIPTILAK,              DOOR_TYPE_ROOM,         BOUNDARY_W   },
     {GO_KIPTILAK_EXIT_DOOR,                 DATA_KIPTILAK,              DOOR_TYPE_PASSAGE,      BOUNDARY_N   },
+    {GO_RIMAK_AFTER_DOOR,                   DATA_RIMOK,                 DOOR_TYPE_ROOM,         BOUNDARY_S   },
     {0,                                     0,                          DOOR_TYPE_ROOM,         BOUNDARY_NONE},// END
 };
 
@@ -37,6 +37,8 @@ public:
         uint64 raigonnGuid;
 
         uint64 firstDoorGuid;
+        std::vector<uint64> mantidBombsGUID;
+        std::vector<uint64> rimokAddGenetarorsGUID;
 
         uint32 dataStorage[MAX_DATA];
 
@@ -56,16 +58,18 @@ public:
             firstDoorGuid   = 0;
 
             memset(dataStorage, 0, MAX_DATA * sizeof(uint32));
+            mantidBombsGUID.clear();
         }
 
         void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
-                case NPC_KIPTILAK:  kiptilakGuid    = creature->GetGUID();  return;
-                case NPC_GADOK:     gadokGuid       = creature->GetGUID();  return;
-                case NPC_RIMOK:     rimokGuid       = creature->GetGUID();  return;
-                case NPC_RAIGONN:   raigonnGuid     = creature->GetGUID();  return;
+                case NPC_KIPTILAK:      kiptilakGuid    = creature->GetGUID();                  return;
+                case NPC_GADOK:         gadokGuid       = creature->GetGUID();                  return;
+                case NPC_RIMOK:         rimokGuid       = creature->GetGUID();                  return;
+                case NPC_RAIGONN:       raigonnGuid     = creature->GetGUID();                  return;
+                case NPC_ADD_GENERATOR: rimokAddGenetarorsGUID.push_back(creature->GetGUID());  return;
                 default:                                                    return;
             }
         }
@@ -78,8 +82,12 @@ public:
                     firstDoorGuid = go->GetGUID();
                     break;
                 case GO_KIPTILAK_WALLS:
-                case GO_KIPTILAK_EXIT_DOOR :
+                case GO_KIPTILAK_EXIT_DOOR:
+                case GO_RIMAK_AFTER_DOOR:
                     AddDoor(go, true);
+                    return;
+                case GO_KIPTILAK_MANTID_BOMBS:
+                    mantidBombsGUID.push_back(go->GetGUID());
                     return;
                 default:
                     return;
@@ -90,6 +98,40 @@ public:
         {
             if (!InstanceScript::SetBossState(id, state))
                 return false;
+
+            switch (id)
+            {
+                case DATA_KIPTILAK:
+                {
+                    if (state == DONE)
+                        for (auto itr: mantidBombsGUID)
+                            if (GameObject* bomb = instance->GetGameObject(itr))
+                                bomb->SetPhaseMask(32768, true); // Set Invisible
+                    break;
+                }
+                case DATA_RIMOK:
+                {
+                    uint8 generatorsCount = 0;
+
+                    for (auto itr: rimokAddGenetarorsGUID)
+                    {
+                        if (Creature* generator = instance->GetCreature(itr))
+                        {
+                            if (generator->AI())
+                            {
+                                // There is 7 add generators, the middle one spawn saboteur
+                                if (state == IN_PROGRESS && (++generatorsCount == 4))
+                                    generator->AI()->DoAction(SPECIAL);
+                                else
+                                    generator->AI()->DoAction(state);
+                            }
+                        }
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
 
             return true;
         }

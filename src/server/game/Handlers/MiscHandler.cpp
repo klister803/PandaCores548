@@ -1415,7 +1415,7 @@ void WorldSession::HandleInspectHonorStatsOpcode(WorldPacket& recvData)
     WorldPacket data(SMSG_INSPECT_HONOR_STATS, 8+1+4+4);
     
     uint8 bitOrder2[8] = {2, 0, 3, 5, 1, 6, 7, 4};
-    data.WriteBitInOrder(guid, bitOrder2);
+    data.WriteBitInOrder(playerGuid, bitOrder2);
 
     data << uint16(4);
     data.WriteByteSeq(playerGuid[3]);

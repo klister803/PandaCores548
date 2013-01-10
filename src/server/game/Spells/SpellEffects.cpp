@@ -711,29 +711,34 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
     }
     switch (m_spellInfo->Id)
     {
-    case 120165: //Conflagrate
-        {
-            UnitList friends;
-            Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, 5.0f);
-            Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(m_caster, friends, u_check);
-            m_caster->VisitNearbyObject(5.0f, searcher);
-
-            for (auto unit : friends)
+        case 120165: //Conflagrate
             {
-                if (m_caster->GetGUID() == unit->GetGUID())
-                    continue;
-                GetOriginalCaster()->CastSpell(unit, 120160, true);
-                GetOriginalCaster()->CastSpell(unit, 120201, true);
+                UnitList friends;
+                Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, 5.0f);
+                Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(m_caster, friends, u_check);
+                m_caster->VisitNearbyObject(5.0f, searcher);
+
+                for (auto unit : friends)
+                {
+                    if (m_caster->GetGUID() == unit->GetGUID())
+                        continue;
+                    GetOriginalCaster()->CastSpell(unit, 120160, true);
+                    GetOriginalCaster()->CastSpell(unit, 120201, true);
+                }
             }
+            break;
+        case 107045: //Jade Fire
+            m_caster->CastSpell(unitTarget, 107098, false);
+            break;
+        case 106299: //Summon Living Air
+        {
+            TempSummon* enne = m_caster->SummonCreature(54631, m_caster->GetPositionX()+rand()%5, m_caster->GetPositionY()+2+rand()%5, m_caster->GetPositionZ()+1, 3.3f,TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
+            enne->AddThreat(m_caster, 2000.f);
+            break;
         }
-        break;
-    case 107045: //Jade Fire 
-        m_caster->CastSpell(unitTarget, 107098, false);
-        break;
-    case 106299: //Summon Living Air
-        TempSummon* enne = m_caster->SummonCreature(54631, m_caster->GetPositionX()+rand()%5, m_caster->GetPositionY()+2+rand()%5, m_caster->GetPositionZ()+1, 3.3f,TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
-        enne->AddThreat(m_caster, 2000.f);
-        break;
+        case 120202: // Gate of the Setting Sun | Boss 3 | Bombard
+            spell_id = GetSpellInfo()->Effects[0].BasePoints;
+            break;
     }
 
     //spells triggered by dummy effect should not miss
