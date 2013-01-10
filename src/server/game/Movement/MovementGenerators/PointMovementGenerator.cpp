@@ -155,7 +155,7 @@ void EffectMovementGenerator::MovementInform(Unit &unit)
         Creature* creature = unit.ToCreature();
 
         if (creature->AI())
-            creature->AI()->MovementInform(POINT_MOTION_TYPE, m_Id);
+            creature->AI()->MovementInform(EFFECT_MOTION_TYPE, m_Id);
     }
     else if (unit.GetTypeId() == TYPEID_PLAYER)
     {
