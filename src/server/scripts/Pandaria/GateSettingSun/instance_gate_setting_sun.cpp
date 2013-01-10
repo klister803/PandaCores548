@@ -10,12 +10,12 @@
 
 DoorData const doorData[] =
 {
-    {GO_KIPTILAK_ENTRANCE_DOOR,             DATA_KIPTILAK,              DOOR_TYPE_ROOM,         BOUNDARY_E   },
     {GO_KIPTILAK_WALLS,                     DATA_KIPTILAK,              DOOR_TYPE_ROOM,         BOUNDARY_E   },
     {GO_KIPTILAK_WALLS,                     DATA_KIPTILAK,              DOOR_TYPE_ROOM,         BOUNDARY_N   },
     {GO_KIPTILAK_WALLS,                     DATA_KIPTILAK,              DOOR_TYPE_ROOM,         BOUNDARY_S   },
     {GO_KIPTILAK_WALLS,                     DATA_KIPTILAK,              DOOR_TYPE_ROOM,         BOUNDARY_W   },
     {GO_KIPTILAK_EXIT_DOOR,                 DATA_KIPTILAK,              DOOR_TYPE_PASSAGE,      BOUNDARY_N   },
+    {GO_RIMAK_AFTER_DOOR,                   DATA_RIMOK,                 DOOR_TYPE_ROOM,         BOUNDARY_S   },
     {0,                                     0,                          DOOR_TYPE_ROOM,         BOUNDARY_NONE},// END
 };
 
@@ -38,6 +38,7 @@ public:
 
         uint64 firstDoorGuid;
         std::vector<uint64> mantidBombsGUID;
+        std::vector<uint64> rimokAddGenetarorsGUID;
 
         uint32 dataStorage[MAX_DATA];
 
@@ -64,14 +65,11 @@ public:
         {
             switch (creature->GetEntry())
             {
-                case NPC_KIPTILAK:  kiptilakGuid    = creature->GetGUID();  return;
-                case NPC_GADOK:     gadokGuid       = creature->GetGUID();  return;
-                case NPC_RIMOK:     rimokGuid       = creature->GetGUID();  return;
-                case NPC_RAIGONN:   raigonnGuid     = creature->GetGUID();  return;
-
-                // Spawn in center of the Ga'Dok tower, we must make them move around the tower
-                case NPC_KRIKTHIK_STRIKER:
-                case NPC_KRIKTHIK_DISRUPTOR:
+                case NPC_KIPTILAK:      kiptilakGuid    = creature->GetGUID();                  return;
+                case NPC_GADOK:         gadokGuid       = creature->GetGUID();                  return;
+                case NPC_RIMOK:         rimokGuid       = creature->GetGUID();                  return;
+                case NPC_RAIGONN:       raigonnGuid     = creature->GetGUID();                  return;
+                case NPC_ADD_GENERATOR: rimokAddGenetarorsGUID.push_back(creature->GetGUID());  return;
                 default:                                                    return;
             }
         }
@@ -85,6 +83,7 @@ public:
                     break;
                 case GO_KIPTILAK_WALLS:
                 case GO_KIPTILAK_EXIT_DOOR:
+                case GO_RIMAK_AFTER_DOOR:
                     AddDoor(go, true);
                     return;
                 case GO_KIPTILAK_MANTID_BOMBS:
@@ -108,7 +107,28 @@ public:
                         for (auto itr: mantidBombsGUID)
                             if (GameObject* bomb = instance->GetGameObject(itr))
                                 bomb->SetPhaseMask(32768, true); // Set Invisible
+                    break;
+                }
+                case DATA_RIMOK:
+                {
+                    bool first = true;
 
+                    for (auto itr: rimokAddGenetarorsGUID)
+                    {
+                        if (Creature* generator = instance->GetCreature(itr))
+                        {
+                            if (generator->AI())
+                            {
+                                if (first && state == IN_PROGRESS)
+                                {
+                                    generator->AI()->DoAction(SPECIAL);
+                                    first = false;
+                                }
+                                else
+                                    generator->AI()->DoAction(state);
+                            }
+                        }
+                    }
                     break;
                 }
                 default:

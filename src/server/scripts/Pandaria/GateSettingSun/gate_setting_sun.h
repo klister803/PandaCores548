@@ -52,6 +52,12 @@ enum CreaturesIds
 
     NPC_KRIKTHIK_STRIKER        = 59778, // Appear on Gadok bombardment
     NPC_KRIKTHIK_DISRUPTOR      = 59794, // Bombard tower when Gadok is in fight
+
+    // Rimok
+    NPC_ADD_GENERATOR           = 59834,
+
+    NPC_KRIKTHIK_SWARMER        = 59835,
+    NPC_KRIKTHIK_SABOTEUR       = 60447,
 };
 
 enum ObjectsIds
@@ -59,7 +65,9 @@ enum ObjectsIds
     GO_KIPTILAK_ENTRANCE_DOOR   = 212982,
     GO_KIPTILAK_WALLS           = 214629,
     GO_KIPTILAK_MANTID_BOMBS    = 215757,
-    GO_KIPTILAK_EXIT_DOOR       = 212983
+    GO_KIPTILAK_EXIT_DOOR       = 212983,
+
+    GO_RIMAK_AFTER_DOOR         = 212985
 };
 
 #endif // STORMSTOUT_BREWERY_H_
