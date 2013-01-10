@@ -824,8 +824,14 @@ class spell_dru_eclipse : public SpellScriptLoader
 
                                     // Your crits with wrath also increase sunfire duration by 2s
                                     if (GetSpell()->IsCritForTarget(target))
+                                    {
                                         if (AuraPtr aura = target->GetAura(SPELL_DRUID_SUNFIRE))
+                                        {
                                             aura->SetDuration(aura->GetDuration() + 2);
+                                            if (aura->GetMaxDuration() < aura->GetDuration())
+                                                aura->SetMaxDuration(aura->GetDuration());
+                                        }
+                                    }
 
                                     break;
                                 }
@@ -849,8 +855,14 @@ class spell_dru_eclipse : public SpellScriptLoader
 
                                     // Your crits with wrath also increase moonfire duration by 2s
                                     if (GetSpell()->IsCritForTarget(target))
+                                    {
                                         if (AuraPtr aura = target->GetAura(SPELL_DRUID_MOONFIRE))
+                                        {
                                             aura->SetDuration(aura->GetDuration() + 2);
+                                            if (aura->GetMaxDuration() < aura->GetDuration())
+                                                aura->SetMaxDuration(aura->GetDuration());
+                                        }
+                                    }
 
                                     break;
                                 }
@@ -886,12 +898,24 @@ class spell_dru_eclipse : public SpellScriptLoader
 
                                     // Your crits with wrath also increase sunfire duration by 2s
                                     if (GetSpell()->IsCritForTarget(target))
+                                    {
                                         if (AuraPtr aura = target->GetAura(SPELL_DRUID_SUNFIRE))
+                                        {
                                             aura->SetDuration(aura->GetDuration() + 2);
+                                            if (aura->GetMaxDuration() < aura->GetDuration())
+                                                aura->SetMaxDuration(aura->GetDuration());
+                                        }
+                                    }
                                     // Your crits with wrath also increase moonfire duration by 2s
                                     if (GetSpell()->IsCritForTarget(target))
+                                    {
                                         if (AuraPtr aura = target->GetAura(SPELL_DRUID_MOONFIRE))
+                                        {
                                             aura->SetDuration(aura->GetDuration() + 2);
+                                            if (aura->GetMaxDuration() < aura->GetDuration())
+                                                aura->SetMaxDuration(aura->GetDuration());
+                                        }
+                                    }
 
                                     break;
                                 }
