@@ -1970,7 +1970,7 @@ void Group::SendUpdateToPlayer(uint64 playerGUID, MemberSlot* slot)
     if (true)
     {
         uint8 bitOrder[8] = {7, 0, 1, 5, 6, 2, 4, 3};
-        data.WriteBitInOrder(guid, bitOrder);
+        data.WriteBitInOrder(looterGuid, bitOrder);
     }
 
     data.WriteBit(leaderGuid[4]);
