@@ -564,6 +564,16 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellId = newSpellInfo->Id;
         }
     }
+    // Consecration - 116467 and Consecration - 26573
+    if (spellInfo->Id == 116467)
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(26573);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
     // Cascade (shadow) - 127632 and Cascade - 121135
     if (spellInfo->Id == 121135 && _player->HasAura(15473))
     {

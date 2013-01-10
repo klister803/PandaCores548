@@ -2228,9 +2228,6 @@ uint32 SpellInfo::CalcPowerCost(Unit const* caster, SpellSchoolMask schoolMask, 
     SpellSchools school = GetFirstSchoolInMask(schoolMask);
     // Flat mod from caster auras by spell school
     powerCost += caster->GetInt32Value(UNIT_FIELD_POWER_COST_MODIFIER + school);
-    // Shiv - costs 20 + weaponSpeed*10 energy (apply only to non-triggered spell with energy cost)
-    if (AttributesEx4 & SPELL_ATTR4_SPELL_VS_EXTEND_COST)
-        powerCost += caster->GetAttackTime(OFF_ATTACK) / 100;
     // Apply cost mod by spell
     if (Player* modOwner = caster->GetSpellModOwner())
         modOwner->ApplySpellMod(Id, SPELLMOD_COST, powerCost);

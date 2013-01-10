@@ -184,6 +184,50 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 chrClass, uint8 level
     // level dependent taxi hubs
     if (level >= 68)
         SetTaximaskNode(213);                               //Shattered Sun Staging Area
+
+    // Add Taxi Nodes availables from player level
+    for (int i = 0; i < sTaxiNodesStore.GetNumRows(); i++)
+    {
+    	TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(i);
+    	if (!node)
+    		continue;
+
+    	// Bad map id
+    	if (!sMapStore.LookupEntry(node->map_id))
+    		continue;
+
+        int gx=(int)(32-node->x/SIZE_OF_GRIDS);                       //grid x
+        int gy=(int)(32-node->y/SIZE_OF_GRIDS);                       //grid y
+
+        // Bad positions
+        if (gx < 0 || gy < 0)
+        	continue;
+
+    	uint32 zone = sMapMgr->GetZoneId(node->map_id, node->x, node->y, node->z);
+    	if (!zone)
+    		continue;
+
+    	WorldMapAreaEntry const* worldMapArea = sWorldMapAreaStore.LookupEntry(zone);
+    	if (!worldMapArea)
+    		continue;
+
+    	uint32 team = Player::TeamForRace(race);
+
+    	if (!node->MountCreatureID[team == ALLIANCE ? 1 : 0])
+    		continue;
+
+    	if (!worldMapArea->minRecommendedLevel || worldMapArea->area_id != 4922 /*Hackfix for TwilightHighlands map swapping*/)
+    		continue;
+
+    	uint32 level = worldMapArea->minRecommendedLevel;
+
+    	// Hackfix for TwilightHighlands map swapping
+    	if (worldMapArea->area_id == 4922)
+    		level = 84;
+
+    	if (worldMapArea->minRecommendedLevel <= level)
+    		SetTaximaskNode(node->ID);
+    }
 }
 
 void PlayerTaxi::LoadTaxiMask(std::string const &data)
@@ -8927,10 +8971,6 @@ void Player::CastItemCombatSpell(Unit* target, WeaponAttackType attType, uint32 
 
             // Apply spell mods
             ApplySpellMod(pEnchant->spellid[s], SPELLMOD_CHANCE_OF_SUCCESS, chance);
-
-            // Shiv has 100% chance to apply the poison
-            if (FindCurrentSpellBySpellId(5938) && e_slot == TEMP_ENCHANTMENT_SLOT)
-                chance = 100.0f;
 
             if (roll_chance_f(chance))
             {
@@ -26623,7 +26663,7 @@ void Player::_LoadStore()
 {
     PreparedStatement* stmt = NULL;
 
-    // Load des items achetés
+    // Load des items achetï¿½s
     stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_BOUTIQUE_ITEM);
     stmt->setInt32(0, GetGUIDLow());
     PreparedQueryResult itemList = CharacterDatabase.Query(stmt);
@@ -26747,7 +26787,7 @@ void Player::_LoadStore()
             GetSession()->SendNotification("%d pieces d'or vous ont ete ajoutee suite a votre commande sur la boutique", (goldCount/1000));
     }
 
-    // Load des métiers
+    // Load des mï¿½tiers
     /*PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_BOUTIQUE_METIER);
     stmt->setInt32(0, GetGUIDLow());
     PreparedQueryResult metierList = CharacterDatabase.Query(stmt);
@@ -26796,7 +26836,7 @@ void Player::_LoadStore()
         while(metierList->NextRow());
 	}*/
 
-    // Uniquement un SaveToDB, en mettre a chaque transaction cause des deadlocks 
-    // car chaque SaveToDB part dans un thread Mysql différent
+    // Uniquement un SaveToDB, en mettre a chaque transaction cause des deadlocks
+    // car chaque SaveToDB part dans un thread Mysql diffï¿½rent
     SaveToDB();
 }

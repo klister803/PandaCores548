@@ -589,6 +589,21 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         else if (victim->HasAura(116888))
             return 0;
     }
+    // Leeching Poison - 112961 each attack heal the player for 10% of the damage
+    if (GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_ROGUE && damage != 0)
+    {
+        if (AuraPtr leechingPoison = victim->GetAura(112961))
+        {
+            if (leechingPoison->GetCaster())
+            {
+                if (leechingPoison->GetCaster()->GetGUID() == GetGUID())
+                {
+                    int32 bp = damage / 10;
+                    CastCustomSpell(this, 112974, &bp, NULL, NULL, true);
+                }
+            }
+        }
+    }
     // Spirit Hunt - 58879 : Feral Spirit heal their owner for 150% of their damage
     if (GetTypeId() == TYPEID_UNIT && GetEntry() == 29264 && damage > 0)
     {
@@ -3425,6 +3440,15 @@ void Unit::_RemoveNoStackAurasDueToAura(AuraPtr aura)
         }
 
         if (aura->CanStackWith(i->second->GetBase()))
+            continue;
+
+        // Hack fix remove seal by consecration
+        if ((i->second->GetBase()->GetId() == 105361 ||
+            i->second->GetBase()->GetId() == 101423 ||
+            i->second->GetBase()->GetId() == 31801 ||
+            i->second->GetBase()->GetId() == 20165 ||
+            i->second->GetBase()->GetId() == 20164)
+            && spellProto->Id == 26573)
             continue;
 
         RemoveAura(i, AURA_REMOVE_BY_DEFAULT);
@@ -9930,6 +9954,8 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 WeaponAttackType attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK;
                 float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
                 APbonus += GetTotalAttackPowerValue(attType);
+                if (spellProto && spellProto->Id == 81297)
+                    APbonus += GetTotalAttackPowerValue(BASE_ATTACK);
                 DoneTotal += int32(bonus->ap_bonus * stack * ApCoeffMod * APbonus);
             }
         }
@@ -9959,6 +9985,15 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
         if (roll_chance_f(Mastery))
             DoneTotalMod *= 2.0f;
+    }
+
+    // Fix spellPower bonus for Holy Prism
+    if (spellProto && (spellProto->Id == 114871 || spellProto->Id == 114852) && GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_PALADIN)
+    {
+        if (spellProto->Id == 114871)
+            DoneTotal = int32(1.962 * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
+        else
+            DoneTotal = int32(2.428 * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
     }
 
     float tmpDamage = (int32(pdamage) + DoneTotal) * DoneTotalMod;
@@ -10230,11 +10265,6 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                            break;
                         }
                     break;
-                    case SPELLFAMILY_ROGUE:
-                        // Shiv-applied poisons can't crit
-                        if (FindCurrentSpellBySpellId(5938))
-                            crit_chance = 0.0f;
-                        break;
                     case SPELLFAMILY_SHAMAN:
                         // Lava Burst
                         if (spellProto->Id == 51505 || spellProto->Id == 77451)
@@ -10479,6 +10509,15 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
             DoneTotal = 0;
     }
 
+    // Fix spellPower bonus for Holy Prism
+    if (spellProto && (spellProto->Id == 114871 || spellProto->Id == 114852) && GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_PALADIN)
+    {
+        if (spellProto->Id == 114852)
+            DoneTotal = int32(1.962 * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
+        else
+            DoneTotal = int32(2.428 * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
+    }
+
     // use float as more appropriate for negative values and percent applying
     float heal = float(int32(healamount) + DoneTotal) * DoneTotalMod;
     // apply spellmod to Done amount
@@ -10489,8 +10528,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     // Word of Glory - 130551
     if (spellProto->Id == 130551 && GetTypeId() == TYPEID_PLAYER)
     {
-        int32 holyPower = GetPower(POWER_HOLY_POWER) > 3 ? 3 : GetPower(POWER_HOLY_POWER);
-        heal *= holyPower;
+        int32 holyPower = GetPower(POWER_HOLY_POWER) > 2 ? 2 : GetPower(POWER_HOLY_POWER);
+        heal *= (holyPower+1);
     }
     // Ascendance - 114052 : Water Ascendant - Healing done is duplicated and distribued evenly among all nearby (15 yards) allies
     if (GetTypeId() == TYPEID_PLAYER && heal != 0 && HasAura(114052) && spellProto->Id != 114083)
