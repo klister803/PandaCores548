@@ -22,6 +22,9 @@
 
 struct StrafPointStruct
 {
+    uint8 pointIdBeginOutside;
+    Position beginOutside;
+
     uint8 pointIdBegin;
     Position begin;
     
@@ -49,19 +52,23 @@ enum eMovements
     POINT_WEST_OUTSIDE      = 11,
     POINT_EAST_OUTSIDE      = 12,
 
-    MOV_NORTH_SOUTH     = 0,
-    MOV_SOUTH_NORTH     = 1,
-    MOV_WEST_EAST       = 2,
-    MOV_EAST_WEST       = 3
+    POINT_KRIKTHIK_CIRCLE   = 13,
+
+    MOV_NORTH_SOUTH         = 0,
+    MOV_SOUTH_NORTH         = 1,
+    MOV_WEST_EAST           = 2,
+    MOV_EAST_WEST           = 3
 };
 
 StrafPointStruct StrafPoints[4] =
 {
-    { POINT_NORTH_START, {1238.007f, 2304.644f, 435.0f, 0.0f}, POINT_NORTH_END, {1153.398f, 2304.578f, 435.0f, 0.0f}, POINT_NORTH_OUTSIDE, {1133.4f, 2304.578f, 438.0f, 0.0f} }, // North -> South
-    { POINT_SOUTH_START, {1153.398f, 2304.578f, 435.0f, 0.0f}, POINT_SOUTH_END, {1238.007f, 2304.644f, 435.0f, 0.0f}, POINT_SOUTH_OUTSIDE, {1258.0f, 2304.644f, 438.0f, 0.0f} }, // South -> North
-    { POINT_WEST_START,  {1195.299f, 2348.941f, 435.0f, 0.0f}, POINT_WEST_END,  {1195.392f, 2263.441f, 435.0f, 0.0f}, POINT_WEST_OUTSIDE,  {1195.4f, 2243.441f, 438.0f, 0.0f} }, // West  -> East
-    { POINT_EAST_START,  {1195.392f, 2263.441f, 435.0f, 0.0f}, POINT_EAST_END,  {1195.299f, 2348.941f, 435.0f, 0.0f}, POINT_EAST_OUTSIDE,  {1195.3f, 2366.941f, 438.0f, 0.0f} }  // East  -> West
+    { POINT_NORTH_OUTSIDE, {1258.0f, 2304.644f, 438.0f, 0.0f}, POINT_NORTH_START, {1238.007f, 2304.644f, 435.0f, 0.0f}, POINT_NORTH_END, {1153.398f, 2304.578f, 435.0f, 0.0f}, POINT_SOUTH_OUTSIDE, {1133.4f, 2304.578f, 438.0f, 0.0f} }, // North -> South
+    { POINT_SOUTH_OUTSIDE, {1133.4f, 2304.578f, 438.0f, 0.0f}, POINT_SOUTH_START, {1153.398f, 2304.578f, 435.0f, 0.0f}, POINT_SOUTH_END, {1238.007f, 2304.644f, 435.0f, 0.0f}, POINT_NORTH_OUTSIDE, {1258.0f, 2304.644f, 438.0f, 0.0f} }, // South -> North
+    { POINT_WEST_OUTSIDE,  {1195.3f, 2366.941f, 438.0f, 0.0f}, POINT_WEST_START,  {1195.299f, 2348.941f, 435.0f, 0.0f}, POINT_WEST_END,  {1195.392f, 2263.441f, 435.0f, 0.0f}, POINT_EAST_OUTSIDE,  {1195.4f, 2243.441f, 438.0f, 0.0f} }, // West  -> East
+    { POINT_EAST_OUTSIDE,  {1195.4f, 2243.441f, 438.0f, 0.0f}, POINT_EAST_START,  {1195.392f, 2263.441f, 435.0f, 0.0f}, POINT_EAST_END,  {1195.299f, 2348.941f, 435.0f, 0.0f}, POINT_WEST_OUTSIDE,  {1195.3f, 2366.941f, 438.0f, 0.0f} }  // East  -> West
 };
+
+Position CenterPos = {1195.0f, 2304.0f, 438.0f};
 
 enum eSpells
 {
@@ -70,19 +77,26 @@ enum eSpells
 
     SPELL_STRAFING_RUN      = 107342,
     SPELL_STRAFIND_RUN_DMG  = 116298,
+
+    SPELL_RIDE_VEHICLE      = 46598,
+
+    // Disruptor
+    SPELL_BOMB              = 115110
 };
 
 enum eEvents
 {
     EVENT_PREY_TIME         = 1,
-    EVENT_IMPALING_STRIKE   = 2
+    EVENT_IMPALING_STRIKE   = 2,
+
+    EVENT_DISRUPTOR_BOMBARD = 3,
 };
 
 enum ePhases
 {
-    PHASE_NONE          = 0,
-    PHASE_NORTH_SOUTH   = 1,
-    PHASE_WEST_EAST     = 2
+    PHASE_MAIN          = 1,
+    PHASE_NORTH_SOUTH   = 2,
+    PHASE_WEST_EAST     = 3
 };
 
 enum eStrafing
@@ -91,6 +105,10 @@ enum eStrafing
     STRAF_70      = 1,
     STRAF_30      = 2
 };
+
+#define MAX_DISRUPTOR   5
+#define MAX_STRIKER     10
+#define RADIUS_CIRCLE   100.0f
 
 class boss_striker_gadok : public CreatureScript
 {
@@ -112,14 +130,10 @@ class boss_striker_gadok : public CreatureScript
 
             uint8 strafingEventCount;
             uint8 strafingEventProgress;
-
             uint8 move;
 
             void Reset()
             {
-                if (!instance)
-                    return;
-
                 _Reset();
                 isStrafing = false;
 
@@ -128,8 +142,34 @@ class boss_striker_gadok : public CreatureScript
                 strafingEventCount = 0;
                 strafingEventProgress = 0;
                 move = 0;
+                me->GetMotionMaster()->Clear();
 
-                instance->SetData(DATA_GADOK, PHASE_NONE);
+                summons.DespawnAll();
+                DoSpawnKrikThik();
+
+                if (instance)
+                    instance->SetData(DATA_GADOK, PHASE_MAIN);
+
+                events.ScheduleEvent(EVENT_PREY_TIME, 10000, PHASE_MAIN);
+                events.ScheduleEvent(EVENT_IMPALING_STRIKE, 19000, PHASE_MAIN);
+            }
+
+            void DoSpawnKrikThik()
+            {
+                for (uint8 i = 0; i < MAX_DISRUPTOR; ++i)
+                    SummonKrikThik(NPC_KRIKTHIK_DISRUPTOR);
+
+                for (uint8 i = 0; i < MAX_STRIKER; ++i)
+                    SummonKrikThik(NPC_KRIKTHIK_STRIKER);
+            }
+
+            TempSummon* SummonKrikThik(uint32 creatureId)
+            {
+                float angle = frand(0, 2*M_PI);
+                float x = CenterPos.GetPositionX() + (RADIUS_CIRCLE * std::cos(angle));
+                float y = CenterPos.GetPositionY() + (RADIUS_CIRCLE * std::sin(angle));
+
+                return me->SummonCreature(creatureId, x, y, CenterPos.GetPositionZ());
             }
 
             void EnterCombat(Unit* /*who*/)
@@ -139,15 +179,17 @@ class boss_striker_gadok : public CreatureScript
 
             void JustReachedHome()
             {
-                if (!instance)
-                    return;
+                if (instance)
+                    instance->SetBossState(DATA_GADOK, FAIL);
 
-                instance->SetBossState(DATA_GADOK, FAIL);
                 summons.DespawnAll();
             }
 
             void MovementInform(uint32 type, uint32 id)
             {
+                if (type != POINT_MOTION_TYPE)
+                    return;
+
                 switch (id)
                 {
                     case POINT_NORTH_START:   case POINT_SOUTH_START:   case POINT_WEST_START:   case POINT_EAST_START:
@@ -173,12 +215,14 @@ class boss_striker_gadok : public CreatureScript
                         ++strafingEventCount;
                     }
                 }
+                // Must not die during Strafing
+                else if (damage >= me->GetHealth())
+                    damage = 0;
             }
 
             uint8 SelectNextStartPoint()
             {
                 // In videos, Gadok follow the opposite direction of clockwise, to confirm
-
                 switch (move)
                 {
                     case MOV_NORTH_SOUTH:   return MOV_WEST_EAST;
@@ -193,14 +237,12 @@ class boss_striker_gadok : public CreatureScript
 
             void DoStrafingEvent()
             {
-                if (!instance)
-                    return;
-
                 switch (strafingEventProgress)
                 {
                     case 0: // Begin, Gadok is 70% or 30% health, he go to the first POINT_START
                         isStrafing = true;
                         me->SetReactState(REACT_PASSIVE);
+                        events.CancelEventGroup(PHASE_MAIN);
 
                         move = urand(MOV_NORTH_SOUTH, MOV_EAST_WEST);
 
@@ -209,7 +251,13 @@ class boss_striker_gadok : public CreatureScript
 
                         me->GetMotionMaster()->MovePoint(StrafPoints[move].pointIdBegin, StrafPoints[move].begin.GetPositionX(), StrafPoints[move].begin.GetPositionY(), StrafPoints[move].begin.GetPositionZ());
 
+                        for (uint8 i = 0; i < 2; ++i)
+                            if (Creature* striker = SummonKrikThik(NPC_KRIKTHIK_STRIKER))
+                                if (striker->AI())
+                                    striker->AI()->DoAction(0);
+
                         ++strafingEventProgress;
+                        me->SetWalk(false);
                         strafingTimer = 0;
                         break;
                     case 1: // We are a POINT_START, wait 2 sec then continue
@@ -217,21 +265,38 @@ class boss_striker_gadok : public CreatureScript
                         strafingTimer = 2000;
                         break;
                     case 2: // 2 sec passed, move to POINT_END with the spell
-                        // Todo : set speed to 2
+                        me->SetSpeed(MOVE_FLIGHT, 2.0f, true);
                         me->GetMotionMaster()->MovePoint(StrafPoints[move].pointIdEnd, StrafPoints[move].end.GetPositionX(), StrafPoints[move].end.GetPositionY(), StrafPoints[move].end.GetPositionZ());
                         me->CastSpell(me, SPELL_STRAFING_RUN, true);
 
                         ++strafingEventProgress;
                         break;
-                    case 3: // First strafing finished, we are at a POINT_END and go to POINT_OUTSIDE
+                    case 3: // We are a POINT_END, wait 500 ms to let movement finish then continue
+                        ++strafingEventProgress;
+                        strafingTimer = 50;
+                        break;
+                    case 4: // First strafing finished, we are at a POINT_END and go to POINT_OUTSIDE
                         if (instance)
-                            instance->SetData(DATA_GADOK, PHASE_NONE);
+                            instance->SetData(DATA_GADOK, PHASE_MAIN);
 
                         me->GetMotionMaster()->MovePoint(StrafPoints[move].pointIdOutside, StrafPoints[move].outside.GetPositionX(), StrafPoints[move].outside.GetPositionY(), StrafPoints[move].outside.GetPositionZ());
                         ++strafingEventProgress;
                         break;
-                    case 4: // We are POINT_OUTSIDE, go to the next POINT_START
+                    case 5: // We are a POINT_OUTSIDE, wait 500 ms to let movement finish then continue
+                        ++strafingEventProgress;
+                        strafingTimer = 50;
+                        break;
+                    case 6: // We are POINT_OUTSIDE, go to the next POINT_OUTSIDE_START
                         move = SelectNextStartPoint();
+
+                        me->GetMotionMaster()->MovePoint(StrafPoints[move].pointIdBeginOutside, StrafPoints[move].beginOutside.GetPositionX(), StrafPoints[move].beginOutside.GetPositionY(), StrafPoints[move].beginOutside.GetPositionZ());
+                        ++strafingEventProgress;
+                        break;
+                    case 7: // We are POINT_OUTSIDE_START, wait 500 ms to let movement finish then continue
+                        ++strafingEventProgress;
+                        strafingTimer = 50;
+                        break;
+                    case 8: // We are at POINT_OUTSIDE_START, go to POINT_START
 
                         if (instance)
                             instance->SetData(DATA_GADOK, move <= MOV_SOUTH_NORTH ? PHASE_NORTH_SOUTH: PHASE_WEST_EAST);
@@ -240,32 +305,40 @@ class boss_striker_gadok : public CreatureScript
 
                         ++strafingEventProgress;
                         break;
-                    case 5: // Just arrived to second POINT_START, wait 2 sec
+                    case 9: // Just arrived to second POINT_START, wait 2 sec
                         ++strafingEventProgress;
-                        strafingTimer = 2000;
+                        strafingTimer = 50;
                         break;
-                    case 6: // 2 sec passed, move to POINT_END with the spell
-                        // Todo : set speed to 2
+                    case 10: // 2 sec passed, move to POINT_END with the spell
+                        me->SetSpeed(MOVE_FLIGHT, 2.0f, true);
                         me->GetMotionMaster()->MovePoint(StrafPoints[move].pointIdEnd, StrafPoints[move].end.GetPositionX(), StrafPoints[move].end.GetPositionY(), StrafPoints[move].end.GetPositionZ());
                         me->CastSpell(me, SPELL_STRAFING_RUN, true);
 
                         ++strafingEventProgress;
                         break;
-                    case 7: // POINT_END, End Strafing Event, go back to fight
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                        {
-                            me->GetMotionMaster()->MoveCharge(target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+                    case 11: // We are a POINT_END, wait 500 ms to let movement finish then continue
+                        ++strafingEventProgress;
+                        strafingTimer = 50;
+                        break;
+                    case 12: // POINT_END, End Strafing Event, go back to fight
+                        if (me->getVictim())
+                            me->GetMotionMaster()->MoveChase(me->getVictim());
+                        else if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0.0f, true))
                             me->AI()->AttackStart(target);
-                        }
 
                         if (instance)
-                            instance->SetData(DATA_GADOK, PHASE_NONE);
+                            instance->SetData(DATA_GADOK, PHASE_MAIN);
 
                         move = 0;
                         me->SetReactState(REACT_AGGRESSIVE);
                         strafingTimer = 0;
                         strafingEventProgress = 0;
                         isStrafing = false;
+                        me->SetSpeed(MOVE_FLIGHT, 1.134f, true);
+                        me->SetWalk(true);
+
+                        events.ScheduleEvent(EVENT_PREY_TIME, 5000, PHASE_MAIN);
+                        events.ScheduleEvent(EVENT_IMPALING_STRIKE, 9000, PHASE_MAIN);
                         break;
                     default:
                         break;
@@ -275,6 +348,16 @@ class boss_striker_gadok : public CreatureScript
             void JustSummoned(Creature* summoned)
             {
                 summons.Summon(summoned);
+
+                switch (summoned->GetEntry())
+                {
+                    case NPC_KRIKTHIK_STRIKER:
+                    case NPC_KRIKTHIK_DISRUPTOR:
+                        summoned->SetSpeed(MOVE_FLIGHT, 2);
+                        break;
+                    default:
+                        break;
+                }
             }
 
             void UpdateAI(const uint32 diff)
@@ -294,12 +377,33 @@ class boss_striker_gadok : public CreatureScript
                     else strafingTimer -= diff;
                 }
 
+                switch (events.ExecuteEvent())
+                {
+                    case EVENT_PREY_TIME:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                            me->CastSpell(target, SPELL_PREY_TIME, false);
+
+                        events.ScheduleEvent(EVENT_PREY_TIME, 10000, PHASE_MAIN);
+                        break;
+                    case EVENT_IMPALING_STRIKE:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
+                            me->CastSpell(target, SPELL_IMPALING_STRIKE, false);
+
+                        events.ScheduleEvent(EVENT_IMPALING_STRIKE, 19000, PHASE_MAIN);
+                        break;
+                }
+
                 DoMeleeAttackIfReady();
             }
 
             void JustDied(Unit* /*killer*/)
             {
-                _JustDied();
+                events.Reset();
+                if (instance)
+                {
+                    instance->SetBossState(DATA_GADOK, DONE);
+                    instance->SaveToDB();
+                }
             }
         };
 
@@ -307,6 +411,180 @@ class boss_striker_gadok : public CreatureScript
         {
             return new boss_striker_gadokAI(creature);
         }
+};
+
+// Base struct for circle movements
+struct npc_krikthik : public ScriptedAI
+{
+    npc_krikthik(Creature* creature) : ScriptedAI(creature) {}
+
+    uint32 nextMovementTimer;
+    float actualAngle;
+    float myPositionZ;
+    bool direction;
+
+    void Reset()
+    {
+        nextMovementTimer = 0;
+        actualAngle = me->GetAngle(CenterPos.GetPositionX(), CenterPos.GetPositionY());
+        direction = urand(0, 1);
+
+        if (direction)
+            myPositionZ = 435.0f;
+        else
+            myPositionZ = 440.0f;
+
+        // Enable Movements
+        MovementInform(POINT_MOTION_TYPE, POINT_KRIKTHIK_CIRCLE);
+
+        me->setActive(true);
+    }
+
+    void MovementInform(uint32 type, uint32 id)
+    {
+        if (type != POINT_MOTION_TYPE)
+            return;
+
+        if (id == POINT_KRIKTHIK_CIRCLE)
+            nextMovementTimer = 50;
+    }
+
+    void SelectNextWaypoint(float& x, float& y)
+    {
+        if (direction)
+            actualAngle -= M_PI / 8;
+        else
+            actualAngle += M_PI / 8;
+
+        x = CenterPos.GetPositionX() + (me->GetObjectSize() + RADIUS_CIRCLE) * std::cos(actualAngle);
+        y = CenterPos.GetPositionY() + (me->GetObjectSize() + RADIUS_CIRCLE) * std::sin(actualAngle);
+    }
+
+    void UpdateAI(const uint32 diff)
+    {
+        if (nextMovementTimer)
+        {
+            if (nextMovementTimer <= diff)
+            {
+                nextMovementTimer = 0;
+
+                float x = 0.0f;
+                float y = 0.0f;
+                SelectNextWaypoint(x, y);
+
+                me->GetMotionMaster()->MovePoint(POINT_KRIKTHIK_CIRCLE, x, y, myPositionZ);
+            }
+            else nextMovementTimer -= diff;
+        }
+    }
+};
+
+class npc_krikthik_striker : public CreatureScript
+{
+public:
+    npc_krikthik_striker() : CreatureScript("npc_krikthik_striker") { }
+
+    struct npc_krikthik_strikerAI : public npc_krikthik
+    {
+        npc_krikthik_strikerAI(Creature* creature) : npc_krikthik(creature)
+        {
+            pInstance = creature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+        bool isAttackerStriker;
+
+        void Reset()
+        {
+            npc_krikthik::Reset();
+            isAttackerStriker = false;
+        }
+
+        void DoAction(int32 const action)
+        {
+            isAttackerStriker = true;
+
+            Map::PlayerList const &PlayerList = pInstance->instance->GetPlayers();
+            Map::PlayerList::const_iterator it = PlayerList.begin();
+            for (uint8 i = 0; i < urand(0, PlayerList.getSize() - 1); ++i, ++it);
+
+            if (Player* player = it->getSource())
+                AttackStart(player);
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (!isAttackerStriker)
+                npc_krikthik::UpdateAI(diff);
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_krikthik_strikerAI (creature);
+    }
+};
+
+class npc_krikthik_disruptor : public CreatureScript
+{
+public:
+    npc_krikthik_disruptor() : CreatureScript("npc_krikthik_disruptor") { }
+
+    struct npc_krikthik_disruptorAI : public npc_krikthik
+    {
+        npc_krikthik_disruptorAI(Creature* creature) : npc_krikthik(creature)
+        {
+            pInstance = creature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+        EventMap events;
+
+        void Reset()
+        {
+            npc_krikthik::Reset();
+
+            events.ScheduleEvent(EVENT_DISRUPTOR_BOMBARD, urand(5000, 20000));
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (!pInstance)
+                return;
+
+            npc_krikthik::UpdateAI(diff);
+
+            if (pInstance->GetBossState(DATA_GADOK) != IN_PROGRESS)
+                return;
+
+            events.Update(diff);
+
+            switch (events.ExecuteEvent())
+            {
+                case EVENT_DISRUPTOR_BOMBARD:
+                {
+                    if (!pInstance)
+                        break;
+
+                    Map::PlayerList const &PlayerList = pInstance->instance->GetPlayers();
+                    Map::PlayerList::const_iterator it = PlayerList.begin();
+                    for (uint8 i = 0; i < urand(0, PlayerList.getSize() - 1); ++i, ++it);
+
+                    if (Player* player = it->getSource())
+                        me->CastSpell(player, SPELL_BOMB, true); //Triggered to avoid pillars line of sight
+
+                    events.ScheduleEvent(EVENT_DISRUPTOR_BOMBARD, urand(5000, 20000));
+
+                    break;
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_krikthik_disruptorAI (creature);
+    }
 };
 
 class spell_gadok_strafing : public SpellScriptLoader
@@ -318,7 +596,7 @@ class spell_gadok_strafing : public SpellScriptLoader
         {
             PrepareSpellScript(spell_gadok_strafing_SpellScript);
             
-            void HandleScript()
+            void HandleBeforeCast()
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -326,7 +604,7 @@ class spell_gadok_strafing : public SpellScriptLoader
                     {
                         uint8 actualStrafPhase = instance->GetData(DATA_GADOK);
 
-                        if (!actualStrafPhase)
+                        if (actualStrafPhase == PHASE_MAIN)
                             return;
 
                         uint32 stalkerEntry = actualStrafPhase == PHASE_NORTH_SOUTH ? NPC_STALKER_NORTH_SOUTH: NPC_STALKER_WEST_EAST;
@@ -343,7 +621,7 @@ class spell_gadok_strafing : public SpellScriptLoader
 
             void Register()
             {
-                BeforeCast += SpellCastFn(spell_gadok_strafing_SpellScript::HandleScript);
+                BeforeCast += SpellCastFn(spell_gadok_strafing_SpellScript::HandleBeforeCast);
             }
         };
 
@@ -353,7 +631,45 @@ class spell_gadok_strafing : public SpellScriptLoader
         }
 };
 
+class spell_prey_time : public SpellScriptLoader
+{
+    public:
+        spell_prey_time() :  SpellScriptLoader("spell_prey_time") { }
+
+        class spell_prey_time_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_prey_time_AuraScript);
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (GetCaster() && GetTarget())
+                    GetTarget()->CastSpell(GetCaster(), SPELL_RIDE_VEHICLE, true);
+            }
+
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (GetCaster())
+                    GetCaster()->RemoveAurasDueToSpell(SPELL_RIDE_VEHICLE);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_prey_time_AuraScript::OnApply, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_prey_time_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_prey_time_AuraScript();
+        }
+};
+
 void AddSC_boss_striker_gadok()
 {
     new boss_striker_gadok();
+    new npc_krikthik_striker();
+    new npc_krikthik_disruptor();
+    new spell_gadok_strafing();
+    new spell_prey_time();
 }

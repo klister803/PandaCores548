@@ -68,6 +68,10 @@ public:
                 case NPC_GADOK:     gadokGuid       = creature->GetGUID();  return;
                 case NPC_RIMOK:     rimokGuid       = creature->GetGUID();  return;
                 case NPC_RAIGONN:   raigonnGuid     = creature->GetGUID();  return;
+
+                // Spawn in center of the Ga'Dok tower, we must make them move around the tower
+                case NPC_KRIKTHIK_STRIKER:
+                case NPC_KRIKTHIK_DISRUPTOR:
                 default:                                                    return;
             }
         }

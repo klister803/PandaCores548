@@ -48,7 +48,10 @@ enum CreaturesIds
 
     // Gadok
     NPC_STALKER_NORTH_SOUTH     = 56932,
-    NPC_STALKER_WEST_EAST       = 56913
+    NPC_STALKER_WEST_EAST       = 56913,
+
+    NPC_KRIKTHIK_STRIKER        = 59778, // Appear on Gadok bombardment
+    NPC_KRIKTHIK_DISRUPTOR      = 59794, // Bombard tower when Gadok is in fight
 };
 
 enum ObjectsIds
