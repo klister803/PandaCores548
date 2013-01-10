@@ -198,7 +198,7 @@ class npc_add_generator : public CreatureScript
                         break;
                     case SPECIAL: // Only one must spawn saboteurs
                         me->CastSpell(me, SPELL_PERIODIC_SPAWN_SABOTEUR, true);
-                        // no break
+                        break;
                     case IN_PROGRESS:
                         me->CastSpell(me, SPELL_PERIODIC_SPAWN_SWARMER, true);
                         break;

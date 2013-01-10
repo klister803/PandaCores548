@@ -111,7 +111,7 @@ public:
                 }
                 case DATA_RIMOK:
                 {
-                    bool first = true;
+                    uint8 generatorsCount = 0;
 
                     for (auto itr: rimokAddGenetarorsGUID)
                     {
@@ -119,11 +119,9 @@ public:
                         {
                             if (generator->AI())
                             {
-                                if (first && state == IN_PROGRESS)
-                                {
+                                // There is 7 add generators, the middle one spawn saboteur
+                                if (state == IN_PROGRESS && (++generatorsCount == 4))
                                     generator->AI()->DoAction(SPECIAL);
-                                    first = false;
-                                }
                                 else
                                     generator->AI()->DoAction(state);
                             }
