@@ -2201,7 +2201,7 @@ void Player::SendTeleportPacket(Position &oldPos)
     if (transGuid)
     {
         uint8 byteOrder[8] = {2, 7, 1, 5, 6, 0, 4, 3};
-        data.WriteBytesSeq(guid, byteOrder);
+        data.WriteBytesSeq(transGuid, byteOrder);
     }
     data.WriteByteSeq(guid[4]);
     data.WriteByteSeq(guid[0]);
