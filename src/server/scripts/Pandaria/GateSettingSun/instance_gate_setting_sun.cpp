@@ -35,6 +35,7 @@ public:
         uint64 gadokGuid;
         uint64 rimokGuid;
         uint64 raigonnGuid;
+        uint64 raigonWeakGuid;
 
         uint64 firstDoorGuid;
         std::vector<uint64> mantidBombsGUID;
@@ -54,6 +55,7 @@ public:
             gadokGuid       = 0;
             rimokGuid       = 0;
             raigonnGuid     = 0;
+            raigonWeakGuid  = 0;
             
             firstDoorGuid   = 0;
 
@@ -193,10 +195,11 @@ public:
         {
             switch (type)
             {
-                case NPC_KIPTILAK:  return kiptilakGuid;
-                case NPC_GADOK:     return gadokGuid;
-                case NPC_RIMOK:     return rimokGuid;
-                case NPC_RAIGONN:   return raigonnGuid;
+                case NPC_KIPTILAK:      return kiptilakGuid;
+                case NPC_GADOK:         return gadokGuid;
+                case NPC_RIMOK:         return rimokGuid;
+                case NPC_RAIGONN:       return raigonnGuid;
+                case NPC_WEAK_POINT:    return raigonWeakGuid;
             }
 
             return 0;

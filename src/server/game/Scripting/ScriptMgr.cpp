@@ -150,10 +150,14 @@ class ScriptRegistry
     itr->second
 
 // Utility macros for finding specific scripts.
+#define GET_SCRIPT_NO_RET(T, I, V) \
+    T* V = ScriptRegistry<T>::GetScriptById(I);
+
 #define GET_SCRIPT(T, I, V) \
     T* V = ScriptRegistry<T>::GetScriptById(I); \
     if (!V) \
         return;
+
 #define GET_SCRIPT_RET(T, I, V, R) \
     T* V = ScriptRegistry<T>::GetScriptById(I); \
     if (!V) \
@@ -850,8 +854,15 @@ CreatureAI* ScriptMgr::GetCreatureAI(Creature* creature)
 {
     ASSERT(creature);
 
-    GET_SCRIPT_RET(CreatureScript, creature->GetScriptId(), tmpscript, NULL);
-    return tmpscript->GetAI(creature);
+    GET_SCRIPT_NO_RET(CreatureScript, creature->GetScriptId(), tmpscript);
+    GET_SCRIPT_NO_RET(VehicleScript, creature->GetScriptId(), tmpVehiclescript);
+
+    if (tmpscript)
+        return tmpscript->GetAI(creature);
+    else if (tmpVehiclescript)
+        return tmpVehiclescript->GetAI(creature);
+    else
+        return NULL;
 }
 
 GameObjectAI* ScriptMgr::GetGameObjectAI(GameObject* gameobject)
