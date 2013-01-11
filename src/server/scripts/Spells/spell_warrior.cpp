@@ -44,6 +44,56 @@ enum WarriorSpells
     WARRIOR_SPELL_SWORD_AND_BOARD               = 50227,
     WARRIOR_SPELL_SHIELD_SLAM                   = 23922,
     WARRIOR_SPELL_ALLOW_RAGING_BLOW             = 131116,
+    WARRIOR_SPELL_MOCKING_BANNER_TAUNT          = 114198,
+    WARRIOR_NPC_MOCKING_BANNER                  = 59390,
+};
+
+// Mocking Banner - 114192
+class spell_warr_mocking_banner : public SpellScriptLoader
+{
+    public:
+        spell_warr_mocking_banner() : SpellScriptLoader("spell_warr_mocking_banner") { }
+
+        class spell_warr_mocking_banner_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warr_mocking_banner_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Player* player = GetTarget()->ToPlayer())
+                {
+                    std::list<Creature*> bannerList;
+                    std::list<Creature*> tempList;
+
+                    GetTarget()->GetCreatureListWithEntryInGrid(tempList, WARRIOR_NPC_MOCKING_BANNER, 30.0f);
+
+                    bannerList = tempList;
+
+                    // Remove other players banners
+                    for (auto itr : tempList)
+                    {
+                        Unit* owner = itr->GetOwner();
+                        if (owner && owner == player && itr->isSummon())
+                            continue;
+
+                        bannerList.remove(itr);
+                    }
+
+                    for (auto itr : bannerList)
+                        player->CastSpell(itr, WARRIOR_SPELL_MOCKING_BANNER_TAUNT, true);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warr_mocking_banner_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warr_mocking_banner_AuraScript();
+        }
 };
 
 // Called by the proc of Enrage - 12880
@@ -664,6 +714,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_mocking_banner();
     new spell_warr_raging_blow();
     new spell_warr_sword_and_board();
     new spell_warr_mortal_strike();
