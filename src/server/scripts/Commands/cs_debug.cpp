@@ -93,6 +93,7 @@ public:
             { "phase",          SEC_MODERATOR,      false, &HandleDebugPhaseCommand,           "", NULL },
             { "tradestatus",    SEC_ADMINISTRATOR,  false, &HandleSendTradeStatus,             "", NULL },
             { "mailstatus",     SEC_ADMINISTRATOR,  false, &HandleSendMailStatus,              "", NULL },
+            { "jump",           SEC_ADMINISTRATOR,  false, &HandleDebugMoveJump,               "", NULL },
             { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -1391,6 +1392,38 @@ public:
         player->GetPhaseMgr().SendDebugReportToPlayer(handler->GetSession()->GetPlayer());	
         return true;	
   }
+
+    static bool HandleDebugMoveJump(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        WorldObject* target = handler->getSelectedObject();
+        if (!target || !target->ToUnit())
+        {
+            handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        char* cx        = strtok((char*)args, " ");
+        char* cy        = strtok(NULL, " ");
+        char* cz        = strtok(NULL, " ");
+        char* cspeedXY  = strtok(NULL, " ");
+        char* cspeedZ   = strtok(NULL, " ");
+
+        if (!cx || !cy || !cz || !cspeedXY || !cspeedZ)
+            return false;
+
+        float x         = (float)atof(cx);
+        float y         = (float)atof(cy);
+        float z         = (float)atof(cz);
+        float speedXY   = (float)atof(cspeedXY);
+        float speedZ    = (float)atof(cspeedZ);
+
+        target->ToUnit()->GetMotionMaster()->MoveJump(x, y,z, speedXY, speedZ);
+        return true;
+    }
 };
 
 void AddSC_debug_commandscript()

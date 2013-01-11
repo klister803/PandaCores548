@@ -16,13 +16,6 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* ScriptData
-SDName: Boss_Broggok
-SD%Complete: 70
-SDComment: pre-event not made
-SDCategory: Hellfire Citadel, Blood Furnace
-EndScriptData */
-
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "gate_setting_sun.h"
@@ -34,6 +27,8 @@ enum eSpells
     SPELL_SABOTAGE                      = 107268,
     SPELL_SABOTAGE_EXPLOSION            = 113645,
     
+    SPELL_PLAYER_EXPLOSION              = 113654,
+
     SPELL_MUNITION_STABLE               = 109987,
     SPELL_MUNITION_EXPLOSION            = 107153,
     SPELL_MUNITION_EXPLOSION_AURA       = 120551,
@@ -93,10 +88,14 @@ class boss_saboteur_kiptilak : public CreatureScript
             {
                 switch (attacker->GetEntry())
                 {
-                    case NPC_EXPLOSION_BUNNY_N:
-                    case NPC_EXPLOSION_BUNNY_S:
-                    case NPC_EXPLOSION_BUNNY_E:
-                    case NPC_EXPLOSION_BUNNY_W:
+                    case NPC_EXPLOSION_BUNNY_N_M:
+                    case NPC_EXPLOSION_BUNNY_S_M:
+                    case NPC_EXPLOSION_BUNNY_E_M:
+                    case NPC_EXPLOSION_BUNNY_W_M:
+                    case NPC_EXPLOSION_BUNNY_N_P:
+                    case NPC_EXPLOSION_BUNNY_S_P:
+                    case NPC_EXPLOSION_BUNNY_E_P:
+                    case NPC_EXPLOSION_BUNNY_W_P:
                         damage = 0;
                         return;
                 }
@@ -153,7 +152,7 @@ class boss_saboteur_kiptilak : public CreatureScript
                         break;
                     case EVENT_SABOTAGE:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
-                            me->CastSpell(me, SPELL_SABOTAGE, true);
+                            me->CastSpell(target, SPELL_SABOTAGE, true);
 
                         events.ScheduleEvent(EVENT_SABOTAGE,   urand(22500, 30000));
                         break;
@@ -196,16 +195,20 @@ public:
 
             switch (me->GetEntry())
             {
-                case NPC_EXPLOSION_BUNNY_N:
+                case NPC_EXPLOSION_BUNNY_N_M:
+                case NPC_EXPLOSION_BUNNY_N_P:
                     orientation = 0.0f;
                     break;
-                case NPC_EXPLOSION_BUNNY_S:
+                case NPC_EXPLOSION_BUNNY_S_M:
+                case NPC_EXPLOSION_BUNNY_S_P:
                     orientation = M_PI;
                     break;
-                case NPC_EXPLOSION_BUNNY_E:
+                case NPC_EXPLOSION_BUNNY_E_M:
+                case NPC_EXPLOSION_BUNNY_E_P:
                     orientation = 4.71f;
                     break;
-                case NPC_EXPLOSION_BUNNY_W:
+                case NPC_EXPLOSION_BUNNY_W_M:
+                case NPC_EXPLOSION_BUNNY_W_P:
                     orientation = 1.57f;
                     break;
             }
@@ -275,7 +278,7 @@ class spell_kiptilak_sabotage : public SpellScriptLoader
                 if (!target)
                     return;
 
-                target->CastSpell(target, SPELL_MUNITION_EXPLOSION, true);
+                target->CastSpell(target, SPELL_PLAYER_EXPLOSION, true);
                 target->CastSpell(target, SPELL_SABOTAGE_EXPLOSION, true);
             }
 

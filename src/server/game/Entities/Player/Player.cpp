@@ -2245,7 +2245,7 @@ void Player::SendTeleportPacket(Position &oldPos)
     if (transGuid)
     {
         uint8 byteOrder[8] = {2, 7, 1, 5, 6, 0, 4, 3};
-        data.WriteBytesSeq(guid, byteOrder);
+        data.WriteBytesSeq(transGuid, byteOrder);
     }
     data.WriteByteSeq(guid[4]);
     data.WriteByteSeq(guid[0]);
@@ -19312,6 +19312,9 @@ bool Player::Satisfy(AccessRequirement const* ar, uint32 target_map, bool report
 
         Difficulty target_difficulty = GetDifficulty(mapEntry->IsRaid());
         MapDifficulty const* mapDiff = GetDownscaledMapDifficultyData(target_map, target_difficulty);
+        if (!mapDiff)
+        	return false;
+
         if (LevelMin || LevelMax || missingItem || missingQuest || missingAchievement)
         {
             if (report)

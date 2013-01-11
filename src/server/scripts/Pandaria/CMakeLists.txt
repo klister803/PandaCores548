@@ -28,6 +28,8 @@ set(scripts_STAT_SRCS
   Pandaria/GateSettingSun/gate_setting_sun.cpp
   Pandaria/GateSettingSun/gate_setting_sun.h
   Pandaria/GateSettingSun/boss_saboteur_kiptilak.cpp
+  Pandaria/GateSettingSun/boss_striker_gadok.cpp
+  Pandaria/GateSettingSun/boss_commander_rimok.cpp
 
   Pandaria/WanderingIsland/wanderingisland.cpp
 )
