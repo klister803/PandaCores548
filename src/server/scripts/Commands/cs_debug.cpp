@@ -94,6 +94,7 @@ public:
             { "tradestatus",    SEC_ADMINISTRATOR,  false, &HandleSendTradeStatus,             "", NULL },
             { "mailstatus",     SEC_ADMINISTRATOR,  false, &HandleSendMailStatus,              "", NULL },
             { "jump",           SEC_ADMINISTRATOR,  false, &HandleDebugMoveJump,               "", NULL },
+            { "backward",       SEC_ADMINISTRATOR,  false, &HandleDebugMoveBackward,           "", NULL },
             { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -1382,8 +1383,8 @@ public:
         return true;
     }
 
-  static bool HandleDebugPhaseCommand(ChatHandler* handler, char const* args)	
-  {	
+    static bool HandleDebugPhaseCommand(ChatHandler* handler, char const* args)	
+    {	
         Unit* unit = handler->getSelectedUnit();	
         Player* player = handler->GetSession()->GetPlayer();	
         if(unit && unit->GetTypeId() == TYPEID_PLAYER)	
@@ -1391,7 +1392,7 @@ public:
 	
         player->GetPhaseMgr().SendDebugReportToPlayer(handler->GetSession()->GetPlayer());	
         return true;	
-  }
+    }
 
     static bool HandleDebugMoveJump(ChatHandler* handler, char const* args)
     {
@@ -1422,6 +1423,34 @@ public:
         float speedZ    = (float)atof(cspeedZ);
 
         target->ToUnit()->GetMotionMaster()->MoveJump(x, y,z, speedXY, speedZ);
+        return true;
+    }
+
+    static bool HandleDebugMoveBackward(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;
+
+        WorldObject* target = handler->getSelectedObject();
+        if (!target || !target->ToUnit())
+        {
+            handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        char* cx        = strtok((char*)args, " ");
+        char* cy        = strtok(NULL, " ");
+        char* cz        = strtok(NULL, " ");
+
+        if (!cx || !cy || !cz)
+            return false;
+
+        float x         = (float)atof(cx);
+        float y         = (float)atof(cy);
+        float z         = (float)atof(cz);
+
+        target->ToUnit()->GetMotionMaster()->MoveBackward(0, x, y,z);
         return true;
     }
 };
