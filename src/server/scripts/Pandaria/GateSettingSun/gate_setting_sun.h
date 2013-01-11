@@ -58,6 +58,9 @@ enum CreaturesIds
 
     NPC_KRIKTHIK_SWARMER        = 59835,
     NPC_KRIKTHIK_SABOTEUR       = 60447,
+
+    // Raingonn
+    NPC_WEAK_POINT              = 56895,
 };
 
 enum ObjectsIds
