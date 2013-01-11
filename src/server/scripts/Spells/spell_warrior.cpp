@@ -46,6 +46,39 @@ enum WarriorSpells
     WARRIOR_SPELL_ALLOW_RAGING_BLOW             = 131116,
     WARRIOR_SPELL_MOCKING_BANNER_TAUNT          = 114198,
     WARRIOR_NPC_MOCKING_BANNER                  = 59390,
+    WARRIOR_SPELL_BERZERKER_RAGE                = 111220,
+    WARRIOR_SPELL_BERZERKER_RAGE_EFFECT         = 23691,
+};
+
+// Berzerker Rage - 18499
+class spell_warr_berzerker_rage : public SpellScriptLoader
+{
+    public:
+        spell_warr_berzerker_rage() : SpellScriptLoader("spell_warr_berzerker_rage") { }
+
+        class spell_warr_berzerker_rage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_berzerker_rage_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    _player->CastSpell(_player, WARRIOR_SPELL_BERZERKER_RAGE, true);
+                    _player->CastSpell(_player, WARRIOR_SPELL_BERZERKER_RAGE_EFFECT, true);
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_berzerker_rage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_berzerker_rage_SpellScript();
+        }
 };
 
 // Mocking Banner - 114192
@@ -714,6 +747,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_berzerker_rage();
     new spell_warr_mocking_banner();
     new spell_warr_raging_blow();
     new spell_warr_sword_and_board();
