@@ -3127,6 +3127,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 114205: // Demoralizing Banner
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(8); // 15s
+                break;
             case 132158: // Nature's Swiftness
                 spellInfo->ProcCharges = 1;
                 break;
