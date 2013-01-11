@@ -379,7 +379,7 @@ public:
         for(int i = 0; i < 27; i++)
         {
             char* tableName = dumpTables[i];
-            QueryResult tableInfo = CharacterDatabase.PQuery("select data_type from information_schema.columns where table_name = '%s' AND table_schema IN ('perso_330', 'perso_maelstrom', 'perso_zandalar')", tableName);
+            QueryResult tableInfo = CharacterDatabase.PQuery("select data_type from information_schema.columns where table_name = '%s' AND table_schema IN ('505_characters', '505_characters_us')", tableName);
             if(tableInfo)
             {
                 do
