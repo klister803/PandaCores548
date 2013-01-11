@@ -265,13 +265,7 @@ void WorldSession::HandleAuctionSellItem(WorldPacket & recvData)
         else
             AH->auctioneer = GUID_LOPART(auctioneer);
 
-        if (!sObjectMgr->GetCreatureData(auctioneer))
-        {
-            sLog->outFatal(LOG_FILTER_AUCTIONHOUSE, "Creature GUID : %u do not exist !", auctioneer);
-            SendAuctionCommandResult(NULL, AUCTION_SELL_ITEM, ERR_RESTRICTED_ACCOUNT);
-            return;
-            //ASSERT(sObjectMgr->GetCreatureData(auctioneer)); // Tentative de vendre un item a un pnj qui n'existe pas, mieux vaut crash ici sinon l'item en question risque de disparaitre tout simplement
-        }
+        ASSERT(sObjectMgr->GetCreatureData(AH->auctioneer)); // Tentative de vendre un item a un pnj qui n'existe pas, mieux vaut crash ici sinon l'item en question risque de disparaitre tout simplement
 
         // Required stack size of auction matches to current item stack size, just move item to auctionhouse
         if (itemsCount == 1 && item->GetCount() == count[i])
