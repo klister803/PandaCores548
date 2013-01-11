@@ -594,6 +594,8 @@ class VehicleScript : public ScriptObject
 
     public:
 
+        bool IsDatabaseBound() const { return true; }
+
         // Called after a vehicle is installed.
         virtual void OnInstall(Vehicle* /*veh*/) { }
 
@@ -611,6 +613,9 @@ class VehicleScript : public ScriptObject
 
         // Called after a passenger is removed from a vehicle.
         virtual void OnRemovePassenger(Vehicle* /*veh*/, Unit* /*passenger*/) { }
+
+        // Called when a CreatureAI object is needed for the creature.
+        virtual CreatureAI* GetAI(Creature* /*creature*/) const { return NULL; }
 };
 
 class DynamicObjectScript : public ScriptObject, public UpdatableScript<DynamicObject>
