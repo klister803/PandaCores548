@@ -163,7 +163,7 @@ void PlayerSocial::SendSocialList(Player* player)
     {
         sSocialMgr->GetFriendInfo(player, itr->first, itr->second);
 
-        data << uint64(itr->first);                         // player guid
+        data << uint64(MAKE_NEW_GUID(itr->first, 0, HIGHGUID_PLAYER));                         // player guid
         data << uint32(itr->second.Flags);                  // player flag (0x1 = Friend, 0x2 = Ignored, 0x4 = Muted)
         data << itr->second.Note;                           // string note
         if (itr->second.Flags & SOCIAL_FLAG_FRIEND)         // if IsFriend()
@@ -251,7 +251,7 @@ void SocialMgr::MakeFriendStatusPacket(FriendsResult result, uint32 guid, WorldP
 {
     data->Initialize(SMSG_FRIEND_STATUS, 5);
     *data << uint8(result);
-    *data << uint64(guid);
+    *data << uint64(MAKE_NEW_GUID(guid, 0, HIGHGUID_PLAYER));
 }
 
 void SocialMgr::SendFriendStatus(Player* player, FriendsResult result, uint32 friend_guid, bool broadcast)
