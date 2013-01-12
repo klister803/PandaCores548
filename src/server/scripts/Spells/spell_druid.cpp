@@ -81,12 +81,15 @@ class spell_dru_wild_mushroom : public SpellScriptLoader
                     PreventHitDefaultEffect(effIndex);
 
                     const SpellInfo* spell = GetSpellInfo();
+                    std::list<Creature*> tempList;
                     std::list<Creature*> mushroomlist;
 
-                    player->GetCreatureListWithEntryInGrid(mushroomlist, DRUID_NPC_WILD_MUSHROOM, 500.0f);
+                    player->GetCreatureListWithEntryInGrid(tempList, DRUID_NPC_WILD_MUSHROOM, 500.0f);
+
+                    mushroomlist = tempList;
 
                     // Remove other players mushrooms
-                    for (std::list<Creature*>::iterator i = mushroomlist.begin(); i != mushroomlist.end(); ++i)
+                    for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
                     {
                         Unit* owner = (*i)->GetOwner();
                         if (owner && owner == player && (*i)->isSummon())
