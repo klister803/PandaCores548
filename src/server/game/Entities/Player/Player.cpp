@@ -26690,22 +26690,22 @@ void Player::_LoadStore()
             	switch (ShopItemid)
             	{
             		case 200001: // 150k po
-            			po = 150000000;
+            			po = 1500000000;
             			break;
             		case 200002: // 80k po
-            			po = 80000000;
+            			po = 800000000;
             			break;
             		case 200003: // 30k po
-            			po = 30000000;
+            			po = 300000000;
             			break;
             		case 200004: // 10k po
-            			po = 10000000;
+            			po = 100000000;
             			break;
             		case 200005: // 5k po
-            			po = 5000000;
+            			po = 50000000;
             			break;
             		case 200006: // 1k po
-            			po = 1000000;
+            			po = 10000000;
             			break;
             		default:
             			po = 0;
