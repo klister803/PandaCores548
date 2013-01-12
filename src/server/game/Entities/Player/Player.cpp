@@ -216,7 +216,7 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 chrClass, uint8 level
     	if (!node->MountCreatureID[team == ALLIANCE ? 1 : 0])
     		continue;
 
-    	if (!worldMapArea->minRecommendedLevel || worldMapArea->area_id != 4922 /*Hackfix for TwilightHighlands map swapping*/)
+    	if (!worldMapArea->minRecommendedLevel)
     		continue;
 
     	uint32 level = worldMapArea->minRecommendedLevel;
