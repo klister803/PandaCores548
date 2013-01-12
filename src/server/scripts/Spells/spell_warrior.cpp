@@ -48,6 +48,36 @@ enum WarriorSpells
     WARRIOR_NPC_MOCKING_BANNER                  = 59390,
     WARRIOR_SPELL_BERZERKER_RAGE_EFFECT         = 23691,
     WARRIOR_SPELL_ENRAGE                        = 12880,
+    WARRIOR_SPELL_COLOSSUS_SMASH                = 86346,
+};
+
+// Sudden Death - 52437
+class spell_warr_sudden_death : public SpellScriptLoader
+{
+    public:
+        spell_warr_sudden_death() : SpellScriptLoader("spell_warr_sudden_death") { }
+
+        class spell_warr_sudden_death_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_sudden_death_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasSpellCooldown(WARRIOR_SPELL_COLOSSUS_SMASH))
+                        _player->RemoveSpellCooldown(WARRIOR_SPELL_COLOSSUS_SMASH, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_sudden_death_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_sudden_death_SpellScript();
+        }
 };
 
 // Berzerker Rage - 18499
@@ -747,6 +777,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_sudden_death();
     new spell_warr_berzerker_rage();
     new spell_warr_mocking_banner();
     new spell_warr_raging_blow();
