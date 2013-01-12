@@ -46,8 +46,8 @@ enum WarriorSpells
     WARRIOR_SPELL_ALLOW_RAGING_BLOW             = 131116,
     WARRIOR_SPELL_MOCKING_BANNER_TAUNT          = 114198,
     WARRIOR_NPC_MOCKING_BANNER                  = 59390,
-    WARRIOR_SPELL_BERZERKER_RAGE                = 111220,
     WARRIOR_SPELL_BERZERKER_RAGE_EFFECT         = 23691,
+    WARRIOR_SPELL_ENRAGE                        = 12880,
 };
 
 // Berzerker Rage - 18499
@@ -64,7 +64,7 @@ class spell_warr_berzerker_rage : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    _player->CastSpell(_player, WARRIOR_SPELL_BERZERKER_RAGE, true);
+                    _player->CastSpell(_player, WARRIOR_SPELL_ENRAGE, true);
                     _player->CastSpell(_player, WARRIOR_SPELL_BERZERKER_RAGE_EFFECT, true);
                 }
             }
