@@ -9030,8 +9030,8 @@ void Unit::SetMinion(Minion *minion, bool apply)
             for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
                 minion->SetSpeed(UnitMoveType(i), m_speed_rate[i], true);
 
-        // Ghoul pets have energy instead of mana (is anywhere better place for this code?)
-        if (minion->IsPetGhoul())
+        // Ghoul pets and Warlock's pets have energy instead of mana (is anywhere better place for this code?)
+        if (minion->IsPetGhoul() || (minion->GetOwner() && minion->GetOwner()->getClass() == CLASS_WARLOCK))
             minion->setPowerType(POWER_ENERGY);
 
         if (GetTypeId() == TYPEID_PLAYER)
@@ -13357,6 +13357,9 @@ void Unit::SetMaxHealth(uint32 val)
 
 uint32 Unit::GetPowerIndexByClass(uint32 powerId, uint32 classId) const
 {
+    if (isPet() && GetOwner() && GetOwner()->getClass() == CLASS_WARLOCK)
+        return 0;
+
     ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(classId);
 
     ASSERT(classEntry && "Class not found");
@@ -13503,7 +13506,7 @@ int32 Unit::GetCreatePowers(Powers power) const
                 return 100;
             return (GetTypeId() == TYPEID_PLAYER || !((Creature const*)this)->isPet() || ((Pet const*)this)->getPetType() != HUNTER_PET ? 0 : 100);
         case POWER_ENERGY:
-            return 100;
+            return ((isPet() && GetEntry() == 416 || GetEntry() == 417 || GetEntry() == 1860 || GetEntry() == 1863 || GetEntry() == 17252) ? 200 : 100);
         case POWER_RUNIC_POWER:
             return 1000;
         case POWER_RUNES:
