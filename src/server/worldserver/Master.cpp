@@ -425,18 +425,18 @@ public:
                         if(result != result2)
                             continue;
 
-                        std::string new_string = "";
+                        /*std::string new_string = "";
                         for(std::string::iterator i = result.begin(); i < result.end(); i++)
                         {
                             if((*i) == '\\')
                                 new_string.push_back('\\');
                             new_string.push_back(*i);
-                        }
+                        }*/
 
                         PreparedStatement * stmt = LoginDatabase.GetPreparedStatement(LOGIN_SET_DUMP);
                         if(stmt)
                         {
-                            stmt->setString(0, new_string);
+                            stmt->setString(0, result2);
                             stmt->setString(1, hash_transfert.c_str());
                             stmt->setUInt32(2, transaction);
                             LoginDatabase.Execute(stmt);
