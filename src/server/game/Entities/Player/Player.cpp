@@ -26686,47 +26686,100 @@ void Player::_LoadStore()
 
             uint32 noSpaceForCount = 0;
 
-            // noSpaceForCount > 0 = il reste des items a ajouter
-            if(AddItem(ShopItemid, ShopCount, &noSpaceForCount) && !noSpaceForCount)
+            // Item special, ajout de po 200001 - 200006
+            if (ShopItemid > 200000)
             {
-                stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BOUTIQUE_ITEM);
-                stmt->setInt32(0, transaction);
-                CharacterDatabase.Execute(stmt);
+            	uint32 po = 0;
+            	switch (ShopItemid)
+            	{
+            		case 200001: // 150k po
+            			po = 1500000000;
+            			break;
+            		case 200002: // 80k po
+            			po = 800000000;
+            			break;
+            		case 200003: // 30k po
+            			po = 300000000;
+            			break;
+            		case 200004: // 10k po
+            			po = 100000000;
+            			break;
+            		case 200005: // 5k po
+            			po = 50000000;
+            			break;
+            		case 200006: // 1k po
+            			po = 10000000;
+            			break;
+            		default:
+            			po = 0;
+            			break;
+            	}
 
-                stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_BOUTIQUE_ITEM_LOG);
-                stmt->setInt32(0, transaction);
-                stmt->setInt32(1, GetGUIDLow());
-                stmt->setInt32(2, ShopItemid);
-                stmt->setInt32(3, ShopCount);
-                CharacterDatabase.Execute(stmt);
+            	if ((GetMoney() + po) > MAX_MONEY_AMOUNT)
+            	{
+            		std::string message = GetSession()->GetSessionDbcLocale() == LocaleConstant::LOCALE_frFR ? "Vous avez déjà atteint la limite de pièces d'or" : "You have already reach max amount of gold";
+            		GetSession()->SendNotification(message.c_str());
+            	}
+            	else
+            	{
+					ModifyMoney(po);
+
+					stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BOUTIQUE_ITEM);
+					stmt->setInt32(0, transaction);
+					CharacterDatabase.Execute(stmt);
+
+					stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_BOUTIQUE_ITEM_LOG);
+					stmt->setInt32(0, transaction);
+					stmt->setInt32(1, GetGUIDLow());
+					stmt->setInt32(2, ShopItemid);
+					stmt->setInt32(3, ShopCount);
+					CharacterDatabase.Execute(stmt);
+            	}
             }
             else
             {
+				// noSpaceForCount > 0 = il reste des items a ajouter
+				if(AddItem(ShopItemid, ShopCount, &noSpaceForCount) && !noSpaceForCount)
+				{
+					stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_BOUTIQUE_ITEM);
+					stmt->setInt32(0, transaction);
+					CharacterDatabase.Execute(stmt);
 
-                stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_BOUTIQUE_ITEM);
-                stmt->setInt32(0, noSpaceForCount);
-                stmt->setInt32(1, transaction);
-                CharacterDatabase.Execute(stmt);
+					stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_BOUTIQUE_ITEM_LOG);
+					stmt->setInt32(0, transaction);
+					stmt->setInt32(1, GetGUIDLow());
+					stmt->setInt32(2, ShopItemid);
+					stmt->setInt32(3, ShopCount);
+					CharacterDatabase.Execute(stmt);
+				}
+				else
+				{
 
-                uint32 itemAdded = ShopCount - noSpaceForCount;
+					stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_BOUTIQUE_ITEM);
+					stmt->setInt32(0, noSpaceForCount);
+					stmt->setInt32(1, transaction);
+					CharacterDatabase.Execute(stmt);
 
-                if (itemAdded)
-                {
-                    stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_BOUTIQUE_ITEM_LOG);
-                    stmt->setInt32(0, transaction);
-                    stmt->setInt32(1, GetGUIDLow());
-                    stmt->setInt32(2, ShopItemid);
-                    stmt->setInt32(3, ShopCount);
-                    CharacterDatabase.Execute(stmt);
-                }
+					uint32 itemAdded = ShopCount - noSpaceForCount;
 
-                ShopError++;
+					if (itemAdded)
+					{
+						stmt = CharacterDatabase.GetPreparedStatement(CHAR_INS_BOUTIQUE_ITEM_LOG);
+						stmt->setInt32(0, transaction);
+						stmt->setInt32(1, GetGUIDLow());
+						stmt->setInt32(2, ShopItemid);
+						stmt->setInt32(3, ShopCount);
+						CharacterDatabase.Execute(stmt);
+					}
+
+					ShopError++;
+				}
             }
 		}
         while(itemList->NextRow());
 
         if(ShopError)
-            GetSession()->SendNotification("Verifiez que vous avez assez de place dans votre inventaire.");
+            GetSession()->SendNotification(GetSession()->GetSessionDbcLocale() == LocaleConstant::LOCALE_frFR ? "Verifiez que vous avez assez de place dans votre inventaire." : "Check if you have free slot in your inventory");
     }
 
     // Load des powerlevels
