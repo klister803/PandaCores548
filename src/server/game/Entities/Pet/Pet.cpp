@@ -215,6 +215,11 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
             SetUInt32Value(UNIT_FIELD_BYTES_0, 0x800); // class = mage
             SetUInt32Value(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE);
                                                             // this enables popup window (pet dismiss, cancel)
+            if (owner && owner->getClass() == CLASS_WARLOCK)
+            {
+                SetUInt32Value(UNIT_FIELD_BYTES_0, 0x400); // class = rogue
+                setPowerType(POWER_ENERGY); // Warlock's pets have energy
+            }
             break;
         case HUNTER_PET:
             SetUInt32Value(UNIT_FIELD_BYTES_0, 0x02020300); // class = warrior, gender = none, power = focus
@@ -243,7 +248,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     SetReactState(ReactStates(fields[6].GetUInt8()));
     SetCanModifyStats(true);
 
-    if (getPetType() == SUMMON_PET && !current)              //all (?) summon pets come with full health when called, but not when they are current
+    if (getPetType() == SUMMON_PET && !current && owner && owner->getClass() != CLASS_WARLOCK)  //all (?) summon pets come with full health when called, but not when they are current
         SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
     else
     {
@@ -251,10 +256,16 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         uint32 savedmana = fields[11].GetUInt32();
         if (!savedhealth && getPetType() == HUNTER_PET)
             setDeathState(JUST_DIED);
-        else
+        else if (owner && owner->getClass() != CLASS_WARLOCK)
         {
             SetHealth(savedhealth > GetMaxHealth() ? GetMaxHealth() : savedhealth);
             SetPower(POWER_MANA, savedmana > uint32(GetMaxPower(POWER_MANA)) ? GetMaxPower(POWER_MANA) : savedmana);
+        }
+        else
+        {
+            SetHealth(savedhealth > GetMaxHealth() ? GetMaxHealth() : savedhealth);
+            SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
+            SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
         }
     }
 
@@ -630,7 +641,7 @@ void Creature::Regenerate(Powers power)
         }
         case POWER_ENERGY:
         {
-            // For deathknight's ghoul.
+            // For deathknight's ghoul and Warlock's pets
             addvalue = 20;
             break;
         }
@@ -839,7 +850,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     if (pInfo)                                      // exist in DB
     {
         SetCreateHealth(pInfo->health);
-        if (petType != HUNTER_PET) //hunter pet use focus
+        if (petType != HUNTER_PET && GetOwner() && GetOwner()->getClass() != CLASS_WARLOCK) // hunter's pets use focus and Warlock's pets use energy
             SetCreateMana(pInfo->mana);
 
         if (pInfo->armor > 0)
@@ -871,13 +882,10 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             uint32 fire  = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE);
             uint32 shadow = m_owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW);
             uint32 val  = (fire > shadow) ? fire : shadow;
-            SetBonusDamage(int32 (val * 0.15f));
-            //bonusAP += val * 0.57;
+            SetBonusDamage(int32 (val));
 
             SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
             SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
-
-            //SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, float(cinfo->attackpower));
             break;
         }
         case HUNTER_PET:
@@ -895,6 +903,19 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
         {
             switch (GetEntry())
             {
+                case 416:  // Imp
+                case 1860: // Voidwalker
+                case 1863: // Succubus
+                case 417:  // Felhunter
+                case 17252:// Felguard
+                {
+                    if (getPowerType() != POWER_ENERGY)
+                        setPowerType(POWER_ENERGY);
+
+                    SetMaxPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
+                    SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
+                    break;
+                }
                 case 510: // mage Water Elemental
                 {
                     SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FROST) * 0.33f));
@@ -1012,7 +1033,10 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     UpdateAllStats();
 
     SetFullHealth();
-    SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
+    if (GetOwner() && GetOwner()->getClass() == CLASS_WARLOCK)
+        SetPower(POWER_ENERGY, GetCreatePowers(POWER_ENERGY));
+    else
+        SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
     return true;
 }
 

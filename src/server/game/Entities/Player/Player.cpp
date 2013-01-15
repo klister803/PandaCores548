@@ -2387,6 +2387,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         //if (getClass() == CLASS_DEATH_KNIGHT && GetMapId() == 609 && !isGameMaster() && !HasSpell(50977))
             //return false;
 
+        if ( mapid == 870  && getLevel() < 85 && getClass() != CLASS_MONK  && !isGameMaster())
+            return false;
+
         // far teleport to another map
         Map* oldmap = IsInWorld() ? GetMap() : NULL;
         // check if we can enter before stopping combat / removing pet / totems / interrupting spells
@@ -24760,6 +24763,170 @@ void Player::UpdateCharmedAI()
         GetMotionMaster()->MoveChase(target);
         Attack(target, true);
     }
+	                               // Heurtoir,            Frappe héro,        Coup traumatisant
+#define SPELL_WAR_ATTACK_LIST   47475,                  47450,              12809
+
+
+                                // inquisition,         Consecration,       Repentir
+#define SPELL_PAL_ATTACK_LIST   35395,                  48819,              20066
+                                // Eclair Lumineux,     Lumiere sacree
+#define SPELL_PAL_FRIEND_LIST   48785,                  48782
+
+
+                                // Tir des arcanes,     Morsure de serpent, Morsure de la mangouste
+#define SPELL_HUNT_ATTACK_LIST  49045,                  49001,              53339
+
+
+                                // pied,                Hemoragie           suriner         Eventail de couteaux
+#define SPELL_ROG_ATTACK_LIST   1766,                   48660,              1776,           51723
+
+
+                                // Douleur,             Chatiment,          Flammes sacrees
+#define SPELL_PRI_ATTACK_LIST   48125,                  48123,              48135
+                                // Soins rapides,       Rénovation,         Priere de guérison
+#define SPELL_PRI_FRIEND_LIST   48071,                  48068,              48113
+
+
+                                // frappe au coeur,     Toucher de glace,   Mort et decompo
+#define SPELL_DK_ATTACK_LIST    55262,                  49909,              49938
+
+
+                                // Chaine d'éclairs,    Horion de flammes,  Orage
+#define SPELL_CHA_ATTACK_LIST   49271,                  49233,              59159
+                                // Salve de guerison    Vague de soin       Bouclier de terre
+#define SPELL_CHA_FRIEND_LIST   55459,                  49273,              49284
+
+
+                                // Boule de feu,        Nova de givre,      Barrage des arcanes
+#define SPELL_MAG_ATTACK_LIST   42833,                  42917,              44781
+
+
+                                // Immolation,          Drain de vie,       Hurlement de terreur
+#define SPELL_DEM_ATTACK_LIST   47811,                  47857,              17928
+
+
+                                // Colère,              Eclat Lunaire,      Lucioles
+#define SPELL_DRU_ATTACK_LIST   48461,                  48463,              770
+                                // Recuperation,        Toucher guerriseur, Tranquillité
+#define SPELL_DRU_FRIEND_LIST   48441,                  48378,              48447
+
+void Player::UpdateCharmedAI()
+{
+    //This should only called in Player::Update
+  Creature *charmer = GetCharmer()->ToCreature();
+
+    //kill self if charm aura has infinite duration
+    if (charmer->IsInEvadeMode())
+    {
+        AuraEffectList const& auras = GetAuraEffectsByType(SPELL_AURA_MOD_CHARM);
+        for (AuraEffectList::const_iterator iter = auras.begin(); iter != auras.end(); ++iter)
+            if ((*iter)->GetCasterGUID() == charmer->GetGUID() && (*iter)->GetBase()->IsPermanent())
+            {
+                charmer->DealDamage(this, GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                return;
+            }
+    }
+
+    if (!charmer->isInCombat())
+        GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
+
+    Unit* target = getVictim();
+    if (!target || !charmer->canAttack(target))
+    {
+        target = charmer->SelectNearestTarget();
+        if (!target)
+            return;
+
+        GetMotionMaster()->MoveChase(target);
+        Attack(target, true);
+    }
+    else
+    {
+        if (HasUnitState(UNIT_STATE_CASTING))
+            return;
+        else if (target && GetMotionMaster()->GetCurrentMovementGeneratorType() != CHASE_MOTION_TYPE)
+            GetMotionMaster()->MoveChase(target);
+
+        // On laisse quelques attaques en melée deux fois sur trois
+        if (urand(0, 2))
+            return;
+
+        // On s'arrete pour cast le spell
+        GetMotionMaster()->MoveIdle();
+
+        // 0 : Friendly, 1-2-3 : attack
+        bool attack = urand(0 , 3);
+
+        switch (getClass())
+        {
+            case CLASS_WARRIOR:
+            {
+                CastSpell(target, rand_number(SPELL_WAR_ATTACK_LIST));
+                break;
+            }
+            case CLASS_PALADIN:
+            {
+                if (attack)
+                    CastSpell(target, rand_number(SPELL_PAL_ATTACK_LIST));
+                else
+                    CastSpell(charmer, rand_number(SPELL_PAL_FRIEND_LIST));
+                break;
+            }
+            case CLASS_HUNTER:
+            {
+                CastSpell(target, rand_number(SPELL_HUNT_ATTACK_LIST));
+                break;
+            }
+            case CLASS_ROGUE:
+            {
+                CastSpell(target, rand_number(SPELL_ROG_ATTACK_LIST));
+                break;
+            }
+            case CLASS_PRIEST:
+            {
+                if (attack)
+                    CastSpell(target, rand_number(SPELL_PRI_ATTACK_LIST));
+                else
+                    CastSpell(charmer, rand_number(SPELL_PRI_FRIEND_LIST));
+                break;
+            }
+            case CLASS_DEATH_KNIGHT:
+            {
+                CastSpell(target, rand_number(SPELL_DK_ATTACK_LIST));
+                break;
+            }
+            case CLASS_SHAMAN:
+            {
+                if (attack)
+                    CastSpell(target, rand_number(SPELL_CHA_ATTACK_LIST));
+                else
+                    CastSpell(charmer, rand_number(SPELL_CHA_FRIEND_LIST));
+                break;
+            }
+            case CLASS_MAGE:
+            {
+                CastSpell(target, rand_number(SPELL_MAG_ATTACK_LIST));
+                break;
+            }
+            case CLASS_WARLOCK:
+            {
+                CastSpell(target, rand_number(SPELL_DEM_ATTACK_LIST));
+                break;
+            }
+            case CLASS_DRUID:
+            {
+                if (attack)
+                    CastSpell(target, rand_number(SPELL_DRU_ATTACK_LIST));
+                else
+                    CastSpell(charmer, rand_number(SPELL_DRU_FRIEND_LIST));
+                break;
+            }
+            default:
+                break;
+        }
+    }
+}
+
 }
 
 uint32 Player::GetRuneTypeBaseCooldown(RuneType runeType) const
