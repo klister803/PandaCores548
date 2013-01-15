@@ -13357,7 +13357,7 @@ void Unit::SetMaxHealth(uint32 val)
 
 uint32 Unit::GetPowerIndexByClass(uint32 powerId, uint32 classId) const
 {
-    if (isPet() && GetOwner() && GetOwner()->getClass() == CLASS_WARLOCK)
+    if (powerId == 3 && isPet() && GetOwner() && GetOwner()->getClass() == CLASS_WARLOCK)
         return 0;
 
     ChrClassesEntry const* classEntry = sChrClassesStore.LookupEntry(classId);
