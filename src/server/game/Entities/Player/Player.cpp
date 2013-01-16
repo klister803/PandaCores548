@@ -2743,6 +2743,12 @@ void Player::RegenerateAll()
         m_demonicFuryPowerRegenTimerCount -= 10000;
     }
 
+    if (m_soulShardsRegenTimerCount >= 20000 && getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION))
+    {
+        Regenerate(POWER_SOUL_SHARDS);
+        m_soulShardsRegenTimerCount -= 20000;
+    }
+
     m_regenTimer = 0;
 }
 
@@ -2843,6 +2849,12 @@ void Player::Regenerate(Powers power)
                 CastSpell(this, 116855, true);
             else
                 RemoveAura(116855);
+        }
+        case POWER_SOUL_SHARDS:
+        {
+            // If isn't in combat, gain 1 shard every 20s
+            if (!isInCombat())
+                addvalue += 100;
         }
         break;
         default:
@@ -2985,7 +2997,7 @@ void Player::ResetAllPowers()
             SetPower(POWER_BURNING_EMBERS, 10);
             break;
         case POWER_SOUL_SHARDS:
-            SetPower(POWER_SOUL_SHARDS, 1);
+            SetPower(POWER_SOUL_SHARDS, 100);
             break;
         case POWER_SHADOW_ORB:
             SetPower(POWER_SHADOW_ORB, 0);
@@ -3702,7 +3714,7 @@ void Player::InitStatsForLevel(bool reapplyMods)
     SetPower(POWER_FOCUS, GetMaxPower(POWER_FOCUS));
     SetPower(POWER_RUNIC_POWER, 0);
     SetPower(POWER_CHI, 0);
-    SetPower(POWER_SOUL_SHARDS, 1);
+    SetPower(POWER_SOUL_SHARDS, 100);
     SetPower(POWER_DEMONIC_FURY, 200);
     SetPower(POWER_BURNING_EMBERS, 10);
     SetPower(POWER_SHADOW_ORB, 0);
@@ -5548,7 +5560,7 @@ void Player::ResurrectPlayer(float restore_percent, bool applySickness)
         SetPower(POWER_ECLIPSE, 0);
         SetPower(POWER_DEMONIC_FURY, 200);
         SetPower(POWER_BURNING_EMBERS, 10);
-        SetPower(POWER_SOUL_SHARDS, 1);
+        SetPower(POWER_SOUL_SHARDS, 100);
         SetPower(POWER_CHI, 0);
         SetPower(POWER_SHADOW_ORB, 0);
     }
@@ -24157,7 +24169,7 @@ void Player::ResurectUsingRequestData()
     SetPower(POWER_FOCUS, GetMaxPower(POWER_FOCUS));
     SetPower(POWER_ECLIPSE, 0);
     SetPower(POWER_BURNING_EMBERS, 10);
-    SetPower(POWER_SOUL_SHARDS, 1);
+    SetPower(POWER_SOUL_SHARDS, 100);
     SetPower(POWER_DEMONIC_FURY, 200);
     SetPower(POWER_SHADOW_ORB, 0);
     SetPower(POWER_CHI, 0);
