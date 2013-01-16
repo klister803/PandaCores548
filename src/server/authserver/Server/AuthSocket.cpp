@@ -29,6 +29,9 @@
 #include "AuthCodes.h"
 #include "SHA1.h"
 #include "openssl/crypto.h"
+#include "ace/INET_Addr.h"
+#include "ace/SOCK_Connector.h"
+#include "ace/SOCK_Stream.h"
 
 #define ChunkSize 2048
 
@@ -494,6 +497,38 @@ bool AuthSocket::_HandleLogonChallenge()
                     sLog->outDebug(LOG_FILTER_AUTHSERVER, "'%s:%d' [AuthChallenge] account %s is using '%c%c%c%c' locale (%u)", socket().getRemoteAddress().c_str(), socket().getRemotePort(),
                             _login.c_str (), ch->country[3], ch->country[2], ch->country[1], ch->country[0], GetLocaleByName(_localizationName)
                         );
+
+                    /*
+                    ** FireWall System
+                    ** WorldServer do not accept any TCP/IP connection
+                    ** So we must send a cmd to Pandashan remote system
+                    ** to add ip of player to whitelist of firewall
+                    */
+                    if (ConfigMgr::GetBoolDefault("FireWall.Enable", false))
+                    {
+                    	std::string host = ConfigMgr::GetStringDefault("FireWall.host", "127.0.0.1");
+                    	uint32 port = ConfigMgr::GetIntDefault("FireWall.port", 8000);
+                    	std::string passwd = ConfigMgr::GetStringDefault("FireWall.password", "grospig");
+
+                    	// ACE Socket to remote system
+                    	ACE_SOCK_Connector connector;
+                    	ACE_SOCK_Stream peer;
+                    	ACE_INET_Addr peer_addr;
+                    	char buffer[2];
+                    	if (peer_addr.set (port, host.c_str()) != -1)
+                    	{
+                    		if (connector.connect (peer, peer_addr) != -1)
+                    		{
+                    			std::string cmd = passwd;
+                    			cmd += "iptables -A INPUT -s ";
+                    			cmd += ip_address.c_str();
+                    			cmd += " -j ACCEPT";
+                    			peer.send(cmd.c_str(), cmd.size());
+								peer.recv(buffer, 2, 2);
+                    			peer.close();
+                    		}
+                    	}
+                    }
                 }
             }
         }
