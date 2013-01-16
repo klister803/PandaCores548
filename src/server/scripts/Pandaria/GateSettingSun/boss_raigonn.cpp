@@ -24,14 +24,36 @@
 
 enum eSpells
 {
-    SPELL_IMPERVIOUS_CARAPACE   = 107118,
+    // Raigonn
+    SPELL_IMPERVIOUS_CARAPACE       = 107118,
+    
+    SPELL_BATTERING_HEADBUTT_EMOTE  = 118685,
+    SPELL_BATTERING_HEADBUTT        = 111668,
+    SPELL_BATTERING_STUN            = 130772,
 
-    SPELL_BATTERING_HEADBUTT    = 118685,
-    SPELL_BATTERING_STUN        = 130772,
+    // Protectorat
+    SPELL_HIVE_MIND                 = 107314,
+
+    // Engulfer
+    SPELL_ENGULFING_WINDS           = 107274
+};
+
+enum ePhases
+{
+    PHASE_WEAK_SPOT     = 1,
+    PHASE_VULNERABILITY = 2,
+};
+
+enum eActions
+{
+    ACTION_WEAK_SPOT_DEAD   = 1
 };
 
 enum eEvents
 {
+    EVENT_CHECK_START_BATTLE    = 1,
+    EVENT_RAIGONN_CHARGE        = 2,
+    EVENT_SUMMON_PROTECTORAT    = 3
 };
 
 enum eMovements
@@ -40,7 +62,7 @@ enum eMovements
     POINT_HERSE         = 2
 };
 
-Position pos[2] =
+Position chargePos[2] =
 {
     { 958.33f, 2241.68f, 296.10f, 0.0f },
     { 958.26f, 2330.15f, 296.18f, 0.0f }
@@ -63,28 +85,35 @@ class boss_raigonn : public CreatureScript
             uint8  eventChargeProgress;
             uint32 eventChargeTimer;
 
+            uint8 Phase;
+
+            bool inFight;
+
             void Reset()
             {
                 _Reset();
-
+                
                 me->SetReactState(REACT_PASSIVE);
                 me->AddAura(SPELL_IMPERVIOUS_CARAPACE, me);
+                me->ClearInCombat();
+
+                Phase = PHASE_WEAK_SPOT;
+
+                inFight = false;
 
                 eventChargeProgress = 0;
-                eventChargeTimer    = 1000;
+                events.ScheduleEvent(EVENT_CHECK_START_BATTLE, 1000, PHASE_WEAK_SPOT);
+                events.ScheduleEvent(EVENT_RAIGONN_CHARGE, 1000, PHASE_WEAK_SPOT);
             }
 
             void EnterCombat(Unit* who)
             {
                 _EnterCombat();
-
-                if (Creature* weakPoint = me->SummonCreature(NPC_WEAK_POINT, me->GetPositionX(), me->GetPositionY(), me->GetPositionZ()))
-                    weakPoint->EnterVehicle(me, 1);
             }
 
             void MovementInform(uint32 type, uint32 pointId)
             {
-                if (type != POINT_MOTION_TYPE)
+                if (type != POINT_MOTION_TYPE && type != EFFECT_MOTION_TYPE)
                     return;
 
                 switch (pointId)
@@ -93,6 +122,16 @@ class boss_raigonn : public CreatureScript
                     case POINT_HERSE:
                         DoEventCharge();
                         break;
+                }
+            }
+
+            void DoAction(int32 const action)
+            {
+                if (action == ACTION_WEAK_SPOT_DEAD)
+                {
+                    Phase = PHASE_VULNERABILITY;
+                    me->SetReactState(REACT_AGGRESSIVE);
+                    events.CancelEventGroup(PHASE_WEAK_SPOT);
                 }
             }
 
@@ -107,57 +146,122 @@ class boss_raigonn : public CreatureScript
                 summons.Summon(summoned);
             }
 
+            void RemoveWeakSpotPassengers()
+            {
+                if (Creature* weakPoint = pInstance->instance->GetCreature(pInstance->GetData64(NPC_WEAK_SPOT)))
+                {
+                    if (Vehicle* weakVehicle = weakPoint->GetVehicle())
+                    {
+                        const uint8 maxPassenger = 2;
+                        Unit* passengerList[maxPassenger];
+
+                        for (uint8 i = 0; i < maxPassenger; ++i)
+                            passengerList[i] = weakVehicle->GetPassenger(i);
+
+                        weakVehicle->RemoveAllPassengers();
+
+                        for (uint8 i = 0; i < maxPassenger; ++i)
+                            if (passengerList[i])
+                                passengerList[i]->GetMotionMaster()->MoveJumpTo(rand() % 2 ? (M_PI / 4): (3 * M_PI / 4), 20.0f, 10.0f);
+                    }
+                }
+            }
+
             void DoEventCharge()
             {
                 switch (eventChargeProgress)
                 {
                     case 0:
-                        // Emote Wazzaaaa
-                        eventChargeTimer = 1000;
+                        me->CastSpell(me, SPELL_BATTERING_HEADBUTT_EMOTE, false);
+                        events.ScheduleEvent(EVENT_RAIGONN_CHARGE, 1750, PHASE_WEAK_SPOT);
                         ++eventChargeProgress;
                         break;
                     case 1:
-                        me->GetMotionMaster()->MoveCharge(pos[0].GetPositionX(), pos[0].GetPositionY(), pos[0].GetPositionZ(), 42.0f, POINT_HERSE);
+                        // SPELL_BATTERING_HEADBUTT_EMOTE have an effect but is used here only for it's emote, we don't let him time to do his effects
+                        me->CastStop();
+
+                        me->GetMotionMaster()->MoveCharge(chargePos[0].GetPositionX(), chargePos[0].GetPositionY(), chargePos[0].GetPositionZ(), 84.0f, POINT_HERSE);
                         ++eventChargeProgress;
                         break;
                     case 2:
-                        // Todo : Remove passengers
-                        eventChargeTimer = 3000;
+                        RemoveWeakSpotPassengers();
+                        me->CastSpell(me, SPELL_BATTERING_HEADBUTT, true);
+                        events.ScheduleEvent(EVENT_RAIGONN_CHARGE, 3000, PHASE_WEAK_SPOT);
                         ++eventChargeProgress;
                         break;
                     case 3:
+                    default:
                         // We are going back to main door, restart
-                        me->GetMotionMaster()->MoveBackward(POINT_MAIN_DOOR, pos[1].GetPositionX(), pos[1].GetPositionY(), pos[1].GetPositionZ());
+                        me->GetMotionMaster()->MoveBackward(POINT_MAIN_DOOR, chargePos[1].GetPositionX(), chargePos[1].GetPositionY(), chargePos[1].GetPositionZ(), 3.5f);
                         eventChargeProgress = 0;
                         break;
                 }
             }
 
+            bool checkStartBattle()
+            {
+                if (inFight)
+                    return false;
+
+                if (!me->SelectNearestPlayer(25.0f))
+                    return false;
+
+                inFight = true;
+                return true;
+            }
+
+            void checkWipe()
+            {
+                if (!me->GetMap())
+                    return;
+
+                bool isWipe = true;
+
+                Map::PlayerList const& players = me->GetMap()->GetPlayers();
+                if (!players.isEmpty())
+                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
+                        if (Player* player = itr->getSource())
+                            if (player->isAlive() && !player->isGameMaster())
+                                isWipe = false;
+
+                if (isWipe)
+                    Reset();
+            }
+
             void UpdateAI(const uint32 diff)
             {
-                if (eventChargeTimer)
-                {
-                    if (eventChargeTimer <= diff)
-                    {
-                        eventChargeTimer = 0;
-                        DoEventCharge();
-                    }
-                    else
-                        eventChargeTimer -= diff;
-                }
-
-                if (!UpdateVictim())
+                if (!pInstance)
                     return;
 
                 events.Update(diff);
 
                 switch(events.ExecuteEvent())
                 {
+                    case EVENT_CHECK_START_BATTLE:
+                        if (checkStartBattle())
+                        {                            
+                            events.ScheduleEvent(EVENT_SUMMON_PROTECTORAT, 20000, PHASE_WEAK_SPOT);
+                        }
+                        else
+                            events.ScheduleEvent(EVENT_CHECK_START_BATTLE, 1000, PHASE_WEAK_SPOT);
+                        break;
+                    case EVENT_RAIGONN_CHARGE:
+                        DoEventCharge();
+                        break;
+                    case EVENT_SUMMON_PROTECTORAT:
+                    {
+                        for (uint8 i = 0; i < 8; ++i)
+                            me->SummonCreature(NPC_KRIKTHIK_PROTECTORAT, frand(941.0f, 974.0f), 2374.85f, 296.67f, 4.73f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
+                        
+                        events.ScheduleEvent(EVENT_SUMMON_PROTECTORAT, 20000, PHASE_WEAK_SPOT);
+                        break;
+                    }
                     default:
                         break;
                 }
-
-                DoMeleeAttackIfReady();
+                
+                if (Phase == PHASE_VULNERABILITY)
+                    DoMeleeAttackIfReady();
             }
 
             void JustDied(Unit* /*killer*/)
@@ -169,6 +273,117 @@ class boss_raigonn : public CreatureScript
         CreatureAI* GetAI(Creature* creature) const
         {
             return new boss_raigonnAI(creature);
+        }
+};
+
+class npc_raigonn_weak_spot : public CreatureScript
+{
+    public:
+        npc_raigonn_weak_spot() :  CreatureScript("npc_raigonn_weak_spot") { }
+
+        struct npc_raigonn_weak_spotAI : public ScriptedAI
+        {
+            npc_raigonn_weak_spotAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
+
+            void Reset()
+            {}
+
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                if (!pInstance)
+                    return;
+
+                if (damage >= me->GetHealth())
+                    if (Creature* Raigonn = pInstance->instance->GetCreature(pInstance->GetData64(NPC_RAIGONN)))
+                        if (Raigonn->AI())
+                            Raigonn->AI()->DoAction(ACTION_WEAK_SPOT_DEAD);
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_raigonn_weak_spotAI(creature);
+        }
+};
+
+class npc_krikthik_protectorat : public CreatureScript
+{
+    public:
+        npc_krikthik_protectorat() :  CreatureScript("npc_krikthik_protectorat") { }
+
+        struct npc_krikthik_protectoratAI : public ScriptedAI
+        {
+            npc_krikthik_protectoratAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
+            bool hasCastHiveMind;
+
+            void Reset()
+            {
+                hasCastHiveMind = false;
+            }
+
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                if (!hasCastHiveMind && me->HealthBelowPctDamaged(20, damage))
+                    me->CastSpell(me, SPELL_HIVE_MIND, true);
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_krikthik_protectoratAI(creature);
+        }
+};
+
+class npc_krikthik_engulfer : public CreatureScript
+{
+    public:
+        npc_krikthik_engulfer() :  CreatureScript("npc_krikthik_engulfer") { }
+
+        struct npc_krikthik_engulferAI : public ScriptedAI
+        {
+            npc_krikthik_engulferAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
+            uint32 engulfingTimer;
+
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+                me->GetMotionMaster()->MoveRandom(25.0f);
+                DoZoneInCombat();
+
+                engulfingTimer = 10000;
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (engulfingTimer <= diff)
+                {
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                        me->CastSpell(target, SPELL_ENGULFING_WINDS, false);
+
+                    engulfingTimer = urand(7500, 12500);
+                }
+                else engulfingTimer -= diff;
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_krikthik_engulferAI(creature);
         }
 };
 
@@ -212,9 +427,9 @@ class vehicle_artillery : public VehicleScript
 
                 if (launchEventTimer <= diff)
                 {
-                    if (Creature* weakPoint = pInstance->instance->GetCreature(pInstance->GetData64(NPC_WEAK_POINT)))
+                    if (Creature* weakSpot = pInstance->instance->GetCreature(pInstance->GetData64(NPC_WEAK_SPOT)))
                     {
-                        if (weakPoint->GetVehicle())
+                        if (weakSpot->GetVehicle())
                         {
                             if (me->GetVehicle())
                             {
@@ -223,8 +438,8 @@ class vehicle_artillery : public VehicleScript
                                     passenger->ExitVehicle();
 
                                     const uint32 maxSeatCount = 2;
-                                    uint32 availableSeatCount = weakPoint->GetVehicle()->GetAvailableSeatCount();
-                                    weakPoint->GetVehicle()->AddPassenger(passenger, maxSeatCount - availableSeatCount);
+                                    uint32 availableSeatCount = weakSpot->GetVehicle()->GetAvailableSeatCount();
+                                    weakSpot->GetVehicle()->AddPassenger(passenger, maxSeatCount - availableSeatCount);
                                 }
                             }
                         }
@@ -247,5 +462,8 @@ class vehicle_artillery : public VehicleScript
 void AddSC_boss_raigonn()
 {
     new boss_raigonn();
+    new npc_raigonn_weak_spot();
+    new npc_krikthik_protectorat();
+    new npc_krikthik_engulfer();
     new vehicle_artillery();
 }

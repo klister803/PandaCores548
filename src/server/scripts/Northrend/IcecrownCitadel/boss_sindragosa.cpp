@@ -366,8 +366,6 @@ class boss_sindragosa : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
-                CheckPlayerDamage(attacker, damage);
-
                 if (!_isThirdPhase && !HealthAbovePct(35))
                 {
                     events.CancelEvent(EVENT_AIR_PHASE);

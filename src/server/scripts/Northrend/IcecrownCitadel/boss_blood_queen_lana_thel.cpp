@@ -205,11 +205,6 @@ class boss_blood_queen_lana_thel : public CreatureScript
                 }
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage)
-            {
-                CheckPlayerDamage(attacker, damage);
-            }
-
             void DoAction(int32 const action)
             {
                 if (action != ACTION_KILL_MINCHAR)

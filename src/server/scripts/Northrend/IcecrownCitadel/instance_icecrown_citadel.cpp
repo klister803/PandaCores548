@@ -2799,26 +2799,6 @@ void UnsummonSpecificCreaturesNearby(Creature* ref, uint32 entry, float radius)
     }
 }
 
-void CheckPlayerDamage(Unit* pUnit, uint32 & damage)
-{
-    if (pUnit->GetTypeId() != TYPEID_PLAYER)
-        return;
-
-    if (pUnit->ToPlayer()->GetSession()->GetSecurity() >= SEC_MODERATOR)
-        return;
-
-    if (damage > MAX_PLAYER_DAMAGES)
-    {
-        sWorld->BanAccount(BAN_CHARACTER, pUnit->ToPlayer()->GetName(), "-1", "Depasse les 400.000 degats dans ICC", "terminapig");
-        damage = 0;
-    }
-    else if (damage > MAX_PLAYER_DAMAGES_LOG)
-    {
-        sWorld->BanAccount(BAN_CHARACTER, pUnit->ToPlayer()->GetName(), "1s", "Depasse les 300.000 degats dans ICC", "terminapig");
-        damage = 0;
-    }
-}
-
 void AddSC_instance_icecrown_citadel()
 {
     new instance_icecrown_citadel();
