@@ -124,11 +124,6 @@ class boss_lord_marrowgar : public CreatureScript
                 instance->SetBossState(DATA_LORD_MARROWGAR, IN_PROGRESS);
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage)
-            {
-                CheckPlayerDamage(attacker, damage);
-            }
-
             void JustDied(Unit* /*killer*/)
             {
                 Talk(SAY_DEATH);

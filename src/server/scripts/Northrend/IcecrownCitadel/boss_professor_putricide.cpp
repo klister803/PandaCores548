@@ -299,8 +299,6 @@ class boss_professor_putricide : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
-                CheckPlayerDamage(attacker, damage);
-
                 switch (_phase)
                 {
                     case PHASE_COMBAT_1:

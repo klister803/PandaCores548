@@ -60,7 +60,12 @@ enum CreaturesIds
     NPC_KRIKTHIK_SABOTEUR       = 60447,
 
     // Raingonn
-    NPC_WEAK_POINT              = 56895,
+    NPC_WEAK_SPOT               = 56895,
+
+    NPC_KRIKTHIK_PROTECTORAT    = 56929,
+    NPC_KRIKTHIK_ENGULFER       = 56912,
+
+    NPC_ARTILLERY               = 59819
 };
 
 enum ObjectsIds
@@ -70,7 +75,10 @@ enum ObjectsIds
     GO_KIPTILAK_MANTID_BOMBS    = 215757,
     GO_KIPTILAK_EXIT_DOOR       = 212983,
 
-    GO_RIMAK_AFTER_DOOR         = 212985
+    GO_RIMAK_AFTER_DOOR         = 212985,
+
+    GO_RAIGONN_DOOR             = 212986,
+    GO_RAIGONN_AFTER_DOOR       = 214261,
 };
 
 #endif // STORMSTOUT_BREWERY_H_

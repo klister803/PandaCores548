@@ -165,7 +165,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void MoveJumpTo(float angle, float speedXY, float speedZ);
         void MoveJump(float x, float y, float z, float speedXY, float speedZ, uint32 id = 0);
         void MoveFall(uint32 id = 0);
-        void MoveBackward(uint32 id, float x, float y, float z);
+        void MoveBackward(uint32 id, float x, float y, float z, float speed = 0.0f);
 
         void MoveSeekAssistance(float x, float y, float z);
         void MoveSeekAssistanceDistract(uint32 timer);
