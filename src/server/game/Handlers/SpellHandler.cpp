@@ -594,6 +594,17 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellId = newSpellInfo->Id;
         }
     }
+    // Unending Breath - 5697 and Unending Breath : Soulburn - 104242
+    if (spellInfo->Id == 5697 && _player->HasAura(74434))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104242);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(74434);
+        }
+    }
 
     Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
     spell->m_cast_count = castCount;                       // set count of casts
