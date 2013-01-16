@@ -9906,10 +9906,6 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                             break;
                         }
                 }
-            // Drain Soul - increased damage for targets under 25 % HP
-            if (spellProto->SpellFamilyFlags[0] & 0x00004000)
-                if (HasAura(100001))
-                    DoneTotalMod *= 2;
             // Shadow Bite (30% increase from each dot)
             if (spellProto->SpellFamilyFlags[1] & 0x00400000 && isPet())
                 if (uint8 count = victim->GetDoTsByCaster(GetOwnerGUID()))
@@ -13518,7 +13514,7 @@ int32 Unit::GetCreatePowers(Powers power) const
         case POWER_DEMONIC_FURY:
             return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY) ? 1000 : 0);
         case POWER_SOUL_SHARDS:
-            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION) ? 3 : 0);
+            return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION) ? 300 : 0);
         case POWER_ECLIPSE:
             return (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_DRUID && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_DROOD_BALANCE) ? 100 : 0); // Should be -100 to 100 this needs the power to be int32 instead of uint32
         case POWER_HOLY_POWER:
