@@ -462,6 +462,13 @@ class spell_warl_drain_life : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_drain_life_AuraScript);
 
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetCaster())
+                    if (GetCaster()->HasAura(WARLOCK_SOULBURN_AURA))
+                        GetCaster()->RemoveAura(WARLOCK_SOULBURN_AURA);
+            }
+
             void OnTick(constAuraEffectPtr aurEff)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -472,9 +479,9 @@ class spell_warl_drain_life : public SpellScriptLoader
                     // In Demonology spec : Generates 10 Demonic Fury per second
                     if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
                         _player->EnergizeBySpell(_player, 689, 10, POWER_DEMONIC_FURY);
-                    // In affliction spec : Soulburn increase heal amount by 50%
-                    else if (_player->HasAura(WARLOCK_SOULBURN_AURA))
-                        basepoints *= 1.5f;
+                    // Soulburn : Increase heal by 50%
+                    if (_player->HasAura(WARLOCK_SOULBURN_AURA))
+                        basepoints = int32(basepoints * 1.5f);
 
                     _player->CastCustomSpell(_player, WARLOCK_DRAIN_LIFE_HEAL, &basepoints, NULL, NULL, true);
                 }
@@ -482,6 +489,7 @@ class spell_warl_drain_life : public SpellScriptLoader
 
             void Register()
             {
+                OnEffectRemove += AuraEffectApplyFn(spell_warl_drain_life_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_drain_life_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
             }
         };
