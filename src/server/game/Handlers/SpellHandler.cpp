@@ -649,6 +649,28 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             _player->RemoveAura(74434);
         }
     }
+    // Soul Swap - 86121 Soul Swap : Exhale - 86213
+    if (spellInfo->Id == 86121 && _player->HasAura(86211))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(86213);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(86211);
+        }
+    }
+    // Soul Swap - 86121 Soul Swap : Soulburn - 119678
+    if (spellInfo->Id == 86121 && _player->HasAura(74434))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(119678);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(74434);
+        }
+    }
 
     Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
     spell->m_cast_count = castCount;                       // set count of casts

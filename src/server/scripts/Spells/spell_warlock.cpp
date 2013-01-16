@@ -51,6 +51,7 @@ enum WarlockSpells
     WARLOCK_DRAIN_LIFE_HEAL                 = 89653,
     WARLOCK_SOULBURN_AURA                   = 74434,
     WARLOCK_CORRUPTION                      = 172,
+    WARLOCK_AGONY                           = 980,
     WARLOCK_DOOM                            = 124913,
     WARLOCK_UNSTABLE_AFFLICTION             = 30108,
     WARLOCK_IMMOLATE                        = 348,
@@ -65,6 +66,90 @@ enum WarlockSpells
     WARLOCK_RAIN_OF_FIRE_TRIGGERED          = 42223,
     WARLOCK_SPAWN_PURPLE_DEMONIC_GATEWAY    = 113890,
     WARLOCK_NIGHTFALL                       = 108558,
+    WARLOCK_SOUL_SWAP_AURA                  = 86211,
+    WARLOCK_SOUL_SWAP_VISUAL                = 92795,
+};
+
+// Soul Swap : Soulburn - 119678
+class spell_warl_soul_swap_soulburn : public SpellScriptLoader
+{
+    public:
+        spell_warl_soul_swap_soulburn() : SpellScriptLoader("spell_warl_soul_swap_soulburn") { }
+
+        class spell_warl_soul_swap_soulburn_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_soul_swap_soulburn_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        // Apply instantly corruption, unstable affliction and agony on the target
+                        _player->CastSpell(target, WARLOCK_CORRUPTION, true);
+                        _player->CastSpell(target, WARLOCK_UNSTABLE_AFFLICTION, true);
+                        _player->CastSpell(target, WARLOCK_AGONY, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_soul_swap_soulburn_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_soul_swap_soulburn_SpellScript();
+        }
+};
+
+// Soul Swap - 86121 or Soul Swap : Exhale - 86213
+class spell_warl_soul_swap : public SpellScriptLoader
+{
+    public:
+        spell_warl_soul_swap() : SpellScriptLoader("spell_warl_soul_swap") { }
+
+        class spell_warl_soul_swap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_soul_swap_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (GetSpellInfo()->Id == 86121)
+                        {
+                            // Soul Swap override spell
+                            caster->CastSpell(caster, WARLOCK_SOUL_SWAP_AURA, true);
+                            caster->RemoveSoulSwapDOT(target);
+                        }
+                        else if (GetSpellInfo()->Id == 86123)
+                        {
+                            caster->CastSpell(target, WARLOCK_SOUL_SWAP_VISUAL, true);
+                            caster->ApplySoulSwapDOT(target);
+
+                            if (caster->HasAura(56226) && caster->ToPlayer()) // Glyph of Soul Swap
+                                caster->ToPlayer()->AddSpellCooldown(86121, 0, time(NULL) + 30);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_soul_swap_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_soul_swap_SpellScript();
+        }
 };
 
 // Called by Corruption - 172
@@ -1227,6 +1312,8 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_soul_swap_soulburn();
+    new spell_warl_soul_swap();
     new spell_warl_nightfall();
     new spell_warl_drain_soul();
     new spell_warl_demonic_gateway();

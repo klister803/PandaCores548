@@ -1271,6 +1271,7 @@ class Unit : public WorldObject
         typedef std::list<AuraApplication *> AuraApplicationList;
         typedef std::list<DiminishingReturn> Diminishing;
         typedef std::set<uint32> ComboPointHolderSet;
+        typedef std::vector<uint32> AuraIdList;
 
         typedef std::map<uint8, AuraApplication*> VisibleAuraMap;
 
@@ -1860,6 +1861,9 @@ class Unit : public WorldObject
         bool HasNegativeAuraWithAttribute(uint32 flag, uint64 guid = 0);
         bool HasAuraWithMechanic(uint32 mechanicMask);
 
+        void RemoveSoulSwapDOT(Unit* target);
+        void ApplySoulSwapDOT(Unit* target);
+
         AuraEffectPtr IsScriptOverriden(SpellInfo const* spell, int32 script) const;
         uint32 GetDiseasesByCaster(uint64 casterGUID, bool remove = false);
         uint32 GetDoTsByCaster(uint64 casterGUID) const;
@@ -2319,6 +2323,7 @@ class Unit : public WorldObject
         AuraApplicationList m_interruptableAuras;             // auras which have interrupt mask applied on unit
         AuraStateAurasMap m_auraStateAuras;        // Used for improve performance of aura state checks on aura apply/remove
         uint32 m_interruptMask;
+        AuraIdList _SoulSwapDOTList;
 
         typedef std::list<HealDone*> HealDoneList;
         typedef std::list<HealTaken*> HealTakenList;
