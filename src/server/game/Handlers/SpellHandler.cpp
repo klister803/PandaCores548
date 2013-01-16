@@ -616,6 +616,39 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             _player->RemoveAura(74434);
         }
     }
+    // Curse of Enfeeblement - 109466 and Curse of Enfeeblement : Soulburn - 109468
+    if (spellInfo->Id == 109466 && _player->HasAura(74434))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(109468);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(74434);
+        }
+    }
+    // Curse of the Elements - 1490 and Curse of the Elements : Soulburn - 104225
+    if (spellInfo->Id == 1490 && _player->HasAura(74434))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104225);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(74434);
+        }
+    }
+    // Curse of Exhaustion - 18223 Curse of Exhaustion : Soulburn - 104242
+    if (spellInfo->Id == 18223 && _player->HasAura(74434))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104223);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(74434);
+        }
+    }
 
     Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
     spell->m_cast_count = castCount;                       // set count of casts
