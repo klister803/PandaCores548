@@ -66,6 +66,38 @@ enum WarlockSpells
     WARLOCK_SPAWN_PURPLE_DEMONIC_GATEWAY    = 113890,
 };
 
+// Drain Soul - 1120
+class spell_warl_drain_soul : public SpellScriptLoader
+{
+    public:
+        spell_warl_drain_soul() : SpellScriptLoader("spell_warl_drain_soul") { }
+
+        class spell_warl_drain_soul_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_drain_soul_AuraScript);
+
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetCaster())
+                {
+                    AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                    if (removeMode == AURA_REMOVE_BY_DEATH)
+                        GetCaster()->SetPower(POWER_SOUL_SHARDS, GetCaster()->GetPower(POWER_SOUL_SHARDS) + 300);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectApplyFn(spell_warl_drain_soul_AuraScript::HandleRemove, EFFECT_4, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_drain_soul_AuraScript();
+        }
+};
+
 // Demonic Gateway - 111771
 class spell_warl_demonic_gateway : public SpellScriptLoader
 {
@@ -1154,6 +1186,7 @@ public:
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_drain_soul();
     new spell_warl_demonic_gateway();
     new spell_warl_rain_of_fire();
     new spell_warl_chaos_bolt();
