@@ -6387,7 +6387,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
         }
 
         // Curse of Agony damage-per-tick calculation
-        if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellInfo()->SpellFamilyFlags[0] & 0x400) && GetSpellInfo()->SpellIconID == 544)
+        if (GetSpellInfo()->Id == 980)
         {
             uint32 totalTick = GetTotalTicks();
             // 1..4 ticks, 1/2 from normal tick damage
@@ -6397,6 +6397,54 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
             else if (m_tickNumber > totalTick * 2 / 3)
                 damage += (damage+1)/2;           // +1 prevent 0.5 damage possible lost at 1..4 ticks
             // 5..8 ticks have normal tick damage
+        }
+        // Malefic Grasp
+        if (GetSpellInfo()->Id == 103103)
+        {
+            int32 afflictionDamage;
+            SpellInfo const* afflictionSpell;
+
+            // Every tick, Malefic Grasp deals instantly 50% of tick-damage for each affliction effects on the target
+            // Corruption ...
+            if (AuraPtr corruption = target->GetAura(172, caster->GetGUID()))
+            {
+                afflictionSpell = sSpellMgr->GetSpellInfo(172);
+                afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+                afflictionDamage /= 2;
+
+                caster->CastCustomSpell(target, 131740, &afflictionDamage, NULL, NULL, true);
+            }
+            // Unstable Affliction ...
+            if (AuraPtr unstableAffliction = target->GetAura(30108, caster->GetGUID()))
+            {
+                afflictionSpell = sSpellMgr->GetSpellInfo(30108);
+                afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+                afflictionDamage /= 2;
+
+                caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
+            }
+            // Seed of Corruption ...
+            if (AuraPtr seedOfCorruption = target->GetAura(980, caster->GetGUID()))
+            {
+                afflictionSpell = sSpellMgr->GetSpellInfo(980);
+                afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+                afflictionDamage /= 2;
+
+                caster->CastCustomSpell(target, 132566, &afflictionDamage, NULL, NULL, true);
+            }
+            // Curse of Agony ...
+            if (AuraPtr agony = target->GetAura(27243, caster->GetGUID()))
+            {
+                afflictionSpell = sSpellMgr->GetSpellInfo(27243);
+                afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+                afflictionDamage /= 2;
+
+                caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
+            }
         }
         // Soul Drain
         if (GetSpellInfo()->Id == 1120)
@@ -6412,15 +6460,15 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                 damage *= 2;
 
                 int32 afflictionDamage;
-                uint32 afflictionAbsorb = 0;
                 SpellInfo const* afflictionSpell;
 
-                // ... and deals instantly 100% of tick-damage for each afflictions effects on the target
+                // ... and deals instantly 100% of tick-damage for each affliction effects on the target
                 // Corruption ...
                 if (AuraPtr corruption = target->GetAura(172, caster->GetGUID()))
                 {
                     afflictionSpell = sSpellMgr->GetSpellInfo(172);
                     afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                    afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
 
                     caster->CastCustomSpell(target, 131740, &afflictionDamage, NULL, NULL, true);
                 }
@@ -6429,6 +6477,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                 {
                     afflictionSpell = sSpellMgr->GetSpellInfo(30108);
                     afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                    afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
 
                     caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
                 }
@@ -6437,6 +6486,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                 {
                     afflictionSpell = sSpellMgr->GetSpellInfo(980);
                     afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                    afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
 
                     caster->CastCustomSpell(target, 132566, &afflictionDamage, NULL, NULL, true);
                 }
@@ -6445,6 +6495,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                 {
                     afflictionSpell = sSpellMgr->GetSpellInfo(27243);
                     afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                    afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
 
                     caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
                 }
