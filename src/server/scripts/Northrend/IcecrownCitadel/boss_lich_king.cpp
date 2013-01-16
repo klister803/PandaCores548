@@ -672,8 +672,6 @@ class boss_the_lich_king : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
-                CheckPlayerDamage(attacker, damage);
-
                 if (events.GetPhaseMask() & PHASE_MASK_ONE && !HealthAbovePct(70))
                 {
                     events.SetPhase(PHASE_TRANSITION);

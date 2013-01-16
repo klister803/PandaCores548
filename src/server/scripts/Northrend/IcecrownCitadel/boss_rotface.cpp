@@ -133,11 +133,6 @@ class boss_rotface : public CreatureScript
                 DoZoneInCombat();
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage)
-            {
-                CheckPlayerDamage(attacker, damage);
-            }
-
             void JustDied(Unit* /*killer*/)
             {
                 _JustDied();

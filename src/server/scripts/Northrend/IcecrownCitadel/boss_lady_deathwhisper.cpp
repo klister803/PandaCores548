@@ -362,8 +362,6 @@ class boss_lady_deathwhisper : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
-                CheckPlayerDamage(attacker, damage);
-
                 // phase transition
                 if (events.GetPhaseMask() & PHASE_ONE_MASK && (int32)damage > me->GetPower(POWER_MANA))
                 {
