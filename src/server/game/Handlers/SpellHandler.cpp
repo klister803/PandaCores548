@@ -605,6 +605,17 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             _player->RemoveAura(74434);
         }
     }
+    // Health Funnel - 755 and Health Funnel : Soulburn - 104242
+    if (spellInfo->Id == 755 && _player->HasAura(74434))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104220);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(74434);
+        }
+    }
 
     Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
     spell->m_cast_count = castCount;                       // set count of casts
