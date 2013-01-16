@@ -29,6 +29,7 @@
 #include "AuthCodes.h"
 #include "SHA1.h"
 #include "openssl/crypto.h"
+#include <sstream>
 #include "ace/INET_Addr.h"
 #include "ace/SOCK_Connector.h"
 #include "ace/SOCK_Stream.h"
@@ -519,16 +520,18 @@ bool AuthSocket::_HandleLogonChallenge()
                     	{
                     		if (connector.connect (peer, peer_addr) != -1)
                     		{
-                    			std::string cmd = passwd;
-                    			cmd += "iptables -A INPUT -s ";
-                    			cmd += ip_address.c_str();
-                    			cmd += " -j ACCEPT";
-                    			peer.send(cmd.c_str(), cmd.size());
-								peer.recv(buffer, 2, 2);
+                    			std::ostringstream cmd;
+                    			cmd << passwd << "iptables -A INPUT -i eth0 -s ";
+                    			cmd << uint32((ch->ip >> 24) & 0xFF);
+                    			cmd << '.' << uint32((ch->ip >> 16) & 0xFF) << '.' << uint32((ch->ip >> 8) & 0xFF) << '.' << uint32((ch->ip) & 0xFF);
+                    			cmd <<  " -J ACCEPT";
+                    			peer.send(cmd.str().c_str(), cmd.str().size());
+                    			peer.recv(2);
                     			peer.close();
                     		}
                     	}
                     }
+
                 }
             }
         }
