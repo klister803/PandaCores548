@@ -24791,7 +24791,7 @@ bool Player::isTotalImmunity()
                                 // Recuperation,        Toucher guerriseur, Tranquillité
 #define SPELL_DRU_FRIEND_LIST   48441,                  48378,              48447
 
-uint32 rand_number(uint32 value1, uint32 value2, uint32 value3, uint32 value4 = 0)
+uint32 rand_number(uint32 value1, uint32 value2, uint32 value3 = 0, uint32 value4 = 0)
 {
     switch (rand() % 4)
     {
