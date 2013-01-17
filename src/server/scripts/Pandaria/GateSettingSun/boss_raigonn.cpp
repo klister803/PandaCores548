@@ -31,11 +31,18 @@ enum eSpells
     SPELL_BATTERING_HEADBUTT        = 111668,
     SPELL_BATTERING_STUN            = 130772,
 
+    SPELL_BROKEN_CARAPACE           = 111742,
+    SPELL_FIXATE                    = 78617,
+    SPELL_STOMP                     = 34716,
+
     // Protectorat
     SPELL_HIVE_MIND                 = 107314,
 
     // Engulfer
-    SPELL_ENGULFING_WINDS           = 107274
+    SPELL_ENGULFING_WINDS           = 107274,
+
+    // Swarm Bringer
+    SPELL_SCREECHING_SWARM          = 111600
 };
 
 enum ePhases
@@ -52,8 +59,17 @@ enum eActions
 enum eEvents
 {
     EVENT_CHECK_START_BATTLE    = 1,
-    EVENT_RAIGONN_CHARGE        = 2,
-    EVENT_SUMMON_PROTECTORAT    = 3
+    EVENT_CHECK_WIPE            = 2,
+    EVENT_RAIGONN_CHARGE        = 3,
+
+    EVENT_SUMMON_PROTECTORAT    = 4,
+    EVENT_SUMMON_ENGULFER       = 5,
+    EVENT_SUMMON_SWARM_BRINGER  = 6,
+
+    EVENT_FIXATE                = 7,
+    EVENT_FIXATE_STOP           = 8,
+
+    EVENT_STOMP                 = 9
 };
 
 enum eMovements
@@ -104,6 +120,15 @@ class boss_raigonn : public CreatureScript
                 eventChargeProgress = 0;
                 events.ScheduleEvent(EVENT_CHECK_START_BATTLE, 1000, PHASE_WEAK_SPOT);
                 events.ScheduleEvent(EVENT_RAIGONN_CHARGE, 1000, PHASE_WEAK_SPOT);
+
+                if (me->GetVehicle())
+                    me->GetVehicle()->SetPassengersSpawnedByAI(true);
+
+                if (Creature* weak = me->SummonCreature(NPC_WEAK_SPOT, 0, 0, 0))
+                {
+                    weak->EnterVehicle(me, 1);
+                    pInstance->SetData64(NPC_WEAK_SPOT, weak->GetGUID());
+                }
             }
 
             void EnterCombat(Unit* who)
@@ -131,7 +156,13 @@ class boss_raigonn : public CreatureScript
                 {
                     Phase = PHASE_VULNERABILITY;
                     me->SetReactState(REACT_AGGRESSIVE);
+
+                    me->CastStop();
+                    me->CastSpell(me, SPELL_BROKEN_CARAPACE, false);
+
                     events.CancelEventGroup(PHASE_WEAK_SPOT);
+                    events.ScheduleEvent(EVENT_FIXATE, 30000, PHASE_VULNERABILITY);
+                    events.ScheduleEvent(EVENT_STOMP, 16000, PHASE_VULNERABILITY);
                 }
             }
 
@@ -192,8 +223,8 @@ class boss_raigonn : public CreatureScript
                     case 3:
                     default:
                         // We are going back to main door, restart
-                        me->GetMotionMaster()->MoveBackward(POINT_MAIN_DOOR, chargePos[1].GetPositionX(), chargePos[1].GetPositionY(), chargePos[1].GetPositionZ(), 3.5f);
                         eventChargeProgress = 0;
+                        me->GetMotionMaster()->MoveBackward(POINT_MAIN_DOOR, chargePos[1].GetPositionX(), chargePos[1].GetPositionY(), chargePos[1].GetPositionZ(), 1.0f);
                         break;
                 }
             }
@@ -203,7 +234,7 @@ class boss_raigonn : public CreatureScript
                 if (inFight)
                     return false;
 
-                if (!me->SelectNearestPlayer(25.0f))
+                if (!me->SelectNearestPlayerNotGM(25.0f))
                     return false;
 
                 inFight = true;
@@ -240,10 +271,18 @@ class boss_raigonn : public CreatureScript
                     case EVENT_CHECK_START_BATTLE:
                         if (checkStartBattle())
                         {                            
-                            events.ScheduleEvent(EVENT_SUMMON_PROTECTORAT, 20000, PHASE_WEAK_SPOT);
+                            DoZoneInCombat();
+                            events.ScheduleEvent(EVENT_SUMMON_PROTECTORAT, 20000);
+                            events.ScheduleEvent(EVENT_SUMMON_ENGULFER, 20000);
+                            events.ScheduleEvent(EVENT_SUMMON_SWARM_BRINGER, 20000);
+                            events.ScheduleEvent(EVENT_CHECK_WIPE, 1000);
                         }
                         else
                             events.ScheduleEvent(EVENT_CHECK_START_BATTLE, 1000, PHASE_WEAK_SPOT);
+                        break;
+                    case EVENT_CHECK_WIPE:
+                        checkWipe();
+                        events.ScheduleEvent(EVENT_CHECK_WIPE, 1000);
                         break;
                     case EVENT_RAIGONN_CHARGE:
                         DoEventCharge();
@@ -251,9 +290,59 @@ class boss_raigonn : public CreatureScript
                     case EVENT_SUMMON_PROTECTORAT:
                     {
                         for (uint8 i = 0; i < 8; ++i)
-                            me->SummonCreature(NPC_KRIKTHIK_PROTECTORAT, frand(941.0f, 974.0f), 2374.85f, 296.67f, 4.73f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
-                        
+                            if (Creature* summon = me->SummonCreature(NPC_KRIKTHIK_PROTECTORAT, frand(941.0f, 974.0f), 2374.85f, 296.67f, 4.73f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000))
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                                    if (summon->AI())
+                                        summon->AI()->AttackStart(target);
+
                         events.ScheduleEvent(EVENT_SUMMON_PROTECTORAT, 20000, PHASE_WEAK_SPOT);
+                        break;
+                    }
+                    case EVENT_SUMMON_ENGULFER:
+                    {
+                        for (uint8 i = 0; i < 3; ++i)
+                            if (Creature* summon = me->SummonCreature(NPC_KRIKTHIK_ENGULFER, frand(941.0f, 974.0f), me->GetPositionY(), me->GetPositionZ() + 20.0f, 4.73f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000))
+                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                                    if (summon->AI())
+                                        summon->AI()->AttackStart(target);
+
+                        events.ScheduleEvent(EVENT_SUMMON_ENGULFER, 20000, PHASE_WEAK_SPOT);
+                        break;
+                    }
+                    case EVENT_SUMMON_SWARM_BRINGER:
+                    {
+                        if (Creature* summon = me->SummonCreature(NPC_KRIKTHIK_SWARM_BRINGER, frand(941.0f, 974.0f), 2374.85f, 296.67f, 4.73f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                                if (summon->AI())
+                                    summon->AI()->AttackStart(target);
+
+                        events.ScheduleEvent(EVENT_SUMMON_ENGULFER, 20000, PHASE_WEAK_SPOT);
+                        break;
+                    }
+                    case EVENT_FIXATE:
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                        {
+                            me->CastSpell(target, SPELL_FIXATE, true);
+
+                            me->SetReactState(REACT_PASSIVE);
+                            me->GetMotionMaster()->MoveChase(target);
+
+                        }
+                        events.ScheduleEvent(EVENT_FIXATE_STOP, 15000);
+                        break;
+                    }
+                    case EVENT_FIXATE_STOP:
+                    {
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        me->GetMotionMaster()->Clear();
+                        events.ScheduleEvent(EVENT_FIXATE, 30000);
+                        break;
+                    }
+                    case EVENT_STOMP:
+                    {
+                        me->CastSpell(me, SPELL_STOMP, false);
+                        events.ScheduleEvent(EVENT_STOMP, 30000);
                         break;
                     }
                     default:
@@ -387,6 +476,48 @@ class npc_krikthik_engulfer : public CreatureScript
         }
 };
 
+class npc_krikthik_swarm_bringer : public CreatureScript
+{
+    public:
+        npc_krikthik_swarm_bringer() :  CreatureScript("npc_krikthik_swarm_bringer") { }
+
+        struct npc_krikthik_swarm_bringerAI : public ScriptedAI
+        {
+            npc_krikthik_swarm_bringerAI(Creature* creature) : ScriptedAI(creature)
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
+            uint32 swarmTimer;
+
+            void Reset()
+            {
+                DoZoneInCombat();
+                swarmTimer = 10000;
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (swarmTimer <= diff)
+                {
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
+                        me->CastSpell(target, SPELL_SCREECHING_SWARM, false);
+
+                    swarmTimer = urand(17500, 22500);
+                }
+                else swarmTimer -= diff;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_krikthik_swarm_bringerAI(creature);
+        }
+};
+
 class vehicle_artillery : public VehicleScript
 {
     public:
@@ -465,5 +596,6 @@ void AddSC_boss_raigonn()
     new npc_raigonn_weak_spot();
     new npc_krikthik_protectorat();
     new npc_krikthik_engulfer();
+    new npc_krikthik_swarm_bringer();
     new vehicle_artillery();
 }

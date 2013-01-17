@@ -64,6 +64,7 @@ enum CreaturesIds
 
     NPC_KRIKTHIK_PROTECTORAT    = 56929,
     NPC_KRIKTHIK_ENGULFER       = 56912,
+    NPC_KRIKTHIK_SWARM_BRINGER  = 56930,
 
     NPC_ARTILLERY               = 59819
 };
