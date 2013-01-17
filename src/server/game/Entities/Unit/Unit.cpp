@@ -18001,3 +18001,33 @@ void Unit::WriteMovementUpdate(WorldPacket &data) const
 {
     WorldSession::WriteMovementInfo(data, (MovementInfo*)&m_movementInfo);
 }
+
+void Unit::RemoveSoulSwapDOT(Unit* target)
+{
+   bool keepDOT = HasAura(56226); // Glyph of Soul Swap
+
+    _SoulSwapDOTList.clear();
+
+    AuraEffectList const mPeriodic = target->GetAuraEffectsByType(SPELL_AURA_PERIODIC_DAMAGE);
+    for (AuraEffectList::const_iterator iter = mPeriodic.begin(); iter != mPeriodic.end(); ++iter)
+    {
+        if (!(*iter)) // prevent crash
+            continue;
+
+        if ((*iter)->GetSpellInfo()->SpellFamilyName != SPELLFAMILY_WARLOCK ||
+            (*iter)->GetCasterGUID() != GetGUID()) // only warlock spells
+            continue;
+
+        _SoulSwapDOTList.push_back((*iter)->GetId());
+        if (!keepDOT)
+            target->RemoveAura((*iter)->GetId(), (*iter)->GetCasterGUID());
+    }
+}
+
+void Unit::ApplySoulSwapDOT(Unit* target)
+{
+    for (AuraIdList::const_iterator iter = _SoulSwapDOTList.begin(); iter != _SoulSwapDOTList.end(); ++iter)
+        AddAura((*iter), target);
+
+    _SoulSwapDOTList.clear();
+}
