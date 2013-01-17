@@ -59,6 +59,9 @@ class Vehicle : public TransportBase
         void TeleportVehicle(float x, float y, float z, float ang);
         bool IsVehicleInUse() { return Seats.begin() != Seats.end(); }
 
+        bool ArePassengersSpawnedByAI() { return _passengersSpawnedByAI; }
+        void SetPassengersSpawnedByAI(bool passengersSpawnedByAI) { _passengersSpawnedByAI = passengersSpawnedByAI; }
+
         SeatMap Seats;
 
         VehicleSeatEntry const* GetSeatForPassenger(Unit* passenger);
@@ -78,5 +81,7 @@ class Vehicle : public TransportBase
         GuidSet vehiclePlayers;
         uint32 _usableSeatNum;         // Number of seats that match VehicleSeatEntry::UsableByPlayer, used for proper display flags
         uint32 _creatureEntry;         // Can be different than me->GetBase()->GetEntry() in case of players
+
+        bool _passengersSpawnedByAI;
 };
 #endif
