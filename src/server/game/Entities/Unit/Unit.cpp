@@ -16026,11 +16026,13 @@ void Unit::RemoveCharmedBy(Unit* charmer)
 
     CastStop();
     CombatStop(); // TODO: CombatStop(true) may cause crash (interrupt spells)
+    AttackStop();
     getHostileRefManager().deleteReferences();
     DeleteThreatList();
     Map* map = GetMap();
     if (!IsVehicle() || (IsVehicle() && map && !map->IsBattleground()))
         RestoreFaction();
+    GetMotionMaster()->Clear(true);
     GetMotionMaster()->InitDefault();
 
     if (type == CHARM_TYPE_POSSESS)
