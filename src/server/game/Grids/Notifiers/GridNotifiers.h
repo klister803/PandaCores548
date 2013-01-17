@@ -1222,6 +1222,30 @@ namespace Trinity
             NearestPlayerInObjectRangeCheck(NearestPlayerInObjectRangeCheck const&);
     };
 
+    class NearestPlayerNotGMInObjectRangeCheck
+    {
+        public:
+            NearestPlayerNotGMInObjectRangeCheck(WorldObject const* obj, float range) : i_obj(obj), i_range(range)
+            {
+            }
+
+            bool operator()(Player* u)
+            {
+                if (!u->isGameMaster() && u->isAlive() && i_obj->IsWithinDistInMap(u, i_range))
+                {
+                    i_range = i_obj->GetDistance(u);
+                    return true;
+                }
+
+                return false;
+            }
+        private:
+            WorldObject const* i_obj;
+            float i_range;
+
+            NearestPlayerNotGMInObjectRangeCheck(NearestPlayerNotGMInObjectRangeCheck const&);
+    };
+
     class AllFriendlyCreaturesInGrid
     {
     public:

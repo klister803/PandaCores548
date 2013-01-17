@@ -619,6 +619,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         Unit* SelectNearestTarget(float dist = 0) const;
         Unit* SelectNearestTargetInAttackDistance(float dist = 0) const;
         Player* SelectNearestPlayer(float distance = 0) const;
+        Player* SelectNearestPlayerNotGM(float distance = 0) const;
 
         void DoFleeToGetAssistance();
         void CallForHelp(float fRadius);
