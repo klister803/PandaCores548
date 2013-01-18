@@ -3134,6 +3134,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(8); // 15s
                 break;
             case 132158: // Nature's Swiftness
+            case 74434: // Soul Burn
+            case 34936: // Backlash
                 spellInfo->ProcCharges = 1;
                 break;
             case 127630: // Cascade - damage trigger

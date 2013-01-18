@@ -348,8 +348,6 @@ class boss_deathbringer_saurfang : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
-                CheckPlayerDamage(attacker, damage);
-
                 if (!_frenzied && HealthBelowPct(31)) // AT 30%, not below
                 {
                     _frenzied = true;

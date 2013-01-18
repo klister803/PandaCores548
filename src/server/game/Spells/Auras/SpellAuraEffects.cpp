@@ -5446,24 +5446,6 @@ void AuraEffect::HandleChannelDeathItem(AuraApplication const* aurApp, uint8 mod
     if (GetSpellInfo()->Effects[m_effIndex].ItemType == 0)
         return;
 
-    // Soul Shard
-    if (GetSpellInfo()->Effects[m_effIndex].ItemType == 6265)
-    {
-        // Soul Shard only from units that grant XP or honor
-        if (!plCaster->isHonorOrXPTarget(target) ||
-            (target->GetTypeId() == TYPEID_UNIT && !target->ToCreature()->isTappedBy(plCaster)))
-            return;
-
-        // If this is Drain Soul, check for Glyph of Drain Soul
-        if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellInfo()->SpellFamilyFlags[0] & 0x00004000))
-        {
-            // Glyph of Drain Soul - chance to create an additional Soul Shard
-            if (AuraEffectPtr aur = caster->GetAuraEffect(58070, 0))
-                if (roll_chance_i(aur->GetMiscValue()))
-                    caster->CastSpell(caster, 58068, true, 0, aur); // We _could_ simply do ++count here, but Blizz does it this way :)
-        }
-    }
-
     //Adding items
     uint32 noSpaceForCount = 0;
     uint32 count = m_amount;
@@ -6405,7 +6387,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
         }
 
         // Curse of Agony damage-per-tick calculation
-        if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellInfo()->SpellFamilyFlags[0] & 0x400) && GetSpellInfo()->SpellIconID == 544)
+        if (GetSpellInfo()->Id == 980)
         {
             uint32 totalTick = GetTotalTicks();
             // 1..4 ticks, 1/2 from normal tick damage
@@ -6415,6 +6397,109 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
             else if (m_tickNumber > totalTick * 2 / 3)
                 damage += (damage+1)/2;           // +1 prevent 0.5 damage possible lost at 1..4 ticks
             // 5..8 ticks have normal tick damage
+        }
+        // Malefic Grasp
+        if (GetSpellInfo()->Id == 103103)
+        {
+            int32 afflictionDamage;
+            SpellInfo const* afflictionSpell;
+
+            // Every tick, Malefic Grasp deals instantly 50% of tick-damage for each affliction effects on the target
+            // Corruption ...
+            if (AuraPtr corruption = target->GetAura(172, caster->GetGUID()))
+            {
+                afflictionSpell = sSpellMgr->GetSpellInfo(172);
+                afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+                afflictionDamage /= 2;
+
+                caster->CastCustomSpell(target, 131740, &afflictionDamage, NULL, NULL, true);
+            }
+            // Unstable Affliction ...
+            if (AuraPtr unstableAffliction = target->GetAura(30108, caster->GetGUID()))
+            {
+                afflictionSpell = sSpellMgr->GetSpellInfo(30108);
+                afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+                afflictionDamage /= 2;
+
+                caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
+            }
+            // Seed of Corruption ...
+            if (AuraPtr seedOfCorruption = target->GetAura(980, caster->GetGUID()))
+            {
+                afflictionSpell = sSpellMgr->GetSpellInfo(980);
+                afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+                afflictionDamage /= 2;
+
+                caster->CastCustomSpell(target, 132566, &afflictionDamage, NULL, NULL, true);
+            }
+            // Curse of Agony ...
+            if (AuraPtr agony = target->GetAura(27243, caster->GetGUID()))
+            {
+                afflictionSpell = sSpellMgr->GetSpellInfo(27243);
+                afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+                afflictionDamage /= 2;
+
+                caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
+            }
+        }
+        // Soul Drain
+        if (GetSpellInfo()->Id == 1120)
+        {
+            // Energize one soul shard every 2 ticks
+            if (m_tickNumber == 2 || m_tickNumber == 4 || m_tickNumber == 6)
+                caster->SetPower(POWER_SOUL_SHARDS, caster->GetPower(POWER_SOUL_SHARDS) + 100);
+
+            // if target is below 20% of life ...
+            if (target->GetHealthPct() <= 20)
+            {
+                // ... drain soul deal 100% more damage ...
+                damage *= 2;
+
+                int32 afflictionDamage;
+                SpellInfo const* afflictionSpell;
+
+                // ... and deals instantly 100% of tick-damage for each affliction effects on the target
+                // Corruption ...
+                if (AuraPtr corruption = target->GetAura(172, caster->GetGUID()))
+                {
+                    afflictionSpell = sSpellMgr->GetSpellInfo(172);
+                    afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                    afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+
+                    caster->CastCustomSpell(target, 131740, &afflictionDamage, NULL, NULL, true);
+                }
+                // Unstable Affliction ...
+                if (AuraPtr unstableAffliction = target->GetAura(30108, caster->GetGUID()))
+                {
+                    afflictionSpell = sSpellMgr->GetSpellInfo(30108);
+                    afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                    afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+
+                    caster->CastCustomSpell(target, 131736, &afflictionDamage, NULL, NULL, true);
+                }
+                // Seed of Corruption ...
+                if (AuraPtr seedOfCorruption = target->GetAura(980, caster->GetGUID()))
+                {
+                    afflictionSpell = sSpellMgr->GetSpellInfo(980);
+                    afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                    afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+
+                    caster->CastCustomSpell(target, 132566, &afflictionDamage, NULL, NULL, true);
+                }
+                // Curse of Agony ...
+                if (AuraPtr agony = target->GetAura(27243, caster->GetGUID()))
+                {
+                    afflictionSpell = sSpellMgr->GetSpellInfo(27243);
+                    afflictionDamage = caster->CalculateSpellDamage(target, afflictionSpell, 0);
+                    afflictionDamage += caster->SpellDamageBonusDone(target, afflictionSpell, afflictionDamage, DOT);
+
+                    caster->CastCustomSpell(target, 131737, &afflictionDamage, NULL, NULL, true);
+                }
+            }
         }
         // Execution Sentence damage-per-tick calculation
         if (GetSpellInfo()->Id == 114916)
@@ -6442,21 +6527,6 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
                 damage = int32(damage * 0.088f); // Ninth:   8.8%
             else
                 damage = int32(damage * 0.444f); // Final:   44.4%
-        }
-        // There is a Chance to make a Soul Shard when Drain soul does damage
-        if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_WARLOCK && (GetSpellInfo()->SpellFamilyFlags[0] & 0x00004000))
-        {
-            if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->isHonorOrXPTarget(target))
-            {
-                if (roll_chance_i(20))
-                {
-                    caster->CastSpell(caster, 43836, true, 0, CONST_CAST(AuraEffect, shared_from_this()));
-                    // Glyph of Drain Soul - chance to create an additional Soul Shard
-                    if (AuraEffectPtr aur = caster->GetAuraEffect(58070, 0))
-                        if (roll_chance_i(aur->GetMiscValue()))
-                            caster->CastSpell(caster, 58068, true, 0, aur);
-                }
-            }
         }
         if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_GENERIC)
         {

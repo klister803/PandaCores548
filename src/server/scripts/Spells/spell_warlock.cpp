@@ -35,14 +35,7 @@ enum WarlockSpells
     WARLOCK_DEMONIC_CIRCLE_SUMMON           = 48018,
     WARLOCK_DEMONIC_CIRCLE_TELEPORT         = 48020,
     WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST       = 62388,
-    WARLOCK_HAUNT                           = 48181,
-    WARLOCK_HAUNT_HEAL                      = 48210,
     WARLOCK_UNSTABLE_AFFLICTION_DISPEL      = 31117,
-    WARLOCK_CURSE_OF_DOOM_EFFECT            = 18662,
-    WARLOCK_IMPROVED_HEALTH_FUNNEL_R1       = 18703,
-    WARLOCK_IMPROVED_HEALTH_FUNNEL_R2       = 18704,
-    WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R1  = 60955,
-    WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2  = 60956,
     WARLOCK_GLYPH_OF_FEAR                   = 56244,
     WARLOCK_FEAR_EFFECT                     = 118699,
     WARLOCK_GLYPH_OF_FEAR_EFFECT            = 130616,
@@ -51,6 +44,7 @@ enum WarlockSpells
     WARLOCK_DRAIN_LIFE_HEAL                 = 89653,
     WARLOCK_SOULBURN_AURA                   = 74434,
     WARLOCK_CORRUPTION                      = 172,
+    WARLOCK_AGONY                           = 980,
     WARLOCK_DOOM                            = 124913,
     WARLOCK_UNSTABLE_AFFLICTION             = 30108,
     WARLOCK_IMMOLATE                        = 348,
@@ -64,6 +58,155 @@ enum WarlockSpells
     WARLOCK_RAIN_OF_FIRE                    = 104232,
     WARLOCK_RAIN_OF_FIRE_TRIGGERED          = 42223,
     WARLOCK_SPAWN_PURPLE_DEMONIC_GATEWAY    = 113890,
+    WARLOCK_NIGHTFALL                       = 108558,
+    WARLOCK_SOUL_SWAP_AURA                  = 86211,
+    WARLOCK_SOUL_SWAP_VISUAL                = 92795,
+};
+
+// Soul Swap : Soulburn - 119678
+class spell_warl_soul_swap_soulburn : public SpellScriptLoader
+{
+    public:
+        spell_warl_soul_swap_soulburn() : SpellScriptLoader("spell_warl_soul_swap_soulburn") { }
+
+        class spell_warl_soul_swap_soulburn_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_soul_swap_soulburn_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        // Apply instantly corruption, unstable affliction and agony on the target
+                        _player->CastSpell(target, WARLOCK_CORRUPTION, true);
+                        _player->CastSpell(target, WARLOCK_UNSTABLE_AFFLICTION, true);
+                        _player->CastSpell(target, WARLOCK_AGONY, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_soul_swap_soulburn_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_soul_swap_soulburn_SpellScript();
+        }
+};
+
+// Soul Swap - 86121 or Soul Swap : Exhale - 86213
+class spell_warl_soul_swap : public SpellScriptLoader
+{
+    public:
+        spell_warl_soul_swap() : SpellScriptLoader("spell_warl_soul_swap") { }
+
+        class spell_warl_soul_swap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_soul_swap_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (GetSpellInfo()->Id == 86121)
+                        {
+                            // Soul Swap override spell
+                            caster->CastSpell(caster, WARLOCK_SOUL_SWAP_AURA, true);
+                            caster->RemoveSoulSwapDOT(target);
+                        }
+                        else if (GetSpellInfo()->Id == 86123)
+                        {
+                            caster->CastSpell(target, WARLOCK_SOUL_SWAP_VISUAL, true);
+                            caster->ApplySoulSwapDOT(target);
+
+                            if (caster->HasAura(56226) && caster->ToPlayer()) // Glyph of Soul Swap
+                                caster->ToPlayer()->AddSpellCooldown(86121, 0, time(NULL) + 30);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_soul_swap_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_soul_swap_SpellScript();
+        }
+};
+
+// Called by Corruption - 172
+// Nightfall - 108558
+class spell_warl_nightfall : public SpellScriptLoader
+{
+    public:
+        spell_warl_nightfall() : SpellScriptLoader("spell_warl_nightfall") { }
+
+        class spell_warl_nightfall_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_nightfall_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    if (Player* _player = GetCaster()->ToPlayer())
+                        if (_player->HasAura(WARLOCK_NIGHTFALL))
+                            if (roll_chance_i(5))
+                                _player->SetPower(POWER_SOUL_SHARDS, _player->GetPower(POWER_SOUL_SHARDS) + 100);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_nightfall_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_nightfall_AuraScript();
+        }
+};
+
+// Drain Soul - 1120
+class spell_warl_drain_soul : public SpellScriptLoader
+{
+    public:
+        spell_warl_drain_soul() : SpellScriptLoader("spell_warl_drain_soul") { }
+
+        class spell_warl_drain_soul_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_drain_soul_AuraScript);
+
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetCaster())
+                {
+                    AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                    if (removeMode == AURA_REMOVE_BY_DEATH)
+                        GetCaster()->SetPower(POWER_SOUL_SHARDS, GetCaster()->GetPower(POWER_SOUL_SHARDS) + 300);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectApplyFn(spell_warl_drain_soul_AuraScript::HandleRemove, EFFECT_4, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_drain_soul_AuraScript();
+        }
 };
 
 // Demonic Gateway - 111771
@@ -430,6 +573,13 @@ class spell_warl_drain_life : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_drain_life_AuraScript);
 
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetCaster())
+                    if (GetCaster()->HasAura(WARLOCK_SOULBURN_AURA))
+                        GetCaster()->RemoveAura(WARLOCK_SOULBURN_AURA);
+            }
+
             void OnTick(constAuraEffectPtr aurEff)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -440,9 +590,9 @@ class spell_warl_drain_life : public SpellScriptLoader
                     // In Demonology spec : Generates 10 Demonic Fury per second
                     if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
                         _player->EnergizeBySpell(_player, 689, 10, POWER_DEMONIC_FURY);
-                    // In affliction spec : Soulburn increase heal amount by 50%
-                    else if (_player->HasAura(WARLOCK_SOULBURN_AURA))
-                        basepoints *= 1.5f;
+                    // Soulburn : Increase heal by 50%
+                    if (_player->HasAura(WARLOCK_SOULBURN_AURA))
+                        basepoints = int32(basepoints * 1.5f);
 
                     _player->CastCustomSpell(_player, WARLOCK_DRAIN_LIFE_HEAL, &basepoints, NULL, NULL, true);
                 }
@@ -450,6 +600,7 @@ class spell_warl_drain_life : public SpellScriptLoader
 
             void Register()
             {
+                OnEffectRemove += AuraEffectApplyFn(spell_warl_drain_life_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_drain_life_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
             }
         };
@@ -965,65 +1116,6 @@ class spell_warl_demonic_circle_teleport : public SpellScriptLoader
         }
 };
 
-class spell_warl_haunt : public SpellScriptLoader
-{
-    public:
-        spell_warl_haunt() : SpellScriptLoader("spell_warl_haunt") { }
-
-        class spell_warl_haunt_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_warl_haunt_SpellScript);
-
-            void HandleOnHit()
-            {
-                if (AuraPtr aura = GetHitAura())
-                    if (AuraEffectPtr aurEff = aura->GetEffect(EFFECT_1))
-                        aurEff->SetAmount(CalculatePct(aurEff->GetAmount(), GetHitDamage()));
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_warl_haunt_SpellScript::HandleOnHit);
-            }
-        };
-
-        class spell_warl_haunt_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warl_haunt_AuraScript);
-
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(WARLOCK_HAUNT_HEAL))
-                    return false;
-                return true;
-            }
-
-            void HandleRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    int32 amount = aurEff->GetAmount();
-                    GetTarget()->CastCustomSpell(caster, WARLOCK_HAUNT_HEAL, &amount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
-                }
-            }
-
-            void Register()
-            {
-                OnEffectRemove += AuraEffectApplyFn(spell_warl_haunt_AuraScript::HandleRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_warl_haunt_SpellScript();
-        }
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warl_haunt_AuraScript();
-        }
-};
-
 class spell_warl_unstable_affliction : public SpellScriptLoader
 {
     public:
@@ -1063,97 +1155,12 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
         }
 };
 
-class spell_warl_curse_of_doom : public SpellScriptLoader
-{
-    public:
-        spell_warl_curse_of_doom() : SpellScriptLoader("spell_warl_curse_of_doom") { }
-
-        class spell_warl_curse_of_doom_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_warl_curse_of_doom_AuraScript);
-
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(WARLOCK_CURSE_OF_DOOM_EFFECT))
-                    return false;
-                return true;
-            }
-
-            bool Load()
-            {
-                return GetCaster() && GetCaster()->GetTypeId() == TYPEID_PLAYER;
-            }
-
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                if (!GetCaster())
-                    return;
-
-                AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
-                if (removeMode != AURA_REMOVE_BY_DEATH || !IsExpired())
-                    return;
-
-                if (GetCaster()->ToPlayer()->isHonorOrXPTarget(GetTarget()))
-                    GetCaster()->CastSpell(GetTarget(), WARLOCK_CURSE_OF_DOOM_EFFECT, true, NULL, aurEff);
-            }
-
-            void Register()
-            {
-                 AfterEffectRemove += AuraEffectRemoveFn(spell_warl_curse_of_doom_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_warl_curse_of_doom_AuraScript();
-        }
-};
-
-class spell_warl_health_funnel : public SpellScriptLoader
-{
-public:
-    spell_warl_health_funnel() : SpellScriptLoader("spell_warl_health_funnel") { }
-
-    class spell_warl_health_funnel_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_warl_health_funnel_AuraScript)
-
-            void ApplyEffect(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            Unit* caster = GetCaster();
-            if (!caster)
-                return;
-
-            Unit* target = GetTarget();
-            if (caster->HasAura(WARLOCK_IMPROVED_HEALTH_FUNNEL_R2))
-                target->CastSpell(target, WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2, true);
-            else if (caster->HasAura(WARLOCK_IMPROVED_HEALTH_FUNNEL_R1))
-                target->CastSpell(target, WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R1, true);
-        }
-
-        void RemoveEffect(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            Unit* target = GetTarget();
-            target->RemoveAurasDueToSpell(WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R1);
-            target->RemoveAurasDueToSpell(WARLOCK_IMPROVED_HEALTH_FUNNEL_BUFF_R2);
-
-        }
-
-        void Register()
-        {
-            OnEffectRemove += AuraEffectRemoveFn(spell_warl_health_funnel_AuraScript::RemoveEffect, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
-            OnEffectApply += AuraEffectApplyFn(spell_warl_health_funnel_AuraScript::ApplyEffect, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_warl_health_funnel_AuraScript();
-    }
-};
-
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_soul_swap_soulburn();
+    new spell_warl_soul_swap();
+    new spell_warl_nightfall();
+    new spell_warl_drain_soul();
     new spell_warl_demonic_gateway();
     new spell_warl_rain_of_fire();
     new spell_warl_chaos_bolt();
@@ -1176,8 +1183,5 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_soulshatter();
     new spell_warl_demonic_circle_summon();
     new spell_warl_demonic_circle_teleport();
-    new spell_warl_haunt();
     new spell_warl_unstable_affliction();
-    new spell_warl_curse_of_doom();
-    new spell_warl_health_funnel();
 }

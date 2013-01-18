@@ -112,11 +112,6 @@ class boss_festergut : public CreatureScript
                 }
             }
 
-            void DamageTaken(Unit* attacker, uint32& damage)
-            {
-                CheckPlayerDamage(attacker, damage);
-            }
-
             void EnterCombat(Unit* who)
             {
                 if (!instance->CheckRequiredBosses(DATA_FESTERGUT, who->ToPlayer()))

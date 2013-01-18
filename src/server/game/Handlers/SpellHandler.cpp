@@ -594,6 +594,83 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellId = newSpellInfo->Id;
         }
     }
+    // Unending Breath - 5697 and Unending Breath : Soulburn - 104242
+    if (spellInfo->Id == 5697 && _player->HasAura(74434))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104242);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(74434);
+        }
+    }
+    // Health Funnel - 755 and Health Funnel : Soulburn - 104242
+    if (spellInfo->Id == 755 && _player->HasAura(74434))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104220);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(74434);
+        }
+    }
+    // Curse of Enfeeblement - 109466 and Curse of Enfeeblement : Soulburn - 109468
+    if (spellInfo->Id == 109466 && _player->HasAura(74434))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(109468);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(74434);
+        }
+    }
+    // Curse of the Elements - 1490 and Curse of the Elements : Soulburn - 104225
+    if (spellInfo->Id == 1490 && _player->HasAura(74434))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104225);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(74434);
+        }
+    }
+    // Curse of Exhaustion - 18223 Curse of Exhaustion : Soulburn - 104242
+    if (spellInfo->Id == 18223 && _player->HasAura(74434))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104223);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(74434);
+        }
+    }
+    // Soul Swap - 86121 Soul Swap : Exhale - 86213
+    if (spellInfo->Id == 86121 && _player->HasAura(86211))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(86213);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(86211);
+        }
+    }
+    // Soul Swap - 86121 Soul Swap : Soulburn - 119678
+    if (spellInfo->Id == 86121 && _player->HasAura(74434))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(119678);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+            _player->RemoveAura(74434);
+        }
+    }
 
     Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
     spell->m_cast_count = castCount;                       // set count of casts

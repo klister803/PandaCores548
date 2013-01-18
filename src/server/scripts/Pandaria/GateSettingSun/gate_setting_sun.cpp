@@ -73,8 +73,23 @@ class AreaTrigger_at_first_door : public AreaTriggerScript
         }
 };
 
+class go_setting_sun_brasier : public GameObjectScript
+{
+public:
+    go_setting_sun_brasier() : GameObjectScript("go_setting_sun_brasier") { }
+
+    bool OnGossipHello(Player* player, GameObject* /*go*/)
+    {
+        if (player->GetInstanceScript())
+            player->GetInstanceScript()->SetData(DATA_BRASIER_CLICKED, DONE);
+
+        return false;
+    }
+};
+
 void AddSC_gate_setting_sun()
 {
     new mob_serpent_spine_defender();
     new AreaTrigger_at_first_door();
+    new go_setting_sun_brasier();
 }

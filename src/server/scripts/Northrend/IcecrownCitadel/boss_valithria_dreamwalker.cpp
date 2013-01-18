@@ -383,8 +383,6 @@ class boss_valithria_dreamwalker : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
-                CheckPlayerDamage(attacker, damage);
-
                 if (me->HealthBelowPctDamaged(25, damage))
                 {
                     if (!_under25PercentTalkDone)

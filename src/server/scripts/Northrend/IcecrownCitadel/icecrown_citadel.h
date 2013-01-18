@@ -690,8 +690,6 @@ CreatureAI* GetIcecrownCitadelAI(Creature* creature)
     return NULL;
 }
 
-void CheckPlayerDamage(Unit* pUnit, uint32 & damage);
-
 // Declaration
 extern Position const SindragosaSpawnPos;
 uint32 GetPhase(const EventMap &em);

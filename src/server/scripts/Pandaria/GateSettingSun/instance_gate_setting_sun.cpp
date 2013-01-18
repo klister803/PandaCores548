@@ -16,6 +16,8 @@ DoorData const doorData[] =
     {GO_KIPTILAK_WALLS,                     DATA_KIPTILAK,              DOOR_TYPE_ROOM,         BOUNDARY_W   },
     {GO_KIPTILAK_EXIT_DOOR,                 DATA_KIPTILAK,              DOOR_TYPE_PASSAGE,      BOUNDARY_N   },
     {GO_RIMAK_AFTER_DOOR,                   DATA_RIMOK,                 DOOR_TYPE_ROOM,         BOUNDARY_S   },
+    {GO_RAIGONN_DOOR,                       DATA_RAIGONN,               DOOR_TYPE_ROOM,         BOUNDARY_NE  },
+    {GO_RAIGONN_AFTER_DOOR,                 DATA_RAIGONN,               DOOR_TYPE_PASSAGE,      BOUNDARY_E   },
     {0,                                     0,                          DOOR_TYPE_ROOM,         BOUNDARY_NONE},// END
 };
 
@@ -38,8 +40,15 @@ public:
         uint64 raigonWeakGuid;
 
         uint64 firstDoorGuid;
-        std::vector<uint64> mantidBombsGUID;
-        std::vector<uint64> rimokAddGenetarorsGUID;
+        uint64 fireSignalGuid;
+
+        uint32 cinematicTimer;
+        uint8 cinematicEventProgress;
+
+        std::vector<uint64> bombarderGuids;
+        std::vector<uint64> mantidBombsGUIDs;
+        std::vector<uint64> rimokAddGenetarorsGUIDs;
+        std::vector<uint64> artilleryGUIDs;
 
         uint32 dataStorage[MAX_DATA];
 
@@ -59,20 +68,49 @@ public:
             
             firstDoorGuid   = 0;
 
+            cinematicTimer = 0;
+            cinematicEventProgress = 0;
+
             memset(dataStorage, 0, MAX_DATA * sizeof(uint32));
-            mantidBombsGUID.clear();
+
+            mantidBombsGUIDs.clear();
+            rimokAddGenetarorsGUIDs.clear();
+            artilleryGUIDs.clear();
+        }
+
+        void OnPlayerEnter(Player* player)
+        {
+            if (GetData(DATA_BRASIER_CLICKED) == NOT_STARTED)
+                player->SetPhaseMask(1, true);
+            else
+                player->SetPhaseMask(2, true);
         }
 
         void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
-                case NPC_KIPTILAK:      kiptilakGuid    = creature->GetGUID();                  return;
-                case NPC_GADOK:         gadokGuid       = creature->GetGUID();                  return;
-                case NPC_RIMOK:         rimokGuid       = creature->GetGUID();                  return;
-                case NPC_RAIGONN:       raigonnGuid     = creature->GetGUID();                  return;
-                case NPC_ADD_GENERATOR: rimokAddGenetarorsGUID.push_back(creature->GetGUID());  return;
-                default:                                                    return;
+                case NPC_KIPTILAK:          kiptilakGuid    = creature->GetGUID();                  return;
+                case NPC_GADOK:             gadokGuid       = creature->GetGUID();                  return;
+                case NPC_RIMOK:             rimokGuid       = creature->GetGUID();                  return;
+                case NPC_RAIGONN:           raigonnGuid     = creature->GetGUID();                  return;
+                case NPC_KRITHUK_BOMBARDER: bombarderGuids.push_back(creature->GetGUID());          return;
+                case NPC_ADD_GENERATOR:     rimokAddGenetarorsGUIDs.push_back(creature->GetGUID()); return;
+                case NPC_ARTILLERY:         artilleryGUIDs.push_back(creature->GetGUID());          return;
+                default:                                                                            return;
+            }
+        }
+
+        virtual void OnCreatureRemove(Creature* creature)
+        {
+            switch (creature->GetEntry())
+            {
+                case NPC_KRITHUK_BOMBARDER:
+                    for (std::vector<uint64>::iterator it = bombarderGuids.begin(); it != bombarderGuids.end(); ++it)
+                        if (*it == creature->GetGUID())
+                            bombarderGuids.erase(it);
+                    break;
+                default:                                                                            return;
             }
         }
 
@@ -83,13 +121,17 @@ public:
                 case GO_KIPTILAK_ENTRANCE_DOOR:
                     firstDoorGuid = go->GetGUID();
                     break;
+                case GO_SIGNAL_FIRE:
+                    fireSignalGuid = go->GetGUID();
+                    break;
                 case GO_KIPTILAK_WALLS:
                 case GO_KIPTILAK_EXIT_DOOR:
                 case GO_RIMAK_AFTER_DOOR:
+                case GO_RAIGONN_AFTER_DOOR:
                     AddDoor(go, true);
                     return;
                 case GO_KIPTILAK_MANTID_BOMBS:
-                    mantidBombsGUID.push_back(go->GetGUID());
+                    mantidBombsGUIDs.push_back(go->GetGUID());
                     return;
                 default:
                     return;
@@ -106,7 +148,7 @@ public:
                 case DATA_KIPTILAK:
                 {
                     if (state == DONE)
-                        for (auto itr: mantidBombsGUID)
+                        for (auto itr: mantidBombsGUIDs)
                             if (GameObject* bomb = instance->GetGameObject(itr))
                                 bomb->SetPhaseMask(32768, true); // Set Invisible
                     break;
@@ -115,7 +157,7 @@ public:
                 {
                     uint8 generatorsCount = 0;
 
-                    for (auto itr: rimokAddGenetarorsGUID)
+                    for (auto itr: rimokAddGenetarorsGUIDs)
                     {
                         if (Creature* generator = instance->GetCreature(itr))
                         {
@@ -129,6 +171,23 @@ public:
                             }
                         }
                     }
+                    break;
+                }
+                case DATA_RAIGONN:
+                {
+                    if (state == IN_PROGRESS)
+                    {
+                        for (auto itr: artilleryGUIDs)
+                            if (Creature* artillery = instance->GetCreature(itr))
+                                artillery->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    }
+                    else
+                    {
+                        for (auto itr: artilleryGUIDs)
+                            if (Creature* artillery = instance->GetCreature(itr))
+                                artillery->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    }
+
                     break;
                 }
                 default:
@@ -170,6 +229,25 @@ public:
                     }
                     break;
                 }
+                case DATA_BRASIER_CLICKED:
+                {
+                    if (dataStorage[type] == DONE)
+                        return;
+
+                    Map::PlayerList const &PlayerList = instance->GetPlayers();
+                    for (Map::PlayerList::const_iterator it = PlayerList.begin(); it != PlayerList.end(); ++it)
+                    {
+                        if (Player* player = it->getSource())
+                        {
+                            player->SendCinematicStart(CINEMATIC_SETTING_SUN);
+                            player->SetPhaseMask(2, true);
+                        }
+                    }
+
+                    cinematicTimer = 100;
+                    dataStorage[type] = data;
+                    break;
+                }
                 default:
                     if (type < MAX_DATA)
                         dataStorage[type] = data;
@@ -191,18 +269,57 @@ public:
             return 0;
         }
 
+        void SetData64(uint32 type, uint64 value)
+        {
+            switch (type)
+            {
+                case NPC_WEAK_SPOT:     raigonWeakGuid = value;     break;
+                default:                                            break;
+            }
+        }
+
         uint64 GetData64(uint32 type)
         {
             switch (type)
             {
-                case NPC_KIPTILAK:      return kiptilakGuid;
-                case NPC_GADOK:         return gadokGuid;
-                case NPC_RIMOK:         return rimokGuid;
-                case NPC_RAIGONN:       return raigonnGuid;
-                case NPC_WEAK_POINT:    return raigonWeakGuid;
+                case NPC_KIPTILAK:          return kiptilakGuid;
+                case NPC_GADOK:             return gadokGuid;
+                case NPC_RIMOK:             return rimokGuid;
+                case NPC_RAIGONN:           return raigonnGuid;
+                case NPC_WEAK_SPOT:         return raigonWeakGuid;
+                case DATA_RANDOM_BOMBARDER: return Trinity::Containers::SelectRandomContainerElement(bombarderGuids);
             }
 
             return 0;
+        }
+
+        void doEventCinematic()
+        {
+            switch(cinematicEventProgress)
+            {
+                case 0:
+                    // On allume le brasier & la meche
+                    cinematicTimer = 6000;
+                    break;
+                case 1:
+                    if (GameObject* go = instance->GetGameObject(fireSignalGuid))
+                        go->UseDoorOrButton();
+                    cinematicTimer = 0;
+                    break;
+            }
+
+            ++cinematicEventProgress;
+        }
+
+        void Update(uint32 diff)
+        {
+            if (cinematicTimer)
+            {
+                if (cinematicTimer <= diff)
+                    doEventCinematic();
+                else
+                    cinematicTimer -= diff;
+            }
         }
     };
 

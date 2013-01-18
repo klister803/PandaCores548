@@ -407,7 +407,7 @@ void MotionMaster::MoveFall(uint32 id/*=0*/)
     Mutate(new EffectMovementGenerator(id), MOTION_SLOT_CONTROLLED);
 }
 
-void MotionMaster::MoveBackward(uint32 id, float x, float y, float z)
+void MotionMaster::MoveBackward(uint32 id, float x, float y, float z, float speed)
 {
     if (_owner->GetTypeId() == TYPEID_PLAYER)
         _owner->AddUnitMovementFlag(MOVEMENTFLAG_BACKWARD);
@@ -416,6 +416,8 @@ void MotionMaster::MoveBackward(uint32 id, float x, float y, float z)
     init.MoveTo(x, y, z);
     init.SetOrientationInversed();
     init.Launch();
+    if (speed > 0.0f)
+        init.SetVelocity(speed);
     Mutate(new EffectMovementGenerator(id), MOTION_SLOT_CONTROLLED);
 }
 
