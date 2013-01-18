@@ -971,7 +971,7 @@ class go_soulwell : public GameObjectScript
                     return true;
                 }
 
-                owner->CastSpell(player, _stoneSpell, true);
+                player->CastSpell(player, _stoneSpell, true);
 
                 return false;
             }
