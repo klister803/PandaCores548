@@ -23,6 +23,8 @@ enum DataTypes
     DATA_RAIGONN            = 4,
 
     DATA_OPEN_FIRST_DOOR    = 5,
+    DATA_BRASIER_CLICKED    = 6,
+    DATA_RANDOM_BOMBARDER   = 7,
     MAX_DATA
 };
 
@@ -53,6 +55,8 @@ enum CreaturesIds
     NPC_KRIKTHIK_STRIKER        = 59778, // Appear on Gadok bombardment
     NPC_KRIKTHIK_DISRUPTOR      = 59794, // Bombard tower when Gadok is in fight
 
+    NPC_KRITHUK_BOMBARDER       = 56706,
+
     // Rimok
     NPC_ADD_GENERATOR           = 59834,
 
@@ -76,10 +80,17 @@ enum ObjectsIds
     GO_KIPTILAK_MANTID_BOMBS    = 215757,
     GO_KIPTILAK_EXIT_DOOR       = 212983,
 
+    GO_SIGNAL_FIRE              = 213507,
+
     GO_RIMAK_AFTER_DOOR         = 212985,
 
     GO_RAIGONN_DOOR             = 212986,
     GO_RAIGONN_AFTER_DOOR       = 214261,
+};
+
+enum eSettingSun
+{
+    CINEMATIC_SETTING_SUN       = 265
 };
 
 #endif // STORMSTOUT_BREWERY_H_

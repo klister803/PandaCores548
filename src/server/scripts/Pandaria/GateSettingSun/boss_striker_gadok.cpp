@@ -504,8 +504,11 @@ public:
         {
             isAttackerStriker = true;
 
+            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_NOT_SELECTABLE);
+
             Map::PlayerList const &PlayerList = pInstance->instance->GetPlayers();
             Map::PlayerList::const_iterator it = PlayerList.begin();
+            // Randomize it, everything is done in the "for"
             for (uint8 i = 0; i < urand(0, PlayerList.getSize() - 1); ++i, ++it);
 
             if (Player* player = it->getSource())
@@ -516,6 +519,8 @@ public:
         {
             if (!isAttackerStriker)
                 npc_krikthik::UpdateAI(diff);
+            else
+                DoMeleeAttackIfReady();
         }
     };
 
@@ -584,6 +589,77 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new npc_krikthik_disruptorAI (creature);
+    }
+};
+
+class npc_flak_cannon : public CreatureScript
+{
+public:
+    npc_flak_cannon() : CreatureScript("npc_flak_cannon") { }
+
+    struct npc_flak_cannonAI : public ScriptedAI
+    {
+        npc_flak_cannonAI(Creature* creature) : ScriptedAI(creature)
+        {
+            pInstance = creature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+
+        void Reset()
+        {}
+
+        void SpellHit(Unit* /*caster*/, SpellInfo const* spell)
+        {
+            if (spell->Id == 116554) // Fire Flak Cannon
+            {
+                for (uint8 i = 0; i < 5; ++i)
+                {
+                    if (Creature* bombarder = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_BOMBARDER)))
+                    {
+                        me->CastSpell(bombarder, 116553, true);
+                        bombarder->GetMotionMaster()->MoveFall();
+                        bombarder->DespawnOrUnsummon(1000);
+                    }
+                }
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_flak_cannonAI (creature);
+    }
+};
+
+class npc_krikthik_bombarder : public CreatureScript
+{
+public:
+    npc_krikthik_bombarder() : CreatureScript("npc_krikthik_bombarder") { }
+
+    struct npc_krikthik_bombarderAI : public ScriptedAI
+    {
+        npc_krikthik_bombarderAI(Creature* creature) : ScriptedAI(creature)
+        {
+            pInstance = creature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+
+        void Reset()
+        {
+            me->GetMotionMaster()->MoveRandom(5.0f);
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_krikthik_bombarderAI (creature);
     }
 };
 
@@ -670,6 +746,8 @@ void AddSC_boss_striker_gadok()
     new boss_striker_gadok();
     new npc_krikthik_striker();
     new npc_krikthik_disruptor();
+    new npc_flak_cannon();
+    new npc_krikthik_bombarder();
     new spell_gadok_strafing();
     new spell_prey_time();
 }
