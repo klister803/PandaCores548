@@ -3427,7 +3427,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 77220:  // Mastery : Emberstorm
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[1].BasePoints = 8;
+                spellInfo->Effects[1].BasePoints = 1;
                 break;
             case 77219:  // Mastery : Master Demonologist
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
