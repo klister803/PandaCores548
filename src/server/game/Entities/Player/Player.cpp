@@ -2841,20 +2841,21 @@ void Player::Regenerate(Powers power)
             // After 15s return to one embers if no one
             // or return to one if more than one
             if (!isInCombat() && GetPower(POWER_BURNING_EMBERS) < 10)
-                addvalue += 10 - GetPower(POWER_BURNING_EMBERS); // Return to one burning ember in 10s
+                SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
             else if (!isInCombat() && GetPower(POWER_BURNING_EMBERS) > 10)
-                addvalue += -1;
+                SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) - 1);
 
             if (GetPower(POWER_BURNING_EMBERS) >= 10)
                 CastSpell(this, 116855, true);
             else
                 RemoveAura(116855);
         }
+        break;
         case POWER_SOUL_SHARDS:
         {
             // If isn't in combat, gain 1 shard every 20s
             if (!isInCombat())
-                addvalue += 100;
+                addvalue += 100.0f;
         }
         break;
         default:
