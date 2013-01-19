@@ -40,9 +40,14 @@ public:
         uint64 raigonWeakGuid;
 
         uint64 firstDoorGuid;
+        uint64 fireSignalGuid;
+
+        uint32 cinematicTimer;
+        uint8 cinematicEventProgress;
+
+        std::vector<uint64> bombarderGuids;
         std::vector<uint64> mantidBombsGUIDs;
         std::vector<uint64> rimokAddGenetarorsGUIDs;
-
         std::vector<uint64> artilleryGUIDs;
 
         uint32 dataStorage[MAX_DATA];
@@ -63,6 +68,9 @@ public:
             
             firstDoorGuid   = 0;
 
+            cinematicTimer = 0;
+            cinematicEventProgress = 0;
+
             memset(dataStorage, 0, MAX_DATA * sizeof(uint32));
 
             mantidBombsGUIDs.clear();
@@ -70,17 +78,39 @@ public:
             artilleryGUIDs.clear();
         }
 
+        void OnPlayerEnter(Player* player)
+        {
+            if (GetData(DATA_BRASIER_CLICKED) == NOT_STARTED)
+                player->SetPhaseMask(1, true);
+            else
+                player->SetPhaseMask(2, true);
+        }
+
         void OnCreatureCreate(Creature* creature)
         {
             switch (creature->GetEntry())
             {
-                case NPC_KIPTILAK:      kiptilakGuid    = creature->GetGUID();                  return;
-                case NPC_GADOK:         gadokGuid       = creature->GetGUID();                  return;
-                case NPC_RIMOK:         rimokGuid       = creature->GetGUID();                  return;
-                case NPC_RAIGONN:       raigonnGuid     = creature->GetGUID();                  return;
-                case NPC_ADD_GENERATOR: rimokAddGenetarorsGUIDs.push_back(creature->GetGUID()); return;
-                case NPC_ARTILLERY:     artilleryGUIDs.push_back(creature->GetGUID());          return;
-                default:                                                                        return;
+                case NPC_KIPTILAK:          kiptilakGuid    = creature->GetGUID();                  return;
+                case NPC_GADOK:             gadokGuid       = creature->GetGUID();                  return;
+                case NPC_RIMOK:             rimokGuid       = creature->GetGUID();                  return;
+                case NPC_RAIGONN:           raigonnGuid     = creature->GetGUID();                  return;
+                case NPC_KRITHUK_BOMBARDER: bombarderGuids.push_back(creature->GetGUID());          return;
+                case NPC_ADD_GENERATOR:     rimokAddGenetarorsGUIDs.push_back(creature->GetGUID()); return;
+                case NPC_ARTILLERY:         artilleryGUIDs.push_back(creature->GetGUID());          return;
+                default:                                                                            return;
+            }
+        }
+
+        virtual void OnCreatureRemove(Creature* creature)
+        {
+            switch (creature->GetEntry())
+            {
+                case NPC_KRITHUK_BOMBARDER:
+                    for (std::vector<uint64>::iterator it = bombarderGuids.begin(); it != bombarderGuids.end(); ++it)
+                        if (*it == creature->GetGUID())
+                            bombarderGuids.erase(it);
+                    break;
+                default:                                                                            return;
             }
         }
 
@@ -90,6 +120,9 @@ public:
             {
                 case GO_KIPTILAK_ENTRANCE_DOOR:
                     firstDoorGuid = go->GetGUID();
+                    break;
+                case GO_SIGNAL_FIRE:
+                    fireSignalGuid = go->GetGUID();
                     break;
                 case GO_KIPTILAK_WALLS:
                 case GO_KIPTILAK_EXIT_DOOR:
@@ -196,6 +229,25 @@ public:
                     }
                     break;
                 }
+                case DATA_BRASIER_CLICKED:
+                {
+                    if (dataStorage[type] == DONE)
+                        return;
+
+                    Map::PlayerList const &PlayerList = instance->GetPlayers();
+                    for (Map::PlayerList::const_iterator it = PlayerList.begin(); it != PlayerList.end(); ++it)
+                    {
+                        if (Player* player = it->getSource())
+                        {
+                            player->SendCinematicStart(CINEMATIC_SETTING_SUN);
+                            player->SetPhaseMask(2, true);
+                        }
+                    }
+
+                    cinematicTimer = 100;
+                    dataStorage[type] = data;
+                    break;
+                }
                 default:
                     if (type < MAX_DATA)
                         dataStorage[type] = data;
@@ -230,14 +282,44 @@ public:
         {
             switch (type)
             {
-                case NPC_KIPTILAK:      return kiptilakGuid;
-                case NPC_GADOK:         return gadokGuid;
-                case NPC_RIMOK:         return rimokGuid;
-                case NPC_RAIGONN:       return raigonnGuid;
-                case NPC_WEAK_SPOT:     return raigonWeakGuid;
+                case NPC_KIPTILAK:          return kiptilakGuid;
+                case NPC_GADOK:             return gadokGuid;
+                case NPC_RIMOK:             return rimokGuid;
+                case NPC_RAIGONN:           return raigonnGuid;
+                case NPC_WEAK_SPOT:         return raigonWeakGuid;
+                case DATA_RANDOM_BOMBARDER: return Trinity::Containers::SelectRandomContainerElement(bombarderGuids);
             }
 
             return 0;
+        }
+
+        void doEventCinematic()
+        {
+            switch(cinematicEventProgress)
+            {
+                case 0:
+                    // On allume le brasier & la meche
+                    cinematicTimer = 6000;
+                    break;
+                case 1:
+                    if (GameObject* go = instance->GetGameObject(fireSignalGuid))
+                        go->UseDoorOrButton();
+                    cinematicTimer = 0;
+                    break;
+            }
+
+            ++cinematicEventProgress;
+        }
+
+        void Update(uint32 diff)
+        {
+            if (cinematicTimer)
+            {
+                if (cinematicTimer <= diff)
+                    doEventCinematic();
+                else
+                    cinematicTimer -= diff;
+            }
         }
     };
 

@@ -24751,7 +24751,7 @@ bool Player::isTotalImmunity()
                                 // inquisition,         Consecration,       Repentir
 #define SPELL_PAL_ATTACK_LIST   35395,                  48819,              20066
                                 // Eclair Lumineux,     Lumiere sacree
-#define SPELL_PAL_FRIEND_LIST   48785,                  48782
+#define SPELL_PAL_FRIEND_LIST   48785,                  48782,              48785
 
 
                                 // Tir des arcanes,     Morsure de serpent, Morsure de la mangouste

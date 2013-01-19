@@ -78,10 +78,12 @@ enum eMovements
     POINT_HERSE         = 2
 };
 
-Position chargePos[2] =
+Position chargePos[4] =
 {
-    { 958.33f, 2241.68f, 296.10f, 0.0f },
-    { 958.26f, 2330.15f, 296.18f, 0.0f }
+    { 958.30f, 2386.92f, 297.43f, 0.0f },
+    { 958.30f, 2458.59f, 300.29f, 0.0f },
+    { 958.30f, 2241.68f, 296.10f, 0.0f },
+    { 958.30f, 2330.15f, 296.18f, 0.0f }
 };
 
 class boss_raigonn : public CreatureScript
@@ -200,6 +202,12 @@ class boss_raigonn : public CreatureScript
 
             void DoEventCharge()
             {
+                if (!pInstance)
+                    return;
+
+                uint32 eventBrasierProgress = pInstance->GetData(DATA_BRASIER_CLICKED);
+                uint8 baseMovement = eventBrasierProgress != DONE ? 0: 2;
+
                 switch (eventChargeProgress)
                 {
                     case 0:
@@ -211,11 +219,13 @@ class boss_raigonn : public CreatureScript
                         // SPELL_BATTERING_HEADBUTT_EMOTE have an effect but is used here only for it's emote, we don't let him time to do his effects
                         me->CastStop();
 
-                        me->GetMotionMaster()->MoveCharge(chargePos[0].GetPositionX(), chargePos[0].GetPositionY(), chargePos[0].GetPositionZ(), 84.0f, POINT_HERSE);
+                        me->GetMotionMaster()->MoveCharge(chargePos[baseMovement].GetPositionX(), chargePos[baseMovement].GetPositionY(), chargePos[baseMovement].GetPositionZ(), 84.0f, POINT_HERSE);
                         ++eventChargeProgress;
                         break;
                     case 2:
-                        RemoveWeakSpotPassengers();
+                        if (eventBrasierProgress == DONE)
+                            RemoveWeakSpotPassengers();
+
                         me->CastSpell(me, SPELL_BATTERING_HEADBUTT, true);
                         events.ScheduleEvent(EVENT_RAIGONN_CHARGE, 3000, PHASE_WEAK_SPOT);
                         ++eventChargeProgress;
@@ -224,7 +234,7 @@ class boss_raigonn : public CreatureScript
                     default:
                         // We are going back to main door, restart
                         eventChargeProgress = 0;
-                        me->GetMotionMaster()->MoveBackward(POINT_MAIN_DOOR, chargePos[1].GetPositionX(), chargePos[1].GetPositionY(), chargePos[1].GetPositionZ(), 1.0f);
+                        me->GetMotionMaster()->MoveBackward(POINT_MAIN_DOOR, chargePos[baseMovement + 1].GetPositionX(), chargePos[baseMovement + 1].GetPositionY(), chargePos[baseMovement + 1].GetPositionZ(), 1.0f);
                         break;
                 }
             }
@@ -301,10 +311,7 @@ class boss_raigonn : public CreatureScript
                     case EVENT_SUMMON_ENGULFER:
                     {
                         for (uint8 i = 0; i < 3; ++i)
-                            if (Creature* summon = me->SummonCreature(NPC_KRIKTHIK_ENGULFER, frand(941.0f, 974.0f), me->GetPositionY(), me->GetPositionZ() + 20.0f, 4.73f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000))
-                                if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                                    if (summon->AI())
-                                        summon->AI()->AttackStart(target);
+                            me->SummonCreature(NPC_KRIKTHIK_ENGULFER, frand(941.0f, 974.0f), me->GetPositionY(), me->GetPositionZ() + 30.0f, 4.73f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
                         events.ScheduleEvent(EVENT_SUMMON_ENGULFER, 20000, PHASE_WEAK_SPOT);
                         break;
