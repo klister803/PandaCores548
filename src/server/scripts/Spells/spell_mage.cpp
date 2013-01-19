@@ -61,6 +61,34 @@ enum MageSpells
     SPELL_MAGE_CONJURE_REFRESHMENT_R8            = 116130,
 };
 
+// Evocation - 12051
+class spell_mage_evocation : public SpellScriptLoader
+{
+    public:
+        spell_mage_evocation() : SpellScriptLoader("spell_mage_evocation") { }
+
+        class spell_mage_evocation_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_evocation_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.15), POWER_MANA);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_evocation_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_evocation_SpellScript();
+        }
+};
+
 // Conjure Refreshment - 42955
 class spell_mage_conjure_refreshment : public SpellScriptLoader
 {
@@ -645,6 +673,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_evocation();
     new spell_mage_conjure_refreshment();
     new spell_mage_ring_of_frost_stun();
     new spell_mage_time_warp();

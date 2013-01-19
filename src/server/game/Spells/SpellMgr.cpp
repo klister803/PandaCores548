@@ -3127,6 +3127,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 12051: // Evocation
+                spellInfo->Effects[1].Effect = 0;
+                spellInfo->Effects[1].ApplyAuraName = 0;
+                break;
             case 23691: // Berzerker Rage Effect
                 spellInfo->Effects[0].BasePoints = 100;
                 break;
