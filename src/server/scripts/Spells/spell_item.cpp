@@ -2041,6 +2041,50 @@ class spell_item_enohar_explosive_arrows : public SpellScriptLoader
         }
 };
 
+
+enum HolyThurible
+{
+    NPC_WITHDRAWN_SOUL           = 45166,
+};
+
+class spell_item_holy_thurible : public SpellScriptLoader
+{
+    public:
+        spell_item_holy_thurible() : SpellScriptLoader("spell_item_holy_thurible") { }
+
+        class spell_item_holy_thurible_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_holy_thurible_SpellScript);
+
+          
+            void HandleDummy(SpellEffIndex /* effIndex */)
+            {
+                Player* caster = GetCaster()->ToPlayer();
+                // GetHitCreature don't work
+                Creature* target  = caster->FindNearestCreature(NPC_WITHDRAWN_SOUL, 2.0f, true);;
+                if(target && caster){
+
+                    if(roll_chance_i(50)){
+                        caster->KilledMonsterCredit(NPC_WITHDRAWN_SOUL, target->GetGUID());
+                        target->DespawnOrUnsummon(0);
+                    }
+                    else
+                        target->setFaction(14);
+                }                
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_item_holy_thurible_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_holy_thurible_SpellScript();
+        }
+};
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -2094,4 +2138,5 @@ void AddSC_item_spell_scripts()
     new spell_item_muisek_vessel();
     new spell_item_greatmothers_soulcatcher();
     new spell_item_enohar_explosive_arrows();
+    new spell_item_holy_thurible();
 }

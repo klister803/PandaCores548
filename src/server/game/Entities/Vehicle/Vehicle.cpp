@@ -44,6 +44,7 @@ Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) 
     }
 
     InitMovementInfoForBase();
+    _passengersSpawnedByAI = false;
 }
 
 Vehicle::~Vehicle()
@@ -97,6 +98,9 @@ void Vehicle::Install()
 
 void Vehicle::InstallAllAccessories(bool evading)
 {
+    if (ArePassengersSpawnedByAI())
+        return;
+
     if (GetBase()->GetTypeId() == TYPEID_PLAYER || !evading)
         RemoveAllPassengers();   // We might have aura's saved in the DB with now invalid casters - remove
 
