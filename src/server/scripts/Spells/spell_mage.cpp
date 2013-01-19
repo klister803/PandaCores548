@@ -51,6 +51,59 @@ enum MageSpells
     SPELL_SHAMAN_SATED                           = 57724,
     SPELL_SHAMAN_EXHAUSTED                       = 57723,
     SPELL_MAGE_RING_OF_FROST_STUN                = 82691,
+    SPELL_MAGE_CONJURE_REFRESHMENT_R1            = 92739,
+    SPELL_MAGE_CONJURE_REFRESHMENT_R2            = 92799,
+    SPELL_MAGE_CONJURE_REFRESHMENT_R3            = 92802,
+    SPELL_MAGE_CONJURE_REFRESHMENT_R4            = 92805,
+    SPELL_MAGE_CONJURE_REFRESHMENT_R5            = 74625,
+    SPELL_MAGE_CONJURE_REFRESHMENT_R6            = 42956,
+    SPELL_MAGE_CONJURE_REFRESHMENT_R7            = 92727,
+    SPELL_MAGE_CONJURE_REFRESHMENT_R8            = 116130,
+};
+
+// Conjure Refreshment - 42955
+class spell_mage_conjure_refreshment : public SpellScriptLoader
+{
+    public:
+        spell_mage_conjure_refreshment() : SpellScriptLoader("spell_mage_conjure_refreshment") { }
+
+        class spell_mage_conjure_refreshment_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_conjure_refreshment_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->getLevel() < 44)
+                        _player->CastSpell(_player, SPELL_MAGE_CONJURE_REFRESHMENT_R1, true);
+                    else if (_player->getLevel() < 54)
+                        _player->CastSpell(_player, SPELL_MAGE_CONJURE_REFRESHMENT_R2, true);
+                    else if (_player->getLevel() < 64)
+                        _player->CastSpell(_player, SPELL_MAGE_CONJURE_REFRESHMENT_R3, true);
+                    else if (_player->getLevel() < 74)
+                        _player->CastSpell(_player, SPELL_MAGE_CONJURE_REFRESHMENT_R4, true);
+                    else if (_player->getLevel() < 80)
+                        _player->CastSpell(_player, SPELL_MAGE_CONJURE_REFRESHMENT_R5, true);
+                    else if (_player->getLevel() < 85)
+                        _player->CastSpell(_player, SPELL_MAGE_CONJURE_REFRESHMENT_R6, true);
+                    else if (_player->getLevel() < 90)
+                        _player->CastSpell(_player, SPELL_MAGE_CONJURE_REFRESHMENT_R7, true);
+                    else
+                        _player->CastSpell(_player, SPELL_MAGE_CONJURE_REFRESHMENT_R8, true);
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_conjure_refreshment_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_conjure_refreshment_SpellScript();
+        }
 };
 
 // Ring of Frost (Stun) - 82691
@@ -592,6 +645,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_conjure_refreshment();
     new spell_mage_ring_of_frost_stun();
     new spell_mage_time_warp();
     new spell_mage_alter_time_overrided();
