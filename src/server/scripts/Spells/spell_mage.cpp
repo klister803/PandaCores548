@@ -61,6 +61,158 @@ enum MageSpells
     SPELL_MAGE_CONJURE_REFRESHMENT_R8            = 116130,
     SPELL_MAGE_MANA_GEM_ENERGIZE                 = 10052,
     SPELL_MAGE_ARCANE_BRILLIANCE                 = 1459,
+    SPELL_MAGE_INFERNO_BLAST                     = 108853,
+    SPELL_MAGE_INFERNO_BLAST_IMPACT              = 118280,
+    SPELL_MAGE_IGNITE                            = 12654,
+    SPELL_MAGE_PYROBLAST                         = 11366,
+    SPELL_MAGE_COMBUSTION_DOT                    = 83853,
+    SPELL_MAGE_COMBUSTION_IMPACT                 = 118271,
+};
+
+// Combustion - 11129
+class spell_mage_combustion : public SpellScriptLoader
+{
+    public:
+        spell_mage_combustion() : SpellScriptLoader("spell_mage_combustion") { }
+
+        class spell_mage_combustion_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_combustion_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        _player->CastSpell(target, SPELL_MAGE_COMBUSTION_IMPACT, true);
+
+                        if (_player->HasSpellCooldown(SPELL_MAGE_INFERNO_BLAST))
+                            _player->RemoveSpellCooldown(SPELL_MAGE_INFERNO_BLAST, true);
+
+                        int32 combustionBp = 0;
+
+                        if (target->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
+                        {
+                            combustionBp += _player->CalculateSpellDamage(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), 1);
+                            combustionBp = _player->SpellDamageBonusDone(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), combustionBp, DOT);
+                        }
+                        if (target->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
+                            combustionBp += target->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+
+                        _player->CastCustomSpell(target, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_combustion_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_combustion_SpellScript();
+        }
+};
+
+// Inferno Blast - 108853
+class spell_mage_inferno_blast : public SpellScriptLoader
+{
+    public:
+        spell_mage_inferno_blast() : SpellScriptLoader("spell_mage_inferno_blast") { }
+
+        class spell_mage_inferno_blast_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_inferno_blast_SpellScript);
+
+            std::list<Unit*> targetList;
+            std::list<Unit*> tempList;
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        _player->CastSpell(target, SPELL_MAGE_INFERNO_BLAST_IMPACT, true);
+
+                        // Spreads any Pyroblast, Ignite, and Combustion effects to up to 2 nearby enemy targets within 10 yards
+                        // TODO : Adjust Unit::GetAttackableUnitListInRange
+                        CellCoord p(Trinity::ComputeCellCoord(target->GetPositionX(), target->GetPositionY()));
+                        Cell cell(p);
+                        cell.SetNoCreate();
+
+                        Trinity::AnyUnitInObjectRangeCheck u_check(target, 10.0f);
+                        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(target, targetList, u_check);
+
+                        TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+                        TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+
+                        cell.Visit(p, world_unit_searcher, *target->GetMap(), *target, 10.0f);
+                        cell.Visit(p, grid_unit_searcher, *target->GetMap(), *target, 10.0f);
+
+                        tempList = targetList;
+
+                        for (auto itr : tempList)
+                        {
+                            if (itr->GetGUID() == target->GetGUID())
+                                targetList.remove(itr);
+                            else if (!_player->IsValidAttackTarget(itr))
+                                targetList.remove(itr);
+                            else if (!_player->IsWithinLOSInMap(itr))
+                                targetList.remove(itr);
+                            else if (!_player->isInFront(itr))
+                                targetList.remove(itr);
+                        }
+
+                        if (targetList.size() > 2)
+                            Trinity::Containers::RandomResizeList(targetList, 2);
+
+                        for (auto itr : targetList)
+                        {
+                            // 1 : Ignite
+                            float value = _player->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
+
+                            int32 igniteBp = 0;
+                            int32 combustionBp = 0;
+
+                            if (itr->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
+                                igniteBp += itr->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+
+                            igniteBp += int32(GetHitDamage() * value / 2);
+
+                            _player->CastCustomSpell(itr, SPELL_MAGE_IGNITE, &igniteBp, NULL, NULL, true);
+
+                            // 2 : Pyroblast
+                            _player->AddAura(SPELL_MAGE_PYROBLAST, itr);
+
+                            // 3 : Combustion
+                            if (itr->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
+                            {
+                                combustionBp += _player->CalculateSpellDamage(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), 1);
+                                combustionBp = _player->SpellDamageBonusDone(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), combustionBp, DOT);
+                            }
+                            if (itr->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
+                                combustionBp += itr->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+
+                            _player->CastCustomSpell(itr, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_inferno_blast_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_inferno_blast_SpellScript();
+        }
 };
 
 // Arcane Brillance - 1459
@@ -739,6 +891,8 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_combustion();
+    new spell_mage_inferno_blast();
     new spell_mage_arcane_brilliance();
     new spell_mage_replenish_mana();
     new spell_mage_evocation();

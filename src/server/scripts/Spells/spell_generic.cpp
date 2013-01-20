@@ -1433,7 +1433,6 @@ class spell_gen_vehicle_scaling : public SpellScriptLoader
         }
 };
 
-
 class spell_gen_oracle_wolvar_reputation : public SpellScriptLoader
 {
     public:
