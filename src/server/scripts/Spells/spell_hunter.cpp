@@ -46,6 +46,7 @@ enum HunterSpells
     HUNTER_SPELL_NARROW_ESCAPE                   = 109298,
     HUNTER_SPELL_NARROW_ESCAPE_RETS              = 128405,
     HUNTER_SPELL_SERPENT_STING                   = 118253,
+    HUNTER_SPELL_SERPENT_SPREAD                  = 87935,
     HUNTER_SPELL_CHIMERA_SHOT_HEAL               = 53353,
     HUNTER_SPELL_RAPID_INTENSITY                 = 131564,
     HUNTER_SPELL_RAPID_FIRE                      = 3045,
@@ -291,7 +292,8 @@ class spell_hun_serpent_spread : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                     if (Unit* target = GetHitUnit())
-                        _player->CastSpell(target, HUNTER_SPELL_SERPENT_STING, true);
+                        if (_player->HasAura(HUNTER_SPELL_SERPENT_SPREAD))
+                            _player->CastSpell(target, HUNTER_SPELL_SERPENT_STING, true);
             }
 
             void Register()
