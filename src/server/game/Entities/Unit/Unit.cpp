@@ -10232,6 +10232,9 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             if (victim->HasAuraWithMechanic((1<<MECHANIC_STUN) | (1<<MECHANIC_KNOCKOUT)))
                                 if (constAuraEffectPtr aurEff = GetAuraEffect(56369, EFFECT_0))
                                     crit_chance += aurEff->GetAmount();
+                        // Holy Shock
+                        if (spellProto->Id == 20473)
+                            crit_chance += 25.0f;
                         break;
                     case SPELLFAMILY_DRUID:
                         // Improved Faerie Fire
