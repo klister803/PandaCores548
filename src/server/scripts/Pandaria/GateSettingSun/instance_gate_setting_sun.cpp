@@ -203,11 +203,15 @@ public:
             {
                 case DATA_OPEN_FIRST_DOOR:
                 {
+                    if (dataStorage[type] == DONE)
+                        return;
+
                     HandleGameObject(firstDoorGuid, true);
+
+                    dataStorage[type] = data;
                     
                     if (GameObject* firstDoor = instance->GetGameObject(firstDoorGuid))
                     {
-                        dataStorage[type] = data;
 
                         if (Creature* trigger = firstDoor->SummonTrigger(firstDoor->GetPositionX(), firstDoor->GetPositionY(), firstDoor->GetPositionZ(), 0, 500))
                         {
