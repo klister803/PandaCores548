@@ -68,6 +68,7 @@ public:
             { "achievement_criteria_data",    SEC_ADMINISTRATOR, true,  &HandleReloadAchievementCriteriaDataCommand,    "", NULL },
             { "achievement_reward",           SEC_ADMINISTRATOR, true,  &HandleReloadAchievementRewardCommand,          "", NULL },
             { "all",                          SEC_ADMINISTRATOR, true,  NULL,                          "", reloadAllCommandTable },
+            { "area_skip_update",             SEC_ADMINISTRATOR, true,  &HandleReloadAreaSkipUpdateCommand,             "", NULL },
             { "areatrigger_involvedrelation", SEC_ADMINISTRATOR, true,  &HandleReloadQuestAreaTriggersCommand,          "", NULL },
             { "areatrigger_tavern",           SEC_ADMINISTRATOR, true,  &HandleReloadAreaTriggerTavernCommand,          "", NULL },
             { "areatrigger_teleport",         SEC_ADMINISTRATOR, true,  &HandleReloadAreaTriggerTeleportCommand,        "", NULL },
@@ -1315,6 +1316,14 @@ public:
 
         handler->SendGlobalGMSysMessage("Creature Areas Updated.");
         return true;
+    }
+
+    static bool HandleReloadAreaSkipUpdateCommand(ChatHandler* handler, const char* /*args*/)
+    {
+    	sObjectMgr->LoadSkipUpdateZone();
+    	handler->SendGlobalGMSysMessage("Area skip update reloaded");
+    	return true;
+
     }
 };
 

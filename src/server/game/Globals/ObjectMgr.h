@@ -588,6 +588,7 @@ struct HotfixInfo
 };
 
 typedef std::vector<HotfixInfo> HotfixData;
+typedef std::map<uint32, bool> UpdateSkipData;
 
 class PlayerDumpReader;
 
@@ -1158,6 +1159,22 @@ class ObjectMgr
             return ret ? ret : time(NULL);
         }
 
+        void LoadSkipUpdateZone();
+
+        bool IsSkipZone(uint32 zone)
+        {
+        	if (skipData.find(zone) != skipData.end())
+        		return skipData[zone];
+        }
+
+        uint32 GetSkipUpdateCount()
+        {
+        	return _skipUpdateCount;
+        }
+
+
+        UpdateSkipData skipData;
+
     private:
         // first free id for selected id type
         uint32 _auctionId;
@@ -1231,6 +1248,8 @@ class ObjectMgr
 
         PhaseDefinitionStore _PhaseDefinitionStore;
         SpellPhaseStore _SpellPhaseStore;
+
+        uint32 _skipUpdateCount;
 
     private:
         void LoadScripts(ScriptsType type);
