@@ -3127,6 +3127,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 12051: // Evocation
+                spellInfo->Effects[1].Effect = 0;
+                spellInfo->Effects[1].ApplyAuraName = 0;
+                break;
             case 23691: // Berzerker Rage Effect
                 spellInfo->Effects[0].BasePoints = 100;
                 break;
@@ -3427,7 +3431,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 77220:  // Mastery : Emberstorm
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[1].BasePoints = 8;
+                spellInfo->Effects[1].BasePoints = 1;
                 break;
             case 77219:  // Mastery : Master Demonologist
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;

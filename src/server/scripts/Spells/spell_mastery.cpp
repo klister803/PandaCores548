@@ -175,11 +175,14 @@ class spell_mastery_ignite : public SpellScriptLoader
                             uint32 procSpellId = GetSpellInfo()->Id ? GetSpellInfo()->Id : 0;
                             if (procSpellId != MASTERY_SPELL_IGNITE)
                             {
-                                float value = caster->GetFloatValue(PLAYER_MASTERY);
-                                value *= 1.5f;
+                                float value = caster->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
 
-                                int32 bp = int32(GetHitDamage() * value / 100 / 2);
-                                bp += target->GetRemainingPeriodicAmount(caster->GetGUID(), MASTERY_SPELL_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+                                int32 bp = 0;
+
+                                if (target->HasAura(MASTERY_SPELL_IGNITE, caster->GetGUID()))
+                                    bp += target->GetRemainingPeriodicAmount(caster->GetGUID(), MASTERY_SPELL_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+
+                                bp = int32(GetHitDamage() * value / 2);
 
                                 caster->CastCustomSpell(target, MASTERY_SPELL_IGNITE, &bp, NULL, NULL, true);
                             }

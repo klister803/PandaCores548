@@ -10232,6 +10232,19 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             if (victim->HasAuraWithMechanic((1<<MECHANIC_STUN) | (1<<MECHANIC_KNOCKOUT)))
                                 if (constAuraEffectPtr aurEff = GetAuraEffect(56369, EFFECT_0))
                                     crit_chance += aurEff->GetAmount();
+                        // Inferno Blast
+                        if (spellProto->Id == 108853)
+                            return true;
+                        // Critical Mass - 117216
+                        // Fireball, Frost Fire Bolt, Pyroblast and scorch have 50% more crit chance
+                        if (spellProto->Id == 133 || spellProto->Id == 44614 || spellProto->Id == 11366 || spellProto->Id == 2948)
+                            if (HasAura(117216))
+                                crit_chance *= 1.5f;
+                        break;
+                    case SPELLFAMILY_PALADIN:
+                        // Holy Shock
+                        if (spellProto->Id == 20473)
+                            crit_chance += 25.0f;
                         break;
                     case SPELLFAMILY_DRUID:
                         // Improved Faerie Fire

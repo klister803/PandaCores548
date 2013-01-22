@@ -4,11 +4,15 @@
 */
 
 #include "gate_setting_sun.h"
+#include "Vehicle.h"
 
 enum spells
 {
     SPELL_MANTID_MUNITION_EXPLOSION     = 107153,
     SPELL_EXPLOSE_GATE                  = 115456,
+
+    SPELL_BOMB_CAST_VISUAL              = 106729,
+    SPELL_BOMB_AURA                     = 106875,
 };
 
 class mob_serpent_spine_defender : public CreatureScript
@@ -54,6 +58,54 @@ public:
     }
 };
 
+class npc_krikthik_bombarder : public CreatureScript
+{
+public:
+    npc_krikthik_bombarder() : CreatureScript("npc_krikthik_bombarder") { }
+
+    struct npc_krikthik_bombarderAI : public ScriptedAI
+    {
+        npc_krikthik_bombarderAI(Creature* creature) : ScriptedAI(creature)
+        {
+            pInstance = creature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+        uint32 bombTimer;
+
+        void Reset()
+        {
+            me->GetMotionMaster()->MoveRandom(5.0f);
+            bombTimer = urand(1000, 7500);
+        }
+
+        // Called when spell hits a target
+        void SpellHitTarget(Unit* target, SpellInfo const* /*spell*/)
+        {
+            if (target->GetEntry() == NPC_BOMB_STALKER)
+                me->AddAura(SPELL_BOMB_AURA, target);
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (bombTimer <= diff)
+            {
+                if (Unit* stalker = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_BOMB_STALKER)))
+                    if (!stalker->HasAura(SPELL_BOMB_AURA))
+                        me->CastSpell(stalker, SPELL_BOMB_CAST_VISUAL, true);
+
+                bombTimer = urand(1000, 7500);
+            }
+            else bombTimer -= diff;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_krikthik_bombarderAI (creature);
+    }
+};
+
 //8359
 class AreaTrigger_at_first_door : public AreaTriggerScript
 {
@@ -62,13 +114,9 @@ class AreaTrigger_at_first_door : public AreaTriggerScript
 
         bool OnTrigger(Player* player, AreaTriggerEntry const* /*trigger*/)
         {
-            if (!player->GetInstanceScript())
-                return false;
+            if (player->GetInstanceScript())
+                player->GetInstanceScript()->SetData(DATA_OPEN_FIRST_DOOR, DONE);
 
-            if (player->GetInstanceScript()->GetData(DATA_OPEN_FIRST_DOOR))
-                return false;
-
-            player->GetInstanceScript()->SetData(DATA_OPEN_FIRST_DOOR, 1);
             return false;
         }
 };
@@ -87,9 +135,69 @@ public:
     }
 };
 
+class vehicle_artillery_to_wall : public VehicleScript
+{
+    public:
+        vehicle_artillery_to_wall() : VehicleScript("vehicle_artillery_to_wall") {}
+
+        void OnAddPassenger(Vehicle* veh, Unit* /*passenger*/, int8 /*seatId*/)
+        {
+            if (veh->GetBase())
+                if (veh->GetBase()->ToCreature())
+                    if (veh->GetBase()->ToCreature()->AI())
+                        veh->GetBase()->ToCreature()->AI()->DoAction(0);
+        }
+
+        struct vehicle_artillery_to_wallAI : public ScriptedAI
+        {
+            vehicle_artillery_to_wallAI(Creature* creature) : ScriptedAI(creature)
+            {}
+
+            uint32 launchEventTimer;
+
+            void Reset()
+            {
+                launchEventTimer = 0;
+            }
+
+            void DoAction(int32 const action)
+            {
+                launchEventTimer = 2500;
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!launchEventTimer)
+                    return;
+
+                if (launchEventTimer <= diff)
+                {
+                    if (me->GetVehicle())
+                    {
+                        if (Unit* passenger = me->GetVehicle()->GetPassenger(0))
+                        {
+                            passenger->ExitVehicle();
+                            passenger->GetMotionMaster()->MoveJump(1100.90f, 2304.58f, 381.23f, 20.0f, 10.0f);
+                        }
+                    }
+
+                    launchEventTimer = 0;
+                }
+                else launchEventTimer -= diff;
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new vehicle_artillery_to_wallAI(creature);
+        }
+};
+
 void AddSC_gate_setting_sun()
 {
     new mob_serpent_spine_defender();
+    new npc_krikthik_bombarder();
     new AreaTrigger_at_first_door();
     new go_setting_sun_brasier();
+    new vehicle_artillery_to_wall();
 }

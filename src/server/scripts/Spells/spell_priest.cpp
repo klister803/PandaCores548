@@ -59,6 +59,48 @@ enum PriestSpells
     PRIEST_CASCADE_DAMAGE_TRIGGER               = 127630,
     PRIEST_CASCADE_HEAL_TRIGGER                 = 120786,
     PRIEST_SHADOWFORM_STANCE                    = 15473,
+    PRIEST_SHADOW_WORD_PAIN                     = 589,
+    PRIEST_DEVOURING_PLAGUE                     = 2944,
+    PRIEST_VAMPIRIC_TOUCH                       = 34914,
+};
+
+// Mind Spike - 73510
+class spell_pri_mind_spike : public SpellScriptLoader
+{
+    public:
+        spell_pri_mind_spike() : SpellScriptLoader("spell_pri_mind_spike") { }
+
+        class spell_pri_mind_spike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_mind_spike_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        // Mind Spike remove all DoT on the target's
+                        if (target->HasAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID()))
+                            target->RemoveAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID());
+                        if (target->HasAura(PRIEST_DEVOURING_PLAGUE, _player->GetGUID()))
+                            target->RemoveAura(PRIEST_DEVOURING_PLAGUE, _player->GetGUID());
+                        if (target->HasAura(PRIEST_VAMPIRIC_TOUCH, _player->GetGUID()))
+                            target->RemoveAura(PRIEST_VAMPIRIC_TOUCH, _player->GetGUID());
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_mind_spike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_mind_spike_SpellScript;
+        }
 };
 
 // Cascade - 127630 (damage trigger) or Cascade - 120786 (heal trigger)
@@ -1060,6 +1102,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_mind_spike();
     new spell_pri_cascade_second();
     new spell_pri_cascade_trigger();
     new spell_pri_cascade_first();
