@@ -612,7 +612,7 @@ void AddSC_boss_saboteur_kiptilak();
 void AddSC_boss_striker_gadok();
 void AddSC_boss_commander_rimok();
 void AddSC_boss_raigonn();
-
+void AddSC_boss_sha_of_anger();
 //Mogu'Shan Palace
 void AddSC_instance_mogu_shan_palace();
 void AddSC_boss_trial_of_the_king();
@@ -1281,6 +1281,7 @@ void AddPandarieScripts()
     AddSC_boss_striker_gadok();
     AddSC_boss_commander_rimok();
     AddSC_boss_raigonn();
+    AddSC_boss_sha_of_anger();
 #endif
 }
 

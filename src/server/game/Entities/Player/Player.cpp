@@ -24793,8 +24793,8 @@ bool Player::isTotalImmunity()
 #define SPELL_CHA_FRIEND_LIST   55459,                  49273,              49284
 
 
-                                // Boule de feu,        Nova de givre,      Barrage des arcanes
-#define SPELL_MAG_ATTACK_LIST   42833,                  42917,              44781
+                                // Boule de feu,        Nova de givre,      Eclair de givrefeu
+#define SPELL_MAG_ATTACK_LIST   42833,                  42917,              44614
 
 
                                 // Immolation,          Drain de vie,       Hurlement de terreur
@@ -24805,6 +24805,8 @@ bool Player::isTotalImmunity()
 #define SPELL_DRU_ATTACK_LIST   48461,                  48463,              770
                                 // Recuperation,        Toucher guerriseur, Tranquillité
 #define SPELL_DRU_FRIEND_LIST   48441,                  48378,              48447
+                                // Breath of fire       //Blackout kick     //Chi burst
+#define SPELL_MONK_ATTACK_LIST  123725,                 128531,             130651
 
 uint32 rand_number(uint32 value1, uint32 value2, uint32 value3 = 0, uint32 value4 = 0)
 {
@@ -24834,6 +24836,11 @@ void Player::UpdateCharmedAI()
                 charmer->DealDamage(this, GetHealth(), NULL, DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
                 return;
             }
+    }
+
+    if (charmer->HasAura(119626) && charmer->HealthBelowPct(50))
+    {
+        charmer->RemoveAura(119626);
     }
 
     if (!charmer->isInCombat())
@@ -24928,6 +24935,11 @@ void Player::UpdateCharmedAI()
                     CastSpell(target, rand_number(SPELL_DRU_ATTACK_LIST));
                 else
                     CastSpell(charmer, rand_number(SPELL_DRU_FRIEND_LIST));
+                break;
+            }
+            case CLASS_MONK:
+            {
+                CastSpell(target, rand_number(SPELL_MONK_ATTACK_LIST));
                 break;
             }
             default:

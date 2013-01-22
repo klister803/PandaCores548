@@ -10,6 +10,9 @@ enum spells
 {
     SPELL_MANTID_MUNITION_EXPLOSION     = 107153,
     SPELL_EXPLOSE_GATE                  = 115456,
+
+    SPELL_BOMB_CAST_VISUAL              = 106729,
+    SPELL_BOMB_AURA                     = 106875,
 };
 
 class mob_serpent_spine_defender : public CreatureScript
@@ -52,6 +55,54 @@ public:
     CreatureAI* GetAI(Creature* creature) const
     {
         return new mob_serpent_spine_defenderAI(creature);
+    }
+};
+
+class npc_krikthik_bombarder : public CreatureScript
+{
+public:
+    npc_krikthik_bombarder() : CreatureScript("npc_krikthik_bombarder") { }
+
+    struct npc_krikthik_bombarderAI : public ScriptedAI
+    {
+        npc_krikthik_bombarderAI(Creature* creature) : ScriptedAI(creature)
+        {
+            pInstance = creature->GetInstanceScript();
+        }
+
+        InstanceScript* pInstance;
+        uint32 bombTimer;
+
+        void Reset()
+        {
+            me->GetMotionMaster()->MoveRandom(5.0f);
+            bombTimer = urand(1000, 7500);
+        }
+
+        // Called when spell hits a target
+        void SpellHitTarget(Unit* target, SpellInfo const* /*spell*/)
+        {
+            if (target->GetEntry() == NPC_BOMB_STALKER)
+                me->AddAura(SPELL_BOMB_AURA, target);
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (bombTimer <= diff)
+            {
+                if (Unit* stalker = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_BOMB_STALKER)))
+                    if (!stalker->HasAura(SPELL_BOMB_AURA))
+                        me->CastSpell(stalker, SPELL_BOMB_CAST_VISUAL, true);
+
+                bombTimer = urand(1000, 7500);
+            }
+            else bombTimer -= diff;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_krikthik_bombarderAI (creature);
     }
 };
 
@@ -145,6 +196,7 @@ class vehicle_artillery_to_wall : public VehicleScript
 void AddSC_gate_setting_sun()
 {
     new mob_serpent_spine_defender();
+    new npc_krikthik_bombarder();
     new AreaTrigger_at_first_door();
     new go_setting_sun_brasier();
     new vehicle_artillery_to_wall();
