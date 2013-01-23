@@ -6,21 +6,7 @@
 
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
-
-#define TYPE_MING_ATTACK 0
-#define TYPE_KUAI_ATTACK 1
-#define TYPE_HAIYAN_ATTACK 2
-#define TYPE_ALL_ATTACK 3
-#define TYPE_MING_RETIRED 4
-#define TYPE_KUAI_RETIRED 5
-#define TYPE_HAIYAN_RETIRED 6
-#define TYPE_WIPE_FIRST_BOSS 7
-#define TYPE_MING_INTRO 8
-#define TYPE_OUTRO_01 9
-#define TYPE_OUTRO_02 10
-#define TYPE_OUTRO_03 11
-#define TYPE_OUTRO_04 12
-#define TYPE_OUTRO_05 13
+#include "mogu_shan_palace.h"
 
 #define SPELL_GUARDIAN_GRUNT 85667
 
