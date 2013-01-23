@@ -71,7 +71,7 @@ public:
 
         void EnterCombat(Unit* unit)
         {
-            Talk(1);
+            Talk(0);
             events.ScheduleEvent(1, 1000);
             events.ScheduleEvent(3, 2000);
         }

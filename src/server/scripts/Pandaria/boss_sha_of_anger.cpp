@@ -64,14 +64,14 @@ public:
             _cloudCount = 10;
             _targetCount = 0;
             _maxTargetCount = 12;
-            Talk(4);
+            Talk(3);
             events.Reset();
             _Reset();
         }
 
         void KilledUnit(Unit* u)
         {
-            Talk(5);
+            Talk(4);
         }
 
         void JustDied(Unit* u)
@@ -80,7 +80,7 @@ public:
 
         void EnterCombat(Unit* unit)
         {
-            Talk(6);
+            Talk(5);
             events.ScheduleEvent(EVENT_GROWING_ANGER,2000);
             events.ScheduleEvent(EVENT_SPAWN,5000);
             events.ScheduleEvent(EVENT_UNLEASHED_WRATH,52000);
@@ -113,8 +113,7 @@ public:
                         {
                             if (_targetCount == 0)
                             {
-                              //DoPlaySoundToSet(me,29011);
-                                Talk(1);
+                                Talk(0);
                             }
 
                             _targetCount++;
@@ -129,8 +128,7 @@ public:
                     break;
                 case EVENT_GROWING_ANGER:
                     {
-                        //DoPlaySoundToSet(me,29010);
-                        Talk(2);     
+                        Talk(1);     
                         for (uint8 i = 0; i < _dominateMindCount; i++)
                         {
                             me->CastSpell(SelectTarget(SELECT_TARGET_RANDOM), SPELL_DOMINATE_MIND, false);
@@ -140,7 +138,7 @@ public:
                     break;
                 case EVENT_SPAWN:
                     {
-                        Talk(3);    
+                        Talk(2);    
                         for (uint8 i=0; i<_cloudCount;i++)
                         {
                             Unit* target = SelectTarget(SELECT_TARGET_RANDOM);
