@@ -64,15 +64,14 @@ public:
             _cloudCount = 10;
             _targetCount = 0;
             _maxTargetCount = 12;
-            me->MonsterYell("Give in to your anger." , LANG_UNIVERSAL,0);
+            Talk(4);
             events.Reset();
             _Reset();
         }
 
         void KilledUnit(Unit* u)
         {
-            me->MonsterYell("Extinguished!" , LANG_UNIVERSAL,0);
-            DoPlaySoundToSet(me,29001);
+            Talk(5);
         }
 
         void JustDied(Unit* u)
@@ -81,8 +80,7 @@ public:
 
         void EnterCombat(Unit* unit)
         {
-            me->MonsterYell("Yes, YES! Bring your rage to bear! Try to strike me down!" , LANG_UNIVERSAL,0);
-            DoPlaySoundToSet(me,28999);
+            Talk(6);
             events.ScheduleEvent(EVENT_GROWING_ANGER,2000);
             events.ScheduleEvent(EVENT_SPAWN,5000);
             events.ScheduleEvent(EVENT_UNLEASHED_WRATH,52000);
@@ -115,8 +113,8 @@ public:
                         {
                             if (_targetCount == 0)
                             {
-                                DoPlaySoundToSet(me,29011);
-                                me->MonsterYell("My fury is UNLEASHED!", LANG_UNIVERSAL,0);
+                              //DoPlaySoundToSet(me,29011);
+                                Talk(1);
                             }
 
                             _targetCount++;
@@ -131,18 +129,18 @@ public:
                     break;
                 case EVENT_GROWING_ANGER:
                     {
-                        DoPlaySoundToSet(me,29010);
-                        me->MonsterYell("Feed me with your ANGER!", LANG_UNIVERSAL,0);      
+                        //DoPlaySoundToSet(me,29010);
+                        Talk(2);     
                         for (uint8 i = 0; i < _dominateMindCount; i++)
                         {
                             me->CastSpell(SelectTarget(SELECT_TARGET_RANDOM), SPELL_DOMINATE_MIND, false);
                         }
                         events.ScheduleEvent(EVENT_GROWING_ANGER, 25000);
                     }
-                    break;   
+                    break;
                 case EVENT_SPAWN:
                     {
-                        me->MonsterYell("Feel your rage!", LANG_UNIVERSAL,0);      
+                        Talk(3);    
                         for (uint8 i=0; i<_cloudCount;i++)
                         {
                             Unit* target = SelectTarget(SELECT_TARGET_RANDOM);
