@@ -23,31 +23,9 @@ class mob_tushui_trainee : public CreatureScript
             
             void EnterCombat(Unit* unit) { }
 
-            void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
-                if((me->GetHealth() - uiDamage)*100/me->GetMaxHealth() < 20)
-                {
-                    uiDamage = 0;
-                    me->SetHealth(1);
-                }
-            }
-
-            void UpdateAI(const uint32 diff)
-            {
-                //while (uint32 eventId = events.ExecuteEvent())
-                //{
-                //    if(eventId == 1) //on ne sais jamais :D
-                //    {
-                //        me->setFaction(2101);
-                //    }
-                //}
-                
-                if (!UpdateVictim())
-                    return;
-
-                DoMeleeAttackIfReady();
-                
-                if(me->GetHealthPct() < 20)
+                if (me->HealthBelowPctDamaged(5, damage))
                 {
                     if(me->getVictim() && me->getVictim()->GetTypeId() == TYPEID_PLAYER)
                         ((Player*)me->getVictim())->KilledMonsterCredit(54586, 0);
@@ -55,10 +33,16 @@ class mob_tushui_trainee : public CreatureScript
                     me->SetHealth(me->GetMaxHealth());
                     me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
                     me->setFaction(2101);
-                    me->ToCreature()->DespawnOrUnsummon(3000);
-                    //me->setFaction(7);
-                    //events.ScheduleEvent(1, 20000);
+                    me->DespawnOrUnsummon(3000);
                 }
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                DoMeleeAttackIfReady();
             }
         };
 };
@@ -83,26 +67,34 @@ public:
         }
         
         EventMap events;
-        
+        bool first;
+
         void EnterCombat(Unit* unit)
         {
-            events.ScheduleEvent(1, 11000);
-            events.ScheduleEvent(3, 5000);
+            Talk(1);
+            events.ScheduleEvent(1, 1000);
+            events.ScheduleEvent(3, 2000);
         }
         
         void Reset()
         {
+            first = true;
             me->SetReactState(REACT_DEFENSIVE);
             me->SetDisplayId(39755);
             me->setFaction(14); //mechant!
         }
         
-        void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+        void DamageTaken(Unit* attacker, uint32& damage)
         {
-            if(me->GetHealth() - uiDamage <= 1)
+            if (me->HealthBelowPctDamaged(5, damage))
             {
-                uiDamage = 0;
-                me->SetHealth(1);
+                me->SetDisplayId(39755);
+                if(me->getVictim() && me->getVictim()->GetTypeId() == TYPEID_PLAYER)
+                    ((Player*)me->getVictim())->KilledMonsterCredit(me->GetEntry(), 0);
+                me->CombatStop();
+                me->setFaction(2104);
+                me->SetHealth(me->GetMaxHealth());
+                me->DespawnOrUnsummon(3000);
             }
         }
         
@@ -123,11 +115,11 @@ public:
                         break;
                     case 3: //baffe
                         me->CastSpell(me->getVictim(), 119301, false);
-                        events.ScheduleEvent(3, 13000);
+                        events.ScheduleEvent(3, 3000);
                         break;
                     case 4: //attaque du faucon
                         me->CastSpell(me->getVictim(), 108935, false);
-                        events.ScheduleEvent(4, 25000);
+                        events.ScheduleEvent(4, 4000);
                         break;
                     case 5: //remechant
                         me->setFaction(14);
@@ -137,23 +129,13 @@ public:
             
             DoMeleeAttackIfReady();
             
-            if(me->GetHealthPct() <= 25)
+            if((me->GetHealthPct() <= 30)&&(first))
             {
+                first = false;
                 me->SetDisplayId(39796); //faucon
-                events.ScheduleEvent(4, 7000);
+                events.ScheduleEvent(4, 1000);
                 events.CancelEvent(3);
                 events.CancelEvent(1);
-            }
-            
-            if(me->GetHealthPct() <= 3)
-            {
-                me->SetDisplayId(39755);
-                if(me->getVictim() && me->getVictim()->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)me->getVictim())->KilledMonsterCredit(me->GetEntry(), 0);
-                me->CombatStop();
-                me->setFaction(2104);
-                me->SetHealth(me->GetMaxHealth());
-                events.ScheduleEvent(5, 20000);
             }
         }
     };
