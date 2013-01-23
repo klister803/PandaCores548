@@ -632,37 +632,6 @@ public:
     }
 };
 
-class npc_krikthik_bombarder : public CreatureScript
-{
-public:
-    npc_krikthik_bombarder() : CreatureScript("npc_krikthik_bombarder") { }
-
-    struct npc_krikthik_bombarderAI : public ScriptedAI
-    {
-        npc_krikthik_bombarderAI(Creature* creature) : ScriptedAI(creature)
-        {
-            pInstance = creature->GetInstanceScript();
-        }
-
-        InstanceScript* pInstance;
-
-        void Reset()
-        {
-            me->GetMotionMaster()->MoveRandom(5.0f);
-        }
-
-        void UpdateAI(const uint32 diff)
-        {
-            
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_krikthik_bombarderAI (creature);
-    }
-};
-
 class spell_gadok_strafing : public SpellScriptLoader
 {
     public:
@@ -747,7 +716,6 @@ void AddSC_boss_striker_gadok()
     new npc_krikthik_striker();
     new npc_krikthik_disruptor();
     new npc_flak_cannon();
-    new npc_krikthik_bombarder();
     new spell_gadok_strafing();
     new spell_prey_time();
 }

@@ -271,6 +271,10 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _isWalkingBeforeCharm = false;
 
     SetEclipsePower(0); // Not sure of 0
+
+    // Area Skip Update
+    _skipCount = 0;
+    _skipDiff = 0;
 }
 
 ////////////////////////////////////////////////////////////

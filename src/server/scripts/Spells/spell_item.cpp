@@ -2061,7 +2061,7 @@ class spell_item_holy_thurible : public SpellScriptLoader
             {
                 Player* caster = GetCaster()->ToPlayer();
                 // GetHitCreature don't work
-                Creature* target  = caster->FindNearestCreature(NPC_WITHDRAWN_SOUL, 2.0f, true);;
+                Creature* target  = caster->FindNearestCreature(NPC_WITHDRAWN_SOUL, 2.0f, true);
                 if(target && caster){
 
                     if(roll_chance_i(50)){
@@ -2082,6 +2082,47 @@ class spell_item_holy_thurible : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_item_holy_thurible_SpellScript();
+        }
+};
+
+
+enum bandage
+{
+    NPC_WOUNDED_DEFENDER      = 38805,
+};
+
+class spell_item_bandage_q24944 : public SpellScriptLoader
+{
+    public:
+        spell_item_bandage_q24944() : SpellScriptLoader("spell_item_bandage_q24944") { }
+
+        class spell_item_bandage_q24944_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_bandage_q24944_SpellScript);
+
+          
+            void HandleDummy(SpellEffIndex /* effIndex */)
+            {
+                Player* caster = GetCaster()->ToPlayer();
+                Creature* target  = GetHitCreature();
+                if(target && caster){
+                    target->SetFullHealth();
+                    target->MonsterSay("Thank you my friend", LANG_UNIVERSAL, 0);
+                    target->ForcedDespawn();
+                    caster->KilledMonsterCredit(NPC_WITHDRAWN_SOUL, 0);
+                }
+                                
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_item_bandage_q24944_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_bandage_q24944_SpellScript();
         }
 };
 
@@ -2139,4 +2180,5 @@ void AddSC_item_spell_scripts()
     new spell_item_greatmothers_soulcatcher();
     new spell_item_enohar_explosive_arrows();
     new spell_item_holy_thurible();
+    new spell_item_bandage_q24944();
 }

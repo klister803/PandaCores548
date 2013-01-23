@@ -46,6 +46,7 @@ public:
         uint8 cinematicEventProgress;
 
         std::vector<uint64> bombarderGuids;
+        std::vector<uint64> bombStalkerGuids;
         std::vector<uint64> mantidBombsGUIDs;
         std::vector<uint64> rimokAddGenetarorsGUIDs;
         std::vector<uint64> artilleryGUIDs;
@@ -73,6 +74,8 @@ public:
 
             memset(dataStorage, 0, MAX_DATA * sizeof(uint32));
 
+            bombarderGuids.clear();
+            bombStalkerGuids.clear();
             mantidBombsGUIDs.clear();
             rimokAddGenetarorsGUIDs.clear();
             artilleryGUIDs.clear();
@@ -95,6 +98,7 @@ public:
                 case NPC_RIMOK:             rimokGuid       = creature->GetGUID();                  return;
                 case NPC_RAIGONN:           raigonnGuid     = creature->GetGUID();                  return;
                 case NPC_KRITHUK_BOMBARDER: bombarderGuids.push_back(creature->GetGUID());          return;
+                case NPC_BOMB_STALKER:      bombStalkerGuids.push_back(creature->GetGUID());        return;
                 case NPC_ADD_GENERATOR:     rimokAddGenetarorsGUIDs.push_back(creature->GetGUID()); return;
                 case NPC_ARTILLERY:         artilleryGUIDs.push_back(creature->GetGUID());          return;
                 default:                                                                            return;
@@ -286,12 +290,13 @@ public:
         {
             switch (type)
             {
-                case NPC_KIPTILAK:          return kiptilakGuid;
-                case NPC_GADOK:             return gadokGuid;
-                case NPC_RIMOK:             return rimokGuid;
-                case NPC_RAIGONN:           return raigonnGuid;
-                case NPC_WEAK_SPOT:         return raigonWeakGuid;
-                case DATA_RANDOM_BOMBARDER: return Trinity::Containers::SelectRandomContainerElement(bombarderGuids);
+                case NPC_KIPTILAK:              return kiptilakGuid;
+                case NPC_GADOK:                 return gadokGuid;
+                case NPC_RIMOK:                 return rimokGuid;
+                case NPC_RAIGONN:               return raigonnGuid;
+                case NPC_WEAK_SPOT:             return raigonWeakGuid;
+                case DATA_RANDOM_BOMBARDER:     return Trinity::Containers::SelectRandomContainerElement(bombarderGuids);
+                case DATA_RANDOM_BOMB_STALKER:  return Trinity::Containers::SelectRandomContainerElement(bombStalkerGuids);
             }
 
             return 0;

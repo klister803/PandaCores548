@@ -15,16 +15,17 @@ uint32 const EncounterCount = 4;
 
 enum DataTypes
 {
-    DATA_IN_FIGHT           = 0,
+    DATA_IN_FIGHT               = 0,
 
-    DATA_KIPTILAK           = 1,
-    DATA_GADOK              = 2,
-    DATA_RIMOK              = 3,
-    DATA_RAIGONN            = 4,
+    DATA_KIPTILAK               = 1,
+    DATA_GADOK                  = 2,
+    DATA_RIMOK                  = 3,
+    DATA_RAIGONN                = 4,
 
-    DATA_OPEN_FIRST_DOOR    = 5,
-    DATA_BRASIER_CLICKED    = 6,
-    DATA_RANDOM_BOMBARDER   = 7,
+    DATA_OPEN_FIRST_DOOR        = 5,
+    DATA_BRASIER_CLICKED        = 6,
+    DATA_RANDOM_BOMBARDER       = 7,
+    DATA_RANDOM_BOMB_STALKER    = 8,
     MAX_DATA
 };
 
@@ -34,6 +35,9 @@ enum CreaturesIds
     NPC_GADOK                   = 56589,
     NPC_RIMOK                   = 56636,
     NPC_RAIGONN                 = 56877,
+
+    NPC_KRITHUK_BOMBARDER       = 56706,
+    NPC_BOMB_STALKER            = 56709,
 
     // Kip'Tilak
     NPC_STABLE_MUNITION         = 56917,
@@ -54,8 +58,6 @@ enum CreaturesIds
 
     NPC_KRIKTHIK_STRIKER        = 59778, // Appear on Gadok bombardment
     NPC_KRIKTHIK_DISRUPTOR      = 59794, // Bombard tower when Gadok is in fight
-
-    NPC_KRITHUK_BOMBARDER       = 56706,
 
     // Rimok
     NPC_ADD_GENERATOR           = 59834,

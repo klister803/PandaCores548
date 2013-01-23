@@ -409,8 +409,8 @@ class boss_deathbringer_saurfang : public CreatureScript
                     {
                         if (GetMSTimeDiffToNow(internalMarkDamageCD) > 20000)
                         {
-                            me->CastSpell(victim, SPELL_MARK_DAMAGE, true);
                             internalMarkDamageCD = getMSTime();
+                            me->CastSpell(victim, SPELL_MARK_DAMAGE, true);
                         }
                     }
                 }
