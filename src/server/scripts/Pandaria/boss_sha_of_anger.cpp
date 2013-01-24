@@ -30,6 +30,7 @@ enum eEvents
     EVENT_BERSERK=3,
     EVENT_DESPAWN=4,
     EVENT_SPAWN=5,
+    EVENT_UPDATE_RAGE=6,
 };
 
 enum eCreatures
@@ -57,9 +58,12 @@ public:
         int _cloudCount;
         int _maxTargetCount;
         uint8 _dominateMindCount;
+        uint32 timer;
+        bool phase1;
 
         void Reset()
         {
+            phase1 = true;
             _dominateMindCount = 5;
             _cloudCount = 10;
             _targetCount = 0;
@@ -81,10 +85,11 @@ public:
         void EnterCombat(Unit* unit)
         {
             Talk(5);
-            events.ScheduleEvent(EVENT_GROWING_ANGER,2000);
+            events.ScheduleEvent(EVENT_GROWING_ANGER,1500);
             events.ScheduleEvent(EVENT_SPAWN,5000);
             events.ScheduleEvent(EVENT_UNLEASHED_WRATH,52000);
             events.ScheduleEvent(EVENT_BERSERK,900000);
+            events.ScheduleEvent(EVENT_UPDATE_RAGE,1000);
         }
 
         void UpdateAI(const uint32 diff)
@@ -93,13 +98,13 @@ public:
                 return;
 
             events.Update(diff);
-
             while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
                 case EVENT_UNLEASHED_WRATH:
                     {
+                        phase1 = false;
                         for (uint8 i=0; i<10;i++)
                         {
                             Unit* target = SelectTarget(SELECT_TARGET_RANDOM);
@@ -107,7 +112,7 @@ public:
                             {
                                 target->CastSpell(target,SPELL_SEETHE,false);
                                 target->AddAura(SPELL_SEETHE_AURA,target);
-                            }
+                            } 
                         }
                         if (_targetCount < _maxTargetCount)
                         {
@@ -122,6 +127,7 @@ public:
                         else
                         {
                             events.ScheduleEvent(EVENT_UNLEASHED_WRATH, 50000);
+                            phase1 = true;
                             _targetCount = 0;
                         }
                     }
@@ -131,7 +137,7 @@ public:
                         Talk(1);     
                         for (uint8 i = 0; i < _dominateMindCount; i++)
                         {
-                            me->CastSpell(SelectTarget(SELECT_TARGET_RANDOM), SPELL_DOMINATE_MIND, false);
+                           me->CastSpell(SelectTarget(SELECT_TARGET_RANDOM), SPELL_DOMINATE_MIND, false);
                         }
                         events.ScheduleEvent(EVENT_GROWING_ANGER, 25000);
                     }
@@ -152,6 +158,17 @@ public:
                         me->CastSpell(me,SPELL_BERSERK,false);
                     }
                     break;   
+                case EVENT_UPDATE_RAGE:
+                    {
+                        if(phase1)
+                            timer = timer + 2;
+                        else
+                            timer = timer - 2;
+
+                        me->SetPower(POWER_RAGE,timer);
+                        events.ScheduleEvent(EVENT_UPDATE_RAGE,1000);
+                    }
+                    break;
                 }
             }
             DoMeleeAttackIfReady();
