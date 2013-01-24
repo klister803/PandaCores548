@@ -5084,7 +5084,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         }
     }
 
-    if (!hasNonDispelEffect && !hasDispellableAura && dispelMask && !IsTriggered())
+    /*if (!hasNonDispelEffect && !hasDispellableAura && dispelMask && !IsTriggered())
     {
         if (Unit* target = m_targets.GetUnitTarget())
         {
@@ -5093,7 +5093,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             if (dispelList.empty())
                 return SPELL_FAILED_NOTHING_TO_DISPEL;
         }
-    }
+    }*/
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
