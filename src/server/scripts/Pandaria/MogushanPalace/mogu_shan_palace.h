@@ -75,6 +75,7 @@ enum eCreatures
 
     //XIN THE WEAPONMASTER
     CREATURE_ANIMATED_STAFF                 = 61433,
+    CREATURE_ANIMATED_AXE                   = 61451,
     CREATURE_LAUNCH_SWORD                   = 63808,
 };
 
@@ -104,7 +105,8 @@ enum eTypes
     TYPE_GET_ENTOURAGE_3, //17
     
     TYPE_ACTIVATE_ANIMATED_STAFF, //18
-    TYPE_ACTIVATE_SWORD, //19
+    TYPE_ACTIVATE_ANIMATED_AXE, //19
+    TYPE_ACTIVATE_SWORD, //20
 };
 
 #endif // STORMSTOUT_BREWERY_H_

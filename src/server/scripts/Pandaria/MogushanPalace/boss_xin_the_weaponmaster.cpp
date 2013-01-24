@@ -25,9 +25,11 @@ class boss_xin_the_weaponmaster : public CreatureScript
 
         enum eEvents
         {
-            EVENT_RING_OF_FIRE  = 1,
-            EVENT_HEURT         = 2,
-            EVENT_INCITING_ROAR = 3,
+            EVENT_RING_OF_FIRE          = 1,
+            EVENT_HEURT                 = 2,
+            EVENT_INCITING_ROAR         = 3,
+            EVENT_SWORD_THROWER         = 4,
+            EVENT_SWORD_THROWER_STOP    = 5,
         };
 
         enum eSpells
@@ -57,14 +59,8 @@ class boss_xin_the_weaponmaster : public CreatureScript
             {
                 events.ScheduleEvent(EVENT_RING_OF_FIRE, 3000);
                 events.ScheduleEvent(EVENT_HEURT, urand(10000, 15000));
-                events.ScheduleEvent(EVENT_INCITING_ROAR, 30000);
-            }
-
-            void DamageTaken(Unit* /*attacker*/, uint32& damage)
-            {
-                if (pInstance)
-                    if (me->HealthBelowPctDamaged(33, damage))
-                        pInstance->SetData(TYPE_ACTIVATE_SWORD, 1);
+                events.ScheduleEvent(EVENT_INCITING_ROAR, urand(15000, 25000));
+                events.ScheduleEvent(EVENT_SWORD_THROWER, 30000);
             }
 
             void UpdateAI(const uint32 diff)
@@ -84,7 +80,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
                         case EVENT_RING_OF_FIRE:
                             if (pInstance)
                                 pInstance->SetData(TYPE_ACTIVATE_ANIMATED_STAFF, 0);
-                            events.ScheduleEvent(EVENT_RING_OF_FIRE, 15000);
+                            events.ScheduleEvent(EVENT_RING_OF_FIRE, 20000);
                             break;
                         case EVENT_HEURT:
                             me->CastSpell(me, SPELL_HEURT, false);
@@ -94,6 +90,17 @@ class boss_xin_the_weaponmaster : public CreatureScript
                             me->CastSpell(me, SPELL_INCITING_ROAR, false);
                             events.ScheduleEvent(EVENT_INCITING_ROAR, 30000);
                             break;
+                        case EVENT_SWORD_THROWER:
+                            if (pInstance)
+                                pInstance->SetData(TYPE_ACTIVATE_SWORD, 1);
+                            events.ScheduleEvent(EVENT_SWORD_THROWER_STOP, 10000);
+                            break;
+                        case EVENT_SWORD_THROWER_STOP:
+                            if (pInstance)
+                                pInstance->SetData(TYPE_ACTIVATE_SWORD, 0);
+                            events.ScheduleEvent(EVENT_SWORD_THROWER, 20000);
+                            break;
+
                     }
                 }
 
@@ -142,6 +149,7 @@ class mob_animated_staff : public CreatureScript
             {
                 me->SetDisplayId(42195);
                 me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, 76364);
+                me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
             }
 
             EventMap events;
@@ -156,8 +164,9 @@ class mob_animated_staff : public CreatureScript
                 point = 0.f;
 
                 me->AddAura(SPELL_PERMANENT_FEIGN_DEATH, me);
-                me->GetMotionMaster()->MoveTargetedHome();
-                events.ScheduleEvent(EVENT_SUMMON_RING_OF_FIRE, 3000);
+
+                Position home = me->GetHomePosition();
+                me->GetMotionMaster()->MovePoint(0, home);
             }
 
             void EnterCombat(Unit* unit)
@@ -214,14 +223,10 @@ class mob_animated_staff : public CreatureScript
                                 return;
 
                             me->GetMotionMaster()->MovePoint(0, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+                            point = 0.0f;
                             _x = target->GetPositionX();
                             _y = target->GetPositionY();
-                            point = 1.0f;
-
-                            float x = _x + 5.0f * cos(0);
-                            float y = _y + 5.0f * sin(0);
-                            me->SummonCreature(CREATURE_RING_OF_FIRE, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()), 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10000);
-                            events.ScheduleEvent(EVENT_SUMMON_RING_TRIGGER, 400);
+                            events.ScheduleEvent(EVENT_SUMMON_RING_TRIGGER, 100);
                             break;
                         }
                         case EVENT_UNSUMMON:
@@ -229,7 +234,7 @@ class mob_animated_staff : public CreatureScript
                             break;
                         case EVENT_SUMMON_RING_TRIGGER:
                         {
-                            if (point >= 21)
+                            if (point >= 11)
                             {
                                 if (TempSummon* tmp = me->SummonCreature(CREATURE_RING_OF_FIRE, _x, _y, me->GetMap()->GetHeight(0, _x, _y, me->GetPositionZ()), 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10000))
                                 {
@@ -239,8 +244,8 @@ class mob_animated_staff : public CreatureScript
                                 return;
                             }
 
-                            float x = _x + 5.0f * cos(point * 2 * M_PI / 20);
-                            float y = _y + 5.0f * sin(point * 2 * M_PI / 20);
+                            float x = _x + 5.0f * cos(point * M_PI / 5);
+                            float y = _y + 5.0f * sin(point * M_PI / 5);
                             me->SummonCreature(CREATURE_RING_OF_FIRE, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()), 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10000);
                             ++point;
                             events.ScheduleEvent(EVENT_SUMMON_RING_TRIGGER, 400);
@@ -250,6 +255,20 @@ class mob_animated_staff : public CreatureScript
                 }
             }
         };
+};
+
+class OnlyTriggerInFrontPredicate
+{
+    public:
+        OnlyTriggerInFrontPredicate(Unit* caster) : _caster(caster) {}
+
+        bool operator()(WorldObject* target)
+        {
+            return target->GetEntry() != 59481 || !_caster->isInFront(target, M_PI / 5) || target->GetGUID() == _caster->GetGUID();
+        }
+
+    private:
+        Unit* _caster;
 };
 
 class spell_dart : public SpellScriptLoader
@@ -286,16 +305,13 @@ class spell_dart : public SpellScriptLoader
 
                 //Select the two targets.
                 std::list<WorldObject*> targets = targetList;
-                for (auto object : targets)
-                    if (object->GetEntry() != 59481 || !GetCaster()->isInFront(object, M_PI / 5) || object->GetGUID() == GetCaster()->GetGUID())
-                            targetList.remove(object);
+                targetList.remove_if(OnlyTriggerInFrontPredicate(GetCaster()));
 
-                std::list<WorldObject*> lines = targetList;
                 //See if we intersect with any players.
                 for (auto object : targets)
                     if (object->GetTypeId() == TYPEID_PLAYER)
-                        for (auto line : lines)
-                            if (object->IsInBetween(GetCaster(), line, 2.0f))
+                        for (auto trigger : targetList)
+                            if (object->IsInBetween(GetCaster(), trigger, 2.0f))
                                 GetCaster()->CastSpell(object->ToPlayer(), SPELL_THROW_DAMAGE, true);
             }
 
@@ -314,9 +330,66 @@ class spell_dart : public SpellScriptLoader
         }
 };
 
+class AngleFiler
+{
+    public:
+        AngleFiler(Unit* caster) : _caster(caster) {}
+
+        bool operator()(WorldObject* target)
+        {
+            return !_caster->isInFront(target, M_PI / 6);
+        }
+
+    private:
+        Unit* _caster;
+};
+
+class spell_ground_slam : public SpellScriptLoader
+{
+    public:
+        spell_ground_slam() : SpellScriptLoader("spell_ground_slam") { }
+
+        class spell_ground_slam_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_ground_slam_SpellScript);
+
+            bool Validate(SpellInfo const* spell)
+            {
+                return true;
+            }
+
+            // set up initial variables and check if caster is creature
+            // this will let use safely use ToCreature() casts in entire script
+            bool Load()
+            {
+                return true;
+            }
+
+            void SelectTarget(std::list<WorldObject*>& targetList)
+            {
+                if (!GetCaster())
+                    return;
+
+                targetList.remove_if(AngleFiler(GetCaster()));
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_ground_slam_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_TARGET_RAID);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_ground_slam_SpellScript::SelectTarget, EFFECT_1, 0);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_ground_slam_SpellScript();
+        }
+};
+
 void AddSC_boss_xin_the_weaponmaster()
 {
     new boss_xin_the_weaponmaster();
     new mob_animated_staff();
     new spell_dart();
+    new spell_ground_slam();
 }

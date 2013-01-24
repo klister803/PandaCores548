@@ -49,6 +49,7 @@ public:
         ** Xin the weaponmaster.
         */
         std::list<uint64> animated_staffs;
+        std::list<uint64> animated_axes;
         std::list<uint64> swordLauncherGuids;
         /*
         ** End of Xin the weaponmaster.
@@ -143,14 +144,64 @@ public:
                     if (Creature* creature = instance->GetCreature(Trinity::Containers::SelectRandomContainerElement(animated_staffs)))
                         if (creature->GetAI())
                             creature->GetAI()->DoAction(0); //ACTION_ACTIVATE
+                    break;
+                }
+                case TYPE_ACTIVATE_ANIMATED_AXE:
+                {
+                    for (auto guid : animated_axes)
+                    {
+                        if (Creature* creature = instance->GetCreature(guid))
+                        {
+                            if (data)
+                            {
+                                creature->AddAura(119373, creature); // Tourbillon
+                                creature->GetMotionMaster()->MoveRandom(50.0f);
+                            }
+                            else
+                            {
+                                creature->RemoveAurasDueToSpell(119373);
+                                creature->GetMotionMaster()->MoveTargetedHome();
+                            }
+                        }
+                    }
+                    break;
                 }
                 case TYPE_ACTIVATE_SWORD:
                 {
+                    Position center;
+                    center.Relocate(-4632.39f, -2613.20f, 22.0f);
+
+                    bool randPos = urand(0, 1);
+
+                    /*     Y
+                           -
+                       ***********
+                       -> 1 * 2 <-
+                     + *********** - X
+                       -> 3 * 4 <-
+                       ***********
+                           +         */
+
                     for (auto itr: swordLauncherGuids)
                     {
+                        bool mustActivate = false;
+
                         if (Creature* launcher = instance->GetCreature(itr))
                         {
-                            if (data)
+                            if (randPos) // Zone 2 & 3
+                            {
+                                if (launcher->GetPositionX() > center.GetPositionX() && launcher->GetPositionY() > center.GetPositionY()
+                                    || launcher->GetPositionX() < center.GetPositionX() && launcher->GetPositionY() < center.GetPositionY())
+                                    mustActivate = true;
+                            }
+                            else // Zone 1 & 4
+                            {
+                                if (launcher->GetPositionX() > center.GetPositionX() && launcher->GetPositionY() < center.GetPositionY()
+                                    || launcher->GetPositionX() < center.GetPositionX() && launcher->GetPositionY() > center.GetPositionY())
+                                    mustActivate = true;
+                            }
+
+                            if (data && mustActivate)
                                 launcher->AddAura(SPELL_THROW_AURA, launcher);
                             else
                                 launcher->RemoveAurasDueToSpell(SPELL_THROW_AURA);
@@ -165,11 +216,15 @@ public:
             switch (creature->GetEntry())
             {
                 case 59481:
-                case 61451:
                     creature->SetReactState(REACT_PASSIVE);
                     break;
                 case CREATURE_ANIMATED_STAFF:
                     animated_staffs.push_back(creature->GetGUID());
+                    break;
+                case CREATURE_ANIMATED_AXE:
+                    animated_axes.push_back(creature->GetGUID());
+                    creature->SetReactState(REACT_PASSIVE);
+                    creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, 30316);
                     break;
                 case CREATURE_LAUNCH_SWORD:
                     swordLauncherGuids.push_back(creature->GetGUID());
@@ -187,14 +242,12 @@ public:
                     case CREATURE_GLINTROK_SKULKER:
                     case CREATURE_GLINTROK_ORACLE:
                     case CREATURE_GLINTROK_HEXXER:
-                        {
-                            Creature* c = instance->GetCreature(gekkan);
-                            if (!c)
-                                return;
+                    {
+                        if (Creature* c = instance->GetCreature(gekkan))
                             if (c->GetAI())
                                 c->GetAI()->DoAction(0); //ACTION_ENTOURAGE_DIED
-                        }
-                        break;
+                    }
+                    break;
                 }
             }
         }
