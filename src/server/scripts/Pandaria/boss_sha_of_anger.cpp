@@ -137,7 +137,7 @@ public:
                         Talk(1);     
                         for (uint8 i = 0; i < _dominateMindCount; i++)
                         {
-                           // me->CastSpell(SelectTarget(SELECT_TARGET_RANDOM), SPELL_DOMINATE_MIND, false);
+                           me->CastSpell(SelectTarget(SELECT_TARGET_RANDOM), SPELL_DOMINATE_MIND, false);
                         }
                         events.ScheduleEvent(EVENT_GROWING_ANGER, 25000);
                     }
