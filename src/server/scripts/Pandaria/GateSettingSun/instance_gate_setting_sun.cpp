@@ -232,6 +232,9 @@ public:
                     if (dataStorage[type] == DONE)
                         return;
 
+                    if (GetBossState(DATA_GADOK) != DONE)
+                        return;
+
                     Map::PlayerList const &PlayerList = instance->GetPlayers();
                     for (Map::PlayerList::const_iterator it = PlayerList.begin(); it != PlayerList.end(); ++it)
                     {
@@ -239,6 +242,7 @@ public:
                         {
                             player->SendCinematicStart(CINEMATIC_SETTING_SUN);
                             player->SetPhaseMask(2, true);
+                            player->NearTeleportTo(1370.0f, 2283.6f, 402.328f, 2.70f);
                         }
                     }
 
