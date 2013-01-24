@@ -179,19 +179,9 @@ public:
                 }
                 case DATA_RAIGONN:
                 {
-                    if (state == IN_PROGRESS)
-                    {
-                        for (auto itr: artilleryGUIDs)
-                            if (Creature* artillery = instance->GetCreature(itr))
-                                artillery->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    }
-                    else
-                    {
-                        for (auto itr: artilleryGUIDs)
-                            if (Creature* artillery = instance->GetCreature(itr))
-                                artillery->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    }
-
+                    for (auto itr: artilleryGUIDs)
+                        if (Creature* artillery = instance->GetCreature(itr))
+                            artillery->ApplyModFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE, state != IN_PROGRESS);
                     break;
                 }
                 default:
