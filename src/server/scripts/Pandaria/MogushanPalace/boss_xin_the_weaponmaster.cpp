@@ -344,52 +344,9 @@ class AngleFiler
         Unit* _caster;
 };
 
-class spell_ground_slam : public SpellScriptLoader
-{
-    public:
-        spell_ground_slam() : SpellScriptLoader("spell_ground_slam") { }
-
-        class spell_ground_slam_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_ground_slam_SpellScript);
-
-            bool Validate(SpellInfo const* spell)
-            {
-                return true;
-            }
-
-            // set up initial variables and check if caster is creature
-            // this will let use safely use ToCreature() casts in entire script
-            bool Load()
-            {
-                return true;
-            }
-
-            void SelectTarget(std::list<WorldObject*>& targetList)
-            {
-                if (!GetCaster())
-                    return;
-
-                targetList.remove_if(AngleFiler(GetCaster()));
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_ground_slam_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_TARGET_RAID);
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_ground_slam_SpellScript::SelectTarget, EFFECT_1, 0);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_ground_slam_SpellScript();
-        }
-};
-
 void AddSC_boss_xin_the_weaponmaster()
 {
     new boss_xin_the_weaponmaster();
     new mob_animated_staff();
     new spell_dart();
-    new spell_ground_slam();
 }
