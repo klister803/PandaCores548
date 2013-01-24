@@ -256,8 +256,8 @@ class boss_striker_gadok : public CreatureScript
                                 if (striker->AI())
                                     striker->AI()->DoAction(0);
 
-                        ++strafingEventProgress;
                         me->SetWalk(false);
+                        ++strafingEventProgress;
                         strafingTimer = 0;
                         break;
                     case 1: // We are a POINT_START, wait 2 sec then continue

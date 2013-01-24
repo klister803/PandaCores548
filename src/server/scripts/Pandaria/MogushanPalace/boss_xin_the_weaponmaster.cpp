@@ -6,103 +6,107 @@
 
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "mogu_shan_palace.h"
 
-
-class spell_dart : public SpellScriptLoader
+class boss_xin_the_weaponmaster : public CreatureScript
 {
     public:
-        spell_dart() : SpellScriptLoader("spell_dart") { }
+        boss_xin_the_weaponmaster() : CreatureScript("boss_xin_the_weaponmaster") { }
 
-        class spell_dart_SpellScript : public SpellScript
+        CreatureAI* GetAI(Creature* creature) const
         {
-            PrepareSpellScript(spell_dart_SpellScript);
+            return new boss_xin_the_weaponmaster_AI(creature);
+        }
 
-            bool Validate(SpellInfo const* spell)
-            {
-                return true;
-            }
-
-            // set up initial variables and check if caster is creature
-            // this will let use safely use ToCreature() casts in entire script
-            bool Load()
-            {
-                return true;
-            }
-
-            bool intersectionCircleSegment(float x0, float y0, float x1, float y1, float cx, float cy, float r)
-            {
-                float a = (x1 - x0) * (x1 - x0) + (y1 - y0) * (y1 - y0);
-                float b = 2 * ((x1 - x0) * (x0 - cx) + (y1 - y0) * (y0 - cy));
-                float c = cx * cx + cy * cy + x0 * x0 + y0 * y0 - 2 * (cx * x0 + cy * y0) - r * r;
-                float det = b * b - 4 * a * c;
-                
-                if (det < 0)
-                    return false;
-                else
-                {
-                    // The circle is in the segment ?
-                    float sdet = sqrt(det);
-                    float r1 = (-b + sdet) / (2 * a);
-                    float r2 = (-b - sdet) / (2 * a);
-                    
-                    if ((r1 < 0 || r1 > 1) && (r2 < 0 || r2 > 1))
-                        if ((r1 < 0 && r2 < 0) || (r1 > 1 && r2 > 1))
-                            return false;
-                        else
-                            return true;
-                    else
-                        return true;
-                }
-            }
-
-            void SelectTarget(std::list<WorldObject*>& targetList)
-            {
-                if (targetList.empty())
-                {
-                    FinishCast(SPELL_FAILED_NO_VALID_TARGETS);
-                    return;
-                }
-                //Select the two targets.
-                std::list<WorldObject*> targets = targetList;
-                for (auto object : targets)
-                {
-                    if (object->ToCreature() && object->GetGUID() != GetCaster()->GetGUID())
-                    {
-                        if (object->ToCreature()->GetEntry() != 61679 || !GetCaster()->isInFront(object, M_PI / 5))
-                            targetList.remove(object);
-                    }
-                    else
-                        targetList.remove(object);
-                }
-                std::list<WorldObject*> lines = targetList;
-                //See if we intersect with any players.
-                for (auto object : targets)
-                {
-                    if (object->ToPlayer())
-                    {
-                        for (auto line : lines)
-                        {
-                            if (intersectionCircleSegment(GetCaster()->GetPositionX(), GetCaster()->GetPositionY(),
-                                line->GetPositionX(), line->GetPositionY(), object->GetPositionX(), object->GetPositionY(), 2.5f))
-                                GetCaster()->DealDamage(object->ToPlayer(), GetSpellInfo()->Effects[0].BasePoints, 0, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, GetSpellInfo());
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dart_SpellScript::SelectTarget, EFFECT_0, TARGET_SRC_CASTER);
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dart_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dart_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
-                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dart_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_CONE_ENEMY_104);
-            }
+        enum eBosses
+        {
+            BOSS_XIN_THE_WEAPONMASTER,
         };
 
-        SpellScript* GetSpellScript() const
+        enum eEvents
         {
-            return new spell_dart_SpellScript();
-        }
+            EVENT_RING_OF_FIRE          = 1,
+            EVENT_HEURT                 = 2,
+            EVENT_INCITING_ROAR         = 3,
+            EVENT_SWORD_THROWER         = 4,
+            EVENT_SWORD_THROWER_STOP    = 5,
+        };
+
+        enum eSpells
+        {
+            SPELL_HEURT         = 119684,
+            SPELL_INCITING_ROAR = 122959,
+        };
+
+        struct boss_xin_the_weaponmaster_AI : public BossAI
+        {
+            boss_xin_the_weaponmaster_AI(Creature* creature) : BossAI(creature, BOSS_XIN_THE_WEAPONMASTER)
+            {
+                pInstance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* pInstance;
+
+            void Reset()
+            {
+                if (pInstance)
+                    pInstance->SetData(TYPE_ACTIVATE_SWORD, 0);
+
+                events.Reset();
+            }
+
+            void EnterCombat(Unit* who)
+            {
+                events.ScheduleEvent(EVENT_RING_OF_FIRE, 3000);
+                events.ScheduleEvent(EVENT_HEURT, urand(10000, 15000));
+                events.ScheduleEvent(EVENT_INCITING_ROAR, urand(15000, 25000));
+                events.ScheduleEvent(EVENT_SWORD_THROWER, 30000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                while (uint32 eventId = events.ExecuteEvent())
+                {
+                    switch (eventId)
+                    {
+                        case EVENT_RING_OF_FIRE:
+                            if (pInstance)
+                                pInstance->SetData(TYPE_ACTIVATE_ANIMATED_STAFF, 0);
+                            events.ScheduleEvent(EVENT_RING_OF_FIRE, 20000);
+                            break;
+                        case EVENT_HEURT:
+                            me->CastSpell(me, SPELL_HEURT, false);
+                            events.ScheduleEvent(EVENT_HEURT, urand(10000, 15000));
+                            break;
+                        case EVENT_INCITING_ROAR:
+                            me->CastSpell(me, SPELL_INCITING_ROAR, false);
+                            events.ScheduleEvent(EVENT_INCITING_ROAR, 30000);
+                            break;
+                        case EVENT_SWORD_THROWER:
+                            if (pInstance)
+                                pInstance->SetData(TYPE_ACTIVATE_SWORD, 1);
+                            events.ScheduleEvent(EVENT_SWORD_THROWER_STOP, 10000);
+                            break;
+                        case EVENT_SWORD_THROWER_STOP:
+                            if (pInstance)
+                                pInstance->SetData(TYPE_ACTIVATE_SWORD, 0);
+                            events.ScheduleEvent(EVENT_SWORD_THROWER, 20000);
+                            break;
+
+                    }
+                }
+
+                DoMeleeAttackIfReady();
+            }
+        };
 };
 
 class mob_animated_staff : public CreatureScript
@@ -117,7 +121,7 @@ class mob_animated_staff : public CreatureScript
 
         enum eSpells
         {
-            SPELL_PERMANENT_FEIGN_DEATH = 29266,
+            SPELL_PERMANENT_FEIGN_DEATH = 130966,
             SPELL_RING_OF_FIRE_0 = 119544,
             SPELL_RING_OF_FIRE_1 = 119590,
         };
@@ -145,12 +149,9 @@ class mob_animated_staff : public CreatureScript
             {
                 me->SetDisplayId(42195);
                 me->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, 76364);
-                me->AddAura(SPELL_PERMANENT_FEIGN_DEATH, me);
-            
-                _x = 0.f;
-                _y = 0.f;
-                point = 0.f;
+                me->SetHomePosition(me->GetPositionX(), me->GetPositionY(), me->GetPositionZ(), me->GetOrientation());
             }
+
             EventMap events;
             float _x;
             float _y;
@@ -158,8 +159,14 @@ class mob_animated_staff : public CreatureScript
 
             void Reset()
             {
-                me->GetMotionMaster()->MoveTargetedHome();
+                _x = 0.f;
+                _y = 0.f;
+                point = 0.f;
+
                 me->AddAura(SPELL_PERMANENT_FEIGN_DEATH, me);
+
+                Position home = me->GetHomePosition();
+                me->GetMotionMaster()->MovePoint(0, home);
             }
 
             void EnterCombat(Unit* unit)
@@ -170,10 +177,20 @@ class mob_animated_staff : public CreatureScript
             {
                 switch (action)
                 {
-                case ACTION_ACTIVATE:
-                    me->RemoveAura(SPELL_PERMANENT_FEIGN_DEATH);
-                    events.ScheduleEvent(EVENT_SUMMON_RING_OF_FIRE, 500);
-                    break;
+                    case ACTION_ACTIVATE:
+                        me->RemoveAura(SPELL_PERMANENT_FEIGN_DEATH);
+                        events.ScheduleEvent(EVENT_SUMMON_RING_OF_FIRE, 500);
+                        break;
+                }
+            }
+
+            void JustSummoned(Creature* summoned)
+            {
+                if (summoned->GetEntry() == CREATURE_RING_OF_FIRE)
+                {
+                    summoned->setFaction(14);
+                    summoned->SetReactState(REACT_PASSIVE);
+                    summoned->AddAura(SPELL_RING_OF_FIRE_0, summoned);
                 }
             }
 
@@ -185,160 +202,154 @@ class mob_animated_staff : public CreatureScript
                 {
                     switch (eventId)
                     {
-                    case EVENT_SUMMON_RING_OF_FIRE:
+                        case EVENT_SUMMON_RING_OF_FIRE:
                         {
-                            events.ScheduleEvent(EVENT_UNSUMMON, 6000);
+                            events.ScheduleEvent(EVENT_UNSUMMON, 9000);
                             Unit* target = nullptr;
                             std::list<Unit*> units;
-                            Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
 
+                            Map::PlayerList const& PlayerList = me->GetMap()->GetPlayers();
                             if (!PlayerList.isEmpty())
-                            {
                                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                                {
-                                    Player* plr = i->getSource();
-                                    if( !plr)
-                                        continue;
-                                    if (plr->isAlive() && !plr->isGameMaster())
-                                        units.push_back(plr);
-                                }
-                            }
+                                    if (Player* plr = i->getSource())
+                                        if (plr->isAlive() && !plr->isGameMaster())
+                                            units.push_back(plr);
+
                             if (units.empty())
                                 return;
-                            std::list<Unit*>::iterator itr = units.begin();
-                            std::advance(itr, units.size() - 1);
-                            target = *itr;
+
+                            target = Trinity::Containers::SelectRandomContainerElement(units);
                             if (!target)
                                 return;
-                            me->GetMotionMaster()->MoveFollow(target, 6.0f, frand(0, 2 * M_PI));
+
+                            me->GetMotionMaster()->MovePoint(0, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
+                            point = 0.0f;
                             _x = target->GetPositionX();
                             _y = target->GetPositionY();
-                            point = 1.f;
-
-                            float x = _x + 5.0f * cos(0);
-                            float y = _y + 5.0f * sin(0);
-                            me->SummonCreature(CREATURE_RING_OF_FIRE, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()));
-                            events.ScheduleEvent(EVENT_SUMMON_RING_TRIGGER, 400);
+                            events.ScheduleEvent(EVENT_SUMMON_RING_TRIGGER, 100);
+                            break;
                         }
-                        break;
-                    case EVENT_UNSUMMON:
-                        Reset();
-                        break;
-                    case EVENT_SUMMON_RING_TRIGGER:
+                        case EVENT_UNSUMMON:
+                            Reset();
+                            break;
+                        case EVENT_SUMMON_RING_TRIGGER:
                         {
-                            if (point == 21)
+                            if (point >= 11)
                             {
-                                TempSummon* tmp = me->SummonCreature(CREATURE_RING_OF_FIRE, _x, _y, me->GetMap()->GetHeight(0, _x, _y, me->GetPositionZ()));
-                                if (tmp)
+                                if (TempSummon* tmp = me->SummonCreature(CREATURE_RING_OF_FIRE, _x, _y, me->GetMap()->GetHeight(0, _x, _y, me->GetPositionZ()), 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10000))
                                 {
                                     tmp->RemoveAura(SPELL_RING_OF_FIRE_0);
                                     tmp->CastSpell(tmp, SPELL_RING_OF_FIRE_1, false);
                                 }
                                 return;
                             }
-                            float x = _x + 5.0f * cos(point * 2 * M_PI / 20);
-                            float y = _y + 5.0f * sin(point * 2 * M_PI / 20);
-                            me->SummonCreature(CREATURE_RING_OF_FIRE, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()));
-                            point++;
-                            if (point <= 21)
-                                events.ScheduleEvent(EVENT_SUMMON_RING_TRIGGER, 400);
+
+                            float x = _x + 5.0f * cos(point * M_PI / 5);
+                            float y = _y + 5.0f * sin(point * M_PI / 5);
+                            me->SummonCreature(CREATURE_RING_OF_FIRE, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()), 0.0f, TEMPSUMMON_TIMED_OR_DEAD_DESPAWN, 10000);
+                            ++point;
+                            events.ScheduleEvent(EVENT_SUMMON_RING_TRIGGER, 400);
+                            break;
                         }
-                        break;
                     }
                 }
             }
         };
 };
 
-class mob_ring_of_fire : public CreatureScript
+class OnlyTriggerInFrontPredicate
 {
     public:
-        mob_ring_of_fire() : CreatureScript("mob_ring_of_fire") { }
+        OnlyTriggerInFrontPredicate(Unit* caster) : _caster(caster) {}
 
-        CreatureAI* GetAI(Creature* creature) const
+        bool operator()(WorldObject* target)
         {
-            return new mob_ring_of_fire_AI(creature);
+            return target->GetEntry() != 59481 || !_caster->isInFront(target, M_PI / 5) || target->GetGUID() == _caster->GetGUID();
         }
 
-        enum eSpells
-        {
-            SPELL_RING_OF_FIRE_0 = 119544,
-            SPELL_RING_OF_FIRE_1 = 119590,
-        };
-
-        struct mob_ring_of_fire_AI : public ScriptedAI
-        {
-            mob_ring_of_fire_AI(Creature* creature) : ScriptedAI(creature)
-            {
-                me->setFaction(14);
-                me->SetReactState(REACT_PASSIVE);
-                me->AddAura(SPELL_RING_OF_FIRE_0, me);
-                me->DespawnOrUnsummon(10000);
-            }
-        };
+    private:
+        Unit* _caster;
 };
 
-class boss_xin_the_weaponmaster : public CreatureScript
+class spell_dart : public SpellScriptLoader
 {
     public:
-        boss_xin_the_weaponmaster() : CreatureScript("boss_xin_the_weaponmaster") { }
+        spell_dart() : SpellScriptLoader("spell_dart") { }
 
-        CreatureAI* GetAI(Creature* creature) const
+        class spell_dart_SpellScript : public SpellScript
         {
-            return new boss_xin_the_weaponmaster_AI(creature);
-        }
+            PrepareSpellScript(spell_dart_SpellScript);
 
-        enum eBosses
-        {
-            BOSS_XIN_THE_WEAPONMASTER,
-        };
-
-        enum eEvents
-        {
-            EVENT_RING_OF_FIRE = 1,
-        };
-
-        struct boss_xin_the_weaponmaster_AI : public BossAI
-        {
-            boss_xin_the_weaponmaster_AI(Creature* creature) : BossAI(creature, BOSS_XIN_THE_WEAPONMASTER)
+            bool Validate(SpellInfo const* spell)
             {
+                return true;
             }
 
-            void EnterCombat(Unit* who)
+            // set up initial variables and check if caster is creature
+            // this will let use safely use ToCreature() casts in entire script
+            bool Load()
             {
-                events.ScheduleEvent(EVENT_RING_OF_FIRE, 3000);
+                return true;
             }
 
-            void UpdateAI(const uint32 diff)
+            void SelectTarget(std::list<WorldObject*>& targetList)
             {
-                if (!UpdateVictim())
+                if (!GetCaster())
                     return;
 
-                events.Update(diff);
-
-                if (me->HasUnitState(UNIT_STATE_CASTING))
-                    return;
-
-                while (uint32 eventId = events.ExecuteEvent())
+                if (targetList.empty())
                 {
-                    switch (eventId)
-                    {
-                    case EVENT_RING_OF_FIRE:
-                        if (me->GetInstanceScript())
-                            me->GetInstanceScript()->SetData(18, 0); //TYPE_ACTIVATE_ANIMATED_STAFF
-                        events.ScheduleEvent(EVENT_RING_OF_FIRE, 10000);
-                        break;
-                    }
+                    FinishCast(SPELL_FAILED_NO_VALID_TARGETS);
+                    return;
                 }
-                DoMeleeAttackIfReady();
+
+                //Select the two targets.
+                std::list<WorldObject*> targets = targetList;
+                targetList.remove_if(OnlyTriggerInFrontPredicate(GetCaster()));
+
+                //See if we intersect with any players.
+                for (auto object : targets)
+                    if (object->GetTypeId() == TYPEID_PLAYER)
+                        for (auto trigger : targetList)
+                            if (object->IsInBetween(GetCaster(), trigger, 2.0f))
+                            {
+                                const SpellInfo* damageSpell = sSpellMgr->GetSpellInfo(SPELL_THROW_DAMAGE, GetCaster()->GetMap()->GetDifficulty());
+                                GetCaster()->DealDamage(object->ToPlayer(), damageSpell->Effects[0].BasePoints, 0, SPELL_DIRECT_DAMAGE, SPELL_SCHOOL_MASK_NORMAL, damageSpell);
+                            }
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dart_SpellScript::SelectTarget, EFFECT_0, TARGET_SRC_CASTER);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dart_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dart_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_dart_SpellScript::SelectTarget, EFFECT_0, TARGET_UNIT_CONE_ENEMY_104);
             }
         };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dart_SpellScript();
+        }
+};
+
+class AngleFiler
+{
+    public:
+        AngleFiler(Unit* caster) : _caster(caster) {}
+
+        bool operator()(WorldObject* target)
+        {
+            return !_caster->isInFront(target, M_PI / 6);
+        }
+
+    private:
+        Unit* _caster;
 };
 
 void AddSC_boss_xin_the_weaponmaster()
 {
-    new spell_dart();
-    new mob_animated_staff();
-    new mob_ring_of_fire();
     new boss_xin_the_weaponmaster();
+    new mob_animated_staff();
+    new spell_dart();
 }

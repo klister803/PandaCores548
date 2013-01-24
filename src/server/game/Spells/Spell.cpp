@@ -3061,7 +3061,7 @@ void Spell::prepare(SpellCastTargets const* targets, constAuraEffectPtr triggere
             if (m_caster->GetGUID() != m_targets.GetObjectTargetGUID() && m_caster->GetTypeId() == TYPEID_UNIT)
                 m_caster->FocusTarget(this, m_targets.GetObjectTargetGUID());
 
-        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_GCD))
+        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_GCD) && result == SPELL_CAST_OK)
             TriggerGlobalCooldown();
 
         //item: first cast may destroy item and second cast causes crash
@@ -5084,7 +5084,7 @@ SpellCastResult Spell::CheckCast(bool strict)
         }
     }
 
-    if (!hasNonDispelEffect && !hasDispellableAura && dispelMask && !IsTriggered())
+    /*if (!hasNonDispelEffect && !hasDispellableAura && dispelMask && !IsTriggered())
     {
         if (Unit* target = m_targets.GetUnitTarget())
         {
@@ -5093,7 +5093,7 @@ SpellCastResult Spell::CheckCast(bool strict)
             if (dispelList.empty())
                 return SPELL_FAILED_NOTHING_TO_DISPEL;
         }
-    }
+    }*/
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {

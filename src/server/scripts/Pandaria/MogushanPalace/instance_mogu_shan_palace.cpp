@@ -7,98 +7,7 @@
 #include "ScriptMgr.h"
 #include "InstanceScript.h"
 #include "VMapFactory.h"
-
-enum eSpells
-{
-    //Kuai the brute
-    SPELL_COMBAT_SOUND_LOOP         = 126252,
-    SPELL_SHOCKWAVE                 = 119922,
-    SPELL_PICK_SHOCKWAVE_TARGET     = 120499,
-    SPELL_SHOCKWAVE_2               = 119929,
-    SPELL_SHOCKWAVE_3               = 119930,
-    SPELL_SHOCKWAVE_4               = 119931,
-    SPELL_SHOCKWAVE_5               = 119932,
-    SPELL_SHOCKWAVE_6               = 119933,
-    SPELL_GUARDIAN_TAUNT            = 85667,
-    //Ming the cunning
-    SPELL_LIGHTNING_BOLT            = 123654,
-    SPELL_WHIRLING_DERVISH          = 119981,
-    SPELL_MAGNETIC_FIELD            = 120100,
-    SPELL_MAGNETIC_FIELD_2          = 120101,
-    SPELL_MAGNETIC_FIELD_3          = 120099,
-    //Haiyan the unstoppable
-    SPELL_TRAUMATIC_BLOW            = 123655,
-    SPELL_CONFLAGRATE               = 120160,
-    SPELL_CONFLAGRATE_2             = 120167,
-    SPELL_CONFLAGRATE_3             = 120161,
-    SPELL_CONFLAGRATE_4             = 120201,
-    SPELL_METEOR                    = 120195,
-    SPELL_METEOR_2                  = 120194,
-    SPELL_METEOR_3                  = 120196,
-    //Xin trigger
-    SPELL_PING                      = 120510,
-    SPELL_MOGU_JUMP                 = 120444,
-    //Gurthan scrapper, harthak adept and kargesh grunt
-    SPELL_GRUNT_AURA                = 121746,
-    //Whirling dervish trigger
-    SPELL_WIRHLING_DERVISH_2        = 119982,
-    SPELL_WHIRLING_DERVISH_3        = 119994,
-    SPELL_THROW                     = 120087,
-    SPELL_THROW_2                   = 120035,
-};
-
-enum eCreatures
-{
-    //Boss
-    CREATURE_KUAI_THE_BRUTE                 = 61442,
-    CREATURE_MING_THE_CUNNING               = 61444,
-    CREATURE_HAIYAN_THE_UNSTOPPABLE         = 61445,
-    CREATURE_XIN_THE_WEAPONMASTER_TRIGGER   = 61884,
-    CREATURE_XIN_THE_WEAPONMASTER           = 61398,
-    //Trash
-    CREATURE_GURTHAN_SCRAPPER               = 61447,
-    CREATURE_HARTHAK_ADEPT                  = 61449,
-    CREATURE_KARGESH_GRUNT                  = 61450,
-    //Trigger
-    CREATURE_WHIRLING_DERVISH               = 61626,
-
-    CREATURE_GEKKAN                         = 61243,
-    CREATURE_GLINTROK_IRONHIDE              = 61337,
-    CREATURE_GLINTROK_SKULKER               = 61338,
-    CREATURE_GLINTROK_ORACLE                = 61339,
-    CREATURE_GLINTROK_HEXXER                = 61340,
-
-    //XIN THE WEAPONMASTER
-    CREATURE_ANIMATED_STAFF                 = 61433,
-};
-
-enum eTypes
-{
-    TYPE_MING_ATTACK,
-    TYPE_KUAI_ATTACK,
-    TYPE_HAIYAN_ATTACK,
-    TYPE_ALL_ATTACK,
-
-    TYPE_MING_RETIRED,
-    TYPE_KUAI_RETIRED,
-    TYPE_HAIYAN_RETIRED,
-
-    TYPE_WIPE_FIRST_BOSS,
-
-    TYPE_MING_INTRO,
-    TYPE_OUTRO_01,
-    TYPE_OUTRO_02,
-    TYPE_OUTRO_03,
-    TYPE_OUTRO_04,
-    TYPE_OUTRO_05,
-
-    TYPE_GET_ENTOURAGE_0, //14
-    TYPE_GET_ENTOURAGE_1, //15
-    TYPE_GET_ENTOURAGE_2, //16
-    TYPE_GET_ENTOURAGE_3, //17
-
-    TYPE_ACTIVATE_ANIMATED_STAFF, //18
-};
+#include "mogu_shan_palace.h"
 
 class instance_mogu_shan_palace : public InstanceMapScript
 {
@@ -140,6 +49,8 @@ public:
         ** Xin the weaponmaster.
         */
         std::list<uint64> animated_staffs;
+        std::list<uint64> animated_axes;
+        std::list<uint64> swordLauncherGuids;
         /*
         ** End of Xin the weaponmaster.
         */
@@ -216,11 +127,9 @@ public:
             {
                 for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
                 {
-                    Player* plr = i->getSource();
-                    if( !plr)
-                        continue;
-                    if (plr->isAlive() && !plr->isGameMaster())
-                        return false;
+                    if(Player* plr = i->getSource())
+                        if (plr->isAlive() && !plr->isGameMaster())
+                            return false;
                 }
             }
             return true;
@@ -230,15 +139,74 @@ public:
         {
             switch (type)
             {
-            case TYPE_ACTIVATE_ANIMATED_STAFF:
+                case TYPE_ACTIVATE_ANIMATED_STAFF:
                 {
-                    std::list<uint64>::iterator itr = animated_staffs.begin();
-                    std::advance(itr, animated_staffs.size() - 1);
-                    Creature* creature = instance->GetCreature(*itr);
-                    if (!creature)
-                        return;
-                    if (creature->GetAI())
-                        creature->GetAI()->DoAction(0); //ACTION_ACTIVATE
+                    if (Creature* creature = instance->GetCreature(Trinity::Containers::SelectRandomContainerElement(animated_staffs)))
+                        if (creature->GetAI())
+                            creature->GetAI()->DoAction(0); //ACTION_ACTIVATE
+                    break;
+                }
+                case TYPE_ACTIVATE_ANIMATED_AXE:
+                {
+                    for (auto guid : animated_axes)
+                    {
+                        if (Creature* creature = instance->GetCreature(guid))
+                        {
+                            if (data)
+                            {
+                                creature->AddAura(119373, creature); // Tourbillon
+                                creature->GetMotionMaster()->MoveRandom(50.0f);
+                            }
+                            else
+                            {
+                                creature->RemoveAurasDueToSpell(119373);
+                                creature->GetMotionMaster()->MoveTargetedHome();
+                            }
+                        }
+                    }
+                    break;
+                }
+                case TYPE_ACTIVATE_SWORD:
+                {
+                    Position center;
+                    center.Relocate(-4632.39f, -2613.20f, 22.0f);
+
+                    bool randPos = urand(0, 1);
+
+                    /*     Y
+                           -
+                       ***********
+                       -> 1 * 2 <-
+                     + *********** - X
+                       -> 3 * 4 <-
+                       ***********
+                           +         */
+
+                    for (auto itr: swordLauncherGuids)
+                    {
+                        bool mustActivate = false;
+
+                        if (Creature* launcher = instance->GetCreature(itr))
+                        {
+                            if (randPos) // Zone 2 & 3
+                            {
+                                if (launcher->GetPositionX() > center.GetPositionX() && launcher->GetPositionY() > center.GetPositionY()
+                                    || launcher->GetPositionX() < center.GetPositionX() && launcher->GetPositionY() < center.GetPositionY())
+                                    mustActivate = true;
+                            }
+                            else // Zone 1 & 4
+                            {
+                                if (launcher->GetPositionX() > center.GetPositionX() && launcher->GetPositionY() < center.GetPositionY()
+                                    || launcher->GetPositionX() < center.GetPositionX() && launcher->GetPositionY() > center.GetPositionY())
+                                    mustActivate = true;
+                            }
+
+                            if (data && mustActivate)
+                                launcher->AddAura(SPELL_THROW_AURA, launcher);
+                            else
+                                launcher->RemoveAurasDueToSpell(SPELL_THROW_AURA);
+                        }
+                    }
                 }
                 break;
             }
@@ -247,13 +215,20 @@ public:
         {
             switch (creature->GetEntry())
             {
-            case 59481:
-            case 61451:
-                creature->SetReactState(REACT_PASSIVE);
-                break;
-            case CREATURE_ANIMATED_STAFF:
-                animated_staffs.push_back(creature->GetGUID());
-                break;
+                case 59481:
+                    creature->SetReactState(REACT_PASSIVE);
+                    break;
+                case CREATURE_ANIMATED_STAFF:
+                    animated_staffs.push_back(creature->GetGUID());
+                    break;
+                case CREATURE_ANIMATED_AXE:
+                    animated_axes.push_back(creature->GetGUID());
+                    creature->SetReactState(REACT_PASSIVE);
+                    creature->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, 30316);
+                    break;
+                case CREATURE_LAUNCH_SWORD:
+                    swordLauncherGuids.push_back(creature->GetGUID());
+                    break;
             }
         }
 
@@ -263,16 +238,14 @@ public:
             {
                 switch (unit->ToCreature()->GetEntry())
                 {
-                case CREATURE_GLINTROK_IRONHIDE:
-                case CREATURE_GLINTROK_SKULKER:
-                case CREATURE_GLINTROK_ORACLE:
-                case CREATURE_GLINTROK_HEXXER:
+                    case CREATURE_GLINTROK_IRONHIDE:
+                    case CREATURE_GLINTROK_SKULKER:
+                    case CREATURE_GLINTROK_ORACLE:
+                    case CREATURE_GLINTROK_HEXXER:
                     {
-                        Creature* c = instance->GetCreature(gekkan);
-                        if (!c)
-                            return;
-                        if (c->GetAI())
-                            c->GetAI()->DoAction(0); //ACTION_ENTOURAGE_DIED
+                        if (Creature* c = instance->GetCreature(gekkan))
+                            if (c->GetAI())
+                                c->GetAI()->DoAction(0); //ACTION_ENTOURAGE_DIED
                     }
                     break;
                 }
@@ -282,21 +255,21 @@ public:
         {
             switch (creature->GetEntry())
             {
-            case CREATURE_GEKKAN:
-                gekkan = creature->GetGUID();
-                break;
-            case CREATURE_GLINTROK_IRONHIDE:
-                glintrok_ironhide = creature->GetGUID();
-                break;
-            case CREATURE_GLINTROK_SKULKER:
-                glintrok_skulker = creature->GetGUID();
-                break;
-            case CREATURE_GLINTROK_ORACLE:
-                glintrok_oracle = creature->GetGUID();
-                break;
-            case CREATURE_GLINTROK_HEXXER:
-                glintrok_hexxer = creature->GetGUID();
-                break;
+                case CREATURE_GEKKAN:
+                    gekkan = creature->GetGUID();
+                    break;
+                case CREATURE_GLINTROK_IRONHIDE:
+                    glintrok_ironhide = creature->GetGUID();
+                    break;
+                case CREATURE_GLINTROK_SKULKER:
+                    glintrok_skulker = creature->GetGUID();
+                    break;
+                case CREATURE_GLINTROK_ORACLE:
+                    glintrok_oracle = creature->GetGUID();
+                    break;
+                case CREATURE_GLINTROK_HEXXER:
+                    glintrok_hexxer = creature->GetGUID();
+                    break;
             }
         }
 
@@ -306,56 +279,44 @@ public:
             {
             case TYPE_OUTRO_05:
                 {
-                    Creature* haiyan = instance->GetCreature(haiyan_guid);
-                    if (!haiyan)
-                        return;
-                    if (haiyan->GetAI())
-                        haiyan->GetAI()->DoAction(1); //ACTION_OUTRO_02
+                    if (Creature* haiyan = instance->GetCreature(haiyan_guid))
+                        if (haiyan->GetAI())
+                            haiyan->GetAI()->DoAction(1); //ACTION_OUTRO_02
                 }
                 break;
             case TYPE_OUTRO_04:
                 {
-                    Creature* kuai = instance->GetCreature(kuai_guid);
-                    if (!kuai)
-                        return;
-                    if (kuai->GetAI())
-                        kuai->GetAI()->DoAction(3); //ACTION_OUTRO_02
+                    if (Creature* kuai = instance->GetCreature(kuai_guid))
+                        if (kuai->GetAI())
+                            kuai->GetAI()->DoAction(3); //ACTION_OUTRO_02
                 }
                 break;
             case TYPE_OUTRO_03:
                 {
-                    Creature* ming = instance->GetCreature(ming_guid);
-                    if (!ming)
-                        return;
-                    if (ming->GetAI())
-                        ming->GetAI()->DoAction(2); //ACTION_OUTRO_02
+                    if (Creature* ming = instance->GetCreature(ming_guid))
+                        if (ming->GetAI())
+                            ming->GetAI()->DoAction(2); //ACTION_OUTRO_02
                 }
                 break;
             case TYPE_OUTRO_02:
                 {
-                    Creature* haiyan = instance->GetCreature(haiyan_guid);
-                    if (!haiyan)
-                        return;
-                    if (haiyan->GetAI())
-                        haiyan->GetAI()->DoAction(0); //ACTION_OUTRO_01
+                    if (Creature* haiyan = instance->GetCreature(haiyan_guid))
+                        if (haiyan->GetAI())
+                            haiyan->GetAI()->DoAction(0); //ACTION_OUTRO_01
                 }
                 break;
             case TYPE_OUTRO_01:
                 {
-                    Creature* ming = instance->GetCreature(ming_guid);
-                    if (!ming)
-                        return;
-                    if (ming->GetAI())
-                        ming->GetAI()->DoAction(1); //ACTION_OUTRO_01
+                    if (Creature* ming = instance->GetCreature(ming_guid))
+                        if (ming->GetAI())
+                            ming->GetAI()->DoAction(1); //ACTION_OUTRO_01
                 }
                 break;
             case TYPE_MING_INTRO:
                 {
-                    Creature* ming = instance->GetCreature(ming_guid);
-                    if (!ming)
-                        return;
-                    if (ming->GetAI())
-                        ming->GetAI()->DoAction(0); //ACTION_INTRO
+                    if (Creature* ming = instance->GetCreature(ming_guid))
+                        if (ming->GetAI())
+                            ming->GetAI()->DoAction(0); //ACTION_INTRO
                 }
                 break;
             case TYPE_WIPE_FIRST_BOSS:

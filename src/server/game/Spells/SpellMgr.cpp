@@ -3514,6 +3514,11 @@ void SpellMgr::LoadSpellCustomAttr()
             case 120552:
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(16);
                 break;
+            case 119684:
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CONE_ENEMY_24;
+                spellInfo->Effects[0].TargetB = 0;
+                spellInfo->Effects[1].TargetA = TARGET_UNIT_CONE_ENEMY_24;
+                spellInfo->Effects[1].TargetB = 0;
             default:
                 break;
             }

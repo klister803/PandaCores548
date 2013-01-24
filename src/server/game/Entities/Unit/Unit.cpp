@@ -2876,7 +2876,7 @@ void Unit::_UpdateAutoRepeatSpell()
         return;
     }
 
-    // apply delay (Auto Shot (spellID 75) not affected)
+    // apply delay (Auto Shot - 75 not affected)
     if (m_AutoRepeatFirstCast && getAttackTimer(RANGED_ATTACK) < 500 && m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id != 75)
         setAttackTimer(RANGED_ATTACK, 500);
     m_AutoRepeatFirstCast = false;
@@ -2887,6 +2887,8 @@ void Unit::_UpdateAutoRepeatSpell()
         // Check if able to cast
         if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->CheckCast(true) != SPELL_CAST_OK)
         {
+            printf("CastResult : %u for SpellId : %u", m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->CheckCast(true), m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id);
+            printf("\n");
             InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
             return;
         }
