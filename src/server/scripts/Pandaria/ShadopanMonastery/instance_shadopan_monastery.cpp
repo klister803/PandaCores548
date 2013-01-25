@@ -132,7 +132,7 @@ public:
 
 };
 
-void AddSC_instance_gate_setting_sun()
+void AddSC_instance_shadopan_monastery()
 {
     new instance_shadopan_monastery();
 }

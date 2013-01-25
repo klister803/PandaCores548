@@ -617,7 +617,7 @@ void AddSC_instance_mogu_shan_palace();         // Mogu'Shan Palace
 void AddSC_boss_trial_of_the_king();
 void AddSC_boss_gekkan();
 void AddSC_boss_xin_the_weaponmaster();
-void AddSC_instance_gate_setting_sun();         // Shadopan Monastery
+void AddSC_instance_shadopan_monastery();       // Shadopan Monastery
 void AddSC_shadopan_monastery();
 
 // battlegrounds
@@ -1283,7 +1283,7 @@ void AddPandarieScripts()
     AddSC_boss_commander_rimok();
     AddSC_boss_raigonn();
     AddSC_boss_sha_of_anger();
-    AddSC_instance_gate_setting_sun();          // Shadopan Monastery
+    AddSC_instance_shadopan_monastery();          // Shadopan Monastery
     AddSC_shadopan_monastery();
 #endif
 }
