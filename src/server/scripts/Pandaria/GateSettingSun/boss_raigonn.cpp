@@ -567,17 +567,17 @@ class vehicle_artillery : public VehicleScript
                 {
                     if (Creature* weakSpot = pInstance->instance->GetCreature(pInstance->GetData64(NPC_WEAK_SPOT)))
                     {
-                        if (weakSpot->GetVehicle())
+                        if (weakSpot->GetVehicleKit())
                         {
-                            if (me->GetVehicle())
+                            if (me->GetVehicleKit())
                             {
-                                if (Unit* passenger = me->GetVehicle()->GetPassenger(0))
+                                if (Unit* passenger = me->GetVehicleKit()->GetPassenger(0))
                                 {
                                     passenger->ExitVehicle();
 
                                     const uint32 maxSeatCount = 2;
-                                    uint32 availableSeatCount = weakSpot->GetVehicle()->GetAvailableSeatCount();
-                                    weakSpot->GetVehicle()->AddPassenger(passenger, maxSeatCount - availableSeatCount);
+                                    uint32 availableSeatCount = weakSpot->GetVehicleKit()->GetAvailableSeatCount();
+                                    weakSpot->GetVehicleKit()->AddPassenger(passenger, maxSeatCount - availableSeatCount);
                                 }
                             }
                         }

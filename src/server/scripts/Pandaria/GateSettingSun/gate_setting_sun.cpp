@@ -172,12 +172,12 @@ class vehicle_artillery_to_wall : public VehicleScript
 
                 if (launchEventTimer <= diff)
                 {
-                    if (me->GetVehicle())
+                    if (me->GetVehicleKit())
                     {
-                        if (Unit* passenger = me->GetVehicle()->GetPassenger(0))
+                        if (Unit* passenger = me->GetVehicleKit()->GetPassenger(0))
                         {
                             passenger->ExitVehicle();
-                            passenger->GetMotionMaster()->MoveJump(1100.90f, 2304.58f, 381.23f, 20.0f, 10.0f);
+                            passenger->GetMotionMaster()->MoveJump(1100.90f, 2304.58f, 381.23f, 30.0f, 50.0f);
                         }
                     }
 
