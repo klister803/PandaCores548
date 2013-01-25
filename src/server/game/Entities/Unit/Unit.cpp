@@ -635,6 +635,19 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
             damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask);
     }
+    // Temporal Shield - 115610
+    if (victim->GetTypeId() == TYPEID_PLAYER && victim->HasAura(115610) && damage != 0)
+    {
+        int32 bp = damage;
+
+        // Temporal Ripples : Add remaining amount to the basepoints
+        if (victim->HasAura(115611))
+            bp += victim->GetRemainingPeriodicAmount(victim->GetGUID(), 115611, SPELL_AURA_PERIODIC_HEAL, 0);
+
+        bp /= 3;
+
+        victim->CastCustomSpell(victim, 115611, &bp, NULL, NULL, true);
+    }
 
     // Calculate Attack Power amount for Vengeance
     // Patch 4.3.2 : Vengeance is no longer triggered by receiving damage from other players
@@ -10397,6 +10410,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
     // No bonus healing for potion spells
     if (spellProto->SpellFamilyName == SPELLFAMILY_POTION)
+        return healamount;
+
+    // No bonus for Temporal Ripples
+    if (spellProto->Id == 115611)
         return healamount;
 
     float DoneTotalMod = 1.0f;
