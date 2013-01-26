@@ -68,6 +68,36 @@ enum MageSpells
     SPELL_MAGE_COMBUSTION_DOT                    = 83853,
     SPELL_MAGE_COMBUSTION_IMPACT                 = 118271,
     SPELL_MAGE_FROSTJAW                          = 102051,
+    SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE      = 114954,
+};
+
+// Nether Tempest - 114923
+class spell_mage_nether_tempest : public SpellScriptLoader
+{
+    public:
+        spell_mage_nether_tempest() : SpellScriptLoader("spell_mage_nether_tempest") { }
+
+        class spell_mage_nether_tempest_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_nether_tempest_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    if (Unit* newTarget = GetCaster()->SelectNearbyTarget(GetTarget(), 10.0f))
+                        GetCaster()->CastSpell(newTarget, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_nether_tempest_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_nether_tempest_AuraScript();
+        }
 };
 
 // Blazing Speed - 108843
@@ -961,6 +991,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_nether_tempest();
     new spell_mage_blazing_speed();
     new spell_mage_frostjaw();
     new spell_mage_combustion();

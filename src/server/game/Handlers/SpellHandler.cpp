@@ -638,7 +638,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             _player->RemoveAura(74434);
         }
     }
-    // Curse of Exhaustion - 18223 Curse of Exhaustion : Soulburn - 104242
+    // Curse of Exhaustion - 18223 and Curse of Exhaustion : Soulburn - 104242
     if (spellInfo->Id == 18223 && _player->HasAura(74434))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104223);
@@ -649,7 +649,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             _player->RemoveAura(74434);
         }
     }
-    // Soul Swap - 86121 Soul Swap : Exhale - 86213
+    // Soul Swap - 86121 and Soul Swap : Exhale - 86213
     if (spellInfo->Id == 86121 && _player->HasAura(86211))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(86213);
@@ -660,7 +660,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             _player->RemoveAura(86211);
         }
     }
-    // Soul Swap - 86121 Soul Swap : Soulburn - 119678
+    // Soul Swap - 86121 and Soul Swap : Soulburn - 119678
     if (spellInfo->Id == 86121 && _player->HasAura(74434))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(119678);
@@ -669,6 +669,36 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
             _player->RemoveAura(74434);
+        }
+    }
+    // Mage Bomb - 125430 and  Living Bomb - 44457
+    if (spellInfo->Id == 125430 && _player->HasSpell(44457))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(44457);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
+    // Mage Bomb - 125430 and Frost Bomb - 112948
+    else if (spellInfo->Id == 125430 && _player->HasSpell(112948))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112948);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
+    // Mage Bomb - 125430 and  Nether Tempest - 114923
+    else if (spellInfo->Id == 125430 && _player->HasSpell(114923))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(114923);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
         }
     }
 
