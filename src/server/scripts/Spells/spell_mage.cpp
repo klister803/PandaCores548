@@ -67,6 +67,76 @@ enum MageSpells
     SPELL_MAGE_PYROBLAST                         = 11366,
     SPELL_MAGE_COMBUSTION_DOT                    = 83853,
     SPELL_MAGE_COMBUSTION_IMPACT                 = 118271,
+    SPELL_MAGE_FROSTJAW                          = 102051,
+};
+
+// Blazing Speed - 108843
+class spell_mage_blazing_speed : public SpellScriptLoader
+{
+    public:
+        spell_mage_blazing_speed() : SpellScriptLoader("spell_mage_blazing_speed") { }
+
+        class spell_mage_blazing_speed_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_blazing_speed_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->RemoveMovementImpairingAuras();
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_blazing_speed_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_blazing_speed_SpellScript();
+        }
+};
+
+// Frostjaw - 102051
+class spell_mage_frostjaw : public SpellScriptLoader
+{
+    public:
+        spell_mage_frostjaw() : SpellScriptLoader("spell_mage_frostjaw") { }
+
+        class spell_mage_frostjaw_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_frostjaw_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->GetTypeId() == TYPEID_PLAYER)
+                        {
+                            if (AuraPtr frostjaw = target->GetAura(SPELL_MAGE_FROSTJAW, _player->GetGUID()))
+                            {
+                                // Only half time against players
+                                frostjaw->SetDuration(frostjaw->GetMaxDuration() / 2);
+                                frostjaw->SetMaxDuration(frostjaw->GetDuration());
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_frostjaw_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_frostjaw_SpellScript();
+        }
 };
 
 // Combustion - 11129
@@ -891,6 +961,8 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_blazing_speed();
+    new spell_mage_frostjaw();
     new spell_mage_combustion();
     new spell_mage_inferno_blast();
     new spell_mage_arcane_brilliance();
