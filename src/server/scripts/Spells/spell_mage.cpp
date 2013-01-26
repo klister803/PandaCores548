@@ -69,6 +69,7 @@ enum MageSpells
     SPELL_MAGE_COMBUSTION_IMPACT                 = 118271,
     SPELL_MAGE_FROSTJAW                          = 102051,
     SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE      = 114954,
+    SPELL_MAGE_LIVING_BOMB_TRIGGERED             = 44461,
 };
 
 // Nether Tempest - 114923
@@ -951,6 +952,7 @@ public:
     }
 };
 
+// Living Bomb - 44457
 class spell_mage_living_bomb : public SpellScriptLoader
 {
     public:
@@ -960,21 +962,14 @@ class spell_mage_living_bomb : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_living_bomb_AuraScript);
 
-            bool Validate(SpellInfo const* spell)
-            {
-                if (!sSpellMgr->GetSpellInfo(uint32(spell->Effects[EFFECT_1].CalcValue())))
-                    return false;
-                return true;
-            }
-
             void AfterRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
-                if (removeMode != AURA_REMOVE_BY_ENEMY_SPELL && removeMode != AURA_REMOVE_BY_EXPIRE)
+                if (removeMode != AURA_REMOVE_BY_DEATH && removeMode != AURA_REMOVE_BY_EXPIRE)
                     return;
 
                 if (Unit* caster = GetCaster())
-                    caster->CastSpell(GetTarget(), uint32(aurEff->GetAmount()), true, NULL, aurEff);
+                    caster->CastSpell(GetTarget(), SPELL_MAGE_LIVING_BOMB_TRIGGERED, true);
             }
 
             void Register()
