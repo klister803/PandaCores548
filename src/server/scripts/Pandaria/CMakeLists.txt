@@ -39,6 +39,7 @@ set(scripts_STAT_SRCS
   Pandaria/ShadopanMonastery/instance_shadopan_monastery.cpp
   Pandaria/ShadopanMonastery/shadopan_monastery.cpp
   Pandaria/ShadopanMonastery/shadopan_monastery.h
+  Pandaria/ShadopanMonastery/boss_gu_cloudstrike.cpp
 
   Pandaria/WanderingIsland/wanderingisland.cpp
 )
