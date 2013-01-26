@@ -531,7 +531,7 @@ public:
 
         boss_li_feiAI(Creature* creature) : ScriptedAI(creature)
         {
-            me->SetReactState(REACT_DEFENSIVE);  /* TODO: React state aggressive, attackable, reset*/
+             /* TODO: React state aggressive, attackable, reset*/
             events.ScheduleEvent(1, 2000);
         }
         void EnterCombat(Unit* unit)
@@ -582,26 +582,49 @@ public:
                     {
                     	updatePlayerList();
                         if(playersInvolved.size() == 0)
+                        {
+                            me->setFaction(35);
+                            me->SetHealth(me->GetMaxHealth());
+                            events.CancelEvent(2);
+                            events.CancelEvent(3);
+                            events.CancelEvent(4);
                             events.ScheduleEvent(1, 2000);
+                        }
                         else
                         {
                             me->setFaction(14);
+                            me->SetReactState(REACT_AGGRESSIVE);
                             events.ScheduleEvent(2, 5000); 
                             events.ScheduleEvent(3, 1000); 
                         }
                     }
                     break;
                     case 2:
-                    	me->CastSpell(me->getVictim(), 108958);
-                    	events.ScheduleEvent(2, 5000);
+                        if(playersInvolved.size() == 0)
+                        {
+                    	    me->CastSpell(me->getVictim(), 108958);
+                    	    events.ScheduleEvent(2, 5000);
+                        }
+                        else
+                            events.ScheduleEvent(1, 2000);
                     	break;
                     case 3:
-                    	me->CastSpell(me->getVictim(), 108936);
-                    	events.ScheduleEvent(4, 2500);
-                    	events.ScheduleEvent(3, 150000);
+                        if(playersInvolved.size() == 0)
+                        {
+                    	    me->CastSpell(me->getVictim(), 108936);
+                    	    events.ScheduleEvent(4, 2500);
+                    	    events.ScheduleEvent(3, 150000);
+                        }
+                        else
+                            events.ScheduleEvent(1, 2000);
                     	break;
                     case 4:
-                    	me->CastSpell(me->getVictim(), 108944);
+                        if(playersInvolved.size() == 0)
+                        {
+                    	    me->CastSpell(me->getVictim(), 108944);
+                        }
+                        else
+                            events.ScheduleEvent(1, 2000);
                     	break;
                 }
             }
