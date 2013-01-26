@@ -36,6 +36,10 @@ set(scripts_STAT_SRCS
   Pandaria/GateSettingSun/boss_commander_rimok.cpp
   Pandaria/GateSettingSun/boss_raigonn.cpp
 
+  Pandaria/ShadopanMonastery/instance_shadopan_monastery.cpp
+  Pandaria/ShadopanMonastery/shadopan_monastery.cpp
+  Pandaria/ShadopanMonastery/shadopan_monastery.h
+
   Pandaria/WanderingIsland/wanderingisland.cpp
 )
 

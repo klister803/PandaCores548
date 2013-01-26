@@ -200,6 +200,9 @@ public:
                 if (!playerTarget)
                     return;
 
+                if (!playerTarget->isAlive())
+                    return;
+
                 Creature* lastSpawnedGuard = SpawnedGUID == 0 ? NULL : GetSummonedGuard();
 
                 // prevent calling Unit::GetUnit at next MoveInLineOfSight call - speedup

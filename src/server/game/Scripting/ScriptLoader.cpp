@@ -598,26 +598,27 @@ void AddSC_terokkar_forest();
 void AddSC_zangarmarsh();
 
 // Pandaria
-void AddSC_instance_temple_of_jade_serpent(); // Temple of Jade Serpent
+void AddSC_instance_temple_of_jade_serpent();   // Temple of Jade Serpent
 void AddSC_boss_wise_mari();
 void AddSC_boss_lorewalker_stonestep();
 void AddSC_boss_liu_flameheat();
 void AddSC_boss_sha_of_doubt();
-void AddSC_instance_stormstout_brewery();     // The Stormstout Brewery
+void AddSC_instance_stormstout_brewery();       // The Stormstout Brewery
 void AddSC_stormstout_brewery();
 void AddSC_boss_ook_ook();
-void AddSC_instance_gate_setting_sun();       // Gate of the Setting Sun
+void AddSC_instance_gate_setting_sun();         // Gate of the Setting Sun
 void AddSC_gate_setting_sun();
 void AddSC_boss_saboteur_kiptilak();
 void AddSC_boss_striker_gadok();
 void AddSC_boss_commander_rimok();
 void AddSC_boss_raigonn();
 void AddSC_boss_sha_of_anger();
-//Mogu'Shan Palace
-void AddSC_instance_mogu_shan_palace();
+void AddSC_instance_mogu_shan_palace();         // Mogu'Shan Palace
 void AddSC_boss_trial_of_the_king();
 void AddSC_boss_gekkan();
 void AddSC_boss_xin_the_weaponmaster();
+void AddSC_instance_shadopan_monastery();       // Shadopan Monastery
+void AddSC_shadopan_monastery();
 
 // battlegrounds
 
@@ -1282,6 +1283,8 @@ void AddPandarieScripts()
     AddSC_boss_commander_rimok();
     AddSC_boss_raigonn();
     AddSC_boss_sha_of_anger();
+    AddSC_instance_shadopan_monastery();          // Shadopan Monastery
+    AddSC_shadopan_monastery();
 #endif
 }
 
