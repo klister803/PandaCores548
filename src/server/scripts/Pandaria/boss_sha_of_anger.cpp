@@ -30,6 +30,7 @@ enum eEvents
     EVENT_BERSERK=3,
     EVENT_DESPAWN=4,
     EVENT_SPAWN=5,
+    EVENT_UPDATE_RAGE=6,
 };
 
 enum eCreatures
@@ -57,22 +58,24 @@ public:
         int _cloudCount;
         int _maxTargetCount;
         uint8 _dominateMindCount;
+        uint32 timer;
+        bool phase1;
 
         void Reset()
         {
+            phase1 = true;
             _dominateMindCount = 5;
             _cloudCount = 10;
             _targetCount = 0;
             _maxTargetCount = 12;
-            me->MonsterYell("Give in to your anger." , LANG_UNIVERSAL,0);
+            Talk(3);
             events.Reset();
             _Reset();
         }
 
         void KilledUnit(Unit* u)
         {
-            me->MonsterYell("Extinguished!" , LANG_UNIVERSAL,0);
-            DoPlaySoundToSet(me,29001);
+            Talk(4);
         }
 
         void JustDied(Unit* u)
@@ -81,12 +84,12 @@ public:
 
         void EnterCombat(Unit* unit)
         {
-            me->MonsterYell("Yes, YES! Bring your rage to bear! Try to strike me down!" , LANG_UNIVERSAL,0);
-            DoPlaySoundToSet(me,28999);
-            events.ScheduleEvent(EVENT_GROWING_ANGER,2000);
+            Talk(5);
+            events.ScheduleEvent(EVENT_GROWING_ANGER,1500);
             events.ScheduleEvent(EVENT_SPAWN,5000);
             events.ScheduleEvent(EVENT_UNLEASHED_WRATH,52000);
             events.ScheduleEvent(EVENT_BERSERK,900000);
+            events.ScheduleEvent(EVENT_UPDATE_RAGE,1000);
         }
 
         void UpdateAI(const uint32 diff)
@@ -95,13 +98,13 @@ public:
                 return;
 
             events.Update(diff);
-
             while (uint32 eventId = events.ExecuteEvent())
             {
                 switch (eventId)
                 {
                 case EVENT_UNLEASHED_WRATH:
                     {
+                        phase1 = false;
                         for (uint8 i=0; i<10;i++)
                         {
                             Unit* target = SelectTarget(SELECT_TARGET_RANDOM);
@@ -109,14 +112,13 @@ public:
                             {
                                 target->CastSpell(target,SPELL_SEETHE,false);
                                 target->AddAura(SPELL_SEETHE_AURA,target);
-                            }
+                            } 
                         }
                         if (_targetCount < _maxTargetCount)
                         {
                             if (_targetCount == 0)
                             {
-                                DoPlaySoundToSet(me,29011);
-                                me->MonsterYell("My fury is UNLEASHED!", LANG_UNIVERSAL,0);
+                                Talk(0);
                             }
 
                             _targetCount++;
@@ -125,24 +127,24 @@ public:
                         else
                         {
                             events.ScheduleEvent(EVENT_UNLEASHED_WRATH, 50000);
+                            phase1 = true;
                             _targetCount = 0;
                         }
                     }
                     break;
                 case EVENT_GROWING_ANGER:
                     {
-                        DoPlaySoundToSet(me,29010);
-                        me->MonsterYell("Feed me with your ANGER!", LANG_UNIVERSAL,0);      
+                        Talk(1);     
                         for (uint8 i = 0; i < _dominateMindCount; i++)
                         {
-                            me->CastSpell(SelectTarget(SELECT_TARGET_RANDOM), SPELL_DOMINATE_MIND, false);
+                           me->CastSpell(SelectTarget(SELECT_TARGET_RANDOM), SPELL_DOMINATE_MIND, false);
                         }
                         events.ScheduleEvent(EVENT_GROWING_ANGER, 25000);
                     }
-                    break;   
+                    break;
                 case EVENT_SPAWN:
                     {
-                        me->MonsterYell("Feel your rage!", LANG_UNIVERSAL,0);      
+                        Talk(2);    
                         for (uint8 i=0; i<_cloudCount;i++)
                         {
                             Unit* target = SelectTarget(SELECT_TARGET_RANDOM);
@@ -156,6 +158,17 @@ public:
                         me->CastSpell(me,SPELL_BERSERK,false);
                     }
                     break;   
+                case EVENT_UPDATE_RAGE:
+                    {
+                        if(phase1)
+                            timer = timer + 2;
+                        else
+                            timer = timer - 2;
+
+                        me->SetPower(POWER_RAGE,timer);
+                        events.ScheduleEvent(EVENT_UPDATE_RAGE,1000);
+                    }
+                    break;
                 }
             }
             DoMeleeAttackIfReady();

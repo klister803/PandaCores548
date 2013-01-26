@@ -523,15 +523,12 @@ int Master::Run()
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "%s (worldserver-daemon)", _FULLVERSION);
     sLog->outInfo(LOG_FILTER_WORLDSERVER, "<Ctrl-C> to stop.\n");
 
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, " ______                       __");
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "/\\__  _\\       __          __/\\ \\__");
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "\\/_/\\ \\/ _ __ /\\_\\    ___ /\\_\\ \\, _\\  __  __");
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "   \\ \\ \\/\\`'__\\/\\ \\ /' _ `\\/\\ \\ \\ \\/ /\\ \\/\\ \\");
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "    \\ \\ \\ \\ \\/ \\ \\ \\/\\ \\/\\ \\ \\ \\ \\ \\_\\ \\ \\_\\ \\");
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "     \\ \\_\\ \\_\\  \\ \\_\\ \\_\\ \\_\\ \\_\\ \\__\\\\/`____ \\");
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "      \\/_/\\/_/   \\/_/\\/_/\\/_/\\/_/\\/__/ `/___/> \\");
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "                                 C O R E  /\\___/");
-    sLog->outInfo(LOG_FILTER_WORLDSERVER, "http://TrinityCore.org                    \\/__/\n");
+    sLog->outInfo(LOG_FILTER_WORLDSERVER, "       __          __     ______              ");
+    sLog->outInfo(LOG_FILTER_WORLDSERVER, "      / /___ _____/ /__  / ____/___  ________ ");
+    sLog->outInfo(LOG_FILTER_WORLDSERVER, " __  / / __ `/ __  / _ \\/ /   / __ \\/ ___/ _ \\");
+    sLog->outInfo(LOG_FILTER_WORLDSERVER, "/ /_/ / /_/ / /_/ /  __/ /___/ /_/ / /  /  __/");
+    sLog->outInfo(LOG_FILTER_WORLDSERVER, "\\____/\\__,_/\\__,_/\\___/\\____/\\____/_/   \\___/");
+    sLog->outInfo(LOG_FILTER_WORLDSERVER, "http://www.pandashan.com\n");
 
     /// worldserver PID file creation
     std::string pidfile = ConfigMgr::GetStringDefault("PidFile", "");

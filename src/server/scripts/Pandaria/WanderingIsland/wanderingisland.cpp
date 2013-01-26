@@ -23,31 +23,9 @@ class mob_tushui_trainee : public CreatureScript
             
             void EnterCombat(Unit* unit) { }
 
-            void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+            void DamageTaken(Unit* attacker, uint32& damage)
             {
-                if((me->GetHealth() - uiDamage)*100/me->GetMaxHealth() < 20)
-                {
-                    uiDamage = 0;
-                    me->SetHealth(1);
-                }
-            }
-
-            void UpdateAI(const uint32 diff)
-            {
-                //while (uint32 eventId = events.ExecuteEvent())
-                //{
-                //    if(eventId == 1) //on ne sais jamais :D
-                //    {
-                //        me->setFaction(2101);
-                //    }
-                //}
-                
-                if (!UpdateVictim())
-                    return;
-
-                DoMeleeAttackIfReady();
-                
-                if(me->GetHealthPct() < 20)
+                if (me->HealthBelowPctDamaged(5, damage))
                 {
                     if(me->getVictim() && me->getVictim()->GetTypeId() == TYPEID_PLAYER)
                         ((Player*)me->getVictim())->KilledMonsterCredit(54586, 0);
@@ -55,10 +33,16 @@ class mob_tushui_trainee : public CreatureScript
                     me->SetHealth(me->GetMaxHealth());
                     me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
                     me->setFaction(2101);
-                    me->ToCreature()->DespawnOrUnsummon(3000);
-                    //me->setFaction(7);
-                    //events.ScheduleEvent(1, 20000);
+                    me->DespawnOrUnsummon(3000);
                 }
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                DoMeleeAttackIfReady();
             }
         };
 };
@@ -83,26 +67,34 @@ public:
         }
         
         EventMap events;
-        
+        bool first;
+
         void EnterCombat(Unit* unit)
         {
-            events.ScheduleEvent(1, 11000);
-            events.ScheduleEvent(3, 5000);
+            Talk(0);
+            events.ScheduleEvent(1, 1000);
+            events.ScheduleEvent(3, 2000);
         }
         
         void Reset()
         {
+            first = true;
             me->SetReactState(REACT_DEFENSIVE);
             me->SetDisplayId(39755);
             me->setFaction(14); //mechant!
         }
         
-        void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+        void DamageTaken(Unit* attacker, uint32& damage)
         {
-            if(me->GetHealth() - uiDamage <= 1)
+            if (me->HealthBelowPctDamaged(5, damage))
             {
-                uiDamage = 0;
-                me->SetHealth(1);
+                me->SetDisplayId(39755);
+                if(me->getVictim() && me->getVictim()->GetTypeId() == TYPEID_PLAYER)
+                    ((Player*)me->getVictim())->KilledMonsterCredit(me->GetEntry(), 0);
+                me->CombatStop();
+                me->setFaction(2104);
+                me->SetHealth(me->GetMaxHealth());
+                me->DespawnOrUnsummon(3000);
             }
         }
         
@@ -123,11 +115,11 @@ public:
                         break;
                     case 3: //baffe
                         me->CastSpell(me->getVictim(), 119301, false);
-                        events.ScheduleEvent(3, 13000);
+                        events.ScheduleEvent(3, 3000);
                         break;
                     case 4: //attaque du faucon
                         me->CastSpell(me->getVictim(), 108935, false);
-                        events.ScheduleEvent(4, 25000);
+                        events.ScheduleEvent(4, 4000);
                         break;
                     case 5: //remechant
                         me->setFaction(14);
@@ -137,23 +129,13 @@ public:
             
             DoMeleeAttackIfReady();
             
-            if(me->GetHealthPct() <= 25)
+            if((me->GetHealthPct() <= 30)&&(first))
             {
+                first = false;
                 me->SetDisplayId(39796); //faucon
-                events.ScheduleEvent(4, 7000);
+                events.ScheduleEvent(4, 1000);
                 events.CancelEvent(3);
                 events.CancelEvent(1);
-            }
-            
-            if(me->GetHealthPct() <= 3)
-            {
-                me->SetDisplayId(39755);
-                if(me->getVictim() && me->getVictim()->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)me->getVictim())->KilledMonsterCredit(me->GetEntry(), 0);
-                me->CombatStop();
-                me->setFaction(2104);
-                me->SetHealth(me->GetMaxHealth());
-                events.ScheduleEvent(5, 20000);
             }
         }
     };
@@ -448,7 +430,7 @@ public:
                             {
                                 if(!plr->HasAura(116421))
                                     plr->CastSpell(plr, 116421);
-                                plr->ModifyPower(POWER_ALTERNATE_POWER, timer);
+                                plr->ModifyPower(POWER_ALTERNATE_POWER, timer/25);
                                 plr->SetMaxPower(POWER_ALTERNATE_POWER, 90);
                             }
                         }
@@ -544,68 +526,87 @@ public:
     
     struct boss_li_feiAI : public ScriptedAI
     {
+        EventMap events;
+        std::list<Player*> playersInvolved;
+
         boss_li_feiAI(Creature* creature) : ScriptedAI(creature)
         {
-            me->SetReactState(REACT_DEFENSIVE);
+            me->SetReactState(REACT_DEFENSIVE);  /* TODO: React state aggressive, attackable, reset*/
+            events.ScheduleEvent(1, 2000);
         }
-        
-        EventMap events;
-        
         void EnterCombat(Unit* unit)
         {
-            events.ScheduleEvent(1, 3000);
-            events.ScheduleEvent(2, 5000);
+        }
+
+        void updatePlayerList()
+        {
+            playersInvolved.clear();
+            
+            std::list<Player*> PlayerList;
+            Trinity::AnyPlayerInObjectRangeCheck checker(me, 50.0f);
+            Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, PlayerList, checker);
+            me->VisitNearbyWorldObject(50.0f, searcher);
+            for (std::list<Player*>::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
+                if(*itr && (*itr)->GetQuestStatus(29421) == QUEST_STATUS_INCOMPLETE)
+                    playersInvolved.push_back(*itr);
         }
         
-        void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
+        void DamageTaken(Unit* attacker, uint32& damage)
         {
-            if(me->GetHealth() - uiDamage <= 1)
+            if (me->HealthBelowPctDamaged(10, damage))
             {
-                uiDamage = 0;
-                me->SetHealth(1);
+                        me->CombatStop();
+                        me->setFaction(35);
+                        me->SetHealth(me->GetMaxHealth());
+                        events.ScheduleEvent(1, 10000);
+                        events.CancelEvent(2);
+                        events.CancelEvent(3);
+                        events.CancelEvent(4);
+                        updatePlayerList();
+                        for(std::list<Player*>::iterator itr = playersInvolved.begin(); itr != playersInvolved.end(); itr++)
+                        {
+                            (*itr)->KilledMonsterCredit(54734, 0);
+                        }
             }
         }
         
         void UpdateAI(const uint32 diff)
         {
-            if (!UpdateVictim())
-                return;
-            
             events.Update(diff);
             
             while (uint32 eventId = events.ExecuteEvent())
             {
                 switch(eventId)
                 {
-                    case 1:
-                    	me->CastSpell(me->getVictim(), 108958);
-                    	events.ScheduleEvent(1, 5000);
-                    	break;
+                    case 1: //Begin script if playersInvolved is not empty
+                    {
+                    	updatePlayerList();
+                        if(playersInvolved.size() == 0)
+                            events.ScheduleEvent(1, 2000);
+                        else
+                        {
+                            me->setFaction(14);
+                            events.ScheduleEvent(2, 5000); 
+                            events.ScheduleEvent(3, 1000); 
+                        }
+                    }
+                    break;
                     case 2:
-                    	me->CastSpell(me->getVictim(), 108936);
-                    	events.ScheduleEvent(3, 2500);
-                    	events.ScheduleEvent(2, 150000);
+                    	me->CastSpell(me->getVictim(), 108958);
+                    	events.ScheduleEvent(2, 5000);
                     	break;
                     case 3:
-                    	me->CastSpell(me->getVictim(), 108944);
+                    	me->CastSpell(me->getVictim(), 108936);
+                    	events.ScheduleEvent(4, 2500);
+                    	events.ScheduleEvent(3, 150000);
                     	break;
                     case 4:
-                    	me->Kill(me);
+                    	me->CastSpell(me->getVictim(), 108944);
                     	break;
                 }
             }
             
             DoMeleeAttackIfReady();
-            
-            if(me->GetHealthPct() <= 10)
-            {
-                if(me->getVictim() && me->getVictim()->GetTypeId() == TYPEID_PLAYER)
-                    ((Player*)me->getVictim())->KilledMonsterCredit(me->GetEntry(), 0);
-                me->CombatStop();
-                me->setFaction(7);
-                me->SetHealth(me->GetMaxHealth());
-                events.ScheduleEvent(4, 20000);
-            }
         }
     };
 };

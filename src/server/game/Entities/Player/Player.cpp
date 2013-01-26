@@ -668,6 +668,12 @@ void KillRewarder::Reward()
             _RewardPlayer(_killer, false);
     }
 
+    // Hack fix Blazing Speed
+    if (_killer->getClass() == CLASS_MAGE && _killer->HasSpell(108843))
+        if (_killer->isHonorOrXPTarget(_victim))
+            _killer->CastSpell(_killer, 113853, true); // Blazing Speed aurastate
+
+
     // 5. Credit instance encounter.
     // 6. Update guild achievements.
     if (Creature* victim = _victim->ToCreature())
@@ -1609,6 +1615,20 @@ void Player::Update(uint32 p_time)
         _LoadStore();
         m_Store = true;
     }
+
+    // Zone Skip Update
+	if (sObjectMgr->IsSkipZone(GetZoneId()))
+	{
+		_skipCount++;
+		_skipDiff += p_time;
+
+		if (_skipCount < sObjectMgr->GetSkipUpdateCount())
+			return;
+
+		p_time = _skipDiff;
+		_skipCount = 0;
+		_skipDiff = 0;
+	}
 
     // undelivered mail
     if (m_nextMailDelivereTime && m_nextMailDelivereTime <= time(NULL))

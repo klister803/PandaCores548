@@ -271,6 +271,10 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _isWalkingBeforeCharm = false;
 
     SetEclipsePower(0); // Not sure of 0
+
+    // Area Skip Update
+    _skipCount = 0;
+    _skipDiff = 0;
 }
 
 ////////////////////////////////////////////////////////////
@@ -630,6 +634,19 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
     {
         if (victim && victim->ToPlayer() && victim->getClass() == CLASS_MONK)
             damage = victim->CalcStaggerDamage(victim->ToPlayer(), damage, damagetype, damageSchoolMask);
+    }
+    // Temporal Shield - 115610
+    if (victim->GetTypeId() == TYPEID_PLAYER && victim->HasAura(115610) && damage != 0)
+    {
+        int32 bp = damage;
+
+        // Temporal Ripples : Add remaining amount to the basepoints
+        if (victim->HasAura(115611))
+            bp += victim->GetRemainingPeriodicAmount(victim->GetGUID(), 115611, SPELL_AURA_PERIODIC_HEAL, 0);
+
+        bp /= 3;
+
+        victim->CastCustomSpell(victim, 115611, &bp, NULL, NULL, true);
     }
 
     // Calculate Attack Power amount for Vengeance
@@ -2872,7 +2889,7 @@ void Unit::_UpdateAutoRepeatSpell()
         return;
     }
 
-    // apply delay (Auto Shot (spellID 75) not affected)
+    // apply delay (Auto Shot - 75 not affected)
     if (m_AutoRepeatFirstCast && getAttackTimer(RANGED_ATTACK) < 500 && m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id != 75)
         setAttackTimer(RANGED_ATTACK, 500);
     m_AutoRepeatFirstCast = false;
@@ -7689,21 +7706,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
                     }
                 }
                 break;
-            case SPELLFAMILY_MAGE:
-                if (auraSpellInfo->SpellIconID == 2127)     // Blazing Speed
-                {
-                    switch (auraSpellInfo->Id)
-                    {
-                        case 31641:  // Rank 1
-                        case 31642:  // Rank 2
-                            trigger_spell_id = 31643;
-                            break;
-                        default:
-                            sLog->outError(LOG_FILTER_UNITS, "Unit::HandleProcTriggerSpell: Spell %u miss posibly Blazing Speed", auraSpellInfo->Id);
-                            return false;
-                    }
-                }
-                break;
             case SPELLFAMILY_WARRIOR:
                 if (auraSpellInfo->Id == 50421)             // Scent of Blood
                 {
@@ -7966,6 +7968,16 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Blazing Speed
+        case 113857:
+        {
+            int32 health = GetHealth();
+
+            if (damage < 0 || damage < (health / 50))
+                return false;
+
+            break;
+        }
         // Enrage
         case 13046:
         {
@@ -10391,6 +10403,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
     // No bonus healing for potion spells
     if (spellProto->SpellFamilyName == SPELLFAMILY_POTION)
+        return healamount;
+
+    // No bonus for Temporal Ripples
+    if (spellProto->Id == 115611)
         return healamount;
 
     float DoneTotalMod = 1.0f;
@@ -14113,7 +14129,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     }
 
     // Hack Fix Ice Floes - Drop charges
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(108839) && procSpell && procSpell->Id != 108839)
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(108839) && procSpell && procSpell->Id != 108839 && procSpell->CalcCastTime() != 0 && !isVictim && !(procExtra & PROC_EX_INTERNAL_DOT))
     {
         AuraApplication* aura = GetAuraApplication(108839, GetGUID());
         if (aura)

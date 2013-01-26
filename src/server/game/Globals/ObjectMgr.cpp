@@ -47,6 +47,7 @@
 #include "PoolMgr.h"
 #include "DB2Structure.h"
 #include "DB2Stores.h"
+#include "Configuration/Config.h"
 
 ScriptMapMap sQuestEndScripts;
 ScriptMapMap sQuestStartScripts;
@@ -237,7 +238,7 @@ bool SpellClickInfo::IsFitToRequirements(Unit const* clicker, Unit const* clicke
 ObjectMgr::ObjectMgr(): _auctionId(1), _equipmentSetGuid(1),
     _itemTextId(1), _mailId(1), _hiPetNumber(1), _voidItemId(1), _hiCharGuid(1),
     _hiCreatureGuid(1), _hiPetGuid(1), _hiVehicleGuid(1), _hiItemGuid(1),
-    _hiGoGuid(1), _hiDoGuid(1), _hiCorpseGuid(1), _hiMoTransGuid(1)
+    _hiGoGuid(1), _hiDoGuid(1), _hiCorpseGuid(1), _hiMoTransGuid(1), _skipUpdateCount(1)
 {}
 
 ObjectMgr::~ObjectMgr()
@@ -8812,4 +8813,27 @@ VehicleAccessoryList const* ObjectMgr::GetVehicleAccessoryList(Vehicle* veh) con
     if (itr != _vehicleTemplateAccessoryStore.end())
         return &itr->second;
     return NULL;
+}
+
+void ObjectMgr::LoadSkipUpdateZone()
+{
+	skipData.clear();
+
+	_skipUpdateCount = ConfigMgr::GetIntDefault("ZoneSkipUpdate.count", 1);
+
+	QueryResult result = WorldDatabase.PQuery("SELECT zone FROM zone_skip_update");
+	if (!result)
+		return;
+
+	uint32 count = 0;
+
+	do
+	{
+		Field* fields = result->Fetch();
+		uint32 zoneId = fields[0].GetUInt32();
+		skipData[zoneId] = true;
+		count++;
+	} while (result->NextRow());
+
+	 sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u zone skip update.", count);
 }

@@ -179,19 +179,9 @@ public:
                 }
                 case DATA_RAIGONN:
                 {
-                    if (state == IN_PROGRESS)
-                    {
-                        for (auto itr: artilleryGUIDs)
-                            if (Creature* artillery = instance->GetCreature(itr))
-                                artillery->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    }
-                    else
-                    {
-                        for (auto itr: artilleryGUIDs)
-                            if (Creature* artillery = instance->GetCreature(itr))
-                                artillery->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
-                    }
-
+                    for (auto itr: artilleryGUIDs)
+                        if (Creature* artillery = instance->GetCreature(itr))
+                            artillery->ApplyModFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE, state != IN_PROGRESS);
                     break;
                 }
                 default:
@@ -242,6 +232,9 @@ public:
                     if (dataStorage[type] == DONE)
                         return;
 
+                    if (GetBossState(DATA_GADOK) != DONE)
+                        return;
+
                     Map::PlayerList const &PlayerList = instance->GetPlayers();
                     for (Map::PlayerList::const_iterator it = PlayerList.begin(); it != PlayerList.end(); ++it)
                     {
@@ -249,6 +242,7 @@ public:
                         {
                             player->SendCinematicStart(CINEMATIC_SETTING_SUN);
                             player->SetPhaseMask(2, true);
+                            player->NearTeleportTo(1370.0f, 2283.6f, 402.328f, 2.70f);
                         }
                     }
 
