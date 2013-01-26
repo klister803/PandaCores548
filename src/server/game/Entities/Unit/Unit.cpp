@@ -2900,8 +2900,6 @@ void Unit::_UpdateAutoRepeatSpell()
         // Check if able to cast
         if (m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->CheckCast(true) != SPELL_CAST_OK)
         {
-            printf("CastResult : %u for SpellId : %u", m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->CheckCast(true), m_currentSpells[CURRENT_AUTOREPEAT_SPELL]->m_spellInfo->Id);
-            printf("\n");
             InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
             return;
         }
