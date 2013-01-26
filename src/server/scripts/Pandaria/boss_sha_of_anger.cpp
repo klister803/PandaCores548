@@ -18,6 +18,7 @@ enum eSpells
     SPELL_ENDLESS_RAGE          = 119446,
     SPELL_BITTER_THOUGHTS       = 119601,
     SPELL_BERSERK               = 47008,
+    SPELL_DOMINATE_MIND_WARNING = 119622,
     SPELL_DOMINATE_MIND         = 119626,
     SPELL_CLOUD                 = 119446,
     SPELL_SEETHE_AURA           = 119487,
@@ -25,12 +26,13 @@ enum eSpells
 
 enum eEvents
 {
-    EVENT_GROWING_ANGER=1,
-    EVENT_UNLEASHED_WRATH=2,
-    EVENT_BERSERK=3,
-    EVENT_DESPAWN=4,
-    EVENT_SPAWN=5,
-    EVENT_UPDATE_RAGE=6,
+    EVENT_GROWING_ANGER_WARNING = 1,
+    EVENT_GROWING_ANGER         = 2,
+    EVENT_UNLEASHED_WRATH       = 3,
+    EVENT_BERSERK               = 4,
+    EVENT_DESPAWN               = 5,
+    EVENT_SPAWN                 = 6,
+    EVENT_UPDATE_RAGE           = 7,
 };
 
 enum eCreatures
@@ -52,8 +54,8 @@ public:
     struct boss_sha_of_anger_AI : public BossAI
     {
         boss_sha_of_anger_AI(Creature* creature) : BossAI(creature, BOSS_SHA_OF_ANGER)
-        {
-        }
+        {}
+
         int _targetCount;
         int _cloudCount;
         int _maxTargetCount;
@@ -61,16 +63,23 @@ public:
         uint32 timer;
         bool phase1;
 
+        std::list<uint64> targetedDominationPlayerGuids;
+
         void Reset()
         {
+            me->setPowerType(POWER_RAGE);
+
             phase1 = true;
-            _dominateMindCount = 5;
-            _cloudCount = 10;
+            _dominateMindCount = 1;
+            _cloudCount = 3;
             _targetCount = 0;
             _maxTargetCount = 12;
+            timer = 0;
             Talk(3);
             events.Reset();
             _Reset();
+
+            targetedDominationPlayerGuids.clear();
         }
 
         void KilledUnit(Unit* u)
@@ -78,18 +87,24 @@ public:
             Talk(4);
         }
 
-        void JustDied(Unit* u)
-        {
-        }
-
         void EnterCombat(Unit* unit)
         {
             Talk(5);
-            events.ScheduleEvent(EVENT_GROWING_ANGER,1500);
+            events.ScheduleEvent(EVENT_GROWING_ANGER_WARNING, 19000);
             events.ScheduleEvent(EVENT_SPAWN,5000);
             events.ScheduleEvent(EVENT_UNLEASHED_WRATH,52000);
             events.ScheduleEvent(EVENT_BERSERK,900000);
             events.ScheduleEvent(EVENT_UPDATE_RAGE,1000);
+        }
+
+        void JustSummoned(Creature* summon)
+        {
+            // Clouds
+            if (summon->GetEntry() == 61523)
+            {
+                summon->CastSpell(summon, SPELL_BITTER_THOUGHTS, true);
+                summon->DespawnOrUnsummon(60000);
+            }
         }
 
         void UpdateAI(const uint32 diff)
@@ -102,17 +117,19 @@ public:
             {
                 switch (eventId)
                 {
-                case EVENT_UNLEASHED_WRATH:
+                    case EVENT_UNLEASHED_WRATH:
                     {
                         phase1 = false;
                         for (uint8 i=0; i<10;i++)
                         {
-                            Unit* target = SelectTarget(SELECT_TARGET_RANDOM);
-                            if (target->GetAuraCount(SPELL_SEETHE_AURA) < 6)
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                             {
-                                target->CastSpell(target,SPELL_SEETHE,false);
-                                target->AddAura(SPELL_SEETHE_AURA,target);
-                            } 
+                                if (target->GetAuraCount(SPELL_SEETHE_AURA) < 6)
+                                {
+                                    target->CastSpell(target,SPELL_SEETHE,false);
+                                    target->AddAura(SPELL_SEETHE_AURA,target);
+                                }
+                            }
                         }
                         if (_targetCount < _maxTargetCount)
                         {
@@ -130,35 +147,42 @@ public:
                             phase1 = true;
                             _targetCount = 0;
                         }
+
+                        break;
                     }
-                    break;
-                case EVENT_GROWING_ANGER:
+                    case EVENT_GROWING_ANGER_WARNING:
                     {
-                        Talk(1);     
-                        for (uint8 i = 0; i < _dominateMindCount; i++)
-                        {
-                           me->CastSpell(SelectTarget(SELECT_TARGET_RANDOM), SPELL_DOMINATE_MIND, false);
-                        }
-                        events.ScheduleEvent(EVENT_GROWING_ANGER, 25000);
+                        Talk(1);
+                        for (uint8 i = 0; i < _dominateMindCount; ++i)
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            {
+                                targetedDominationPlayerGuids.push_back(target->GetGUID());
+                                me->CastSpell(target, SPELL_DOMINATE_MIND_WARNING, true);
+                            }
+
+                        events.ScheduleEvent(EVENT_GROWING_ANGER, 6000);
+                        break;
                     }
-                    break;
-                case EVENT_SPAWN:
+                    case EVENT_GROWING_ANGER:
                     {
-                        Talk(2);    
-                        for (uint8 i=0; i<_cloudCount;i++)
-                        {
-                            Unit* target = SelectTarget(SELECT_TARGET_RANDOM);
-                            me->CastSpell(target, SPELL_CLOUD, false);
-                        }
+                        for (auto guid : targetedDominationPlayerGuids)
+                            if (Player* target = ObjectAccessor::GetPlayer(*me, guid))
+                                me->CastSpell(target, SPELL_DOMINATE_MIND, false);
+
+                        events.ScheduleEvent(EVENT_GROWING_ANGER_WARNING, 19000);
+                        break;
+                    }
+                    case EVENT_SPAWN:
+                    {
+                        Talk(2);
+                        for (uint8 i=0; i<_cloudCount;++i)
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                                me->CastSpell(target, SPELL_CLOUD, false);
+
                         events.ScheduleEvent(EVENT_SPAWN, 15000);
+                        break;
                     }
-                    break;
-                case EVENT_BERSERK:
-                    {
-                        me->CastSpell(me,SPELL_BERSERK,false);
-                    }
-                    break;   
-                case EVENT_UPDATE_RAGE:
+                    case EVENT_UPDATE_RAGE:
                     {
                         if(phase1)
                             timer = timer + 2;
@@ -167,8 +191,13 @@ public:
 
                         me->SetPower(POWER_RAGE,timer);
                         events.ScheduleEvent(EVENT_UPDATE_RAGE,1000);
+                        break;
                     }
-                    break;
+                    case EVENT_BERSERK:
+                    {
+                        me->CastSpell(me,SPELL_BERSERK,false);
+                        break;
+                    }
                 }
             }
             DoMeleeAttackIfReady();
@@ -176,63 +205,37 @@ public:
     };
 };
 
-class mob_cloud : public CreatureScript
+class spell_sha_of_anger_aggressive_behaviour : public SpellScriptLoader
 {
-public:
-    mob_cloud() : CreatureScript("mob_cloud") { }
+    public:
+        spell_sha_of_anger_aggressive_behaviour() : SpellScriptLoader("spell_sha_of_anger_aggressive_behaviour") { }
 
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new mob_cloud_AI(creature);
-    }
-
-    struct mob_cloud_AI : public ScriptedAI
-    {
-        mob_cloud_AI(Creature* creature) : ScriptedAI(creature)
+        class spell_sha_of_anger_aggressive_behaviour_AuraScript : public AuraScript
         {
-        }
-        EventMap events;
+            PrepareAuraScript(spell_sha_of_anger_aggressive_behaviour_AuraScript);
 
-        void JustDied(Unit* killer)
-        {
-        }
-
-        void Reset()
-        {
-            me->CastSpell(me,SPELL_BITTER_THOUGHTS,false);
-            events.ScheduleEvent(EVENT_DESPAWN, 60000);
-        }
-
-        void EnterCombat(Unit* u)
-        {
-        }
-
-        void UpdateAI(const uint32 diff)
-        {
-            if (!UpdateVictim())
-                return;
-
-
-            events.Update(diff);
-
-            while (uint32 eventId = events.ExecuteEvent())
+            void HandlePeriodicTick(constAuraEffectPtr /*aurEff*/)
             {
-                switch (eventId)
-                {
-                case EVENT_DESPAWN:
-                    {
-                        me->DespawnOrUnsummon();
-                    }
-                    break;
-                }
+                PreventDefaultAction();
+                if (Unit* target = GetTarget())
+                    if (target->GetHealthPct() < 50.0f)
+                        this->Remove(AURA_REMOVE_BY_DEFAULT);
             }
-            DoMeleeAttackIfReady();
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_of_anger_aggressive_behaviour_AuraScript::HandlePeriodicTick, EFFECT_5, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_of_anger_aggressive_behaviour_AuraScript();
         }
-    };
 };
 
 void AddSC_boss_sha_of_anger()
 {
     new boss_sha_of_anger();
-    new mob_cloud();
+    new spell_sha_of_anger_aggressive_behaviour();
 }
