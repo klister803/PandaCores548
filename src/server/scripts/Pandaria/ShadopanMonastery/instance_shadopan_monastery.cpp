@@ -36,6 +36,8 @@ public:
         uint64 shaViolenceGuid;
         uint64 taranZhuGuid;
 
+        uint64 azureSerpentGuid;
+
         uint32 dataStorage[MAX_DATA];
 
         instance_shadopan_monastery_InstanceMapScript(Map* map) : InstanceScript(map)
@@ -51,6 +53,8 @@ public:
             shaViolenceGuid         = 0;
             taranZhuGuid            = 0;
 
+            azureSerpentGuid        = 0;
+
             memset(dataStorage, 0, MAX_DATA * sizeof(uint32));
         }
 
@@ -62,6 +66,8 @@ public:
                 case NPC_MASTER_SNOWDRIFT:  masterSnowdriftGuid = creature->GetGUID();  return;
                 case NPC_SHA_VIOLENCE:      shaViolenceGuid     = creature->GetGUID();  return;
                 case NPC_TARAN_ZHU:         taranZhuGuid        = creature->GetGUID();  return;
+
+                case NPC_AZURE_SERPENT:     azureSerpentGuid    = creature->GetGUID();  return;
             }
         }
 
@@ -124,6 +130,8 @@ public:
                 case NPC_MASTER_SNOWDRIFT:  return masterSnowdriftGuid;
                 case NPC_SHA_VIOLENCE:      return shaViolenceGuid;
                 case NPC_TARAN_ZHU:         return taranZhuGuid;
+
+                case NPC_AZURE_SERPENT:     return azureSerpentGuid;
             }
 
             return 0;
