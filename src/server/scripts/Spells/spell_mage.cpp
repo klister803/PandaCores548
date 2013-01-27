@@ -70,6 +70,39 @@ enum MageSpells
     SPELL_MAGE_FROSTJAW                          = 102051,
     SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE      = 114954,
     SPELL_MAGE_LIVING_BOMB_TRIGGERED             = 44461,
+    SPELL_MAGE_FROST_BOMB_TRIGGERED              = 113092,
+};
+
+// Frost Bomb - 112948
+class spell_mage_frost_bomb : public SpellScriptLoader
+{
+    public:
+        spell_mage_frost_bomb() : SpellScriptLoader("spell_mage_frost_bomb") { }
+
+        class spell_mage_frost_bomb_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_frost_bomb_AuraScript);
+
+            void AfterRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                if (removeMode != AURA_REMOVE_BY_EXPIRE)
+                    return;
+
+                if (Unit* caster = GetCaster())
+                    caster->CastSpell(GetTarget(), SPELL_MAGE_FROST_BOMB_TRIGGERED, true);
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_mage_frost_bomb_AuraScript::AfterRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_frost_bomb_AuraScript();
+        }
 };
 
 // Nether Tempest - 114923
@@ -986,6 +1019,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_frost_bomb();
     new spell_mage_nether_tempest();
     new spell_mage_blazing_speed();
     new spell_mage_frostjaw();
