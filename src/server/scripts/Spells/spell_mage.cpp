@@ -67,6 +67,107 @@ enum MageSpells
     SPELL_MAGE_PYROBLAST                         = 11366,
     SPELL_MAGE_COMBUSTION_DOT                    = 83853,
     SPELL_MAGE_COMBUSTION_IMPACT                 = 118271,
+    SPELL_MAGE_FROSTJAW                          = 102051,
+    SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE      = 114954,
+    SPELL_MAGE_LIVING_BOMB_TRIGGERED             = 44461,
+};
+
+// Nether Tempest - 114923
+class spell_mage_nether_tempest : public SpellScriptLoader
+{
+    public:
+        spell_mage_nether_tempest() : SpellScriptLoader("spell_mage_nether_tempest") { }
+
+        class spell_mage_nether_tempest_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_nether_tempest_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    if (Unit* newTarget = GetCaster()->SelectNearbyTarget(GetTarget(), 10.0f))
+                        GetCaster()->CastSpell(newTarget, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_nether_tempest_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_nether_tempest_AuraScript();
+        }
+};
+
+// Blazing Speed - 108843
+class spell_mage_blazing_speed : public SpellScriptLoader
+{
+    public:
+        spell_mage_blazing_speed() : SpellScriptLoader("spell_mage_blazing_speed") { }
+
+        class spell_mage_blazing_speed_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_blazing_speed_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->RemoveMovementImpairingAuras();
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_blazing_speed_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_blazing_speed_SpellScript();
+        }
+};
+
+// Frostjaw - 102051
+class spell_mage_frostjaw : public SpellScriptLoader
+{
+    public:
+        spell_mage_frostjaw() : SpellScriptLoader("spell_mage_frostjaw") { }
+
+        class spell_mage_frostjaw_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_frostjaw_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->GetTypeId() == TYPEID_PLAYER)
+                        {
+                            if (AuraPtr frostjaw = target->GetAura(SPELL_MAGE_FROSTJAW, _player->GetGUID()))
+                            {
+                                // Only half time against players
+                                frostjaw->SetDuration(frostjaw->GetMaxDuration() / 2);
+                                frostjaw->SetMaxDuration(frostjaw->GetDuration());
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_frostjaw_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_frostjaw_SpellScript();
+        }
 };
 
 // Combustion - 11129
@@ -851,6 +952,7 @@ public:
     }
 };
 
+// Living Bomb - 44457
 class spell_mage_living_bomb : public SpellScriptLoader
 {
     public:
@@ -860,21 +962,14 @@ class spell_mage_living_bomb : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_living_bomb_AuraScript);
 
-            bool Validate(SpellInfo const* spell)
-            {
-                if (!sSpellMgr->GetSpellInfo(uint32(spell->Effects[EFFECT_1].CalcValue())))
-                    return false;
-                return true;
-            }
-
             void AfterRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
-                if (removeMode != AURA_REMOVE_BY_ENEMY_SPELL && removeMode != AURA_REMOVE_BY_EXPIRE)
+                if (removeMode != AURA_REMOVE_BY_DEATH && removeMode != AURA_REMOVE_BY_EXPIRE)
                     return;
 
                 if (Unit* caster = GetCaster())
-                    caster->CastSpell(GetTarget(), uint32(aurEff->GetAmount()), true, NULL, aurEff);
+                    caster->CastSpell(GetTarget(), SPELL_MAGE_LIVING_BOMB_TRIGGERED, true);
             }
 
             void Register()
@@ -891,6 +986,9 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_nether_tempest();
+    new spell_mage_blazing_speed();
+    new spell_mage_frostjaw();
     new spell_mage_combustion();
     new spell_mage_inferno_blast();
     new spell_mage_arcane_brilliance();

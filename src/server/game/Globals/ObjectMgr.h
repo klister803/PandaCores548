@@ -1165,6 +1165,8 @@ class ObjectMgr
         {
         	if (skipData.find(zone) != skipData.end())
         		return skipData[zone];
+
+            return false;
         }
 
         uint32 GetSkipUpdateCount()

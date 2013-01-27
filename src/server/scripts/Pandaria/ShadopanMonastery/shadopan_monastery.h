@@ -30,7 +30,11 @@ enum CreaturesIds
     NPC_GU_CLOUDSTRIKE          = 56747,
     NPC_MASTER_SNOWDRIFT        = 56541,
     NPC_SHA_VIOLENCE            = 56719,
-    NPC_TARAN_ZHU               = 56884
+    NPC_TARAN_ZHU               = 56884,
+
+    // Gu Cloudstrike
+    NPC_AZURE_SERPENT           = 56754,
+    NPC_GUARDIAN                = 59741
 };
 
 enum ObjectsIds

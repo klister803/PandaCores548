@@ -668,6 +668,12 @@ void KillRewarder::Reward()
             _RewardPlayer(_killer, false);
     }
 
+    // Hack fix Blazing Speed
+    if (_killer->getClass() == CLASS_MAGE && _killer->HasSpell(108843))
+        if (_killer->isHonorOrXPTarget(_victim))
+            _killer->CastSpell(_killer, 113853, true); // Blazing Speed aurastate
+
+
     // 5. Credit instance encounter.
     // 6. Update guild achievements.
     if (Creature* victim = _victim->ToCreature())
@@ -24838,18 +24844,13 @@ void Player::UpdateCharmedAI()
             }
     }
 
-    if (charmer->HasAura(119626) && charmer->HealthBelowPct(50))
-    {
-        charmer->RemoveAura(119626);
-    }
-
     if (!charmer->isInCombat())
         GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
     Unit* target = getVictim();
     if (!target || !charmer->IsValidAttackTarget(target))
     {
-        target = charmer->SelectNearestTarget();
+        target = charmer->SelectNearestPlayerNotGM();
         if (!target)
             return;
 

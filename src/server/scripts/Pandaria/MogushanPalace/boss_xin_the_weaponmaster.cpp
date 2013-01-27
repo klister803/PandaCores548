@@ -333,20 +333,6 @@ class spell_dart : public SpellScriptLoader
         }
 };
 
-class AngleFiler
-{
-    public:
-        AngleFiler(Unit* caster) : _caster(caster) {}
-
-        bool operator()(WorldObject* target)
-        {
-            return !_caster->isInFront(target, M_PI / 6);
-        }
-
-    private:
-        Unit* _caster;
-};
-
 void AddSC_boss_xin_the_weaponmaster()
 {
     new boss_xin_the_weaponmaster();

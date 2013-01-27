@@ -589,8 +589,8 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     // Ice Barrier
                     if (GetSpellInfo()->SpellFamilyFlags[1] & 0x1 && GetSpellInfo()->SpellFamilyFlags[2] & 0x8)
                     {
-                        // +87% from sp bonus
-                        DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 0.87f;
+                        // +330% from sp bonus
+                        DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 3.30f;
                     }
                     // Mage Ward
                     else if (GetSpellInfo()->SpellFamilyFlags[0] & 0x8 && GetSpellInfo()->SpellFamilyFlags[2] & 0x8)
@@ -2840,6 +2840,8 @@ void AuraEffect::HandleAuraMounted(AuraApplication const* aurApp, uint8 mode, bo
     if (apply)
     {
         uint32 creatureEntry = GetMiscValue();
+        uint32 displayId = 0;
+        uint32 vehicleId = 0;
 
         // Festive Holiday Mount
         if (target->HasAura(62061))
@@ -2850,30 +2852,28 @@ void AuraEffect::HandleAuraMounted(AuraApplication const* aurApp, uint8 mode, bo
                 creatureEntry = 15665;
         }
 
-        CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(creatureEntry);
-        if (!ci)
+        if (CreatureTemplate const* ci = sObjectMgr->GetCreatureTemplate(creatureEntry))
         {
-            sLog->outError(LOG_FILTER_SQL, "AuraMounted: `creature_template`='%u' not found in database (only need its modelid)", GetMiscValue());
-            return;
+            uint32 team = 0;
+            if (target->GetTypeId() == TYPEID_PLAYER)
+                team = target->ToPlayer()->GetTeam();
+
+            uint32 displayId = ObjectMgr::ChooseDisplayId(team, ci);
+            sObjectMgr->GetCreatureModelRandomGender(&displayId);
+
+            vehicleId = ci->VehicleId;
+
+            //some spell has one aura of mount and one of vehicle
+            for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                if (GetSpellInfo()->Effects[i].Effect == SPELL_EFFECT_SUMMON
+                    && GetSpellInfo()->Effects[i].MiscValue == GetMiscValue())
+                    displayId = 0;
         }
 
-        uint32 team = 0;
-        if (target->GetTypeId() == TYPEID_PLAYER)
-            team = target->ToPlayer()->GetTeam();
-
-        uint32 displayID = ObjectMgr::ChooseDisplayId(team, ci);
-        sObjectMgr->GetCreatureModelRandomGender(&displayID);
-
-        //some spell has one aura of mount and one of vehicle
-        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
-            if (GetSpellInfo()->Effects[i].Effect == SPELL_EFFECT_SUMMON
-                && GetSpellInfo()->Effects[i].MiscValue == GetMiscValue())
-                displayID = 0;
-
-        target->Mount(displayID, ci->VehicleId, GetMiscValue());
+        target->Mount(displayId, vehicleId, GetMiscValue());
 
         // cast speed aura
-        if (MountCapabilityEntry const* mountCapability = target->GetMountCapability(uint32(GetMiscValueB())))
+        if (MountCapabilityEntry const* mountCapability = sMountCapabilityStore.LookupEntry(GetAmount()))
             target->CastSpell(target, mountCapability->SpeedModSpell, true);
     }
     else
