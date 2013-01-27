@@ -591,7 +591,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
     // RandomProperty case
     if (itemProto->RandomProperty)
     {
-        uint32 randomPropId = GetItemEnchantMod(itemProto->RandomProperty);
+        uint32 randomPropId = GetItemEnchantMod(itemProto->RandomProperty, ENCHANTMENT_RANDOM_PROPERTY);
         ItemRandomPropertiesEntry const* random_id = sItemRandomPropertiesStore.LookupEntry(randomPropId);
         if (!random_id)
         {
@@ -604,7 +604,7 @@ int32 Item::GenerateItemRandomPropertyId(uint32 item_id)
     // RandomSuffix case
     else
     {
-        uint32 randomPropId = GetItemEnchantMod(itemProto->RandomSuffix);
+        uint32 randomPropId = GetItemEnchantMod(itemProto->RandomSuffix, ENCHANTMENT_RANDOM_SUFFIX);
         ItemRandomSuffixEntry const* random_id = sItemRandomSuffixStore.LookupEntry(randomPropId);
         if (!random_id)
         {
