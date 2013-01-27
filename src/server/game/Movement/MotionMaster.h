@@ -23,6 +23,7 @@
 #include <vector>
 #include "SharedDefines.h"
 #include "Object.h"
+#include <LockedVector.h>
 
 class MovementGenerator;
 class Unit;
@@ -189,7 +190,7 @@ class MotionMaster //: private std::stack<MovementGenerator *>
         void DirectExpire(bool reset);
         void DelayedExpire();
 
-        typedef std::vector<_Ty> ExpireList;
+        typedef ACE_Based::LockedVector<_Ty> ExpireList;
         ExpireList* _expList;
         _Ty Impl[MAX_MOTION_SLOT];
         int _top;
