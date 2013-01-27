@@ -725,7 +725,7 @@ class mob_mu_shiba : public CreatureScript
                     case 1:
                         me->CastSpell(me->getVictim(), SPELL_RAVAGE, false);
                         me->Attack(SelectTarget(SELECT_TARGET_RANDOM), false);
-                        events.ScheduleEvent(1, 6000);
+                        events.ScheduleEvent(1, 25000);
                         break;
                     }
                 }
