@@ -783,6 +783,13 @@ void Player::UpdateManaRegen()
         base_regen = base_regen + (base_regen * 6.25f);
         base_regen *= HastePct;
     }
+
+    // Invocation : Decrease your mana regen by 50%
+    if (HasAura(114003))
+    {
+        combat_regen *= 0.5f;
+        base_regen *= 0.5f;
+    }
     
     // Not In Combat : 2% of base mana + spirit_regen
     SetStatFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER, base_regen);

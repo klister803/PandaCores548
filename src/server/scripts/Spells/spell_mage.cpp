@@ -71,6 +71,50 @@ enum MageSpells
     SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE      = 114954,
     SPELL_MAGE_LIVING_BOMB_TRIGGERED             = 44461,
     SPELL_MAGE_FROST_BOMB_TRIGGERED              = 113092,
+    SPELL_MAGE_INVOKERS_ENERGY                   = 116257,
+    SPELL_MAGE_INVOCATION                        = 114003,
+    SPELL_MAGE_GLYPH_OF_EVOCATION                = 56380,
+};
+
+// Called by Evocation - 12051
+// Invocation - 114003
+class spell_mage_invocation : public SpellScriptLoader
+{
+    public:
+        spell_mage_invocation() : SpellScriptLoader("spell_mage_invocation") { }
+
+        class spell_mage_invocation_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_invocation_AuraScript);
+
+            void AfterRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                if (removeMode != AURA_REMOVE_BY_EXPIRE)
+                    return;
+
+                if (Unit* caster = GetCaster())
+                {
+                    if (caster->HasAura(SPELL_MAGE_INVOCATION))
+                    {
+                        caster->CastSpell(caster, SPELL_MAGE_INVOKERS_ENERGY, true);
+
+                        if (caster->HasAura(SPELL_MAGE_GLYPH_OF_EVOCATION))
+                            caster->HealBySpell(caster, sSpellMgr->GetSpellInfo(12051), caster->CountPctFromMaxHealth(40), false);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_mage_invocation_AuraScript::AfterRemove, EFFECT_0, SPELL_AURA_OBS_MOD_POWER, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_invocation_AuraScript();
+        }
 };
 
 // Frost Bomb - 112948
@@ -1019,6 +1063,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_invocation();
     new spell_mage_frost_bomb();
     new spell_mage_nether_tempest();
     new spell_mage_blazing_speed();
