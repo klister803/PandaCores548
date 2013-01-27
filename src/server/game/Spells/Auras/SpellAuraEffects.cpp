@@ -2858,7 +2858,7 @@ void AuraEffect::HandleAuraMounted(AuraApplication const* aurApp, uint8 mode, bo
             if (target->GetTypeId() == TYPEID_PLAYER)
                 team = target->ToPlayer()->GetTeam();
 
-            uint32 displayId = ObjectMgr::ChooseDisplayId(team, ci);
+            displayId = ObjectMgr::ChooseDisplayId(team, ci);
             sObjectMgr->GetCreatureModelRandomGender(&displayId);
 
             vehicleId = ci->VehicleId;

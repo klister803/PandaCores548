@@ -45,11 +45,11 @@ public:
         uint32 cinematicTimer;
         uint8 cinematicEventProgress;
 
-        std::vector<uint64> bombarderGuids;
-        std::vector<uint64> bombStalkerGuids;
-        std::vector<uint64> mantidBombsGUIDs;
-        std::vector<uint64> rimokAddGenetarorsGUIDs;
-        std::vector<uint64> artilleryGUIDs;
+        std::list<uint64> bombarderGuids;
+        std::list<uint64> bombStalkerGuids;
+        std::list<uint64> mantidBombsGUIDs;
+        std::list<uint64> rimokAddGenetarorsGUIDs;
+        std::list<uint64> artilleryGUIDs;
 
         uint32 dataStorage[MAX_DATA];
 
@@ -110,9 +110,14 @@ public:
             switch (creature->GetEntry())
             {
                 case NPC_KRITHUK_BOMBARDER:
-                    for (std::vector<uint64>::iterator it = bombarderGuids.begin(); it != bombarderGuids.end(); ++it)
+                    for (std::list<uint64>::iterator it = bombarderGuids.begin(); it != bombarderGuids.end(); ++it)
+                    {
                         if (*it == creature->GetGUID())
+                        {
                             bombarderGuids.erase(it);
+                            break;
+                        }
+                    }
                     break;
                 default:                                                                            return;
             }

@@ -189,7 +189,7 @@ public:
                         else
                             timer = timer - 2;
 
-                        me->SetPower(POWER_RAGE,timer);
+                        me->SetPower(POWER_RAGE,timer*10);
                         events.ScheduleEvent(EVENT_UPDATE_RAGE,1000);
                         break;
                     }
