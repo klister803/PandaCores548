@@ -59,6 +59,7 @@ class mob_xian_the_weaponmaster_trigger : public CreatureScript
             {
                 event_go = false;
                 me->GetMotionMaster()->MoveTargetedHome();
+                SetCanSeeEvenInPassiveMode(true);
             }
 
             void MoveInLineOfSight(Unit* who)
