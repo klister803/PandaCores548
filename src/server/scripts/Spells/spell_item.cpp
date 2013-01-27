@@ -2109,7 +2109,7 @@ class spell_item_bandage_q24944 : public SpellScriptLoader
                     target->SetFullHealth();
                     target->MonsterSay("Thank you my friend", LANG_UNIVERSAL, 0);
                     target->ForcedDespawn();
-                    caster->KilledMonsterCredit(NPC_WOUNDED_DEFENDER, 0);
+                    caster->KilledMonsterCredit(NPC_WITHDRAWN_SOUL, 0);
                 }
                                 
             }
