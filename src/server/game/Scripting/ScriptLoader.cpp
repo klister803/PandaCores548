@@ -620,6 +620,7 @@ void AddSC_boss_xin_the_weaponmaster();
 void AddSC_instance_shadopan_monastery();       // Shadopan Monastery
 void AddSC_shadopan_monastery();
 void AddSC_boss_gu_cloudstrike();
+void AddSC_boss_master_snowdrift();
 
 // battlegrounds
 
@@ -1287,6 +1288,7 @@ void AddPandarieScripts()
     AddSC_instance_shadopan_monastery();          // Shadopan Monastery
     AddSC_shadopan_monastery();
     AddSC_boss_gu_cloudstrike();
+    AddSC_boss_master_snowdrift();
 #endif
 }
 

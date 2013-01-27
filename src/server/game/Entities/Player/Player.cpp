@@ -24844,18 +24844,13 @@ void Player::UpdateCharmedAI()
             }
     }
 
-    if (charmer->HasAura(119626) && charmer->HealthBelowPct(50))
-    {
-        charmer->RemoveAura(119626);
-    }
-
     if (!charmer->isInCombat())
         GetMotionMaster()->MoveFollow(charmer, PET_FOLLOW_DIST, PET_FOLLOW_ANGLE);
 
     Unit* target = getVictim();
     if (!target || !charmer->IsValidAttackTarget(target))
     {
-        target = charmer->SelectNearestTarget();
+        target = charmer->SelectNearestPlayerNotGM();
         if (!target)
             return;
 

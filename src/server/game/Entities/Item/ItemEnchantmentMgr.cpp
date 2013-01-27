@@ -41,16 +41,18 @@ struct EnchStoreItem
 typedef std::vector<EnchStoreItem> EnchStoreList;
 typedef UNORDERED_MAP<uint32, EnchStoreList> EnchantmentStore;
 
-static EnchantmentStore RandomItemEnch;
+static EnchantmentStore RandomPropertyItemEnch;
+static EnchantmentStore RandomSuffixItemEnch;
 
 void LoadRandomEnchantmentsTable()
 {
     uint32 oldMSTime = getMSTime();
 
-    RandomItemEnch.clear();                                 // for reload case
+    RandomPropertyItemEnch.clear();                                 // for reload case
+    RandomSuffixItemEnch.clear();
 
     //                                                 0      1      2
-    QueryResult result = WorldDatabase.Query("SELECT entry, ench, chance FROM item_enchantment_template");
+    QueryResult result = WorldDatabase.Query("SELECT entry, ench, chance, type FROM item_enchantment_template");
 
     if (result)
     {
@@ -63,9 +65,15 @@ void LoadRandomEnchantmentsTable()
             uint32 entry = fields[0].GetUInt32();
             uint32 ench = fields[1].GetUInt32();
             float chance = fields[2].GetFloat();
+            uint32 type = fields[3].GetUInt32();
 
             if (chance > 0.000001f && chance <= 100.0f)
-                RandomItemEnch[entry].push_back(EnchStoreItem(ench, chance));
+            {
+            	if (type == ENCHANTMENT_RANDOM_SUFFIX)
+            		RandomSuffixItemEnch[entry].push_back(EnchStoreItem(ench, chance));
+            	else if (type == ENCHANTMENT_RANDOM_PROPERTY)
+            		RandomPropertyItemEnch[entry].push_back(EnchStoreItem(ench, chance));
+            }
 
             ++count;
         } while (result->NextRow());
@@ -76,7 +84,7 @@ void LoadRandomEnchantmentsTable()
         sLog->outError(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 Item Enchantment definitions. DB table `item_enchantment_template` is empty.");
 }
 
-uint32 GetItemEnchantMod(int32 entry)
+uint32 GetItemEnchantMod(int32 entry, uint32 type)
 {
     if (!entry)
         return 0;
@@ -84,8 +92,8 @@ uint32 GetItemEnchantMod(int32 entry)
     if (entry == -1)
         return 0;
 
-    EnchantmentStore::const_iterator tab = RandomItemEnch.find(entry);
-    if (tab == RandomItemEnch.end())
+    EnchantmentStore::const_iterator tab = type == ENCHANTMENT_RANDOM_PROPERTY ? RandomPropertyItemEnch.find(entry) : RandomSuffixItemEnch.find(entry) ;
+    if (tab == (type == ENCHANTMENT_RANDOM_PROPERTY ? RandomPropertyItemEnch.end() : RandomSuffixItemEnch.end()))
     {
         sLog->outError(LOG_FILTER_SQL, "Item RandomProperty / RandomSuffix id #%u used in `item_template` but it does not have records in `item_enchantment_template` table.", entry);
         return 0;

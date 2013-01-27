@@ -589,8 +589,8 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     // Ice Barrier
                     if (GetSpellInfo()->SpellFamilyFlags[1] & 0x1 && GetSpellInfo()->SpellFamilyFlags[2] & 0x8)
                     {
-                        // +87% from sp bonus
-                        DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 0.87f;
+                        // +330% from sp bonus
+                        DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 3.30f;
                     }
                     // Mage Ward
                     else if (GetSpellInfo()->SpellFamilyFlags[0] & 0x8 && GetSpellInfo()->SpellFamilyFlags[2] & 0x8)
@@ -2858,7 +2858,7 @@ void AuraEffect::HandleAuraMounted(AuraApplication const* aurApp, uint8 mode, bo
             if (target->GetTypeId() == TYPEID_PLAYER)
                 team = target->ToPlayer()->GetTeam();
 
-            uint32 displayId = ObjectMgr::ChooseDisplayId(team, ci);
+            displayId = ObjectMgr::ChooseDisplayId(team, ci);
             sObjectMgr->GetCreatureModelRandomGender(&displayId);
 
             vehicleId = ci->VehicleId;
