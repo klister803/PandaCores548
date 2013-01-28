@@ -1061,7 +1061,26 @@ enum SpellEffects
     SPELL_EFFECT_180                                = 180, // Unused (4.3.4)
     SPELL_EFFECT_UNLEARN_TALENT                     = 181,
     SPELL_EFFECT_182                                = 182,
-    TOTAL_SPELL_EFFECTS                             = 183
+    SPELL_EFFECT_183                                = 183,
+    SPELL_EFFECT_184                                = 184,
+    SPELL_EFFECT_185                                = 185,
+    SPELL_EFFECT_186                                = 186,
+    SPELL_EFFECT_187                                = 187,
+    SPELL_EFFECT_188                                = 188,
+    SPELL_EFFECT_189                                = 189,
+    SPELL_EFFECT_190                                = 190,
+    SPELL_EFFECT_191                                = 191,
+    SPELL_EFFECT_192                                = 192,
+    SPELL_EFFECT_193                                = 193,
+    SPELL_EFFECT_194                                = 194,
+    SPELL_EFFECT_195                                = 195,
+    SPELL_EFFECT_196                                = 196,
+    SPELL_EFFECT_197                                = 197,
+    SPELL_EFFECT_198                                = 198,
+    SPELL_EFFECT_199                                = 199,
+    SPELL_EFFECT_200                                = 200,
+    SPELL_EFFECT_201                                = 201,
+    TOTAL_SPELL_EFFECTS                             = 202
 };
 
 enum SpellCastResult
