@@ -1991,15 +1991,15 @@ struct SpellPowerEntry
     uint32    SpellId;                                      // 1
     //uint32    unk505                                      // 2
     uint32    powerType;                                    // 3
-    uint32    manaCost;
-    //uint32
-    //uint32
-    //uint32
-    //uint32
-    float ManaCostPercentage;
-    float manaPerSecond;
-    //uint32
-    //float unk;
+    uint32    manaCost;                                     // 4
+    //uint32                                                // 5
+    //uint32                                                // 6
+    //uint32                                                // 7
+    //uint32                                                // 8
+    float ManaCostPercentage;                               // 9
+    float manaPerSecond;                                    // 10
+    //uint32                                                // 11
+    //float unk;                                            // 12
 };
 
 struct SpellRuneCostEntry
@@ -2061,9 +2061,9 @@ struct SpellTargetRestrictionsEntry
 struct SpellReagentsEntry
 {
     //uint32    Id;                                           // 0        m_ID
-    int32     Reagent[MAX_SPELL_REAGENTS];                  // 54-61    m_reagent
-    uint32    ReagentCount[MAX_SPELL_REAGENTS];             // 62-69    m_reagentCount
-    //uint32 unk;
+    int32     Reagent[MAX_SPELL_REAGENTS];                  // 1-9      m_reagent
+    uint32    ReagentCount[MAX_SPELL_REAGENTS];             // 10-18    m_reagentCount
+    //uint32 unk;                                           // 19
 
 };
 
@@ -2093,8 +2093,8 @@ struct SpellScalingEntry
     int32     CastTimeMax;                                  // 2
     int32     CastTimeMaxLevel;                             // 3
     int32     ScalingClass;                                 // 4        (index * 100) + charLevel - 1 => gtSpellScaling.dbc
-    float     CoefBase;                                      // 5
-    uint32    CoefLevelBase;                                     // 6
+    float     CoefBase;                                     // 5
+    uint32    CoefLevelBase;                                // 6
     //uin32   unk505                                        // 7
     //uint32  unk505                                        // 8
 };
