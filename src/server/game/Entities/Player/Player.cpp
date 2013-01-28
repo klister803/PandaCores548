@@ -1617,7 +1617,7 @@ void Player::Update(uint32 p_time)
     }
 
     // Zone Skip Update
-	if (sObjectMgr->IsSkipZone(GetZoneId()))
+	if (sObjectMgr->IsSkipZone(GetZoneId()) || isAFK())
 	{
 		_skipCount++;
 		_skipDiff += p_time;

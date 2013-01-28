@@ -463,7 +463,7 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
 void Creature::Update(uint32 diff)
 {
 	// Zone Skip Update
-	if (sObjectMgr->IsSkipZone(GetZoneId()))
+	if (sObjectMgr->IsSkipZone(GetZoneId()) || (!isInCombat() && !GetMap()->Instanceable()))
 	{
 		_skipCount++;
 		_skipDiff += diff;
