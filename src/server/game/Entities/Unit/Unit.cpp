@@ -11615,6 +11615,10 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
     // can't attack self
     if (this == target)
         return false;
+    
+    // Sha of anger mind control
+    if (target->HasAura(119626))
+        return true;
 
     // can't attack unattackable units or GMs
     if (target->HasUnitState(UNIT_STATE_UNATTACKABLE)
@@ -16567,9 +16571,15 @@ float Unit::GetCombatRatingReduction(CombatRating cr) const
     return 0.0f;
 }
 
-uint32 Unit::GetCombatRatingDamageReduction(CombatRating cr, float rate, float cap, uint32 damage) const
+uint32 Unit::GetCombatRatingDamageReduction(CombatRating cr, float cap, uint32 damage) const
 {
-    float percent = std::min(GetCombatRatingReduction(cr) * rate, cap);
+    float percent = std::min(GetCombatRatingReduction(cr), cap);
+
+    if ((cr == CR_RESILIENCE_PLAYER_DAMAGE_TAKEN || cr == CR_RESILIENCE_CRIT_TAKEN) && ToPlayer())
+        percent -= ToPlayer()->GetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT);
+    else if ((cr == CR_RESILIENCE_PLAYER_DAMAGE_TAKEN || cr == CR_RESILIENCE_CRIT_TAKEN) && GetOwner() && GetOwner()->ToPlayer())
+        percent -= GetOwner()->ToPlayer()->GetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT);
+
     return CalculatePct(damage, percent);
 }
 

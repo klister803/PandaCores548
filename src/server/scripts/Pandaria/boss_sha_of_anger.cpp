@@ -185,9 +185,9 @@ public:
                     case EVENT_UPDATE_RAGE:
                     {
                         if(phase1)
-                            timer = timer + 2;
+                            timer = timer + 20;
                         else
-                            timer = timer - 2;
+                            timer = timer - 20;
 
                         me->SetPower(POWER_RAGE,timer);
                         events.ScheduleEvent(EVENT_UPDATE_RAGE,1000);
@@ -213,6 +213,8 @@ class spell_sha_of_anger_aggressive_behaviour : public SpellScriptLoader
         class spell_sha_of_anger_aggressive_behaviour_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_sha_of_anger_aggressive_behaviour_AuraScript);
+            uint32 factionSave;
+            bool pvpFlag;
 
             void HandlePeriodicTick(constAuraEffectPtr /*aurEff*/)
             {
@@ -222,9 +224,37 @@ class spell_sha_of_anger_aggressive_behaviour : public SpellScriptLoader
                         this->Remove(AURA_REMOVE_BY_DEFAULT);
             }
 
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                pvpFlag = false;
+                factionSave = 0;
+                if(Unit* target = GetTarget())
+                {
+                    if (!target->ToPlayer())
+                        return;
+                    
+                    target->SetPvP(true);
+                    factionSave = target->getFaction();
+                    target->setFaction(16);
+                    target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
+                }
+
+            }
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if(Unit* target = GetTarget())
+                {
+                    target->setFaction(factionSave);
+                    target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
+                }
+            }
+
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_sha_of_anger_aggressive_behaviour_AuraScript::HandlePeriodicTick, EFFECT_5, SPELL_AURA_PERIODIC_DUMMY);
+                OnEffectApply += AuraEffectApplyFn(spell_sha_of_anger_aggressive_behaviour_AuraScript::OnApply, EFFECT_5, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_sha_of_anger_aggressive_behaviour_AuraScript::OnRemove, EFFECT_5, SPELL_AURA_PERIODIC_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
 

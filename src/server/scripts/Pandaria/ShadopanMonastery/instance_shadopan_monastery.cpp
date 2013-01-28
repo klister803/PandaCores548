@@ -19,6 +19,8 @@ DoorData const doorData[] =
     {0,                         0,                      DOOR_TYPE_ROOM,         BOUNDARY_NONE},// END
 };
 
+Position snowdriftCenterPos = {3659.08f, 3015.38f, 804.74f};
+
 class instance_shadopan_monastery : public InstanceMapScript
 {
 public:
@@ -31,12 +33,26 @@ public:
 
     struct instance_shadopan_monastery_InstanceMapScript : public InstanceScript
     {
+        uint8 aliveNoviceCount;
+        uint8 aliveMinibossCount;
+
         uint64 guCloudstikeGuid;
         uint64 masterSnowdriftGuid;
         uint64 shaViolenceGuid;
         uint64 taranZhuGuid;
 
         uint64 azureSerpentGuid;
+
+        uint64 snowdriftPossessionsGuid;
+        
+        std::list<uint64> minibossPositionsGuid;
+        std::list<uint64> minibossPositionsGuidSave;
+
+        std::list<uint64> firstDefeatedNovicePositionsGuid;
+        std::list<uint64> firstDefeatedNovicePositionsGuidSave;
+
+        std::list<uint64> secondDefeatedNovicePositionsGuid;
+        std::list<uint64> secondDefeatedNovicePositionsGuidSave;
 
         uint32 dataStorage[MAX_DATA];
 
@@ -48,12 +64,17 @@ public:
             SetBossNumber(EncounterCount);
             LoadDoorData(doorData);
 
-            guCloudstikeGuid        = 0;
-            masterSnowdriftGuid     = 0;
-            shaViolenceGuid         = 0;
-            taranZhuGuid            = 0;
+            aliveNoviceCount            = MAX_NOVICE;
+            aliveMinibossCount          = 2;
 
-            azureSerpentGuid        = 0;
+            guCloudstikeGuid            = 0;
+            masterSnowdriftGuid         = 0;
+            shaViolenceGuid             = 0;
+            taranZhuGuid                = 0;
+
+            azureSerpentGuid            = 0;
+
+            snowdriftPossessionsGuid    = 0;
 
             memset(dataStorage, 0, MAX_DATA * sizeof(uint32));
         }
@@ -66,8 +87,28 @@ public:
                 case NPC_MASTER_SNOWDRIFT:  masterSnowdriftGuid = creature->GetGUID();  return;
                 case NPC_SHA_VIOLENCE:      shaViolenceGuid     = creature->GetGUID();  return;
                 case NPC_TARAN_ZHU:         taranZhuGuid        = creature->GetGUID();  return;
-
                 case NPC_AZURE_SERPENT:     azureSerpentGuid    = creature->GetGUID();  return;
+                case NPC_SNOWDRIFT_POSITION:
+                {
+                    uint32 guid = creature->GetDBTableGUIDLow();
+
+                    if (creature->GetDistance(snowdriftCenterPos) > 5.0f && creature->GetDistance(snowdriftCenterPos) < 13.0f)
+                    {
+                        minibossPositionsGuid.push_back(creature->GetGUID());
+                        minibossPositionsGuidSave.push_back(creature->GetGUID());
+                    }
+                    else if (creature->GetDistance(snowdriftCenterPos) > 15.0f  && creature->GetDistance(snowdriftCenterPos) < 17.5f)
+                    {
+                        firstDefeatedNovicePositionsGuid.push_back(creature->GetGUID());
+                        firstDefeatedNovicePositionsGuidSave.push_back(creature->GetGUID());
+                    }
+                    else if (creature->GetDistance(snowdriftCenterPos) > 17.5f && creature->GetDistance(snowdriftCenterPos) < 25.0f)
+                    {
+                        secondDefeatedNovicePositionsGuid.push_back(creature->GetGUID());
+                        secondDefeatedNovicePositionsGuidSave.push_back(creature->GetGUID());
+                    }
+                    break;
+                }
             }
         }
 
@@ -85,6 +126,10 @@ public:
                 case GO_SHA_EXIT:
                     AddDoor(go, true);
                     return;
+                case GO_SNOWDRIFT_POSSESSIONS:
+                    go->SetPhaseMask(2, true);
+                    snowdriftPossessionsGuid = go->GetGUID();
+                    break;
                 default:
                     return;
             }
@@ -95,6 +140,31 @@ public:
             if (!InstanceScript::SetBossState(id, state))
                 return false;
 
+            switch (id)
+            {
+                case DATA_MASTER_SNOWDRIFT:
+                {
+                    switch (state)
+                    {
+                        case NOT_STARTED:
+                        case FAIL:
+                            aliveNoviceCount                    = MAX_NOVICE;
+                            aliveMinibossCount                  = 2;
+                            minibossPositionsGuid               = minibossPositionsGuidSave;
+                            firstDefeatedNovicePositionsGuid    = firstDefeatedNovicePositionsGuidSave;
+                            secondDefeatedNovicePositionsGuid   = secondDefeatedNovicePositionsGuidSave;
+                            break;
+                        case DONE:
+                            if (GameObject* possessions = instance->GetGameObject(snowdriftPossessionsGuid))
+                                possessions->SetPhaseMask(1, true);
+                            break;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+
             return true;
         }
 
@@ -102,6 +172,18 @@ public:
         {
             switch (type)
             {
+                case DATA_DEFEATED_NOVICE:
+                    if (!--aliveNoviceCount)
+                        if (Creature* snowdrift = instance->GetCreature(masterSnowdriftGuid))
+                            if (snowdrift->IsAIEnabled)
+                                snowdrift->AI()->DoAction(ACTION_NOVICE_DONE);
+                    break;
+                case DATA_DEFEATED_MINIBOSS:
+                    if (!--aliveMinibossCount)
+                        if (Creature* snowdrift = instance->GetCreature(masterSnowdriftGuid))
+                            if (snowdrift->IsAIEnabled)
+                                snowdrift->AI()->DoAction(ACTION_MINIBOSS_DONE);
+                    break;
                 default:
                     if (type < MAX_DATA)
                         dataStorage[type] = data;
@@ -126,12 +208,39 @@ public:
         {
             switch (type)
             {
-                case NPC_GU_CLOUDSTRIKE:    return guCloudstikeGuid;
-                case NPC_MASTER_SNOWDRIFT:  return masterSnowdriftGuid;
-                case NPC_SHA_VIOLENCE:      return shaViolenceGuid;
-                case NPC_TARAN_ZHU:         return taranZhuGuid;
+                case NPC_GU_CLOUDSTRIKE:        return guCloudstikeGuid;
+                case NPC_MASTER_SNOWDRIFT:      return masterSnowdriftGuid;
+                case NPC_SHA_VIOLENCE:          return shaViolenceGuid;
+                case NPC_TARAN_ZHU:             return taranZhuGuid;
+                case NPC_AZURE_SERPENT:         return azureSerpentGuid;
 
-                case NPC_AZURE_SERPENT:     return azureSerpentGuid;
+                case DATA_RANDOM_FIRST_POS:
+                {
+                    if (firstDefeatedNovicePositionsGuid.empty())
+                        return 0;
+
+                    uint64 guid = Trinity::Containers::SelectRandomContainerElement(firstDefeatedNovicePositionsGuid);
+                    firstDefeatedNovicePositionsGuid.remove(guid);
+                    return guid;
+                }
+                case DATA_RANDOM_SECOND_POS:
+                {
+                    if (secondDefeatedNovicePositionsGuid.empty())
+                        return 0;
+
+                    uint64 guid = Trinity::Containers::SelectRandomContainerElement(secondDefeatedNovicePositionsGuid);
+                    secondDefeatedNovicePositionsGuid.remove(guid);
+                    return guid;
+                }
+                case DATA_RANDOM_MINIBOSS_POS:
+                {
+                    if (minibossPositionsGuid.empty())
+                        return 0;
+
+                    uint64 guid = Trinity::Containers::SelectRandomContainerElement(minibossPositionsGuid);
+                    minibossPositionsGuid.remove(guid);
+                    return guid;
+                }
             }
 
             return 0;

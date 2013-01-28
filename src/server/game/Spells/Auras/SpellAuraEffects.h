@@ -239,6 +239,7 @@ class AuraEffect : public std::enable_shared_from_this<AuraEffect>
         void HandleModSpellCritChance(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleModSpellCritChanceShool(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraModCritPct(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraModResiliencePct(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         //   attack speed
         void HandleModCastingSpeed(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleModMeleeRangedSpeedPct(AuraApplication const* aurApp, uint8 mode, bool apply) const;
