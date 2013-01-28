@@ -70,8 +70,8 @@ public:
             me->setPowerType(POWER_RAGE);
 
             phase1 = true;
-            _dominateMindCount = 1;
-            _cloudCount = 3;
+            _dominateMindCount = 3;
+            _cloudCount = 10;
             _targetCount = 0;
             _maxTargetCount = 12;
             timer = 0;
