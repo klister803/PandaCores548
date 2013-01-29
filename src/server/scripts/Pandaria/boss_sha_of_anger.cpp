@@ -243,7 +243,7 @@ class spell_sha_of_anger_aggressive_behaviour : public SpellScriptLoader
             {
                 if(Unit* target = GetTarget())
                 {
-                    target->setFaction(target->RestoreFaction);
+                    target->RestoreFaction;
                     target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
                 }
             }
