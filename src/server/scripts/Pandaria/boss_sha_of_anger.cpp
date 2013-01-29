@@ -227,14 +227,12 @@ class spell_sha_of_anger_aggressive_behaviour : public SpellScriptLoader
             void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
                 pvpFlag = false;
-                factionSave = 0;
                 if(Unit* target = GetTarget())
                 {
                     if (!target->ToPlayer())
                         return;
                     
                     target->SetPvP(true);
-                    factionSave = target->getFaction();
                     target->setFaction(16);
                     target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
                 }
@@ -245,7 +243,7 @@ class spell_sha_of_anger_aggressive_behaviour : public SpellScriptLoader
             {
                 if(Unit* target = GetTarget())
                 {
-                    target->setFaction(factionSave);
+                    target->setFaction(target->RestoreFaction);
                     target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PLAYER_CONTROLLED);
                 }
             }
