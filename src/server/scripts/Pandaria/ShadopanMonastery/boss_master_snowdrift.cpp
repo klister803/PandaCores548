@@ -19,10 +19,18 @@
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "shadopan_monastery.h"
+#include "Vehicle.h"
 
 enum eSpells
 {
     // Snowdrift
+
+    SPELL_FLYING_KICK_SNOWDRIFT = 106439,
+    SPELL_CHASE_DOWN            = 118961,
+    SPELL_FIST_OF_FURY          = 106853,
+    SPELL_PARRY_STANCE          = 106454,
+    SPELL_QUIVERING_PALM        = 106422,
+    SPELL_TORNADO_KICK          = 106434,
 
     // Novices
 
@@ -48,14 +56,21 @@ enum eEvents
     EVENT_FIRST_EVENT           = 1,
     EVENT_CHECK_WIPE            = 2,
 
-    // Miniboss
-    EVENT_BALL_OF_FIRE          = 3,
-    EVENT_FLYING_KICK           = 4,
-    EVENT_CALL_STAFF            = 5,
-    EVENT_RELEASE_STAFF         = 6,
+    EVENT_FLYING_KICK_SNOWDRIFT = 3,
+    EVENT_CHASE_DOWN            = 4,
+    EVENT_FIST_OF_FURY          = 5,
+    EVENT_PARRY_STANCE          = 6,
+    EVENT_QUIVERING_PALM        = 7,
+    EVENT_TORNADO_KICK          = 8,
 
-    EVENT_WHIRLING_STEEL_FOCUS  = 7,
-    EVENT_WHIRLING_STEEL_DAMAGE = 8
+    // Miniboss
+    EVENT_BALL_OF_FIRE          = 9,
+    EVENT_FLYING_KICK           = 10,
+    EVENT_CALL_STAFF            = 11,
+    EVENT_RELEASE_STAFF         = 12,
+
+    EVENT_WHIRLING_STEEL_FOCUS  = 13,
+    EVENT_WHIRLING_STEEL_STOP   = 14
 };
 
 enum ePhases
@@ -66,15 +81,15 @@ enum ePhases
 
 enum ePoints
 {
-    POINT_BEGIN_EVENT               = 0,
-    POINT_PHASE_FIGHT               = 1,
+    POINT_BEGIN_EVENT               = 1,
+    POINT_PHASE_FIGHT               = 2,
 
-    POINT_NOVICE_JUMP               = 2,
-    POINT_NOVICE_DEFEATED           = 3,
-    POINT_NOVICE_DEFEATED_SECOND    = 4,
-    
-    POINT_MINIBOSS_JUMP             = 5,
-    POINT_MINIBOSS_DEFEATED         = 6
+    POINT_NOVICE_JUMP               = 3,
+    POINT_NOVICE_DEFEATED           = 4,
+    POINT_NOVICE_DEFEATED_SECOND    = 5,
+
+    POINT_MINIBOSS_JUMP             = 6,
+    POINT_MINIBOSS_DEFEATED         = 7
 };
 
 Position SnowdriftPos[2] =
@@ -133,6 +148,16 @@ class boss_master_snowdrift : public CreatureScript
                 SetCanSeeEvenInPassiveMode(true);
             }
 
+            void EnterCombat(Unit* /*who*/)
+            {
+                events.ScheduleEvent(EVENT_FLYING_KICK_SNOWDRIFT, 1000);
+                events.ScheduleEvent(EVENT_CHASE_DOWN, 1000);
+                events.ScheduleEvent(EVENT_FIST_OF_FURY, 1000);
+                events.ScheduleEvent(EVENT_PARRY_STANCE, 1000);
+                events.ScheduleEvent(EVENT_QUIVERING_PALM, 1000);
+                events.ScheduleEvent(EVENT_TORNADO_KICK, 1000);
+            }
+
             void MoveInLineOfSight(Unit* who)
             {
                 if (who->ToPlayer())
@@ -143,6 +168,7 @@ class boss_master_snowdrift : public CreatureScript
                     if (me->GetDistance(who) < 45.0f && !introStarted)
                     {
                         introStarted = true;
+                        pInstance->SetBossState(DATA_MASTER_SNOWDRIFT, IN_PROGRESS);
                         events.ScheduleEvent(EVENT_FIRST_EVENT, 1000);
                         events.ScheduleEvent(EVENT_CHECK_WIPE, 1000);
                     }
@@ -153,8 +179,6 @@ class boss_master_snowdrift : public CreatureScript
             {
                 pInstance->SetBossState(DATA_MASTER_SNOWDRIFT, FAIL);
                 summons.DespawnAll();
-                
-                me->SetFacingTo(me->GetAngle(3659.08f, 3015.38f));
             }
 
             void DoAction(const int32 action)
@@ -175,6 +199,25 @@ class boss_master_snowdrift : public CreatureScript
                 {
                     ++eventPhase;
                     events.ScheduleEvent(EVENT_FIRST_EVENT, urand(1000, 2000));
+                }
+            }
+
+            void MovementInform(uint32 uiType, uint32 id)
+            {
+                if (uiType != POINT_MOTION_TYPE)
+                    return;
+
+                switch (id)
+                {
+                    case POINT_PHASE_FIGHT:
+                        me->setFaction(14);
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        // No Break
+                    case POINT_BEGIN_EVENT:
+                        me->SetFacingTo(me->GetAngle(3659.08f, 3015.38f));
+                        break;
+                    default:
+                        break;
                 }
             }
 
@@ -215,6 +258,10 @@ class boss_master_snowdrift : public CreatureScript
                         me->SummonCreature(NPC_FLAGRANT_LOTUS, MinibossSpawnPos[0].GetPositionX(), MinibossSpawnPos[0].GetPositionY(), MinibossSpawnPos[0].GetPositionZ());
                         me->SummonCreature(NPC_FLYING_SNOW,    MinibossSpawnPos[1].GetPositionX(), MinibossSpawnPos[1].GetPositionY(), MinibossSpawnPos[1].GetPositionZ());
                     }
+                    case 9:
+                    {
+                        me->GetMotionMaster()->MovePoint(POINT_PHASE_FIGHT, SnowdriftPos[1].GetPositionX(), SnowdriftPos[1].GetPositionY(), SnowdriftPos[1].GetPositionZ());
+                    }
                     default:
                         break;
                 }
@@ -224,7 +271,7 @@ class boss_master_snowdrift : public CreatureScript
             {
                 events.Update(diff);
 
-                switch(events.ExecuteEvent())
+                switch(uint32 eventId = events.ExecuteEvent())
                 {
                     // Event Script
                     case EVENT_FIRST_EVENT:
@@ -236,6 +283,24 @@ class boss_master_snowdrift : public CreatureScript
                         events.ScheduleEvent(EVENT_CHECK_WIPE, 1000);
                         break;
                     // Combat Script
+                    case EVENT_FLYING_KICK_SNOWDRIFT:
+                        events.ScheduleEvent(eventId, 1000);
+                        break;
+                    case EVENT_CHASE_DOWN:
+                        events.ScheduleEvent(eventId, 1000);
+                        break;
+                    case EVENT_FIST_OF_FURY:
+                        events.ScheduleEvent(eventId, 1000);
+                        break;
+                    case EVENT_PARRY_STANCE:
+                        events.ScheduleEvent(eventId, 1000);
+                        break;
+                    case EVENT_QUIVERING_PALM:
+                        events.ScheduleEvent(eventId, 1000);
+                        break;
+                    case EVENT_TORNADO_KICK:
+                        events.ScheduleEvent(eventId, 1000);
+                        break;
                     default:
                         break;
                 }
@@ -262,11 +327,13 @@ class npc_snowdrift_novice : public CreatureScript
             {
                 pInstance = creature->GetInstanceScript();
                 jumpDone = false;
+                stillInFight = true;
             }
 
             InstanceScript* pInstance;
             EventMap events;
             bool jumpDone;
+            bool stillInFight;
 
             void Reset()
             {
@@ -304,10 +371,14 @@ class npc_snowdrift_novice : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
+                if (!stillInFight)
+                    return;
+
                 if (damage >= me->GetHealth())
                 {
                     damage = 0;
                     me->setFaction(35);
+                    stillInFight = false;
 
                     if (Creature* position = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_FIRST_POS)))
                     {
@@ -343,11 +414,13 @@ class npc_snowdrift_miniboss : public CreatureScript
             {
                 pInstance = creature->GetInstanceScript();
                 jumpDone = false;
+                stillInFight = true;
             }
 
             InstanceScript* pInstance;
             EventMap events;
             bool jumpDone;
+            bool stillInFight;
 
             void Reset()
             {
@@ -369,21 +442,16 @@ class npc_snowdrift_miniboss : public CreatureScript
                 else
                 {
                     events.ScheduleEvent(EVENT_WHIRLING_STEEL_FOCUS,  1000);
-                    events.ScheduleEvent(EVENT_WHIRLING_STEEL_DAMAGE, 1000);
                 }
             }
 
             void MovementInform(uint32 uiType, uint32 id)
             {
-                if (uiType != EFFECT_MOTION_TYPE)
+                if (uiType != EFFECT_MOTION_TYPE && uiType != POINT_MOTION_TYPE)
                     return;
 
                 switch (id)
                 {
-                    case POINT_NOVICE_JUMP:
-                        if (Player* target = me->SelectNearestPlayerNotGM(100.0f))
-                            AttackStart(target);
-                        break;
                     case POINT_MINIBOSS_DEFEATED:
                         me->SetFacingTo(me->GetAngle(3659.08f, 3015.38f));
                         break;
@@ -394,6 +462,9 @@ class npc_snowdrift_miniboss : public CreatureScript
 
             void DamageTaken(Unit* attacker, uint32& damage)
             {
+                if (!stillInFight)
+                    return;
+
                 if (damage >= me->GetHealth())
                 {
                     damage = 0;
@@ -401,7 +472,7 @@ class npc_snowdrift_miniboss : public CreatureScript
 
                     if (Creature* position = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_MINIBOSS_POS)))
                     {
-                        me->GetMotionMaster()->MoveJump(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), 20.0f, 10.0f, POINT_MINIBOSS_DEFEATED);
+                        me->GetMotionMaster()->MovePoint(POINT_MINIBOSS_DEFEATED, position->GetPositionX(), position->GetPositionY(), position->GetPositionZ());
                         me->SetHomePosition(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), position->GetOrientation());
                     }
 
@@ -421,6 +492,40 @@ class npc_snowdrift_miniboss : public CreatureScript
                             me->CastSpell(target, SPELL_BALL_OF_FIRE, false);
 
                         events.ScheduleEvent(EVENT_BALL_OF_FIRE, 1000);
+                        break;
+                    case EVENT_FLYING_KICK:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            me->CastSpell(target, SPELL_FLYING_KICK, false);
+
+                        events.ScheduleEvent(EVENT_FLYING_KICK, 1000);
+                        break;
+                    case EVENT_CALL_STAFF:
+                        //me->CastSpell(me, SPELL_CALL_STAFF, false);
+                        events.ScheduleEvent(EVENT_CALL_STAFF, 1000);
+                        break;
+                    case EVENT_RELEASE_STAFF:
+                        if (me->GetVehicleKit())
+                            if (me->GetVehicleKit()->GetPassenger(0))
+                                me->GetVehicleKit()->GetPassenger(0)->ExitVehicle();
+                        events.ScheduleEvent(EVENT_CALL_STAFF, 1000);
+                        break;
+                    case EVENT_WHIRLING_STEEL_FOCUS:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                        {
+                            me->AddAura(SPELL_WHIRLING_STEEL_DAMAGE, me);
+                            me->AddAura(SPELL_WHIRLING_STEEL_FOCUS, target);
+
+                            me->SetReactState(REACT_PASSIVE);
+                            me->GetMotionMaster()->Clear();
+                            me->GetMotionMaster()->MoveChase(target);
+                        }
+                        events.ScheduleEvent(EVENT_WHIRLING_STEEL_STOP, 10000);
+                        break;
+                    case EVENT_WHIRLING_STEEL_STOP:
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        me->GetMotionMaster()->Clear();
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            AttackStart(target);
                         break;
                     default:
                         break;
@@ -444,7 +549,7 @@ class npc_snowdrift_fireball : public CreatureScript
         struct npc_snowdrift_fireballAI : public ScriptedAI
         {
             npc_snowdrift_fireballAI(Creature* creature) : ScriptedAI(creature) {}
-            
+
             uint32 damageTimer;
 
             void Reset()
@@ -466,7 +571,7 @@ class npc_snowdrift_fireball : public CreatureScript
                     if (Unit* target = me->SelectNearestTarget())
                         if (me->GetDistance(target) <= 1.0f)
                             me->CastSpell(target, SPELL_BALL_OF_FIRE_DAMAGE, true);
-                    
+
                     damageTimer = 500;
                 }
                 else damageTimer -= diff;
