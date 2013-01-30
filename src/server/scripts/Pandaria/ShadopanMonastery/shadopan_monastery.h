@@ -30,6 +30,7 @@ enum DataTypes
 
     DATA_DEFEATED_NOVICE        = 8,
     DATA_DEFEATED_MINIBOSS      = 9,
+    DATA_DEFEATED_CLONES        = 10,
 
     MAX_DATA
 };
@@ -50,7 +51,9 @@ enum CreaturesIds
     NPC_SNOWDRIFT_POSITION      = 56397,
 
     NPC_FLAGRANT_LOTUS          = 56472,
-    NPC_FLYING_SNOW             = 56473
+    NPC_FLYING_SNOW             = 56473,
+
+    NPC_SNOWDRIFT_CLONE         = 56713,
 };
 
 enum ObjectsIds
@@ -74,6 +77,7 @@ enum SharedActions
 {
     ACTION_NOVICE_DONE          = 1,
     ACTION_MINIBOSS_DONE        = 2,
+    ACTION_CLONES_DONE          = 3,
 };
 
 #endif // SHADOPAN_MONASTERY_H_
