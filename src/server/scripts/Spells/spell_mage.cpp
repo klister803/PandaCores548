@@ -76,6 +76,38 @@ enum MageSpells
     SPELL_MAGE_GLYPH_OF_EVOCATION                = 56380,
 };
 
+// Frostbolt - 116
+class spell_mage_frostbolt : public SpellScriptLoader
+{
+    public:
+        spell_mage_frostbolt() : SpellScriptLoader("spell_mage_frostbolt") { }
+
+        class spell_mage_frostbolt_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_frostbolt_SpellScript);
+
+            SpellCastResult CheckTarget()
+            {
+                if (!GetExplTargetUnit())
+                    return SPELL_FAILED_NO_VALID_TARGETS;
+                else if (GetExplTargetUnit()->GetGUID() == GetCaster()->GetGUID())
+                    return SPELL_FAILED_BAD_TARGETS;
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_mage_frostbolt_SpellScript::CheckTarget);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_frostbolt_SpellScript();
+        }
+};
+
 // Called by Evocation - 12051
 // Invocation - 114003
 class spell_mage_invocation : public SpellScriptLoader
@@ -1063,6 +1095,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_frostbolt();
     new spell_mage_invocation();
     new spell_mage_frost_bomb();
     new spell_mage_nether_tempest();

@@ -4419,8 +4419,15 @@ int32 Unit::GetMaxNegativeAuraModifier(AuraType auratype) const
 
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+    {
         if ((*i)->GetAmount() < modifier)
-            modifier = (*i)->GetAmount();
+        {
+            if ((*i)->GetBase()->GetId() == 116 && auratype == SPELL_AURA_MOD_DECREASE_SPEED) // Frostbolt speed reduction is always at 50%
+                modifier = (*i)->GetBaseAmount();
+            else
+                modifier = (*i)->GetAmount();
+        }
+    }
 
     return modifier;
 }
