@@ -11,8 +11,6 @@ DoorData const doorData[] =
     {GO_CLOUDSTRIKE_ENTRANCE,   DATA_GU_CLOUDSTRIKE,    DOOR_TYPE_ROOM,         BOUNDARY_SE  },
     {GO_CLOUDSTRIKE_EXIT,       DATA_GU_CLOUDSTRIKE,    DOOR_TYPE_PASSAGE,      BOUNDARY_S   },
     {GO_SNOWDRIFT_ENTRANCE,     NPC_MASTER_SNOWDRIFT,   DOOR_TYPE_ROOM,         BOUNDARY_SE  },
-    {GO_SNOWDRIFT_FIRE_WALL,    NPC_MASTER_SNOWDRIFT,   DOOR_TYPE_ROOM,         BOUNDARY_SE  },
-    {GO_SNOWDRIFT_DOJO_DOOR,    NPC_MASTER_SNOWDRIFT,   DOOR_TYPE_ROOM,         BOUNDARY_SE  },
     {GO_SNOWDRIFT_EXIT,         NPC_MASTER_SNOWDRIFT,   DOOR_TYPE_PASSAGE,      BOUNDARY_NW  },
     {GO_SHA_ENTRANCE,           NPC_SHA_VIOLENCE,       DOOR_TYPE_ROOM,         BOUNDARY_SW  },
     {GO_SHA_EXIT,               NPC_SHA_VIOLENCE,       DOOR_TYPE_PASSAGE,      BOUNDARY_S   },
@@ -44,6 +42,8 @@ public:
         uint64 azureSerpentGuid;
 
         uint64 snowdriftPossessionsGuid;
+        uint64 snowdriftFirewallGuid;
+        uint64 snowdriftDojoDoorGuid;
         
         std::list<uint64> minibossPositionsGuid;
         std::list<uint64> minibossPositionsGuidSave;
@@ -75,6 +75,8 @@ public:
             azureSerpentGuid            = 0;
 
             snowdriftPossessionsGuid    = 0;
+            snowdriftFirewallGuid       = 0;
+            snowdriftDojoDoorGuid       = 0;
 
             memset(dataStorage, 0, MAX_DATA * sizeof(uint32));
         }
@@ -92,7 +94,7 @@ public:
                 {
                     uint32 guid = creature->GetDBTableGUIDLow();
 
-                    if (creature->GetDistance(snowdriftCenterPos) > 5.0f && creature->GetDistance(snowdriftCenterPos) < 13.0f)
+                    if (creature->GetDistance(snowdriftCenterPos) > 5.0f && creature->GetDistance(snowdriftCenterPos) < 15.0f)
                     {
                         minibossPositionsGuid.push_back(creature->GetGUID());
                         minibossPositionsGuidSave.push_back(creature->GetGUID());
@@ -119,8 +121,6 @@ public:
                 case GO_CLOUDSTRIKE_ENTRANCE:
                 case GO_CLOUDSTRIKE_EXIT:
                 case GO_SNOWDRIFT_ENTRANCE:
-                case GO_SNOWDRIFT_FIRE_WALL:
-                case GO_SNOWDRIFT_DOJO_DOOR:
                 case GO_SNOWDRIFT_EXIT:
                 case GO_SHA_ENTRANCE:
                 case GO_SHA_EXIT:
@@ -129,6 +129,12 @@ public:
                 case GO_SNOWDRIFT_POSSESSIONS:
                     go->SetPhaseMask(2, true);
                     snowdriftPossessionsGuid = go->GetGUID();
+                    break;
+                case GO_SNOWDRIFT_FIRE_WALL:
+                    snowdriftFirewallGuid = go->GetGUID();
+                    break;
+                case GO_SNOWDRIFT_DOJO_DOOR:
+                    snowdriftDojoDoorGuid = go->GetGUID();
                     break;
                 default:
                     return;
@@ -153,10 +159,19 @@ public:
                             minibossPositionsGuid               = minibossPositionsGuidSave;
                             firstDefeatedNovicePositionsGuid    = firstDefeatedNovicePositionsGuidSave;
                             secondDefeatedNovicePositionsGuid   = secondDefeatedNovicePositionsGuidSave;
+
+                            HandleGameObject(snowdriftFirewallGuid, false);
+                            HandleGameObject(snowdriftDojoDoorGuid, false);
+                            break;
+                        case IN_PROGRESS:
+                            HandleGameObject(snowdriftDojoDoorGuid, false);
                             break;
                         case DONE:
                             if (GameObject* possessions = instance->GetGameObject(snowdriftPossessionsGuid))
                                 possessions->SetPhaseMask(1, true);
+
+                            HandleGameObject(snowdriftFirewallGuid, true);
+                            HandleGameObject(snowdriftDojoDoorGuid, true);
                             break;
                     }
                     break;
@@ -180,9 +195,14 @@ public:
                     break;
                 case DATA_DEFEATED_MINIBOSS:
                     if (!--aliveMinibossCount)
+                    {
                         if (Creature* snowdrift = instance->GetCreature(masterSnowdriftGuid))
                             if (snowdrift->IsAIEnabled)
                                 snowdrift->AI()->DoAction(ACTION_MINIBOSS_DONE);
+
+                        HandleGameObject(snowdriftFirewallGuid, true);
+                        HandleGameObject(snowdriftDojoDoorGuid, true);
+                    }
                     break;
                 default:
                     if (type < MAX_DATA)
