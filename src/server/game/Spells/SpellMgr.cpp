@@ -3232,6 +3232,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->OverrideSpellList.push_back(109260); // Add Aspect of the Iron Hack to override spell list of Aspect of the Hawk
                 break;
             case 6346: // Fear Ward
+            case 48108:// Hot Streak
                 spellInfo->ProcCharges = 1;
                 break;
             case 8122: // Psychic Scream
@@ -3730,7 +3731,6 @@ void SpellMgr::LoadDbcDataCorrections()
     case 31834: // Light's Grace
     case 34754: // Clearcasting
     case 34936: // Backlash
-    case 48108: // Hot Streak
     case 51124: // Killing Machine
     case 54741: // Firestarter
     case 57761: // Fireball!

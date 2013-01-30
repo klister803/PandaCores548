@@ -191,6 +191,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_modAttackSpeedPct[RANGED_ATTACK] = 1.0f;
 
     m_extraAttacks = 0;
+    countCrit = 0;
     m_canDualWield = false;
 
     m_rootTimes = 0;
@@ -5838,29 +5839,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 }
                 break;
             }
-
-            // Hot Streak & Improved Hot Streak
-            if (dummySpell->SpellIconID == 2999)
-            {
-                if (effIndex != 0)
-                    return false;
-                AuraEffectPtr counter = triggeredByAura->GetBase()->GetEffect(EFFECT_1);
-                if (!counter)
-                    return true;
-
-                // Count spell criticals in a row in second aura
-                if (procEx & PROC_EX_CRITICAL_HIT)
-                {
-                    counter->SetAmount(counter->GetAmount() * 2);
-                    if (counter->GetAmount() < 100 && dummySpell->Id != 44445) // not enough or Hot Streak spell
-                        return true;
-                    // Crititcal counted -> roll chance
-                    if (roll_chance_i(triggerAmount))
-                        CastSpell(this, 48108, true, castItem, triggeredByAura);
-                }
-                counter->SetAmount(25);
-                return true;
-            }
             // Incanter's Regalia set (add trigger chance to Mana Shield)
             if (dummySpell->SpellFamilyFlags[0] & 0x8000)
             {
@@ -9737,6 +9715,11 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(spellProto->GetSchoolMask()));
         DoneTotalMod += (crit_chance / 100.0f);
     }
+
+    // Pyroblast - 11366
+    // Pyroblast ! - 48108 : Next Pyroblast damage increased by 25%
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 11366 && damagetype == DIRECT_DAMAGE && HasAura(48108))
+        AddPct(DoneTotalMod, 25);
 
     // Pet damage?
     if (GetTypeId() == TYPEID_UNIT && !ToCreature()->isPet())
@@ -14131,6 +14114,24 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             }
         }
     }
+
+    // Hack fix Pyroblast - Hot Streak
+    if ((procExtra & PROC_EX_CRITICAL_HIT) && !(procExtra & PROC_EX_INTERNAL_DOT) && procSpell &&  procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_FIRE && procSpell->Id != 12654 && procSpell->Id != 83853)
+    {
+        if (AuraPtr pyroblastDriver = GetAura(44448))
+        {
+            countCrit++;
+
+            if (countCrit >= 2)
+            {
+                CastSpell(this, 48108, true);
+                countCrit = 0;
+            }
+        }
+    }
+    else if (!(procExtra & PROC_EX_CRITICAL_HIT) && !(procExtra & PROC_EX_INTERNAL_DOT) && procSpell && procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_FIRE && procSpell->Id != 12654 && procSpell->Id != 83853)
+        if (AuraPtr pyroblastDriver = GetAura(44448))
+            countCrit = 0;
 
     // Hack Fix Ice Floes - Drop charges
     if (GetTypeId() == TYPEID_PLAYER && HasAura(108839) && procSpell && procSpell->Id != 108839 && procSpell->CalcCastTime() != 0 && !isVictim && !(procExtra & PROC_EX_INTERNAL_DOT))
