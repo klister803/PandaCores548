@@ -1145,13 +1145,31 @@ void Guardian::UpdateMaxHealth()
     float multiplicator;
     switch (GetEntry())
     {
-        case ENTRY_IMP:         multiplicator = 8.4f;   break;
-        case ENTRY_VOIDWALKER:  multiplicator = 11.0f;  break;
-        case ENTRY_SUCCUBUS:    multiplicator = 9.1f;   break;
-        case ENTRY_FELHUNTER:   multiplicator = 9.5f;   break;
-        case ENTRY_FELGUARD:    multiplicator = 11.0f;  break;
-        case ENTRY_BLOODWORM:   multiplicator = 1.0f;   break;
-        default:                multiplicator = 10.0f;  break;
+        case ENTRY_IMP:
+            multiplicator = 8.4f;
+            break;
+        case ENTRY_VOIDWALKER:
+            multiplicator = 11.0f;
+            break;
+        case ENTRY_SUCCUBUS:
+            multiplicator = 9.1f;
+            break;
+        case ENTRY_FELHUNTER:
+            multiplicator = 9.5f;
+            break;
+        case ENTRY_FELGUARD:
+            multiplicator = 11.0f;
+            break;
+        case ENTRY_BLOODWORM:
+            multiplicator = 1.0f;
+            break;
+        case ENTRY_WATER_ELEMENTAL:
+            multiplicator = 1.0f;
+            stamina = 0.0f;
+            break;
+        default:
+            multiplicator = 10.0f;
+            break;
     }
 
     float value = GetModifierValue(unitMod, BASE_VALUE) + GetCreateHealth();
@@ -1171,12 +1189,22 @@ void Guardian::UpdateMaxPower(Powers power)
 
     switch (GetEntry())
     {
-        case ENTRY_IMP:         multiplicator = 4.95f;  break;
+        case ENTRY_IMP:
+            multiplicator = 4.95f;
+            break;
         case ENTRY_VOIDWALKER:
         case ENTRY_SUCCUBUS:
         case ENTRY_FELHUNTER:
-        case ENTRY_FELGUARD:    multiplicator = 11.5f;  break;
-        default:                multiplicator = 15.0f;  break;
+        case ENTRY_FELGUARD:
+            multiplicator = 11.5f;
+            break;
+        case ENTRY_WATER_ELEMENTAL:
+            multiplicator = 1.0f;
+            addValue = 0.0f;
+            break;
+        default:
+            multiplicator = 15.0f;
+            break;
     }
 
     float value  = GetModifierValue(unitMod, BASE_VALUE) + GetCreatePowers(power);
@@ -1216,7 +1244,7 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
             SetBonusDamage(int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.1287f));
         }
         //demons benefit from warlocks shadow or fire damage
-        else if (isPet())
+        else if (isPet() && GetEntry() != ENTRY_WATER_ELEMENTAL)
         {
             int32 fire  = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_FIRE);
             int32 shadow = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_SHADOW);
@@ -1232,7 +1260,8 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
             int32 frost = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_FROST);
             if (frost < 0)
                 frost = 0;
-            SetBonusDamage(int32(frost * 0.4f));
+            SetBonusDamage(frost);
+            bonusAP = frost * 0.57f;
         }
     }
 
