@@ -1155,7 +1155,7 @@ void WorldSession::BuildPartyMemberStatsChangedPacket(Player* player, WorldPacke
     if (mask == GROUP_UPDATE_FLAG_NONE)
         return;
 
-    mask = mask &~ GROUP_UPDATE_FLAG_AURAS | GROUP_UPDATE_FLAG_PET_AURAS;
+    mask = mask &~ (GROUP_UPDATE_FLAG_AURAS | GROUP_UPDATE_FLAG_PET_AURAS);
 
     if (mask & GROUP_UPDATE_FLAG_POWER_TYPE)                // if update power type, update current/max power also
         mask |= (GROUP_UPDATE_FLAG_CUR_POWER | GROUP_UPDATE_FLAG_MAX_POWER);
