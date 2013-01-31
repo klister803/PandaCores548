@@ -88,6 +88,9 @@ enum ObjectsIds
 
     GO_RAIGONN_DOOR             = 212986,
     GO_RAIGONN_AFTER_DOOR       = 214261,
+
+    GO_GREATDOOR_SECOND_DOOR    = 214888,
+    GO_WALL_C                   = 213198,
 };
 
 enum eSettingSun
