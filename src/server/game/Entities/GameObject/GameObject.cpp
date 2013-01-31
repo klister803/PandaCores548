@@ -1818,7 +1818,7 @@ void GameObject::ModifyHealth(int32 change, Unit* attackerOrHealer /*= NULL*/, u
     // Set the health bar, value = 255 * healthPct;
     SetGoAnimProgress(GetGOValue()->Building.Health * 255 / GetGOValue()->Building.MaxHealth);
 
-    Player* player = attackerOrHealer->GetCharmerOrOwnerPlayerOrPlayerItself();
+    Player* player = attackerOrHealer ? attackerOrHealer->GetCharmerOrOwnerPlayerOrPlayerItself(): NULL;
 
     // dealing damage, send packet
     // TODO: is there any packet for healing?
