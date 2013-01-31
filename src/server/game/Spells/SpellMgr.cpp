@@ -3140,11 +3140,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 114205: // Demoralizing Banner
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(8); // 15s
                 break;
-            case 132158: // Nature's Swiftness
-            case 74434: // Soul Burn
-            case 34936: // Backlash
-                spellInfo->ProcCharges = 1;
-                break;
             case 127630: // Cascade - damage trigger
             case 120786: // Cascade - heal trigger
                 spellInfo->Effects[1].TargetA = TARGET_UNIT_TARGET_ANY;
@@ -3231,11 +3226,15 @@ void SpellMgr::LoadSpellCustomAttr()
             case 13165: // Aspect of the Hawk
                 spellInfo->OverrideSpellList.push_back(109260); // Add Aspect of the Iron Hack to override spell list of Aspect of the Hawk
                 break;
-            case 6346: // Fear Ward
-            case 48108:// Hot Streak
+            case 6346:  // Fear Ward
+            case 48108: // Hot Streak
+            case 57761: // Brain Freeze
+            case 132158: // Nature's Swiftness
+            case 74434: // Soul Burn
+            case 34936: // Backlash
                 spellInfo->ProcCharges = 1;
                 break;
-            case 8122: // Psychic Scream
+            case 8122:  // Psychic Scream
                 spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                 spellInfo->MaxAffectedTargets = 5;
                 break;
