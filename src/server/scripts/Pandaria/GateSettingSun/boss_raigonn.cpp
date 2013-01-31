@@ -32,6 +32,7 @@ enum eSpells
     SPELL_BATTERING_STUN            = 130772,
 
     SPELL_BROKEN_CARAPACE           = 111742,
+    SPELL_BROKEN_CARAPACE_DAMAGE    = 107146,
     SPELL_FIXATE                    = 78617,
     SPELL_STOMP                     = 34716,
 
@@ -114,6 +115,7 @@ class boss_raigonn : public CreatureScript
                 me->SetReactState(REACT_PASSIVE);
                 me->AddAura(SPELL_IMPERVIOUS_CARAPACE, me);
                 me->ClearInCombat();
+                SetCanSeeEvenInPassiveMode(true);
 
                 Phase = PHASE_WEAK_SPOT;
 
@@ -123,8 +125,8 @@ class boss_raigonn : public CreatureScript
                 events.ScheduleEvent(EVENT_CHECK_START_BATTLE, 1000, PHASE_WEAK_SPOT);
                 events.ScheduleEvent(EVENT_RAIGONN_CHARGE, 1000, PHASE_WEAK_SPOT);
 
-                if (me->GetVehicle())
-                    me->GetVehicle()->SetPassengersSpawnedByAI(true);
+                if (me->GetVehicleKit())
+                    me->GetVehicleKit()->SetPassengersSpawnedByAI(true);
 
                 if (Creature* weak = me->SummonCreature(NPC_WEAK_SPOT, 0, 0, 0))
                 {
@@ -135,6 +137,9 @@ class boss_raigonn : public CreatureScript
 
             void EnterCombat(Unit* who)
             {
+                if (!inFight)
+                    return;
+
                 _EnterCombat();
             }
 
@@ -160,7 +165,9 @@ class boss_raigonn : public CreatureScript
                     me->SetReactState(REACT_AGGRESSIVE);
 
                     me->CastStop();
-                    me->CastSpell(me, SPELL_BROKEN_CARAPACE, false);
+                    me->RemoveAurasDueToSpell(SPELL_IMPERVIOUS_CARAPACE);
+                    me->CastSpell(me, SPELL_BROKEN_CARAPACE, true);
+                    me->CastSpell(me, SPELL_BROKEN_CARAPACE_DAMAGE, true);
 
                     events.CancelEventGroup(PHASE_WEAK_SPOT);
                     events.ScheduleEvent(EVENT_FIXATE, 30000, PHASE_VULNERABILITY);
@@ -246,6 +253,10 @@ class boss_raigonn : public CreatureScript
 
                 if (!me->SelectNearestPlayerNotGM(25.0f))
                     return false;
+
+                if (pInstance)
+                    if (pInstance->GetData(DATA_RIMOK) != DONE)
+                        return false;
 
                 inFight = true;
                 return true;
@@ -362,7 +373,12 @@ class boss_raigonn : public CreatureScript
 
             void JustDied(Unit* /*killer*/)
             {
-                _JustDied();
+                events.Reset();
+                if (instance)
+                {
+                    instance->SetBossState(DATA_RAIGONN, DONE);
+                    instance->SaveToDB();
+                }
             }
         };
 
@@ -577,7 +593,7 @@ class vehicle_artillery : public VehicleScript
 
                                     const uint32 maxSeatCount = 2;
                                     uint32 availableSeatCount = weakSpot->GetVehicleKit()->GetAvailableSeatCount();
-                                    weakSpot->GetVehicleKit()->AddPassenger(passenger, maxSeatCount - availableSeatCount);
+                                    passenger->EnterVehicle(weakSpot,  maxSeatCount - availableSeatCount);
                                 }
                             }
                         }

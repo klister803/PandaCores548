@@ -611,15 +611,21 @@ public:
 
         void SpellHit(Unit* /*caster*/, SpellInfo const* spell)
         {
+            if (!pInstance)
+                return;
+
+            if (pInstance->GetData(DATA_GADOK) != DONE)
+                return;
+
             if (spell->Id == 116554) // Fire Flak Cannon
             {
                 for (uint8 i = 0; i < 5; ++i)
                 {
                     if (Creature* bombarder = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_BOMBARDER)))
                     {
-                        me->CastSpell(bombarder, 116553, true);
+                        me->CastSpell(bombarder, 116553, false);
                         bombarder->GetMotionMaster()->MoveFall();
-                        bombarder->DespawnOrUnsummon(1000);
+                        bombarder->DespawnOrUnsummon(2000);
                     }
                 }
             }

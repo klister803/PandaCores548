@@ -20,9 +20,9 @@ class mob_serpent_spine_defender : public CreatureScript
 public:
     mob_serpent_spine_defender() : CreatureScript("mob_serpent_spine_defender") { }
 
-    struct mob_serpent_spine_defenderAI : public Scripted_NoMovementAI
+    struct mob_serpent_spine_defenderAI : public ScriptedAI
     {
-        mob_serpent_spine_defenderAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
+        mob_serpent_spine_defenderAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 attackTimer;
 
@@ -49,6 +49,8 @@ public:
                 else
                     attackTimer -= diff;
             }
+
+            DoMeleeAttackIfReady();
         }
     };
 
@@ -94,7 +96,7 @@ public:
                     if (!stalker->HasAura(SPELL_BOMB_AURA))
                         me->CastSpell(stalker, SPELL_BOMB_CAST_VISUAL, true);
 
-                bombTimer = urand(1000, 7500);
+                bombTimer = urand(1000, 5000);
             }
             else bombTimer -= diff;
         }
