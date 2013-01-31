@@ -3454,6 +3454,60 @@ public:
     }
 };
 
+/*######
+# npc_frozen_orb
+######*/
+
+class npc_frozen_orb : public CreatureScript
+{
+public:
+    npc_frozen_orb() : CreatureScript("npc_frozen_orb") { }
+
+    struct npc_frozen_orbAI : public ScriptedAI
+    {
+        uint32 frozenOrbTimer;
+
+        npc_frozen_orbAI(Creature* creature) : ScriptedAI(creature)
+        {
+            Unit* owner = creature->GetOwner();
+
+            if (owner)
+            {
+                owner->CastSpell(creature, 84721, true);
+                owner->CastSpell(owner, 44544, true);
+                owner->CastSpell(owner, 126084, true);
+            }
+
+            frozenOrbTimer = 1000;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            Unit* owner = me->GetOwner();
+
+            if (!owner)
+                return;
+
+            if (frozenOrbTimer <= diff)
+            {
+                if (owner && owner->ToPlayer())
+                    if (owner->ToPlayer()->HasSpellCooldown(84721))
+                        owner->ToPlayer()->RemoveSpellCooldown(84721);
+
+                owner->CastSpell(me, 84721, true);
+                frozenOrbTimer = 1000;
+            }
+            else
+                frozenOrbTimer -= diff;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_frozen_orbAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3496,4 +3550,5 @@ void AddSC_npcs_special()
     new npc_ring_of_frost();
     new npc_shadowy_apparition();
     new npc_demoralizing_banner();
+    new npc_frozen_orb();
 }

@@ -3229,7 +3229,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 6346:  // Fear Ward
             case 48108: // Hot Streak
             case 57761: // Brain Freeze
-            case 132158: // Nature's Swiftness
+            case 132158:// Nature's Swiftness
             case 74434: // Soul Burn
             case 34936: // Backlash
                 spellInfo->ProcCharges = 1;
