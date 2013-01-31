@@ -3234,6 +3234,11 @@ void SpellMgr::LoadSpellCustomAttr()
             case 34936: // Backlash
                 spellInfo->ProcCharges = 1;
                 break;
+            case 44544: // Fingers of Frost
+            case 126084:// Fingers of Frost - visual
+                spellInfo->ProcCharges = 2;
+                spellInfo->StackAmount = 0;
+                break;
             case 8122:  // Psychic Scream
                 spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                 spellInfo->MaxAffectedTargets = 5;

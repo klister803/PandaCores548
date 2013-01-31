@@ -8834,6 +8834,12 @@ bool Unit::HasAuraState(AuraStateType flag, SpellInfo const* spellProto, Unit co
                 if ((*j)->IsAffectingSpell(spellProto))
                     return true;
         }
+        // Fix Brain Freeze (57761) - Frostfire Bolt (44614) act as if target has aurastate frozen
+        if (spellProto && spellProto->Id == 44614 && Caster->HasAura(57761))
+            return true;
+        // Fix Fingers of Frost (44544) - Ice Lance (30455) and Deep Freeze (44572) act as if target has aurastate frozen
+        if (spellProto && (spellProto->Id == 30455 || spellProto->Id == 44572) && Caster->HasAura(44544))
+            return true;
         // Check per caster aura state
         // If aura with aurastate by caster not found return false
         if ((1<<(flag-1)) & PER_CASTER_AURA_STATE_MASK)
@@ -9727,6 +9733,35 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // Pyroblast ! - 48108 : Next Pyroblast damage increased by 25%
     if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 11366 && damagetype == DIRECT_DAMAGE && HasAura(48108))
         AddPct(DoneTotalMod, 25);
+
+    // Fingers of Frost - 112965
+    if (GetTypeId() == TYPEID_PLAYER && pdamage != 0 && ToPlayer()->HasSpell(112965) && spellProto)
+    {
+        if (spellProto->Id == 116 || spellProto->Id == 44614 || spellProto->Id == 84721)
+        {
+            if (roll_chance_i(12))
+            {
+                CastSpell(this, 44544, true);  // Fingers of frost proc
+                CastSpell(this, 126084, true); // Fingers of frost visual
+            }
+        }
+        else if (spellProto->Id == 42208)
+        {
+            if (roll_chance_i(4))
+            {
+                CastSpell(this, 44544, true);  // Fingers of frost proc
+                CastSpell(this, 126084, true); // Fingers of frost visual
+            }
+        }
+        else if (spellProto->Id == 2948)
+        {
+            if (roll_chance_i(9))
+            {
+                CastSpell(this, 44544, true);  // Fingers of frost proc
+                CastSpell(this, 126084, true); // Fingers of frost visual
+            }
+        }
+    }
 
     // Pet damage?
     if (GetTypeId() == TYPEID_UNIT && !ToCreature()->isPet())
@@ -14156,6 +14191,18 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     // Fix Drop charge for Killing Machine
     if (GetTypeId() == TYPEID_PLAYER && HasAura(51124) && getClass() == CLASS_DEATH_KNIGHT && procSpell && (procSpell->Id == 49020 || procSpell->Id == 49143))
         RemoveAura(51124);
+
+    // Fix Drop charge for Fingers of Frost
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(44544) && getClass() == CLASS_MAGE && procSpell && (procSpell->Id == 30455 || procSpell->Id == 44572))
+    {
+        AuraApplication* fingersOfFrost = GetAuraApplication(44544, GetGUID());
+        AuraApplication* fingersVisual = GetAuraApplication(126084, GetGUID());
+
+        if (fingersOfFrost)
+            fingersOfFrost->GetBase()->DropCharge();
+        if (fingersVisual)
+            fingersVisual->GetBase()->DropCharge();
+    }
 
     // Hack Fix Immolate - Critical strikes generate burning embers
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 348 && procExtra & PROC_EX_CRITICAL_HIT)
