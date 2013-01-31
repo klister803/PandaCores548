@@ -178,6 +178,7 @@ class boss_master_snowdrift : public CreatureScript
                 events.ScheduleEvent(EVENT_PARRY_STANCE, defaultrand);
                 events.ScheduleEvent(EVENT_QUIVERING_PALM, defaultrand);
                 events.ScheduleEvent(EVENT_TORNADO_KICK, defaultrand);
+                events.ScheduleEvent(EVENT_DISAPPEAR, defaultrand);
             }
 
             void MoveInLineOfSight(Unit* who)
@@ -217,7 +218,7 @@ class boss_master_snowdrift : public CreatureScript
 
                     for (auto novice : noviceList)
                         if (Creature* position = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_SECOND_POS)))
-                            novice->GetMotionMaster()->MoveJump(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), 20.0f, 10.0f, POINT_NOVICE_DEFEATED_SECOND);
+                            novice->GetMotionMaster()->MoveJump(position->GetPositionX(), position->GetPositionY(), position->GetPositionZ(), 20.0f, 30.0f, POINT_NOVICE_DEFEATED_SECOND);
 
                     ++eventPhase;
                     events.ScheduleEvent(EVENT_FIRST_EVENT, urand(1000, 2000));
