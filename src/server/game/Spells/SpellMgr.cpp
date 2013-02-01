@@ -3530,6 +3530,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 112060:
                 spellInfo->Effects[0].TargetB = 0;
                 break;
+            case 118685:
+                spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(5);
+                break;
             default:
                 break;
             }
