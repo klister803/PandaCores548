@@ -70,8 +70,8 @@ public:
             me->setPowerType(POWER_RAGE);
 
             phase1 = true;
-            _dominateMindCount = 3;
-            _cloudCount = 10;
+            _dominateMindCount = 2;
+            _cloudCount = 3;
             _targetCount = 0;
             _maxTargetCount = 12;
             timer = 0;
@@ -156,8 +156,13 @@ public:
                         for (uint8 i = 0; i < _dominateMindCount; ++i)
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                             {
+                                if (target != me->getVictim())
+                                {
                                 targetedDominationPlayerGuids.push_back(target->GetGUID());
                                 me->CastSpell(target, SPELL_DOMINATE_MIND_WARNING, true);
+                                }
+                                else
+                                    --i;
                             }
 
                         events.ScheduleEvent(EVENT_GROWING_ANGER, 6000);
@@ -167,7 +172,10 @@ public:
                     {
                         for (auto guid : targetedDominationPlayerGuids)
                             if (Player* target = ObjectAccessor::GetPlayer(*me, guid))
+                            {
+                                if (target != me->getVictim())
                                 me->CastSpell(target, SPELL_DOMINATE_MIND, false);
+                            }
 
                         events.ScheduleEvent(EVENT_GROWING_ANGER_WARNING, 19000);
                         break;
