@@ -114,7 +114,7 @@ class boss_raigonn : public CreatureScript
                 
                 me->SetReactState(REACT_PASSIVE);
                 me->AddAura(SPELL_IMPERVIOUS_CARAPACE, me);
-                me->ClearInCombat();
+                me->CombatStop();
                 SetCanSeeEvenInPassiveMode(true);
 
                 Phase = PHASE_WEAK_SPOT;
@@ -125,19 +125,16 @@ class boss_raigonn : public CreatureScript
                 events.ScheduleEvent(EVENT_CHECK_START_BATTLE, 1000, PHASE_WEAK_SPOT);
                 events.ScheduleEvent(EVENT_RAIGONN_CHARGE, 1000, PHASE_WEAK_SPOT);
 
+                me->RemoveAurasDueToSpell(SPELL_BROKEN_CARAPACE);
+                me->RemoveAurasDueToSpell(SPELL_BROKEN_CARAPACE_DAMAGE);
+
                 if (me->GetVehicleKit())
                     me->GetVehicleKit()->SetPassengersSpawnedByAI(true);
-
-                if (Creature* weak = me->SummonCreature(NPC_WEAK_SPOT, 0, 0, 0))
-                {
-                    weak->EnterVehicle(me, 1);
-                    pInstance->SetData64(NPC_WEAK_SPOT, weak->GetGUID());
-                }
             }
 
             void EnterCombat(Unit* who)
             {
-                if (!inFight)
+                if (Phase != PHASE_VULNERABILITY)
                     return;
 
                 _EnterCombat();
@@ -190,7 +187,7 @@ class boss_raigonn : public CreatureScript
             {
                 if (Creature* weakPoint = pInstance->instance->GetCreature(pInstance->GetData64(NPC_WEAK_SPOT)))
                 {
-                    if (Vehicle* weakVehicle = weakPoint->GetVehicle())
+                    if (Vehicle* weakVehicle = weakPoint->GetVehicleKit())
                     {
                         const uint8 maxPassenger = 2;
                         Unit* passengerList[maxPassenger];
@@ -262,24 +259,6 @@ class boss_raigonn : public CreatureScript
                 return true;
             }
 
-            void checkWipe()
-            {
-                if (!me->GetMap())
-                    return;
-
-                bool isWipe = true;
-
-                Map::PlayerList const& players = me->GetMap()->GetPlayers();
-                if (!players.isEmpty())
-                    for (Map::PlayerList::const_iterator itr = players.begin(); itr != players.end(); ++itr)
-                        if (Player* player = itr->getSource())
-                            if (player->isAlive() && !player->isGameMaster())
-                                isWipe = false;
-
-                if (isWipe)
-                    Reset();
-            }
-
             void UpdateAI(const uint32 diff)
             {
                 if (!pInstance)
@@ -297,13 +276,21 @@ class boss_raigonn : public CreatureScript
                             events.ScheduleEvent(EVENT_SUMMON_ENGULFER, 20000);
                             events.ScheduleEvent(EVENT_SUMMON_SWARM_BRINGER, 20000);
                             events.ScheduleEvent(EVENT_CHECK_WIPE, 1000);
+
+                            if (Creature* weak = me->SummonCreature(NPC_WEAK_SPOT, 0, 0, 0))
+                            {
+                                weak->EnterVehicle(me, 1);
+                                pInstance->SetData64(NPC_WEAK_SPOT, weak->GetGUID());
+                            }
                         }
                         else
                             events.ScheduleEvent(EVENT_CHECK_START_BATTLE, 1000, PHASE_WEAK_SPOT);
                         break;
                     case EVENT_CHECK_WIPE:
-                        checkWipe();
-                        events.ScheduleEvent(EVENT_CHECK_WIPE, 1000);
+                        if (pInstance->IsWipe())
+                            Reset();
+                        else
+                            events.ScheduleEvent(EVENT_CHECK_WIPE, 1000);
                         break;
                     case EVENT_RAIGONN_CHARGE:
                         DoEventCharge();
@@ -313,7 +300,7 @@ class boss_raigonn : public CreatureScript
                         for (uint8 i = 0; i < 8; ++i)
                             if (Creature* summon = me->SummonCreature(NPC_KRIKTHIK_PROTECTORAT, frand(941.0f, 974.0f), 2374.85f, 296.67f, 4.73f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000))
                                 if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                                    if (summon->AI())
+                                    if (summon->IsAIEnabled)
                                         summon->AI()->AttackStart(target);
 
                         events.ScheduleEvent(EVENT_SUMMON_PROTECTORAT, 20000, PHASE_WEAK_SPOT);
