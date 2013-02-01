@@ -190,6 +190,39 @@ class spell_mage_frost_bomb : public SpellScriptLoader
         }
 };
 
+class CheckNetherImpactPredicate
+{
+    public:
+        CheckNetherImpactPredicate(Unit* caster, Unit* mainTarget) : _caster(caster), _mainTarget(mainTarget) {}
+
+        bool operator()(Unit* target)
+        {
+            if (!_caster || !_mainTarget)
+                return true;
+
+            if (!_caster->IsValidAttackTarget(target))
+                return true;
+
+            if (!target->IsWithinLOSInMap(_caster))
+                return true;
+
+            if (!target->isInFront(_caster))
+                return true;
+
+            if (target->GetGUID() == _caster->GetGUID())
+                return true;
+
+            if (target->GetGUID() == _mainTarget->GetGUID())
+                return true;
+
+            return false;
+        }
+
+    private:
+        Unit* _caster;
+        Unit* _mainTarget;
+};
+
 // Nether Tempest - 114923
 class spell_mage_nether_tempest : public SpellScriptLoader
 {
@@ -200,7 +233,6 @@ class spell_mage_nether_tempest : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_nether_tempest_AuraScript);
 
-            std::list<Unit*> tempList;
             std::list<Unit*> targetList;
 
             void OnTick(constAuraEffectPtr aurEff)
@@ -222,25 +254,7 @@ class spell_mage_nether_tempest : public SpellScriptLoader
                         cell.Visit(p, world_unit_searcher, *GetTarget()->GetMap(), *GetTarget(), 10.0f);
                         cell.Visit(p, grid_unit_searcher, *GetTarget()->GetMap(), *GetTarget(), 10.0f);
 
-                        tempList = targetList;
-
-                        for (auto itr : tempList)
-                        {
-                            if (!_player->IsValidAttackTarget(itr))
-                                targetList.remove(itr);
-
-                            if (!itr->IsWithinLOSInMap(_player))
-                                targetList.remove(itr);
-
-                            if (!itr->isInFront(_player))
-                                targetList.remove(itr);
-
-                            if (itr->GetGUID() == _player->GetGUID())
-                                targetList.remove(itr);
-
-                            if (itr->GetGUID() == GetTarget()->GetGUID())
-                                targetList.remove(itr);
-                        }
+                        targetList.remove_if(CheckNetherImpactPredicate(_player, GetTarget()));
 
                         Trinity::Containers::RandomResizeList(targetList, 1);
 
