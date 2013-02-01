@@ -167,10 +167,8 @@ public:
                     {
                         for (auto guid : targetedDominationPlayerGuids)
                             if (Player* target = ObjectAccessor::GetPlayer(*me, guid))
-                            {
                                 if (target != me->getVictim())
-                                me->CastSpell(target, SPELL_DOMINATE_MIND, false);
-                            }
+                                    me->CastSpell(target, SPELL_DOMINATE_MIND, false);
 
                         events.ScheduleEvent(EVENT_GROWING_ANGER_WARNING, 19000);
                         break;
