@@ -154,15 +154,10 @@ public:
                     {
                         Talk(1);
                         for (uint8 i = 0; i < _dominateMindCount; ++i)
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                             {
-                                if (target != me->getVictim())
-                                {
                                 targetedDominationPlayerGuids.push_back(target->GetGUID());
                                 me->CastSpell(target, SPELL_DOMINATE_MIND_WARNING, true);
-                                }
-                                else
-                                    --i;
                             }
 
                         events.ScheduleEvent(EVENT_GROWING_ANGER, 6000);
