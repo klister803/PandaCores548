@@ -78,6 +78,48 @@ enum MageSpells
     SPELL_MAGE_GLYPH_OF_EVOCATION                = 56380,
     SPELL_MAGE_BRAIN_FREEZE                      = 44549,
     SPELL_MAGE_BRAIN_FREEZE_TRIGGERED            = 57761,
+    SPELL_MAGE_SLOW                              = 31589,
+};
+
+// Slow - 31589
+class spell_mage_slow : public SpellScriptLoader
+{
+    public:
+        spell_mage_slow() : SpellScriptLoader("spell_mage_slow") { }
+
+        class spell_mage_slow_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_slow_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->GetTypeId() == TYPEID_PLAYER)
+                        {
+                            if (AuraPtr frostjaw = target->GetAura(SPELL_MAGE_SLOW, _player->GetGUID()))
+                            {
+                                // Only half time against players
+                                frostjaw->SetDuration(frostjaw->GetMaxDuration() / 2);
+                                frostjaw->SetMaxDuration(frostjaw->GetDuration());
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_slow_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_slow_SpellScript();
+        }
 };
 
 // Frostbolt - 116
@@ -1160,6 +1202,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_slow();
     new spell_mage_frostbolt();
     new spell_mage_invocation();
     new spell_mage_frost_bomb();
