@@ -28,7 +28,7 @@ public:
 
         void Reset()
         {
-            attackTimer = 2500;
+            attackTimer = urand(1000, 5000);
         }
 
         void DamageDealt(Unit* /*target*/, uint32& damage, DamageEffectType /*damageType*/)
