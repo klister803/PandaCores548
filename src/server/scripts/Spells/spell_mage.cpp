@@ -69,11 +69,47 @@ enum MageSpells
     SPELL_MAGE_COMBUSTION_IMPACT                 = 118271,
     SPELL_MAGE_FROSTJAW                          = 102051,
     SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE      = 114954,
+    SPELL_MAGE_NETHER_TEMPEST_VISUAL             = 114924,
+    SPELL_MAGE_NETHER_TEMPEST_MISSILE            = 114956,
     SPELL_MAGE_LIVING_BOMB_TRIGGERED             = 44461,
     SPELL_MAGE_FROST_BOMB_TRIGGERED              = 113092,
     SPELL_MAGE_INVOKERS_ENERGY                   = 116257,
     SPELL_MAGE_INVOCATION                        = 114003,
     SPELL_MAGE_GLYPH_OF_EVOCATION                = 56380,
+    SPELL_MAGE_BRAIN_FREEZE                      = 44549,
+    SPELL_MAGE_BRAIN_FREEZE_TRIGGERED            = 57761,
+};
+
+// Frostbolt - 116
+class spell_mage_frostbolt : public SpellScriptLoader
+{
+    public:
+        spell_mage_frostbolt() : SpellScriptLoader("spell_mage_frostbolt") { }
+
+        class spell_mage_frostbolt_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_frostbolt_SpellScript);
+
+            SpellCastResult CheckTarget()
+            {
+                if (!GetExplTargetUnit())
+                    return SPELL_FAILED_NO_VALID_TARGETS;
+                else if (GetExplTargetUnit()->GetGUID() == GetCaster()->GetGUID())
+                    return SPELL_FAILED_BAD_TARGETS;
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_mage_frostbolt_SpellScript::CheckTarget);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_frostbolt_SpellScript();
+        }
 };
 
 // Called by Evocation - 12051
@@ -134,7 +170,12 @@ class spell_mage_frost_bomb : public SpellScriptLoader
                     return;
 
                 if (Unit* caster = GetCaster())
+                {
                     caster->CastSpell(GetTarget(), SPELL_MAGE_FROST_BOMB_TRIGGERED, true);
+
+                    if (caster->HasAura(SPELL_MAGE_BRAIN_FREEZE))
+                        caster->CastSpell(caster, SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
+                }
             }
 
             void Register()
@@ -159,11 +200,62 @@ class spell_mage_nether_tempest : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_nether_tempest_AuraScript);
 
+            std::list<Unit*> tempList;
+            std::list<Unit*> targetList;
+
             void OnTick(constAuraEffectPtr aurEff)
             {
                 if (GetCaster())
-                    if (Unit* newTarget = GetCaster()->SelectNearbyTarget(GetTarget(), 10.0f))
-                        GetCaster()->CastSpell(newTarget, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
+                {
+                    if (Player* _player = GetCaster()->ToPlayer())
+                    {
+                        CellCoord p(Trinity::ComputeCellCoord(GetTarget()->GetPositionX(), GetTarget()->GetPositionY()));
+                        Cell cell(p);
+                        cell.SetNoCreate();
+
+                        Trinity::AnyUnitInObjectRangeCheck u_check(GetTarget(), 10.0f);
+                        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(GetTarget(), targetList, u_check);
+
+                        TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+                        TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+
+                        cell.Visit(p, world_unit_searcher, *GetTarget()->GetMap(), *GetTarget(), 10.0f);
+                        cell.Visit(p, grid_unit_searcher, *GetTarget()->GetMap(), *GetTarget(), 10.0f);
+
+                        tempList = targetList;
+
+                        for (auto itr : tempList)
+                        {
+                            if (!_player->IsValidAttackTarget(itr))
+                                targetList.remove(itr);
+
+                            if (!itr->IsWithinLOSInMap(_player))
+                                targetList.remove(itr);
+
+                            if (!itr->isInFront(_player))
+                                targetList.remove(itr);
+
+                            if (itr->GetGUID() == _player->GetGUID())
+                                targetList.remove(itr);
+
+                            if (itr->GetGUID() == GetTarget()->GetGUID())
+                                targetList.remove(itr);
+                        }
+
+                        Trinity::Containers::RandomResizeList(targetList, 1);
+
+                        for (auto itr : targetList)
+                        {
+                            GetCaster()->CastSpell(itr, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
+                            GetCaster()->CastSpell(itr, SPELL_MAGE_NETHER_TEMPEST_VISUAL, true);
+                            GetTarget()->CastSpell(itr, SPELL_MAGE_NETHER_TEMPEST_MISSILE, true);
+                        }
+
+                        if (GetCaster()->HasAura(SPELL_MAGE_BRAIN_FREEZE))
+                            if (roll_chance_i(10))
+                                GetCaster()->CastSpell(GetCaster(), SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
+                    }
+                }
             }
 
             void Register()
@@ -1046,7 +1138,12 @@ class spell_mage_living_bomb : public SpellScriptLoader
                     return;
 
                 if (Unit* caster = GetCaster())
+                {
                     caster->CastSpell(GetTarget(), SPELL_MAGE_LIVING_BOMB_TRIGGERED, true);
+
+                    if (caster->HasAura(SPELL_MAGE_BRAIN_FREEZE))
+                        caster->CastSpell(caster, SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
+                }
             }
 
             void Register()
@@ -1063,6 +1160,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_frostbolt();
     new spell_mage_invocation();
     new spell_mage_frost_bomb();
     new spell_mage_nether_tempest();

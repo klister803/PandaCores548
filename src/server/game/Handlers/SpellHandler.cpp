@@ -701,6 +701,19 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellId = newSpellInfo->Id;
         }
     }
+    // Frostbolt - 116 and Frostbolt - 126201 (heal for water elemental)
+    if (spellInfo->Id == 116 && targets.GetUnitTarget())
+    {
+        if (targets.GetUnitTarget()->GetOwner() && targets.GetUnitTarget()->GetOwner()->GetTypeId() == TYPEID_PLAYER && targets.GetUnitTarget()->GetOwner()->GetGUID() == _player->GetGUID())
+        {
+            SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(126201);
+            if(newSpellInfo)
+            {
+                spellInfo = newSpellInfo;
+                spellId = newSpellInfo->Id;
+            }
+        }
+    }
 
     Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
     spell->m_cast_count = castCount;                       // set count of casts

@@ -849,8 +849,9 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     PetLevelInfo const* pInfo = sObjectMgr->GetPetLevelInfo(creature_ID, petlevel);
     if (pInfo)                                      // exist in DB
     {
-        SetCreateHealth(pInfo->health);
-        if (petType != HUNTER_PET && GetOwner() && GetOwner()->getClass() != CLASS_WARLOCK) // hunter's pets use focus and Warlock's pets use energy
+        if (creature_ID != 510)
+            SetCreateHealth(pInfo->health);
+        if (petType != HUNTER_PET && GetOwner() && GetOwner()->getClass() != CLASS_WARLOCK && creature_ID != 510) // hunter's pets use focus and Warlock's pets use energy
             SetCreateMana(pInfo->mana);
 
         if (pInfo->armor > 0)
@@ -918,7 +919,9 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                 }
                 case 510: // mage Water Elemental
                 {
-                    SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FROST) * 0.33f));
+                    SetCreateHealth(m_owner->CountPctFromMaxHealth(50));
+                    SetCreateMana(m_owner->GetMaxPower(POWER_MANA));
+                    SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FROST)));
                     break;
                 }
                 case 1964: //force of nature
