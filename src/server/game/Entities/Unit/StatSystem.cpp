@@ -760,6 +760,7 @@ void Player::UpdateManaRegen()
 {
     // Mana regen from spirit
     float spirit_regen = OCTRegenMPPerSpirit();
+    float HastePct = 1.0f;
     // Apply PCT bonus from SPELL_AURA_MOD_POWER_REGEN_PERCENT aura on spirit base regen
     spirit_regen *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
 
@@ -775,12 +776,30 @@ void Player::UpdateManaRegen()
     // Chaotic Energy : Increase Mana regen by 625%
     if (HasAura(111546))
     {
-        // haste also increases your mana regeneration.
-        float HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
+        // haste also increase your mana regeneration
+        HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
 
         combat_regen = combat_regen + (combat_regen * 6.25f);
         combat_regen *= HastePct;
         base_regen = base_regen + (base_regen * 6.25f);
+        base_regen *= HastePct;
+    }
+
+    // Nether Attunement - 117957 : Haste also increase your mana regeneration
+    if (HasAura(117957))
+    {
+        HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
+
+        combat_regen *= HastePct;
+        base_regen *= HastePct;
+    }
+
+    // Mana Attunement : Increase Mana regen by 400%
+    if (HasAura(121039))
+    {
+        combat_regen = combat_regen + (combat_regen * 4.0f);
+        combat_regen *= HastePct;
+        base_regen = base_regen + (base_regen * 4.0f);
         base_regen *= HastePct;
     }
 
