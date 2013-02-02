@@ -435,7 +435,7 @@ public:
                         std::advance(itr, urand(0, grunts.size() - 1));
 
                         Creature* grunt = instance->GetCreature(*itr);
-                        if (grunt)
+                        if (creature && grunt)
                             creature->Attack(grunt, true);
                     }
                     for (auto guid : grunts)
@@ -449,7 +449,7 @@ public:
                         std::advance(itr, urand(0, scrappers.size() - 1));
 
                         Creature* scrapper = instance->GetCreature(*itr);
-                        if (scrapper)
+                        if (creature && scrapper)
                             creature->Attack(scrapper, true);
                     }
                     for (auto guid : scrappers)
@@ -463,7 +463,7 @@ public:
                         std::advance(itr, urand(0, adepts.size() - 1));
 
                         Creature* adept = instance->GetCreature(*itr);
-                        if (adept)
+                        if (creature && adept)
                             creature->Attack(adept, true);
                     }
                 }
