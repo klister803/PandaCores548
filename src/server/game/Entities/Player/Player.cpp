@@ -7902,7 +7902,7 @@ uint32 Player::_GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const
    {
        case CURRENCY_TYPE_CONQUEST_POINTS:
        {
-           cap = 400000;
+           cap = 180000;
            break;
        }
        case CURRENCY_TYPE_JUSTICE_POINTS:
