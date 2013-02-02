@@ -503,6 +503,10 @@ int32 SpellEffectInfo::CalcValue(Unit const* caster, int32 const* bp, Unit const
                 //there are many more: slow speed, -healing pct
             value *= 0.25f * exp(caster->getLevel() * (70 - _spellInfo->SpellLevel) / 1000.0f);
             //value = int32(value * (int32)getLevel() / (int32)(_spellInfo->spellLevel ? _spellInfo->spellLevel : 1));
+
+        // Hack Fix Arcane Barrage triggered
+        if (_spellInfo->Id == 50273)
+            value = float(basePoints);
     }
 
     return int32(value);

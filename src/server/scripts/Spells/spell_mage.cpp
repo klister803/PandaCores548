@@ -79,6 +79,139 @@ enum MageSpells
     SPELL_MAGE_BRAIN_FREEZE                      = 44549,
     SPELL_MAGE_BRAIN_FREEZE_TRIGGERED            = 57761,
     SPELL_MAGE_SLOW                              = 31589,
+    SPELL_MAGE_ARCANE_CHARGE                     = 36032,
+    SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED          = 50273,
+};
+
+class CheckArcaneBarrageImpactPredicate
+{
+    public:
+        CheckArcaneBarrageImpactPredicate(Unit* caster, Unit* mainTarget) : _caster(caster), _mainTarget(mainTarget) {}
+
+        bool operator()(Unit* target)
+        {
+            if (!_caster || !_mainTarget)
+                return true;
+
+            if (!_caster->IsValidAttackTarget(target))
+                return true;
+
+            if (!target->IsWithinLOSInMap(_caster))
+                return true;
+
+            if (!target->isInFront(_caster))
+                return true;
+
+            if (target->GetGUID() == _caster->GetGUID())
+                return true;
+
+            if (target->GetGUID() == _mainTarget->GetGUID())
+                return true;
+
+            return false;
+        }
+
+    private:
+        Unit* _caster;
+        Unit* _mainTarget;
+};
+
+// Arcane Barrage - 44425
+class spell_mage_arcane_barrage : public SpellScriptLoader
+{
+    public:
+        spell_mage_arcane_barrage() : SpellScriptLoader("spell_mage_arcane_barrage") { }
+
+        class spell_mage_arcane_barrage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_arcane_barrage_SpellScript);
+
+            uint8 chargeCount;
+            std::list<Unit*> tempList;
+            std::list<Unit*> targetList;
+            int32 bp;
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (AuraPtr arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
+                        {
+                            chargeCount = arcaneCharge->GetStackAmount();
+                            _player->RemoveAura(SPELL_MAGE_ARCANE_CHARGE);
+                        }
+
+                        if (chargeCount)
+                        {
+                            bp = GetHitDamage() / 2;
+
+                            CellCoord p(Trinity::ComputeCellCoord(target->GetPositionX(), target->GetPositionY()));
+                            Cell cell(p);
+                            cell.SetNoCreate();
+
+                            Trinity::AnyUnitInObjectRangeCheck u_check(target, 10.0f);
+                            Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(target, targetList, u_check);
+
+                            TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+                            TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+
+                            cell.Visit(p, world_unit_searcher, *target->GetMap(), *target, 10.0f);
+                            cell.Visit(p, grid_unit_searcher, *target->GetMap(), *target, 10.0f);
+
+                            targetList.remove_if(CheckArcaneBarrageImpactPredicate(_player, target));
+
+                            Trinity::Containers::RandomResizeList(targetList, chargeCount);
+
+                            for (auto itr : targetList)
+                                target->CastCustomSpell(itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, 0, _player->GetGUID());
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_arcane_barrage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_arcane_barrage_SpellScript();
+        }
+};
+
+// Arcane Explosion - 1449
+class spell_mage_arcane_explosion : public SpellScriptLoader
+{
+    public:
+        spell_mage_arcane_explosion() : SpellScriptLoader("spell_mage_arcane_explosion") { }
+
+        class spell_mage_arcane_explosion_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_arcane_explosion_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_MAGE_ARCANE)
+                            if (AuraPtr arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
+                                arcaneCharge->RefreshDuration();
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_arcane_explosion_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_arcane_explosion_SpellScript();
+        }
 };
 
 // Slow - 31589
@@ -232,6 +365,39 @@ class spell_mage_frost_bomb : public SpellScriptLoader
         }
 };
 
+class CheckNetherImpactPredicate
+{
+    public:
+        CheckNetherImpactPredicate(Unit* caster, Unit* mainTarget) : _caster(caster), _mainTarget(mainTarget) {}
+
+        bool operator()(Unit* target)
+        {
+            if (!_caster || !_mainTarget)
+                return true;
+
+            if (!_caster->IsValidAttackTarget(target))
+                return true;
+
+            if (!target->IsWithinLOSInMap(_caster))
+                return true;
+
+            if (!target->isInFront(_caster))
+                return true;
+
+            if (target->GetGUID() == _caster->GetGUID())
+                return true;
+
+            if (target->GetGUID() == _mainTarget->GetGUID())
+                return true;
+
+            return false;
+        }
+
+    private:
+        Unit* _caster;
+        Unit* _mainTarget;
+};
+
 // Nether Tempest - 114923
 class spell_mage_nether_tempest : public SpellScriptLoader
 {
@@ -242,7 +408,6 @@ class spell_mage_nether_tempest : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_nether_tempest_AuraScript);
 
-            std::list<Unit*> tempList;
             std::list<Unit*> targetList;
 
             void OnTick(constAuraEffectPtr aurEff)
@@ -264,25 +429,7 @@ class spell_mage_nether_tempest : public SpellScriptLoader
                         cell.Visit(p, world_unit_searcher, *GetTarget()->GetMap(), *GetTarget(), 10.0f);
                         cell.Visit(p, grid_unit_searcher, *GetTarget()->GetMap(), *GetTarget(), 10.0f);
 
-                        tempList = targetList;
-
-                        for (auto itr : tempList)
-                        {
-                            if (!_player->IsValidAttackTarget(itr))
-                                targetList.remove(itr);
-
-                            if (!itr->IsWithinLOSInMap(_player))
-                                targetList.remove(itr);
-
-                            if (!itr->isInFront(_player))
-                                targetList.remove(itr);
-
-                            if (itr->GetGUID() == _player->GetGUID())
-                                targetList.remove(itr);
-
-                            if (itr->GetGUID() == GetTarget()->GetGUID())
-                                targetList.remove(itr);
-                        }
+                        targetList.remove_if(CheckNetherImpactPredicate(_player, GetTarget()));
 
                         Trinity::Containers::RandomResizeList(targetList, 1);
 
@@ -429,6 +576,39 @@ class spell_mage_combustion : public SpellScriptLoader
         }
 };
 
+class CheckInfernoBlastImpactPredicate
+{
+    public:
+        CheckInfernoBlastImpactPredicate(Unit* caster, Unit* mainTarget) : _caster(caster), _mainTarget(mainTarget) {}
+
+        bool operator()(Unit* target)
+        {
+            if (!_caster || !_mainTarget)
+                return true;
+
+            if (!_caster->IsValidAttackTarget(target))
+                return true;
+
+            if (!target->IsWithinLOSInMap(_caster))
+                return true;
+
+            if (!target->isInFront(_caster))
+                return true;
+
+            if (target->GetGUID() == _caster->GetGUID())
+                return true;
+
+            if (target->GetGUID() == _mainTarget->GetGUID())
+                return true;
+
+            return false;
+        }
+
+    private:
+        Unit* _caster;
+        Unit* _mainTarget;
+};
+
 // Inferno Blast - 108853
 class spell_mage_inferno_blast : public SpellScriptLoader
 {
@@ -440,7 +620,6 @@ class spell_mage_inferno_blast : public SpellScriptLoader
             PrepareSpellScript(spell_mage_inferno_blast_SpellScript);
 
             std::list<Unit*> targetList;
-            std::list<Unit*> tempList;
 
             void HandleOnHit()
             {
@@ -465,19 +644,7 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                         cell.Visit(p, world_unit_searcher, *target->GetMap(), *target, 10.0f);
                         cell.Visit(p, grid_unit_searcher, *target->GetMap(), *target, 10.0f);
 
-                        tempList = targetList;
-
-                        for (auto itr : tempList)
-                        {
-                            if (itr->GetGUID() == target->GetGUID())
-                                targetList.remove(itr);
-                            else if (!_player->IsValidAttackTarget(itr))
-                                targetList.remove(itr);
-                            else if (!_player->IsWithinLOSInMap(itr))
-                                targetList.remove(itr);
-                            else if (!_player->isInFront(itr))
-                                targetList.remove(itr);
-                        }
+                        targetList.remove_if(CheckInfernoBlastImpactPredicate(_player, target));
 
                         if (targetList.size() > 2)
                             Trinity::Containers::RandomResizeList(targetList, 2);
@@ -1076,6 +1243,8 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_arcane_barrage();
+    new spell_mage_arcane_explosion();
     new spell_mage_slow();
     new spell_mage_frostbolt();
     new spell_mage_invocation();
