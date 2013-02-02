@@ -368,16 +368,6 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
     unit->m_movementInfo.t_seat = seat->first;
     unit->m_movementInfo.t_guid = _me->GetGUID();
 
-    // Hackfix
-    switch (veSeat->m_ID)
-    {
-        case 10882:
-            unit->m_movementInfo.t_pos.m_positionX = 15.0f;
-            unit->m_movementInfo.t_pos.m_positionY = 0.0f;
-            unit->m_movementInfo.t_pos.m_positionZ = 17.0f;
-            break;
-    }
-
     if (_me->GetTypeId() == TYPEID_UNIT
         && unit->GetTypeId() == TYPEID_PLAYER
         && seat->first == 0 && seat->second.SeatInfo->m_flags & VEHICLE_SEAT_FLAG_CAN_CONTROL)
