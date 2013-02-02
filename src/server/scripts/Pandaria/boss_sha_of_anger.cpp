@@ -120,7 +120,7 @@ public:
                     case EVENT_UNLEASHED_WRATH:
                     {
                         phase1 = false;
-                        for (uint8 i=0; i<10;i++)
+                        for (uint8 i=0; i<5;i++)
                         {
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                             {
