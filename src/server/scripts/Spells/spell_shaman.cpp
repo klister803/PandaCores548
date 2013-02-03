@@ -1066,7 +1066,7 @@ class spell_sha_lava_lash : public SpellScriptLoader
                                 {
                                     std::list<Unit*> targetList;
 
-                                    _player->GetAttackableUnitListInRange(_player, targetList, 12.0f);
+                                    _player->GetAttackableUnitListInRange(targetList, 12.0f);
 
                                     int32 hitTargets = 0;
 

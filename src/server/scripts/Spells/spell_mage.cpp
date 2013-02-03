@@ -127,8 +127,6 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
             PrepareSpellScript(spell_mage_arcane_barrage_SpellScript);
 
             uint8 chargeCount;
-            std::list<Unit*> tempList;
-            std::list<Unit*> targetList;
             int32 bp;
 
             void HandleOnHit()
@@ -147,19 +145,9 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
                         {
                             bp = GetHitDamage() / 2;
 
-                            CellCoord p(Trinity::ComputeCellCoord(target->GetPositionX(), target->GetPositionY()));
-                            Cell cell(p);
-                            cell.SetNoCreate();
+                            std::list<Unit*> targetList;
 
-                            Trinity::AnyUnitInObjectRangeCheck u_check(target, 10.0f);
-                            Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(target, targetList, u_check);
-
-                            TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-                            TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-
-                            cell.Visit(p, world_unit_searcher, *target->GetMap(), *target, 10.0f);
-                            cell.Visit(p, grid_unit_searcher, *target->GetMap(), *target, 10.0f);
-
+                            target->GetAttackableUnitListInRange(targetList, 10.0f);
                             targetList.remove_if(CheckArcaneBarrageImpactPredicate(_player, target));
 
                             Trinity::Containers::RandomResizeList(targetList, chargeCount);
@@ -408,27 +396,15 @@ class spell_mage_nether_tempest : public SpellScriptLoader
         {
             PrepareAuraScript(spell_mage_nether_tempest_AuraScript);
 
-            std::list<Unit*> targetList;
-
             void OnTick(constAuraEffectPtr aurEff)
             {
                 if (GetCaster())
                 {
                     if (Player* _player = GetCaster()->ToPlayer())
                     {
-                        CellCoord p(Trinity::ComputeCellCoord(GetTarget()->GetPositionX(), GetTarget()->GetPositionY()));
-                        Cell cell(p);
-                        cell.SetNoCreate();
+                        std::list<Unit*> targetList;
 
-                        Trinity::AnyUnitInObjectRangeCheck u_check(GetTarget(), 10.0f);
-                        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(GetTarget(), targetList, u_check);
-
-                        TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-                        TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-
-                        cell.Visit(p, world_unit_searcher, *GetTarget()->GetMap(), *GetTarget(), 10.0f);
-                        cell.Visit(p, grid_unit_searcher, *GetTarget()->GetMap(), *GetTarget(), 10.0f);
-
+                        GetTarget()->GetAttackableUnitListInRange(targetList, 10.0f);
                         targetList.remove_if(CheckNetherImpactPredicate(_player, GetTarget()));
 
                         Trinity::Containers::RandomResizeList(targetList, 1);
@@ -619,30 +595,19 @@ class spell_mage_inferno_blast : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mage_inferno_blast_SpellScript);
 
-            std::list<Unit*> targetList;
-
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
+                        std::list<Unit*> targetList;
+
                         _player->CastSpell(target, SPELL_MAGE_INFERNO_BLAST_IMPACT, true);
 
                         // Spreads any Pyroblast, Ignite, and Combustion effects to up to 2 nearby enemy targets within 10 yards
-                        // TODO : Adjust Unit::GetAttackableUnitListInRange
-                        CellCoord p(Trinity::ComputeCellCoord(target->GetPositionX(), target->GetPositionY()));
-                        Cell cell(p);
-                        cell.SetNoCreate();
 
-                        Trinity::AnyUnitInObjectRangeCheck u_check(target, 10.0f);
-                        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(target, targetList, u_check);
-
-                        TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-                        TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-
-                        cell.Visit(p, world_unit_searcher, *target->GetMap(), *target, 10.0f);
-                        cell.Visit(p, grid_unit_searcher, *target->GetMap(), *target, 10.0f);
+                        target->GetAttackableUnitListInRange(targetList, 10.0f);
 
                         targetList.remove_if(CheckInfernoBlastImpactPredicate(_player, target));
 

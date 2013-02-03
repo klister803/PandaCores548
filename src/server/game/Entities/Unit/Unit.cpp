@@ -10576,7 +10576,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     {
         std::list<Unit*> nearbyUnits;
         std::list<Unit*> nearbyAllies;
-        GetAttackableUnitListInRange(ToPlayer(), nearbyUnits, 15.0f);
+        ToPlayer()->GetAttackableUnitListInRange(nearbyUnits, 15.0f);
 
         for (auto itr : nearbyUnits)
             if (!itr->IsHostileTo(this))
@@ -14838,20 +14838,20 @@ void Unit::UpdateReactives(uint32 p_time)
     }
 }
 
-void Unit::GetAttackableUnitListInRange(Player* _player, std::list<Unit*, std::allocator<Unit*>> &list, float fMaxSearchRange) const
+void Unit::GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearchRange) const
 {
-    CellCoord p(Trinity::ComputeCellCoord(_player->GetPositionX(), _player->GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
     cell.SetNoCreate();
 
-    Trinity::AnyUnitInObjectRangeCheck u_check(_player, fMaxSearchRange);
-    Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(_player, list, u_check);
+    Trinity::AnyUnitInObjectRangeCheck u_check(this, fMaxSearchRange);
+    Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(this, list, u_check);
 
     TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
     TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
-    cell.Visit(p, world_unit_searcher, *_player->GetMap(), *_player, fMaxSearchRange);
-    cell.Visit(p, grid_unit_searcher, *_player->GetMap(), *_player, fMaxSearchRange);
+    cell.Visit(p, world_unit_searcher, *GetMap(), *this, fMaxSearchRange);
+    cell.Visit(p, grid_unit_searcher, *GetMap(), *this, fMaxSearchRange);
 }
 
 Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
