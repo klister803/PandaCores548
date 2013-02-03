@@ -597,6 +597,7 @@ public:
                         if(playersInvolved.size() == 0)
                         {
                             me->setFaction(35);
+                            me->CombatStop();
                             me->SetHealth(me->GetMaxHealth());
                             events.CancelEvent(2);
                             events.CancelEvent(3);
