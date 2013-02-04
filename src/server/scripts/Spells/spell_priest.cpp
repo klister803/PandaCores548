@@ -125,7 +125,7 @@ class spell_pri_cascade_second : public SpellScriptLoader
                     {
                         affectedUnits = 0;
 
-                        _player->GetAttackableUnitListInRange(_player, targetList, 40.0f);
+                        _player->GetAttackableUnitListInRange(targetList, 40.0f);
 
                         for (auto itr : targetList)
                         {

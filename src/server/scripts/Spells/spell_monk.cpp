@@ -193,7 +193,7 @@ class spell_monk_chi_burst : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         std::list<Unit*> tempUnitMap;
-                        _player->GetAttackableUnitListInRange(_player, tempUnitMap, _player->GetDistance(target));
+                        _player->GetAttackableUnitListInRange(tempUnitMap, _player->GetDistance(target));
 
                         // Chi Burst will always heal the Monk
                         _player->CastSpell(_player, SPELL_MONK_CHI_BURST_HEAL, true);
@@ -443,7 +443,7 @@ class spell_monk_chi_torpedo : public SpellScriptLoader
                     if (Player* _player = caster->ToPlayer())
                     {
                         std::list<Unit*> tempUnitMap;
-                        _player->GetAttackableUnitListInRange(_player, tempUnitMap, 20.0f);
+                        _player->GetAttackableUnitListInRange(tempUnitMap, 20.0f);
 
                         for (auto itr : tempUnitMap)
                         {
