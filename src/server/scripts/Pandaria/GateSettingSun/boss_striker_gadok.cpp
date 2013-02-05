@@ -614,7 +614,7 @@ public:
             if (!pInstance)
                 return;
 
-            if (pInstance->GetData(DATA_GADOK) != DONE)
+            if (pInstance->GetBossState(DATA_GADOK) != DONE)
                 return;
 
             if (spell->Id == 116554) // Fire Flak Cannon
@@ -623,7 +623,7 @@ public:
                 {
                     if (Creature* bombarder = pInstance->instance->GetCreature(pInstance->GetData64(DATA_RANDOM_BOMBARDER)))
                     {
-                        me->CastSpell(bombarder, 116553, false);
+                        me->CastSpell(bombarder, 116553, true);
                         bombarder->GetMotionMaster()->MoveFall();
                         bombarder->DespawnOrUnsummon(2000);
                     }
