@@ -69,6 +69,7 @@ enum MonkSpells
     SPELL_MONK_ZEN_SPHERE_HEAL                  = 124081,
     SPELL_MONK_ZEN_SPHERE_DETONATE_HEAL         = 124101,
     SPELL_MONK_ZEN_SPHERE_DETONATE_DAMAGE       = 125033,
+    SPELL_MONK_HEALING_ELIXIRS_AURA             = 122280,
     SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH   = 122281,
     SPELL_MONK_RENEWING_MIST_HOT                = 119611,
     SPELL_MONK_RENEWING_MIST_JUMP_AURA          = 119607,
@@ -171,13 +172,16 @@ class spell_monk_healing_elixirs : public SpellScriptLoader
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    int32 bp = 10;
-
-                    if (!_player->HasSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH))
+                    if (_player->HasAura(SPELL_MONK_HEALING_ELIXIRS_AURA))
                     {
-                        _player->CastCustomSpell(_player, SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, &bp, NULL, NULL, true);
-                        // This effect cannot occur more than once per 18s
-                        _player->AddSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, 0, time(NULL) + 18);
+                        int32 bp = 10;
+
+                        if (!_player->HasSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH))
+                        {
+                            _player->CastCustomSpell(_player, SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, &bp, NULL, NULL, true);
+                            // This effect cannot occur more than once per 18s
+                            _player->AddSpellCooldown(SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH, 0, time(NULL) + 18);
+                        }
                     }
                 }
             }
