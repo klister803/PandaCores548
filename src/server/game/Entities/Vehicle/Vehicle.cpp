@@ -30,7 +30,7 @@
 #include "SpellInfo.h"
 #include "MoveSplineInit.h"
 
-Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) : _me(unit), _vehicleInfo(vehInfo), _usableSeatNum(0), _creatureEntry(creatureEntry)
+Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) : _me(unit), _vehicleInfo(vehInfo), _usableSeatNum(0), _creatureEntry(creatureEntry), _canBeCastedByPassengers(false)
 {
     for (uint32 i = 0; i < MAX_VEHICLE_SEATS; ++i)
     {
@@ -367,6 +367,18 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
     unit->m_movementInfo.t_time = 0; // 1 for player
     unit->m_movementInfo.t_seat = seat->first;
     unit->m_movementInfo.t_guid = _me->GetGUID();
+
+    // Hackfix
+    switch (veSeat->m_ID)
+    {
+        case 10882:
+            unit->m_movementInfo.t_pos.m_positionX = 15.0f;
+            unit->m_movementInfo.t_pos.m_positionY = 0.0f;
+            unit->m_movementInfo.t_pos.m_positionZ = 30.0f;
+            break;
+        default:
+            break;
+    }
 
     if (_me->GetTypeId() == TYPEID_UNIT
         && unit->GetTypeId() == TYPEID_PLAYER
