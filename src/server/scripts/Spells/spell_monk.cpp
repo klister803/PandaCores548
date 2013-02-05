@@ -70,6 +70,89 @@ enum MonkSpells
     SPELL_MONK_ZEN_SPHERE_DETONATE_HEAL         = 124101,
     SPELL_MONK_ZEN_SPHERE_DETONATE_DAMAGE       = 125033,
     SPELL_MONK_HEALING_ELIXIRS_RESTORE_HEALTH   = 122281,
+    SPELL_MONK_RENEWING_MIST_HOT                = 119611,
+    SPELL_MONK_RENEWING_MIST_JUMP_AURA          = 119607,
+    SPELL_MONK_GLYPH_OF_RENEWING_MIST           = 123334,
+};
+
+// Renewing Mist - 119611
+class spell_monk_renewing_mist : public SpellScriptLoader
+{
+    public:
+        spell_monk_renewing_mist() : SpellScriptLoader("spell_monk_renewing_mist") { }
+
+        class spell_monk_renewing_mist_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_renewing_mist_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Player* _player = caster->ToPlayer())
+                    {
+                        Player* target = GetTarget()->ToPlayer();
+                        Unit* newTarget;
+
+                        if (!target)
+                            return;
+
+                        if (target->HasAura(SPELL_MONK_RENEWING_MIST_JUMP_AURA, _player->GetGUID()))
+                        {
+                            if (_player->HasAura(SPELL_MONK_GLYPH_OF_RENEWING_MIST))
+                                newTarget = _player->GetNextRandomRaidMemberOrPet(40.0f);
+                            else
+                                newTarget = _player->GetNextRandomRaidMemberOrPet(20.0f);
+
+                            if (!newTarget)
+                                return;
+
+                            if (AuraPtr renewingMistJump = target->GetAura(SPELL_MONK_RENEWING_MIST_JUMP_AURA, _player->GetGUID()))
+                            {
+                                if (renewingMistJump->GetCharges() > 1)
+                                {
+                                    renewingMistJump->DropCharge();
+                                    uint8 stacks = renewingMistJump->GetCharges();
+
+                                    target->RemoveAura(SPELL_MONK_RENEWING_MIST_JUMP_AURA, _player->GetGUID());
+                                    _player->CastSpell(newTarget, SPELL_MONK_RENEWING_MIST_JUMP_AURA, true);
+
+                                    if (AuraPtr NEWrenewingMistJump = newTarget->GetAura(SPELL_MONK_RENEWING_MIST_JUMP_AURA, _player->GetGUID()))
+                                        NEWrenewingMistJump->SetCharges(stacks);
+                                }
+                                else
+                                    target->RemoveAura(SPELL_MONK_RENEWING_MIST_JUMP_AURA, _player->GetGUID());
+                            }
+
+                            if (AuraPtr renewingMistHot = target->GetAura(SPELL_MONK_RENEWING_MIST_HOT, _player->GetGUID()))
+                            {
+                                int32 duration = renewingMistHot->GetDuration();
+                                int32 maxDuration = renewingMistHot->GetMaxDuration();
+
+                                target->RemoveAura(SPELL_MONK_RENEWING_MIST_HOT, _player->GetGUID());
+                                _player->AddAura(SPELL_MONK_RENEWING_MIST_HOT, newTarget);
+
+                                if (AuraPtr NEWrenewingMistHot = newTarget->GetAura(SPELL_MONK_RENEWING_MIST_HOT, _player->GetGUID()))
+                                {
+                                    NEWrenewingMistHot->SetDuration(duration);
+                                    NEWrenewingMistHot->SetMaxDuration(maxDuration);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_renewing_mist_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_renewing_mist_AuraScript();
+        }
 };
 
 // Called by : Fortifying Brew - 115203, Chi Brew - 115399, Elusive Brew - 115308, Tigereye Brew - 116740
@@ -1189,6 +1272,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_renewing_mist();
     new spell_monk_healing_elixirs();
     new spell_monk_zen_sphere();
     new spell_monk_zen_sphere_hot();
