@@ -174,10 +174,13 @@ class boss_raigonn : public CreatureScript
 
                 inFight = true;
                 DoZoneInCombat();
+                events.CancelEventGroup(PHASE_VULNERABILITY);
                 events.ScheduleEvent(EVENT_SUMMON_PROTECTORAT, urand(15000, 30000));
                 events.ScheduleEvent(EVENT_SUMMON_ENGULFER, urand(15000, 30000));
                 events.ScheduleEvent(EVENT_SUMMON_SWARM_BRINGER, urand(15000, 30000));
                 events.ScheduleEvent(EVENT_CHECK_WIPE, 1000);
+
+                pInstance->SetBossState(DATA_RAIGONN, IN_PROGRESS);
 
                 if (Creature* weakPoint = pInstance->instance->GetCreature(pInstance->GetData64(NPC_WEAK_SPOT)))
                 {
@@ -226,6 +229,10 @@ class boss_raigonn : public CreatureScript
                     events.CancelEventGroup(PHASE_WEAK_SPOT);
                     events.ScheduleEvent(EVENT_FIXATE, 30000, PHASE_VULNERABILITY);
                     events.ScheduleEvent(EVENT_STOMP, 16000, PHASE_VULNERABILITY);
+
+                    DoZoneInCombat();
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                        AttackStart(target);
                 }
             }
 
@@ -264,6 +271,9 @@ class boss_raigonn : public CreatureScript
             void DoEventCharge()
             {
                 if (!pInstance)
+                    return;
+
+                if (Phase != PHASE_WEAK_SPOT)
                     return;
 
                 uint32 eventBrasierProgress = pInstance->GetData(DATA_BRASIER_CLICKED);
@@ -343,7 +353,7 @@ class boss_raigonn : public CreatureScript
                                     if (summon->IsAIEnabled)
                                         summon->AI()->AttackStart(target);
 
-                        events.ScheduleEvent(EVENT_SUMMON_PROTECTORAT, urand(15000, 30000), PHASE_WEAK_SPOT);
+                        events.ScheduleEvent(EVENT_SUMMON_PROTECTORAT, urand(30000, 45000), PHASE_WEAK_SPOT);
                         break;
                     }
                     case EVENT_SUMMON_ENGULFER:
@@ -351,7 +361,7 @@ class boss_raigonn : public CreatureScript
                         for (uint8 i = 0; i < 3; ++i)
                             me->SummonCreature(NPC_KRIKTHIK_ENGULFER, frand(941.0f, 974.0f), me->GetPositionY(), me->GetPositionZ() + 30.0f, 4.73f, TEMPSUMMON_CORPSE_TIMED_DESPAWN, 5000);
 
-                        events.ScheduleEvent(EVENT_SUMMON_ENGULFER, urand(65000, 70000), PHASE_WEAK_SPOT);
+                        events.ScheduleEvent(EVENT_SUMMON_ENGULFER, urand(95000, 105000), PHASE_WEAK_SPOT);
                         break;
                     }
                     case EVENT_SUMMON_SWARM_BRINGER:
@@ -361,12 +371,12 @@ class boss_raigonn : public CreatureScript
                                 if (summon->AI())
                                     summon->AI()->AttackStart(target);
 
-                        events.ScheduleEvent(EVENT_SUMMON_ENGULFER, urand(15000, 30000), PHASE_WEAK_SPOT);
+                        events.ScheduleEvent(EVENT_SUMMON_ENGULFER, urand(35000, 50000), PHASE_WEAK_SPOT);
                         break;
                     }
                     case EVENT_FIXATE:
                     {
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                         {
                             me->CastSpell(target, SPELL_FIXATE, true);
 
@@ -374,20 +384,24 @@ class boss_raigonn : public CreatureScript
                             me->GetMotionMaster()->MoveChase(target);
 
                         }
-                        events.ScheduleEvent(EVENT_FIXATE_STOP, 15000);
+                        events.ScheduleEvent(EVENT_FIXATE_STOP, 15000, PHASE_VULNERABILITY);
                         break;
                     }
                     case EVENT_FIXATE_STOP:
                     {
                         me->SetReactState(REACT_AGGRESSIVE);
                         me->GetMotionMaster()->Clear();
-                        events.ScheduleEvent(EVENT_FIXATE, 30000);
+
+                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                            AttackStart(target);
+
+                        events.ScheduleEvent(EVENT_FIXATE, 30000, PHASE_VULNERABILITY);
                         break;
                     }
                     case EVENT_STOMP:
                     {
                         me->CastSpell(me, SPELL_STOMP, false);
-                        events.ScheduleEvent(EVENT_STOMP, 30000);
+                        events.ScheduleEvent(EVENT_STOMP, 30000, PHASE_VULNERABILITY);
                         break;
                     }
                     default:
