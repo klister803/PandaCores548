@@ -17292,7 +17292,7 @@ void Unit::ChangeSeat(int8 seatId, bool next)
         ASSERT(false);
 }
 
-void Unit::ExitVehicle(Position const* /*exitPosition*/)
+void Unit::ExitVehicle(Position const* exitPosition)
 {
     //! This function can be called at upper level code to initialize an exit from the passenger's side.
     if (!m_vehicle)
@@ -17302,7 +17302,7 @@ void Unit::ExitVehicle(Position const* /*exitPosition*/)
     //! The following call would not even be executed successfully as the
     //! SPELL_AURA_CONTROL_VEHICLE unapply handler already calls _ExitVehicle without
     //! specifying an exitposition. The subsequent call below would return on if (!m_vehicle).
-    /*_ExitVehicle(exitPosition);*/
+    _ExitVehicle(exitPosition);
     //! To do:
     //! We need to allow SPELL_AURA_CONTROL_VEHICLE unapply handlers in spellscripts
     //! to specify exit coordinates and either store those per passenger, or we need to

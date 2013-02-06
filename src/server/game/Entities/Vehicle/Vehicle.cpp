@@ -316,6 +316,9 @@ bool Vehicle::CheckCustomCanEnter()
 
 bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
 {
+    if (!unit)
+        return false;
+
     if (unit->GetVehicle() != this)
         return false;
 
