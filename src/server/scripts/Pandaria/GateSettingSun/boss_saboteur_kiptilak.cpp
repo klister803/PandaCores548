@@ -262,6 +262,56 @@ public:
     }
 };
 
+class CheckMunitionExplosionPredicate
+{
+    public:
+        CheckMunitionExplosionPredicate(Unit* caster) : _caster(caster) {}
+
+        bool operator()(WorldObject* target)
+        {
+            if (!_caster || !target)
+                return true;
+
+            Unit* casterOwner = _caster->GetOwner();
+
+            if (!casterOwner || casterOwner == target)
+                return true;
+
+            return false;
+        }
+
+    private:
+        Unit* _caster;
+};
+
+class spell_kiptilak_munitions_explosion : public SpellScriptLoader
+{
+    public:
+        spell_kiptilak_munitions_explosion() : SpellScriptLoader("spell_kiptilak_munitions_explosion") { }
+
+        class spell_kiptilak_munitions_explosion_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_kiptilak_munitions_explosion_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& unitList)
+            {
+                if (Unit* caster = GetCaster())
+                    unitList.remove_if(CheckMunitionExplosionPredicate(caster));
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_kiptilak_munitions_explosion_SpellScript::FilterTargets, EFFECT_0, TARGET_SRC_CASTER);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_kiptilak_munitions_explosion_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_kiptilak_munitions_explosion_SpellScript();
+        }
+};
+
 class spell_kiptilak_sabotage : public SpellScriptLoader
 {
     public:
@@ -298,5 +348,6 @@ void AddSC_boss_saboteur_kiptilak()
 {
     new boss_saboteur_kiptilak();
     new npc_munition_explosion_bunny();
+    new spell_kiptilak_munitions_explosion();
     new spell_kiptilak_sabotage();
 }

@@ -87,6 +87,12 @@ public:
             secondaryDoorGUIDs.clear();
         }
 
+        void OnDestroy(Map* map)
+        {
+            if (Creature* weakSpot = instance->GetCreature(GetData64(NPC_WEAK_SPOT)))
+                weakSpot->_ExitVehicle();
+        }
+
         void OnPlayerEnter(Player* player)
         {
             if (GetData(DATA_BRASIER_CLICKED) == NOT_STARTED)
