@@ -33,6 +33,7 @@ enum eEvents
     EVENT_DESPAWN               = 5,
     EVENT_SPAWN                 = 6,
     EVENT_UPDATE_RAGE           = 7,
+    EVENT_RANGE_ATTACK          = 8,
 };
 
 enum eCreatures
@@ -62,6 +63,7 @@ public:
         uint8 _dominateMindCount;
         uint32 timer;
         bool phase1;
+        bool range;
 
         std::list<uint64> targetedDominationPlayerGuids;
 
@@ -70,10 +72,11 @@ public:
             me->setPowerType(POWER_RAGE);
 
             phase1 = true;
+            range = false;
             _dominateMindCount = 2;
             _cloudCount = 3;
             _targetCount = 0;
-            _maxTargetCount = 12;
+            _maxTargetCount = 5;
             timer = 0;
             Talk(3);
             events.Reset();
@@ -124,7 +127,7 @@ public:
                         {
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                             {
-                                if (target->GetAuraCount(SPELL_SEETHE_AURA) < 6)
+                                if (target->GetAuraCount(SPELL_SEETHE_AURA) < 3)
                                 {
                                     target->CastSpell(target,SPELL_SEETHE,false);
                                     target->AddAura(SPELL_SEETHE_AURA,target);
@@ -199,8 +202,26 @@ public:
                         me->CastSpell(me,SPELL_BERSERK,false);
                         break;
                     }
+
+                    case EVENT_RANGE_ATTACK:
+                    {
+                       if (Unit* target = me->getVictim())
+                        {
+                            target->CastSpell(target,SPELL_SEETHE,false);
+                            target->CastSpell(target,SPELL_SEETHE,false);
+                        }
+                       range = false;
+                       break;
+                    }
                 }
             }
+
+            if ((!me->IsWithinMeleeRange(me->getVictim()))&&(!range))
+            {
+                range = true;
+                events.ScheduleEvent(EVENT_RANGE_ATTACK,2000);
+            }
+
             DoMeleeAttackIfReady();
         }
     };
