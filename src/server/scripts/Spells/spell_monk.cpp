@@ -74,6 +74,66 @@ enum MonkSpells
     SPELL_MONK_RENEWING_MIST_HOT                = 119611,
     SPELL_MONK_RENEWING_MIST_JUMP_AURA          = 119607,
     SPELL_MONK_GLYPH_OF_RENEWING_MIST           = 123334,
+    SPELL_MONK_SURGING_MIST_HEAL                = 116995,
+    SPELL_MONK_ENVELOPING_MIST_HEAL             = 132120,
+};
+
+// Enveloping Mist - 124682
+class spell_monk_enveloping_mist : public SpellScriptLoader
+{
+    public:
+        spell_monk_enveloping_mist() : SpellScriptLoader("spell_monk_enveloping_mist") { }
+
+        class spell_monk_enveloping_mist_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_enveloping_mist_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetExplTargetUnit())
+                        _player->CastSpell(target, SPELL_MONK_ENVELOPING_MIST_HEAL, true);
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_monk_enveloping_mist_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_enveloping_mist_SpellScript();
+        }
+};
+
+// Surging Mist - 116694
+class spell_monk_surging_mist : public SpellScriptLoader
+{
+    public:
+        spell_monk_surging_mist() : SpellScriptLoader("spell_monk_surging_mist") { }
+
+        class spell_monk_surging_mist_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_surging_mist_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetExplTargetUnit())
+                        _player->CastSpell(target, SPELL_MONK_SURGING_MIST_HEAL, true);
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_monk_surging_mist_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_surging_mist_SpellScript();
+        }
 };
 
 // Renewing Mist - 119611
@@ -101,9 +161,9 @@ class spell_monk_renewing_mist : public SpellScriptLoader
                         if (target->HasAura(SPELL_MONK_RENEWING_MIST_JUMP_AURA, _player->GetGUID()))
                         {
                             if (_player->HasAura(SPELL_MONK_GLYPH_OF_RENEWING_MIST))
-                                newTarget = _player->GetNextRandomRaidMemberOrPet(40.0f);
+                                newTarget = target->GetNextRandomRaidMemberOrPet(40.0f);
                             else
-                                newTarget = _player->GetNextRandomRaidMemberOrPet(20.0f);
+                                newTarget = target->GetNextRandomRaidMemberOrPet(20.0f);
 
                             if (!newTarget)
                                 return;
@@ -1276,6 +1336,8 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_enveloping_mist();
+    new spell_monk_surging_mist();
     new spell_monk_renewing_mist();
     new spell_monk_healing_elixirs();
     new spell_monk_zen_sphere();
