@@ -29,7 +29,6 @@ enum eSpells
     SPELL_FRENZIED_ASSAULT          = 107120,
 
     // Add Generator
-    SPELL_SPAWN_SWARMER             = 115051,
     SPELL_PERIODIC_SPAWN_SWARMER    = 115052,
     SPELL_PERIODIC_SPAWN_SABOTEUR   = 116621,
 
