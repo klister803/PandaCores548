@@ -151,9 +151,9 @@ public:
                 break;
             case 400002:
                 if (go->GetPositionZ() < 400.0f)
-                    player->NearTeleportTo(go->GetPositionX, go->GetPositionY(), 431.0f);
+                    player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), 431.0f, go->GetOrientation());
                 else
-                    player->NearTeleportTo(go->GetPositionX, go->GetPositionY(), 388.5f);
+                    player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), 388.5f, go->GetOrientation());
                 break;
         }
 
