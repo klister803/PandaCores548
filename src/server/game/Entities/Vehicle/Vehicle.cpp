@@ -200,10 +200,16 @@ void Vehicle::RemoveAllPassengers()
     _me->RemoveAurasByType(SPELL_AURA_CONTROL_VEHICLE);
 
     // Sometime aura do not work, so we iterate to be sure that every passengers have been removed
-    for (SeatMap::const_iterator itr = Seats.begin(); itr != Seats.end(); ++itr)
+    for (SeatMap::iterator itr = Seats.begin(); itr != Seats.end(); ++itr)
+    {
         if (itr->second.Passenger)
+        {
             if (Unit* passenger = ObjectAccessor::FindUnit(itr->second.Passenger))
                 passenger->_ExitVehicle();
+
+            itr->second.Passenger = 0;
+        }
+    }
 }
 
 bool Vehicle::HasEmptySeat(int8 seatId) const
