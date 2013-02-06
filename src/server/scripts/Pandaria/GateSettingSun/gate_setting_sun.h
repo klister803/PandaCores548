@@ -15,12 +15,12 @@ uint32 const EncounterCount = 4;
 
 enum DataTypes
 {
-    DATA_IN_FIGHT               = 0,
+    DATA_KIPTILAK               = 0,
+    DATA_GADOK                  = 1,
+    DATA_RIMOK                  = 2,
+    DATA_RAIGONN                = 3,
 
-    DATA_KIPTILAK               = 1,
-    DATA_GADOK                  = 2,
-    DATA_RIMOK                  = 3,
-    DATA_RAIGONN                = 4,
+    DATA_IN_FIGHT               = 4,
 
     DATA_OPEN_FIRST_DOOR        = 5,
     DATA_BRASIER_CLICKED        = 6,

@@ -145,10 +145,10 @@ class boss_saboteur_kiptilak : public CreatureScript
                 switch(events.ExecuteEvent())
                 {
                     case EVENT_EXPLOSIVES:
-                        for (uint8 i = 0; i < 3; ++i)
+                        for (uint8 i = 0; i < urand(1, 3); ++i)
                             me->CastSpell(frand(702, 740), frand(2292, 2320), 388.5f, SPELL_PLANT_EXPLOSIVE, true);
 
-                        events.ScheduleEvent(EVENT_EXPLOSIVES, urand(7500,  10000));
+                        events.ScheduleEvent(EVENT_EXPLOSIVES, urand(7500, 12500));
                         break;
                     case EVENT_SABOTAGE:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
@@ -191,7 +191,7 @@ public:
         {
             me->SetReactState(REACT_PASSIVE);
             orientation = 0.0f;
-            checkTimer = 500;
+            checkTimer = 1000;
 
             switch (me->GetEntry())
             {
