@@ -33,7 +33,6 @@ enum MonkSpells
     SPELL_MONK_BLACKOUT_KICK_DOT                = 128531,
     SPELL_MONK_BLACKOUT_KICK_HEAL               = 128591,
     SPELL_MONK_SHUFFLE                          = 115307,
-    SPELL_MONK_SERPENTS_ZEAL                    = 127722,
     SPELL_MONK_ZEN_PILGRIMAGE                   = 126892,
     SPELL_MONK_ZEN_PILGRIMAGE_RETURN            = 126895,
     SPELL_MONK_DISABLE_ROOT                     = 116706,
@@ -79,6 +78,36 @@ enum MonkSpells
     SPELL_MONK_PLUS_ONE_MANA_TEA                = 123760,
     SPELL_MONK_MANA_TEA_STACKS                  = 115867,
     SPELL_MONK_MANA_TEA_REGEN                   = 115294,
+    SPELL_MONK_SPINNING_CRANE_KICK_HEAL         = 117640,
+};
+
+// Called by Spinning Crane Kick - 101546
+// Teachings of the Monastery - 116645
+class spell_monk_teachings_of_the_monastery : public SpellScriptLoader
+{
+    public:
+        spell_monk_teachings_of_the_monastery() : SpellScriptLoader("spell_monk_teachings_of_the_monastery") { }
+
+        class spell_monk_teachings_of_the_monastery_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_teachings_of_the_monastery_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    GetCaster()->CastSpell(GetCaster(), SPELL_MONK_SPINNING_CRANE_KICK_HEAL, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_teachings_of_the_monastery_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_teachings_of_the_monastery_AuraScript();
+        }
 };
 
 // Mana Tea - 115294
@@ -1139,10 +1168,6 @@ class spell_monk_blackout_kick : public SpellScriptLoader
                                 caster->CastCustomSpell(caster, SPELL_MONK_BLACKOUT_KICK_HEAL, &bp, NULL, NULL, true);
                             }
                         }
-                        // +25% / +50% of the auto-attacks on heal nearby targets
-                        // TODO : Buff the Jade Serpent Statue too
-                        else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_MISTWEAVER)
-                            caster->CastSpell(caster, SPELL_MONK_SERPENTS_ZEAL, true);
                         // Brewmaster : Training - you gain Shuffle, increasing parry chance and stagger amount by 20%
                         else if (caster->GetTypeId() == TYPEID_PLAYER && caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_MONK_BREWMASTER)
                             caster->CastSpell(caster, SPELL_MONK_SHUFFLE, true);
@@ -1468,6 +1493,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_teachings_of_the_monastery();
     new spell_monk_mana_tea();
     new spell_monk_mana_tea_stacks();
     new spell_monk_enveloping_mist();
