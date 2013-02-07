@@ -43,6 +43,7 @@ public:
         uint64 fireSignalGuid;
 
         uint64 wallCGuid;
+        uint64 portalTempGadokGuid;
 
         uint32 cinematicTimer;
         uint8 cinematicEventProgress;
@@ -64,18 +65,19 @@ public:
             SetBossNumber(EncounterCount);
             LoadDoorData(doorData);
 
-            kiptilakGuid    = 0;
-            gadokGuid       = 0;
-            rimokGuid       = 0;
-            raigonnGuid     = 0;
-            raigonWeakGuid  = 0;
+            kiptilakGuid            = 0;
+            gadokGuid               = 0;
+            rimokGuid               = 0;
+            raigonnGuid             = 0;
+            raigonWeakGuid          = 0;
             
-            firstDoorGuid   = 0;
+            firstDoorGuid           = 0;
 
-            cinematicTimer  = 0;
-            cinematicEventProgress = 0;
+            cinematicTimer          = 0;
+            cinematicEventProgress  = 0;
 
-            wallCGuid       = 0;
+            wallCGuid               = 0;
+            portalTempGadokGuid     = 0;
 
             memset(dataStorage, 0, MAX_DATA * sizeof(uint32));
 
@@ -87,7 +89,7 @@ public:
             secondaryDoorGUIDs.clear();
         }
 
-        void OnDestroy(Map* map)
+        void OnDestroy(InstanceMap* pMap)
         {
             if (Creature* weakSpot = instance->GetCreature(GetData64(NPC_WEAK_SPOT)))
                 weakSpot->_ExitVehicle();
@@ -166,6 +168,9 @@ public:
                 case GO_WALL_C:
                     wallCGuid = go->GetGUID();
                     return;
+                case GO_PORTAL_TEMP_GADOK:
+                    portalTempGadokGuid = go->GetGUID();
+                    return;
                 default:
                     return;
             }
@@ -184,6 +189,12 @@ public:
                         for (auto itr: mantidBombsGUIDs)
                             if (GameObject* bomb = instance->GetGameObject(itr))
                                 bomb->SetPhaseMask(32768, true); // Set Invisible
+                    break;
+                }
+                case DATA_GADOK:
+                {
+                    if (GameObject* portal = instance->GetGameObject(portalTempGadokGuid))
+                        portal->SetPhaseMask(state == IN_PROGRESS ? 4 : 3, true);
                     break;
                 }
                 case DATA_RIMOK:

@@ -272,9 +272,12 @@ class CheckMunitionExplosionPredicate
             if (!_caster || !target)
                 return true;
 
-            Unit* casterOwner = _caster->GetOwner();
+            if (!_caster->ToTempSummon())
+                return true;
 
-            if (!casterOwner || casterOwner == target)
+            Unit* creator = _caster->ToTempSummon()->GetSummoner();
+
+            if (!creator || creator == target)
                 return true;
 
             return false;

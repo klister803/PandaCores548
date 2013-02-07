@@ -199,11 +199,17 @@ void Vehicle::RemoveAllPassengers()
     // We don't need to iterate over Seats
     _me->RemoveAurasByType(SPELL_AURA_CONTROL_VEHICLE);
 
-    // Following the above logic, this assertion should NEVER fail.
-    // Even in 'hacky' cases, there should at least be VEHICLE_SPELL_RIDE_HARDCODED on us.
-    // SeatMap::const_iterator itr;
-    // for (itr = Seats.begin(); itr != Seats.end(); ++itr)
-    //    ASSERT(!itr->second.passenger);
+    // Sometime aura do not work, so we iterate to be sure that every passengers have been removed
+    for (SeatMap::iterator itr = Seats.begin(); itr != Seats.end(); ++itr)
+    {
+        if (itr->second.Passenger)
+        {
+            if (Unit* passenger = ObjectAccessor::FindUnit(itr->second.Passenger))
+                passenger->_ExitVehicle();
+
+            itr->second.Passenger = 0;
+        }
+    }
 }
 
 bool Vehicle::HasEmptySeat(int8 seatId) const
@@ -310,6 +316,9 @@ bool Vehicle::CheckCustomCanEnter()
 
 bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
 {
+    if (!unit)
+        return false;
+
     if (unit->GetVehicle() != this)
         return false;
 

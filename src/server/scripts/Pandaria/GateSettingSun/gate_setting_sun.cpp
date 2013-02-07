@@ -137,6 +137,30 @@ public:
     }
 };
 
+class go_setting_sun_temp_portal : public GameObjectScript
+{
+public:
+    go_setting_sun_temp_portal() : GameObjectScript("go_setting_sun_temp_portal") { }
+
+    bool OnGossipHello(Player* player, GameObject* go)
+    {
+        switch (go->GetEntry())
+        {
+            case 400001:
+                player->NearTeleportTo(1078.96f, 2305.48f, 381.55f, 0.01f);
+                break;
+            case 400002:
+                if (go->GetPositionZ() < 400.0f)
+                    player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), 431.0f, go->GetOrientation());
+                else
+                    player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), 388.5f, go->GetOrientation());
+                break;
+        }
+
+        return false;
+    }
+};
+
 class vehicle_artillery_to_wall : public VehicleScript
 {
     public:
@@ -201,5 +225,6 @@ void AddSC_gate_setting_sun()
     new npc_krikthik_bombarder();
     new AreaTrigger_at_first_door();
     new go_setting_sun_brasier();
+    new go_setting_sun_temp_portal();
     new vehicle_artillery_to_wall();
 }

@@ -91,6 +91,9 @@ enum ObjectsIds
 
     GO_GREATDOOR_SECOND_DOOR    = 214888,
     GO_WALL_C                   = 213198,
+
+    GO_PORTAL_TEMP_CORDE        = 400001,
+    GO_PORTAL_TEMP_GADOK        = 400002
 };
 
 enum eSettingSun
