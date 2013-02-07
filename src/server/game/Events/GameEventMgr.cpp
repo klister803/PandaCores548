@@ -850,42 +850,6 @@ void GameEventMgr::LoadFromDB()
         }
     }
 
-    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Game Event Battleground Data...");
-    {
-        uint32 oldMSTime = getMSTime();
-
-        //                                                   0         1
-        QueryResult result = WorldDatabase.Query("SELECT eventEntry, bgflag FROM game_event_battleground_holiday");
-
-        if (!result)
-        {
-            sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 battleground holidays in game events. DB table `game_event_battleground_holiday` is empty.");
-        }
-        else
-        {
-            uint32 count = 0;
-            do
-            {
-                Field* fields = result->Fetch();
-
-                uint16 event_id = fields[0].GetUInt8();
-
-                if (event_id >= mGameEvent.size())
-                {
-                    sLog->outError(LOG_FILTER_SQL, "`game_event_battleground_holiday` game event id (%u) is out of range compared to max event id in `game_event`", event_id);
-                    continue;
-                }
-
-                mGameEventBattlegroundHolidays[event_id] = fields[1].GetUInt32();
-
-                ++count;
-            }
-            while (result->NextRow());
-
-            sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded %u battleground holidays in game events in %u ms", count, GetMSTimeDiffToNow(oldMSTime));
-        }
-    }
-
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Game Event Pool Data...");
     {
         uint32 oldMSTime = getMSTime();
@@ -969,7 +933,6 @@ void GameEventMgr::Initialize()
         mGameEventCreatureQuests.resize(maxEventId);
         mGameEventGameObjectQuests.resize(maxEventId);
         mGameEventVendors.resize(maxEventId);
-        mGameEventBattlegroundHolidays.resize(maxEventId, 0);
         mGameEventPoolIds.resize(maxEventId * 2 - 1);
         mGameEventNPCFlags.resize(maxEventId);
         mGameEventModelEquip.resize(maxEventId);
@@ -1164,10 +1127,14 @@ void GameEventMgr::UpdateEventNPCFlags(uint16 event_id)
 
 void GameEventMgr::UpdateBattlegroundSettings()
 {
-    uint32 mask = 0;
+    std::list<uint32> activeHollidayList;
+    GameEventMgr::GameEventDataMap const events = sGameEventMgr->GetEventMap();
+
     for (ActiveEvents::const_iterator itr = m_ActiveEvents.begin(); itr != m_ActiveEvents.end(); ++itr)
-        mask |= mGameEventBattlegroundHolidays[*itr];
-    sBattlegroundMgr->SetHolidayWeekends(mask);
+        if (events[*itr].holiday_id)
+            activeHollidayList.push_back(events[*itr].holiday_id);
+
+    sBattlegroundMgr->SetHolidayWeekends(activeHollidayList);
 }
 
 void GameEventMgr::UpdateEventNPCVendor(uint16 event_id, bool activate)
