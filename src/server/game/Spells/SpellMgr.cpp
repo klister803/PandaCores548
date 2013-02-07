@@ -3131,6 +3131,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 115294:// Mana Tea
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36); // 1s
+                break;
             case 44461: // Living Bomb
                 spellInfo->MaxAffectedTargets = 3;
                 break;
