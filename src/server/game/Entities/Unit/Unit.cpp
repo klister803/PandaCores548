@@ -11655,9 +11655,8 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
 
     // can't attack own vehicle or passenger
     if (m_vehicle)
-        if (!m_vehicle->CanBeCastedByPassengers())
-            if (IsOnVehicle(target) || m_vehicle->GetBase()->IsOnVehicle(target))
-                return false;
+        if (IsOnVehicle(target) || m_vehicle->GetBase()->IsOnVehicle(target))
+            return false;
 
     // can't attack invisible (ignore stealth for aoe spells) also if the area being looked at is from a spell use the dynamic object created instead of the casting unit.
     if ((!bySpell || !(bySpell->AttributesEx6 & SPELL_ATTR6_CAN_TARGET_INVISIBLE)) && (obj ? !obj->canSeeOrDetect(target, bySpell && bySpell->IsAffectingArea()) : !canSeeOrDetect(target, bySpell && bySpell->IsAffectingArea())))
@@ -11909,12 +11908,15 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
         return 0;
 
     if (power == POWER_CHI)
+    {
         if (dVal < 0)
         {
-            AuraPtr tigereyeBrew = this->GetAura(123980);
-            if (tigereyeBrew != NULLAURA)
+            if (AuraPtr tigereyeBrew = this->GetAura(123980))
                 tigereyeBrew->SetScriptData(0, -dVal);
+            else if (AuraPtr manaTea = this->GetAura(123766))
+                manaTea->SetScriptData(0, -dVal);
         }
+    }
 
     int32 curPower = GetPower(power);
 

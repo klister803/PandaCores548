@@ -2638,6 +2638,10 @@ void SpellMgr::LoadSpellClassInfo()
         if(!classEntry)
             continue;
 
+        // Player damage reduction (40% base resilience)
+        if (ClassID == CLASS_DEATH_KNIGHT || ClassID == CLASS_MAGE || ClassID == CLASS_PRIEST)
+            mSpellClassInfo[ClassID].push_back(115043);
+
         // Swift Flight Form
         if (ClassID == CLASS_DRUID)
             mSpellClassInfo[ClassID].push_back(40120);
@@ -3127,6 +3131,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 115294:// Mana Tea
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36); // 1s
+                break;
             case 44461: // Living Bomb
                 spellInfo->MaxAffectedTargets = 3;
                 break;

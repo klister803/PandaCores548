@@ -76,6 +76,138 @@ enum MonkSpells
     SPELL_MONK_GLYPH_OF_RENEWING_MIST           = 123334,
     SPELL_MONK_SURGING_MIST_HEAL                = 116995,
     SPELL_MONK_ENVELOPING_MIST_HEAL             = 132120,
+    SPELL_MONK_PLUS_ONE_MANA_TEA                = 123760,
+    SPELL_MONK_MANA_TEA_STACKS                  = 115867,
+    SPELL_MONK_MANA_TEA_REGEN                   = 115294,
+};
+
+// Mana Tea - 115294
+class spell_monk_mana_tea : public SpellScriptLoader
+{
+    public:
+        spell_monk_mana_tea() : SpellScriptLoader("spell_monk_mana_tea") { }
+
+        class spell_monk_mana_tea_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_mana_tea_SpellScript);
+
+            SpellModifier* spellMod;
+
+            void HandleBeforeCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    int32 stacks = 0;
+
+                    if (AuraPtr manaTeaStacks = _player->GetAura(SPELL_MONK_MANA_TEA_STACKS))
+                        stacks = manaTeaStacks->GetStackAmount();
+
+                    int32 newDuration = stacks * IN_MILLISECONDS;
+
+                    spellMod = new SpellModifier();
+                    spellMod->op = SPELLMOD_DURATION;
+                    spellMod->type = SPELLMOD_FLAT;
+                    spellMod->spellId = SPELL_MONK_MANA_TEA_REGEN;
+                    spellMod->value = newDuration;
+                    spellMod->mask[1] = 0x200000;
+                    spellMod->mask[2] = 0x1;
+
+                    _player->AddSpellMod(spellMod, true);
+                }
+            }
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->AddSpellMod(spellMod, false);
+            }
+
+            void Register()
+            {
+                BeforeCast += SpellCastFn(spell_monk_mana_tea_SpellScript::HandleBeforeCast);
+                AfterCast += SpellCastFn(spell_monk_mana_tea_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_mana_tea_SpellScript();
+        }
+
+        class spell_monk_mana_tea_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_mana_tea_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                {
+                    // remove one charge per tick instead of remove aura on cast
+                    // "Cancelling the channel will not waste stacks"
+                    if (AuraPtr manaTea = GetCaster()->GetAura(SPELL_MONK_MANA_TEA_STACKS))
+                    {
+                        if (manaTea->GetStackAmount() > 1)
+                            manaTea->SetStackAmount(manaTea->GetStackAmount() - 1);
+                        else
+                            GetCaster()->RemoveAura(SPELL_MONK_MANA_TEA_STACKS);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_mana_tea_AuraScript::OnTick, EFFECT_0, SPELL_AURA_OBS_MOD_POWER);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_mana_tea_AuraScript();
+        }
+};
+
+// Brewing : Mana Tea - 123766
+class spell_monk_mana_tea_stacks : public SpellScriptLoader
+{
+    public:
+        spell_monk_mana_tea_stacks() : SpellScriptLoader("spell_monk_mana_tea_stacks") { }
+
+        class spell_monk_mana_tea_stacks_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_mana_tea_stacks_AuraScript);
+
+            uint32 chiConsumed;
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                chiConsumed = 0;
+            }
+
+            void SetData(uint32 type, uint32 data)
+            {
+                while ((chiConsumed += data) >= 4)
+                {
+                    chiConsumed = 0;
+                    data = data > 4 ? data - 4: 0;
+
+                    if (GetCaster())
+                    {
+                        GetCaster()->CastSpell(GetCaster(), SPELL_MONK_MANA_TEA_STACKS, true);
+                        GetCaster()->CastSpell(GetCaster(), SPELL_MONK_PLUS_ONE_MANA_TEA, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_monk_mana_tea_stacks_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_mana_tea_stacks_AuraScript();
+        }
 };
 
 // Enveloping Mist - 124682
@@ -1336,6 +1468,8 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_mana_tea();
+    new spell_monk_mana_tea_stacks();
     new spell_monk_enveloping_mist();
     new spell_monk_surging_mist();
     new spell_monk_renewing_mist();
