@@ -51,6 +51,7 @@ struct CreateBattlegroundData
     float Team2StartLocZ;
     float Team2StartLocO;
     float StartMaxDist;
+    uint32 holiday;
     uint32 scriptId;
 };
 
@@ -132,7 +133,7 @@ class BattlegroundMgr
         void ToggleArenaTesting();
         void ToggleTesting();
 
-        void SetHolidayWeekends(uint32 mask);
+        void SetHolidayWeekends(std::list<uint32> activeHolidayId);
         void LoadBattleMastersEntry();
         BattlegroundTypeId GetBattleMasterBG(uint32 entry) const
         {

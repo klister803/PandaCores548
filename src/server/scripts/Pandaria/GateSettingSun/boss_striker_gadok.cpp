@@ -572,8 +572,15 @@ public:
                         break;
 
                     Map::PlayerList const &PlayerList = pInstance->instance->GetPlayers();
+
+                    if (PlayerList.isEmpty())
+                        return;
+
                     Map::PlayerList::const_iterator it = PlayerList.begin();
                     for (uint8 i = 0; i < urand(0, PlayerList.getSize() - 1); ++i, ++it);
+
+                    if (it == PlayerList.end())
+                        return;
 
                     if (Player* player = it->getSource())
                         me->CastSpell(player, SPELL_BOMB, true); //Triggered to avoid pillars line of sight
