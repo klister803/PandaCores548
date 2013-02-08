@@ -79,6 +79,71 @@ enum MonkSpells
     SPELL_MONK_MANA_TEA_STACKS                  = 115867,
     SPELL_MONK_MANA_TEA_REGEN                   = 115294,
     SPELL_MONK_SPINNING_CRANE_KICK_HEAL         = 117640,
+    MONK_NPC_JADE_SERPENT_STATUE                = 60849,
+};
+
+// Summon Jade Serpent Statue - 115313
+class spell_monk_jade_serpent_statue : public SpellScriptLoader
+{
+    public:
+        spell_monk_jade_serpent_statue() : SpellScriptLoader("spell_monk_jade_serpent_statue") { }
+
+        class spell_monk_jade_serpent_statue_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_jade_serpent_statue_SpellScript)
+
+            void HandleSummon(SpellEffIndex effIndex)
+            {
+                if (Player* player = GetCaster()->ToPlayer())
+                {
+                    PreventHitDefaultEffect(effIndex);
+
+                    const SpellInfo* spell = GetSpellInfo();
+                    std::list<Creature*> tempList;
+                    std::list<Creature*> jadeSerpentlist;
+
+                    player->GetCreatureListWithEntryInGrid(tempList, MONK_NPC_JADE_SERPENT_STATUE, 500.0f);
+                    player->GetCreatureListWithEntryInGrid(jadeSerpentlist, MONK_NPC_JADE_SERPENT_STATUE, 500.0f);
+
+                    // Remove other players jade statue
+                    for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+                    {
+                        Unit* owner = (*i)->GetOwner();
+                        if (owner && owner == player && (*i)->isSummon())
+                            continue;
+
+                        jadeSerpentlist.remove((*i));
+                    }
+
+                    // 1 statue max
+                    if ((int32)jadeSerpentlist.size() >= spell->Effects[effIndex].BasePoints)
+                        jadeSerpentlist.back()->ToTempSummon()->UnSummon();
+
+                    Position pos;
+                    GetExplTargetDest()->GetPosition(&pos);
+                    const SummonPropertiesEntry* properties = sSummonPropertiesStore.LookupEntry(spell->Effects[effIndex].MiscValueB);
+                    TempSummon* summon = player->SummonCreature(spell->Effects[effIndex].MiscValue, pos, TEMPSUMMON_TIMED_OR_CORPSE_DESPAWN, spell->GetDuration());
+                    if (!summon)
+                        return;
+
+                    summon->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, player->GetGUID());
+                    summon->setFaction(player->getFaction());
+                    summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                    summon->SetMaxHealth(player->CountPctFromMaxHealth(50));
+                    summon->SetHealth(summon->GetMaxHealth());
+                }
+            }
+
+            void Register()
+            {
+                OnEffectHit += SpellEffectFn(spell_monk_jade_serpent_statue_SpellScript::HandleSummon, EFFECT_0, SPELL_EFFECT_SUMMON);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_jade_serpent_statue_SpellScript();
+        }
 };
 
 // Called by Spinning Crane Kick - 107270
@@ -95,8 +160,20 @@ class spell_monk_teachings_of_the_monastery : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (GetCaster())
+                {
                     if (GetHitUnit())
-                        GetCaster()->CastSpell(GetCaster(), SPELL_MONK_SPINNING_CRANE_KICK_HEAL, true);
+                    {
+                        if (GetCaster()->ToPlayer())
+                        {
+                            if (!GetCaster()->ToPlayer()->HasSpellCooldown(SPELL_MONK_SPINNING_CRANE_KICK_HEAL))
+                            {
+                                // prevent multiples procs if hits more than one target
+                                GetCaster()->CastSpell(GetCaster(), SPELL_MONK_SPINNING_CRANE_KICK_HEAL, true);
+                                GetCaster()->ToPlayer()->AddSpellCooldown(SPELL_MONK_SPINNING_CRANE_KICK_HEAL, 0, time(NULL) + 0.1);
+                            }
+                        }
+                    }
+                }
             }
 
             void Register()
@@ -1494,6 +1571,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_jade_serpent_statue();
     new spell_monk_teachings_of_the_monastery();
     new spell_monk_mana_tea();
     new spell_monk_mana_tea_stacks();

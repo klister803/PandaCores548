@@ -649,6 +649,99 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         victim->CastCustomSpell(victim, 115611, &bp, NULL, NULL, true);
     }
+    // Stance of the Wise Serpent - 115070
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(115070) && spellProto)
+    {
+        int32 bp = damage / 2;
+        std::list<Unit*> targetList;
+        std::list<Creature*> tempList;
+        std::list<Creature*> statueList;
+        Creature* statue;
+
+        ToPlayer()->GetPartyMembers(targetList);
+
+        if (targetList.size() > 1)
+        {
+            targetList.sort(Trinity::HealthPctOrderPred());
+            targetList.resize(1);
+        }
+
+        ToPlayer()->GetCreatureListWithEntryInGrid(tempList, 60849, 500.0f);
+        ToPlayer()->GetCreatureListWithEntryInGrid(statueList, 60849, 500.0f);
+
+        // Remove other players jade statue
+        for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+        {
+            Unit* owner = (*i)->GetOwner();
+            if (owner && owner == ToPlayer() && (*i)->isSummon())
+                continue;
+
+            statueList.remove((*i));
+        }
+
+        // In addition, you also gain Eminence, causing you to heal the lowest health nearby target within 20 yards for an amount equal to 50% of non-autoattack damage you deal
+        for (auto itr : targetList)
+        {
+            CastCustomSpell(itr, 117895, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+
+            if (statueList.size() == 1)
+            {
+                for (auto itrBis : statueList)
+                    statue = itrBis;
+
+                if (statue && (statue->isPet() || statue->isGuardian()))
+                    if (statue->GetOwner() && statue->GetOwner()->GetGUID() == GetGUID())
+                        statue->CastCustomSpell(itr, 117895, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+            }
+        }
+    }
+    // Serpent's Zeal - 127722
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(127722) && !spellProto)
+    {
+        int32 bp = 0;
+        std::list<Creature*> tempList;
+        std::list<Creature*> statueList;
+        Creature* statue;
+
+        if (AuraPtr serpentsZeal = GetAura(127722))
+        {
+            if (serpentsZeal->GetStackAmount() < 2)
+                bp += damage / 4;
+            else
+                bp += damage / 2;
+
+            if (serpentsZeal->GetStackAmount() > 1)
+                serpentsZeal->SetStackAmount(serpentsZeal->GetStackAmount() - 1);
+            else
+                RemoveAura(127722);
+        }
+
+        ToPlayer()->GetCreatureListWithEntryInGrid(tempList, 60849, 500.0f);
+        ToPlayer()->GetCreatureListWithEntryInGrid(statueList, 60849, 500.0f);
+
+        // Remove other players jade statue
+        for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+        {
+            Unit* owner = (*i)->GetOwner();
+            if (owner && owner == ToPlayer() && (*i)->isSummon())
+                continue;
+
+            statueList.remove((*i));
+        }
+
+        // you gain Serpent's Zeal causing you to heal nearby injured targets equal to 25% of your auto-attack damage. Stacks up to 2 times.
+        CastCustomSpell(this, 126890, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+
+        if (statueList.size() == 1)
+        {
+            for (auto itrBis : statueList)
+                statue = itrBis;
+
+            if (statue && (statue->isPet() || statue->isGuardian()))
+                if (statue->GetOwner() && statue->GetOwner()->GetGUID() == GetGUID())
+                    statue->CastCustomSpell(statue, 126890, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+        }
+    }
 
     // Calculate Attack Power amount for Vengeance
     // Patch 4.3.2 : Vengeance is no longer triggered by receiving damage from other players
@@ -10456,6 +10549,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 115611)
         return healamount;
 
+    // No bonus for Eminence (statue) and Eminence
+    if (spellProto->Id == 117895 || spellProto->Id == 126890)
+        return healamount;
+
     float DoneTotalMod = 1.0f;
     int32 DoneTotal = 0;
 
@@ -10620,6 +10717,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, uint32 healamount, DamageEffectType damagetype, uint32 stack)
 {
     float TakenTotalMod = 1.0f;
+
+    // No bonus for Eminence (statue) and Eminence
+    if (spellProto->Id == 117895 || spellProto->Id == 126890)
+        return healamount;
 
     // Healing taken percent
     float minval = float(GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT));
