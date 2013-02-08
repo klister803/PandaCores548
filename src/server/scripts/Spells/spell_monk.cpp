@@ -81,32 +81,33 @@ enum MonkSpells
     SPELL_MONK_SPINNING_CRANE_KICK_HEAL         = 117640,
 };
 
-// Called by Spinning Crane Kick - 101546
+// Called by Spinning Crane Kick - 107270
 // Teachings of the Monastery - 116645
 class spell_monk_teachings_of_the_monastery : public SpellScriptLoader
 {
     public:
         spell_monk_teachings_of_the_monastery() : SpellScriptLoader("spell_monk_teachings_of_the_monastery") { }
 
-        class spell_monk_teachings_of_the_monastery_AuraScript : public AuraScript
+        class spell_monk_teachings_of_the_monastery_SpellScript : public SpellScript
         {
-            PrepareAuraScript(spell_monk_teachings_of_the_monastery_AuraScript);
+            PrepareSpellScript(spell_monk_teachings_of_the_monastery_SpellScript);
 
-            void OnTick(constAuraEffectPtr aurEff)
+            void HandleOnHit()
             {
                 if (GetCaster())
-                    GetCaster()->CastSpell(GetCaster(), SPELL_MONK_SPINNING_CRANE_KICK_HEAL, true);
+                    if (GetHitUnit())
+                        GetCaster()->CastSpell(GetCaster(), SPELL_MONK_SPINNING_CRANE_KICK_HEAL, true);
             }
 
             void Register()
             {
-                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_teachings_of_the_monastery_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+                OnHit += SpellHitFn(spell_monk_teachings_of_the_monastery_SpellScript::HandleOnHit);
             }
         };
 
-        AuraScript* GetAuraScript() const
+        SpellScript* GetSpellScript() const
         {
-            return new spell_monk_teachings_of_the_monastery_AuraScript();
+            return new spell_monk_teachings_of_the_monastery_SpellScript();
         }
 };
 
