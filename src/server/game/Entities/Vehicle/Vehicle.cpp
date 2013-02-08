@@ -30,7 +30,8 @@
 #include "SpellInfo.h"
 #include "MoveSplineInit.h"
 
-Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) : _me(unit), _vehicleInfo(vehInfo), _usableSeatNum(0), _creatureEntry(creatureEntry), _canBeCastedByPassengers(false)
+Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) : _me(unit), _vehicleInfo(vehInfo), _usableSeatNum(0), _creatureEntry(creatureEntry),
+                                                                                  _isBeingDismissed(false), _passengersSpawnedByAI(false), _canBeCastedByPassengers(false)
 {
     for (uint32 i = 0; i < MAX_VEHICLE_SEATS; ++i)
     {
@@ -44,7 +45,6 @@ Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) 
     }
 
     InitMovementInfoForBase();
-    _passengersSpawnedByAI = false;
 }
 
 Vehicle::~Vehicle()
@@ -113,8 +113,11 @@ void Vehicle::InstallAllAccessories(bool evading)
             InstallAccessory(itr->AccessoryEntry, itr->SeatId, itr->IsMinion, itr->SummonedType, itr->SummonTime);
 }
 
-void Vehicle::Uninstall()
+void Vehicle::Uninstall(bool uninstallBeforeDelete)
 {
+    if (uninstallBeforeDelete)
+        _isBeingDismissed = true;
+
     sLog->outDebug(LOG_FILTER_VEHICLES, "Vehicle::Uninstall Entry: %u, GuidLow: %u", _creatureEntry, _me->GetGUIDLow());
     RemoveAllPassengers();
 
@@ -495,6 +498,9 @@ void Vehicle::RelocatePassengers()
 void Vehicle::Dismiss()
 {
     if (GetBase()->GetTypeId() != TYPEID_UNIT)
+        return;
+
+    if (_isBeingDismissed)
         return;
 
     sLog->outDebug(LOG_FILTER_VEHICLES, "Vehicle::Dismiss Entry: %u, GuidLow %u", _creatureEntry, _me->GetGUIDLow());
