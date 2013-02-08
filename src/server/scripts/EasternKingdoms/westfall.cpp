@@ -262,8 +262,76 @@ public:
     };
 };
 
+enum clodoEnum { 
+
+    NPC_HOMELESS_STORMWIND_CITIZEN      = 42384,
+    NPC_HOMELESS_STORMWIND_CITIZEN2     = 42386,
+    NPC_WEST_PLAINS_DRIFTER             = 42391,
+    KILL_CREDIT_WESTFALL_STEW           = 42617
+
+};
+
+class npc_westfall_stew : public CreatureScript
+{
+public:
+    npc_westfall_stew() : CreatureScript("npc_westfall_stew") { }
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_westfall_stewAI (creature);
+    }
+    
+    struct npc_westfall_stewAI : public ScriptedAI
+    {
+        npc_westfall_stewAI(Creature* creature) : ScriptedAI(creature) {}
+        uint32 time;
+        bool booltest;
+        std::list<Creature*> clodoList;
+            
+        void Reset()
+        {
+            time = 30000;
+            booltest = true;
+            if(Player* invocer = me->ToTempSummon()->GetSummoner()->ToPlayer()) 
+            {               
+                GetCreatureListWithEntryInGrid(clodoList, me, NPC_HOMELESS_STORMWIND_CITIZEN, 15.0f);
+                for (auto clodo: clodoList)
+                {
+                    if(clodo->getStandState() != UNIT_STAND_STATE_SIT)
+                    {
+                        clodo->GetMotionMaster()->MoveFollow(me, 1, me->GetAngle(clodo));
+                        clodo->SetStandState(UNIT_STAND_STATE_SIT);
+                        invocer->KilledMonsterCredit(KILL_CREDIT_WESTFALL_STEW, 0);
+                    }
+                }               
+            }
+        }
+        void UpdateAI(const uint32 diff)
+        {
+            if(booltest)
+            {
+                if (time < diff)
+                {
+                    for (auto clodo: clodoList)
+                    {
+                        clodo->SetStandState(UNIT_STAND_STATE_STAND);
+                        clodo->SetDefaultMovementType(RANDOM_MOTION_TYPE);                   
+                    } 
+                    me->DespawnOrUnsummon();
+                    booltest = false;
+                }
+                else 
+                    time -= diff;
+            }
+        }
+    };
+
+};
+
+
 void AddSC_westfall()
 {
     new npc_daphne_stilwell();
     new npc_defias_traitor();
+    new npc_westfall_stew();
 }

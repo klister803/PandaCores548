@@ -167,7 +167,7 @@ public:
 ## npc_koltira_deathweaver
 ######*/
 
-enum eKoltira
+enum Koltira
 {
     SAY_BREAKOUT1                   = -1609561,
     SAY_BREAKOUT2                   = -1609562,
@@ -187,10 +187,10 @@ enum eKoltira
 
     NPC_CRIMSON_ACOLYTE             = 29007,
     NPC_HIGH_INQUISITOR_VALROTH     = 29001,
-    NPC_KOLTIRA_ALT                 = 28447,
+
 
     //not sure about this id
-    //NPC_DEATH_KNIGHT_MOUNT          = 29201,
+    //NPC_DEATH_KNIGHT_MOUNT        = 29201,
     MODEL_DEATH_KNIGHT_MOUNT        = 25278
 };
 
@@ -205,15 +205,10 @@ public:
         {
             creature->SetStandState(UNIT_STAND_STATE_STAND);
 
-            if (npc_escortAI* pEscortAI = CAST_AI(npc_koltira_deathweaver::npc_koltira_deathweaverAI, creature->AI()))
-                pEscortAI->Start(false, false, player->GetGUID());
+            if (npc_escortAI* escortAI = CAST_AI(npc_koltira_deathweaver::npc_koltira_deathweaverAI, creature->AI()))
+                escortAI->Start(false, false, player->GetGUID());
         }
         return true;
-    }
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_koltira_deathweaverAI(creature);
     }
 
     struct npc_koltira_deathweaverAI : public npc_escortAI
@@ -223,21 +218,17 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
         }
 
-        uint32 m_uiWave;
-        uint32 m_uiWave_Timer;
-        uint64 m_uiValrothGUID;
-
         void Reset()
         {
             if (!HasEscortState(STATE_ESCORT_ESCORTING))
             {
-                m_uiWave = 0;
-                m_uiWave_Timer = 3000;
-                m_uiValrothGUID = 0;
-                me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                wave = 0;
+                waveTimer = 3000;
+                valrothGUID = 0;
                 me->LoadEquipment(0, true);
-                me->RemoveAura(SPELL_ANTI_MAGIC_ZONE);
-                me->SetReactState(REACT_PASSIVE);
+                me->RemoveAurasDueToSpell(SPELL_ANTI_MAGIC_ZONE);
+                me->RemoveAurasDueToSpell(SPELL_KOLTIRA_TRANSFORM);
+                me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
             }
         }
 
@@ -246,23 +237,22 @@ public:
             switch (waypointId)
             {
                 case 0:
-                    DoScriptText(SAY_BREAKOUT1, me);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                    Talk(SAY_BREAKOUT1);
                     break;
                 case 1:
                     me->SetStandState(UNIT_STAND_STATE_KNEEL);
                     break;
                 case 2:
                     me->SetStandState(UNIT_STAND_STATE_STAND);
-                    //me->UpdateEntry(NPC_KOLTIRA_ALT); //unclear if we must update or not
                     DoCast(me, SPELL_KOLTIRA_TRANSFORM);
                     me->LoadEquipment(me->GetEquipmentId());
                     break;
                 case 3:
                     SetEscortPaused(true);
+                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
                     me->SetStandState(UNIT_STAND_STATE_KNEEL);
-                    DoScriptText(SAY_BREAKOUT2, me);
-                    DoCast(me, SPELL_ANTI_MAGIC_ZONE);  // cast again that makes bubble up
+                    Talk(SAY_BREAKOUT2);
+                    DoCast(me, SPELL_ANTI_MAGIC_ZONE);
                     break;
                 case 4:
                     SetRun(true);
@@ -282,9 +272,8 @@ public:
                 summoned->AI()->AttackStart(player);
 
             if (summoned->GetEntry() == NPC_HIGH_INQUISITOR_VALROTH)
-                m_uiValrothGUID = summoned->GetGUID();
+                valrothGUID = summoned->GetGUID();
 
-            summoned->AddThreat(me, 0.0f);
             summoned->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
         }
 
@@ -300,71 +289,77 @@ public:
 
             if (HasEscortState(STATE_ESCORT_PAUSED))
             {
-                if (m_uiWave_Timer <= uiDiff)
+                if (waveTimer <= uiDiff)
                 {
-                    switch (m_uiWave)
+                    switch (wave)
                     {
                         case 0:
-                            DoScriptText(SAY_BREAKOUT3, me);
+                            Talk(SAY_BREAKOUT3);
                             SummonAcolyte(3);
-                            m_uiWave_Timer = 20000;
+                            waveTimer = 20000;
                             break;
                         case 1:
-                            DoScriptText(SAY_BREAKOUT4, me);
+                            Talk(SAY_BREAKOUT4);
                             SummonAcolyte(3);
-                            m_uiWave_Timer = 20000;
+                            waveTimer = 20000;
                             break;
                         case 2:
-                            DoScriptText(SAY_BREAKOUT5, me);
+                            Talk(SAY_BREAKOUT5);
                             SummonAcolyte(4);
-                            m_uiWave_Timer = 20000;
+                            waveTimer = 20000;
                             break;
                         case 3:
-                            DoScriptText(SAY_BREAKOUT6, me);
+                            Talk(SAY_BREAKOUT6);
                             me->SummonCreature(NPC_HIGH_INQUISITOR_VALROTH, 1642.329f, -6045.818f, 127.583f, 0.0f, TEMPSUMMON_TIMED_DESPAWN_OUT_OF_COMBAT, 1000);
-                            m_uiWave_Timer = 1000;
+                            waveTimer = 1000;
                             break;
                         case 4:
                         {
-                            Creature* temp = Unit::GetCreature(*me, m_uiValrothGUID);
+                            Creature* temp = Unit::GetCreature(*me, valrothGUID);
 
                             if (!temp || !temp->isAlive())
                             {
-                                DoScriptText(SAY_BREAKOUT8, me);
-                                m_uiWave_Timer = 5000;
+                                Talk(SAY_BREAKOUT8);
+                                waveTimer = 5000;
                             }
                             else
                             {
-                                m_uiWave_Timer = 2500;
-                                return;                         //return, we don't want m_uiWave to increment now
+                                waveTimer = 2500;
+                                return;
                             }
                             break;
                         }
                         case 5:
-                            DoScriptText(SAY_BREAKOUT9, me);
+                            Talk(SAY_BREAKOUT9);
                             me->RemoveAurasDueToSpell(SPELL_ANTI_MAGIC_ZONE);
-                            // i do not know why the armor will also be removed
-                            m_uiWave_Timer = 2500;
+                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE);
+                            waveTimer = 2500;
                             break;
                         case 6:
-                            DoScriptText(SAY_BREAKOUT10, me);
+                            Talk(SAY_BREAKOUT10);
                             SetEscortPaused(false);
                             break;
                     }
 
-                    ++m_uiWave;
+                    ++wave;
                 }
                 else
-                    m_uiWave_Timer -= uiDiff;
-
-                if(!me->HasAura(52894))
-                    DoCast(me, 52894);
+                    waveTimer -= uiDiff;
             }
         }
+        
+    private:
+        uint8 wave;
+        uint32 waveTimer;
+        uint64 valrothGUID;
+
     };
-
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_koltira_deathweaverAI(creature);
+    }
 };
-
 //Scarlet courier
 enum ScarletCourierEnum
 {

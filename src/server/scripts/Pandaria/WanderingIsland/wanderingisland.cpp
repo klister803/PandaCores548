@@ -538,6 +538,17 @@ public:
         {
         }
 
+        void Reset()
+        {
+            me->CombatStop();
+            me->setFaction(35);
+            me->SetHealth(me->GetMaxHealth());
+            events.ScheduleEvent(1, 10000);
+            events.CancelEvent(2);
+            events.CancelEvent(3);
+            events.CancelEvent(4);
+        }
+
         void updatePlayerList()
         {
             playersInvolved.clear();
@@ -557,6 +568,8 @@ public:
             {
                         me->CombatStop();
                         me->setFaction(35);
+                        me->SetReactState(REACT_PASSIVE);
+                         me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
                         me->SetHealth(me->GetMaxHealth());
                         events.ScheduleEvent(1, 10000);
                         events.CancelEvent(2);
@@ -584,6 +597,7 @@ public:
                         if(playersInvolved.size() == 0)
                         {
                             me->setFaction(35);
+                            me->CombatStop();
                             me->SetHealth(me->GetMaxHealth());
                             events.CancelEvent(2);
                             events.CancelEvent(3);
@@ -592,15 +606,17 @@ public:
                         }
                         else
                         {
-                            me->setFaction(14);
                             me->SetReactState(REACT_AGGRESSIVE);
+                            me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
+                            me->setFaction(16);
                             events.ScheduleEvent(2, 5000); 
                             events.ScheduleEvent(3, 1000); 
                         }
                     }
                     break;
                     case 2:
-                        if(playersInvolved.size() == 0)
+                        updatePlayerList();
+                        if(playersInvolved.size() > 0)
                         {
                     	    me->CastSpell(me->getVictim(), 108958);
                     	    events.ScheduleEvent(2, 5000);
@@ -609,7 +625,8 @@ public:
                             events.ScheduleEvent(1, 2000);
                     	break;
                     case 3:
-                        if(playersInvolved.size() == 0)
+                        updatePlayerList();
+                        if(playersInvolved.size() > 0)
                         {
                     	    me->CastSpell(me->getVictim(), 108936);
                     	    events.ScheduleEvent(4, 2500);
@@ -619,7 +636,8 @@ public:
                             events.ScheduleEvent(1, 2000);
                     	break;
                     case 4:
-                        if(playersInvolved.size() == 0)
+                        updatePlayerList();
+                        if(playersInvolved.size() > 0)
                         {
                     	    me->CastSpell(me->getVictim(), 108944);
                         }

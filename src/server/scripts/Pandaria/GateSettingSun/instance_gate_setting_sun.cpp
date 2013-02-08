@@ -42,6 +42,9 @@ public:
         uint64 firstDoorGuid;
         uint64 fireSignalGuid;
 
+        uint64 wallCGuid;
+        uint64 portalTempGadokGuid;
+
         uint32 cinematicTimer;
         uint8 cinematicEventProgress;
 
@@ -50,6 +53,7 @@ public:
         std::list<uint64> mantidBombsGUIDs;
         std::list<uint64> rimokAddGenetarorsGUIDs;
         std::list<uint64> artilleryGUIDs;
+        std::list<uint64> secondaryDoorGUIDs;
 
         uint32 dataStorage[MAX_DATA];
 
@@ -61,16 +65,19 @@ public:
             SetBossNumber(EncounterCount);
             LoadDoorData(doorData);
 
-            kiptilakGuid    = 0;
-            gadokGuid       = 0;
-            rimokGuid       = 0;
-            raigonnGuid     = 0;
-            raigonWeakGuid  = 0;
+            kiptilakGuid            = 0;
+            gadokGuid               = 0;
+            rimokGuid               = 0;
+            raigonnGuid             = 0;
+            raigonWeakGuid          = 0;
             
-            firstDoorGuid   = 0;
+            firstDoorGuid           = 0;
 
-            cinematicTimer = 0;
-            cinematicEventProgress = 0;
+            cinematicTimer          = 0;
+            cinematicEventProgress  = 0;
+
+            wallCGuid               = 0;
+            portalTempGadokGuid     = 0;
 
             memset(dataStorage, 0, MAX_DATA * sizeof(uint32));
 
@@ -79,6 +86,13 @@ public:
             mantidBombsGUIDs.clear();
             rimokAddGenetarorsGUIDs.clear();
             artilleryGUIDs.clear();
+            secondaryDoorGUIDs.clear();
+        }
+
+        void OnDestroy(InstanceMap* pMap)
+        {
+            if (Creature* weakSpot = instance->GetCreature(GetData64(NPC_WEAK_SPOT)))
+                weakSpot->_ExitVehicle();
         }
 
         void OnPlayerEnter(Player* player)
@@ -87,6 +101,11 @@ public:
                 player->SetPhaseMask(1, true);
             else
                 player->SetPhaseMask(2, true);
+        }
+
+        void OnPlayerLeave(Player* player)
+        {
+            player->SetPhaseMask(1, true);
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -142,6 +161,16 @@ public:
                 case GO_KIPTILAK_MANTID_BOMBS:
                     mantidBombsGUIDs.push_back(go->GetGUID());
                     return;
+                case GO_GREATDOOR_SECOND_DOOR:
+                    secondaryDoorGUIDs.push_back(go->GetGUID());
+                    HandleGameObject(go->GetGUID(), true, go);
+                    return;
+                case GO_WALL_C:
+                    wallCGuid = go->GetGUID();
+                    return;
+                case GO_PORTAL_TEMP_GADOK:
+                    portalTempGadokGuid = go->GetGUID();
+                    return;
                 default:
                     return;
             }
@@ -162,9 +191,18 @@ public:
                                 bomb->SetPhaseMask(32768, true); // Set Invisible
                     break;
                 }
+                case DATA_GADOK:
+                {
+                    if (GameObject* portal = instance->GetGameObject(portalTempGadokGuid))
+                        portal->SetPhaseMask(state == IN_PROGRESS ? 4 : 3, true);
+                    break;
+                }
                 case DATA_RIMOK:
                 {
                     uint8 generatorsCount = 0;
+
+                    for (auto itr: secondaryDoorGUIDs)
+                        HandleGameObject(itr, state != DONE);
 
                     for (auto itr: rimokAddGenetarorsGUIDs)
                     {
@@ -185,8 +223,13 @@ public:
                 case DATA_RAIGONN:
                 {
                     for (auto itr: artilleryGUIDs)
+                    {
                         if (Creature* artillery = instance->GetCreature(itr))
+                        {
                             artillery->ApplyModFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE, state != IN_PROGRESS);
+                            artillery->ApplyModFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK, state == IN_PROGRESS);
+                        }
+                    }
                     break;
                 }
                 default:
@@ -312,6 +355,11 @@ public:
                 case 1:
                     if (GameObject* go = instance->GetGameObject(fireSignalGuid))
                         go->UseDoorOrButton();
+                    cinematicTimer = 5000;
+                    break;
+                case 2:
+                    if (GameObject* go = instance->GetGameObject(wallCGuid))
+                        go->ModifyHealth(-100000);
                     cinematicTimer = 0;
                     break;
             }

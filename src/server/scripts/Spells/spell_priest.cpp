@@ -125,7 +125,7 @@ class spell_pri_cascade_second : public SpellScriptLoader
                     {
                         affectedUnits = 0;
 
-                        _player->GetAttackableUnitListInRange(_player, targetList, 40.0f);
+                        _player->GetAttackableUnitListInRange(targetList, 40.0f);
 
                         for (auto itr : targetList)
                         {
@@ -242,15 +242,18 @@ class spell_pri_cascade_trigger : public SpellScriptLoader
 
             void HandleOnHit()
             {
-                if (Player* _player = GetOriginalCaster()->ToPlayer())
+                if (GetOriginalCaster())
                 {
-                    if (Unit* target = GetHitUnit())
+                    if (Player* _player = GetOriginalCaster()->ToPlayer())
                     {
-                        // Trigger for SpellScript
-                        if (_player->IsValidAttackTarget(target))
-                            _player->CastSpell(target, PRIEST_CASCADE_DAMAGE_TRIGGER, true); // Only damage
-                        else
-                            _player->CastSpell(target, PRIEST_CASCADE_HEAL_TRIGGER, true); // Only heal
+                        if (Unit* target = GetHitUnit())
+                        {
+                            // Trigger for SpellScript
+                            if (_player->IsValidAttackTarget(target))
+                                _player->CastSpell(target, PRIEST_CASCADE_DAMAGE_TRIGGER, true); // Only damage
+                            else
+                                _player->CastSpell(target, PRIEST_CASCADE_HEAL_TRIGGER, true); // Only heal
+                        }
                     }
                 }
             }

@@ -15,12 +15,12 @@ uint32 const EncounterCount = 4;
 
 enum DataTypes
 {
-    DATA_IN_FIGHT               = 0,
+    DATA_KIPTILAK               = 0,
+    DATA_GADOK                  = 1,
+    DATA_RIMOK                  = 2,
+    DATA_RAIGONN                = 3,
 
-    DATA_KIPTILAK               = 1,
-    DATA_GADOK                  = 2,
-    DATA_RIMOK                  = 3,
-    DATA_RAIGONN                = 4,
+    DATA_IN_FIGHT               = 4,
 
     DATA_OPEN_FIRST_DOOR        = 5,
     DATA_BRASIER_CLICKED        = 6,
@@ -88,6 +88,12 @@ enum ObjectsIds
 
     GO_RAIGONN_DOOR             = 212986,
     GO_RAIGONN_AFTER_DOOR       = 214261,
+
+    GO_GREATDOOR_SECOND_DOOR    = 214888,
+    GO_WALL_C                   = 213198,
+
+    GO_PORTAL_TEMP_CORDE        = 400001,
+    GO_PORTAL_TEMP_GADOK        = 400002
 };
 
 enum eSettingSun

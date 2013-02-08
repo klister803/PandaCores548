@@ -7818,7 +7818,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     }
     // count can't be more then weekCap.
     uint32 weekCap = _GetCurrencyWeekCap(currency);
-    if (count > int32(weekCap))
+    if (weekCap && count > int32(weekCap))
         count = weekCap;
 
     int32 newTotalCount = int32(oldTotalCount) + count;
@@ -7829,15 +7829,18 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (newWeekCount < 0)
         newWeekCount = 0;
 
-    ASSERT(weekCap >= oldWeekCount);
-
-    // TODO: fix conquest points
-    // if we get more then weekCap just set to limit
-    if (weekCap && int32(weekCap) < newWeekCount)
+    if (weekCap)
     {
-        newWeekCount = int32(weekCap);
-        // weekCap - oldWeekCount alwayt >= 0 as we set limit before!
-        newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
+        ASSERT(weekCap >= oldWeekCount);
+
+        // TODO: fix conquest points
+        // if we get more then weekCap just set to limit
+        if (int32(weekCap) < newWeekCount)
+        {
+            newWeekCount = int32(weekCap);
+            // weekCap - oldWeekCount alwayt >= 0 as we set limit before!
+            newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
+        }
     }
 
     // if we get more then totalCap set to maximum;
@@ -7899,14 +7902,7 @@ uint32 Player::_GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const
    {
        case CURRENCY_TYPE_CONQUEST_POINTS:
        {
-           cap = 400000;
-           break;
-       }
-       case CURRENCY_TYPE_HONOR_POINTS:
-       {
-           uint32 honorcap = sWorld->getIntConfig(CONFIG_MAX_HONOR_POINTS);
-           if (honorcap > 0)
-               cap = honorcap;
+           cap = 180000;
            break;
        }
        case CURRENCY_TYPE_JUSTICE_POINTS:

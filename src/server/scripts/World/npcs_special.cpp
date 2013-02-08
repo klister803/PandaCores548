@@ -3286,63 +3286,6 @@ class npc_spirit_link_totem : public CreatureScript
 };
 
 /*######
-# npc_ring_of_frost
-######*/
-
-class npc_ring_of_frost : public CreatureScript
-{
-public:
-    npc_ring_of_frost() : CreatureScript("npc_ring_of_frost") { }
-
-    struct npc_ring_of_frostAI : public ScriptedAI
-    {
-        uint32 frostStunTimer;
-
-        npc_ring_of_frostAI(Creature* creature) : ScriptedAI(creature)
-        {
-            frostStunTimer = 500;
-
-            Unit* owner = creature->GetOwner();
-
-            if (owner)
-                if (creature->GetEntry() == 44199)
-                    owner->CastSpell(creature, 82691, true);
-
-            if (owner)
-            {
-                creature->SetUInt64Value(UNIT_FIELD_SUMMONEDBY, owner->GetGUID());
-                creature->SetUInt32Value(UNIT_CREATED_BY_SPELL, 113724);
-                creature->AddUnitState(UNIT_STATE_ROOT);
-            }
-        }
-
-        void UpdateAI(const uint32 diff)
-        {
-            Unit* owner = me->GetOwner();
-
-            if (!owner)
-                return;
-
-            if (!UpdateVictim())
-                return;
-
-            if (frostStunTimer <= diff)
-            {
-                owner->CastSpell(me, 82691, true);
-                frostStunTimer = 6000;
-            }
-            else
-                frostStunTimer -= diff;
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_ring_of_frostAI(creature);
-    }
-};
-
-/*######
 # npc_shadowy_apparition
 ######*/
 
@@ -3454,6 +3397,60 @@ public:
     }
 };
 
+/*######
+# npc_frozen_orb
+######*/
+
+class npc_frozen_orb : public CreatureScript
+{
+public:
+    npc_frozen_orb() : CreatureScript("npc_frozen_orb") { }
+
+    struct npc_frozen_orbAI : public ScriptedAI
+    {
+        uint32 frozenOrbTimer;
+
+        npc_frozen_orbAI(Creature* creature) : ScriptedAI(creature)
+        {
+            Unit* owner = creature->GetOwner();
+
+            if (owner)
+            {
+                owner->CastSpell(creature, 84721, true);
+                owner->CastSpell(owner, 44544, true);
+                owner->CastSpell(owner, 126084, true);
+            }
+
+            frozenOrbTimer = 1000;
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            Unit* owner = me->GetOwner();
+
+            if (!owner)
+                return;
+
+            if (frozenOrbTimer <= diff)
+            {
+                if (owner && owner->ToPlayer())
+                    if (owner->ToPlayer()->HasSpellCooldown(84721))
+                        owner->ToPlayer()->RemoveSpellCooldown(84721);
+
+                owner->CastSpell(me, 84721, true);
+                frozenOrbTimer = 1000;
+            }
+            else
+                frozenOrbTimer -= diff;
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_frozen_orbAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3493,7 +3490,7 @@ void AddSC_npcs_special()
     new npc_capacitor_totem();
     new npc_feral_spirit();
     new npc_spirit_link_totem();
-    new npc_ring_of_frost();
     new npc_shadowy_apparition();
     new npc_demoralizing_banner();
+    new npc_frozen_orb();
 }

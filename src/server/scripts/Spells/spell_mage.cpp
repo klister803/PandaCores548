@@ -69,11 +69,360 @@ enum MageSpells
     SPELL_MAGE_COMBUSTION_IMPACT                 = 118271,
     SPELL_MAGE_FROSTJAW                          = 102051,
     SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE      = 114954,
+    SPELL_MAGE_NETHER_TEMPEST_VISUAL             = 114924,
+    SPELL_MAGE_NETHER_TEMPEST_MISSILE            = 114956,
     SPELL_MAGE_LIVING_BOMB_TRIGGERED             = 44461,
     SPELL_MAGE_FROST_BOMB_TRIGGERED              = 113092,
     SPELL_MAGE_INVOKERS_ENERGY                   = 116257,
     SPELL_MAGE_INVOCATION                        = 114003,
     SPELL_MAGE_GLYPH_OF_EVOCATION                = 56380,
+    SPELL_MAGE_BRAIN_FREEZE                      = 44549,
+    SPELL_MAGE_BRAIN_FREEZE_TRIGGERED            = 57761,
+    SPELL_MAGE_SLOW                              = 31589,
+    SPELL_MAGE_ARCANE_CHARGE                     = 36032,
+    SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED          = 50273,
+    SPELL_MAGE_RING_OF_FROST_SUMMON              = 113724,
+    SPELL_MAGE_RING_OF_FROST_FREEZE              = 82691,
+    SPELL_MAGE_RING_OF_FROST_DUMMY               = 91264,
+    SPELL_MAGE_PYROMANIAC_AURA                   = 132209,
+    SPELL_MAGE_PYROMANIAC_DAMAGE_DONE            = 132210,
+};
+
+// Called by Nether Tempest - 114923, Frost Bomb - 112948 and Living Bomb - 44457
+// Pyromaniac - 132209
+class spell_mage_pyromaniac : public SpellScriptLoader
+{
+    public:
+        spell_mage_pyromaniac() : SpellScriptLoader("spell_mage_pyromaniac") { }
+
+        class spell_mage_pyromaniac_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_pyromaniac_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(SPELL_MAGE_PYROMANIAC_AURA))
+                            _player->CastSpell(target, SPELL_MAGE_PYROMANIAC_DAMAGE_DONE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_pyromaniac_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_pyromaniac_SpellScript();
+        }
+};
+
+// Ring of Frost - 113724
+class spell_mage_ring_of_frost : public SpellScriptLoader
+{
+    public:
+        spell_mage_ring_of_frost() : SpellScriptLoader("spell_mage_ring_of_frost") { }
+
+        class spell_mage_ring_of_frost_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_ring_of_frost_AuraScript);
+
+            bool Load()
+            {
+                ringOfFrost = NULL;
+                return true;
+            }
+
+            void HandleEffectPeriodic(constAuraEffectPtr aurEff)
+            {
+                if (ringOfFrost)
+                    if (GetMaxDuration() - (int32)ringOfFrost->GetTimer() >= sSpellMgr->GetSpellInfo(SPELL_MAGE_RING_OF_FROST_DUMMY)->GetDuration())
+                        GetTarget()->CastSpell(ringOfFrost->GetPositionX(), ringOfFrost->GetPositionY(), ringOfFrost->GetPositionZ(), SPELL_MAGE_RING_OF_FROST_FREEZE, true);
+            }
+
+            void Apply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                std::list<Creature*> MinionList;
+                GetTarget()->GetAllMinionsByEntry(MinionList, GetSpellInfo()->Effects[EFFECT_0].MiscValue);
+
+                // Get the last summoned RoF, save it and despawn older ones
+                for (std::list<Creature*>::iterator itr = MinionList.begin(); itr != MinionList.end(); itr++)
+                {
+                    TempSummon* summon = (*itr)->ToTempSummon();
+
+                    if (ringOfFrost && summon)
+                    {
+                        if (summon->GetTimer() > ringOfFrost->GetTimer())
+                        {
+                            ringOfFrost->DespawnOrUnsummon();
+                            ringOfFrost = summon;
+                        }
+                        else
+                            summon->DespawnOrUnsummon();
+                    }
+                    else if (summon)
+                        ringOfFrost = summon;
+                }
+            }
+
+            TempSummon* ringOfFrost;
+
+            void Register()
+            {
+                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_mage_ring_of_frost_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+                 OnEffectApply += AuraEffectApplyFn(spell_mage_ring_of_frost_AuraScript::Apply, EFFECT_1, SPELL_AURA_PERIODIC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_ring_of_frost_AuraScript();
+        }
+};
+
+// Ring of Frost - 82691
+class spell_mage_ring_of_frost_freeze : public SpellScriptLoader
+{
+    public:
+        spell_mage_ring_of_frost_freeze() : SpellScriptLoader("spell_mage_ring_of_frost_freeze") { }
+
+        class spell_mage_ring_of_frost_freeze_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_ring_of_frost_freeze_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& targets)
+            {
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_RING_OF_FROST_DUMMY));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_RING_OF_FROST_FREEZE));
+                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_mage_ring_of_frost_freeze_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_DEST_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_ring_of_frost_freeze_SpellScript();
+        }
+
+        class spell_mage_ring_of_frost_freeze_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_ring_of_frost_freeze_AuraScript);
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
+                    if (GetCaster())
+                        GetCaster()->CastSpell(GetTarget(), SPELL_MAGE_RING_OF_FROST_DUMMY, true);
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_mage_ring_of_frost_freeze_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_STUN, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mage_ring_of_frost_freeze_AuraScript();
+        }
+};
+
+class CheckArcaneBarrageImpactPredicate
+{
+    public:
+        CheckArcaneBarrageImpactPredicate(Unit* caster, Unit* mainTarget) : _caster(caster), _mainTarget(mainTarget) {}
+
+        bool operator()(Unit* target)
+        {
+            if (!_caster || !_mainTarget)
+                return true;
+
+            if (!_caster->IsValidAttackTarget(target))
+                return true;
+
+            if (!target->IsWithinLOSInMap(_caster))
+                return true;
+
+            if (!_caster->isInFront(target))
+                return true;
+
+            if (target->GetGUID() == _caster->GetGUID())
+                return true;
+
+            if (target->GetGUID() == _mainTarget->GetGUID())
+                return true;
+
+            return false;
+        }
+
+    private:
+        Unit* _caster;
+        Unit* _mainTarget;
+};
+
+// Arcane Barrage - 44425
+class spell_mage_arcane_barrage : public SpellScriptLoader
+{
+    public:
+        spell_mage_arcane_barrage() : SpellScriptLoader("spell_mage_arcane_barrage") { }
+
+        class spell_mage_arcane_barrage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_arcane_barrage_SpellScript);
+
+            uint8 chargeCount;
+            int32 bp;
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (AuraPtr arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
+                        {
+                            chargeCount = arcaneCharge->GetStackAmount();
+                            _player->RemoveAura(SPELL_MAGE_ARCANE_CHARGE);
+                        }
+
+                        if (chargeCount)
+                        {
+                            bp = GetHitDamage() / 2;
+
+                            std::list<Unit*> targetList;
+
+                            target->GetAttackableUnitListInRange(targetList, 10.0f);
+                            targetList.remove_if(CheckArcaneBarrageImpactPredicate(_player, target));
+
+                            Trinity::Containers::RandomResizeList(targetList, chargeCount);
+
+                            for (auto itr : targetList)
+                                target->CastCustomSpell(itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, 0, _player->GetGUID());
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_arcane_barrage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_arcane_barrage_SpellScript();
+        }
+};
+
+// Arcane Explosion - 1449
+class spell_mage_arcane_explosion : public SpellScriptLoader
+{
+    public:
+        spell_mage_arcane_explosion() : SpellScriptLoader("spell_mage_arcane_explosion") { }
+
+        class spell_mage_arcane_explosion_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_arcane_explosion_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_MAGE_ARCANE)
+                            if (AuraPtr arcaneCharge = _player->GetAura(SPELL_MAGE_ARCANE_CHARGE))
+                                arcaneCharge->RefreshDuration();
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_arcane_explosion_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_arcane_explosion_SpellScript();
+        }
+};
+
+// Slow - 31589
+class spell_mage_slow : public SpellScriptLoader
+{
+    public:
+        spell_mage_slow() : SpellScriptLoader("spell_mage_slow") { }
+
+        class spell_mage_slow_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_slow_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->GetTypeId() == TYPEID_PLAYER)
+                        {
+                            if (AuraPtr frostjaw = target->GetAura(SPELL_MAGE_SLOW, _player->GetGUID()))
+                            {
+                                // Only half time against players
+                                frostjaw->SetDuration(frostjaw->GetMaxDuration() / 2);
+                                frostjaw->SetMaxDuration(frostjaw->GetDuration());
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_slow_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_slow_SpellScript();
+        }
+};
+
+// Frostbolt - 116
+class spell_mage_frostbolt : public SpellScriptLoader
+{
+    public:
+        spell_mage_frostbolt() : SpellScriptLoader("spell_mage_frostbolt") { }
+
+        class spell_mage_frostbolt_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_frostbolt_SpellScript);
+
+            SpellCastResult CheckTarget()
+            {
+                if (!GetExplTargetUnit())
+                    return SPELL_FAILED_NO_VALID_TARGETS;
+                else if (GetExplTargetUnit()->GetGUID() == GetCaster()->GetGUID())
+                    return SPELL_FAILED_BAD_TARGETS;
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_mage_frostbolt_SpellScript::CheckTarget);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_frostbolt_SpellScript();
+        }
 };
 
 // Called by Evocation - 12051
@@ -134,7 +483,12 @@ class spell_mage_frost_bomb : public SpellScriptLoader
                     return;
 
                 if (Unit* caster = GetCaster())
+                {
                     caster->CastSpell(GetTarget(), SPELL_MAGE_FROST_BOMB_TRIGGERED, true);
+
+                    if (caster->HasAura(SPELL_MAGE_BRAIN_FREEZE))
+                        caster->CastSpell(caster, SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
+                }
             }
 
             void Register()
@@ -147,6 +501,39 @@ class spell_mage_frost_bomb : public SpellScriptLoader
         {
             return new spell_mage_frost_bomb_AuraScript();
         }
+};
+
+class CheckNetherImpactPredicate
+{
+    public:
+        CheckNetherImpactPredicate(Unit* caster, Unit* mainTarget) : _caster(caster), _mainTarget(mainTarget) {}
+
+        bool operator()(Unit* target)
+        {
+            if (!_caster || !_mainTarget)
+                return true;
+
+            if (!_caster->IsValidAttackTarget(target))
+                return true;
+
+            if (!target->IsWithinLOSInMap(_caster))
+                return true;
+
+            if (!_caster->isInFront(target))
+                return true;
+
+            if (target->GetGUID() == _caster->GetGUID())
+                return true;
+
+            if (target->GetGUID() == _mainTarget->GetGUID())
+                return true;
+
+            return false;
+        }
+
+    private:
+        Unit* _caster;
+        Unit* _mainTarget;
 };
 
 // Nether Tempest - 114923
@@ -162,8 +549,28 @@ class spell_mage_nether_tempest : public SpellScriptLoader
             void OnTick(constAuraEffectPtr aurEff)
             {
                 if (GetCaster())
-                    if (Unit* newTarget = GetCaster()->SelectNearbyTarget(GetTarget(), 10.0f))
-                        GetCaster()->CastSpell(newTarget, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
+                {
+                    if (Player* _player = GetCaster()->ToPlayer())
+                    {
+                        std::list<Unit*> targetList;
+
+                        GetTarget()->GetAttackableUnitListInRange(targetList, 10.0f);
+                        targetList.remove_if(CheckNetherImpactPredicate(_player, GetTarget()));
+
+                        Trinity::Containers::RandomResizeList(targetList, 1);
+
+                        for (auto itr : targetList)
+                        {
+                            GetCaster()->CastSpell(itr, SPELL_MAGE_NETHER_TEMPEST_DIRECT_DAMAGE, true);
+                            GetCaster()->CastSpell(itr, SPELL_MAGE_NETHER_TEMPEST_VISUAL, true);
+                            GetTarget()->CastSpell(itr, SPELL_MAGE_NETHER_TEMPEST_MISSILE, true);
+                        }
+
+                        if (GetCaster()->HasAura(SPELL_MAGE_BRAIN_FREEZE))
+                            if (roll_chance_i(10))
+                                GetCaster()->CastSpell(GetCaster(), SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
+                    }
+                }
             }
 
             void Register()
@@ -295,6 +702,39 @@ class spell_mage_combustion : public SpellScriptLoader
         }
 };
 
+class CheckInfernoBlastImpactPredicate
+{
+    public:
+        CheckInfernoBlastImpactPredicate(Unit* caster, Unit* mainTarget) : _caster(caster), _mainTarget(mainTarget) {}
+
+        bool operator()(Unit* target)
+        {
+            if (!_caster || !_mainTarget)
+                return true;
+
+            if (!_caster->IsValidAttackTarget(target))
+                return true;
+
+            if (!target->IsWithinLOSInMap(_caster))
+                return true;
+
+            if (!_caster->isInFront(target))
+                return true;
+
+            if (target->GetGUID() == _caster->GetGUID())
+                return true;
+
+            if (target->GetGUID() == _mainTarget->GetGUID())
+                return true;
+
+            return false;
+        }
+
+    private:
+        Unit* _caster;
+        Unit* _mainTarget;
+};
+
 // Inferno Blast - 108853
 class spell_mage_inferno_blast : public SpellScriptLoader
 {
@@ -305,45 +745,22 @@ class spell_mage_inferno_blast : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mage_inferno_blast_SpellScript);
 
-            std::list<Unit*> targetList;
-            std::list<Unit*> tempList;
-
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
+                        std::list<Unit*> targetList;
+                        int32 combustionBp = 0;
+
                         _player->CastSpell(target, SPELL_MAGE_INFERNO_BLAST_IMPACT, true);
 
                         // Spreads any Pyroblast, Ignite, and Combustion effects to up to 2 nearby enemy targets within 10 yards
-                        // TODO : Adjust Unit::GetAttackableUnitListInRange
-                        CellCoord p(Trinity::ComputeCellCoord(target->GetPositionX(), target->GetPositionY()));
-                        Cell cell(p);
-                        cell.SetNoCreate();
 
-                        Trinity::AnyUnitInObjectRangeCheck u_check(target, 10.0f);
-                        Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(target, targetList, u_check);
+                        target->GetAttackableUnitListInRange(targetList, 10.0f);
 
-                        TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-                        TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
-
-                        cell.Visit(p, world_unit_searcher, *target->GetMap(), *target, 10.0f);
-                        cell.Visit(p, grid_unit_searcher, *target->GetMap(), *target, 10.0f);
-
-                        tempList = targetList;
-
-                        for (auto itr : tempList)
-                        {
-                            if (itr->GetGUID() == target->GetGUID())
-                                targetList.remove(itr);
-                            else if (!_player->IsValidAttackTarget(itr))
-                                targetList.remove(itr);
-                            else if (!_player->IsWithinLOSInMap(itr))
-                                targetList.remove(itr);
-                            else if (!_player->isInFront(itr))
-                                targetList.remove(itr);
-                        }
+                        targetList.remove_if(CheckInfernoBlastImpactPredicate(_player, target));
 
                         if (targetList.size() > 2)
                             Trinity::Containers::RandomResizeList(targetList, 2);
@@ -351,31 +768,38 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                         for (auto itr : targetList)
                         {
                             // 1 : Ignite
-                            float value = _player->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
+                            if (target->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
+                            {
+                                float value = _player->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
 
-                            int32 igniteBp = 0;
-                            int32 combustionBp = 0;
+                                int32 igniteBp = 0;
 
-                            if (itr->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
-                                igniteBp += itr->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+                                if (itr->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
+                                    igniteBp += itr->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
 
-                            igniteBp += int32(GetHitDamage() * value / 2);
+                                igniteBp += int32(GetHitDamage() * value / 2);
 
-                            _player->CastCustomSpell(itr, SPELL_MAGE_IGNITE, &igniteBp, NULL, NULL, true);
+                                _player->CastCustomSpell(itr, SPELL_MAGE_IGNITE, &igniteBp, NULL, NULL, true);
+                            }
 
                             // 2 : Pyroblast
-                            _player->AddAura(SPELL_MAGE_PYROBLAST, itr);
+                            if (target->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
+                                _player->AddAura(SPELL_MAGE_PYROBLAST, itr);
 
                             // 3 : Combustion
-                            if (itr->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
+                            if (target->HasAura(SPELL_MAGE_COMBUSTION_DOT, _player->GetGUID()))
                             {
-                                combustionBp += _player->CalculateSpellDamage(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), 1);
-                                combustionBp = _player->SpellDamageBonusDone(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), combustionBp, DOT);
-                            }
-                            if (itr->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
-                                combustionBp += itr->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
+                                if (itr->HasAura(SPELL_MAGE_PYROBLAST, _player->GetGUID()))
+                                {
+                                    combustionBp += _player->CalculateSpellDamage(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), 1);
+                                    combustionBp = _player->SpellDamageBonusDone(target, sSpellMgr->GetSpellInfo(SPELL_MAGE_PYROBLAST), combustionBp, DOT);
+                                }
+                                if (itr->HasAura(SPELL_MAGE_IGNITE, _player->GetGUID()))
+                                    combustionBp += itr->GetRemainingPeriodicAmount(_player->GetGUID(), SPELL_MAGE_IGNITE, SPELL_AURA_PERIODIC_DAMAGE);
 
-                            _player->CastCustomSpell(itr, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
+                                if (combustionBp)
+                                    _player->CastCustomSpell(itr, SPELL_MAGE_COMBUSTION_DOT, &combustionBp, NULL, NULL, true);
+                            }
                         }
                     }
                 }
@@ -728,40 +1152,6 @@ class spell_mage_alter_time : public SpellScriptLoader
         }
 };
 
-class spell_mage_blast_wave : public SpellScriptLoader
-{
-    public:
-        spell_mage_blast_wave() : SpellScriptLoader("spell_mage_blast_wave") { }
-
-        class spell_mage_blast_wave_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_blast_wave_SpellScript);
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_MAGE_GLYPH_OF_BLAST_WAVE))
-                    return false;
-                return true;
-            }
-
-            void HandleKnockBack(SpellEffIndex effIndex)
-            {
-                if (GetCaster()->HasAura(SPELL_MAGE_GLYPH_OF_BLAST_WAVE))
-                    PreventHitDefaultEffect(effIndex);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_mage_blast_wave_SpellScript::HandleKnockBack, EFFECT_2, SPELL_EFFECT_KNOCK_BACK);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_blast_wave_SpellScript();
-        }
-};
-
 class spell_mage_cold_snap : public SpellScriptLoader
 {
     public:
@@ -866,98 +1256,6 @@ const uint32 spell_mage_polymorph_cast_visual::spell_mage_polymorph_cast_visual_
     SPELL_MAGE_SHEEP_FORM
 };
 
-class spell_mage_summon_water_elemental : public SpellScriptLoader
-{
-    public:
-        spell_mage_summon_water_elemental() : SpellScriptLoader("spell_mage_summon_water_elemental") { }
-
-        class spell_mage_summon_water_elemental_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_mage_summon_water_elemental_SpellScript);
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_MAGE_GLYPH_OF_ETERNAL_WATER) || !sSpellMgr->GetSpellInfo(SPELL_MAGE_SUMMON_WATER_ELEMENTAL_TEMPORARY) || !sSpellMgr->GetSpellInfo(SPELL_MAGE_SUMMON_WATER_ELEMENTAL_PERMANENT))
-                    return false;
-                return true;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                Unit* caster = GetCaster();
-                // Glyph of Eternal Water
-                if (caster->HasAura(SPELL_MAGE_GLYPH_OF_ETERNAL_WATER))
-                    caster->CastSpell(caster, SPELL_MAGE_SUMMON_WATER_ELEMENTAL_PERMANENT, true);
-                else
-                    caster->CastSpell(caster, SPELL_MAGE_SUMMON_WATER_ELEMENTAL_TEMPORARY, true);
-            }
-
-            void Register()
-            {
-                // add dummy effect spell handler to Summon Water Elemental
-                OnEffectHit += SpellEffectFn(spell_mage_summon_water_elemental_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_mage_summon_water_elemental_SpellScript();
-        }
-};
-
-// Frost Warding
-class spell_mage_frost_warding_trigger : public SpellScriptLoader
-{
-    public:
-        spell_mage_frost_warding_trigger() : SpellScriptLoader("spell_mage_frost_warding_trigger") { }
-
-        class spell_mage_frost_warding_trigger_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_mage_frost_warding_trigger_AuraScript);
-
-            enum Spells
-            {
-                SPELL_MAGE_FROST_WARDING_TRIGGERED = 57776,
-                SPELL_MAGE_FROST_WARDING_R1 = 28332,
-            };
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_MAGE_FROST_WARDING_TRIGGERED) || !sSpellMgr->GetSpellInfo(SPELL_MAGE_FROST_WARDING_R1))
-                    return false;
-                return true;
-            }
-
-            void Absorb(AuraEffectPtr aurEff, DamageInfo & dmgInfo, uint32 & absorbAmount)
-            {
-                Unit* target = GetTarget();
-                if (AuraEffectPtr talentAurEff = target->GetAuraEffectOfRankedSpell(SPELL_MAGE_FROST_WARDING_R1, EFFECT_0))
-                {
-                    int32 chance = talentAurEff->GetSpellInfo()->Effects[EFFECT_1].CalcValue();
-
-                    if (roll_chance_i(chance))
-                    {
-                        int32 bp = dmgInfo.GetDamage();
-                        dmgInfo.AbsorbDamage(bp);
-                        target->CastCustomSpell(target, SPELL_MAGE_FROST_WARDING_TRIGGERED, &bp, NULL, NULL, true, NULL, aurEff);
-                        absorbAmount = 0;
-                        PreventDefaultAction();
-                    }
-                }
-            }
-
-            void Register()
-            {
-                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_mage_frost_warding_trigger_AuraScript::Absorb, EFFECT_0);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_mage_frost_warding_trigger_AuraScript();
-        }
-};
-
 class spell_mage_incanters_absorbtion_base_AuraScript : public AuraScript
 {
     public:
@@ -1046,7 +1344,12 @@ class spell_mage_living_bomb : public SpellScriptLoader
                     return;
 
                 if (Unit* caster = GetCaster())
+                {
                     caster->CastSpell(GetTarget(), SPELL_MAGE_LIVING_BOMB_TRIGGERED, true);
+
+                    if (caster->HasAura(SPELL_MAGE_BRAIN_FREEZE))
+                        caster->CastSpell(caster, SPELL_MAGE_BRAIN_FREEZE_TRIGGERED, true);
+                }
             }
 
             void Register()
@@ -1063,6 +1366,13 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_pyromaniac();
+    new spell_mage_ring_of_frost();
+    new spell_mage_ring_of_frost_freeze();
+    new spell_mage_arcane_barrage();
+    new spell_mage_arcane_explosion();
+    new spell_mage_slow();
+    new spell_mage_frostbolt();
     new spell_mage_invocation();
     new spell_mage_frost_bomb();
     new spell_mage_nether_tempest();
@@ -1078,12 +1388,9 @@ void AddSC_mage_spell_scripts()
     new spell_mage_time_warp();
     new spell_mage_alter_time_overrided();
     new spell_mage_alter_time();
-    new spell_mage_blast_wave();
     new spell_mage_cold_snap();
-    new spell_mage_frost_warding_trigger();
     new spell_mage_incanters_absorbtion_absorb();
     new spell_mage_incanters_absorbtion_manashield();
     new spell_mage_polymorph_cast_visual();
-    new spell_mage_summon_water_elemental();
     new spell_mage_living_bomb();
 }

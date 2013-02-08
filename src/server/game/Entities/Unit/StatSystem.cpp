@@ -760,6 +760,7 @@ void Player::UpdateManaRegen()
 {
     // Mana regen from spirit
     float spirit_regen = OCTRegenMPPerSpirit();
+    float HastePct = 1.0f;
     // Apply PCT bonus from SPELL_AURA_MOD_POWER_REGEN_PERCENT aura on spirit base regen
     spirit_regen *= GetTotalAuraMultiplierByMiscValue(SPELL_AURA_MOD_POWER_REGEN_PERCENT, POWER_MANA);
 
@@ -772,15 +773,37 @@ void Player::UpdateManaRegen()
         base_regen = 0.01f * GetMaxPower(POWER_MANA) + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA);
     }
 
+    // Mana Meditation
+    if (HasAura(121278))
+        base_regen += 0.5 * spirit_regen;
+
     // Chaotic Energy : Increase Mana regen by 625%
     if (HasAura(111546))
     {
-        // haste also increases your mana regeneration.
-        float HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
+        // haste also increase your mana regeneration
+        HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
 
         combat_regen = combat_regen + (combat_regen * 6.25f);
         combat_regen *= HastePct;
         base_regen = base_regen + (base_regen * 6.25f);
+        base_regen *= HastePct;
+    }
+
+    // Nether Attunement - 117957 : Haste also increase your mana regeneration
+    if (HasAura(117957))
+    {
+        HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
+
+        combat_regen *= HastePct;
+        base_regen *= HastePct;
+    }
+
+    // Mana Attunement : Increase Mana regen by 400%
+    if (HasAura(121039))
+    {
+        combat_regen = combat_regen + (combat_regen * 4.0f);
+        combat_regen *= HastePct;
+        base_regen = base_regen + (base_regen * 4.0f);
         base_regen *= HastePct;
     }
 
@@ -1145,13 +1168,31 @@ void Guardian::UpdateMaxHealth()
     float multiplicator;
     switch (GetEntry())
     {
-        case ENTRY_IMP:         multiplicator = 8.4f;   break;
-        case ENTRY_VOIDWALKER:  multiplicator = 11.0f;  break;
-        case ENTRY_SUCCUBUS:    multiplicator = 9.1f;   break;
-        case ENTRY_FELHUNTER:   multiplicator = 9.5f;   break;
-        case ENTRY_FELGUARD:    multiplicator = 11.0f;  break;
-        case ENTRY_BLOODWORM:   multiplicator = 1.0f;   break;
-        default:                multiplicator = 10.0f;  break;
+        case ENTRY_IMP:
+            multiplicator = 8.4f;
+            break;
+        case ENTRY_VOIDWALKER:
+            multiplicator = 11.0f;
+            break;
+        case ENTRY_SUCCUBUS:
+            multiplicator = 9.1f;
+            break;
+        case ENTRY_FELHUNTER:
+            multiplicator = 9.5f;
+            break;
+        case ENTRY_FELGUARD:
+            multiplicator = 11.0f;
+            break;
+        case ENTRY_BLOODWORM:
+            multiplicator = 1.0f;
+            break;
+        case ENTRY_WATER_ELEMENTAL:
+            multiplicator = 1.0f;
+            stamina = 0.0f;
+            break;
+        default:
+            multiplicator = 10.0f;
+            break;
     }
 
     float value = GetModifierValue(unitMod, BASE_VALUE) + GetCreateHealth();
@@ -1171,12 +1212,22 @@ void Guardian::UpdateMaxPower(Powers power)
 
     switch (GetEntry())
     {
-        case ENTRY_IMP:         multiplicator = 4.95f;  break;
+        case ENTRY_IMP:
+            multiplicator = 4.95f;
+            break;
         case ENTRY_VOIDWALKER:
         case ENTRY_SUCCUBUS:
         case ENTRY_FELHUNTER:
-        case ENTRY_FELGUARD:    multiplicator = 11.5f;  break;
-        default:                multiplicator = 15.0f;  break;
+        case ENTRY_FELGUARD:
+            multiplicator = 11.5f;
+            break;
+        case ENTRY_WATER_ELEMENTAL:
+            multiplicator = 1.0f;
+            addValue = 0.0f;
+            break;
+        default:
+            multiplicator = 15.0f;
+            break;
     }
 
     float value  = GetModifierValue(unitMod, BASE_VALUE) + GetCreatePowers(power);
@@ -1216,7 +1267,7 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
             SetBonusDamage(int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.1287f));
         }
         //demons benefit from warlocks shadow or fire damage
-        else if (isPet())
+        else if (isPet() && GetEntry() != ENTRY_WATER_ELEMENTAL)
         {
             int32 fire  = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FIRE)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_FIRE);
             int32 shadow = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_SHADOW)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_SHADOW);
@@ -1232,7 +1283,8 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
             int32 frost = int32(owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS + SPELL_SCHOOL_FROST)) - owner->GetUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG + SPELL_SCHOOL_FROST);
             if (frost < 0)
                 frost = 0;
-            SetBonusDamage(int32(frost * 0.4f));
+            SetBonusDamage(frost);
+            bonusAP = frost * 0.57f;
         }
     }
 

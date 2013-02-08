@@ -1067,6 +1067,7 @@ uint32 BattlegroundMgr::CreateBattleground(CreateBattlegroundData& data)
     bg->SetTeamStartLoc(HORDE,    data.Team2StartLocX, data.Team2StartLocY, data.Team2StartLocZ, data.Team2StartLocO);
     bg->SetStartMaxDist(data.StartMaxDist);
     bg->SetLevelRange(data.LevelMin, data.LevelMax);
+    bg->SetHolidayId(data.holiday);
     bg->SetScriptId(data.scriptId);
 
     // add bg to update list
@@ -1083,8 +1084,8 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
     uint8 selectionWeight;
     BattlemasterListEntry const* bl;
 
-    //                                               0   1                  2                  3       4       5                 6               7              8            9             10      11
-    QueryResult result = WorldDatabase.Query("SELECT id, MinPlayersPerTeam, MaxPlayersPerTeam, MinLvl, MaxLvl, AllianceStartLoc, AllianceStartO, HordeStartLoc, HordeStartO, StartMaxDist, Weight, ScriptName FROM battleground_template");
+    //                                               0   1                  2                  3       4       5                 6               7              8            9             10      11       12
+    QueryResult result = WorldDatabase.Query("SELECT id, MinPlayersPerTeam, MaxPlayersPerTeam, MinLvl, MaxLvl, AllianceStartLoc, AllianceStartO, HordeStartLoc, HordeStartO, StartMaxDist, Weight, holiday, ScriptName FROM battleground_template");
 
     if (!result)
     {
@@ -1178,7 +1179,8 @@ void BattlegroundMgr::CreateInitialBattlegrounds()
         data.StartMaxDist = fields[9].GetFloat();
 
         selectionWeight = fields[10].GetUInt8();
-        data.scriptId = sObjectMgr->GetScriptId(fields[11].GetCString());
+        data.holiday = fields[11].GetUInt32();
+        data.scriptId = sObjectMgr->GetScriptId(fields[12].GetCString());
 
         //data.BattlegroundName = bl->name[sWorld->GetDefaultDbcLocale()];
         data.MapID = bl->mapid[0];
@@ -1486,13 +1488,20 @@ void BattlegroundMgr::ToggleArenaTesting()
         sWorld->SendWorldText(LANG_DEBUG_ARENA_OFF);
 }
 
-void BattlegroundMgr::SetHolidayWeekends(uint32 mask)
+void BattlegroundMgr::SetHolidayWeekends(std::list<uint32> activeHolidayId)
 {
     for (uint32 bgtype = 1; bgtype < MAX_BATTLEGROUND_TYPE_ID; ++bgtype)
     {
         if (Battleground* bg = GetBattlegroundTemplate(BattlegroundTypeId(bgtype)))
         {
-            bg->SetHoliday(mask & (1 << bgtype));
+            bool holidayActivate = false;
+
+            if (uint32 holidayId = bg->GetHolidayId())
+                for (auto activeId: activeHolidayId)
+                    if (holidayId == activeId)
+                        holidayActivate = true;
+
+            bg->SetHoliday(holidayActivate);
         }
     }
 }

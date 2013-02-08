@@ -237,13 +237,13 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectGiveCurrency,                             //166 SPELL_EFFECT_GIVE_CURRENCY
     &Spell::EffectNULL,                                     //167 SPELL_EFFECT_167
     &Spell::EffectNULL,                                     //168 SPELL_EFFECT_168
-    &Spell::EffectNULL,                                     //169 SPELL_EFFECT_169
-    &Spell::EffectNULL,                                     //170 SPELL_EFFECT_170
+    &Spell::EffectNULL,                                     //169 SPELL_EFFECT_DESTROY_ITEM
+    &Spell::EffectNULL,                                     //170 SPELL_EFFECT_UPDATE_ZONE_AURAS_AND_PHASES
     &Spell::EffectNULL,                                     //171 SPELL_EFFECT_171
-    &Spell::EffectNULL,                                     //172 SPELL_EFFECT_RESURRECT_WITH_AURA see 312e8509dddf910a5ab199d646c5a4d237d5fda9
+    &Spell::EffectNULL,                                     //172 SPELL_EFFECT_MASS_RESURECTION
     &Spell::EffectBuyGuilkBankTab,                          //173 SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB
-    &Spell::EffectNULL,                                     //174 SPELL_EFFECT_174
-    &Spell::EffectUnused,                                   //175 SPELL_EFFECT_175  unused
+    &Spell::EffectNULL,                                     //174 SPELL_EFFECT_APPLY_AURA_ON_PET
+    &Spell::EffectUnused,                                   //175 SPELL_EFFECT_175
     &Spell::EffectNULL,                                     //176 SPELL_EFFECT_176
     &Spell::EffectNULL,                                     //177 SPELL_EFFECT_177
     &Spell::EffectUnused,                                   //178 SPELL_EFFECT_178 unused
@@ -252,7 +252,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectUnlearnTalent,                            //181 SPELL_EFFECT_UNLEARN_TALENT
     &Spell::EffectNULL,                                     //182 SPELL_EFFECT_182
     &Spell::EffectNULL,                                     //183 SPELL_EFFECT_183
-    &Spell::EffectNULL,                                     //184 SPELL_EFFECT_184
+    &Spell::EffectNULL,                                     //184 SPELL_EFFECT_REPUTATION_REWARD
     &Spell::EffectNULL,                                     //185 SPELL_EFFECT_185
     &Spell::EffectNULL,                                     //186 SPELL_EFFECT_186
     &Spell::EffectNULL,                                     //187 SPELL_EFFECT_187
@@ -268,7 +268,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //197 SPELL_EFFECT_197
     &Spell::EffectNULL,                                     //198 SPELL_EFFECT_198
     &Spell::EffectNULL,                                     //199 SPELL_EFFECT_199
-    &Spell::EffectNULL,                                     //200 SPELL_EFFECT_200
+    &Spell::EffectNULL,                                     //200 SPELL_EFFECT_HEAL_BATTLEPET_PCT
     &Spell::EffectNULL                                      //201 SPELL_EFFECT_201
 };
 void Spell::EffectNULL(SpellEffIndex /*effIndex*/)

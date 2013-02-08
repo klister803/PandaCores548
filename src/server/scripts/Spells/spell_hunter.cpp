@@ -83,7 +83,7 @@ class spell_hun_powershot : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         std::list<Unit*> tempUnitMap;
-                        _player->GetAttackableUnitListInRange(_player, tempUnitMap, _player->GetDistance(target));
+                        _player->GetAttackableUnitListInRange(tempUnitMap, _player->GetDistance(target));
 
                         for (auto itr : tempUnitMap)
                         {
@@ -1079,7 +1079,7 @@ class spell_hun_disengage : public SpellScriptLoader
                         std::list<Unit*> unitList;
                         std::list<Unit*> retsList;
 
-                        _player->GetAttackableUnitListInRange(_player, unitList, 8.0f);
+                        _player->GetAttackableUnitListInRange(unitList, 8.0f);
 
                         for (auto itr : unitList)
                             if (_player->IsValidAttackTarget(itr))

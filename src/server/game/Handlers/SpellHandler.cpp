@@ -701,6 +701,36 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellId = newSpellInfo->Id;
         }
     }
+    // Frostbolt - 116 and Frostbolt - 126201 (heal for water elemental)
+    if (spellInfo->Id == 116 && targets.GetUnitTarget())
+    {
+        if (targets.GetUnitTarget()->GetOwner() && targets.GetUnitTarget()->GetOwner()->GetTypeId() == TYPEID_PLAYER && targets.GetUnitTarget()->GetOwner()->GetGUID() == _player->GetGUID())
+        {
+            SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(126201);
+            if(newSpellInfo)
+            {
+                spellInfo = newSpellInfo;
+                spellId = newSpellInfo->Id;
+            }
+        }
+    }
+    // Surging Mist - 116694 and Surging Mist - 116995
+    // Surging Mist is instantly casted if player is channeling Soothing Mist
+    if (spellInfo->Id == 116694 && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
+    {
+        recvPacket.rfinish();
+        _player->CastSpell(targets.GetUnitTarget(), 116995, true);
+        _player->EnergizeBySpell(_player, 116995, 1, POWER_CHI);
+        return;
+    }
+    // Enveloping Mist - 124682 and Enveloping Mist - 132120
+    // Enveloping Mist is instantly casted if player is channeling Soothing Mist
+    if (spellInfo->Id == 124682 && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
+    {
+        recvPacket.rfinish();
+        _player->CastSpell(targets.GetUnitTarget(), 132120, true);
+        return;
+    }
 
     Spell* spell = new Spell(mover, spellInfo, TRIGGERED_NONE, 0, false);
     spell->m_cast_count = castCount;                       // set count of casts

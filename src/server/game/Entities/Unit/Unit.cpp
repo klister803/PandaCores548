@@ -191,6 +191,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     m_modAttackSpeedPct[RANGED_ATTACK] = 1.0f;
 
     m_extraAttacks = 0;
+    countCrit = 0;
     m_canDualWield = false;
 
     m_rootTimes = 0;
@@ -647,6 +648,99 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         bp /= 3;
 
         victim->CastCustomSpell(victim, 115611, &bp, NULL, NULL, true);
+    }
+    // Stance of the Wise Serpent - 115070
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(115070) && spellProto)
+    {
+        int32 bp = damage / 2;
+        std::list<Unit*> targetList;
+        std::list<Creature*> tempList;
+        std::list<Creature*> statueList;
+        Creature* statue;
+
+        ToPlayer()->GetPartyMembers(targetList);
+
+        if (targetList.size() > 1)
+        {
+            targetList.sort(Trinity::HealthPctOrderPred());
+            targetList.resize(1);
+        }
+
+        ToPlayer()->GetCreatureListWithEntryInGrid(tempList, 60849, 500.0f);
+        ToPlayer()->GetCreatureListWithEntryInGrid(statueList, 60849, 500.0f);
+
+        // Remove other players jade statue
+        for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+        {
+            Unit* owner = (*i)->GetOwner();
+            if (owner && owner == ToPlayer() && (*i)->isSummon())
+                continue;
+
+            statueList.remove((*i));
+        }
+
+        // In addition, you also gain Eminence, causing you to heal the lowest health nearby target within 20 yards for an amount equal to 50% of non-autoattack damage you deal
+        for (auto itr : targetList)
+        {
+            CastCustomSpell(itr, 117895, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+
+            if (statueList.size() == 1)
+            {
+                for (auto itrBis : statueList)
+                    statue = itrBis;
+
+                if (statue && (statue->isPet() || statue->isGuardian()))
+                    if (statue->GetOwner() && statue->GetOwner()->GetGUID() == GetGUID())
+                        statue->CastCustomSpell(itr, 117895, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+            }
+        }
+    }
+    // Serpent's Zeal - 127722
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(127722) && !spellProto)
+    {
+        int32 bp = 0;
+        std::list<Creature*> tempList;
+        std::list<Creature*> statueList;
+        Creature* statue;
+
+        if (AuraPtr serpentsZeal = GetAura(127722))
+        {
+            if (serpentsZeal->GetStackAmount() < 2)
+                bp += damage / 4;
+            else
+                bp += damage / 2;
+
+            if (serpentsZeal->GetStackAmount() > 1)
+                serpentsZeal->SetStackAmount(serpentsZeal->GetStackAmount() - 1);
+            else
+                RemoveAura(127722);
+        }
+
+        ToPlayer()->GetCreatureListWithEntryInGrid(tempList, 60849, 500.0f);
+        ToPlayer()->GetCreatureListWithEntryInGrid(statueList, 60849, 500.0f);
+
+        // Remove other players jade statue
+        for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+        {
+            Unit* owner = (*i)->GetOwner();
+            if (owner && owner == ToPlayer() && (*i)->isSummon())
+                continue;
+
+            statueList.remove((*i));
+        }
+
+        // you gain Serpent's Zeal causing you to heal nearby injured targets equal to 25% of your auto-attack damage. Stacks up to 2 times.
+        CastCustomSpell(this, 126890, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+
+        if (statueList.size() == 1)
+        {
+            for (auto itrBis : statueList)
+                statue = itrBis;
+
+            if (statue && (statue->isPet() || statue->isGuardian()))
+                if (statue->GetOwner() && statue->GetOwner()->GetGUID() == GetGUID())
+                    statue->CastCustomSpell(statue, 126890, &bp, NULL, NULL, true, 0, NULL, GetGUID()); // Eminence - statue
+        }
     }
 
     // Calculate Attack Power amount for Vengeance
@@ -4418,8 +4512,15 @@ int32 Unit::GetMaxNegativeAuraModifier(AuraType auratype) const
 
     AuraEffectList const& mTotalAuraList = GetAuraEffectsByType(auratype);
     for (AuraEffectList::const_iterator i = mTotalAuraList.begin(); i != mTotalAuraList.end(); ++i)
+    {
         if ((*i)->GetAmount() < modifier)
-            modifier = (*i)->GetAmount();
+        {
+            if ((*i)->GetBase()->GetId() == 116 && auratype == SPELL_AURA_MOD_DECREASE_SPEED) // Frostbolt speed reduction is always at 50%
+                modifier = (*i)->GetBaseAmount();
+            else
+                modifier = (*i)->GetAmount();
+        }
+    }
 
     return modifier;
 }
@@ -5837,29 +5938,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                         return false;
                 }
                 break;
-            }
-
-            // Hot Streak & Improved Hot Streak
-            if (dummySpell->SpellIconID == 2999)
-            {
-                if (effIndex != 0)
-                    return false;
-                AuraEffectPtr counter = triggeredByAura->GetBase()->GetEffect(EFFECT_1);
-                if (!counter)
-                    return true;
-
-                // Count spell criticals in a row in second aura
-                if (procEx & PROC_EX_CRITICAL_HIT)
-                {
-                    counter->SetAmount(counter->GetAmount() * 2);
-                    if (counter->GetAmount() < 100 && dummySpell->Id != 44445) // not enough or Hot Streak spell
-                        return true;
-                    // Crititcal counted -> roll chance
-                    if (roll_chance_i(triggerAmount))
-                        CastSpell(this, 48108, true, castItem, triggeredByAura);
-                }
-                counter->SetAmount(25);
-                return true;
             }
             // Incanter's Regalia set (add trigger chance to Mana Shield)
             if (dummySpell->SpellFamilyFlags[0] & 0x8000)
@@ -7968,6 +8046,28 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Teachings of The Monastery (Blackout Kick)
+        case 116645:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 100784)
+                return false;
+
+            break;
+        }
+        // Teachings of the Monastery (Tiger Palm)
+        case 118672:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 100787)
+                return false;
+
+            break;
+        }
         // Blazing Speed
         case 113857:
         {
@@ -8849,6 +8949,12 @@ bool Unit::HasAuraState(AuraStateType flag, SpellInfo const* spellProto, Unit co
                 if ((*j)->IsAffectingSpell(spellProto))
                     return true;
         }
+        // Fix Brain Freeze (57761) - Frostfire Bolt (44614) act as if target has aurastate frozen
+        if (spellProto && spellProto->Id == 44614 && Caster->HasAura(57761))
+            return true;
+        // Fix Fingers of Frost (44544) - Ice Lance (30455) and Deep Freeze (44572) act as if target has aurastate frozen
+        if (spellProto && (spellProto->Id == 30455 || spellProto->Id == 44572) && Caster->HasAura(44544))
+            return true;
         // Check per caster aura state
         // If aura with aurastate by caster not found return false
         if ((1<<(flag-1)) & PER_CASTER_AURA_STATE_MASK)
@@ -9738,6 +9844,40 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         DoneTotalMod += (crit_chance / 100.0f);
     }
 
+    // Pyroblast - 11366
+    // Pyroblast ! - 48108 : Next Pyroblast damage increased by 25%
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 11366 && damagetype == DIRECT_DAMAGE && HasAura(48108))
+        AddPct(DoneTotalMod, 25);
+
+    // Fingers of Frost - 112965
+    if (GetTypeId() == TYPEID_PLAYER && pdamage != 0 && ToPlayer()->HasSpell(112965) && spellProto)
+    {
+        if (spellProto->Id == 116 || spellProto->Id == 44614 || spellProto->Id == 84721)
+        {
+            if (roll_chance_i(12))
+            {
+                CastSpell(this, 44544, true);  // Fingers of frost proc
+                CastSpell(this, 126084, true); // Fingers of frost visual
+            }
+        }
+        else if (spellProto->Id == 42208)
+        {
+            if (roll_chance_i(4))
+            {
+                CastSpell(this, 44544, true);  // Fingers of frost proc
+                CastSpell(this, 126084, true); // Fingers of frost visual
+            }
+        }
+        else if (spellProto->Id == 2948)
+        {
+            if (roll_chance_i(9))
+            {
+                CastSpell(this, 44544, true);  // Fingers of frost proc
+                CastSpell(this, 126084, true); // Fingers of frost visual
+            }
+        }
+    }
+
     // Pet damage?
     if (GetTypeId() == TYPEID_UNIT && !ToCreature()->isPet())
         DoneTotalMod *= ToCreature()->GetSpellDamageMod(ToCreature()->GetCreatureTemplate()->rank);
@@ -10409,6 +10549,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 115611)
         return healamount;
 
+    // No bonus for Eminence (statue) and Eminence
+    if (spellProto->Id == 117895 || spellProto->Id == 126890)
+        return healamount;
+
     float DoneTotalMod = 1.0f;
     int32 DoneTotal = 0;
 
@@ -10463,6 +10607,9 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
     // Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit = SpellBaseHealingBonusDone(spellProto->GetSchoolMask());
+
+    if (!DoneAdvertisedBenefit)
+        DoneAdvertisedBenefit = SpellBaseDamageBonusDone(spellProto->GetSchoolMask());
 
     // Check for table values
     SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
@@ -10551,7 +10698,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     {
         std::list<Unit*> nearbyUnits;
         std::list<Unit*> nearbyAllies;
-        GetAttackableUnitListInRange(ToPlayer(), nearbyUnits, 15.0f);
+        ToPlayer()->GetAttackableUnitListInRange(nearbyUnits, 15.0f);
 
         for (auto itr : nearbyUnits)
             if (!itr->IsHostileTo(this))
@@ -10570,6 +10717,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, uint32 healamount, DamageEffectType damagetype, uint32 stack)
 {
     float TakenTotalMod = 1.0f;
+
+    // No bonus for Eminence (statue) and Eminence
+    if (spellProto->Id == 117895 || spellProto->Id == 126890)
+        return healamount;
 
     // Healing taken percent
     float minval = float(GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT));
@@ -11880,12 +12031,15 @@ int32 Unit::ModifyPower(Powers power, int32 dVal)
         return 0;
 
     if (power == POWER_CHI)
+    {
         if (dVal < 0)
         {
-            AuraPtr tigereyeBrew = this->GetAura(123980);
-            if (tigereyeBrew != NULLAURA)
+            if (AuraPtr tigereyeBrew = this->GetAura(123980))
                 tigereyeBrew->SetScriptData(0, -dVal);
+            else if (AuraPtr manaTea = this->GetAura(123766))
+                manaTea->SetScriptData(0, -dVal);
         }
+    }
 
     int32 curPower = GetPower(power);
 
@@ -14132,6 +14286,24 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
     }
 
+    // Hack fix Pyroblast - Hot Streak
+    if ((procExtra & PROC_EX_CRITICAL_HIT) && !(procExtra & PROC_EX_INTERNAL_DOT) && procSpell &&  procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_FIRE && procSpell->Id != 12654 && procSpell->Id != 83853)
+    {
+        if (AuraPtr pyroblastDriver = GetAura(44448))
+        {
+            countCrit++;
+
+            if (countCrit >= 2)
+            {
+                CastSpell(this, 48108, true);
+                countCrit = 0;
+            }
+        }
+    }
+    else if (!(procExtra & PROC_EX_CRITICAL_HIT) && !(procExtra & PROC_EX_INTERNAL_DOT) && procSpell && procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_FIRE && procSpell->Id != 12654 && procSpell->Id != 83853)
+        if (AuraPtr pyroblastDriver = GetAura(44448))
+            countCrit = 0;
+
     // Hack Fix Ice Floes - Drop charges
     if (GetTypeId() == TYPEID_PLAYER && HasAura(108839) && procSpell && procSpell->Id != 108839 && procSpell->CalcCastTime() != 0 && !isVictim && !(procExtra & PROC_EX_INTERNAL_DOT))
     {
@@ -14148,6 +14320,18 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     // Fix Drop charge for Killing Machine
     if (GetTypeId() == TYPEID_PLAYER && HasAura(51124) && getClass() == CLASS_DEATH_KNIGHT && procSpell && (procSpell->Id == 49020 || procSpell->Id == 49143))
         RemoveAura(51124);
+
+    // Fix Drop charge for Fingers of Frost
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(44544) && getClass() == CLASS_MAGE && procSpell && (procSpell->Id == 30455 || procSpell->Id == 44572))
+    {
+        AuraApplication* fingersOfFrost = GetAuraApplication(44544, GetGUID());
+        AuraApplication* fingersVisual = GetAuraApplication(126084, GetGUID());
+
+        if (fingersOfFrost)
+            fingersOfFrost->GetBase()->DropCharge();
+        if (fingersVisual)
+            fingersVisual->GetBase()->DropCharge();
+    }
 
     // Hack Fix Immolate - Critical strikes generate burning embers
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 348 && procExtra & PROC_EX_CRITICAL_HIT)
@@ -14458,7 +14642,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         } // if (!handled)
 
         // Remove charge (aura can be removed by triggers)
-        if (useCharges && takeCharges && i->aura->GetId() != 324) // Custom MoP Script - Hack Fix for Lightning Shield
+        if (useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032) // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
             i->aura->DropCharge();
 
         if (spellInfo->AttributesEx3 & SPELL_ATTR3_DISABLE_PROC)
@@ -14783,20 +14967,20 @@ void Unit::UpdateReactives(uint32 p_time)
     }
 }
 
-void Unit::GetAttackableUnitListInRange(Player* _player, std::list<Unit*, std::allocator<Unit*>> &list, float fMaxSearchRange) const
+void Unit::GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearchRange) const
 {
-    CellCoord p(Trinity::ComputeCellCoord(_player->GetPositionX(), _player->GetPositionY()));
+    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
     cell.SetNoCreate();
 
-    Trinity::AnyUnitInObjectRangeCheck u_check(_player, fMaxSearchRange);
-    Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(_player, list, u_check);
+    Trinity::AnyUnitInObjectRangeCheck u_check(this, fMaxSearchRange);
+    Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(this, list, u_check);
 
     TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
     TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
-    cell.Visit(p, world_unit_searcher, *_player->GetMap(), *_player, fMaxSearchRange);
-    cell.Visit(p, grid_unit_searcher, *_player->GetMap(), *_player, fMaxSearchRange);
+    cell.Visit(p, world_unit_searcher, *GetMap(), *this, fMaxSearchRange);
+    cell.Visit(p, grid_unit_searcher, *GetMap(), *this, fMaxSearchRange);
 }
 
 Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
@@ -16185,7 +16369,7 @@ void Unit::RemoveVehicleKit()
     if (!m_vehicleKit)
         return;
 
-    m_vehicleKit->Uninstall();
+    m_vehicleKit->Uninstall(true);
     delete m_vehicleKit;
 
     m_vehicleKit = NULL;

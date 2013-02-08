@@ -145,10 +145,10 @@ class boss_saboteur_kiptilak : public CreatureScript
                 switch(events.ExecuteEvent())
                 {
                     case EVENT_EXPLOSIVES:
-                        for (uint8 i = 0; i < 3; ++i)
+                        for (uint8 i = 0; i < urand(1, 3); ++i)
                             me->CastSpell(frand(702, 740), frand(2292, 2320), 388.5f, SPELL_PLANT_EXPLOSIVE, true);
 
-                        events.ScheduleEvent(EVENT_EXPLOSIVES, urand(7500,  10000));
+                        events.ScheduleEvent(EVENT_EXPLOSIVES, urand(7500, 12500));
                         break;
                     case EVENT_SABOTAGE:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1, 0.0f, true))
@@ -191,7 +191,7 @@ public:
         {
             me->SetReactState(REACT_PASSIVE);
             orientation = 0.0f;
-            checkTimer = 500;
+            checkTimer = 1000;
 
             switch (me->GetEntry())
             {
@@ -262,6 +262,59 @@ public:
     }
 };
 
+class CheckMunitionExplosionPredicate
+{
+    public:
+        CheckMunitionExplosionPredicate(Unit* caster) : _caster(caster) {}
+
+        bool operator()(WorldObject* target)
+        {
+            if (!_caster || !target)
+                return true;
+
+            if (!_caster->ToTempSummon())
+                return true;
+
+            Unit* creator = _caster->ToTempSummon()->GetSummoner();
+
+            if (!creator || creator == target)
+                return true;
+
+            return false;
+        }
+
+    private:
+        Unit* _caster;
+};
+
+class spell_kiptilak_munitions_explosion : public SpellScriptLoader
+{
+    public:
+        spell_kiptilak_munitions_explosion() : SpellScriptLoader("spell_kiptilak_munitions_explosion") { }
+
+        class spell_kiptilak_munitions_explosion_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_kiptilak_munitions_explosion_SpellScript);
+
+            void FilterTargets(std::list<WorldObject*>& unitList)
+            {
+                if (Unit* caster = GetCaster())
+                    unitList.remove_if(CheckMunitionExplosionPredicate(caster));
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_kiptilak_munitions_explosion_SpellScript::FilterTargets, EFFECT_0, TARGET_SRC_CASTER);
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_kiptilak_munitions_explosion_SpellScript::FilterTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENTRY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_kiptilak_munitions_explosion_SpellScript();
+        }
+};
+
 class spell_kiptilak_sabotage : public SpellScriptLoader
 {
     public:
@@ -298,5 +351,6 @@ void AddSC_boss_saboteur_kiptilak()
 {
     new boss_saboteur_kiptilak();
     new npc_munition_explosion_bunny();
+    new spell_kiptilak_munitions_explosion();
     new spell_kiptilak_sabotage();
 }

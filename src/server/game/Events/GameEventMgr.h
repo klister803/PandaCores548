@@ -168,7 +168,6 @@ class GameEventMgr
         //GameEventGuidMap  mGameEventGameobjectGuids;
         GameEventIdMap    mGameEventPoolIds;
         GameEventDataMap  mGameEvent;
-        GameEventBitmask  mGameEventBattlegroundHolidays;
         QuestIdToEventConditionMap mQuestToEventConditions;
         GameEventNPCFlagMap mGameEventNPCFlags;
         ActiveEvents m_ActiveEvents;

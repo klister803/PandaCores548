@@ -2638,6 +2638,10 @@ void SpellMgr::LoadSpellClassInfo()
         if(!classEntry)
             continue;
 
+        // Player damage reduction (40% base resilience)
+        if (ClassID == CLASS_DEATH_KNIGHT || ClassID == CLASS_MAGE || ClassID == CLASS_PRIEST)
+            mSpellClassInfo[ClassID].push_back(115043);
+
         // Swift Flight Form
         if (ClassID == CLASS_DRUID)
             mSpellClassInfo[ClassID].push_back(40120);
@@ -3127,6 +3131,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 117895:// Eminence (statue)
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
+                spellInfo->Effects[0].TargetB = NULL;
+                break;
+            case 115294:// Mana Tea
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(36); // 1s
+                break;
             case 44461: // Living Bomb
                 spellInfo->MaxAffectedTargets = 3;
                 break;
@@ -3139,11 +3150,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 114205: // Demoralizing Banner
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(8); // 15s
-                break;
-            case 132158: // Nature's Swiftness
-            case 74434: // Soul Burn
-            case 34936: // Backlash
-                spellInfo->ProcCharges = 1;
                 break;
             case 127630: // Cascade - damage trigger
             case 120786: // Cascade - heal trigger
@@ -3231,10 +3237,20 @@ void SpellMgr::LoadSpellCustomAttr()
             case 13165: // Aspect of the Hawk
                 spellInfo->OverrideSpellList.push_back(109260); // Add Aspect of the Iron Hack to override spell list of Aspect of the Hawk
                 break;
-            case 6346: // Fear Ward
+            case 6346:  // Fear Ward
+            case 48108: // Hot Streak
+            case 57761: // Brain Freeze
+            case 132158:// Nature's Swiftness
+            case 74434: // Soul Burn
+            case 34936: // Backlash
                 spellInfo->ProcCharges = 1;
                 break;
-            case 8122: // Psychic Scream
+            case 44544: // Fingers of Frost
+            case 126084:// Fingers of Frost - visual
+                spellInfo->ProcCharges = 2;
+                spellInfo->StackAmount = 0;
+                break;
+            case 8122:  // Psychic Scream
                 spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                 spellInfo->MaxAffectedTargets = 5;
                 break;
@@ -3522,6 +3538,17 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].TargetB = 0;
                 spellInfo->Effects[1].TargetA = TARGET_UNIT_CONE_ENEMY_24;
                 spellInfo->Effects[1].TargetB = 0;
+                break;
+            case 106853:
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                spellInfo->Effects[0].TargetB = 0;
+                break;
+            case 112060:
+                spellInfo->Effects[0].TargetB = 0;
+                break;
+            case 118685:
+                spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(5);
+                break;
             default:
                 break;
             }
@@ -3541,6 +3568,9 @@ void SpellMgr::LoadSpellCustomAttr()
             default:
                 break;
             }
+
+            // This must be re-done if targets changed since the spellinfo load
+            spellInfo->ExplicitTargetMask = spellInfo->_GetExplicitTargetMask();
         }
     }
 
@@ -3730,7 +3760,6 @@ void SpellMgr::LoadDbcDataCorrections()
     case 31834: // Light's Grace
     case 34754: // Clearcasting
     case 34936: // Backlash
-    case 48108: // Hot Streak
     case 51124: // Killing Machine
     case 54741: // Firestarter
     case 57761: // Fireball!

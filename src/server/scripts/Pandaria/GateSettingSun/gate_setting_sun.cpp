@@ -20,15 +20,15 @@ class mob_serpent_spine_defender : public CreatureScript
 public:
     mob_serpent_spine_defender() : CreatureScript("mob_serpent_spine_defender") { }
 
-    struct mob_serpent_spine_defenderAI : public Scripted_NoMovementAI
+    struct mob_serpent_spine_defenderAI : public ScriptedAI
     {
-        mob_serpent_spine_defenderAI(Creature* creature) : Scripted_NoMovementAI(creature) {}
+        mob_serpent_spine_defenderAI(Creature* creature) : ScriptedAI(creature) {}
 
         uint32 attackTimer;
 
         void Reset()
         {
-            attackTimer = 2500;
+            attackTimer = urand(1000, 5000);
         }
 
         void DamageDealt(Unit* /*target*/, uint32& damage, DamageEffectType /*damageType*/)
@@ -49,6 +49,8 @@ public:
                 else
                     attackTimer -= diff;
             }
+
+            DoMeleeAttackIfReady();
         }
     };
 
@@ -94,7 +96,7 @@ public:
                     if (!stalker->HasAura(SPELL_BOMB_AURA))
                         me->CastSpell(stalker, SPELL_BOMB_CAST_VISUAL, true);
 
-                bombTimer = urand(1000, 7500);
+                bombTimer = urand(1000, 5000);
             }
             else bombTimer -= diff;
         }
@@ -130,6 +132,30 @@ public:
     {
         if (player->GetInstanceScript())
             player->GetInstanceScript()->SetData(DATA_BRASIER_CLICKED, DONE);
+
+        return false;
+    }
+};
+
+class go_setting_sun_temp_portal : public GameObjectScript
+{
+public:
+    go_setting_sun_temp_portal() : GameObjectScript("go_setting_sun_temp_portal") { }
+
+    bool OnGossipHello(Player* player, GameObject* go)
+    {
+        switch (go->GetEntry())
+        {
+            case 400001:
+                player->NearTeleportTo(1078.96f, 2305.48f, 381.55f, 0.01f);
+                break;
+            case 400002:
+                if (go->GetPositionZ() < 400.0f)
+                    player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), 431.0f, go->GetOrientation());
+                else
+                    player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), 388.5f, go->GetOrientation());
+                break;
+        }
 
         return false;
     }
@@ -199,5 +225,6 @@ void AddSC_gate_setting_sun()
     new npc_krikthik_bombarder();
     new AreaTrigger_at_first_door();
     new go_setting_sun_brasier();
+    new go_setting_sun_temp_portal();
     new vehicle_artillery_to_wall();
 }

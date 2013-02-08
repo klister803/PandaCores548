@@ -63,6 +63,39 @@ enum WarlockSpells
     WARLOCK_SOUL_SWAP_VISUAL                = 92795,
 };
 
+// Burning Rush - 111400
+class spell_warl_burning_rush : public SpellScriptLoader
+{
+    public:
+        spell_warl_burning_rush() : SpellScriptLoader("spell_warl_burning_rush") { }
+
+        class spell_warl_burning_rush_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_burning_rush_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                {
+                    // Drain 4% of health every second
+                    int32 basepoints = GetCaster()->CountPctFromMaxHealth(4);
+
+                    GetCaster()->DealDamage(GetCaster(), basepoints, NULL, NODAMAGE, SPELL_SCHOOL_MASK_NORMAL, NULL, false);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_burning_rush_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_burning_rush_AuraScript();
+        }
+};
+
 // Soul Swap : Soulburn - 119678
 class spell_warl_soul_swap_soulburn : public SpellScriptLoader
 {
@@ -1157,6 +1190,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_burning_rush();
     new spell_warl_soul_swap_soulburn();
     new spell_warl_soul_swap();
     new spell_warl_nightfall();
