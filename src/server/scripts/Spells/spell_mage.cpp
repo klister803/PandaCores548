@@ -131,15 +131,20 @@ class spell_mage_ring_of_frost : public SpellScriptLoader
 
             bool Load()
             {
-                ringOfFrost = NULL;
+            	ringOfFrostGUID = 0;
                 return true;
             }
 
             void HandleEffectPeriodic(constAuraEffectPtr aurEff)
             {
-                if (ringOfFrost)
-                    if (GetMaxDuration() - (int32)ringOfFrost->GetTimer() >= sSpellMgr->GetSpellInfo(SPELL_MAGE_RING_OF_FROST_DUMMY)->GetDuration())
-                        GetTarget()->CastSpell(ringOfFrost->GetPositionX(), ringOfFrost->GetPositionY(), ringOfFrost->GetPositionZ(), SPELL_MAGE_RING_OF_FROST_FREEZE, true);
+                if (Creature * c = Unit::GetCreature(*GetTarget(), ringOfFrostGUID))
+                {
+                	if (!c->ToTempSummon())
+                		return;
+
+                    if (GetMaxDuration() - (int32)c->ToTempSummon()->GetTimer() >= sSpellMgr->GetSpellInfo(SPELL_MAGE_RING_OF_FROST_DUMMY)->GetDuration())
+                        GetTarget()->CastSpell(c->GetPositionX(), c->GetPositionY(), c->GetPositionZ(), SPELL_MAGE_RING_OF_FROST_FREEZE, true);
+                }
             }
 
             void Apply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
@@ -152,22 +157,25 @@ class spell_mage_ring_of_frost : public SpellScriptLoader
                 {
                     TempSummon* summon = (*itr)->ToTempSummon();
 
+                    Creature* c = Unit::GetCreature(*GetTarget(), ringOfFrostGUID);
+                    TempSummon* ringOfFrost = c ? c->ToTempSummon() : NULL;
+
                     if (ringOfFrost && summon)
                     {
                         if (summon->GetTimer() > ringOfFrost->GetTimer())
                         {
                             ringOfFrost->DespawnOrUnsummon();
-                            ringOfFrost = summon;
+                            ringOfFrostGUID = summon->GetGUID();
                         }
                         else
                             summon->DespawnOrUnsummon();
                     }
                     else if (summon)
-                        ringOfFrost = summon;
+                    	ringOfFrostGUID = summon->GetGUID();
                 }
             }
 
-            TempSummon* ringOfFrost;
+            uint64 ringOfFrostGUID;
 
             void Register()
             {
