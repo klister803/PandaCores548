@@ -2182,7 +2182,8 @@ bool Player::BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, B
         *dataBuffer << uint8(guid[4] ^ 1);
     if (guildGuid[5] != 0)
         *dataBuffer << uint8(guildGuid[5] ^ 1);
-    dataBuffer->append(name.c_str(), name.length());            // Name
+    if (name.length()))
+    	dataBuffer->append(name.c_str(), name.length());            // Name
     *dataBuffer << uint32(petLevel);                            // Pet level
     *dataBuffer << uint8(gender);                               // Gender
     *dataBuffer << float(x);                                    // X
