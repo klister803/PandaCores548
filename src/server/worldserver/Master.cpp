@@ -418,17 +418,12 @@ public:
                     CharacterDatabase.PExecute("DELETE FROM guild_member WHERE guid = '%u'",        perso_guid);
 
                     std::string result = "";
-                    if(PlayerDumpWriter().GetDump(perso_guid, result))
+                    if(sInterRealmTransfertWriter->GetDump(perso_guid, result))
                     {
-                        std::string result2 = "";
-                        sInterRealmTransfertWriter->GetDump(perso_guid, result2);
-                        if(result != result2)
-                            continue;
-
                         PreparedStatement * stmt = LoginDatabase.GetPreparedStatement(LOGIN_SET_DUMP);
                         if(stmt)
                         {
-                            stmt->setString(0, result2);
+                            stmt->setString(0, result);
                             stmt->setString(1, hash_transfert.c_str());
                             stmt->setUInt32(2, transaction);
                             LoginDatabase.Execute(stmt);
