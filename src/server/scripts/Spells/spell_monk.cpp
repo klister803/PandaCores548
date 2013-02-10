@@ -80,6 +80,53 @@ enum MonkSpells
     SPELL_MONK_MANA_TEA_REGEN                   = 115294,
     SPELL_MONK_SPINNING_CRANE_KICK_HEAL         = 117640,
     MONK_NPC_JADE_SERPENT_STATUE                = 60849,
+    SPELL_MONK_UPLIFT_ALLOWING_CAST             = 123757,
+    SPELL_MONK_THUNDER_FOCUS_TEA                = 116680,
+};
+
+// Called by Uplift - 116670
+// Thunder Focus Tea - 116680
+class spell_monk_thunder_focus_tea : public SpellScriptLoader
+{
+    public:
+        spell_monk_thunder_focus_tea() : SpellScriptLoader("spell_monk_thunder_focus_tea") { }
+
+        class spell_monk_thunder_focus_tea_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_thunder_focus_tea_SpellScript)
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(SPELL_MONK_THUNDER_FOCUS_TEA))
+                        {
+                            std::list<Unit*> groupList;
+
+                            _player->GetPartyMembers(groupList);
+
+                            for (auto itr : groupList)
+                                if (AuraPtr renewingMistGroup = itr->GetAura(SPELL_MONK_RENEWING_MIST_HOT, _player->GetGUID()))
+                                    renewingMistGroup->RefreshDuration();
+
+                            _player->RemoveAura(SPELL_MONK_THUNDER_FOCUS_TEA);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_thunder_focus_tea_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_thunder_focus_tea_SpellScript();
+        }
 };
 
 // Summon Jade Serpent Statue - 115313
@@ -381,9 +428,99 @@ class spell_monk_renewing_mist : public SpellScriptLoader
     public:
         spell_monk_renewing_mist() : SpellScriptLoader("spell_monk_renewing_mist") { }
 
+        class spell_monk_renewing_mist_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_renewing_mist_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    std::list<Unit*> playerList;
+                    std::list<Creature*> tempList;
+                    std::list<Creature*> statueList;
+                    Creature* statue;
+
+                    _player->GetPartyMembers(playerList);
+
+                    if (playerList.size() > 1)
+                    {
+                        playerList.sort(Trinity::HealthPctOrderPred());
+                        playerList.resize(1);
+                    }
+
+                    _player->GetCreatureListWithEntryInGrid(tempList, 60849, 100.0f);
+                    _player->GetCreatureListWithEntryInGrid(statueList, 60849, 100.0f);
+
+                    // Remove other players jade statue
+                    for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+                    {
+                        Unit* owner = (*i)->GetOwner();
+                        if (owner && owner == _player && (*i)->isSummon())
+                            continue;
+
+                        statueList.remove((*i));
+                    }
+
+                    for (auto itr : playerList)
+                    {
+                        if (statueList.size() == 1)
+                        {
+                            for (auto itrBis : statueList)
+                                statue = itrBis;
+
+                            if (statue && (statue->isPet() || statue->isGuardian()))
+                            {
+                                if (statue->GetOwner() && statue->GetOwner()->GetGUID() == _player->GetGUID())
+                                {
+                                    _player->AddAura(SPELL_MONK_RENEWING_MIST_HOT, itr);
+                                    _player->CastSpell(itr, SPELL_MONK_RENEWING_MIST_JUMP_AURA, true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_renewing_mist_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_renewing_mist_SpellScript();
+        }
+
         class spell_monk_renewing_mist_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_monk_renewing_mist_AuraScript);
+
+            uint32 update;
+
+            bool Validate(SpellInfo const* /*spell*/)
+            {
+                update = 0;
+
+                if (!sSpellMgr->GetSpellInfo(119611))
+                    return false;
+                return true;
+            }
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                update += diff;
+
+                if (update >= 2500)
+                {
+                    if (GetCaster())
+                        if (Player* _player = GetCaster()->ToPlayer())
+                            _player->CastSpell(_player, SPELL_MONK_UPLIFT_ALLOWING_CAST, true);
+
+                    update = 0;
+                }
+            }
 
             void OnTick(constAuraEffectPtr aurEff)
             {
@@ -443,9 +580,18 @@ class spell_monk_renewing_mist : public SpellScriptLoader
                 }
             }
 
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetCaster())
+                    if (AuraPtr uplift = GetCaster()->GetAura(SPELL_MONK_UPLIFT_ALLOWING_CAST, GetCaster()->GetGUID()))
+                        GetCaster()->RemoveAura(SPELL_MONK_UPLIFT_ALLOWING_CAST, GetCaster()->GetGUID());
+            }
+
             void Register()
             {
                 OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_renewing_mist_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+                OnEffectUpdate += AuraEffectUpdateFn(spell_monk_renewing_mist_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+                OnEffectRemove += AuraEffectApplyFn(spell_monk_renewing_mist_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
             }
         };
 
@@ -1571,6 +1717,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_thunder_focus_tea();
     new spell_monk_jade_serpent_statue();
     new spell_monk_teachings_of_the_monastery();
     new spell_monk_mana_tea();

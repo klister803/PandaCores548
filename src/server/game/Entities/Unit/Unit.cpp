@@ -666,8 +666,8 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
             targetList.resize(1);
         }
 
-        ToPlayer()->GetCreatureListWithEntryInGrid(tempList, 60849, 500.0f);
-        ToPlayer()->GetCreatureListWithEntryInGrid(statueList, 60849, 500.0f);
+        ToPlayer()->GetCreatureListWithEntryInGrid(tempList, 60849, 100.0f);
+        ToPlayer()->GetCreatureListWithEntryInGrid(statueList, 60849, 100.0f);
 
         // Remove other players jade statue
         for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
@@ -716,8 +716,8 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
                 RemoveAura(127722);
         }
 
-        ToPlayer()->GetCreatureListWithEntryInGrid(tempList, 60849, 500.0f);
-        ToPlayer()->GetCreatureListWithEntryInGrid(statueList, 60849, 500.0f);
+        ToPlayer()->GetCreatureListWithEntryInGrid(tempList, 60849, 100.0f);
+        ToPlayer()->GetCreatureListWithEntryInGrid(statueList, 60849, 100.0f);
 
         // Remove other players jade statue
         for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
@@ -16369,7 +16369,7 @@ void Unit::RemoveVehicleKit()
     if (!m_vehicleKit)
         return;
 
-    m_vehicleKit->Uninstall(true);
+    m_vehicleKit->Uninstall();
     delete m_vehicleKit;
 
     m_vehicleKit = NULL;
