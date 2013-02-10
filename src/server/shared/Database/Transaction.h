@@ -28,6 +28,7 @@ class Transaction
 {
     friend class TransactionTask;
     friend class MySQLConnection;
+    friend class DatabaseWokerPool;
 
     public:
         Transaction() : _cleanedUp(false) {}

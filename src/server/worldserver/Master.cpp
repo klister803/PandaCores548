@@ -421,17 +421,9 @@ public:
                     if(PlayerDumpWriter().GetDump(perso_guid, result))
                     {
                         std::string result2 = "";
-                        PlayerDumpWriter().GetDump(perso_guid, result2);
+                        sInterRealmTransfertWriter->GetDump(perso_guid, result2);
                         if(result != result2)
                             continue;
-
-                        /*std::string new_string = "";
-                        for(std::string::iterator i = result.begin(); i < result.end(); i++)
-                        {
-                            if((*i) == '\\')
-                                new_string.push_back('\\');
-                            new_string.push_back(*i);
-                        }*/
 
                         PreparedStatement * stmt = LoginDatabase.GetPreparedStatement(LOGIN_SET_DUMP);
                         if(stmt)
@@ -463,10 +455,10 @@ public:
                     FILE *fout = fopen("temp.dump", "w");
                     if(!fout)
                         continue;
-                    fprintf(fout, "%s\n", dump.c_str());
+                    fprintf(fout, dump.c_str());
                     fclose(fout);
 
-                    switch(PlayerDumpReader().LoadDump("temp.dump", account, "", 0))
+                    switch(sInterRealmTransfertReader->LoadDump("temp.dump", account, "", 0))
                     {
                         case DUMP_SUCCESS:
                         {
