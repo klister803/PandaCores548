@@ -5887,10 +5887,14 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                 // Frenzied Regeneration
                 case 22842:
                 {
+                    if (!target)
+                        break;
+
                     // Converts up to 10 rage per second into health for $d.  Each point of rage is converted into ${$m2/10}.1% of max health.
                     // Should be manauser
                     if (target->getPowerType() != POWER_RAGE)
                         break;
+
                     uint32 rage = target->GetPower(POWER_RAGE);
                     // Nothing todo
                     if (rage == 0)
@@ -6007,18 +6011,21 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                 // Custom MoP Script
                 case 103958: // Metamorphosis
                 {
-                    if (caster->GetPower(POWER_DEMONIC_FURY) > 0)
+                    if (caster)
                     {
-                        // Power cost : 6 demonic fury per second
-                        uint32 demonicFury = caster->GetPower(POWER_DEMONIC_FURY) - 6;
+                        if (caster->GetPower(POWER_DEMONIC_FURY) > 0)
+                        {
+                            // Power cost : 6 demonic fury per second
+                            uint32 demonicFury = caster->GetPower(POWER_DEMONIC_FURY) - 6;
 
-                        if (demonicFury < 0)
-                            demonicFury = 0;
+                            if (demonicFury < 0)
+                                demonicFury = 0;
 
-                        caster->SetPower(POWER_DEMONIC_FURY, demonicFury);
+                            caster->SetPower(POWER_DEMONIC_FURY, demonicFury);
+                        }
+                        else
+                            caster->RemoveAurasDueToSpell(103958);
                     }
-                    else
-                        caster->RemoveAurasDueToSpell(103958);
                 }
             }
         case SPELLFAMILY_DEATHKNIGHT:

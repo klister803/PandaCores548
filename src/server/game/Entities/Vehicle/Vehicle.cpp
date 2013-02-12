@@ -203,14 +203,16 @@ void Vehicle::RemoveAllPassengers()
     _me->RemoveAurasByType(SPELL_AURA_CONTROL_VEHICLE);
 
     // Sometime aura do not work, so we iterate to be sure that every passengers have been removed
-    for (SeatMap::iterator itr = Seats.begin(); itr != Seats.end(); ++itr)
+    // We need a copy because passenger->_ExitVehicle() may modify the Seats list
+    SeatMap tempSeatMap = Seats;
+    for (auto itr: tempSeatMap)
     {
-        if (itr->second.Passenger)
+        if (itr.second.Passenger)
         {
-            if (Unit* passenger = ObjectAccessor::FindUnit(itr->second.Passenger))
+            if (Unit* passenger = ObjectAccessor::FindUnit(itr.second.Passenger))
                 passenger->_ExitVehicle();
 
-            itr->second.Passenger = 0;
+            itr.second.Passenger = 0;
         }
     }
 }
