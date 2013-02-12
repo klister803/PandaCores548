@@ -16369,7 +16369,7 @@ void Unit::RemoveVehicleKit()
     if (!m_vehicleKit)
         return;
 
-    m_vehicleKit->Uninstall();
+    m_vehicleKit->Uninstall(true);
     delete m_vehicleKit;
 
     m_vehicleKit = NULL;
