@@ -766,6 +766,10 @@ int WorldSocket::ProcessIncoming(WorldPacket* new_pct)
                     return -1;
                 }
 
+                // prevent invalid memory access/crash with custom opcodes
+                if (opcode >= NUM_OPCODE_HANDLERS)
+                    return 0;
+
                 OpcodeHandler* handler = opcodeTable[opcode];
                 if (!handler || handler->status == STATUS_UNHANDLED)
                 {
