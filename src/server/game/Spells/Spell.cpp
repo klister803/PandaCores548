@@ -2746,20 +2746,6 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
     // TODO: move this code to scripts
     if (m_preCastSpell)
     {
-        // Paladin immunity shields
-        if (m_preCastSpell == 61988)
-        {
-            // Cast Forbearance
-            m_caster->CastSpell(unit, 25771, true);
-            // Cast Avenging Wrath Marker
-            unit->CastSpell(unit, 61987, true);
-        }
-
-        // Avenging Wrath
-        if (m_preCastSpell == 61987)
-            // Cast the serverside immunity shield marker
-            m_caster->CastSpell(unit, 61988, true);
-
         // Custom MoP Script
         // Expel Harm - 115072 apply wrong aura (Flying Serpent Kick - 101545)
         if (m_spellInfo->Id == 115072 && m_preCastSpell == 101545)

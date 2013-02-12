@@ -49,8 +49,6 @@ enum PaladinSpells
     SPELL_DIVINE_STORM_DUMMY                     = 54171,
     SPELL_DIVINE_STORM_HEAL                      = 54172,
     SPELL_FORBEARANCE                            = 25771,
-    SPELL_AVENGING_WRATH_MARKER                  = 61987,
-    SPELL_IMMUNE_SHIELD_MARKER                   = 61988,
     PALADIN_SPELL_WORD_OF_GLORY                  = 85673,
     PALADIN_SPELL_WORD_OF_GLORY_HEAL             = 130551,
     PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY         = 54936,
@@ -68,6 +66,93 @@ enum PaladinSpells
     PALADIN_SPELL_EXECUTION_SENTENCE             = 114916,
     PALADIN_SPELL_STAY_OF_EXECUTION              = 114917,
     PALADIN_SPELL_INQUISITION                    = 84963,
+};
+
+// Cleanse - 4987
+class spell_pal_cleanse : public SpellScriptLoader
+{
+    public:
+        spell_pal_cleanse() : SpellScriptLoader("spell_pal_cleanse") { }
+
+        class spell_pal_cleanse_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_cleanse_SpellScript);
+
+            SpellCastResult CheckCleansing()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        // Create dispel mask by dispel type
+                        for (int8 i = 0; i < 3; i++)
+                        {
+                            uint32 dispel_type = GetSpellInfo()->Effects[i].MiscValue;
+                            uint32 dispelMask  = GetSpellInfo()->GetDispelMask(DispelType(dispel_type));
+                            DispelChargesList dispelList;
+                            target->GetDispellableAuraList(caster, dispelMask, dispelList);
+
+                            if (dispelList.empty())
+                                return SPELL_FAILED_NOTHING_TO_DISPEL;
+
+                            return SPELL_CAST_OK;
+                        }
+                    }
+                }
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_pal_cleanse_SpellScript::CheckCleansing);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_cleanse_SpellScript();
+        }
+};
+
+// Divine Shield - 642
+class spell_pal_divine_shield : public SpellScriptLoader
+{
+    public:
+        spell_pal_divine_shield() : SpellScriptLoader("spell_pal_divine_shield") { }
+
+        class spell_pal_divine_shield_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_divine_shield_SpellScript);
+
+            SpellCastResult CheckForbearance()
+            {
+                Unit* caster = GetCaster();
+                if (Unit* target = GetExplTargetUnit())
+                    if (target->HasAura(SPELL_FORBEARANCE))
+                        return SPELL_FAILED_TARGET_AURASTATE;
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, SPELL_FORBEARANCE, true);
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_pal_divine_shield_SpellScript::CheckForbearance);
+                OnHit += SpellHitFn(spell_pal_divine_shield_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_divine_shield_SpellScript();
+        }
 };
 
 // Inquisition - 84963
@@ -919,6 +1004,7 @@ class spell_pal_divine_storm_dummy : public SpellScriptLoader
         }
 };
 
+// Lay on Hands - 633
 class spell_pal_lay_on_hands : public SpellScriptLoader
 {
     public:
@@ -928,43 +1014,27 @@ class spell_pal_lay_on_hands : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pal_lay_on_hands_SpellScript);
 
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_FORBEARANCE))
-                    return false;
-                if (!sSpellMgr->GetSpellInfo(SPELL_AVENGING_WRATH_MARKER))
-                    return false;
-                if (!sSpellMgr->GetSpellInfo(SPELL_IMMUNE_SHIELD_MARKER))
-                    return false;
-                return true;
-            }
-
-            SpellCastResult CheckCast()
+            SpellCastResult CheckForbearance()
             {
                 Unit* caster = GetCaster();
                 if (Unit* target = GetExplTargetUnit())
-                    if (caster == target)
-                        if (target->HasAura(SPELL_FORBEARANCE) || target->HasAura(SPELL_AVENGING_WRATH_MARKER) || target->HasAura(SPELL_IMMUNE_SHIELD_MARKER))
-                            return SPELL_FAILED_TARGET_AURASTATE;
+                    if (target->HasAura(SPELL_FORBEARANCE))
+                        return SPELL_FAILED_TARGET_AURASTATE;
 
                 return SPELL_CAST_OK;
             }
 
-            void HandleScript()
+            void HandleOnHit()
             {
-                Unit* caster = GetCaster();
-                if (caster == GetHitUnit())
-                {
-                    caster->CastSpell(caster, SPELL_FORBEARANCE, true);
-                    caster->CastSpell(caster, SPELL_AVENGING_WRATH_MARKER, true);
-                    caster->CastSpell(caster, SPELL_IMMUNE_SHIELD_MARKER, true);
-                }
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, SPELL_FORBEARANCE, true);
             }
 
             void Register()
             {
-                OnCheckCast += SpellCheckCastFn(spell_pal_lay_on_hands_SpellScript::CheckCast);
-                AfterHit += SpellHitFn(spell_pal_lay_on_hands_SpellScript::HandleScript);
+                OnCheckCast += SpellCheckCastFn(spell_pal_lay_on_hands_SpellScript::CheckForbearance);
+                OnHit += SpellHitFn(spell_pal_lay_on_hands_SpellScript::HandleOnHit);
             }
         };
 
@@ -1049,6 +1119,8 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_cleanse();
+    new spell_pal_divine_shield();
     new spell_pal_inquisition();
     new spell_pal_execution_sentence();
     new spell_pal_lights_hammer();
