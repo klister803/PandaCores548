@@ -42,7 +42,7 @@ void TimeDiffMgr::Update(uint32 diff)
         m_prevLog[INTERVAL_1_MINUTE].Players = sWorld->GetPlayerCount();
         InitTimer(INTERVAL_1_MINUTE);
 
-        WorldDatabase.PExecute(
+        CharacterDatabase.PExecute(
             "INSERT INTO time_diff_log (time, average, max, players) VALUES (UNIX_TIMESTAMP(), %u, %u, %u)",
             m_prevLog[INTERVAL_1_MINUTE].Average, m_prevLog[INTERVAL_1_MINUTE].Max,
             m_prevLog[INTERVAL_1_MINUTE].Players);
