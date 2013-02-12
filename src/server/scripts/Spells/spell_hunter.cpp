@@ -138,8 +138,11 @@ class spell_hun_feign_death : public SpellScriptLoader
 
             void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                GetTarget()->SetHealth(health);
-                GetTarget()->SetPower(POWER_FOCUS, focus);
+                if (health && focus)
+                {
+                    GetTarget()->SetHealth(health);
+                    GetTarget()->SetPower(POWER_FOCUS, focus);
+                }
             }
 
             void Register()
