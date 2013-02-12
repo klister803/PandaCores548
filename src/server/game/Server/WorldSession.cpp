@@ -688,7 +688,7 @@ void WorldSession::SendAuthWaitQue(uint32 position)
     if (position == 0)
         SendAuthResponse(AUTH_OK, false);
     else
-        SendAuthResponse(AUTH_WAIT_QUEUE, true, position);
+        SendAuthResponse(AUTH_OK, true, position);
 }
 
 void WorldSession::LoadGlobalAccountData()
