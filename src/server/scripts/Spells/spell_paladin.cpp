@@ -66,6 +66,45 @@ enum PaladinSpells
     PALADIN_SPELL_EXECUTION_SENTENCE             = 114916,
     PALADIN_SPELL_STAY_OF_EXECUTION              = 114917,
     PALADIN_SPELL_INQUISITION                    = 84963,
+    PALADIN_SPELL_GLYPH_OF_BLINDING_LIGHT        = 54934,
+    PALADIN_SPELL_BLINDING_LIGHT_CONFUSE         = 115421,
+    PALADIN_SPELL_BLINDING_LIGHT_STUN            = 115752,
+};
+
+// Blinding Light - 115750
+class spell_pal_blinding_light : public SpellScriptLoader
+{
+    public:
+        spell_pal_blinding_light() : SpellScriptLoader("spell_pal_blinding_light") { }
+
+        class spell_pal_blinding_light_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_blinding_light_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_BLINDING_LIGHT))
+                            _player->CastSpell(target, PALADIN_SPELL_BLINDING_LIGHT_STUN, true);
+                        else
+                            _player->CastSpell(target, PALADIN_SPELL_BLINDING_LIGHT_CONFUSE, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_blinding_light_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_blinding_light_SpellScript();
+        }
 };
 
 // Hand of Protection - 1022
@@ -1158,6 +1197,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_blinding_light();
     new spell_pal_hand_of_protection();
     new spell_pal_cleanse();
     new spell_pal_divine_shield();
