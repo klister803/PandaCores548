@@ -4685,6 +4685,11 @@ void Spell::HandleHolyPower(Player* caster)
 {
     if (!caster)
         return;
+
+    // Templar's Verdict - Don't remove power twice
+    if (m_spellInfo->Id == 85256)
+        return;
+
     bool hit = true;
     Player* modOwner = caster->GetSpellModOwner();
     m_powerCost = caster->GetPower(POWER_HOLY_POWER); // Always use all the holy power we have
