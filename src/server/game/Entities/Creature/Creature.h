@@ -724,6 +724,10 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
 
         void ForcedDespawn(uint32 timeMSToDespawn = 0);
 
+        uint32 m_LOSCheckTimer;
+        bool m_LOSCheck_creature;
+        bool m_LOSCheck_player;
+
     protected:
         bool CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint32 team, const CreatureData* data = NULL);
         bool InitEntry(uint32 entry, uint32 team=ALLIANCE, const CreatureData* data=NULL);
