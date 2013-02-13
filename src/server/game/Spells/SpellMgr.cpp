@@ -3131,6 +3131,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 105361:// Seal of Command
+                spellInfo->OverrideSpellList.push_back(31801); // Replace Seal of Command with Seal of Truth
+                break;
             case 117895:// Eminence (statue)
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
                 spellInfo->Effects[0].TargetB = NULL;

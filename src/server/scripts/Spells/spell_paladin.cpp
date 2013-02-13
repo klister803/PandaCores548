@@ -67,8 +67,67 @@ enum PaladinSpells
     PALADIN_SPELL_STAY_OF_EXECUTION              = 114917,
     PALADIN_SPELL_INQUISITION                    = 84963,
     PALADIN_SPELL_GLYPH_OF_BLINDING_LIGHT        = 54934,
-    PALADIN_SPELL_BLINDING_LIGHT_CONFUSE         = 115421,
+    PALADIN_SPELL_BLINDING_LIGHT_CONFUSE         = 105421,
     PALADIN_SPELL_BLINDING_LIGHT_STUN            = 115752,
+    PALADIN_SPELL_EXORCISM                       = 879,
+};
+
+// Art of War - 59578
+class spell_pal_art_of_war : public SpellScriptLoader
+{
+    public:
+        spell_pal_art_of_war() : SpellScriptLoader("spell_pal_art_of_war") { }
+
+        class spell_pal_art_of_war_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_art_of_war_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasSpellCooldown(PALADIN_SPELL_EXORCISM))
+                        _player->RemoveSpellCooldown(PALADIN_SPELL_EXORCISM, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_art_of_war_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_art_of_war_SpellScript();
+        }
+};
+
+// Seal of Insight - 20167
+class spell_pal_seal_of_insight : public SpellScriptLoader
+{
+    public:
+        spell_pal_seal_of_insight() : SpellScriptLoader("spell_pal_seal_of_insight") { }
+
+        class spell_pal_seal_of_insight_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_seal_of_insight_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.04), POWER_MANA);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_seal_of_insight_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_seal_of_insight_SpellScript();
+        }
 };
 
 // Blinding Light - 115750
@@ -1197,6 +1256,8 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_art_of_war();
+    new spell_pal_seal_of_insight();
     new spell_pal_blinding_light();
     new spell_pal_hand_of_protection();
     new spell_pal_cleanse();
