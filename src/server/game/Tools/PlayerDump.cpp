@@ -409,7 +409,7 @@ void fixNULLfields(std::string &line) {
 }
 
 DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account,
-		std::string name, uint32 guid) {
+                std::string name, uint32 guid, bool onlyBoundedItems) {
 	uint32 charcount = AccountMgr::GetCharactersCount(account);
 	if (charcount >= 10)
 	return DUMP_TOO_MANY_CHARS;
@@ -630,6 +630,18 @@ DumpReturn PlayerDumpReader::LoadDump(const std::string& file, uint32 account,
 						ROLLBACK(DUMP_FILE_BROKEN);// item_instance.guid update
 						if (!changenth(line, 3, newguid))// item_instance.owner_guid update
 						ROLLBACK(DUMP_FILE_BROKEN);
+
+                        if (onlyBoundedItems)
+                        {
+                            std::string::size_type s, e;
+                            if (!findnth(line, 9, s, e))
+                            ROLLBACK(DUMP_FILE_BROKEN);
+
+                            uint32 flags = atoi(line.substr(s, e - s).c_str());
+                            if (!(flags & 1))
+                                allowedAppend = false;
+                        }
+
 						break;
 					}
 					case DTT_ITEM_GIFT:
