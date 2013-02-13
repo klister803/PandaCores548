@@ -162,14 +162,20 @@ void CreatureRelocationNotifier::Visit(PlayerMapType &m)
         if (!player->m_seer->isNeedNotify(NOTIFY_VISIBILITY_CHANGED))
             player->UpdateVisibilityOf(&i_creature);
 
-        CreatureUnitRelocationWorker(&i_creature, player);
+        if (i_creature.m_LOSCheck_player)
+        {
+        	CreatureUnitRelocationWorker(&i_creature, player);
+        	i_creature.m_LOSCheck_player = false;
+        }
     }
 }
 
 void CreatureRelocationNotifier::Visit(CreatureMapType &m)
 {
-    if (!i_creature.isAlive())
+    if (!i_creature.isAlive() || !i_creature.m_LOSCheck_creature)
         return;
+
+    i_creature.m_LOSCheck_creature = false;
 
     for (CreatureMapType::iterator iter=m.begin(); iter != m.end(); ++iter)
     {
