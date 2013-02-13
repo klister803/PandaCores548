@@ -204,28 +204,16 @@ class spell_monk_teachings_of_the_monastery : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_teachings_of_the_monastery_SpellScript);
 
-            void HandleOnHit()
+            void HandleAfterCast()
             {
                 if (GetCaster())
-                {
-                    if (GetHitUnit())
-                    {
-                        if (GetCaster()->ToPlayer())
-                        {
-                            if (!GetCaster()->ToPlayer()->HasSpellCooldown(SPELL_MONK_SPINNING_CRANE_KICK_HEAL))
-                            {
-                                // prevent multiples procs if hits more than one target
-                                GetCaster()->CastSpell(GetCaster(), SPELL_MONK_SPINNING_CRANE_KICK_HEAL, true);
-                                GetCaster()->ToPlayer()->AddSpellCooldown(SPELL_MONK_SPINNING_CRANE_KICK_HEAL, 0, time(NULL) + 0.1);
-                            }
-                        }
-                    }
-                }
+                    if (GetCaster()->HasAura(118672))
+                        GetCaster()->CastSpell(GetCaster(), SPELL_MONK_SPINNING_CRANE_KICK_HEAL, true);
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_monk_teachings_of_the_monastery_SpellScript::HandleOnHit);
+                AfterCast += SpellCastFn(spell_monk_teachings_of_the_monastery_SpellScript::HandleAfterCast);
             }
         };
 
