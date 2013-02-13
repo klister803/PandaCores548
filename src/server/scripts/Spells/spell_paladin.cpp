@@ -69,6 +69,36 @@ enum PaladinSpells
     PALADIN_SPELL_GLYPH_OF_BLINDING_LIGHT        = 54934,
     PALADIN_SPELL_BLINDING_LIGHT_CONFUSE         = 105421,
     PALADIN_SPELL_BLINDING_LIGHT_STUN            = 115752,
+    PALADIN_SPELL_EXORCISM                       = 879,
+};
+
+// Art of War - 59578
+class spell_pal_art_of_war : public SpellScriptLoader
+{
+    public:
+        spell_pal_art_of_war() : SpellScriptLoader("spell_pal_art_of_war") { }
+
+        class spell_pal_art_of_war_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_art_of_war_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasSpellCooldown(PALADIN_SPELL_EXORCISM))
+                        _player->RemoveSpellCooldown(PALADIN_SPELL_EXORCISM, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_art_of_war_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_art_of_war_SpellScript();
+        }
 };
 
 // Seal of Insight - 20167
@@ -1226,6 +1256,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_art_of_war();
     new spell_pal_seal_of_insight();
     new spell_pal_blinding_light();
     new spell_pal_hand_of_protection();
