@@ -6751,18 +6751,8 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
 
                     triggered_spell_id = 31803;
 
-                    // On target with 5 stacks of Censure direct damage is done
-                    AuraPtr aur = victim->GetAura(triggered_spell_id, GetGUID());
-                    if (aur != NULLAURA)
-                    {
-                        if (aur->GetStackAmount() == 5)
-                        {
-                            if (stacker)
-                                aur->RefreshDuration();
-                            CastSpell(victim, 42463, true);
-                            return true;
-                        }
-                    }
+                    // Deals additionnal 12% weapon damage
+                    CastSpell(victim, 42463, true);
 
                     if (!stacker)
                         return false;
