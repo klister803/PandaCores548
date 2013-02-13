@@ -132,14 +132,17 @@ class spell_hun_feign_death : public SpellScriptLoader
 
             void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                health = GetCaster()->GetHealth();
-                focus = GetCaster()->GetPower(POWER_FOCUS);
+                health = GetTarget()->GetHealth();
+                focus = GetTarget()->GetPower(POWER_FOCUS);
             }
 
             void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                GetCaster()->SetHealth(health);
-                GetCaster()->SetPower(POWER_FOCUS, focus);
+                if (health && focus)
+                {
+                    GetTarget()->SetHealth(health);
+                    GetTarget()->SetPower(POWER_FOCUS, focus);
+                }
             }
 
             void Register()
