@@ -1,15 +1,22 @@
 /*
-    Dungeon : Stormstout Brewery 85-87
+    Dungeon : Mogushan Palace 88-90
     Instance General Script
 */
 
-#ifndef STORMSTOUT_BREWERY_H_
-#define STORMSTOUT_BREWERY_H_
+#ifndef MOGUSHAN_PALACE_H_
+#define MOGUSHAN_PALACE_H_
 
 #include "SpellScript.h"
 #include "Map.h"
 #include "Creature.h"
 #include "CreatureAIImpl.h"
+
+enum eData
+{
+    DATA_TRIAL_OF_THE_KING      = 0,
+    DATA_GEKKAN                 = 1,
+    DATA_XIN_THE_WEAPONMASTER   = 2
+};
 
 enum eSpells
 {
@@ -43,6 +50,8 @@ enum eSpells
     SPELL_MOGU_JUMP                 = 120444,
     SPELL_THROW_DAMAGE              = 119311,
     SPELL_THROW_AURA                = 119315,
+    SPELL_PERMANENT_FEIGN_DEATH     = 130966,
+    SPELL_AXE_TOURBILOL             = 119373,
     //Gurthan scrapper, harthak adept and kargesh grunt
     SPELL_GRUNT_AURA                = 121746,
     //Whirling dervish trigger
@@ -109,4 +118,12 @@ enum eTypes
     TYPE_ACTIVATE_SWORD, //20
 };
 
-#endif // STORMSTOUT_BREWERY_H_
+enum eGameObjects
+{
+    GO_DOOR_BEFORE_TRIAL    = 213594,
+    GO_TRIAL_CHEST          = 214520,
+    GO_DOOR_AFTER_TRIAL     = 213593,
+    GO_DOOR_BEFORE_KING     = 213596,
+};
+
+#endif // MOGUSHAN_PALACE_H_

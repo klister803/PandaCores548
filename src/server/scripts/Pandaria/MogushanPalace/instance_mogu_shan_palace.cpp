@@ -54,12 +54,25 @@ public:
         /*
         ** End of Xin the weaponmaster.
         */
-        instance_mogu_shan_palace_InstanceMapScript(Map* map) : InstanceScript(map)
+
+        uint64 doorBeforeTrialGuid;
+        uint64 trialChestGuid;
+        uint64 doorAfterTrialGuid;
+        uint64 doorBeforeKingGuid;
+
+        instance_mogu_shan_palace_InstanceMapScript(Map* map) : InstanceScript(map) {}
+
+        void Initialize()
         {
             xin_guid = 0;
             kuai_guid = 0;
             ming_guid = 0;
             haiyan_guid = 0;
+
+            doorBeforeTrialGuid = 0;
+            trialChestGuid = 0;
+            doorAfterTrialGuid = 0;
+            doorBeforeKingGuid = 0;
 
             gekkan = 0;
             glintrok_ironhide = 0;
@@ -68,12 +81,39 @@ public:
             glintrok_hexxer = 0;
         }
 
-        void Initialize()
+        bool SetBossState(uint32 id, EncounterState state)
         {
+            if (!InstanceScript::SetBossState(id, state))
+                return false;
+
+            switch (id)
+            {
+                case DATA_TRIAL_OF_THE_KING:
+                    HandleGameObject(doorBeforeTrialGuid, state != IN_PROGRESS);
+                    if (GameObject* chest = instance->GetGameObject(trialChestGuid))
+                        chest->SetPhaseMask(state == DONE ? 1: 128, true);
+                    break;
+                case DATA_GEKKAN:
+                    HandleGameObject(doorAfterTrialGuid, state == DONE);
+                    // Todo : mod temp portal phasemask
+                    break;
+                case DATA_XIN_THE_WEAPONMASTER:
+                    HandleGameObject(doorBeforeTrialGuid, state != IN_PROGRESS);
+                    break;
+            }
+
+            return true;
         }
 
         void OnGameObjectCreate(GameObject* go)
         {
+            switch (go->GetEntry())
+            {
+                case GO_DOOR_BEFORE_TRIAL:  doorBeforeTrialGuid = go->GetGUID();    break;
+                case GO_TRIAL_CHEST:        trialChestGuid = go->GetGUID();         break;
+                case GO_DOOR_AFTER_TRIAL:   doorAfterTrialGuid = go->GetGUID();     break;
+                case GO_DOOR_BEFORE_KING:   doorBeforeKingGuid = go->GetGUID();     break;
+            }
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -86,10 +126,6 @@ public:
         void OnUnitDeath(Unit* unit)
         {
             OnUnitDeath_gekkan(unit);
-        }
-        
-        virtual void Update(uint32 diff) 
-        {
         }
 
         void SetData(uint32 type, uint32 data)
@@ -154,12 +190,14 @@ public:
                         {
                             if (data)
                             {
-                                creature->AddAura(119373, creature); // Tourbillon
+                                creature->AddAura(SPELL_AXE_TOURBILOL, creature);
+                                creature->AddAura(SPELL_PERMANENT_FEIGN_DEATH, creature);
                                 creature->GetMotionMaster()->MoveRandom(50.0f);
                             }
                             else
                             {
-                                creature->RemoveAurasDueToSpell(119373);
+                                creature->RemoveAurasDueToSpell(SPELL_AXE_TOURBILOL);
+                                creature->RemoveAurasDueToSpell(SPELL_PERMANENT_FEIGN_DEATH);
                                 creature->GetMotionMaster()->MoveTargetedHome();
                             }
                         }
@@ -228,6 +266,7 @@ public:
                     break;
                 case CREATURE_LAUNCH_SWORD:
                     swordLauncherGuids.push_back(creature->GetGUID());
+                    creature->AddAura(SPELL_PERMANENT_FEIGN_DEATH, creature);
                     break;
             }
         }
@@ -500,6 +539,7 @@ public:
                 break;
             }
         }
+
         void OnCreatureCreate_trial_of_the_king(Creature* creature)
         {
             switch (creature->GetEntry())

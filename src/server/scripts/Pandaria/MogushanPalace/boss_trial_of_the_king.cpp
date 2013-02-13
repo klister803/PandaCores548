@@ -408,17 +408,18 @@ class mob_adepts : public CreatureScript
                 {
                 case ACTION_ENCOURAGE:
                     {
-                        float x = me->GetPositionX() + 5.f * cos(me->GetOrientation());
-                        float y = me->GetPositionY() + 5.f * sin(me->GetOrientation());
+                        float x, y;
+                        GetPositionWithDistInOrientation(me, 30.0f, me->GetOrientation(), x, y);
                         me->GetMotionMaster()->MovePoint(0, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()));
+
                         me->CastSpell(me, 120867, false);
                         events.ScheduleEvent(EVENT_APPLAUSE + urand(0, 1), 500 + urand(500, 1500));
                     }
                     break;
                 case ACTION_RETIRE:
                     {
-                        float x = me->GetPositionX() - 5.f * cos(me->GetOrientation());
-                        float y = me->GetPositionY() - 5.f * sin(me->GetOrientation());
+                        float x, y;
+                        GetPositionWithDistInOrientation(me, 30.0f, me->GetOrientation(), x, y);
                         me->GetMotionMaster()->MovePoint(1, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()));
 
                         me->RemoveAura(120867);
@@ -429,8 +430,9 @@ class mob_adepts : public CreatureScript
                 case ACTION_ATTACK:
                     {
                         status = STATUS_ATTACK_GRUNTS;
-                        float x = me->GetPositionX() + 30.f * cos(me->GetOrientation());
-                        float y = me->GetPositionY() + 30.f * sin(me->GetOrientation());
+
+                        float x, y;
+                        GetPositionWithDistInOrientation(me, 30.0f, me->GetOrientation(), x, y);
                         me->GetMotionMaster()->MovePoint(0, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()));
 
                         me->RemoveAura(121569);
