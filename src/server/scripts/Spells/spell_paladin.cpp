@@ -127,9 +127,8 @@ class spell_pal_divine_shield : public SpellScriptLoader
 
             SpellCastResult CheckForbearance()
             {
-                Unit* caster = GetCaster();
-                if (Unit* target = GetExplTargetUnit())
-                    if (target->HasAura(SPELL_FORBEARANCE))
+                if (Unit* caster = GetCaster())
+                    if (caster->HasAura(SPELL_FORBEARANCE))
                         return SPELL_FAILED_TARGET_AURASTATE;
 
                 return SPELL_CAST_OK;
