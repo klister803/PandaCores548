@@ -71,6 +71,35 @@ enum PaladinSpells
     PALADIN_SPELL_BLINDING_LIGHT_STUN            = 115752,
 };
 
+// Seal of Insight - 20167
+class spell_pal_seal_of_insight : public SpellScriptLoader
+{
+    public:
+        spell_pal_seal_of_insight() : SpellScriptLoader("spell_pal_seal_of_insight") { }
+
+        class spell_pal_seal_of_insight_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_seal_of_insight_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.04), POWER_MANA);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_seal_of_insight_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_seal_of_insight_SpellScript();
+        }
+};
+
 // Blinding Light - 115750
 class spell_pal_blinding_light : public SpellScriptLoader
 {
@@ -1197,6 +1226,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_seal_of_insight();
     new spell_pal_blinding_light();
     new spell_pal_hand_of_protection();
     new spell_pal_cleanse();
