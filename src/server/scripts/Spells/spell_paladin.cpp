@@ -68,6 +68,46 @@ enum PaladinSpells
     PALADIN_SPELL_INQUISITION                    = 84963,
 };
 
+// Hand of Protection - 1022
+class spell_pal_hand_of_protection : public SpellScriptLoader
+{
+    public:
+        spell_pal_hand_of_protection() : SpellScriptLoader("spell_pal_hand_of_protection") { }
+
+        class spell_pal_hand_of_protection_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_hand_of_protection_SpellScript);
+
+            SpellCastResult CheckForbearance()
+            {
+                Unit* caster = GetCaster();
+                if (Unit* target = GetExplTargetUnit())
+                    if (target->HasAura(SPELL_FORBEARANCE))
+                        return SPELL_FAILED_TARGET_AURASTATE;
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, SPELL_FORBEARANCE, true);
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_pal_hand_of_protection_SpellScript::CheckForbearance);
+                OnHit += SpellHitFn(spell_pal_hand_of_protection_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_hand_of_protection_SpellScript();
+        }
+};
+
 // Cleanse - 4987
 class spell_pal_cleanse : public SpellScriptLoader
 {
@@ -1118,6 +1158,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_hand_of_protection();
     new spell_pal_cleanse();
     new spell_pal_divine_shield();
     new spell_pal_inquisition();

@@ -3226,6 +3226,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                 break;
             case 118699: // Fear Effect
+            case 10326:  // Turn Evil
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                 break;
             case 130616: // Glyph of Fear Effect
