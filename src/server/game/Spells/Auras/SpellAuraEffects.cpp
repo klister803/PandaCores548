@@ -5175,19 +5175,19 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                     break;
 				case SPELLFAMILY_ROGUE:
 					//  Tricks of the trade
-					switch (GetId())
-					{
-					case 59628: //Tricks of the trade buff on rogue (6sec duration)
-						target->SetReducedThreatPercent(0,0);
-						break;
-					case 57934: //Tricks of the trade buff on rogue (30sec duration)
-						if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE || !caster->GetMisdirectionTarget())
-							target->SetReducedThreatPercent(0,0);
-						else
-							target->SetReducedThreatPercent(0,caster->GetMisdirectionTarget()->GetGUID());
-						break;
-					}
-
+                    switch (GetId())
+                    {
+                        case 59628: //Tricks of the trade buff on rogue (6sec duration)
+                            target->SetReducedThreatPercent(0,0);
+                            break;
+                        case 57934: //Tricks of the trade buff on rogue (30sec duration)
+                            if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE || !caster->GetMisdirectionTarget())
+                                target->SetReducedThreatPercent(0,0);
+                            else
+                                target->SetReducedThreatPercent(0,caster->GetMisdirectionTarget()->GetGUID());
+                            break;
+                    }
+                    break;
 				default:
 					break;
 			}

@@ -14337,6 +14337,22 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (roll_chance_i(30))
             SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
 
+    // Guardian of Ancient Kings : attacks player's target
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(86698) && !(procExtra & PROC_EX_INTERNAL_DOT) && !(procExtra & PROC_EX_INTERNAL_TRIGGERED))
+    {
+        if (procSpell && procSpell->Id != 86700)
+            CastSpell(this, 86700, true);       // your attacks will infuse you with Ancient Power
+        else if (!procSpell)
+            CastSpell(this, 86700, true);
+    }
+    else if (GetTypeId() == TYPEID_UNIT && GetOwner() && GetOwner()->HasAura(86698) && (procExtra & PROC_EX_INTERNAL_DOT) && !(procExtra & PROC_EX_INTERNAL_TRIGGERED))
+    {
+        if (procSpell && procSpell->Id != 86700)
+            CastSpell(GetOwner(), 86700, true); // the attacks of the Guardian will infuse you with Ancient Power
+        else if (!procSpell)
+            CastSpell(GetOwner(), 86700, true); // the attacks of the Guardian will infuse you with Ancient Power
+    }
+
     // Summon Shadowy Apparitions when Shadow Word : Pain is crit
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 589 && HasAura(78203) && procExtra & PROC_EX_CRITICAL_HIT)
     {
