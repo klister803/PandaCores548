@@ -74,6 +74,46 @@ enum PaladinSpells
     PALADIN_SPELL_ANCIENT_POWER                  = 86700,
 };
 
+// Emancipate - 121783
+class spell_pal_emancipate : public SpellScriptLoader
+{
+    public:
+        spell_pal_emancipate() : SpellScriptLoader("spell_pal_emancipate") { }
+
+        class spell_pal_emancipate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_emancipate_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    std::list<AuraPtr> auraList;
+
+                    for (auto itr : _player->GetAppliedAuras())
+                    {
+                        AuraPtr aura = itr.second->GetBase();
+                        if (aura && aura->GetSpellInfo()->GetAllEffectsMechanicMask() & ((1<<MECHANIC_SNARE)|(1<<MECHANIC_ROOT)))
+                            auraList.push_back(aura);
+                    }
+
+                    Trinity::Containers::RandomResizeList(auraList, 1);
+                    _player->RemoveAura(*auraList.begin());
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_emancipate_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_emancipate_SpellScript();
+        }
+};
+
 // Ancient Fury - 86704
 class spell_pal_ancient_fury : public SpellScriptLoader
 {
@@ -1338,6 +1378,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_emancipate();
     new spell_pal_ancient_fury();
     new spell_pal_guardian_of_ancient_kings_retribution();
     new spell_pal_art_of_war();
