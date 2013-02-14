@@ -18,11 +18,6 @@ class boss_xin_the_weaponmaster : public CreatureScript
             return new boss_xin_the_weaponmaster_AI(creature);
         }
 
-        enum eBosses
-        {
-            BOSS_XIN_THE_WEAPONMASTER,
-        };
-
         enum eEvents
         {
             EVENT_RING_OF_FIRE          = 1,
@@ -40,7 +35,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
 
         struct boss_xin_the_weaponmaster_AI : public BossAI
         {
-            boss_xin_the_weaponmaster_AI(Creature* creature) : BossAI(creature, BOSS_XIN_THE_WEAPONMASTER)
+            boss_xin_the_weaponmaster_AI(Creature* creature) : BossAI(creature, DATA_XIN_THE_WEAPONMASTER)
             {
                 pInstance = creature->GetInstanceScript();
             }
@@ -121,7 +116,6 @@ class mob_animated_staff : public CreatureScript
 
         enum eSpells
         {
-            SPELL_PERMANENT_FEIGN_DEATH = 130966,
             SPELL_RING_OF_FIRE_0 = 119544,
             SPELL_RING_OF_FIRE_1 = 119590,
         };

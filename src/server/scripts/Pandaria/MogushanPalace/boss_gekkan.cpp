@@ -6,13 +6,9 @@
 
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
+#include "mogu_shan_palace.h"
 
 #define TYPE_GET_ENTOURAGE 14
-
-enum eBosses
-{
-    BOSS_GEKKAN,
-};
 
 class boss_gekkan : public CreatureScript
 {
@@ -50,7 +46,7 @@ class boss_gekkan : public CreatureScript
 
         struct boss_gekkan_AI : public BossAI
         {
-            boss_gekkan_AI(Creature* creature) : BossAI(creature, BOSS_GEKKAN)
+            boss_gekkan_AI(Creature* creature) : BossAI(creature, DATA_GEKKAN)
             {
             }
             std::list<uint64> entourage;
