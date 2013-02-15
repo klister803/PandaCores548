@@ -43,6 +43,39 @@ enum RogueSpells
     ROGUE_SPELL_LEECH_VITALITY                   = 116921,
     ROGUE_SPELL_PARTIAL_PARALYSIS                = 115197,
     ROGUE_SPELL_TOTAL_PARALYSIS                  = 3609,
+    ROGUE_SPELL_DEADLY_POISON_DOT                = 2818,
+    ROGUE_SPELL_DEADLY_POISON_INSTANT_DAMAGE     = 113780,
+};
+
+// Called by Deadly Poison - 2818
+// Deadly Poison : Instant damage - 113780
+class spell_rog_deadly_poison_instant_damage : public SpellScriptLoader
+{
+    public:
+        spell_rog_deadly_poison_instant_damage() : SpellScriptLoader("spell_rog_deadly_poison_instant_damage") { }
+
+        class spell_rog_deadly_poison_instant_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_deadly_poison_instant_damage_SpellScript);
+
+            void HandleOnCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetExplTargetUnit())
+                        if (target->HasAura(ROGUE_SPELL_DEADLY_POISON_DOT, _player->GetGUID()))
+                            _player->CastSpell(target, ROGUE_SPELL_DEADLY_POISON_INSTANT_DAMAGE, true);
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_rog_deadly_poison_instant_damage_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_deadly_poison_instant_damage_SpellScript();
+        }
 };
 
 // Paralytic Poison - 113952
@@ -528,6 +561,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_deadly_poison_instant_damage();
     new spell_rog_paralytic_poison();
     new spell_rog_shiv();
     new spell_rog_poisons();
