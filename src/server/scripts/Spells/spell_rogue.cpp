@@ -45,6 +45,73 @@ enum RogueSpells
     ROGUE_SPELL_TOTAL_PARALYSIS                  = 3609,
     ROGUE_SPELL_DEADLY_POISON_DOT                = 2818,
     ROGUE_SPELL_DEADLY_POISON_INSTANT_DAMAGE     = 113780,
+    ROGUE_SPELL_SLICE_AND_DICE                   = 5171,
+};
+
+// Slice and Dice - 5171
+class spell_rog_slice_and_dice : public SpellScriptLoader
+{
+    public:
+        spell_rog_slice_and_dice() : SpellScriptLoader("spell_rog_slice_and_dice") { }
+
+        class spell_rog_slice_and_dice_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_slice_and_dice_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (AuraPtr sliceAndDice = _player->GetAura(ROGUE_SPELL_SLICE_AND_DICE))
+                    {
+                        int32 duration = sliceAndDice->GetDuration();
+                        int32 maxDuration = sliceAndDice->GetMaxDuration();
+
+                        // Replace old duration of Slice and Dice by the new duration ...
+                        // ... five combo points : 36s instead of 30s
+                        if (maxDuration >= 30000)
+                        {
+                            sliceAndDice->SetDuration(duration + 6000);
+                            sliceAndDice->SetMaxDuration(maxDuration + 6000);
+                        }
+                        // ... four combo points : 30s instead of 25s
+                        else if (maxDuration >= 25000)
+                        {
+                            sliceAndDice->SetDuration(duration + 5000);
+                            sliceAndDice->SetMaxDuration(maxDuration + 5000);
+                        }
+                        // ... three combo points : 24s instead of 20s
+                        else if (maxDuration >= 20000)
+                        {
+                            sliceAndDice->SetDuration(duration + 4000);
+                            sliceAndDice->SetMaxDuration(maxDuration + 4000);
+                        }
+                        // ... two combo points : 18s instead of 15s
+                        else if (maxDuration >= 15000)
+                        {
+                            sliceAndDice->SetDuration(duration + 3000);
+                            sliceAndDice->SetMaxDuration(maxDuration + 3000);
+                        }
+                        // ... one combo point : 12s instead of 10s
+                        else
+                        {
+                            sliceAndDice->SetDuration(duration + 2000);
+                            sliceAndDice->SetMaxDuration(maxDuration + 2000);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_slice_and_dice_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_slice_and_dice_SpellScript();
+        }
 };
 
 // Called by Deadly Poison - 2818
@@ -561,6 +628,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_slice_and_dice();
     new spell_rog_deadly_poison_instant_damage();
     new spell_rog_paralytic_poison();
     new spell_rog_shiv();
