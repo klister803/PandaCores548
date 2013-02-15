@@ -3195,6 +3195,12 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                         if (item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)
                             totalDamagePercentMod *= 1.5f;
             }
+            // Ambush - 44.7% more damage with daggers
+            if (m_spellInfo->Id == 8676)
+                if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    if (Item* item = m_caster->ToPlayer()->GetWeaponForAttack(m_attackType, true))
+                        if (item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)
+                            totalDamagePercentMod *= 1.447f;
             break;
         }
         case SPELLFAMILY_SHAMAN:
