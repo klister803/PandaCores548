@@ -8036,6 +8036,13 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Dematerialize
+        case 122464:
+        {
+            return false;
+
+            break;
+        }
         // Teachings of The Monastery (Blackout Kick)
         case 116645:
         {
@@ -14277,6 +14284,16 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     CastSpell(this, 119962, true);
                 }
             }
+        }
+    }
+
+    // Dematerialize
+    if (target->GetTypeId() == TYPEID_PLAYER && target->HasAura(122464) && procSpell && procSpell->GetAllEffectsMechanicMask() & (1 << MECHANIC_STUN))
+    {
+        if (!target->ToPlayer()->HasSpellCooldown(122465))
+        {
+            target->CastSpell(target, 122465, true);
+            target->ToPlayer()->AddSpellCooldown(122465, 0, time(NULL) + 10);
         }
     }
 
