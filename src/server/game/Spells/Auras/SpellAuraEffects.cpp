@@ -665,6 +665,38 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         case SPELL_AURA_PERIODIC_DAMAGE:
             if (!caster)
                 break;
+            // Rupture
+            if (GetSpellInfo()->Id == 1943)
+            {
+                m_canBeRecalculated = false;
+
+                if (caster->GetTypeId() != TYPEID_PLAYER)
+                    break;
+
+                uint8 cp = caster->ToPlayer()->GetComboPoints();
+                float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+
+                switch (cp)
+                {
+                    case 1:
+                        amount += int32(ap * 0.1f / 4);
+                        break;
+                    case 2:
+                        amount += int32(ap * 0.24f / 6);
+                        break;
+                    case 3:
+                        amount += int32(ap * 0.40f / 8);
+                        break;
+                    case 4:
+                        amount += int32(ap * 0.56f / 10);
+                        break;
+                    case 5:
+                        amount += int32(ap * 0.744f / 12);
+                        break;
+                    default:
+                        break;
+                }
+            }
             // Rip
             if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DRUID && m_spellInfo->SpellFamilyFlags[0] & 0x00800000)
             {
