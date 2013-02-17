@@ -701,6 +701,16 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
             spellId = newSpellInfo->Id;
         }
     }
+    // Evocation - 12051 and  Rune of Power - 116011
+    if (spellInfo->Id == 12051 && _player->HasSpell(116011))
+    {
+        SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(116011);
+        if(newSpellInfo)
+        {
+            spellInfo = newSpellInfo;
+            spellId = newSpellInfo->Id;
+        }
+    }
     // Frostbolt - 116 and Frostbolt - 126201 (heal for water elemental)
     if (spellInfo->Id == 116 && targets.GetUnitTarget())
     {

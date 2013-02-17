@@ -958,7 +958,7 @@ class spell_sha_heroism : public SpellScriptLoader
             void ApplyDebuff()
             {
                 if (Unit* target = GetHitUnit())
-                    target->CastSpell(target, SHAMAN_SPELL_EXHAUSTION, true);
+                    GetCaster()->CastSpell(target, SHAMAN_SPELL_EXHAUSTION, true);
             }
 
             void Register()

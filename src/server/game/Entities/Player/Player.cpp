@@ -22446,6 +22446,53 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         if (rec == 0 && catrec == 0)
             return;
 
+        // Sanctity of Battle - 25956
+        // Melee haste effects lower the cooldown and global cooldown of your ...
+        if (rec > 0 && HasAura(25956))
+        {
+            float HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
+
+            switch (GetSpecializationId(GetActiveSpec()))
+            {
+                // ... Judgment, Crusader Strike, and Hammer of Wrath.
+                case SPEC_NONE:
+                case SPEC_PALADIN_HOLY:
+                    // In order
+                    if (spellInfo->Id == 20271 ||
+                        spellInfo->Id == 35395 ||
+                        spellInfo->Id == 24275)
+                        rec /= HastePct;
+
+                    break;
+                // ... Judgment, Crusader Strike, Hammer of the Righteous, Consecration, Holy Wrath, Avenger's Shield and Hammer of Wrath
+                case SPEC_PALADIN_PROTECTION:
+                    // In order
+                    if (spellInfo->Id == 20271 ||
+                        spellInfo->Id == 35395 ||
+                        spellInfo->Id == 53595 ||
+                        spellInfo->Id == 879 ||
+                        spellInfo->Id == 879 ||
+                        spellInfo->Id == 879 ||
+                        spellInfo->Id == 24275)
+                        rec /= HastePct;
+
+                    break;
+                // ... Judgment, Crusader Strike, Hammer of the Righteous, Exorcism and Hammer of Wrath
+                case SPEC_PALADIN_RETRIBUTION:
+                    // In order
+                    if (spellInfo->Id == 20271 ||
+                        spellInfo->Id == 35395 ||
+                        spellInfo->Id == 53595 ||
+                        spellInfo->Id == 879 ||
+                        spellInfo->Id == 24275)
+                        rec /= HastePct;
+
+                    break;
+                default:
+                    break;
+            }
+        }
+
         catrecTime = catrec ? curTime+catrec/IN_MILLISECONDS : 0;
         recTime    = rec ? curTime+rec/IN_MILLISECONDS : catrecTime;
     }

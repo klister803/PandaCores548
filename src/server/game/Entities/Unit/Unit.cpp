@@ -8036,6 +8036,13 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Dematerialize
+        case 122464:
+        {
+            return false;
+
+            break;
+        }
         // Teachings of The Monastery (Blackout Kick)
         case 116645:
         {
@@ -9641,7 +9648,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // Apply Power JcJ damage bonus
     if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && victim->GetGUID() == TYPEID_PLAYER)
     {
-        float PowerJcJ = this->ToPlayer()->GetRatingBonusValue(CR_PVP_POWER) / 100.0f;
+        float PowerJcJ = this->ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
         AddPct(DoneTotalMod, PowerJcJ);
     }
 
@@ -9649,7 +9656,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // 76658 - Mastery : Essence of the Viper
     if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
     {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        float Mastery = GetFloatValue(PLAYER_MASTERY);
         AddPct(DoneTotalMod, Mastery);
     }
 
@@ -9660,7 +9667,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         Unit* owner = GetOwner();
         if (owner && owner->GetTypeId() == TYPEID_PLAYER && owner->HasAura(76657))
         {
-            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f;
             AddPct(DoneTotalMod, Mastery);
         }
     }
@@ -9672,7 +9679,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         || spellProto->Id == 29722 || spellProto->Id == 114654 || spellProto->Id == 108685
         || spellProto->Id == 108686))
     {
-        float Mastery = (GetFloatValue(PLAYER_MASTERY) + 1) / 100.0f;
+        float Mastery = (GetFloatValue(PLAYER_MASTERY) + 1);
         AddPct(DoneTotalMod, Mastery);
     }
 
@@ -9680,7 +9687,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // 76808 - Mastery : Executioner
     if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 1943 || spellProto->Id == 2098 || spellProto->Id == 121411) && HasAura(76808))
     {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f;
         AddPct(DoneTotalMod, Mastery);
     }
 
@@ -9689,7 +9696,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // Increase periodic damage of Corruption, Agony and Unstable Affliction
     if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 172 || spellProto->Id == 131737 || spellProto->Id == 131736) && damagetype == DOT && HasAura(77215))
     {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.1f / 100.0f;
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.1f;
         AddPct(DoneTotalMod, Mastery);
     }
 
@@ -9697,7 +9704,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // 76803 - Mastery : Potent Poisons
     if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 2818 || spellProto->Id == 8680) && pdamage != 0 && HasAura(76803))
     {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.5f / 100.0f;
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.5f;
         AddPct(DoneTotalMod, Mastery);
     }
 
@@ -9706,13 +9713,13 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // Bonus damage while using Metamorphosis
     if (GetTypeId() == TYPEID_PLAYER && HasAura(103958) && HasAura(77219))
     {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f;
         AddPct(DoneTotalMod, Mastery);
     }
     // Bonus damage in caster form
     else if (!HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
     {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        float Mastery = GetFloatValue(PLAYER_MASTERY);
         AddPct(DoneTotalMod, Mastery);
     }
     // Bonus damage for demon servants
@@ -9721,7 +9728,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         Unit* owner = GetOwner();
         if (owner && owner->HasAura(77219) && owner->GetTypeId() == TYPEID_PLAYER)
         {
-            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) / 100.0f;
+            float Mastery = owner->GetFloatValue(PLAYER_MASTERY);
             AddPct(DoneTotalMod, Mastery);
         }
     }
@@ -9732,7 +9739,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     {
         if (HasAura(77493))
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.13f / 100.0f;
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.13f;
             AddPct(DoneTotalMod, Mastery);
         }
     }
@@ -9746,7 +9753,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
             float manapct = float(GetPower(POWER_MANA)) / float(GetMaxPower(POWER_MANA)) * 100.0f;
             float bonus = 0;
-            bonus = (1.5f * Mastery * manapct) / 100.0f;
+            bonus = (1.5f * Mastery * manapct);
 
             AddPct(DoneTotalMod, bonus);
         }
@@ -9758,7 +9765,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     {
         if (HasAura(77514))
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
             AddPct(DoneTotalMod, Mastery);
         }
     }
@@ -9769,7 +9776,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     {
         if (HasAura(77515))
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.5f / 100.0f;
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.5f;
             AddPct(DoneTotalMod, Mastery);
         }
     }
@@ -9783,7 +9790,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             Unit* owner = GetOwner();
             if (owner && owner->GetTypeId() == TYPEID_PLAYER && owner->HasAura(76613))
             {
-                float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f;
                 AddPct(DoneTotalMod, Mastery);
             }
         }
@@ -9793,7 +9800,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
             {
                 if (victim->HasAuraState(AURA_STATE_FROZEN))
                 {
-                    float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                    float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
                     AddPct(DoneTotalMod, Mastery);
                 }
             }
@@ -9806,7 +9813,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     {
         if (HasAura(77223))
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
 
             AddPct(DoneTotalMod, Mastery);
         }
@@ -9816,12 +9823,12 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // 77492 - Mastery : Total Eclipse
     if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_NATURE && HasAura(77492) && HasAura(48517)) // Solar Eclipse
     {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f / 100.0f;
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f;
         AddPct(DoneTotalMod, Mastery);
     }
     else if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_ARCANE && HasAura(77492) && HasAura(48518)) // Lunar Eclipse
     {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f / 100.0f;
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.87f;
         AddPct(DoneTotalMod, Mastery);
     }
 
@@ -9831,7 +9838,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     {
         float crit_chance;
         crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(spellProto->GetSchoolMask()));
-        AddPct(DoneTotalMod, (crit_chance / 100.0f));
+        AddPct(DoneTotalMod, crit_chance);
     }
 
     // Pyroblast - 11366
@@ -11052,7 +11059,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     // Apply Power JcJ damage bonus
     if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && victim->GetGUID() == TYPEID_PLAYER)
     {
-        float PowerJcJ = this->ToPlayer()->GetRatingBonusValue(CR_PVP_POWER) / 100.0f;
+        float PowerJcJ = this->ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
         AddPct(DoneTotalMod, PowerJcJ);
     }
 
@@ -11060,7 +11067,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     // 76658 - Mastery : Essence of the Viper
     if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->SchoolMask == SPELL_SCHOOL_MASK_MAGIC && HasAura(76658))
     {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        float Mastery = GetFloatValue(PLAYER_MASTERY);
         AddPct(DoneTotalMod, Mastery);
     }
 
@@ -11084,13 +11091,13 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     // Bonus damage while using Metamorphosis
     if (HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
     {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f / 100.0f;
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f;
         AddPct(DoneTotalMod, Mastery);
     }
     // Bonus damage in caster form
     else if (!HasAura(103958) && HasAura(77219) && GetTypeId() == TYPEID_PLAYER)
     {
-        float Mastery = GetFloatValue(PLAYER_MASTERY) / 100.0f;
+        float Mastery = GetFloatValue(PLAYER_MASTERY);
         AddPct(DoneTotalMod, Mastery);
     }
     // Bonus damage for demon servants
@@ -11099,7 +11106,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         Unit* owner = GetOwner();
         if (owner && owner->HasAura(77219) && owner->GetTypeId() == TYPEID_PLAYER)
         {
-            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) / 100.0f;
+            float Mastery = owner->GetFloatValue(PLAYER_MASTERY);
             AddPct(DoneTotalMod, Mastery);
         }
     }
@@ -11111,7 +11118,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
         Unit* owner = GetOwner();
         if (owner && owner->GetTypeId() == TYPEID_PLAYER && owner->HasAura(76657))
         {
-            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f;
             AddPct(DoneTotalMod, Mastery);
         }
     }
@@ -11122,7 +11129,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     {
         if (HasAura(76856) && HasAuraState(AURA_STATE_ENRAGE))
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.4f / 100.0f;
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 1.4f;
             AddPct(DoneTotalMod, Mastery);
         }
     }
@@ -11133,7 +11140,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     {
         if (HasAura(77514))
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.0f;
             AddPct(DoneTotalMod, Mastery);
         }
     }
@@ -11144,7 +11151,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
     {
         if (HasAura(77515))
         {
-            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.5f / 100.0f;
+            float Mastery = GetFloatValue(PLAYER_MASTERY) * 2.5f;
             AddPct(DoneTotalMod, Mastery);
         }
     }
@@ -11184,7 +11191,7 @@ uint32 Unit::MeleeDamageBonusDone(Unit* victim, uint32 pdamage, WeaponAttackType
             Unit* owner = this->GetOwner();
             if (owner->HasAura(76613) && owner->GetTypeId() == TYPEID_PLAYER)
             {
-                float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f / 100.0f;
+                float Mastery = owner->GetFloatValue(PLAYER_MASTERY) * 2.0f;
                 AddPct(DoneTotalMod, Mastery);
             }
         }
@@ -14280,6 +14287,16 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
     }
 
+    // Dematerialize
+    if (target && target->GetTypeId() == TYPEID_PLAYER && target->HasAura(122464) && procSpell && procSpell->GetAllEffectsMechanicMask() & (1 << MECHANIC_STUN))
+    {
+        if (!target->ToPlayer()->HasSpellCooldown(122465))
+        {
+            target->CastSpell(target, 122465, true);
+            target->ToPlayer()->AddSpellCooldown(122465, 0, time(NULL) + 10);
+        }
+    }
+
     // Hack fix Pyroblast - Hot Streak
     if ((procExtra & PROC_EX_CRITICAL_HIT) && !(procExtra & PROC_EX_INTERNAL_DOT) && procSpell &&  procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_FIRE && procSpell->Id != 12654 && procSpell->Id != 83853)
     {
@@ -14336,6 +14353,22 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 42223)
         if (roll_chance_i(30))
             SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
+
+    // Guardian of Ancient Kings : attacks player's target
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(86698) && !(procExtra & PROC_EX_INTERNAL_DOT) && !(procExtra & PROC_EX_INTERNAL_TRIGGERED))
+    {
+        if (procSpell && procSpell->Id != 86700)
+            CastSpell(this, 86700, true);       // your attacks will infuse you with Ancient Power
+        else if (!procSpell)
+            CastSpell(this, 86700, true);
+    }
+    else if (GetTypeId() == TYPEID_UNIT && GetOwner() && GetOwner()->HasAura(86698) && (procExtra & PROC_EX_INTERNAL_DOT) && !(procExtra & PROC_EX_INTERNAL_TRIGGERED))
+    {
+        if (procSpell && procSpell->Id != 86700)
+            CastSpell(GetOwner(), 86700, true); // the attacks of the Guardian will infuse you with Ancient Power
+        else if (!procSpell)
+            CastSpell(GetOwner(), 86700, true); // the attacks of the Guardian will infuse you with Ancient Power
+    }
 
     // Summon Shadowy Apparitions when Shadow Word : Pain is crit
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 589 && HasAura(78203) && procExtra & PROC_EX_CRITICAL_HIT)
