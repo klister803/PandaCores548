@@ -51,6 +51,38 @@ enum RogueSpells
     ROGUE_SPELL_MASTER_POISONER_AURA             = 58410,
     ROGUE_SPELL_MASTER_POISONER_DEBUFF           = 93068,
     ROGUE_SPELL_CRIMSON_TEMPEST_DOT              = 122233,
+    ROGUE_SPELL_SHROUD_OF_CONCEALMENT_AURA       = 115834,
+};
+
+// Shroud of Concealment - 115834
+class spell_rog_shroud_of_concealment : public SpellScriptLoader
+{
+    public:
+        spell_rog_shroud_of_concealment() : SpellScriptLoader("spell_rog_shroud_of_concealment") { }
+
+        class spell_rog_shroud_of_concealment_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_shroud_of_concealment_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (AuraPtr shroudOfConcealment = target->GetAura(ROGUE_SPELL_SHROUD_OF_CONCEALMENT_AURA, _player->GetGUID()))
+                            if (!target->IsInRaidWith(_player) && !target->IsInPartyWith(_player))
+                                target->RemoveAura(ROGUE_SPELL_SHROUD_OF_CONCEALMENT_AURA, _player->GetGUID());
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_shroud_of_concealment_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_shroud_of_concealment_SpellScript();
+        }
 };
 
 // Crimson Tempest - 121411
@@ -791,6 +823,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_shroud_of_concealment();
     new spell_rog_crimson_tempest();
     new spell_rog_master_poisoner();
     new spell_rog_smoke_bomb_aura();
