@@ -1177,6 +1177,9 @@ class ObjectMgr
 
         UpdateSkipData skipData;
 
+        ///Temporaire pour la création des Z, a remettre en private après
+        GameObjectDataContainer _gameObjectDataStore;
+
     private:
         // first free id for selected id type
         uint32 _auctionId;
@@ -1293,7 +1296,7 @@ class ObjectMgr
         EquipmentInfoContainer _equipmentInfoStore;
         LinkedRespawnContainer _linkedRespawnStore;
         CreatureLocaleContainer _creatureLocaleStore;
-        GameObjectDataContainer _gameObjectDataStore;
+        //GameObjectDataContainer _gameObjectDataStore;
         GameObjectLocaleContainer _gameObjectLocaleStore;
         GameObjectTemplateContainer _gameObjectTemplateStore;
 

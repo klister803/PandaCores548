@@ -31,6 +31,7 @@ EndScriptData */
 #include "GridNotifiers.h"
 #include "GridNotifiersImpl.h"
 #include "GossipDef.h"
+#include "MapManager.h"
 
 #include <fstream>
 
@@ -95,6 +96,7 @@ public:
             { "mailstatus",     SEC_ADMINISTRATOR,  false, &HandleSendMailStatus,              "", NULL },
             { "jump",           SEC_ADMINISTRATOR,  false, &HandleDebugMoveJump,               "", NULL },
             { "backward",       SEC_ADMINISTRATOR,  false, &HandleDebugMoveBackward,           "", NULL },
+            { "load_z",         SEC_ADMINISTRATOR,  false, &HandleDebugLoadZ,                  "", NULL },
             { NULL,             SEC_PLAYER,         false, NULL,                               "", NULL }
         };
         static ChatCommand commandTable[] =
@@ -1451,6 +1453,32 @@ public:
         float z         = (float)atof(cz);
 
         target->ToUnit()->GetMotionMaster()->MoveBackward(0, x, y,z);
+        return true;
+    }
+
+    static bool HandleDebugLoadZ(ChatHandler* handler, char const* args)
+    {
+        for (auto gameobject: sObjectMgr->_gameObjectDataStore)
+        {
+            GameObjectData data = gameobject.second;
+
+            if (!data.posZ)
+            {
+                Map* map = sMapMgr->FindMap(data.mapid, 0);
+
+                if (!map)
+                    map = sMapMgr->CreateMap(data.mapid, handler->GetSession()->GetPlayer());
+
+                if (map)
+                {
+                    float newPosZ = map->GetHeight(data.phaseMask, data.posX, data.posY, MAX_HEIGHT, true);
+
+                    if (newPosZ && newPosZ != -200000.0f)
+                        WorldDatabase.PExecute("UPDATE gameobject SET position_z = %f WHERE guid = %u", newPosZ, gameobject.first);
+                }
+            }
+        }
+
         return true;
     }
 };
