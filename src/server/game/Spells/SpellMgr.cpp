@@ -2638,6 +2638,10 @@ void SpellMgr::LoadSpellClassInfo()
         if(!classEntry)
             continue;
 
+        // Incarnation
+        if (ClassID == CLASS_DRUID)
+            mSpellClassInfo[ClassID].push_back(106731);
+
         // Player damage reduction (40% base resilience)
         if (ClassID == CLASS_DEATH_KNIGHT || ClassID == CLASS_MAGE || ClassID == CLASS_PRIEST)
             mSpellClassInfo[ClassID].push_back(115043);
