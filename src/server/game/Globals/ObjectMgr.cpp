@@ -2417,7 +2417,7 @@ void ObjectMgr::LoadItemTemplates()
             Field* fields = result->Fetch();
             uint32 itemId = fields[0].GetUInt32();
             if (_itemTemplateStore.find(itemId) != _itemTemplateStore.end())
-                return;
+                continue;
 
             ItemTemplate& itemTemplate = _itemTemplateStore[itemId];
 
