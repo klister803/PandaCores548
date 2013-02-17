@@ -54,6 +54,62 @@ enum RogueSpells
     ROGUE_SPELL_SHROUD_OF_CONCEALMENT_AURA       = 115834,
 };
 
+// Redirect - 73981
+class spell_rog_redirect : public SpellScriptLoader
+{
+    public:
+        spell_rog_redirect() : SpellScriptLoader("spell_rog_redirect") { }
+
+        class spell_rog_redirect_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_redirect_SpellScript);
+
+            SpellCastResult CheckCast()
+            {
+                if (GetCaster())
+                {
+                    if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
+                        return SPELL_FAILED_DONT_REPORT;
+
+                    if (!GetCaster()->ToPlayer()->GetComboPoints())
+                        return SPELL_FAILED_NO_COMBO_POINTS;
+                }
+                else
+                    return SPELL_FAILED_DONT_REPORT;
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        uint8 cp = _player->GetComboPoints();
+
+                        if (cp > 5)
+                            cp = 5;
+
+                        _player->ClearComboPoints();
+                        _player->AddComboPoints(target, cp, GetSpell());
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_rog_redirect_SpellScript::CheckCast);
+                OnHit += SpellHitFn(spell_rog_redirect_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_redirect_SpellScript();
+        }
+};
+
 // Shroud of Concealment - 115834
 class spell_rog_shroud_of_concealment : public SpellScriptLoader
 {
@@ -823,6 +879,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_redirect();
     new spell_rog_shroud_of_concealment();
     new spell_rog_crimson_tempest();
     new spell_rog_master_poisoner();
