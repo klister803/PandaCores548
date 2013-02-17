@@ -8036,6 +8036,13 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        //Master Poisoner
+        case 58410:
+        {
+            return false;
+
+            break;
+        }
         // Dematerialize
         case 122464:
         {

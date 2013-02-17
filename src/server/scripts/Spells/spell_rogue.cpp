@@ -48,6 +48,40 @@ enum RogueSpells
     ROGUE_SPELL_SLICE_AND_DICE                   = 5171,
     ROGUE_SPELL_SMOKE_BOMB_AREA_DUMMY            = 76577,
     ROGUE_SPELL_SMOKE_BOMB_AURA                  = 88611,
+    ROGUE_SPELL_MASTER_POISONER_AURA             = 58410,
+    ROGUE_SPELL_MASTER_POISONER_DEBUFF           = 93068,
+};
+
+// Called by Wound Poison - 8680, Deadly Poison - 2818, Mind-Numbing Poison - 5760, Crippling Poison - 3409
+// Paralytic Poison - 113952, Leeching Poison - 112961 and Deadly Poison : Instant damage - 113780
+// Master Poisoner - 58410
+class spell_rog_master_poisoner : public SpellScriptLoader
+{
+    public:
+        spell_rog_master_poisoner() : SpellScriptLoader("spell_rog_master_poisoner") { }
+
+        class spell_rog_master_poisoner_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_master_poisoner_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(ROGUE_SPELL_MASTER_POISONER_AURA))
+                            _player->CastSpell(target, ROGUE_SPELL_MASTER_POISONER_DEBUFF, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_master_poisoner_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_master_poisoner_SpellScript();
+        }
 };
 
 // Smoke Bomb - 88611
@@ -722,6 +756,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_master_poisoner();
     new spell_rog_smoke_bomb_aura();
     new spell_rog_smoke_bomb();
     new spell_rog_slice_and_dice();
