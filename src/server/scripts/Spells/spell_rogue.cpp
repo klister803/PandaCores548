@@ -46,6 +46,100 @@ enum RogueSpells
     ROGUE_SPELL_DEADLY_POISON_DOT                = 2818,
     ROGUE_SPELL_DEADLY_POISON_INSTANT_DAMAGE     = 113780,
     ROGUE_SPELL_SLICE_AND_DICE                   = 5171,
+    ROGUE_SPELL_SMOKE_BOMB_AREA_DUMMY            = 76577,
+    ROGUE_SPELL_SMOKE_BOMB_AURA                  = 88611,
+};
+
+// Smoke Bomb - 88611
+class spell_rog_smoke_bomb_aura : public SpellScriptLoader
+{
+    public:
+        spell_rog_smoke_bomb_aura() : SpellScriptLoader("spell_rog_smoke_bomb_aura") { }
+
+        class spell_rog_smoke_bomb_aura_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_smoke_bomb_aura_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->GetGUID() != _player->GetGUID() && !target->IsFriendlyTo(_player))
+                        {
+                            target->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+                            target->AttackStop();
+                            if (target->ToPlayer())
+                                target->ToPlayer()->SendAttackSwingCancelAttack();
+                        }
+                        else if (target->GetGUID() == _player->GetGUID())
+                            _player->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_smoke_bomb_aura_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_smoke_bomb_aura_SpellScript();
+        }
+
+        class spell_rog_smoke_bomb_aura_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_smoke_bomb_aura_AuraScript);
+
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+               if (GetCaster())
+                   if (GetTarget()->GetGUID() == GetCaster()->GetGUID())
+                       if (GetTarget()->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+                           GetTarget()->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_rog_smoke_bomb_aura_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_INTERFERE_TARGETTING, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_smoke_bomb_aura_AuraScript();
+        }
+};
+
+// Smoke Bomb - 76577
+class spell_rog_smoke_bomb : public SpellScriptLoader
+{
+    public:
+        spell_rog_smoke_bomb() : SpellScriptLoader("spell_rog_smoke_bomb") { }
+
+        class spell_rog_smoke_bomb_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_smoke_bomb_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(ROGUE_SPELL_SMOKE_BOMB_AREA_DUMMY))
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), ROGUE_SPELL_SMOKE_BOMB_AURA, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_rog_smoke_bomb_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_smoke_bomb_AuraScript();
+        }
 };
 
 // Slice and Dice - 5171
@@ -628,6 +722,8 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_smoke_bomb_aura();
+    new spell_rog_smoke_bomb();
     new spell_rog_slice_and_dice();
     new spell_rog_deadly_poison_instant_damage();
     new spell_rog_paralytic_poison();
