@@ -50,6 +50,41 @@ enum RogueSpells
     ROGUE_SPELL_SMOKE_BOMB_AURA                  = 88611,
     ROGUE_SPELL_MASTER_POISONER_AURA             = 58410,
     ROGUE_SPELL_MASTER_POISONER_DEBUFF           = 93068,
+    ROGUE_SPELL_CRIMSON_TEMPEST_DOT              = 122233,
+};
+
+// Crimson Tempest - 121411
+class spell_rog_crimson_tempest : public SpellScriptLoader
+{
+    public:
+        spell_rog_crimson_tempest() : SpellScriptLoader("spell_rog_crimson_tempest") { }
+
+        class spell_rog_crimson_tempest_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_crimson_tempest_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 damage = int32(GetHitDamage() * 0.30f / 6); // 30% / number_of_ticks
+                        _player->CastCustomSpell(target, ROGUE_SPELL_CRIMSON_TEMPEST_DOT, &damage, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_crimson_tempest_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_crimson_tempest_SpellScript();
+        }
 };
 
 // Called by Wound Poison - 8680, Deadly Poison - 2818, Mind-Numbing Poison - 5760, Crippling Poison - 3409
@@ -756,6 +791,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_crimson_tempest();
     new spell_rog_master_poisoner();
     new spell_rog_smoke_bomb_aura();
     new spell_rog_smoke_bomb();
