@@ -46,6 +46,290 @@ enum RogueSpells
     ROGUE_SPELL_DEADLY_POISON_DOT                = 2818,
     ROGUE_SPELL_DEADLY_POISON_INSTANT_DAMAGE     = 113780,
     ROGUE_SPELL_SLICE_AND_DICE                   = 5171,
+    ROGUE_SPELL_SMOKE_BOMB_AREA_DUMMY            = 76577,
+    ROGUE_SPELL_SMOKE_BOMB_AURA                  = 88611,
+    ROGUE_SPELL_MASTER_POISONER_AURA             = 58410,
+    ROGUE_SPELL_MASTER_POISONER_DEBUFF           = 93068,
+    ROGUE_SPELL_CRIMSON_TEMPEST_DOT              = 122233,
+    ROGUE_SPELL_SHROUD_OF_CONCEALMENT_AURA       = 115834,
+    ROGUE_SPELL_CUT_TO_THE_CHASE_AURA            = 51667,
+};
+
+// Called by Envenom - 1329 and Eviscerate - 2098
+// Cut to the Chase - 51667
+class spell_rog_cut_to_the_chase : public SpellScriptLoader
+{
+    public:
+        spell_rog_cut_to_the_chase() : SpellScriptLoader("spell_rog_cut_to_the_chase") { }
+
+        class spell_rog_cut_to_the_chase_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_cut_to_the_chase_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(ROGUE_SPELL_CUT_TO_THE_CHASE_AURA))
+                            if (AuraPtr sliceAndDice = _player->GetAura(ROGUE_SPELL_SLICE_AND_DICE, _player->GetGUID()))
+                                sliceAndDice->SetDuration(sliceAndDice->GetMaxDuration());
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_cut_to_the_chase_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_cut_to_the_chase_SpellScript();
+        }
+};
+
+// Redirect - 73981
+class spell_rog_redirect : public SpellScriptLoader
+{
+    public:
+        spell_rog_redirect() : SpellScriptLoader("spell_rog_redirect") { }
+
+        class spell_rog_redirect_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_redirect_SpellScript);
+
+            SpellCastResult CheckCast()
+            {
+                if (GetCaster())
+                {
+                    if (GetCaster()->GetTypeId() != TYPEID_PLAYER)
+                        return SPELL_FAILED_DONT_REPORT;
+
+                    if (!GetCaster()->ToPlayer()->GetComboPoints())
+                        return SPELL_FAILED_NO_COMBO_POINTS;
+                }
+                else
+                    return SPELL_FAILED_DONT_REPORT;
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        uint8 cp = _player->GetComboPoints();
+
+                        if (cp > 5)
+                            cp = 5;
+
+                        _player->ClearComboPoints();
+                        _player->AddComboPoints(target, cp, GetSpell());
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_rog_redirect_SpellScript::CheckCast);
+                OnHit += SpellHitFn(spell_rog_redirect_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_redirect_SpellScript();
+        }
+};
+
+// Shroud of Concealment - 115834
+class spell_rog_shroud_of_concealment : public SpellScriptLoader
+{
+    public:
+        spell_rog_shroud_of_concealment() : SpellScriptLoader("spell_rog_shroud_of_concealment") { }
+
+        class spell_rog_shroud_of_concealment_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_shroud_of_concealment_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (AuraPtr shroudOfConcealment = target->GetAura(ROGUE_SPELL_SHROUD_OF_CONCEALMENT_AURA, _player->GetGUID()))
+                            if (!target->IsInRaidWith(_player) && !target->IsInPartyWith(_player))
+                                target->RemoveAura(ROGUE_SPELL_SHROUD_OF_CONCEALMENT_AURA, _player->GetGUID());
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_shroud_of_concealment_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_shroud_of_concealment_SpellScript();
+        }
+};
+
+// Crimson Tempest - 121411
+class spell_rog_crimson_tempest : public SpellScriptLoader
+{
+    public:
+        spell_rog_crimson_tempest() : SpellScriptLoader("spell_rog_crimson_tempest") { }
+
+        class spell_rog_crimson_tempest_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_crimson_tempest_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 damage = int32(GetHitDamage() * 0.30f / 6); // 30% / number_of_ticks
+                        _player->CastCustomSpell(target, ROGUE_SPELL_CRIMSON_TEMPEST_DOT, &damage, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_crimson_tempest_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_crimson_tempest_SpellScript();
+        }
+};
+
+// Called by Wound Poison - 8680, Deadly Poison - 2818, Mind-Numbing Poison - 5760, Crippling Poison - 3409
+// Paralytic Poison - 113952, Leeching Poison - 112961 and Deadly Poison : Instant damage - 113780
+// Master Poisoner - 58410
+class spell_rog_master_poisoner : public SpellScriptLoader
+{
+    public:
+        spell_rog_master_poisoner() : SpellScriptLoader("spell_rog_master_poisoner") { }
+
+        class spell_rog_master_poisoner_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_master_poisoner_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(ROGUE_SPELL_MASTER_POISONER_AURA))
+                            _player->CastSpell(target, ROGUE_SPELL_MASTER_POISONER_DEBUFF, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_master_poisoner_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_master_poisoner_SpellScript();
+        }
+};
+
+// Smoke Bomb - 88611
+class spell_rog_smoke_bomb_aura : public SpellScriptLoader
+{
+    public:
+        spell_rog_smoke_bomb_aura() : SpellScriptLoader("spell_rog_smoke_bomb_aura") { }
+
+        class spell_rog_smoke_bomb_aura_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_smoke_bomb_aura_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->GetGUID() != _player->GetGUID() && !target->IsFriendlyTo(_player))
+                        {
+                            target->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
+                            target->AttackStop();
+                            if (target->ToPlayer())
+                                target->ToPlayer()->SendAttackSwingCancelAttack();
+                        }
+                        else if (target->GetGUID() == _player->GetGUID())
+                            _player->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_smoke_bomb_aura_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_smoke_bomb_aura_SpellScript();
+        }
+
+        class spell_rog_smoke_bomb_aura_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_smoke_bomb_aura_AuraScript);
+
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+               if (GetCaster())
+                   if (GetTarget()->GetGUID() == GetCaster()->GetGUID())
+                       if (GetTarget()->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
+                           GetTarget()->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_rog_smoke_bomb_aura_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_INTERFERE_TARGETTING, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_smoke_bomb_aura_AuraScript();
+        }
+};
+
+// Smoke Bomb - 76577
+class spell_rog_smoke_bomb : public SpellScriptLoader
+{
+    public:
+        spell_rog_smoke_bomb() : SpellScriptLoader("spell_rog_smoke_bomb") { }
+
+        class spell_rog_smoke_bomb_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_smoke_bomb_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(ROGUE_SPELL_SMOKE_BOMB_AREA_DUMMY))
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), ROGUE_SPELL_SMOKE_BOMB_AURA, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_rog_smoke_bomb_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_smoke_bomb_AuraScript();
+        }
 };
 
 // Slice and Dice - 5171
@@ -628,6 +912,13 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_cut_to_the_chase();
+    new spell_rog_redirect();
+    new spell_rog_shroud_of_concealment();
+    new spell_rog_crimson_tempest();
+    new spell_rog_master_poisoner();
+    new spell_rog_smoke_bomb_aura();
+    new spell_rog_smoke_bomb();
     new spell_rog_slice_and_dice();
     new spell_rog_deadly_poison_instant_damage();
     new spell_rog_paralytic_poison();

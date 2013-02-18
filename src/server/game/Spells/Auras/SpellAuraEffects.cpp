@@ -5442,28 +5442,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
             // if (!(mode & AURA_EFFECT_HANDLE_REAL))
             //    break;
             break;
-		case SPELLFAMILY_ROGUE:
-        {
-            switch (GetId())
-            {
-                case 76577: // Smoke Bomb
-                {
-                    if (apply)
-                    {
-                        AuraPtr newAura = target->AddAura(88611, target);
-                        if (newAura != NULLAURA)
-                        {
-                            newAura->SetMaxDuration(GetBase()->GetDuration());
-                            newAura->SetDuration(GetBase()->GetDuration());
-                        }
-                    }
-                    else
-                        target->RemoveAurasDueToSpell(88611);
-                    break;
-                }
-            }
-            break;
-        }
         case SPELLFAMILY_DEATHKNIGHT:
         {
             if (!(mode & AURA_EFFECT_HANDLE_REAL))

@@ -6568,18 +6568,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
 
             switch (dummySpell->SpellIconID)
             {
-                case 2909: // Cut to the Chase
-                {
-                    // "refresh your Slice and Dice duration to its 5 combo point maximum"
-                    // lookup Slice and Dice
-                    AuraPtr aur = GetAura(5171);
-                    if (aur != NULLAURA)
-                    {
-                        aur->SetDuration(aur->GetSpellInfo()->GetMaxDuration(), true);
-                        return true;
-                    }
-                    return false;
-                }
                 case 2963: // Deadly Brew
                 {
                     triggered_spell_id = 3409;
@@ -8036,6 +8024,24 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Blindside
+        case 121152:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 5374 && procSpell->Id != 27576)
+                return false;
+
+            break;
+        }
+        // Master Poisoner
+        case 58410:
+        {
+            return false;
+
+            break;
+        }
         // Dematerialize
         case 122464:
         {
@@ -9628,6 +9634,11 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Some spells don't benefit from done mods
     if (spellProto->AttributesEx3 & SPELL_ATTR3_NO_DONE_BONUS)
+        return pdamage;
+
+    // small exception for Crimson Tempest, can't find any general rule
+    // should ignore ALL damage mods, they already calculated in trigger spell
+    if (spellProto->Id == 122233) // Crimson Tempest
         return pdamage;
 
     // small exception for Echo of Light, can't find any general rule
@@ -14332,6 +14343,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     if (GetTypeId() == TYPEID_PLAYER && HasAura(51124) && getClass() == CLASS_DEATH_KNIGHT && procSpell && (procSpell->Id == 49020 || procSpell->Id == 49143))
         RemoveAura(51124);
 
+    // Fix Drop charge for Blindsight
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(121152) && getClass() == CLASS_ROGUE && procSpell && procSpell->Id == 111240)
+        RemoveAura(121153);
+
     // Fix Drop charge for Fingers of Frost
     if (GetTypeId() == TYPEID_PLAYER && HasAura(44544) && getClass() == CLASS_MAGE && procSpell && (procSpell->Id == 30455 || procSpell->Id == 44572))
     {
@@ -14669,7 +14684,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         } // if (!handled)
 
         // Remove charge (aura can be removed by triggers)
-        if (useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032) // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
+        if (useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 && i->aura->GetId() != 121153) // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
             i->aura->DropCharge();
 
         if (spellInfo->AttributesEx3 & SPELL_ATTR3_DISABLE_PROC)
@@ -17102,6 +17117,12 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             if (Player::TeamForRace(getRace()) == ALLIANCE)
                 return 21243;
             return 21244;
+        case FORM_TRAVEL:
+            if (Player::TeamForRace(getRace()) == ALLIANCE)
+                return 40816;
+            return 45339;
+        case FORM_MOONKIN:
+            return 37173;
         default:
             break;
     }

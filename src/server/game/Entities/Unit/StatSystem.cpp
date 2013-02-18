@@ -178,6 +178,25 @@ bool Player::UpdateAllStats()
                 CastSpell(this, trigger, true);
         }
     }
+    // Assassin's Resolve - 84601
+    if (GetTypeId() == TYPEID_PLAYER)
+    {
+        if (getClass() == CLASS_ROGUE && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_ASSASSINATION)
+        {
+            Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+            Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+
+            if (((mainItem && mainItem->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER) || (offItem && offItem->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)))
+            {
+                if (HasAura(84601))
+                    RemoveAura(84601);
+
+                CastSpell(this, 84601, true);
+            }
+            else
+                RemoveAura(84601);
+        }
+    }
 
     UpdateAllRatings();
     UpdateAllCritPercentages();

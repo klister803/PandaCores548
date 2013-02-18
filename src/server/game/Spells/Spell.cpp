@@ -2382,6 +2382,14 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         }
     }
 
+    // Your finishing moves have a 20% chance per combo point to restore 25 Energy.
+    if (m_needComboPoints)
+        if (Player* plrCaster = m_caster->ToPlayer())
+            if (uint8 cp = plrCaster->GetComboPoints())
+                if (m_caster->HasAura(58423))
+                    if (roll_chance_i(cp * 20))
+                        m_caster->CastSpell(m_caster, 98440, true); // Restore 25 energys
+
     // Do not take combo points on dodge and miss
     if (missInfo != SPELL_MISS_NONE && m_needComboPoints &&
             m_targets.GetUnitTargetGUID() == target->targetGUID)
@@ -6919,7 +6927,7 @@ SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& sk
                     // skill bonus provided by casting spell (mostly item spells)
                     // add the effect base points modifier from the spell casted (cheat lock / skeleton key etc.)
                     if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_GAMEOBJECT_ITEM_TARGET || m_spellInfo->Effects[effIndex].TargetB.GetTarget() == TARGET_GAMEOBJECT_ITEM_TARGET)
-                        skillValue += m_spellInfo->Effects[effIndex].CalcValue();
+                        skillValue += m_spellInfo->Effects[effIndex].CalcValue(m_caster, 0);
 
                     if (skillValue < reqSkillValue)
                         return SPELL_FAILED_LOW_CASTLEVEL;
