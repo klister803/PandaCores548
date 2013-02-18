@@ -406,28 +406,28 @@ class mob_adepts : public CreatureScript
             {
                 switch (action)
                 {
-                case ACTION_ENCOURAGE:
+                    case ACTION_ENCOURAGE:
                     {
                         float x, y;
-                        GetPositionWithDistInOrientation(me, 30.0f, me->GetOrientation(), x, y);
+                        GetPositionWithDistInOrientation(me, 5.0f, me->GetOrientation(), x, y);
                         me->GetMotionMaster()->MovePoint(0, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()));
 
                         me->CastSpell(me, 120867, false);
                         events.ScheduleEvent(EVENT_APPLAUSE + urand(0, 1), 500 + urand(500, 1500));
+                        break;
                     }
-                    break;
-                case ACTION_RETIRE:
+                    case ACTION_RETIRE:
                     {
                         float x, y;
-                        GetPositionWithDistInOrientation(me, 30.0f, me->GetOrientation(), x, y);
+                        GetPositionWithDistInOrientation(me, -5.0f, me->GetOrientation(), x, y);
                         me->GetMotionMaster()->MovePoint(1, x, y, me->GetMap()->GetHeight(0, x, y, me->GetPositionZ()));
 
                         me->RemoveAura(120867);
                         me->CastSpell(me, 121569, false);
                         events.Reset();
+                        break;
                     }
-                    break;
-                case ACTION_ATTACK:
+                    case ACTION_ATTACK:
                     {
                         status = STATUS_ATTACK_GRUNTS;
 
@@ -437,6 +437,7 @@ class mob_adepts : public CreatureScript
 
                         me->RemoveAura(121569);
                         events.Reset();
+                        break;
                     }
                 }
             }
@@ -578,9 +579,9 @@ class boss_kuai_the_brute : public CreatureScript
             {
                 Talk(TALK_AGGRO);
                 events.ScheduleEvent(EVENT_SHOCKWAVE, 3000);
-                Creature* mu_shiba = me->GetMap()->GetCreature(pet_guid);
-                if (mu_shiba && mu_shiba->GetAI())
-                    mu_shiba->GetAI()->DoAction(ACTION_ATTACK);
+
+                if (Creature* mu_shiba = me->GetMap()->GetCreature(pet_guid))
+                    mu_shiba->AI()->DoAction(ACTION_ATTACK);
             }
 
             void DamageTaken(Unit* killer, uint32 &damage)
@@ -699,17 +700,20 @@ class mob_mu_shiba : public CreatureScript
             {
                 switch (action)
                 {
-                case ACTION_ATTACK:
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
-                    me->Attack(SelectTarget(SELECT_TARGET_RANDOM), true);
-                    break;
-                case ACTION_ATTACK_STOP:
-                    events.Reset();
-                    me->AttackStop();
-                    me->SetReactState(REACT_PASSIVE);
-                    me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
-                    break;
+                    case ACTION_ATTACK:
+                        me->SetReactState(REACT_AGGRESSIVE);
+                        me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+                        DoZoneInCombat();
+
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            AttackStart(target);
+                        break;
+                    case ACTION_ATTACK_STOP:
+                        events.Reset();
+                        me->AttackStop();
+                        me->SetReactState(REACT_PASSIVE);
+                        me->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC);
+                        break;
                 }
             }
 

@@ -25,6 +25,8 @@ class boss_xin_the_weaponmaster : public CreatureScript
             EVENT_INCITING_ROAR         = 3,
             EVENT_SWORD_THROWER         = 4,
             EVENT_SWORD_THROWER_STOP    = 5,
+            EVENT_AXES_ACTIVATE         = 6,
+            EVENT_AXES_DESACTIVATE      = 7
         };
 
         enum eSpells
@@ -56,6 +58,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
                 events.ScheduleEvent(EVENT_HEURT, urand(10000, 15000));
                 events.ScheduleEvent(EVENT_INCITING_ROAR, urand(15000, 25000));
                 events.ScheduleEvent(EVENT_SWORD_THROWER, 30000);
+                events.ScheduleEvent(EVENT_AXES_ACTIVATE, 15000);
             }
 
             void UpdateAI(const uint32 diff)
@@ -95,7 +98,18 @@ class boss_xin_the_weaponmaster : public CreatureScript
                                 pInstance->SetData(TYPE_ACTIVATE_SWORD, 0);
                             events.ScheduleEvent(EVENT_SWORD_THROWER, 20000);
                             break;
+                        case EVENT_AXES_ACTIVATE:
+                            if (pInstance)
+                                pInstance->SetData(TYPE_ACTIVATE_ANIMATED_AXE, 1);
 
+                            events.ScheduleEvent(EVENT_AXES_DESACTIVATE, 10000);
+                            break;
+                        case EVENT_AXES_DESACTIVATE:
+                            if (pInstance)
+                                pInstance->SetData(TYPE_ACTIVATE_ANIMATED_AXE, 0);
+
+                            events.ScheduleEvent(EVENT_AXES_ACTIVATE, 15000);
+                            break;
                     }
                 }
 
