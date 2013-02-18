@@ -17118,6 +17118,8 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
             if (Player::TeamForRace(getRace()) == ALLIANCE)
                 return 40816;
             return 45339;
+        case FORM_MOONKIN:
+            return 37173;
         default:
             break;
     }
