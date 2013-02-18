@@ -52,6 +52,10 @@ enum RogueSpells
     ROGUE_SPELL_MASTER_POISONER_DEBUFF           = 93068,
     ROGUE_SPELL_CRIMSON_TEMPEST_DOT              = 122233,
     ROGUE_SPELL_SHROUD_OF_CONCEALMENT_AURA       = 115834,
+    ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE            = 51637,
+    ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE            = 79136,
+    ROGUE_SPELL_GARROTE_DOT                      = 703,
+    ROGUE_SPELL_RUPTURE_DOT                      = 1943,
     ROGUE_SPELL_CUT_TO_THE_CHASE_AURA            = 51667,
 };
 
@@ -84,6 +88,92 @@ class spell_rog_cut_to_the_chase : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_rog_cut_to_the_chase_SpellScript();
+        }
+};
+
+// Called by Garrote - 703 and Rupture - 1943
+// Venomous Wounds - 79134
+class spell_rog_venomous_wounds : public SpellScriptLoader
+{
+    public:
+        spell_rog_venomous_wounds() : SpellScriptLoader("spell_rog_venomous_wounds") { }
+
+        class spell_rog_venomous_wounds_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_venomous_wounds_AuraScript);
+
+            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetTarget())
+                    {
+                        // Each time your Rupture or Garrote deals damage to an enemy that you have poisoned ...
+                        if (target->HasAura(8680, caster->GetGUID())
+                            || target->HasAura(2818, caster->GetGUID())
+                            || target->HasAura(5760, caster->GetGUID())
+                            || target->HasAura(3409, caster->GetGUID())
+                            || target->HasAura(113952, caster->GetGUID())
+                            || target->HasAura(112961, caster->GetGUID()))
+                        {
+                            if (AuraPtr rupture = target->GetAura(ROGUE_SPELL_RUPTURE_DOT, caster->GetGUID()))
+                            {
+                                // ... you have a 75% chance ...
+                                if (roll_chance_i(75))
+                                {
+                                    // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
+                                    caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
+                                    int32 bp = 10;
+                                    caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
+                                }
+                            }
+                            // Garrote will not trigger this effect if the enemy is also afflicted by your Rupture
+                            else if (AuraPtr garrote = target->GetAura(ROGUE_SPELL_GARROTE_DOT, caster->GetGUID()))
+                            {
+                                // ... you have a 75% chance ...
+                                if (roll_chance_i(75))
+                                {
+                                    // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
+                                    caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
+                                    int32 bp = 10;
+                                    caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetTarget())
+                    {
+                        AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                        if (removeMode == AURA_REMOVE_BY_DEATH)
+                        {
+                            if (AuraPtr rupture = aurEff->GetBase())
+                            {
+                                // If an enemy dies while afflicted by your Rupture, you regain energy proportional to the remaining Rupture duration
+                                int32 duration = int32(rupture->GetDuration() / 1000);
+                                caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &duration, NULL, NULL, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_rog_venomous_wounds_AuraScript::HandleEffectPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                OnEffectRemove += AuraEffectRemoveFn(spell_rog_venomous_wounds_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_venomous_wounds_AuraScript();
         }
 };
 
@@ -913,6 +1003,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 void AddSC_rogue_spell_scripts()
 {
     new spell_rog_cut_to_the_chase();
+    new spell_rog_venomous_wounds();
     new spell_rog_redirect();
     new spell_rog_shroud_of_concealment();
     new spell_rog_crimson_tempest();
