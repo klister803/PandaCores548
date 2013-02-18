@@ -8036,7 +8036,18 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
-        //Master Poisoner
+        // Blindside
+        case 121152:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 5374 && procSpell->Id != 27576)
+                return false;
+
+            break;
+        }
+        // Master Poisoner
         case 58410:
         {
             return false;
