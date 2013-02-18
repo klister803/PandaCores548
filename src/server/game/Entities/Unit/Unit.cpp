@@ -14343,6 +14343,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     if (GetTypeId() == TYPEID_PLAYER && HasAura(51124) && getClass() == CLASS_DEATH_KNIGHT && procSpell && (procSpell->Id == 49020 || procSpell->Id == 49143))
         RemoveAura(51124);
 
+    // Fix Drop charge for Blindsight
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(121152) && getClass() == CLASS_ROGUE && procSpell && procSpell->Id == 111240)
+        RemoveAura(121153);
+
     // Fix Drop charge for Fingers of Frost
     if (GetTypeId() == TYPEID_PLAYER && HasAura(44544) && getClass() == CLASS_MAGE && procSpell && (procSpell->Id == 30455 || procSpell->Id == 44572))
     {
@@ -14680,7 +14684,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         } // if (!handled)
 
         // Remove charge (aura can be removed by triggers)
-        if (useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032) // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
+        if (useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 && i->aura->GetId() != 121153) // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
             i->aura->DropCharge();
 
         if (spellInfo->AttributesEx3 & SPELL_ATTR3_DISABLE_PROC)
