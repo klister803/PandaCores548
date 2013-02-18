@@ -52,6 +52,39 @@ enum RogueSpells
     ROGUE_SPELL_MASTER_POISONER_DEBUFF           = 93068,
     ROGUE_SPELL_CRIMSON_TEMPEST_DOT              = 122233,
     ROGUE_SPELL_SHROUD_OF_CONCEALMENT_AURA       = 115834,
+    ROGUE_SPELL_CUT_TO_THE_CHASE_AURA            = 51667,
+};
+
+// Called by Envenom - 1329 and Eviscerate - 2098
+// Cut to the Chase - 51667
+class spell_rog_cut_to_the_chase : public SpellScriptLoader
+{
+    public:
+        spell_rog_cut_to_the_chase() : SpellScriptLoader("spell_rog_cut_to_the_chase") { }
+
+        class spell_rog_cut_to_the_chase_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_cut_to_the_chase_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(ROGUE_SPELL_CUT_TO_THE_CHASE_AURA))
+                            if (AuraPtr sliceAndDice = _player->GetAura(ROGUE_SPELL_SLICE_AND_DICE, _player->GetGUID()))
+                                sliceAndDice->SetDuration(sliceAndDice->GetMaxDuration());
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_cut_to_the_chase_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_cut_to_the_chase_SpellScript();
+        }
 };
 
 // Redirect - 73981
@@ -879,6 +912,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_cut_to_the_chase();
     new spell_rog_redirect();
     new spell_rog_shroud_of_concealment();
     new spell_rog_crimson_tempest();
