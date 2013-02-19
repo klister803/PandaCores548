@@ -3131,6 +3131,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 121733:// Throw
+                spellInfo->OverrideSpellList.push_back(114014); // Add Shuriken Toss to override spell list of Throw
+                break;
             case 105361:// Seal of Command
                 spellInfo->OverrideSpellList.push_back(31801); // Replace Seal of Command with Seal of Truth
                 break;
