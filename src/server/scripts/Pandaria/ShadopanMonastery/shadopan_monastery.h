@@ -54,6 +54,9 @@ enum CreaturesIds
     NPC_FLYING_SNOW             = 56473,
 
     NPC_SNOWDRIFT_CLONE         = 56713,
+
+    // Sha of Violence
+    NPC_LESSER_VOLATILE_ENERGY  = 66652,
 };
 
 enum ObjectsIds
