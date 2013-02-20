@@ -192,6 +192,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
 
     m_extraAttacks = 0;
     countCrit = 0;
+    insightCount = 0;
     m_canDualWield = false;
 
     m_rootTimes = 0;
@@ -8024,6 +8025,27 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Combat Potency
+        case 35551:
+        {
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (procSpell && procSpell->Id != 86392)
+                return false;
+
+            if (procSpell && procSpell->Id == 86392)
+                if (!roll_chance_i(20))
+                    return false;
+
+            float offHandSpeed = GetAttackTime(OFF_ATTACK) / IN_MILLISECONDS;
+
+            if (!procSpell && (procFlags & PROC_FLAG_DONE_OFFHAND_ATTACK))
+                if (!roll_chance_f(20.0f * offHandSpeed / 1.4f))
+                    return false;
+
+            break;
+        }
         // Blindside
         case 121152:
         {
@@ -14305,6 +14327,49 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         {
             target->CastSpell(target, 122465, true);
             target->ToPlayer()->AddSpellCooldown(122465, 0, time(NULL) + 10);
+        }
+    }
+
+    // Bandit's Guile - 84654
+    // Your Sinister Strike and Revealing Strike abilities increase your damage dealt by up to 30%
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(84654) && procSpell && (procSpell->Id == 84617 || procSpell->Id == 1752))
+    {
+        insightCount++;
+
+        // it takes a total of 4 strikes to get a proc, or a level up
+        if (insightCount >= 4)
+        {
+            insightCount = 0;
+
+            // it takes 4 strikes to get Shallow insight
+            // than 4 strikes to get Moderate insight
+            // and than 4 strikes to get Deep Insight
+
+            // Shallow Insight
+            if (HasAura(84745))
+            {
+                RemoveAura(84745);
+                CastSpell(this, 84746, true); // Moderate Insight
+            }
+            else if (HasAura(84746))
+            {
+                RemoveAura(84746);
+                CastSpell(this, 84747, true); // Deep Insight
+            }
+            // the cycle will begin
+            else if (!HasAura(84747))
+                CastSpell(this, 84745, true); // Shallow Insight
+        }
+        else
+        {
+            // Each strike refreshes the duration of shallow insight or Moderate insight
+            // but you can't refresh Deep Insight without starting from shallow insight.
+            // Shallow Insight
+            if (AuraPtr shallowInsight = GetAura(84745))
+                shallowInsight->RefreshDuration();
+            // Moderate Insight
+            else if (AuraPtr moderateInsight = GetAura(84746))
+                moderateInsight->RefreshDuration();
         }
     }
 
