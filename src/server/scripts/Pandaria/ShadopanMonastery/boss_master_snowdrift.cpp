@@ -25,7 +25,6 @@ enum eSpells
 {
     // Snowdrift
 
-    SPELL_FLYING_KICK_SNOWDRIFT = 106439,
     SPELL_CHASE_DOWN            = 118961,
     SPELL_FIST_OF_FURY          = 106853,
     SPELL_PARRY_STANCE          = 106454,
@@ -58,31 +57,34 @@ enum eEvents
     EVENT_FIRST_EVENT           = 1,
     EVENT_CHECK_WIPE            = 2,
 
-    EVENT_FLYING_KICK_SNOWDRIFT = 3,
-    EVENT_CHASE_DOWN            = 4,
-    EVENT_FIST_OF_FURY          = 5,
-    EVENT_PARRY_STANCE          = 6,
-    EVENT_QUIVERING_PALM        = 7,
-    EVENT_TORNADO_KICK          = 8,
+    EVENT_CHASE_DOWN            = 3,
+    EVENT_FIST_OF_FURY          = 4,
+    EVENT_PARRY_STANCE          = 5,
+    EVENT_QUIVERING_PALM        = 6,
+    EVENT_TORNADO_KICK          = 7,
+    EVENT_FIREBALL              = 8,
+    EVENT_PHASE_3               = 9,
 
-    EVENT_DISAPPEAR             = 9,
-    EVENT_DISAPPEAR_TWO         = 10,
+    EVENT_DISAPPEAR             = 10,
+    EVENT_DISAPPEAR_TWO         = 11,
 
     // Miniboss
-    EVENT_BALL_OF_FIRE          = 11,
-    EVENT_FLYING_KICK           = 12,
-    EVENT_CALL_STAFF            = 13,
-    EVENT_RELEASE_STAFF         = 14,
+    EVENT_BALL_OF_FIRE          = 12,
+    EVENT_FLYING_KICK           = 13,
+    EVENT_CALL_STAFF            = 14,
+    EVENT_RELEASE_STAFF         = 15,
     
-    EVENT_WHIRLING_STEEL_FOCUS  = 15,
-    EVENT_WHIRLING_STEEL_CHANGE = 16,
-    EVENT_WHIRLING_STEEL_STOP   = 17
+    EVENT_WHIRLING_STEEL_FOCUS  = 16,
+    EVENT_WHIRLING_STEEL_CHANGE = 17,
+    EVENT_WHIRLING_STEEL_STOP   = 18
 };
 
 enum ePhases
 {
     PHASE_FIRST_EVENT   = 1,
-    PHASE_FIGHT         = 2
+    PHASE_FIGHT_1       = 2,
+    PHASE_FIGHT_2       = 3,
+    PHASE_FIGHT_3       = 4
 };
 
 enum ePoints
@@ -167,18 +169,32 @@ class boss_master_snowdrift : public CreatureScript
             void EnterCombat(Unit* /*who*/)
             {
                 pInstance->SetBossState(DATA_MASTER_SNOWDRIFT, IN_PROGRESS);
-                initDefaultEvents();
+                initDefaultEventsForPhase();
             }
 
-            void initDefaultEvents()
+            void initDefaultEventsForPhase()
             {
-                events.ScheduleEvent(EVENT_FLYING_KICK_SNOWDRIFT, defaultrand);
-                events.ScheduleEvent(EVENT_CHASE_DOWN, defaultrand);
-                events.ScheduleEvent(EVENT_FIST_OF_FURY, defaultrand);
-                events.ScheduleEvent(EVENT_PARRY_STANCE, defaultrand);
-                events.ScheduleEvent(EVENT_QUIVERING_PALM, defaultrand);
-                events.ScheduleEvent(EVENT_TORNADO_KICK, defaultrand);
-                events.ScheduleEvent(EVENT_DISAPPEAR, defaultrand);
+                events.CancelEventGroup(PHASE_FIGHT_1);
+                events.CancelEventGroup(PHASE_FIGHT_2);
+                events.CancelEventGroup(PHASE_FIGHT_3);
+
+                switch (phase)
+                {
+                    case PHASE_FIGHT_1:
+                        events.ScheduleEvent(EVENT_TORNADO_KICK, defaultrand, PHASE_FIGHT_1);
+                        events.ScheduleEvent(EVENT_FIST_OF_FURY, defaultrand, PHASE_FIGHT_1);
+                        events.ScheduleEvent(EVENT_CHASE_DOWN, defaultrand, PHASE_FIGHT_1);
+                        events.ScheduleEvent(EVENT_DISAPPEAR, defaultrand, PHASE_FIGHT_1);
+                        break;
+                    case PHASE_FIGHT_2:
+                        events.ScheduleEvent(EVENT_FIREBALL, defaultrand, PHASE_FIGHT_2);
+                        events.ScheduleEvent(EVENT_PHASE_3, defaultrand, PHASE_FIGHT_2);
+                        break;
+                    case PHASE_FIGHT_3:
+                        events.ScheduleEvent(EVENT_PARRY_STANCE, defaultrand, PHASE_FIGHT_3);
+                        events.ScheduleEvent(EVENT_QUIVERING_PALM, defaultrand, PHASE_FIGHT_3);
+                        break;
+                }
             }
 
             void MoveInLineOfSight(Unit* who)
@@ -231,7 +247,7 @@ class boss_master_snowdrift : public CreatureScript
                 else if (action == ACTION_CLONES_DONE)
                 {
                     me->SetReactState(REACT_AGGRESSIVE);
-                    initDefaultEvents();
+                    events.ScheduleEvent(EVENT_PHASE_3, 5000);
                 }
             }
 
@@ -295,11 +311,30 @@ class boss_master_snowdrift : public CreatureScript
                     case 9:
                     {
                         me->GetMotionMaster()->MovePoint(POINT_PHASE_FIGHT, SnowdriftPos[POINT_PHASE_FIGHT - 1].GetPositionX(), SnowdriftPos[POINT_PHASE_FIGHT - 1].GetPositionY(), SnowdriftPos[POINT_PHASE_FIGHT - 1].GetPositionZ());
-                        phase = PHASE_FIGHT;
+                        phase = PHASE_FIGHT_1;
                         break;
                     }
                     default:
                         break;
+                }
+            }
+
+            void DamageTaken(Unit* /*attacker*/, uint32& damage)
+            {
+                if (phase == PHASE_FIGHT_1)
+                {
+                    if (me->HealthBelowPctDamaged(70, damage))
+                    {
+                        me->CombatStop();
+                        me->SetReactState(REACT_PASSIVE);
+                        events.Reset();
+
+                        me->CastSpell(me, SPELL_SMOKE_BOMB, true);
+                        me->SetVisible(false); // We set this for two seconds, time to let client erase players' focus from the boss
+
+                        phase = PHASE_FIGHT_2;
+                        events.ScheduleEvent(EVENT_DISAPPEAR, 2000);
+                    }
                 }
             }
 
@@ -319,13 +354,9 @@ class boss_master_snowdrift : public CreatureScript
                         events.ScheduleEvent(EVENT_CHECK_WIPE, defaultrand);
                         break;
                     // Combat Script
-                    case EVENT_FLYING_KICK_SNOWDRIFT:
-                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
-                            me->CastSpell(target, SPELL_FLYING_KICK_SNOWDRIFT, false);
-
-                        events.ScheduleEvent(eventId, defaultrand);
-                        break;
-                    case EVENT_CHASE_DOWN:
+                    /// Phase 1
+                    case EVENT_TORNADO_KICK:
+                        me->CastSpell(me, SPELL_TORNADO_KICK, false);
                         events.ScheduleEvent(eventId, defaultrand);
                         break;
                     case EVENT_FIST_OF_FURY:
@@ -334,25 +365,11 @@ class boss_master_snowdrift : public CreatureScript
 
                         events.ScheduleEvent(eventId, defaultrand);
                         break;
-                    case EVENT_PARRY_STANCE:
-                        me->CastSpell(me, SPELL_PARRY_STANCE, false);
+                    case EVENT_CHASE_DOWN:
                         events.ScheduleEvent(eventId, defaultrand);
                         break;
-                    case EVENT_QUIVERING_PALM:
-                        events.ScheduleEvent(eventId, defaultrand);
-                        break;
-                    case EVENT_TORNADO_KICK:
-                        me->CastSpell(me, SPELL_TORNADO_KICK, false);
-                        events.ScheduleEvent(eventId, defaultrand);
-                        break;
+                    /// Phase 2
                     case EVENT_DISAPPEAR:
-                        me->CastSpell(me, SPELL_SMOKE_BOMB, true);
-                        me->SetVisible(false); // We set this for a second, time to let client erase players' focus from the boss
-                        events.Reset();
-                        me->SetReactState(REACT_PASSIVE);
-                        events.ScheduleEvent(EVENT_DISAPPEAR_TWO, 1000);
-                        break;
-                    case EVENT_DISAPPEAR_TWO:
                     {
                         std::vector<uint8> randomIndex;
                         for (int i = 0; i < 3; ++i) randomIndex.push_back(i); // 0 1 2
@@ -374,13 +391,32 @@ class boss_master_snowdrift : public CreatureScript
                                 if (Creature* clone = me->SummonCreature(NPC_SNOWDRIFT_CLONE, ClonePos[index].GetPositionX(), ClonePos[index].GetPositionY(), ClonePos[index].GetPositionZ(), ClonePos[index].GetOrientation()))
                                     clone->CastSpell(clone, SPELL_SMOKE_BOMB, true);
                         }
-                        events.ScheduleEvent(EVENT_DISAPPEAR, 30000);
+
+                        initDefaultEventsForPhase();
                     }
+                    case EVENT_FIREBALL:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            me->CastSpell(target, SPELL_BALL_OF_FIRE, false);
+
+                        events.ScheduleEvent(eventId, defaultrand);
+                        break;
+                    /// Phase 3
+                    case EVENT_PHASE_3:
+                        phase = PHASE_FIGHT_3;
+                        initDefaultEventsForPhase();
+                        break;
+                    case EVENT_PARRY_STANCE:
+                        me->CastSpell(me, SPELL_PARRY_STANCE, false);
+                        events.ScheduleEvent(eventId, defaultrand);
+                        break;
+                    case EVENT_QUIVERING_PALM:
+                        events.ScheduleEvent(eventId, defaultrand);
+                        break;
                     default:
                         break;
                 }
 
-                if (phase == PHASE_FIGHT)
+                if (phase == PHASE_FIGHT_1 || phase == PHASE_FIGHT_3)
                     DoMeleeAttackIfReady();
             }
         };

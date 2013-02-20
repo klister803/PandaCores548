@@ -453,6 +453,9 @@ void BattlegroundIC::HandleKillUnit(Creature* unit, Player* killer)
 
 void BattlegroundIC::HandleKillPlayer(Player* player, Player* killer)
 {
+    if (!player || player->GetTeamId() >= 2)
+        return;
+
     if (GetStatus() != STATUS_IN_PROGRESS)
         return;
 

@@ -130,6 +130,31 @@ public:
 
         void SetData(uint32 type, uint32 data)
         {
+            switch (type)
+            {
+                case DATA_GEKKAN_ADDS:
+                    if (Creature* pGekkan = instance->GetCreature(gekkan))
+                    {
+                        if (Unit * target = pGekkan->SelectNearestTarget(100.0f))
+                        {
+                            pGekkan->AI()->AttackStart(target);
+
+                            if (Creature* ironhide = instance->GetCreature(glintrok_ironhide))
+                                ironhide->AI()->AttackStart(target);
+
+                            if (Creature* skulker = instance->GetCreature(glintrok_skulker))
+                                skulker->AI()->AttackStart(target);
+
+                            if (Creature* oracle = instance->GetCreature(glintrok_oracle))
+                                oracle->AI()->AttackStart(target);
+
+                            if (Creature* hexxer = instance->GetCreature(glintrok_hexxer))
+                                hexxer->AI()->AttackStart(target);
+                        }
+                    }
+                    break;
+            }
+
             SetData_trial_of_the_king(type, data);
             SetData_xin_the_weaponmaster(type, data);
         }
@@ -577,7 +602,29 @@ public:
 
 };
 
+class go_mogushan_palace_temp_portal : public GameObjectScript
+{
+public:
+    go_mogushan_palace_temp_portal() : GameObjectScript("go_mogushan_palace_temp_portal") { }
+
+    bool OnGossipHello(Player* player, GameObject* go)
+    {
+        switch (go->GetEntry())
+        {
+            case 400003:
+                if (go->GetPositionZ() < 0.0f)
+                    player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), 22.31f, go->GetOrientation());
+                else
+                    player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), -39.0f, go->GetOrientation());
+                break;
+        }
+
+        return false;
+    }
+};
+
 void AddSC_instance_mogu_shan_palace()
 {
     new instance_mogu_shan_palace();
+    new go_mogushan_palace_temp_portal();
 }

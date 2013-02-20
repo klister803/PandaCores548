@@ -15,7 +15,9 @@ enum eData
 {
     DATA_TRIAL_OF_THE_KING      = 0,
     DATA_GEKKAN                 = 1,
-    DATA_XIN_THE_WEAPONMASTER   = 2
+    DATA_XIN_THE_WEAPONMASTER   = 2,
+
+    DATA_GEKKAN_ADDS            = 3
 };
 
 enum eSpells

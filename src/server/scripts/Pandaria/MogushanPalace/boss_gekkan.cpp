@@ -59,6 +59,9 @@ class boss_gekkan : public CreatureScript
                         entourage.push_back(me->GetInstanceScript()->GetData64(TYPE_GET_ENTOURAGE + i));
                 events.ScheduleEvent(EVENT_RECKLESS_INSPIRATION, 3000);
                 Talk(TALK_AGGRO);
+
+                if (me->GetInstanceScript())
+                    me->GetInstanceScript()->SetData(DATA_GEKKAN_ADDS, 1);
             }
 
             void JustDied(Unit* who)
@@ -168,6 +171,9 @@ class mob_glintrok_skulker : public CreatureScript
             void EnterCombat(Unit* unit)
             {
                 events.ScheduleEvent(1, 2000);
+
+                if (me->GetInstanceScript())
+                    me->GetInstanceScript()->SetData(DATA_GEKKAN_ADDS, 1);
             }
 
             void UpdateAI(const uint32 diff)
@@ -218,6 +224,9 @@ class mob_glintrok_ironhide : public CreatureScript
             void EnterCombat(Unit* unit)
             {
                 events.ScheduleEvent(1, 2000);
+
+                if (me->GetInstanceScript())
+                    me->GetInstanceScript()->SetData(DATA_GEKKAN_ADDS, 1);
             }
 
             void UpdateAI(const uint32 diff)
@@ -270,6 +279,9 @@ class mob_glintrok_oracle : public CreatureScript
             {
                 events.ScheduleEvent(1, 2000);
                 events.ScheduleEvent(2, 4000);
+
+                if (me->GetInstanceScript())
+                    me->GetInstanceScript()->SetData(DATA_GEKKAN_ADDS, 1);
             }
 
             void UpdateAI(const uint32 diff)
@@ -326,6 +338,9 @@ class mob_glintrok_hexxer : public CreatureScript
             {
                 events.ScheduleEvent(1, 2000);
                 events.ScheduleEvent(2, 4000);
+
+                if (me->GetInstanceScript())
+                    me->GetInstanceScript()->SetData(DATA_GEKKAN_ADDS, 1);
             }
 
             void UpdateAI(const uint32 diff)
