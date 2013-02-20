@@ -8024,6 +8024,27 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Combat Potency
+        case 35551:
+        {
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (procSpell && procSpell->Id != 86392)
+                return false;
+
+            if (procSpell && procSpell->Id == 86392)
+                if (!roll_chance_i(20))
+                    return false;
+
+            float offHandSpeed = GetAttackTime(OFF_ATTACK) / IN_MILLISECONDS;
+
+            if (!procSpell && (procFlags & PROC_FLAG_DONE_OFFHAND_ATTACK))
+                if (!roll_chance_f(20.0f * offHandSpeed / 1.4f))
+                    return false;
+
+            break;
+        }
         // Blindside
         case 121152:
         {
