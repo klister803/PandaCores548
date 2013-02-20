@@ -14338,6 +14338,11 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
     }
 
+    // Revealing Strike - 84617
+    if (GetTypeId() == TYPEID_PLAYER && target && target->HasAura(84617, GetGUID()) && procSpell && procSpell->Id == 1752)
+        if (roll_chance_i(20))
+            ToPlayer()->AddComboPoints(target, 1);
+
     // Bandit's Guile - 84654
     // Your Sinister Strike and Revealing Strike abilities increase your damage dealt by up to 30%
     if (GetTypeId() == TYPEID_PLAYER && HasAura(84654) && procSpell && (procSpell->Id == 84617 || procSpell->Id == 1752))
