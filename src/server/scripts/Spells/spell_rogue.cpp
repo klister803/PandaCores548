@@ -66,6 +66,35 @@ enum RogueSpells
     ROGUE_SPELL_SANGUINARY_VEIN_DEBUFF           = 124271,
 };
 
+// Called by Slice and Dice - 5171
+// Energetic Recovery - 79152
+class spell_rog_energetic_recovery : public SpellScriptLoader
+{
+    public:
+        spell_rog_energetic_recovery() : SpellScriptLoader("spell_rog_energetic_recovery") { }
+
+        class spell_rog_energetic_recovery_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_energetic_recovery_AuraScript);
+
+            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
+            {
+                if (GetCaster())
+                    GetCaster()->EnergizeBySpell(GetCaster(), 5171, 8, POWER_ENERGY);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_rog_energetic_recovery_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_ENERGIZE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_energetic_recovery_AuraScript();
+        }
+};
+
 // Called by Rupture - 1943, Garrote - 703 and Crimson Tempest - 121411
 // Sanguinary Vein - 79147
 class spell_rog_sanguinary_vein : public SpellScriptLoader
@@ -1195,6 +1224,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_energetic_recovery();
     new spell_rog_sanguinary_vein();
     new spell_rog_hemorrhage();
     new spell_rog_restless_blades();
