@@ -42,6 +42,7 @@ set(scripts_STAT_SRCS
   Pandaria/ShadopanMonastery/boss_gu_cloudstrike.cpp
   Pandaria/ShadopanMonastery/boss_master_snowdrift.cpp
   Pandaria/ShadopanMonastery/boss_sha_of_violence.cpp
+  Pandaria/ShadopanMonastery/boss_taran_zhu.cpp
 
   Pandaria/WanderingIsland/wanderingisland.cpp
 )

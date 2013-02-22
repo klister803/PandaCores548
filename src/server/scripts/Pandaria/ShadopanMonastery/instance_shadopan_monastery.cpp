@@ -176,6 +176,37 @@ public:
                     }
                     break;
                 }
+                case DATA_TARAN_ZHU:
+                {
+                    const uint32 SPELL_HATE = 107085;
+
+                    if (state == IN_PROGRESS)
+                    {
+                        Map::PlayerList const &PlayerList = instance->GetPlayers();
+
+                        if (!PlayerList.isEmpty())
+                            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                                if (Player* player = i->getSource())
+                                {
+                                    player->CastSpell(player, SPELL_HATE, true);
+                                    player->SetMaxPower(POWER_ALTERNATE_POWER, 100);
+                                    player->SetPower(POWER_ALTERNATE_POWER, 0);
+                                }
+                    }
+                    else
+                    {
+                        Map::PlayerList const &PlayerList = instance->GetPlayers();
+
+                        if (!PlayerList.isEmpty())
+                            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
+                                if (Player* player = i->getSource())
+                                {
+                                    player->RemoveAurasDueToSpell(SPELL_HATE);
+                                    player->SetMaxPower(POWER_ALTERNATE_POWER, 100);
+                                    player->SetPower(POWER_ALTERNATE_POWER, 0);
+                                }
+                    }
+                }
                 default:
                     break;
             }
