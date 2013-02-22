@@ -62,6 +62,42 @@ enum RogueSpells
     ROGUE_SPELL_REDIRECT                         = 73981,
     ROGUE_SPELL_SHADOW_BLADES                    = 121471,
     ROGUE_SPELL_SPRINT                           = 2983,
+    ROGUE_SPELL_HEMORRHAGE_DOT                   = 89775,
+};
+
+// Hemorrhage - 16511
+class spell_rog_hemorrhage : public SpellScriptLoader
+{
+    public:
+        spell_rog_hemorrhage() : SpellScriptLoader("spell_rog_hemorrhage") { }
+
+        class spell_rog_hemorrhage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_hemorrhage_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 bp = int32(GetHitDamage() / 2 / 8);
+
+                        _player->CastCustomSpell(target, ROGUE_SPELL_HEMORRHAGE_DOT, &bp, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_hemorrhage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_hemorrhage_SpellScript();
+        }
 };
 
 // Called by Crimson Tempest - 121411, Rupture - 1943 and Eviscerate - 2098
@@ -1128,6 +1164,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_hemorrhage();
     new spell_rog_restless_blades();
     new spell_rog_cut_to_the_chase();
     new spell_rog_venomous_wounds();

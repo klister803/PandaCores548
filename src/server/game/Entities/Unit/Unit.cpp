@@ -8033,6 +8033,13 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Find Weakness
+        case 91023:
+        {
+            return false;
+
+            break;
+        }
         // Combat Potency
         case 35551:
         {
@@ -9669,6 +9676,11 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // small exception for Crimson Tempest, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
     if (spellProto->Id == 122233) // Crimson Tempest
+        return pdamage;
+
+    // small exception for Hemorrhage, can't find any general rule
+    // should ignore ALL damage mods, they already calculated in trigger spell
+    if (spellProto->Id == 89775) // Hemorrhage
         return pdamage;
 
     // small exception for Echo of Light, can't find any general rule
@@ -14337,6 +14349,10 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             target->ToPlayer()->AddSpellCooldown(122465, 0, time(NULL) + 10);
         }
     }
+
+    // Find Weakness - 91023
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(91023) && procSpell && (procSpell->Id == 8676 || procSpell->Id == 703 || procSpell->Id == 1833))
+        CastSpell(target, 91021, true);
 
     // Revealing Strike - 84617
     if (GetTypeId() == TYPEID_PLAYER && target && target->HasAura(84617, GetGUID()) && procSpell && procSpell->Id == 1752)
