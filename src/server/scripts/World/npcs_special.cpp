@@ -3512,7 +3512,10 @@ public:
                         _healcount++;
 
                     if (_healcount == 5) // "Your Guardian of Ancient Spirits heals the target of your next 5 heals for the same amount as your heal"
+                    {
                         me->DespawnOrUnsummon();
+                        return;
+                    }
                 }
             }
         }
