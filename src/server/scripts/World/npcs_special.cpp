@@ -3505,7 +3505,7 @@ public:
         {
             if (me->GetEntry() == NPC_HOLY_GUARDIAN) // Holy paladin guardian
             {
-                for (uint32 i = 0; i = MAX_SPELL_EFFECTS;)
+                for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
                 {
                     if (spell->Effects[i].Effect == SPELL_EFFECT_HEAL // if the spell is a heal...
                         && spell->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY) //... and is single target
