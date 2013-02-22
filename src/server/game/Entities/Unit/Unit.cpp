@@ -8033,6 +8033,13 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Sanguinary Vein
+        case 79147:
+        {
+            return false;
+
+            break;
+        }
         // Find Weakness
         case 91023:
         {
