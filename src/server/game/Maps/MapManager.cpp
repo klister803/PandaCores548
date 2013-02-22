@@ -102,16 +102,17 @@ Map* MapManager::CreateBaseMap(uint32 id)
     {
         TRINITY_GUARD(ACE_Thread_Mutex, Lock);
 
-        const MapEntry* entry = sMapStore.LookupEntry(id);
-        if (entry && entry->Instanceable())
-        {
+        MapEntry const* entry = sMapStore.LookupEntry(id);
+        ASSERT(entry);
+
+        if (entry->Instanceable())
             map = new MapInstanced(id, i_gridCleanUpDelay);
-        }
         else
         {
             map = new Map(id, i_gridCleanUpDelay, 0, NONE_DIFFICULTY);
             map->LoadRespawnTimes();
         }
+
         i_maps[id] = map;
     }
 
