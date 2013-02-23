@@ -28,7 +28,6 @@
 enum RogueSpells
 {
     ROGUE_SPELL_SHIV_TRIGGERED                   = 5940,
-    ROGUE_SPELL_GLYPH_OF_PREPARATION             = 56819,
     ROGUE_SPELL_PREY_ON_THE_WEAK                 = 58670,
     ROGUE_SPELL_RECUPERATE                       = 73651,
     ROGUE_SPELL_DEADLY_POISON                    = 2823,
@@ -1000,13 +999,6 @@ class spell_rog_preparation : public SpellScriptLoader
                 return GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(ROGUE_SPELL_GLYPH_OF_PREPARATION))
-                    return false;
-                return true;
-            }
-
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 Player* caster = GetCaster()->ToPlayer();
@@ -1019,19 +1011,10 @@ class spell_rog_preparation : public SpellScriptLoader
 
                     if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
                     {
-                        if (spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_COLDB_SHADOWSTEP ||      // Cold Blood, Shadowstep
-                            spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT)           // Vanish, Evasion, Sprint
+                        if (spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT ||   // Vanish, Evasion, Sprint
+                            spellInfo->Id == 31224 ||
+                            spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_DISMANTLE)          // Dismantle
                             caster->RemoveSpellCooldown((itr++)->first, true);
-                        else if (caster->HasAura(ROGUE_SPELL_GLYPH_OF_PREPARATION))
-                        {
-                            if (spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_DISMANTLE ||         // Dismantle
-                                spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_KICK ||               // Kick
-                                (spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_BLADE_FLURRY &&     // Blade Flurry
-                                spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_BLADE_FLURRY))
-                                caster->RemoveSpellCooldown((itr++)->first, true);
-                            else
-                                ++itr;
-                        }
                         else
                             ++itr;
                     }
