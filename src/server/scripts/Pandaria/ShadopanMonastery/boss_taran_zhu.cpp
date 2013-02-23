@@ -16,14 +16,14 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include "ScriptMgr.h"
 #include "ScriptedCreature.h"
 #include "shadopan_monastery.h"
 
 enum eSpells
 {
-    SPELL_HATE                      = 107085,
-    SPELL_HAZE_OF_HATE              = 107087,
+    SPELL_CORRUPTED                 = 131530,
 
     SPELL_RISING_HATE               = 107356,
     SPELL_RING_OF_MALICE            = 131521,
@@ -85,6 +85,16 @@ class boss_taran_zhu : public CreatureScript
                 }
             }
 
+            void DamageTaken(Unit* who, uint32& damage)
+            {
+                if (damage >= me->GetHealth())
+                {
+                    me->setFaction(35);
+                    me->SetFullHealth();
+                    me->RemoveAurasDueToSpell(SPELL_CORRUPTED);
+                }
+            }
+
             void UpdateAI(const uint32 diff)
             {
                 if (!UpdateVictim())
@@ -96,14 +106,17 @@ class boss_taran_zhu : public CreatureScript
                 {
                     case EVENT_RISING_HATE:
                         me->CastSpell(me, SPELL_RISING_HATE, false);
-                        events.ScheduleEvent(EVENT_RISING_HATE, urand(25000, 35000));
+                        events.ScheduleEvent(EVENT_RISING_HATE, urand(10000, 15000));
                         break;
                     case EVENT_RING_OF_MALICE:
                         me->CastSpell(me, SPELL_RING_OF_MALICE, true);
+                        events.ScheduleEvent(EVENT_SHA_BLAST,  urand(2000, 4000));
                         events.ScheduleEvent(EVENT_RING_OF_MALICE, urand(27500, 32500));
                         break;
                     case EVENT_SHA_BLAST:
-                        // Only when SPELL_RING_OF_MALICE in activate, no need to check 'cause it is already done in spell::checkcast
+                        if (!me->HasAura(SPELL_RING_OF_MALICE))
+                            break;
+
                         if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO, 0, 0, true))
                             me->CastSpell(target, SPELL_SHA_BLAST, false);
                         
@@ -134,28 +147,18 @@ public:
 
     struct npc_gripping_hatredAI : public ScriptedAI
     {
-        npc_gripping_hatredAI(Creature* creature) : ScriptedAI(creature)
-        {
-            pInstance = creature->GetInstanceScript();
-        }
-
-        InstanceScript* pInstance;
-        uint32 gripTimer;
+        npc_gripping_hatredAI(Creature* creature) : ScriptedAI(creature) {}
 
         void Reset()
         {
+            me->SetReactState(REACT_PASSIVE);
             me->CastSpell(me, SPELL_POOL_OF_SHADOWS, true);
-            gripTimer = 2500;
         }
 
         void UpdateAI(const uint32 diff)
         {
-            if (gripTimer <= diff)
-            {
+            if (!me->HasUnitState(UNIT_STATE_CASTING))
                 me->CastSpell(me, SPELL_GRIP_OF_HATE, false);
-                gripTimer = 10000;
-            }
-            else gripTimer -= diff;
         }
     };
 
@@ -178,10 +181,11 @@ class spell_taran_zhu_hate : public SpellScriptLoader
             {
                 if (Unit* target = GetTarget())
                     if (target->GetPower(POWER_ALTERNATE_POWER) >= 100)
-                    {
-                        target->SetPower(POWER_ALTERNATE_POWER, 0);
-                        target->CastSpell(target, SPELL_HAZE_OF_HATE, true);
-                    }
+                        if (!target->HasAura(SPELL_HAZE_OF_HATE))
+                        {
+                            target->CastSpell(target, SPELL_HAZE_OF_HATE, true);
+                            target->CastSpell(target, SPELL_HAZE_OF_HATE_VISUAL, true);
+                        }
             }
 
             void Register()
@@ -209,7 +213,11 @@ class spell_taran_zhu_meditation : public SpellScriptLoader
             {
                 if (GetTargetApplication()->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE)
                     if (Unit* target = GetTarget())
+                    {
                         target->SetPower(POWER_ALTERNATE_POWER, 0);
+                        target->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE);
+                        target->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE_VISUAL);
+                    }
             }
 
             void Register()
@@ -224,10 +232,39 @@ class spell_taran_zhu_meditation : public SpellScriptLoader
         }
 };
 
+class spell_taran_zhu_grip_of_hate : public SpellScriptLoader
+{
+    public:
+        spell_taran_zhu_grip_of_hate() : SpellScriptLoader("spell_taran_zhu_grip_of_hate") { }
+
+        class spell_taran_zhu_grip_of_hate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_taran_zhu_grip_of_hate_SpellScript);
+
+            void HandleScriptEffect(SpellEffIndex effIndex)
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetHitUnit())
+                        target->CastSpell(caster, GetSpellInfo()->Effects[effIndex].BasePoints, true);
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_taran_zhu_grip_of_hate_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_taran_zhu_grip_of_hate_SpellScript();
+        }
+};
+
 void AddSC_boss_taran_zhu()
 {
     new boss_taran_zhu();
     new npc_gripping_hatred();
     new spell_taran_zhu_hate();
     new spell_taran_zhu_meditation();
+    new spell_taran_zhu_grip_of_hate();
 }

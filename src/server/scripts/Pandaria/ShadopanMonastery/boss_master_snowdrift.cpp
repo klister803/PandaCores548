@@ -181,18 +181,17 @@ class boss_master_snowdrift : public CreatureScript
                 switch (phase)
                 {
                     case PHASE_FIGHT_1:
-                        events.ScheduleEvent(EVENT_TORNADO_KICK, defaultrand, PHASE_FIGHT_1);
-                        events.ScheduleEvent(EVENT_FIST_OF_FURY, defaultrand, PHASE_FIGHT_1);
+                        events.ScheduleEvent(EVENT_TORNADO_KICK, urand(7500, 12500), PHASE_FIGHT_1);
+                        events.ScheduleEvent(EVENT_FIST_OF_FURY, urand(5000, 10000), PHASE_FIGHT_1);
                         events.ScheduleEvent(EVENT_CHASE_DOWN, defaultrand, PHASE_FIGHT_1);
-                        events.ScheduleEvent(EVENT_DISAPPEAR, defaultrand, PHASE_FIGHT_1);
                         break;
                     case PHASE_FIGHT_2:
-                        events.ScheduleEvent(EVENT_FIREBALL, defaultrand, PHASE_FIGHT_2);
-                        events.ScheduleEvent(EVENT_PHASE_3, defaultrand, PHASE_FIGHT_2);
+                        events.ScheduleEvent(EVENT_FIREBALL, urand(2500, 5000), PHASE_FIGHT_2);
+                        events.ScheduleEvent(EVENT_PHASE_3, urand(10000, 15000), PHASE_FIGHT_2);
                         break;
                     case PHASE_FIGHT_3:
-                        events.ScheduleEvent(EVENT_PARRY_STANCE, defaultrand, PHASE_FIGHT_3);
-                        events.ScheduleEvent(EVENT_QUIVERING_PALM, defaultrand, PHASE_FIGHT_3);
+                        events.ScheduleEvent(EVENT_PARRY_STANCE, urand(10000, 15000), PHASE_FIGHT_3);
+                        events.ScheduleEvent(EVENT_QUIVERING_PALM, urand(5000, 10000), PHASE_FIGHT_3);
                         break;
                 }
             }
@@ -243,11 +242,6 @@ class boss_master_snowdrift : public CreatureScript
                 {
                     ++eventPhase;
                     events.ScheduleEvent(EVENT_FIRST_EVENT, urand(1000, 2000));
-                }
-                else if (action == ACTION_CLONES_DONE)
-                {
-                    me->SetReactState(REACT_AGGRESSIVE);
-                    events.ScheduleEvent(EVENT_PHASE_3, 5000);
                 }
             }
 
@@ -327,12 +321,12 @@ class boss_master_snowdrift : public CreatureScript
                     {
                         me->CombatStop();
                         me->SetReactState(REACT_PASSIVE);
-                        events.Reset();
 
                         me->CastSpell(me, SPELL_SMOKE_BOMB, true);
                         me->SetVisible(false); // We set this for two seconds, time to let client erase players' focus from the boss
 
                         phase = PHASE_FIGHT_2;
+                        events.Reset();
                         events.ScheduleEvent(EVENT_DISAPPEAR, 2000);
                     }
                 }
@@ -357,15 +351,16 @@ class boss_master_snowdrift : public CreatureScript
                     /// Phase 1
                     case EVENT_TORNADO_KICK:
                         me->CastSpell(me, SPELL_TORNADO_KICK, false);
-                        events.ScheduleEvent(eventId, defaultrand);
+                        events.ScheduleEvent(EVENT_TORNADO_KICK, urand(7500, 12500));
                         break;
                     case EVENT_FIST_OF_FURY:
                         if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
                             me->CastSpell(target, SPELL_FIST_OF_FURY, false);
 
-                        events.ScheduleEvent(eventId, defaultrand);
+                        events.ScheduleEvent(EVENT_FIST_OF_FURY, urand(5000, 10000));
                         break;
                     case EVENT_CHASE_DOWN:
+                        // Todo
                         events.ScheduleEvent(eventId, defaultrand);
                         break;
                     /// Phase 2
@@ -393,24 +388,26 @@ class boss_master_snowdrift : public CreatureScript
                         }
 
                         initDefaultEventsForPhase();
+                        break;
                     }
                     case EVENT_FIREBALL:
                         if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                             me->CastSpell(target, SPELL_BALL_OF_FIRE, false);
 
-                        events.ScheduleEvent(eventId, defaultrand);
+                        events.ScheduleEvent(EVENT_FIREBALL, urand(2500, 5000));
                         break;
                     /// Phase 3
                     case EVENT_PHASE_3:
+                        me->SetReactState(REACT_AGGRESSIVE);
                         phase = PHASE_FIGHT_3;
                         initDefaultEventsForPhase();
                         break;
                     case EVENT_PARRY_STANCE:
                         me->CastSpell(me, SPELL_PARRY_STANCE, false);
-                        events.ScheduleEvent(eventId, defaultrand);
+                        events.ScheduleEvent(EVENT_PARRY_STANCE, urand(10000, 15000));
                         break;
                     case EVENT_QUIVERING_PALM:
-                        events.ScheduleEvent(eventId, defaultrand);
+                        events.ScheduleEvent(EVENT_QUIVERING_PALM, urand(5000, 10000));
                         break;
                     default:
                         break;
@@ -669,6 +666,45 @@ class npc_snowdrift_miniboss : public CreatureScript
         }
 };
 
+class npc_snowdrift_clone : public CreatureScript
+{
+    public:
+        npc_snowdrift_clone() :  CreatureScript("npc_snowdrift_clone") { }
+
+        struct npc_snowdrift_cloneAI : public ScriptedAI
+        {
+            npc_snowdrift_cloneAI(Creature* creature) : ScriptedAI(creature) {}
+
+            uint32 fireBallTimer;
+
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+                me->setFaction(14);
+                DoZoneInCombat();
+
+                fireBallTimer = 500;
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (fireBallTimer <= diff)
+                {
+                    if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 0, 0, true))
+                        me->CastSpell(target, SPELL_BALL_OF_FIRE, true);
+
+                    fireBallTimer = 500;
+                }
+                else fireBallTimer -= diff;
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_snowdrift_cloneAI(creature);
+        }
+};
+
 class npc_snowdrift_fireball : public CreatureScript
 {
     public:
@@ -717,5 +753,6 @@ void AddSC_boss_master_snowdrift()
     new boss_master_snowdrift();
     new npc_snowdrift_novice();
     new npc_snowdrift_miniboss();
+    new npc_snowdrift_clone();
     new npc_snowdrift_fireball();
 }
