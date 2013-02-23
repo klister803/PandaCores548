@@ -572,8 +572,15 @@ public:
                         break;
 
                     Map::PlayerList const &PlayerList = pInstance->instance->GetPlayers();
+
+                    if (PlayerList.isEmpty())
+                        return;
+
                     Map::PlayerList::const_iterator it = PlayerList.begin();
                     for (uint8 i = 0; i < urand(0, PlayerList.getSize() - 1); ++i, ++it);
+
+                    if (it == PlayerList.end())
+                        return;
 
                     if (Player* player = it->getSource())
                         me->CastSpell(player, SPELL_BOMB, true); //Triggered to avoid pillars line of sight
@@ -611,6 +618,12 @@ public:
 
         void SpellHit(Unit* /*caster*/, SpellInfo const* spell)
         {
+            if (!pInstance)
+                return;
+
+            if (pInstance->GetBossState(DATA_GADOK) != DONE)
+                return;
+
             if (spell->Id == 116554) // Fire Flak Cannon
             {
                 for (uint8 i = 0; i < 5; ++i)
@@ -619,7 +632,7 @@ public:
                     {
                         me->CastSpell(bombarder, 116553, true);
                         bombarder->GetMotionMaster()->MoveFall();
-                        bombarder->DespawnOrUnsummon(1000);
+                        bombarder->DespawnOrUnsummon(2000);
                     }
                 }
             }

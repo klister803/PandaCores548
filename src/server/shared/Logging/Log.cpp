@@ -292,6 +292,8 @@ void Log::write(LogMessage* msg)
         Logger* logger = GetLoggerByType(msg->type);
         worker->enqueue(new LogOperation(logger, msg));
     }
+    else
+        delete msg;
 }
 
 std::string Log::GetTimestampStr()

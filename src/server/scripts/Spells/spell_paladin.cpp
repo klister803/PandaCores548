@@ -49,8 +49,6 @@ enum PaladinSpells
     SPELL_DIVINE_STORM_DUMMY                     = 54171,
     SPELL_DIVINE_STORM_HEAL                      = 54172,
     SPELL_FORBEARANCE                            = 25771,
-    SPELL_AVENGING_WRATH_MARKER                  = 61987,
-    SPELL_IMMUNE_SHIELD_MARKER                   = 61988,
     PALADIN_SPELL_WORD_OF_GLORY                  = 85673,
     PALADIN_SPELL_WORD_OF_GLORY_HEAL             = 130551,
     PALADIN_SPELL_GLYPH_OF_WORD_OF_GLORY         = 54936,
@@ -68,6 +66,352 @@ enum PaladinSpells
     PALADIN_SPELL_EXECUTION_SENTENCE             = 114916,
     PALADIN_SPELL_STAY_OF_EXECUTION              = 114917,
     PALADIN_SPELL_INQUISITION                    = 84963,
+    PALADIN_SPELL_GLYPH_OF_BLINDING_LIGHT        = 54934,
+    PALADIN_SPELL_BLINDING_LIGHT_CONFUSE         = 105421,
+    PALADIN_SPELL_BLINDING_LIGHT_STUN            = 115752,
+    PALADIN_SPELL_EXORCISM                       = 879,
+    PALADIN_SPELL_ANCIENT_FURY                   = 86704,
+    PALADIN_SPELL_ANCIENT_POWER                  = 86700,
+};
+
+// Emancipate - 121783
+class spell_pal_emancipate : public SpellScriptLoader
+{
+    public:
+        spell_pal_emancipate() : SpellScriptLoader("spell_pal_emancipate") { }
+
+        class spell_pal_emancipate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_emancipate_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    std::list<AuraPtr> auraList;
+
+                    for (auto itr : _player->GetAppliedAuras())
+                    {
+                        AuraPtr aura = itr.second->GetBase();
+                        if (aura && aura->GetSpellInfo()->GetAllEffectsMechanicMask() & ((1<<MECHANIC_SNARE)|(1<<MECHANIC_ROOT)))
+                            auraList.push_back(aura);
+                    }
+
+                    Trinity::Containers::RandomResizeList(auraList, 1);
+                    _player->RemoveAura(*auraList.begin());
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_emancipate_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_emancipate_SpellScript();
+        }
+};
+
+// Ancient Fury - 86704
+class spell_pal_ancient_fury : public SpellScriptLoader
+{
+    public:
+        spell_pal_ancient_fury() : SpellScriptLoader("spell_pal_ancient_fury") { }
+
+        class spell_pal_ancient_fury_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_ancient_fury_SpellScript);
+
+            int32 ancientPower;
+
+            void HandleBeforeCast()
+            {
+                if (GetCaster()->HasAura(PALADIN_SPELL_ANCIENT_POWER))
+                {
+                    ancientPower = GetCaster()->GetAura(PALADIN_SPELL_ANCIENT_POWER)->GetStackAmount();
+                    GetCaster()->RemoveAura(PALADIN_SPELL_ANCIENT_POWER);
+                }
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 damage = GetHitDamage();
+                        int32 newDamage = 0;
+
+                        if (ancientPower)
+                            newDamage = damage * ancientPower;
+
+                        if (newDamage)
+                            SetHitDamage(newDamage);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                BeforeCast += SpellCastFn(spell_pal_ancient_fury_SpellScript::HandleBeforeCast);
+                OnHit += SpellHitFn(spell_pal_ancient_fury_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_ancient_fury_SpellScript();
+        }
+};
+
+// Guardian of Ancient Kings (Retribution) - 86698
+class spell_pal_guardian_of_ancient_kings_retribution : public SpellScriptLoader
+{
+    public:
+        spell_pal_guardian_of_ancient_kings_retribution() : SpellScriptLoader("spell_pal_guardian_of_ancient_kings_retribution") { }
+
+        class spell_pal_guardian_of_ancient_kings_retribution_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_guardian_of_ancient_kings_retribution_AuraScript);
+
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (GetCaster())
+                    GetCaster()->CastSpell(GetCaster(), PALADIN_SPELL_ANCIENT_FURY, true);
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_pal_guardian_of_ancient_kings_retribution_AuraScript::HandleRemove, EFFECT_2, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_guardian_of_ancient_kings_retribution_AuraScript();
+        }
+};
+
+// Art of War - 59578
+class spell_pal_art_of_war : public SpellScriptLoader
+{
+    public:
+        spell_pal_art_of_war() : SpellScriptLoader("spell_pal_art_of_war") { }
+
+        class spell_pal_art_of_war_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_art_of_war_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasSpellCooldown(PALADIN_SPELL_EXORCISM))
+                        _player->RemoveSpellCooldown(PALADIN_SPELL_EXORCISM, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_art_of_war_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_art_of_war_SpellScript();
+        }
+};
+
+// Seal of Insight - 20167
+class spell_pal_seal_of_insight : public SpellScriptLoader
+{
+    public:
+        spell_pal_seal_of_insight() : SpellScriptLoader("spell_pal_seal_of_insight") { }
+
+        class spell_pal_seal_of_insight_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_seal_of_insight_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.04), POWER_MANA);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_seal_of_insight_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_seal_of_insight_SpellScript();
+        }
+};
+
+// Blinding Light - 115750
+class spell_pal_blinding_light : public SpellScriptLoader
+{
+    public:
+        spell_pal_blinding_light() : SpellScriptLoader("spell_pal_blinding_light") { }
+
+        class spell_pal_blinding_light_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_blinding_light_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(PALADIN_SPELL_GLYPH_OF_BLINDING_LIGHT))
+                            _player->CastSpell(target, PALADIN_SPELL_BLINDING_LIGHT_STUN, true);
+                        else
+                            _player->CastSpell(target, PALADIN_SPELL_BLINDING_LIGHT_CONFUSE, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_blinding_light_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_blinding_light_SpellScript();
+        }
+};
+
+// Hand of Protection - 1022
+class spell_pal_hand_of_protection : public SpellScriptLoader
+{
+    public:
+        spell_pal_hand_of_protection() : SpellScriptLoader("spell_pal_hand_of_protection") { }
+
+        class spell_pal_hand_of_protection_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_hand_of_protection_SpellScript);
+
+            SpellCastResult CheckForbearance()
+            {
+                Unit* caster = GetCaster();
+                if (Unit* target = GetExplTargetUnit())
+                    if (target->HasAura(SPELL_FORBEARANCE))
+                        return SPELL_FAILED_TARGET_AURASTATE;
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, SPELL_FORBEARANCE, true);
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_pal_hand_of_protection_SpellScript::CheckForbearance);
+                OnHit += SpellHitFn(spell_pal_hand_of_protection_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_hand_of_protection_SpellScript();
+        }
+};
+
+// Cleanse - 4987
+class spell_pal_cleanse : public SpellScriptLoader
+{
+    public:
+        spell_pal_cleanse() : SpellScriptLoader("spell_pal_cleanse") { }
+
+        class spell_pal_cleanse_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_cleanse_SpellScript);
+
+            SpellCastResult CheckCleansing()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        // Create dispel mask by dispel type
+                        for (int8 i = 0; i < 3; i++)
+                        {
+                            uint32 dispel_type = GetSpellInfo()->Effects[i].MiscValue;
+                            uint32 dispelMask  = GetSpellInfo()->GetDispelMask(DispelType(dispel_type));
+                            DispelChargesList dispelList;
+                            target->GetDispellableAuraList(caster, dispelMask, dispelList);
+
+                            if (dispelList.empty())
+                                return SPELL_FAILED_NOTHING_TO_DISPEL;
+
+                            return SPELL_CAST_OK;
+                        }
+                    }
+                }
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_pal_cleanse_SpellScript::CheckCleansing);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_cleanse_SpellScript();
+        }
+};
+
+// Divine Shield - 642
+class spell_pal_divine_shield : public SpellScriptLoader
+{
+    public:
+        spell_pal_divine_shield() : SpellScriptLoader("spell_pal_divine_shield") { }
+
+        class spell_pal_divine_shield_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_divine_shield_SpellScript);
+
+            SpellCastResult CheckForbearance()
+            {
+                if (Unit* caster = GetCaster())
+                    if (caster->HasAura(SPELL_FORBEARANCE))
+                        return SPELL_FAILED_TARGET_AURASTATE;
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, SPELL_FORBEARANCE, true);
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_pal_divine_shield_SpellScript::CheckForbearance);
+                OnHit += SpellHitFn(spell_pal_divine_shield_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_divine_shield_SpellScript();
+        }
 };
 
 // Inquisition - 84963
@@ -919,6 +1263,7 @@ class spell_pal_divine_storm_dummy : public SpellScriptLoader
         }
 };
 
+// Lay on Hands - 633
 class spell_pal_lay_on_hands : public SpellScriptLoader
 {
     public:
@@ -928,43 +1273,27 @@ class spell_pal_lay_on_hands : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pal_lay_on_hands_SpellScript);
 
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_FORBEARANCE))
-                    return false;
-                if (!sSpellMgr->GetSpellInfo(SPELL_AVENGING_WRATH_MARKER))
-                    return false;
-                if (!sSpellMgr->GetSpellInfo(SPELL_IMMUNE_SHIELD_MARKER))
-                    return false;
-                return true;
-            }
-
-            SpellCastResult CheckCast()
+            SpellCastResult CheckForbearance()
             {
                 Unit* caster = GetCaster();
                 if (Unit* target = GetExplTargetUnit())
-                    if (caster == target)
-                        if (target->HasAura(SPELL_FORBEARANCE) || target->HasAura(SPELL_AVENGING_WRATH_MARKER) || target->HasAura(SPELL_IMMUNE_SHIELD_MARKER))
-                            return SPELL_FAILED_TARGET_AURASTATE;
+                    if (target->HasAura(SPELL_FORBEARANCE))
+                        return SPELL_FAILED_TARGET_AURASTATE;
 
                 return SPELL_CAST_OK;
             }
 
-            void HandleScript()
+            void HandleOnHit()
             {
-                Unit* caster = GetCaster();
-                if (caster == GetHitUnit())
-                {
-                    caster->CastSpell(caster, SPELL_FORBEARANCE, true);
-                    caster->CastSpell(caster, SPELL_AVENGING_WRATH_MARKER, true);
-                    caster->CastSpell(caster, SPELL_IMMUNE_SHIELD_MARKER, true);
-                }
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, SPELL_FORBEARANCE, true);
             }
 
             void Register()
             {
-                OnCheckCast += SpellCheckCastFn(spell_pal_lay_on_hands_SpellScript::CheckCast);
-                AfterHit += SpellHitFn(spell_pal_lay_on_hands_SpellScript::HandleScript);
+                OnCheckCast += SpellCheckCastFn(spell_pal_lay_on_hands_SpellScript::CheckForbearance);
+                OnHit += SpellHitFn(spell_pal_lay_on_hands_SpellScript::HandleOnHit);
             }
         };
 
@@ -1049,6 +1378,15 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_emancipate();
+    new spell_pal_ancient_fury();
+    new spell_pal_guardian_of_ancient_kings_retribution();
+    new spell_pal_art_of_war();
+    new spell_pal_seal_of_insight();
+    new spell_pal_blinding_light();
+    new spell_pal_hand_of_protection();
+    new spell_pal_cleanse();
+    new spell_pal_divine_shield();
     new spell_pal_inquisition();
     new spell_pal_execution_sentence();
     new spell_pal_lights_hammer();

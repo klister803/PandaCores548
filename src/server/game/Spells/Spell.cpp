@@ -1324,11 +1324,18 @@ void Spell::SelectImplicitAreaTargets(SpellEffIndex effIndex, SpellImplicitTarge
         // Custom MoP Script
         // 107270 - Spinning Crane Kick : Give 1 Chi if the spell hits at least 3 targets
         if (m_caster->GetTypeId() == TYPEID_PLAYER)
+        {
             if (m_spellInfo->Id == 107270 && unitTargets.size() >= 3 && !m_caster->ToPlayer()->HasSpellCooldown(129881))
             {
                 m_caster->CastSpell(m_caster, 129881, true);
                 m_caster->ToPlayer()->AddSpellCooldown(129881, 0, time(NULL) + 3);
             }
+        }
+
+        if (m_caster->GetTypeId() == TYPEID_PLAYER && m_spellInfo->Id == 1449 && unitTargets.size() >= 1)
+            if (m_caster->ToPlayer()->GetSpecializationId(m_caster->ToPlayer()->GetActiveSpec()) == SPEC_MAGE_ARCANE)
+                if (roll_chance_i(30))
+                    m_caster->AddAura(36032, m_caster);
 
         // Other special target selection goes here
         if (uint32 maxTargets = m_spellValue->MaxAffectedTargets)
@@ -2375,6 +2382,14 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
         }
     }
 
+    // Your finishing moves have a 20% chance per combo point to restore 25 Energy.
+    if (m_needComboPoints)
+        if (Player* plrCaster = m_caster->ToPlayer())
+            if (uint8 cp = plrCaster->GetComboPoints())
+                if (m_caster->HasAura(58423))
+                    if (roll_chance_i(cp * 20))
+                        m_caster->CastSpell(m_caster, 98440, true); // Restore 25 energys
+
     // Do not take combo points on dodge and miss
     if (missInfo != SPELL_MISS_NONE && m_needComboPoints &&
             m_targets.GetUnitTargetGUID() == target->targetGUID)
@@ -2438,6 +2453,7 @@ void Spell::DoAllEffectOnTarget(TargetInfo* target)
     if (m_healing > 0)
     {
         bool crit = caster->isSpellCrit(unitTarget, m_spellInfo, m_spellSchoolMask);
+
         uint32 addhealth = m_healing;
         if (crit)
         {
@@ -2738,20 +2754,6 @@ void Spell::DoTriggersOnSpellHit(Unit* unit, uint32 effMask)
     // TODO: move this code to scripts
     if (m_preCastSpell)
     {
-        // Paladin immunity shields
-        if (m_preCastSpell == 61988)
-        {
-            // Cast Forbearance
-            m_caster->CastSpell(unit, 25771, true);
-            // Cast Avenging Wrath Marker
-            unit->CastSpell(unit, 61987, true);
-        }
-
-        // Avenging Wrath
-        if (m_preCastSpell == 61987)
-            // Cast the serverside immunity shield marker
-            m_caster->CastSpell(unit, 61988, true);
-
         // Custom MoP Script
         // Expel Harm - 115072 apply wrong aura (Flying Serpent Kick - 101545)
         if (m_spellInfo->Id == 115072 && m_preCastSpell == 101545)
@@ -4691,6 +4693,11 @@ void Spell::HandleHolyPower(Player* caster)
 {
     if (!caster)
         return;
+
+    // Templar's Verdict - Don't remove power twice
+    if (m_spellInfo->Id == 85256)
+        return;
+
     bool hit = true;
     Player* modOwner = caster->GetSpellModOwner();
     m_powerCost = caster->GetPower(POWER_HOLY_POWER); // Always use all the holy power we have
@@ -4953,15 +4960,14 @@ SpellCastResult Spell::CheckCast(bool strict)
 
             if (!IsTriggered())
             {
-                if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
-                    return SPELL_FAILED_LINE_OF_SIGHT;
+                // Hackfix for Raigonn
+                if (m_caster->GetEntry() != WORLD_TRIGGER && target->GetEntry() != 56895) // Ignore LOS for gameobjects casts (wrongly casted by a trigger)
+                    if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
+                        return SPELL_FAILED_LINE_OF_SIGHT;
+
                 if (m_caster->IsVisionObscured(target))
                     return SPELL_FAILED_VISION_OBSCURED; // smoke bomb, camouflage...
             }
-
-            if (m_caster->GetEntry() != WORLD_TRIGGER) // Ignore LOS for gameobjects casts (wrongly casted by a trigger)
-                if (!(m_spellInfo->AttributesEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && VMAP::VMapFactory::checkSpellForLoS(m_spellInfo->Id) && !m_caster->IsWithinLOSInMap(target))
-                    return SPELL_FAILED_LINE_OF_SIGHT;
         }
     }
 
@@ -6921,7 +6927,7 @@ SpellCastResult Spell::CanOpenLock(uint32 effIndex, uint32 lockId, SkillType& sk
                     // skill bonus provided by casting spell (mostly item spells)
                     // add the effect base points modifier from the spell casted (cheat lock / skeleton key etc.)
                     if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_GAMEOBJECT_ITEM_TARGET || m_spellInfo->Effects[effIndex].TargetB.GetTarget() == TARGET_GAMEOBJECT_ITEM_TARGET)
-                        skillValue += m_spellInfo->Effects[effIndex].CalcValue();
+                        skillValue += m_spellInfo->Effects[effIndex].CalcValue(m_caster, 0);
 
                     if (skillValue < reqSkillValue)
                         return SPELL_FAILED_LOW_CASTLEVEL;

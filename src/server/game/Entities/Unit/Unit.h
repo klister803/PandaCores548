@@ -1312,6 +1312,8 @@ class Unit : public WorldObject
         void GetRandomContactPoint(const Unit* target, float &x, float &y, float &z, float distance2dMin, float distance2dMax) const;
         uint32 m_extraAttacks;
         bool m_canDualWield;
+        int32 countCrit;
+        int32 insightCount;
 
         void _addAttacker(Unit* pAttacker)                  // must be called only from Unit::Attack(Unit*)
         {
@@ -1342,7 +1344,7 @@ class Unit : public WorldObject
         void CombatStop(bool includingCast = false);
         void CombatStopWithPets(bool includingCast = false);
         void StopAttackFaction(uint32 faction_id);
-        void GetAttackableUnitListInRange(Player* _player, std::list<Unit*, std::allocator<Unit*>> &list, float fMaxSearchRange) const;
+        void GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearchRange) const;
         Unit* SelectNearbyTarget(Unit* exclude = NULL, float dist = NOMINAL_MELEE_RANGE) const;
         void SendMeleeAttackStop(Unit* victim = NULL);
         void SendMeleeAttackStart(Unit* victim);

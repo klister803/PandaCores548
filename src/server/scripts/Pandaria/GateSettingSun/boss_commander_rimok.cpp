@@ -29,7 +29,6 @@ enum eSpells
     SPELL_FRENZIED_ASSAULT          = 107120,
 
     // Add Generator
-    SPELL_SPAWN_SWARMER             = 115051,
     SPELL_PERIODIC_SPAWN_SWARMER    = 115052,
     SPELL_PERIODIC_SPAWN_SABOTEUR   = 116621,
 
@@ -123,6 +122,47 @@ class boss_commander_rimok : public CreatureScript
         }
 };
 
+class npc_krikthik_swarmer : public CreatureScript
+{
+    public:
+        npc_krikthik_swarmer() : CreatureScript("npc_krikthik_swarmer") {}
+
+        struct npc_krikthik_swarmerAI : public ScriptedAI
+        {
+            npc_krikthik_swarmerAI(Creature* creature) : ScriptedAI(creature) {}
+
+            uint32 attackTimer;
+
+            void Reset()
+            {
+                attackTimer = 2000;
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (attackTimer)
+                {
+                    if (attackTimer <= diff)
+                    {
+                        DoZoneInCombat();
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            AttackStart(target);
+
+                        attackTimer = 0;
+                    }
+                    else attackTimer -= diff;
+                }
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_krikthik_swarmerAI(creature);
+        }
+};
+
 class npc_krikthik_saboteur : public CreatureScript
 {
     public:
@@ -130,21 +170,32 @@ class npc_krikthik_saboteur : public CreatureScript
 
         struct npc_krikthik_saboteurAI : public ScriptedAI
         {
-            npc_krikthik_saboteurAI(Creature* creature) : ScriptedAI(creature)
-            {
-                pInstance = creature->GetInstanceScript();
-            }
+            npc_krikthik_saboteurAI(Creature* creature) : ScriptedAI(creature) {}
 
-            InstanceScript* pInstance;
+            uint32 attackTimer;
             uint32 checkTimer;
 
             void Reset()
             {
-                checkTimer = urand(7500, 12500);
+                attackTimer = 2000;
+                checkTimer = urand(17500, 22500);
             }
 
             void UpdateAI(const uint32 diff)
             {
+                if (attackTimer)
+                {
+                    if (attackTimer <= diff)
+                    {
+                        DoZoneInCombat();
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            AttackStart(target);
+
+                        attackTimer = 0;
+                    }
+                    else attackTimer -= diff;
+                }
+
                 if (checkTimer <= diff)
                 {
                     me->CastSpell(me, SPELL_BOMBARD, false);
@@ -291,8 +342,15 @@ class spell_rimok_saboteur_bombard : public SpellScriptLoader
                     if (InstanceScript* pInstance = caster->GetInstanceScript())
                     {
                         Map::PlayerList const &PlayerList = pInstance->instance->GetPlayers();
+
+                        if (PlayerList.isEmpty())
+                            return;
+
                         Map::PlayerList::const_iterator it = PlayerList.begin();
                         for (uint8 i = 0; i < urand(0, PlayerList.getSize() - 1); ++i, ++it);
+
+                        if (it == PlayerList.end())
+                            return;
 
                         if (Player* player = it->getSource())
                             caster->CastSpell(player, GetSpellInfo()->Effects[0].TriggerSpell, true);
@@ -315,6 +373,7 @@ class spell_rimok_saboteur_bombard : public SpellScriptLoader
 void AddSC_boss_commander_rimok()
 {
     new boss_commander_rimok();
+    new npc_krikthik_swarmer();
     new npc_krikthik_saboteur();
     new npc_add_generator();
     new npc_viscous_fluid();

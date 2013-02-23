@@ -54,12 +54,25 @@ public:
         /*
         ** End of Xin the weaponmaster.
         */
-        instance_mogu_shan_palace_InstanceMapScript(Map* map) : InstanceScript(map)
+
+        uint64 doorBeforeTrialGuid;
+        uint64 trialChestGuid;
+        uint64 doorAfterTrialGuid;
+        uint64 doorBeforeKingGuid;
+
+        instance_mogu_shan_palace_InstanceMapScript(Map* map) : InstanceScript(map) {}
+
+        void Initialize()
         {
             xin_guid = 0;
             kuai_guid = 0;
             ming_guid = 0;
             haiyan_guid = 0;
+
+            doorBeforeTrialGuid = 0;
+            trialChestGuid = 0;
+            doorAfterTrialGuid = 0;
+            doorBeforeKingGuid = 0;
 
             gekkan = 0;
             glintrok_ironhide = 0;
@@ -68,12 +81,39 @@ public:
             glintrok_hexxer = 0;
         }
 
-        void Initialize()
+        bool SetBossState(uint32 id, EncounterState state)
         {
+            if (!InstanceScript::SetBossState(id, state))
+                return false;
+
+            switch (id)
+            {
+                case DATA_TRIAL_OF_THE_KING:
+                    HandleGameObject(doorBeforeTrialGuid, state != IN_PROGRESS);
+                    if (GameObject* chest = instance->GetGameObject(trialChestGuid))
+                        chest->SetPhaseMask(state == DONE ? 1: 128, true);
+                    break;
+                case DATA_GEKKAN:
+                    HandleGameObject(doorAfterTrialGuid, state == DONE);
+                    // Todo : mod temp portal phasemask
+                    break;
+                case DATA_XIN_THE_WEAPONMASTER:
+                    HandleGameObject(doorBeforeTrialGuid, state != IN_PROGRESS);
+                    break;
+            }
+
+            return true;
         }
 
         void OnGameObjectCreate(GameObject* go)
         {
+            switch (go->GetEntry())
+            {
+                case GO_DOOR_BEFORE_TRIAL:  doorBeforeTrialGuid = go->GetGUID();    break;
+                case GO_TRIAL_CHEST:        trialChestGuid = go->GetGUID();         break;
+                case GO_DOOR_AFTER_TRIAL:   doorAfterTrialGuid = go->GetGUID();     break;
+                case GO_DOOR_BEFORE_KING:   doorBeforeKingGuid = go->GetGUID();     break;
+            }
         }
 
         void OnCreatureCreate(Creature* creature)
@@ -87,13 +127,34 @@ public:
         {
             OnUnitDeath_gekkan(unit);
         }
-        
-        virtual void Update(uint32 diff) 
-        {
-        }
 
         void SetData(uint32 type, uint32 data)
         {
+            switch (type)
+            {
+                case DATA_GEKKAN_ADDS:
+                    if (Creature* pGekkan = instance->GetCreature(gekkan))
+                    {
+                        if (Unit * target = pGekkan->SelectNearestTarget(100.0f))
+                        {
+                            pGekkan->AI()->AttackStart(target);
+
+                            if (Creature* ironhide = instance->GetCreature(glintrok_ironhide))
+                                ironhide->AI()->AttackStart(target);
+
+                            if (Creature* skulker = instance->GetCreature(glintrok_skulker))
+                                skulker->AI()->AttackStart(target);
+
+                            if (Creature* oracle = instance->GetCreature(glintrok_oracle))
+                                oracle->AI()->AttackStart(target);
+
+                            if (Creature* hexxer = instance->GetCreature(glintrok_hexxer))
+                                hexxer->AI()->AttackStart(target);
+                        }
+                    }
+                    break;
+            }
+
             SetData_trial_of_the_king(type, data);
             SetData_xin_the_weaponmaster(type, data);
         }
@@ -154,12 +215,14 @@ public:
                         {
                             if (data)
                             {
-                                creature->AddAura(119373, creature); // Tourbillon
+                                creature->AddAura(SPELL_AXE_TOURBILOL, creature);
+                                creature->AddAura(SPELL_PERMANENT_FEIGN_DEATH, creature);
                                 creature->GetMotionMaster()->MoveRandom(50.0f);
                             }
                             else
                             {
-                                creature->RemoveAurasDueToSpell(119373);
+                                creature->RemoveAurasDueToSpell(SPELL_AXE_TOURBILOL);
+                                creature->RemoveAurasDueToSpell(SPELL_PERMANENT_FEIGN_DEATH);
                                 creature->GetMotionMaster()->MoveTargetedHome();
                             }
                         }
@@ -228,6 +291,7 @@ public:
                     break;
                 case CREATURE_LAUNCH_SWORD:
                     swordLauncherGuids.push_back(creature->GetGUID());
+                    creature->AddAura(SPELL_PERMANENT_FEIGN_DEATH, creature);
                     break;
             }
         }
@@ -435,7 +499,7 @@ public:
                         std::advance(itr, urand(0, grunts.size() - 1));
 
                         Creature* grunt = instance->GetCreature(*itr);
-                        if (grunt)
+                        if (creature && grunt)
                             creature->Attack(grunt, true);
                     }
                     for (auto guid : grunts)
@@ -449,7 +513,7 @@ public:
                         std::advance(itr, urand(0, scrappers.size() - 1));
 
                         Creature* scrapper = instance->GetCreature(*itr);
-                        if (scrapper)
+                        if (creature && scrapper)
                             creature->Attack(scrapper, true);
                     }
                     for (auto guid : scrappers)
@@ -463,7 +527,7 @@ public:
                         std::advance(itr, urand(0, adepts.size() - 1));
 
                         Creature* adept = instance->GetCreature(*itr);
-                        if (adept)
+                        if (creature && adept)
                             creature->Attack(adept, true);
                     }
                 }
@@ -500,6 +564,7 @@ public:
                 break;
             }
         }
+
         void OnCreatureCreate_trial_of_the_king(Creature* creature)
         {
             switch (creature->GetEntry())
@@ -537,7 +602,24 @@ public:
 
 };
 
+class go_mogushan_palace_temp_portal : public GameObjectScript
+{
+public:
+    go_mogushan_palace_temp_portal() : GameObjectScript("go_mogushan_palace_temp_portal") { }
+
+    bool OnGossipHello(Player* player, GameObject* go)
+    {
+        if (go->GetPositionZ() < 0.0f)
+            player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), 22.31f, go->GetOrientation());
+        else
+            player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), -39.0f, go->GetOrientation());
+
+        return false;
+    }
+};
+
 void AddSC_instance_mogu_shan_palace()
 {
     new instance_mogu_shan_palace();
+    new go_mogushan_palace_temp_portal();
 }

@@ -18,11 +18,6 @@ class boss_xin_the_weaponmaster : public CreatureScript
             return new boss_xin_the_weaponmaster_AI(creature);
         }
 
-        enum eBosses
-        {
-            BOSS_XIN_THE_WEAPONMASTER,
-        };
-
         enum eEvents
         {
             EVENT_RING_OF_FIRE          = 1,
@@ -30,6 +25,8 @@ class boss_xin_the_weaponmaster : public CreatureScript
             EVENT_INCITING_ROAR         = 3,
             EVENT_SWORD_THROWER         = 4,
             EVENT_SWORD_THROWER_STOP    = 5,
+            EVENT_AXES_ACTIVATE         = 6,
+            EVENT_AXES_DESACTIVATE      = 7
         };
 
         enum eSpells
@@ -40,7 +37,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
 
         struct boss_xin_the_weaponmaster_AI : public BossAI
         {
-            boss_xin_the_weaponmaster_AI(Creature* creature) : BossAI(creature, BOSS_XIN_THE_WEAPONMASTER)
+            boss_xin_the_weaponmaster_AI(Creature* creature) : BossAI(creature, DATA_XIN_THE_WEAPONMASTER)
             {
                 pInstance = creature->GetInstanceScript();
             }
@@ -61,6 +58,7 @@ class boss_xin_the_weaponmaster : public CreatureScript
                 events.ScheduleEvent(EVENT_HEURT, urand(10000, 15000));
                 events.ScheduleEvent(EVENT_INCITING_ROAR, urand(15000, 25000));
                 events.ScheduleEvent(EVENT_SWORD_THROWER, 30000);
+                events.ScheduleEvent(EVENT_AXES_ACTIVATE, 15000);
             }
 
             void UpdateAI(const uint32 diff)
@@ -100,7 +98,18 @@ class boss_xin_the_weaponmaster : public CreatureScript
                                 pInstance->SetData(TYPE_ACTIVATE_SWORD, 0);
                             events.ScheduleEvent(EVENT_SWORD_THROWER, 20000);
                             break;
+                        case EVENT_AXES_ACTIVATE:
+                            if (pInstance)
+                                pInstance->SetData(TYPE_ACTIVATE_ANIMATED_AXE, 1);
 
+                            events.ScheduleEvent(EVENT_AXES_DESACTIVATE, 10000);
+                            break;
+                        case EVENT_AXES_DESACTIVATE:
+                            if (pInstance)
+                                pInstance->SetData(TYPE_ACTIVATE_ANIMATED_AXE, 0);
+
+                            events.ScheduleEvent(EVENT_AXES_ACTIVATE, 15000);
+                            break;
                     }
                 }
 
@@ -121,7 +130,6 @@ class mob_animated_staff : public CreatureScript
 
         enum eSpells
         {
-            SPELL_PERMANENT_FEIGN_DEATH = 130966,
             SPELL_RING_OF_FIRE_0 = 119544,
             SPELL_RING_OF_FIRE_1 = 119590,
         };

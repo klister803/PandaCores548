@@ -33,6 +33,7 @@ enum eEvents
     EVENT_DESPAWN               = 5,
     EVENT_SPAWN                 = 6,
     EVENT_UPDATE_RAGE           = 7,
+    EVENT_RANGE_ATTACK          = 8,
 };
 
 enum eCreatures
@@ -62,6 +63,7 @@ public:
         uint8 _dominateMindCount;
         uint32 timer;
         bool phase1;
+        bool range;
 
         std::list<uint64> targetedDominationPlayerGuids;
 
@@ -70,10 +72,11 @@ public:
             me->setPowerType(POWER_RAGE);
 
             phase1 = true;
-            _dominateMindCount = 3;
-            _cloudCount = 10;
+            range = false;
+            _dominateMindCount = 2;
+            _cloudCount = 3;
             _targetCount = 0;
-            _maxTargetCount = 12;
+            _maxTargetCount = 5;
             timer = 0;
             Talk(3);
             events.Reset();
@@ -120,11 +123,11 @@ public:
                     case EVENT_UNLEASHED_WRATH:
                     {
                         phase1 = false;
-                        for (uint8 i=0; i<10;i++)
+                        for (uint8 i=0; i<5;i++)
                         {
                             if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
                             {
-                                if (target->GetAuraCount(SPELL_SEETHE_AURA) < 6)
+                                if (target->GetAuraCount(SPELL_SEETHE_AURA) < 3)
                                 {
                                     target->CastSpell(target,SPELL_SEETHE,false);
                                     target->AddAura(SPELL_SEETHE_AURA,target);
@@ -154,7 +157,7 @@ public:
                     {
                         Talk(1);
                         for (uint8 i = 0; i < _dominateMindCount; ++i)
-                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM, 1))
                             {
                                 targetedDominationPlayerGuids.push_back(target->GetGUID());
                                 me->CastSpell(target, SPELL_DOMINATE_MIND_WARNING, true);
@@ -167,7 +170,8 @@ public:
                     {
                         for (auto guid : targetedDominationPlayerGuids)
                             if (Player* target = ObjectAccessor::GetPlayer(*me, guid))
-                                me->CastSpell(target, SPELL_DOMINATE_MIND, false);
+                                if (target != me->getVictim())
+                                    me->CastSpell(target, SPELL_DOMINATE_MIND, false);
 
                         events.ScheduleEvent(EVENT_GROWING_ANGER_WARNING, 19000);
                         break;
@@ -198,8 +202,26 @@ public:
                         me->CastSpell(me,SPELL_BERSERK,false);
                         break;
                     }
+
+                    case EVENT_RANGE_ATTACK:
+                    {
+                       if (Unit* target = me->getVictim())
+                        {
+                            target->CastSpell(target,SPELL_SEETHE,false);
+                            target->CastSpell(target,SPELL_SEETHE,false);
+                        }
+                       range = false;
+                       break;
+                    }
                 }
             }
+
+            if ((!me->IsWithinMeleeRange(me->getVictim()))&&(!range))
+            {
+                range = true;
+                events.ScheduleEvent(EVENT_RANGE_ATTACK,2000);
+            }
+
             DoMeleeAttackIfReady();
         }
     };

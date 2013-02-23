@@ -160,6 +160,10 @@ m_creatureInfo(NULL), m_creatureData(NULL), m_path_id(0), m_formation(NULL)
     m_SightDistance = sWorld->getFloatConfig(CONFIG_SIGHT_MONSTER);
     m_CombatDistance = 0;//MELEE_RANGE;
 
+    m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD;
+    m_LOSCheck_player = false;
+    m_LOSCheck_creature = false;
+
     ResetLootMode(); // restore default loot mode
     TriggerJustRespawned = false;
     m_isTempWorldObject = false;
@@ -462,6 +466,13 @@ bool Creature::UpdateEntry(uint32 Entry, uint32 team, const CreatureData* data)
 
 void Creature::Update(uint32 diff)
 {
+	if (m_LOSCheckTimer <= diff)
+	{
+		m_LOSCheck_player = true;
+		m_LOSCheck_creature = true;
+		m_LOSCheckTimer = DEFAULT_VISIBILITY_NOTIFY_PERIOD*2;
+	} else m_LOSCheckTimer -= diff;
+
 	// Zone Skip Update
 	if (sObjectMgr->IsSkipZone(GetZoneId()) || (!isInCombat() && !GetMap()->Instanceable()))
 	{

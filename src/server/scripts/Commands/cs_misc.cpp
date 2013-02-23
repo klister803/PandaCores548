@@ -62,11 +62,17 @@ public:
             { "money",              SEC_ADMINISTRATOR,      true,  &HandleSendMoneyCommand,             "", NULL },
             { NULL,                 0,                      false, NULL,                                "", NULL }
         };
+        static ChatCommand auraCommandTable[] =
+        {
+            { "duration",           SEC_ADMINISTRATOR,      true,  &HandleAuraDurationCommand,          "", NULL },
+            { "",                   SEC_ADMINISTRATOR,      true,  &HandleAuraCommand,                  "", NULL },
+            { NULL,                 0,                      false, NULL,                                "", NULL }
+        };
         static ChatCommand commandTable[] =
         {
             { "dev",                SEC_ADMINISTRATOR,      false, &HandleDevCommand,                   "", NULL },
             { "gps",                SEC_ADMINISTRATOR,      false, &HandleGPSCommand,                   "", NULL },
-            { "aura",               SEC_ADMINISTRATOR,      false, &HandleAuraCommand,                  "", NULL },
+            { "aura",               SEC_ADMINISTRATOR,      false, NULL,                                "", auraCommandTable },
             { "unaura",             SEC_ADMINISTRATOR,      false, &HandleUnAuraCommand,                "", NULL },
             { "appear",             SEC_MODERATOR,          false, &HandleAppearCommand,                "", NULL },
             { "summon",             SEC_MODERATOR,          false, &HandleSummonCommand,                "", NULL },
@@ -253,6 +259,41 @@ public:
 
         if (SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(spellId))
             Aura::TryRefreshStackOrCreate(spellInfo, MAX_EFFECT_MASK, target, target, spellInfo->spellPower);
+
+        return true;
+    }
+
+    static bool HandleAuraDurationCommand(ChatHandler* handler, char const* args)
+    {
+        Unit* target = handler->getSelectedUnit();
+        if (!target)
+        {
+            handler->SendSysMessage(LANG_SELECT_CHAR_OR_CREATURE);
+            handler->SetSentErrorMessage(true);
+            return false;
+        }
+
+        // number or [name] Shift-click form |color|Hspell:spell_id|h[name]|h|r or Htalent form
+        uint32 spellId = handler->extractSpellIdFromLink((char*)args);
+
+        if (!spellId)
+            return false;
+        
+        char const* dduration = strtok(NULL, " ");
+        int32 duration = 1000;
+
+        if (dduration)
+            duration = strtol(dduration, NULL, 10);
+
+        if (!duration)
+            target->RemoveAurasDueToSpell(spellId);
+        else
+        {
+            if (AuraPtr aura = target->GetAura(spellId))
+                aura->SetDuration(duration);
+            else
+                return false;
+        }
 
         return true;
     }

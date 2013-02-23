@@ -585,6 +585,14 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 break;
             switch (GetSpellInfo()->SpellFamilyName)
             {
+                case SPELLFAMILY_MONK:
+                    // Life Cocoon
+                    if (GetSpellInfo()->Id == 116849)
+                    {
+                        // +550% from sp bonus
+                        DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 5.50f;
+                    }
+                    break;
                 case SPELLFAMILY_MAGE:
                     // Ice Barrier
                     if (GetSpellInfo()->SpellFamilyFlags[1] & 0x1 && GetSpellInfo()->SpellFamilyFlags[2] & 0x8)
@@ -657,6 +665,38 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         case SPELL_AURA_PERIODIC_DAMAGE:
             if (!caster)
                 break;
+            // Rupture
+            if (GetSpellInfo()->Id == 1943)
+            {
+                m_canBeRecalculated = false;
+
+                if (caster->GetTypeId() != TYPEID_PLAYER)
+                    break;
+
+                uint8 cp = caster->ToPlayer()->GetComboPoints();
+                float ap = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+
+                switch (cp)
+                {
+                    case 1:
+                        amount += int32(ap * 0.1f / 4);
+                        break;
+                    case 2:
+                        amount += int32(ap * 0.24f / 6);
+                        break;
+                    case 3:
+                        amount += int32(ap * 0.40f / 8);
+                        break;
+                    case 4:
+                        amount += int32(ap * 0.56f / 10);
+                        break;
+                    case 5:
+                        amount += int32(ap * 0.744f / 12);
+                        break;
+                    default:
+                        break;
+                }
+            }
             // Rip
             if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DRUID && m_spellInfo->SpellFamilyFlags[0] & 0x00800000)
             {
@@ -5167,19 +5207,19 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
                     break;
 				case SPELLFAMILY_ROGUE:
 					//  Tricks of the trade
-					switch (GetId())
-					{
-					case 59628: //Tricks of the trade buff on rogue (6sec duration)
-						target->SetReducedThreatPercent(0,0);
-						break;
-					case 57934: //Tricks of the trade buff on rogue (30sec duration)
-						if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE || !caster->GetMisdirectionTarget())
-							target->SetReducedThreatPercent(0,0);
-						else
-							target->SetReducedThreatPercent(0,caster->GetMisdirectionTarget()->GetGUID());
-						break;
-					}
-
+                    switch (GetId())
+                    {
+                        case 59628: //Tricks of the trade buff on rogue (6sec duration)
+                            target->SetReducedThreatPercent(0,0);
+                            break;
+                        case 57934: //Tricks of the trade buff on rogue (30sec duration)
+                            if (aurApp->GetRemoveMode() == AURA_REMOVE_BY_EXPIRE || !caster->GetMisdirectionTarget())
+                                target->SetReducedThreatPercent(0,0);
+                            else
+                                target->SetReducedThreatPercent(0,caster->GetMisdirectionTarget()->GetGUID());
+                            break;
+                    }
+                    break;
 				default:
 					break;
 			}
@@ -5402,28 +5442,6 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
             // if (!(mode & AURA_EFFECT_HANDLE_REAL))
             //    break;
             break;
-		case SPELLFAMILY_ROGUE:
-        {
-            switch (GetId())
-            {
-                case 76577: // Smoke Bomb
-                {
-                    if (apply)
-                    {
-                        AuraPtr newAura = target->AddAura(88611, target);
-                        if (newAura != NULLAURA)
-                        {
-                            newAura->SetMaxDuration(GetBase()->GetDuration());
-                            newAura->SetDuration(GetBase()->GetDuration());
-                        }
-                    }
-                    else
-                        target->RemoveAurasDueToSpell(88611);
-                    break;
-                }
-            }
-            break;
-        }
         case SPELLFAMILY_DEATHKNIGHT:
         {
             if (!(mode & AURA_EFFECT_HANDLE_REAL))
@@ -5879,10 +5897,14 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                 // Frenzied Regeneration
                 case 22842:
                 {
+                    if (!target)
+                        break;
+
                     // Converts up to 10 rage per second into health for $d.  Each point of rage is converted into ${$m2/10}.1% of max health.
                     // Should be manauser
                     if (target->getPowerType() != POWER_RAGE)
                         break;
+
                     uint32 rage = target->GetPower(POWER_RAGE);
                     // Nothing todo
                     if (rage == 0)
@@ -5999,18 +6021,21 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                 // Custom MoP Script
                 case 103958: // Metamorphosis
                 {
-                    if (caster->GetPower(POWER_DEMONIC_FURY) > 0)
+                    if (caster)
                     {
-                        // Power cost : 6 demonic fury per second
-                        uint32 demonicFury = caster->GetPower(POWER_DEMONIC_FURY) - 6;
+                        if (caster->GetPower(POWER_DEMONIC_FURY) > 0)
+                        {
+                            // Power cost : 6 demonic fury per second
+                            uint32 demonicFury = caster->GetPower(POWER_DEMONIC_FURY) - 6;
 
-                        if (demonicFury < 0)
-                            demonicFury = 0;
+                            if (demonicFury < 0)
+                                demonicFury = 0;
 
-                        caster->SetPower(POWER_DEMONIC_FURY, demonicFury);
+                            caster->SetPower(POWER_DEMONIC_FURY, demonicFury);
+                        }
+                        else
+                            caster->RemoveAurasDueToSpell(103958);
                     }
-                    else
-                        caster->RemoveAurasDueToSpell(103958);
                 }
             }
         case SPELLFAMILY_DEATHKNIGHT:

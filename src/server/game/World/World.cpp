@@ -329,7 +329,7 @@ void World::AddQueuedPlayer(WorldSession* sess)
     m_QueuedPlayer.push_back(sess);
 
     // The 1st SMSG_AUTH_RESPONSE needs to contain other info too.
-    sess->SendAuthResponse(AUTH_WAIT_QUEUE, true, GetQueuePos(sess));
+    sess->SendAuthResponse(AUTH_OK, true, GetQueuePos(sess));
 }
 
 bool World::RemoveQueuedPlayer(WorldSession* sess)
@@ -1287,6 +1287,9 @@ void World::SetInitialWorldSettings()
     ///- Initialize game event manager
     sGameEventMgr->Initialize();
 
+    //- Initialize TimeDiffMgr
+    sTimeDiffMgr->Initialize();
+
     ///- Loading strings. Getting no records means core load has to be canceled because no error message can be output.
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Loading Trinity strings...");
@@ -2124,6 +2127,8 @@ void World::Update(uint32 diff)
 
     // And last, but not least handle the issued cli commands
     ProcessCliCommands();
+
+    sTimeDiffMgr->Update(diff);
 
     sScriptMgr->OnWorldUpdate(diff);
 }

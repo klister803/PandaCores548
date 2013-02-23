@@ -60,18 +60,11 @@ public:
 
         void MoveInLineOfSight(Unit* who)
         {
-            if (me->GetDistance(who) < 5.0f)
-                if (Creature* creature = who->ToCreature())
-                    if (creature->GetEntry() == NPC_WOLF)
-                        if (!HasATarget)
-                            if (who->Attack(me, true))
-                            {
-                                who->AddThreat(me, 0.0f);
-                                who->SetInCombatWith(me);
-                                me->SetInCombatWith(who);
-                                who->GetMotionMaster()->MoveChase(me, 1.5f);
-                                HasATarget = true;
-                            }
+            if (who && !HasATarget)
+                if (me->GetDistance(who) < 5.0f)
+                    if (Creature* creature = who->ToCreature())
+                        if (creature->GetEntry() == NPC_WOLF)
+                            AttackStart(who);
         }
 
         void EnterEvadeMode()

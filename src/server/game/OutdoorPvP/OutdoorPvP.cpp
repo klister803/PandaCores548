@@ -44,14 +44,20 @@ bool OPvPCapturePoint::HandlePlayerEnter(Player* player)
         player->SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldstate2, (uint32)ceil((m_value + m_maxValue) / (2 * m_maxValue) * 100.0f));
         player->SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldstate3, m_neutralValuePct);
     }
-    return m_activePlayers[player->GetTeamId()].insert(player).second;
+
+    if (player->GetTeamId() < 2)
+        return m_activePlayers[player->GetTeamId()].insert(player).second;
+
+    return false;
 }
 
 void OPvPCapturePoint::HandlePlayerLeave(Player* player)
 {
     if (m_capturePoint)
         player->SendUpdateWorldState(m_capturePoint->GetGOInfo()->capturePoint.worldState1, 0);
-    m_activePlayers[player->GetTeamId()].erase(player);
+
+    if (player->GetTeamId() < 2)
+        m_activePlayers[player->GetTeamId()].erase(player);
 }
 
 void OPvPCapturePoint::SendChangePhase()
@@ -243,7 +249,8 @@ OutdoorPvP::~OutdoorPvP()
 
 void OutdoorPvP::HandlePlayerEnterZone(Player* player, uint32 /*zone*/)
 {
-    m_players[player->GetTeamId()].insert(player);
+    if (player && player->GetTeamId() < 2)
+        m_players[player->GetTeamId()].insert(player);
 }
 
 void OutdoorPvP::HandlePlayerLeaveZone(Player* player, uint32 /*zone*/)
@@ -254,7 +261,10 @@ void OutdoorPvP::HandlePlayerLeaveZone(Player* player, uint32 /*zone*/)
     // remove the world state information from the player (we can't keep everyone up to date, so leave out those who are not in the concerning zones)
     if (!player->GetSession()->PlayerLogout())
         SendRemoveWorldStates(player);
-    m_players[player->GetTeamId()].erase(player);
+
+    if (player->GetTeamId() < 2)
+        m_players[player->GetTeamId()].erase(player);
+
     sLog->outDebug(LOG_FILTER_OUTDOORPVP, "Player %s left an outdoorpvp zone", player->GetName());
 }
 
@@ -476,7 +486,10 @@ bool OutdoorPvP::IsInsideObjective(Player* player) const
 
 bool OPvPCapturePoint::IsInsideObjective(Player* player) const
 {
-    return m_activePlayers[player->GetTeamId()].find(player) != m_activePlayers[player->GetTeamId()].end();
+    if (player && player->GetTeamId() < 2)
+        return m_activePlayers[player->GetTeamId()].find(player) != m_activePlayers[player->GetTeamId()].end();
+
+    return false;
 }
 
 bool OutdoorPvP::HandleCustomSpell(Player* player, uint32 spellId, GameObject* go)
@@ -576,7 +589,10 @@ void OutdoorPvP::RegisterZone(uint32 zoneId)
 
 bool OutdoorPvP::HasPlayer(Player* player) const
 {
-    return m_players[player->GetTeamId()].find(player) != m_players[player->GetTeamId()].end();
+    if (player && player->GetTeamId() < 2)
+        return m_players[player->GetTeamId()].find(player) != m_players[player->GetTeamId()].end();
+
+    return false;
 }
 
 void OutdoorPvP::TeamCastSpell(TeamId team, int32 spellId)

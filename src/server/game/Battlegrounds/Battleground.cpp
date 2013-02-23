@@ -183,6 +183,7 @@ Battleground::Battleground()
     m_ArenaTeamIds[BG_TEAM_HORDE]      = 0;
 
     m_StartMaxDist = 0.0f;
+    m_holiday = 0;
 
     m_ArenaTeamRatingChanges[BG_TEAM_ALLIANCE]   = 0;
     m_ArenaTeamRatingChanges[BG_TEAM_HORDE]      = 0;

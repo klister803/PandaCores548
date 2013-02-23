@@ -2182,7 +2182,8 @@ bool Player::BuildEnumData(PreparedQueryResult result, ByteBuffer* dataBuffer, B
         *dataBuffer << uint8(guid[4] ^ 1);
     if (guildGuid[5] != 0)
         *dataBuffer << uint8(guildGuid[5] ^ 1);
-    dataBuffer->append(name.c_str(), name.length());            // Name
+    if (name.length())
+    	dataBuffer->append(name.c_str(), name.length());            // Name
     *dataBuffer << uint32(petLevel);                            // Pet level
     *dataBuffer << uint8(gender);                               // Gender
     *dataBuffer << float(x);                                    // X
@@ -2796,6 +2797,7 @@ void Player::Regenerate(Powers power)
     float rangedHaste = GetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE);
     float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
     float spellHaste = GetFloatValue(UNIT_MOD_CAST_SPEED);
+    float HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
 
     switch (power)
     {
@@ -2822,7 +2824,7 @@ void Player::Regenerate(Powers power)
             addvalue += (6.0f + CalculatePct(6.0f, rangedHaste)) * sWorld->getRate(RATE_POWER_FOCUS);
             break;
         case POWER_ENERGY:                                              // Regenerate Energy
-            addvalue += ((0.01f * m_regenTimer) + CalculatePct(0.01f, meleeHaste)) * sWorld->getRate(RATE_POWER_ENERGY);
+            addvalue += ((0.01f * m_regenTimer) * sWorld->getRate(RATE_POWER_ENERGY) * HastePct);
             break;
         case POWER_RUNIC_POWER:
         {
@@ -7818,7 +7820,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     }
     // count can't be more then weekCap.
     uint32 weekCap = _GetCurrencyWeekCap(currency);
-    if (count > int32(weekCap))
+    if (weekCap && count > int32(weekCap))
         count = weekCap;
 
     int32 newTotalCount = int32(oldTotalCount) + count;
@@ -7829,15 +7831,18 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
     if (newWeekCount < 0)
         newWeekCount = 0;
 
-    ASSERT(weekCap >= oldWeekCount);
-
-    // TODO: fix conquest points
-    // if we get more then weekCap just set to limit
-    if (weekCap && int32(weekCap) < newWeekCount)
+    if (weekCap)
     {
-        newWeekCount = int32(weekCap);
-        // weekCap - oldWeekCount alwayt >= 0 as we set limit before!
-        newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
+        ASSERT(weekCap >= oldWeekCount);
+
+        // TODO: fix conquest points
+        // if we get more then weekCap just set to limit
+        if (int32(weekCap) < newWeekCount)
+        {
+            newWeekCount = int32(weekCap);
+            // weekCap - oldWeekCount alwayt >= 0 as we set limit before!
+            newTotalCount = oldTotalCount + (weekCap - oldWeekCount);
+        }
     }
 
     // if we get more then totalCap set to maximum;
@@ -7899,14 +7904,7 @@ uint32 Player::_GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const
    {
        case CURRENCY_TYPE_CONQUEST_POINTS:
        {
-           cap = 400000;
-           break;
-       }
-       case CURRENCY_TYPE_HONOR_POINTS:
-       {
-           uint32 honorcap = sWorld->getIntConfig(CONFIG_MAX_HONOR_POINTS);
-           if (honorcap > 0)
-               cap = honorcap;
+           cap = 180000;
            break;
        }
        case CURRENCY_TYPE_JUSTICE_POINTS:
@@ -8006,6 +8004,9 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
         float posx = fields[1].GetFloat();
         float posy = fields[2].GetFloat();
         float posz = fields[3].GetFloat();
+
+        if (!sMapStore.LookupEntry(map))
+            return 0;
 
         zone = sMapMgr->GetZoneId(map, posx, posy, posz);
 
@@ -12657,6 +12658,25 @@ Item* Player::EquipItem(uint16 pos, Item* pItem, bool update)
             ToPlayer()->UpdateRating(CR_HASTE_MELEE);
         }
     }
+    // Assassin's Resolve - 84601
+    if (GetTypeId() == TYPEID_PLAYER)
+    {
+        if (getClass() == CLASS_ROGUE && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_ASSASSINATION)
+        {
+            Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+            Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+
+            if (((mainItem && mainItem->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER) || (offItem && offItem->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)))
+            {
+                if (HasAura(84601))
+                    RemoveAura(84601);
+
+                CastSpell(this, 84601, true);
+            }
+            else
+                RemoveAura(84601);
+        }
+    }
 
     return pItem;
 }
@@ -13454,6 +13474,25 @@ void Player::SwapItem(uint16 src, uint16 dst)
                     CastSpell(this, trigger, true);
 
                 ToPlayer()->UpdateRating(CR_HASTE_MELEE);
+            }
+        }
+        // Assassin's Resolve - 84601
+        if (GetTypeId() == TYPEID_PLAYER)
+        {
+            if (getClass() == CLASS_ROGUE && ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_ASSASSINATION)
+            {
+                Item* mainItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+                Item* offItem = GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
+
+                if (((mainItem && mainItem->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER) || (offItem && offItem->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)))
+                {
+                    if (HasAura(84601))
+                        RemoveAura(84601);
+
+                    CastSpell(this, 84601, true);
+                }
+                else
+                    RemoveAura(84601);
             }
         }
 
@@ -22448,6 +22487,53 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         // no cooldown after applying spell mods
         if (rec == 0 && catrec == 0)
             return;
+
+        // Sanctity of Battle - 25956
+        // Melee haste effects lower the cooldown and global cooldown of your ...
+        if (rec > 0 && HasAura(25956))
+        {
+            float HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
+
+            switch (GetSpecializationId(GetActiveSpec()))
+            {
+                // ... Judgment, Crusader Strike, and Hammer of Wrath.
+                case SPEC_NONE:
+                case SPEC_PALADIN_HOLY:
+                    // In order
+                    if (spellInfo->Id == 20271 ||
+                        spellInfo->Id == 35395 ||
+                        spellInfo->Id == 24275)
+                        rec /= HastePct;
+
+                    break;
+                // ... Judgment, Crusader Strike, Hammer of the Righteous, Consecration, Holy Wrath, Avenger's Shield and Hammer of Wrath
+                case SPEC_PALADIN_PROTECTION:
+                    // In order
+                    if (spellInfo->Id == 20271 ||
+                        spellInfo->Id == 35395 ||
+                        spellInfo->Id == 53595 ||
+                        spellInfo->Id == 879 ||
+                        spellInfo->Id == 879 ||
+                        spellInfo->Id == 879 ||
+                        spellInfo->Id == 24275)
+                        rec /= HastePct;
+
+                    break;
+                // ... Judgment, Crusader Strike, Hammer of the Righteous, Exorcism and Hammer of Wrath
+                case SPEC_PALADIN_RETRIBUTION:
+                    // In order
+                    if (spellInfo->Id == 20271 ||
+                        spellInfo->Id == 35395 ||
+                        spellInfo->Id == 53595 ||
+                        spellInfo->Id == 879 ||
+                        spellInfo->Id == 24275)
+                        rec /= HastePct;
+
+                    break;
+                default:
+                    break;
+            }
+        }
 
         catrecTime = catrec ? curTime+catrec/IN_MILLISECONDS : 0;
         recTime    = rec ? curTime+rec/IN_MILLISECONDS : catrecTime;

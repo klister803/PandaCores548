@@ -524,7 +524,7 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         void Motion_Initialize();
 
         void AI_SendMoveToPacket(float x, float y, float z, uint32 time, uint32 MovementFlags, uint8 type);
-        CreatureAI* AI() const { return (CreatureAI*)i_AI; }
+        inline CreatureAI* AI() const { return (CreatureAI*)i_AI; }
 
         bool SetWalk(bool enable);
         bool SetDisableGravity(bool disable, bool packetOnly = false);
@@ -723,6 +723,10 @@ class Creature : public Unit, public GridObject<Creature>, public MapCreature
         bool m_isTempWorldObject; //true when possessed
 
         void ForcedDespawn(uint32 timeMSToDespawn = 0);
+
+        uint32 m_LOSCheckTimer;
+        bool m_LOSCheck_creature;
+        bool m_LOSCheck_player;
 
     protected:
         bool CreateFromProto(uint32 guidlow, uint32 Entry, uint32 vehId, uint32 team, const CreatureData* data = NULL);

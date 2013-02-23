@@ -30,7 +30,8 @@
 #include "SpellInfo.h"
 #include "MoveSplineInit.h"
 
-Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) : _me(unit), _vehicleInfo(vehInfo), _usableSeatNum(0), _creatureEntry(creatureEntry)
+Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) : _me(unit), _vehicleInfo(vehInfo), _usableSeatNum(0), _creatureEntry(creatureEntry),
+                                                                                  _isBeingDismissed(false), _passengersSpawnedByAI(false), _canBeCastedByPassengers(false)
 {
     for (uint32 i = 0; i < MAX_VEHICLE_SEATS; ++i)
     {
@@ -44,7 +45,6 @@ Vehicle::Vehicle(Unit* unit, VehicleEntry const* vehInfo, uint32 creatureEntry) 
     }
 
     InitMovementInfoForBase();
-    _passengersSpawnedByAI = false;
 }
 
 Vehicle::~Vehicle()
@@ -113,8 +113,11 @@ void Vehicle::InstallAllAccessories(bool evading)
             InstallAccessory(itr->AccessoryEntry, itr->SeatId, itr->IsMinion, itr->SummonedType, itr->SummonTime);
 }
 
-void Vehicle::Uninstall()
+void Vehicle::Uninstall(bool uninstallBeforeDelete)
 {
+    if (uninstallBeforeDelete)
+        _isBeingDismissed = true;
+
     sLog->outDebug(LOG_FILTER_VEHICLES, "Vehicle::Uninstall Entry: %u, GuidLow: %u", _creatureEntry, _me->GetGUIDLow());
     RemoveAllPassengers();
 
@@ -199,11 +202,19 @@ void Vehicle::RemoveAllPassengers()
     // We don't need to iterate over Seats
     _me->RemoveAurasByType(SPELL_AURA_CONTROL_VEHICLE);
 
-    // Following the above logic, this assertion should NEVER fail.
-    // Even in 'hacky' cases, there should at least be VEHICLE_SPELL_RIDE_HARDCODED on us.
-    // SeatMap::const_iterator itr;
-    // for (itr = Seats.begin(); itr != Seats.end(); ++itr)
-    //    ASSERT(!itr->second.passenger);
+    // Sometime aura do not work, so we iterate to be sure that every passengers have been removed
+    // We need a copy because passenger->_ExitVehicle() may modify the Seats list
+    SeatMap tempSeatMap = Seats;
+    for (auto itr: tempSeatMap)
+    {
+        if (itr.second.Passenger)
+        {
+            if (Unit* passenger = ObjectAccessor::FindUnit(itr.second.Passenger))
+                passenger->_ExitVehicle();
+
+            itr.second.Passenger = 0;
+        }
+    }
 }
 
 bool Vehicle::HasEmptySeat(int8 seatId) const
@@ -310,6 +321,9 @@ bool Vehicle::CheckCustomCanEnter()
 
 bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
 {
+    if (!unit)
+        return false;
+
     if (unit->GetVehicle() != this)
         return false;
 
@@ -374,7 +388,9 @@ bool Vehicle::AddPassenger(Unit* unit, int8 seatId)
         case 10882:
             unit->m_movementInfo.t_pos.m_positionX = 15.0f;
             unit->m_movementInfo.t_pos.m_positionY = 0.0f;
-            unit->m_movementInfo.t_pos.m_positionZ = 17.0f;
+            unit->m_movementInfo.t_pos.m_positionZ = 30.0f;
+            break;
+        default:
             break;
     }
 
@@ -484,6 +500,9 @@ void Vehicle::RelocatePassengers()
 void Vehicle::Dismiss()
 {
     if (GetBase()->GetTypeId() != TYPEID_UNIT)
+        return;
+
+    if (_isBeingDismissed)
         return;
 
     sLog->outDebug(LOG_FILTER_VEHICLES, "Vehicle::Dismiss Entry: %u, GuidLow %u", _creatureEntry, _me->GetGUIDLow());

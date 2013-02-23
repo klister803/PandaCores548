@@ -83,7 +83,7 @@ class spell_hun_powershot : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         std::list<Unit*> tempUnitMap;
-                        _player->GetAttackableUnitListInRange(_player, tempUnitMap, _player->GetDistance(target));
+                        _player->GetAttackableUnitListInRange(tempUnitMap, _player->GetDistance(target));
 
                         for (auto itr : tempUnitMap)
                         {
@@ -132,14 +132,17 @@ class spell_hun_feign_death : public SpellScriptLoader
 
             void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                health = GetCaster()->GetHealth();
-                focus = GetCaster()->GetPower(POWER_FOCUS);
+                health = GetTarget()->GetHealth();
+                focus = GetTarget()->GetPower(POWER_FOCUS);
             }
 
             void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                GetCaster()->SetHealth(health);
-                GetCaster()->SetPower(POWER_FOCUS, focus);
+                if (health && focus)
+                {
+                    GetTarget()->SetHealth(health);
+                    GetTarget()->SetPower(POWER_FOCUS, focus);
+                }
             }
 
             void Register()
@@ -1079,7 +1082,7 @@ class spell_hun_disengage : public SpellScriptLoader
                         std::list<Unit*> unitList;
                         std::list<Unit*> retsList;
 
-                        _player->GetAttackableUnitListInRange(_player, unitList, 8.0f);
+                        _player->GetAttackableUnitListInRange(unitList, 8.0f);
 
                         for (auto itr : unitList)
                             if (_player->IsValidAttackTarget(itr))
