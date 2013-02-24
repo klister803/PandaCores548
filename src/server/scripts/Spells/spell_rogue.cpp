@@ -329,35 +329,38 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                 {
                     if (Unit* target = GetTarget())
                     {
-                        // Each time your Rupture or Garrote deals damage to an enemy that you have poisoned ...
-                        if (target->HasAura(8680, caster->GetGUID())
-                            || target->HasAura(2818, caster->GetGUID())
-                            || target->HasAura(5760, caster->GetGUID())
-                            || target->HasAura(3409, caster->GetGUID())
-                            || target->HasAura(113952, caster->GetGUID())
-                            || target->HasAura(112961, caster->GetGUID()))
+                        if (caster->HasAura(79134))
                         {
-                            if (AuraPtr rupture = target->GetAura(ROGUE_SPELL_RUPTURE_DOT, caster->GetGUID()))
+                            // Each time your Rupture or Garrote deals damage to an enemy that you have poisoned ...
+                            if (target->HasAura(8680, caster->GetGUID())
+                                || target->HasAura(2818, caster->GetGUID())
+                                || target->HasAura(5760, caster->GetGUID())
+                                || target->HasAura(3409, caster->GetGUID())
+                                || target->HasAura(113952, caster->GetGUID())
+                                || target->HasAura(112961, caster->GetGUID()))
                             {
-                                // ... you have a 75% chance ...
-                                if (roll_chance_i(75))
+                                if (AuraPtr rupture = target->GetAura(ROGUE_SPELL_RUPTURE_DOT, caster->GetGUID()))
                                 {
-                                    // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
-                                    caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
-                                    int32 bp = 10;
-                                    caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
+                                    // ... you have a 75% chance ...
+                                    if (roll_chance_i(75))
+                                    {
+                                        // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
+                                        caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
+                                        int32 bp = 10;
+                                        caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
+                                    }
                                 }
-                            }
-                            // Garrote will not trigger this effect if the enemy is also afflicted by your Rupture
-                            else if (AuraPtr garrote = target->GetAura(ROGUE_SPELL_GARROTE_DOT, caster->GetGUID()))
-                            {
-                                // ... you have a 75% chance ...
-                                if (roll_chance_i(75))
+                                // Garrote will not trigger this effect if the enemy is also afflicted by your Rupture
+                                else if (AuraPtr garrote = target->GetAura(ROGUE_SPELL_GARROTE_DOT, caster->GetGUID()))
                                 {
-                                    // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
-                                    caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
-                                    int32 bp = 10;
-                                    caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
+                                    // ... you have a 75% chance ...
+                                    if (roll_chance_i(75))
+                                    {
+                                        // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
+                                        caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
+                                        int32 bp = 10;
+                                        caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
+                                    }
                                 }
                             }
                         }
