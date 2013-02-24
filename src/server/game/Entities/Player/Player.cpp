@@ -2411,6 +2411,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         if ( mapid == 870  && getLevel() < 85 && getClass() != CLASS_MONK  && !isGameMaster())
             return false;
 
+        if (GetMapId() == 860 && GetTeamId() == TEAM_NEUTRAL)
+            return false;
+
         // far teleport to another map
         Map* oldmap = IsInWorld() ? GetMap() : NULL;
         // check if we can enter before stopping combat / removing pet / totems / interrupting spells
