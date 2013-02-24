@@ -71,6 +71,12 @@ class boss_sha_of_violence : public CreatureScript
                 summons.DespawnAll();
             }
 
+            void JustSummoned(Creature* summon)
+            {
+                summons.Summon(summon);
+                summon->CastSpell(summon, SPELL_ICE_TRAP, true);
+            }
+
             void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (!enrageDone && me->HealthBelowPctDamaged(20, damage))
@@ -116,34 +122,7 @@ class boss_sha_of_violence : public CreatureScript
         }
 };
 
-class npc_lesser_volatile_energy : public CreatureScript
-{
-public:
-    npc_lesser_volatile_energy() : CreatureScript("npc_lesser_volatile_energy") { }
-
-    struct npc_lesser_volatile_energyAI : public ScriptedAI
-    {
-        npc_lesser_volatile_energyAI(Creature* creature) : ScriptedAI(creature) {}
-
-        void Reset()
-        {
-            me->CastSpell(me, SPELL_ICE_TRAP, true);
-        }
-
-        void JustDied(Unit* killer)
-        {
-            me->CastSpell(me, SPELL_EXPLOSION, true);
-        }
-    };
-
-    CreatureAI* GetAI(Creature* creature) const
-    {
-        return new npc_lesser_volatile_energyAI (creature);
-    }
-};
-
 void AddSC_boss_sha_of_violence()
 {
     new boss_sha_of_violence();
-    new npc_lesser_volatile_energy();
 }
