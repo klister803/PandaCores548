@@ -3131,6 +3131,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 124271:// Sanguinary Vein
+                spellInfo->Attributes &= ~SPELL_ATTR0_HIDDEN_CLIENTSIDE;
+                spellInfo->Attributes &= ~SPELL_ATTR0_HIDE_IN_COMBAT_LOG;
+                break;
             case 84745: // Shallow Insight
             case 84746: // Moderate Insight
             case 84747: // Deep Insight
