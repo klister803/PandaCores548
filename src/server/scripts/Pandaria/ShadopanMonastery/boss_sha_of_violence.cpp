@@ -71,26 +71,16 @@ class boss_sha_of_violence : public CreatureScript
                 summons.DespawnAll();
             }
 
+            void JustSummoned(Creature* summon)
+            {
+                summons.Summon(summon);
+                summon->CastSpell(summon, SPELL_ICE_TRAP, true);
+            }
+
             void DamageTaken(Unit* attacker, uint32& damage)
             {
                 if (!enrageDone && me->HealthBelowPctDamaged(20, damage))
                     me->CastSpell(me, SPELL_ENRAGE, true);
-            }
-
-            void JustSummoned(Creature* summoned)
-            {
-                summons.Summon(summoned);
-
-                if (summoned->GetEntry() == NPC_LESSER_VOLATILE_ENERGY)
-                    summoned->CastSpell(summoned, SPELL_ICE_TRAP, true);
-            }
-
-            void SummonedCreatureDespawn(Creature* summon)
-            {
-                summons.Despawn(summon);
-
-                if (summon->GetEntry() == NPC_LESSER_VOLATILE_ENERGY)
-                    summon->CastSpell(summon, SPELL_EXPLOSION, true);
             }
 
             void UpdateAI(const uint32 diff)

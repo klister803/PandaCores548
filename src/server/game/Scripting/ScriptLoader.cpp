@@ -623,6 +623,7 @@ void AddSC_shadopan_monastery();
 void AddSC_boss_gu_cloudstrike();
 void AddSC_boss_master_snowdrift();
 void AddSC_boss_sha_of_violence();
+void AddSC_boss_taran_zhu();
 
 // battlegrounds
 
@@ -1293,6 +1294,7 @@ void AddPandarieScripts()
     AddSC_boss_gu_cloudstrike();
     AddSC_boss_master_snowdrift();
     AddSC_boss_sha_of_violence();
+    AddSC_boss_taran_zhu();
 #endif
 }
 
