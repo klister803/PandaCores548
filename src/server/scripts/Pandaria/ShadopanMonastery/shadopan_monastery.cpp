@@ -11,16 +11,51 @@ enum eSpells
     SPELL_ICE_ARROW             = 126114,
     SPELL_EXPLOSION_DAMAGE      = 106966,
     SPELL_PURIFICATION_RITUAL   = 111690,
+
+    // Residual Hatred
+    SPELL_CURSE_OF_AGONY        = 112999,
+    SPELL_RING_OF_MALICE        = 112932,
+    SPELL_SHADOW_BOLT           = 112998,
+
+    // Vestige of Hatred
+    SPELL_BLACK_CLEAVE          = 113020,
+    SPELL_DEATH_GRIP            = 113021,
+    SPELL_ICE_TRAP              = 135382,
+    SPELL_TOUCH_OF_WEAKNESS     = 113022,
+
+    // Fragment of Hatred
+    //SPELL_ICE_TRAP              = 135382,
+    SPELL_SINISTER_STRIKE       = 112931,
+    SPELL_VOLLEY_OF_HATRED      = 112911,
 };
 
-class npc_shado_pan_ambusher : public CreatureScript
+enum eEvents
+{
+    // Residual Hatred
+    EVENT_CURSE_OF_AGONY        = 1,
+    EVENT_RING_OF_MALICE        = 2,
+    EVENT_SHADOW_BOLT           = 3,
+
+    // Vestige of Hatred
+    EVENT_BLACK_CLEAVE          = 4,
+    EVENT_DEATH_GRIP            = 5,
+    EVENT_ICE_TRAP              = 6,
+    EVENT_TOUCH_OF_WEAKNESS     = 7,
+
+    // Fragment of Hatred
+    //EVENT_ICE_TRAP              = 8,
+    EVENT_SINISTER_STRIKE       = 9,
+    EVENT_VOLLEY_OF_HATRED      = 10,
+};
+
+class npc_shadopan_ambusher : public CreatureScript
 {
     public:
-        npc_shado_pan_ambusher() :  CreatureScript("npc_shado_pan_ambusher") { }
+        npc_shadopan_ambusher() :  CreatureScript("npc_shadopan_ambusher") { }
 
-        struct npc_shado_pan_ambusherAI : public ScriptedAI
+        struct npc_shadopan_ambusherAI : public ScriptedAI
         {
-            npc_shado_pan_ambusherAI(Creature* creature) : ScriptedAI(creature) {}
+            npc_shadopan_ambusherAI(Creature* creature) : ScriptedAI(creature) {}
 
             uint32 criseTimer;
             bool inFight;
@@ -62,18 +97,18 @@ class npc_shado_pan_ambusher : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new npc_shado_pan_ambusherAI(creature);
+            return new npc_shadopan_ambusherAI(creature);
         }
 };
 
-class npc_shado_pan_archery : public CreatureScript
+class npc_shadopan_archery : public CreatureScript
 {
     public:
-        npc_shado_pan_archery() :  CreatureScript("npc_shado_pan_archery") { }
+        npc_shadopan_archery() :  CreatureScript("npc_shadopan_archery") { }
 
-        struct npc_shado_pan_archeryAI : public ScriptedAI
+        struct npc_shadopan_archeryAI : public ScriptedAI
         {
-            npc_shado_pan_archeryAI(Creature* creature) : ScriptedAI(creature)
+            npc_shadopan_archeryAI(Creature* creature) : ScriptedAI(creature)
             {
                 pInstance = creature->GetInstanceScript();
             }
@@ -121,7 +156,139 @@ class npc_shado_pan_archery : public CreatureScript
 
         CreatureAI* GetAI(Creature* creature) const
         {
-            return new npc_shado_pan_archeryAI(creature);
+            return new npc_shadopan_archeryAI(creature);
+        }
+};
+
+class npc_shadopan_hatred : public CreatureScript
+{
+    public:
+        npc_shadopan_hatred() :  CreatureScript("npc_shadopan_hatred") { }
+
+        struct npc_shadopan_hatredAI : public ScriptedAI
+        {
+            npc_shadopan_hatredAI(Creature* creature) : ScriptedAI(creature) {}
+
+            EventMap events;
+
+            void Reset()
+            {
+                if (me->GetEntry() == NPC_RESIDUAL_OF_HATRED)
+                {
+                    events.ScheduleEvent(EVENT_CURSE_OF_AGONY, urand(5000, 1000));
+                    events.ScheduleEvent(EVENT_RING_OF_MALICE, urand(12500, 15000));
+                    events.ScheduleEvent(EVENT_SHADOW_BOLT, urand(2500, 10000));
+                }
+                else if (me->GetEntry() == NPC_VESTIGE_OF_HATRED)
+                {
+                    events.ScheduleEvent(EVENT_BLACK_CLEAVE, 15000);
+                    events.ScheduleEvent(EVENT_DEATH_GRIP, urand(7500, 12500));
+                    events.ScheduleEvent(EVENT_ICE_TRAP, urand (17500, 22500));
+                    events.ScheduleEvent(EVENT_TOUCH_OF_WEAKNESS, urand(20000, 25000));
+                }
+                else
+                {
+                    events.ScheduleEvent(EVENT_ICE_TRAP, urand (17500, 22500));
+                    events.ScheduleEvent(EVENT_SINISTER_STRIKE, urand(2500, 10000));
+                    events.ScheduleEvent(EVENT_VOLLEY_OF_HATRED, urand(7500, 12500));
+                }
+            }
+
+            void EnterCombat(Unit* /*victim*/)
+            {
+                DoZoneInCombat();
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                events.Update(diff);
+
+                switch(events.ExecuteEvent())
+                {
+                    // Residual Hatred
+                    case EVENT_CURSE_OF_AGONY:
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            me->CastSpell(target, SPELL_CURSE_OF_AGONY, false);
+
+                        events.ScheduleEvent(EVENT_CURSE_OF_AGONY, urand(5000, 1000));
+                        break;
+                    }
+                    case EVENT_RING_OF_MALICE:
+                    {
+                        me->CastSpell(me, SPELL_RING_OF_MALICE, false);
+                        events.ScheduleEvent(EVENT_RING_OF_MALICE, urand(12500, 15000));
+                        break;
+                    }
+                    case EVENT_SHADOW_BOLT:
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                            me->CastSpell(target, SPELL_SHADOW_BOLT, false);
+
+                        events.ScheduleEvent(EVENT_SHADOW_BOLT, urand(2500, 10000));
+                        break;
+                    }
+                    // Vestige of Hatred
+                    case EVENT_BLACK_CLEAVE:
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                            me->CastSpell(target, SPELL_BLACK_CLEAVE, false);
+
+                        events.ScheduleEvent(EVENT_BLACK_CLEAVE, 15000);
+                        break;
+                    }
+                    case EVENT_DEATH_GRIP:
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_FARTHEST))
+                            me->CastSpell(target, SPELL_DEATH_GRIP, false);
+
+                        events.ScheduleEvent(EVENT_DEATH_GRIP, urand(7500, 12500));
+                        break;
+                    }
+                    case EVENT_TOUCH_OF_WEAKNESS:
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            me->CastSpell(target, SPELL_TOUCH_OF_WEAKNESS, false);
+
+                        events.ScheduleEvent(EVENT_TOUCH_OF_WEAKNESS, urand(20000, 25000));
+                        break;
+                    }
+                    // Vestige of Hatred
+                    case EVENT_SINISTER_STRIKE:
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_TOPAGGRO))
+                            me->CastSpell(target, SPELL_SINISTER_STRIKE, false);
+
+                        events.ScheduleEvent(EVENT_SINISTER_STRIKE, urand(2500, 10000));
+                        break;
+                    }
+                    case EVENT_VOLLEY_OF_HATRED:
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            me->CastSpell(target, SPELL_TOUCH_OF_WEAKNESS, false);
+
+                        events.ScheduleEvent(EVENT_VOLLEY_OF_HATRED, urand(7500, 12500));
+                        break;
+                    }
+                    // Common
+                    case EVENT_ICE_TRAP:
+                    {
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            me->CastSpell(target, SPELL_ICE_TRAP, false);
+
+                        events.ScheduleEvent(EVENT_ICE_TRAP, urand (17500, 22500));
+                        break;
+                    }
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_shadopan_hatredAI(creature);
         }
 };
 
@@ -241,8 +408,9 @@ class areatrigger_at_shadopan_archery : public AreaTriggerScript
 
 void AddSC_shadopan_monastery()
 {
-    new npc_shado_pan_ambusher();
-    new npc_shado_pan_archery();
+    new npc_shadopan_ambusher();
+    new npc_shadopan_archery();
+    new npc_shadopan_hatred();
     new spell_shadopan_explosion();
     new spell_shadopan_apparitions();
     new areatrigger_at_shadopan_archery();
