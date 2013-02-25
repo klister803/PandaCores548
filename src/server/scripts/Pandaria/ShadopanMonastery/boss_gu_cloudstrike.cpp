@@ -23,30 +23,32 @@
 enum eSpells
 {
     // Gu
-    SPELL_KILL_GUARDIANS    = 114927,
+    SPELL_KILL_GUARDIANS            = 114927,
 
-    SPELL_INVOKE_LIGHTNING  = 106984,
-    SPELL_CHARGING_SOUL     = 110945,
-
-    SPELL_OVERCHARGED_SOUL  = 110852,
+    SPELL_INVOKE_LIGHTNING          = 106984,
+    SPELL_CHARGING_SOUL             = 110945,
+    
+    SPELL_OVERCHARGED_SOUL          = 110852,
+    SPELL_OVERCHARGED_SOUL_DAMAGE   = 111129,
 
     // Azure Serpent
-    SPELL_LIGHTNING_SHIELD  = 123496,
-    SPELL_STATIC_FIELD      = 106923,
+    SPELL_LIGHTNING_SHIELD          = 123496,
+    SPELL_STATIC_FIELD              = 106923,
 
-    SPELL_LIGHTNING_BREATH  = 102573,
-    SPELL_MAGNETIC_SHROUD   = 107140, // TODO
+    SPELL_LIGHTNING_BREATH          = 102573,
+    SPELL_MAGNETIC_SHROUD           = 107140, // TODO
 };
 
 enum eEvents
 {
     // Gu
     EVENT_INVOKE_LIGHTNING  = 1,
+    EVENT_OVERCHARGED_SOUL  = 2,
 
     // Azure Serpent
-    EVENT_STATIC_FIELD      = 2,
-    EVENT_LIGHTNING_BREATH  = 3,
-    EVENT_MAGNETIC_SHROUD   = 4,
+    EVENT_STATIC_FIELD      = 3,
+    EVENT_LIGHTNING_BREATH  = 4,
+    EVENT_MAGNETIC_SHROUD   = 5,
 };
 
 enum eActions
@@ -116,6 +118,8 @@ class boss_gu_cloudstrike : public CreatureScript
                 {
                     phase = 2;
                     events.CancelEventGroup(PHASE_ONE);
+
+                    events.ScheduleEvent(EVENT_OVERCHARGED_SOUL, 2500, PHASE_TWO);
                     
                     me->SetReactState(REACT_PASSIVE);
                     me->CastSpell(me, SPELL_CHARGING_SOUL, false);
@@ -171,6 +175,10 @@ class boss_gu_cloudstrike : public CreatureScript
                             me->CastSpell(target, SPELL_INVOKE_LIGHTNING, false);
 
                         events.ScheduleEvent(EVENT_INVOKE_LIGHTNING, urand(5000, 10000), PHASE_ONE);
+                        break;
+                    case EVENT_OVERCHARGED_SOUL:
+                        me->CastSpell(me, SPELL_OVERCHARGED_SOUL_DAMAGE, false);
+                        events.ScheduleEvent(EVENT_OVERCHARGED_SOUL, 2500, PHASE_TWO);
                         break;
                     default:
                         break;
@@ -255,7 +263,7 @@ class npc_azure_serpent : public CreatureScript
                         events.ScheduleEvent(EVENT_LIGHTNING_BREATH, urand (2500, 7500), PHASE_TWO);
                         
                         me->SetReactState(REACT_AGGRESSIVE);
-                        me->GetMotionMaster()->MovePoint(4, azureSerpentPositions[4].GetPositionX(), azureSerpentPositions[4].GetPositionY(), azureSerpentPositions[4].GetPositionZ());
+                        me->GetMotionMaster()->MovePoint(4, azureSerpentPositions[3].GetPositionX(), azureSerpentPositions[3].GetPositionY(), azureSerpentPositions[3].GetPositionZ());
                         me->RemoveAurasDueToSpell(SPELL_LIGHTNING_SHIELD);
 
                         DoZoneInCombat();
@@ -413,10 +421,38 @@ class spell_kill_guardians : public SpellScriptLoader
         }
 };
 
+class spell_overcharged_soul_damage : public SpellScriptLoader
+{
+    public:
+        spell_overcharged_soul_damage() : SpellScriptLoader("spell_overcharged_soul_damage") { }
+
+        class spell_overcharged_soul_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_overcharged_soul_damage_SpellScript);
+
+            void ChangeDamage(SpellEffIndex effIndex)
+            {
+                if (Unit* caster = GetCaster())
+                    SetHitDamage(25000 / caster->GetHealthPct());
+            }
+
+            void Register()
+            {
+                OnEffectHitTarget += SpellEffectFn(spell_overcharged_soul_damage_SpellScript::ChangeDamage, EFFECT_0, SPELL_EFFECT_SCHOOL_DAMAGE);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_overcharged_soul_damage_SpellScript();
+        }
+};
+
 void AddSC_boss_gu_cloudstrike()
 {
     new boss_gu_cloudstrike();
     new npc_azure_serpent();
     new AreaTrigger_at_gu_intro();
     new spell_kill_guardians();
+    new spell_overcharged_soul_damage();
 }

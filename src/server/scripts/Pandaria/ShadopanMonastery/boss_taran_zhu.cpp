@@ -55,10 +55,10 @@ class boss_taran_zhu : public CreatureScript
             boss_taran_zhuAI(Creature* creature) : BossAI(creature, DATA_TARAN_ZHU)
             {
                 pInstance = creature->GetInstanceScript();
+                me->AddAura(SPELL_CORRUPTED, me);
             }
 
             InstanceScript* pInstance;
-            bool enrageDone;
 
             void Reset()
             {
