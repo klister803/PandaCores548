@@ -3131,6 +3131,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 130493:// Nightstalker
+                spellInfo->Effects[1].Effect = 0;
+                spellInfo->Effects[1].ApplyAuraName = 0;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
+                spellInfo->Effects[0].MiscValue = SPELL_SCHOOL_MASK_ALL;
+                break;
             case 124271:// Sanguinary Vein
                 spellInfo->Attributes &= ~SPELL_ATTR0_HIDDEN_CLIENTSIDE;
                 spellInfo->Attributes &= ~SPELL_ATTR0_HIDE_IN_COMBAT_LOG;

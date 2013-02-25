@@ -63,6 +63,60 @@ enum RogueSpells
     ROGUE_SPELL_SPRINT                           = 2983,
     ROGUE_SPELL_HEMORRHAGE_DOT                   = 89775,
     ROGUE_SPELL_SANGUINARY_VEIN_DEBUFF           = 124271,
+    ROGUE_SPELL_NIGHTSTALKER_AURA                = 14062,
+    ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE         = 130493,
+};
+
+// Called by Stealth - 1784
+// Nightstalker - 14062
+class spell_rog_nightstalker : public SpellScriptLoader
+{
+    public:
+        spell_rog_nightstalker() : SpellScriptLoader("spell_rog_nightstalker") { }
+
+        class spell_rog_nightstalker_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_nightstalker_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(ROGUE_SPELL_NIGHTSTALKER_AURA))
+                        _player->CastSpell(_player, ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_nightstalker_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_nightstalker_SpellScript();
+        }
+
+        class spell_rog_nightstalker_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_nightstalker_AuraScript);
+
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetCaster())
+                    if (GetCaster()->HasAura(ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE))
+                        GetCaster()->RemoveAura(ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE);
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_rog_nightstalker_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_nightstalker_AuraScript();
+        }
 };
 
 // Called by Slice and Dice - 5171
@@ -1167,6 +1221,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_nightstalker();
     new spell_rog_energetic_recovery();
     new spell_rog_sanguinary_vein();
     new spell_rog_hemorrhage();
