@@ -7223,6 +7223,13 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
     if (!target)
         return;
 
+    if (!apply)
+    {
+        target->SetMaxPower(POWER_ALTERNATE_POWER, 0);
+        target->SetPower(POWER_ALTERNATE_POWER, 0);
+        return;
+    }
+
     uint32 startPower = 0;
     uint32 maxPower = 0;
 
@@ -7365,6 +7372,6 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
             break;
     }
 
-    target->SetPower(POWER_ALTERNATE_POWER, startPower);
     target->SetMaxPower(POWER_ALTERNATE_POWER, maxPower);
+    target->SetPower(POWER_ALTERNATE_POWER, startPower);
 }
