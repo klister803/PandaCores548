@@ -7,10 +7,12 @@
 
 enum eSpells
 {
+    SPELL_STEALTH_COSMETIC      = 91194,
     SPELL_CRISE                 = 128248,
     SPELL_ICE_ARROW             = 126114,
     SPELL_EXPLOSION_DAMAGE      = 106966,
     SPELL_PURIFICATION_RITUAL   = 111690,
+    SPELL_APPARITIONS_AURA      = 112060,
 
     // Residual Hatred
     SPELL_CURSE_OF_AGONY        = 112999,
@@ -64,6 +66,7 @@ class npc_shadopan_ambusher : public CreatureScript
             {
                 criseTimer = 5000;
                 inFight = false;
+                me->AddAura(SPELL_STEALTH_COSMETIC, me);
             }
 
             void MoveInLineOfSight(Unit* who)
@@ -71,7 +74,21 @@ class npc_shadopan_ambusher : public CreatureScript
                 if (!inFight && me->GetDistance(who) < 35.0f)
                 {
                     inFight = true;
-                    me->GetMotionMaster()->MoveJump(who->GetPositionX(), who->GetPositionY(), who->GetPositionZ(), 20.0f, 20.0f);
+                    me->RemoveAurasDueToSpell(SPELL_STEALTH_COSMETIC);
+                    me->GetMotionMaster()->MoveJump(who->GetPositionX() + frand(-2.0f, 2.0f), who->GetPositionY() + frand(-2.0f, 2.0f), who->GetPositionZ(), 20.0f, 20.0f, 1);
+                }
+            }
+            
+            void MovementInform(uint32 uiType, uint32 uiId)
+            {
+                if (uiType != EFFECT_MOTION_TYPE)
+                    return;
+
+                if (uiId == 1)
+                {
+                    DoZoneInCombat();
+                    if (Unit* target = SelectTarget(SELECT_TARGET_NEAREST))
+                        AttackStart(target);
                 }
             }
 
@@ -89,9 +106,11 @@ class npc_shadopan_ambusher : public CreatureScript
                         me->CastSpell(me, SPELL_CRISE, true);
                     }
 
-                    criseTimer = 500;
+                    criseTimer = urand(3000, 5000);
                 }
                 else criseTimer -= diff;
+
+                DoMeleeAttackIfReady();
             }
         };
 
@@ -132,7 +151,10 @@ class npc_shadopan_archery : public CreatureScript
                     uint64 targetGuid = 0;
 
                     if (pInstance->GetData(DATA_ARCHERY) == 1 && me->GetEntry() == NPC_ARCHERY_FIRST)
+                    {
                         targetGuid = pInstance->GetData64(NPC_ARCHERY_TARGET);
+                        fireTimer = urand(2000, 4000);
+                    }
                     else if (pInstance->GetData(DATA_ARCHERY) == 2 && me->GetEntry() == NPC_ARCHERY_SECOND)
                     {
                         Map::PlayerList const& playerList = pInstance->instance->GetPlayers();
@@ -143,12 +165,14 @@ class npc_shadopan_archery : public CreatureScript
 
                         if (Player* player = Itr->getSource())
                             targetGuid = player->GetGUID();
+
+                        fireTimer = urand(5000, 10000);
                     }
+                    else
+                        fireTimer = 5000;
 
                     if (Unit* target = ObjectAccessor::FindUnit(targetGuid))
                         me->CastSpell(target, SPELL_ICE_ARROW, false);
-
-                    fireTimer = urand(1000, 2000);
                 }
                 else fireTimer -= diff;
             }
@@ -197,6 +221,12 @@ class npc_shadopan_hatred : public CreatureScript
             void EnterCombat(Unit* /*victim*/)
             {
                 DoZoneInCombat();
+            }
+
+            void DamageTaken(Unit* attacker, uint32& damage)
+            {
+                if (me->HasAura(SPELL_APPARITIONS_AURA))
+                    damage = 0;
             }
 
             void UpdateAI(const uint32 diff)
