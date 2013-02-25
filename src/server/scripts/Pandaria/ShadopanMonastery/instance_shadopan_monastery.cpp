@@ -187,18 +187,7 @@ public:
                 case DATA_TARAN_ZHU:
                 {
                     if (state == IN_PROGRESS)
-                    {
-                        Map::PlayerList const &PlayerList = instance->GetPlayers();
-
-                        if (!PlayerList.isEmpty())
-                            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                                if (Player* player = i->getSource())
-                                {
-                                    player->AddAura(SPELL_HATE, player);
-                                    player->SetMaxPower(POWER_ALTERNATE_POWER, 100);
-                                    player->SetPower(POWER_ALTERNATE_POWER, 0);
-                                }
-                    }
+                        DoAddAuraOnPlayers(SPELL_HATE);
                     else
                     {
                         Map::PlayerList const &PlayerList = instance->GetPlayers();
@@ -210,8 +199,6 @@ public:
                                     player->RemoveAurasDueToSpell(SPELL_HATE);
                                     player->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE);
                                     player->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE_VISUAL);
-                                    player->SetMaxPower(POWER_ALTERNATE_POWER, 100);
-                                    player->SetPower(POWER_ALTERNATE_POWER, 0);
                                 }
                     }
                 }
