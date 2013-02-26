@@ -67,6 +67,39 @@ enum RogueSpells
     ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE         = 130493,
     ROGUE_SPELL_SHADOW_FOCUS_AURA                = 108209,
     ROGUE_SPELL_SHADOW_FOCUS_COST_PCT            = 112942,
+    ROGUE_SPELL_NERVE_STRIKE_AURA                = 108210,
+    ROGUE_SPELL_NERVE_STRIKE_REDUCE_DAMAGE_DONE  = 112947,
+};
+
+// Called by Kidney Shot - 408 and Cheap Shot - 1833
+// Nerve Strike - 108210
+class spell_rog_nerve_strike : public SpellScriptLoader
+{
+    public:
+        spell_rog_nerve_strike() : SpellScriptLoader("spell_rog_nerve_strike") { }
+
+        class spell_rog_nerve_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_nerve_strike_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(ROGUE_SPELL_NERVE_STRIKE_AURA))
+                            _player->CastSpell(target, ROGUE_SPELL_NERVE_STRIKE_REDUCE_DAMAGE_DONE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_nerve_strike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_nerve_strike_SpellScript();
+        }
 };
 
 // Called by Stealth - 1784
@@ -1203,6 +1236,7 @@ class spell_rog_deadly_poison : public SpellScriptLoader
         }
 };
 
+// Shadow Step - 36554
 class spell_rog_shadowstep : public SpellScriptLoader
 {
     public:
@@ -1233,6 +1267,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_nerve_strike();
     new spell_rog_nightstalker();
     new spell_rog_energetic_recovery();
     new spell_rog_sanguinary_vein();
