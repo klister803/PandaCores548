@@ -63,7 +63,53 @@ enum HunterSpells
     HUNTER_SPELL_CAMOULAGE_STEALTH               = 80325,
     HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE             = 119449,
     HUNTER_SPELL_GLYPH_OF_CAMOUFLAGE_STEALTH     = 119450,
-    HUNTER_SPELL_POWERSHOT                       = 109259
+    HUNTER_SPELL_POWERSHOT                       = 109259,
+    HUNTER_SPELL_IMPROVED_SERPENT_STING_AURA     = 82834,
+    HUNTER_SPELL_IMPROVED_SERPENT_STING          = 83077,
+};
+
+// Called by Serpent Sting - 118253
+// Improved Serpent Sting - 82834
+class spell_hun_improved_serpent_sting : public SpellScriptLoader
+{
+    public:
+        spell_hun_improved_serpent_sting() : SpellScriptLoader("spell_hun_improved_serpent_sting") { }
+
+        class spell_hun_improved_serpent_sting_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_improved_serpent_sting_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(HUNTER_SPELL_IMPROVED_SERPENT_STING_AURA))
+                        {
+                            if (AuraPtr serpentSting = target->GetAura(HUNTER_SPELL_SERPENT_STING, _player->GetGUID()))
+                            {
+                                int32 bp = _player->SpellDamageBonusDone(target, serpentSting->GetSpellInfo(), serpentSting->GetEffect(0)->GetAmount(), DOT);
+                                bp *= serpentSting->GetMaxDuration() / serpentSting->GetEffect(0)->GetAmplitude();
+                                bp = CalculatePct(bp, 30);
+
+                                _player->CastCustomSpell(target, HUNTER_SPELL_IMPROVED_SERPENT_STING, &bp, NULL, NULL, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_hun_improved_serpent_sting_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_improved_serpent_sting_SpellScript();
+        }
 };
 
 // Powershot - 109259
@@ -1160,6 +1206,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_improved_serpent_sting();
     new spell_hun_powershot();
     new spell_hun_feign_death();
     new spell_hun_camouflage_visual();
