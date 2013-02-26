@@ -537,6 +537,23 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                         }
                     }
                 }
+                // Deadly Throw
+                else if (m_spellInfo->Id == 26679)
+                {
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        if (uint32 combo = ((Player*)m_caster)->GetComboPoints())
+                        {
+                            float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
+
+                            if (m_caster->ToPlayer()->GetSpecializationId(m_caster->ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_ASSASSINATION
+                                || m_caster->ToPlayer()->GetSpecializationId(m_caster->ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_COMBAT)
+                                damage += int32(ap * combo * 0.12f);
+                            else if (m_caster->ToPlayer()->GetSpecializationId(m_caster->ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_SUBTLETY)
+                                damage += int32(ap * combo * 0.149f);
+                        }
+                    }
+                }
                 break;
             }
             case SPELLFAMILY_HUNTER:
@@ -3368,6 +3385,12 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
 
     if (!unitTarget || !unitTarget->isAlive())
         return;
+
+    // Deadly Throw - Interrupt spell only if used with 5 combo points
+    if (m_spellInfo->Id == 26679)
+        if (m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER)
+            if (m_originalCaster->ToPlayer()->GetComboPoints() < 5)
+                return;
 
     // TODO: not all spells that used this effect apply cooldown at school spells
     // also exist case: apply cooldown to interrupted cast only and to all spells
