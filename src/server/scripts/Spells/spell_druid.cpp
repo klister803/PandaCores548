@@ -28,13 +28,13 @@
 
 enum DruidSpells
 {
-    DRUID_INCREASED_MOONFIRE_DURATION   = 38414,
-    DRUID_NATURES_SPLENDOR              = 57865,
-    DRUID_LIFEBLOOM_FINAL_HEAL          = 33778,
-    DRUID_LIFEBLOOM_ENERGIZE            = 64372,
-    DRUID_SURVIVAL_INSTINCTS            = 50322,
-    DRUID_SAVAGE_ROAR                   = 62071,
-    SPELL_DRUID_ITEM_T8_BALANCE_RELIC   = 64950,
+    DRUID_INCREASED_MOONFIRE_DURATION    = 38414,
+    DRUID_NATURES_SPLENDOR               = 57865,
+    DRUID_LIFEBLOOM_FINAL_HEAL           = 33778,
+    DRUID_LIFEBLOOM_ENERGIZE             = 64372,
+    DRUID_SURVIVAL_INSTINCTS             = 50322,
+    DRUID_SAVAGE_ROAR                    = 62071,
+    SPELL_DRUID_ITEM_T8_BALANCE_RELIC    = 64950,
     SPELL_DRUID_WRATH                    = 5176,
     SPELL_DRUID_STARFIRE                 = 2912,
     SPELL_DRUID_STARSURGE                = 78674,
@@ -62,6 +62,43 @@ enum DruidSpells
     DRUID_SPELL_WILD_MUSHROOM_SUICIDE    = 92853,
     DRUID_SPELL_WILD_MUSHROOM_DAMAGE     = 78777,
     SPELL_DRUID_WILD_MUSHROOM_HEAL       = 102792,
+    SPELL_DRUID_FAERIE_DECREASE_SPEED    = 102354,
+};
+
+// Faerie Swarm
+class spell_dru_faerie_swarm : public SpellScriptLoader
+{
+    public:
+        spell_dru_faerie_swarm() : SpellScriptLoader("spell_dru_faerie_swarm") { }
+
+        class spell_dru_faerie_swarm_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_faerie_swarm_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        _player->CastSpell(target, SPELL_DRUID_FAERIE_DECREASE_SPEED, true);
+                        _player->CastSpell(target, SPELL_DRUID_WEAKENED_ARMOR, true);
+                        _player->CastSpell(target, SPELL_DRUID_WEAKENED_ARMOR, true);
+                        _player->CastSpell(target, SPELL_DRUID_WEAKENED_ARMOR, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_faerie_swarm_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_faerie_swarm_SpellScript();
+        }
 };
 
 // Wild Mushroom - 88747
@@ -1522,6 +1559,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_faerie_swarm();
     new spell_dru_wild_mushroom_bloom();
     new spell_dru_wild_mushroom_detonate();
     new spell_dru_wild_mushroom();
