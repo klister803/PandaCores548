@@ -63,6 +63,44 @@ enum DruidSpells
     DRUID_SPELL_WILD_MUSHROOM_DAMAGE     = 78777,
     SPELL_DRUID_WILD_MUSHROOM_HEAL       = 102792,
     SPELL_DRUID_FAERIE_DECREASE_SPEED    = 102354,
+    SPELL_DRUID_SKULL_BASH_MANA_COST     = 82365,
+    SPELL_DRUID_SKULL_BASH_INTERUPT      = 93985,
+    SPELL_DRUID_SKULL_BASH_CHARGE        = 93983,
+};
+
+// Skull Bash
+class spell_dru_skull_bash : public SpellScriptLoader
+{
+    public:
+        spell_dru_skull_bash() : SpellScriptLoader("spell_dru_skull_bash") { }
+
+        class spell_dru_skull_bash_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_skull_bash_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        _player->CastSpell(target, SPELL_DRUID_SKULL_BASH_MANA_COST, true);
+                        _player->CastSpell(target, SPELL_DRUID_SKULL_BASH_INTERUPT, true);
+                        _player->CastSpell(target, SPELL_DRUID_SKULL_BASH_CHARGE, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_skull_bash_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_skull_bash_SpellScript();
+        }
 };
 
 // Faerie Swarm
@@ -1559,6 +1597,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_skull_bash();
     new spell_dru_faerie_swarm();
     new spell_dru_wild_mushroom_bloom();
     new spell_dru_wild_mushroom_detonate();
