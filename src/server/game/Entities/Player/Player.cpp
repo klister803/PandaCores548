@@ -2411,6 +2411,9 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
         if ( mapid == 870  && getLevel() < 85 && getClass() != CLASS_MONK  && !isGameMaster())
             return false;
 
+        if (GetMapId() == 860 && GetTeamId() == TEAM_NEUTRAL)
+            return false;
+
         // far teleport to another map
         Map* oldmap = IsInWorld() ? GetMap() : NULL;
         // check if we can enter before stopping combat / removing pet / totems / interrupting spells
@@ -2797,6 +2800,7 @@ void Player::Regenerate(Powers power)
     float rangedHaste = GetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE);
     float meleeHaste = GetFloatValue(UNIT_MOD_HASTE);
     float spellHaste = GetFloatValue(UNIT_MOD_CAST_SPEED);
+    float HastePct = 1.0f + GetUInt32Value(PLAYER_FIELD_COMBAT_RATING_1 + CR_HASTE_MELEE) * GetRatingMultiplier(CR_HASTE_MELEE) / 100.0f;
 
     switch (power)
     {
@@ -2823,7 +2827,7 @@ void Player::Regenerate(Powers power)
             addvalue += (6.0f + CalculatePct(6.0f, rangedHaste)) * sWorld->getRate(RATE_POWER_FOCUS);
             break;
         case POWER_ENERGY:                                              // Regenerate Energy
-            addvalue += ((0.01f * m_regenTimer) + CalculatePct(0.01f, meleeHaste)) * sWorld->getRate(RATE_POWER_ENERGY);
+            addvalue += ((0.01f * m_regenTimer) * sWorld->getRate(RATE_POWER_ENERGY) * HastePct);
             break;
         case POWER_RUNIC_POWER:
         {
@@ -8003,6 +8007,9 @@ uint32 Player::GetZoneIdFromDB(uint64 guid)
         float posx = fields[1].GetFloat();
         float posy = fields[2].GetFloat();
         float posz = fields[3].GetFloat();
+
+        if (!sMapStore.LookupEntry(map))
+            return 0;
 
         zone = sMapMgr->GetZoneId(map, posx, posy, posz);
 

@@ -486,46 +486,17 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             case SPELLFAMILY_ROGUE:
             {
                 // Envenom
-                if (m_spellInfo->SpellFamilyFlags[1] & 0x00000008)
+                if (m_spellInfo->Id == 32645)
                 {
                     if (Player* player = m_caster->ToPlayer())
                     {
-                        // consume from stack dozes not more that have combo-points
-                        if (uint32 combo = player->GetComboPoints())
+                        uint8 combo = player->GetComboPoints();
+
+                        float ap = player->GetTotalAttackPowerValue(BASE_ATTACK);
+
+                        if (combo)
                         {
-                            // Lookup for Deadly poison (only attacker applied)
-                            if (constAuraEffectPtr aurEff = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_ROGUE, 0x00010000, 0, 0, m_caster->GetGUID()))
-                            {
-                                // count consumed deadly poison doses at target
-                                bool needConsume = true;
-                                uint32 spellId = aurEff->GetId();
-
-                                uint32 doses = aurEff->GetBase()->GetStackAmount();
-                                if (doses > combo)
-                                    doses = combo;
-
-                                // Master Poisoner
-                                Unit::AuraEffectList const& auraList = player->GetAuraEffectsByType(SPELL_AURA_MOD_AURA_DURATION_BY_DISPEL_NOT_STACK);
-                                for (Unit::AuraEffectList::const_iterator iter = auraList.begin(); iter != auraList.end(); ++iter)
-                                {
-                                    if ((*iter)->GetSpellInfo()->SpellFamilyName == SPELLFAMILY_ROGUE && (*iter)->GetSpellInfo()->SpellIconID == 1960)
-                                    {
-                                        uint32 chance = (*iter)->GetSpellInfo()->Effects[EFFECT_2].CalcValue(m_caster);
-
-                                        if (chance && roll_chance_i(chance))
-                                            needConsume = false;
-
-                                        break;
-                                    }
-                                }
-
-                                if (needConsume)
-                                    for (uint32 i = 0; i < doses; ++i)
-                                        unitTarget->RemoveAuraFromStack(spellId);
-
-                                damage *= doses;
-                                damage += int32(player->GetTotalAttackPowerValue(BASE_ATTACK) * 0.09f * combo);
-                            }
+                            damage += int32(0.112f * combo * ap + damage * combo);
 
                             // Eviscerate and Envenom Bonus Damage (item set effect)
                             if (m_caster->HasAura(37169))
@@ -563,6 +534,23 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                                 damage += int32(ap * combo * 0.028f);
                             else if (m_caster->ToPlayer()->GetSpecializationId(m_caster->ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_SUBTLETY)
                                 damage += int32(ap * combo * 0.034f);
+                        }
+                    }
+                }
+                // Deadly Throw
+                else if (m_spellInfo->Id == 26679)
+                {
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        if (uint32 combo = ((Player*)m_caster)->GetComboPoints())
+                        {
+                            float ap = m_caster->GetTotalAttackPowerValue(BASE_ATTACK);
+
+                            if (m_caster->ToPlayer()->GetSpecializationId(m_caster->ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_ASSASSINATION
+                                || m_caster->ToPlayer()->GetSpecializationId(m_caster->ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_COMBAT)
+                                damage += int32(ap * combo * 0.12f);
+                            else if (m_caster->ToPlayer()->GetSpecializationId(m_caster->ToPlayer()->GetActiveSpec()) == SPEC_ROGUE_SUBTLETY)
+                                damage += int32(ap * combo * 0.149f);
                         }
                     }
                 }
@@ -3201,23 +3189,18 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
         }
         case SPELLFAMILY_ROGUE:
         {
-            // Hemorrhage
-            if (m_spellInfo->SpellFamilyFlags[0] & 0x2000000)
-            {
-                if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                    m_caster->ToPlayer()->AddComboPoints(unitTarget, 1, this);
-                // 50% more damage with daggers
-                if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                    if (Item* item = m_caster->ToPlayer()->GetWeaponForAttack(m_attackType, true))
-                        if (item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)
-                            totalDamagePercentMod *= 1.5f;
-            }
             // Ambush - 44.7% more damage with daggers
             if (m_spellInfo->Id == 8676)
                 if (m_caster->GetTypeId() == TYPEID_PLAYER)
                     if (Item* item = m_caster->ToPlayer()->GetWeaponForAttack(m_attackType, true))
                         if (item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)
                             totalDamagePercentMod *= 1.447f;
+            // Hemorrhage - 45% more damage with daggers
+            if (m_spellInfo->Id == 16511)
+                if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    if (Item* item = m_caster->ToPlayer()->GetWeaponForAttack(m_attackType, true))
+                        if (item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)
+                            totalDamagePercentMod *= 1.45f;
             break;
         }
         case SPELLFAMILY_SHAMAN:
@@ -3402,6 +3385,12 @@ void Spell::EffectInterruptCast(SpellEffIndex effIndex)
 
     if (!unitTarget || !unitTarget->isAlive())
         return;
+
+    // Deadly Throw - Interrupt spell only if used with 5 combo points
+    if (m_spellInfo->Id == 26679)
+        if (m_originalCaster && m_originalCaster->GetTypeId() == TYPEID_PLAYER)
+            if (m_originalCaster->ToPlayer()->GetComboPoints() < 5)
+                return;
 
     // TODO: not all spells that used this effect apply cooldown at school spells
     // also exist case: apply cooldown to interrupted cast only and to all spells

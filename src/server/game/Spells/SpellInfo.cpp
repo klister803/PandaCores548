@@ -2431,10 +2431,7 @@ bool SpellInfo::_IsPositiveEffect(uint8 effIndex, bool deep) const
             switch (Id)
             {
                 // Envenom must be considered as a positive effect even though it deals damage
-                case 32645:     // Envenom (Rank 1)
-                case 32684:     // Envenom (Rank 2)
-                case 57992:     // Envenom (Rank 3)
-                case 57993:     // Envenom (Rank 4)
+                case 32645:
                     return true;
                 default:
                     break;

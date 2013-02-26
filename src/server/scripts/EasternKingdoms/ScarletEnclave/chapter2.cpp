@@ -169,16 +169,16 @@ public:
 
 enum Koltira
 {
-    SAY_BREAKOUT1                   = -1609561,
-    SAY_BREAKOUT2                   = -1609562,
-    SAY_BREAKOUT3                   = -1609563,
-    SAY_BREAKOUT4                   = -1609564,
-    SAY_BREAKOUT5                   = -1609565,
-    SAY_BREAKOUT6                   = -1609566,
-    SAY_BREAKOUT7                   = -1609567,
-    SAY_BREAKOUT8                   = -1609568,
-    SAY_BREAKOUT9                   = -1609569,
-    SAY_BREAKOUT10                  = -1609570,
+    SAY_BREAKOUT1                   = 1,
+    SAY_BREAKOUT2                   = 2,
+    SAY_BREAKOUT3                   = 3,
+    SAY_BREAKOUT4                   = 4,
+    SAY_BREAKOUT5                   = 5,
+    SAY_BREAKOUT6                   = 6,
+    SAY_BREAKOUT7                   = 7,
+    SAY_BREAKOUT8                   = 8,
+    SAY_BREAKOUT9                   = 9,
+    SAY_BREAKOUT10                  = 10,
 
     SPELL_KOLTIRA_TRANSFORM         = 52899,
     SPELL_ANTI_MAGIC_ZONE           = 52894,

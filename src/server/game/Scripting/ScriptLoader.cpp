@@ -330,6 +330,7 @@ void AddSC_wailing_caverns();                //Wailing caverns
 void AddSC_instance_wailing_caverns();
 void AddSC_zulfarrak();                     //Zul'Farrak generic
 void AddSC_instance_zulfarrak();            //Zul'Farrak instance script
+void AddSC_gilneas();
 
 void AddSC_ashenvale();
 void AddSC_azshara();
@@ -621,6 +622,8 @@ void AddSC_instance_shadopan_monastery();       // Shadopan Monastery
 void AddSC_shadopan_monastery();
 void AddSC_boss_gu_cloudstrike();
 void AddSC_boss_master_snowdrift();
+void AddSC_boss_sha_of_violence();
+void AddSC_boss_taran_zhu();
 
 // battlegrounds
 
@@ -985,6 +988,7 @@ void AddKalimdorScripts()
     AddSC_instance_wailing_caverns();
     AddSC_zulfarrak();                      //Zul'Farrak generic
     AddSC_instance_zulfarrak();             //Zul'Farrak instance script
+    AddSC_gilneas();
 
     AddSC_ashenvale();
     AddSC_azshara();
@@ -1289,6 +1293,8 @@ void AddPandarieScripts()
     AddSC_shadopan_monastery();
     AddSC_boss_gu_cloudstrike();
     AddSC_boss_master_snowdrift();
+    AddSC_boss_sha_of_violence();
+    AddSC_boss_taran_zhu();
 #endif
 }
 

@@ -192,6 +192,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
 
     m_extraAttacks = 0;
     countCrit = 0;
+    insightCount = 0;
     m_canDualWield = false;
 
     m_rootTimes = 0;
@@ -553,6 +554,15 @@ void Unit::DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb)
 uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
     // Custom MoP Script
+    // Blade Flurry
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(13877) && damage > 0 && (!spellProto || (spellProto && spellProto->Id != 22482)))
+    {
+        Unit* target = SelectNearbyTarget(victim);
+        int32 bp = damage;
+
+        if (target)
+            CastCustomSpell(target, 22482, &bp, NULL, NULL, true);
+    }
     // Cheat Death : An attack that would otherwise be fatal will instead reduce you to no less than 10% of your maximum health
     if (victim->GetTypeId() == TYPEID_PLAYER && victim->getClass() == CLASS_ROGUE && damage != 0)
     {
@@ -3685,6 +3695,10 @@ void Unit::RemoveAura(AuraApplication * aurApp, AuraRemoveMode mode)
     if (aurApp->GetBase()->GetApplicationOfTarget(GetGUID()) != aurApp || aurApp->GetBase()->IsRemoved())
         return;
     uint32 spellId = aurApp->GetBase()->GetId();
+
+    if (spellId == 51713 && mode != AURA_REMOVE_BY_EXPIRE)
+        return;
+
     for (AuraApplicationMap::iterator iter = m_appliedAuras.lower_bound(spellId); iter != m_appliedAuras.upper_bound(spellId);)
     {
         if (aurApp == iter->second)
@@ -5104,7 +5118,6 @@ bool Unit::HandleHasteAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
             switch (hasteSpell->Id)
             {
                 // Blade Flurry
-                case 13877:
                 case 33735:
                 {
                     target = SelectNearbyTarget(victim);
@@ -6545,15 +6558,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->Id)
             {
-                case 32748: // Deadly Throw Interrupt
-                {
-                    // Prevent cast Deadly Throw Interrupt on self from last effect (apply dummy) of Deadly Throw
-                    if (this == victim)
-                        return false;
-
-                    triggered_spell_id = 32747;
-                    break;
-                }
                 case 57934: // Tricks of the Trade
                 {
                     Unit* redirectTarget = GetMisdirectionTarget();
@@ -8024,6 +8028,41 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Sanguinary Vein
+        case 79147:
+        {
+            return false;
+
+            break;
+        }
+        // Find Weakness
+        case 91023:
+        {
+            return false;
+
+            break;
+        }
+        // Combat Potency
+        case 35551:
+        {
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (procSpell && procSpell->Id != 86392)
+                return false;
+
+            if (procSpell && procSpell->Id == 86392)
+                if (!roll_chance_i(20))
+                    return false;
+
+            float offHandSpeed = GetAttackTime(OFF_ATTACK) / IN_MILLISECONDS;
+
+            if (!procSpell && (procFlags & PROC_FLAG_DONE_OFFHAND_ATTACK))
+                if (!roll_chance_f(20.0f * offHandSpeed / 1.4f))
+                    return false;
+
+            break;
+        }
         // Blindside
         case 121152:
         {
@@ -9644,6 +9683,10 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // small exception for Improved Serpent Sting, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
     if (spellProto->Id == 83077) // Improved Serpent Sting
+        return pdamage;
+    // small exception for Hemorrhage, can't find any general rule
+    // should ignore ALL damage mods, they already calculated in trigger spell
+    if (spellProto->Id == 89775) // Hemorrhage
         return pdamage;
 
     // small exception for Echo of Light, can't find any general rule
@@ -14315,6 +14358,58 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         {
             target->CastSpell(target, 122465, true);
             target->ToPlayer()->AddSpellCooldown(122465, 0, time(NULL) + 10);
+        }
+    }
+
+    // Find Weakness - 91023
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(91023) && procSpell && (procSpell->Id == 8676 || procSpell->Id == 703 || procSpell->Id == 1833))
+        CastSpell(target, 91021, true);
+
+    // Revealing Strike - 84617
+    if (GetTypeId() == TYPEID_PLAYER && target && target->HasAura(84617, GetGUID()) && procSpell && procSpell->Id == 1752)
+        if (roll_chance_i(20))
+            ToPlayer()->AddComboPoints(target, 1);
+
+    // Bandit's Guile - 84654
+    // Your Sinister Strike and Revealing Strike abilities increase your damage dealt by up to 30%
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(84654) && procSpell && (procSpell->Id == 84617 || procSpell->Id == 1752))
+    {
+        insightCount++;
+
+        // it takes a total of 4 strikes to get a proc, or a level up
+        if (insightCount >= 4)
+        {
+            insightCount = 0;
+
+            // it takes 4 strikes to get Shallow insight
+            // than 4 strikes to get Moderate insight
+            // and than 4 strikes to get Deep Insight
+
+            // Shallow Insight
+            if (HasAura(84745))
+            {
+                RemoveAura(84745);
+                CastSpell(this, 84746, true); // Moderate Insight
+            }
+            else if (HasAura(84746))
+            {
+                RemoveAura(84746);
+                CastSpell(this, 84747, true); // Deep Insight
+            }
+            // the cycle will begin
+            else if (!HasAura(84747))
+                CastSpell(this, 84745, true); // Shallow Insight
+        }
+        else
+        {
+            // Each strike refreshes the duration of shallow insight or Moderate insight
+            // but you can't refresh Deep Insight without starting from shallow insight.
+            // Shallow Insight
+            if (AuraPtr shallowInsight = GetAura(84745))
+                shallowInsight->RefreshDuration();
+            // Moderate Insight
+            else if (AuraPtr moderateInsight = GetAura(84746))
+                moderateInsight->RefreshDuration();
         }
     }
 

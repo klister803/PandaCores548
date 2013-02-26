@@ -2820,6 +2820,24 @@ void WorldObject::GetCreatureListWithEntryInGrid(std::list<Creature*>& creatureL
     cell.Visit(pair, visitor, *(this->GetMap()), *this, maxSearchRange);
 }
 
+void WorldObject::GetGameObjectListWithEntryInGridAppend(std::list<GameObject*>& gameobjectList, uint32 entry, float maxSearchRange) const
+{
+    std::list<GameObject*> tempList;
+    GetGameObjectListWithEntryInGrid(tempList, entry, maxSearchRange);
+    gameobjectList.sort();
+    tempList.sort();
+    gameobjectList.merge(tempList);
+}
+
+void WorldObject::GetCreatureListWithEntryInGridAppend(std::list<Creature*>& creatureList, uint32 entry, float maxSearchRange) const
+{
+    std::list<Creature*> tempList;
+    GetCreatureListWithEntryInGrid(tempList, entry, maxSearchRange);
+    creatureList.sort();
+    tempList.sort();
+    creatureList.merge(tempList);
+}
+
 /*
 namespace Trinity
 {

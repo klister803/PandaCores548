@@ -1313,6 +1313,7 @@ class Unit : public WorldObject
         uint32 m_extraAttacks;
         bool m_canDualWield;
         int32 countCrit;
+        int32 insightCount;
 
         void _addAttacker(Unit* pAttacker)                  // must be called only from Unit::Attack(Unit*)
         {

@@ -609,15 +609,10 @@ public:
 
     bool OnGossipHello(Player* player, GameObject* go)
     {
-        switch (go->GetEntry())
-        {
-            case 400003:
-                if (go->GetPositionZ() < 0.0f)
-                    player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), 22.31f, go->GetOrientation());
-                else
-                    player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), -39.0f, go->GetOrientation());
-                break;
-        }
+        if (go->GetPositionZ() < 0.0f)
+            player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), 22.31f, go->GetOrientation());
+        else
+            player->NearTeleportTo(go->GetPositionX(), go->GetPositionY(), -39.0f, go->GetOrientation());
 
         return false;
     }
