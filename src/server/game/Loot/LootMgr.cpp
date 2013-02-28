@@ -1424,13 +1424,7 @@ bool LootTemplate::HasQuestDrop(LootTemplateMap const& store, uint8 groupId) con
     for (LootStoreItemList::const_iterator i = Entries.begin(); i != Entries.end(); ++i)
     {
         if (i->mincountOrRef < 0)                           // References
-        {
-            LootTemplateMap::const_iterator Referenced = store.find(-i->mincountOrRef);
-            if (Referenced == store.end())
-                continue;                                   // Error message [should be] already printed at loading stage
-            if (Referenced->second->HasQuestDrop(store, i->group))
-                return true;
-        }
+            return LootTemplates_Reference.HaveQuestLootFor(-i->mincountOrRef);
         else if (i->needs_quest)
             return true;                                    // quest drop found
     }
