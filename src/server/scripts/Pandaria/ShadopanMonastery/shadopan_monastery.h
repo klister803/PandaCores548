@@ -32,6 +32,8 @@ enum DataTypes
     DATA_DEFEATED_MINIBOSS      = 8,
     DATA_DEFEATED_CLONES        = 9,
 
+    DATA_ARCHERY                = 10,
+
     MAX_DATA
 };
 
@@ -57,6 +59,15 @@ enum CreaturesIds
 
     // Sha of Violence
     NPC_LESSER_VOLATILE_ENERGY  = 66652,
+
+    // Trashs
+    NPC_ARCHERY_FIRST           = 64549,
+    NPC_ARCHERY_SECOND          = 56767,
+    NPC_ARCHERY_TARGET          = 64550,
+
+    NPC_RESIDUAL_OF_HATRED      = 58803,
+    NPC_VESTIGE_OF_HATRED       = 58807,
+    NPC_FRAGMENT_OF_HATRED      = 58810,
 };
 
 enum ObjectsIds

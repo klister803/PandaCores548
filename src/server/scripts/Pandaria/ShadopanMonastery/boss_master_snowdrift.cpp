@@ -407,6 +407,9 @@ class boss_master_snowdrift : public CreatureScript
                         events.ScheduleEvent(EVENT_PARRY_STANCE, urand(10000, 15000));
                         break;
                     case EVENT_QUIVERING_PALM:
+                        if (Unit* target = SelectTarget(SELECT_TARGET_RANDOM))
+                            me->CastSpell(target, SPELL_QUIVERING_PALM, false);
+
                         events.ScheduleEvent(EVENT_QUIVERING_PALM, urand(5000, 10000));
                         break;
                     default:

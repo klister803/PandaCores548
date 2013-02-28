@@ -172,7 +172,7 @@ void CreatureRelocationNotifier::Visit(PlayerMapType &m)
 
 void CreatureRelocationNotifier::Visit(CreatureMapType &m)
 {
-    if (!i_creature.isAlive() || !i_creature.m_LOSCheck_creature)
+    if (!i_creature.isAlive())// || !i_creature.m_LOSCheck_creature)
         return;
 
     i_creature.m_LOSCheck_creature = false;

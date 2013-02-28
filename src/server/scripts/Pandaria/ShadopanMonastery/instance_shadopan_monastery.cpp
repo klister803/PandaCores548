@@ -53,6 +53,10 @@ public:
 
         std::list<uint64> secondDefeatedNovicePositionsGuid;
         std::list<uint64> secondDefeatedNovicePositionsGuidSave;
+        
+        std::list<uint64> firstArcherySet;
+        std::list<uint64> secondArcherySet;
+        std::list<uint64> archeryTargetGuids;
 
         uint32 dataStorage[MAX_DATA];
 
@@ -77,6 +81,9 @@ public:
             snowdriftPossessionsGuid    = 0;
             snowdriftFirewallGuid       = 0;
             snowdriftDojoDoorGuid       = 0;
+            
+            firstArcherySet.clear();
+            secondArcherySet.clear();
 
             memset(dataStorage, 0, MAX_DATA * sizeof(uint32));
         }
@@ -85,11 +92,12 @@ public:
         {
             switch (creature->GetEntry())
             {
-                case NPC_GU_CLOUDSTRIKE:    guCloudstikeGuid    = creature->GetGUID();  return;
-                case NPC_MASTER_SNOWDRIFT:  masterSnowdriftGuid = creature->GetGUID();  return;
-                case NPC_SHA_VIOLENCE:      shaViolenceGuid     = creature->GetGUID();  return;
-                case NPC_TARAN_ZHU:         taranZhuGuid        = creature->GetGUID();  return;
-                case NPC_AZURE_SERPENT:     azureSerpentGuid    = creature->GetGUID();  return;
+                case NPC_GU_CLOUDSTRIKE:    guCloudstikeGuid    = creature->GetGUID();          return;
+                case NPC_MASTER_SNOWDRIFT:  masterSnowdriftGuid = creature->GetGUID();          return;
+                case NPC_SHA_VIOLENCE:      shaViolenceGuid     = creature->GetGUID();          return;
+                case NPC_TARAN_ZHU:         taranZhuGuid        = creature->GetGUID();          return;
+                case NPC_AZURE_SERPENT:     azureSerpentGuid    = creature->GetGUID();          return;
+                case NPC_ARCHERY_TARGET:    archeryTargetGuids.push_back(creature->GetGUID());  return;
                 case NPC_SNOWDRIFT_POSITION:
                 {
                     uint32 guid = creature->GetDBTableGUIDLow();
@@ -179,18 +187,7 @@ public:
                 case DATA_TARAN_ZHU:
                 {
                     if (state == IN_PROGRESS)
-                    {
-                        Map::PlayerList const &PlayerList = instance->GetPlayers();
-
-                        if (!PlayerList.isEmpty())
-                            for (Map::PlayerList::const_iterator i = PlayerList.begin(); i != PlayerList.end(); ++i)
-                                if (Player* player = i->getSource())
-                                {
-                                    player->AddAura(SPELL_HATE, player);
-                                    player->SetMaxPower(POWER_ALTERNATE_POWER, 100);
-                                    player->SetPower(POWER_ALTERNATE_POWER, 0);
-                                }
-                    }
+                        DoAddAuraOnPlayers(SPELL_HATE);
                     else
                     {
                         Map::PlayerList const &PlayerList = instance->GetPlayers();
@@ -202,8 +199,6 @@ public:
                                     player->RemoveAurasDueToSpell(SPELL_HATE);
                                     player->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE);
                                     player->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE_VISUAL);
-                                    player->SetMaxPower(POWER_ALTERNATE_POWER, 100);
-                                    player->SetPower(POWER_ALTERNATE_POWER, 0);
                                 }
                     }
                 }
@@ -264,7 +259,7 @@ public:
                 case NPC_SHA_VIOLENCE:          return shaViolenceGuid;
                 case NPC_TARAN_ZHU:             return taranZhuGuid;
                 case NPC_AZURE_SERPENT:         return azureSerpentGuid;
-
+                case NPC_ARCHERY_TARGET:        return Trinity::Containers::SelectRandomContainerElement(archeryTargetGuids);
                 case DATA_RANDOM_FIRST_POS:
                 {
                     if (firstDefeatedNovicePositionsGuid.empty())

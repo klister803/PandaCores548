@@ -28,7 +28,6 @@
 enum RogueSpells
 {
     ROGUE_SPELL_SHIV_TRIGGERED                   = 5940,
-    ROGUE_SPELL_GLYPH_OF_PREPARATION             = 56819,
     ROGUE_SPELL_PREY_ON_THE_WEAK                 = 58670,
     ROGUE_SPELL_RECUPERATE                       = 73651,
     ROGUE_SPELL_DEADLY_POISON                    = 2823,
@@ -63,6 +62,165 @@ enum RogueSpells
     ROGUE_SPELL_SHADOW_BLADES                    = 121471,
     ROGUE_SPELL_SPRINT                           = 2983,
     ROGUE_SPELL_HEMORRHAGE_DOT                   = 89775,
+    ROGUE_SPELL_SANGUINARY_VEIN_DEBUFF           = 124271,
+    ROGUE_SPELL_NIGHTSTALKER_AURA                = 14062,
+    ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE         = 130493,
+    ROGUE_SPELL_SHADOW_FOCUS_AURA                = 108209,
+    ROGUE_SPELL_SHADOW_FOCUS_COST_PCT            = 112942,
+    ROGUE_SPELL_NERVE_STRIKE_AURA                = 108210,
+    ROGUE_SPELL_NERVE_STRIKE_REDUCE_DAMAGE_DONE  = 112947,
+};
+
+// Called by Kidney Shot - 408 and Cheap Shot - 1833
+// Nerve Strike - 108210
+class spell_rog_nerve_strike : public SpellScriptLoader
+{
+    public:
+        spell_rog_nerve_strike() : SpellScriptLoader("spell_rog_nerve_strike") { }
+
+        class spell_rog_nerve_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_nerve_strike_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(ROGUE_SPELL_NERVE_STRIKE_AURA))
+                            _player->CastSpell(target, ROGUE_SPELL_NERVE_STRIKE_REDUCE_DAMAGE_DONE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_nerve_strike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_nerve_strike_SpellScript();
+        }
+};
+
+// Called by Stealth - 1784
+// Nightstalker - 14062
+class spell_rog_nightstalker : public SpellScriptLoader
+{
+    public:
+        spell_rog_nightstalker() : SpellScriptLoader("spell_rog_nightstalker") { }
+
+        class spell_rog_nightstalker_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_nightstalker_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(ROGUE_SPELL_NIGHTSTALKER_AURA))
+                        _player->CastSpell(_player, ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE, true);
+
+                    if (_player->HasAura(ROGUE_SPELL_SHADOW_FOCUS_AURA))
+                        _player->CastSpell(_player, ROGUE_SPELL_SHADOW_FOCUS_COST_PCT, true);
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_nightstalker_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_nightstalker_SpellScript();
+        }
+
+        class spell_rog_nightstalker_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_nightstalker_AuraScript);
+
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetCaster())
+                {
+                    if (GetCaster()->HasAura(ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE))
+                        GetCaster()->RemoveAura(ROGUE_SPELL_NIGHTSTALKER_DAMAGE_DONE);
+
+                    if (GetCaster()->HasAura(ROGUE_SPELL_SHADOW_FOCUS_COST_PCT))
+                        GetCaster()->RemoveAura(ROGUE_SPELL_SHADOW_FOCUS_COST_PCT);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_rog_nightstalker_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_nightstalker_AuraScript();
+        }
+};
+
+// Called by Slice and Dice - 5171
+// Energetic Recovery - 79152
+class spell_rog_energetic_recovery : public SpellScriptLoader
+{
+    public:
+        spell_rog_energetic_recovery() : SpellScriptLoader("spell_rog_energetic_recovery") { }
+
+        class spell_rog_energetic_recovery_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_energetic_recovery_AuraScript);
+
+            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
+            {
+                if (GetCaster())
+                    GetCaster()->EnergizeBySpell(GetCaster(), 5171, 8, POWER_ENERGY);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_rog_energetic_recovery_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_ENERGIZE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_energetic_recovery_AuraScript();
+        }
+};
+
+// Called by Rupture - 1943, Garrote - 703 and Crimson Tempest - 121411
+// Sanguinary Vein - 79147
+class spell_rog_sanguinary_vein : public SpellScriptLoader
+{
+    public:
+        spell_rog_sanguinary_vein() : SpellScriptLoader("spell_rog_sanguinary_vein") { }
+
+        class spell_rog_sanguinary_vein_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_rog_sanguinary_vein_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, ROGUE_SPELL_SANGUINARY_VEIN_DEBUFF, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_rog_sanguinary_vein_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_rog_sanguinary_vein_SpellScript();
+        }
 };
 
 // Hemorrhage - 16511
@@ -270,35 +428,38 @@ class spell_rog_venomous_wounds : public SpellScriptLoader
                 {
                     if (Unit* target = GetTarget())
                     {
-                        // Each time your Rupture or Garrote deals damage to an enemy that you have poisoned ...
-                        if (target->HasAura(8680, caster->GetGUID())
-                            || target->HasAura(2818, caster->GetGUID())
-                            || target->HasAura(5760, caster->GetGUID())
-                            || target->HasAura(3409, caster->GetGUID())
-                            || target->HasAura(113952, caster->GetGUID())
-                            || target->HasAura(112961, caster->GetGUID()))
+                        if (caster->HasAura(79134))
                         {
-                            if (AuraPtr rupture = target->GetAura(ROGUE_SPELL_RUPTURE_DOT, caster->GetGUID()))
+                            // Each time your Rupture or Garrote deals damage to an enemy that you have poisoned ...
+                            if (target->HasAura(8680, caster->GetGUID())
+                                || target->HasAura(2818, caster->GetGUID())
+                                || target->HasAura(5760, caster->GetGUID())
+                                || target->HasAura(3409, caster->GetGUID())
+                                || target->HasAura(113952, caster->GetGUID())
+                                || target->HasAura(112961, caster->GetGUID()))
                             {
-                                // ... you have a 75% chance ...
-                                if (roll_chance_i(75))
+                                if (AuraPtr rupture = target->GetAura(ROGUE_SPELL_RUPTURE_DOT, caster->GetGUID()))
                                 {
-                                    // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
-                                    caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
-                                    int32 bp = 10;
-                                    caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
+                                    // ... you have a 75% chance ...
+                                    if (roll_chance_i(75))
+                                    {
+                                        // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
+                                        caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
+                                        int32 bp = 10;
+                                        caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
+                                    }
                                 }
-                            }
-                            // Garrote will not trigger this effect if the enemy is also afflicted by your Rupture
-                            else if (AuraPtr garrote = target->GetAura(ROGUE_SPELL_GARROTE_DOT, caster->GetGUID()))
-                            {
-                                // ... you have a 75% chance ...
-                                if (roll_chance_i(75))
+                                // Garrote will not trigger this effect if the enemy is also afflicted by your Rupture
+                                else if (AuraPtr garrote = target->GetAura(ROGUE_SPELL_GARROTE_DOT, caster->GetGUID()))
                                 {
-                                    // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
-                                    caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
-                                    int32 bp = 10;
-                                    caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
+                                    // ... you have a 75% chance ...
+                                    if (roll_chance_i(75))
+                                    {
+                                        // ... to deal [ X + 16% of AP ] additional Nature damage and to regain 10 Energy
+                                        caster->CastSpell(target, ROGUE_SPELL_VENOMOUS_WOUND_DAMAGE, true);
+                                        int32 bp = 10;
+                                        caster->CastCustomSpell(caster, ROGUE_SPELL_VENOMOUS_VIM_ENERGIZE, &bp, NULL, NULL, true);
+                                    }
                                 }
                             }
                         }
@@ -882,50 +1043,7 @@ class spell_rog_recuperate : public SpellScriptLoader
         }
 };
 
-// 31130 - Nerves of Steel
-class spell_rog_nerves_of_steel : public SpellScriptLoader
-{
-    public:
-        spell_rog_nerves_of_steel() : SpellScriptLoader("spell_rog_nerves_of_steel") { }
-
-        class spell_rog_nerves_of_steel_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_rog_nerves_of_steel_AuraScript);
-
-            uint32 absorbPct;
-
-            bool Load()
-            {
-                absorbPct = GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster());
-                return true;
-            }
-
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                // Set absorbtion amount to unlimited
-                amount = -1;
-            }
-
-            void Absorb(AuraEffectPtr /*aurEff*/, DamageInfo & dmgInfo, uint32 & absorbAmount)
-            {
-                // reduces all damage taken while stun or fear
-                if (GetTarget()->GetUInt32Value(UNIT_FIELD_FLAGS) & (UNIT_FLAG_FLEEING) || (GetTarget()->GetUInt32Value(UNIT_FIELD_FLAGS) & (UNIT_FLAG_STUNNED) && GetTarget()->HasAuraWithMechanic(1<<MECHANIC_STUN)))
-                    absorbAmount = CalculatePct(dmgInfo.GetDamage(), absorbPct);
-            }
-
-            void Register()
-            {
-                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_rog_nerves_of_steel_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_rog_nerves_of_steel_AuraScript::Absorb, EFFECT_0);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_rog_nerves_of_steel_AuraScript();
-        }
-};
-
+// Preparation - 14185
 class spell_rog_preparation : public SpellScriptLoader
 {
     public:
@@ -940,13 +1058,6 @@ class spell_rog_preparation : public SpellScriptLoader
                 return GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(ROGUE_SPELL_GLYPH_OF_PREPARATION))
-                    return false;
-                return true;
-            }
-
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 Player* caster = GetCaster()->ToPlayer();
@@ -959,19 +1070,10 @@ class spell_rog_preparation : public SpellScriptLoader
 
                     if (spellInfo->SpellFamilyName == SPELLFAMILY_ROGUE)
                     {
-                        if (spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_COLDB_SHADOWSTEP ||      // Cold Blood, Shadowstep
-                            spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT)           // Vanish, Evasion, Sprint
+                        if (spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_VAN_EVAS_SPRINT ||   // Vanish, Evasion, Sprint
+                            spellInfo->Id == 31224 ||
+                            spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_DISMANTLE)          // Dismantle
                             caster->RemoveSpellCooldown((itr++)->first, true);
-                        else if (caster->HasAura(ROGUE_SPELL_GLYPH_OF_PREPARATION))
-                        {
-                            if (spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_DISMANTLE ||         // Dismantle
-                                spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_KICK ||               // Kick
-                                (spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_ROGUE_BLADE_FLURRY &&     // Blade Flurry
-                                spellInfo->SpellFamilyFlags[1] & SPELLFAMILYFLAG1_ROGUE_BLADE_FLURRY))
-                                caster->RemoveSpellCooldown((itr++)->first, true);
-                            else
-                                ++itr;
-                        }
                         else
                             ++itr;
                     }
@@ -1134,6 +1236,7 @@ class spell_rog_deadly_poison : public SpellScriptLoader
         }
 };
 
+// Shadow Step - 36554
 class spell_rog_shadowstep : public SpellScriptLoader
 {
     public:
@@ -1164,6 +1267,10 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_nerve_strike();
+    new spell_rog_nightstalker();
+    new spell_rog_energetic_recovery();
+    new spell_rog_sanguinary_vein();
     new spell_rog_hemorrhage();
     new spell_rog_restless_blades();
     new spell_rog_cut_to_the_chase();
@@ -1180,7 +1287,6 @@ void AddSC_rogue_spell_scripts()
     new spell_rog_shiv();
     new spell_rog_poisons();
     new spell_rog_recuperate();
-    new spell_rog_nerves_of_steel();
     new spell_rog_preparation();
     new spell_rog_prey_on_the_weak();
     new spell_rog_deadly_poison();

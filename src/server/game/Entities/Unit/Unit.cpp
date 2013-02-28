@@ -3695,6 +3695,10 @@ void Unit::RemoveAura(AuraApplication * aurApp, AuraRemoveMode mode)
     if (aurApp->GetBase()->GetApplicationOfTarget(GetGUID()) != aurApp || aurApp->GetBase()->IsRemoved())
         return;
     uint32 spellId = aurApp->GetBase()->GetId();
+
+    if (spellId == 51713 && mode != AURA_REMOVE_BY_EXPIRE)
+        return;
+
     for (AuraApplicationMap::iterator iter = m_appliedAuras.lower_bound(spellId); iter != m_appliedAuras.upper_bound(spellId);)
     {
         if (aurApp == iter->second)
@@ -6554,15 +6558,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->Id)
             {
-                case 32748: // Deadly Throw Interrupt
-                {
-                    // Prevent cast Deadly Throw Interrupt on self from last effect (apply dummy) of Deadly Throw
-                    if (this == victim)
-                        return false;
-
-                    triggered_spell_id = 32747;
-                    break;
-                }
                 case 57934: // Tricks of the Trade
                 {
                     Unit* redirectTarget = GetMisdirectionTarget();
@@ -8033,6 +8028,13 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Sanguinary Vein
+        case 79147:
+        {
+            return false;
+
+            break;
+        }
         // Find Weakness
         case 91023:
         {
@@ -9678,6 +9680,10 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     if (spellProto->Id == 122233) // Crimson Tempest
         return pdamage;
 
+    // small exception for Improved Serpent Sting, can't find any general rule
+    // should ignore ALL damage mods, they already calculated in trigger spell
+    if (spellProto->Id == 83077) // Improved Serpent Sting
+        return pdamage;
     // small exception for Hemorrhage, can't find any general rule
     // should ignore ALL damage mods, they already calculated in trigger spell
     if (spellProto->Id == 89775) // Hemorrhage
@@ -10200,6 +10206,11 @@ uint32 Unit::SpellDamageBonusTaken(Unit* caster, SpellInfo const* spellProto, ui
     // small exception for Stagger Amount, can't find any general rules
     // Light Stagger, Moderate Stagger and Heavy Stagger ignore reduction mods
     if (spellProto->Id == 124275 || spellProto->Id == 124274 || spellProto->Id == 124273)
+        return pdamage;
+
+    // small exception for Improved Serpent Sting, can't find any general rule
+    // should ignore ALL damage mods, they already calculated in trigger spell
+    if (spellProto->Id == 83077) // Improved Serpent Sting
         return pdamage;
 
     int32 TakenTotal = 0;
@@ -12253,7 +12264,12 @@ void Unit::UpdateSpeed(UnitMoveType mtype, bool forced)
         {
             // Set creature speed rate from CreatureInfo
             if (GetTypeId() == TYPEID_UNIT)
-                speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
+            {
+                if (mtype == MOVE_FLIGHT)
+                    speed *= ToCreature()->GetCreatureTemplate()->speed_fly;
+                else
+                    speed *= ToCreature()->GetCreatureTemplate()->speed_run;    // at this point, MOVE_WALK is never reached
+            }
 
             // Normalize speed by 191 aura SPELL_AURA_USE_NORMAL_MOVEMENT_SPEED if need
             // TODO: possible affect only on MOVE_RUN
