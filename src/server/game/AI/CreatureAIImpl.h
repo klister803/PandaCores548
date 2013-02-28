@@ -583,7 +583,8 @@ inline bool CreatureAI::_EnterEvadeMode()
         return false;
 
     // dont remove vehicle auras, passengers arent supposed to drop off the vehicle
-    me->RemoveAllAurasExceptType(SPELL_AURA_CONTROL_VEHICLE);
+    if (me->GetEntry() != NPC_HOLY_GUARDIAN)
+        me->RemoveAllAurasExceptType(SPELL_AURA_CONTROL_VEHICLE);
 
     // sometimes bosses stuck in combat?
     me->DeleteThreatList();
