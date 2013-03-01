@@ -181,7 +181,7 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
         StatusID = STATUS_NONE;
 
     ObjectGuid guidBytes1 = pPlayer->GetGUID();
-    ObjectGuid guidBytes2 = bg->GetGUID();
+    ObjectGuid guidBytes2 = bg ? bg->GetGUID() : 0;
 
     switch (StatusID)
     {
@@ -198,7 +198,12 @@ void BattlegroundMgr::BuildBattlegroundStatusPacket(WorldPacket* data, Battlegro
             *data << uint32(Time1);                     // Join Time
             data->WriteByteSeq(guidBytes1[7]);
             data->WriteByteSeq(guidBytes1[2]);
-            *data << uint32(bg->isArena() ? bg->GetMaxPlayersPerTeam() : 1);                         // unk, always 1
+
+            if (bg)
+            	*data << uint32(bg->isArena() ? bg->GetMaxPlayersPerTeam() : 1);                         // unk, always 1
+            else
+            	*data << uint32(1);
+
             data->WriteByteSeq(guidBytes1[5]);
             data->WriteByteSeq(guidBytes1[1]);
             data->WriteByteSeq(guidBytes1[4]);
