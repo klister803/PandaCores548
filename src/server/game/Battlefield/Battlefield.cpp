@@ -862,8 +862,9 @@ Creature* Battlefield::SpawnCreature(uint32 entry, float x, float y, float z, fl
         return NULL;
     }
     // force using DB speeds -- do we really need this?
-    creature->SetSpeed(MOVE_WALK, cinfo->speed_walk);
-    creature->SetSpeed(MOVE_RUN, cinfo->speed_run);
+    creature->SetSpeed(MOVE_WALK,   cinfo->speed_walk);
+    creature->SetSpeed(MOVE_RUN,    cinfo->speed_run);
+    creature->SetSpeed(MOVE_FLIGHT, cinfo->speed_fly);
 
     // Set creature in world
     map->AddToMap(creature);
