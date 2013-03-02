@@ -66,9 +66,41 @@ enum DruidSpells
     SPELL_DRUID_SKULL_BASH_MANA_COST     = 82365,
     SPELL_DRUID_SKULL_BASH_INTERUPT      = 93985,
     SPELL_DRUID_SKULL_BASH_CHARGE        = 93983,
+    SPELL_DRUID_FORM_CAT_INCREASE_SPEED  = 113636,
 };
 
-// Skull Bash
+// Cat Form - 768
+class spell_dru_cat_form : public SpellScriptLoader
+{
+    public:
+        spell_dru_cat_form() : SpellScriptLoader("spell_dru_cat_form") { }
+
+        class spell_dru_cat_form_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_cat_form_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    _player->CastSpell(_player, SPELL_DRUID_FORM_CAT_INCREASE_SPEED, true);
+                    _player->RemoveMovementImpairingAuras();
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_cat_form_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_cat_form_SpellScript();
+        }
+};
+
+// Skull Bash - 106839
 class spell_dru_skull_bash : public SpellScriptLoader
 {
     public:
@@ -103,7 +135,7 @@ class spell_dru_skull_bash : public SpellScriptLoader
         }
 };
 
-// Faerie Swarm
+// Faerie Swarm - 102355
 class spell_dru_faerie_swarm : public SpellScriptLoader
 {
     public:
@@ -1597,6 +1629,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_cat_form_SpellScript();
     new spell_dru_skull_bash();
     new spell_dru_faerie_swarm();
     new spell_dru_wild_mushroom_bloom();
