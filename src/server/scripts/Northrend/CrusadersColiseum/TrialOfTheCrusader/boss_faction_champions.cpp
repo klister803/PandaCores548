@@ -1675,8 +1675,9 @@ public:
 
             if (m_uiShadowstepTimer <= uiDiff)
             {
-                if (me->IsInRange(me->getVictim(), 10.0f, 40.0f))
-                    DoCastVictim(SPELL_SHADOWSTEP);
+            	if (Unit* victim = me->getVictim())
+            		if (me->IsInRange(victim, 10.0f, 40.0f))
+            			DoCastVictim(SPELL_SHADOWSTEP);
                 m_uiShadowstepTimer = urand(10*IN_MILLISECONDS, 80*IN_MILLISECONDS);
             } else m_uiShadowstepTimer -= uiDiff;
 

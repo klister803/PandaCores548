@@ -2642,6 +2642,20 @@ void SpellMgr::LoadSpellClassInfo()
         if (ClassID == CLASS_DEATH_KNIGHT || ClassID == CLASS_MAGE || ClassID == CLASS_PRIEST)
             mSpellClassInfo[ClassID].push_back(115043);
 
+        // All Rune for DK
+        if (ClassID == CLASS_DEATH_KNIGHT)
+        {
+            mSpellClassInfo[ClassID].push_back(53323);
+            mSpellClassInfo[ClassID].push_back(54447);
+            mSpellClassInfo[ClassID].push_back(53342);
+            mSpellClassInfo[ClassID].push_back(53331);
+            mSpellClassInfo[ClassID].push_back(54446);
+            mSpellClassInfo[ClassID].push_back(53323);
+            mSpellClassInfo[ClassID].push_back(53344);
+            mSpellClassInfo[ClassID].push_back(70164);
+            mSpellClassInfo[ClassID].push_back(62158);
+        }
+
         // Swift Flight Form
         if (ClassID == CLASS_DRUID)
             mSpellClassInfo[ClassID].push_back(40120);
