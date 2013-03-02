@@ -8115,7 +8115,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
         {
             int32 health = GetHealth();
 
-            if (damage < 0 || damage < (health / 50))
+            if (damage < 0 || damage < uint32(health / 50))
                 return false;
 
             break;
