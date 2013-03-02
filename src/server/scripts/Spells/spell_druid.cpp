@@ -1629,7 +1629,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
-    new spell_dru_cat_form_SpellScript();
+    new spell_dru_cat_form();
     new spell_dru_skull_bash();
     new spell_dru_faerie_swarm();
     new spell_dru_wild_mushroom_bloom();
