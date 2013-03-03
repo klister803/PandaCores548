@@ -1776,6 +1776,7 @@ void SpellMgr::LoadSpellProcEvents()
         SpellInfo const* spell = GetSpellInfo(entry);
         if (!spell)
         {
+            WorldDatabase.PExecute("DELETE FROM spell_proc_event WHERE entry = %u;", entry);
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_proc_event` does not exist", entry);
             continue;
         }
@@ -1976,6 +1977,7 @@ void SpellMgr::LoadSpellBonusess()
         SpellInfo const* spell = GetSpellInfo(entry);
         if (!spell)
         {
+            WorldDatabase.PExecute("DELETE FROM spell_bonus_data WHERE entry = %u;", entry);
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_bonus_data` does not exist", entry);
             continue;
         }
