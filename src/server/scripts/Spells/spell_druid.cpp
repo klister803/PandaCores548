@@ -67,6 +67,45 @@ enum DruidSpells
     SPELL_DRUID_FORM_CAT_INCREASE_SPEED     = 113636,
     SPELL_DRUID_GLYPH_OF_REGROWTH           = 116218,
     SPELL_DRUID_REGROWTH                    = 8936,
+    SPELL_DRUID_MARK_OF_THE_WILD            = 1126,
+};
+
+// Mark of the Wild - 1126
+class spell_dru_mark_of_the_wild : public SpellScriptLoader
+{
+    public:
+        spell_dru_mark_of_the_wild() : SpellScriptLoader("spell_dru_mark_of_the_wild") { }
+
+        class spell_dru_mark_of_the_wild_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_mark_of_the_wild_SpellScript);
+
+            void HandleOnHit()
+            {
+                Unit* caster = GetCaster();
+                if (caster && caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    caster->AddAura(SPELL_DRUID_MARK_OF_THE_WILD, caster);
+
+                    std::list<Unit*> memberList;
+                    Player* plr = caster->ToPlayer();
+                    plr->GetPartyMembers(memberList);
+
+                    for (auto itr : memberList)
+                        caster->AddAura(SPELL_DRUID_MARK_OF_THE_WILD, (itr));
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_mark_of_the_wild_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_mark_of_the_wild_SpellScript();
+        }
 };
 
 // Nature's Cure - 88423
@@ -1718,6 +1757,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_mark_of_the_wild();
     new spell_dru_natures_cure();
     new spell_dru_glyph_of_regrowth();
     new spell_dru_cat_form();
