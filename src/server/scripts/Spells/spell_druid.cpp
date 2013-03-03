@@ -28,45 +28,87 @@
 
 enum DruidSpells
 {
-    DRUID_INCREASED_MOONFIRE_DURATION    = 38414,
-    DRUID_NATURES_SPLENDOR               = 57865,
-    DRUID_LIFEBLOOM_FINAL_HEAL           = 33778,
-    DRUID_LIFEBLOOM_ENERGIZE             = 64372,
-    DRUID_SURVIVAL_INSTINCTS             = 50322,
-    DRUID_SAVAGE_ROAR                    = 62071,
-    SPELL_DRUID_ITEM_T8_BALANCE_RELIC    = 64950,
-    SPELL_DRUID_WRATH                    = 5176,
-    SPELL_DRUID_STARFIRE                 = 2912,
-    SPELL_DRUID_STARSURGE                = 78674,
-    SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE = 81070,
-    SPELL_DRUID_STARSURGE_ENERGIZE       = 86605,
-    SPELL_DRUID_SOLAR_ECLIPSE            = 48517,
-    SPELL_DRUID_LUNAR_ECLIPSE            = 48518,
-    SPELL_DRUID_NATURES_GRACE            = 16886,
-    SPELL_DRUID_EUPHORIA                 = 81062,
-    SPELL_DRUID_PROWL                    = 5215,
-    SPELL_DRUID_WEAKENED_ARMOR           = 113746,
-    SPELL_DRUID_GLYPH_OF_FRENZIED_REGEN  = 54810,
-    SPELL_DRUID_FRENZIED_REGEN_HEAL_TAKE = 124769,
-    SPELL_DRUID_CELESTIAL_ALIGNMENT      = 112071,
-    SPELL_DRUID_ASTRAL_COMMUNION         = 127663,
-    SPELL_DRUID_SUNFIRE                  = 93402,
-    SPELL_DRUID_MOONFIRE                 = 8921,
-    SPELL_DRUID_SWIFTMEND                = 81262,
-    SPELL_DRUID_SWIFTMEND_TICK           = 81269,
-    DRUID_NPC_WILD_MUSHROOM              = 47649,
-    DRUID_TALENT_FUNGAL_GROWTH_1         = 78788,
-    DRUID_TALENT_FUNGAL_GROWTH_2         = 78789,
-    DRUID_NPC_FUNGAL_GROWTH_1            = 81291,
-    DRUID_NPC_FUNGAL_GROWTH_2            = 81283,
-    DRUID_SPELL_WILD_MUSHROOM_SUICIDE    = 92853,
-    DRUID_SPELL_WILD_MUSHROOM_DAMAGE     = 78777,
-    SPELL_DRUID_WILD_MUSHROOM_HEAL       = 102792,
-    SPELL_DRUID_FAERIE_DECREASE_SPEED    = 102354,
-    SPELL_DRUID_SKULL_BASH_MANA_COST     = 82365,
-    SPELL_DRUID_SKULL_BASH_INTERUPT      = 93985,
-    SPELL_DRUID_SKULL_BASH_CHARGE        = 93983,
-    SPELL_DRUID_FORM_CAT_INCREASE_SPEED  = 113636,
+    DRUID_INCREASED_MOONFIRE_DURATION       = 38414,
+    DRUID_NATURES_SPLENDOR                  = 57865,
+    DRUID_SURVIVAL_INSTINCTS                = 50322,
+    DRUID_SAVAGE_ROAR                       = 62071,
+    SPELL_DRUID_ITEM_T8_BALANCE_RELIC       = 64950,
+    SPELL_DRUID_WRATH                       = 5176,
+    SPELL_DRUID_STARFIRE                    = 2912,
+    SPELL_DRUID_STARSURGE                   = 78674,
+    SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE    = 81070,
+    SPELL_DRUID_STARSURGE_ENERGIZE          = 86605,
+    SPELL_DRUID_SOLAR_ECLIPSE               = 48517,
+    SPELL_DRUID_LUNAR_ECLIPSE               = 48518,
+    SPELL_DRUID_NATURES_GRACE               = 16886,
+    SPELL_DRUID_EUPHORIA                    = 81062,
+    SPELL_DRUID_PROWL                       = 5215,
+    SPELL_DRUID_WEAKENED_ARMOR              = 113746,
+    SPELL_DRUID_GLYPH_OF_FRENZIED_REGEN     = 54810,
+    SPELL_DRUID_FRENZIED_REGEN_HEAL_TAKE    = 124769,
+    SPELL_DRUID_CELESTIAL_ALIGNMENT         = 112071,
+    SPELL_DRUID_ASTRAL_COMMUNION            = 127663,
+    SPELL_DRUID_SUNFIRE                     = 93402,
+    SPELL_DRUID_MOONFIRE                    = 8921,
+    SPELL_DRUID_SWIFTMEND                   = 81262,
+    SPELL_DRUID_SWIFTMEND_TICK              = 81269,
+    DRUID_NPC_WILD_MUSHROOM                 = 47649,
+    DRUID_TALENT_FUNGAL_GROWTH_1            = 78788,
+    DRUID_TALENT_FUNGAL_GROWTH_2            = 78789,
+    DRUID_NPC_FUNGAL_GROWTH_1               = 81291,
+    DRUID_NPC_FUNGAL_GROWTH_2               = 81283,
+    DRUID_SPELL_WILD_MUSHROOM_SUICIDE       = 92853,
+    DRUID_SPELL_WILD_MUSHROOM_DAMAGE        = 78777,
+    SPELL_DRUID_WILD_MUSHROOM_HEAL          = 102792,
+    SPELL_DRUID_FAERIE_DECREASE_SPEED       = 102354,
+    SPELL_DRUID_SKULL_BASH_MANA_COST        = 82365,
+    SPELL_DRUID_SKULL_BASH_INTERUPT         = 93985,
+    SPELL_DRUID_SKULL_BASH_CHARGE           = 93983,
+    SPELL_DRUID_FORM_CAT_INCREASE_SPEED     = 113636,
+    SPELL_DRUID_GLYPH_OF_REGROWTH           = 116218,
+    SPELL_DRUID_REGROWTH                    = 8936,
+};
+
+// Called by Regrowth - 8936
+// Glyph of Regrowth - 116218
+class spell_dru_glyph_of_regrowth : public SpellScriptLoader
+{
+    public:
+        spell_dru_glyph_of_regrowth() : SpellScriptLoader("spell_dru_glyph_of_regrowth") { }
+
+        class spell_dru_glyph_of_regrowth_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_glyph_of_regrowth_AuraScript);
+
+            void HandleApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                // Increases the critical strike chance of your Regrowth by 40%, but removes the periodic component of the spell.
+                if (GetCaster())
+                    if (GetCaster()->HasAura(SPELL_DRUID_GLYPH_OF_REGROWTH))
+                        GetTarget()->RemoveAura(SPELL_DRUID_REGROWTH, GetCaster()->GetGUID());
+            }
+
+            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
+            {
+                // Duration automatically refreshes to 6 sec each time Regrowth heals targets at or below 50% health
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetTarget())
+                        if (target->GetHealthPct() < 50)
+                            if (AuraPtr regrowth = target->GetAura(SPELL_DRUID_REGROWTH, caster->GetGUID()))
+                                regrowth->RefreshDuration();
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_dru_glyph_of_regrowth_AuraScript::HandleApply, EFFECT_1, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_glyph_of_regrowth_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_HEAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_glyph_of_regrowth_AuraScript();
+        }
 };
 
 // Cat Form - 768
@@ -1629,6 +1671,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_glyph_of_regrowth();
     new spell_dru_cat_form();
     new spell_dru_skull_bash();
     new spell_dru_faerie_swarm();

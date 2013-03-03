@@ -10476,6 +10476,16 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                                     crit_chance += aurEff->GetAmount();
                            break;
                         }
+                        // Regrowth
+                        if (spellProto->Id == 8936)
+                        {
+                            // Regrowth has a 60% increased chance for a critical effect.
+                            crit_chance += 60.0f;
+
+                            // Glyph of Regrowth
+                            if (HasAura(116218))
+                                return true; // Increases the critical strike chance of your Regrowth by 40%, but removes the periodic component of the spell.
+                        }
                     break;
                     case SPELLFAMILY_SHAMAN:
                         // Lava Burst
