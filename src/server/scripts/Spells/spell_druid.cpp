@@ -28,47 +28,207 @@
 
 enum DruidSpells
 {
-    DRUID_INCREASED_MOONFIRE_DURATION    = 38414,
-    DRUID_NATURES_SPLENDOR               = 57865,
-    DRUID_LIFEBLOOM_FINAL_HEAL           = 33778,
-    DRUID_LIFEBLOOM_ENERGIZE             = 64372,
-    DRUID_SURVIVAL_INSTINCTS             = 50322,
-    DRUID_SAVAGE_ROAR                    = 62071,
-    SPELL_DRUID_ITEM_T8_BALANCE_RELIC    = 64950,
-    SPELL_DRUID_WRATH                    = 5176,
-    SPELL_DRUID_STARFIRE                 = 2912,
-    SPELL_DRUID_STARSURGE                = 78674,
-    SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE = 81070,
-    SPELL_DRUID_STARSURGE_ENERGIZE       = 86605,
-    SPELL_DRUID_SOLAR_ECLIPSE            = 48517,
-    SPELL_DRUID_LUNAR_ECLIPSE            = 48518,
-    SPELL_DRUID_NATURES_GRACE            = 16886,
-    SPELL_DRUID_EUPHORIA                 = 81062,
-    SPELL_DRUID_PROWL                    = 5215,
-    SPELL_DRUID_WEAKENED_ARMOR           = 113746,
-    SPELL_DRUID_GLYPH_OF_FRENZIED_REGEN  = 54810,
-    SPELL_DRUID_FRENZIED_REGEN_HEAL_TAKE = 124769,
-    SPELL_DRUID_CELESTIAL_ALIGNMENT      = 112071,
-    SPELL_DRUID_ASTRAL_COMMUNION         = 127663,
-    SPELL_DRUID_SUNFIRE                  = 93402,
-    SPELL_DRUID_MOONFIRE                 = 8921,
-    SPELL_DRUID_SWIFTMEND                = 81262,
-    SPELL_DRUID_SWIFTMEND_TICK           = 81269,
-    DRUID_NPC_WILD_MUSHROOM              = 47649,
-    DRUID_TALENT_FUNGAL_GROWTH_1         = 78788,
-    DRUID_TALENT_FUNGAL_GROWTH_2         = 78789,
-    DRUID_NPC_FUNGAL_GROWTH_1            = 81291,
-    DRUID_NPC_FUNGAL_GROWTH_2            = 81283,
-    DRUID_SPELL_WILD_MUSHROOM_SUICIDE    = 92853,
-    DRUID_SPELL_WILD_MUSHROOM_DAMAGE     = 78777,
-    SPELL_DRUID_WILD_MUSHROOM_HEAL       = 102792,
-    SPELL_DRUID_FAERIE_DECREASE_SPEED    = 102354,
-    SPELL_DRUID_SKULL_BASH_MANA_COST     = 82365,
-    SPELL_DRUID_SKULL_BASH_INTERUPT      = 93985,
-    SPELL_DRUID_SKULL_BASH_CHARGE        = 93983,
+    DRUID_INCREASED_MOONFIRE_DURATION       = 38414,
+    DRUID_NATURES_SPLENDOR                  = 57865,
+    DRUID_SURVIVAL_INSTINCTS                = 50322,
+    DRUID_SAVAGE_ROAR                       = 62071,
+    SPELL_DRUID_ITEM_T8_BALANCE_RELIC       = 64950,
+    SPELL_DRUID_WRATH                       = 5176,
+    SPELL_DRUID_STARFIRE                    = 2912,
+    SPELL_DRUID_STARSURGE                   = 78674,
+    SPELL_DRUID_ECLIPSE_GENERAL_ENERGIZE    = 81070,
+    SPELL_DRUID_STARSURGE_ENERGIZE          = 86605,
+    SPELL_DRUID_SOLAR_ECLIPSE               = 48517,
+    SPELL_DRUID_LUNAR_ECLIPSE               = 48518,
+    SPELL_DRUID_NATURES_GRACE               = 16886,
+    SPELL_DRUID_EUPHORIA                    = 81062,
+    SPELL_DRUID_PROWL                       = 5215,
+    SPELL_DRUID_WEAKENED_ARMOR              = 113746,
+    SPELL_DRUID_GLYPH_OF_FRENZIED_REGEN     = 54810,
+    SPELL_DRUID_FRENZIED_REGEN_HEAL_TAKE    = 124769,
+    SPELL_DRUID_CELESTIAL_ALIGNMENT         = 112071,
+    SPELL_DRUID_ASTRAL_COMMUNION            = 127663,
+    SPELL_DRUID_SUNFIRE                     = 93402,
+    SPELL_DRUID_MOONFIRE                    = 8921,
+    SPELL_DRUID_SWIFTMEND                   = 81262,
+    SPELL_DRUID_SWIFTMEND_TICK              = 81269,
+    DRUID_NPC_WILD_MUSHROOM                 = 47649,
+    DRUID_TALENT_FUNGAL_GROWTH_1            = 78788,
+    DRUID_TALENT_FUNGAL_GROWTH_2            = 78789,
+    DRUID_NPC_FUNGAL_GROWTH_1               = 81291,
+    DRUID_NPC_FUNGAL_GROWTH_2               = 81283,
+    DRUID_SPELL_WILD_MUSHROOM_SUICIDE       = 92853,
+    DRUID_SPELL_WILD_MUSHROOM_DAMAGE        = 78777,
+    SPELL_DRUID_WILD_MUSHROOM_HEAL          = 102792,
+    SPELL_DRUID_FAERIE_DECREASE_SPEED       = 102354,
+    SPELL_DRUID_SKULL_BASH_MANA_COST        = 82365,
+    SPELL_DRUID_SKULL_BASH_INTERUPT         = 93985,
+    SPELL_DRUID_SKULL_BASH_CHARGE           = 93983,
+    SPELL_DRUID_FORM_CAT_INCREASE_SPEED     = 113636,
+    SPELL_DRUID_GLYPH_OF_REGROWTH           = 116218,
+    SPELL_DRUID_REGROWTH                    = 8936,
+    SPELL_DRUID_MARK_OF_THE_WILD            = 1126,
 };
 
-// Skull Bash
+// Mark of the Wild - 1126
+class spell_dru_mark_of_the_wild : public SpellScriptLoader
+{
+    public:
+        spell_dru_mark_of_the_wild() : SpellScriptLoader("spell_dru_mark_of_the_wild") { }
+
+        class spell_dru_mark_of_the_wild_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_mark_of_the_wild_SpellScript);
+
+            void HandleOnHit()
+            {
+                Unit* caster = GetCaster();
+                if (caster && caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    caster->AddAura(SPELL_DRUID_MARK_OF_THE_WILD, caster);
+
+                    std::list<Unit*> memberList;
+                    Player* plr = caster->ToPlayer();
+                    plr->GetPartyMembers(memberList);
+
+                    for (auto itr : memberList)
+                        caster->AddAura(SPELL_DRUID_MARK_OF_THE_WILD, (itr));
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_mark_of_the_wild_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_mark_of_the_wild_SpellScript();
+        }
+};
+
+// Nature's Cure - 88423
+class spell_dru_natures_cure : public SpellScriptLoader
+{
+    public:
+        spell_dru_natures_cure() : SpellScriptLoader("spell_dru_natures_cure") { }
+
+        class spell_dru_natures_cure_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_natures_cure_SpellScript);
+
+            SpellCastResult CheckCleansing()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        // Create dispel mask by dispel type
+                        for (int8 i = 0; i < MAX_SPELL_EFFECTS; i++)
+                        {
+                            uint32 dispel_type = GetSpellInfo()->Effects[i].MiscValue;
+                            uint32 dispelMask  = GetSpellInfo()->GetDispelMask(DispelType(dispel_type));
+                            DispelChargesList dispelList;
+                            target->GetDispellableAuraList(caster, dispelMask, dispelList);
+
+                            if (dispelList.empty())
+                                return SPELL_FAILED_NOTHING_TO_DISPEL;
+
+                            return SPELL_CAST_OK;
+                        }
+                    }
+                }
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_dru_natures_cure_SpellScript::CheckCleansing);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_natures_cure_SpellScript();
+        }
+};
+
+// Called by Regrowth - 8936
+// Glyph of Regrowth - 116218
+class spell_dru_glyph_of_regrowth : public SpellScriptLoader
+{
+    public:
+        spell_dru_glyph_of_regrowth() : SpellScriptLoader("spell_dru_glyph_of_regrowth") { }
+
+        class spell_dru_glyph_of_regrowth_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_glyph_of_regrowth_AuraScript);
+
+            void HandleApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                // Increases the critical strike chance of your Regrowth by 40%, but removes the periodic component of the spell.
+                if (GetCaster())
+                    if (GetCaster()->HasAura(SPELL_DRUID_GLYPH_OF_REGROWTH))
+                        GetTarget()->RemoveAura(SPELL_DRUID_REGROWTH, GetCaster()->GetGUID());
+            }
+
+            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
+            {
+                // Duration automatically refreshes to 6 sec each time Regrowth heals targets at or below 50% health
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetTarget())
+                        if (target->GetHealthPct() < 50)
+                            if (AuraPtr regrowth = target->GetAura(SPELL_DRUID_REGROWTH, caster->GetGUID()))
+                                regrowth->RefreshDuration();
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_dru_glyph_of_regrowth_AuraScript::HandleApply, EFFECT_1, SPELL_AURA_PERIODIC_HEAL, AURA_EFFECT_HANDLE_REAL);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_glyph_of_regrowth_AuraScript::HandleEffectPeriodic, EFFECT_1, SPELL_AURA_PERIODIC_HEAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_glyph_of_regrowth_AuraScript();
+        }
+};
+
+// Cat Form - 768
+class spell_dru_cat_form : public SpellScriptLoader
+{
+    public:
+        spell_dru_cat_form() : SpellScriptLoader("spell_dru_cat_form") { }
+
+        class spell_dru_cat_form_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_cat_form_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    _player->CastSpell(_player, SPELL_DRUID_FORM_CAT_INCREASE_SPEED, true);
+                    _player->RemoveMovementImpairingAuras();
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_cat_form_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_cat_form_SpellScript();
+        }
+};
+
+// Skull Bash - 106839
 class spell_dru_skull_bash : public SpellScriptLoader
 {
     public:
@@ -103,7 +263,7 @@ class spell_dru_skull_bash : public SpellScriptLoader
         }
 };
 
-// Faerie Swarm
+// Faerie Swarm - 102355
 class spell_dru_faerie_swarm : public SpellScriptLoader
 {
     public:
@@ -1357,87 +1517,6 @@ class spell_dru_starfall_dummy : public SpellScriptLoader
         }
 };
 
-class spell_dru_lifebloom : public SpellScriptLoader
-{
-    public:
-        spell_dru_lifebloom() : SpellScriptLoader("spell_dru_lifebloom") { }
-
-        class spell_dru_lifebloom_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dru_lifebloom_AuraScript);
-
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(DRUID_LIFEBLOOM_FINAL_HEAL))
-                    return false;
-                if (!sSpellMgr->GetSpellInfo(DRUID_LIFEBLOOM_ENERGIZE))
-                    return false;
-                return true;
-            }
-
-            void AfterRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                // Final heal only on duration end
-                if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
-                    return;
-
-                // final heal
-                int32 stack = GetStackAmount();
-                int32 healAmount = aurEff->GetAmount();
-                if (Unit* caster = GetCaster())
-                {
-                    healAmount = caster->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), healAmount, HEAL, stack);
-                    healAmount = GetTarget()->SpellHealingBonusTaken(caster, GetSpellInfo(), healAmount, HEAL, stack);
-
-                    GetTarget()->CastCustomSpell(GetTarget(), DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
-
-                    // restore mana
-                    int32 returnMana = CalculatePct(caster->GetCreateMana(), GetSpellInfo()->ManaCostPercentage) * stack / 2;
-                    caster->CastCustomSpell(caster, DRUID_LIFEBLOOM_ENERGIZE, &returnMana, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
-                    return;
-                }
-
-                GetTarget()->CastCustomSpell(GetTarget(), DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
-            }
-
-            void HandleDispel(DispelInfo* dispelInfo)
-            {
-                if (Unit* target = GetUnitOwner())
-                {
-                    if (constAuraEffectPtr aurEff = GetEffect(EFFECT_1))
-                    {
-                        // final heal
-                        int32 healAmount = aurEff->GetAmount();
-                        if (Unit* caster = GetCaster())
-                        {
-                            healAmount = caster->SpellHealingBonusDone(target, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
-                            healAmount = target->SpellHealingBonusTaken(caster, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
-                            target->CastCustomSpell(target, DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULL, GetCasterGUID());
-
-                            // restore mana
-                            int32 returnMana = CalculatePct(caster->GetCreateMana(), GetSpellInfo()->ManaCostPercentage) * dispelInfo->GetRemovedCharges() / 2;
-                            caster->CastCustomSpell(caster, DRUID_LIFEBLOOM_ENERGIZE, &returnMana, NULL, NULL, true, NULL, NULL, GetCasterGUID());
-                            return;
-                        }
-
-                        target->CastCustomSpell(target, DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULL, GetCasterGUID());
-                    }
-                }
-            }
-
-            void Register()
-            {
-                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_lifebloom_AuraScript::AfterRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-                AfterDispel += AuraDispelFn(spell_dru_lifebloom_AuraScript::HandleDispel);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dru_lifebloom_AuraScript();
-        }
-};
-
 class spell_dru_predatory_strikes : public SpellScriptLoader
 {
     public:
@@ -1597,6 +1676,10 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_mark_of_the_wild();
+    new spell_dru_natures_cure();
+    new spell_dru_glyph_of_regrowth();
+    new spell_dru_cat_form();
     new spell_dru_skull_bash();
     new spell_dru_faerie_swarm();
     new spell_dru_wild_mushroom_bloom();
@@ -1623,7 +1706,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_starfall_aoe();
     new spell_dru_swift_flight_passive();
     new spell_dru_starfall_dummy();
-    new spell_dru_lifebloom();
     new spell_dru_predatory_strikes();
     new spell_dru_savage_roar();
     new spell_dru_survival_instincts();

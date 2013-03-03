@@ -188,45 +188,48 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 chrClass, uint8 level
     // Add Taxi Nodes availables from player level
     for (uint32 i = 0; i < sTaxiNodesStore.GetNumRows(); i++)
     {
-    	TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(i);
-    	if (!node)
-    		continue;
+        TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(i);
+        if (!node)
+            continue;
 
-    	// Bad map id
-    	if (!sMapStore.LookupEntry(node->map_id))
-    		continue;
+        // Bad map id
+        if (!sMapStore.LookupEntry(node->map_id))
+            continue;
 
         int gx=(int)(32-node->x/SIZE_OF_GRIDS);                       //grid x
         int gy=(int)(32-node->y/SIZE_OF_GRIDS);                       //grid y
 
         // Bad positions
         if (gx < 0 || gy < 0)
-        	continue;
+            continue;
 
-    	uint32 zone = sMapMgr->GetZoneId(node->map_id, node->x, node->y, node->z);
-    	if (!zone)
-    		continue;
+        uint32 zone = sMapMgr->GetZoneId(node->map_id, node->x, node->y, node->z);
+        if (!zone)
+            continue;
 
-    	WorldMapAreaEntry const* worldMapArea = sWorldMapAreaStore.LookupEntry(zone);
-    	if (!worldMapArea)
-    		continue;
+        WorldMapAreaEntry const* worldMapArea = sWorldMapAreaStore.LookupEntry(zone);
+        if (!worldMapArea)
+            continue;
 
-    	uint32 team = Player::TeamForRace(race);
+        uint32 team = Player::TeamForRace(race);
 
-    	if (!node->MountCreatureID[team == ALLIANCE ? 1 : 0])
-    		continue;
+        if (team == PANDAREN_NEUTRAL)
+            continue;
 
-    	if (!worldMapArea->minRecommendedLevel)
-    		continue;
+        if (!node->MountCreatureID[team == ALLIANCE ? 1 : 0])
+            continue;
 
-    	uint32 level = worldMapArea->minRecommendedLevel;
+        if (!worldMapArea->minRecommendedLevel)
+            continue;
 
-    	// Hackfix for TwilightHighlands map swapping
-    	if (worldMapArea->area_id == 4922)
-    		level = 84;
+        uint32 minLevel = worldMapArea->minRecommendedLevel;
 
-    	if (worldMapArea->minRecommendedLevel <= level)
-    		SetTaximaskNode(node->ID);
+        // Hackfix for TwilightHighlands map swapping
+        if (worldMapArea->area_id == 4922)
+            minLevel = 84;
+
+        if (minLevel <= level)
+            SetTaximaskNode(node->ID);
     }
 }
 
@@ -20754,7 +20757,7 @@ void Player::UpdateContestedPvP(uint32 diff)
 
 void Player::UpdatePvPFlag(time_t currTime)
 {
-    if (!IsPvP())
+    if (!IsPvP() || InBattleground() || InArena())
         return;
     if (pvpInfo.endTimer == 0 || currTime < (pvpInfo.endTimer + 300) || pvpInfo.inHostileArea)
         return;

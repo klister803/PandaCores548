@@ -1490,7 +1490,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
                 {
                     float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25 / 100.0f;
 
-                    if (!(m_spellInfo->HasAura(SPELL_AURA_PERIODIC_HEAL)))
+                    if (m_spellInfo->HasEffect(SPELL_EFFECT_HEAL))
                     {
                         addhealth *= (1 + Mastery);
 

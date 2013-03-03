@@ -8115,7 +8115,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
         {
             int32 health = GetHealth();
 
-            if (damage < 0 || damage < (health / 50))
+            if (damage < 0 || damage < uint32(health / 50))
                 return false;
 
             break;
@@ -10475,6 +10475,16 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                                 if (victim->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_DRUID, 0x00000002, 0, 0))
                                     crit_chance += aurEff->GetAmount();
                            break;
+                        }
+                        // Regrowth
+                        if (spellProto->Id == 8936)
+                        {
+                            // Regrowth has a 60% increased chance for a critical effect.
+                            crit_chance += 60.0f;
+
+                            // Glyph of Regrowth
+                            if (HasAura(116218))
+                                return true; // Increases the critical strike chance of your Regrowth by 40%, but removes the periodic component of the spell.
                         }
                     break;
                     case SPELLFAMILY_SHAMAN:

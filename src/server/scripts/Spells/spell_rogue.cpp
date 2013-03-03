@@ -69,6 +69,57 @@ enum RogueSpells
     ROGUE_SPELL_SHADOW_FOCUS_COST_PCT            = 112942,
     ROGUE_SPELL_NERVE_STRIKE_AURA                = 108210,
     ROGUE_SPELL_NERVE_STRIKE_REDUCE_DAMAGE_DONE  = 112947,
+    ROGUE_SPELL_COMBAT_READINESS                 = 74001,
+    ROGUE_SPELL_COMBAT_INSIGHT                   = 74002,
+};
+
+// Combat Readiness - 74001
+class spell_rog_combat_readiness : public SpellScriptLoader
+{
+    public:
+        spell_rog_combat_readiness() : SpellScriptLoader("spell_rog_combat_readiness") { }
+
+        class spell_rog_combat_readiness_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_rog_combat_readiness_AuraScript);
+
+            uint32 update;
+            bool hit;
+
+            void HandleApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetCaster())
+                {
+                    update = 10000;
+                    hit = false;
+                }
+            }
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                update -= diff;
+
+                if (GetCaster())
+                    if (GetCaster()->HasAura(ROGUE_SPELL_COMBAT_INSIGHT))
+                        hit = true;
+
+                if (update <= 0)
+                    if (Player* _player = GetCaster()->ToPlayer())
+                        if (!hit)
+                            _player->RemoveAura(ROGUE_SPELL_COMBAT_READINESS);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_rog_combat_readiness_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL, AURA_EFFECT_HANDLE_REAL);
+                OnEffectUpdate += AuraEffectUpdateFn(spell_rog_combat_readiness_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_rog_combat_readiness_AuraScript();
+        }
 };
 
 // Called by Kidney Shot - 408 and Cheap Shot - 1833
@@ -1267,6 +1318,7 @@ class spell_rog_shadowstep : public SpellScriptLoader
 
 void AddSC_rogue_spell_scripts()
 {
+    new spell_rog_combat_readiness();
     new spell_rog_nerve_strike();
     new spell_rog_nightstalker();
     new spell_rog_energetic_recovery();
