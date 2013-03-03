@@ -2407,8 +2407,13 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     {
         //if (getClass() == CLASS_DEATH_KNIGHT && GetMapId() == 609 && !isGameMaster() && !HasSpell(50977))
             //return false;
-
+        
+        // Pandarie
         if ( mapid == 870  && getLevel() < 85 && getClass() != CLASS_MONK  && !isGameMaster())
+            return false;
+
+        //Tréfonds
+         if ( mapid == 646  && getLevel() < 80 && !isGameMaster())
             return false;
 
         if (GetMapId() == 860 && GetTeamId() == TEAM_NEUTRAL)
