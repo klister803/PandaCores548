@@ -68,6 +68,181 @@ enum DruidSpells
     SPELL_DRUID_GLYPH_OF_REGROWTH           = 116218,
     SPELL_DRUID_REGROWTH                    = 8936,
     SPELL_DRUID_MARK_OF_THE_WILD            = 1126,
+    SPELL_DRUID_OMEN_OF_CLARITY             = 113043,
+    SPELL_DRUID_CLEARCASTING                = 16870,
+    SPELL_DRUID_LIFEBLOOM                   = 33763,
+    SPELL_DRUID_LIFEBLOOM_FINAL_HEAL        = 33778,
+    SPELL_DRUID_KILLER_INSTINCT             = 108299,
+    SPELL_DRUID_KILLER_INSTINCT_MOD_STAT    = 108300,
+    SPELL_DRUID_CAT_FORM                    = 768,
+    SPELL_DRUID_BEAR_FORM                   = 5487,
+};
+
+// Lifebloom - 33763 : Final heal
+class spell_dru_lifebloom : public SpellScriptLoader
+{
+    public:
+        spell_dru_lifebloom() : SpellScriptLoader("spell_dru_lifebloom") { }
+
+        class spell_dru_lifebloom_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_lifebloom_AuraScript);
+
+            void AfterRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                // Final heal only on duration end
+                if (GetTargetApplication()->GetRemoveMode() != AURA_REMOVE_BY_EXPIRE)
+                    return;
+
+                // final heal
+                int32 stack = GetStackAmount();
+                int32 healAmount = aurEff->GetAmount();
+
+                if (Unit* caster = GetCaster())
+                {
+                    healAmount = caster->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), healAmount, HEAL, stack);
+                    healAmount = GetTarget()->SpellHealingBonusTaken(caster, GetSpellInfo(), healAmount, HEAL, stack);
+
+                    GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
+
+                    return;
+                }
+
+                GetTarget()->CastCustomSpell(GetTarget(), SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, aurEff, GetCasterGUID());
+            }
+
+            void HandleDispel(DispelInfo* dispelInfo)
+            {
+                if (Unit* target = GetUnitOwner())
+                {
+                    if (constAuraEffectPtr aurEff = GetEffect(EFFECT_1))
+                    {
+                        // final heal
+                        int32 healAmount = aurEff->GetAmount();
+
+                        if (Unit* caster = GetCaster())
+                        {
+                            healAmount = caster->SpellHealingBonusDone(target, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
+                            healAmount = target->SpellHealingBonusTaken(caster, GetSpellInfo(), healAmount, HEAL, dispelInfo->GetRemovedCharges());
+
+                            target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULL, GetCasterGUID());
+
+                            return;
+                        }
+                        target->CastCustomSpell(target, SPELL_DRUID_LIFEBLOOM_FINAL_HEAL, &healAmount, NULL, NULL, true, NULL, NULL, GetCasterGUID());
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectRemove += AuraEffectRemoveFn(spell_dru_lifebloom_AuraScript::AfterRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterDispel += AuraDispelFn(spell_dru_lifebloom_AuraScript::HandleDispel);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_lifebloom_AuraScript();
+        }
+};
+
+// Called by Cat Form - 768 and Bear Form - 5487
+// Killer Instinct - 108299
+class spell_dru_killer_instinct : public SpellScriptLoader
+{
+    public:
+        spell_dru_killer_instinct() : SpellScriptLoader("spell_dru_killer_instinct") { }
+
+        class spell_dru_killer_instinct_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_killer_instinct_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(SPELL_DRUID_KILLER_INSTINCT))
+                    {
+                        int32 bp = _player->GetStat(STAT_INTELLECT);
+
+                        _player->CastCustomSpell(_player, SPELL_DRUID_KILLER_INSTINCT_MOD_STAT, &bp, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_killer_instinct_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_killer_instinct_SpellScript();
+        }
+};
+
+// Called by Regrowth - 8936, Nourish - 50464 and Healing Touch - 5185
+// Lifebloom - 33763 : Refresh duration
+class spell_dru_lifebloom_refresh : public SpellScriptLoader
+{
+    public:
+        spell_dru_lifebloom_refresh() : SpellScriptLoader("spell_dru_lifebloom_refresh") { }
+
+        class spell_dru_lifebloom_refresh_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_lifebloom_refresh_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (AuraPtr lifebloom = target->GetAura(SPELL_DRUID_LIFEBLOOM, _player->GetGUID()))
+                            lifebloom->RefreshDuration();
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_lifebloom_refresh_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_lifebloom_refresh_SpellScript();
+        }
+};
+
+// Called by Lifebloom - 33763
+// Omen of Clarity - 113043
+class spell_dru_omen_of_clarity : public SpellScriptLoader
+{
+    public:
+        spell_dru_omen_of_clarity() : SpellScriptLoader("spell_dru_omen_of_clarity") { }
+
+        class spell_dru_omen_of_clarity_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_omen_of_clarity_AuraScript);
+
+            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (caster->HasAura(SPELL_DRUID_OMEN_OF_CLARITY))
+                        if (roll_chance_i(4))
+                            caster->CastSpell(caster, SPELL_DRUID_CLEARCASTING, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_omen_of_clarity_AuraScript::HandleEffectPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_omen_of_clarity_AuraScript();
+        }
 };
 
 // Mark of the Wild - 1126
@@ -961,9 +1136,9 @@ class spell_dru_growl : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (GetSpellInfo()->Id == 106898 && _player->GetShapeshiftForm() != FORM_CAT && _player->GetShapeshiftForm() != FORM_BEAR)
-                        _player->CastSpell(_player, 5487, true);
+                        _player->CastSpell(_player, SPELL_DRUID_BEAR_FORM, true);
                     else if (GetSpellInfo()->Id != 106898)
-                        _player->CastSpell(_player, 5487, true);
+                        _player->CastSpell(_player, SPELL_DRUID_BEAR_FORM, true);
                 }
             }
 
@@ -1000,7 +1175,7 @@ class spell_dru_prowl : public SpellScriptLoader
             {
                 // This spell activate the cat form
                 if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, 768, true);
+                    _player->CastSpell(_player, SPELL_DRUID_CAT_FORM, true);
             }
 
             void Register()
@@ -1676,6 +1851,10 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_lifebloom();
+    new spell_dru_killer_instinct();
+    new spell_dru_lifebloom_refresh();
+    new spell_dru_omen_of_clarity();
     new spell_dru_mark_of_the_wild();
     new spell_dru_natures_cure();
     new spell_dru_glyph_of_regrowth();
