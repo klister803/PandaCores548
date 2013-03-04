@@ -100,7 +100,7 @@ void RealmList::UpdateRealms(bool init)
         while (result->NextRow());
     }
 
-    QueryResult firewalls = LoginDatabase.PQuery("SELECT ip FROM firewall_farms");
+    QueryResult firewalls = LoginDatabase.PQuery("SELECT ip FROM firewall_farms WHERE type = 0"); // Type 0 = worldserver protection
     if (firewalls)
     {
       m_firewallFarms.clear();
