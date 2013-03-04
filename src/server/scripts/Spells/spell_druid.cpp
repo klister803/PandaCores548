@@ -70,6 +70,46 @@ enum DruidSpells
     SPELL_DRUID_MARK_OF_THE_WILD            = 1126,
     SPELL_DRUID_OMEN_OF_CLARITY             = 113043,
     SPELL_DRUID_CLEARCASTING                = 16870,
+    SPELL_DRUID_KILLER_INSTINCT             = 108299,
+    SPELL_DRUID_KILLER_INSTINCT_MOD_STAT    = 108300,
+    SPELL_DRUID_CAT_FORM                    = 768,
+    SPELL_DRUID_BEAR_FORM                   = 5487,
+};
+
+// Called by Cat Form - 768 and Bear Form - 5487
+// Killer Instinct - 108299
+class spell_dru_killer_instinct : public SpellScriptLoader
+{
+    public:
+        spell_dru_killer_instinct() : SpellScriptLoader("spell_dru_killer_instinct") { }
+
+        class spell_dru_killer_instinct_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_killer_instinct_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(SPELL_DRUID_KILLER_INSTINCT))
+                    {
+                        int32 bp = _player->GetStat(STAT_INTELLECT);
+
+                        _player->CastCustomSpell(_player, SPELL_DRUID_KILLER_INSTINCT_MOD_STAT, &bp, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_killer_instinct_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_killer_instinct_SpellScript();
+        }
 };
 
 // Called by Lifebloom - 33763
@@ -994,9 +1034,9 @@ class spell_dru_growl : public SpellScriptLoader
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (GetSpellInfo()->Id == 106898 && _player->GetShapeshiftForm() != FORM_CAT && _player->GetShapeshiftForm() != FORM_BEAR)
-                        _player->CastSpell(_player, 5487, true);
+                        _player->CastSpell(_player, SPELL_DRUID_BEAR_FORM, true);
                     else if (GetSpellInfo()->Id != 106898)
-                        _player->CastSpell(_player, 5487, true);
+                        _player->CastSpell(_player, SPELL_DRUID_BEAR_FORM, true);
                 }
             }
 
@@ -1033,7 +1073,7 @@ class spell_dru_prowl : public SpellScriptLoader
             {
                 // This spell activate the cat form
                 if (Player* _player = GetCaster()->ToPlayer())
-                    _player->CastSpell(_player, 768, true);
+                    _player->CastSpell(_player, SPELL_DRUID_CAT_FORM, true);
             }
 
             void Register()
@@ -1709,6 +1749,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_killer_instinct();
     new spell_dru_omen_of_clarity();
     new spell_dru_mark_of_the_wild();
     new spell_dru_natures_cure();

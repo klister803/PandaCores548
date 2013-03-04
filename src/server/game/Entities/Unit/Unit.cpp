@@ -8088,14 +8088,12 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
         case 58410:
         {
             return false;
-
             break;
         }
         // Dematerialize
         case 122464:
         {
             return false;
-
             break;
         }
         // Teachings of The Monastery (Blackout Kick)
