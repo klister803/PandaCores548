@@ -10494,6 +10494,10 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             if (HasAura(116218))
                                 return true; // Increases the critical strike chance of your Regrowth by 40%, but removes the periodic component of the spell.
                         }
+                        // Ravage
+                        if (spellProto->Id == 6785)
+                            if (victim->GetHealthPct() > 80.0f)
+                                crit_chance += 50.0f; // Ravage has a 50% increased chance to critically strike targets with over 80% health.
                     break;
                     case SPELLFAMILY_SHAMAN:
                         // Lava Burst

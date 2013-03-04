@@ -76,6 +76,36 @@ enum DruidSpells
     SPELL_DRUID_KILLER_INSTINCT_MOD_STAT    = 108300,
     SPELL_DRUID_CAT_FORM                    = 768,
     SPELL_DRUID_BEAR_FORM                   = 5487,
+    SPELL_DRUID_INFECTED_WOUNDS             = 58180,
+};
+
+// Ravage - 6785
+class spell_dru_ravage : public SpellScriptLoader
+{
+    public:
+        spell_dru_ravage() : SpellScriptLoader("spell_dru_ravage") { }
+
+        class spell_dru_ravage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_ravage_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, SPELL_DRUID_INFECTED_WOUNDS, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_ravage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_ravage_SpellScript();
+        }
 };
 
 // Lifebloom - 33763 : Final heal
@@ -1851,6 +1881,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_ravage();
     new spell_dru_lifebloom();
     new spell_dru_killer_instinct();
     new spell_dru_lifebloom_refresh();
