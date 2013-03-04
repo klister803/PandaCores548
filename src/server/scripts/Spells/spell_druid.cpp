@@ -68,6 +68,39 @@ enum DruidSpells
     SPELL_DRUID_GLYPH_OF_REGROWTH           = 116218,
     SPELL_DRUID_REGROWTH                    = 8936,
     SPELL_DRUID_MARK_OF_THE_WILD            = 1126,
+    SPELL_DRUID_OMEN_OF_CLARITY             = 113043,
+    SPELL_DRUID_CLEARCASTING                = 16870,
+};
+
+// Called by Lifebloom - 33763
+// Omen of Clarity - 113043
+class spell_dru_omen_of_clarity : public SpellScriptLoader
+{
+    public:
+        spell_dru_omen_of_clarity() : SpellScriptLoader("spell_dru_omen_of_clarity") { }
+
+        class spell_dru_omen_of_clarity_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_omen_of_clarity_AuraScript);
+
+            void HandleEffectPeriodic(constAuraEffectPtr /*aurEff*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (caster->HasAura(SPELL_DRUID_OMEN_OF_CLARITY))
+                        if (roll_chance_i(4))
+                            caster->CastSpell(caster, SPELL_DRUID_CLEARCASTING, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_omen_of_clarity_AuraScript::HandleEffectPeriodic, EFFECT_0, SPELL_AURA_PERIODIC_HEAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_omen_of_clarity_AuraScript();
+        }
 };
 
 // Mark of the Wild - 1126
@@ -1676,6 +1709,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_omen_of_clarity();
     new spell_dru_mark_of_the_wild();
     new spell_dru_natures_cure();
     new spell_dru_glyph_of_regrowth();

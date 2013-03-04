@@ -8028,18 +8028,28 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Omen of Clarity (old)
+        case 16864:
+        {
+            return false;
+            break;
+        }
+        // Omen of Clarity (new)
+        case 113043:
+        {
+            return false;
+            break;
+        }
         // Sanguinary Vein
         case 79147:
         {
             return false;
-
             break;
         }
         // Find Weakness
         case 91023:
         {
             return false;
-
             break;
         }
         // Combat Potency
