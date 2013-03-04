@@ -20,7 +20,9 @@
 #include "RealmList.h"
 #include "Database/DatabaseEnv.h"
 
-RealmList::RealmList() : m_UpdateInterval(0), m_NextUpdateTime(time(NULL)) { }
+RealmList::RealmList() : m_UpdateInterval(0), m_NextUpdateTime(time(NULL))
+{
+}
 
 // Load the realm list from the database
 void RealmList::Initialize(uint32 updateInterval)
@@ -46,7 +48,7 @@ void RealmList::UpdateRealm(uint32 ID, const std::string& name, const std::strin
 
     // Append port to IP address.
     std::ostringstream ss;
-    ss << address << ':' << port;
+    ss << port;
     realm.address = ss.str();
     realm.gamebuild = build;
 }
@@ -96,5 +98,21 @@ void RealmList::UpdateRealms(bool init)
                 sLog->outInfo(LOG_FILTER_AUTHSERVER, "Added realm \"%s\".", fields[1].GetCString());
         }
         while (result->NextRow());
+    }
+
+    QueryResult firewalls = LoginDatabase.PQuery("SELECT ip FROM firewall_farms");
+    if (firewalls)
+    {
+      m_firewallFarms.clear();
+      m_firewallFarms.resize(firewalls->GetRowCount());
+      uint32 count = 0;
+
+      do
+      {
+        Field* fields = firewalls->Fetch();
+        m_firewallFarms[count] = fields[0].GetCString();
+        count++;
+      }
+      while (firewalls->NextRow());
     }
 }
