@@ -10628,6 +10628,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 115611)
         return healamount;
 
+    // No bonus for Living Seed
+    if (spellProto->Id == 48503)
+        return healamount;
+
     // No bonus for Eminence (statue) and Eminence
     if (spellProto->Id == 117895 || spellProto->Id == 126890)
         return healamount;
@@ -10798,6 +10802,10 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
 
     // No bonus for Eminence (statue) and Eminence
     if (spellProto->Id == 117895 || spellProto->Id == 126890)
+        return healamount;
+
+    // No bonus for Living Seed
+    if (spellProto->Id == 48503)
         return healamount;
 
     // Healing taken percent
