@@ -10664,25 +10664,6 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
                 if (victim->HealthBelowPct(50))
                     AddPct(DoneTotalMod, (*i)->GetAmount());
                 break;
-            case 8477: // Nourish Heal Boost
-            {
-                int32 stepPercent = (*i)->GetAmount();
-                int32 modPercent = 0;
-                AuraApplicationMap const& victimAuras = victim->GetAppliedAuras();
-                for (AuraApplicationMap::const_iterator itr = victimAuras.begin(); itr != victimAuras.end(); ++itr)
-                {
-                    constAuraPtr aura = itr->second->GetBase();
-                    if (aura->GetCasterGUID() != GetGUID())
-                        continue;
-                    SpellInfo const* m_spell = aura->GetSpellInfo();
-                    if (m_spell->SpellFamilyName != SPELLFAMILY_DRUID ||
-                        !(m_spell->SpellFamilyFlags[1] & 0x00000010 || m_spell->SpellFamilyFlags[0] & 0x50))
-                        continue;
-                    modPercent += stepPercent * aura->GetStackAmount();
-                }
-                AddPct(DoneTotalMod, modPercent);
-                break;
-            }
             default:
                 break;
         }
@@ -10827,13 +10808,15 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     // Taken fixed damage bonus auras
     int32 TakenAdvertisedBenefit = SpellBaseHealingBonusTaken(spellProto->GetSchoolMask());
 
-    // Nourish cast
-    if (spellProto->SpellFamilyName == SPELLFAMILY_DRUID && spellProto->SpellFamilyFlags[1] & 0x2000000)
+    // Nourish heal boost
+    if (spellProto->Id == 50464)
     {
-        // Rejuvenation, Regrowth, Lifebloom, or Wild Growth
-        if (GetAuraEffect(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_DRUID, 0x50, 0x4000010, 0))
-            // increase healing by 20%
-            TakenTotalMod *= 1.2f;
+        // Heals for an additional 20% if you have a Rejuvenation, Regrowth, Lifebloom, or Wild Growth effect active on the target.
+        if (HasAura(48438, caster->GetGUID()) ||   // Wild Growth
+            HasAura(33763, caster->GetGUID()) ||   // Lifebloom
+            HasAura(8936, caster->GetGUID()) ||    // Regrowth
+            HasAura(774, caster->GetGUID()))       // Rejuvenation
+            AddPct(TakenTotalMod, 20);
     }
 
     // Check for table values
