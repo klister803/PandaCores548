@@ -77,6 +77,47 @@ enum DruidSpells
     SPELL_DRUID_CAT_FORM                    = 768,
     SPELL_DRUID_BEAR_FORM                   = 5487,
     SPELL_DRUID_INFECTED_WOUNDS             = 58180,
+    SPELL_DRUID_BEAR_HUG                    = 102795,
+};
+
+// Bear Hug - 102795
+class spell_dru_bear_hug : public SpellScriptLoader
+{
+    public:
+        spell_dru_bear_hug() : SpellScriptLoader("spell_dru_bear_hug") { }
+
+        class spell_dru_bear_hug_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_bear_hug_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (AuraPtr bearHug = target->GetAura(SPELL_DRUID_BEAR_HUG, _player->GetGUID()))
+                        {
+                            if (bearHug->GetEffect(1))
+                            {
+                                _player->CastSpell(_player, SPELL_DRUID_BEAR_FORM, true);
+                                bearHug->GetEffect(1)->SetAmount(_player->CountPctFromMaxHealth(10));
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_bear_hug_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_bear_hug_SpellScript();
+        }
 };
 
 // Ravage - 6785
@@ -1881,6 +1922,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_bear_hug();
     new spell_dru_ravage();
     new spell_dru_lifebloom();
     new spell_dru_killer_instinct();
