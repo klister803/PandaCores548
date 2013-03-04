@@ -29,7 +29,6 @@
 #include "AuthCodes.h"
 #include "SHA1.h"
 #include "openssl/crypto.h"
-#include <sstream>
 #include "ace/INET_Addr.h"
 #include "ace/SOCK_Connector.h"
 #include "ace/SOCK_Stream.h"
@@ -498,40 +497,6 @@ bool AuthSocket::_HandleLogonChallenge()
                     sLog->outDebug(LOG_FILTER_AUTHSERVER, "'%s:%d' [AuthChallenge] account %s is using '%c%c%c%c' locale (%u)", socket().getRemoteAddress().c_str(), socket().getRemotePort(),
                             _login.c_str (), ch->country[3], ch->country[2], ch->country[1], ch->country[0], GetLocaleByName(_localizationName)
                         );
-
-                    /*
-                    ** FireWall System
-                    ** WorldServer do not accept any TCP/IP connection
-                    ** So we must send a cmd to Pandashan remote system
-                    ** to add ip of player to whitelist of firewall
-                    */
-                    if (ConfigMgr::GetBoolDefault("FireWall.Enable", false))
-                    {
-                    	std::string host = ConfigMgr::GetStringDefault("FireWall.host", "127.0.0.1");
-                    	uint32 port = ConfigMgr::GetIntDefault("FireWall.port", 8000);
-                    	std::string passwd = ConfigMgr::GetStringDefault("FireWall.password", "grospig");
-
-                    	// ACE Socket to remote system
-                    	ACE_SOCK_Connector connector;
-                    	ACE_SOCK_Stream peer;
-                    	ACE_INET_Addr peer_addr;
-                    	char buffer[2];
-                    	if (peer_addr.set (port, host.c_str()) != -1)
-                    	{
-                    		if (connector.connect (peer, peer_addr) != -1)
-                    		{
-                    			std::ostringstream cmd;
-                    			cmd << passwd << "iptables -A INPUT -i eth0 -s ";
-                    			cmd << uint32((ch->ip >> 24) & 0xFF);
-                    			cmd << '.' << uint32((ch->ip >> 16) & 0xFF) << '.' << uint32((ch->ip >> 8) & 0xFF) << '.' << uint32((ch->ip) & 0xFF);
-                    			cmd <<  " -J ACCEPT";
-                    			peer.send(cmd.str().c_str(), cmd.str().size());
-                    			peer.recv(2);
-                    			peer.close();
-                    		}
-                    	}
-                    }
-
                 }
             }
         }
@@ -901,7 +866,10 @@ bool AuthSocket::_HandleRealmList()
         pkt << lock;                                    // if 1, then realm locked
         pkt << uint8(i->second.flag);                       // RealmFlags
         pkt << i->first;
-        pkt << i->second.address;
+        std::string ip = sRealmList->firewallSize() ? sRealmList->GetRandomFirewall() : "localhost";
+        ip += ":";
+        ip += i->second.address;
+        pkt << ip;
         pkt << i->second.populationLevel;
         pkt << AmountOfCharacters;
         pkt << i->second.timezone;                          // realm category

@@ -575,8 +575,8 @@ bool BattlegroundBFG::SetupBattleground()
             return false;
         }
     }
-    if (!AddObject(BG_BFG_OBJECT_GATE_A,BG_BFG_OBJECTID_GATE_A,BG_BFG_DoorPositions[0][0],BG_BFG_DoorPositions[0][1],BG_BFG_DoorPositions[0][2],BG_BFG_DoorPositions[0][3],BG_BFG_DoorPositions[0][4],BG_BFG_DoorPositions[0][5],BG_BFG_DoorPositions[0][6],BG_BFG_DoorPositions[0][7],RESPAWN_IMMEDIATELY)
-        || !AddObject(BG_BFG_OBJECT_GATE_H,BG_BFG_OBJECTID_GATE_H,BG_BFG_DoorPositions[1][0],BG_BFG_DoorPositions[1][1],BG_BFG_DoorPositions[1][2],BG_BFG_DoorPositions[1][3],BG_BFG_DoorPositions[1][4],BG_BFG_DoorPositions[1][5],BG_BFG_DoorPositions[1][6],BG_BFG_DoorPositions[1][7],RESPAWN_IMMEDIATELY)
+    if (!AddObject(BG_BFG_OBJECT_GATE_A,    BG_BFG_OBJECTID_GATE_A, BG_BFG_DoorPositions[0][0], BG_BFG_DoorPositions[0][1], BG_BFG_DoorPositions[0][2], BG_BFG_DoorPositions[0][3], BG_BFG_DoorPositions[0][4], BG_BFG_DoorPositions[0][5], BG_BFG_DoorPositions[0][6], BG_BFG_DoorPositions[0][7], RESPAWN_IMMEDIATELY)
+        || !AddObject(BG_BFG_OBJECT_GATE_H, BG_BFG_OBJECTID_GATE_H, BG_BFG_DoorPositions[1][0], BG_BFG_DoorPositions[1][1], BG_BFG_DoorPositions[1][2], BG_BFG_DoorPositions[1][3], BG_BFG_DoorPositions[1][4], BG_BFG_DoorPositions[1][5], BG_BFG_DoorPositions[1][6], BG_BFG_DoorPositions[1][7], RESPAWN_IMMEDIATELY)
         )
     {
         sLog->outError(LOG_FILTER_BATTLEGROUND, "BatteGroundBG: Failed to spawn door object Battleground not created!");
