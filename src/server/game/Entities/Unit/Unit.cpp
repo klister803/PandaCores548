@@ -10632,6 +10632,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 48503)
         return healamount;
 
+    // No bonus for Lifebloom : Final heal
+    if (spellProto->Id == 33778)
+        return healamount;
+
     // No bonus for Eminence (statue) and Eminence
     if (spellProto->Id == 117895 || spellProto->Id == 126890)
         return healamount;
@@ -10672,7 +10676,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     // Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit = SpellBaseHealingBonusDone(spellProto->GetSchoolMask());
 
-    if (!DoneAdvertisedBenefit)
+    if (!DoneAdvertisedBenefit || (SpellBaseHealingBonusDone(spellProto->GetSchoolMask()) < SpellBaseDamageBonusDone(spellProto->GetSchoolMask())))
         DoneAdvertisedBenefit = SpellBaseDamageBonusDone(spellProto->GetSchoolMask());
 
     // Check for table values
@@ -10787,6 +10791,10 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
 
     // No bonus for Living Seed
     if (spellProto->Id == 48503)
+        return healamount;
+
+    // No bonus for Lifebloom : Final heal
+    if (spellProto->Id == 33778)
         return healamount;
 
     // Healing taken percent
