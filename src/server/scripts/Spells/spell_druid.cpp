@@ -1860,25 +1860,6 @@ class spell_dru_survival_instincts : public SpellScriptLoader
     public:
         spell_dru_survival_instincts() : SpellScriptLoader("spell_dru_survival_instincts") { }
 
-        class spell_dru_survival_instincts_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dru_survival_instincts_SpellScript);
-
-            SpellCastResult CheckCast()
-            {
-                Unit* caster = GetCaster();
-                if (!caster->IsInFeralForm())
-                    return SPELL_FAILED_ONLY_SHAPESHIFT;
-
-                return SPELL_CAST_OK;
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_dru_survival_instincts_SpellScript::CheckCast);
-            }
-        };
-
         class spell_dru_survival_instincts_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_dru_survival_instincts_AuraScript);
@@ -1908,11 +1889,6 @@ class spell_dru_survival_instincts : public SpellScriptLoader
                 AfterEffectRemove += AuraEffectRemoveFn(spell_dru_survival_instincts_AuraScript::AfterRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_CHANGE_AMOUNT_MASK);
             }
         };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dru_survival_instincts_SpellScript();
-        }
 
         AuraScript* GetAuraScript() const
         {
