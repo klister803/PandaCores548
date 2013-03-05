@@ -80,6 +80,37 @@ enum DruidSpells
     SPELL_DRUID_BEAR_HUG                    = 102795,
 };
 
+// Ferocious Bite - 22568
+class spell_dru_ferocious_bite : public SpellScriptLoader
+{
+    public:
+        spell_dru_ferocious_bite() : SpellScriptLoader("spell_dru_ferocious_bite") { }
+
+        class spell_dru_ferocious_bite_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_ferocious_bite_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (target->GetHealthPct() < 25.0f)
+                            if (AuraPtr rip = target->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
+                                rip->RefreshDuration();
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_ferocious_bite_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_ferocious_bite_SpellScript();
+        }
+};
+
 // Bear Hug - 102795
 class spell_dru_bear_hug : public SpellScriptLoader
 {
@@ -1901,6 +1932,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_ferocious_bite();
     new spell_dru_bear_hug();
     new spell_dru_ravage();
     new spell_dru_lifebloom();
