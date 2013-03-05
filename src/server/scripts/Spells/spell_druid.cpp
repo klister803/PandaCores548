@@ -78,6 +78,36 @@ enum DruidSpells
     SPELL_DRUID_BEAR_FORM                   = 5487,
     SPELL_DRUID_INFECTED_WOUNDS             = 58180,
     SPELL_DRUID_BEAR_HUG                    = 102795,
+    SPELL_DRUID_RIP                         = 1079,
+    SPELL_DRUID_SAVAGE_DEFENSE_DODGE_PCT    = 132402,
+};
+
+// Savage Defense - 62606
+class spell_dru_savage_defense : public SpellScriptLoader
+{
+    public:
+        spell_dru_savage_defense() : SpellScriptLoader("spell_dru_savage_defense") { }
+
+        class spell_dru_savage_defense_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_savage_defense_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->CastSpell(_player, SPELL_DRUID_SAVAGE_DEFENSE_DODGE_PCT, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_savage_defense_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_savage_defense_SpellScript();
+        }
 };
 
 // Ferocious Bite - 22568
@@ -1595,49 +1625,6 @@ class spell_dru_primal_tenacity : public SpellScriptLoader
         }
 };
 
-// 62606 - Savage Defense
-class spell_dru_savage_defense : public SpellScriptLoader
-{
-    public:
-        spell_dru_savage_defense() : SpellScriptLoader("spell_dru_savage_defense") { }
-
-        class spell_dru_savage_defense_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_dru_savage_defense_AuraScript);
-
-            uint32 absorbPct;
-
-            bool Load()
-            {
-                absorbPct = GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster());
-                return true;
-            }
-
-            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                // Set absorbtion amount to unlimited
-                amount = -1;
-            }
-
-            void Absorb(AuraEffectPtr aurEff, DamageInfo & /*dmgInfo*/, uint32 & absorbAmount)
-            {
-                absorbAmount = uint32(CalculatePct(GetTarget()->GetTotalAttackPowerValue(BASE_ATTACK), absorbPct));
-                aurEff->SetAmount(0);
-            }
-
-            void Register()
-            {
-                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dru_savage_defense_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
-                 OnEffectAbsorb += AuraEffectAbsorbFn(spell_dru_savage_defense_AuraScript::Absorb, EFFECT_0);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_dru_savage_defense_AuraScript();
-        }
-};
-
 class spell_dru_t10_restoration_4p_bonus : public SpellScriptLoader
 {
     public:
@@ -1932,6 +1919,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_savage_defense();
     new spell_dru_ferocious_bite();
     new spell_dru_bear_hug();
     new spell_dru_ravage();
@@ -1964,7 +1952,6 @@ void AddSC_druid_spell_scripts()
     new spell_dru_glyph_of_starfire();
     new spell_dru_moonkin_form_passive();
     new spell_dru_primal_tenacity();
-    new spell_dru_savage_defense();
     new spell_dru_t10_restoration_4p_bonus();
     new spell_dru_starfall_aoe();
     new spell_dru_swift_flight_passive();
