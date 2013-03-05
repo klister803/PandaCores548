@@ -354,7 +354,7 @@ class spell_dru_mark_of_the_wild : public SpellScriptLoader
         }
 };
 
-// Nature's Cure - 88423
+// Nature's Cure - 88423 and Remove Corruption - 2782
 class spell_dru_natures_cure : public SpellScriptLoader
 {
     public:
