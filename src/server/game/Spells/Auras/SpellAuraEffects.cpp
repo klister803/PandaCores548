@@ -463,7 +463,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleOverrideAttackPowerBySpellPower,           //404 SPELL_AURA_OVERRIDE_AP_BY_SPELL_POWER_PCT
     &AuraEffect::HandleIncreaseHasteFromItemsByPct,               //405 SPELL_AURA_INCREASE_HASTE_FROM_ITEMS_BY_PCT
     &AuraEffect::HandleNULL,                                      //406 SPELL_AURA_406
-    &AuraEffect::HandleNULL,                                      //407 SPELL_AURA_407
+    &AuraEffect::HandleModFear,                                   //407 SPELL_AURA_407      TODO : Find the difference between 7 & 407
     &AuraEffect::HandleNULL,                                      //408 SPELL_AURA_408
     &AuraEffect::HandleNULL,                                      //409 SPELL_AURA_409
     &AuraEffect::HandleNULL,                                      //410 SPELL_AURA_410

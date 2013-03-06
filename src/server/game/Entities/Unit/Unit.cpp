@@ -4178,6 +4178,27 @@ void Unit::_ApplyAllAuraStatMods()
         (*i).second->GetBase()->HandleAllEffects(i->second, AURA_EFFECT_HANDLE_STAT, true);
 }
 
+std::list<AuraEffectPtr> Unit::GetAuraEffectsByMechanic(uint32 mechanic_mask) const
+{
+    AuraEffectList list;
+    for (AuraApplicationMap::const_iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end(); ++iter)
+    {
+        constAuraPtr aura = iter->second->GetBase();
+        for (uint8 i = 0; i < MAX_EFFECTS; ++i)
+        {
+            if (aura->GetSpellInfo()->GetEffectMechanicMask(i) & mechanic_mask)
+            {
+                if (iter->second)
+                    if (iter->second->GetBase())
+                        if (iter->second->GetBase()->GetEffect(i))
+                            list.push_back(iter->second->GetBase()->GetEffect(i));
+            }
+        }
+    }
+
+    return list;
+}
+
 AuraEffectPtr Unit::GetAuraEffect(uint32 spellId, uint8 effIndex, uint64 caster) const
 {
     for (AuraApplicationMap::const_iterator itr = m_appliedAuras.lower_bound(spellId); itr != m_appliedAuras.upper_bound(spellId); ++itr)
@@ -16194,8 +16215,10 @@ void Unit::SetFeared(bool apply)
     {
         SetTarget(0);
 
+        uint32 mechanic_mask = (1 << MECHANIC_FEAR) | (1 << MECHANIC_HORROR);
+
         Unit* caster = NULL;
-        Unit::AuraEffectList const& fearAuras = GetAuraEffectsByType(SPELL_AURA_MOD_FEAR);
+        Unit::AuraEffectList const& fearAuras = GetAuraEffectsByMechanic(mechanic_mask);
         if (!fearAuras.empty())
             caster = ObjectAccessor::GetUnit(*this, fearAuras.front()->GetCasterGUID());
         if (!caster)

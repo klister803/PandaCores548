@@ -1834,6 +1834,8 @@ class Unit : public WorldObject
         void _ApplyAllAuraStatMods();
 
         AuraEffectList const& GetAuraEffectsByType(AuraType type) const { return m_modAuras[type]; }
+        AuraEffectList GetAuraEffectsByMechanic(uint32 mechanic_mask) const;
+
         AuraList      & GetSingleCastAuras()       { return m_scAuras; }
         AuraList const& GetSingleCastAuras() const { return m_scAuras; }
 
