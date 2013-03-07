@@ -80,6 +80,7 @@ enum DruidSpells
     SPELL_DRUID_BEAR_HUG                    = 102795,
     SPELL_DRUID_RIP                         = 1079,
     SPELL_DRUID_SAVAGE_DEFENSE_DODGE_PCT    = 132402,
+    SPELL_DRUID_DASH                        = 1850,
 };
 
 // Called by Mangle (bear) - 33878, Mangle (cat) - 33876, Ravage - 6785 and Shred - 5221
@@ -592,6 +593,38 @@ class spell_dru_cat_form : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_dru_cat_form_SpellScript();
+        }
+
+        class spell_dru_cat_form_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_cat_form_AuraScript);
+
+            void OnApply(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (AuraPtr dash = caster->GetAura(SPELL_DRUID_DASH))
+                        if (dash->GetEffect(0))
+                            if (dash->GetEffect(0)->GetAmount() == 0)
+                                dash->GetEffect(0)->SetAmount(70);
+            }
+
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (AuraPtr dash = caster->GetAura(SPELL_DRUID_DASH))
+                        dash->GetEffect(0)->SetAmount(0);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_dru_cat_form_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_dru_cat_form_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_cat_form_AuraScript();
         }
 };
 
