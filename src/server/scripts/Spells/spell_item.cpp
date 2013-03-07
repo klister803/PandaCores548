@@ -2105,7 +2105,7 @@ class spell_item_bandage_q24944 : public SpellScriptLoader
             {
                 Player* caster = GetCaster()->ToPlayer();
                 Creature* target  = GetHitCreature();
-                if(target && caster){
+                if(target && caster && target->GetEntry() == NPC_WOUNDED_DEFENDER){
                     target->SetFullHealth();
                     target->MonsterSay("Thank you my friend", LANG_UNIVERSAL, 0);
                     target->ForcedDespawn();

@@ -8028,20 +8028,28 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
-        // Sanguinary Vein
-        case 79147:
+        // Twist of Fate
+        case 109142:
         {
-            return false;
+            if (!victim)
+                return false;
+
+            if (!procSpell)
+                return false;
+
+            if (victim->GetHealthPct() > 20.0f)
+                return false;
 
             break;
         }
-        // Find Weakness
-        case 91023:
-        {
+        case 16864:     // Omen of Clarity (old)
+        case 58410:     // Master Poisoner
+        case 79147:     // Sanguinary Vein
+        case 91023:     // Find Weakness
+        case 108942:    // Phantasm
+        case 113043:    // Omen of Clarity (new)
+        case 122464:    // Dematerialize
             return false;
-
-            break;
-        }
         // Combat Potency
         case 35551:
         {
@@ -8074,20 +8082,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
 
             break;
         }
-        // Master Poisoner
-        case 58410:
-        {
-            return false;
-
-            break;
-        }
-        // Dematerialize
-        case 122464:
-        {
-            return false;
-
-            break;
-        }
         // Teachings of The Monastery (Blackout Kick)
         case 116645:
         {
@@ -8115,7 +8109,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
         {
             int32 health = GetHealth();
 
-            if (damage < 0 || damage < (health / 50))
+            if (damage < 0 || damage < uint32(health / 50))
                 return false;
 
             break;
@@ -10476,6 +10470,20 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                                     crit_chance += aurEff->GetAmount();
                            break;
                         }
+                        // Regrowth
+                        if (spellProto->Id == 8936)
+                        {
+                            // Regrowth has a 60% increased chance for a critical effect.
+                            crit_chance += 60.0f;
+
+                            // Glyph of Regrowth
+                            if (HasAura(116218))
+                                return true; // Increases the critical strike chance of your Regrowth by 40%, but removes the periodic component of the spell.
+                        }
+                        // Ravage
+                        if (spellProto->Id == 6785)
+                            if (victim->GetHealthPct() > 80.0f)
+                                crit_chance += 50.0f; // Ravage has a 50% increased chance to critically strike targets with over 80% health.
                     break;
                     case SPELLFAMILY_SHAMAN:
                         // Lava Burst
@@ -10610,6 +10618,14 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 115611)
         return healamount;
 
+    // No bonus for Living Seed
+    if (spellProto->Id == 48503)
+        return healamount;
+
+    // No bonus for Lifebloom : Final heal
+    if (spellProto->Id == 33778)
+        return healamount;
+
     // No bonus for Eminence (statue) and Eminence
     if (spellProto->Id == 117895 || spellProto->Id == 126890)
         return healamount;
@@ -10642,25 +10658,6 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
                 if (victim->HealthBelowPct(50))
                     AddPct(DoneTotalMod, (*i)->GetAmount());
                 break;
-            case 8477: // Nourish Heal Boost
-            {
-                int32 stepPercent = (*i)->GetAmount();
-                int32 modPercent = 0;
-                AuraApplicationMap const& victimAuras = victim->GetAppliedAuras();
-                for (AuraApplicationMap::const_iterator itr = victimAuras.begin(); itr != victimAuras.end(); ++itr)
-                {
-                    constAuraPtr aura = itr->second->GetBase();
-                    if (aura->GetCasterGUID() != GetGUID())
-                        continue;
-                    SpellInfo const* m_spell = aura->GetSpellInfo();
-                    if (m_spell->SpellFamilyName != SPELLFAMILY_DRUID ||
-                        !(m_spell->SpellFamilyFlags[1] & 0x00000010 || m_spell->SpellFamilyFlags[0] & 0x50))
-                        continue;
-                    modPercent += stepPercent * aura->GetStackAmount();
-                }
-                AddPct(DoneTotalMod, modPercent);
-                break;
-            }
             default:
                 break;
         }
@@ -10669,7 +10666,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     // Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit = SpellBaseHealingBonusDone(spellProto->GetSchoolMask());
 
-    if (!DoneAdvertisedBenefit)
+    if (!DoneAdvertisedBenefit || (SpellBaseHealingBonusDone(spellProto->GetSchoolMask()) < SpellBaseDamageBonusDone(spellProto->GetSchoolMask())))
         DoneAdvertisedBenefit = SpellBaseDamageBonusDone(spellProto->GetSchoolMask());
 
     // Check for table values
@@ -10782,6 +10779,14 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     if (spellProto->Id == 117895 || spellProto->Id == 126890)
         return healamount;
 
+    // No bonus for Living Seed
+    if (spellProto->Id == 48503)
+        return healamount;
+
+    // No bonus for Lifebloom : Final heal
+    if (spellProto->Id == 33778)
+        return healamount;
+
     // Healing taken percent
     float minval = float(GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT));
     if (minval)
@@ -10801,13 +10806,15 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     // Taken fixed damage bonus auras
     int32 TakenAdvertisedBenefit = SpellBaseHealingBonusTaken(spellProto->GetSchoolMask());
 
-    // Nourish cast
-    if (spellProto->SpellFamilyName == SPELLFAMILY_DRUID && spellProto->SpellFamilyFlags[1] & 0x2000000)
+    // Nourish heal boost
+    if (spellProto->Id == 50464)
     {
-        // Rejuvenation, Regrowth, Lifebloom, or Wild Growth
-        if (GetAuraEffect(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_DRUID, 0x50, 0x4000010, 0))
-            // increase healing by 20%
-            TakenTotalMod *= 1.2f;
+        // Heals for an additional 20% if you have a Rejuvenation, Regrowth, Lifebloom, or Wild Growth effect active on the target.
+        if (HasAura(48438, caster->GetGUID()) ||   // Wild Growth
+            HasAura(33763, caster->GetGUID()) ||   // Lifebloom
+            HasAura(8936, caster->GetGUID()) ||    // Regrowth
+            HasAura(774, caster->GetGUID()))       // Rejuvenation
+            AddPct(TakenTotalMod, 20);
     }
 
     // Check for table values
