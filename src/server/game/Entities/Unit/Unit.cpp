@@ -672,7 +672,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         if (targetList.size() > 1)
         {
-            targetList.sort(Trinity::HealthPctOrderPred());
+            targetList.sort(JadeCore::HealthPctOrderPred());
             targetList.resize(1);
         }
 
@@ -1898,7 +1898,7 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
     // We're going to call functions which can modify content of the list during iteration over it's elements
     // Let's copy the list so we can prevent iterator invalidation
     AuraEffectList vSchoolAbsorbCopy(victim->GetAuraEffectsByType(SPELL_AURA_SCHOOL_ABSORB));
-    vSchoolAbsorbCopy.sort(Trinity::AbsorbAuraOrderPred());
+    vSchoolAbsorbCopy.sort(JadeCore::AbsorbAuraOrderPred());
 
     // absorb without mana cost
     for (AuraEffectList::iterator itr = vSchoolAbsorbCopy.begin(); (itr != vSchoolAbsorbCopy.end()) && (dmgInfo.GetDamage() > 0); ++itr)
@@ -15159,15 +15159,15 @@ void Unit::UpdateReactives(uint32 p_time)
 
 void Unit::GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearchRange) const
 {
-    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
+    CellCoord p(JadeCore::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
     cell.SetNoCreate();
 
-    Trinity::AnyUnitInObjectRangeCheck u_check(this, fMaxSearchRange);
-    Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(this, list, u_check);
+    JadeCore::AnyUnitInObjectRangeCheck u_check(this, fMaxSearchRange);
+    JadeCore::UnitListSearcher<JadeCore::AnyUnitInObjectRangeCheck> searcher(this, list, u_check);
 
-    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+    TypeContainerVisitor<JadeCore::UnitListSearcher<JadeCore::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+    TypeContainerVisitor<JadeCore::UnitListSearcher<JadeCore::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
     cell.Visit(p, world_unit_searcher, *GetMap(), *this, fMaxSearchRange);
     cell.Visit(p, grid_unit_searcher, *GetMap(), *this, fMaxSearchRange);
@@ -15176,8 +15176,8 @@ void Unit::GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearch
 Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
 {
     std::list<Unit*> targets;
-    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
-    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
+    JadeCore::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
+    JadeCore::UnitListSearcher<JadeCore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
     VisitNearbyObject(dist, searcher);
 
     // remove current target
@@ -15201,7 +15201,7 @@ Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
         return NULL;
 
     // select random
-    return Trinity::Containers::SelectRandomContainerElement(targets);
+    return JadeCore::Containers::SelectRandomContainerElement(targets);
 }
 
 void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply)
@@ -16881,7 +16881,7 @@ void Unit::UpdateObjectVisibility(bool forced)
     {
         WorldObject::UpdateObjectVisibility(true);
         // call MoveInLineOfSight for nearby creatures
-        Trinity::AIRelocationNotifier notifier(*this);
+        JadeCore::AIRelocationNotifier notifier(*this);
         VisitNearbyObject(GetVisibilityRange(), notifier);
     }
 }
@@ -17815,7 +17815,7 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
 bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool teleport)
 {
     // prevent crash when a bad coord is sent by the client
-    if (!Trinity::IsValidMapCoord(x, y, z, orientation))
+    if (!JadeCore::IsValidMapCoord(x, y, z, orientation))
     {
         sLog->outDebug(LOG_FILTER_UNITS, "Unit::UpdatePosition(%f, %f, %f) .. bad coordinates!", x, y, z);
         return false;

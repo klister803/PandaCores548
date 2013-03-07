@@ -2427,7 +2427,7 @@ class Unit : public WorldObject
         int32 _eclipsePower;
 };
 
-namespace Trinity
+namespace JadeCore
 {
     // Binary predicate for sorting Units based on percent value of a power
     class PowerPctOrderPred

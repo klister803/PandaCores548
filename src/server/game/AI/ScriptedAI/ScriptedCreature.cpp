@@ -318,8 +318,8 @@ void ScriptedAI::DoTeleportAll(float x, float y, float z, float o)
 Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 minHPDiff)
 {
     Unit* unit = NULL;
-    Trinity::MostHPMissingInRange u_check(me, range, minHPDiff);
-    Trinity::UnitLastSearcher<Trinity::MostHPMissingInRange> searcher(me, unit, u_check);
+    JadeCore::MostHPMissingInRange u_check(me, range, minHPDiff);
+    JadeCore::UnitLastSearcher<JadeCore::MostHPMissingInRange> searcher(me, unit, u_check);
     me->VisitNearbyObject(range, searcher);
 
     return unit;
@@ -328,8 +328,8 @@ Unit* ScriptedAI::DoSelectLowestHpFriendly(float range, uint32 minHPDiff)
 std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float range)
 {
     std::list<Creature*> list;
-    Trinity::FriendlyCCedInRange u_check(me, range);
-    Trinity::CreatureListSearcher<Trinity::FriendlyCCedInRange> searcher(me, list, u_check);
+    JadeCore::FriendlyCCedInRange u_check(me, range);
+    JadeCore::CreatureListSearcher<JadeCore::FriendlyCCedInRange> searcher(me, list, u_check);
     me->VisitNearbyObject(range, searcher);
     return list;
 }
@@ -337,8 +337,8 @@ std::list<Creature*> ScriptedAI::DoFindFriendlyCC(float range)
 std::list<Creature*> ScriptedAI::DoFindFriendlyMissingBuff(float range, uint32 uiSpellid)
 {
     std::list<Creature*> list;
-    Trinity::FriendlyMissingBuffInRange u_check(me, range, uiSpellid);
-    Trinity::CreatureListSearcher<Trinity::FriendlyMissingBuffInRange> searcher(me, list, u_check);
+    JadeCore::FriendlyMissingBuffInRange u_check(me, range, uiSpellid);
+    JadeCore::CreatureListSearcher<JadeCore::FriendlyMissingBuffInRange> searcher(me, list, u_check);
     me->VisitNearbyObject(range, searcher);
     return list;
 }
@@ -347,13 +347,13 @@ Player* ScriptedAI::GetPlayerAtMinimumRange(float minimumRange)
 {
     Player* player = NULL;
 
-    CellCoord pair(Trinity::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
+    CellCoord pair(JadeCore::ComputeCellCoord(me->GetPositionX(), me->GetPositionY()));
     Cell cell(pair);
     cell.SetNoCreate();
 
-    Trinity::PlayerAtMinimumRangeAway check(me, minimumRange);
-    Trinity::PlayerSearcher<Trinity::PlayerAtMinimumRangeAway> searcher(me, player, check);
-    TypeContainerVisitor<Trinity::PlayerSearcher<Trinity::PlayerAtMinimumRangeAway>, GridTypeMapContainer> visitor(searcher);
+    JadeCore::PlayerAtMinimumRangeAway check(me, minimumRange);
+    JadeCore::PlayerSearcher<JadeCore::PlayerAtMinimumRangeAway> searcher(me, player, check);
+    TypeContainerVisitor<JadeCore::PlayerSearcher<JadeCore::PlayerAtMinimumRangeAway>, GridTypeMapContainer> visitor(searcher);
 
     cell.Visit(pair, visitor, *me->GetMap(), *me, minimumRange);
 

@@ -202,9 +202,9 @@ class spell_mage_ring_of_frost_freeze : public SpellScriptLoader
 
             void FilterTargets(std::list<WorldObject*>& targets)
             {
-                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_RING_OF_FROST_DUMMY));
-                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_RING_OF_FROST_FREEZE));
-                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
+                targets.remove_if(JadeCore::UnitAuraCheck(true, SPELL_MAGE_RING_OF_FROST_DUMMY));
+                targets.remove_if(JadeCore::UnitAuraCheck(true, SPELL_MAGE_RING_OF_FROST_FREEZE));
+                targets.remove_if(JadeCore::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
             }
 
             void Register()
@@ -308,7 +308,7 @@ class spell_mage_arcane_barrage : public SpellScriptLoader
                             target->GetAttackableUnitListInRange(targetList, 10.0f);
                             targetList.remove_if(CheckArcaneBarrageImpactPredicate(_player, target));
 
-                            Trinity::Containers::RandomResizeList(targetList, chargeCount);
+                            JadeCore::Containers::RandomResizeList(targetList, chargeCount);
 
                             for (auto itr : targetList)
                                 target->CastCustomSpell(itr, SPELL_MAGE_ARCANE_BARRAGE_TRIGGERED, &bp, NULL, NULL, true, 0, 0, _player->GetGUID());
@@ -565,7 +565,7 @@ class spell_mage_nether_tempest : public SpellScriptLoader
                         GetTarget()->GetAttackableUnitListInRange(targetList, 10.0f);
                         targetList.remove_if(CheckNetherImpactPredicate(_player, GetTarget()));
 
-                        Trinity::Containers::RandomResizeList(targetList, 1);
+                        JadeCore::Containers::RandomResizeList(targetList, 1);
 
                         for (auto itr : targetList)
                         {
@@ -771,7 +771,7 @@ class spell_mage_inferno_blast : public SpellScriptLoader
                         targetList.remove_if(CheckInfernoBlastImpactPredicate(_player, target));
 
                         if (targetList.size() > 2)
-                            Trinity::Containers::RandomResizeList(targetList, 2);
+                            JadeCore::Containers::RandomResizeList(targetList, 2);
 
                         for (auto itr : targetList)
                         {
@@ -1003,10 +1003,10 @@ class spell_mage_time_warp : public SpellScriptLoader
 
             void RemoveInvalidTargets(std::list<WorldObject*>& targets)
             {
-                targets.remove_if(Trinity::UnitAuraCheck(true, HUNTER_SPELL_INSANITY));
-                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_EXHAUSTED));
-                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_SATED));
-                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
+                targets.remove_if(JadeCore::UnitAuraCheck(true, HUNTER_SPELL_INSANITY));
+                targets.remove_if(JadeCore::UnitAuraCheck(true, SPELL_SHAMAN_EXHAUSTED));
+                targets.remove_if(JadeCore::UnitAuraCheck(true, SPELL_SHAMAN_SATED));
+                targets.remove_if(JadeCore::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
             }
 
             void ApplyDebuff()

@@ -16,8 +16,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRINITYCORE_QUEST_H
-#define TRINITYCORE_QUEST_H
+#ifndef QUEST_H
+#define QUEST_H
 
 #include "Define.h"
 #include "DatabaseEnv.h"

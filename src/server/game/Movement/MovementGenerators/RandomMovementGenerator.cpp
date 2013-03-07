@@ -53,8 +53,8 @@ void RandomMovementGenerator<Creature>::_setRandomLocation(Creature& creature)
     destY = respY + distanceY;
 
     // prevent invalid coordinates generation
-    Trinity::NormalizeMapCoord(destX);
-    Trinity::NormalizeMapCoord(destY);
+    JadeCore::NormalizeMapCoord(destX);
+    JadeCore::NormalizeMapCoord(destY);
 
     travelDistZ = distanceX*distanceX + distanceY*distanceY;
 

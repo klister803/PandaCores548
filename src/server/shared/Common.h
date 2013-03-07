@@ -16,8 +16,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRINITYCORE_COMMON_H
-#define TRINITYCORE_COMMON_H
+#ifndef COMMON_H
+#define COMMON_H
 
 // config.h needs to be included 1st
 // TODO this thingy looks like hack, but its not, need to

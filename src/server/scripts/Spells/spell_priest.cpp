@@ -173,7 +173,7 @@ class spell_pri_cascade_second : public SpellScriptLoader
                             return;
 
                         // Each bound hit twice more targets up to 8 for the same bound
-                        Trinity::Containers::RandomResizeList(targetList, (affectedUnits * 2));
+                        JadeCore::Containers::RandomResizeList(targetList, (affectedUnits * 2));
 
                         for (auto itr : targetList)
                         {

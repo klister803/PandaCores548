@@ -433,7 +433,7 @@ class spell_monk_renewing_mist : public SpellScriptLoader
 
                     if (playerList.size() > 1)
                     {
-                        playerList.sort(Trinity::HealthPctOrderPred());
+                        playerList.sort(JadeCore::HealthPctOrderPred());
                         playerList.resize(1);
                     }
 

@@ -440,8 +440,8 @@ void GameObject::Update(uint32 diff)
                     // search unfriendly creature
                     if (owner)                    // hunter trap
                     {
-                        Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck checker(this, owner, radius);
-                        Trinity::UnitSearcher<Trinity::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> searcher(this, ok, checker);
+                        JadeCore::AnyUnfriendlyNoTotemUnitInObjectRangeCheck checker(this, owner, radius);
+                        JadeCore::UnitSearcher<JadeCore::AnyUnfriendlyNoTotemUnitInObjectRangeCheck> searcher(this, ok, checker);
                         VisitNearbyGridObject(radius, searcher);
                         if (!ok) VisitNearbyWorldObject(radius, searcher);
                     }
@@ -450,8 +450,8 @@ void GameObject::Update(uint32 diff)
                         // environmental damage spells already have around enemies targeting but this not help in case not existed GO casting support
                         // affect only players
                         Player* player = NULL;
-                        Trinity::AnyPlayerInObjectRangeCheck checker(this, radius);
-                        Trinity::PlayerSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(this, player, checker);
+                        JadeCore::AnyPlayerInObjectRangeCheck checker(this, radius);
+                        JadeCore::PlayerSearcher<JadeCore::AnyPlayerInObjectRangeCheck> searcher(this, player, checker);
                         VisitNearbyWorldObject(radius, searcher);
                         ok = player;
                     }
@@ -983,13 +983,13 @@ void GameObject::TriggeringLinkedGameObject(uint32 trapEntry, Unit* target)
     GameObject* trapGO = NULL;
     {
         // using original GO distance
-        CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
+        CellCoord p(JadeCore::ComputeCellCoord(GetPositionX(), GetPositionY()));
         Cell cell(p);
 
-        Trinity::NearestGameObjectEntryInObjectRangeCheck go_check(*target, trapEntry, range);
-        Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck> checker(this, trapGO, go_check);
+        JadeCore::NearestGameObjectEntryInObjectRangeCheck go_check(*target, trapEntry, range);
+        JadeCore::GameObjectLastSearcher<JadeCore::NearestGameObjectEntryInObjectRangeCheck> checker(this, trapGO, go_check);
 
-        TypeContainerVisitor<Trinity::GameObjectLastSearcher<Trinity::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer > object_checker(checker);
+        TypeContainerVisitor<JadeCore::GameObjectLastSearcher<JadeCore::NearestGameObjectEntryInObjectRangeCheck>, GridTypeMapContainer > object_checker(checker);
         cell.Visit(p, object_checker, *GetMap(), *target, range);
     }
 
@@ -1002,12 +1002,12 @@ GameObject* GameObject::LookupFishingHoleAround(float range)
 {
     GameObject* ok = NULL;
 
-    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
+    CellCoord p(JadeCore::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
-    Trinity::NearestGameObjectFishingHole u_check(*this, range);
-    Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole> checker(this, ok, u_check);
+    JadeCore::NearestGameObjectFishingHole u_check(*this, range);
+    JadeCore::GameObjectSearcher<JadeCore::NearestGameObjectFishingHole> checker(this, ok, u_check);
 
-    TypeContainerVisitor<Trinity::GameObjectSearcher<Trinity::NearestGameObjectFishingHole>, GridTypeMapContainer > grid_object_checker(checker);
+    TypeContainerVisitor<JadeCore::GameObjectSearcher<JadeCore::NearestGameObjectFishingHole>, GridTypeMapContainer > grid_object_checker(checker);
     cell.Visit(p, grid_object_checker, *GetMap(), *this, range);
 
     return ok;
@@ -1459,7 +1459,7 @@ void GameObject::Use(Unit* user)
                 if (info->summoningRitual.casterTargetSpell && info->summoningRitual.casterTargetSpell != 1) // No idea why this field is a bool in some cases
                     for (uint32 i = 0; i < info->summoningRitual.casterTargetSpellTargets; i++)
                         // m_unique_users can contain only player GUIDs
-                        if (Player* target = ObjectAccessor::GetPlayer(*this, Trinity::Containers::SelectRandomContainerElement(m_unique_users)))
+                        if (Player* target = ObjectAccessor::GetPlayer(*this, JadeCore::Containers::SelectRandomContainerElement(m_unique_users)))
                             spellCaster->CastSpell(target, info->summoningRitual.casterTargetSpell, true);
 
                 // finish owners spell

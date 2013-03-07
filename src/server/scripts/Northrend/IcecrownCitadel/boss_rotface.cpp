@@ -586,14 +586,14 @@ class spell_rotface_ooze_flood : public SpellScriptLoader
 
                 std::list<Creature*> triggers;
                 GetHitUnit()->GetCreatureListWithEntryInGrid(triggers, GetHitUnit()->GetEntry(), 12.5f);
-                triggers.sort(Trinity::ObjectDistanceOrderPred(GetHitUnit()));
+                triggers.sort(JadeCore::ObjectDistanceOrderPred(GetHitUnit()));
                 GetHitUnit()->CastSpell(triggers.back(), uint32(GetEffectValue()), false, NULL, NULL, GetOriginalCaster() ? GetOriginalCaster()->GetGUID() : 0);
             }
 
             void FilterTargets(std::list<WorldObject*>& targetList)
             {
                 // get 2 targets except 2 nearest
-                targetList.sort(Trinity::ObjectDistanceOrderPred(GetCaster()));
+                targetList.sort(JadeCore::ObjectDistanceOrderPred(GetCaster()));
 
                 // .resize() runs pop_back();
                 if (targetList.size() > 4)
@@ -639,7 +639,7 @@ class spell_rotface_ooze_flood_2 : public SpellScriptLoader
                 if (triggers.empty())
                     return;
 
-                triggers.sort(Trinity::ObjectDistanceOrderPred(GetHitUnit()));
+                triggers.sort(JadeCore::ObjectDistanceOrderPred(GetHitUnit()));
 
                 if (GetHitUnit() == *triggers.begin())
                     triggers.pop_front();
@@ -679,11 +679,11 @@ class spell_rotface_mutated_infection : public SpellScriptLoader
             {
                 // remove targets with this aura already
                 // tank is not on this list
-                targets.remove_if (Trinity::UnitAuraCheck(true, GetSpellInfo()->Id));
+                targets.remove_if (JadeCore::UnitAuraCheck(true, GetSpellInfo()->Id));
                 if (targets.empty())
                     return;
 
-                WorldObject* target = Trinity::Containers::SelectRandomContainerElement(targets);
+                WorldObject* target = JadeCore::Containers::SelectRandomContainerElement(targets);
                 targets.clear();
                 targets.push_back(target);
                 _target = target;
