@@ -82,6 +82,63 @@ enum DruidSpells
     SPELL_DRUID_SAVAGE_DEFENSE_DODGE_PCT    = 132402,
 };
 
+// Called by Mangle (bear) - 33878, Mangle (cat) - 33876, Ravage - 6785 and Shred - 5221
+// Rip - 1079
+class spell_dru_rip_duration : public SpellScriptLoader
+{
+    public:
+        spell_dru_rip_duration() : SpellScriptLoader("spell_dru_rip_duration") { }
+
+        class spell_dru_rip_duration_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_rip_duration_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        // Each time you Shred, Ravage, or Mangle the target while in Cat Form ...
+                        if (_player->GetShapeshiftForm() == FORM_CAT)
+                        {
+                            if (AuraPtr rip = target->GetAura(SPELL_DRUID_RIP, _player->GetGUID()))
+                            {
+                                int32 duration = rip->GetDuration();
+                                int32 maxDuration = rip->GetMaxDuration();
+
+                                int32 countMin = maxDuration;
+                                int32 countMax = sSpellMgr->GetSpellInfo(SPELL_DRUID_RIP)->GetMaxDuration() + 6000;
+
+                                // ... the duration of your Rip on that target is extended by 2 sec, up to a maximum of 6 sec.
+                                if ((countMin + 2000) < countMax)
+                                {
+                                    rip->SetDuration(duration + 2000);
+                                    rip->SetMaxDuration(countMin + 2000);
+                                }
+                                else if (countMin < countMax)
+                                {
+                                    rip->SetDuration(duration + 2000);
+                                    rip->SetMaxDuration(countMax);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_rip_duration_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_rip_duration_SpellScript();
+        }
+};
+
 // Savage Defense - 62606
 class spell_dru_savage_defense : public SpellScriptLoader
 {
@@ -1919,6 +1976,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_rip_duration();
     new spell_dru_savage_defense();
     new spell_dru_ferocious_bite();
     new spell_dru_bear_hug();
