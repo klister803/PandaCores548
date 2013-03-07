@@ -168,6 +168,34 @@ class spell_dru_savage_defense : public SpellScriptLoader
         }
 };
 
+// Bear Form - 5487
+class spell_dru_bear_form : public SpellScriptLoader
+{
+    public:
+        spell_dru_bear_form() : SpellScriptLoader("spell_dru_bear_form") { }
+
+        class spell_dru_bear_form_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_bear_form_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 100, POWER_RAGE);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_bear_form_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_bear_form_SpellScript();
+        }
+};
+
 // Ferocious Bite - 22568
 class spell_dru_ferocious_bite : public SpellScriptLoader
 {
@@ -2011,6 +2039,7 @@ void AddSC_druid_spell_scripts()
 {
     new spell_dru_rip_duration();
     new spell_dru_savage_defense();
+    new spell_dru_bear_form();
     new spell_dru_ferocious_bite();
     new spell_dru_bear_hug();
     new spell_dru_ravage();
