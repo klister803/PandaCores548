@@ -62,6 +62,38 @@ enum PriestSpells
     PRIEST_SHADOW_WORD_PAIN                     = 589,
     PRIEST_DEVOURING_PLAGUE                     = 2944,
     PRIEST_VAMPIRIC_TOUCH                       = 34914,
+    PRIEST_PHANTASM_AURA                        = 108942,
+    PRIEST_PHANTASM_PROC                        = 114239,
+};
+
+// Called by Fade - 586
+// Phantasm - 108942
+class spell_pri_phantasm : public SpellScriptLoader
+{
+    public:
+        spell_pri_phantasm() : SpellScriptLoader("spell_pri_phantasm") { }
+
+        class spell_pri_phantasm_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_phantasm_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(PRIEST_PHANTASM_AURA))
+                        _player->CastSpell(_player, PRIEST_PHANTASM_PROC, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_phantasm_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_phantasm_SpellScript;
+        }
 };
 
 // Mind Spike - 73510
@@ -1105,6 +1137,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_phantasm();
     new spell_pri_mind_spike();
     new spell_pri_cascade_second();
     new spell_pri_cascade_trigger();

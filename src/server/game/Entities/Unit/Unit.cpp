@@ -8028,30 +8028,28 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
-        // Omen of Clarity (old)
-        case 16864:
+        // Twist of Fate
+        case 109142:
         {
-            return false;
+            if (!victim)
+                return false;
+
+            if (!procSpell)
+                return false;
+
+            if (victim->GetHealthPct() > 20.0f)
+                return false;
+
             break;
         }
-        // Omen of Clarity (new)
-        case 113043:
-        {
+        case 16864:     // Omen of Clarity (old)
+        case 58410:     // Master Poisoner
+        case 79147:     // Sanguinary Vein
+        case 91023:     // Find Weakness
+        case 108942:    // Phantasm
+        case 113043:    // Omen of Clarity (new)
+        case 122464:    // Dematerialize
             return false;
-            break;
-        }
-        // Sanguinary Vein
-        case 79147:
-        {
-            return false;
-            break;
-        }
-        // Find Weakness
-        case 91023:
-        {
-            return false;
-            break;
-        }
         // Combat Potency
         case 35551:
         {
@@ -8082,18 +8080,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
             if (procSpell->Id != 5374 && procSpell->Id != 27576)
                 return false;
 
-            break;
-        }
-        // Master Poisoner
-        case 58410:
-        {
-            return false;
-            break;
-        }
-        // Dematerialize
-        case 122464:
-        {
-            return false;
             break;
         }
         // Teachings of The Monastery (Blackout Kick)
