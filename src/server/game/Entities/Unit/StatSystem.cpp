@@ -1209,6 +1209,9 @@ void Guardian::UpdateMaxHealth()
             multiplicator = 1.0f;
             stamina = 0.0f;
             break;
+        case 28524: // Bloodworms
+            SetMaxHealth(GetCreateHealth());
+            return;
         default:
             multiplicator = 10.0f;
             break;
