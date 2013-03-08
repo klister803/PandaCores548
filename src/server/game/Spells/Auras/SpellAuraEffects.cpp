@@ -698,14 +698,22 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 }
             }
             // Rip
-            if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_DRUID && m_spellInfo->SpellFamilyFlags[0] & 0x00800000)
+            if (m_spellInfo->Id == 1079)
             {
                 m_canBeRecalculated = false;
-                // 0.01*$AP*cp
+
                 if (caster->GetTypeId() != TYPEID_PLAYER)
                     break;
 
                 uint8 cp = caster->ToPlayer()->GetComboPoints();
+                int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
+
+                // In feral spec : 0.484 * $AP * cp
+                if (caster->ToPlayer()->GetSpecializationId(caster->ToPlayer()->GetActiveSpec()) == SPEC_DROOD_CAT)
+                    amount += int32(cp * AP * 0.484f);
+                // In other spec : 0.387 * $AP * cp
+                else
+                    amount += int32(cp * AP * 0.387f);
 
                 // Idol of Feral Shadows. Cant be handled as SpellMod in SpellAura:Dummy due its dependency from CPs
                 if (constAuraEffectPtr aurEff = caster->GetAuraEffect(34241, EFFECT_0))
@@ -713,8 +721,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 // Idol of Worship. Cant be handled as SpellMod in SpellAura:Dummy due its dependency from CPs
                 else if (constAuraEffectPtr aurEff = caster->GetAuraEffect(60774, EFFECT_0))
                     amount += cp * aurEff->GetAmount();
-
-                amount += uint32(CalculatePct(caster->GetTotalAttackPowerValue(BASE_ATTACK), cp));
             }
             // Unholy Blight damage over time effect
             else if (GetId() == 50536)
