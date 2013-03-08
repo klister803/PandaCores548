@@ -1243,7 +1243,7 @@ class spell_dk_blood_boil : public SpellScriptLoader
 
                         if (_player->HasAura(DK_SPELL_SCARLET_FEVER))
                         {
-                            _player->CastSpell(target, DK_SPELL_WEAKENED_BLOWS);
+                            _player->CastSpell(target, DK_SPELL_WEAKENED_BLOWS, true);
 
                             if (target->HasAura(DK_SPELL_BLOOD_PLAGUE))
                                 if (AuraPtr aura = target->GetAura(DK_SPELL_BLOOD_PLAGUE))
