@@ -35,7 +35,7 @@
 class Player;
 //class Map;
 
-namespace Trinity
+namespace JadeCore
 {
     struct VisibleNotifier
     {

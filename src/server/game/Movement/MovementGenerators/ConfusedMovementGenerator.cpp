@@ -51,8 +51,8 @@ void ConfusedMovementGenerator<T>::Initialize(T &unit)
         float wanderY = y + (wander_distance * (float)rand_norm() - wander_distance/2);
 
         // prevent invalid coordinates generation
-        Trinity::NormalizeMapCoord(wanderX);
-        Trinity::NormalizeMapCoord(wanderY);
+        JadeCore::NormalizeMapCoord(wanderX);
+        JadeCore::NormalizeMapCoord(wanderY);
 
         if (unit.IsWithinLOS(wanderX, wanderY, z))
         {

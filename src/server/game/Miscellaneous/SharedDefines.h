@@ -58,6 +58,7 @@ enum SpellEffIndex
     EFFECT_29,
     EFFECT_30,
     EFFECT_31,
+    MAX_EFFECTS,
 };
 
 enum SpecIndex

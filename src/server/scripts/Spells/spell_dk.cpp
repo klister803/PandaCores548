@@ -58,6 +58,55 @@ enum DeathKnightSpells
     DK_SPELL_CONVERSION							= 119975,
 };
 
+// Howling Blast - 49184
+class spell_dk_howling_blast : public SpellScriptLoader
+{
+    public:
+        spell_dk_howling_blast() : SpellScriptLoader("spell_dk_howling_blast") { }
+
+        class spell_dk_howling_blast_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_howling_blast_SpellScript);
+
+            uint64 tar;
+
+
+            void HandleBeforeCast()
+            {
+                Unit* target = GetExplTargetUnit();
+                Unit* caster = GetCaster();
+
+                if (!caster || !target)
+                    return;
+
+                tar = target->GetGUID();
+            }
+
+            void HandleOnHit()
+            {
+                Unit* target = GetHitUnit();
+                Unit* caster = GetCaster();
+
+                if (!caster || !target || !tar)
+                    return;
+
+                if (target->GetGUID() == tar)
+                    SetHitDamage(GetHitDamage()*2);
+            }
+
+            void Register()
+            {
+                BeforeCast += SpellCastFn(spell_dk_howling_blast_SpellScript::HandleBeforeCast);
+                OnHit += SpellHitFn(spell_dk_howling_blast_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_howling_blast_SpellScript();
+        }
+};
+
 // Conversion - 119975
 class spell_dk_conversion : public SpellScriptLoader
 {
@@ -1331,6 +1380,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_howling_blast();
     new spell_dk_conversion();
     new spell_dk_remorseless_winter();
     new spell_dk_soul_reaper();

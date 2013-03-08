@@ -226,7 +226,7 @@ class mob_animated_staff : public CreatureScript
                             if (units.empty())
                                 return;
 
-                            target = Trinity::Containers::SelectRandomContainerElement(units);
+                            target = JadeCore::Containers::SelectRandomContainerElement(units);
                             if (!target)
                                 return;
 

@@ -501,7 +501,7 @@ public:
 
             if (!checkPassed)
             {
-                Player * pPassenger = Trinity::Containers::SelectRandomContainerElement(pSet);
+                Player * pPassenger = JadeCore::Containers::SelectRandomContainerElement(pSet);
 
                 if (!pPassenger)
                     if (me->isInCombat())

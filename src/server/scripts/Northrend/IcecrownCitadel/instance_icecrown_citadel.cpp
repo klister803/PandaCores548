@@ -1090,7 +1090,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                         if(data)
                             BloodQueen_BloodBolt_TargetsList.push_back(data);
                         //else
-                            //Trinity::Containers::RandomListOrder<uint64>(BloodQueen_BloodBolt_TargetsList);
+                            //JadeCore::Containers::RandomListOrder<uint64>(BloodQueen_BloodBolt_TargetsList);
                         break;
                     default:
                         break;
@@ -2571,7 +2571,7 @@ class instance_icecrown_citadel : public InstanceMapScript
                             GetCreatureListWithEntryInGrid(triggers, terenas, NPC_WORLD_TRIGGER_INFINITE_AOI, 100.0f);
                             if (!triggers.empty())
                             {
-                                triggers.sort(Trinity::ObjectDistanceOrderPred(terenas, false));
+                                triggers.sort(JadeCore::ObjectDistanceOrderPred(terenas, false));
                                 Unit* visual = triggers.front();
                                 visual->CastSpell(visual, SPELL_FROSTMOURNE_TELEPORT_VISUAL, true);
                             }

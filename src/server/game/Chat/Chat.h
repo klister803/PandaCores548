@@ -16,8 +16,8 @@
  * with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TRINITYCORE_CHAT_H
-#define TRINITYCORE_CHAT_H
+#ifndef CHAT_H
+#define CHAT_H
 
 #include "SharedDefines.h"
 #include "Player.h"
