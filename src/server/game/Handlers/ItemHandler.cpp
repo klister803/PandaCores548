@@ -1729,6 +1729,12 @@ void WorldSession::HandleReforgeItemOpcode(WorldPacket& recvData)
         return;
     }
 
+    if (item->HasFlag(ITEM_FIELD_MODIFIERS_MASK, 1))
+    {
+        SendReforgeResult(false);
+        return;
+    }
+
     player->ModifyMoney(-int64(item->GetSpecialPrice()));
 
     item->SetDynamicUInt32Value(ITEM_DYNAMIC_MODIFIERS, 0, reforgeEntry);
