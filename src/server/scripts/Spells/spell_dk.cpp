@@ -56,6 +56,9 @@ enum DeathKnightSpells
     DK_SPELL_REMORSELESS_WINTER_STUN            = 115001,
     DK_SPELL_REMORSELESS_WINTER                 = 115000,
     DK_SPELL_CONVERSION							= 119975,
+    DK_SPELL_WEAKENED_BLOWS                     = 115798,
+    DK_SPELL_SCARLET_FEVER                      = 81132,
+
 };
 
 // Howling Blast - 49184
@@ -1238,6 +1241,17 @@ class spell_dk_blood_boil : public SpellScriptLoader
                     {
                         GetCaster()->CastSpell(GetCaster(), DK_SPELL_BLOOD_BOIL_TRIGGERED, true);
 
+                        if (_player->HasAura(DK_SPELL_SCARLET_FEVER))
+                        {
+                            _player->CastSpell(target, DK_SPELL_WEAKENED_BLOWS, true);
+
+                            if (target->HasAura(DK_SPELL_BLOOD_PLAGUE))
+                                if (AuraPtr aura = target->GetAura(DK_SPELL_BLOOD_PLAGUE))
+                                    aura->SetDuration(aura->GetMaxDuration());
+                            if (target->HasAura(DK_SPELL_FROST_FEVER))
+                                if (AuraPtr aura = target->GetAura(DK_SPELL_FROST_FEVER))
+                                    aura->SetDuration(aura->GetMaxDuration());
+                        }
                         // Deals 50% additional damage to targets infected with Blood Plague or Frost Fever
                         if (AuraApplication* aura = target->GetAuraApplication(DK_SPELL_FROST_FEVER))
                         {
