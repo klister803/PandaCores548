@@ -3146,6 +3146,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 61336: // Survival Instincts
+                spellInfo->Effects[0].BasePoints = -50;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+                break;
             case 9005:  // Pounce
                 spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35); // 4s
                 break;
