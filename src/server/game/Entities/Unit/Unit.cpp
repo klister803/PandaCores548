@@ -10659,6 +10659,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 115611)
         return healamount;
 
+    // No bonus for Leader of the Pack
+    if (spellProto->Id == 34299)
+        return healamount;
+
     // No bonus for Living Seed
     if (spellProto->Id == 48503)
         return healamount;
@@ -14401,6 +14405,17 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                     CastSpell(this, 119962, true);
                 }
             }
+        }
+    }
+
+    // Leader of the Pack
+    if (target && GetTypeId() == TYPEID_PLAYER && (procExtra & PROC_EX_CRITICAL_HIT) && HasAura(17007) && (attType == BASE_ATTACK || (procSpell && procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_NORMAL)))
+    {
+        if (!ToPlayer()->HasSpellCooldown(34299))
+        {
+            CastSpell(this, 34299, true); // Heal
+            EnergizeBySpell(this, 68285, CountPctFromMaxMana(8), POWER_MANA);
+            ToPlayer()->AddSpellCooldown(34299, 0, time(NULL) + 6); // 6s ICD
         }
     }
 
