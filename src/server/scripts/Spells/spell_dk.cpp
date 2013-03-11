@@ -59,10 +59,7 @@ enum DeathKnightSpells
     DK_SPELL_WEAKENED_BLOWS                     = 115798,
     DK_SPELL_SCARLET_FEVER                      = 81132,
     DK_SPELL_SCENT_OF_BLOOD_AURA                = 50421,
-
 };
-
-
 
 // Death Strike heal - 45470
 class spell_dk_death_strike_heal : public SpellScriptLoader
@@ -80,11 +77,11 @@ class spell_dk_death_strike_heal : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                       if (AuraPtr scentOfBlood = _player->GetAura(DK_SPELL_SCENT_OF_BLOOD_AURA))
+                        if (AuraPtr scentOfBlood = _player->GetAura(DK_SPELL_SCENT_OF_BLOOD_AURA))
                         {
-                                uint8 chg = scentOfBlood->GetStackAmount();
-                                uint32 hl = GetHitHeal() * 0.2 * chg;
-                                SetHitHeal(GetHitHeal() + hl);
+                            uint8 chg = scentOfBlood->GetStackAmount();
+                            uint32 hl = GetHitHeal() * 0.2 * chg;
+                            SetHitHeal(GetHitHeal() + hl);
                         }
                     }
                 }
@@ -113,7 +110,6 @@ class spell_dk_howling_blast : public SpellScriptLoader
             PrepareSpellScript(spell_dk_howling_blast_SpellScript);
 
             uint64 tar;
-
 
             void HandleBeforeCast()
             {
@@ -565,7 +561,7 @@ class spell_dk_death_strike : public SpellScriptLoader
                                     _player->ConvertRune(i, RUNE_DEATH);
                                 }
                             }
-                        }   
+                        }
                     }
                 }
             }
