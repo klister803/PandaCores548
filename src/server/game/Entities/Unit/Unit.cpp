@@ -8049,6 +8049,26 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Glyph of Mind Blast
+        case 87195:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!victim)
+                return false;
+
+            if (procSpell->Id != 8092)
+                return false;
+
+            if (!(procEx & PROC_EX_CRITICAL_HIT))
+                return false;
+
+            break;
+        }
         // Twist of Fate
         case 109142:
         {
@@ -10501,10 +10521,6 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             if (HasAura(116218))
                                 return true; // Increases the critical strike chance of your Regrowth by 40%, but removes the periodic component of the spell.
                         }
-                        // Ravage
-                        if (spellProto->Id == 6785)
-                            if (victim->GetHealthPct() > 80.0f)
-                                crit_chance += 50.0f; // Ravage has a 50% increased chance to critically strike targets with over 80% health.
                     break;
                     case SPELLFAMILY_SHAMAN:
                         // Lava Burst
@@ -10537,6 +10553,10 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         // +25% crit chance for Ferocious Bite on bleeding targets
                         if (spellProto->Id == 22568 && victim->HasAuraState(AURA_STATE_BLEEDING))
                             crit_chance += 25.0f;
+                        // Ravage
+                        if (spellProto->Id == 6785)
+                            if (victim->GetHealthPct() > 80.0f)
+                                crit_chance += 50.0f; // Ravage has a 50% increased chance to critically strike targets with over 80% health.
                     break;
                     case SPELLFAMILY_WARRIOR:
                        // Victory Rush
@@ -10637,6 +10657,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
     // No bonus for Temporal Ripples
     if (spellProto->Id == 115611)
+        return healamount;
+
+    // No bonus for Leader of the Pack
+    if (spellProto->Id == 34299)
         return healamount;
 
     // No bonus for Living Seed
@@ -14384,6 +14408,17 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
     }
 
+    // Leader of the Pack
+    if (target && GetTypeId() == TYPEID_PLAYER && (procExtra & PROC_EX_CRITICAL_HIT) && HasAura(17007) && (attType == BASE_ATTACK || (procSpell && procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_NORMAL)))
+    {
+        if (!ToPlayer()->HasSpellCooldown(34299))
+        {
+            CastSpell(this, 34299, true); // Heal
+            EnergizeBySpell(this, 68285, CountPctFromMaxMana(8), POWER_MANA);
+            ToPlayer()->AddSpellCooldown(34299, 0, time(NULL) + 6); // 6s ICD
+        }
+    }
+
     // Dematerialize
     if (target && target->GetTypeId() == TYPEID_PLAYER && target->HasAura(122464) && procSpell && procSpell->GetAllEffectsMechanicMask() & (1 << MECHANIC_STUN))
     {
@@ -17262,7 +17297,20 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 return 40816;
             return 45339;
         case FORM_MOONKIN:
-            return 37173;
+            if (Player::TeamForRace(getRace()) == HORDE)
+            {
+                if (getRace() == RACE_TROLL)
+                    return 37174;
+                else if (getRace() == RACE_TAUREN)
+                    return 15375;
+            }
+            else if (Player::TeamForRace(getRace()) == ALLIANCE)
+            {
+                if (getRace() == RACE_NIGHTELF)
+                    return 15374;
+                else if (getRace() == RACE_WORGEN)
+                    return 37173;
+            }
         default:
             break;
     }

@@ -3146,6 +3146,13 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 61336: // Survival Instincts
+                spellInfo->Effects[0].BasePoints = -50;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+                break;
+            case 9005:  // Pounce
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35); // 4s
+                break;
             case 33763: // Lifebloom
                 spellInfo->AttributesEx5 |= SPELL_ATTR5_SINGLE_TARGET_SPELL;
                 break;
@@ -3252,6 +3259,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = 0;
                 break;
             case 6262: // Health Stone
+            case 34299:// Leader of the pack - healing
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL_PCT;
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                 break;
@@ -3283,6 +3291,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 132158:// Nature's Swiftness
             case 74434: // Soul Burn
             case 34936: // Backlash
+            case 50334: // Berserk (bear)
                 spellInfo->ProcCharges = 1;
                 break;
             case 44544: // Fingers of Frost
