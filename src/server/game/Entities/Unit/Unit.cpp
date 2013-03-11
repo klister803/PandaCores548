@@ -17297,7 +17297,20 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 return 40816;
             return 45339;
         case FORM_MOONKIN:
-            return 37173;
+            if (Player::TeamForRace(getRace()) == HORDE)
+            {
+                if (getRace() == RACE_TROLL)
+                    return 37174;
+                else if (getRace() == RACE_TAUREN)
+                    return 15375;
+            }
+            else if (Player::TeamForRace(getRace()) == ALLIANCE)
+            {
+                if (getRace() == RACE_NIGHTELF)
+                    return 15374;
+                else if (getRace() == RACE_WORGEN)
+                    return 37173;
+            }
         default:
             break;
     }
