@@ -58,7 +58,48 @@ enum DeathKnightSpells
     DK_SPELL_CONVERSION							= 119975,
     DK_SPELL_WEAKENED_BLOWS                     = 115798,
     DK_SPELL_SCARLET_FEVER                      = 81132,
+    DK_SPELL_SCENT_OF_BLOOD_AURA                = 50421,
 
+};
+
+
+
+// Death Strike heal - 45470
+class spell_dk_death_strike_heal : public SpellScriptLoader
+{
+    public:
+        spell_dk_death_strike_heal() : SpellScriptLoader("spell_dk_death_strike_heal") { }
+
+        class spell_dk_death_strike_heal_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_death_strike_heal_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                       if (AuraPtr scentOfBlood = _player->GetAura(DK_SPELL_SCENT_OF_BLOOD_AURA))
+                        {
+                                uint8 chg = scentOfBlood->GetStackAmount();
+                                uint32 hl = GetHitHeal() * 0.2 * chg;
+                                SetHitHeal(GetHitHeal() + hl);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_death_strike_heal_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_death_strike_heal_SpellScript();
+        }
 };
 
 // Howling Blast - 49184
@@ -524,7 +565,7 @@ class spell_dk_death_strike : public SpellScriptLoader
                                     _player->ConvertRune(i, RUNE_DEATH);
                                 }
                             }
-                        }
+                        }   
                     }
                 }
             }
@@ -1394,6 +1435,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_death_strike_heal();
     new spell_dk_howling_blast();
     new spell_dk_conversion();
     new spell_dk_remorseless_winter();
