@@ -3146,6 +3146,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 9005:  // Pounce
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35); // 4s
+                break;
             case 33763: // Lifebloom
                 spellInfo->AttributesEx5 |= SPELL_ATTR5_SINGLE_TARGET_SPELL;
                 break;
