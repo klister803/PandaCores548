@@ -674,8 +674,13 @@ class spell_dru_cat_form : public SpellScriptLoader
             void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
+                {
                     if (AuraPtr dash = caster->GetAura(SPELL_DRUID_DASH))
                         dash->GetEffect(0)->SetAmount(0);
+
+                    if (caster->HasAura(SPELL_DRUID_PROWL))
+                        caster->RemoveAura(SPELL_DRUID_PROWL);
+                }
             }
 
             void Register()
