@@ -81,6 +81,41 @@ enum DruidSpells
     SPELL_DRUID_RIP                         = 1079,
     SPELL_DRUID_SAVAGE_DEFENSE_DODGE_PCT    = 132402,
     SPELL_DRUID_DASH                        = 1850,
+    SPELL_DRUID_BERSERK_BEAR                = 50334,
+    SPELL_DRUID_BERSERK_CAT                 = 106951,
+
+// Berserk - 106952
+class spell_dru_berserker : public SpellScriptLoader
+{
+    public:
+        spell_dru_berserker() : SpellScriptLoader("spell_dru_berserker") { }
+
+        class spell_dru_berserker_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_berserker_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->GetShapeshiftForm() == FORM_BEAR)
+                        _player->CastSpell(_player, SPELL_DRUID_BERSERK_BEAR, true);
+                    else if (_player->GetShapeshiftForm() == FORM_CAT)
+                        _player->CastSpell(_player, SPELL_DRUID_BERSERK_CAT, true);
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_berserker_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_berserker_SpellScript();
+        }
+};
 };
 
 // Called by Mangle (bear) - 33878, Mangle (cat) - 33876, Ravage - 6785 and Shred - 5221
@@ -2037,6 +2072,7 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_berserker();
     new spell_dru_rip_duration();
     new spell_dru_savage_defense();
     new spell_dru_bear_form();
