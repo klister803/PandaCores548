@@ -241,8 +241,11 @@ void BattlegroundBFG::AddPlayer(Player *plr)
         plr->AddAura(SPELL_ROOT_BEGIN, plr);
 }
 
-void BattlegroundBFG::RemovePlayer(Player * plr, uint64 /*guid*/)
+void BattlegroundBFG::RemovePlayer(Player* plr, uint64 /*guid*/)
 {
+    if (!plr)
+        return;
+
     if (plr->HasAura(SPELL_ROOT_BEGIN))
         plr->RemoveAurasDueToSpell(SPELL_ROOT_BEGIN);
 }

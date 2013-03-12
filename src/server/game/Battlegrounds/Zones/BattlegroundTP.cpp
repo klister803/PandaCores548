@@ -645,6 +645,9 @@ void BattlegroundTP::EventPlayerCapturedFlag(Player* source)
 
 void BattlegroundTP::RemovePlayer(Player* player, uint64 guid, uint32 /* team */)
 {
+    if (!player)
+        return;
+
     uint8 team = player->GetTeamId();
 
     if (_flagKeepers[team ^ 1] == guid)
