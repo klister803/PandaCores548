@@ -83,7 +83,7 @@ enum DruidSpells
     SPELL_DRUID_DASH                        = 1850,
     SPELL_DRUID_BERSERK_BEAR                = 50334,
     SPELL_DRUID_BERSERK_CAT                 = 106951,
-
+};
 // Berserk - 106952
 class spell_dru_berserker : public SpellScriptLoader
 {
@@ -115,7 +115,6 @@ class spell_dru_berserker : public SpellScriptLoader
         {
             return new spell_dru_berserker_SpellScript();
         }
-};
 };
 
 // Called by Mangle (bear) - 33878, Mangle (cat) - 33876, Ravage - 6785 and Shred - 5221
