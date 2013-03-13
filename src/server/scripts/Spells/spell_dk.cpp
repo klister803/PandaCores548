@@ -60,9 +60,40 @@ enum DeathKnightSpells
     DK_SPELL_SCARLET_FEVER                      = 81132,
     DK_SPELL_SCENT_OF_BLOOD_AURA                = 50421,
     DK_SPELL_CHAINS_OF_ICE                      = 45524,
+    DK_SPELL_EBON_PLAGUEBRINGER                 = 51160,
 
 };
 
+// Plague Strike - 45462
+class spell_dk_plague_strike : public SpellScriptLoader
+{
+    public:
+        spell_dk_plague_strike() : SpellScriptLoader("spell_dk_plague_strike") { }
+
+        class spell_dk_plague_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_plague_strike_SpellScript);
+
+            void HandleOnHit()
+            {
+                Unit* target = GetHitUnit();
+                Unit* caster = GetCaster();
+
+                if (caster->HasAura(DK_SPELL_EBON_PLAGUEBRINGER))
+                    caster->CastSpell(target, DK_SPELL_FROST_FEVER, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_plague_strike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_plague_strike_SpellScript();
+        }
+};
 
 // Festering Strike - 85948
 class spell_dk_festering_strike : public SpellScriptLoader
@@ -1481,6 +1512,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_plague_strike();
     new spell_dk_festering_strike();
     new spell_dk_death_strike_heal();
     new spell_dk_howling_blast();
