@@ -4757,7 +4757,9 @@ SpellCastResult Spell::CheckCast(bool strict)
     if (m_caster->GetTypeId() == TYPEID_PLAYER && !(m_spellInfo->Attributes & SPELL_ATTR0_PASSIVE))
     {
         //can cast triggered (by aura only?) spells while have this flag
-        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CASTER_AURASTATE) && m_caster->ToPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY))
+        if (!(_triggeredCastFlags & TRIGGERED_IGNORE_CASTER_AURASTATE) && m_caster->ToPlayer()->HasFlag(PLAYER_FLAGS, PLAYER_ALLOW_ONLY_ABILITY)
+            && !(m_caster->HasAura(46924) && m_spellInfo->Id == 469 || m_spellInfo->Id == 6673 || m_spellInfo->Id == 97462 || m_spellInfo->Id == 5246 || m_spellInfo->Id == 12323
+            || m_spellInfo->Id == 107566 || m_spellInfo->Id == 102060)) // Hack fix Bladestorm - caster should be able to cast only shout spells during bladestorm
             return SPELL_FAILED_SPELL_IN_PROGRESS;
 
         if (m_caster->ToPlayer()->HasSpellCooldown(m_spellInfo->Id))
