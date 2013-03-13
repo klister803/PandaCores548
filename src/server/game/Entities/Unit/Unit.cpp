@@ -10567,6 +10567,9 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                                crit_chance += aurEff->GetAmount();
                            break;
                        }
+                       // Dragon Roar is always a critical hit
+                       if (spellProto->Id == 118000)
+                           return true;
                     break;
                 }
             }

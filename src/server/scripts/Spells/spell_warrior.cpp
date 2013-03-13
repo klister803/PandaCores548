@@ -54,6 +54,36 @@ enum WarriorSpells
     WARRIOR_SPELL_ALLOW_OVERPOWER               = 119962,
     WARRIOR_SPELL_TASTE_FOR_BLOOD_DAMAGE_DONE   = 125831,
     WARRIOR_SPELL_SECOND_WIND_REGEN             = 16491,
+    WARRIOR_SPELL_DRAGON_ROAR_KNOCK_BACK        = 118895,
+};
+
+// Dragon Roar - 118000
+class spell_warr_dragon_roar : public SpellScriptLoader
+{
+    public:
+        spell_warr_dragon_roar() : SpellScriptLoader("spell_warr_dragon_roar") { }
+
+        class spell_warr_dragon_roar_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_dragon_roar_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, WARRIOR_SPELL_DRAGON_ROAR_KNOCK_BACK, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_dragon_roar_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_dragon_roar_SpellScript();
+        }
 };
 
 // Staggering Shout - 107566
@@ -975,6 +1005,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_dragon_roar();
     new spell_warr_staggering_shout();
     new spell_warr_frenzied_regeneration();
     new spell_warr_second_wind();

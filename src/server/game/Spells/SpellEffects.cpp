@@ -407,6 +407,14 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             }
             case SPELLFAMILY_WARRIOR:
             {
+                // Dragon Roar
+                if (m_spellInfo->Id == 118000 && m_caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if (m_caster->ToPlayer()->GetSpecializationId(m_caster->ToPlayer()->GetActiveSpec()) == SPEC_WARRIOR_ARMS)
+                        damage += CalculatePct(m_caster->GetTotalAttackPowerValue(BASE_ATTACK), 168);
+                    else
+                        damage += CalculatePct(m_caster->GetTotalAttackPowerValue(BASE_ATTACK), 140);
+                }
                 // Victory Rush
                 if (m_spellInfo->SpellFamilyFlags[1] & 0x100)
                     ApplyPct(damage, m_caster->GetTotalAttackPowerValue(BASE_ATTACK));
