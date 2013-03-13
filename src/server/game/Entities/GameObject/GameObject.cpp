@@ -1105,6 +1105,10 @@ void GameObject::Use(Unit* user)
             //doors/buttons never really despawn, only reset to default state/flags
             UseDoorOrButton(0, false, user);
 
+            if (Player* player = user->ToPlayer())
+                if (Battleground* bg = player->GetBattleground())
+                    bg->EventPlayerUsedGO(player, this);
+
             // activate script
             GetMap()->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), spellCaster, this);
             return;

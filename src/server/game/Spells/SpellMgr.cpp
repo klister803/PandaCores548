@@ -4275,7 +4275,7 @@ void SpellMgr::LoadDbcDataCorrections()
     case 40165: // Introspection
     case 40166: // Introspection
     case 40167: // Introspection
-    spellInfo->Attributes |= SPELL_ATTR0_NEGATIVE_1;
+    spellInfo->Attributes |= SPELL_ATTR0_DEBUFF;
     break;
     case 2378: // Minor Fortitude
     spellInfo->manaCost = 0;
