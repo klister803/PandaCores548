@@ -1880,16 +1880,11 @@ public:
     {
         PrepareSpellScript(spell_unlocking_zuluheds_chains_SpellScript);
 
-        bool Load()
-        {
-             return GetCaster()->GetTypeId() == TYPEID_PLAYER;
-        }
-
         void HandleAfterHit()
         {
-            Player* caster = GetCaster()->ToPlayer();
-            if (caster->GetQuestStatus(QUEST_ZULUHED) == QUEST_STATUS_INCOMPLETE)
-                caster->KilledMonsterCredit(NPC_KARYNAKU, 0);
+            if (GetCaster()->GetTypeId() == TYPEID_PLAYER)
+                if (Creature* karynaku = GetCaster()->FindNearestCreature(NPC_KARYNAKU, 15.0f)) 
+                    GetCaster()->ToPlayer()->CastedCreatureOrGO(NPC_KARYNAKU, karynaku->GetGUID(), GetSpellInfo()->Id); 
         }
 
         void Register()
