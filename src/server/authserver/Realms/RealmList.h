@@ -55,6 +55,7 @@ class RealmList
 {
 public:
     typedef std::map<std::string, Realm> RealmMap;
+    typedef std::vector<std::string> FirewallFarms;
 
     RealmList();
     ~RealmList() {}
@@ -69,11 +70,15 @@ public:
     RealmMap::const_iterator end() const { return m_realms.end(); }
     uint32 size() const { return m_realms.size(); }
 
+    uint32 firewallSize() const { return m_firewallFarms.size(); }
+    std::string GetRandomFirewall() { return m_firewallFarms[rand() % firewallSize()]; }
+
 private:
     void UpdateRealms(bool init=false);
     void UpdateRealm(uint32 ID, const std::string& name, const std::string& address, uint16 port, uint8 icon, RealmFlags flag, uint8 timezone, AccountTypes allowedSecurityLevel, float popu, uint32 build);
 
     RealmMap m_realms;
+    FirewallFarms m_firewallFarms;
     uint32   m_UpdateInterval;
     time_t   m_NextUpdateTime;
 };

@@ -188,45 +188,48 @@ void PlayerTaxi::InitTaxiNodesForLevel(uint32 race, uint32 chrClass, uint8 level
     // Add Taxi Nodes availables from player level
     for (uint32 i = 0; i < sTaxiNodesStore.GetNumRows(); i++)
     {
-    	TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(i);
-    	if (!node)
-    		continue;
+        TaxiNodesEntry const* node = sTaxiNodesStore.LookupEntry(i);
+        if (!node)
+            continue;
 
-    	// Bad map id
-    	if (!sMapStore.LookupEntry(node->map_id))
-    		continue;
+        // Bad map id
+        if (!sMapStore.LookupEntry(node->map_id))
+            continue;
 
         int gx=(int)(32-node->x/SIZE_OF_GRIDS);                       //grid x
         int gy=(int)(32-node->y/SIZE_OF_GRIDS);                       //grid y
 
         // Bad positions
         if (gx < 0 || gy < 0)
-        	continue;
+            continue;
 
-    	uint32 zone = sMapMgr->GetZoneId(node->map_id, node->x, node->y, node->z);
-    	if (!zone)
-    		continue;
+        uint32 zone = sMapMgr->GetZoneId(node->map_id, node->x, node->y, node->z);
+        if (!zone)
+            continue;
 
-    	WorldMapAreaEntry const* worldMapArea = sWorldMapAreaStore.LookupEntry(zone);
-    	if (!worldMapArea)
-    		continue;
+        WorldMapAreaEntry const* worldMapArea = sWorldMapAreaStore.LookupEntry(zone);
+        if (!worldMapArea)
+            continue;
 
-    	uint32 team = Player::TeamForRace(race);
+        uint32 team = Player::TeamForRace(race);
 
-    	if (!node->MountCreatureID[team == ALLIANCE ? 1 : 0])
-    		continue;
+        if (team == PANDAREN_NEUTRAL)
+            continue;
 
-    	if (!worldMapArea->minRecommendedLevel)
-    		continue;
+        if (!node->MountCreatureID[team == ALLIANCE ? 1 : 0])
+            continue;
 
-    	uint32 level = worldMapArea->minRecommendedLevel;
+        if (!worldMapArea->minRecommendedLevel)
+            continue;
 
-    	// Hackfix for TwilightHighlands map swapping
-    	if (worldMapArea->area_id == 4922)
-    		level = 84;
+        uint32 minLevel = worldMapArea->minRecommendedLevel;
 
-    	if (worldMapArea->minRecommendedLevel <= level)
-    		SetTaximaskNode(node->ID);
+        // Hackfix for TwilightHighlands map swapping
+        if (worldMapArea->area_id == 4922)
+            minLevel = 84;
+
+        if (minLevel <= level)
+            SetTaximaskNode(node->ID);
     }
 }
 
@@ -509,7 +512,7 @@ inline void KillRewarder::_InitGroupData()
                         _maxLevel = lvl;
                     // 2.4. _maxNotGrayMember - maximum level of alive group member within reward distance,
                     //      for whom victim is not gray;
-                    uint32 grayLevel = Trinity::XP::GetGrayLevel(lvl);
+                    uint32 grayLevel = JadeCore::XP::GetGrayLevel(lvl);
                     if (_victim->getLevel() > grayLevel && (!_maxNotGrayMember || _maxNotGrayMember->getLevel() < lvl))
                         _maxNotGrayMember = member;
                 }
@@ -529,7 +532,7 @@ inline void KillRewarder::_InitXP(Player* player)
     // * otherwise, not in PvP;
     // * not if killer is on vehicle.
     if (_isBattleGround || (!_isPvP && !_killer->GetVehicle()))
-        _xp = Trinity::XP::Gain(player, _victim);
+        _xp = JadeCore::XP::Gain(player, _victim);
 }
 
 inline void KillRewarder::_RewardHonor(Player* player)
@@ -637,7 +640,7 @@ void KillRewarder::_RewardGroup()
             {
                 // 3.1.2. Alter group rate if group is in raid (not for battlegrounds).
                 const bool isRaid = !_isPvP && sMapStore.LookupEntry(_killer->GetMapId())->IsRaid() && _group->isRaidGroup();
-                _groupRate = Trinity::XP::xp_in_group_rate(_count, isRaid);
+                _groupRate = JadeCore::XP::xp_in_group_rate(_count, isRaid);
             }
 
             // 3.1.3. Reward each group member (even dead or corpse) within reward distance.
@@ -2407,8 +2410,13 @@ bool Player::TeleportTo(uint32 mapid, float x, float y, float z, float orientati
     {
         //if (getClass() == CLASS_DEATH_KNIGHT && GetMapId() == 609 && !isGameMaster() && !HasSpell(50977))
             //return false;
-
+        
+        // Pandarie
         if ( mapid == 870  && getLevel() < 85 && getClass() != CLASS_MONK  && !isGameMaster())
+            return false;
+
+        //Tréfonds
+         if ( mapid == 646  && getLevel() < 80 && !isGameMaster())
             return false;
 
         if (GetMapId() == 860 && GetTeamId() == TEAM_NEUTRAL)
@@ -7102,7 +7110,7 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self)
     if (self)
         GetSession()->SendPacket(data);
 
-    Trinity::MessageDistDeliverer notifier(this, data, dist);
+    JadeCore::MessageDistDeliverer notifier(this, data, dist);
     VisitNearbyWorldObject(dist, notifier);
 }
 
@@ -7111,7 +7119,7 @@ void Player::SendMessageToSetInRange(WorldPacket* data, float dist, bool self, b
     if (self)
         GetSession()->SendPacket(data);
 
-    Trinity::MessageDistDeliverer notifier(this, data, dist, own_team_only);
+    JadeCore::MessageDistDeliverer notifier(this, data, dist, own_team_only);
     VisitNearbyWorldObject(dist, notifier);
 }
 
@@ -7122,7 +7130,7 @@ void Player::SendMessageToSet(WorldPacket* data, Player const* skipped_rcvr)
 
     // we use World::GetMaxVisibleDistance() because i cannot see why not use a distance
     // update: replaced by GetMap()->GetVisibilityDistance()
-    Trinity::MessageDistDeliverer notifier(this, data, GetVisibilityRange(), false, skipped_rcvr);
+    JadeCore::MessageDistDeliverer notifier(this, data, GetVisibilityRange(), false, skipped_rcvr);
     VisitNearbyWorldObject(GetVisibilityRange(), notifier);
 }
 
@@ -7276,7 +7284,7 @@ int32 Player::CalculateReputationGain(uint32 creatureOrQuestLevel, int32 rep, in
 
     float rate = for_quest ? sWorld->getRate(RATE_REPUTATION_LOWLEVEL_QUEST) : sWorld->getRate(RATE_REPUTATION_LOWLEVEL_KILL);
 
-    if (rate != 1.0f && creatureOrQuestLevel <= Trinity::XP::GetGrayLevel(getLevel()))
+    if (rate != 1.0f && creatureOrQuestLevel <= JadeCore::XP::GetGrayLevel(getLevel()))
         percent *= rate;
 
     float repMod = noQuestBonus ? 0.0f : (float)GetTotalAuraModifier(SPELL_AURA_MOD_REPUTATION_GAIN);
@@ -7530,7 +7538,7 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
                 return false;
 
             uint8 k_level = getLevel();
-            uint8 k_grey = Trinity::XP::GetGrayLevel(k_level);
+            uint8 k_grey = JadeCore::XP::GetGrayLevel(k_level);
             uint8 v_level = victim->getLevel();
 
             if (v_level <= k_grey)
@@ -7557,7 +7565,7 @@ bool Player::RewardHonor(Unit* victim, uint32 groupsize, int32 honor, bool pvpto
             else
                 victim_guid = 0;                        // Don't show HK: <rank> message, only log.
 
-            honor_f = ceil(Trinity::Honor::hk_honor_at_level_f(k_level) * (v_level - k_grey) / (k_level - k_grey));
+            honor_f = ceil(JadeCore::Honor::hk_honor_at_level_f(k_level) * (v_level - k_grey) / (k_level - k_grey));
 
             // count the number of playerkills in one day
             ApplyModUInt32Value(PLAYER_FIELD_KILLS, 1, true);
@@ -17695,7 +17703,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
         m_movementInfo.t_guid = MAKE_NEW_GUID(transGUID, 0, HIGHGUID_MO_TRANSPORT);
         m_movementInfo.t_pos.Relocate(fields[27].GetFloat(), fields[28].GetFloat(), fields[29].GetFloat(), fields[30].GetFloat());
 
-        if (!Trinity::IsValidMapCoord(
+        if (!JadeCore::IsValidMapCoord(
             GetPositionX()+m_movementInfo.t_pos.m_positionX, GetPositionY()+m_movementInfo.t_pos.m_positionY,
             GetPositionZ()+m_movementInfo.t_pos.m_positionZ, GetOrientation()+m_movementInfo.t_pos.GetOrientation()) ||
             // transport size limited
@@ -20749,7 +20757,7 @@ void Player::UpdateContestedPvP(uint32 diff)
 
 void Player::UpdatePvPFlag(time_t currTime)
 {
-    if (!IsPvP())
+    if (!IsPvP() || InBattleground() || InArena())
         return;
     if (pvpInfo.endTimer == 0 || currTime < (pvpInfo.endTimer + 300) || pvpInfo.inHostileArea)
         return;
@@ -23113,7 +23121,7 @@ void Player::UpdateObjectVisibility(bool forced)
 void Player::UpdateVisibilityForPlayer()
 {
     // updates visibility of all objects around point of view for current player
-    Trinity::VisibleNotifier notifier(*this);
+    JadeCore::VisibleNotifier notifier(*this);
     m_seer->VisitNearbyObject(GetSightRange(), notifier);
     notifier.SendToSelf();   // send gathered data
 }
@@ -24134,7 +24142,7 @@ uint32 Player::GetResurrectionSpellId()
 bool Player::isHonorOrXPTarget(Unit* victim)
 {
     uint8 v_level = victim->getLevel();
-    uint8 k_grey  = Trinity::XP::GetGrayLevel(getLevel());
+    uint8 k_grey  = JadeCore::XP::GetGrayLevel(getLevel());
 
     // Victim level less gray level
     if (v_level <= k_grey)

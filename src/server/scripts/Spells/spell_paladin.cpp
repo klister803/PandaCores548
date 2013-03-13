@@ -97,7 +97,7 @@ class spell_pal_emancipate : public SpellScriptLoader
                             auraList.push_back(aura);
                     }
 
-                    Trinity::Containers::RandomResizeList(auraList, 1);
+                    JadeCore::Containers::RandomResizeList(auraList, 1);
                     _player->RemoveAura(*auraList.begin());
                 }
             }
@@ -345,7 +345,7 @@ class spell_pal_cleanse : public SpellScriptLoader
                     if (Unit* target = GetExplTargetUnit())
                     {
                         // Create dispel mask by dispel type
-                        for (int8 i = 0; i < 3; i++)
+                        for (int8 i = 0; i < MAX_SPELL_EFFECTS; i++)
                         {
                             uint32 dispel_type = GetSpellInfo()->Effects[i].MiscValue;
                             uint32 dispelMask  = GetSpellInfo()->GetDispelMask(DispelType(dispel_type));

@@ -261,8 +261,8 @@ public:
                     	me->MonsterYell("Thank you!", LANG_UNIVERSAL, 0);
                         
                         std::list<Player*> PlayerList;
-                        Trinity::AnyPlayerInObjectRangeCheck checker(me, 50.0f);
-                        Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, PlayerList, checker);
+                        JadeCore::AnyPlayerInObjectRangeCheck checker(me, 50.0f);
+                        JadeCore::PlayerListSearcher<JadeCore::AnyPlayerInObjectRangeCheck> searcher(me, PlayerList, checker);
                         me->VisitNearbyWorldObject(50.0f, searcher);
                         for (std::list<Player*>::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
                             (*itr)->KilledMonsterCredit(54855, 0);
@@ -327,8 +327,8 @@ public:
                 me->SetReactState(REACT_DEFENSIVE);
                 
                 std::list<Creature*> unitlist;
-                Trinity::AllCreaturesOfEntryInRange check(me, 59637, 50.0f);
-                Trinity::CreatureListSearcher<Trinity::AllCreaturesOfEntryInRange> searcher(me, unitlist, check);
+                JadeCore::AllCreaturesOfEntryInRange check(me, 59637, 50.0f);
+                JadeCore::CreatureListSearcher<JadeCore::AllCreaturesOfEntryInRange> searcher(me, unitlist, check);
                 me->VisitNearbyWorldObject(50.0f, searcher);
                 for (std::list<Creature*>::const_iterator itr = unitlist.begin(); itr != unitlist.end(); ++itr)
                 	me->Kill(*itr);
@@ -345,8 +345,8 @@ public:
             playersInvolved.clear();
             
             std::list<Player*> PlayerList;
-            Trinity::AnyPlayerInObjectRangeCheck checker(me, 50.0f);
-            Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, PlayerList, checker);
+            JadeCore::AnyPlayerInObjectRangeCheck checker(me, 50.0f);
+            JadeCore::PlayerListSearcher<JadeCore::AnyPlayerInObjectRangeCheck> searcher(me, PlayerList, checker);
             me->VisitNearbyWorldObject(50.0f, searcher);
             for (std::list<Player*>::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
                 if(*itr && (*itr)->GetQuestStatus(29414) == QUEST_STATUS_INCOMPLETE)
@@ -554,8 +554,8 @@ public:
             playersInvolved.clear();
             
             std::list<Player*> PlayerList;
-            Trinity::AnyPlayerInObjectRangeCheck checker(me, 50.0f);
-            Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(me, PlayerList, checker);
+            JadeCore::AnyPlayerInObjectRangeCheck checker(me, 50.0f);
+            JadeCore::PlayerListSearcher<JadeCore::AnyPlayerInObjectRangeCheck> searcher(me, PlayerList, checker);
             me->VisitNearbyWorldObject(50.0f, searcher);
             for (std::list<Player*>::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
                 if(*itr && (*itr)->GetQuestStatus(29421) == QUEST_STATUS_INCOMPLETE)

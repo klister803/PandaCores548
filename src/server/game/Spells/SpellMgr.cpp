@@ -1776,6 +1776,7 @@ void SpellMgr::LoadSpellProcEvents()
         SpellInfo const* spell = GetSpellInfo(entry);
         if (!spell)
         {
+            WorldDatabase.PExecute("DELETE FROM spell_proc_event WHERE entry = %u;", entry);
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_proc_event` does not exist", entry);
             continue;
         }
@@ -1976,6 +1977,7 @@ void SpellMgr::LoadSpellBonusess()
         SpellInfo const* spell = GetSpellInfo(entry);
         if (!spell)
         {
+            WorldDatabase.PExecute("DELETE FROM spell_bonus_data WHERE entry = %u;", entry);
             sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_bonus_data` does not exist", entry);
             continue;
         }
@@ -2639,93 +2641,92 @@ void SpellMgr::LoadSpellClassInfo()
             continue;
 
         // Player damage reduction (40% base resilience)
-        if (ClassID == CLASS_DEATH_KNIGHT || ClassID == CLASS_MAGE || ClassID == CLASS_PRIEST)
-            mSpellClassInfo[ClassID].push_back(115043);
+        mSpellClassInfo[ClassID].insert(115043);
 
         // All Rune for DK
         if (ClassID == CLASS_DEATH_KNIGHT)
         {
-            mSpellClassInfo[ClassID].push_back(53323);
-            mSpellClassInfo[ClassID].push_back(54447);
-            mSpellClassInfo[ClassID].push_back(53342);
-            mSpellClassInfo[ClassID].push_back(53331);
-            mSpellClassInfo[ClassID].push_back(54446);
-            mSpellClassInfo[ClassID].push_back(53323);
-            mSpellClassInfo[ClassID].push_back(53344);
-            mSpellClassInfo[ClassID].push_back(70164);
-            mSpellClassInfo[ClassID].push_back(62158);
+            mSpellClassInfo[ClassID].insert(53323);
+            mSpellClassInfo[ClassID].insert(54447);
+            mSpellClassInfo[ClassID].insert(53342);
+            mSpellClassInfo[ClassID].insert(53331);
+            mSpellClassInfo[ClassID].insert(54446);
+            mSpellClassInfo[ClassID].insert(53323);
+            mSpellClassInfo[ClassID].insert(53344);
+            mSpellClassInfo[ClassID].insert(70164);
+            mSpellClassInfo[ClassID].insert(62158);
         }
 
         // Swift Flight Form
         if (ClassID == CLASS_DRUID)
-            mSpellClassInfo[ClassID].push_back(40120);
+            mSpellClassInfo[ClassID].insert(40120);
 
         // Dark Soul
         if (ClassID == CLASS_WARLOCK)
-            mSpellClassInfo[ClassID].push_back(77801);
+            mSpellClassInfo[ClassID].insert(77801);
 
         // All portals and teleports for mages
         if (ClassID == CLASS_MAGE)
         {
-            mSpellClassInfo[ClassID].push_back(3561);
-            mSpellClassInfo[ClassID].push_back(3562);
-            mSpellClassInfo[ClassID].push_back(3563);
-            mSpellClassInfo[ClassID].push_back(3565);
-            mSpellClassInfo[ClassID].push_back(3566);
-            mSpellClassInfo[ClassID].push_back(3567);
-            mSpellClassInfo[ClassID].push_back(32271);
-            mSpellClassInfo[ClassID].push_back(32272);
-            mSpellClassInfo[ClassID].push_back(49359);
-            mSpellClassInfo[ClassID].push_back(49360);
-            mSpellClassInfo[ClassID].push_back(32266);
-            mSpellClassInfo[ClassID].push_back(32267);
-            mSpellClassInfo[ClassID].push_back(10059);
-            mSpellClassInfo[ClassID].push_back(11416);
-            mSpellClassInfo[ClassID].push_back(11417);
-            mSpellClassInfo[ClassID].push_back(11418);
-            mSpellClassInfo[ClassID].push_back(11419);
-            mSpellClassInfo[ClassID].push_back(11420);
-            mSpellClassInfo[ClassID].push_back(49358);
-            mSpellClassInfo[ClassID].push_back(49361);
-            mSpellClassInfo[ClassID].push_back(35715);
-            mSpellClassInfo[ClassID].push_back(33690);
-            mSpellClassInfo[ClassID].push_back(33691);
-            mSpellClassInfo[ClassID].push_back(35717);
-            mSpellClassInfo[ClassID].push_back(53140);
-            mSpellClassInfo[ClassID].push_back(53142);
-            mSpellClassInfo[ClassID].push_back(88342);
-            mSpellClassInfo[ClassID].push_back(88344);
-            mSpellClassInfo[ClassID].push_back(88345);
-            mSpellClassInfo[ClassID].push_back(88346);
-            mSpellClassInfo[ClassID].push_back(132620);
-            mSpellClassInfo[ClassID].push_back(132621);
-            mSpellClassInfo[ClassID].push_back(132626);
-            mSpellClassInfo[ClassID].push_back(132627);
+            mSpellClassInfo[ClassID].insert(3561);
+            mSpellClassInfo[ClassID].insert(3562);
+            mSpellClassInfo[ClassID].insert(3563);
+            mSpellClassInfo[ClassID].insert(3565);
+            mSpellClassInfo[ClassID].insert(3566);
+            mSpellClassInfo[ClassID].insert(3567);
+            mSpellClassInfo[ClassID].insert(32271);
+            mSpellClassInfo[ClassID].insert(32272);
+            mSpellClassInfo[ClassID].insert(49359);
+            mSpellClassInfo[ClassID].insert(49360);
+            mSpellClassInfo[ClassID].insert(32266);
+            mSpellClassInfo[ClassID].insert(32267);
+            mSpellClassInfo[ClassID].insert(10059);
+            mSpellClassInfo[ClassID].insert(11416);
+            mSpellClassInfo[ClassID].insert(11417);
+            mSpellClassInfo[ClassID].insert(11418);
+            mSpellClassInfo[ClassID].insert(11419);
+            mSpellClassInfo[ClassID].insert(11420);
+            mSpellClassInfo[ClassID].insert(49358);
+            mSpellClassInfo[ClassID].insert(49361);
+            mSpellClassInfo[ClassID].insert(35715);
+            mSpellClassInfo[ClassID].insert(33690);
+            mSpellClassInfo[ClassID].insert(33691);
+            mSpellClassInfo[ClassID].insert(35717);
+            mSpellClassInfo[ClassID].insert(53140);
+            mSpellClassInfo[ClassID].insert(53142);
+            mSpellClassInfo[ClassID].insert(88342);
+            mSpellClassInfo[ClassID].insert(88344);
+            mSpellClassInfo[ClassID].insert(88345);
+            mSpellClassInfo[ClassID].insert(88346);
+            mSpellClassInfo[ClassID].insert(132620);
+            mSpellClassInfo[ClassID].insert(132621);
+            mSpellClassInfo[ClassID].insert(132626);
+            mSpellClassInfo[ClassID].insert(132627);
         }
 
         // Ancestral Focus
         if (ClassID == CLASS_SHAMAN)
-            mSpellClassInfo[ClassID].push_back(89920);
+            mSpellClassInfo[ClassID].insert(89920);
 
         // Plate Mail skill
         if (ClassID == CLASS_PALADIN || ClassID == CLASS_WARRIOR)
-            mSpellClassInfo[ClassID].push_back(750);
+            mSpellClassInfo[ClassID].insert(750);
 
         // Mail skill
         if (ClassID == CLASS_SHAMAN || ClassID == CLASS_HUNTER)
-            mSpellClassInfo[ClassID].push_back(8737);
+            mSpellClassInfo[ClassID].insert(8737);
 
         // Dual Wield
         if (ClassID == CLASS_WARRIOR || ClassID == CLASS_HUNTER || ClassID == CLASS_ROGUE || ClassID == CLASS_DEATH_KNIGHT || ClassID == CLASS_MONK)
-            mSpellClassInfo[ClassID].push_back(674);
+            mSpellClassInfo[ClassID].insert(674);
 
         // Natural Insight druid
         if (ClassID == CLASS_DRUID)
-            mSpellClassInfo[ClassID].push_back(112857);
+            mSpellClassInfo[ClassID].insert(112857);
         
         //Sinister Strike Enabler
         if (ClassID == CLASS_ROGUE)
-            mSpellClassInfo[ClassID].push_back(79327);
+            mSpellClassInfo[ClassID].insert(79327);
 
         for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
         {
@@ -2751,7 +2752,7 @@ void SpellMgr::LoadSpellClassInfo()
             if (sSpellMgr->IsTalent(spellEntry->Id))
                 continue;
 
-            mSpellClassInfo[ClassID].push_back(spellEntry->Id);
+            mSpellClassInfo[ClassID].insert(spellEntry->Id);
         }
 
         for (uint32 i = 0; i < sSpecializationSpellStore.GetNumRows(); ++i)
@@ -2764,7 +2765,7 @@ void SpellMgr::LoadSpellClassInfo()
             if (!chrSpec)
                 continue;
 
-            mSpellClassInfo[chrSpec->classId].push_back(specializationInfo->LearnSpell);
+            mSpellClassInfo[chrSpec->classId].insert(specializationInfo->LearnSpell);
         }
     }
 
@@ -3145,6 +3146,16 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 61336: // Survival Instincts
+                spellInfo->Effects[0].BasePoints = -50;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+                break;
+            case 9005:  // Pounce
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35); // 4s
+                break;
+            case 33763: // Lifebloom
+                spellInfo->AttributesEx5 |= SPELL_ATTR5_SINGLE_TARGET_SPELL;
+                break;
             case 1784:  // Stealth
                 spellInfo->OverrideSpellList.push_back(115191); // Add Stealth (talent) to override spell list of Stealth
                 break;
@@ -3153,10 +3164,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].ApplyAuraName = 0;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_DONE;
                 spellInfo->Effects[0].MiscValue = SPELL_SCHOOL_MASK_ALL;
-                break;
-            case 124271:// Sanguinary Vein
-                spellInfo->Attributes &= ~SPELL_ATTR0_HIDDEN_CLIENTSIDE;
-                spellInfo->Attributes &= ~SPELL_ATTR0_HIDE_IN_COMBAT_LOG;
                 break;
             case 84745: // Shallow Insight
             case 84746: // Moderate Insight
@@ -3252,6 +3259,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = 0;
                 break;
             case 6262: // Health Stone
+            case 34299:// Leader of the pack - healing
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL_PCT;
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                 break;
@@ -3283,6 +3291,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 132158:// Nature's Swiftness
             case 74434: // Soul Burn
             case 34936: // Backlash
+            case 50334: // Berserk (bear)
                 spellInfo->ProcCharges = 1;
                 break;
             case 44544: // Fingers of Frost

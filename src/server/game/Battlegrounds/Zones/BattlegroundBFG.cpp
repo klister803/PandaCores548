@@ -241,8 +241,11 @@ void BattlegroundBFG::AddPlayer(Player *plr)
         plr->AddAura(SPELL_ROOT_BEGIN, plr);
 }
 
-void BattlegroundBFG::RemovePlayer(Player * plr, uint64 /*guid*/)
+void BattlegroundBFG::RemovePlayer(Player* plr, uint64 /*guid*/)
 {
+    if (!plr)
+        return;
+
     if (plr->HasAura(SPELL_ROOT_BEGIN))
         plr->RemoveAurasDueToSpell(SPELL_ROOT_BEGIN);
 }
@@ -337,13 +340,13 @@ void BattlegroundBFG::FillInitialWorldStates(WorldPacket& data)
     data << uint32(BG_BFG_OP_OCCUPIED_BASES_HORDE) << uint32(horde);
     
     // Team scores
-    data << uint32(BG_BFG_OP_RESOURCES_MAX)      << uint32(BG_BFG_MAX_TEAM_SCORE);
-    data << uint32(BG_BFG_OP_RESOURCES_WARNING)  << uint32(BG_BFG_WARNING_NEAR_VICTORY_SCORE);
     data << uint32(BG_BFG_OP_RESOURCES_ALLY)     << uint32(m_TeamScores[BG_TEAM_ALLIANCE]);
     data << uint32(BG_BFG_OP_RESOURCES_HORDE)    << uint32(m_TeamScores[BG_TEAM_HORDE]);
+    data << uint32(BG_BFG_OP_RESOURCES_MAX)      << uint32(BG_BFG_MAX_TEAM_SCORE);
+    //data << uint32(BG_BFG_OP_RESOURCES_WARNING)  << uint32(BG_BFG_WARNING_NEAR_VICTORY_SCORE);
     
     // other unknown
-    data << uint32(0x745) << uint32(0x2);           // 37 1861 unk
+    //data << uint32(0x745) << uint32(0x2);           // 37 1861 unk
 }
 
 void BattlegroundBFG::_SendNodeUpdate(uint8 node)
@@ -561,27 +564,29 @@ bool BattlegroundBFG::SetupBattleground()
     sLog->outError(LOG_FILTER_BATTLEGROUND, "SetupBattleground");
     for (int i = 0 ; i < BG_BFG_DYNAMIC_NODES_COUNT; ++i)
     {
-        if    (!AddObject(BG_BFG_OBJECT_BANNER_NEUTRAL + 8*i,    BG_BFG_NodeObjectId[i],          BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),RESPAWN_ONE_DAY)
-            || !AddObject(BG_BFG_OBJECT_BANNER_CONT_A + 8*i,     BG_BFG_OBJECTID_BANNER_CONT_A,   BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),RESPAWN_ONE_DAY)
-            || !AddObject(BG_BFG_OBJECT_BANNER_CONT_H + 8*i,     BG_BFG_OBJECTID_BANNER_CONT_H,   BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),RESPAWN_ONE_DAY)
-            || !AddObject(BG_BFG_OBJECT_BANNER_ALLY + 8*i,       BG_BFG_OBJECTID_BANNER_A,        BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),RESPAWN_ONE_DAY)
-            || !AddObject(BG_BFG_OBJECT_BANNER_HORDE + 8*i,      BG_BFG_OBJECTID_BANNER_H,        BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),RESPAWN_ONE_DAY)
-            || !AddObject(BG_BFG_OBJECT_AURA_ALLY + 8*i,         BG_BFG_OBJECTID_AURA_A,          BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),RESPAWN_ONE_DAY)
-            || !AddObject(BG_BFG_OBJECT_AURA_HORDE + 8*i,        BG_BFG_OBJECTID_AURA_H,          BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),RESPAWN_ONE_DAY)
-            || !AddObject(BG_BFG_OBJECT_AURA_CONTESTED + 8*i,    BG_BFG_OBJECTID_AURA_C,          BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),RESPAWN_ONE_DAY)
+        if    (!AddObject(BG_BFG_OBJECT_BANNER_NEUTRAL + 8*i,    BG_BFG_NodeObjectId[i],          BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),  RESPAWN_ONE_DAY)
+            || !AddObject(BG_BFG_OBJECT_BANNER_CONT_A + 8*i,     BG_BFG_OBJECTID_BANNER_CONT_A,   BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),  RESPAWN_ONE_DAY)
+            || !AddObject(BG_BFG_OBJECT_BANNER_CONT_H + 8*i,     BG_BFG_OBJECTID_BANNER_CONT_H,   BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),  RESPAWN_ONE_DAY)
+            || !AddObject(BG_BFG_OBJECT_BANNER_ALLY + 8*i,       BG_BFG_OBJECTID_BANNER_A,        BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),  RESPAWN_ONE_DAY)
+            || !AddObject(BG_BFG_OBJECT_BANNER_HORDE + 8*i,      BG_BFG_OBJECTID_BANNER_H,        BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),  RESPAWN_ONE_DAY)
+            || !AddObject(BG_BFG_OBJECT_AURA_ALLY + 8*i,         BG_BFG_OBJECTID_AURA_A,          BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),  RESPAWN_ONE_DAY)
+            || !AddObject(BG_BFG_OBJECT_AURA_HORDE + 8*i,        BG_BFG_OBJECTID_AURA_H,          BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),  RESPAWN_ONE_DAY)
+            || !AddObject(BG_BFG_OBJECT_AURA_CONTESTED + 8*i,    BG_BFG_OBJECTID_AURA_C,          BG_BFG_NodePositions[i][0],BG_BFG_NodePositions[i][1],BG_BFG_NodePositions[i][2],BG_BFG_NodePositions[i][3], 0, 0, sin(BG_BFG_NodePositions[i][3]/2), cos(BG_BFG_NodePositions[i][3]/2),  RESPAWN_ONE_DAY)
             )
         {
             sLog->outError(LOG_FILTER_BATTLEGROUND, "BatteGroundBG: Failed to spawn some object Battleground not created!");
             return false;
         }
     }
-    if (!AddObject(BG_BFG_OBJECT_GATE_A,BG_BFG_OBJECTID_GATE_A,BG_BFG_DoorPositions[0][0],BG_BFG_DoorPositions[0][1],BG_BFG_DoorPositions[0][2],BG_BFG_DoorPositions[0][3],BG_BFG_DoorPositions[0][4],BG_BFG_DoorPositions[0][5],BG_BFG_DoorPositions[0][6],BG_BFG_DoorPositions[0][7],RESPAWN_IMMEDIATELY)
-        || !AddObject(BG_BFG_OBJECT_GATE_H,BG_BFG_OBJECTID_GATE_H,BG_BFG_DoorPositions[1][0],BG_BFG_DoorPositions[1][1],BG_BFG_DoorPositions[1][2],BG_BFG_DoorPositions[1][3],BG_BFG_DoorPositions[1][4],BG_BFG_DoorPositions[1][5],BG_BFG_DoorPositions[1][6],BG_BFG_DoorPositions[1][7],RESPAWN_IMMEDIATELY)
+    if (!AddObject(BG_BFG_OBJECT_GATE_A,    BG_BFG_OBJECTID_GATE_A, BG_BFG_DoorPositions[0][0], BG_BFG_DoorPositions[0][1], BG_BFG_DoorPositions[0][2], BG_BFG_DoorPositions[0][3], BG_BFG_DoorPositions[0][4], BG_BFG_DoorPositions[0][5], BG_BFG_DoorPositions[0][6], BG_BFG_DoorPositions[0][7], RESPAWN_IMMEDIATELY)
+        || !AddObject(BG_BFG_OBJECT_GATE_H, BG_BFG_OBJECTID_GATE_H, BG_BFG_DoorPositions[1][0], BG_BFG_DoorPositions[1][1], BG_BFG_DoorPositions[1][2], BG_BFG_DoorPositions[1][3], BG_BFG_DoorPositions[1][4], BG_BFG_DoorPositions[1][5], BG_BFG_DoorPositions[1][6], BG_BFG_DoorPositions[1][7], RESPAWN_IMMEDIATELY)
         )
     {
         sLog->outError(LOG_FILTER_BATTLEGROUND, "BatteGroundBG: Failed to spawn door object Battleground not created!");
         return false;
     }
+
+    UpdateWorldState(BG_BFG_OP_RESOURCES_MAX, BG_BFG_MAX_TEAM_SCORE);
     
     return true;
 }

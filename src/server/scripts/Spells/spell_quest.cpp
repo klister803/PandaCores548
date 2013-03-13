@@ -1439,8 +1439,8 @@ public:
             Unit* caster = GetCaster();
             // Check for player that is in 65 y range
             std::list<Player*> PlayerList;
-            Trinity::AnyPlayerInObjectRangeCheck checker(caster, 765.0f);
-            Trinity::PlayerListSearcher<Trinity::AnyPlayerInObjectRangeCheck> searcher(caster, PlayerList, checker);
+            JadeCore::AnyPlayerInObjectRangeCheck checker(caster, 765.0f);
+            JadeCore::PlayerListSearcher<JadeCore::AnyPlayerInObjectRangeCheck> searcher(caster, PlayerList, checker);
             caster->VisitNearbyWorldObject(65.0f, searcher);
             for (std::list<Player*>::const_iterator itr = PlayerList.begin(); itr != PlayerList.end(); ++itr)
                 // Check if found player target is on fly mount or using flying form

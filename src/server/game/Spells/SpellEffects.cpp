@@ -47,6 +47,7 @@
 #include "Battleground.h"
 #include "BattlegroundEY.h"
 #include "BattlegroundWS.h"
+#include "BattlegroundTP.h"
 #include "OutdoorPvPMgr.h"
 #include "Language.h"
 #include "SocialMgr.h"
@@ -690,7 +691,7 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
                     uint32 maxTargets = std::min<uint32>(3, attackers.size());
                     for (uint32 i = 0; i < maxTargets; ++i)
                     {
-                        Unit* attacker = Trinity::Containers::SelectRandomContainerElement(attackers);
+                        Unit* attacker = JadeCore::Containers::SelectRandomContainerElement(attackers);
                         AddUnitTarget(attacker, 1 << 1);
                         attackers.erase(attacker);
                     }
@@ -728,8 +729,8 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
         case 120165: //Conflagrate
             {
                 UnitList friends;
-                Trinity::AnyFriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, 5.0f);
-                Trinity::UnitListSearcher<Trinity::AnyFriendlyUnitInObjectRangeCheck> searcher(m_caster, friends, u_check);
+                JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(m_caster, m_caster, 5.0f);
+                JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(m_caster, friends, u_check);
                 m_caster->VisitNearbyObject(5.0f, searcher);
 
                 for (auto unit : friends)
@@ -1490,7 +1491,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
                 {
                     float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25 / 100.0f;
 
-                    if (!(m_spellInfo->HasAura(SPELL_AURA_PERIODIC_HEAL)))
+                    if (m_spellInfo->HasEffect(SPELL_EFFECT_HEAL))
                     {
                         addhealth *= (1 + Mastery);
 
@@ -1919,7 +1920,7 @@ void Spell::EffectEnergize(SpellEffIndex effIndex)
         if (!avalibleElixirs.empty())
         {
             // cast random elixir on target
-            m_caster->CastSpell(unitTarget, Trinity::Containers::SelectRandomContainerElement(avalibleElixirs), true, m_CastItem);
+            m_caster->CastSpell(unitTarget, JadeCore::Containers::SelectRandomContainerElement(avalibleElixirs), true, m_CastItem);
         }
     }
 }
@@ -3231,9 +3232,9 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
         case SPELLFAMILY_DEATHKNIGHT:
         {
             // Blood Strike
-            if (m_spellInfo->SpellFamilyFlags[0] & 0x400000)
+            if (m_spellInfo->Id == 45902)
             {
-                float bonusPct = m_spellInfo->Effects[EFFECT_2].CalcValue(m_caster) * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) / 2.0f;
+                float bonusPct = m_spellInfo->Effects[EFFECT_3].BasePoints * unitTarget->GetDiseasesByCaster(m_caster->GetGUID()) / 10.0f;
                 // Death Knight T8 Melee 4P Bonus
                 if (constAuraEffectPtr aurEff = m_caster->GetAuraEffect(64736, EFFECT_0))
                     AddPct(bonusPct, aurEff->GetAmount());
@@ -3482,6 +3483,19 @@ void Spell::EffectSummonObjectWild(SpellEffIndex effIndex)
                 if (bg && bg->GetTypeID(true) == BATTLEGROUND_EY && bg->GetStatus() == STATUS_IN_PROGRESS)
                 {
                     ((BattlegroundEY*)bg)->SetDroppedFlagGUID(pGameObj->GetGUID());
+                }
+                break;
+            }
+            case 726:                                       //TP
+            {
+                if (bg && bg->GetTypeID(true) == BATTLEGROUND_TP && bg->GetStatus() == STATUS_IN_PROGRESS)
+                {
+                    uint32 team = TEAM_ALLIANCE;
+
+                    if (player->GetTeamId() == team)
+                        team = TEAM_HORDE;
+
+                    ((BattlegroundTP*)bg)->SetDroppedFlagGUID(pGameObj->GetGUID(), team);
                 }
                 break;
             }

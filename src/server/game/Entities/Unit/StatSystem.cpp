@@ -792,9 +792,9 @@ void Player::UpdateManaRegen()
         base_regen = 0.01f * GetMaxPower(POWER_MANA) + GetTotalAuraModifierByMiscValue(SPELL_AURA_MOD_POWER_REGEN, POWER_MANA);
     }
 
-    // Mana Meditation
-    if (HasAura(121278))
-        base_regen += 0.5 * spirit_regen;
+    // Mana Meditation && Meditation
+    if (HasAura(121278) || HasAura(85101))
+        base_regen += 0.5 * spirit_regen; // Allows 50% of your mana regeneration from Spirit to continue while in combat.
 
     // Chaotic Energy : Increase Mana regen by 625%
     if (HasAura(111546))
@@ -1209,6 +1209,9 @@ void Guardian::UpdateMaxHealth()
             multiplicator = 1.0f;
             stamina = 0.0f;
             break;
+        case 28524: // Bloodworms
+            SetMaxHealth(GetCreateHealth());
+            return;
         default:
             multiplicator = 10.0f;
             break;

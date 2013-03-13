@@ -672,7 +672,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         if (targetList.size() > 1)
         {
-            targetList.sort(Trinity::HealthPctOrderPred());
+            targetList.sort(JadeCore::HealthPctOrderPred());
             targetList.resize(1);
         }
 
@@ -1898,7 +1898,7 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
     // We're going to call functions which can modify content of the list during iteration over it's elements
     // Let's copy the list so we can prevent iterator invalidation
     AuraEffectList vSchoolAbsorbCopy(victim->GetAuraEffectsByType(SPELL_AURA_SCHOOL_ABSORB));
-    vSchoolAbsorbCopy.sort(Trinity::AbsorbAuraOrderPred());
+    vSchoolAbsorbCopy.sort(JadeCore::AbsorbAuraOrderPred());
 
     // absorb without mana cost
     for (AuraEffectList::iterator itr = vSchoolAbsorbCopy.begin(); (itr != vSchoolAbsorbCopy.end()) && (dmgInfo.GetDamage() > 0); ++itr)
@@ -4176,6 +4176,27 @@ void Unit::_ApplyAllAuraStatMods()
 {
     for (AuraApplicationMap::iterator i = m_appliedAuras.begin(); i != m_appliedAuras.end(); ++i)
         (*i).second->GetBase()->HandleAllEffects(i->second, AURA_EFFECT_HANDLE_STAT, true);
+}
+
+std::list<AuraEffectPtr> Unit::GetAuraEffectsByMechanic(uint32 mechanic_mask) const
+{
+    AuraEffectList list;
+    for (AuraApplicationMap::const_iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end(); ++iter)
+    {
+        constAuraPtr aura = iter->second->GetBase();
+        for (uint8 i = 0; i < MAX_EFFECTS; ++i)
+        {
+            if (aura->GetSpellInfo()->GetEffectMechanicMask(i) & mechanic_mask)
+            {
+                if (iter->second)
+                    if (iter->second->GetBase())
+                        if (iter->second->GetBase()->GetEffect(i))
+                            list.push_back(iter->second->GetBase()->GetEffect(i));
+            }
+        }
+    }
+
+    return list;
 }
 
 AuraEffectPtr Unit::GetAuraEffect(uint32 spellId, uint8 effIndex, uint64 caster) const
@@ -8028,20 +8049,48 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
-        // Sanguinary Vein
-        case 79147:
+        // Glyph of Mind Blast
+        case 87195:
         {
-            return false;
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!victim)
+                return false;
+
+            if (procSpell->Id != 8092)
+                return false;
+
+            if (!(procEx & PROC_EX_CRITICAL_HIT))
+                return false;
 
             break;
         }
-        // Find Weakness
-        case 91023:
+        // Twist of Fate
+        case 109142:
         {
-            return false;
+            if (!victim)
+                return false;
+
+            if (!procSpell)
+                return false;
+
+            if (victim->GetHealthPct() > 20.0f)
+                return false;
 
             break;
         }
+        case 16864:     // Omen of Clarity (old)
+        case 58410:     // Master Poisoner
+        case 79147:     // Sanguinary Vein
+        case 91023:     // Find Weakness
+        case 108942:    // Phantasm
+        case 113043:    // Omen of Clarity (new)
+        case 122464:    // Dematerialize
+            return false;
         // Combat Potency
         case 35551:
         {
@@ -8074,20 +8123,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
 
             break;
         }
-        // Master Poisoner
-        case 58410:
-        {
-            return false;
-
-            break;
-        }
-        // Dematerialize
-        case 122464:
-        {
-            return false;
-
-            break;
-        }
         // Teachings of The Monastery (Blackout Kick)
         case 116645:
         {
@@ -8115,7 +8150,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
         {
             int32 health = GetHealth();
 
-            if (damage < 0 || damage < (health / 50))
+            if (damage < 0 || damage < uint32(health / 50))
                 return false;
 
             break;
@@ -10476,6 +10511,16 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                                     crit_chance += aurEff->GetAmount();
                            break;
                         }
+                        // Regrowth
+                        if (spellProto->Id == 8936)
+                        {
+                            // Regrowth has a 60% increased chance for a critical effect.
+                            crit_chance += 60.0f;
+
+                            // Glyph of Regrowth
+                            if (HasAura(116218))
+                                return true; // Increases the critical strike chance of your Regrowth by 40%, but removes the periodic component of the spell.
+                        }
                     break;
                     case SPELLFAMILY_SHAMAN:
                         // Lava Burst
@@ -10508,6 +10553,10 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         // +25% crit chance for Ferocious Bite on bleeding targets
                         if (spellProto->Id == 22568 && victim->HasAuraState(AURA_STATE_BLEEDING))
                             crit_chance += 25.0f;
+                        // Ravage
+                        if (spellProto->Id == 6785)
+                            if (victim->GetHealthPct() > 80.0f)
+                                crit_chance += 50.0f; // Ravage has a 50% increased chance to critically strike targets with over 80% health.
                     break;
                     case SPELLFAMILY_WARRIOR:
                        // Victory Rush
@@ -10610,6 +10659,18 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 115611)
         return healamount;
 
+    // No bonus for Leader of the Pack
+    if (spellProto->Id == 34299)
+        return healamount;
+
+    // No bonus for Living Seed
+    if (spellProto->Id == 48503)
+        return healamount;
+
+    // No bonus for Lifebloom : Final heal
+    if (spellProto->Id == 33778)
+        return healamount;
+
     // No bonus for Eminence (statue) and Eminence
     if (spellProto->Id == 117895 || spellProto->Id == 126890)
         return healamount;
@@ -10642,25 +10703,6 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
                 if (victim->HealthBelowPct(50))
                     AddPct(DoneTotalMod, (*i)->GetAmount());
                 break;
-            case 8477: // Nourish Heal Boost
-            {
-                int32 stepPercent = (*i)->GetAmount();
-                int32 modPercent = 0;
-                AuraApplicationMap const& victimAuras = victim->GetAppliedAuras();
-                for (AuraApplicationMap::const_iterator itr = victimAuras.begin(); itr != victimAuras.end(); ++itr)
-                {
-                    constAuraPtr aura = itr->second->GetBase();
-                    if (aura->GetCasterGUID() != GetGUID())
-                        continue;
-                    SpellInfo const* m_spell = aura->GetSpellInfo();
-                    if (m_spell->SpellFamilyName != SPELLFAMILY_DRUID ||
-                        !(m_spell->SpellFamilyFlags[1] & 0x00000010 || m_spell->SpellFamilyFlags[0] & 0x50))
-                        continue;
-                    modPercent += stepPercent * aura->GetStackAmount();
-                }
-                AddPct(DoneTotalMod, modPercent);
-                break;
-            }
             default:
                 break;
         }
@@ -10669,7 +10711,7 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     // Done fixed damage bonus auras
     int32 DoneAdvertisedBenefit = SpellBaseHealingBonusDone(spellProto->GetSchoolMask());
 
-    if (!DoneAdvertisedBenefit)
+    if (!DoneAdvertisedBenefit || (SpellBaseHealingBonusDone(spellProto->GetSchoolMask()) < SpellBaseDamageBonusDone(spellProto->GetSchoolMask())))
         DoneAdvertisedBenefit = SpellBaseDamageBonusDone(spellProto->GetSchoolMask());
 
     // Check for table values
@@ -10782,6 +10824,14 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     if (spellProto->Id == 117895 || spellProto->Id == 126890)
         return healamount;
 
+    // No bonus for Living Seed
+    if (spellProto->Id == 48503)
+        return healamount;
+
+    // No bonus for Lifebloom : Final heal
+    if (spellProto->Id == 33778)
+        return healamount;
+
     // Healing taken percent
     float minval = float(GetMaxNegativeAuraModifier(SPELL_AURA_MOD_HEALING_PCT));
     if (minval)
@@ -10801,13 +10851,15 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
     // Taken fixed damage bonus auras
     int32 TakenAdvertisedBenefit = SpellBaseHealingBonusTaken(spellProto->GetSchoolMask());
 
-    // Nourish cast
-    if (spellProto->SpellFamilyName == SPELLFAMILY_DRUID && spellProto->SpellFamilyFlags[1] & 0x2000000)
+    // Nourish heal boost
+    if (spellProto->Id == 50464)
     {
-        // Rejuvenation, Regrowth, Lifebloom, or Wild Growth
-        if (GetAuraEffect(SPELL_AURA_PERIODIC_HEAL, SPELLFAMILY_DRUID, 0x50, 0x4000010, 0))
-            // increase healing by 20%
-            TakenTotalMod *= 1.2f;
+        // Heals for an additional 20% if you have a Rejuvenation, Regrowth, Lifebloom, or Wild Growth effect active on the target.
+        if (HasAura(48438, caster->GetGUID()) ||   // Wild Growth
+            HasAura(33763, caster->GetGUID()) ||   // Lifebloom
+            HasAura(8936, caster->GetGUID()) ||    // Regrowth
+            HasAura(774, caster->GetGUID()))       // Rejuvenation
+            AddPct(TakenTotalMod, 20);
     }
 
     // Check for table values
@@ -14356,6 +14408,17 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
     }
 
+    // Leader of the Pack
+    if (target && GetTypeId() == TYPEID_PLAYER && (procExtra & PROC_EX_CRITICAL_HIT) && HasAura(17007) && (attType == BASE_ATTACK || (procSpell && procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_NORMAL)))
+    {
+        if (!ToPlayer()->HasSpellCooldown(34299))
+        {
+            CastSpell(this, 34299, true); // Heal
+            EnergizeBySpell(this, 68285, CountPctFromMaxMana(8), POWER_MANA);
+            ToPlayer()->AddSpellCooldown(34299, 0, time(NULL) + 6); // 6s ICD
+        }
+    }
+
     // Dematerialize
     if (target && target->GetTypeId() == TYPEID_PLAYER && target->HasAura(122464) && procSpell && procSpell->GetAllEffectsMechanicMask() & (1 << MECHANIC_STUN))
     {
@@ -15121,15 +15184,15 @@ void Unit::UpdateReactives(uint32 p_time)
 
 void Unit::GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearchRange) const
 {
-    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
+    CellCoord p(JadeCore::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
     cell.SetNoCreate();
 
-    Trinity::AnyUnitInObjectRangeCheck u_check(this, fMaxSearchRange);
-    Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(this, list, u_check);
+    JadeCore::AnyUnitInObjectRangeCheck u_check(this, fMaxSearchRange);
+    JadeCore::UnitListSearcher<JadeCore::AnyUnitInObjectRangeCheck> searcher(this, list, u_check);
 
-    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+    TypeContainerVisitor<JadeCore::UnitListSearcher<JadeCore::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+    TypeContainerVisitor<JadeCore::UnitListSearcher<JadeCore::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
     cell.Visit(p, world_unit_searcher, *GetMap(), *this, fMaxSearchRange);
     cell.Visit(p, grid_unit_searcher, *GetMap(), *this, fMaxSearchRange);
@@ -15138,8 +15201,8 @@ void Unit::GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearch
 Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
 {
     std::list<Unit*> targets;
-    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
-    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
+    JadeCore::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
+    JadeCore::UnitListSearcher<JadeCore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
     VisitNearbyObject(dist, searcher);
 
     // remove current target
@@ -15163,7 +15226,7 @@ Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
         return NULL;
 
     // select random
-    return Trinity::Containers::SelectRandomContainerElement(targets);
+    return JadeCore::Containers::SelectRandomContainerElement(targets);
 }
 
 void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply)
@@ -16177,8 +16240,10 @@ void Unit::SetFeared(bool apply)
     {
         SetTarget(0);
 
+        uint32 mechanic_mask = (1 << MECHANIC_FEAR) | (1 << MECHANIC_HORROR);
+
         Unit* caster = NULL;
-        Unit::AuraEffectList const& fearAuras = GetAuraEffectsByType(SPELL_AURA_MOD_FEAR);
+        Unit::AuraEffectList const& fearAuras = GetAuraEffectsByMechanic(mechanic_mask);
         if (!fearAuras.empty())
             caster = ObjectAccessor::GetUnit(*this, fearAuras.front()->GetCasterGUID());
         if (!caster)
@@ -16841,7 +16906,7 @@ void Unit::UpdateObjectVisibility(bool forced)
     {
         WorldObject::UpdateObjectVisibility(true);
         // call MoveInLineOfSight for nearby creatures
-        Trinity::AIRelocationNotifier notifier(*this);
+        JadeCore::AIRelocationNotifier notifier(*this);
         VisitNearbyObject(GetVisibilityRange(), notifier);
     }
 }
@@ -17232,7 +17297,20 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 return 40816;
             return 45339;
         case FORM_MOONKIN:
-            return 37173;
+            if (Player::TeamForRace(getRace()) == HORDE)
+            {
+                if (getRace() == RACE_TROLL)
+                    return 37174;
+                else if (getRace() == RACE_TAUREN)
+                    return 15375;
+            }
+            else if (Player::TeamForRace(getRace()) == ALLIANCE)
+            {
+                if (getRace() == RACE_NIGHTELF)
+                    return 15374;
+                else if (getRace() == RACE_WORGEN)
+                    return 37173;
+            }
         default:
             break;
     }
@@ -17775,7 +17853,7 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
 bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool teleport)
 {
     // prevent crash when a bad coord is sent by the client
-    if (!Trinity::IsValidMapCoord(x, y, z, orientation))
+    if (!JadeCore::IsValidMapCoord(x, y, z, orientation))
     {
         sLog->outDebug(LOG_FILTER_UNITS, "Unit::UpdatePosition(%f, %f, %f) .. bad coordinates!", x, y, z);
         return false;

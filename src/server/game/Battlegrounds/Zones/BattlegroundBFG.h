@@ -120,7 +120,7 @@ const float BG_BFG_SpiritGuidePos[5][4] = {
 };
 
 const float BG_BFG_NodePositions[3][4] = {
-    {1057.86f,  1278.28f, 3.62f,    5.06f}, // Lighthouse
+    {1057.86f,  1278.28f, 3.13f,    5.06f}, // Lighthouse
     {980.08f,   948.707f, 12.7478f, 5.92f}, // waterworks
     {1250.99f,  958.311f, 5.66513f, 5.93f}  // mine
 };

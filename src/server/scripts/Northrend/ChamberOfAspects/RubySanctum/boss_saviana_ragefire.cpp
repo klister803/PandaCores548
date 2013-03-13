@@ -109,8 +109,7 @@ class boss_saviana_ragefire : public CreatureScript
                         me->SetCanFly(false);
                         me->SetDisableGravity(false);
                         me->SetReactState(REACT_AGGRESSIVE);
-                        if (me->GetMotionMaster() && me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
-                            me->GetMotionMaster()->MovementExpired();
+                        me->GetMotionMaster()->MovementExpired();
                         DoStartMovement(me->getVictim());
                         break;
                     default:
@@ -207,7 +206,7 @@ class spell_saviana_conflagration_init : public SpellScriptLoader
                 targets.remove_if(ConflagrationTargetSelector());
                 uint8 maxSize = uint8(GetCaster()->GetMap()->GetSpawnMode() & 1 ? 6 : 3);
                 if (targets.size() > maxSize)
-                    Trinity::Containers::RandomResizeList(targets, maxSize);
+                    JadeCore::Containers::RandomResizeList(targets, maxSize);
             }
 
             void HandleDummy(SpellEffIndex effIndex)

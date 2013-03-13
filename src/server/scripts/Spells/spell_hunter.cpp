@@ -66,6 +66,77 @@ enum HunterSpells
     HUNTER_SPELL_POWERSHOT                       = 109259,
     HUNTER_SPELL_IMPROVED_SERPENT_STING_AURA     = 82834,
     HUNTER_SPELL_IMPROVED_SERPENT_STING          = 83077,
+    HUNTER_SPELL_GLAIVE_TOSS_DAMAGES             = 121414,
+    HUNTER_SPELL_GLAIVE_TOSS                     = 117050,
+};
+
+class spell_hun_glaive_toss_damages : public SpellScriptLoader
+{
+    public:
+        spell_hun_glaive_toss_damages() : SpellScriptLoader("spell_hun_glaive_toss_damages") { }
+
+        class spell_hun_glaive_toss_damages_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_glaive_toss_damages_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                    if (Unit* target = GetHitUnit())
+                        if (target->HasAura(HUNTER_SPELL_GLAIVE_TOSS))
+                            SetHitDamage(GetHitDamage() * 4);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_hun_glaive_toss_damages_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_glaive_toss_damages_SpellScript();
+        }
+};
+
+
+// Called by Glaive Toss - 120755 and 120756
+// Glaive Toss - 117050
+class spell_hun_glaive_toss : public SpellScriptLoader
+{
+    public:
+        spell_hun_glaive_toss() : SpellScriptLoader("spell_hun_glaive_toss") { }
+
+        class spell_hun_glaive_toss_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_glaive_toss_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        caster->CastSpell(target, HUNTER_SPELL_GLAIVE_TOSS_DAMAGES, true);
+                        Player* plr = target->ToPlayer();
+
+                        if (plr && plr->HasSpellCooldown(HUNTER_SPELL_GLAIVE_TOSS))
+                            return;
+                        
+                        target->CastSpell(caster, GetSpellInfo()->Id, true, 0, NULL, caster->GetGUID());                      
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_hun_glaive_toss_SpellScript::HandleOnHit);
+            }
+        };
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_glaive_toss_SpellScript();
+        }
 };
 
 // Called by Serpent Sting - 118253
@@ -369,10 +440,10 @@ class spell_hun_ancient_hysteria : public SpellScriptLoader
 
             void RemoveInvalidTargets(std::list<WorldObject*>& targets)
             {
-                targets.remove_if(Trinity::UnitAuraCheck(true, HUNTER_SPELL_INSANITY));
-                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_EXHAUSTED));
-                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_SHAMAN_SATED));
-                targets.remove_if(Trinity::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
+                targets.remove_if(JadeCore::UnitAuraCheck(true, HUNTER_SPELL_INSANITY));
+                targets.remove_if(JadeCore::UnitAuraCheck(true, SPELL_SHAMAN_EXHAUSTED));
+                targets.remove_if(JadeCore::UnitAuraCheck(true, SPELL_SHAMAN_SATED));
+                targets.remove_if(JadeCore::UnitAuraCheck(true, SPELL_MAGE_TEMPORAL_DISPLACEMENT));
             }
 
             void ApplyDebuff()
@@ -1010,8 +1081,8 @@ class spell_hun_pet_carrion_feeder : public SpellScriptLoader
                 float max_range = GetSpellInfo()->GetMaxRange(false);
                 WorldObject* result = NULL;
                 // search for nearby enemy corpse in range
-                Trinity::AnyDeadUnitSpellTargetInRangeCheck check(caster, max_range, GetSpellInfo(), TARGET_CHECK_ENEMY);
-                Trinity::WorldObjectSearcher<Trinity::AnyDeadUnitSpellTargetInRangeCheck> searcher(caster, result, check);
+                JadeCore::AnyDeadUnitSpellTargetInRangeCheck check(caster, max_range, GetSpellInfo(), TARGET_CHECK_ENEMY);
+                JadeCore::WorldObjectSearcher<JadeCore::AnyDeadUnitSpellTargetInRangeCheck> searcher(caster, result, check);
                 caster->GetMap()->VisitFirstFound(caster->m_positionX, caster->m_positionY, max_range, searcher);
                 if (!result)
                     return SPELL_FAILED_NO_EDIBLE_CORPSES;
@@ -1206,6 +1277,8 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_glaive_toss_damages();
+    new spell_hun_glaive_toss();
     new spell_hun_improved_serpent_sting();
     new spell_hun_powershot();
     new spell_hun_feign_death();

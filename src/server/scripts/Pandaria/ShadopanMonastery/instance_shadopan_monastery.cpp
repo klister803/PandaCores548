@@ -40,10 +40,15 @@ public:
         uint64 taranZhuGuid;
 
         uint64 azureSerpentGuid;
-
+        
+        uint64 snowdriftEntranceGuid;
         uint64 snowdriftPossessionsGuid;
         uint64 snowdriftFirewallGuid;
         uint64 snowdriftDojoDoorGuid;
+        uint64 snowdriftExitGuid;
+        
+        uint64 shaEntranceGuid;
+        uint64 shaExitGuid;
         
         std::list<uint64> minibossPositionsGuid;
         std::list<uint64> minibossPositionsGuidSave;
@@ -78,9 +83,14 @@ public:
 
             azureSerpentGuid            = 0;
 
+            snowdriftEntranceGuid       = 0;
             snowdriftPossessionsGuid    = 0;
             snowdriftFirewallGuid       = 0;
             snowdriftDojoDoorGuid       = 0;
+            snowdriftExitGuid           = 0;
+
+            shaEntranceGuid             = 0;
+            shaExitGuid                 = 0;
             
             firstArcherySet.clear();
             secondArcherySet.clear();
@@ -128,12 +138,11 @@ public:
             {
                 case GO_CLOUDSTRIKE_ENTRANCE:
                 case GO_CLOUDSTRIKE_EXIT:
-                case GO_SNOWDRIFT_ENTRANCE:
-                case GO_SNOWDRIFT_EXIT:
-                case GO_SHA_ENTRANCE:
-                case GO_SHA_EXIT:
                     AddDoor(go, true);
                     return;
+                case GO_SNOWDRIFT_ENTRANCE:
+                    snowdriftEntranceGuid = go->GetGUID();
+                    break;
                 case GO_SNOWDRIFT_POSSESSIONS:
                     go->SetPhaseMask(2, true);
                     snowdriftPossessionsGuid = go->GetGUID();
@@ -143,6 +152,15 @@ public:
                     break;
                 case GO_SNOWDRIFT_DOJO_DOOR:
                     snowdriftDojoDoorGuid = go->GetGUID();
+                    break;
+                case GO_SNOWDRIFT_EXIT:
+                    snowdriftExitGuid = go->GetGUID();
+                    break;
+                case GO_SHA_ENTRANCE:
+                    shaEntranceGuid = go->GetGUID();
+                    break;
+                case GO_SHA_EXIT:
+                    shaExitGuid = go->GetGUID();
                     break;
                 default:
                     return;
@@ -167,19 +185,42 @@ public:
                             minibossPositionsGuid               = minibossPositionsGuidSave;
                             firstDefeatedNovicePositionsGuid    = firstDefeatedNovicePositionsGuidSave;
                             secondDefeatedNovicePositionsGuid   = secondDefeatedNovicePositionsGuidSave;
-
+                            
+                            HandleGameObject(snowdriftEntranceGuid, true);
                             HandleGameObject(snowdriftFirewallGuid, false);
                             HandleGameObject(snowdriftDojoDoorGuid, false);
+                            HandleGameObject(snowdriftExitGuid,     false);
                             break;
                         case IN_PROGRESS:
+                            HandleGameObject(snowdriftEntranceGuid, false);
                             HandleGameObject(snowdriftDojoDoorGuid, false);
                             break;
                         case DONE:
                             if (GameObject* possessions = instance->GetGameObject(snowdriftPossessionsGuid))
                                 possessions->SetPhaseMask(1, true);
-
+                            
+                            HandleGameObject(snowdriftEntranceGuid, true);
                             HandleGameObject(snowdriftFirewallGuid, true);
                             HandleGameObject(snowdriftDojoDoorGuid, true);
+                            HandleGameObject(snowdriftExitGuid,     true);
+                            break;
+                    }
+                    break;
+                }
+                case DATA_SHA_VIOLENCE:
+                {
+                    switch (state)
+                    {
+                        case NOT_STARTED:
+                        case FAIL:
+                            HandleGameObject(shaEntranceGuid,   true);
+                            HandleGameObject(shaExitGuid,       false);
+                            break;
+                        case IN_PROGRESS:
+                            HandleGameObject(shaEntranceGuid,   false);
+                        case DONE:
+                            HandleGameObject(shaEntranceGuid,   true);
+                            HandleGameObject(shaExitGuid,       true);
                             break;
                     }
                     break;
@@ -259,13 +300,13 @@ public:
                 case NPC_SHA_VIOLENCE:          return shaViolenceGuid;
                 case NPC_TARAN_ZHU:             return taranZhuGuid;
                 case NPC_AZURE_SERPENT:         return azureSerpentGuid;
-                case NPC_ARCHERY_TARGET:        return Trinity::Containers::SelectRandomContainerElement(archeryTargetGuids);
+                case NPC_ARCHERY_TARGET:        return JadeCore::Containers::SelectRandomContainerElement(archeryTargetGuids);
                 case DATA_RANDOM_FIRST_POS:
                 {
                     if (firstDefeatedNovicePositionsGuid.empty())
                         return 0;
 
-                    uint64 guid = Trinity::Containers::SelectRandomContainerElement(firstDefeatedNovicePositionsGuid);
+                    uint64 guid = JadeCore::Containers::SelectRandomContainerElement(firstDefeatedNovicePositionsGuid);
                     firstDefeatedNovicePositionsGuid.remove(guid);
                     return guid;
                 }
@@ -274,7 +315,7 @@ public:
                     if (secondDefeatedNovicePositionsGuid.empty())
                         return 0;
 
-                    uint64 guid = Trinity::Containers::SelectRandomContainerElement(secondDefeatedNovicePositionsGuid);
+                    uint64 guid = JadeCore::Containers::SelectRandomContainerElement(secondDefeatedNovicePositionsGuid);
                     secondDefeatedNovicePositionsGuid.remove(guid);
                     return guid;
                 }
@@ -283,7 +324,7 @@ public:
                     if (minibossPositionsGuid.empty())
                         return 0;
 
-                    uint64 guid = Trinity::Containers::SelectRandomContainerElement(minibossPositionsGuid);
+                    uint64 guid = JadeCore::Containers::SelectRandomContainerElement(minibossPositionsGuid);
                     minibossPositionsGuid.remove(guid);
                     return guid;
                 }
