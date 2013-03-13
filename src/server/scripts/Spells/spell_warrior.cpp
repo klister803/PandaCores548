@@ -56,6 +56,33 @@ enum WarriorSpells
     WARRIOR_SPELL_SECOND_WIND_REGEN             = 16491,
 };
 
+// Staggering Shout - 107566
+class spell_warr_staggering_shout : public SpellScriptLoader
+{
+    public:
+        spell_warr_staggering_shout() : SpellScriptLoader("spell_warr_staggering_shout") { }
+
+        class spell_warr_staggering_shout_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_staggering_shout_SpellScript);
+
+            void RemoveInvalidTargets(std::list<WorldObject*>& targets)
+            {
+                targets.remove_if(JadeCore::UnitAuraTypeCheck(false, SPELL_AURA_MOD_DECREASE_SPEED));
+            }
+
+            void Register()
+            {
+                OnObjectAreaTargetSelect += SpellObjectAreaTargetSelectFn(spell_warr_staggering_shout_SpellScript::RemoveInvalidTargets, EFFECT_0, TARGET_UNIT_SRC_AREA_ENEMY);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_staggering_shout_SpellScript();
+        }
+};
+
 // Frenzied Regeneration - 55694
 class spell_warr_frenzied_regeneration : public SpellScriptLoader
 {
@@ -129,7 +156,7 @@ class spell_warr_second_wind : public SpellScriptLoader
             }
         };
 
-        SpellScript* GetSpellScript() const
+        AuraScript* GetAuraScript() const
         {
             return new spell_warr_second_wind_AuraScript();
         }
@@ -948,6 +975,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_staggering_shout();
     new spell_warr_frenzied_regeneration();
     new spell_warr_second_wind();
     new spell_warr_taste_for_blood_aura();
