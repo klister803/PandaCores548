@@ -82,6 +82,28 @@ class spell_warr_second_wind : public SpellScriptLoader
         {
             return new spell_warr_second_wind_SpellScript();
         }
+
+        class spell_warr_second_wind_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warr_second_wind_AuraScript);
+
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    if (caster->HasAura(WARRIOR_SPELL_SECOND_WIND_REGEN))
+                        caster->RemoveAura(WARRIOR_SPELL_SECOND_WIND_REGEN);
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_warr_second_wind_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_OBS_MOD_HEALTH, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_second_wind_AuraScript();
+        }
 };
 
 // Called by Heroic Strike - 78 and Slam - 1464
