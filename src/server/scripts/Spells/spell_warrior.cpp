@@ -49,6 +49,86 @@ enum WarriorSpells
     WARRIOR_SPELL_BERZERKER_RAGE_EFFECT         = 23691,
     WARRIOR_SPELL_ENRAGE                        = 12880,
     WARRIOR_SPELL_COLOSSUS_SMASH                = 86346,
+    WARRIOR_SPELL_MORTAL_STRIKE_AURA            = 12294,
+    WARRIOR_SPELL_TASTE_FOR_BLOOD               = 56638,
+    WARRIOR_SPELL_ALLOW_OVERPOWER               = 119962,
+    WARRIOR_SPELL_TASTE_FOR_BLOOD_DAMAGE_DONE   = 125831,
+};
+
+// Called by Heroic Strike - 78 and Slam - 1464
+// Taste for Blood (damage done) - 125831
+class spell_warr_taste_for_blood_aura : public SpellScriptLoader
+{
+    public:
+        spell_warr_taste_for_blood_aura() : SpellScriptLoader("spell_warr_taste_for_blood_aura") { }
+
+        class spell_warr_taste_for_blood_aura_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_taste_for_blood_aura_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(WARRIOR_SPELL_TASTE_FOR_BLOOD_DAMAGE_DONE))
+                            _player->RemoveAura(WARRIOR_SPELL_TASTE_FOR_BLOOD_DAMAGE_DONE);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_taste_for_blood_aura_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_taste_for_blood_aura_SpellScript();
+        }
+};
+
+// Called by Overpower - 7384
+// Taste for Blood - 56638
+class spell_warr_taste_for_blood : public SpellScriptLoader
+{
+    public:
+        spell_warr_taste_for_blood() : SpellScriptLoader("spell_warr_taste_for_blood") { }
+
+        class spell_warr_taste_for_blood_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_taste_for_blood_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(WARRIOR_SPELL_TASTE_FOR_BLOOD))
+                        {
+                            if (roll_chance_i(30))
+                            {
+                                // Second chance to allow overpower
+                                _player->AddComboPoints(target, 1);
+                                _player->StartReactiveTimer(REACTIVE_OVERPOWER);
+                                _player->CastSpell(_player, WARRIOR_SPELL_ALLOW_OVERPOWER, true);
+                                // Increase damage of next Heroic Strike or Slam
+                                _player->CastSpell(_player, WARRIOR_SPELL_TASTE_FOR_BLOOD_DAMAGE_DONE, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_taste_for_blood_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_taste_for_blood_SpellScript();
+        }
 };
 
 // Sudden Death - 52437
@@ -242,10 +322,21 @@ class spell_warr_mortal_strike : public SpellScriptLoader
             {
                 // Fix Apply Mortal strike buff on player only if he has the correct glyph
                 if (Player* _player = GetCaster()->ToPlayer())
+                {
                     if (Unit* target = GetHitUnit())
-                        if (_player->HasAura(12294))
+                    {
+                        if (_player->HasAura(WARRIOR_SPELL_MORTAL_STRIKE_AURA))
                             if (!_player->HasAura(WARRIOR_SPELL_GLYPH_OF_MORTAL_STRIKE))
-                                _player->RemoveAura(12294);
+                                _player->RemoveAura(WARRIOR_SPELL_MORTAL_STRIKE_AURA);
+
+                        if (_player->HasAura(WARRIOR_SPELL_TASTE_FOR_BLOOD))
+                        {
+                            _player->AddComboPoints(target, 1);
+                            _player->StartReactiveTimer(REACTIVE_OVERPOWER);
+                            _player->CastSpell(_player, WARRIOR_SPELL_ALLOW_OVERPOWER, true);
+                        }
+                    }
+                }
             }
 
             void Register()
@@ -777,6 +868,8 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_taste_for_blood_aura();
+    new spell_warr_taste_for_blood();
     new spell_warr_sudden_death();
     new spell_warr_berzerker_rage();
     new spell_warr_mocking_banner();
