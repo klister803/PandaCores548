@@ -3298,6 +3298,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 50334: // Berserk (bear)
                 spellInfo->ProcCharges = 1;
                 break;
+            case 131116:// Allow to use Raging Blow
+                spellInfo->ProcCharges = 2;
+                break;
             case 44544: // Fingers of Frost
             case 126084:// Fingers of Frost - visual
                 spellInfo->ProcCharges = 2;
