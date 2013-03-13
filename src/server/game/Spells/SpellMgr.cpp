@@ -3296,6 +3296,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 74434: // Soul Burn
             case 34936: // Backlash
             case 50334: // Berserk (bear)
+            case 23920: // Spell Reflection
                 spellInfo->ProcCharges = 1;
                 break;
             case 131116:// Allow to use Raging Blow
