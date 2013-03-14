@@ -57,6 +57,43 @@ enum WarriorSpells
     WARRIOR_SPELL_DRAGON_ROAR_KNOCK_BACK        = 118895,
     WARRIOR_SPELL_MEAT_CLEAVER_PROC             = 85739,
     WARRIOR_SPELL_PHYSICAL_VULNERABILITY        = 81326,
+    WARRIOR_SPELL_STORM_BOLT_STUN               = 132169
+};
+
+// Storm Bolt - 107570
+class spell_warr_storm_bolt : public SpellScriptLoader
+{
+    public:
+        spell_warr_storm_bolt() : SpellScriptLoader("spell_warr_storm_bolt") { }
+
+        class spell_warr_storm_bolt_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_storm_bolt_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if (unitTarget->IsImmunedToSpellEffect(sSpellMgr->GetSpellInfo(WARRIOR_SPELL_STORM_BOLT_STUN), 0))
+                            SetHitDamage(GetHitDamage() * 4);
+
+                        _player->CastSpell(unitTarget, WARRIOR_SPELL_STORM_BOLT_STUN, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_storm_bolt_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_storm_bolt_SpellScript();
+        }
 };
 
 // Colossus Smash - 86346
@@ -1066,6 +1103,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_storm_bolt();
     new spell_warr_colossus_smash();
     new spell_warr_meat_cleaver();
     new spell_warr_dragon_roar();
