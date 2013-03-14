@@ -14865,7 +14865,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             i->aura->DropCharge();
 
         if (useCharges && takeCharges && ((i->aura->GetId() == 119962 && procSpell && procSpell->Id == 7384) // Custom MoP Script - Hack Fix for allow Overpower
-            || (i->aura->GetId() == 131116 && procSpell && procSpell->Id == 85288)))                         // Custom MoP Script - Hack Fix for allow Raging Blow
+            || (i->aura->GetId() == 131116 && procSpell && procSpell->Id == 96103)))                         // Custom MoP Script - Hack Fix for allow Raging Blow
             i->aura->DropCharge();
 
         if (spellInfo->AttributesEx3 & SPELL_ATTR3_DISABLE_PROC)
