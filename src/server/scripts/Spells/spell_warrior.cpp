@@ -55,6 +55,37 @@ enum WarriorSpells
     WARRIOR_SPELL_TASTE_FOR_BLOOD_DAMAGE_DONE   = 125831,
     WARRIOR_SPELL_SECOND_WIND_REGEN             = 16491,
     WARRIOR_SPELL_DRAGON_ROAR_KNOCK_BACK        = 118895,
+    WARRIOR_SPELL_MEAT_CLEAVER_PROC             = 85739,
+};
+
+// Called by Raging Blow - 85288
+// Meat Cleaver - 85739
+class spell_warr_meat_cleaver : public SpellScriptLoader
+{
+    public:
+        spell_warr_meat_cleaver() : SpellScriptLoader("spell_warr_meat_cleaver") { }
+
+        class spell_warr_meat_cleaver_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warr_meat_cleaver_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(WARRIOR_SPELL_MEAT_CLEAVER_PROC))
+                        _player->RemoveAura(WARRIOR_SPELL_MEAT_CLEAVER_PROC);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warr_meat_cleaver_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warr_meat_cleaver_SpellScript();
+        }
 };
 
 // Dragon Roar - 118000
@@ -1005,6 +1036,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_meat_cleaver();
     new spell_warr_dragon_roar();
     new spell_warr_staggering_shout();
     new spell_warr_frenzied_regeneration();

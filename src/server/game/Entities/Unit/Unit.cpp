@@ -8049,6 +8049,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Meat Cleaver
+        case 12950:
+        {
+            if (!procSpell || ! victim || GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (procSpell->Id != 1680 && procSpell->Id != 44949)
+                return false;
+
+            break;
+        }
         // Glyph of Mind Blast
         case 87195:
         {
