@@ -10592,6 +10592,9 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                        // Dragon Roar is always a critical hit
                        if (spellProto->Id == 118000)
                            return true;
+                       // Bloodthirst has double critical chance
+                       if (spellProto->Id == 23881)
+                           crit_chance *= 2;
                     break;
                 }
             }
