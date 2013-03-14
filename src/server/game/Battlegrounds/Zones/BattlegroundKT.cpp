@@ -138,11 +138,17 @@ void BattlegroundKT::EventPlayerClickedOnOrb(Player* source, GameObject* target_
     if (index > MAX_ORBS || m_OrbKeepers[index] != 0)
         return;
 
+    // Check if the player already have an orb
+    for (uint8 i = 0; i <= MAX_ORBS; ++i)
+        if (m_OrbKeepers[i] == source->GetGUID())
+            return;
+
     PlaySoundToAll(source->GetTeamId() == TEAM_ALLIANCE ? BG_KT_SOUND_A_ORB_PICKED_UP: BG_KT_SOUND_H_ORB_PICKED_UP);
     source->CastSpell(source, BG_KT_ORBS_SPELLS[index], true);
 
     m_OrbKeepers[index] = source->GetGUID();
     UpdateWorldState(BG_KT_ICON_A, 1);
+    SpawnBGObject(BG_KT_OBJECT_ORB_1 + index, RESPAWN_ONE_DAY);
 
     SendMessageToAll(LANG_BG_KT_PICKEDUP, source->GetTeamId() == TEAM_ALLIANCE ? CHAT_MSG_BG_SYSTEM_ALLIANCE: CHAT_MSG_BG_SYSTEM_HORDE, source);
     source->RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
@@ -161,7 +167,6 @@ void BattlegroundKT::EventPlayerDroppedOrb(Player* source)
             return;
 
         if (m_OrbKeepers[index] == source->GetGUID())
-            source->RemoveAurasDueToSpell(BG_KT_SPELL_ORB_PICKED_UP_1);
             break;
     }
 
