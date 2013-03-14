@@ -6049,6 +6049,17 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->Id)
             {
+                // Bloodsurge
+                case 46915:
+                {
+                    if (!procSpell)
+                        return false;
+
+                    if (procSpell->Id != 23881)
+                        return false;
+
+                    break;
+                }
                 // Sweeping Strikes
                 case 12328:
                 {
