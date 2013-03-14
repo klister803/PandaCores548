@@ -6049,6 +6049,23 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->Id)
             {
+                // Bloodbath
+                case 12292:
+                {
+                    if (!procSpell)
+                        return false;
+
+                    if (!damage)
+                        return false;
+
+                    if (!roll_chance_i(30))
+                        return false;
+
+                    int32 bp = int32(CalculatePct(damage, triggerAmount) / 6); // damage / tick_number
+                    CastCustomSpell(victim, 113344, &bp, NULL, NULL, true);
+
+                    break;
+                }
                 // Bloodsurge
                 case 46915:
                 {
