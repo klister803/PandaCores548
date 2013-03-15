@@ -8083,6 +8083,20 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Revenge (aura proc)
+        case 5301:
+        {
+            if (!(procEx & PROC_EX_DODGE) && !(procEx & PROC_EX_PARRY))
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (ToPlayer()->HasSpellCooldown(6572))
+                ToPlayer()->RemoveSpellCooldown(6572, true);
+
+            break;
+        }
         // Meat Cleaver
         case 12950:
         {
