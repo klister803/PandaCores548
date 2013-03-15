@@ -2465,7 +2465,13 @@ bool Unit::isSpellBlocked(Unit* victim, SpellInfo const* spellProto, WeaponAttac
 bool Unit::isBlockCritical()
 {
     if (roll_chance_i(GetTotalAuraModifier(SPELL_AURA_MOD_BLOCK_CRIT_CHANCE)))
+    {
+        // Critical Blocks enrage the warrior
+        if (HasAura(76857))
+            CastSpell(this, 12880, true);
         return true;
+    }
+
     return false;
 }
 
@@ -4518,6 +4524,10 @@ int32 Unit::GetTotalAuraModifier(AuraType auratype) const
 
     for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
         modifier += itr->second;
+
+    // Fix Mastery : Critical Block - Increase critical block chance
+    if (HasAura(76857) && auratype == SPELL_AURA_MOD_BLOCK_CRIT_CHANCE)
+        modifier += int32(GetFloatValue(PLAYER_MASTERY) * 2.2f);
 
     return modifier;
 }
@@ -8153,6 +8163,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
 
             break;
         }
+        case 76857:     // Mastery : Critical Block
         case 16864:     // Omen of Clarity (old)
         case 58410:     // Master Poisoner
         case 79147:     // Sanguinary Vein
@@ -8231,7 +8242,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
             if (!procSpell)
                 return false;
 
-            if (procEx != PROC_EX_CRITICAL_HIT && procEx != PROC_EX_BLOCK)
+            if (!(procEx & PROC_EX_CRITICAL_HIT))
                 return false;
 
             // Mortal Strike, Bloodthirst and Colossus Smash critical strikes and critical blocks Enrage you
