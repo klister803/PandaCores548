@@ -1288,8 +1288,10 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
         return;
 
     if (spellInfo && spellInfo->Id == 48743) // Hack Fix Death Pact - don't suffer from DamageTaken
+    {
         damageInfo->damage = damage;
         return;
+    }
 
     Unit* victim = damageInfo->target;
     if (!victim || !victim->isAlive())
