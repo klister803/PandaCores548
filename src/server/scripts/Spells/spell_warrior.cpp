@@ -61,6 +61,38 @@ enum WarriorSpells
     WARRIOR_SPELL_SHIELD_BLOCKC_TRIGGERED       = 132404,
 };
 
+// Shield Barrier - 112048
+class spell_warr_shield_barrier : public SpellScriptLoader
+{
+    public:
+        spell_warr_shield_barrier() : SpellScriptLoader("spell_warr_shield_barrier") { }
+
+        class spell_warr_shield_barrier_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warr_shield_barrier_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                int32 rage = int32(GetCaster()->GetPower(POWER_RAGE) / 10);
+                int32 AP = int32(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
+                int32 Strength = int32(GetCaster()->GetStat(STAT_STRENGTH));
+                int32 Stamina = int32(GetCaster()->GetStat(STAT_STAMINA));
+
+                amount += std::max(int32(2 * (AP - 2 * (Strength - 10))), int32(Stamina * 2.5f)) * (std::min(60, rage) / 20);
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warr_shield_barrier_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warr_shield_barrier_AuraScript();
+        }
+};
+
 // Shield Block - 2565
 class spell_warr_shield_block : public SpellScriptLoader
 {
@@ -1132,6 +1164,7 @@ public:
 
 void AddSC_warrior_spell_scripts()
 {
+    new spell_warr_shield_barrier();
     new spell_warr_shield_block();
     new spell_warr_storm_bolt();
     new spell_warr_colossus_smash();
