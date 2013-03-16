@@ -8110,6 +8110,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
 
             break;
         }
+        // Divine Insight
+        case 109175:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 34914)
+                return false;
+
+            break;
+        }
         // Ultimatum
         case 122509:
         {
