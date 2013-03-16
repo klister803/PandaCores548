@@ -3297,6 +3297,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 34936: // Backlash
             case 50334: // Berserk (bear)
             case 23920: // Spell Reflection
+            case 81292: // Glyph of Mind Spike
                 spellInfo->ProcCharges = 1;
                 break;
             case 131116:// Allow to use Raging Blow

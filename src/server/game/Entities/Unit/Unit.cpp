@@ -8093,6 +8093,23 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Glyph of Mind Spike
+        case 33371:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!victim)
+                return false;
+
+            if (procSpell->Id != 73510)
+                return false;
+
+            break;
+        }
         // Ultimatum
         case 122509:
         {
