@@ -1105,6 +1105,10 @@ void GameObject::Use(Unit* user)
             //doors/buttons never really despawn, only reset to default state/flags
             UseDoorOrButton(0, false, user);
 
+            if (Player* player = user->ToPlayer())
+                if (Battleground* bg = player->GetBattleground())
+                    bg->EventPlayerUsedGO(player, this);
+
             // activate script
             GetMap()->ScriptsStart(sGameObjectScripts, GetDBTableGUIDLow(), spellCaster, this);
             return;
@@ -1604,7 +1608,7 @@ void GameObject::Use(Unit* user)
                     {
                         case 179785:                        // Silverwing Flag
                         case 179786:                        // Warsong Flag
-                            if (bg->GetTypeID(true) == BATTLEGROUND_WS)
+                            if (bg->GetTypeID(true) == BATTLEGROUND_WS || bg->GetTypeID(true) == BATTLEGROUND_TP)
                                 bg->EventPlayerClickedOnFlag(player, this);
                             break;
                         case 184142:                        // Netherstorm Flag

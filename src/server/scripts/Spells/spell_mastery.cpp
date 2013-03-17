@@ -35,7 +35,7 @@ enum MasterySpells
     MASTERY_SPELL_IGNITE                = 12654,
     MASTERY_SPELL_BLOOD_SHIELD          = 77535,
     MASTERY_SPELL_COMBO_BREAKER_1       = 118864,
-    MASTERY_SPELL_COMBO_BREAKER_2       = 116768
+    MASTERY_SPELL_COMBO_BREAKER_2       = 116768,
 };
 
 // Called by 100780 - Jab

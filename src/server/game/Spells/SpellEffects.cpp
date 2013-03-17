@@ -47,6 +47,7 @@
 #include "Battleground.h"
 #include "BattlegroundEY.h"
 #include "BattlegroundWS.h"
+#include "BattlegroundTP.h"
 #include "OutdoorPvPMgr.h"
 #include "Language.h"
 #include "SocialMgr.h"
@@ -406,6 +407,14 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             }
             case SPELLFAMILY_WARRIOR:
             {
+                // Dragon Roar
+                if (m_spellInfo->Id == 118000 && m_caster->GetTypeId() == TYPEID_PLAYER)
+                {
+                    if (m_caster->ToPlayer()->GetSpecializationId(m_caster->ToPlayer()->GetActiveSpec()) == SPEC_WARRIOR_ARMS)
+                        damage += CalculatePct(m_caster->GetTotalAttackPowerValue(BASE_ATTACK), 168);
+                    else
+                        damage += CalculatePct(m_caster->GetTotalAttackPowerValue(BASE_ATTACK), 140);
+                }
                 // Victory Rush
                 if (m_spellInfo->SpellFamilyFlags[1] & 0x100)
                     ApplyPct(damage, m_caster->GetTotalAttackPowerValue(BASE_ATTACK));
@@ -3482,6 +3491,19 @@ void Spell::EffectSummonObjectWild(SpellEffIndex effIndex)
                 if (bg && bg->GetTypeID(true) == BATTLEGROUND_EY && bg->GetStatus() == STATUS_IN_PROGRESS)
                 {
                     ((BattlegroundEY*)bg)->SetDroppedFlagGUID(pGameObj->GetGUID());
+                }
+                break;
+            }
+            case 726:                                       //TP
+            {
+                if (bg && bg->GetTypeID(true) == BATTLEGROUND_TP && bg->GetStatus() == STATUS_IN_PROGRESS)
+                {
+                    uint32 team = TEAM_ALLIANCE;
+
+                    if (player->GetTeamId() == team)
+                        team = TEAM_HORDE;
+
+                    ((BattlegroundTP*)bg)->SetDroppedFlagGUID(pGameObj->GetGUID(), team);
                 }
                 break;
             }

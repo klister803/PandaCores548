@@ -109,8 +109,7 @@ class boss_saviana_ragefire : public CreatureScript
                         me->SetCanFly(false);
                         me->SetDisableGravity(false);
                         me->SetReactState(REACT_AGGRESSIVE);
-                        if (me->GetMotionMaster() && me->GetMotionMaster()->GetCurrentMovementGeneratorType() == POINT_MOTION_TYPE)
-                            me->GetMotionMaster()->MovementExpired();
+                        me->GetMotionMaster()->MovementExpired();
                         DoStartMovement(me->getVictim());
                         break;
                     default:

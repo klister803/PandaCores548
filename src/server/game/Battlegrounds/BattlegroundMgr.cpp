@@ -1053,6 +1053,7 @@ uint32 BattlegroundMgr::CreateBattleground(CreateBattlegroundData& data)
         case BATTLEGROUND_TP: bg = new BattlegroundTP; break;
         case BATTLEGROUND_BFG: bg = new BattlegroundBFG; break;
         case BATTLEGROUND_RB: bg = new BattlegroundRB; break;
+        case BATTLEGROUND_KT: bg = new BattlegroundKT; break;
         default:
             bg = new Battleground;
             break;
