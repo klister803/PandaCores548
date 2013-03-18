@@ -61,7 +61,157 @@ enum DeathKnightSpells
     DK_SPELL_SCENT_OF_BLOOD_AURA                = 50421,
     DK_SPELL_CHAINS_OF_ICE                      = 45524,
     DK_SPELL_EBON_PLAGUEBRINGER                 = 51160,
+    DK_SPELL_REAPING                            = 56835,
 
+};
+// Icy touch - 45477
+class spell_dk_icy_touch : public SpellScriptLoader
+{
+    public:
+        spell_dk_icy_touch() : SpellScriptLoader("spell_dk_icy_touch") { }
+
+        class spell_dk_icy_touch_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_icy_touch_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(DK_SPELL_REAPING, _player->GetGUID()))
+                        {
+                            bool frost = false;
+
+                            for (int i = 0; i < MAX_RUNES ; i++)
+                            {
+                                if (_player->GetCurrentRune(i) == RUNE_DEATH)
+                                    continue;
+
+                                if (!_player->GetRuneCooldown(i))
+                                    continue;
+
+                                if (_player->GetCurrentRune(i) == RUNE_FROST && frost != true)
+                                {
+                                    _player->ConvertRune(i, RUNE_DEATH);
+                                    frost = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_dk_icy_touch_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_icy_touch_SpellScript();
+        }
+};
+
+// Pestilence - 50842
+class spell_dk_pestilence : public SpellScriptLoader
+{
+    public:
+        spell_dk_pestilence() : SpellScriptLoader("spell_dk_pestilence") { }
+
+        class spell_dk_pestilence_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_pestilence_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(DK_SPELL_REAPING, _player->GetGUID()))
+                        {
+                            bool blood = false;
+
+                            for (int i = 0; i < MAX_RUNES ; i++)
+                            {
+                                if (_player->GetCurrentRune(i) == RUNE_DEATH)
+                                    continue;
+
+                                if (!_player->GetRuneCooldown(i))
+                                    continue;
+
+                                if (_player->GetCurrentRune(i) == RUNE_BLOOD || _player->GetCurrentRune(i) == RUNE_DEATH && blood != true)
+                                {
+                                    _player->ConvertRune(i, RUNE_DEATH);
+                                    blood = true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_dk_pestilence_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_pestilence_SpellScript();
+        }
+};
+
+// Blood Strike - 45902
+class spell_dk_blood_strike : public SpellScriptLoader
+{
+    public:
+        spell_dk_blood_strike() : SpellScriptLoader("spell_dk_blood_strike") { }
+
+        class spell_dk_blood_strike_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_blood_strike_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(DK_SPELL_REAPING, _player->GetGUID()))
+                        {
+                            for (int i = 0; i < MAX_RUNES ; i++)
+                            {
+                                bool blood = false;
+
+                                if (_player->GetCurrentRune(i) == RUNE_DEATH)
+                                    continue;
+
+                                if (!_player->GetRuneCooldown(i))
+                                    continue;
+
+                                if (_player->GetCurrentRune(i) == RUNE_BLOOD && blood != true)
+                                {
+                                    _player->ConvertRune(i, RUNE_DEATH);
+                                    blood =  true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_blood_strike_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_blood_strike_SpellScript();
+        }
 };
 
 // Plague Strike - 45462
@@ -126,10 +276,34 @@ class spell_dk_festering_strike : public SpellScriptLoader
                             uint32 dur = COI->GetDuration() + 6000;
                             COI->SetDuration(dur);
                         }
+                        if (_player->HasAura(DK_SPELL_REAPING, _player->GetGUID()))
+                        {
+                            bool blood = false;
+                            bool frost = false;
+
+                            for (int i = 0; i < MAX_RUNES ; i++)
+                            {
+                                if (_player->GetCurrentRune(i) == RUNE_DEATH)
+                                    continue;
+
+                                if (!_player->GetRuneCooldown(i))
+                                    continue;
+
+                                if (_player->GetCurrentRune(i) == RUNE_BLOOD && blood != true)
+                                {
+                                    _player->ConvertRune(i, RUNE_DEATH);
+                                    blood = true;
+                                }
+                                if (_player->GetCurrentRune(i) == RUNE_FROST && frost != true)
+                                {
+                                    _player->ConvertRune(i, RUNE_DEATH);
+                                    frost = true;
+                                }
+                            }
+                        }
                     }
                 }
             }
-
             void Register()
             {
                 OnHit += SpellHitFn(spell_dk_festering_strike_SpellScript::HandleOnHit);
@@ -1387,6 +1561,25 @@ class spell_dk_blood_boil : public SpellScriptLoader
                             if (_player->HasAura(DK_SPELL_ROILING_BLOOD))
                                 _player->CastSpell(target, DK_SPELL_PESTILENCE, true);
                         }
+                        if (_player->HasAura(DK_SPELL_REAPING, _player->GetGUID()))
+                        {
+                            bool blood = false;
+
+                            for (int i = 0; i < MAX_RUNES ; i++)
+                            {
+                                if (_player->GetCurrentRune(i) == RUNE_DEATH)
+                                    continue;
+
+                                if (!_player->GetRuneCooldown(i))
+                                    continue;
+
+                                if (_player->GetCurrentRune(i) == RUNE_BLOOD && blood != true)
+                                {
+                                    _player->ConvertRune(i, RUNE_DEATH);
+                                    blood = true;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -1512,6 +1705,9 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_icy_touch();
+    new spell_dk_pestilence();
+    new spell_dk_blood_strike();
     new spell_dk_plague_strike();
     new spell_dk_festering_strike();
     new spell_dk_death_strike_heal();
