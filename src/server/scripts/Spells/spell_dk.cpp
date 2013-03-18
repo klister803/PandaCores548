@@ -64,6 +64,33 @@ enum DeathKnightSpells
     DK_SPELL_REAPING                            = 56835,
 
 };
+// Necrotic Strike - 73975
+class spell_dk_necrotic_strike : public SpellScriptLoader
+{
+    public:
+        spell_dk_necrotic_strike() : SpellScriptLoader("spell_dk_necrotic_strike") { }
+
+        class spell_dk_necrotic_strike_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_necrotic_strike_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                amount = int32(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_dk_necrotic_strike_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_HEAL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_necrotic_strike_AuraScript();
+        }
+};
+
 // Icy touch - 45477
 class spell_dk_icy_touch : public SpellScriptLoader
 {
@@ -1705,6 +1732,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_necrotic_strike();
     new spell_dk_icy_touch();
     new spell_dk_pestilence();
     new spell_dk_blood_strike();
