@@ -61,6 +61,7 @@ public:
             { "rename",         SEC_GAMEMASTER,     true,  &HandleCharacterRenameCommand,          "", NULL },
             { "reputation",     SEC_GAMEMASTER,     true,  &HandleCharacterReputationCommand,      "", NULL },
             { "titles",         SEC_GAMEMASTER,     true,  &HandleCharacterTitlesCommand,          "", NULL },
+            { "getrename",      SEC_GAMEMASTER,     true,  &HandleCharacterGetrenameCommand,    "", NULL },
             { NULL,             0,                  false, NULL,                                   "", NULL }
         };
 
@@ -916,7 +917,58 @@ public:
 
         return true;
     }
+
+    static bool HandleCharacterGetrenameCommand(ChatHandler* handler, char const* args)
+    {
+        if (!*args)
+            return false;       
+
+        std::string character = args;
+
+        if (isNumeric(character.c_str()))
+        {
+            uint32 PlayerGuid = (uint32)atoi((char*)args);
+
+            if (!PlayerGuid)
+                return false;
+
+            QueryResult result = CharacterDatabase.PQuery("SELECT * FROM log_rename WHERE guid = '%u'", PlayerGuid);
+            if (!result)
+            {
+                handler->PSendSysMessage("Aucun rename pour le personnage de guid '%u'", PlayerGuid);
+                return true;
+            }
+            else
+            {
+                std::string PlayerNewName;
+                sObjectMgr->GetPlayerNameByGUID(PlayerGuid, PlayerNewName); // nom actuel en cas de rename multiple !
+                handler->PSendSysMessage("Le nom actuel du joueur de guid '%u' est : '%s'", PlayerGuid, PlayerNewName.c_str());
+                return true;
+            }
+        }
+        else 
+        {
+            if (!normalizePlayerName(character))
+                return false;
+
+            QueryResult result = CharacterDatabase.PQuery("SELECT guid FROM log_rename WHERE oldName = '%s'", character.c_str());
+            if (!result)
+            {
+                handler->PSendSysMessage("Aucun rename pour le personnage '%s'", character.c_str());
+                return true;
+            }
+            else
+            {
+                std::string PlayerNewName;
+                sObjectMgr->GetPlayerNameByGUID(result->Fetch()->GetUInt32(), PlayerNewName); // nom actuel en cas de rename multiple !
+                handler->PSendSysMessage("Le nom actuel du joueur '%s' est : '%s' (guid : '%u')", character.c_str(), PlayerNewName.c_str(), result->Fetch()->GetUInt32());
+                return true;
+            }
+        }
+        return true;
+    }
 };
+
 
 void AddSC_character_commandscript()
 {
