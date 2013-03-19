@@ -1665,6 +1665,7 @@ void Creature::setDeathState(DeathState s)
 
 void Creature::Respawn(bool force)
 {
+    movespline->ResetSpline();
     DestroyForNearbyPlayers();
 
     if (force)

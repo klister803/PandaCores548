@@ -120,6 +120,8 @@ namespace Movement
         const Vector3 CurrentDestination() const { return Initialized() ? spline.getPoint(point_Idx+1) : Vector3(); }
         int32 currentPathIdx() const;
 
+        void ResetSpline() { spline.clear(); }
+
         bool onTransport;
         std::string ToString() const;
     };
