@@ -277,6 +277,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     // Area Skip Update
     _skipCount = 0;
     _skipDiff = 0;
+
+    m_IsInKillingProcess = false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -15862,8 +15864,10 @@ void Unit::PlayOneShotAnimKit(uint32 id)
 void Unit::Kill(Unit* victim, bool durabilityLoss)
 {
     // Prevent killing unit twice (and giving reward from kill twice)
-    if (!victim->GetHealth())
+    if (!victim->GetHealth() || m_IsInKillingProcess)
         return;
+
+    m_IsInKillingProcess = true;
 
     // find player: owner of controlled `this` or `this` itself maybe
     Player* player = GetCharmerOrOwnerPlayerOrPlayerItself();
@@ -16134,6 +16138,8 @@ void Unit::Kill(Unit* victim, bool durabilityLoss)
         if (Player* killed = victim->ToPlayer())
             sScriptMgr->OnPlayerKilledByCreature(killerCre, killed);
     }
+
+    m_IsInKillingProcess = false;
 }
 
 void Unit::SetControlled(bool apply, UnitState state)
