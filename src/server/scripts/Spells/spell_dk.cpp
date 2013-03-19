@@ -62,8 +62,39 @@ enum DeathKnightSpells
     DK_SPELL_CHAINS_OF_ICE                      = 45524,
     DK_SPELL_EBON_PLAGUEBRINGER                 = 51160,
     DK_SPELL_REAPING                            = 56835,
-
+    DK_SPELL_DESECRATED_GROUND                  = 118009,
+    DK_SPELL_DESECRATED_GROUND_IMMUNE           = 115018,
 };
+
+// Desecrated ground - 118009
+class spell_dk_desecrated_ground : public SpellScriptLoader
+{
+    public:
+        spell_dk_desecrated_ground() : SpellScriptLoader("spell_dk_desecrated_ground") { }
+
+        class spell_dk_desecrated_ground_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dk_desecrated_ground_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(DK_SPELL_DESECRATED_GROUND))
+                    if (GetCaster()->GetDistance(dynObj) <= 8.0f)
+                        GetCaster()->CastSpell(GetCaster(), DK_SPELL_DESECRATED_GROUND_IMMUNE, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dk_desecrated_ground_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dk_desecrated_ground_AuraScript();
+        }
+};
+
 // Necrotic Strike - 73975
 class spell_dk_necrotic_strike : public SpellScriptLoader
 {
@@ -1732,6 +1763,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_desecrated_ground();
     new spell_dk_necrotic_strike();
     new spell_dk_icy_touch();
     new spell_dk_pestilence();
