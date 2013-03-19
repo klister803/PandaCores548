@@ -224,7 +224,8 @@ enum ScoreType
     //SM
     SCORE_CARTS_HELPED          = 20,
     //TK
-    SCORE_ORB_HANDLES           = 21
+    SCORE_ORB_HANDLES           = 21,
+    SCORE_ORB_SCORE             = 22
 };
 
 enum ArenaType

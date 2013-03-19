@@ -623,6 +623,11 @@ void BattlegroundMgr::BuildPvpLogDataPacket(WorldPacket* data, Battleground* bg)
                 buff << uint32(((BattlegroundBFGScore*)itr2->second)->BasesAssaulted);      // bases asssulted
                 buff << uint32(((BattlegroundBFGScore*)itr2->second)->BasesDefended);       // bases defended
                 break;
+            case BATTLEGROUND_KT:
+                data->WriteBits(0x00000002, 24);
+                buff << uint32(((BattleGroundKTScore*)itr2->second)->OrbHandles);
+                buff << uint32(((BattleGroundKTScore*)itr2->second)->Score * 10);
+                break;
             case BATTLEGROUND_NA:
             case BATTLEGROUND_BE:
             case BATTLEGROUND_AA:

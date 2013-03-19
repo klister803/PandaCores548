@@ -42,6 +42,19 @@ enum BG_KT_Objects
     BG_KT_OBJECT_MAX            = 6
 };
 
+enum BG_KT_Creatures
+{
+    BG_KT_CREATURE_ORB_AURA_1   = 0,
+    BG_KT_CREATURE_ORB_AURA_2   = 1,
+    BG_KT_CREATURE_ORB_AURA_3   = 2,
+    BG_KT_CREATURE_ORB_AURA_4   = 3,
+    
+    BG_KT_CREATURE_SPIRIT_1     = 4,
+    BG_KT_CREATURE_SPIRIT_2     = 5,
+
+    BG_KT_CREATURE_MAX          = 6
+};
+
 enum BG_KT_Objets_Entry
 {
     BG_KT_OBJECT_DOOR_ENTRY     = 213172,
@@ -62,16 +75,18 @@ enum BG_KT_Sound
 
 enum BG_KT_SpellId
 {
-    BG_KT_SPELL_ORB_AURA_1      = 121217,   // YELLOW
-    BG_KT_SPELL_ORB_AURA_2      = 121219,   // PURPLE
+    BG_KT_SPELL_ORB_PICKED_UP_1 = 121164,   // PURPLE
+    BG_KT_SPELL_ORB_PICKED_UP_2 = 121175,   // ORANGE
+    BG_KT_SPELL_ORB_PICKED_UP_3 = 121176,   // GREEN
+    BG_KT_SPELL_ORB_PICKED_UP_4 = 121177,   // YELLOW
+
+    BG_KT_SPELL_ORB_AURA_1      = 121219,   // PURPLE
+    BG_KT_SPELL_ORB_AURA_2      = 121221,   // ORANGE
     BG_KT_SPELL_ORB_AURA_3      = 121220,   // GREEN
-    BG_KT_SPELL_ORB_AURA_4      = 121221,   // ORANGE
+    BG_KT_SPELL_ORB_AURA_4      = 121217,   // YELLOW
 
-    BG_KT_SPELL_ORB_PICKED_UP_1 = 121164,
-    BG_KT_SPELL_ORB_PICKED_UP_2 = 121175,
-    BG_KT_SPELL_ORB_PICKED_UP_3 = 121176,
-    BG_KT_SPELL_ORB_PICKED_UP_4 = 121177
-
+    BG_KT_ALLIANCE_INSIGNIA     = 131527,
+    BG_KT_HORDE_INSIGNIA        = 131528
 };
 
 enum BG_KT_WorldStates
@@ -105,9 +120,10 @@ enum BG_KT_ZONE
 class BattleGroundKTScore : public BattlegroundScore
 {
     public:
-        BattleGroundKTScore() : OrbHandles(0) {}
+        BattleGroundKTScore() : OrbHandles(0), Score(0) {}
         virtual ~BattleGroundKTScore() {}
         uint32 OrbHandles;
+        uint32 Score;
 };
 
 enum BG_TK_Events
@@ -133,12 +149,26 @@ const float BG_KT_OrbPositions[MAX_ORBS][4] =
     {1716.83f, 1249.93f, 13.5706f, 4.71397f}
 };
 
+const float BG_KT_SpiritPositions[MAX_ORBS][4] =
+{
+    {1892.61f, 1151.69f, 14.7160f, 2.523528f},
+    {1672.40f, 1524.10f, 16.7387f, 6.032206f},
+};
+
 const uint32 BG_KT_ORBS_SPELLS[MAX_ORBS] =
 {
     BG_KT_SPELL_ORB_PICKED_UP_1,
     BG_KT_SPELL_ORB_PICKED_UP_2,
     BG_KT_SPELL_ORB_PICKED_UP_3,
     BG_KT_SPELL_ORB_PICKED_UP_4
+};
+
+const uint32 BG_KT_ORBS_AURA[MAX_ORBS] =
+{
+    BG_KT_SPELL_ORB_AURA_1,
+    BG_KT_SPELL_ORB_AURA_2,
+    BG_KT_SPELL_ORB_AURA_3,
+    BG_KT_SPELL_ORB_AURA_4
 };
 
 //tick point according to which zone
@@ -162,7 +192,7 @@ class BattlegroundKT : public Battleground
         /* Battleground Events */
         virtual void EventPlayerDroppedOrb(Player* source);
 
-        virtual void EventPlayerUsedGO(Player* source, GameObject* target_obj) { EventPlayerClickedOnOrb(source, target_obj); }
+        virtual void EventPlayerClickedOnFlag(Player* source, GameObject* target_obj) { EventPlayerClickedOnOrb(source, target_obj); }
         void EventPlayerClickedOnOrb(Player* source, GameObject* target_obj);
 
         void RemovePlayer(Player* plr, ObjectGuid guid);
