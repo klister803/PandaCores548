@@ -97,7 +97,7 @@ class spell_pal_emancipate : public SpellScriptLoader
                             auraList.push_back(aura);
                     }
 
-                    Trinity::Containers::RandomResizeList(auraList, 1);
+                    JadeCore::Containers::RandomResizeList(auraList, 1);
                     _player->RemoveAura(*auraList.begin());
                 }
             }

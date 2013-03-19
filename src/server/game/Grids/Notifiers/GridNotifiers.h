@@ -35,7 +35,7 @@
 class Player;
 //class Map;
 
-namespace Trinity
+namespace JadeCore
 {
     struct VisibleNotifier
     {
@@ -1388,6 +1388,25 @@ namespace Trinity
             bool _present;
             uint32 _spellId;
             uint64 _casterGUID;
+    };
+
+    class UnitAuraTypeCheck
+    {
+        public:
+            UnitAuraTypeCheck(bool present, AuraType type) : _present(present), _type(type) {}
+            bool operator()(Unit* unit) const
+            {
+                return unit->HasAuraType(_type) == _present;
+            }
+
+            bool operator()(WorldObject* object) const
+            {
+                return object->ToUnit() && object->ToUnit()->HasAuraType(_type) == _present;
+            }
+
+        private:
+            bool _present;
+            AuraType _type;
     };
 
     // Player checks and do

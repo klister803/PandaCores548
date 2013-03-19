@@ -3146,6 +3146,23 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 108201:// Desecrated Ground
+                spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_FEARED;
+                spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_STUNNED;
+                spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_CONFUSED;
+                spellInfo->AttributesEx |= SPELL_ATTR1_DISPEL_AURAS_ON_IMMUNITY;
+                break;
+            case 125831:// Taste for Blood (damage done)
+                spellInfo->Effects[0].SpellClassMask[0] &= ~0x400040;
+                spellInfo->Effects[0].SpellClassMask[0] |= 0x200040;
+                break;
+            case 61336: // Survival Instincts
+                spellInfo->Effects[0].BasePoints = -50;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+                break;
+            case 9005:  // Pounce
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(35); // 4s
+                break;
             case 33763: // Lifebloom
                 spellInfo->AttributesEx5 |= SPELL_ATTR5_SINGLE_TARGET_SPELL;
                 break;
@@ -3252,6 +3269,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].BasePoints = 0;
                 break;
             case 6262: // Health Stone
+            case 34299:// Leader of the pack - healing
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL_PCT;
                 spellInfo->AttributesEx3 |= SPELL_ATTR3_NO_DONE_BONUS;
                 break;
@@ -3283,7 +3301,14 @@ void SpellMgr::LoadSpellCustomAttr()
             case 132158:// Nature's Swiftness
             case 74434: // Soul Burn
             case 34936: // Backlash
+            case 50334: // Berserk (bear)
+            case 23920: // Spell Reflection
+            case 124430:// Divine Insight (shadow)
+            case 81292: // Glyph of Mind Spike
                 spellInfo->ProcCharges = 1;
+                break;
+            case 131116:// Allow to use Raging Blow
+                spellInfo->ProcCharges = 2;
                 break;
             case 44544: // Fingers of Frost
             case 126084:// Fingers of Frost - visual
@@ -4258,7 +4283,7 @@ void SpellMgr::LoadDbcDataCorrections()
     case 40165: // Introspection
     case 40166: // Introspection
     case 40167: // Introspection
-    spellInfo->Attributes |= SPELL_ATTR0_NEGATIVE_1;
+    spellInfo->Attributes |= SPELL_ATTR0_DEBUFF;
     break;
     case 2378: // Minor Fortitude
     spellInfo->manaCost = 0;

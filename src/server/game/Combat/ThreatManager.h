@@ -257,7 +257,7 @@ class ThreatManager
 
 //=================================================
 
-namespace Trinity
+namespace JadeCore
 {
     // Binary predicate for sorting HostileReferences based on threat value
     class ThreatOrderPred

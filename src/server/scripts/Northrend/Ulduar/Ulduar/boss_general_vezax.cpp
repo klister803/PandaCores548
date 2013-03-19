@@ -292,7 +292,7 @@ class boss_general_vezax : public CreatureScript
                     if (size < playersMin)
                         return NULL;
 
-                    return Trinity::Containers::SelectRandomContainerElement(PlayerList);
+                    return JadeCore::Containers::SelectRandomContainerElement(PlayerList);
                 }
 
                 return NULL;

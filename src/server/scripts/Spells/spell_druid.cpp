@@ -81,6 +81,71 @@ enum DruidSpells
     SPELL_DRUID_RIP                         = 1079,
     SPELL_DRUID_SAVAGE_DEFENSE_DODGE_PCT    = 132402,
     SPELL_DRUID_DASH                        = 1850,
+    SPELL_DRUID_BERSERK_BEAR                = 50334,
+    SPELL_DRUID_BERSERK_CAT                 = 106951,
+    SPELL_DRUID_STAMPEDING_ROAR             = 106898,
+};
+
+// Dash - 1850
+class spell_dru_dash : public SpellScriptLoader
+{
+    public:
+        spell_dru_dash() : SpellScriptLoader("spell_dru_dash") { }
+
+        class spell_dru_dash_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_dash_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(SPELL_DRUID_STAMPEDING_ROAR))
+                        _player->RemoveAura(SPELL_DRUID_STAMPEDING_ROAR);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_dash_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_dash_SpellScript();
+        }
+};
+
+// Berserk - 106952
+class spell_dru_berserker : public SpellScriptLoader
+{
+    public:
+        spell_dru_berserker() : SpellScriptLoader("spell_dru_berserker") { }
+
+        class spell_dru_berserker_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_berserker_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->GetShapeshiftForm() == FORM_BEAR)
+                        _player->CastSpell(_player, SPELL_DRUID_BERSERK_BEAR, true);
+                    else if (_player->GetShapeshiftForm() == FORM_CAT)
+                        _player->CastSpell(_player, SPELL_DRUID_BERSERK_CAT, true);
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_berserker_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_berserker_SpellScript();
+        }
 };
 
 // Called by Mangle (bear) - 33878, Mangle (cat) - 33876, Ravage - 6785 and Shred - 5221
@@ -639,8 +704,13 @@ class spell_dru_cat_form : public SpellScriptLoader
             void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
+                {
                     if (AuraPtr dash = caster->GetAura(SPELL_DRUID_DASH))
                         dash->GetEffect(0)->SetAmount(0);
+
+                    if (caster->HasAura(SPELL_DRUID_PROWL))
+                        caster->RemoveAura(SPELL_DRUID_PROWL);
+                }
             }
 
             void Register()
@@ -1212,6 +1282,36 @@ class spell_dru_frenzied_regeneration : public SpellScriptLoader
         }
 };
 
+// Stampeding Roar - 106898
+class spell_dru_stampeding_roar_speed : public SpellScriptLoader
+{
+    public:
+        spell_dru_stampeding_roar_speed() : SpellScriptLoader("spell_dru_stampeding_roar_speed") { }
+
+        class spell_dru_stampeding_roar_speed_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_stampeding_roar_speed_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(SPELL_DRUID_DASH))
+                        if (_player->HasAura(SPELL_DRUID_STAMPEDING_ROAR))
+                            _player->RemoveAura(SPELL_DRUID_STAMPEDING_ROAR);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_stampeding_roar_speed_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_stampeding_roar_speed_SpellScript();
+        }
+};
+
 // Stampeding Roar - 97993
 class spell_dru_stampeding_roar : public SpellScriptLoader
 {
@@ -1779,7 +1879,7 @@ class spell_dru_t10_restoration_4p_bonus : public SpellScriptLoader
                         return;
                     }
 
-                    Unit* target = Trinity::Containers::SelectRandomContainerElement(tempTargets);
+                    Unit* target = JadeCore::Containers::SelectRandomContainerElement(tempTargets);
                     targets.clear();
                     targets.push_back(target);
                 }
@@ -1868,7 +1968,7 @@ class spell_dru_starfall_dummy : public SpellScriptLoader
 
             void FilterTargets(std::list<WorldObject*>& targets)
             {
-                Trinity::Containers::RandomResizeList(targets, 2);
+                JadeCore::Containers::RandomResizeList(targets, 2);
             }
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
@@ -2037,6 +2137,8 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_dash();
+    new spell_dru_berserker();
     new spell_dru_rip_duration();
     new spell_dru_savage_defense();
     new spell_dru_bear_form();
@@ -2061,6 +2163,7 @@ void AddSC_druid_spell_scripts()
     new spell_dru_shooting_stars();
     new spell_dru_celestial_alignment();
     new spell_dru_frenzied_regeneration();
+    new spell_dru_stampeding_roar_speed();
     new spell_dru_stampeding_roar();
     new spell_dru_innervate();
     new spell_dru_lacerate();

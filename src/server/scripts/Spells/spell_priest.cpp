@@ -34,7 +34,6 @@ enum PriestSpells
     PRIEST_SPELL_PENANCE_R1_HEAL                = 47757,
     PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED    = 33619,
     PRIEST_SPELL_REFLECTIVE_SHIELD_R1           = 33201,
-    PRIEST_SPELL_VAMPIRIC_TOUCH_DISPEL          = 64085,
     PRIEST_SPELL_EMPOWERED_RENEW                = 63544,
     PRIEST_ICON_ID_EMPOWERED_RENEW_TALENT       = 3021,
     PRIEST_ICON_ID_PAIN_AND_SUFFERING           = 2874,
@@ -205,7 +204,7 @@ class spell_pri_cascade_second : public SpellScriptLoader
                             return;
 
                         // Each bound hit twice more targets up to 8 for the same bound
-                        Trinity::Containers::RandomResizeList(targetList, (affectedUnits * 2));
+                        JadeCore::Containers::RandomResizeList(targetList, (affectedUnits * 2));
 
                         for (auto itr : targetList)
                         {
@@ -981,6 +980,7 @@ public:
     }
 };
 
+// Vampiric Touch - 34914
 class spell_pri_vampiric_touch : public SpellScriptLoader
 {
     public:
@@ -990,28 +990,15 @@ class spell_pri_vampiric_touch : public SpellScriptLoader
         {
             PrepareAuraScript(spell_pri_vampiric_touch_AuraScript);
 
-            bool Validate(SpellInfo const* /*spell*/)
+            void OnTick(constAuraEffectPtr aurEff)
             {
-                if (!sSpellMgr->GetSpellInfo(PRIEST_SPELL_VAMPIRIC_TOUCH_DISPEL))
-                    return false;
-                return true;
-            }
-
-            void HandleDispel(DispelInfo* /*dispelInfo*/)
-            {
-                if (Unit* caster = GetCaster())
-                    if (Unit* target = GetUnitOwner())
-                        if (constAuraEffectPtr aurEff = GetEffect(EFFECT_1))
-                        {
-                            int32 damage = aurEff->GetAmount() * 8;
-                            // backfire damage
-                            caster->CastCustomSpell(target, PRIEST_SPELL_VAMPIRIC_TOUCH_DISPEL, &damage, NULL, NULL, true, NULL, aurEff);
-                        }
+                if (GetCaster())
+                    GetCaster()->EnergizeBySpell(GetCaster(), GetSpellInfo()->Id, GetCaster()->CountPctFromMaxMana(2), POWER_MANA);
             }
 
             void Register()
             {
-                AfterDispel += AuraDispelFn(spell_pri_vampiric_touch_AuraScript::HandleDispel);
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_vampiric_touch_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DAMAGE);
             }
         };
 

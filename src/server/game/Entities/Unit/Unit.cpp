@@ -672,7 +672,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         if (targetList.size() > 1)
         {
-            targetList.sort(Trinity::HealthPctOrderPred());
+            targetList.sort(JadeCore::HealthPctOrderPred());
             targetList.resize(1);
         }
 
@@ -1287,6 +1287,12 @@ void Unit::CalculateSpellDamageTaken(SpellNonMeleeDamage* damageInfo, int32 dama
     if (damage < 0)
         return;
 
+    if (spellInfo && spellInfo->Id == 48743) // Hack Fix Death Pact - don't suffer from DamageTaken
+    {
+        damageInfo->damage = damage;
+        return;
+    }
+
     Unit* victim = damageInfo->target;
     if (!victim || !victim->isAlive())
         return;
@@ -1898,7 +1904,7 @@ void Unit::CalcAbsorbResist(Unit* victim, SpellSchoolMask schoolMask, DamageEffe
     // We're going to call functions which can modify content of the list during iteration over it's elements
     // Let's copy the list so we can prevent iterator invalidation
     AuraEffectList vSchoolAbsorbCopy(victim->GetAuraEffectsByType(SPELL_AURA_SCHOOL_ABSORB));
-    vSchoolAbsorbCopy.sort(Trinity::AbsorbAuraOrderPred());
+    vSchoolAbsorbCopy.sort(JadeCore::AbsorbAuraOrderPred());
 
     // absorb without mana cost
     for (AuraEffectList::iterator itr = vSchoolAbsorbCopy.begin(); (itr != vSchoolAbsorbCopy.end()) && (dmgInfo.GetDamage() > 0); ++itr)
@@ -2459,7 +2465,13 @@ bool Unit::isSpellBlocked(Unit* victim, SpellInfo const* spellProto, WeaponAttac
 bool Unit::isBlockCritical()
 {
     if (roll_chance_i(GetTotalAuraModifier(SPELL_AURA_MOD_BLOCK_CRIT_CHANCE)))
+    {
+        // Critical Blocks enrage the warrior
+        if (HasAura(76857))
+            CastSpell(this, 12880, true);
         return true;
+    }
+
     return false;
 }
 
@@ -4178,6 +4190,27 @@ void Unit::_ApplyAllAuraStatMods()
         (*i).second->GetBase()->HandleAllEffects(i->second, AURA_EFFECT_HANDLE_STAT, true);
 }
 
+std::list<AuraEffectPtr> Unit::GetAuraEffectsByMechanic(uint32 mechanic_mask) const
+{
+    AuraEffectList list;
+    for (AuraApplicationMap::const_iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end(); ++iter)
+    {
+        constAuraPtr aura = iter->second->GetBase();
+        for (uint8 i = 0; i < MAX_EFFECTS; ++i)
+        {
+            if (aura->GetSpellInfo()->GetEffectMechanicMask(i) & mechanic_mask)
+            {
+                if (iter->second)
+                    if (iter->second->GetBase())
+                        if (iter->second->GetBase()->GetEffect(i))
+                            list.push_back(iter->second->GetBase()->GetEffect(i));
+            }
+        }
+    }
+
+    return list;
+}
+
 AuraEffectPtr Unit::GetAuraEffect(uint32 spellId, uint8 effIndex, uint64 caster) const
 {
     for (AuraApplicationMap::const_iterator itr = m_appliedAuras.lower_bound(spellId); itr != m_appliedAuras.upper_bound(spellId); ++itr)
@@ -4491,6 +4524,10 @@ int32 Unit::GetTotalAuraModifier(AuraType auratype) const
 
     for (std::map<SpellGroup, int32>::const_iterator itr = SameEffectSpellGroup.begin(); itr != SameEffectSpellGroup.end(); ++itr)
         modifier += itr->second;
+
+    // Fix Mastery : Critical Block - Increase critical block chance
+    if (HasAura(76857) && auratype == SPELL_AURA_MOD_BLOCK_CRIT_CHANCE)
+        modifier += int32(GetFloatValue(PLAYER_MASTERY) * 2.2f);
 
     return modifier;
 }
@@ -6028,6 +6065,34 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->Id)
             {
+                // Bloodbath
+                case 12292:
+                {
+                    if (!procSpell)
+                        return false;
+
+                    if (!damage)
+                        return false;
+
+                    if (!roll_chance_i(30))
+                        return false;
+
+                    int32 bp = int32(CalculatePct(damage, triggerAmount) / 6); // damage / tick_number
+                    CastCustomSpell(victim, 113344, &bp, NULL, NULL, true);
+
+                    break;
+                }
+                // Bloodsurge
+                case 46915:
+                {
+                    if (!procSpell)
+                        return false;
+
+                    if (procSpell->Id != 23881)
+                        return false;
+
+                    break;
+                }
                 // Sweeping Strikes
                 case 12328:
                 {
@@ -8028,6 +8093,90 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Glyph of Mind Spike
+        case 33371:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!victim)
+                return false;
+
+            if (procSpell->Id != 73510)
+                return false;
+
+            break;
+        }
+        // Divine Insight
+        case 109175:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 34914)
+                return false;
+
+            break;
+        }
+        // Ultimatum
+        case 122509:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 23922)
+                return false;
+
+            break;
+        }
+        // Revenge (aura proc)
+        case 5301:
+        {
+            if (!(procEx & PROC_EX_DODGE) && !(procEx & PROC_EX_PARRY))
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (ToPlayer()->HasSpellCooldown(6572))
+                ToPlayer()->RemoveSpellCooldown(6572, true);
+
+            break;
+        }
+        // Meat Cleaver
+        case 12950:
+        {
+            if (!procSpell || ! victim || GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (procSpell->Id != 1680 && procSpell->Id != 44949)
+                return false;
+
+            break;
+        }
+        // Glyph of Mind Blast
+        case 87195:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!victim)
+                return false;
+
+            if (procSpell->Id != 8092)
+                return false;
+
+            if (!(procEx & PROC_EX_CRITICAL_HIT))
+                return false;
+
+            break;
+        }
         // Twist of Fate
         case 109142:
         {
@@ -8042,6 +8191,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
 
             break;
         }
+        case 76857:     // Mastery : Critical Block
         case 16864:     // Omen of Clarity (old)
         case 58410:     // Master Poisoner
         case 79147:     // Sanguinary Vein
@@ -8120,7 +8270,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
             if (!procSpell)
                 return false;
 
-            if (procEx != PROC_EX_CRITICAL_HIT && procEx != PROC_EX_BLOCK)
+            if (!(procEx & PROC_EX_CRITICAL_HIT))
                 return false;
 
             // Mortal Strike, Bloodthirst and Colossus Smash critical strikes and critical blocks Enrage you
@@ -10480,10 +10630,6 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                             if (HasAura(116218))
                                 return true; // Increases the critical strike chance of your Regrowth by 40%, but removes the periodic component of the spell.
                         }
-                        // Ravage
-                        if (spellProto->Id == 6785)
-                            if (victim->GetHealthPct() > 80.0f)
-                                crit_chance += 50.0f; // Ravage has a 50% increased chance to critically strike targets with over 80% health.
                     break;
                     case SPELLFAMILY_SHAMAN:
                         // Lava Burst
@@ -10516,6 +10662,10 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                         // +25% crit chance for Ferocious Bite on bleeding targets
                         if (spellProto->Id == 22568 && victim->HasAuraState(AURA_STATE_BLEEDING))
                             crit_chance += 25.0f;
+                        // Ravage
+                        if (spellProto->Id == 6785)
+                            if (victim->GetHealthPct() > 80.0f)
+                                crit_chance += 50.0f; // Ravage has a 50% increased chance to critically strike targets with over 80% health.
                     break;
                     case SPELLFAMILY_WARRIOR:
                        // Victory Rush
@@ -10526,6 +10676,12 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
                                crit_chance += aurEff->GetAmount();
                            break;
                        }
+                       // Dragon Roar is always a critical hit
+                       if (spellProto->Id == 118000)
+                           return true;
+                       // Bloodthirst has double critical chance
+                       if (spellProto->Id == 23881)
+                           crit_chance *= 2;
                     break;
                 }
             }
@@ -10616,6 +10772,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
 
     // No bonus for Temporal Ripples
     if (spellProto->Id == 115611)
+        return healamount;
+
+    // No bonus for Leader of the Pack
+    if (spellProto->Id == 34299)
         return healamount;
 
     // No bonus for Living Seed
@@ -11868,7 +12028,7 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
 
     if (Player const* playerAttacker = ToPlayer())
     {
-        if (playerAttacker->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_UNK19))
+        if (playerAttacker->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_UBER))
             return false;
     }
     // check flags
@@ -14363,6 +14523,17 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         }
     }
 
+    // Leader of the Pack
+    if (target && GetTypeId() == TYPEID_PLAYER && (procExtra & PROC_EX_CRITICAL_HIT) && HasAura(17007) && (attType == BASE_ATTACK || (procSpell && procSpell->GetSchoolMask() == SPELL_SCHOOL_MASK_NORMAL)))
+    {
+        if (!ToPlayer()->HasSpellCooldown(34299))
+        {
+            CastSpell(this, 34299, true); // Heal
+            EnergizeBySpell(this, 68285, CountPctFromMaxMana(8), POWER_MANA);
+            ToPlayer()->AddSpellCooldown(34299, 0, time(NULL) + 6); // 6s ICD
+        }
+    }
+
     // Dematerialize
     if (target && target->GetTypeId() == TYPEID_PLAYER && target->HasAura(122464) && procSpell && procSpell->GetAllEffectsMechanicMask() & (1 << MECHANIC_STUN))
     {
@@ -14801,7 +14972,12 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         } // if (!handled)
 
         // Remove charge (aura can be removed by triggers)
-        if (useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 && i->aura->GetId() != 121153) // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
+        if (useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 && i->aura->GetId() != 121153 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
+            && i->aura->GetId() != 119962 && i->aura->GetId() != 131116)
+            i->aura->DropCharge();
+
+        if (useCharges && takeCharges && ((i->aura->GetId() == 119962 && procSpell && procSpell->Id == 7384) // Custom MoP Script - Hack Fix for allow Overpower
+            || (i->aura->GetId() == 131116 && procSpell && procSpell->Id == 96103)))                         // Custom MoP Script - Hack Fix for allow Raging Blow
             i->aura->DropCharge();
 
         if (spellInfo->AttributesEx3 & SPELL_ATTR3_DISABLE_PROC)
@@ -15128,15 +15304,15 @@ void Unit::UpdateReactives(uint32 p_time)
 
 void Unit::GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearchRange) const
 {
-    CellCoord p(Trinity::ComputeCellCoord(GetPositionX(), GetPositionY()));
+    CellCoord p(JadeCore::ComputeCellCoord(GetPositionX(), GetPositionY()));
     Cell cell(p);
     cell.SetNoCreate();
 
-    Trinity::AnyUnitInObjectRangeCheck u_check(this, fMaxSearchRange);
-    Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck> searcher(this, list, u_check);
+    JadeCore::AnyUnitInObjectRangeCheck u_check(this, fMaxSearchRange);
+    JadeCore::UnitListSearcher<JadeCore::AnyUnitInObjectRangeCheck> searcher(this, list, u_check);
 
-    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
-    TypeContainerVisitor<Trinity::UnitListSearcher<Trinity::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+    TypeContainerVisitor<JadeCore::UnitListSearcher<JadeCore::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+    TypeContainerVisitor<JadeCore::UnitListSearcher<JadeCore::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
 
     cell.Visit(p, world_unit_searcher, *GetMap(), *this, fMaxSearchRange);
     cell.Visit(p, grid_unit_searcher, *GetMap(), *this, fMaxSearchRange);
@@ -15145,8 +15321,8 @@ void Unit::GetAttackableUnitListInRange(std::list<Unit*> &list, float fMaxSearch
 Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
 {
     std::list<Unit*> targets;
-    Trinity::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
-    Trinity::UnitListSearcher<Trinity::AnyUnfriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
+    JadeCore::AnyUnfriendlyUnitInObjectRangeCheck u_check(this, this, dist);
+    JadeCore::UnitListSearcher<JadeCore::AnyUnfriendlyUnitInObjectRangeCheck> searcher(this, targets, u_check);
     VisitNearbyObject(dist, searcher);
 
     // remove current target
@@ -15170,7 +15346,7 @@ Unit* Unit::SelectNearbyTarget(Unit* exclude, float dist) const
         return NULL;
 
     // select random
-    return Trinity::Containers::SelectRandomContainerElement(targets);
+    return JadeCore::Containers::SelectRandomContainerElement(targets);
 }
 
 void Unit::ApplyAttackTimePercentMod(WeaponAttackType att, float val, bool apply)
@@ -16184,8 +16360,10 @@ void Unit::SetFeared(bool apply)
     {
         SetTarget(0);
 
+        uint32 mechanic_mask = (1 << MECHANIC_FEAR) | (1 << MECHANIC_HORROR);
+
         Unit* caster = NULL;
-        Unit::AuraEffectList const& fearAuras = GetAuraEffectsByType(SPELL_AURA_MOD_FEAR);
+        Unit::AuraEffectList const& fearAuras = GetAuraEffectsByMechanic(mechanic_mask);
         if (!fearAuras.empty())
             caster = ObjectAccessor::GetUnit(*this, fearAuras.front()->GetCasterGUID());
         if (!caster)
@@ -16848,7 +17026,7 @@ void Unit::UpdateObjectVisibility(bool forced)
     {
         WorldObject::UpdateObjectVisibility(true);
         // call MoveInLineOfSight for nearby creatures
-        Trinity::AIRelocationNotifier notifier(*this);
+        JadeCore::AIRelocationNotifier notifier(*this);
         VisitNearbyObject(GetVisibilityRange(), notifier);
     }
 }
@@ -17239,7 +17417,20 @@ uint32 Unit::GetModelForForm(ShapeshiftForm form)
                 return 40816;
             return 45339;
         case FORM_MOONKIN:
-            return 37173;
+            if (Player::TeamForRace(getRace()) == HORDE)
+            {
+                if (getRace() == RACE_TROLL)
+                    return 37174;
+                else if (getRace() == RACE_TAUREN)
+                    return 15375;
+            }
+            else if (Player::TeamForRace(getRace()) == ALLIANCE)
+            {
+                if (getRace() == RACE_NIGHTELF)
+                    return 15374;
+                else if (getRace() == RACE_WORGEN)
+                    return 37173;
+            }
         default:
             break;
     }
@@ -17782,7 +17973,7 @@ void Unit::NearTeleportTo(float x, float y, float z, float orientation, bool cas
 bool Unit::UpdatePosition(float x, float y, float z, float orientation, bool teleport)
 {
     // prevent crash when a bad coord is sent by the client
-    if (!Trinity::IsValidMapCoord(x, y, z, orientation))
+    if (!JadeCore::IsValidMapCoord(x, y, z, orientation))
     {
         sLog->outDebug(LOG_FILTER_UNITS, "Unit::UpdatePosition(%f, %f, %f) .. bad coordinates!", x, y, z);
         return false;
