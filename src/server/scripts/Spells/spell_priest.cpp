@@ -651,6 +651,15 @@ class spell_pri_void_shift : public SpellScriptLoader
                 return true;
             }
 
+            SpellCastResult CheckTarget()
+            {
+                if (GetExplTargetUnit())
+                    if (GetExplTargetUnit()->GetTypeId() != TYPEID_PLAYER)
+                        return SPELL_FAILED_BAD_TARGETS;
+
+                return SPELL_CAST_OK;
+            }
+
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -679,6 +688,7 @@ class spell_pri_void_shift : public SpellScriptLoader
 
             void Register()
             {
+                OnCheckCast += SpellCheckCastFn(spell_pri_void_shift_SpellScript::CheckTarget);
                 OnEffectHitTarget += SpellEffectFn(spell_pri_void_shift_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
             }
         };
