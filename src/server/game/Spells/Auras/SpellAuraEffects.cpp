@@ -3466,8 +3466,9 @@ void AuraEffect::HandleModStateImmunityMask(AuraApplication const* aurApp, uint8
             break;
         }
         case 679:
+        case 1921:
         {
-            if (GetId() == 57742)
+            if (GetId() == 57742 || GetId() == 115018)
             {
                 mechanic_immunity_list = (1 << MECHANIC_SNARE) | (1 << MECHANIC_ROOT)
                     | (1 << MECHANIC_FEAR) | (1 << MECHANIC_STUN)
