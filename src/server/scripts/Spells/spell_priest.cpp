@@ -65,6 +65,58 @@ enum PriestSpells
     PRIEST_PHANTASM_PROC                        = 114239,
 };
 
+// Devouring Plague - 2944
+class spell_pri_devouring_plague : public SpellScriptLoader
+{
+    public:
+        spell_pri_devouring_plague() : SpellScriptLoader("spell_pri_devouring_plague") { }
+
+        class spell_pri_devouring_plague_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_devouring_plague_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_PRIEST_SHADOW)
+                        {
+                            int32 currentPower = _player->GetPower(POWER_SHADOW_ORB);
+
+                            _player->SetPower(POWER_SHADOW_ORB, 0);
+                            // Shadow Orb visual
+                            if (_player->HasAura(77487))
+                                _player->RemoveAura(77487);
+                            // Glyph of Shadow Ravens
+                            else if (_player->HasAura(127850))
+                                _player->RemoveAura(127850);
+
+                            // Instant damage equal to amount of shadow orb
+                            SetHitDamage(int32(GetHitDamage() * currentPower / 3));
+
+                            // Periodic damage equal to amount of shadow orb
+                            if (AuraPtr devouringPlague = target->GetAura(GetSpellInfo()->Id, _player->GetGUID()))
+                                if (devouringPlague->GetEffect(1))
+                                    devouringPlague->GetEffect(1)->SetAmount(devouringPlague->GetEffect(1)->GetAmount() * currentPower);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_devouring_plague_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_devouring_plague_SpellScript;
+        }
+};
+
 // Called by Fade - 586
 // Phantasm - 108942
 class spell_pri_phantasm : public SpellScriptLoader
@@ -599,6 +651,15 @@ class spell_pri_void_shift : public SpellScriptLoader
                 return true;
             }
 
+            SpellCastResult CheckTarget()
+            {
+                if (GetExplTargetUnit())
+                    if (GetExplTargetUnit()->GetTypeId() != TYPEID_PLAYER)
+                        return SPELL_FAILED_BAD_TARGETS;
+
+                return SPELL_CAST_OK;
+            }
+
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -627,6 +688,7 @@ class spell_pri_void_shift : public SpellScriptLoader
 
             void Register()
             {
+                OnCheckCast += SpellCheckCastFn(spell_pri_void_shift_SpellScript::CheckTarget);
                 OnEffectHitTarget += SpellEffectFn(spell_pri_void_shift_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
             }
         };
@@ -637,7 +699,7 @@ class spell_pri_void_shift : public SpellScriptLoader
         }
 };
 
-// 8092 - Mind Blast, 32379 - Shadow Word : Death, 2944 - Devouring Plague and 64044 - Psychic Horror
+// 8092 - Mind Blast, 32379 - Shadow Word : Death and 64044 - Psychic Horror
 class spell_pri_shadow_orb : public SpellScriptLoader
 {
     public:
@@ -684,18 +746,6 @@ class spell_pri_shadow_orb : public SpellScriptLoader
                                     else if (!caster->HasAura(77487) && caster->HasAura(57985))
                                         caster->CastSpell(caster, 127850, true);
                                     break;
-                                // 2944 - Devouring Plague
-                                case 2944:
-                                {
-                                    caster->SetPower(POWER_SHADOW_ORB, 0);
-                                    // Shadow Orb visual
-                                    if (caster->HasAura(77487))
-                                        caster->RemoveAura(77487);
-                                    // Glyph of Shadow Ravens
-                                    else if (caster->HasAura(127850))
-                                        caster->RemoveAura(127850);
-                                    break;
-                                }
                                 // 64044 - Psychic Horror
                                 case 64044:
                                 {
@@ -1124,6 +1174,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_devouring_plague();
     new spell_pri_phantasm();
     new spell_pri_mind_spike();
     new spell_pri_cascade_second();

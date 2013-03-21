@@ -277,6 +277,8 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     // Area Skip Update
     _skipCount = 0;
     _skipDiff = 0;
+
+    m_IsInKillingProcess = false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -10774,6 +10776,10 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 115611)
         return healamount;
 
+    // No bonus for Devouring Plague heal
+    if (spellProto->Id == 127626)
+        return healamount;
+
     // No bonus for Leader of the Pack
     if (spellProto->Id == 34299)
         return healamount;
@@ -10945,6 +10951,10 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
 
     // No bonus for Lifebloom : Final heal
     if (spellProto->Id == 33778)
+        return healamount;
+
+    // No bonus for Devouring Plague heal
+    if (spellProto->Id == 127626)
         return healamount;
 
     // Healing taken percent
@@ -15862,8 +15872,10 @@ void Unit::PlayOneShotAnimKit(uint32 id)
 void Unit::Kill(Unit* victim, bool durabilityLoss)
 {
     // Prevent killing unit twice (and giving reward from kill twice)
-    if (!victim->GetHealth())
+    if (!victim->GetHealth() || m_IsInKillingProcess)
         return;
+
+    m_IsInKillingProcess = true;
 
     // find player: owner of controlled `this` or `this` itself maybe
     Player* player = GetCharmerOrOwnerPlayerOrPlayerItself();
@@ -16134,6 +16146,8 @@ void Unit::Kill(Unit* victim, bool durabilityLoss)
         if (Player* killed = victim->ToPlayer())
             sScriptMgr->OnPlayerKilledByCreature(killerCre, killed);
     }
+
+    m_IsInKillingProcess = false;
 }
 
 void Unit::SetControlled(bool apply, UnitState state)
