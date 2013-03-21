@@ -4013,6 +4013,7 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                 case 61288:                                 // Minor Inscription Research
                 case 61756:                                 // Northrend Inscription Research (FAST QA VERSION)
                 case 64323:                                 // Book of Glyph Mastery
+                case 112996:                                // Scroll of Wisdom
                 {
                     if (m_caster->GetTypeId() != TYPEID_PLAYER)
                         return;
