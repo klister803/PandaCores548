@@ -3309,6 +3309,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 23920: // Spell Reflection
             case 124430:// Divine Insight (shadow)
             case 81292: // Glyph of Mind Spike
+            case 114250:// Selfless Healer
                 spellInfo->ProcCharges = 1;
                 break;
             case 131116:// Allow to use Raging Blow
