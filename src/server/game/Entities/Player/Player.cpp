@@ -3644,6 +3644,12 @@ void Player::InitStatsForLevel(bool reapplyMods)
     }
     SetFloatValue(PLAYER_FIELD_MOD_SPELL_POWER_PCT, 1.0f);
 
+    // Set new PCT MoP field to 1.0f to get correct client tooltip
+    SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT, 1.0f);
+    SetFloatValue(PLAYER_FIELD_WEAPON_DMG_MULTIPLIERS, 1.0f);
+    SetFloatValue(PLAYER_FIELD_MOD_HEALING_DONE_PCT, 1.0f);
+    SetFloatValue(PLAYER_FIELD_MOD_DAMAGE_DONE_PCT, 1.0f);
+
     //reset attack power, damage and attack speed fields
     SetFloatValue(UNIT_FIELD_BASEATTACKTIME, 2000.0f);
     SetFloatValue(UNIT_FIELD_BASEATTACKTIME + 1, 2000.0f); // offhand attack time
