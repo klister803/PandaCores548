@@ -6,17 +6,6 @@
 #include "shadopan_monastery.h"
 #include "InstanceScript.h"
 
-DoorData const doorData[] =
-{
-    {GO_CLOUDSTRIKE_ENTRANCE,   DATA_GU_CLOUDSTRIKE,    DOOR_TYPE_ROOM,         BOUNDARY_SE  },
-    {GO_CLOUDSTRIKE_EXIT,       DATA_GU_CLOUDSTRIKE,    DOOR_TYPE_PASSAGE,      BOUNDARY_S   },
-    {GO_SNOWDRIFT_ENTRANCE,     NPC_MASTER_SNOWDRIFT,   DOOR_TYPE_ROOM,         BOUNDARY_SE  },
-    {GO_SNOWDRIFT_EXIT,         NPC_MASTER_SNOWDRIFT,   DOOR_TYPE_PASSAGE,      BOUNDARY_NW  },
-    {GO_SHA_ENTRANCE,           NPC_SHA_VIOLENCE,       DOOR_TYPE_ROOM,         BOUNDARY_SW  },
-    {GO_SHA_EXIT,               NPC_SHA_VIOLENCE,       DOOR_TYPE_PASSAGE,      BOUNDARY_S   },
-    {0,                         0,                      DOOR_TYPE_ROOM,         BOUNDARY_NONE},// END
-};
-
 Position snowdriftCenterPos = {3659.08f, 3015.38f, 804.74f};
 
 class instance_shadopan_monastery : public InstanceMapScript
@@ -40,7 +29,9 @@ public:
         uint64 taranZhuGuid;
 
         uint64 azureSerpentGuid;
-        
+
+        uint64 cloudstikeEntranceGuid;
+        uint64 cloudstikeExitGuid;
         uint64 snowdriftEntranceGuid;
         uint64 snowdriftPossessionsGuid;
         uint64 snowdriftFirewallGuid;
@@ -71,7 +62,6 @@ public:
         void Initialize()
         {
             SetBossNumber(EncounterCount);
-            LoadDoorData(doorData);
 
             aliveNoviceCount            = MAX_NOVICE;
             aliveMinibossCount          = 2;
@@ -83,6 +73,9 @@ public:
 
             azureSerpentGuid            = 0;
 
+            cloudstikeEntranceGuid      = 0;
+            cloudstikeExitGuid          = 0;
+            snowdriftEntranceGuid       = 0;
             snowdriftEntranceGuid       = 0;
             snowdriftPossessionsGuid    = 0;
             snowdriftFirewallGuid       = 0;
@@ -137,9 +130,11 @@ public:
             switch (go->GetEntry())
             {
                 case GO_CLOUDSTRIKE_ENTRANCE:
+                    cloudstikeEntranceGuid = go->GetGUID();
+                    break;
                 case GO_CLOUDSTRIKE_EXIT:
-                    AddDoor(go, true);
-                    return;
+                    cloudstikeExitGuid = go->GetGUID();
+                    break;
                 case GO_SNOWDRIFT_ENTRANCE:
                     snowdriftEntranceGuid = go->GetGUID();
                     break;
@@ -174,6 +169,33 @@ public:
 
             switch (id)
             {
+                case DATA_GU_CLOUDSTRIKE:
+                {
+                    switch (state)
+                    {
+                        case NOT_STARTED:
+                        case FAIL:
+                        {
+                            HandleGameObject(cloudstikeEntranceGuid, true);
+                            HandleGameObject(cloudstikeExitGuid,     false);
+                            break;
+                        }
+                        case IN_PROGRESS:
+                        {
+                            HandleGameObject(cloudstikeEntranceGuid, false);
+                            HandleGameObject(cloudstikeExitGuid,     false);
+                            break;
+                        }
+                        case DONE:
+                        {
+                            HandleGameObject(cloudstikeEntranceGuid, true);
+                            HandleGameObject(cloudstikeExitGuid,     true);
+                            HandleGameObject(snowdriftEntranceGuid,  true);
+                            break;
+                        }
+                    }
+                    break;
+                }
                 case DATA_MASTER_SNOWDRIFT:
                 {
                     switch (state)
@@ -203,6 +225,7 @@ public:
                             HandleGameObject(snowdriftFirewallGuid, true);
                             HandleGameObject(snowdriftDojoDoorGuid, true);
                             HandleGameObject(snowdriftExitGuid,     true);
+                            HandleGameObject(shaEntranceGuid,       true);
                             break;
                     }
                     break;
@@ -242,6 +265,7 @@ public:
                                     player->RemoveAurasDueToSpell(SPELL_HAZE_OF_HATE_VISUAL);
                                 }
                     }
+                    break;
                 }
                 default:
                     break;
