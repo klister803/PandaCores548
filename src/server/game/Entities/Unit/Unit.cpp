@@ -9105,7 +9105,7 @@ void Unit::ModifyAuraState(AuraStateType flag, bool apply)
                 for (Unit::AuraApplicationMap::iterator itr = tAuras.begin(); itr != tAuras.end();)
                 {
                     SpellInfo const* spellProto = (*itr).second->GetBase()->GetSpellInfo();
-                    if (spellProto->CasterAuraState == uint32(flag))
+                    if (spellProto->CasterAuraState == uint32(flag) && spellProto->Id != 16491) // Don't remove Second Wind, implemented in ::HandlePeriodicHealAurasTick
                         RemoveAura(itr);
                     else
                         ++itr;
