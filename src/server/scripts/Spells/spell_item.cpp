@@ -2126,6 +2126,55 @@ class spell_item_bandage_q24944 : public SpellScriptLoader
         }
 };
 
+class spell_item_gen_alchemy_mop : public SpellScriptLoader
+{
+    public:
+        spell_item_gen_alchemy_mop() : SpellScriptLoader("spell_item_gen_alchemy_mop") { }
+
+        class spell_item_gen_alchemy_mop_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_item_gen_alchemy_mop_SpellScript);
+
+            bool Load()
+            {
+                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
+            }
+
+            SpellCastResult CheckRequirement()
+            {
+                if (GetCaster()->GetTypeId() == TYPEID_PLAYER && HasDiscoveredAllSpells(114751, GetCaster()->ToPlayer()))
+                {
+                    SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_LEARNED_EVERYTHING);
+                    return SPELL_FAILED_CUSTOM_ERROR;
+                }
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleOnHit()
+            {
+                Player* caster = GetCaster()->ToPlayer();
+                if(caster)
+                {
+                    if (uint32 discoveredSpellId = GetExplicitDiscoverySpell(114751, caster->ToPlayer()))
+                        caster->learnSpell(discoveredSpellId, false);
+                }
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_item_gen_alchemy_mop_SpellScript::CheckRequirement);
+                OnHit += SpellHitFn(spell_item_gen_alchemy_mop_SpellScript::HandleOnHit);
+            }
+
+        };
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_item_gen_alchemy_mop_SpellScript();
+        }                 
+};
+
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -2181,4 +2230,5 @@ void AddSC_item_spell_scripts()
     new spell_item_enohar_explosive_arrows();
     new spell_item_holy_thurible();
     new spell_item_bandage_q24944();
+    new spell_item_gen_alchemy_mop();
 }
