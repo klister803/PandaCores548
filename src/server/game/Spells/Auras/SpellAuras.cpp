@@ -916,8 +916,13 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode)
         RefreshSpellMods();
         RefreshTimers();
 
+        // Fix Backdraft can stack up to 6 charges max
+        if (m_spellInfo->Id == 117828)
+            SetCharges((GetCharges() + 3) > 6 ? 6 : GetCharges() + 3);
         // reset charges
-        SetCharges(CalcMaxCharges());
+        else
+            SetCharges(CalcMaxCharges());
+
         // FIXME: not a best way to synchronize charges, but works
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             if (AuraEffectPtr aurEff = GetEffect(i))

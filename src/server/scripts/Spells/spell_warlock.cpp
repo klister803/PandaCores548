@@ -61,6 +61,38 @@ enum WarlockSpells
     WARLOCK_NIGHTFALL                       = 108558,
     WARLOCK_SOUL_SWAP_AURA                  = 86211,
     WARLOCK_SOUL_SWAP_VISUAL                = 92795,
+    WARLOCK_GRIMOIRE_OF_SACRIFICE           = 108503,
+};
+
+// Called by Summon Felhunter - 691, Summon Succubus - 712, Summon Voidwalker - 697, Summon Imp - 688
+// Summon Infernal - 1122, Summon Doomguard - 18540 and Summon Felguard - 30146
+// Grimoire of Sacrifice - 108503
+class spell_warl_grimoire_of_sacrifice : public SpellScriptLoader
+{
+    public:
+        spell_warl_grimoire_of_sacrifice() : SpellScriptLoader("spell_warl_grimoire_of_sacrifice") { }
+
+        class spell_warl_grimoire_of_sacrifice_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_grimoire_of_sacrifice_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(WARLOCK_GRIMOIRE_OF_SACRIFICE))
+                        _player->RemoveAura(WARLOCK_GRIMOIRE_OF_SACRIFICE);
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_warl_grimoire_of_sacrifice_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_grimoire_of_sacrifice_SpellScript();
+        }
 };
 
 // Burning Rush - 111400
@@ -311,8 +343,9 @@ class spell_warl_chaos_bolt : public SpellScriptLoader
             void HandleAfterCast()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                    if (_player->HasAura(WARLOCK_BACKDRAFT) && _player->HasAura(WARLOCK_PYROCLASM))
-                        _player->RemoveAura(WARLOCK_BACKDRAFT);
+                    if (_player->HasAura(WARLOCK_PYROCLASM))
+                        if(AuraPtr backdraft = _player->GetAura(WARLOCK_BACKDRAFT))
+                            backdraft->SetCharges(backdraft->GetCharges() - 3);
             }
 
             void Register()
@@ -615,8 +648,12 @@ class spell_warl_drain_life : public SpellScriptLoader
 
             void OnTick(constAuraEffectPtr aurEff)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
+                    Player* _player = GetCaster()->ToPlayer();
+                    if (!_player)
+                        return;
+
                     // Restoring 2% of the caster's total health every 1s
                     int32 basepoints = _player->GetMaxHealth() / 50;
 
@@ -1190,6 +1227,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_grimoire_of_sacrifice();
     new spell_warl_burning_rush();
     new spell_warl_soul_swap_soulburn();
     new spell_warl_soul_swap();

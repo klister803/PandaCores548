@@ -830,7 +830,14 @@ enum TrinityStrings
     LANG_MOVEGENS_EFFECT                = 1142,
     LANG_MOVEFLAGS_GET                  = 1143,
     LANG_MOVEFLAGS_SET                  = 1144,
-    // Room for more level 3              1144-1199 not used
+    // Room for more level 3              1144-1150 not used
+    LANG_LIST_MAIL_HEADER               = 1151,
+    LANG_LIST_MAIL_INFO_1               = 1152,
+    LANG_LIST_MAIL_INFO_2               = 1153,
+    LANG_LIST_MAIL_INFO_3               = 1154,
+    LANG_LIST_MAIL_INFO_ITEM            = 1155,
+    LANG_LIST_MAIL_NOT_FOUND            = 1156,
+    // Room for more level 3              1157-1199 not used
 
     // Debug commands
     LANG_CINEMATIC_NOT_EXIST            = 1200,

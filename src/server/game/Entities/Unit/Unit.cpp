@@ -9105,7 +9105,7 @@ void Unit::ModifyAuraState(AuraStateType flag, bool apply)
                 for (Unit::AuraApplicationMap::iterator itr = tAuras.begin(); itr != tAuras.end();)
                 {
                     SpellInfo const* spellProto = (*itr).second->GetBase()->GetSpellInfo();
-                    if (spellProto->CasterAuraState == uint32(flag))
+                    if (spellProto->CasterAuraState == uint32(flag) && spellProto->Id != 16491) // Don't remove Second Wind, implemented in ::HandlePeriodicHealAurasTick
                         RemoveAura(itr);
                     else
                         ++itr;
@@ -9851,7 +9851,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     int32 DoneTotal = 0;
 
     // Apply Power JcJ damage bonus
-    if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && victim->GetGUID() == TYPEID_PLAYER)
+    if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && (victim->GetTypeId() == TYPEID_PLAYER || (victim->GetTypeId() == TYPEID_UNIT && isPet() && GetOwner() && GetOwner()->ToPlayer())))
     {
         float PowerJcJ = this->ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
         AddPct(DoneTotalMod, PowerJcJ);
@@ -9885,6 +9885,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         || spellProto->Id == 108686))
     {
         float Mastery = (GetFloatValue(PLAYER_MASTERY) + 1);
+        AddPct(DoneTotalMod, Mastery);
+    }
+
+    // Mastery : Emberstorm - 77220
+    // Increases the damage of spells wich consume Burning Embers (Shadowburn and Chaos Bolt)
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(77220) && spellProto && (spellProto->Id == 17877 || spellProto->Id == 116858))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f;
         AddPct(DoneTotalMod, Mastery);
     }
 
@@ -10898,9 +10906,9 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto && (spellProto->Id == 114871 || spellProto->Id == 114852) && GetTypeId() == TYPEID_PLAYER && getClass() == CLASS_PALADIN)
     {
         if (spellProto->Id == 114852)
-            DoneTotal = int32(1.962 * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
+            DoneTotal = int32(1.962f * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
         else
-            DoneTotal = int32(2.428 * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
+            DoneTotal = int32(2.428f * ToPlayer()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY));
     }
 
     // use float as more appropriate for negative values and percent applying

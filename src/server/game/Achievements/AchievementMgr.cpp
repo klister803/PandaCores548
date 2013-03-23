@@ -375,9 +375,8 @@ bool AchievementCriteriaDataSet::Meets(Player const* source, Unit const* target,
 }
 
 template<class T>
-AchievementMgr<T>::AchievementMgr(T* owner)
+AchievementMgr<T>::AchievementMgr(T* owner): _owner(owner), _achievementPoints(0) 
 {
-    _owner = owner;
 }
 
 template<class T>
@@ -837,6 +836,8 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
             ca.changed = false;
             ca.first_guid = first_guid;
             ca.completedByThisCharacter = false;
+            
+            _achievementPoints += achievement->points;
 
             // title achievement rewards are retroactive
             if (AchievementReward const* reward = sAchievementMgr->GetAchievementReward(achievement))
@@ -908,6 +909,7 @@ void AchievementMgr<Player>::LoadFromDB(PreparedQueryResult achievementResult, P
 
             CompletedAchievementData& ca = m_completedAchievements[achievementid];
             ca.completedByThisCharacter = true;
+            _achievementPoints += achievement->points;
 
         }
         while (achievementResult->NextRow());
@@ -982,6 +984,7 @@ void AchievementMgr<Guild>::LoadFromDB(PreparedQueryResult achievementResult, Pr
                 ca.guids.insert(MAKE_NEW_GUID(atol(guids[i]), 0, HIGHGUID_PLAYER));
 
             ca.changed = false;
+            _achievementPoints += achievement->points;
 
         } while (achievementResult->NextRow());
     }
@@ -1054,6 +1057,7 @@ void AchievementMgr<Player>::Reset()
     }
 
     m_completedAchievements.clear();
+    _achievementPoints = 0;
     criteriaProgress->clear();
     DeleteFromDB(GetOwner()->GetGUIDLow());
 
@@ -1093,7 +1097,8 @@ void AchievementMgr<Guild>::Reset()
     while (!criteriaProgressMap->empty())
        if (AchievementCriteriaEntry const* criteria = sAchievementMgr->GetAchievementCriteria(criteriaProgressMap->begin()->first))
             RemoveCriteriaProgress(criteria);
-
+    
+    _achievementPoints = 0;
     m_completedAchievements.clear();
     DeleteFromDB(GetOwner()->GetId());
 }
@@ -2183,6 +2188,8 @@ void AchievementMgr<T>::CompletedAchievement(AchievementEntry const* achievement
     if (!(achievement->flags & ACHIEVEMENT_FLAG_REALM_FIRST_KILL))
         sAchievementMgr->SetRealmCompleted(achievement);
 
+    _achievementPoints += achievement->points;
+
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT, 0, 0, NULL, referencePlayer);
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS, achievement->points, 0, NULL, referencePlayer);
 
@@ -2268,6 +2275,8 @@ void AchievementMgr<Guild>::CompletedAchievement(AchievementEntry const* achieve
     }
 
     sAchievementMgr->SetRealmCompleted(achievement);
+
+    _achievementPoints += achievement->points;
 
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_ACHIEVEMENT, 0, 0, NULL, referencePlayer);
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_EARN_ACHIEVEMENT_POINTS, achievement->points, 0, NULL, referencePlayer);
