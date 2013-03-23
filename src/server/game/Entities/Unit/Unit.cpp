@@ -9888,6 +9888,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         AddPct(DoneTotalMod, Mastery);
     }
 
+    // Mastery : Emberstorm - 77220
+    // Increases the damage of spells wich consume Burning Embers (Shadowburn and Chaos Bolt)
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(77220) && spellProto && (spellProto->Id == 17877 || spellProto->Id == 116858))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f;
+        AddPct(DoneTotalMod, Mastery);
+    }
+
     // Custom MoP Script
     // 76808 - Mastery : Executioner
     if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 1943 || spellProto->Id == 2098 || spellProto->Id == 121411) && HasAura(76808))
