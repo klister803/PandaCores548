@@ -617,24 +617,28 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     break;
                 case SPELLFAMILY_PRIEST:
                     // Power Word: Shield
-                    if (GetSpellInfo()->SpellFamilyFlags[0] & 0x1)
+                    if (GetSpellInfo()->Id == 17)
                     {
-                        // +80.68% from sp bonus
-                        DoneActualBenefit += caster->SpellBaseHealingBonusDone(m_spellInfo->GetSchoolMask()) * 0.8068f;
-                        DoneActualBenefit *= caster->CalculateLevelPenalty(GetSpellInfo());
-
-                        amount += int32(DoneActualBenefit);
-
-                        // Twin Disciplines
-                        if (constAuraEffectPtr pAurEff = caster->GetAuraEffect(SPELL_AURA_MOD_DAMAGE_PERCENT_DONE, SPELLFAMILY_PRIEST, 2292, 0))
-                            AddPct(amount, pAurEff->GetAmount());
-
-                        // Reuse variable, not sure if this code below can be moved before Twin Disciplines
-                        DoneActualBenefit = float(amount);
-                        DoneActualBenefit *= caster->GetTotalAuraMultiplier(SPELL_AURA_MOD_HEALING_DONE_PERCENT);
-                        amount = int32(DoneActualBenefit);
-
-                        return amount;
+                        if (Player* _plr = caster->ToPlayer())
+                        {
+                            switch (_plr->GetSpecializationId(_plr->GetActiveSpec()))
+                            {
+                                case SPEC_PRIEST_DISCIPLINE:
+                                    // +263.8% from sp bonus
+                                    DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 2.638f;
+                                    break;
+                                case SPEC_PRIEST_HOLY:
+                                    // +233.9% from sp bonus
+                                    DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 2.339f;
+                                    break;
+                                case SPEC_PRIEST_SHADOW:
+                                    // +187.1% from sp bonus
+                                    DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 1.871f;
+                                    break;
+                                default:
+                                    break;
+                            }
+                        }
                     }
                     break;
                 default:
