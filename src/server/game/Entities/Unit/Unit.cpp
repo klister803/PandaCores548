@@ -9851,7 +9851,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     int32 DoneTotal = 0;
 
     // Apply Power JcJ damage bonus
-    if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && victim->GetGUID() == TYPEID_PLAYER)
+    if (pdamage > 0 && this->GetTypeId() == TYPEID_PLAYER && (victim->GetTypeId() == TYPEID_PLAYER || (victim->GetTypeId() == TYPEID_UNIT && isPet() && GetOwner() && GetOwner()->ToPlayer())))
     {
         float PowerJcJ = this->ToPlayer()->GetRatingBonusValue(CR_PVP_POWER);
         AddPct(DoneTotalMod, PowerJcJ);
@@ -9885,6 +9885,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         || spellProto->Id == 108686))
     {
         float Mastery = (GetFloatValue(PLAYER_MASTERY) + 1);
+        AddPct(DoneTotalMod, Mastery);
+    }
+
+    // Mastery : Emberstorm - 77220
+    // Increases the damage of spells wich consume Burning Embers (Shadowburn and Chaos Bolt)
+    if (GetTypeId() == TYPEID_PLAYER && HasAura(77220) && spellProto && (spellProto->Id == 17877 || spellProto->Id == 116858))
+    {
+        float Mastery = GetFloatValue(PLAYER_MASTERY) * 3.0f;
         AddPct(DoneTotalMod, Mastery);
     }
 
