@@ -647,8 +647,12 @@ class spell_warl_drain_life : public SpellScriptLoader
 
             void OnTick(constAuraEffectPtr aurEff)
             {
-                if (Player* _player = GetCaster()->ToPlayer())
+                if (Unit* caster = GetCaster())
                 {
+                    Player* _player = GetCaster()->ToPlayer();
+                    if (!_player)
+                        return;
+
                     // Restoring 2% of the caster's total health every 1s
                     int32 basepoints = _player->GetMaxHealth() / 50;
 
