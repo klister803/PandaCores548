@@ -2878,7 +2878,7 @@ void Player::Regenerate(Powers power)
             else if (!isInCombat() && GetPower(POWER_BURNING_EMBERS) > 10)
                 SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) - 1);
 
-            if (GetPower(POWER_BURNING_EMBERS) >= 10)
+            if (GetPower(POWER_BURNING_EMBERS) >= 20)
                 CastSpell(this, 116855, true);
             else
                 RemoveAura(116855);

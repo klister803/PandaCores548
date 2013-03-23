@@ -106,6 +106,9 @@ void PetAI::UpdateAI(const uint32 diff)
             return;
         }
 
+        if (owner && !owner->isInCombat())
+            owner->SetInCombatWith(me->getVictim());
+
         DoMeleeAttackIfReady();
     }
     else if (owner && me->GetCharmInfo()) //no victim
