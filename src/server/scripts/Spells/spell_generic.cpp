@@ -1384,14 +1384,9 @@ class spell_gen_vehicle_scaling : public SpellScriptLoader
     public:
         spell_gen_vehicle_scaling() : SpellScriptLoader("spell_gen_vehicle_scaling") { }
 
-        class spell_gen_vehicle_scaling_AuraScript : public AuraScript
+        class spell_gen_vehicle_scaling_SpellScript : public SpellScript
         {
-            PrepareAuraScript(spell_gen_vehicle_scaling_AuraScript);
-
-            bool Load()
-            {
-                return GetCaster() && GetCaster()->GetTypeId() == TYPEID_PLAYER;
-            }
+            PrepareSpellScript(spell_gen_vehicle_scaling_SpellScript);
 
             SpellCastResult CheckCast()
             {
@@ -1400,6 +1395,26 @@ class spell_gen_vehicle_scaling : public SpellScriptLoader
                         return SPELL_FAILED_DONT_REPORT;
 
                 return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_gen_vehicle_scaling_SpellScript::CheckCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_vehicle_scaling_SpellScript();
+        }
+
+        class spell_gen_vehicle_scaling_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_vehicle_scaling_AuraScript);
+
+            bool Load()
+            {
+                return GetCaster() && GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
             void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32& amount, bool& /*canBeRecalculated*/)
@@ -1430,7 +1445,6 @@ class spell_gen_vehicle_scaling : public SpellScriptLoader
 
             void Register()
             {
-                OnCheckCast += SpellCheckCastFn(spell_gen_vehicle_scaling_AuraScript::CheckCast);
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_gen_vehicle_scaling_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_MOD_HEALING_PCT);
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_gen_vehicle_scaling_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_MOD_DAMAGE_PERCENT_DONE);
                 DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_gen_vehicle_scaling_AuraScript::CalculateAmount, EFFECT_2, SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT);
