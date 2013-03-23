@@ -68,6 +68,128 @@ enum HunterSpells
     HUNTER_SPELL_IMPROVED_SERPENT_STING          = 83077,
     HUNTER_SPELL_GLAIVE_TOSS_DAMAGES             = 121414,
     HUNTER_SPELL_GLAIVE_TOSS                     = 117050,
+    HUNTER_SPELL_BINDING_SHOT_AREA               = 109248,
+    HUNTER_SPELL_BINDING_SHOT_LINK               = 117405,
+    HUNTER_SPELL_BINDING_SHOT_STUN               = 117526,
+    HUNTER_SPELL_BINDING_SHOT_IMMUNE             = 117553,
+};
+
+// Binding Shot - 117405
+class spell_hun_binding_shot : public SpellScriptLoader
+{
+    public:
+        spell_hun_binding_shot() : SpellScriptLoader("spell_hun_binding_shot") { }
+
+        class spell_hun_binding_shot_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_binding_shot_SpellScript);
+
+            SpellCastResult checkImmunity()
+            {
+                if (GetExplTargetUnit())
+                    if (GetExplTargetUnit()->HasAura(HUNTER_SPELL_BINDING_SHOT_IMMUNE))
+                        return SPELL_FAILED_DONT_REPORT;
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_hun_binding_shot_SpellScript::checkImmunity);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_binding_shot_SpellScript();
+        }
+
+        class spell_hun_binding_shot_zone_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_binding_shot_zone_AuraScript);
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    DynamicObject* dynObj = caster->GetDynObject(HUNTER_SPELL_BINDING_SHOT_AREA);
+
+                    if (!dynObj)
+                        return;
+
+                    std::list<Unit*> bindedList;
+
+                    CellCoord p(JadeCore::ComputeCellCoord(dynObj->GetPositionX(), dynObj->GetPositionY()));
+                    Cell cell(p);
+                    cell.SetNoCreate();
+
+                    JadeCore::AnyUnitInObjectRangeCheck u_check(dynObj, 15.0f);
+                    JadeCore::UnitListSearcher<JadeCore::AnyUnitInObjectRangeCheck> searcher(dynObj, bindedList, u_check);
+
+                    TypeContainerVisitor<JadeCore::UnitListSearcher<JadeCore::AnyUnitInObjectRangeCheck>, WorldTypeMapContainer > world_unit_searcher(searcher);
+                    TypeContainerVisitor<JadeCore::UnitListSearcher<JadeCore::AnyUnitInObjectRangeCheck>, GridTypeMapContainer >  grid_unit_searcher(searcher);
+
+                    cell.Visit(p, world_unit_searcher, *dynObj->GetMap(), *dynObj, 15.0f);
+                    cell.Visit(p, grid_unit_searcher, *dynObj->GetMap(), *dynObj, 15.0f);
+
+                    bindedList.remove_if(JadeCore::UnitAuraCheck(false, GetSpellInfo()->Id, caster->GetGUID()));
+
+                    for (auto itr : bindedList)
+                    {
+                        Unit* target = itr->ToUnit();
+                        if (!target)
+                            continue;
+
+                        if (target->GetDistance(dynObj) > 5.0f)
+                        {
+                            if (!target->HasAura(HUNTER_SPELL_BINDING_SHOT_IMMUNE))
+                            {
+                                caster->AddAura(HUNTER_SPELL_BINDING_SHOT_STUN, target);
+                                caster->CastSpell(target, HUNTER_SPELL_BINDING_SHOT_IMMUNE, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_hun_binding_shot_zone_AuraScript::OnUpdate, EFFECT_1, SPELL_AURA_MOD_DAMAGE_FROM_CASTER);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_binding_shot_zone_AuraScript();
+        }
+};
+
+// Binding Shot - 109248
+class spell_hun_binding_shot_zone : public SpellScriptLoader
+{
+    public:
+        spell_hun_binding_shot_zone() : SpellScriptLoader("spell_hun_binding_shot_zone") { }
+
+        class spell_hun_binding_shot_zone_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_binding_shot_zone_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(HUNTER_SPELL_BINDING_SHOT_AREA))
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), HUNTER_SPELL_BINDING_SHOT_LINK, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_hun_binding_shot_zone_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_binding_shot_zone_AuraScript();
+        }
 };
 
 class spell_hun_glaive_toss_damages : public SpellScriptLoader
@@ -98,7 +220,6 @@ class spell_hun_glaive_toss_damages : public SpellScriptLoader
             return new spell_hun_glaive_toss_damages_SpellScript();
         }
 };
-
 
 // Called by Glaive Toss - 120755 and 120756
 // Glaive Toss - 117050
@@ -1277,6 +1398,8 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_binding_shot();
+    new spell_hun_binding_shot_zone();
     new spell_hun_glaive_toss_damages();
     new spell_hun_glaive_toss();
     new spell_hun_improved_serpent_sting();

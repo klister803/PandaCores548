@@ -83,7 +83,7 @@ class spell_pri_devouring_plague : public SpellScriptLoader
                     {
                         if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_PRIEST_SHADOW)
                         {
-                            int32 currentPower = _player->GetPower(POWER_SHADOW_ORB);
+                            int32 currentPower = _player->GetPower(POWER_SHADOW_ORB) + 1; // Don't forget PowerCost
 
                             _player->SetPower(POWER_SHADOW_ORB, 0);
                             // Shadow Orb visual
