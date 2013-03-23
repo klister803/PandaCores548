@@ -1793,6 +1793,34 @@ void WorldSession::HandleCharFactionOrRaceChange(WorldPacket& recvData)
     uint32 used_loginFlag   = ((recvData.GetOpcode() == CMSG_CHAR_RACE_CHANGE) ? AT_LOGIN_CHANGE_RACE : AT_LOGIN_CHANGE_FACTION);
     char const* knownTitlesStr = fields[4].GetCString();
 
+    BattlegroundTeamId oldTeam = BG_TEAM_ALLIANCE;
+
+    // Search each faction is targeted
+    switch (oldRace)
+    {
+        case RACE_ORC:
+        case RACE_GOBLIN:
+        case RACE_TAUREN:
+        case RACE_UNDEAD_PLAYER:
+        case RACE_TROLL:
+        case RACE_BLOODELF:
+        case RACE_PANDAREN_HORDE:
+        	oldTeam = BG_TEAM_HORDE;
+            break;
+        default:
+            break;
+    }
+
+    // We need to correct race when it's pandaren
+    // Because client always send neutral ID
+    if (race == RACE_PANDAREN_NEUTRAL)
+    {
+    	if ((recvData.GetOpcode() == CMSG_CHAR_RACE_CHANGE))
+    		race = oldTeam == BG_TEAM_ALLIANCE ? RACE_PANDAREN_ALLI : RACE_PANDAREN_HORDE;
+    	else
+    		race = oldTeam == BG_TEAM_ALLIANCE ? RACE_PANDAREN_HORDE : RACE_PANDAREN_ALLI;
+    }
+
     if (!sObjectMgr->GetPlayerInfo(race, playerClass))
     {
         WorldPacket data(SMSG_CHAR_FACTION_CHANGE, 1);

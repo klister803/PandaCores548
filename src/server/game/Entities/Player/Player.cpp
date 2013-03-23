@@ -23535,6 +23535,30 @@ void Player::learnDefaultSpells()
         else                                                // but send in normal spell in game learn case
             learnSpell(tspell, true);
     }
+
+    if (getRace() == RACE_PANDAREN_HORDE)
+    {
+    	uint32 spellLangHorde[2] = {669, 108127};
+    	for (int i = 0; i < 2; i++)
+    	{
+			if (!IsInWorld())                                    // will send in INITIAL_SPELLS in list anyway at map add
+				addSpell(spellLangHorde[i], true, true, true, false);
+			else                                                // but send in normal spell in game learn case
+				learnSpell(spellLangHorde[i], true);
+    	}
+    }
+
+    if (getRace() == RACE_PANDAREN_ALLI)
+    {
+    	uint32 spellLangAlliance[2] = {668,108127};
+    	for (int i = 0; i < 2; i++)
+    	{
+			if (!IsInWorld())                                    // will send in INITIAL_SPELLS in list anyway at map add
+				addSpell(spellLangAlliance[i], true, true, true, false);
+			else                                                // but send in normal spell in game learn case
+				learnSpell(spellLangAlliance[i], true);
+    	}
+    }
 }
 
 void Player::learnQuestRewardedSpells(Quest const* quest)
