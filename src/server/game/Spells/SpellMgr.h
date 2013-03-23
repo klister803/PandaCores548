@@ -732,6 +732,8 @@ class SpellMgr
         void LoadTalentSpellInfo();
         void LoadSpellPowerInfo();
 
+        std::vector<uint32>        mSpellCreateItemList;
+
     private:
         SpellDifficultySearcherMap mSpellDifficultySearcherMap;
         SpellChainMap              mSpellChains;

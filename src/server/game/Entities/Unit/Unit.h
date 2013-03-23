@@ -2369,6 +2369,8 @@ class Unit : public WorldObject
         uint32 _skipCount;
         uint32 _skipDiff;
 
+        bool m_IsInKillingProcess;
+
         bool IsAlwaysVisibleFor(WorldObject const* seer) const;
         bool IsAlwaysDetectableFor(WorldObject const* seer) const;
 

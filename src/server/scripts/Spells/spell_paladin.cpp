@@ -72,6 +72,64 @@ enum PaladinSpells
     PALADIN_SPELL_EXORCISM                       = 879,
     PALADIN_SPELL_ANCIENT_FURY                   = 86704,
     PALADIN_SPELL_ANCIENT_POWER                  = 86700,
+    PALADIN_SPELL_SACRED_SHIELD                  = 65148,
+
+};
+
+// Sacred shield - 20925
+class spell_pal_sacred_shield : public SpellScriptLoader
+{
+    public:
+        spell_pal_sacred_shield() : SpellScriptLoader("spell_pal_sacred_shield") { }
+
+        class spell_pal_sacred_shield_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_sacred_shield_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Unit* _player = GetCaster())
+                    if (Unit* target = GetTarget())
+                            _player->CastSpell(target, PALADIN_SPELL_SACRED_SHIELD, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_pal_sacred_shield_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_sacred_shield_AuraScript();
+        }
+};
+
+// Sacred shield absorb - 65148
+class spell_pal_sacred_shield_absorb : public SpellScriptLoader
+{
+    public:
+        spell_pal_sacred_shield_absorb() : SpellScriptLoader("spell_pal_sacred_shield_absorb") { }
+
+        class spell_pal_sacred_shield_absorb_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pal_sacred_shield_absorb_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
+            {
+                amount = int32(30 + GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 1.17f );
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_pal_sacred_shield_absorb_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pal_sacred_shield_absorb_AuraScript();
+        }
 };
 
 // Emancipate - 121783
@@ -1378,6 +1436,8 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_sacred_shield();
+    new spell_pal_sacred_shield_absorb();
     new spell_pal_emancipate();
     new spell_pal_ancient_fury();
     new spell_pal_guardian_of_ancient_kings_retribution();

@@ -2889,62 +2889,62 @@ void SpellMgr::LoadSpellCustomAttr()
             {
                 switch (spellInfo->Effects[j].ApplyAuraName)
                 {
-                case SPELL_AURA_MOD_POSSESS:
-                case SPELL_AURA_MOD_CONFUSE:
-                case SPELL_AURA_MOD_CHARM:
-                case SPELL_AURA_AOE_CHARM:
-                case SPELL_AURA_MOD_FEAR:
-                case SPELL_AURA_MOD_STUN:
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
-                    break;
-                case SPELL_AURA_PERIODIC_HEAL:
-                case SPELL_AURA_PERIODIC_DAMAGE:
-                case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
-                case SPELL_AURA_PERIODIC_LEECH:
-                case SPELL_AURA_PERIODIC_MANA_LEECH:
-                case SPELL_AURA_PERIODIC_HEALTH_FUNNEL:
-                case SPELL_AURA_PERIODIC_ENERGIZE:
-                case SPELL_AURA_OBS_MOD_HEALTH:
-                case SPELL_AURA_OBS_MOD_POWER:
-                case SPELL_AURA_POWER_BURN:
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NO_INITIAL_THREAT;
-                    break;
+                    case SPELL_AURA_MOD_POSSESS:
+                    case SPELL_AURA_MOD_CONFUSE:
+                    case SPELL_AURA_MOD_CHARM:
+                    case SPELL_AURA_AOE_CHARM:
+                    case SPELL_AURA_MOD_FEAR:
+                    case SPELL_AURA_MOD_STUN:
+                        spellInfo->AttributesCu |= SPELL_ATTR0_CU_AURA_CC;
+                        break;
+                    case SPELL_AURA_PERIODIC_HEAL:
+                    case SPELL_AURA_PERIODIC_DAMAGE:
+                    case SPELL_AURA_PERIODIC_DAMAGE_PERCENT:
+                    case SPELL_AURA_PERIODIC_LEECH:
+                    case SPELL_AURA_PERIODIC_MANA_LEECH:
+                    case SPELL_AURA_PERIODIC_HEALTH_FUNNEL:
+                    case SPELL_AURA_PERIODIC_ENERGIZE:
+                    case SPELL_AURA_OBS_MOD_HEALTH:
+                    case SPELL_AURA_OBS_MOD_POWER:
+                    case SPELL_AURA_POWER_BURN:
+                        spellInfo->AttributesCu |= SPELL_ATTR0_CU_NO_INITIAL_THREAT;
+                        break;
                 }
 
                 switch (spellInfo->Effects[j].Effect)
                 {
-                case SPELL_EFFECT_SCHOOL_DAMAGE:
-                case SPELL_EFFECT_WEAPON_DAMAGE:
-                case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
-                case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
-                case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
-                case SPELL_EFFECT_HEAL:
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_DIRECT_DAMAGE;
-                    break;
-                case SPELL_EFFECT_POWER_DRAIN:
-                case SPELL_EFFECT_POWER_BURN:
-                case SPELL_EFFECT_HEAL_MAX_HEALTH:
-                case SPELL_EFFECT_HEALTH_LEECH:
-                case SPELL_EFFECT_HEAL_PCT:
-                case SPELL_EFFECT_ENERGIZE_PCT:
-                case SPELL_EFFECT_ENERGIZE:
-                case SPELL_EFFECT_HEAL_MECHANICAL:
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_NO_INITIAL_THREAT;
-                    break;
-                case SPELL_EFFECT_CHARGE:
-                case SPELL_EFFECT_CHARGE_DEST:
-                case SPELL_EFFECT_JUMP:
-                case SPELL_EFFECT_JUMP_DEST:
-                case SPELL_EFFECT_LEAP_BACK:
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_CHARGE;
-                    break;
-                case SPELL_EFFECT_PICKPOCKET:
-                    spellInfo->AttributesCu |= SPELL_ATTR0_CU_PICKPOCKET;
-                    break;
-                case SPELL_EFFECT_ENCHANT_ITEM:
-                case SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY:
-                case SPELL_EFFECT_ENCHANT_ITEM_PRISMATIC:
-                case SPELL_EFFECT_ENCHANT_HELD_ITEM:
+                    case SPELL_EFFECT_SCHOOL_DAMAGE:
+                    case SPELL_EFFECT_WEAPON_DAMAGE:
+                    case SPELL_EFFECT_WEAPON_DAMAGE_NOSCHOOL:
+                    case SPELL_EFFECT_NORMALIZED_WEAPON_DMG:
+                    case SPELL_EFFECT_WEAPON_PERCENT_DAMAGE:
+                    case SPELL_EFFECT_HEAL:
+                        spellInfo->AttributesCu |= SPELL_ATTR0_CU_DIRECT_DAMAGE;
+                        break;
+                    case SPELL_EFFECT_POWER_DRAIN:
+                    case SPELL_EFFECT_POWER_BURN:
+                    case SPELL_EFFECT_HEAL_MAX_HEALTH:
+                    case SPELL_EFFECT_HEALTH_LEECH:
+                    case SPELL_EFFECT_HEAL_PCT:
+                    case SPELL_EFFECT_ENERGIZE_PCT:
+                    case SPELL_EFFECT_ENERGIZE:
+                    case SPELL_EFFECT_HEAL_MECHANICAL:
+                        spellInfo->AttributesCu |= SPELL_ATTR0_CU_NO_INITIAL_THREAT;
+                        break;
+                    case SPELL_EFFECT_CHARGE:
+                    case SPELL_EFFECT_CHARGE_DEST:
+                    case SPELL_EFFECT_JUMP:
+                    case SPELL_EFFECT_JUMP_DEST:
+                    case SPELL_EFFECT_LEAP_BACK:
+                        spellInfo->AttributesCu |= SPELL_ATTR0_CU_CHARGE;
+                        break;
+                    case SPELL_EFFECT_PICKPOCKET:
+                        spellInfo->AttributesCu |= SPELL_ATTR0_CU_PICKPOCKET;
+                        break;
+                    case SPELL_EFFECT_ENCHANT_ITEM:
+                    case SPELL_EFFECT_ENCHANT_ITEM_TEMPORARY:
+                    case SPELL_EFFECT_ENCHANT_ITEM_PRISMATIC:
+                    case SPELL_EFFECT_ENCHANT_HELD_ITEM:
                     {
                         // only enchanting profession enchantments procs can stack
                         if (IsPartOfSkillLine(SKILL_ENCHANTING, i))
@@ -2971,6 +2971,10 @@ void SpellMgr::LoadSpellCustomAttr()
                         }
                         break;
                     }
+                    case SPELL_EFFECT_CREATE_ITEM:
+                    case SPELL_EFFECT_CREATE_ITEM_2:
+                        mSpellCreateItemList.push_back(i);
+                        break;
                 }
             }
 
@@ -3305,6 +3309,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 23920: // Spell Reflection
             case 124430:// Divine Insight (shadow)
             case 81292: // Glyph of Mind Spike
+            case 114250:// Selfless Healer
                 spellInfo->ProcCharges = 1;
                 break;
             case 131116:// Allow to use Raging Blow
