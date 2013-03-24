@@ -63,6 +63,49 @@ enum PriestSpells
     PRIEST_VAMPIRIC_TOUCH                       = 34914,
     PRIEST_PHANTASM_AURA                        = 108942,
     PRIEST_PHANTASM_PROC                        = 114239,
+    PRIEST_SPIRIT_SHELL_AURA                    = 109964,
+    PRIEST_SPIRIT_SHELL_ABSORPTION              = 114908,
+};
+
+// Called by Heal - 2050, Flash Heal - 2061, Greater Heal - 2060 and Prayer of Healing - 596
+// Spirit Shell - 109964
+class spell_pri_spirit_shell : public SpellScriptLoader
+{
+    public:
+        spell_pri_spirit_shell() : SpellScriptLoader("spell_pri_spirit_shell") { }
+
+        class spell_pri_spirit_shell_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_spirit_shell_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(PRIEST_SPIRIT_SHELL_AURA))
+                        {
+                            int32 bp = GetHitHeal();
+
+                            SetHitHeal(0);
+
+                            _player->CastCustomSpell(target, PRIEST_SPIRIT_SHELL_ABSORPTION, &bp, NULL, NULL, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_spirit_shell_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_spirit_shell_SpellScript();
+        }
 };
 
 // Purify - 527
@@ -1221,6 +1264,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_spirit_shell();
     new spell_pri_purify();
     new spell_pri_devouring_plague();
     new spell_pri_phantasm();
