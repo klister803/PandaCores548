@@ -298,6 +298,7 @@ class SpellInfo
 public:
     uint32 Id;
     uint32 Category;
+    uint32 CategoryFlags;
     uint32 Dispel;
     uint32 Mechanic;
     uint32 Attributes;
