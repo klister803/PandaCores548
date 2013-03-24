@@ -75,6 +75,8 @@ enum PriestSpells
     PRIEST_STRENGTH_OF_SOUL_AURA                = 89488,
     PRIEST_STRENGTH_OF_SOUL_REDUCE_TIME         = 89490,
     PRIEST_WEAKENED_SOUL                        = 6788,
+	PRIEST_EVANGELISM_AURA                      = 81661,
+    PRIEST_ARCHANGEL                            = 81700,
 };
 
 // Called by Heal - 2050, Greater Heal - 2060 and Flash Heal - 2061
@@ -521,6 +523,79 @@ class spell_pri_mind_spike : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_mind_spike_SpellScript;
+        }
+};
+
+// Evangelism - 81661
+class spell_pri_evangelism : public SpellScriptLoader
+{
+    public:
+        spell_pri_evangelism() : SpellScriptLoader("spell_pri_evangelism") { }
+
+        class spell_pri_evangelism_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_evangelism_SpellScript);
+
+			void HandleOnHit()
+			{
+				if (Player* _player = GetCaster()->ToPlayer())
+				{
+					if (GetHitDamage())
+					{
+						_player->CastSpell(_player,PRIEST_EVANGELISM_AURA,true);
+					}
+				}
+			}
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_evangelism_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_evangelism_SpellScript;
+        }
+};
+// Archangel - 81700
+class spell_pri_archangel : public SpellScriptLoader
+{
+    public:
+        spell_pri_archangel() : SpellScriptLoader("spell_pri_archangel") { }
+
+        class spell_pri_archangel_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_archangel_SpellScript);
+
+			void HandleOnHit()
+			{
+				if (Player* _player = GetCaster()->ToPlayer())
+				{
+					int stackNumber = _player->GetAura(PRIEST_EVANGELISM_AURA)->GetStackAmount();
+					if (!(stackNumber > 0))
+						return;
+
+					if (AuraPtr archangel = _player->GetAura(GetSpellInfo()->Id))
+					{
+						if (archangel->GetEffect(0))
+						{
+						archangel->GetEffect(0)->ChangeAmount(archangel->GetEffect(0)->GetAmount() * stackNumber);
+						_player->RemoveAura(PRIEST_EVANGELISM_AURA);
+						}
+					}
+				}
+			}
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_archangel_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_archangel_SpellScript;
         }
 };
 
@@ -1541,4 +1616,6 @@ void AddSC_priest_spell_scripts()
     new spell_priest_renew();
     new spell_pri_shadow_word_death();
     new spell_pri_shadowform();
+	new spell_pri_evangelism();
+	new spell_pri_archangel();
 }
