@@ -79,6 +79,36 @@ enum PriestSpells
     LIGHTSPRING_RENEW                           = 126154,
     PRIEST_SMITE                                = 585,
     PRIEST_HOLY_WORD_CHASTISE                   = 88625,
+    PRIEST_HOLY_WORD_SANCTUARY_AREA             = 88685,
+    PRIEST_HOLY_WORD_SANCTUARY_HEAL             = 88686,
+};
+
+// Holy Word : Sanctuary - 88685
+class spell_pri_holy_word_sanctuary : public SpellScriptLoader
+{
+    public:
+        spell_pri_holy_word_sanctuary() : SpellScriptLoader("spell_pri_holy_word_sanctuary") { }
+
+        class spell_pri_holy_word_sanctuary_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_holy_word_sanctuary_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(PRIEST_HOLY_WORD_SANCTUARY_AREA))
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), PRIEST_HOLY_WORD_SANCTUARY_HEAL, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_holy_word_sanctuary_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_holy_word_sanctuary_AuraScript();
+        }
 };
 
 // Called by Smite - 585
@@ -1590,6 +1620,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_holy_word_sanctuary();
     new spell_pri_chakra_chastise();
     new spell_pri_lightwell_renew();
     new spell_pri_strength_of_soul();
