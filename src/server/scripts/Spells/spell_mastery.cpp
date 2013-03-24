@@ -38,7 +38,7 @@ enum MasterySpells
     MASTERY_SPELL_COMBO_BREAKER_2       = 116768,
 };
 
-// Called by Power Word : Shield - 17, Spirit Shell - 114908 and Divine Aegis - 47753
+// Called by Power Word : Shield - 17, Spirit Shell - 114908, Angelic Bulwark - 114214 and Divine Aegis - 47753
 // Mastery : Shield Discipline - 77484
 class spell_mastery_shield_discipline : public SpellScriptLoader
 {

@@ -6265,19 +6265,18 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 return true;                                // no hidden cooldown
             }
             // Divine Aegis
-            if (dummySpell->SpellIconID == 2820)
+            if (dummySpell->Id == 47515)
             {
                 if (!target)
                     return false;
 
-                // Multiple effects stack, so let's try to find this aura.
-                int32 bonus = 0;
-                if (constAuraEffectPtr aurEff = target->GetAuraEffect(47753, 0))
-                    bonus = aurEff->GetAmount();
+                if (!procSpell)
+                    return false;
 
-                basepoints0 = CalculatePct(int32(damage), triggerAmount) + bonus;
-                if (basepoints0 > target->getLevel() * 125)
-                    basepoints0 = target->getLevel() * 125;
+                if (procSpell->Id != 596 && !(procEx & PROC_EX_CRITICAL_HIT))
+                    return false;
+
+                basepoints0 = CalculatePct(int32(damage), triggerAmount);
 
                 triggered_spell_id = 47753;
                 break;
