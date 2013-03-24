@@ -1127,7 +1127,7 @@ class spell_pri_shadow_orb : public SpellScriptLoader
         }
 };
 
-// Guardian Spirit
+// Guardian Spirit - 47788
 class spell_pri_guardian_spirit : public SpellScriptLoader
 {
     public:
