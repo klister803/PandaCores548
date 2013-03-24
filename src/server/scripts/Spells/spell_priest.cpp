@@ -75,6 +75,114 @@ enum PriestSpells
     PRIEST_STRENGTH_OF_SOUL_AURA                = 89488,
     PRIEST_STRENGTH_OF_SOUL_REDUCE_TIME         = 89490,
     PRIEST_WEAKENED_SOUL                        = 6788,
+    LIGHTWELL_CHARGES                           = 59907,
+    LIGHTSPRING_RENEW                           = 126154,
+    PRIEST_SMITE                                = 585,
+    PRIEST_HOLY_WORD_CHASTISE                   = 88625,
+    PRIEST_HOLY_WORD_SANCTUARY_AREA             = 88685,
+    PRIEST_HOLY_WORD_SANCTUARY_HEAL             = 88686,
+};
+
+// Holy Word : Sanctuary - 88685
+class spell_pri_holy_word_sanctuary : public SpellScriptLoader
+{
+    public:
+        spell_pri_holy_word_sanctuary() : SpellScriptLoader("spell_pri_holy_word_sanctuary") { }
+
+        class spell_pri_holy_word_sanctuary_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_holy_word_sanctuary_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(PRIEST_HOLY_WORD_SANCTUARY_AREA))
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), PRIEST_HOLY_WORD_SANCTUARY_HEAL, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_pri_holy_word_sanctuary_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_holy_word_sanctuary_AuraScript();
+        }
+};
+
+// Called by Smite - 585
+// Chakra : Chastise - 81209
+class spell_pri_chakra_chastise : public SpellScriptLoader
+{
+    public:
+        spell_pri_chakra_chastise() : SpellScriptLoader("spell_pri_chakra_chastise") { }
+
+        class spell_pri_chakra_chastise_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_chakra_chastise_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (roll_chance_i(10))
+                            if (_player->HasSpellCooldown(PRIEST_HOLY_WORD_CHASTISE))
+                                _player->RemoveSpellCooldown(PRIEST_HOLY_WORD_CHASTISE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_chakra_chastise_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_chakra_chastise_SpellScript();
+        }
+};
+
+// Lightwell Renew - 60123
+class spell_pri_lightwell_renew : public SpellScriptLoader
+{
+    public:
+        spell_pri_lightwell_renew() : SpellScriptLoader("spell_pri_lightwell_renew") { }
+
+        class spell_pri_lightwell_renew_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_lightwell_renew_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* m_caster = GetCaster())
+                {
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if (m_caster->GetTypeId() != TYPEID_UNIT || !m_caster->ToCreature()->isSummon())
+                            return;
+
+                        // proc a spellcast
+                        if (AuraPtr chargesAura = m_caster->GetAura(LIGHTWELL_CHARGES))
+                        {
+                            m_caster->CastSpell(unitTarget, LIGHTSPRING_RENEW, true, NULL, NULL, m_caster->ToTempSummon()->GetSummonerGUID());
+                            if (chargesAura->ModCharges(-1))
+                                m_caster->ToTempSummon()->UnSummon();
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_lightwell_renew_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_lightwell_renew_SpellScript();
+        }
 };
 
 // Called by Heal - 2050, Greater Heal - 2060 and Flash Heal - 2061
@@ -1127,7 +1235,7 @@ class spell_pri_shadow_orb : public SpellScriptLoader
         }
 };
 
-// Guardian Spirit
+// Guardian Spirit - 47788
 class spell_pri_guardian_spirit : public SpellScriptLoader
 {
     public:
@@ -1512,6 +1620,9 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_holy_word_sanctuary();
+    new spell_pri_chakra_chastise();
+    new spell_pri_lightwell_renew();
     new spell_pri_strength_of_soul();
     new spell_pri_grace();
     new spell_pri_train_of_thought();

@@ -756,14 +756,6 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
         case SPELL_AURA_PERIODIC_HEAL:
             if (!caster)
                 break;
-            // Lightwell Renew
-            if (GetSpellInfo()->SpellFamilyName == SPELLFAMILY_PRIEST && m_spellInfo->SpellFamilyFlags[2] & 0x4000)
-            {
-                if (caster->GetTypeId() == TYPEID_PLAYER)
-                // Bonus from Glyph of Lightwell
-                if (AuraEffectPtr modHealing = caster->GetAuraEffect(55673, 0))
-                    AddPct(amount, modHealing->GetAmount());
-            }
             break;
         case SPELL_AURA_MOD_THREAT:
         {

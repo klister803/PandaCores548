@@ -168,6 +168,7 @@ enum SpellSpecificType
     SPELL_SPECIFIC_HAND                          = 28,
     SPELL_SPECIFIC_PHASE                         = 29,
     SPELL_SPECIFIC_BANE                          = 30,
+    SPELL_SPECIFIC_CHAKRA                        = 31,
 };
 
 enum SpellCustomAttributes
