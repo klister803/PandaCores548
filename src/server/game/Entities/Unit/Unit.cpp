@@ -10752,8 +10752,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 115611)
         return healamount;
 
-    // No bonus for Devouring Plague heal
-    if (spellProto->Id == 127626)
+    // No bonus for Devouring Plague heal or Atonement
+    if (spellProto->Id == 127626 || spellProto->Id == 81751)
         return healamount;
 
     // No bonus for Leader of the Pack
