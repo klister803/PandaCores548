@@ -75,6 +75,50 @@ enum PriestSpells
     PRIEST_STRENGTH_OF_SOUL_AURA                = 89488,
     PRIEST_STRENGTH_OF_SOUL_REDUCE_TIME         = 89490,
     PRIEST_WEAKENED_SOUL                        = 6788,
+    LIGHTWELL_CHARGES                           = 59907,
+    LIGHTSPRING_RENEW                           = 126154,
+};
+
+// Lightwell Renew - 60123
+class spell_pri_lightwell_renew : public SpellScriptLoader
+{
+    public:
+        spell_pri_lightwell_renew() : SpellScriptLoader("spell_pri_lightwell_renew") { }
+
+        class spell_pri_lightwell_renew_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_lightwell_renew_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* m_caster = GetCaster())
+                {
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if (m_caster->GetTypeId() != TYPEID_UNIT || !m_caster->ToCreature()->isSummon())
+                            return;
+
+                        // proc a spellcast
+                        if (AuraPtr chargesAura = m_caster->GetAura(LIGHTWELL_CHARGES))
+                        {
+                            m_caster->CastSpell(unitTarget, LIGHTSPRING_RENEW, true, NULL, NULL, m_caster->ToTempSummon()->GetSummonerGUID());
+                            if (chargesAura->ModCharges(-1))
+                                m_caster->ToTempSummon()->UnSummon();
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_lightwell_renew_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_lightwell_renew_SpellScript();
+        }
 };
 
 // Called by Heal - 2050, Greater Heal - 2060 and Flash Heal - 2061
@@ -1512,6 +1556,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_lightwell_renew();
     new spell_pri_strength_of_soul();
     new spell_pri_grace();
     new spell_pri_train_of_thought();
