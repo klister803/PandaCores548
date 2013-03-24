@@ -3635,6 +3635,11 @@ void SpellMgr::LoadSpellCustomAttr()
             case 118685:
                 spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(5);
                 break;
+             // Malygos Enrage
+            case 60670:
+            	spellInfo->Effects[1].TriggerSpell = 0;
+            	spellInfo->Effects[2].TriggerSpell = 0;
+            	break;
             default:
                 break;
             }
