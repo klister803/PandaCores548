@@ -70,6 +70,49 @@ enum PriestSpells
     PRIEST_RAPTURE_ENERGIZE                     = 47755,
     PRIEST_TRAIN_OF_THOUGHT                     = 92297,
     PRIEST_INNER_FOCUS                          = 89485,
+    PRIEST_STRENGTH_OF_SOUL_AURA                = 89488,
+    PRIEST_STRENGTH_OF_SOUL_REDUCE_TIME         = 89490,
+    PRIEST_WEAKENED_SOUL                        = 6788,
+};
+
+// Called by Heal - 2050, Greater Heal - 2060 and Flash Heal - 2061
+// Strength of Soul - 89488
+class spell_pri_strength_of_soul : public SpellScriptLoader
+{
+    public:
+        spell_pri_strength_of_soul() : SpellScriptLoader("spell_pri_strength_of_soul") { }
+
+        class spell_pri_strength_of_soul_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_strength_of_soul_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (AuraPtr weakenedSoul = target->GetAura(PRIEST_WEAKENED_SOUL, _player->GetGUID()))
+                        {
+                            if (weakenedSoul->GetDuration() > 2000)
+                                weakenedSoul->SetDuration(weakenedSoul->GetDuration() - 2000);
+                            else
+                                target->RemoveAura(PRIEST_WEAKENED_SOUL);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_strength_of_soul_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_strength_of_soul_SpellScript();
+        }
 };
 
 // Called by Smite - 585 and Greater Heal - 2060
@@ -1436,6 +1479,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_strength_of_soul();
     new spell_pri_train_of_thought();
     new spell_pri_rapture();
     new spell_pri_atonement();
