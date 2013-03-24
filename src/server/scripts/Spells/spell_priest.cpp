@@ -29,9 +29,9 @@
 enum PriestSpells
 {
     PRIEST_SPELL_GUARDIAN_SPIRIT_HEAL           = 48153,
-    PRIEST_SPELL_PENANCE_R1                     = 47540,
-    PRIEST_SPELL_PENANCE_R1_DAMAGE              = 47758,
-    PRIEST_SPELL_PENANCE_R1_HEAL                = 47757,
+    PRIEST_SPELL_PENANCE                        = 47540,
+    PRIEST_SPELL_PENANCE_DAMAGE                 = 47758,
+    PRIEST_SPELL_PENANCE_HEAL                   = 47757,
     PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED    = 33619,
     PRIEST_SPELL_REFLECTIVE_SHIELD_R1           = 33201,
     PRIEST_SPELL_EMPOWERED_RENEW                = 63544,
@@ -65,6 +65,80 @@ enum PriestSpells
     PRIEST_PHANTASM_PROC                        = 114239,
     PRIEST_SPIRIT_SHELL_AURA                    = 109964,
     PRIEST_SPIRIT_SHELL_ABSORPTION              = 114908,
+    PRIEST_TRAIN_OF_THOUGHT                     = 92297,
+    PRIEST_INNER_FOCUS                          = 89485,
+};
+
+// Called by Smite - 585 and Greater Heal - 2060
+// Train of Thought - 92297
+class spell_pri_train_of_thought : public SpellScriptLoader
+{
+    public:
+        spell_pri_train_of_thought() : SpellScriptLoader("spell_pri_train_of_thought") { }
+
+        class spell_pri_train_of_thought_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_train_of_thought_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(PRIEST_TRAIN_OF_THOUGHT))
+                        {
+                            if (GetSpellInfo()->Id == 585)
+                            {
+                                if (_player->HasSpellCooldown(PRIEST_SPELL_PENANCE))
+                                {
+                                    float newCooldownDelay = _player->GetSpellCooldownDelay(PRIEST_SPELL_PENANCE) * IN_MILLISECONDS;
+
+                                    if (newCooldownDelay > 500.0f)
+                                        newCooldownDelay -= 500.0f;
+
+                                    _player->AddSpellCooldown(PRIEST_SPELL_PENANCE, 0, uint32(time(NULL) + (newCooldownDelay / IN_MILLISECONDS)));
+
+                                    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
+                                    data << uint32(PRIEST_SPELL_PENANCE);               // Spell ID
+                                    data << uint64(_player->GetGUID());                 // Player GUID
+                                    data << int32(-500);                                // Cooldown mod in milliseconds
+                                    _player->GetSession()->SendPacket(&data);
+                                }
+                            }
+                            else if (GetSpellInfo()->Id == 2060)
+                            {
+                                if (_player->HasSpellCooldown(PRIEST_INNER_FOCUS))
+                                {
+                                    uint32 newCooldownDelay = _player->GetSpellCooldownDelay(PRIEST_INNER_FOCUS);
+
+                                    if (newCooldownDelay > 5)
+                                        newCooldownDelay -= 5;
+
+                                    _player->AddSpellCooldown(PRIEST_INNER_FOCUS, 0, uint32(time(NULL) + newCooldownDelay));
+
+                                    WorldPacket data(SMSG_MODIFY_COOLDOWN, 4+8+4);
+                                    data << uint32(PRIEST_INNER_FOCUS);                 // Spell ID
+                                    data << uint64(_player->GetGUID());                 // Player GUID
+                                    data << int32(-5000);                               // Cooldown mod in milliseconds
+                                    _player->GetSession()->SendPacket(&data);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_train_of_thought_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_train_of_thought_SpellScript();
+        }
 };
 
 // Called by Heal - 2050, Flash Heal - 2061, Greater Heal - 2060 and Prayer of Healing - 596
@@ -982,16 +1056,16 @@ class spell_pri_penance : public SpellScriptLoader
 
             bool Validate(SpellInfo const* spellEntry)
             {
-                if (!sSpellMgr->GetSpellInfo(PRIEST_SPELL_PENANCE_R1))
+                if (!sSpellMgr->GetSpellInfo(PRIEST_SPELL_PENANCE))
                     return false;
                 // can't use other spell than this penance due to spell_ranks dependency
-                if (sSpellMgr->GetFirstSpellInChain(PRIEST_SPELL_PENANCE_R1) != sSpellMgr->GetFirstSpellInChain(spellEntry->Id))
+                if (sSpellMgr->GetFirstSpellInChain(PRIEST_SPELL_PENANCE) != sSpellMgr->GetFirstSpellInChain(spellEntry->Id))
                     return false;
 
                 uint8 rank = sSpellMgr->GetSpellRank(spellEntry->Id);
-                if (!sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_R1_DAMAGE, rank, true))
+                if (!sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_DAMAGE, rank, true))
                     return false;
-                if (!sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_R1_HEAL, rank, true))
+                if (!sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_HEAL, rank, true))
                     return false;
 
                 return true;
@@ -1008,9 +1082,9 @@ class spell_pri_penance : public SpellScriptLoader
                     uint8 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
 
                     if (caster->IsFriendlyTo(unitTarget))
-                        caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_R1_HEAL, rank), false, 0);
+                        caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_HEAL, rank), false, 0);
                     else
-                        caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_R1_DAMAGE, rank), false, 0);
+                        caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_DAMAGE, rank), false, 0);
                 }
             }
 
@@ -1264,6 +1338,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_train_of_thought();
     new spell_pri_spirit_shell();
     new spell_pri_purify();
     new spell_pri_devouring_plague();
