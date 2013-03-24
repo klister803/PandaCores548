@@ -77,6 +77,40 @@ enum PriestSpells
     PRIEST_WEAKENED_SOUL                        = 6788,
     LIGHTWELL_CHARGES                           = 59907,
     LIGHTSPRING_RENEW                           = 126154,
+    PRIEST_SMITE                                = 585,
+    PRIEST_HOLY_WORD_CHASTISE                   = 88625,
+};
+
+// Called by Smite - 585
+// Chakra : Chastise - 81209
+class spell_pri_chakra_chastise : public SpellScriptLoader
+{
+    public:
+        spell_pri_chakra_chastise() : SpellScriptLoader("spell_pri_chakra_chastise") { }
+
+        class spell_pri_chakra_chastise_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_chakra_chastise_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (roll_chance_i(10))
+                            if (_player->HasSpellCooldown(PRIEST_HOLY_WORD_CHASTISE))
+                                _player->RemoveSpellCooldown(PRIEST_HOLY_WORD_CHASTISE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_chakra_chastise_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_chakra_chastise_SpellScript();
+        }
 };
 
 // Lightwell Renew - 60123
@@ -1556,6 +1590,7 @@ public:
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_chakra_chastise();
     new spell_pri_lightwell_renew();
     new spell_pri_strength_of_soul();
     new spell_pri_grace();
