@@ -1550,6 +1550,10 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
                 m_caster->CastCustomSpell(target, 115129, &bp, NULL, NULL, true);
             }
         }
+        // Chakra : Serenity - 81208
+        if (m_caster && addhealth && m_caster->HasAura(81208) && m_spellInfo->Effects[0].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY) // Single heal target
+            if (AuraPtr renew = unitTarget->GetAura(139, m_caster->GetGUID()))
+                renew->RefreshDuration();
 
         m_damage -= addhealth;
     }
