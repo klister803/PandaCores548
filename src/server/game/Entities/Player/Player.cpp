@@ -22556,12 +22556,13 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         recTime    = rec ? curTime+rec/IN_MILLISECONDS : catrecTime;
     }
 
-    // Trade Skill Cooldown : COOLDOWN_EXPIRES_AT_MIDNIGHT
     // New MoP skill cooldown
-    if (spellInfo->CategoryFlags & 0x8 && rec <  60 * 60 * 24)
+    // SPELL_CATEGORY_FLAGS_IS_DAYLY_COOLDOWN
+    if (spellInfo->CategoryFlags & SPELL_CATEGORY_FLAGS_IS_DAYLY_COOLDOWN)
     {
-    	time_t tomorrow = curTime + 86400;
-    	tm *ltm = localtime(&tomorrow);
+    	int days = catrec / 1000;
+    	time_t cooldown = curTime + (86400 * days);
+    	tm *ltm = localtime(&cooldown);
     	ltm->tm_hour = 0;
     	ltm->tm_min = 0;
     	ltm->tm_sec = 0;
