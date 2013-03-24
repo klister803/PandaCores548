@@ -834,6 +834,11 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry, uint32 difficulty)
     DmgClass = _categorie ? _categorie->DmgClass : 0;
     PreventionType = _categorie ? _categorie->PreventionType : 0;
 
+    if (SpellCategoryEntry const* categoryInfo = sSpellCategoryStores.LookupEntry(Category))
+    	CategoryFlags = categoryInfo->Flags;
+    else
+    	CategoryFlags = 0;
+
     // SpellClassOptionsEntry
     SpellClassOptionsEntry const* _class = GetSpellClassOptions();
     SpellFamilyName = _class ? _class->SpellFamilyName : 0;

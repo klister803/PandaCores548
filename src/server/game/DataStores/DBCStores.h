@@ -191,6 +191,7 @@ extern DBCStorage <SpellAuraOptionsEntry>        sSpellAuraOptionsStore;
 extern DBCStorage <SpellAuraRestrictionsEntry>   sSpellAuraRestrictionsStore;
 extern DBCStorage <SpellCastingRequirementsEntry> sSpellCastingRequirementsStore;
 extern DBCStorage <SpellCategoriesEntry>         sSpellCategoriesStore;
+extern DBCStorage <SpellCategoryEntry>           sSpellCategoryStores;
 extern DBCStorage <SpellClassOptionsEntry>       sSpellClassOptionsStore;
 extern DBCStorage <SpellCooldownsEntry>          sSpellCooldownsStore;
 extern DBCStorage <SpellEffectEntry>             sSpellEffectStore;

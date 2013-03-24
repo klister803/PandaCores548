@@ -1868,6 +1868,13 @@ struct SpellCategoriesEntry
     uint32    StartRecoveryCategory;                        // 145      m_startRecoveryCategory
 };
 
+// SpellCategory.dbc
+struct SpellCategoryEntry
+{
+	uint32 CategoryId;
+	uint32 Flags;
+};
+
 typedef std::set<uint32> SpellCategorySet;
 typedef std::map<uint32, SpellCategorySet > SpellCategoryStore;
 typedef std::set<uint32> PetFamilySpellsSet;
