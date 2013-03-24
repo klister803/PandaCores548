@@ -352,6 +352,11 @@ enum SpellCategory
     SPELL_CATEGORY_DRINK            = 59,
 };
 
+enum SpellCategoryFlags
+{
+	SPELL_CATEGORY_FLAGS_IS_DAYLY_COOLDOWN		= 0x08,
+};
+
 const uint32 ItemQualityColors[MAX_ITEM_QUALITY] =
 {
     0xff9d9d9d,        //GREY
@@ -3623,7 +3628,7 @@ enum SkillType
     SKILL_NEW_PET_VOIDWALKER	   = 928, // New in MoP 5.0.5
     SKILL_NEW_PET_OBSERVER		   = 930, // New in MoP 5.0.5
     SKILL_NEW_PET_WRATHGUARD	   = 931, // New in MoP 5.0.5
-    SKILL_ALL					   = 934, // 5.0.5 Tous - Spécialisations","Les sorts gérant une combinaison de spécialisation se trouvent ici.
+    SKILL_ALL					   = 934, // 5.0.5 Tous - Spï¿½cialisations","Les sorts gï¿½rant une combinaison de spï¿½cialisation se trouvent ici.
     SKILL_NEW_RUNEFORGING		   = 960, // New in MoP 5.0.5
     SKILL_WAY_OF_GRILL			   = 975, // New in MoP 5.0.5 (cooking)
     SKILL_WAY_OF_WOK			   = 976, // New in MoP 5.0.5 (cooking)

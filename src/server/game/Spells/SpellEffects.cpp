@@ -1550,6 +1550,10 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
                 m_caster->CastCustomSpell(target, 115129, &bp, NULL, NULL, true);
             }
         }
+        // Chakra : Serenity - 81208
+        if (m_caster && addhealth && m_caster->HasAura(81208) && m_spellInfo->Effects[0].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY) // Single heal target
+            if (AuraPtr renew = unitTarget->GetAura(139, m_caster->GetGUID()))
+                renew->RefreshDuration();
 
         m_damage -= addhealth;
     }
@@ -4037,37 +4041,6 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
                             }
                         }
                     }
-                    return;
-                }
-                case 60123: // Lightwell
-                {
-                    if (m_caster->GetTypeId() != TYPEID_UNIT || !m_caster->ToCreature()->isSummon())
-                        return;
-
-                    uint32 spell_heal;
-
-                    switch (m_caster->GetEntry())
-                    {
-                        case 31897: spell_heal = 7001; break;
-                        case 31896: spell_heal = 27873; break;
-                        case 31895: spell_heal = 27874; break;
-                        case 31894: spell_heal = 28276; break;
-                        case 31893: spell_heal = 48084; break;
-                        case 31883: spell_heal = 48085; break;
-                        default:
-                            sLog->outError(LOG_FILTER_SPELLS_AURAS, "Unknown Lightwell spell caster %u", m_caster->GetEntry());
-                            return;
-                    }
-
-                    // proc a spellcast
-                    AuraPtr chargesAura = m_caster->GetAura(59907);
-                    if (chargesAura != NULLAURA)
-                    {
-                        m_caster->CastSpell(unitTarget, spell_heal, true, NULL, NULL, m_caster->ToTempSummon()->GetSummonerGUID());
-                        if (chargesAura->ModCharges(-1))
-                            m_caster->ToTempSummon()->UnSummon();
-                    }
-
                     return;
                 }
                 // Stoneclaw Totem
