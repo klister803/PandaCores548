@@ -34,8 +34,6 @@ enum PriestSpells
     PRIEST_SPELL_PENANCE_HEAL                   = 47757,
     PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED    = 33619,
     PRIEST_SPELL_REFLECTIVE_SHIELD_R1           = 33201,
-    PRIEST_SPELL_EMPOWERED_RENEW                = 63544,
-    PRIEST_ICON_ID_EMPOWERED_RENEW_TALENT       = 3021,
     PRIEST_ICON_ID_PAIN_AND_SUFFERING           = 2874,
     PRIEST_SHADOW_WORD_DEATH                    = 32409,
     PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH      = 107903,
@@ -81,6 +79,8 @@ enum PriestSpells
     PRIEST_HOLY_WORD_CHASTISE                   = 88625,
     PRIEST_HOLY_WORD_SANCTUARY_AREA             = 88685,
     PRIEST_HOLY_WORD_SANCTUARY_HEAL             = 88686,
+    PRIEST_RAPID_RENEWAL_AURA                   = 95649,
+    PRIEST_SPELL_EMPOWERED_RENEW                = 63544,
 };
 
 // Holy Word : Sanctuary - 88685
@@ -1504,6 +1504,8 @@ class spell_pri_vampiric_touch : public SpellScriptLoader
         }
 };
 
+// Called by Renew - 139
+// Rapid Renew - 95649
 class spell_priest_renew : public SpellScriptLoader
 {
     public:
@@ -1513,22 +1515,17 @@ class spell_priest_renew : public SpellScriptLoader
         {
             PrepareAuraScript(spell_priest_renew_AuraScript);
 
-            bool Load()
-            {
-                return GetCaster() && GetCaster()->GetTypeId() == TYPEID_PLAYER;
-            }
-
             void HandleApplyEffect(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                 {
                     // Empowered Renew
-                    if (constAuraEffectPtr empoweredRenewAurEff = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_EMPOWERED_RENEW_TALENT, EFFECT_1))
+                    if (AuraPtr empoweredRenew = caster->GetAura(PRIEST_RAPID_RENEWAL_AURA))
                     {
                         uint32 heal = caster->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), GetEffect(EFFECT_0)->GetAmount(), DOT);
                         heal = GetTarget()->SpellHealingBonusTaken(caster, GetSpellInfo(), heal, DOT);
 
-                        int32 basepoints0 = empoweredRenewAurEff->GetAmount() * GetEffect(EFFECT_0)->GetTotalTicks() * int32(heal) / 100;
+                        int32 basepoints0 = empoweredRenew->GetEffect(EFFECT_2)->GetAmount() * GetEffect(EFFECT_0)->GetTotalTicks() * int32(heal) / 100;
                         caster->CastCustomSpell(GetTarget(), PRIEST_SPELL_EMPOWERED_RENEW, &basepoints0, NULL, NULL, true, NULL, aurEff);
                     }
                 }
