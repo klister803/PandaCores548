@@ -1384,6 +1384,30 @@ class spell_gen_vehicle_scaling : public SpellScriptLoader
     public:
         spell_gen_vehicle_scaling() : SpellScriptLoader("spell_gen_vehicle_scaling") { }
 
+        class spell_gen_vehicle_scaling_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_vehicle_scaling_SpellScript);
+
+            SpellCastResult CheckCast()
+            {
+                if (Unit* target = GetExplTargetUnit())
+                    if (target->GetTypeId() == TYPEID_PLAYER)
+                        return SPELL_FAILED_DONT_REPORT;
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_gen_vehicle_scaling_SpellScript::CheckCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_vehicle_scaling_SpellScript();
+        }
+
         class spell_gen_vehicle_scaling_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_gen_vehicle_scaling_AuraScript);
