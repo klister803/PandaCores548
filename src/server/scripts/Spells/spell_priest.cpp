@@ -67,6 +67,7 @@ enum PriestSpells
     PRIEST_SPIRIT_SHELL_ABSORPTION              = 114908,
     PRIEST_ATONEMENT_AURA                       = 81749,
     PRIEST_ATONEMENT_HEAL                       = 81751,
+    PRIEST_RAPTURE_ENERGIZE                     = 47755,
     PRIEST_TRAIN_OF_THOUGHT                     = 92297,
     PRIEST_INNER_FOCUS                          = 89485,
 };
@@ -140,6 +141,47 @@ class spell_pri_train_of_thought : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_train_of_thought_SpellScript();
+        }
+};
+
+// Called by Power Word : Shield - 17
+// Rapture - 47536
+class spell_pri_rapture : public SpellScriptLoader
+{
+    public:
+        spell_pri_rapture() : SpellScriptLoader("spell_pri_rapture") { }
+
+        class spell_pri_rapture_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_rapture_AuraScript);
+
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    AuraRemoveMode removeMode = GetTargetApplication()->GetRemoveMode();
+                    if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL)
+                    {
+                        int32 bp = int32(caster->GetStat(STAT_SPIRIT) * 1.5f);
+
+                        if (caster->ToPlayer() && !caster->ToPlayer()->HasSpellCooldown(PRIEST_RAPTURE_ENERGIZE))
+                        {
+                            caster->EnergizeBySpell(caster, PRIEST_RAPTURE_ENERGIZE, bp, POWER_MANA);
+                            caster->ToPlayer()->AddSpellCooldown(PRIEST_RAPTURE_ENERGIZE, 0, time(NULL) + 12);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_pri_rapture_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_rapture_AuraScript();
         }
 };
 
@@ -1395,6 +1437,7 @@ public:
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_train_of_thought();
+    new spell_pri_rapture();
     new spell_pri_atonement();
     new spell_pri_spirit_shell();
     new spell_pri_purify();
