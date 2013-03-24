@@ -70,6 +70,8 @@ enum PriestSpells
     PRIEST_RAPTURE_ENERGIZE                     = 47755,
     PRIEST_TRAIN_OF_THOUGHT                     = 92297,
     PRIEST_INNER_FOCUS                          = 89485,
+    PRIEST_GRACE_AURA                           = 47517,
+    PRIEST_GRACE_PROC                           = 77613,
     PRIEST_STRENGTH_OF_SOUL_AURA                = 89488,
     PRIEST_STRENGTH_OF_SOUL_REDUCE_TIME         = 89490,
     PRIEST_WEAKENED_SOUL                        = 6788,
@@ -112,6 +114,37 @@ class spell_pri_strength_of_soul : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pri_strength_of_soul_SpellScript();
+        }
+};
+
+// Called by Heal - 2050
+// Grace - 47517
+class spell_pri_grace : public SpellScriptLoader
+{
+    public:
+        spell_pri_grace() : SpellScriptLoader("spell_pri_grace") { }
+
+        class spell_pri_grace_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_grace_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(PRIEST_GRACE_AURA))
+                            _player->CastSpell(target, PRIEST_GRACE_PROC, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_grace_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_grace_SpellScript();
         }
 };
 
@@ -1480,6 +1513,7 @@ public:
 void AddSC_priest_spell_scripts()
 {
     new spell_pri_strength_of_soul();
+    new spell_pri_grace();
     new spell_pri_train_of_thought();
     new spell_pri_rapture();
     new spell_pri_atonement();
