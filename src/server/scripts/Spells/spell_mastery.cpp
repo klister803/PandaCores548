@@ -38,6 +38,38 @@ enum MasterySpells
     MASTERY_SPELL_COMBO_BREAKER_2       = 116768,
 };
 
+// Called by Power Word : Shield - 17, Spirit Shell - 114908 and Divine Aegis - 47753
+// Mastery : Shield Discipline - 77484
+class spell_mastery_shield_discipline : public SpellScriptLoader
+{
+    public:
+        spell_mastery_shield_discipline() : SpellScriptLoader("spell_mastery_shield_discipline") { }
+
+        class spell_mastery_shield_discipline_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mastery_shield_discipline_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    float Mastery = 1 + (caster->GetFloatValue(PLAYER_MASTERY) * 2.5f / 100.0f);
+                    amount = int32(amount * Mastery);
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mastery_shield_discipline_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_mastery_shield_discipline_AuraScript();
+        }
+};
+
 // Called by 100780 - Jab
 // 115636 - Mastery : Combo Breaker
 class spell_mastery_combo_breaker : public SpellScriptLoader
@@ -361,6 +393,7 @@ class spell_mastery_elemental_overload : public SpellScriptLoader
 
 void AddSC_mastery_spell_scripts()
 {
+    new spell_mastery_shield_discipline();
     new spell_mastery_combo_breaker();
     new spell_mastery_blood_shield();
     new spell_mastery_ignite();
