@@ -3498,6 +3498,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[0].BasePoints = 8;
                 break;
+            case 77485:  // Mastery : Echo of Light
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 8;
+                break;
             case 77486:  // Mastery : Shadowy Recall
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[0].BasePoints = 8;
