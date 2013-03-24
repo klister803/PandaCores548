@@ -158,13 +158,17 @@ class npc_shadopan_archery : public CreatureScript
                     else if (pInstance->GetData(DATA_ARCHERY) == 2 && me->GetEntry() == NPC_ARCHERY_SECOND)
                     {
                         Map::PlayerList const& playerList = pInstance->instance->GetPlayers();
-                        Map::PlayerList::const_iterator Itr = playerList.begin();
 
-                        uint8 advance = urand(0, playerList.getSize() - 1);
-                        for (uint8 i = 0; i < advance; ++i, ++Itr);
+                        if (!playerList.isEmpty())
+                        {
+                            Map::PlayerList::const_iterator Itr = playerList.begin();
 
-                        if (Player* player = Itr->getSource())
-                            targetGuid = player->GetGUID();
+                            uint8 advance = urand(0, playerList.getSize() - 1);
+                            for (uint8 i = 0; i < advance; ++i, ++Itr);
+
+                            if (Player* player = Itr->getSource())
+                                targetGuid = player->GetGUID();
+                        }
 
                         fireTimer = urand(5000, 10000);
                     }
