@@ -3311,6 +3311,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 81292: // Glyph of Mind Spike
             case 114250:// Selfless Healer
             case 90174: // Divine Purpose
+            case 89485: // Inner Focus
                 spellInfo->ProcCharges = 1;
                 break;
             case 131116:// Allow to use Raging Blow
