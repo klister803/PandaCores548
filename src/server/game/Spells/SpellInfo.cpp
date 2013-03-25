@@ -834,6 +834,11 @@ SpellInfo::SpellInfo(SpellEntry const* spellEntry, uint32 difficulty)
     DmgClass = _categorie ? _categorie->DmgClass : 0;
     PreventionType = _categorie ? _categorie->PreventionType : 0;
 
+    if (SpellCategoryEntry const* categoryInfo = sSpellCategoryStores.LookupEntry(Category))
+    	CategoryFlags = categoryInfo->Flags;
+    else
+    	CategoryFlags = 0;
+
     // SpellClassOptionsEntry
     SpellClassOptionsEntry const* _class = GetSpellClassOptions();
     SpellFamilyName = _class ? _class->SpellFamilyName : 0;
@@ -1383,6 +1388,7 @@ bool SpellInfo::IsAuraExclusiveBySpecificPerCasterWith(SpellInfo const* spellInf
         case SPELL_SPECIFIC_ASPECT:
         case SPELL_SPECIFIC_JUDGEMENT:
         case SPELL_SPECIFIC_WARLOCK_CORRUPTION:
+        case SPELL_SPECIFIC_CHAKRA:
             return spellSpec == spellInfo->GetSpellSpecific();
         default:
             return false;
@@ -2017,6 +2023,10 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
             // Divine Spirit and Prayer of Spirit
             if (SpellFamilyFlags[0] & 0x20)
                 return SPELL_SPECIFIC_PRIEST_DIVINE_SPIRIT;
+
+            // Chakra : Serenity, Chakra : Chastise and Chakra : Sanctuary
+            if (Id == 81208 || Id == 81209 || Id == 81206)
+                return SPELL_SPECIFIC_CHAKRA;
 
             break;
         }

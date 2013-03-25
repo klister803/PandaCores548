@@ -168,6 +168,7 @@ enum SpellSpecificType
     SPELL_SPECIFIC_HAND                          = 28,
     SPELL_SPECIFIC_PHASE                         = 29,
     SPELL_SPECIFIC_BANE                          = 30,
+    SPELL_SPECIFIC_CHAKRA                        = 31,
 };
 
 enum SpellCustomAttributes
@@ -297,6 +298,7 @@ class SpellInfo
 public:
     uint32 Id;
     uint32 Category;
+    uint32 CategoryFlags;
     uint32 Dispel;
     uint32 Mechanic;
     uint32 Attributes;

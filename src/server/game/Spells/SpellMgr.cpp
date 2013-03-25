@@ -3150,6 +3150,16 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 59907: // Lightwell Charges
+                spellInfo->ProcCharges = 15;
+                break;
+            case 81751: // Atonement
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ALLY;
+                spellInfo->Effects[0].TargetB = 0;
+                break;
+            case 47515: // Divine Aegis
+                spellInfo->Effects[0].BasePoints = 50;
+                break;
             case 108201:// Desecrated Ground
                 spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_FEARED;
                 spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_STUNNED;
@@ -3310,6 +3320,8 @@ void SpellMgr::LoadSpellCustomAttr()
             case 124430:// Divine Insight (shadow)
             case 81292: // Glyph of Mind Spike
             case 114250:// Selfless Healer
+            case 90174: // Divine Purpose
+            case 89485: // Inner Focus
                 spellInfo->ProcCharges = 1;
                 break;
             case 131116:// Allow to use Raging Blow
@@ -3486,6 +3498,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[0].BasePoints = 8;
                 break;
+            case 77485:  // Mastery : Echo of Light
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
+                spellInfo->Effects[0].BasePoints = 8;
+                break;
             case 77486:  // Mastery : Shadowy Recall
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[0].BasePoints = 8;
@@ -3619,6 +3635,11 @@ void SpellMgr::LoadSpellCustomAttr()
             case 118685:
                 spellInfo->RangeEntry = sSpellRangeStore.LookupEntry(5);
                 break;
+             // Malygos Enrage
+            case 60670:
+            	spellInfo->Effects[1].TriggerSpell = 0;
+            	spellInfo->Effects[2].TriggerSpell = 0;
+            	break;
             default:
                 break;
             }
