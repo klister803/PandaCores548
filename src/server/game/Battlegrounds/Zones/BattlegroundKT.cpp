@@ -323,9 +323,8 @@ void BattlegroundKT::HandleKillPlayer(Player *player, Player *killer)
 }
 
 
-void BattlegroundKT::UpdatePlayerScore(Player *Source, uint32 type, uint32 value)
+void BattlegroundKT::UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor)
 {
-
     BattlegroundScoreMap::iterator itr = PlayerScores.find(Source->GetObjectGuid());
     if(itr == PlayerScores.end())                         // player not found
         return;
@@ -339,7 +338,7 @@ void BattlegroundKT::UpdatePlayerScore(Player *Source, uint32 type, uint32 value
             ((BattleGroundKTScore*)itr->second)->Score += value;
             break;
         default:
-            Battleground::UpdatePlayerScore(Source, type, value);
+            Battleground::UpdatePlayerScore(Source, type, value, doAddHonor);
             break;
     }
 }
