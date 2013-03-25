@@ -85,6 +85,123 @@ enum PriestSpells
     PRIEST_SPELL_EMPOWERED_RENEW                = 63544,
     PRIEST_SPELL_DIVINE_INSIGHT_TALENT          = 109175,
     PRIEST_SPELL_DIVINE_INSIGHT_DISCIPLINE      = 123266,
+    PRIEST_SPELL_DIVINE_INSIGHT_HOLY            = 123267,
+    PRIEST_PRAYER_OF_MENDING                    = 33076,
+    PRIEST_PRAYER_OF_MENDING_HEAL               = 33110,
+    PRIEST_PRAYER_OF_MENDING_RADIUS             = 123262,
+};
+
+// Prayer of Mending (Divine Insight) - 123259
+class spell_pri_prayer_of_mending_divine_insight : public SpellScriptLoader
+{
+    public:
+        spell_pri_prayer_of_mending_divine_insight() : SpellScriptLoader("spell_pri_prayer_of_mending_divine_insight") { }
+
+        class spell_pri_prayer_of_mending_divine_insight_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_prayer_of_mending_divine_insight_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (AuraPtr prayerOfMending = target->GetAura(PRIEST_PRAYER_OF_MENDING_RADIUS, _player->GetGUID()))
+                        {
+                            int32 value = prayerOfMending->GetEffect(0)->GetAmount();
+
+                            if (_player->HasAura(PRIEST_SPELL_DIVINE_INSIGHT_HOLY))
+                                _player->RemoveAura(PRIEST_SPELL_DIVINE_INSIGHT_HOLY);
+
+                            target->CastCustomSpell(target, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                            if (target->HasAura(GetSpellInfo()->Id))
+                                target->RemoveAura(GetSpellInfo()->Id);
+
+                            float radius = sSpellMgr->GetSpellInfo(PRIEST_PRAYER_OF_MENDING_RADIUS)->Effects[0].CalcRadius(_player);
+
+                            if (Unit* secondTarget = target->GetNextRandomRaidMemberOrPet(radius))
+                            {
+                                target->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                if (secondTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
+                                    secondTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
+
+                                secondTarget->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+
+                                if (Unit* thirdTarget = target->GetNextRandomRaidMemberOrPet(radius))
+                                {
+                                    secondTarget->CastCustomSpell(thirdTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                    if (thirdTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
+                                        thirdTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
+
+                                    thirdTarget->CastCustomSpell(thirdTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+
+                                    if (Unit* fourthTarget = target->GetNextRandomRaidMemberOrPet(radius))
+                                    {
+                                        thirdTarget->CastCustomSpell(fourthTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                        if (fourthTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
+                                            fourthTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
+
+                                        fourthTarget->CastCustomSpell(fourthTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+
+                                        if (Unit* fifthTarget = target->GetNextRandomRaidMemberOrPet(radius))
+                                        {
+                                            fourthTarget->CastCustomSpell(fifthTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                            if (fifthTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
+                                                fifthTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
+
+                                            fifthTarget->CastCustomSpell(fifthTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_prayer_of_mending_divine_insight_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_prayer_of_mending_divine_insight_SpellScript();
+        }
+};
+
+// Called by Greater Heal - 2060 and Prayer of Healing - 596
+// Divine Insight (Holy) - 109175
+class spell_pri_divine_insight_holy : public SpellScriptLoader
+{
+    public:
+        spell_pri_divine_insight_holy() : SpellScriptLoader("spell_pri_divine_insight_holy") { }
+
+        class spell_pri_divine_insight_holy_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_divine_insight_holy_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(PRIEST_SPELL_DIVINE_INSIGHT_TALENT))
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_PRIEST_HOLY)
+                            if (roll_chance_i(40))
+                                _player->CastSpell(_player, PRIEST_SPELL_DIVINE_INSIGHT_HOLY, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_divine_insight_holy_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_divine_insight_holy_SpellScript();
+        }
 };
 
 // Called by Power Word : Shield (Divine Insight) - 123258
@@ -1701,6 +1818,8 @@ class spell_pri_shadowform : public SpellScriptLoader
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_prayer_of_mending_divine_insight();
+    new spell_pri_divine_insight_holy();
     new spell_pri_divine_insight_discipline();
     new spell_pri_holy_word_sanctuary();
     new spell_pri_chakra_chastise();
