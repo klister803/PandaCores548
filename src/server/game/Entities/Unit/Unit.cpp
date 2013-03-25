@@ -10748,8 +10748,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->SpellFamilyName == SPELLFAMILY_POTION)
         return healamount;
 
-    // No bonus for Temporal Ripples
-    if (spellProto->Id == 115611)
+    // No bonus for Temporal Ripples or Desperate Prayer
+    if (spellProto->Id == 115611 || spellProto->Id == 19236)
         return healamount;
 
     // No bonus for Devouring Plague heal or Atonement
