@@ -94,9 +94,9 @@ class spell_hun_aimed_shot : public SpellScriptLoader
                     {
                         int32 csv = GetHitDamage();
 
-                            if (_player->HasAura(HUNTER_SPELL_PIERCIG_SHOTS))
-                                if (GetSpell()->IsCritForTarget(target))
-                                    _player->CastCustomSpell(HUNTER_SPELL_PIERCIG_SHOTS_EFFECT, SPELLVALUE_BASE_POINT0, csv, target, true);
+                        if (_player->HasAura(HUNTER_SPELL_PIERCIG_SHOTS))
+                            if (GetSpell()->IsCritForTarget(target))
+                                _player->CastCustomSpell(HUNTER_SPELL_PIERCIG_SHOTS_EFFECT, SPELLVALUE_BASE_POINT0, csv, target, true);
                     }
                 }
             }
