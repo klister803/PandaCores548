@@ -2878,7 +2878,7 @@ void Player::Regenerate(Powers power)
             else if (!isInCombat() && GetPower(POWER_BURNING_EMBERS) > 10)
                 SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) - 1);
 
-            if (GetPower(POWER_BURNING_EMBERS) >= 10)
+            if (GetPower(POWER_BURNING_EMBERS) >= 20)
                 CastSpell(this, 116855, true);
             else
                 RemoveAura(116855);
@@ -3567,6 +3567,9 @@ void Player::InitSpellForLevel()
             if(!find)
                 continue;
         }
+
+        if (!IsSpellFitByClassAndRace(spellId))
+        	continue;
 
         if (spell->SpellLevel <= level)
             learnSpell(spellId, false);
@@ -22554,6 +22557,19 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
 
         catrecTime = catrec ? curTime+catrec/IN_MILLISECONDS : 0;
         recTime    = rec ? curTime+rec/IN_MILLISECONDS : catrecTime;
+    }
+
+    // New MoP skill cooldown
+    // SPELL_CATEGORY_FLAGS_IS_DAYLY_COOLDOWN
+    if (spellInfo->CategoryFlags & SPELL_CATEGORY_FLAGS_IS_DAYLY_COOLDOWN)
+    {
+    	int days = catrec / 1000;
+    	time_t cooldown = curTime + (86400 * days);
+    	tm *ltm = localtime(&cooldown);
+    	ltm->tm_hour = 0;
+    	ltm->tm_min = 0;
+    	ltm->tm_sec = 0;
+    	recTime = mktime(ltm);
     }
 
     // self spell cooldown

@@ -73,7 +73,6 @@ enum PaladinSpells
     PALADIN_SPELL_ANCIENT_FURY                   = 86704,
     PALADIN_SPELL_ANCIENT_POWER                  = 86700,
     PALADIN_SPELL_SACRED_SHIELD                  = 65148,
-
 };
 
 // Sacred shield - 20925
@@ -117,7 +116,7 @@ class spell_pal_sacred_shield_absorb : public SpellScriptLoader
 
             void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
             {
-                amount = int32(30 + GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 1.17f );
+                amount = int32(30 + GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 1.17f);
             }
 
             void Register()

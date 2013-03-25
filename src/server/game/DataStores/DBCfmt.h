@@ -125,6 +125,7 @@ const char SoundEntriesfmt[]="nxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 const char SpecializationSpellsfmt[]="niiix";
 const char SpellCastTimefmt[]="nixx";
 const char SpellCategoriesEntryfmt[]="dxxiiiiiix";
+const char SpellCategoryEntryfmt[]="nixxxx";
 const char SpellDifficultyfmt[]="niiii";
 const std::string CustomSpellDifficultyfmt="ppppp";
 const std::string CustomSpellDifficultyIndex="id";

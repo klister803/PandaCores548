@@ -916,8 +916,13 @@ bool Aura::ModStackAmount(int32 num, AuraRemoveMode removeMode)
         RefreshSpellMods();
         RefreshTimers();
 
+        // Fix Backdraft can stack up to 6 charges max
+        if (m_spellInfo->Id == 117828)
+            SetCharges((GetCharges() + 3) > 6 ? 6 : GetCharges() + 3);
         // reset charges
-        SetCharges(CalcMaxCharges());
+        else
+            SetCharges(CalcMaxCharges());
+
         // FIXME: not a best way to synchronize charges, but works
         for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
             if (AuraEffectPtr aurEff = GetEffect(i))
@@ -1351,35 +1356,6 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
             case SPELLFAMILY_PRIEST:
                 if (!caster)
                     break;
-                // Power word: shield
-                if (removeMode == AURA_REMOVE_BY_ENEMY_SPELL && GetSpellInfo()->SpellFamilyFlags[0] & 0x00000001)
-                {
-                    // Rapture
-                    if (constAuraPtr aura = caster->GetAuraOfRankedSpell(47535))
-                    {
-                        // check cooldown
-                        if (caster->GetTypeId() == TYPEID_PLAYER)
-                        {
-                            if (caster->ToPlayer()->HasSpellCooldown(aura->GetId()))
-                            {
-                                 // This additional check is needed to add a minimal delay before cooldown in effect
-                                 // to allow all bubbles broken by a single damage source proc mana return
-                                 if (caster->ToPlayer()->GetSpellCooldownDelay(aura->GetId()) <= 11)
-                                     break;
-                            }
-                            else    //and if needed
-                                caster->ToPlayer()->AddSpellCooldown(aura->GetId(), 0, uint32(time(NULL) + 12));
-
-                        }
-                        // effect on caster
-                        if (constAuraEffectPtr aurEff = aura->GetEffect(0))
-                        {
-                            float multiplier = float(aurEff->GetAmount());
-                            int32 basepoints0 = int32(CalculatePct(caster->GetMaxPower(POWER_MANA), multiplier));
-                            caster->CastCustomSpell(caster, 47755, &basepoints0, NULL, NULL, true);
-                        }
-                    }
-                }
                 break;
             case SPELLFAMILY_ROGUE:
                 // Remove Vanish on stealth remove

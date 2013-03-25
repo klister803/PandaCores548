@@ -118,9 +118,17 @@ namespace Movement
         unit.SendMessageToSet(&data, true);
     }
 
-    void MoveSplineInit::Stop()
+    void MoveSplineInit::Stop(bool force)
     {
         MoveSpline& move_spline = *unit.movespline;
+
+        if (force)
+        {
+            args.flags = MoveSplineFlag::Done;
+            unit.m_movementInfo.RemoveMovementFlag(MOVEMENTFLAG_FORWARD);
+            move_spline.Initialize(args);
+        	return;
+        }
 
         // No need to stop if we are not moving
         if (move_spline.Finalized())

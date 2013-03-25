@@ -343,8 +343,9 @@ class spell_warl_chaos_bolt : public SpellScriptLoader
             void HandleAfterCast()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                    if (_player->HasAura(WARLOCK_BACKDRAFT) && _player->HasAura(WARLOCK_PYROCLASM))
-                        _player->RemoveAura(WARLOCK_BACKDRAFT);
+                    if (_player->HasAura(WARLOCK_PYROCLASM))
+                        if(AuraPtr backdraft = _player->GetAura(WARLOCK_BACKDRAFT))
+                            backdraft->SetCharges(backdraft->GetCharges() - 3);
             }
 
             void Register()
