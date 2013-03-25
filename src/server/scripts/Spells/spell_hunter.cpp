@@ -74,6 +74,49 @@ enum HunterSpells
     HUNTER_SPELL_BINDING_SHOT_IMMUNE             = 117553,
     HUNTER_SPELL_PIERCIG_SHOTS                   = 53238,
     HUNTER_SPELL_PIERCIG_SHOTS_EFFECT            = 63468,
+    HUNTER_SPELL_STEADY_FOCUS                    = 53224,
+    HUNTER_SPELL_STEADY_FOCUS_AURA               = 53220,
+};
+
+// Steady Focus - 53224
+class spell_hun_steady_focus : public SpellScriptLoader
+{
+    public:
+        spell_hun_steady_focus() : SpellScriptLoader("spell_hun_steady_focus") { }
+
+        class spell_hun_steady_focus_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_steady_focus_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (AuraPtr SteadyFocus = _player->GetAura(HUNTER_SPELL_STEADY_FOCUS))
+                        {
+                            int32 newAmount = SteadyFocus->GetStackAmount();
+                            _player->GetAura(HUNTER_SPELL_STEADY_FOCUS)->SetStackAmount(_player->GetAura(HUNTER_SPELL_STEADY_FOCUS)->GetStackAmount() + 1);
+
+                            if (_player->GetAura(HUNTER_SPELL_STEADY_FOCUS)->GetStackAmount() >= 2)
+                            {
+                                _player->AddAura(HUNTER_SPELL_STEADY_FOCUS_AURA, _player);
+                                _player->GetAura(HUNTER_SPELL_STEADY_FOCUS)->SetStackAmount(0);
+                            }
+                        }
+                    }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_hun_steady_focus_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_steady_focus_SpellScript();
+        }
 };
 
 // Aimed - 19434
@@ -1494,6 +1537,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_steady_focus();
     new spell_hun_aimed_shot();
     new spell_hun_piercing_shots();
     new spell_hun_binding_shot();
