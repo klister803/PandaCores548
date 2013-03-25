@@ -647,12 +647,8 @@ class spell_pri_evangelism : public SpellScriptLoader
 			void HandleOnHit()
 			{
 				if (Player* _player = GetCaster()->ToPlayer())
-				{
 					if (GetHitDamage())
-					{
 						_player->CastSpell(_player,PRIEST_EVANGELISM_AURA,true);
-					}
-				}
 			}
 
             void Register()
@@ -666,6 +662,7 @@ class spell_pri_evangelism : public SpellScriptLoader
             return new spell_pri_evangelism_SpellScript;
         }
 };
+
 // Archangel - 81700
 class spell_pri_archangel : public SpellScriptLoader
 {
@@ -688,8 +685,8 @@ class spell_pri_archangel : public SpellScriptLoader
 					{
 						if (archangel->GetEffect(0))
 						{
-						archangel->GetEffect(0)->ChangeAmount(archangel->GetEffect(0)->GetAmount() * stackNumber);
-						_player->RemoveAura(PRIEST_EVANGELISM_AURA);
+                            archangel->GetEffect(0)->ChangeAmount(archangel->GetEffect(0)->GetAmount() * stackNumber);
+                            _player->RemoveAura(PRIEST_EVANGELISM_AURA);
 						}
 					}
 				}

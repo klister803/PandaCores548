@@ -206,7 +206,7 @@ class BattlegroundKT : public Battleground
 
         void UpdateOrbState(Team team, uint32 value);
         void UpdateTeamScore(Team team);
-        void UpdatePlayerScore(Player* source, uint32 type, uint32 value);
+        void UpdatePlayerScore(Player* Source, uint32 type, uint32 value, bool doAddHonor = true);
         virtual void FillInitialWorldStates(WorldPacket& data, uint32& count);
 
         /* Scorekeeping */
