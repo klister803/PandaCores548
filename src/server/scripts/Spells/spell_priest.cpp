@@ -89,6 +89,39 @@ enum PriestSpells
     PRIEST_PRAYER_OF_MENDING                    = 33076,
     PRIEST_PRAYER_OF_MENDING_HEAL               = 33110,
     PRIEST_PRAYER_OF_MENDING_RADIUS             = 123262,
+    PRIEST_BODY_AND_SOUL_AURA                   = 64129,
+    PRIEST_BODY_AND_SOUL_INCREASE_SPEED         = 65081,
+};
+
+// Called by Leap of Faith - 73325 and Power Word : Shield - 17
+// Body and Soul - 64129
+class spell_pri_body_and_soul : public SpellScriptLoader
+{
+    public:
+        spell_pri_body_and_soul() : SpellScriptLoader("spell_pri_body_and_soul") { }
+
+        class spell_pri_body_and_soul_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_body_and_soul_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(PRIEST_BODY_AND_SOUL_AURA))
+                            _player->CastSpell(target, PRIEST_BODY_AND_SOUL_INCREASE_SPEED, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_body_and_soul_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_body_and_soul_SpellScript();
+        }
 };
 
 // Prayer of Mending (Divine Insight) - 123259
@@ -1818,6 +1851,7 @@ class spell_pri_shadowform : public SpellScriptLoader
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_body_and_soul();
     new spell_pri_prayer_of_mending_divine_insight();
     new spell_pri_divine_insight_holy();
     new spell_pri_divine_insight_discipline();
