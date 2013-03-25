@@ -3568,6 +3568,9 @@ void Player::InitSpellForLevel()
                 continue;
         }
 
+        if (!IsSpellFitByClassAndRace(spellId))
+        	continue;
+
         if (spell->SpellLevel <= level)
             learnSpell(spellId, false);
     }
