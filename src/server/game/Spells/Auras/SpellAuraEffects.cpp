@@ -616,8 +616,8 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     }
                     break;
                 case SPELLFAMILY_PRIEST:
-                    // Power Word: Shield
-                    if (GetSpellInfo()->Id == 17)
+                    // Power Word : Shield
+                    if (GetSpellInfo()->Id == 17 || GetSpellInfo()->Id == 123258)
                     {
                         if (Player* _plr = caster->ToPlayer())
                         {

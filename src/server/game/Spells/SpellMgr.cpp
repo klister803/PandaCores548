@@ -3317,7 +3317,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 34936: // Backlash
             case 50334: // Berserk (bear)
             case 23920: // Spell Reflection
-            case 124430:// Divine Insight (shadow)
+            case 124430:// Divine Insight (Shadow)
             case 81292: // Glyph of Mind Spike
             case 114250:// Selfless Healer
             case 90174: // Divine Purpose

@@ -83,6 +83,38 @@ enum PriestSpells
     PRIEST_HOLY_WORD_SANCTUARY_HEAL             = 88686,
     PRIEST_RAPID_RENEWAL_AURA                   = 95649,
     PRIEST_SPELL_EMPOWERED_RENEW                = 63544,
+    PRIEST_SPELL_DIVINE_INSIGHT_TALENT          = 109175,
+    PRIEST_SPELL_DIVINE_INSIGHT_DISCIPLINE      = 123266,
+};
+
+// Called by Power Word : Shield (Divine Insight) - 123258
+// Divine Insight (Discipline) - 123266
+class spell_pri_divine_insight_discipline : public SpellScriptLoader
+{
+    public:
+        spell_pri_divine_insight_discipline() : SpellScriptLoader("spell_pri_divine_insight_discipline") { }
+
+        class spell_pri_divine_insight_discipline_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_divine_insight_discipline_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(PRIEST_SPELL_DIVINE_INSIGHT_DISCIPLINE))
+                        _player->RemoveAura(PRIEST_SPELL_DIVINE_INSIGHT_DISCIPLINE);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_divine_insight_discipline_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_divine_insight_discipline_SpellScript();
+        }
 };
 
 // Holy Word : Sanctuary - 88685
@@ -1039,7 +1071,7 @@ class spell_pri_shadowy_apparition : public SpellScriptLoader
 
                     player->GetCreatureListWithEntryInGrid(shadowyList, PRIEST_NPC_SHADOWY_APPARITION, 500.0f);
 
-                    // Remove other players mushrooms
+                    // Remove other players shadowy apparitions
                     for (auto itr : shadowyList)
                     {
                         Unit* owner = itr->GetOwner();
@@ -1394,6 +1426,7 @@ class spell_pri_pain_and_suffering_proc : public SpellScriptLoader
         }
 };
 
+// Penance - 47540
 class spell_pri_penance : public SpellScriptLoader
 {
     public:
@@ -1427,18 +1460,26 @@ class spell_pri_penance : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
-                if (Unit* unitTarget = GetHitUnit())
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (!unitTarget->isAlive())
-                        return;
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if (!unitTarget->isAlive())
+                            return;
 
-                    uint8 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
+                        uint8 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
 
-                    if (caster->IsFriendlyTo(unitTarget))
-                        caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_HEAL, rank), false, 0);
-                    else
-                        caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_DAMAGE, rank), false, 0);
+                        if (_player->IsFriendlyTo(unitTarget))
+                            _player->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_HEAL, rank), false, 0);
+                        else
+                            _player->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_DAMAGE, rank), false, 0);
+
+                        // Divine Insight (Discipline)
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_PRIEST_DISCIPLINE)
+                            if (_player->HasAura(PRIEST_SPELL_DIVINE_INSIGHT_TALENT))
+                                if (roll_chance_i(40))
+                                    _player->CastSpell(_player, PRIEST_SPELL_DIVINE_INSIGHT_DISCIPLINE, true);
+                    }
                 }
             }
 
@@ -1660,6 +1701,7 @@ class spell_pri_shadowform : public SpellScriptLoader
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_divine_insight_discipline();
     new spell_pri_holy_word_sanctuary();
     new spell_pri_chakra_chastise();
     new spell_pri_lightwell_renew();
