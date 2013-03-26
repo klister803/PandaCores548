@@ -1328,17 +1328,16 @@ class spell_pri_shadowy_apparition : public SpellScriptLoader
                 if (Player* player = GetCaster()->ToPlayer())
                 {
                     std::list<Creature*> shadowyList;
+                    std::list<Creature*> tempList;
 
-                    player->GetCreatureListWithEntryInGrid(shadowyList, PRIEST_NPC_SHADOWY_APPARITION, 500.0f);
+                    player->GetCreatureListWithEntryInGrid(tempList, PRIEST_NPC_SHADOWY_APPARITION, 500.0f);
 
                     // Remove other players shadowy apparitions
-                    for (auto itr : shadowyList)
+                    for (auto itr : tempList)
                     {
                         Unit* owner = itr->GetOwner();
                         if (owner && owner == player && itr->isSummon())
-                            continue;
-
-                        shadowyList.remove(itr);
+                            shadowyList.push_back(itr);
                     }
 
                     if (shadowyList.size() == 3)
