@@ -14655,6 +14655,11 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             itr->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
         }
     }
+    // Fix Staedy focus - 53220
+    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id != 56641 && HasAura(5012) && HasAura(53220))
+    {
+        RemoveAura(5012);
+    }
 
     ProcTriggeredList procTriggered;
     // Fill procTriggered list
