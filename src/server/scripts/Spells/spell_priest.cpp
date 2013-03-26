@@ -34,7 +34,6 @@ enum PriestSpells
     PRIEST_SPELL_PENANCE_HEAL                   = 47757,
     PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED    = 33619,
     PRIEST_SPELL_REFLECTIVE_SHIELD_R1           = 33201,
-    PRIEST_ICON_ID_PAIN_AND_SUFFERING           = 2874,
     PRIEST_SHADOW_WORD_DEATH                    = 32409,
     PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH      = 107903,
     PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH         = 107904,
@@ -1329,17 +1328,16 @@ class spell_pri_shadowy_apparition : public SpellScriptLoader
                 if (Player* player = GetCaster()->ToPlayer())
                 {
                     std::list<Creature*> shadowyList;
+                    std::list<Creature*> tempList;
 
-                    player->GetCreatureListWithEntryInGrid(shadowyList, PRIEST_NPC_SHADOWY_APPARITION, 500.0f);
+                    player->GetCreatureListWithEntryInGrid(tempList, PRIEST_NPC_SHADOWY_APPARITION, 500.0f);
 
                     // Remove other players shadowy apparitions
-                    for (auto itr : shadowyList)
+                    for (auto itr : tempList)
                     {
                         Unit* owner = itr->GetOwner();
                         if (owner && owner == player && itr->isSummon())
-                            continue;
-
-                        shadowyList.remove(itr);
+                            shadowyList.push_back(itr);
                     }
 
                     if (shadowyList.size() == 3)
@@ -1657,36 +1655,6 @@ class spell_pri_guardian_spirit : public SpellScriptLoader
         }
 };
 
-class spell_pri_pain_and_suffering_proc : public SpellScriptLoader
-{
-    public:
-        spell_pri_pain_and_suffering_proc() : SpellScriptLoader("spell_pri_pain_and_suffering_proc") { }
-
-        // 47948 Pain and Suffering (proc)
-        class spell_pri_pain_and_suffering_proc_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_pain_and_suffering_proc_SpellScript);
-
-            void HandleEffectScriptEffect(SpellEffIndex /*effIndex*/)
-            {
-                // Refresh Shadow Word: Pain on target
-                if (Unit* unitTarget = GetHitUnit())
-                    if (AuraEffectPtr aur = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x8000, 0, 0, GetCaster()->GetGUID()))
-                        aur->GetBase()->RefreshDuration();
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_pri_pain_and_suffering_proc_SpellScript::HandleEffectScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_pain_and_suffering_proc_SpellScript;
-        }
-};
-
 // Penance - 47540
 class spell_pri_penance : public SpellScriptLoader
 {
@@ -2000,7 +1968,6 @@ void AddSC_priest_spell_scripts()
     new spell_pri_void_shift();
     new spell_pri_shadow_orb();
     new spell_pri_guardian_spirit();
-    new spell_pri_pain_and_suffering_proc();
     new spell_pri_penance();
     new spell_pri_reflective_shield_trigger();
     new spell_pri_prayer_of_mending_heal();

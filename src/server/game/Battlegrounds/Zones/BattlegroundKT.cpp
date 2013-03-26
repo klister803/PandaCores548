@@ -57,13 +57,13 @@ void BattlegroundKT::PostUpdateImpl(uint32 diff)
             uint32 hordeScore    = GetTeamScore(HORDE);
 
             if (allianceScore > hordeScore)
-                EndBattleGround(ALLIANCE);
+                EndBattleground(ALLIANCE);
             else if (allianceScore < hordeScore)
-                EndBattleGround(HORDE);
+                EndBattleground(HORDE);
             else
             {
                 // if 0 => tie
-                EndBattleGround(m_LastCapturedOrbTeam);
+                EndBattleground(m_LastCapturedOrbTeam);
             }
         }
         else
@@ -298,7 +298,7 @@ void BattlegroundKT::Reset()
     m_LastCapturedOrbTeam = TEAM_NONE;
 }
 
-void BattlegroundKT::EndBattleGround(Team winner)
+void BattlegroundKT::EndBattleground(uint32 winner)
 {
     //win reward
     if (winner == ALLIANCE)

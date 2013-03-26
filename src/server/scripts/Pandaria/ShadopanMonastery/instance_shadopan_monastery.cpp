@@ -131,12 +131,14 @@ public:
             {
                 case GO_CLOUDSTRIKE_ENTRANCE:
                     cloudstikeEntranceGuid = go->GetGUID();
+                    HandleGameObject(0, true, go);
                     break;
                 case GO_CLOUDSTRIKE_EXIT:
                     cloudstikeExitGuid = go->GetGUID();
                     break;
                 case GO_SNOWDRIFT_ENTRANCE:
                     snowdriftEntranceGuid = go->GetGUID();
+                    HandleGameObject(0, true, go);
                     break;
                 case GO_SNOWDRIFT_POSSESSIONS:
                     go->SetPhaseMask(2, true);
@@ -153,6 +155,7 @@ public:
                     break;
                 case GO_SHA_ENTRANCE:
                     shaEntranceGuid = go->GetGUID();
+                    HandleGameObject(0, true, go);
                     break;
                 case GO_SHA_EXIT:
                     shaExitGuid = go->GetGUID();
