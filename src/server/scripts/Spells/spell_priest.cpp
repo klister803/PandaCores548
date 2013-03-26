@@ -95,6 +95,44 @@ enum PriestSpells
     PRIEST_SURGE_OF_DARKNESS                    = 87160,
 };
 
+// Shadowfiend - 34433
+class spell_pri_shadowfiend : public SpellScriptLoader
+{
+    public:
+        spell_pri_shadowfiend() : SpellScriptLoader("spell_pri_shadowfiend") { }
+
+        class spell_pri_shadowfiend_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_shadowfiend_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        if (Guardian* pet = _player->GetGuardianPet())
+                        {
+                            pet->InitCharmInfo();
+                            pet->SetReactState(ReactStates::REACT_DEFENSIVE);
+                            pet->ToCreature()->AI()->AttackStart(target);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_pri_shadowfiend_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_shadowfiend_SpellScript();
+        }
+};
+
 // Called by Mind Spike - 73510
 // Surge of Darkness - 87160
 class spell_pri_surge_of_darkness : public SpellScriptLoader
@@ -1937,6 +1975,7 @@ class spell_pri_shadowform : public SpellScriptLoader
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_shadowfiend();
     new spell_pri_surge_of_darkness();
     new spell_pri_surge_of_light();
     new spell_pri_from_darkness_comes_light();
