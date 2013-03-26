@@ -6281,16 +6281,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 triggered_spell_id = 47753;
                 break;
             }
-            // Body and Soul
-            if (dummySpell->SpellIconID == 2218)
-            {
-                // Proc only from Cure Disease on self cast
-                if (procSpell->Id != 528 || victim != this || !roll_chance_i(triggerAmount))
-                    return false;
-                triggered_spell_id = 64136;
-                target = this;
-                break;
-            }
             switch (dummySpell->Id)
             {
                 // Vampiric Embrace
@@ -8481,15 +8471,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
         case 62606:
         {
             basepoints0 = CalculatePct(triggerAmount, GetTotalAttackPowerValue(BASE_ATTACK));
-            break;
-        }
-        // Body and Soul
-        case 64128:
-        case 65081:
-        {
-            // Proc only from PW:S cast
-            if (!(procSpell->SpellFamilyFlags[0] & 0x00000001))
-                return false;
             break;
         }
         // Culling the Herd
@@ -10748,8 +10729,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->SpellFamilyName == SPELLFAMILY_POTION)
         return healamount;
 
-    // No bonus for Temporal Ripples
-    if (spellProto->Id == 115611)
+    // No bonus for Temporal Ripples or Desperate Prayer
+    if (spellProto->Id == 115611 || spellProto->Id == 19236)
         return healamount;
 
     // No bonus for Devouring Plague heal or Atonement
@@ -14673,6 +14654,11 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 ai->SetGUID(target->GetGUID());
             itr->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
         }
+    }
+    // Fix Staedy focus - 53220
+    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id != 56641 && HasAura(5012) && HasAura(53220))
+    {
+        RemoveAura(5012);
     }
 
     ProcTriggeredList procTriggered;

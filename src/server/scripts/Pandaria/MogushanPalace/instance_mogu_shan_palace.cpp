@@ -110,7 +110,7 @@ public:
             switch (go->GetEntry())
             {
                 case GO_DOOR_BEFORE_TRIAL:  doorBeforeTrialGuid = go->GetGUID();    break;
-                case GO_TRIAL_CHEST:        trialChestGuid = go->GetGUID();         break;
+                case GO_TRIAL_CHEST:        trialChestGuid = go->GetGUID();         go->SetPhaseMask(128, true);    break;
                 case GO_DOOR_AFTER_TRIAL:   doorAfterTrialGuid = go->GetGUID();     break;
                 case GO_DOOR_BEFORE_KING:   doorBeforeKingGuid = go->GetGUID();     break;
             }
@@ -530,6 +530,8 @@ public:
                         if (creature && adept)
                             creature->Attack(adept, true);
                     }
+
+                    SetBossState(DATA_TRIAL_OF_THE_KING, DONE);
                 }
                 break;
             case TYPE_MING_RETIRED:
