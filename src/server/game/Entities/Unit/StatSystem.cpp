@@ -793,7 +793,7 @@ void Player::UpdateManaRegen()
     }
 
     // Mana Meditation && Meditation
-    if (HasAura(121278) || HasAura(85101))
+    if (HasAuraType(SPELL_AURA_MOD_MANA_REGEN_INTERRUPT))
         base_regen += 0.5 * spirit_regen; // Allows 50% of your mana regeneration from Spirit to continue while in combat.
 
     // Chaotic Energy : Increase Mana regen by 625%

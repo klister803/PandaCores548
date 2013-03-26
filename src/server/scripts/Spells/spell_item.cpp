@@ -2175,6 +2175,90 @@ class spell_item_gen_alchemy_mop : public SpellScriptLoader
 };
 
 
+class spell_alchemist_rejuvenation : public SpellScriptLoader
+{
+    public:
+        spell_alchemist_rejuvenation() : SpellScriptLoader("spell_alchemist_rejuvenation") { }
+
+        class spell_alchemist_rejuvenation_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_alchemist_rejuvenation_SpellScript);
+
+            bool Load()
+            {
+                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
+            }
+
+            void HandleOnHit()
+            {
+                if(Unit* caster = GetCaster())
+                {
+                    if(caster->getPowerType() == POWER_MANA)
+                    {
+                        switch (caster->getLevel())
+                        {
+                             case 85:
+                                caster->EnergizeBySpell(caster, 105704, urand(8484, 9376), POWER_MANA);                                
+                                break;
+                            case 86:
+                                caster->EnergizeBySpell(caster, 105704, urand(13651, 15087), POWER_MANA);  
+                                break;
+                            case 87:
+                                caster->EnergizeBySpell(caster, 105704, urand(16451, 18181), POWER_MANA);  
+                                break;
+                            case 88:
+                                caster->EnergizeBySpell(caster, 105704, urand(19818, 21902), POWER_MANA);  
+                                break;
+                            case 89:
+                                caster->EnergizeBySpell(caster, 105704, urand(23884, 26398), POWER_MANA);  
+                                break;
+                            case 90:
+                                caster->EnergizeBySpell(caster, 105704, urand(28500, 31500), POWER_MANA);  
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                    switch (caster->getLevel())
+                    {
+                        case 85:
+                            caster->HealBySpell(caster, sSpellMgr->GetSpellInfo(105704), urand(33935, 37505), false);                                
+                            break;
+                        case 86:
+                            caster->HealBySpell(caster, sSpellMgr->GetSpellInfo(105704), urand(54601, 60347), false);  
+                            break;
+                        case 87:
+                            caster->HealBySpell(caster, sSpellMgr->GetSpellInfo(105704), urand(65801, 72727), false);  
+                            break;
+                        case 88:
+                            caster->HealBySpell(caster, sSpellMgr->GetSpellInfo(105704), urand(79268, 87610), false);  
+                            break;
+                        case 89:
+                            caster->HealBySpell(caster, sSpellMgr->GetSpellInfo(105704), urand(95534, 105590), false);  
+                            break;
+                        case 90:
+                            caster->HealBySpell(caster, sSpellMgr->GetSpellInfo(105704), urand(114001, 126001), false);  
+                            break;
+                        default:
+                            break;
+                    }
+                }                    
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_alchemist_rejuvenation_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_alchemist_rejuvenation_SpellScript();
+        }
+};
+
+
+
 void AddSC_item_spell_scripts()
 {
     // 23074 Arcanite Dragonling
@@ -2231,4 +2315,5 @@ void AddSC_item_spell_scripts()
     new spell_item_holy_thurible();
     new spell_item_bandage_q24944();
     new spell_item_gen_alchemy_mop();
+    new spell_alchemist_rejuvenation();
 }
