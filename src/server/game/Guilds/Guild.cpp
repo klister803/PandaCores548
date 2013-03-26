@@ -1822,7 +1822,7 @@ void Guild::HandleRemoveMember(WorldSession* session, uint64 guid)
             // After call to DeleteMember pointer to member becomes invalid
             DeleteMember(guid, false, true);
             _LogEvent(GUILD_EVENT_LOG_UNINVITE_PLAYER, player->GetGUIDLow(), GUID_LOPART(guid));
-            _BroadcastEvent(GE_REMOVED, 0, member->GetName(), player->GetName());
+            _BroadcastEvent(GE_REMOVED, 0, member->GetName().c_str(), player->GetName());
         }
     }
     else if (removedPlayer)
