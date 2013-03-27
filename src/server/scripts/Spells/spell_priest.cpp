@@ -183,7 +183,7 @@ class spell_pri_shadow_word_insanity_allowing : public SpellScriptLoader
         }
 };
 
-// Shadowfiend - 34433
+// Shadowfiend - 34433 or Mindbender - 123040
 class spell_pri_shadowfiend : public SpellScriptLoader
 {
     public:
