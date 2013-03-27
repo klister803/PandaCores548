@@ -64,7 +64,12 @@ enum WarlockSpells
     WARLOCK_GRIMOIRE_OF_SACRIFICE           = 108503,
     WARLOCK_METAMORPHOSIS                   = 103958,
     WARLOCK_DEMONIC_LEAP_JUMP               = 54785,
+    WARLOCK_ITEM_S12_TIER_4                 = 131632,
+    WARLOCK_TWILIGHT_WARD_S12               = 131623,
+    WARLOCK_TWILIGHT_WARD_METAMORPHOSIS_S12 = 131624,
     WARLOCK_SHADOWFLAME                     = 47960,
+};
+
 // Hand of Gul'Dan - 86040
 class spell_warl_hand_of_guldan : public SpellScriptLoader
 {
@@ -94,6 +99,50 @@ class spell_warl_hand_of_guldan : public SpellScriptLoader
         }
 };
 
+// Twilight Ward - 6229 and Twilight Ward (Metamorphosis) - 104048
+class spell_warl_twilight_ward_s12 : public SpellScriptLoader
+{
+    public:
+        spell_warl_twilight_ward_s12() : SpellScriptLoader("spell_warl_twilight_ward_s12") { }
+
+        class spell_warl_twilight_ward_s12_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_twilight_ward_s12_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(WARLOCK_ITEM_S12_TIER_4))
+                    {
+                        if (GetSpellInfo()->Id == 6229)
+                        {
+                            if (_player->HasAura(GetSpellInfo()->Id))
+                                _player->RemoveAura(GetSpellInfo()->Id);
+
+                            _player->CastSpell(_player, WARLOCK_TWILIGHT_WARD_S12, true);
+                        }
+                        else if (GetSpellInfo()->Id == 104048)
+                        {
+                            if (_player->HasAura(GetSpellInfo()->Id))
+                                _player->RemoveAura(GetSpellInfo()->Id);
+
+                            _player->CastSpell(_player, WARLOCK_TWILIGHT_WARD_METAMORPHOSIS_S12, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_twilight_ward_s12_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_twilight_ward_s12_SpellScript();
+        }
 };
 
 // Hellfire - 5857
@@ -1320,6 +1369,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 void AddSC_warlock_spell_scripts()
 {
     new spell_warl_hand_of_guldan();
+    new spell_warl_twilight_ward_s12();
     new spell_warl_hellfire();
     new spell_warl_demonic_leap();
     new spell_warl_grimoire_of_sacrifice();
