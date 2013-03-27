@@ -66,6 +66,35 @@ enum WarlockSpells
     WARLOCK_DEMONIC_LEAP_JUMP               = 54785,
 };
 
+// Hellfire - 5857
+class spell_warl_hellfire : public SpellScriptLoader
+{
+    public:
+        spell_warl_hellfire() : SpellScriptLoader("spell_warl_hellfire") { }
+
+        class spell_warl_hellfire_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_hellfire_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 3, POWER_DEMONIC_FURY);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_hellfire_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_hellfire_SpellScript();
+        }
+};
+
 // Demonic Leap - 109151
 class spell_warl_demonic_leap : public SpellScriptLoader
 {
@@ -1260,6 +1289,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_hellfire();
     new spell_warl_demonic_leap();
     new spell_warl_grimoire_of_sacrifice();
     new spell_warl_burning_rush();
