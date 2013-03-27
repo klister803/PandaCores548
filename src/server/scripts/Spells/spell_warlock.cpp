@@ -64,6 +64,36 @@ enum WarlockSpells
     WARLOCK_GRIMOIRE_OF_SACRIFICE           = 108503,
     WARLOCK_METAMORPHOSIS                   = 103958,
     WARLOCK_DEMONIC_LEAP_JUMP               = 54785,
+    WARLOCK_SHADOWFLAME                     = 47960,
+// Hand of Gul'Dan - 86040
+class spell_warl_hand_of_guldan : public SpellScriptLoader
+{
+    public:
+        spell_warl_hand_of_guldan() : SpellScriptLoader("spell_warl_hand_of_guldan") { }
+
+        class spell_warl_hand_of_guldan_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_hand_of_guldan_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, WARLOCK_SHADOWFLAME, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_hand_of_guldan_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_hand_of_guldan_SpellScript();
+        }
+};
+
 };
 
 // Hellfire - 5857
@@ -1289,6 +1319,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_hand_of_guldan();
     new spell_warl_hellfire();
     new spell_warl_demonic_leap();
     new spell_warl_grimoire_of_sacrifice();
