@@ -10,6 +10,7 @@
 
 set(scripts_STAT_SRCS
   ${scripts_STAT_SRCS}
+	Custom/event_april.cpp
 )
 
 message("  -> Prepared: Custom")
