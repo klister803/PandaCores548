@@ -3150,6 +3150,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 172:   // Corruption
+            case 30108: // Unstable Affliction
+                spellInfo->Effects[2].Effect = 0;
+                spellInfo->Effects[2].ApplyAuraName = 0;
+                spellInfo->Effects[2].BasePoints = 0;
+                break;
             case 34433: // Shadowfiend
                 spellInfo->OverrideSpellList.push_back(123040); // Add Mindbender to override spell list of Shadowfiend
                 break;
