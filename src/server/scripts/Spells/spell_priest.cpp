@@ -93,6 +93,132 @@ enum PriestSpells
     PRIEST_FROM_DARKNESS_COMES_LIGHT_AURA       = 109186,
     PRIEST_SURGE_OF_LIGHT                       = 114255,
     PRIEST_SURGE_OF_DARKNESS                    = 87160,
+    PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST   = 130733,
+    PRIEST_SHADOW_WORD_INSANITY_DAMAGE          = 129249,
+};
+
+// Power Word - Solace - 129250
+class spell_pri_power_word_solace : public SpellScriptLoader
+{
+    public:
+        spell_pri_power_word_solace() : SpellScriptLoader("spell_pri_power_word_solace") { }
+
+        class spell_pri_power_word_solace_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_power_word_solace_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (!_player->HasAura(PRIEST_SHADOWFORM_STANCE))
+                            _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.7f), POWER_MANA);
+                        else
+                        {
+                            SetHitDamage(0);
+
+                            _player->CastSpell(target, PRIEST_SHADOW_WORD_INSANITY_DAMAGE, true);
+
+                            if (target->HasAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID()))
+                                target->RemoveAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID());
+
+                            if (target->HasAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, _player->GetGUID()))
+                                target->RemoveAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, _player->GetGUID());
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_power_word_solace_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_power_word_solace_SpellScript();
+        }
+};
+
+// Called by Shadow Word : Pain - 589
+// Shadow Word : Insanity (allowing cast) - 130733
+class spell_pri_shadow_word_insanity_allowing : public SpellScriptLoader
+{
+    public:
+        spell_pri_shadow_word_insanity_allowing() : SpellScriptLoader("spell_pri_shadow_word_insanity_allowing") { }
+
+        class spell_pri_shadow_word_insanity_allowing_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_shadow_word_insanity_allowing_AuraScript);
+
+            std::list<Unit*> targetList;
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                aurEff->GetTargetList(targetList);
+
+                for (auto itr : targetList)
+                {
+                    if (Unit* caster = GetCaster())
+                        if (AuraPtr shadowWordPain = itr->GetAura(PRIEST_SHADOW_WORD_PAIN, caster->GetGUID()))
+                            if (shadowWordPain->GetDuration() <= (shadowWordPain->GetMaxDuration() / 4))
+                                caster->CastSpell(itr, PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, true);
+                }
+
+                targetList.clear();
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_pri_shadow_word_insanity_allowing_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_shadow_word_insanity_allowing_AuraScript();
+        }
+};
+
+// Shadowfiend - 34433 or Mindbender - 123040
+class spell_pri_shadowfiend : public SpellScriptLoader
+{
+    public:
+        spell_pri_shadowfiend() : SpellScriptLoader("spell_pri_shadowfiend") { }
+
+        class spell_pri_shadowfiend_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_shadowfiend_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        if (Guardian* pet = _player->GetGuardianPet())
+                        {
+                            pet->InitCharmInfo();
+                            pet->SetReactState(ReactStates::REACT_DEFENSIVE);
+                            pet->ToCreature()->AI()->AttackStart(target);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_pri_shadowfiend_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_shadowfiend_SpellScript();
+        }
 };
 
 // Called by Mind Spike - 73510
@@ -1937,6 +2063,9 @@ class spell_pri_shadowform : public SpellScriptLoader
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_power_word_solace();
+    new spell_pri_shadow_word_insanity_allowing();
+    new spell_pri_shadowfiend();
     new spell_pri_surge_of_darkness();
     new spell_pri_surge_of_light();
     new spell_pri_from_darkness_comes_light();
