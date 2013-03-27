@@ -3258,8 +3258,8 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_INCREASE_HEALTH_PERCENT;
                 break;
             case 111771: // Demonic Gateway
-                spellInfo->Effects[0].Effect = 0;
-                spellInfo->Effects[0].BasePoints = 0;
+                spellInfo->Effects[2].Effect = 0;
+                spellInfo->Effects[2].TriggerSpell = 0;
                 break;
             case 117828: // Backdraft
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_ADD_PCT_MODIFIER;
