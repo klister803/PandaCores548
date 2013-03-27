@@ -58,6 +58,9 @@ enum WarlockSpells
     WARLOCK_RAIN_OF_FIRE                    = 104232,
     WARLOCK_RAIN_OF_FIRE_TRIGGERED          = 42223,
     WARLOCK_SPAWN_PURPLE_DEMONIC_GATEWAY    = 113890,
+    WARLOCK_DEMONIC_GATEWAY_TELEPORT_GREEN  = 113896,
+    WARLOCK_DEMONIC_GATEWAY_TELEPORT_PURPLE = 120729,
+    WARLOCK_DEMONIC_GATEWAY_PERIODIC_CHARGE = 113901,
     WARLOCK_NIGHTFALL                       = 108558,
     WARLOCK_SOUL_SWAP_AURA                  = 86211,
     WARLOCK_SOUL_SWAP_VISUAL                = 92795,
@@ -412,6 +415,35 @@ class spell_warl_drain_soul : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_warl_drain_soul_AuraScript();
+        }
+};
+
+// Demonic Gateway (periodic add charge) - 113901
+class spell_warl_demonic_gateway_charges : public SpellScriptLoader
+{
+    public:
+        spell_warl_demonic_gateway_charges() : SpellScriptLoader("spell_warl_demonic_gateway_charges") { }
+
+        class spell_warl_demonic_gateway_charges_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_demonic_gateway_charges_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Unit* target = GetTarget())
+                    if (AuraPtr demonicGateway = target->GetAura(WARLOCK_DEMONIC_GATEWAY_PERIODIC_CHARGE))
+                        demonicGateway->ModCharges(1);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_demonic_gateway_charges_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_demonic_gateway_charges_AuraScript();
         }
 };
 
@@ -1378,6 +1410,7 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_soul_swap();
     new spell_warl_nightfall();
     new spell_warl_drain_soul();
+    new spell_warl_demonic_gateway_charges();
     new spell_warl_demonic_gateway();
     new spell_warl_rain_of_fire();
     new spell_warl_chaos_bolt();
