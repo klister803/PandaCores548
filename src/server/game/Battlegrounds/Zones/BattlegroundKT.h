@@ -200,7 +200,7 @@ class BattlegroundKT : public Battleground
         void HandleKillPlayer(Player* player, Player* killer);
         bool SetupBattleground();
         void Reset();
-        void EndBattleGround(Team winner);
+        virtual void EndBattleground(uint32 winner);
         WorldSafeLocsEntry const* GetClosestGraveYard(Player* player);
         uint32 GetRemainingTimeInMinutes() { return m_EndTimer ? (m_EndTimer-1) / (MINUTE * IN_MILLISECONDS) + 1 : 0; }
 

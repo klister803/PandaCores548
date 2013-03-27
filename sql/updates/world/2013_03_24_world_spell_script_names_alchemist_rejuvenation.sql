@@ -1,2 +1,1 @@
-
-insert into `spell_script_names` (`spell_id`, `ScriptName`) values('-spell_alchemist_rejuvenation','spell_alchemist_rejuvenation');
+insert into `spell_script_names` (`spell_id`, `ScriptName`) values('105704','spell_alchemist_rejuvenation');

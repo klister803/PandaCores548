@@ -37,7 +37,6 @@ npc_mount_vendor        100%    Regular mount vendors all over the world. Displa
 npc_rogue_trainer        80%    Scripted trainers, so they are able to offer item 17126 for class quest 6681
 npc_sayge               100%    Darkmoon event fortune teller, buff player based on answers given
 npc_snake_trap_serpents  80%    AI for snakes that summoned by Snake Trap
-npc_shadowfiend         100%   restore 5% of owner's mana when shadowfiend die from damage
 npc_locksmith            75%    list of keys needs to be confirmed
 npc_firework            100%    NPC's summoned by rockets and rocket clusters, for making them cast visual
 EndContentData */
@@ -567,6 +566,7 @@ uint32 const HordeSoldierId[3] =
 /*######
 ## npc_doctor (handles both Gustaf Vanhowzen and Gregory Victor)
 ######*/
+
 class npc_doctor : public CreatureScript
 {
 public:
@@ -2125,38 +2125,6 @@ public:
 };
 
 /*######
-# npc_shadowfiend
-######*/
-#define GLYPH_OF_SHADOWFIEND_MANA         58227
-#define GLYPH_OF_SHADOWFIEND              58228
-
-class npc_shadowfiend : public CreatureScript
-{
-    public:
-        npc_shadowfiend() : CreatureScript("npc_shadowfiend") { }
-
-        struct npc_shadowfiendAI : public PetAI
-        {
-            npc_shadowfiendAI(Creature* creature) : PetAI(creature) {}
-
-            void JustDied(Unit* killer)
-            {
-                if (me->isSummon())
-                    if (Unit* owner = me->ToTempSummon()->GetSummoner())
-                        if (owner->HasAura(GLYPH_OF_SHADOWFIEND))
-                            owner->CastSpell(owner, GLYPH_OF_SHADOWFIEND_MANA, true);
-
-                PetAI::JustDied(killer);
-            }
-        };
-
-        CreatureAI* GetAI(Creature* creature) const
-        {
-            return new npc_shadowfiendAI(creature);
-        }
-};
-
-/*######
 # npc_fire_elemental
 ######*/
 
@@ -3596,7 +3564,6 @@ void AddSC_npcs_special()
     new npc_lightwell();
     new mob_mojo();
     new npc_training_dummy();
-    new npc_shadowfiend();
     new npc_wormhole();
     new npc_pet_trainer();
     new npc_locksmith();

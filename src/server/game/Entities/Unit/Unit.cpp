@@ -5488,6 +5488,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     if (!target)
                         return false;
 
+                    if (GetEntry() == 62982 || GetEntry() == 67236) // Mindbender
+                    {
+                        target->EnergizeBySpell(target, 123051, int32(1.3f * target->GetPower(POWER_MANA)), POWER_MANA);
+                        return false;
+                    }
+
                     triggered_spell_id = 34650;
                     break;
                 }
@@ -14654,6 +14660,11 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
                 ai->SetGUID(target->GetGUID());
             itr->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
         }
+    }
+    // Fix Staedy focus - 53220
+    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id != 56641 && HasAura(5012) && HasAura(53220))
+    {
+        RemoveAura(5012);
     }
 
     ProcTriggeredList procTriggered;

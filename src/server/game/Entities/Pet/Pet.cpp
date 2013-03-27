@@ -956,9 +956,28 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                         SetCreateMana(28 + 10*petlevel);
                         SetCreateHealth(28 + 30*petlevel);
                     }
-                    int32 bonus_dmg = (int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SHADOW)* 0.3f));
+                    int32 bonus_dmg = (int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SHADOW) * 0.3f));
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((petlevel * 4 - petlevel) + bonus_dmg));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((petlevel * 4 + petlevel) + bonus_dmg));
+
+                    break;
+                }
+                case 62982: // Mindbender
+                case 67236: // Mindbender (Sha)
+                {
+                    if (!pInfo)
+                    {
+                        SetCreateMana(28 + 10*petlevel);
+                        SetCreateHealth(28 + 30*petlevel);
+                    }
+
+                    // Mindbender deals 80% more damage than Shadowfiend
+                    int32 bonus_dmg = (int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SHADOW) * 0.3f));
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(((petlevel * 4 - petlevel) + bonus_dmg) * 1.8f));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(((petlevel * 4 + petlevel) + bonus_dmg) * 1.8f));
+
+                    CastSpell(this, 107903, true); // Shadowform visual
+                    CastSpell(this, 28305, true); // Mana Leech (passive)
 
                     break;
                 }

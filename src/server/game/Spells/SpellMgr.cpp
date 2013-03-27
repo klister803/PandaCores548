@@ -3150,6 +3150,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 34433: // Shadowfiend
+                spellInfo->OverrideSpellList.push_back(123040); // Add Mindbender to override spell list of Shadowfiend
+                break;
             case 64904: // Hymn of Hope
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_INCREASE_ENERGY_PERCENT;
                 break;

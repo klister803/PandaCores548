@@ -216,7 +216,7 @@ void SocialMgr::GetFriendInfo(Player* player, uint32 friendGUID, FriendInfo &fri
     friendInfo.Level = 0;
     friendInfo.Class = 0;
 
-    Player* pFriend = ObjectAccessor::FindPlayer(friendGUID);
+    Player* pFriend = ObjectAccessor::FindPlayer(MAKE_NEW_GUID(friendGUID, 0, HIGHGUID_PLAYER));
     if (!pFriend)
         return;
 
