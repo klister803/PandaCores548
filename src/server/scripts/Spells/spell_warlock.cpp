@@ -62,6 +62,39 @@ enum WarlockSpells
     WARLOCK_SOUL_SWAP_AURA                  = 86211,
     WARLOCK_SOUL_SWAP_VISUAL                = 92795,
     WARLOCK_GRIMOIRE_OF_SACRIFICE           = 108503,
+    WARLOCK_METAMORPHOSIS                   = 103958,
+    WARLOCK_DEMONIC_LEAP_JUMP               = 54785,
+};
+
+// Demonic Leap - 109151
+class spell_warl_demonic_leap : public SpellScriptLoader
+{
+    public:
+        spell_warl_demonic_leap() : SpellScriptLoader("spell_warl_demonic_leap") { }
+
+        class spell_warl_demonic_leap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_demonic_leap_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    _player->CastSpell(_player, WARLOCK_METAMORPHOSIS, true);
+                    _player->CastSpell(_player, WARLOCK_DEMONIC_LEAP_JUMP, true);
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_warl_demonic_leap_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_demonic_leap_SpellScript();
+        }
 };
 
 // Called by Summon Felhunter - 691, Summon Succubus - 712, Summon Voidwalker - 697, Summon Imp - 688
@@ -1227,6 +1260,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_demonic_leap();
     new spell_warl_grimoire_of_sacrifice();
     new spell_warl_burning_rush();
     new spell_warl_soul_swap_soulburn();
