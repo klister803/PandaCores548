@@ -73,6 +73,38 @@ enum WarlockSpells
     WARLOCK_SHADOWFLAME                     = 47960,
 };
 
+// Sacrificial Pact - 108416
+class spell_warl_sacrificial_pact : public SpellScriptLoader
+{
+    public:
+        spell_warl_sacrificial_pact() : SpellScriptLoader("spell_warl_sacrificial_pact") { }
+
+        class spell_warl_sacrificial_pact_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_sacrificial_pact_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if(!GetCaster()->GetGuardianPet())
+                        amount = int32(GetCaster()->GetHealth() / 4);
+                    else if(GetCaster()->GetGuardianPet())
+                        amount = int32(GetCaster()->GetGuardianPet()->GetHealth() / 4);
+                }
+            }
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_sacrificial_pact_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_sacrificial_pact_AuraScript();
+        }
+};
+
 // Hand of Gul'Dan - 86040
 class spell_warl_hand_of_guldan : public SpellScriptLoader
 {
@@ -1400,6 +1432,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_sacrificial_pact();
     new spell_warl_hand_of_guldan();
     new spell_warl_twilight_ward_s12();
     new spell_warl_hellfire();
