@@ -365,9 +365,27 @@ class spell_warr_taste_for_blood_aura : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
+                {
                     if (Unit* target = GetHitUnit())
+                    {
+                        // Hotfix (2012-12-11): "Taste for Blood now only stacks 1 time versus other players (was 3 times)."
+                        // Patch 5.1.0 (2012-11-27): Will now stack up to 3 times in PvP. It will continue to stack to 5 in other situations.
+
+                        int32 stacks = 0;
+
+                        if (AuraPtr tasteForBlood = _player->GetAura(WARRIOR_SPELL_TASTE_FOR_BLOOD_DAMAGE_DONE))
+                            stacks = tasteForBlood->GetStackAmount();
+
+                        stacks++;
+
                         if (_player->HasAura(WARRIOR_SPELL_TASTE_FOR_BLOOD_DAMAGE_DONE))
                             _player->RemoveAura(WARRIOR_SPELL_TASTE_FOR_BLOOD_DAMAGE_DONE);
+
+                        if (target->GetTypeId() == TYPEID_PLAYER)
+                            if (stacks > 2)
+                                SetHitDamage(int32(GetHitDamage() / stacks) * 2);
+                    }
+                }
             }
 
             void Register()

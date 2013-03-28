@@ -64,6 +64,47 @@ enum DeathKnightSpells
     DK_SPELL_REAPING                            = 56835,
     DK_SPELL_DESECRATED_GROUND                  = 118009,
     DK_SPELL_DESECRATED_GROUND_IMMUNE           = 115018,
+    DK_SPELL_ASPHYXIATE                         = 108194,
+};
+
+// Called by Strangulate - 47476
+// Asphyxiate - 108194
+class spell_dk_asphyxiate : public SpellScriptLoader
+{
+    public:
+        spell_dk_asphyxiate() : SpellScriptLoader("spell_dk_asphyxiate") { }
+
+        class spell_dk_asphyxiate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_asphyxiate_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasSpell(DK_SPELL_ASPHYXIATE))
+                        {
+                            if (target->HasAura(GetSpellInfo()->Id, _player->GetGUID()))
+                            {
+                                target->RemoveAura(GetSpellInfo()->Id, _player->GetGUID());
+                                _player->CastSpell(target, DK_SPELL_ASPHYXIATE, true);
+                            }
+                        }
+                    }
+                }
+            }
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_asphyxiate_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_asphyxiate_SpellScript();
+        }
 };
 
 // Desecrated ground - 118009
@@ -1763,6 +1804,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_asphyxiate();
     new spell_dk_desecrated_ground();
     new spell_dk_necrotic_strike();
     new spell_dk_icy_touch();

@@ -10000,9 +10000,9 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         AddPct(DoneTotalMod, Mastery);
     }
 
-    // Chaos Bolt - 116858
+    // Chaos Bolt - 116858 and Soul Fire - 6353
     // damage is increased by your critical strike chance
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 116858)
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 116858 && spellProto->Id == 6353)
     {
         float crit_chance;
         crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(spellProto->GetSchoolMask()));
@@ -10894,7 +10894,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         int32 bp = heal / nearbyAllies.size();
 
         for (auto itr : nearbyAllies)
-            CastCustomSpell(itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
+            if (bp > 0)
+                CastCustomSpell(itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
     }
 
     return uint32(std::max(heal, 0.0f));

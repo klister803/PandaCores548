@@ -76,7 +76,7 @@ enum HunterSpells
     HUNTER_SPELL_MASTERS_CALL                    = 62305,
 };
 
-//Barrage damage - 120361
+// Barrage damage - 120361
 class spell_hun_barrage : public SpellScriptLoader
 {
     public:
@@ -89,13 +89,9 @@ class spell_hun_barrage : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                {
                     if (Unit* target = GetHitUnit())
-                    {
-                       if (!target->HasAura(120360))
-                           SetHitDamage(GetHitDamage() / 2);
-                    }
-                }
+                        if (!target->HasAura(120360))
+                            SetHitDamage(GetHitDamage() / 2);
             }
 
             void Register()
