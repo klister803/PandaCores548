@@ -10894,7 +10894,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         int32 bp = heal / nearbyAllies.size();
 
         for (auto itr : nearbyAllies)
-            CastCustomSpell(itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
+            if (bp > 0)
+                CastCustomSpell(itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
     }
 
     return uint32(std::max(heal, 0.0f));
