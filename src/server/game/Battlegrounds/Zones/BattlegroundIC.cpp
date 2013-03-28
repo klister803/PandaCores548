@@ -378,7 +378,7 @@ bool BattlegroundIC::SetupBattleground()
         }
     }
 
-    for (uint8 i = 0; i < MAX_NORMAL_NPCS_SPAWNS; i++)
+    for (uint8 i = 2; i < MAX_NORMAL_NPCS_SPAWNS; i++)
     {
         if (!AddCreature(BG_IC_NpcSpawnlocs[i].entry, BG_IC_NpcSpawnlocs[i].type, BG_IC_NpcSpawnlocs[i].team,
             BG_IC_NpcSpawnlocs[i].x, BG_IC_NpcSpawnlocs[i].y,
@@ -828,12 +828,20 @@ void BattlegroundIC::DestroyGate(Player* player, GameObject* go)
     GateStatus[GetGateIDFromEntry(go->GetEntry())] = BG_IC_GATE_DESTROYED;
     uint32 uws_open = GetWorldStateFromGateEntry(go->GetEntry(), true);
     uint32 uws_close = GetWorldStateFromGateEntry(go->GetEntry(), false);
+
+    uint8 team = player->GetTeamId() == TEAM_ALLIANCE ? TEAM_ALLIANCE: TEAM_HORDE;
+
     if (uws_open)
     {
         UpdateWorldState(uws_close, 0);
         UpdateWorldState(uws_open, 1);
     }
     DoorOpen((player->GetTeamId() == TEAM_ALLIANCE ? BG_IC_GO_HORDE_KEEP_PORTCULLIS : BG_IC_GO_DOODAD_PORTCULLISACTIVE02));
+
+    // Spawn the boss
+    AddCreature(BG_IC_NpcSpawnlocs[team].entry, BG_IC_NpcSpawnlocs[team].type, BG_IC_NpcSpawnlocs[team].team,
+                BG_IC_NpcSpawnlocs[team].x, BG_IC_NpcSpawnlocs[team].y, BG_IC_NpcSpawnlocs[team].z, BG_IC_NpcSpawnlocs[team].o,
+                RESPAWN_ONE_DAY);
 
     uint32 lang_entry = 0;
 
