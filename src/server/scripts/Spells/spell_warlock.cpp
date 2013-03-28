@@ -64,6 +64,38 @@ enum WarlockSpells
     WARLOCK_GRIMOIRE_OF_SACRIFICE           = 108503,
 };
 
+// Sacrificial Pact - 108416
+class spell_warl_sacrificial_pact : public SpellScriptLoader
+{
+    public:
+        spell_warl_sacrificial_pact() : SpellScriptLoader("spell_warl_sacrificial_pact") { }
+
+        class spell_warl_sacrificial_pact_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_sacrificial_pact_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if(!GetCaster()->GetGuardianPet())
+                        amount = int32(GetCaster()->GetHealth() / 4);
+                    else if(GetCaster()->GetGuardianPet())
+                        amount = int32(GetCaster()->GetGuardianPet()->GetHealth() / 4);
+                }
+            }
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_sacrificial_pact_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_sacrificial_pact_AuraScript();
+        }
+};
+
 // Called by Summon Felhunter - 691, Summon Succubus - 712, Summon Voidwalker - 697, Summon Imp - 688
 // Summon Infernal - 1122, Summon Doomguard - 18540 and Summon Felguard - 30146
 // Grimoire of Sacrifice - 108503
@@ -1227,6 +1259,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_sacrificial_pact();
     new spell_warl_grimoire_of_sacrifice();
     new spell_warl_burning_rush();
     new spell_warl_soul_swap_soulburn();
