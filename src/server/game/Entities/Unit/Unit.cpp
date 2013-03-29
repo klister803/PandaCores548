@@ -8059,6 +8059,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        //Shadow infusion
+        case 49572:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 47632)
+                return false;
+
+            break;
+        }
         // Glyph of Mind Spike
         case 33371:
         {
