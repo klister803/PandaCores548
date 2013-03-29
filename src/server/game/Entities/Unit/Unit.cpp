@@ -279,6 +279,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _skipDiff = 0;
 
     m_IsInKillingProcess = false;
+    m_VisibilityUpdScheduled = false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -16994,17 +16995,75 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
                 summon->SetPhaseMask(newPhaseMask, true);
 }
 
+class Unit::AINotifyTask : public BasicEvent
+{
+    Unit& m_owner;
+public:
+    explicit AINotifyTask(Unit * me) : m_owner(*me) {
+        m_owner.m_VisibilityUpdScheduled = true;
+    }
+
+    ~AINotifyTask() {
+        m_owner.m_VisibilityUpdScheduled = false;
+    }
+
+    virtual bool Execute(uint64 , uint32)
+    {
+        JadeCore::AIRelocationNotifier notifier(m_owner);
+        m_owner.VisitNearbyObject(m_owner.GetVisibilityRange(), notifier);
+        return true;
+    }
+
+    static void ScheduleAINotify(Unit* me)
+    {
+        if (!me->m_VisibilityUpdScheduled)
+            me->m_Events.AddEvent(new AINotifyTask(me), me->m_Events.CalculateTime(World::Visibility_AINotifyDelay));
+    }
+};
+
+class Unit::VisibilityUpdateTask : public BasicEvent
+{
+    Unit& m_owner;
+public:
+    explicit VisibilityUpdateTask(Unit * me) : m_owner(*me) {}
+
+    virtual bool Execute(uint64 , uint32)
+    {
+        UpdateVisibility(&m_owner);
+        return true;
+    }
+
+    static void UpdateVisibility(Unit* me)
+     {
+        if (!me->m_sharedVision.empty())
+            for (SharedVisionList::const_iterator it = me->m_sharedVision.begin();it!= me->m_sharedVision.end();)
+            {
+                Player * tmp = *it;
+                ++it;
+                tmp->UpdateVisibilityForPlayer();
+            }
+        if (me->isType(TYPEMASK_PLAYER))
+            ((Player*)me)->UpdateVisibilityForPlayer();
+        me->WorldObject::UpdateObjectVisibility(true);
+    }
+};
+
+void Unit::OnRelocated()
+{
+    if (!m_lastVisibilityUpdPos.IsInDist(this, World::Visibility_RelocationLowerLimit)) {
+        m_lastVisibilityUpdPos = *this;
+        m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(1));
+    }
+    AINotifyTask::ScheduleAINotify(this);
+}
+
 void Unit::UpdateObjectVisibility(bool forced)
 {
-    if (!forced)
-        AddToNotify(NOTIFY_VISIBILITY_CHANGED);
+    if (forced)
+        VisibilityUpdateTask::UpdateVisibility(this);
     else
-    {
-        WorldObject::UpdateObjectVisibility(true);
-        // call MoveInLineOfSight for nearby creatures
-        JadeCore::AIRelocationNotifier notifier(*this);
-        VisitNearbyObject(GetVisibilityRange(), notifier);
-    }
+        m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(1));
+    AINotifyTask::ScheduleAINotify(this);
 }
 
 void Unit::SendMoveKnockBack(Player* player, float speedXY, float speedZ, float vcos, float vsin)

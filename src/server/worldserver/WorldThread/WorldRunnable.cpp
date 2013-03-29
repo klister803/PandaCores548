@@ -32,7 +32,7 @@
 #include "WorldRunnable.h"
 #include "OutdoorPvPMgr.h"
 
-#define WORLD_SLEEP_CONST 50
+#define WORLD_SLEEP_CONST 25
 
 #ifdef _WIN32
 #include "ServiceWin32.h"

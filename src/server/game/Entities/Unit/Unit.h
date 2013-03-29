@@ -2285,6 +2285,8 @@ class Unit : public WorldObject
         // Movement info
         Movement::MoveSpline * movespline;
 
+        void OnRelocated();
+
     protected:
         explicit Unit (bool isWorldObject);
 
@@ -2405,6 +2407,10 @@ class Unit : public WorldObject
         void SetRooted(bool apply);
 
     private:
+        class AINotifyTask;
+        class VisibilityUpdateTask;
+        Position m_lastVisibilityUpdPos;
+        bool m_VisibilityUpdScheduled;
         uint32 m_rootTimes;
 
         uint32 m_state;                                     // Even derived shouldn't modify
