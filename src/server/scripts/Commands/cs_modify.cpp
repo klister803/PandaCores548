@@ -1156,7 +1156,7 @@ public:
 
         target->ModifyCurrency(CURRENCY_TYPE_HONOR_POINTS, amount, true, true);
 
-        handler->PSendSysMessage(LANG_COMMAND_MODIFY_HONOR, handler->GetNameLink(target).c_str(), target->GetCurrency(CURRENCY_TYPE_HONOR_POINTS));
+        handler->PSendSysMessage(LANG_COMMAND_MODIFY_HONOR, handler->GetNameLink(target).c_str(), target->GetCurrency(CURRENCY_TYPE_HONOR_POINTS, false));
 
         return true;
     }

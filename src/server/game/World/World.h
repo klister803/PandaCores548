@@ -227,12 +227,16 @@ enum WorldIntConfigs
     CONFIG_START_PLAYER_LEVEL,
     CONFIG_START_HEROIC_PLAYER_LEVEL,
     CONFIG_START_PLAYER_MONEY,
-    CONFIG_MAX_HONOR_POINTS,
-    CONFIG_START_HONOR_POINTS,
-    CONFIG_MAX_JUSTICE_POINTS,
-    CONFIG_START_JUSTICE_POINTS,
-    CONFIG_MAX_ARENA_POINTS,//todo: remove
-    CONFIG_START_ARENA_POINTS,//todo: remove
+    CONFIG_CURRENCY_START_JUSTICE_POINTS,
+    CONFIG_CURRENCY_MAX_JUSTICE_POINTS,
+    CONFIG_CURRENCY_START_HONOR_POINTS,
+    CONFIG_CURRENCY_MAX_HONOR_POINTS,
+    CONFIG_CURRENCY_START_CONQUEST_POINTS,
+    CONFIG_CURRENCY_CONQUEST_POINTS_WEEK_CAP,
+    CONFIG_CURRENCY_CONQUEST_POINTS_ARENA_REWARD,
+    CONFIG_CURRENCY_RESET_HOUR,
+    CONFIG_CURRENCY_RESET_DAY,
+    CONFIG_CURRENCY_RESET_INTERVAL,
     CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL,
     CONFIG_MAX_RECRUIT_A_FRIEND_BONUS_PLAYER_LEVEL_DIFFERENCE,
     CONFIG_INSTANCE_RESET_TIME_HOUR,
@@ -798,9 +802,11 @@ class World
         void InitDailyQuestResetTime();
         void InitWeeklyQuestResetTime();
         void InitRandomBGResetTime();
+        void InitCurrencyResetTime();
         void ResetDailyQuests();
         void ResetWeeklyQuests();
         void ResetRandomBG();
+        void ResetCurrencyWeekCap();
     private:
         static ACE_Atomic_Op<ACE_Thread_Mutex, bool> m_stopEvent;
         static uint8 m_ExitCode;
@@ -862,6 +868,7 @@ class World
         time_t m_NextDailyQuestReset;
         time_t m_NextWeeklyQuestReset;
         time_t m_NextRandomBGReset;
+        time_t m_NextCurrencyReset;
 
         //Player Queue
         Queue m_QueuedPlayer;

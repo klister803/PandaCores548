@@ -5489,6 +5489,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     if (!target)
                         return false;
 
+                    if (GetEntry() == 62982 || GetEntry() == 67236) // Mindbender
+                    {
+                        target->EnergizeBySpell(target, 123051, int32(1.3f * target->GetPower(POWER_MANA)), POWER_MANA);
+                        return false;
+                    }
+
                     triggered_spell_id = 34650;
                     break;
                 }
@@ -8054,6 +8060,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        //Shadow infusion
+        case 49572:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 47632)
+                return false;
+
+            break;
+        }
         // Glyph of Mind Spike
         case 33371:
         {
@@ -9995,9 +10012,9 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         AddPct(DoneTotalMod, Mastery);
     }
 
-    // Chaos Bolt - 116858
+    // Chaos Bolt - 116858 and Soul Fire - 6353
     // damage is increased by your critical strike chance
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 116858)
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 116858 && spellProto->Id == 6353)
     {
         float crit_chance;
         crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(spellProto->GetSchoolMask()));
@@ -10889,7 +10906,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         int32 bp = heal / nearbyAllies.size();
 
         for (auto itr : nearbyAllies)
-            CastCustomSpell(itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
+            if (bp > 0)
+                CastCustomSpell(itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
     }
 
     return uint32(std::max(heal, 0.0f));

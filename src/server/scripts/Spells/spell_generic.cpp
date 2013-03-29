@@ -3536,6 +3536,37 @@ class spell_gen_darkflight : public SpellScriptLoader
         }
 };
 
+// Blood Fury - 20572 or Blood Fury - 33702
+class spell_gen_blood_fury : public SpellScriptLoader
+{
+    public:
+        spell_gen_blood_fury() : SpellScriptLoader("spell_gen_blood_fury") { }
+
+        class spell_gen_blood_fury_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_gen_blood_fury_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (GetCaster()->HasAura(GetSpellInfo()->Id))
+                {
+                    GetCaster()->RemoveAura(GetSpellInfo()->Id);
+                    GetCaster()->CastSpell(GetCaster(), 33697, true);
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_gen_blood_fury_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_gen_blood_fury_SpellScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -3617,4 +3648,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_running_wild();
     new spell_gen_two_forms();
     new spell_gen_darkflight();
+    new spell_gen_blood_fury();
 }

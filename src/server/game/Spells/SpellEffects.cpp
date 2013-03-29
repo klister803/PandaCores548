@@ -2285,6 +2285,18 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
     if (!m_originalCaster)
         return;
 
+    // Fix Mindbender : Pet entry update function of weapon (sha)
+    if (m_spellInfo->Id == 123040 && m_originalCaster->ToPlayer())
+    {
+        Item* mainItem = m_originalCaster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
+
+        if (mainItem && (mainItem->GetEntry() == 86335 || mainItem->GetEntry() == 86227))
+        {
+            entry = sSpellMgr->GetSpellInfo(132604)->Effects[effIndex].MiscValue;
+            properties = sSummonPropertiesStore.LookupEntry(sSpellMgr->GetSpellInfo(132604)->Effects[effIndex].MiscValueB);
+        }
+    }
+
     int32 duration = m_spellInfo->GetDuration();
     if (Player* modOwner = m_originalCaster->GetSpellModOwner())
         modOwner->ApplySpellMod(m_spellInfo->Id, SPELLMOD_DURATION, duration);
