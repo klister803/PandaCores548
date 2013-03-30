@@ -72,6 +72,36 @@ enum WarlockSpells
     WARLOCK_TWILIGHT_WARD_METAMORPHOSIS_S12 = 131624,
     WARLOCK_SHADOWFLAME                     = 47960,
     WARLOCK_SOUL_LEECH_HEAL                 = 108366,
+    WARLOCK_DARK_REGENERATION               = 108359,
+};
+
+// Dark Regeneration - 108359
+class spell_warl_dark_regeneration : public SpellScriptLoader
+{
+    public:
+        spell_warl_dark_regeneration() : SpellScriptLoader("spell_warl_dark_regeneration") { }
+
+        class spell_warl_dark_regeneration_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_dark_regeneration_AuraScript);
+
+            void HandleApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetTarget())
+                    if (Guardian* pet = GetTarget()->GetGuardianPet())
+                        pet->CastSpell(pet, WARLOCK_DARK_REGENERATION, true);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_warl_dark_regeneration_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_OBS_MOD_HEALTH, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_dark_regeneration_AuraScript();
+        }
 };
 
 // Called by Incinerate - 29722 and Chaos Bolt - 116858
@@ -1472,6 +1502,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_dark_regeneration();
     new spell_warl_soul_leech();
     new spell_warl_sacrificial_pact();
     new spell_warl_hand_of_guldan();
