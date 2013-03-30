@@ -861,24 +861,15 @@ class WorldObject : public Object, public WorldLocation
         virtual void UpdateObjectVisibility(bool forced = true);
         void BuildUpdate(UpdateDataMapType&);
 
-        //relocation and visibility system functions
-        void AddToNotify(uint16 f) { m_notifyflags |= f;}
-        bool isNeedNotify(uint16 f) const { return m_notifyflags & f;}
-        uint16 GetNotifyFlags() const { return m_notifyflags; }
-        bool NotifyExecuted(uint16 f) const { return m_executed_notifies & f;}
-        void SetNotified(uint16 f) { m_executed_notifies |= f;}
-        void ResetAllNotifies() { m_notifyflags = 0; m_executed_notifies = 0; }
-
         bool isActiveObject() const { return m_isActive; }
         void setActive(bool isActiveObject);
         void SetWorldObject(bool apply);
         bool IsPermanentWorldObject() const { return m_isWorldObject; }
         bool IsWorldObject() const;
 
-        template<class NOTIFIER> void VisitNearbyObject(float const& radius, NOTIFIER& notifier) const { if (IsInWorld()) GetMap()->VisitAll(GetPositionX(), GetPositionY(), radius, notifier); }
-        template<class NOTIFIER> void VisitNearbyGridObject(float const& radius, NOTIFIER& notifier) const { if (IsInWorld()) GetMap()->VisitGrid(GetPositionX(), GetPositionY(), radius, notifier); }
-        template<class NOTIFIER> void VisitNearbyWorldObject(float const& radius, NOTIFIER& notifier) const { if (IsInWorld()) GetMap()->VisitWorld(GetPositionX(), GetPositionY(), radius, notifier); }
-
+        template<class NOTIFIER> void VisitNearbyObject(const float &radius, NOTIFIER &notifier, bool loadGrids = false) const { if (IsInWorld()) GetMap()->VisitAll(GetPositionX(), GetPositionY(), radius, notifier, loadGrids); }
+        template<class NOTIFIER> void VisitNearbyGridObject(const float &radius, NOTIFIER &notifier, bool loadGrids = false) const { if (IsInWorld()) GetMap()->VisitGrid(GetPositionX(), GetPositionY(), radius, notifier, loadGrids); }
+        template<class NOTIFIER> void VisitNearbyWorldObject(const float &radius, NOTIFIER &notifier, bool loadGrids = false) const { if (IsInWorld()) GetMap()->VisitWorld(GetPositionX(), GetPositionY(), radius, notifier, loadGrids); }
 #ifdef MAP_BASED_RAND_GEN
         int32 irand(int32 min, int32 max) const     { return int32 (GetMap()->mtRand.randInt(max - min)) + min; }
         uint32 urand(uint32 min, uint32 max) const  { return GetMap()->mtRand.randInt(max - min) + min;}
@@ -938,9 +929,6 @@ class WorldObject : public Object, public WorldLocation
         //uint32 m_mapId;                                     // object at map with map_id
         uint32 m_InstanceId;                                // in map copy with instance id
         uint32 m_phaseMask;                                 // in area phase state
-
-        uint16 m_notifyflags;
-        uint16 m_executed_notifies;
 
         std::list<uint64/* guid*/> _visibilityPlayerList;
 

@@ -2514,7 +2514,6 @@ class Player : public Unit, public GridObject<Player>
         bool IsVisibleGloballyFor(Player* player) const;
 
         void SendInitialVisiblePackets(Unit* target);
-        void UpdateObjectVisibility(bool forced = true);
         void UpdateVisibilityForPlayer();
         void UpdateVisibilityOf(WorldObject* target);
         void UpdateTriggerVisibility();

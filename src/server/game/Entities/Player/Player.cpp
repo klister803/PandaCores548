@@ -5995,6 +5995,7 @@ void Player::RepopAtGraveyard()
     if (ClosestGrave)
     {
         TeleportTo(ClosestGrave->map_id, ClosestGrave->x, ClosestGrave->y, ClosestGrave->z, GetOrientation());
+        UpdateObjectVisibility();
         if (isDead())                                        // not send if alive, because it used in TeleportTo()
         {
             WorldPacket data(SMSG_DEATH_RELEASE_LOC, 4*4);  // show spirit healer position on minimap
@@ -23249,22 +23250,11 @@ template void Player::UpdateVisibilityOf(Corpse*        target, UpdateData& data
 template void Player::UpdateVisibilityOf(GameObject*    target, UpdateData& data, std::set<Unit*>& visibleNow);
 template void Player::UpdateVisibilityOf(DynamicObject* target, UpdateData& data, std::set<Unit*>& visibleNow);
 
-void Player::UpdateObjectVisibility(bool forced)
-{
-    if (!forced)
-        AddToNotify(NOTIFY_VISIBILITY_CHANGED);
-    else
-    {
-        Unit::UpdateObjectVisibility(true);
-        UpdateVisibilityForPlayer();
-    }
-}
-
 void Player::UpdateVisibilityForPlayer()
 {
     // updates visibility of all objects around point of view for current player
     JadeCore::VisibleNotifier notifier(*this);
-    m_seer->VisitNearbyObject(GetSightRange(), notifier);
+    m_seer->VisitNearbyObject(GetSightRange(), notifier, true);
     notifier.SendToSelf();   // send gathered data
 }
 

@@ -561,99 +561,7 @@ void Map::Update(const uint32 t_diff)
 
     MoveAllCreaturesInMoveList();
 
-    if (!m_mapRefManager.isEmpty() || !m_activeNonPlayers.empty())
-        ProcessRelocationNotifies(t_diff);
-
     sScriptMgr->OnMapUpdate(this, t_diff);
-}
-
-struct ResetNotifier
-{
-    template<class T>inline void resetNotify(GridRefManager<T> &m)
-    {
-        for (typename GridRefManager<T>::iterator iter=m.begin(); iter != m.end(); ++iter)
-            iter->getSource()->ResetAllNotifies();
-    }
-    template<class T> void Visit(GridRefManager<T> &) {}
-    void Visit(CreatureMapType &m) { resetNotify<Creature>(m);}
-    void Visit(PlayerMapType &m) { resetNotify<Player>(m);}
-};
-
-void Map::ProcessRelocationNotifies(const uint32 diff)
-{
-    for (GridRefManager<NGridType>::iterator i = GridRefManager<NGridType>::begin(); i != GridRefManager<NGridType>::end(); ++i)
-    {
-        NGridType *grid = i->getSource();
-
-        if (grid->GetGridState() != GRID_STATE_ACTIVE)
-            continue;
-
-        grid->getGridInfoRef()->getRelocationTimer().TUpdate(diff);
-        if (!grid->getGridInfoRef()->getRelocationTimer().TPassed())
-            continue;
-
-        uint32 gx = grid->getX(), gy = grid->getY();
-
-        CellCoord cell_min(gx*MAX_NUMBER_OF_CELLS, gy*MAX_NUMBER_OF_CELLS);
-        CellCoord cell_max(cell_min.x_coord + MAX_NUMBER_OF_CELLS, cell_min.y_coord+MAX_NUMBER_OF_CELLS);
-
-        for (uint32 x = cell_min.x_coord; x < cell_max.x_coord; ++x)
-        {
-            for (uint32 y = cell_min.y_coord; y < cell_max.y_coord; ++y)
-            {
-                uint32 cell_id = (y * TOTAL_NUMBER_OF_CELLS_PER_MAP) + x;
-                if (!isCellMarked(cell_id))
-                    continue;
-
-                CellCoord pair(x, y);
-                Cell cell(pair);
-                cell.SetNoCreate();
-
-                JadeCore::DelayedUnitRelocation cell_relocation(cell, pair, *this, MAX_VISIBILITY_DISTANCE);
-                TypeContainerVisitor<JadeCore::DelayedUnitRelocation, GridTypeMapContainer  > grid_object_relocation(cell_relocation);
-                TypeContainerVisitor<JadeCore::DelayedUnitRelocation, WorldTypeMapContainer > world_object_relocation(cell_relocation);
-                Visit(cell, grid_object_relocation);
-                Visit(cell, world_object_relocation);
-            }
-        }
-    }
-
-    ResetNotifier reset;
-    TypeContainerVisitor<ResetNotifier, GridTypeMapContainer >  grid_notifier(reset);
-    TypeContainerVisitor<ResetNotifier, WorldTypeMapContainer > world_notifier(reset);
-    for (GridRefManager<NGridType>::iterator i = GridRefManager<NGridType>::begin(); i != GridRefManager<NGridType>::end(); ++i)
-    {
-        NGridType *grid = i->getSource();
-
-        if (grid->GetGridState() != GRID_STATE_ACTIVE)
-            continue;
-
-        if (!grid->getGridInfoRef()->getRelocationTimer().TPassed())
-            continue;
-
-        grid->getGridInfoRef()->getRelocationTimer().TReset(diff, m_VisibilityNotifyPeriod);
-
-        uint32 gx = grid->getX(), gy = grid->getY();
-
-        CellCoord cell_min(gx*MAX_NUMBER_OF_CELLS, gy*MAX_NUMBER_OF_CELLS);
-        CellCoord cell_max(cell_min.x_coord + MAX_NUMBER_OF_CELLS, cell_min.y_coord+MAX_NUMBER_OF_CELLS);
-
-        for (uint32 x = cell_min.x_coord; x < cell_max.x_coord; ++x)
-        {
-            for (uint32 y = cell_min.y_coord; y < cell_max.y_coord; ++y)
-            {
-                uint32 cell_id = (y * TOTAL_NUMBER_OF_CELLS_PER_MAP) + x;
-                if (!isCellMarked(cell_id))
-                    continue;
-
-                CellCoord pair(x, y);
-                Cell cell(pair);
-                cell.SetNoCreate();
-                Visit(cell, grid_notifier);
-                Visit(cell, world_notifier);
-            }
-        }
-    }
 }
 
 void Map::RemovePlayerFromMap(Player* player, bool remove)
@@ -725,7 +633,7 @@ void Map::PlayerRelocation(Player* player, float x, float y, float z, float orie
         AddToGrid(player, new_cell);
     }
 
-    player->UpdateObjectVisibility(false);
+    player->OnRelocated();
 }
 
 void Map::CreatureRelocation(Creature* creature, float x, float y, float z, float ang, bool respawnRelocationOnFail)
@@ -758,7 +666,7 @@ void Map::CreatureRelocation(Creature* creature, float x, float y, float z, floa
         creature->Relocate(x, y, z, ang);
         if (creature->IsVehicle())
             creature->GetVehicleKit()->RelocatePassengers();
-        creature->UpdateObjectVisibility(false);
+        creature->OnRelocated();
         RemoveCreatureFromMoveList(creature);
     }
 
