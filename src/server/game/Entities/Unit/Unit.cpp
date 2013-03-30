@@ -8060,7 +8060,15 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
-        //Shadow infusion
+        // Sudden Doom
+        case 49530:
+        {
+            if (!roll_chance_i(15))
+                return false;
+
+            break;
+        }
+        // Shadow infusion
         case 49572:
         {
             if (!procSpell)
