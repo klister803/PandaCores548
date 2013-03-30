@@ -1132,16 +1132,16 @@ class spell_pri_cascade_second : public SpellScriptLoader
         {
             PrepareSpellScript(spell_pri_cascade_second_SpellScript);
 
-            std::list<Unit*> checkAuras;
-            std::list<Unit*> targetList;
-            int32 affectedUnits;
-
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
+                        std::list<Unit*> checkAuras;
+                        std::list<Unit*> targetList;
+                        int32 affectedUnits;
+
                         affectedUnits = 0;
 
                         _player->GetAttackableUnitListInRange(targetList, 40.0f);
@@ -1158,7 +1158,8 @@ class spell_pri_cascade_second : public SpellScriptLoader
                         if (affectedUnits >= 15)
                             return;
 
-                        checkAuras = targetList;
+                        for (auto itr : targetList)
+                            checkAuras.push_back(itr);
 
                         for (auto itr : checkAuras)
                         {
