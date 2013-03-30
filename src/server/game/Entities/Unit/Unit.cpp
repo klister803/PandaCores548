@@ -4825,6 +4825,52 @@ void Unit::RemoveAllDynObjects()
         m_dynObj.front()->Remove();
 }
 
+void Unit::_RegisterAreaTriggerObject(AreaTriggerObject* areaTriggerObj)
+{
+    m_areaTriggerObj.push_back(areaTriggerObj);
+}
+
+void Unit::_UnregisterAreaTriggerObject(AreaTriggerObject* areaTriggerObj)
+{
+    m_areaTriggerObj.remove(areaTriggerObj);
+}
+
+AreaTriggerObject* Unit::GetAreaTriggerObject(uint32 spellId)
+{
+    if (m_areaTriggerObj.empty())
+        return NULL;
+    for (AreaTriggerObjectList::const_iterator i = m_areaTriggerObj.begin(); i != m_areaTriggerObj.end();++i)
+    {
+        AreaTriggerObject* areaTriggerObj = *i;
+        if (areaTriggerObj->GetSpellId() == spellId)
+            return areaTriggerObj;
+    }
+    return NULL;
+}
+
+void Unit::RemoveAreaTriggerObject(uint32 spellId)
+{
+    if (m_areaTriggerObj.empty())
+        return;
+    for (AreaTriggerObjectList::iterator i = m_areaTriggerObj.begin(); i != m_areaTriggerObj.end();)
+    {
+        AreaTriggerObject* areaTriggerObj = *i;
+        if (areaTriggerObj->GetSpellId() == spellId)
+        {
+            areaTriggerObj->Remove();
+            i = m_areaTriggerObj.begin();
+        }
+        else
+            ++i;
+    }
+}
+
+void Unit::RemoveAllAreaTriggerObjects()
+{
+    while (!m_areaTriggerObj.empty())
+        m_areaTriggerObj.front()->Remove();
+}
+
 GameObject* Unit::GetGameObject(uint32 spellId) const
 {
     for (GameObjectList::const_iterator i = m_gameObj.begin(); i != m_gameObj.end(); ++i)

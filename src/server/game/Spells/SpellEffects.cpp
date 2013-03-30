@@ -66,6 +66,7 @@
 #include "InstanceScript.h"
 #include "Guild.h"
 #include "GuildMgr.h"
+#include "AreaTriggerObject.h"
 
 pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
 {
@@ -248,7 +249,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //176 SPELL_EFFECT_176
     &Spell::EffectNULL,                                     //177 SPELL_EFFECT_177
     &Spell::EffectUnused,                                   //178 SPELL_EFFECT_178 unused
-    &Spell::EffectNULL,                                     //179 SPELL_EFFECT_CREATE_AREATRIGGER
+    &Spell::EffectCreateAreatrigger,                        //179 SPELL_EFFECT_CREATE_AREATRIGGER
     &Spell::EffectUnused,                                   //180 SPELL_EFFECT_180 unused
     &Spell::EffectUnlearnTalent,                            //181 SPELL_EFFECT_UNLEARN_TALENT
     &Spell::EffectNULL,                                     //182 SPELL_EFFECT_182
@@ -6234,6 +6235,38 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
 
     plr->SaveToDB();
     plr->SendTalentsInfoData(false);
+}
+
+void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
+{
+    /*if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
+        return;
+
+    if (!m_spellAura)
+    {
+        // Caster not in world, might be spell triggered from aura removal
+        if (!m_caster->IsInWorld())
+            return;
+
+        AreaTriggerObject* areaTriggerOjb = new AreaTriggerObject(false);
+        if (!areaTriggerOjb->CreateAreaTriggerObject(sObjectMgr->GenerateLowGuid(HIGHGUID_AREATRIGGEROBJECT), m_caster, m_spellInfo->Id, m_spellInfo->SpellVisual[effIndex], *destTarget))
+        {
+            delete areaTriggerOjb;
+            return;
+        }
+
+        AuraPtr aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, areaTriggerOjb, m_caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]);
+        if (aura != NULLAURA)
+        {
+            m_spellAura = aura;
+            m_spellAura->_RegisterForTargets();
+        }
+        else
+            return;
+    }
+
+    ASSERT(m_spellAura->GetAreaTriggerobjOwner());
+    m_spellAura->_ApplyEffectForTargets(effIndex);*/
 }
 
 int32 Spell::CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier)

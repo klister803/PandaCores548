@@ -23,6 +23,7 @@
 #include "Vehicle.h"
 #include "GameObject.h"
 #include "DynamicObject.h"
+#include "AreaTriggerObject.h"
 #include "Corpse.h"
 #include "World.h"
 #include "CellImpl.h"
@@ -232,8 +233,10 @@ void ObjectGridCleaner::Visit(GridRefManager<T> &m)
 template void ObjectGridUnloader::Visit(CreatureMapType &);
 template void ObjectGridUnloader::Visit(GameObjectMapType &);
 template void ObjectGridUnloader::Visit(DynamicObjectMapType &);
+template void ObjectGridUnloader::Visit(AreaTriggerObjectMapType &);
 template void ObjectGridUnloader::Visit(CorpseMapType &);
 template void ObjectGridCleaner::Visit(CreatureMapType &);
 template void ObjectGridCleaner::Visit<GameObject>(GameObjectMapType &);
 template void ObjectGridCleaner::Visit<DynamicObject>(DynamicObjectMapType &);
+template void ObjectGridCleaner::Visit<AreaTriggerObject>(AreaTriggerObjectMapType &);
 template void ObjectGridCleaner::Visit<Corpse>(CorpseMapType &);

@@ -31,6 +31,7 @@
 #include "GossipDef.h"
 #include "CreatureAI.h"
 #include "SpellAuraEffects.h"
+#include "AreaTriggerObject.h"
 
 // This is the global static registry of scripts.
 template<class TScript>
@@ -1147,6 +1148,14 @@ void ScriptMgr::OnDynamicObjectUpdate(DynamicObject* dynobj, uint32 diff)
         itr->second->OnUpdate(dynobj, diff);
 }
 
+void ScriptMgr::OnAreaTriggerObjectUpdate(AreaTriggerObject* areaTriggerObj, uint32 diff)
+{
+    ASSERT(areaTriggerObj);
+
+    FOR_SCRIPTS(AreaTriggerObjectScript, itr, end)
+        itr->second->OnUpdate(areaTriggerObj, diff);
+}
+
 void ScriptMgr::OnAddPassenger(Transport* transport, Player* player)
 {
     ASSERT(transport);
@@ -1547,6 +1556,12 @@ DynamicObjectScript::DynamicObjectScript(const char* name)
     : ScriptObject(name)
 {
     ScriptRegistry<DynamicObjectScript>::AddScript(this);
+}
+
+AreaTriggerObjectScript::AreaTriggerObjectScript(const char* name)
+    : ScriptObject(name)
+{
+    ScriptRegistry<AreaTriggerObjectScript>::AddScript(this);
 }
 
 TransportScript::TransportScript(const char* name)

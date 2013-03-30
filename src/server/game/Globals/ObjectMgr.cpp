@@ -237,7 +237,7 @@ bool SpellClickInfo::IsFitToRequirements(Unit const* clicker, Unit const* clicke
 ObjectMgr::ObjectMgr(): _auctionId(1), _equipmentSetGuid(1),
     _itemTextId(1), _mailId(1), _hiPetNumber(1), _voidItemId(1), _hiCharGuid(1),
     _hiCreatureGuid(1), _hiPetGuid(1), _hiVehicleGuid(1), _hiItemGuid(1),
-    _hiGoGuid(1), _hiDoGuid(1), _hiCorpseGuid(1), _hiMoTransGuid(1), _skipUpdateCount(1)
+    _hiGoGuid(1), _hiDoGuid(1), _hiCorpseGuid(1), _hiMoTransGuid(1), _skipUpdateCount(1), _hiAreaTriggerGuid(1)
 {}
 
 ObjectMgr::~ObjectMgr()
@@ -6146,6 +6146,11 @@ uint32 ObjectMgr::GenerateLowGuid(HighGuid guidhigh)
         {
             ASSERT(_hiCorpseGuid < 0xFFFFFFFE && "Corpse guid overflow!");
             return _hiCorpseGuid++;
+        }
+        case HIGHGUID_AREATRIGGEROBJECT:
+        {
+            ASSERT(_hiAreaTriggerGuid < 0xFFFFFFFE && "AreaTriggerObject guid overflow!");
+            return _hiAreaTriggerGuid++;
         }
         case HIGHGUID_DYNAMICOBJECT:
         {

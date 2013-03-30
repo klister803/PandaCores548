@@ -117,6 +117,11 @@ DynamicObject* ObjectAccessor::GetDynamicObject(WorldObject const& u, uint64 gui
     return GetObjectInMap(guid, u.GetMap(), (DynamicObject*)NULL);
 }
 
+AreaTriggerObject* ObjectAccessor::GetAreaTriggerObject(WorldObject const& u, uint64 guid)
+{
+    return GetObjectInMap(guid, u.GetMap(), (AreaTriggerObject*)NULL);
+}
+
 Unit* ObjectAccessor::GetUnit(WorldObject const& u, uint64 guid)
 {
     return GetObjectInMap(guid, u.GetMap(), (Unit*)NULL);
@@ -405,6 +410,7 @@ template class HashMapHolder<Player>;
 template class HashMapHolder<Pet>;
 template class HashMapHolder<GameObject>;
 template class HashMapHolder<DynamicObject>;
+template class HashMapHolder<AreaTriggerObject>;
 template class HashMapHolder<Creature>;
 template class HashMapHolder<Corpse>;
 template class HashMapHolder<Transport>;
@@ -415,4 +421,5 @@ template Creature* ObjectAccessor::GetObjectInWorld<Creature>(uint32 mapid, floa
 template Corpse* ObjectAccessor::GetObjectInWorld<Corpse>(uint32 mapid, float x, float y, uint64 guid, Corpse* /*fake*/);
 template GameObject* ObjectAccessor::GetObjectInWorld<GameObject>(uint32 mapid, float x, float y, uint64 guid, GameObject* /*fake*/);
 template DynamicObject* ObjectAccessor::GetObjectInWorld<DynamicObject>(uint32 mapid, float x, float y, uint64 guid, DynamicObject* /*fake*/);
+template AreaTriggerObject* ObjectAccessor::GetObjectInWorld<AreaTriggerObject>(uint32 mapid, float x, float y, uint64 guid, AreaTriggerObject* /*fake*/);
 template Transport* ObjectAccessor::GetObjectInWorld<Transport>(uint32 mapid, float x, float y, uint64 guid, Transport* /*fake*/);

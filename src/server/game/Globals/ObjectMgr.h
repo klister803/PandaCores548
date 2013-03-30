@@ -25,6 +25,7 @@
 #include "Creature.h"
 #include "Player.h"
 #include "DynamicObject.h"
+#include "AreaTriggerObject.h"
 #include "GameObject.h"
 #include "Corpse.h"
 #include "QuestDef.h"
@@ -1200,6 +1201,7 @@ class ObjectMgr
         uint32 _hiDoGuid;
         uint32 _hiCorpseGuid;
         uint32 _hiMoTransGuid;
+        uint32 _hiAreaTriggerGuid;
 
         QuestMap _questTemplates;
 

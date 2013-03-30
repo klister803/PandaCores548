@@ -56,19 +56,21 @@ enum TypeMask
     TYPEMASK_GAMEOBJECT     = 0x0020,
     TYPEMASK_DYNAMICOBJECT  = 0x0040,
     TYPEMASK_CORPSE         = 0x0080,
+    TYPEMASK_AREATRIGGER    = 0x0100,
     TYPEMASK_SEER           = TYPEMASK_UNIT | TYPEMASK_DYNAMICOBJECT
 };
 
 enum TypeID
 {
-    TYPEID_OBJECT        = 0,
-    TYPEID_ITEM          = 1,
-    TYPEID_CONTAINER     = 2,
-    TYPEID_UNIT          = 3,
-    TYPEID_PLAYER        = 4,
-    TYPEID_GAMEOBJECT    = 5,
-    TYPEID_DYNAMICOBJECT = 6,
-    TYPEID_CORPSE        = 7
+    TYPEID_OBJECT               = 0,
+    TYPEID_ITEM                 = 1,
+    TYPEID_CONTAINER            = 2,
+    TYPEID_UNIT                 = 3,
+    TYPEID_PLAYER               = 4,
+    TYPEID_GAMEOBJECT           = 5,
+    TYPEID_DYNAMICOBJECT        = 6,
+    TYPEID_CORPSE               = 7,
+    TYPEID_AREATRIGGEROBJECT    = 8
 };
 
 #define NUM_CLIENT_OBJECT_TYPES             8
@@ -334,6 +336,9 @@ class Object
 
         DynamicObject* ToDynObject() { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject*>(this); else return NULL; }
         DynamicObject const* ToDynObject() const { if (GetTypeId() == TYPEID_DYNAMICOBJECT) return reinterpret_cast<DynamicObject const*>(this); else return NULL; }
+
+        AreaTriggerObject* ToAreaTriggerObject() { if (GetTypeId() == TYPEID_AREATRIGGEROBJECT) return reinterpret_cast<AreaTriggerObject*>(this); else return NULL; }
+        AreaTriggerObject const* ToAreaTriggerObject() const { if (GetTypeId() == TYPEID_AREATRIGGEROBJECT) return reinterpret_cast<AreaTriggerObject const*>(this); else return NULL; }
 
     protected:
         Object();

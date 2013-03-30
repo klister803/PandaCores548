@@ -26,6 +26,7 @@
 #include "Corpse.h"
 #include "Object.h"
 #include "DynamicObject.h"
+#include "AreaTriggerObject.h"
 #include "GameObject.h"
 #include "Player.h"
 #include "Unit.h"
@@ -58,6 +59,7 @@ namespace JadeCore
         void Visit(PlayerMapType &);
         void Visit(CreatureMapType &);
         void Visit(DynamicObjectMapType &);
+        void Visit(AreaTriggerObjectMapType &);
     };
 
     struct PlayerRelocationNotifier : public VisibleNotifier
@@ -116,6 +118,7 @@ namespace JadeCore
         void Visit(CreatureMapType &m){ updateObjects<Creature>(m); }
         void Visit(GameObjectMapType &m) { updateObjects<GameObject>(m); }
         void Visit(DynamicObjectMapType &m) { updateObjects<DynamicObject>(m); }
+        void Visit(AreaTriggerObjectMapType &m) { updateObjects<AreaTriggerObject>(m); }
         void Visit(CorpseMapType &m) { updateObjects<Corpse>(m); }
     };
 
@@ -182,6 +185,7 @@ namespace JadeCore
         void Visit(CreatureMapType &m);
         void Visit(CorpseMapType &m);
         void Visit(DynamicObjectMapType &m);
+        void Visit(AreaTriggerObjectMapType &m);
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
@@ -202,6 +206,7 @@ namespace JadeCore
         void Visit(CreatureMapType &m);
         void Visit(CorpseMapType &m);
         void Visit(DynamicObjectMapType &m);
+        void Visit(AreaTriggerObjectMapType &m);
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
@@ -222,6 +227,7 @@ namespace JadeCore
         void Visit(CorpseMapType &m);
         void Visit(GameObjectMapType &m);
         void Visit(DynamicObjectMapType &m);
+        void Visit(AreaTriggerObjectMapType &m);
 
         template<class NOT_INTERESTED> void Visit(GridRefManager<NOT_INTERESTED> &) {}
     };
@@ -276,6 +282,15 @@ namespace JadeCore
             if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_DYNAMICOBJECT))
                 return;
             for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
+                if (itr->getSource()->InSamePhase(i_phaseMask))
+                    i_do(itr->getSource());
+        }
+
+        void Visit(AreaTriggerObjectMapType &m)
+        {
+            if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_AREATRIGGEROBJECT))
+                return;
+            for (AreaTriggerObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
                 if (itr->getSource()->InSamePhase(i_phaseMask))
                     i_do(itr->getSource());
         }

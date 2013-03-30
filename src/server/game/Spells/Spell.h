@@ -28,6 +28,7 @@ class Unit;
 class Player;
 class GameObject;
 class DynamicObject;
+class AreaTriggerObject;
 class WorldObject;
 class Aura;
 class SpellScript;
@@ -341,6 +342,7 @@ class Spell
         void EffectGiveCurrency(SpellEffIndex effIndex);
         void EffectUnlearnTalent(SpellEffIndex effIndex);
         void EffectBuyGuilkBankTab(SpellEffIndex effIndex);
+        void EffectCreateAreatrigger(SpellEffIndex effIndex);
         int32 CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier);
 
         typedef std::set<AuraPtr> UsedSpellMods;

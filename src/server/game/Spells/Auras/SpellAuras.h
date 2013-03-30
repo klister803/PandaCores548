@@ -33,6 +33,7 @@ struct SpellProcEntry;
 class AuraEffect;
 class Aura;
 class DynamicObject;
+class AreaTriggerObject;
 class AuraScript;
 class ProcInfo;
 
@@ -106,6 +107,7 @@ class Aura : public std::enable_shared_from_this<Aura>
         WorldObject* GetOwner() const { return m_owner; }
         Unit* GetUnitOwner() const { ASSERT(GetType() == UNIT_AURA_TYPE); return (Unit*)m_owner; }
         DynamicObject* GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return (DynamicObject*)m_owner; }
+        AreaTriggerObject* GetAreaTriggerobjOwner() const { ASSERT(GetType() == AREATRIGGEROBJ_AURA_TYPE); return (AreaTriggerObject*)m_owner; }
 
         AuraObjectType GetType() const;
 
@@ -282,5 +284,14 @@ class DynObjAura : public Aura
         void Remove(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
 
         void FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster);
+};
+
+class AreaTriggerObjAura : public Aura
+{
+    friend AuraPtr Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* owner, Unit* caster, SpellPowerEntry const* spellPowerData, int32 *baseAmount, Item* castItem, uint64 casterGUID);
+    protected:
+        explicit AreaTriggerObjAura(SpellInfo const* spellproto, uint32 effMask, WorldObject* owner, Unit* caster, SpellPowerEntry const* spellPowerData, int32 *baseAmount, Item* castItem, uint64 casterGUID);
+    public:
+        void Remove(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
 };
 #endif

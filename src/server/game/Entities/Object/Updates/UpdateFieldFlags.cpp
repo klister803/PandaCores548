@@ -2179,6 +2179,23 @@ uint32 DynamicObjectUpdateFieldFlags[DYNAMICOBJECT_END] =
     UF_FLAG_PUBLIC,                                         // DYNAMICOBJECT_CASTTIME
 };
 
+
+uint32 AreaTriggerObjectUpdateFieldFlags[AREATRIGGER_END] =
+{
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_GUID
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_GUID+1
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_DATA+1
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_TYPE
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_ENTRY
+    UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_SCALE_X
+    UF_FLAG_PUBLIC,                                         // AREATRIGGER_CASTER
+    UF_FLAG_PUBLIC,                                         // AREATRIGGER_SPELLID
+    UF_FLAG_PUBLIC,                                         // AREATRIGGER_SPELLVISUALID
+    UF_FLAG_PUBLIC,                                         // AREATRIGGER_DURATION
+    UF_FLAG_PUBLIC,                                         // AREATRIGGER_END
+};
+
 uint32 CorpseUpdateFieldFlags[CORPSE_END] =
 {
     UF_FLAG_PUBLIC,                                         // OBJECT_FIELD_GUID
