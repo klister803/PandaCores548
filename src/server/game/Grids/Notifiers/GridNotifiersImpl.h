@@ -163,28 +163,6 @@ void JadeCore::WorldObjectSearcher<Check>::Visit(DynamicObjectMapType &m)
     }
 }
 
-template<class Check>
-void JadeCore::WorldObjectSearcher<Check>::Visit(AreaTriggerObjectMapType &m)
-{
-    if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_AREATRIGGEROBJECT))
-        return;
-
-    // already found
-    if (i_object)
-        return;
-
-    for (AreaTriggerObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-        {
-            i_object = itr->getSource();
-            return;
-        }
-    }
-}
 
 template<class Check>
 void JadeCore::WorldObjectLastSearcher<Check>::Visit(GameObjectMapType &m)
@@ -267,22 +245,6 @@ void JadeCore::WorldObjectLastSearcher<Check>::Visit(DynamicObjectMapType &m)
 }
 
 template<class Check>
-void JadeCore::WorldObjectLastSearcher<Check>::Visit(AreaTriggerObjectMapType &m)
-{
-    if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_AREATRIGGEROBJECT))
-        return;
-
-    for (AreaTriggerObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-    {
-        if (!itr->getSource()->InSamePhase(i_phaseMask))
-            continue;
-
-        if (i_check(itr->getSource()))
-            i_object = itr->getSource();
-    }
-}
-
-template<class Check>
 void JadeCore::WorldObjectListSearcher<Check>::Visit(PlayerMapType &m)
 {
     if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_PLAYER))
@@ -333,17 +295,6 @@ void JadeCore::WorldObjectListSearcher<Check>::Visit(DynamicObjectMapType &m)
         return;
 
     for (DynamicObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
-        if (i_check(itr->getSource()))
-            i_objects.push_back(itr->getSource());
-}
-
-template<class Check>
-void JadeCore::WorldObjectListSearcher<Check>::Visit(AreaTriggerObjectMapType &m)
-{
-    if (!(i_mapTypeMask & GRID_MAP_TYPE_MASK_AREATRIGGEROBJECT))
-        return;
-
-    for (AreaTriggerObjectMapType::iterator itr=m.begin(); itr != m.end(); ++itr)
         if (i_check(itr->getSource()))
             i_objects.push_back(itr->getSource());
 }

@@ -40,7 +40,6 @@ class ObjectGridLoader
         void Visit(CreatureMapType &m);
         void Visit(CorpseMapType &) const {}
         void Visit(DynamicObjectMapType&) const {}
-        void Visit(AreaTriggerObjectMapType&) const {}
 
         void LoadN(void);
 

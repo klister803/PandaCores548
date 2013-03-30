@@ -333,7 +333,6 @@ class Creature;
 class Spell;
 class SpellInfo;
 class DynamicObject;
-class AreaTriggerObject;
 class GameObject;
 class Item;
 class Pet;
@@ -2052,13 +2051,6 @@ class Unit : public WorldObject
         void RemoveDynObject(uint32 spellId);
         void RemoveAllDynObjects();
 
-        // AreaTriggerObject management
-        void _RegisterAreaTriggerObject(AreaTriggerObject* areaTriggerObj);
-        void _UnregisterAreaTriggerObject(AreaTriggerObject* areaTriggerObj);
-        AreaTriggerObject* GetAreaTriggerObject(uint32 spellId);
-        void RemoveAreaTriggerObject(uint32 spellId);
-        void RemoveAllAreaTriggerObjects();
-
         GameObject* GetGameObject(uint32 spellId) const;
         void AddGameObject(GameObject* gameObj);
         void RemoveGameObject(GameObject* gameObj, bool del);
@@ -2320,9 +2312,6 @@ class Unit : public WorldObject
 
         typedef std::list<DynamicObject*> DynObjectList;
         DynObjectList m_dynObj;
-
-        typedef std::list<AreaTriggerObject*> AreaTriggerObjectList;
-        AreaTriggerObjectList m_areaTriggerObj;
 
         typedef std::list<GameObject*> GameObjectList;
         GameObjectList m_gameObj;

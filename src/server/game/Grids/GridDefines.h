@@ -27,7 +27,6 @@
 class Corpse;
 class Creature;
 class DynamicObject;
-class AreaTriggerObject;
 class GameObject;
 class Pet;
 class Player;
@@ -57,25 +56,23 @@ class Player;
 #define MAP_HALFSIZE            (MAP_SIZE/2)
 
 // Creature used instead pet to simplify *::Visit templates (not required duplicate code for Creature->Pet case)
-typedef TYPELIST_5(Player, Creature/*pets*/, Corpse/*resurrectable*/, DynamicObject/*farsight target*/, AreaTriggerObject) AllWorldObjectTypes;
-typedef TYPELIST_5(GameObject, Creature/*except pets*/, DynamicObject, Corpse/*Bones*/, AreaTriggerObject) AllGridObjectTypes;
+typedef TYPELIST_4(Player, Creature/*pets*/, Corpse/*resurrectable*/, DynamicObject/*farsight target*/) AllWorldObjectTypes;
+typedef TYPELIST_4(GameObject, Creature/*except pets*/, DynamicObject, Corpse/*Bones*/) AllGridObjectTypes;
 
-typedef GridRefManager<Corpse>              CorpseMapType;
-typedef GridRefManager<Creature>            CreatureMapType;
-typedef GridRefManager<DynamicObject>       DynamicObjectMapType;
-typedef GridRefManager<AreaTriggerObject>   AreaTriggerObjectMapType;
-typedef GridRefManager<GameObject>          GameObjectMapType;
-typedef GridRefManager<Player>              PlayerMapType;
+typedef GridRefManager<Corpse>          CorpseMapType;
+typedef GridRefManager<Creature>        CreatureMapType;
+typedef GridRefManager<DynamicObject>   DynamicObjectMapType;
+typedef GridRefManager<GameObject>      GameObjectMapType;
+typedef GridRefManager<Player>          PlayerMapType;
 
 enum GridMapTypeMask
 {
-    GRID_MAP_TYPE_MASK_CORPSE               = 0x01,
-    GRID_MAP_TYPE_MASK_CREATURE             = 0x02,
-    GRID_MAP_TYPE_MASK_DYNAMICOBJECT        = 0x04,
-    GRID_MAP_TYPE_MASK_GAMEOBJECT           = 0x08,
-    GRID_MAP_TYPE_MASK_PLAYER               = 0x10,
-    GRID_MAP_TYPE_MASK_AREATRIGGEROBJECT    = 0x20,
-    GRID_MAP_TYPE_MASK_ALL                  = 0x3F
+    GRID_MAP_TYPE_MASK_CORPSE           = 0x01,
+    GRID_MAP_TYPE_MASK_CREATURE         = 0x02,
+    GRID_MAP_TYPE_MASK_DYNAMICOBJECT    = 0x04,
+    GRID_MAP_TYPE_MASK_GAMEOBJECT       = 0x08,
+    GRID_MAP_TYPE_MASK_PLAYER           = 0x10,
+    GRID_MAP_TYPE_MASK_ALL              = 0x1F
 };
 
 typedef Grid<Player, AllWorldObjectTypes, AllGridObjectTypes> GridType;

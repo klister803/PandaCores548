@@ -840,11 +840,11 @@ void World::LoadConfigSettings(bool reload)
         sLog->outError(LOG_FILTER_SERVER_LOADING, "Currency.StartConquestPoints (%i) must be >= 0, set to default 0.", m_int_configs[CONFIG_CURRENCY_START_CONQUEST_POINTS]);
         m_int_configs[CONFIG_CURRENCY_START_CONQUEST_POINTS] = 0;
     }
-    m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_WEEK_CAP] = ConfigMgr::GetIntDefault("Currency.ConquestPointsWeekCap", 1650);
+    m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_WEEK_CAP] = ConfigMgr::GetIntDefault("Currency.ConquestPointsWeekCap", 1800);
     if (int32(m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_WEEK_CAP]) <= 0)
     {
         sLog->outError(LOG_FILTER_SERVER_LOADING, "Currency.ConquestPointsWeekCap (%i) must be > 0, set to default 1650.", m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_WEEK_CAP]);
-        m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_WEEK_CAP] = 1650;
+        m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_WEEK_CAP] = 1800;
     }
     m_int_configs[CONFIG_CURRENCY_CONQUEST_POINTS_WEEK_CAP] *= 100;     //precision mod
 

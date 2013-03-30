@@ -49,7 +49,6 @@ struct ItemExtendedCostEntry;
 class Channel;
 class Creature;
 class DynamicObject;
-class AreaTriggerObject;
 class Group;
 class OutdoorPvP;
 class Pet;

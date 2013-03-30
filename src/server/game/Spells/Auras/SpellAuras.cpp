@@ -269,13 +269,6 @@ uint32 Aura::BuildEffectMaskForOwner(SpellInfo const* spellProto, uint32 avalibl
                     effMask |= 1 << i;
             }
             break;
-        case TYPEID_AREATRIGGEROBJECT:
-            for (uint8 i = 0; i< MAX_SPELL_EFFECTS; ++i)
-            {
-                if (spellProto->Effects[i].Effect == SPELL_EFFECT_CREATE_AREATRIGGER)
-                    effMask |= 1 << i;
-            }
-            break;
         default:
             break;
     }
@@ -439,12 +432,7 @@ Unit* Aura::GetCaster() const
 
 AuraObjectType Aura::GetType() const
 {
-    if (m_owner->GetTypeId() == TYPEID_DYNAMICOBJECT)
-        return DYNOBJ_AURA_TYPE;
-    else if (m_owner->GetTypeId() == TYPEID_AREATRIGGEROBJECT)
-        return AREATRIGGEROBJ_AURA_TYPE;
-    else
-        return UNIT_AURA_TYPE;
+    return (m_owner->GetTypeId() == TYPEID_DYNAMICOBJECT) ? DYNOBJ_AURA_TYPE : UNIT_AURA_TYPE;
 }
 
 void Aura::_ApplyForTarget(Unit* target, Unit* caster, AuraApplication * auraApp)

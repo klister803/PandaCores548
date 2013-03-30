@@ -56,17 +56,16 @@ uint32 GuidHigh2TypeId(uint32 guid_hi)
 {
     switch (guid_hi)
     {
-        case HIGHGUID_ITEM:                 return TYPEID_ITEM;
+        case HIGHGUID_ITEM:         return TYPEID_ITEM;
         //case HIGHGUID_CONTAINER:    return TYPEID_CONTAINER; HIGHGUID_CONTAINER == HIGHGUID_ITEM currently
-        case HIGHGUID_UNIT:                 return TYPEID_UNIT;
-        case HIGHGUID_PET:                  return TYPEID_UNIT;
-        case HIGHGUID_PLAYER:               return TYPEID_PLAYER;
-        case HIGHGUID_GAMEOBJECT:           return TYPEID_GAMEOBJECT;
-        case HIGHGUID_DYNAMICOBJECT:        return TYPEID_DYNAMICOBJECT;
-        case HIGHGUID_AREATRIGGEROBJECT:    return TYPEID_AREATRIGGEROBJECT;
-        case HIGHGUID_CORPSE:               return TYPEID_CORPSE;
-        case HIGHGUID_MO_TRANSPORT:         return TYPEID_GAMEOBJECT;
-        case HIGHGUID_VEHICLE:              return TYPEID_UNIT;
+        case HIGHGUID_UNIT:         return TYPEID_UNIT;
+        case HIGHGUID_PET:          return TYPEID_UNIT;
+        case HIGHGUID_PLAYER:       return TYPEID_PLAYER;
+        case HIGHGUID_GAMEOBJECT:   return TYPEID_GAMEOBJECT;
+        case HIGHGUID_DYNAMICOBJECT:return TYPEID_DYNAMICOBJECT;
+        case HIGHGUID_CORPSE:       return TYPEID_CORPSE;
+        case HIGHGUID_MO_TRANSPORT: return TYPEID_GAMEOBJECT;
+        case HIGHGUID_VEHICLE:      return TYPEID_UNIT;
     }
     return NUM_CLIENT_OBJECT_TYPES;                         // unknown
 }
@@ -212,7 +211,6 @@ void Object::BuildCreateUpdateBlockForPlayer(UpdateData* data, Player* target) c
         case HIGHGUID_PET:
         case HIGHGUID_CORPSE:
         case HIGHGUID_DYNAMICOBJECT:
-        case HIGHGUID_AREATRIGGEROBJECT:
             updateType = UPDATETYPE_CREATE_OBJECT2;
             break;
         case HIGHGUID_UNIT:
@@ -996,10 +994,6 @@ void Object::GetUpdateFieldData(Player const* target, uint32*& flags, bool& isOw
         case TYPEID_DYNAMICOBJECT:
             flags = DynamicObjectUpdateFieldFlags;
             isOwner = ((DynamicObject*)this)->GetCasterGUID() == target->GetGUID();
-            break;
-        case TYPEID_AREATRIGGEROBJECT:
-            flags = AreaTriggerObjectUpdateFieldFlags;
-            isOwner = ((AreaTriggerObject*)this)->GetCasterGUID() == target->GetGUID();
             break;
         case TYPEID_CORPSE:
             flags = CorpseUpdateFieldFlags;

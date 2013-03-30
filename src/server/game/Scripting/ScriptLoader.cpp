@@ -617,6 +617,8 @@ void AddSC_boss_striker_gadok();
 void AddSC_boss_commander_rimok();
 void AddSC_boss_raigonn();
 void AddSC_boss_sha_of_anger();
+void AddSC_boss_galion();
+//void AddSC_boss_stone_guard();
 void AddSC_instance_mogu_shan_palace();         // Mogu'Shan Palace
 void AddSC_boss_trial_of_the_king();
 void AddSC_boss_gekkan();
@@ -1291,7 +1293,9 @@ void AddPandarieScripts()
     AddSC_boss_striker_gadok();
     AddSC_boss_commander_rimok();
     AddSC_boss_raigonn();
-    AddSC_boss_sha_of_anger();
+    AddSC_boss_sha_of_anger();                   //Pandaria World Bosses
+    AddSC_boss_galion();
+    //AddSC_boss_stone_guard();
     AddSC_instance_shadopan_monastery();          // Shadopan Monastery
     AddSC_shadopan_monastery();
     AddSC_boss_gu_cloudstrike();
