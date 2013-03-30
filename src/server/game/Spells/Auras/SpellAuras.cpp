@@ -367,16 +367,6 @@ AuraPtr Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* o
             ASSERT(aura->GetDynobjOwner()->IsInWorld());
             ASSERT(aura->GetDynobjOwner()->GetMap() == aura->GetCaster()->GetMap());
             break;
-        case TYPEID_AREATRIGGEROBJECT:
-            aura = AuraPtr(new AreaTriggerObjAura(spellproto, effMask, owner, caster, spellPowerData, baseAmount, castItem, casterGUID));
-            aura->GetAreaTriggerobjOwner()->SetAura(aura);
-            aura->_InitEffects(effMask, caster, baseAmount);
-
-            aura->LoadScripts();
-            ASSERT(aura->GetAreaTriggerobjOwner());
-            ASSERT(aura->GetAreaTriggerobjOwner()->IsInWorld());
-            ASSERT(aura->GetAreaTriggerobjOwner()->GetMap() == aura->GetCaster()->GetMap());
-            break;
         default:
             ASSERT(false);
             return NULL;
@@ -2227,17 +2217,4 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
                 targets[*itr] = 1<<effIndex;
         }
     }
-}
-
-AreaTriggerObjAura::AreaTriggerObjAura(SpellInfo const* spellproto, uint32 effMask, WorldObject* owner, Unit* caster, SpellPowerEntry const* spellPowerData, int32 *baseAmount, Item* castItem, uint64 casterGUID)
-    : Aura(spellproto, owner, caster, spellPowerData, castItem, casterGUID)
-{
-    m_spellPowerData = spellPowerData;
-}
-
-void AreaTriggerObjAura::Remove(AuraRemoveMode removeMode)
-{
-    if (IsRemoved())
-        return;
-    _Remove(removeMode);
 }

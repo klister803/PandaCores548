@@ -285,13 +285,4 @@ class DynObjAura : public Aura
 
         void FillTargetMap(std::map<Unit*, uint32> & targets, Unit* caster);
 };
-
-class AreaTriggerObjAura : public Aura
-{
-    friend AuraPtr Aura::Create(SpellInfo const* spellproto, uint32 effMask, WorldObject* owner, Unit* caster, SpellPowerEntry const* spellPowerData, int32 *baseAmount, Item* castItem, uint64 casterGUID);
-    protected:
-        explicit AreaTriggerObjAura(SpellInfo const* spellproto, uint32 effMask, WorldObject* owner, Unit* caster, SpellPowerEntry const* spellPowerData, int32 *baseAmount, Item* castItem, uint64 casterGUID);
-    public:
-        void Remove(AuraRemoveMode removeMode = AURA_REMOVE_BY_DEFAULT);
-};
 #endif
