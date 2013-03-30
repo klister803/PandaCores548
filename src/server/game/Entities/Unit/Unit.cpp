@@ -10801,8 +10801,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 127626 || spellProto->Id == 81751)
         return healamount;
 
-    // No bonus for Leader of the Pack
-    if (spellProto->Id == 34299)
+    // No bonus for Leader of the Pack or Soul Leech
+    if (spellProto->Id == 34299 || spellProto->Id == 108366)
         return healamount;
 
     // No bonus for Living Seed
