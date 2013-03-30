@@ -1406,12 +1406,19 @@ class Player : public Unit, public GridObject<Player>
         void SendNewCurrency(uint32 id) const;
         /// send full data about all currencies to client
         void SendCurrencies() const;
+        void SendPvpRewards() const;
         /// return count of currency witch has plr
-        uint32 GetCurrency(uint32 id) const;
+        uint32 GetCurrency(uint32 id, bool usePrecision) const;
+        uint32 GetCurrencyOnWeek(uint32 id, bool usePrecision) const;
         /// return presence related currency
         bool HasCurrency(uint32 id, uint32 count) const;
         /// @todo: not understand why it subtract from total count and for what it used. It should be remove and replaced by ModifyCurrency
         void SetCurrency(uint32 id, uint32 count, bool printLog = true);
+        uint32 GetCurrencyWeekCap(uint32 id, bool usePrecision) const;
+        void ResetCurrencyWeekCap();
+        uint32 GetCurrencyWeekCap(CurrencyTypesEntry const* currency) const;
+        uint32 GetCurrencyTotalCap(CurrencyTypesEntry const* currency) const;
+        void UpdateConquestCurrencyCap(uint32 currency);
 
         /**
         * @name ModifyCurrency
@@ -2003,6 +2010,11 @@ class Player : public Unit, public GridObject<Player>
         void SetArenaTeamInfoField(uint8 slot, ArenaTeamInfoType type, uint32 value)
         {
             SetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + type, value);
+            if (type == ARENA_TEAM_PERSONAL_RATING && value > _maxPersonalArenaRate)
+            {
+                _maxPersonalArenaRate = value;
+                UpdateConquestCurrencyCap(CURRENCY_TYPE_CONQUEST_META_ARENA);
+            }
         }
         static uint32 GetArenaTeamIdFromDB(uint64 guid, uint8 slot);
         static void LeaveAllArenaTeams(uint64 guid);
@@ -2010,6 +2022,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 GetArenaPersonalRating(uint8 slot) const { return GetUInt32Value(PLAYER_FIELD_ARENA_TEAM_INFO_1_1 + (slot * ARENA_TEAM_END) + ARENA_TEAM_PERSONAL_RATING); }
         void SetArenaTeamIdInvited(uint32 ArenaTeamId) { m_ArenaTeamIdInvited = ArenaTeamId; }
         uint32 GetArenaTeamIdInvited() { return m_ArenaTeamIdInvited; }
+        uint32 GetRBGPersonalRating() const { return 0; }
 
         Difficulty GetDifficulty(bool isRaid) const { return isRaid ? m_raidDifficulty : m_dungeonDifficulty; }
         Difficulty GetDungeonDifficulty() const { return m_dungeonDifficulty; }
@@ -2500,7 +2513,6 @@ class Player : public Unit, public GridObject<Player>
         bool IsVisibleGloballyFor(Player* player) const;
 
         void SendInitialVisiblePackets(Unit* target);
-        void UpdateObjectVisibility(bool forced = true);
         void UpdateVisibilityForPlayer();
         void UpdateVisibilityOf(WorldObject* target);
         void UpdateTriggerVisibility();
@@ -2861,7 +2873,6 @@ class Player : public Unit, public GridObject<Player>
         uint32 m_currentBuybackSlot;
 
         PlayerCurrenciesMap _currencyStorage;
-        uint32 _GetCurrencyWeekCap(const CurrencyTypesEntry* currency) const;
 
         VoidStorageItem* _voidStorageItems[VOID_STORAGE_MAX_SLOT];
 
@@ -3065,6 +3076,7 @@ class Player : public Unit, public GridObject<Player>
         uint32 _pendingBindTimer;
 
         uint32 _activeCheats;
+        uint32 _maxPersonalArenaRate;
 
         PhaseMgr phaseMgr;
 

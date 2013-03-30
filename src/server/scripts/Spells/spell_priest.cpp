@@ -34,9 +34,6 @@ enum PriestSpells
     PRIEST_SPELL_PENANCE_HEAL                   = 47757,
     PRIEST_SPELL_REFLECTIVE_SHIELD_TRIGGERED    = 33619,
     PRIEST_SPELL_REFLECTIVE_SHIELD_R1           = 33201,
-    PRIEST_SPELL_EMPOWERED_RENEW                = 63544,
-    PRIEST_ICON_ID_EMPOWERED_RENEW_TALENT       = 3021,
-    PRIEST_ICON_ID_PAIN_AND_SUFFERING           = 2874,
     PRIEST_SHADOW_WORD_DEATH                    = 32409,
     PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH      = 107903,
     PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH         = 107904,
@@ -83,6 +80,420 @@ enum PriestSpells
     PRIEST_HOLY_WORD_CHASTISE                   = 88625,
     PRIEST_HOLY_WORD_SANCTUARY_AREA             = 88685,
     PRIEST_HOLY_WORD_SANCTUARY_HEAL             = 88686,
+    PRIEST_RAPID_RENEWAL_AURA                   = 95649,
+    PRIEST_SPELL_EMPOWERED_RENEW                = 63544,
+    PRIEST_SPELL_DIVINE_INSIGHT_TALENT          = 109175,
+    PRIEST_SPELL_DIVINE_INSIGHT_DISCIPLINE      = 123266,
+    PRIEST_SPELL_DIVINE_INSIGHT_HOLY            = 123267,
+    PRIEST_PRAYER_OF_MENDING                    = 33076,
+    PRIEST_PRAYER_OF_MENDING_HEAL               = 33110,
+    PRIEST_PRAYER_OF_MENDING_RADIUS             = 123262,
+    PRIEST_BODY_AND_SOUL_AURA                   = 64129,
+    PRIEST_BODY_AND_SOUL_INCREASE_SPEED         = 65081,
+    PRIEST_FROM_DARKNESS_COMES_LIGHT_AURA       = 109186,
+    PRIEST_SURGE_OF_LIGHT                       = 114255,
+    PRIEST_SURGE_OF_DARKNESS                    = 87160,
+    PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST   = 130733,
+    PRIEST_SHADOW_WORD_INSANITY_DAMAGE          = 129249,
+};
+
+// Power Word - Solace - 129250
+class spell_pri_power_word_solace : public SpellScriptLoader
+{
+    public:
+        spell_pri_power_word_solace() : SpellScriptLoader("spell_pri_power_word_solace") { }
+
+        class spell_pri_power_word_solace_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_power_word_solace_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (!_player->HasAura(PRIEST_SHADOWFORM_STANCE))
+                            _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.007f), POWER_MANA);
+                        else
+                        {
+                            SetHitDamage(0);
+
+                            _player->CastSpell(target, PRIEST_SHADOW_WORD_INSANITY_DAMAGE, true);
+
+                            if (target->HasAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID()))
+                                target->RemoveAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID());
+
+                            if (target->HasAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, _player->GetGUID()))
+                                target->RemoveAura(PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, _player->GetGUID());
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_power_word_solace_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_power_word_solace_SpellScript();
+        }
+};
+
+// Called by Shadow Word : Pain - 589
+// Shadow Word : Insanity (allowing cast) - 130733
+class spell_pri_shadow_word_insanity_allowing : public SpellScriptLoader
+{
+    public:
+        spell_pri_shadow_word_insanity_allowing() : SpellScriptLoader("spell_pri_shadow_word_insanity_allowing") { }
+
+        class spell_pri_shadow_word_insanity_allowing_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_pri_shadow_word_insanity_allowing_AuraScript);
+
+            std::list<Unit*> targetList;
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                aurEff->GetTargetList(targetList);
+
+                for (auto itr : targetList)
+                {
+                    if (Unit* caster = GetCaster())
+                        if (AuraPtr shadowWordPain = itr->GetAura(PRIEST_SHADOW_WORD_PAIN, caster->GetGUID()))
+                            if (shadowWordPain->GetDuration() <= (shadowWordPain->GetMaxDuration() / 4))
+                                caster->CastSpell(itr, PRIEST_SHADOW_WORD_INSANITY_ALLOWING_CAST, true);
+                }
+
+                targetList.clear();
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_pri_shadow_word_insanity_allowing_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_pri_shadow_word_insanity_allowing_AuraScript();
+        }
+};
+
+// Shadowfiend - 34433 or Mindbender - 123040
+class spell_pri_shadowfiend : public SpellScriptLoader
+{
+    public:
+        spell_pri_shadowfiend() : SpellScriptLoader("spell_pri_shadowfiend") { }
+
+        class spell_pri_shadowfiend_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_shadowfiend_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetExplTargetUnit())
+                    {
+                        if (Guardian* pet = _player->GetGuardianPet())
+                        {
+                            pet->InitCharmInfo();
+                            pet->SetReactState(ReactStates::REACT_DEFENSIVE);
+                            pet->ToCreature()->AI()->AttackStart(target);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_pri_shadowfiend_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_shadowfiend_SpellScript();
+        }
+};
+
+// Called by Mind Spike - 73510
+// Surge of Darkness - 87160
+class spell_pri_surge_of_darkness : public SpellScriptLoader
+{
+    public:
+        spell_pri_surge_of_darkness() : SpellScriptLoader("spell_pri_surge_of_darkness") { }
+
+        class spell_pri_surge_of_darkness_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_surge_of_darkness_SpellScript);
+
+            void HandleOnCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (AuraPtr surgeOfDarkness = _player->GetAura(PRIEST_SURGE_OF_DARKNESS))
+                    {
+                        surgeOfDarkness->SetUsingCharges(true);
+                        surgeOfDarkness->DropCharge();
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_pri_surge_of_darkness_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_surge_of_darkness_SpellScript();
+        }
+};
+
+// Called by Flash Heal - 2061
+// Surge of Light - 114255
+class spell_pri_surge_of_light : public SpellScriptLoader
+{
+    public:
+        spell_pri_surge_of_light() : SpellScriptLoader("spell_pri_surge_of_light") { }
+
+        class spell_pri_surge_of_light_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_surge_of_light_SpellScript);
+
+            void HandleOnCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (AuraPtr surgeOfLight = _player->GetAura(PRIEST_SURGE_OF_LIGHT))
+                    {
+                        surgeOfLight->SetUsingCharges(true);
+                        surgeOfLight->DropCharge();
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCast += SpellCastFn(spell_pri_surge_of_light_SpellScript::HandleOnCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_surge_of_light_SpellScript();
+        }
+};
+
+// Called by Smite - 585, Heal - 2050, Flash Heal - 2061, Binding Heal - 32546 and Greater Heal - 2060 (Surge of Darkness)
+// From Darkness, Comes Light - 109186
+class spell_pri_from_darkness_comes_light : public SpellScriptLoader
+{
+    public:
+        spell_pri_from_darkness_comes_light() : SpellScriptLoader("spell_pri_from_darkness_comes_light") { }
+
+        class spell_pri_from_darkness_comes_light_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_from_darkness_comes_light_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(PRIEST_FROM_DARKNESS_COMES_LIGHT_AURA))
+                        if (roll_chance_i(15))
+                            _player->CastSpell(_player, PRIEST_SURGE_OF_LIGHT, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_from_darkness_comes_light_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_from_darkness_comes_light_SpellScript();
+        }
+};
+
+// Called by Leap of Faith - 73325 and Power Word : Shield - 17
+// Body and Soul - 64129
+class spell_pri_body_and_soul : public SpellScriptLoader
+{
+    public:
+        spell_pri_body_and_soul() : SpellScriptLoader("spell_pri_body_and_soul") { }
+
+        class spell_pri_body_and_soul_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_body_and_soul_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(PRIEST_BODY_AND_SOUL_AURA))
+                            _player->CastSpell(target, PRIEST_BODY_AND_SOUL_INCREASE_SPEED, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_body_and_soul_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_body_and_soul_SpellScript();
+        }
+};
+
+// Prayer of Mending (Divine Insight) - 123259
+class spell_pri_prayer_of_mending_divine_insight : public SpellScriptLoader
+{
+    public:
+        spell_pri_prayer_of_mending_divine_insight() : SpellScriptLoader("spell_pri_prayer_of_mending_divine_insight") { }
+
+        class spell_pri_prayer_of_mending_divine_insight_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_prayer_of_mending_divine_insight_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (AuraPtr prayerOfMending = target->GetAura(PRIEST_PRAYER_OF_MENDING_RADIUS, _player->GetGUID()))
+                        {
+                            int32 value = prayerOfMending->GetEffect(0)->GetAmount();
+
+                            if (_player->HasAura(PRIEST_SPELL_DIVINE_INSIGHT_HOLY))
+                                _player->RemoveAura(PRIEST_SPELL_DIVINE_INSIGHT_HOLY);
+
+                            target->CastCustomSpell(target, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                            if (target->HasAura(GetSpellInfo()->Id))
+                                target->RemoveAura(GetSpellInfo()->Id);
+
+                            float radius = sSpellMgr->GetSpellInfo(PRIEST_PRAYER_OF_MENDING_RADIUS)->Effects[0].CalcRadius(_player);
+
+                            if (Unit* secondTarget = target->GetNextRandomRaidMemberOrPet(radius))
+                            {
+                                target->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                if (secondTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
+                                    secondTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
+
+                                secondTarget->CastCustomSpell(secondTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+
+                                if (Unit* thirdTarget = target->GetNextRandomRaidMemberOrPet(radius))
+                                {
+                                    secondTarget->CastCustomSpell(thirdTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                    if (thirdTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
+                                        thirdTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
+
+                                    thirdTarget->CastCustomSpell(thirdTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+
+                                    if (Unit* fourthTarget = target->GetNextRandomRaidMemberOrPet(radius))
+                                    {
+                                        thirdTarget->CastCustomSpell(fourthTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                        if (fourthTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
+                                            fourthTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
+
+                                        fourthTarget->CastCustomSpell(fourthTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+
+                                        if (Unit* fifthTarget = target->GetNextRandomRaidMemberOrPet(radius))
+                                        {
+                                            fourthTarget->CastCustomSpell(fifthTarget, PRIEST_PRAYER_OF_MENDING, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                            if (fifthTarget->HasAura(PRIEST_PRAYER_OF_MENDING))
+                                                fifthTarget->RemoveAura(PRIEST_PRAYER_OF_MENDING);
+
+                                            fifthTarget->CastCustomSpell(fifthTarget, PRIEST_PRAYER_OF_MENDING_HEAL, &value, NULL, NULL, true, NULL, NULL, _player->GetGUID());
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_prayer_of_mending_divine_insight_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_prayer_of_mending_divine_insight_SpellScript();
+        }
+};
+
+// Called by Greater Heal - 2060 and Prayer of Healing - 596
+// Divine Insight (Holy) - 109175
+class spell_pri_divine_insight_holy : public SpellScriptLoader
+{
+    public:
+        spell_pri_divine_insight_holy() : SpellScriptLoader("spell_pri_divine_insight_holy") { }
+
+        class spell_pri_divine_insight_holy_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_divine_insight_holy_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(PRIEST_SPELL_DIVINE_INSIGHT_TALENT))
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_PRIEST_HOLY)
+                            if (roll_chance_i(40))
+                                _player->CastSpell(_player, PRIEST_SPELL_DIVINE_INSIGHT_HOLY, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_divine_insight_holy_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_divine_insight_holy_SpellScript();
+        }
+};
+
+// Called by Power Word : Shield (Divine Insight) - 123258
+// Divine Insight (Discipline) - 123266
+class spell_pri_divine_insight_discipline : public SpellScriptLoader
+{
+    public:
+        spell_pri_divine_insight_discipline() : SpellScriptLoader("spell_pri_divine_insight_discipline") { }
+
+        class spell_pri_divine_insight_discipline_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pri_divine_insight_discipline_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(PRIEST_SPELL_DIVINE_INSIGHT_DISCIPLINE))
+                        _player->RemoveAura(PRIEST_SPELL_DIVINE_INSIGHT_DISCIPLINE);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pri_divine_insight_discipline_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pri_divine_insight_discipline_SpellScript();
+        }
 };
 
 // Holy Word : Sanctuary - 88685
@@ -611,13 +1022,20 @@ class spell_pri_mind_spike : public SpellScriptLoader
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        // Mind Spike remove all DoT on the target's
-                        if (target->HasAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID()))
-                            target->RemoveAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID());
-                        if (target->HasAura(PRIEST_DEVOURING_PLAGUE, _player->GetGUID()))
-                            target->RemoveAura(PRIEST_DEVOURING_PLAGUE, _player->GetGUID());
-                        if (target->HasAura(PRIEST_VAMPIRIC_TOUCH, _player->GetGUID()))
-                            target->RemoveAura(PRIEST_VAMPIRIC_TOUCH, _player->GetGUID());
+                        // Surge of Darkness - Your next Mind Spike will not consume your damage-over-time effects ...
+                        if (!_player->HasAura(PRIEST_SURGE_OF_DARKNESS))
+                        {
+                            // Mind Spike remove all DoT on the target's
+                            if (target->HasAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID()))
+                                target->RemoveAura(PRIEST_SHADOW_WORD_PAIN, _player->GetGUID());
+                            if (target->HasAura(PRIEST_DEVOURING_PLAGUE, _player->GetGUID()))
+                                target->RemoveAura(PRIEST_DEVOURING_PLAGUE, _player->GetGUID());
+                            if (target->HasAura(PRIEST_VAMPIRIC_TOUCH, _player->GetGUID()))
+                                target->RemoveAura(PRIEST_VAMPIRIC_TOUCH, _player->GetGUID());
+                        }
+                        // ... and deals 50% additional damage.
+                        else
+                            SetHitDamage(int32(GetHitDamage() * 1.5f));
                     }
                 }
             }
@@ -647,12 +1065,8 @@ class spell_pri_evangelism : public SpellScriptLoader
 			void HandleOnHit()
 			{
 				if (Player* _player = GetCaster()->ToPlayer())
-				{
 					if (GetHitDamage())
-					{
 						_player->CastSpell(_player,PRIEST_EVANGELISM_AURA,true);
-					}
-				}
 			}
 
             void Register()
@@ -666,6 +1080,7 @@ class spell_pri_evangelism : public SpellScriptLoader
             return new spell_pri_evangelism_SpellScript;
         }
 };
+
 // Archangel - 81700
 class spell_pri_archangel : public SpellScriptLoader
 {
@@ -688,8 +1103,8 @@ class spell_pri_archangel : public SpellScriptLoader
 					{
 						if (archangel->GetEffect(0))
 						{
-						archangel->GetEffect(0)->ChangeAmount(archangel->GetEffect(0)->GetAmount() * stackNumber);
-						_player->RemoveAura(PRIEST_EVANGELISM_AURA);
+                            archangel->GetEffect(0)->ChangeAmount(archangel->GetEffect(0)->GetAmount() * stackNumber);
+                            _player->RemoveAura(PRIEST_EVANGELISM_AURA);
 						}
 					}
 				}
@@ -1039,17 +1454,16 @@ class spell_pri_shadowy_apparition : public SpellScriptLoader
                 if (Player* player = GetCaster()->ToPlayer())
                 {
                     std::list<Creature*> shadowyList;
+                    std::list<Creature*> tempList;
 
-                    player->GetCreatureListWithEntryInGrid(shadowyList, PRIEST_NPC_SHADOWY_APPARITION, 500.0f);
+                    player->GetCreatureListWithEntryInGrid(tempList, PRIEST_NPC_SHADOWY_APPARITION, 500.0f);
 
-                    // Remove other players mushrooms
-                    for (auto itr : shadowyList)
+                    // Remove other players shadowy apparitions
+                    for (auto itr : tempList)
                     {
                         Unit* owner = itr->GetOwner();
                         if (owner && owner == player && itr->isSummon())
-                            continue;
-
-                        shadowyList.remove(itr);
+                            shadowyList.push_back(itr);
                     }
 
                     if (shadowyList.size() == 3)
@@ -1367,36 +1781,7 @@ class spell_pri_guardian_spirit : public SpellScriptLoader
         }
 };
 
-class spell_pri_pain_and_suffering_proc : public SpellScriptLoader
-{
-    public:
-        spell_pri_pain_and_suffering_proc() : SpellScriptLoader("spell_pri_pain_and_suffering_proc") { }
-
-        // 47948 Pain and Suffering (proc)
-        class spell_pri_pain_and_suffering_proc_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pri_pain_and_suffering_proc_SpellScript);
-
-            void HandleEffectScriptEffect(SpellEffIndex /*effIndex*/)
-            {
-                // Refresh Shadow Word: Pain on target
-                if (Unit* unitTarget = GetHitUnit())
-                    if (AuraEffectPtr aur = unitTarget->GetAuraEffect(SPELL_AURA_PERIODIC_DAMAGE, SPELLFAMILY_PRIEST, 0x8000, 0, 0, GetCaster()->GetGUID()))
-                        aur->GetBase()->RefreshDuration();
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_pri_pain_and_suffering_proc_SpellScript::HandleEffectScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pri_pain_and_suffering_proc_SpellScript;
-        }
-};
-
+// Penance - 47540
 class spell_pri_penance : public SpellScriptLoader
 {
     public:
@@ -1430,18 +1815,26 @@ class spell_pri_penance : public SpellScriptLoader
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                Unit* caster = GetCaster();
-                if (Unit* unitTarget = GetHitUnit())
+                if (Player* _player = GetCaster()->ToPlayer())
                 {
-                    if (!unitTarget->isAlive())
-                        return;
+                    if (Unit* unitTarget = GetHitUnit())
+                    {
+                        if (!unitTarget->isAlive())
+                            return;
 
-                    uint8 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
+                        uint8 rank = sSpellMgr->GetSpellRank(GetSpellInfo()->Id);
 
-                    if (caster->IsFriendlyTo(unitTarget))
-                        caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_HEAL, rank), false, 0);
-                    else
-                        caster->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_DAMAGE, rank), false, 0);
+                        if (_player->IsFriendlyTo(unitTarget))
+                            _player->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_HEAL, rank), false, 0);
+                        else
+                            _player->CastSpell(unitTarget, sSpellMgr->GetSpellWithRank(PRIEST_SPELL_PENANCE_DAMAGE, rank), false, 0);
+
+                        // Divine Insight (Discipline)
+                        if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_PRIEST_DISCIPLINE)
+                            if (_player->HasAura(PRIEST_SPELL_DIVINE_INSIGHT_TALENT))
+                                if (roll_chance_i(40))
+                                    _player->CastSpell(_player, PRIEST_SPELL_DIVINE_INSIGHT_DISCIPLINE, true);
+                    }
                 }
             }
 
@@ -1515,6 +1908,7 @@ enum PrayerOfMending
 {
     SPELL_T9_HEALING_2_PIECE = 67201,
 };
+
 // Prayer of Mending Heal
 class spell_pri_prayer_of_mending_heal : public SpellScriptLoader
 {
@@ -1564,7 +1958,14 @@ class spell_pri_vampiric_touch : public SpellScriptLoader
             void OnTick(constAuraEffectPtr aurEff)
             {
                 if (GetCaster())
+                {
                     GetCaster()->EnergizeBySpell(GetCaster(), GetSpellInfo()->Id, GetCaster()->CountPctFromMaxMana(2), POWER_MANA);
+
+                    // From Darkness, Comes Light
+                    if (GetCaster()->HasAura(PRIEST_FROM_DARKNESS_COMES_LIGHT_AURA))
+                        if (roll_chance_i(15))
+                            GetCaster()->CastSpell(GetCaster(), PRIEST_SURGE_OF_DARKNESS, true);
+                }
             }
 
             void Register()
@@ -1579,6 +1980,8 @@ class spell_pri_vampiric_touch : public SpellScriptLoader
         }
 };
 
+// Called by Renew - 139
+// Rapid Renew - 95649
 class spell_priest_renew : public SpellScriptLoader
 {
     public:
@@ -1588,22 +1991,17 @@ class spell_priest_renew : public SpellScriptLoader
         {
             PrepareAuraScript(spell_priest_renew_AuraScript);
 
-            bool Load()
-            {
-                return GetCaster() && GetCaster()->GetTypeId() == TYPEID_PLAYER;
-            }
-
             void HandleApplyEffect(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
             {
                 if (Unit* caster = GetCaster())
                 {
                     // Empowered Renew
-                    if (constAuraEffectPtr empoweredRenewAurEff = caster->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_EMPOWERED_RENEW_TALENT, EFFECT_1))
+                    if (AuraPtr empoweredRenew = caster->GetAura(PRIEST_RAPID_RENEWAL_AURA))
                     {
                         uint32 heal = caster->SpellHealingBonusDone(GetTarget(), GetSpellInfo(), GetEffect(EFFECT_0)->GetAmount(), DOT);
                         heal = GetTarget()->SpellHealingBonusTaken(caster, GetSpellInfo(), heal, DOT);
 
-                        int32 basepoints0 = empoweredRenewAurEff->GetAmount() * GetEffect(EFFECT_0)->GetTotalTicks() * int32(heal) / 100;
+                        int32 basepoints0 = empoweredRenew->GetEffect(EFFECT_2)->GetAmount() * GetEffect(EFFECT_0)->GetTotalTicks() * int32(heal) / 100;
                         caster->CastCustomSpell(GetTarget(), PRIEST_SPELL_EMPOWERED_RENEW, &basepoints0, NULL, NULL, true, NULL, aurEff);
                     }
                 }
@@ -1621,80 +2019,60 @@ class spell_priest_renew : public SpellScriptLoader
         }
 };
 
-class spell_pri_shadow_word_death : public SpellScriptLoader
+// Called by Shadow Form - 15473
+// Glyph of Shadow - 107906
+class spell_pri_shadowform : public SpellScriptLoader
 {
     public:
-        spell_pri_shadow_word_death() : SpellScriptLoader("spell_pri_shadow_word_death") { }
+        spell_pri_shadowform() : SpellScriptLoader("spell_pri_shadowform") { }
 
-        class spell_pri_shadow_word_death_SpellScript : public SpellScript
+        class spell_pri_shadowform_AuraScript : public AuraScript
         {
-            PrepareSpellScript(spell_pri_shadow_word_death_SpellScript);
+            PrepareAuraScript(spell_pri_shadowform_AuraScript);
 
-            void HandleDamage()
+            bool Validate(SpellInfo const* /*entry*/)
             {
-                int32 damage = GetHitDamage();
+                if (!sSpellMgr->GetSpellInfo(PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH) ||
+                    !sSpellMgr->GetSpellInfo(PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH))
+                    return false;
+                return true;
+            }
 
-                // Pain and Suffering reduces damage
-                if (AuraEffectPtr aurEff = GetCaster()->GetDummyAuraEffect(SPELLFAMILY_PRIEST, PRIEST_ICON_ID_PAIN_AND_SUFFERING, EFFECT_1))
-                    AddPct(damage, aurEff->GetAmount());
+            void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                GetTarget()->CastSpell(GetTarget(), GetTarget()->HasAura(PRIEST_GLYPH_OF_SHADOW) ? PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH : PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH, true);
+            }
 
-                GetCaster()->CastCustomSpell(GetCaster(), PRIEST_SHADOW_WORD_DEATH, &damage, 0, 0, true);
+            void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                GetTarget()->RemoveAurasDueToSpell(GetTarget()->HasAura(PRIEST_GLYPH_OF_SHADOW) ? PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH : PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH);
             }
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_pri_shadow_word_death_SpellScript::HandleDamage);
+                AfterEffectApply += AuraEffectApplyFn(spell_pri_shadowform_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_pri_shadowform_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
             }
         };
 
-        SpellScript* GetSpellScript() const
+        AuraScript* GetAuraScript() const
         {
-            return new spell_pri_shadow_word_death_SpellScript();
+            return new spell_pri_shadowform_AuraScript();
         }
-};
-
-class spell_pri_shadowform : public SpellScriptLoader
-{
-public:
-    spell_pri_shadowform() : SpellScriptLoader("spell_pri_shadowform") { }
-
-    class spell_pri_shadowform_AuraScript : public AuraScript
-    {
-        PrepareAuraScript(spell_pri_shadowform_AuraScript);
-
-        bool Validate(SpellInfo const* /*entry*/)
-        {
-            if (!sSpellMgr->GetSpellInfo(PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH) ||
-                !sSpellMgr->GetSpellInfo(PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH))
-                return false;
-            return true;
-        }
-
-        void HandleEffectApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            GetTarget()->CastSpell(GetTarget(), GetTarget()->HasAura(PRIEST_GLYPH_OF_SHADOW) ? PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH : PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH, true);
-        }
-
-        void HandleEffectRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-        {
-            GetTarget()->RemoveAurasDueToSpell(GetTarget()->HasAura(PRIEST_GLYPH_OF_SHADOW) ? PRIEST_SHADOWFORM_VISUAL_WITH_GLYPH : PRIEST_SHADOWFORM_VISUAL_WITHOUT_GLYPH);
-        }
-
-        void Register()
-        {
-            AfterEffectApply += AuraEffectApplyFn(spell_pri_shadowform_AuraScript::HandleEffectApply, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-            AfterEffectRemove += AuraEffectRemoveFn(spell_pri_shadowform_AuraScript::HandleEffectRemove, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT, AURA_EFFECT_HANDLE_REAL_OR_REAPPLY_MASK);
-        }
-    };
-
-    AuraScript* GetAuraScript() const
-    {
-        return new spell_pri_shadowform_AuraScript();
-    }
 };
 
 void AddSC_priest_spell_scripts()
 {
+    new spell_pri_power_word_solace();
+    new spell_pri_shadow_word_insanity_allowing();
+    new spell_pri_shadowfiend();
+    new spell_pri_surge_of_darkness();
+    new spell_pri_surge_of_light();
+    new spell_pri_from_darkness_comes_light();
+    new spell_pri_body_and_soul();
+    new spell_pri_prayer_of_mending_divine_insight();
+    new spell_pri_divine_insight_holy();
+    new spell_pri_divine_insight_discipline();
     new spell_pri_holy_word_sanctuary();
     new spell_pri_chakra_chastise();
     new spell_pri_lightwell_renew();
@@ -1719,13 +2097,11 @@ void AddSC_priest_spell_scripts()
     new spell_pri_void_shift();
     new spell_pri_shadow_orb();
     new spell_pri_guardian_spirit();
-    new spell_pri_pain_and_suffering_proc();
     new spell_pri_penance();
     new spell_pri_reflective_shield_trigger();
     new spell_pri_prayer_of_mending_heal();
     new spell_pri_vampiric_touch();
     new spell_priest_renew();
-    new spell_pri_shadow_word_death();
     new spell_pri_shadowform();
 	new spell_pri_evangelism();
 	new spell_pri_archangel();

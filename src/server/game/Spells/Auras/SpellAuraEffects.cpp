@@ -354,7 +354,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleUnused,                                    //295 unused (4.3.4)
     &AuraEffect::HandleAuraSetVehicle,                            //296 SPELL_AURA_SET_VEHICLE_ID sets vehicle on target
     &AuraEffect::HandleNULL,                                      //297 Spirit Burst spells
-    &AuraEffect::HandleNULL,                                      //298 70569 - Strangulating, maybe prevents talk or cast
+    &AuraEffect::HandleAuraStrangulate,                           //298 70569 - Strangulating, maybe prevents talk or cast
     &AuraEffect::HandleUnused,                                    //299 unused (4.3.4)
     &AuraEffect::HandleNoImmediateEffect,                         //300 SPELL_AURA_SHARE_DAMAGE_PCT implemented in Unit::DealDamage
     &AuraEffect::HandleNoImmediateEffect,                         //301 SPELL_AURA_SCHOOL_HEAL_ABSORB implemented in Unit::CalcHealAbsorb
@@ -609,15 +609,15 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                     break;
                 case SPELLFAMILY_WARLOCK:
                     // Twilight Ward
-                    if (m_spellInfo->Id == 6229)
+                    if (m_spellInfo->Id == 6229 || m_spellInfo->Id == 104048 || m_spellInfo->Id == 131623 || m_spellInfo->Id == 131624)
                     {
                         // +300% from sp bonus
                         DoneActualBenefit += caster->SpellBaseDamageBonusDone(m_spellInfo->GetSchoolMask()) * 3.0f;
                     }
                     break;
                 case SPELLFAMILY_PRIEST:
-                    // Power Word: Shield
-                    if (GetSpellInfo()->Id == 17)
+                    // Power Word : Shield
+                    if (GetSpellInfo()->Id == 17 || GetSpellInfo()->Id == 123258)
                     {
                         if (Player* _plr = caster->ToPlayer())
                         {
@@ -709,6 +709,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 if (caster->GetTypeId() != TYPEID_PLAYER)
                     break;
 
+                // Basepoint hotfix
+                amount *= 10;
+
                 uint8 cp = caster->ToPlayer()->GetComboPoints();
                 int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
 
@@ -725,6 +728,8 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 // Idol of Worship. Cant be handled as SpellMod in SpellAura:Dummy due its dependency from CPs
                 else if (constAuraEffectPtr aurEff = caster->GetAuraEffect(60774, EFFECT_0))
                     amount += cp * aurEff->GetAmount();
+
+                amount /= int32(GetBase()->GetMaxDuration() / GetBase()->GetEffect(0)->GetAmplitude());
             }
             // Unholy Blight damage over time effect
             else if (GetId() == 50536)
@@ -1873,6 +1878,11 @@ void AuraEffect::HandleSpiritOfRedemption(AuraApplication const* aurApp, uint8 m
     else if (target->isAlive())
         // call functions which may have additional effects after chainging state of unit
         target->setDeathState(JUST_DIED);
+
+    if (apply)
+        target->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
+    else
+        target->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE);
 }
 
 void AuraEffect::HandleAuraGhost(AuraApplication const* aurApp, uint8 mode, bool apply) const
@@ -4801,7 +4811,7 @@ void AuraEffect::HandleModDamageDone(AuraApplication const* aurApp, uint8 mode, 
     if ((GetMiscValue() & SPELL_SCHOOL_MASK_MAGIC) == 0)
         return;
 
-    if (GetSpellInfo()->EquippedItemClass != -1 || GetSpellInfo()->EquippedItemInventoryTypeMask != 0)
+    if (GetSpellInfo()->EquippedItemClass != -1 || (GetSpellInfo()->EquippedItemInventoryTypeMask != 0 && GetSpellInfo()->Id != 33702 && GetSpellInfo()->Id != 33697))
     {
         // wand magic case (skip generic to all item spell bonuses)
         // done in Player::_ApplyWeaponDependentAuraMods
@@ -4814,22 +4824,8 @@ void AuraEffect::HandleModDamageDone(AuraApplication const* aurApp, uint8 mode, 
     // This information for client side use only
     if (target->GetTypeId() == TYPEID_PLAYER)
     {
-        if (GetAmount() > 0)
-        {
-            for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; i++)
-            {
-                if ((GetMiscValue() & (1<<i)) != 0)
-                    target->ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_POS+i, GetAmount(), apply);
-            }
-        }
-        else
-        {
-            for (int i = SPELL_SCHOOL_HOLY; i < MAX_SPELL_SCHOOL; i++)
-            {
-                if ((GetMiscValue() & (1<<i)) != 0)
-                    target->ApplyModUInt32Value(PLAYER_FIELD_MOD_DAMAGE_DONE_NEG+i, GetAmount(), apply);
-            }
-        }
+        target->ToPlayer()->ApplySpellPowerBonus(GetAmount(), apply);
+
         if (Guardian* pet = target->ToPlayer()->GetGuardianPet())
             pet->UpdateAttackPowerAndDamage();
     }
@@ -7367,4 +7363,27 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
 
     target->SetMaxPower(POWER_ALTERNATE_POWER, maxPower);
     target->SetPower(POWER_ALTERNATE_POWER, startPower);
+}
+
+void AuraEffect::HandleAuraStrangulate(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+
+    if (!target)
+        return;
+
+    // Asphyxiate
+    if (m_spellInfo->Id == 108194)
+    {
+        int32 newZ = 10;
+        target->SetControlled(apply, UNIT_STATE_STUNNED);
+
+        if (apply)
+            target->UpdateHeight(target->GetPositionZ() + newZ);
+        else
+            target->UpdateHeight(target->GetPositionZ() - newZ);
+    }
 }

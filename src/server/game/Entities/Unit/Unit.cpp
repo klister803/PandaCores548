@@ -279,6 +279,7 @@ Unit::Unit(bool isWorldObject): WorldObject(isWorldObject)
     _skipDiff = 0;
 
     m_IsInKillingProcess = false;
+    m_VisibilityUpdScheduled = false;
 }
 
 ////////////////////////////////////////////////////////////
@@ -5488,6 +5489,12 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     if (!target)
                         return false;
 
+                    if (GetEntry() == 62982 || GetEntry() == 67236) // Mindbender
+                    {
+                        target->EnergizeBySpell(target, 123051, int32(1.3f * target->GetPower(POWER_MANA)), POWER_MANA);
+                        return false;
+                    }
+
                     triggered_spell_id = 34650;
                     break;
                 }
@@ -6279,16 +6286,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 basepoints0 = CalculatePct(int32(damage), triggerAmount);
 
                 triggered_spell_id = 47753;
-                break;
-            }
-            // Body and Soul
-            if (dummySpell->SpellIconID == 2218)
-            {
-                // Proc only from Cure Disease on self cast
-                if (procSpell->Id != 528 || victim != this || !roll_chance_i(triggerAmount))
-                    return false;
-                triggered_spell_id = 64136;
-                target = this;
                 break;
             }
             switch (dummySpell->Id)
@@ -8063,6 +8060,17 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        //Shadow infusion
+        case 49572:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 47632)
+                return false;
+
+            break;
+        }
         // Glyph of Mind Spike
         case 33371:
         {
@@ -8481,15 +8489,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
         case 62606:
         {
             basepoints0 = CalculatePct(triggerAmount, GetTotalAttackPowerValue(BASE_ATTACK));
-            break;
-        }
-        // Body and Soul
-        case 64128:
-        case 65081:
-        {
-            // Proc only from PW:S cast
-            if (!(procSpell->SpellFamilyFlags[0] & 0x00000001))
-                return false;
             break;
         }
         // Culling the Herd
@@ -10013,9 +10012,9 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
         AddPct(DoneTotalMod, Mastery);
     }
 
-    // Chaos Bolt - 116858
+    // Chaos Bolt - 116858 and Soul Fire - 6353
     // damage is increased by your critical strike chance
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 116858)
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 116858 || spellProto->Id == 6353))
     {
         float crit_chance;
         crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(spellProto->GetSchoolMask()));
@@ -10748,8 +10747,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->SpellFamilyName == SPELLFAMILY_POTION)
         return healamount;
 
-    // No bonus for Temporal Ripples
-    if (spellProto->Id == 115611)
+    // No bonus for Temporal Ripples or Desperate Prayer
+    if (spellProto->Id == 115611 || spellProto->Id == 19236)
         return healamount;
 
     // No bonus for Devouring Plague heal or Atonement
@@ -10907,7 +10906,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
         int32 bp = heal / nearbyAllies.size();
 
         for (auto itr : nearbyAllies)
-            CastCustomSpell(itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
+            if (bp > 0)
+                CastCustomSpell(itr, 114083, &bp, NULL, NULL, true); // Restorative Mists
     }
 
     return uint32(std::max(heal, 0.0f));
@@ -14674,6 +14674,11 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             itr->GetMotionMaster()->MovePoint(1, target->GetPositionX(), target->GetPositionY(), target->GetPositionZ());
         }
     }
+    // Fix Staedy focus - 53220
+    if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id != 56641 && HasAura(5012) && HasAura(53220))
+    {
+        RemoveAura(5012);
+    }
 
     ProcTriggeredList procTriggered;
     // Fill procTriggered list
@@ -17008,17 +17013,75 @@ void Unit::SetPhaseMask(uint32 newPhaseMask, bool update)
                 summon->SetPhaseMask(newPhaseMask, true);
 }
 
+class Unit::AINotifyTask : public BasicEvent
+{
+    Unit& m_owner;
+public:
+    explicit AINotifyTask(Unit * me) : m_owner(*me) {
+        m_owner.m_VisibilityUpdScheduled = true;
+    }
+
+    ~AINotifyTask() {
+        m_owner.m_VisibilityUpdScheduled = false;
+    }
+
+    virtual bool Execute(uint64 , uint32)
+    {
+        JadeCore::AIRelocationNotifier notifier(m_owner);
+        m_owner.VisitNearbyObject(m_owner.GetVisibilityRange(), notifier);
+        return true;
+    }
+
+    static void ScheduleAINotify(Unit* me)
+    {
+        if (!me->m_VisibilityUpdScheduled)
+            me->m_Events.AddEvent(new AINotifyTask(me), me->m_Events.CalculateTime(World::Visibility_AINotifyDelay));
+    }
+};
+
+class Unit::VisibilityUpdateTask : public BasicEvent
+{
+    Unit& m_owner;
+public:
+    explicit VisibilityUpdateTask(Unit * me) : m_owner(*me) {}
+
+    virtual bool Execute(uint64 , uint32)
+    {
+        UpdateVisibility(&m_owner);
+        return true;
+    }
+
+    static void UpdateVisibility(Unit* me)
+     {
+        if (!me->m_sharedVision.empty())
+            for (SharedVisionList::const_iterator it = me->m_sharedVision.begin();it!= me->m_sharedVision.end();)
+            {
+                Player * tmp = *it;
+                ++it;
+                tmp->UpdateVisibilityForPlayer();
+            }
+        if (me->isType(TYPEMASK_PLAYER))
+            ((Player*)me)->UpdateVisibilityForPlayer();
+        me->WorldObject::UpdateObjectVisibility(true);
+    }
+};
+
+void Unit::OnRelocated()
+{
+    if (!m_lastVisibilityUpdPos.IsInDist(this, World::Visibility_RelocationLowerLimit)) {
+        m_lastVisibilityUpdPos = *this;
+        m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(1));
+    }
+    AINotifyTask::ScheduleAINotify(this);
+}
+
 void Unit::UpdateObjectVisibility(bool forced)
 {
-    if (!forced)
-        AddToNotify(NOTIFY_VISIBILITY_CHANGED);
+    if (forced)
+        VisibilityUpdateTask::UpdateVisibility(this);
     else
-    {
-        WorldObject::UpdateObjectVisibility(true);
-        // call MoveInLineOfSight for nearby creatures
-        JadeCore::AIRelocationNotifier notifier(*this);
-        VisitNearbyObject(GetVisibilityRange(), notifier);
-    }
+        m_Events.AddEvent(new VisibilityUpdateTask(this), m_Events.CalculateTime(1));
+    AINotifyTask::ScheduleAINotify(this);
 }
 
 void Unit::SendMoveKnockBack(Player* player, float speedXY, float speedZ, float vcos, float vsin)

@@ -38,9 +38,7 @@ enum HunterSpells
     HUNTER_PET_HEART_OF_THE_PHOENIX_TRIGGERED    = 54114,
     HUNTER_PET_HEART_OF_THE_PHOENIX_DEBUFF       = 55711,
     HUNTER_PET_SPELL_CARRION_FEEDER_TRIGGERED    = 54045,
-    HUNTER_SPELL_INVIGORATION_TRIGGERED          = 53398,
     HUNTER_SPELL_MASTERS_CALL_TRIGGERED          = 62305,
-    HUNTER_SPELL_ASPECT_OF_THE_BEAST_PET         = 61669,
     HUNTER_SPELL_POSTHASTE                       = 109215,
     HUNTER_SPELL_POSTHASTE_INCREASE_SPEED        = 118922,
     HUNTER_SPELL_NARROW_ESCAPE                   = 109298,
@@ -72,6 +70,104 @@ enum HunterSpells
     HUNTER_SPELL_BINDING_SHOT_LINK               = 117405,
     HUNTER_SPELL_BINDING_SHOT_STUN               = 117526,
     HUNTER_SPELL_BINDING_SHOT_IMMUNE             = 117553,
+    HUNTER_SPELL_PIERCIG_SHOTS                   = 53238,
+    HUNTER_SPELL_PIERCIG_SHOTS_EFFECT            = 63468,
+    HUNTER_SPELL_STEADY_FOCUS                    = 53224,
+    HUNTER_SPELL_MASTERS_CALL                    = 62305,
+};
+
+// Barrage damage - 120361
+class spell_hun_barrage : public SpellScriptLoader
+{
+    public:
+        spell_hun_barrage() : SpellScriptLoader("spell_hun_barrage") { }
+
+        class spell_hun_barrage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_barrage_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (!target->HasAura(120360))
+                            SetHitDamage(GetHitDamage() / 2);
+            }
+
+            void Register()
+            {
+               OnHit += SpellHitFn(spell_hun_barrage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_barrage_SpellScript();
+        }
+};
+
+// Aimed - 19434
+class spell_hun_aimed_shot : public SpellScriptLoader
+{
+    public:
+        spell_hun_aimed_shot() : SpellScriptLoader("spell_hun_aimed_shot") { }
+
+        class spell_hun_aimed_shot_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_aimed_shot_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 csv = GetHitDamage();
+
+                        if (_player->HasAura(HUNTER_SPELL_PIERCIG_SHOTS))
+                            if (GetSpell()->IsCritForTarget(target))
+                                _player->CastCustomSpell(HUNTER_SPELL_PIERCIG_SHOTS_EFFECT, SPELLVALUE_BASE_POINT0, csv, target, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_hun_aimed_shot_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_aimed_shot_SpellScript();
+        }
+};
+
+// Piercing Shots - 63468
+class spell_hun_piercing_shots : public SpellScriptLoader
+{
+    public:
+        spell_hun_piercing_shots() : SpellScriptLoader("spell_hun_piercing_shots") { }
+
+        class spell_hun_piercing_shots_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_piercing_shots_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                amount = int32(amount / 8);
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_hun_piercing_shots_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_piercing_shots_AuraScript();
+        }
 };
 
 // Binding Shot - 117405
@@ -753,65 +849,42 @@ class spell_hun_steady_shot : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                         _player->CastSpell(_player, HUNTER_SPELL_STEADY_SHOT_ENERGIZE, true);
             }
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 csv = GetHitDamage();
+
+                        if (_player->HasAura(HUNTER_SPELL_PIERCIG_SHOTS))
+                            if (GetSpell()->IsCritForTarget(target))
+                                _player->CastCustomSpell(HUNTER_SPELL_PIERCIG_SHOTS_EFFECT, SPELLVALUE_BASE_POINT0, csv, target, true);
+
+                        if (_player->HasAura(HUNTER_SPELL_STEADY_FOCUS))
+                        {
+                            if (!_player->HasAura(5012))
+                                _player->AddAura(5012, _player);
+                            else if (_player->HasAura(5012) && !_player->HasAura(53220))
+                            {
+                                _player->CastSpell(_player, 53220, true);
+                                _player->RemoveAura(5012, AURA_REMOVE_BY_DEFAULT);
+                            }
+                        }
+                    }
+                }
+            }
 
             void Register()
             {
                 OnHit += SpellHitFn(spell_hun_steady_shot_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_hun_steady_shot_SpellScript::HandleAfterHit);
             }
         };
 
         SpellScript* GetSpellScript() const
         {
             return new spell_hun_steady_shot_SpellScript();
-        }
-};
-
-// 13161 Aspect of the Beast
-class spell_hun_aspect_of_the_beast : public SpellScriptLoader
-{
-    public:
-        spell_hun_aspect_of_the_beast() : SpellScriptLoader("spell_hun_aspect_of_the_beast") { }
-
-        class spell_hun_aspect_of_the_beast_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_hun_aspect_of_the_beast_AuraScript);
-
-            bool Load()
-            {
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
-            }
-
-            bool Validate(SpellInfo const* /*entry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(HUNTER_SPELL_ASPECT_OF_THE_BEAST_PET))
-                    return false;
-                return true;
-            }
-
-            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (Player* caster = GetCaster()->ToPlayer())
-                    if (Pet* pet = caster->GetPet())
-                        pet->RemoveAurasDueToSpell(HUNTER_SPELL_ASPECT_OF_THE_BEAST_PET);
-            }
-
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (Player* caster = GetCaster()->ToPlayer())
-                    if (caster->GetPet())
-                        caster->CastSpell(caster, HUNTER_SPELL_ASPECT_OF_THE_BEAST_PET, true);
-            }
-
-            void Register()
-            {
-                AfterEffectApply += AuraEffectApplyFn(spell_hun_aspect_of_the_beast_AuraScript::OnApply, EFFECT_0, SPELL_AURA_UNTRACKABLE, AURA_EFFECT_HANDLE_REAL);
-                AfterEffectRemove += AuraEffectRemoveFn(spell_hun_aspect_of_the_beast_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_UNTRACKABLE, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_hun_aspect_of_the_beast_AuraScript();
         }
 };
 
@@ -840,53 +913,31 @@ class spell_hun_chimera_shot : public SpellScriptLoader
                     }
                 }
             }
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 csv = GetHitDamage();
+
+                            if (_player->HasAura(HUNTER_SPELL_PIERCIG_SHOTS))
+                                if (GetSpell()->IsCritForTarget(target))
+                                    _player->CastCustomSpell(HUNTER_SPELL_PIERCIG_SHOTS_EFFECT, SPELLVALUE_BASE_POINT0, csv, target, true);
+                    }
+                }
+            }
 
             void Register()
             {
                 OnHit += SpellHitFn(spell_hun_chimera_shot_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_hun_chimera_shot_SpellScript::HandleAfterHit);
             }
         };
 
         SpellScript* GetSpellScript() const
         {
             return new spell_hun_chimera_shot_SpellScript();
-        }
-};
-
-// 53412 Invigoration
-class spell_hun_invigoration : public SpellScriptLoader
-{
-    public:
-        spell_hun_invigoration() : SpellScriptLoader("spell_hun_invigoration") { }
-
-        class spell_hun_invigoration_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_invigoration_SpellScript);
-
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(HUNTER_SPELL_INVIGORATION_TRIGGERED))
-                    return false;
-                return true;
-            }
-
-            void HandleScriptEffect(SpellEffIndex /*effIndex*/)
-            {
-                if (Unit* unitTarget = GetHitUnit())
-                    if (AuraEffectPtr aurEff = unitTarget->GetDummyAuraEffect(SPELLFAMILY_HUNTER, 3487, 0))
-                        if (roll_chance_i(aurEff->GetAmount()))
-                            unitTarget->CastSpell(unitTarget, HUNTER_SPELL_INVIGORATION_TRIGGERED, true);
-            }
-
-            void Register()
-            {
-                OnEffectHitTarget += SpellEffectFn(spell_hun_invigoration_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_invigoration_SpellScript();
         }
 };
 
@@ -1398,6 +1449,9 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_barrage();
+    new spell_hun_aimed_shot();
+    new spell_hun_piercing_shots();
     new spell_hun_binding_shot();
     new spell_hun_binding_shot_zone();
     new spell_hun_glaive_toss_damages();
@@ -1413,9 +1467,7 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_rapid_fire();
     new spell_hun_cobra_shot();
     new spell_hun_steady_shot();
-    new spell_hun_aspect_of_the_beast();
     new spell_hun_chimera_shot();
-    new spell_hun_invigoration();
     new spell_hun_last_stand_pet();
     new spell_hun_masters_call();
     new spell_hun_readiness();

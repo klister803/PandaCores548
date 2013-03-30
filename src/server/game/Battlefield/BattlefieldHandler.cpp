@@ -398,7 +398,7 @@ void WorldSession::HandleRequestPvpReward(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_REQUEST_PVP_REWARDS");
 
-    //_player->SendPvpRewards();
+    _player->SendPvpRewards();
 }
 
 void WorldSession::HandleRequestRatedBgStats(WorldPacket& recvData)
@@ -411,7 +411,7 @@ void WorldSession::HandleRequestRatedBgStats(WorldPacket& recvData)
     data << uint32(0);  //unk2
     //data << _player->GetCurrencyWeekCap(CURRENCY_TYPE_CONQUEST_META_BG, true);
     data << uint32(0);  //unk3
-    data << _player->GetCurrency(CURRENCY_TYPE_CONQUEST_POINTS);
+    data << _player->GetCurrency(CURRENCY_TYPE_CONQUEST_POINTS, true);
     data << uint8(3);   //unk4
     data << uint32(0);  //unk5
     SendPacket(&data);

@@ -116,7 +116,8 @@ class spell_pal_sacred_shield_absorb : public SpellScriptLoader
 
             void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
             {
-                amount = int32(30 + GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 1.17f);
+                if (GetCaster())
+                    amount = int32(30 + GetCaster()->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_HOLY) * 1.17f);
             }
 
             void Register()
