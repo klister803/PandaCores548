@@ -114,7 +114,7 @@ class spell_pri_power_word_solace : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                     {
                         if (!_player->HasAura(PRIEST_SHADOWFORM_STANCE))
-                            _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.7f), POWER_MANA);
+                            _player->EnergizeBySpell(_player, GetSpellInfo()->Id, int32(_player->GetMaxPower(POWER_MANA) * 0.007f), POWER_MANA);
                         else
                         {
                             SetHitDamage(0);

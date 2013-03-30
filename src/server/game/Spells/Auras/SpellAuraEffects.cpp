@@ -709,6 +709,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
                 if (caster->GetTypeId() != TYPEID_PLAYER)
                     break;
 
+                // Basepoint hotfix
+                amount *= 10;
+
                 uint8 cp = caster->ToPlayer()->GetComboPoints();
                 int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
 
