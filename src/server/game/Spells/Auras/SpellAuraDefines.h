@@ -483,6 +483,5 @@ enum AuraObjectType
 {
     UNIT_AURA_TYPE,
     DYNOBJ_AURA_TYPE,
-    AREATRIGGEROBJ_AURA_TYPE,
 };
 #endif

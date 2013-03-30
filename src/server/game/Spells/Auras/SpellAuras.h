@@ -33,7 +33,6 @@ struct SpellProcEntry;
 class AuraEffect;
 class Aura;
 class DynamicObject;
-class AreaTriggerObject;
 class AuraScript;
 class ProcInfo;
 
@@ -107,7 +106,6 @@ class Aura : public std::enable_shared_from_this<Aura>
         WorldObject* GetOwner() const { return m_owner; }
         Unit* GetUnitOwner() const { ASSERT(GetType() == UNIT_AURA_TYPE); return (Unit*)m_owner; }
         DynamicObject* GetDynobjOwner() const { ASSERT(GetType() == DYNOBJ_AURA_TYPE); return (DynamicObject*)m_owner; }
-        AreaTriggerObject* GetAreaTriggerobjOwner() const { ASSERT(GetType() == AREATRIGGEROBJ_AURA_TYPE); return (AreaTriggerObject*)m_owner; }
 
         AuraObjectType GetType() const;
 

@@ -2060,9 +2060,6 @@ void Map::RemoveAllObjectsInRemoveList()
         case TYPEID_DYNAMICOBJECT:
             RemoveFromMap((DynamicObject*)obj, true);
             break;
-        case TYPEID_AREATRIGGEROBJECT:
-            RemoveFromMap((AreaTriggerObject*)obj, true);
-            break;
         case TYPEID_GAMEOBJECT:
             RemoveFromMap((GameObject*)obj, true);
             break;
@@ -2181,13 +2178,11 @@ template bool Map::AddToMap(Corpse*);
 template bool Map::AddToMap(Creature*);
 template bool Map::AddToMap(GameObject*);
 template bool Map::AddToMap(DynamicObject*);
-template bool Map::AddToMap(AreaTriggerObject*);
 
 template void Map::RemoveFromMap(Corpse*, bool);
 template void Map::RemoveFromMap(Creature*, bool);
 template void Map::RemoveFromMap(GameObject*, bool);
 template void Map::RemoveFromMap(DynamicObject*, bool);
-template void Map::RemoveFromMap(AreaTriggerObject*, bool);
 
 /* ******* Dungeon Instance Maps ******* */
 
@@ -2688,11 +2683,6 @@ GameObject* Map::GetGameObject(uint64 guid)
 DynamicObject* Map::GetDynamicObject(uint64 guid)
 {
     return ObjectAccessor::GetObjectInMap(guid, this, (DynamicObject*)NULL);
-}
-
-AreaTriggerObject* Map::GetAreaTriggerObject(uint64 guid)
-{
-    return ObjectAccessor::GetObjectInMap(guid, this, (AreaTriggerObject*)NULL);
 }
 
 void Map::UpdateIteratorBack(Player* player)

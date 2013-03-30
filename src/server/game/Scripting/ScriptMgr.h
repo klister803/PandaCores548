@@ -60,7 +60,6 @@ class Vehicle;
 class WorldPacket;
 class WorldSocket;
 class WorldObject;
-class AreaTriggerObject;
 
 struct AchievementCriteriaData;
 struct AuctionEntry;
@@ -626,13 +625,6 @@ class DynamicObjectScript : public ScriptObject, public UpdatableScript<DynamicO
         DynamicObjectScript(const char* name);
 };
 
-class AreaTriggerObjectScript : public ScriptObject, public UpdatableScript<AreaTriggerObject>
-{
-    protected:
-
-        AreaTriggerObjectScript(const char* name);
-};
-
 class TransportScript : public ScriptObject, public UpdatableScript<Transport>
 {
     protected:
@@ -982,10 +974,6 @@ class ScriptMgr
     public: /* DynamicObjectScript */
 
         void OnDynamicObjectUpdate(DynamicObject* dynobj, uint32 diff);
-
-    public: /* AreaTriggerObjectScript */
-
-        void OnAreaTriggerObjectUpdate(AreaTriggerObject* areaTriggerObj, uint32 diff);
 
     public: /* TransportScript */
 

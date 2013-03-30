@@ -34,7 +34,6 @@ struct SpellModifier;
 class Creature;
 class GameObject;
 class DynamicObject;
-class AreaTriggerObject;
 class Player;
 class Item;
 class WorldLocation;
