@@ -7885,7 +7885,7 @@ void Player::ModifyCurrency(uint32 id, int32 count, bool printLog/* = true*/, bo
 
     if (weekCap)
     {
-        ASSERT(weekCap >= oldWeekCount);
+        //ASSERT(weekCap >= oldWeekCount);
 
         // TODO: fix conquest points
         // if we get more then weekCap just set to limit
