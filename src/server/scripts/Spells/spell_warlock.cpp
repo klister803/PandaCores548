@@ -71,6 +71,46 @@ enum WarlockSpells
     WARLOCK_TWILIGHT_WARD_S12               = 131623,
     WARLOCK_TWILIGHT_WARD_METAMORPHOSIS_S12 = 131624,
     WARLOCK_SHADOWFLAME                     = 47960,
+    WARLOCK_SOUL_LEECH_HEAL                 = 108366,
+};
+
+// Called by Incinerate - 29722 and Chaos Bolt - 116858
+// Soul Leech - 108370
+class spell_warl_soul_leech : public SpellScriptLoader
+{
+    public:
+        spell_warl_soul_leech() : SpellScriptLoader("spell_warl_soul_leech") { }
+
+        class spell_warl_soul_leech_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_soul_leech_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 bp = int32(GetHitDamage() / 10);
+
+                        _player->CastCustomSpell(_player, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
+
+                        if (Guardian* pet = _player->GetGuardianPet())
+                            _player->CastCustomSpell(pet, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_warl_soul_leech_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_soul_leech_SpellScript();
+        }
 };
 
 // Sacrificial Pact - 108416
@@ -1432,6 +1472,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_soul_leech();
     new spell_warl_sacrificial_pact();
     new spell_warl_hand_of_guldan();
     new spell_warl_twilight_ward_s12();
