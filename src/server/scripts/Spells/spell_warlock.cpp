@@ -58,10 +58,256 @@ enum WarlockSpells
     WARLOCK_RAIN_OF_FIRE                    = 104232,
     WARLOCK_RAIN_OF_FIRE_TRIGGERED          = 42223,
     WARLOCK_SPAWN_PURPLE_DEMONIC_GATEWAY    = 113890,
+    WARLOCK_DEMONIC_GATEWAY_TELEPORT_GREEN  = 113896,
+    WARLOCK_DEMONIC_GATEWAY_TELEPORT_PURPLE = 120729,
+    WARLOCK_DEMONIC_GATEWAY_PERIODIC_CHARGE = 113901,
     WARLOCK_NIGHTFALL                       = 108558,
     WARLOCK_SOUL_SWAP_AURA                  = 86211,
     WARLOCK_SOUL_SWAP_VISUAL                = 92795,
     WARLOCK_GRIMOIRE_OF_SACRIFICE           = 108503,
+    WARLOCK_METAMORPHOSIS                   = 103958,
+    WARLOCK_DEMONIC_LEAP_JUMP               = 54785,
+    WARLOCK_ITEM_S12_TIER_4                 = 131632,
+    WARLOCK_TWILIGHT_WARD_S12               = 131623,
+    WARLOCK_TWILIGHT_WARD_METAMORPHOSIS_S12 = 131624,
+    WARLOCK_SHADOWFLAME                     = 47960,
+    WARLOCK_SOUL_LEECH_HEAL                 = 108366,
+    WARLOCK_DARK_REGENERATION               = 108359,
+};
+
+// Dark Regeneration - 108359
+class spell_warl_dark_regeneration : public SpellScriptLoader
+{
+    public:
+        spell_warl_dark_regeneration() : SpellScriptLoader("spell_warl_dark_regeneration") { }
+
+        class spell_warl_dark_regeneration_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_dark_regeneration_AuraScript);
+
+            void HandleApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetTarget())
+                    if (Guardian* pet = GetTarget()->GetGuardianPet())
+                        pet->CastSpell(pet, WARLOCK_DARK_REGENERATION, true);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_warl_dark_regeneration_AuraScript::HandleApply, EFFECT_0, SPELL_AURA_OBS_MOD_HEALTH, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_dark_regeneration_AuraScript();
+        }
+};
+
+// Called by Incinerate - 29722 and Chaos Bolt - 116858
+// Soul Leech - 108370
+class spell_warl_soul_leech : public SpellScriptLoader
+{
+    public:
+        spell_warl_soul_leech() : SpellScriptLoader("spell_warl_soul_leech") { }
+
+        class spell_warl_soul_leech_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_soul_leech_SpellScript);
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        int32 bp = int32(GetHitDamage() / 10);
+
+                        _player->CastCustomSpell(_player, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
+
+                        if (Guardian* pet = _player->GetGuardianPet())
+                            _player->CastCustomSpell(pet, WARLOCK_SOUL_LEECH_HEAL, &bp, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                AfterHit += SpellHitFn(spell_warl_soul_leech_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_soul_leech_SpellScript();
+        }
+};
+
+// Sacrificial Pact - 108416
+class spell_warl_sacrificial_pact : public SpellScriptLoader
+{
+    public:
+        spell_warl_sacrificial_pact() : SpellScriptLoader("spell_warl_sacrificial_pact") { }
+
+        class spell_warl_sacrificial_pact_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_sacrificial_pact_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr , int32 & amount, bool & )
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if(!GetCaster()->GetGuardianPet())
+                        amount = int32(GetCaster()->GetHealth() / 4);
+                    else if(GetCaster()->GetGuardianPet())
+                        amount = int32(GetCaster()->GetGuardianPet()->GetHealth() / 4);
+                }
+            }
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_sacrificial_pact_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_sacrificial_pact_AuraScript();
+        }
+};
+
+// Hand of Gul'Dan - 86040
+class spell_warl_hand_of_guldan : public SpellScriptLoader
+{
+    public:
+        spell_warl_hand_of_guldan() : SpellScriptLoader("spell_warl_hand_of_guldan") { }
+
+        class spell_warl_hand_of_guldan_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_hand_of_guldan_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->CastSpell(target, WARLOCK_SHADOWFLAME, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_hand_of_guldan_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_hand_of_guldan_SpellScript();
+        }
+};
+
+// Twilight Ward - 6229 and Twilight Ward (Metamorphosis) - 104048
+class spell_warl_twilight_ward_s12 : public SpellScriptLoader
+{
+    public:
+        spell_warl_twilight_ward_s12() : SpellScriptLoader("spell_warl_twilight_ward_s12") { }
+
+        class spell_warl_twilight_ward_s12_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_twilight_ward_s12_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(WARLOCK_ITEM_S12_TIER_4))
+                    {
+                        if (GetSpellInfo()->Id == 6229)
+                        {
+                            if (_player->HasAura(GetSpellInfo()->Id))
+                                _player->RemoveAura(GetSpellInfo()->Id);
+
+                            _player->CastSpell(_player, WARLOCK_TWILIGHT_WARD_S12, true);
+                        }
+                        else if (GetSpellInfo()->Id == 104048)
+                        {
+                            if (_player->HasAura(GetSpellInfo()->Id))
+                                _player->RemoveAura(GetSpellInfo()->Id);
+
+                            _player->CastSpell(_player, WARLOCK_TWILIGHT_WARD_METAMORPHOSIS_S12, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_twilight_ward_s12_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_twilight_ward_s12_SpellScript();
+        }
+};
+
+// Hellfire - 5857
+class spell_warl_hellfire : public SpellScriptLoader
+{
+    public:
+        spell_warl_hellfire() : SpellScriptLoader("spell_warl_hellfire") { }
+
+        class spell_warl_hellfire_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_hellfire_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 3, POWER_DEMONIC_FURY);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_hellfire_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_hellfire_SpellScript();
+        }
+};
+
+// Demonic Leap - 109151
+class spell_warl_demonic_leap : public SpellScriptLoader
+{
+    public:
+        spell_warl_demonic_leap() : SpellScriptLoader("spell_warl_demonic_leap") { }
+
+        class spell_warl_demonic_leap_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_demonic_leap_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    _player->CastSpell(_player, WARLOCK_METAMORPHOSIS, true);
+                    _player->CastSpell(_player, WARLOCK_DEMONIC_LEAP_JUMP, true);
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_warl_demonic_leap_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_demonic_leap_SpellScript();
+        }
 };
 
 // Called by Summon Felhunter - 691, Summon Succubus - 712, Summon Voidwalker - 697, Summon Imp - 688
@@ -271,6 +517,35 @@ class spell_warl_drain_soul : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_warl_drain_soul_AuraScript();
+        }
+};
+
+// Demonic Gateway (periodic add charge) - 113901
+class spell_warl_demonic_gateway_charges : public SpellScriptLoader
+{
+    public:
+        spell_warl_demonic_gateway_charges() : SpellScriptLoader("spell_warl_demonic_gateway_charges") { }
+
+        class spell_warl_demonic_gateway_charges_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_demonic_gateway_charges_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Unit* target = GetTarget())
+                    if (AuraPtr demonicGateway = target->GetAura(WARLOCK_DEMONIC_GATEWAY_PERIODIC_CHARGE))
+                        demonicGateway->ModCharges(1);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_demonic_gateway_charges_AuraScript::OnTick, EFFECT_1, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_demonic_gateway_charges_AuraScript();
         }
 };
 
@@ -1227,12 +1502,20 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_dark_regeneration();
+    new spell_warl_soul_leech();
+    new spell_warl_sacrificial_pact();
+    new spell_warl_hand_of_guldan();
+    new spell_warl_twilight_ward_s12();
+    new spell_warl_hellfire();
+    new spell_warl_demonic_leap();
     new spell_warl_grimoire_of_sacrifice();
     new spell_warl_burning_rush();
     new spell_warl_soul_swap_soulburn();
     new spell_warl_soul_swap();
     new spell_warl_nightfall();
     new spell_warl_drain_soul();
+    new spell_warl_demonic_gateway_charges();
     new spell_warl_demonic_gateway();
     new spell_warl_rain_of_fire();
     new spell_warl_chaos_bolt();

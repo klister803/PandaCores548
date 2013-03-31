@@ -3541,6 +3541,58 @@ public:
     }
 };
 
+/*######
+# npc_demonic_gateway_purple
+######*/
+
+class npc_demonic_gateway_purple : public CreatureScript
+{
+public:
+    npc_demonic_gateway_purple() : CreatureScript("npc_demonic_gateway_purple") { }
+
+    struct npc_demonic_gateway_purpleAI : public ScriptedAI
+    {
+        npc_demonic_gateway_purpleAI(Creature* creature) : ScriptedAI(creature)
+        {
+            Unit* owner = creature->GetOwner();
+
+            if (owner)
+                creature->CastSpell(creature, 113901, true); // Periodic add charge
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_demonic_gateway_purpleAI(creature);
+    }
+};
+
+/*######
+# new npc_demonic_gateway_green
+######*/
+
+class npc_demonic_gateway_green : public CreatureScript
+{
+public:
+    npc_demonic_gateway_green() : CreatureScript("npc_demonic_gateway_green") { }
+
+    struct npc_demonic_gateway_greenAI : public ScriptedAI
+    {
+        npc_demonic_gateway_greenAI(Creature* creature) : ScriptedAI(creature)
+        {
+            Unit* owner = creature->GetOwner();
+
+            if (owner)
+                creature->CastSpell(creature, 113901, true); // Periodic add charges
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_demonic_gateway_greenAI(creature);
+    }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3584,4 +3636,6 @@ void AddSC_npcs_special()
     new npc_frozen_orb();
     new npc_guardian_of_ancient_kings();
     new npc_power_word_barrier();
+    new npc_demonic_gateway_purple();
+    new npc_demonic_gateway_green();
 }

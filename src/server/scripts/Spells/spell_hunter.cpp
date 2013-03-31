@@ -73,6 +73,37 @@ enum HunterSpells
     HUNTER_SPELL_PIERCIG_SHOTS                   = 53238,
     HUNTER_SPELL_PIERCIG_SHOTS_EFFECT            = 63468,
     HUNTER_SPELL_STEADY_FOCUS                    = 53224,
+    HUNTER_SPELL_MASTERS_CALL                    = 62305,
+};
+
+// Barrage damage - 120361
+class spell_hun_barrage : public SpellScriptLoader
+{
+    public:
+        spell_hun_barrage() : SpellScriptLoader("spell_hun_barrage") { }
+
+        class spell_hun_barrage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_barrage_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (!target->HasAura(120360))
+                            SetHitDamage(GetHitDamage() / 2);
+            }
+
+            void Register()
+            {
+               OnHit += SpellHitFn(spell_hun_barrage_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_barrage_SpellScript();
+        }
 };
 
 // Aimed - 19434
@@ -1418,6 +1449,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_barrage();
     new spell_hun_aimed_shot();
     new spell_hun_piercing_shots();
     new spell_hun_binding_shot();

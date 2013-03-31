@@ -417,11 +417,11 @@ class Map : public GridRefManager<NGridType>
         void RemoveFromActive(Creature* obj);
 
         void SwitchGridContainers(Creature* creature, bool toWorldContainer);
-        template<class NOTIFIER> void VisitAll(const float &x, const float &y, float radius, NOTIFIER &notifier);
-        template<class NOTIFIER> void VisitFirstFound(const float &x, const float &y, float radius, NOTIFIER &notifier);
-        template<class NOTIFIER> void VisitWorld(const float &x, const float &y, float radius, NOTIFIER &notifier);
-        template<class NOTIFIER> void VisitGrid(const float &x, const float &y, float radius, NOTIFIER &notifier);
-        CreatureGroupHolderType CreatureGroupHolder;
+                template<class NOTIFIER> void VisitAll(const float &x, const float &y, float radius, NOTIFIER &notifier, bool loadGrids = false);
+                template<class NOTIFIER> void VisitFirstFound(const float &x, const float &y, float radius, NOTIFIER &notifier, bool loadGrids = false);
+                template<class NOTIFIER> void VisitWorld(const float &x, const float &y, float radius, NOTIFIER &notifier, bool loadGrids = false);
+                template<class NOTIFIER> void VisitGrid(const float &x, const float &y, float radius, NOTIFIER &notifier, bool loadGrids = false);
+        		CreatureGroupHolderType CreatureGroupHolder;
 
         void UpdateIteratorBack(Player* player);
 
@@ -563,10 +563,6 @@ class Map : public GridRefManager<NGridType>
         GridMap* GridMaps[MAX_NUMBER_OF_GRIDS][MAX_NUMBER_OF_GRIDS];
         std::bitset<TOTAL_NUMBER_OF_CELLS_PER_MAP*TOTAL_NUMBER_OF_CELLS_PER_MAP> marked_cells;
 
-        //these functions used to process player/mob aggro reactions and
-        //visibility calculations. Highly optimized for massive calculations
-        void ProcessRelocationNotifies(const uint32 diff);
-
         bool i_scriptLock;
         std::set<WorldObject*> i_objectsToRemove;
         std::map<WorldObject*, bool> i_objectsToSwitch;
@@ -684,11 +680,12 @@ inline void Map::Visit(Cell const& cell, TypeContainerVisitor<T, CONTAINER>& vis
 }
 
 template<class NOTIFIER>
-inline void Map::VisitAll(float const& x, float const& y, float radius, NOTIFIER& notifier)
+inline void Map::VisitAll(float const& x, float const& y, float radius, NOTIFIER& notifier, bool loadGrids)
 {
     CellCoord p(JadeCore::ComputeCellCoord(x, y));
     Cell cell(p);
-    cell.SetNoCreate();
+    if (!loadGrids)
+        cell.SetNoCreate();
 
     TypeContainerVisitor<NOTIFIER, WorldTypeMapContainer> world_object_notifier(notifier);
     cell.Visit(p, world_object_notifier, *this, radius, x, y);
@@ -698,11 +695,12 @@ inline void Map::VisitAll(float const& x, float const& y, float radius, NOTIFIER
 
 // should be used with Searcher notifiers, tries to search world if nothing found in grid
 template<class NOTIFIER>
-inline void Map::VisitFirstFound(const float &x, const float &y, float radius, NOTIFIER &notifier)
+inline void Map::VisitFirstFound(const float &x, const float &y, float radius, NOTIFIER &notifier, bool loadGrids)
 {
     CellCoord p(JadeCore::ComputeCellCoord(x, y));
     Cell cell(p);
-    cell.SetNoCreate();
+    if (!loadGrids)
+        cell.SetNoCreate();
 
     TypeContainerVisitor<NOTIFIER, WorldTypeMapContainer> world_object_notifier(notifier);
     cell.Visit(p, world_object_notifier, *this, radius, x, y);
@@ -714,22 +712,24 @@ inline void Map::VisitFirstFound(const float &x, const float &y, float radius, N
 }
 
 template<class NOTIFIER>
-inline void Map::VisitWorld(const float &x, const float &y, float radius, NOTIFIER &notifier)
+inline void Map::VisitWorld(const float &x, const float &y, float radius, NOTIFIER &notifier, bool loadGrids)
 {
     CellCoord p(JadeCore::ComputeCellCoord(x, y));
     Cell cell(p);
-    cell.SetNoCreate();
+    if (!loadGrids)
+        cell.SetNoCreate();
 
     TypeContainerVisitor<NOTIFIER, WorldTypeMapContainer> world_object_notifier(notifier);
     cell.Visit(p, world_object_notifier, *this, radius, x, y);
 }
 
 template<class NOTIFIER>
-inline void Map::VisitGrid(const float &x, const float &y, float radius, NOTIFIER &notifier)
+inline void Map::VisitGrid(const float &x, const float &y, float radius, NOTIFIER &notifier, bool loadGrids)
 {
     CellCoord p(JadeCore::ComputeCellCoord(x, y));
     Cell cell(p);
-    cell.SetNoCreate();
+    if (!loadGrids)
+        cell.SetNoCreate();
 
     TypeContainerVisitor<NOTIFIER, GridTypeMapContainer >  grid_object_notifier(notifier);
     cell.Visit(p, grid_object_notifier, *this, radius, x, y);
