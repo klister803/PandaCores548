@@ -2998,9 +2998,9 @@ public:
 ## npc_experience
 ######*/
 
-#define GOSSIP_CHOOSE_FACTION     "Je souhaiterais choisir ma faction"
-#define GOSSIP_TP_STORMIND        "Je souhaiterais me rendre a Hurlevent"
-#define GOSSIP_TP_ORGRI           "Je souhaiterais me rendre a Orgrimmar"
+#define GOSSIP_CHOOSE_FACTION     "I would like to choose my faction"
+#define GOSSIP_TP_STORMIND        "I would like to go to Stormwind"
+#define GOSSIP_TP_ORGRI           "I would like to go to Orgrimmar"
 
 class npc_choose_faction : public CreatureScript
 {
