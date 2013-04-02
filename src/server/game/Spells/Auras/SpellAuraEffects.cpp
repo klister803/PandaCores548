@@ -354,7 +354,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleUnused,                                    //295 unused (4.3.4)
     &AuraEffect::HandleAuraSetVehicle,                            //296 SPELL_AURA_SET_VEHICLE_ID sets vehicle on target
     &AuraEffect::HandleNULL,                                      //297 Spirit Burst spells
-    &AuraEffect::HandleNULL,                                      //298 70569 - Strangulating, maybe prevents talk or cast
+    &AuraEffect::HandleAuraStrangulate,                           //298 70569 - Strangulating, maybe prevents talk or cast
     &AuraEffect::HandleUnused,                                    //299 unused (4.3.4)
     &AuraEffect::HandleNoImmediateEffect,                         //300 SPELL_AURA_SHARE_DAMAGE_PCT implemented in Unit::DealDamage
     &AuraEffect::HandleNoImmediateEffect,                         //301 SPELL_AURA_SCHOOL_HEAL_ABSORB implemented in Unit::CalcHealAbsorb
@@ -708,6 +708,9 @@ int32 AuraEffect::CalculateAmount(Unit* caster)
 
                 if (caster->GetTypeId() != TYPEID_PLAYER)
                     break;
+
+                // Basepoint hotfix
+                amount *= 10;
 
                 uint8 cp = caster->ToPlayer()->GetComboPoints();
                 int32 AP = caster->GetTotalAttackPowerValue(BASE_ATTACK);
@@ -7360,4 +7363,27 @@ void AuraEffect::HandleProgressBar(AuraApplication const* aurApp, uint8 mode, bo
 
     target->SetMaxPower(POWER_ALTERNATE_POWER, maxPower);
     target->SetPower(POWER_ALTERNATE_POWER, startPower);
+}
+
+void AuraEffect::HandleAuraStrangulate(AuraApplication const* aurApp, uint8 mode, bool apply) const
+{
+    if (!(mode & AURA_EFFECT_HANDLE_REAL))
+        return;
+
+    Unit* target = aurApp->GetTarget();
+
+    if (!target)
+        return;
+
+    // Asphyxiate
+    if (m_spellInfo->Id == 108194)
+    {
+        int32 newZ = 10;
+        target->SetControlled(apply, UNIT_STATE_STUNNED);
+
+        if (apply)
+            target->UpdateHeight(target->GetPositionZ() + newZ);
+        else
+            target->UpdateHeight(target->GetPositionZ() - newZ);
+    }
 }
