@@ -602,15 +602,15 @@ void AddSC_terokkar_forest();
 void AddSC_zangarmarsh();
 
 // Pandaria
-void AddSC_instance_temple_of_jade_serpent();   // Temple of Jade Serpent
+void AddSC_instance_temple_of_jade_serpent();       // Temple of Jade Serpent
 void AddSC_boss_wise_mari();
 void AddSC_boss_lorewalker_stonestep();
 void AddSC_boss_liu_flameheat();
 void AddSC_boss_sha_of_doubt();
-void AddSC_instance_stormstout_brewery();       // The Stormstout Brewery
+void AddSC_instance_stormstout_brewery();           // The Stormstout Brewery
 void AddSC_stormstout_brewery();
 void AddSC_boss_ook_ook();
-void AddSC_instance_gate_setting_sun();         // Gate of the Setting Sun
+void AddSC_instance_gate_setting_sun();             // Gate of the Setting Sun
 void AddSC_gate_setting_sun();
 void AddSC_boss_saboteur_kiptilak();
 void AddSC_boss_striker_gadok();
@@ -619,16 +619,18 @@ void AddSC_boss_raigonn();
 void AddSC_boss_sha_of_anger();
 void AddSC_boss_galion();
 //void AddSC_boss_stone_guard();
-void AddSC_instance_mogu_shan_palace();         // Mogu'Shan Palace
+void AddSC_instance_mogu_shan_palace();             // Mogu'Shan Palace
 void AddSC_boss_trial_of_the_king();
 void AddSC_boss_gekkan();
 void AddSC_boss_xin_the_weaponmaster();
-void AddSC_instance_shadopan_monastery();       // Shadopan Monastery
+void AddSC_instance_shadopan_monastery();           // Shadopan Monastery
 void AddSC_shadopan_monastery();
 void AddSC_boss_gu_cloudstrike();
 void AddSC_boss_master_snowdrift();
 void AddSC_boss_sha_of_violence();
 void AddSC_boss_taran_zhu();
+void AddSC_instance_siege_of_the_niuzoa_temple();   // Siege of the Niuzoa Temple
+void AddSC_boss_jinbak();
 
 // battlegrounds
 
@@ -1274,34 +1276,36 @@ void AddNorthrendScripts()
 void AddPandarieScripts()
 {
 #ifdef SCRIPTS
-    AddSC_instance_temple_of_jade_serpent();    // Temple of Jade Serpent
+    AddSC_instance_temple_of_jade_serpent();        // Temple of Jade Serpent
     AddSC_boss_wise_mari();
     AddSC_boss_lorewalker_stonestep();
     AddSC_boss_liu_flameheat();
     AddSC_boss_sha_of_doubt();
-    AddSC_instance_stormstout_brewery();        // The Stormstout Brewery
+    AddSC_instance_stormstout_brewery();            // The Stormstout Brewery
     AddSC_stormstout_brewery();
     AddSC_boss_ook_ook();
-    AddSC_instance_mogu_shan_palace();          // The Mogu'Shan Palace
+    AddSC_instance_mogu_shan_palace();              // The Mogu'Shan Palace
     AddSC_boss_trial_of_the_king();
     AddSC_boss_gekkan();
     AddSC_boss_xin_the_weaponmaster();
     AddSC_WanderingIsland();
-    AddSC_instance_gate_setting_sun();          // Gate of the Setting Sun
+    AddSC_instance_gate_setting_sun();              // Gate of the Setting Sun
     AddSC_gate_setting_sun();
     AddSC_boss_saboteur_kiptilak();
     AddSC_boss_striker_gadok();
     AddSC_boss_commander_rimok();
     AddSC_boss_raigonn();
-    AddSC_boss_sha_of_anger();                   //Pandaria World Bosses
+    AddSC_boss_sha_of_anger();                      //Pandaria World Bosses
     AddSC_boss_galion();
     //AddSC_boss_stone_guard();
-    AddSC_instance_shadopan_monastery();          // Shadopan Monastery
+    AddSC_instance_shadopan_monastery();            // Shadopan Monastery
     AddSC_shadopan_monastery();
     AddSC_boss_gu_cloudstrike();
     AddSC_boss_master_snowdrift();
     AddSC_boss_sha_of_violence();
     AddSC_boss_taran_zhu();
+    AddSC_instance_siege_of_the_niuzoa_temple();    // Siege of the Niuzoa Temple
+    AddSC_boss_jinbak();
 #endif
 }
 
