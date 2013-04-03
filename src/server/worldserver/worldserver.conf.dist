@@ -2808,6 +2808,9 @@ Logger.Opcodes=41,6,Console Server
 
 Loggers=Root Chat DBErrors GM RA Warden Character Load WorldServer Opcodes
 
+#
+###################################################################################################
+
 ###################################################################################################
 #
 #  GUILD LEVELING SETTINGS
@@ -2866,6 +2869,92 @@ Guild.DailyXPCap = 7807500
 #
 
 Guild.WeeklyReputationCap = 4375
+
+#
+###################################################################################################
+
+###################################################################################################
+#
+# CURRENCIES SETTINGS
+#
+#    Currency.ResetInterval
+#        How often should currency week count reset (days)
+#        Default: 7 (weekly)
+#
+
+Currency.ResetInterval = 7
+
+#
+#    Currency.ResetWeekDay
+#        Week day when currency week count is reset (0..6) 0 == Sunday
+#        Default: 3 (Wednesday)
+#
+
+Currency.ResetWeekDay = 3
+
+#
+#    Currency.ResetHour
+#        Hour of a day when currency week count is reset (0..23)
+#        Default: 6
+#
+
+Currency.ResetHour = 6
+
+#
+#    Currency.StartHonorPoints
+#        Amount of honor points that new players will start with
+#        Default: 0 (with precision)
+#
+
+Currency.StartHonorPoints = 0
+
+#
+#    Currency.MaxHonorPoints
+#        Amount honor points a player can have
+#        Default: 4000
+#
+
+Currency.MaxHonorPoints = 4000
+
+#
+#    Currency.StartJusticePoints
+#        Amount of justice points that new players will start with
+#        Default: 0 (with precision)
+#
+
+Currency.StartJusticePoints = 0
+
+#
+#    Currency.MaxJusticePoints
+#        Amount justice points a player can have
+#        Default: 4000
+#
+
+Currency.MaxJusticePoints = 3000
+
+#
+#    Currency.StartConquestPoints
+#        Amount of conquest points that new players will start with
+#        Default: 0 (with precision)
+#
+
+Currency.StartConquestPoints = 0
+
+#
+#    Currency.ConquestPointsDefaultWeekCap
+#        Amount of conquest points that player can earn per week
+#        Default: 1350
+#
+
+Currency.ConquestPointsDefaultWeekCap = 1350
+
+#
+#    Currency.ConquestPointsArenaReward
+#        Amount of conquest points rewarded by winning arenas
+#        Default: 180
+#
+
+Currency.ConquestPointsArenaReward = 180
 
 #
 ###################################################################################################
