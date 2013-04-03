@@ -6292,6 +6292,30 @@ void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
 
                 break;
             }
+            case 115460: // Healing Sphere
+            {
+                int32 count = caster->CountDynObject(m_spellInfo->Id);
+
+                if (count > 3)
+                {
+                    std::list<DynamicObject*> healingSphereList;
+                    caster->GetDynObjectList(healingSphereList, m_spellInfo->Id);
+
+                    if (!healingSphereList.empty())
+                    {
+                        healingSphereList.sort(JadeCore::DurationPctOrderPred());
+
+                        for (auto itr : healingSphereList)
+                        {
+                            DynamicObject* healingSphere = itr;
+                            healingSphere->SetDuration(0);
+                            break;
+                        }
+                    }
+                }
+
+                break;
+            }
             default:
                 break;
         }

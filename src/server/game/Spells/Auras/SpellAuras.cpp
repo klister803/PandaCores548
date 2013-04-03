@@ -2216,7 +2216,28 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
                         for (auto itr : targetList)
                         {
                             dynObjOwnerCaster->CastSpell(itr, 121557, true); // Angelic Feather increase speed
-                            GetDynobjOwner()->Remove();
+                            GetDynobjOwner()->SetDuration(0);
+                            return;
+                        }
+                    }
+
+                    break;
+                }
+                case 115460: // Healing Sphere
+                {
+                    std::list<Unit*> targetList;
+                    radius = 1.0f;
+
+                    JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
+                    JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
+                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
+
+                    if (!targetList.empty())
+                    {
+                        for (auto itr : targetList)
+                        {
+                            dynObjOwnerCaster->CastSpell(itr, 115464, true); // Healing Sphere heal
+                            GetDynobjOwner()->SetDuration(0);
                             return;
                         }
                     }
