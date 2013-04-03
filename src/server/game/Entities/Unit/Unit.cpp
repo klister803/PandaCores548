@@ -4818,6 +4818,18 @@ int32 Unit::CountDynObject(uint32 spellId)
     return count;
 }
 
+void Unit::GetDynObjectList(std::list<DynamicObject*> &list, uint32 spellId)
+{
+    if (m_dynObj.empty())
+        return;
+    for (DynObjectList::const_iterator i = m_dynObj.begin(); i != m_dynObj.end();++i)
+    {
+        DynamicObject* dynObj = *i;
+        if (dynObj->GetSpellId() == spellId)
+            list.push_back(dynObj);
+    }
+}
+
 void Unit::RemoveDynObject(uint32 spellId)
 {
     if (m_dynObj.empty())
