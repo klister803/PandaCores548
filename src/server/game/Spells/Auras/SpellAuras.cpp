@@ -2191,11 +2191,41 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
             JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
             GetDynobjOwner()->VisitNearbyObject(radius, searcher);
         }
-        else
+        else if (GetSpellInfo()->Effects[effIndex].Effect != SPELL_EFFECT_CREATE_AREATRIGGER)
         {
             JadeCore::AnyAoETargetUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
             JadeCore::UnitListSearcher<JadeCore::AnyAoETargetUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
             GetDynobjOwner()->VisitNearbyObject(radius, searcher);
+        }
+        else
+        {
+            // Custom MoP Script
+            switch (GetSpellInfo()->Id)
+            {
+                case 121536: // Angelic Feather
+                {
+                    std::list<Unit*> targetList;
+                    radius = 1.0f;
+
+                    JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
+                    JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
+                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
+
+                    if (!targetList.empty())
+                    {
+                        for (auto itr : targetList)
+                        {
+                            dynObjOwnerCaster->CastSpell(itr, 121557, true); // Angelic Feather increase speed
+                            GetDynobjOwner()->Remove();
+                            return;
+                        }
+                    }
+
+                    break;
+                }
+                default:
+                    break;
+            }
         }
 
         for (UnitList::iterator itr = targetList.begin(); itr!= targetList.end();++itr)

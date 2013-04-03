@@ -6273,7 +6273,22 @@ void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
                 int32 count = caster->CountDynObject(m_spellInfo->Id);
 
                 if (count > 3)
-                    dynObj->Remove();
+                {
+                    std::list<DynamicObject*> angelicFeatherList;
+                    caster->GetDynObjectList(angelicFeatherList, m_spellInfo->Id);
+
+                    if (!angelicFeatherList.empty())
+                    {
+                        angelicFeatherList.sort(JadeCore::DurationPctOrderPred());
+
+                        for (auto itr : angelicFeatherList)
+                        {
+                            DynamicObject* angelicFeather = itr;
+                            angelicFeather->SetDuration(0);
+                            break;
+                        }
+                    }
+                }
 
                 break;
             }
