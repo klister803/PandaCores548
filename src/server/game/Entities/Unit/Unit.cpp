@@ -9555,6 +9555,31 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
         // Ancestral Vigor - 105284
         unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
     }
+    // 117907 - Mastery : Gift of the Serpent
+    if (unit && unit->GetTypeId() == TYPEID_PLAYER && addhealth > 0 && unit->HasAura(117907))
+    {
+        float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.22f;
+
+        if (roll_chance_f(Mastery))
+        {
+            std::list<Unit*> targetList;
+
+            JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(unit, unit, 6.0f);
+            JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(unit, targetList, u_check);
+            unit->VisitNearbyObject(6.0f, searcher);
+
+            if (!targetList.empty())
+            {
+                targetList.sort(JadeCore::HealthPctOrderPred());
+
+                for (auto itr : targetList)
+                {
+                    unit->CastSpell(itr, 119031, true);
+                    break;
+                }
+            }
+        }
+    }
     // 76669 - Mastery : Illuminated Healing
     if (unit && victim && addhealth != 0)
     {

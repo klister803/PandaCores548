@@ -2244,6 +2244,27 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
 
                     break;
                 }
+                case 119031: // Gift of the Serpent (Mastery)
+                {
+                    std::list<Unit*> targetList;
+                    radius = 1.0f;
+
+                    JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
+                    JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
+                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
+
+                    if (!targetList.empty())
+                    {
+                        for (auto itr : targetList)
+                        {
+                            dynObjOwnerCaster->CastSpell(itr, 124041, true); // Gift of the Serpent heal
+                            GetDynobjOwner()->SetDuration(0);
+                            return;
+                        }
+                    }
+
+                    break;
+                }
                 default:
                     break;
             }
