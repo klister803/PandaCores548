@@ -2265,6 +2265,27 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
 
                     break;
                 }
+                case 122035: // Path of Blossom
+                {
+                    std::list<Unit*> targetList;
+                    radius = 1.0f;
+
+                    JadeCore::NearestAttackableUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
+                    JadeCore::UnitListSearcher<JadeCore::NearestAttackableUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
+                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
+
+                    if (!targetList.empty())
+                    {
+                        for (auto itr : targetList)
+                        {
+                            dynObjOwnerCaster->CastSpell(itr, 122036, true); // Path of Blossom damage
+                            GetDynobjOwner()->SetDuration(0);
+                            return;
+                        }
+                    }
+
+                    break;
+                }
                 default:
                     break;
             }
