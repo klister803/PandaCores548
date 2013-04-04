@@ -2946,7 +2946,7 @@ Currency.StartConquestPoints = 0
 #        Default: 1350
 #
 
-Currency.ConquestPointsDefaultWeekCap = 1350
+Currency.ConquestPointsDefaultWeekCap = 1800
 
 #
 #    Currency.ConquestPointsArenaReward
