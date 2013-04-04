@@ -670,16 +670,30 @@ class spell_monk_zen_sphere : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_zen_sphere_SpellScript);
 
+            bool active;
+
             void HandleBeforeHit()
+            {
+                active = false;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (target->HasAura(SPELL_MONK_ZEN_SPHERE_HEAL))
+                            active = true;
+            }
+
+            void HandleAfterHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (target->HasAura(SPELL_MONK_ZEN_SPHERE_HEAL))
+                        if (active)
                         {
                             _player->CastSpell(_player, SPELL_MONK_ZEN_SPHERE_DETONATE_HEAL, true);
                             _player->CastSpell(_player, SPELL_MONK_ZEN_SPHERE_DETONATE_DAMAGE, true);
+                            _player->RemoveAura(SPELL_MONK_ZEN_SPHERE_HEAL);
+                            active = false;
                         }
                     }
                 }
@@ -688,6 +702,7 @@ class spell_monk_zen_sphere : public SpellScriptLoader
             void Register()
             {
                 BeforeHit += SpellHitFn(spell_monk_zen_sphere_SpellScript::HandleBeforeHit);
+                AfterHit += SpellHitFn(spell_monk_zen_sphere_SpellScript::HandleAfterHit);
             }
         };
 
