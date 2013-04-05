@@ -2140,21 +2140,11 @@ class spell_item_gen_alchemy_mop : public SpellScriptLoader
                 return GetCaster()->GetTypeId() == TYPEID_PLAYER;
             }
 
-            SpellCastResult CheckRequirement()
-            {
-                if (GetCaster()->GetTypeId() == TYPEID_PLAYER && HasDiscoveredAllSpells(114751, GetCaster()->ToPlayer()))
-                {
-                    SetCustomCastResultMessage(SPELL_CUSTOM_ERROR_LEARNED_EVERYTHING);
-                    return SPELL_FAILED_CUSTOM_ERROR;
-                }
-
-                return SPELL_CAST_OK;
-            }
-
             void HandleOnHit()
             {
+                uint8 chance = urand(1,5); // not official, todo: find the rate
                 Player* caster = GetCaster()->ToPlayer();
-                if(caster)
+                if (caster && GetCaster()->GetTypeId() == TYPEID_PLAYER && !HasDiscoveredAllSpells(114751, GetCaster()->ToPlayer()) && chance == 1)
                 {
                     if (uint32 discoveredSpellId = GetExplicitDiscoverySpell(114751, caster->ToPlayer()))
                         caster->learnSpell(discoveredSpellId, false);
@@ -2163,7 +2153,6 @@ class spell_item_gen_alchemy_mop : public SpellScriptLoader
 
             void Register()
             {
-                OnCheckCast += SpellCheckCastFn(spell_item_gen_alchemy_mop_SpellScript::CheckRequirement);
                 OnHit += SpellHitFn(spell_item_gen_alchemy_mop_SpellScript::HandleOnHit);
             }
 

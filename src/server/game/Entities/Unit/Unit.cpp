@@ -4803,6 +4803,33 @@ DynamicObject* Unit::GetDynObject(uint32 spellId)
     return NULL;
 }
 
+int32 Unit::CountDynObject(uint32 spellId)
+{
+    int32 count = 0;
+
+    if (m_dynObj.empty())
+        return 0;
+    for (DynObjectList::const_iterator i = m_dynObj.begin(); i != m_dynObj.end();++i)
+    {
+        DynamicObject* dynObj = *i;
+        if (dynObj->GetSpellId() == spellId)
+            count++;
+    }
+    return count;
+}
+
+void Unit::GetDynObjectList(std::list<DynamicObject*> &list, uint32 spellId)
+{
+    if (m_dynObj.empty())
+        return;
+    for (DynObjectList::const_iterator i = m_dynObj.begin(); i != m_dynObj.end();++i)
+    {
+        DynamicObject* dynObj = *i;
+        if (dynObj->GetSpellId() == spellId)
+            list.push_back(dynObj);
+    }
+}
+
 void Unit::RemoveDynObject(uint32 spellId)
 {
     if (m_dynObj.empty())
@@ -8060,7 +8087,15 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
-        //Shadow infusion
+        // Sudden Doom
+        case 49530:
+        {
+            if (!roll_chance_i(15))
+                return false;
+
+            break;
+        }
+        // Shadow infusion
         case 49572:
         {
             if (!procSpell)
@@ -9520,6 +9555,31 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
         // Ancestral Vigor - 105284
         unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
     }
+    // 117907 - Mastery : Gift of the Serpent
+    if (unit && unit->GetTypeId() == TYPEID_PLAYER && addhealth > 0 && unit->HasAura(117907))
+    {
+        float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.22f;
+
+        if (roll_chance_f(Mastery))
+        {
+            std::list<Unit*> targetList;
+
+            JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(unit, unit, 6.0f);
+            JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(unit, targetList, u_check);
+            unit->VisitNearbyObject(6.0f, searcher);
+
+            if (!targetList.empty())
+            {
+                targetList.sort(JadeCore::HealthPctOrderPred());
+
+                for (auto itr : targetList)
+                {
+                    unit->CastSpell(itr, 119031, true);
+                    break;
+                }
+            }
+        }
+    }
     // 76669 - Mastery : Illuminated Healing
     if (unit && victim && addhealth != 0)
     {
@@ -10014,7 +10074,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
 
     // Chaos Bolt - 116858 and Soul Fire - 6353
     // damage is increased by your critical strike chance
-    if (GetTypeId() == TYPEID_PLAYER && spellProto && spellProto->Id == 116858 && spellProto->Id == 6353)
+    if (GetTypeId() == TYPEID_PLAYER && spellProto && (spellProto->Id == 116858 || spellProto->Id == 6353))
     {
         float crit_chance;
         crit_chance = GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(spellProto->GetSchoolMask()));
@@ -10755,8 +10815,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 127626 || spellProto->Id == 81751)
         return healamount;
 
-    // No bonus for Leader of the Pack
-    if (spellProto->Id == 34299)
+    // No bonus for Leader of the Pack or Soul Leech
+    if (spellProto->Id == 34299 || spellProto->Id == 108366)
         return healamount;
 
     // No bonus for Living Seed

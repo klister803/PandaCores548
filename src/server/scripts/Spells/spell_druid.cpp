@@ -84,6 +84,101 @@ enum DruidSpells
     SPELL_DRUID_BERSERK_BEAR                = 50334,
     SPELL_DRUID_BERSERK_CAT                 = 106951,
     SPELL_DRUID_STAMPEDING_ROAR             = 106898,
+    SPELL_DRUID_SOLAR_BEAM                  = 78675,
+    SPELL_DRUID_SOLAR_BEAM_SILENCE          = 81261,
+    SPELL_DRUID_URSOLS_VORTEX_AREA_TRIGGER  = 102793,
+    SPELL_DRUID_URSOLS_VORTEX_SNARE         = 127797,
+    SPELL_DRUID_URSOLS_VORTEX_JUMP_DEST     = 118283,
+};
+
+// Ursol's Vortex - 102793
+class spell_dru_ursols_vortex : public SpellScriptLoader
+{
+    public:
+        spell_dru_ursols_vortex() : SpellScriptLoader("spell_dru_ursols_vortex") { }
+
+        class spell_dru_ursols_vortex_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dru_ursols_vortex_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (!target->HasAura(SPELL_DRUID_URSOLS_VORTEX_AREA_TRIGGER))
+                            _player->CastSpell(target, SPELL_DRUID_URSOLS_VORTEX_SNARE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dru_ursols_vortex_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dru_ursols_vortex_SpellScript();
+        }
+
+        class spell_dru_ursols_vortex_snare_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_ursols_vortex_snare_AuraScript);
+
+            std::list<Unit*> targetList;
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                aurEff->GetTargetList(targetList);
+
+                for (auto itr : targetList)
+                {
+                    if (Unit* caster = GetCaster())
+                        if (DynamicObject* dynObj = caster->GetDynObject(SPELL_DRUID_URSOLS_VORTEX_AREA_TRIGGER))
+                            if (itr->GetDistance(dynObj) > 10.0f && !itr->HasAura(SPELL_DRUID_URSOLS_VORTEX_JUMP_DEST))
+                                itr->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_URSOLS_VORTEX_JUMP_DEST, true);
+                }
+
+                targetList.clear();
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_dru_ursols_vortex_snare_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_DECREASE_SPEED);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_ursols_vortex_snare_AuraScript();
+        }
+};
+
+// Solar beam - 78675
+class spell_dru_solar_beam : public SpellScriptLoader
+{
+    public:
+        spell_dru_solar_beam() : SpellScriptLoader("spell_dru_solar_beam") { }
+
+        class spell_dru_solar_beam_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_dru_solar_beam_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (DynamicObject* dynObj = GetCaster()->GetDynObject(SPELL_DRUID_SOLAR_BEAM))
+                    GetCaster()->CastSpell(dynObj->GetPositionX(), dynObj->GetPositionY(), dynObj->GetPositionZ(), SPELL_DRUID_SOLAR_BEAM_SILENCE, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_dru_solar_beam_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_dru_solar_beam_AuraScript();
+        }
 };
 
 // Dash - 1850
@@ -2137,6 +2232,8 @@ class spell_dru_survival_instincts : public SpellScriptLoader
 
 void AddSC_druid_spell_scripts()
 {
+    new spell_dru_ursols_vortex();
+    new spell_dru_solar_beam();
     new spell_dru_dash();
     new spell_dru_berserker();
     new spell_dru_rip_duration();

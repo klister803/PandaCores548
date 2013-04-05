@@ -39,6 +39,7 @@
 #include "../SharedPtrs/SharedPtrs.h"
 #include "Timer.h"
 #include <list>
+#include "../DynamicObject/DynamicObject.h"
 
 #define WORLD_TRIGGER   12999
 
@@ -2048,6 +2049,8 @@ class Unit : public WorldObject
         void _RegisterDynObject(DynamicObject* dynObj);
         void _UnregisterDynObject(DynamicObject* dynObj);
         DynamicObject* GetDynObject(uint32 spellId);
+        int32 CountDynObject(uint32 spellId);
+        void GetDynObjectList(std::list<DynamicObject*> &list, uint32 spellId);
         void RemoveDynObject(uint32 spellId);
         void RemoveAllDynObjects();
 
@@ -2464,6 +2467,21 @@ namespace JadeCore
             {
                 float rA = a->GetMaxHealth() ? float(a->GetHealth()) / float(a->GetMaxHealth()) : 0.0f;
                 float rB = b->GetMaxHealth() ? float(b->GetHealth()) / float(b->GetMaxHealth()) : 0.0f;
+                return m_ascending ? rA < rB : rA > rB;
+            }
+        private:
+            const bool m_ascending;
+    };
+
+    // Binary predicate for sorting DynamicObjects based on value of duration
+    class DurationPctOrderPred
+    {
+        public:
+            DurationPctOrderPred(bool ascending = true) : m_ascending(ascending) {}
+            bool operator() (const DynamicObject* a, const DynamicObject* b) const
+            {
+                int32 rA = a->GetDuration() ? float(a->GetDuration()) : 0;
+                int32 rB = b->GetDuration() ? float(b->GetDuration()) : 0;
                 return m_ascending ? rA < rB : rA > rB;
             }
         private:
