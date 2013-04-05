@@ -86,6 +86,35 @@ enum MageSpells
     SPELL_MAGE_RING_OF_FROST_DUMMY               = 91264,
     SPELL_MAGE_PYROMANIAC_AURA                   = 132209,
     SPELL_MAGE_PYROMANIAC_DAMAGE_DONE            = 132210,
+    SPELL_MAGE_MIRROR_IMAGE_SUMMON               = 58832,
+};
+
+// Mirror Images - 55342
+class spell_mage_mirror_images : public SpellScriptLoader
+{
+    public:
+        spell_mage_mirror_images() : SpellScriptLoader("spell_mage_mirror_images") { }
+
+        class spell_mage_mirror_images_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_mirror_images_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->CastSpell(_player, SPELL_MAGE_MIRROR_IMAGE_SUMMON, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_mirror_images_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_mirror_images_SpellScript();
+        }
 };
 
 // Called by Nether Tempest - 114923, Frost Bomb - 112948 and Living Bomb - 44457
@@ -1374,6 +1403,7 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_mirror_images();
     new spell_mage_pyromaniac();
     new spell_mage_ring_of_frost();
     new spell_mage_ring_of_frost_freeze();

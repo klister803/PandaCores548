@@ -3150,6 +3150,18 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 45204: // Mirror Image - Clone Me!
+                spellInfo->AttributesEx6 |= SPELL_ATTR6_CAN_TARGET_INVISIBLE;
+                spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+                break;
+            case 41055: // Copy Weapon Spells
+            case 45206:
+            case 63416:
+            case 69891:
+            case 69892:
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
+                spellInfo->Mechanic = 0;
+                break;
             case 115175:// Soothing Mists
                 spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
                 break;
