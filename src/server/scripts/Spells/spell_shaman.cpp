@@ -1079,7 +1079,13 @@ class spell_sha_lava_lash : public SpellScriptLoader
 
                                     for (auto itr : targetList)
                                     {
-                                        if (!_player->IsValidAttackTarget(itr) || itr->GetGUID() == target->GetGUID())
+                                        if (!_player->IsValidAttackTarget(itr))
+                                            continue;
+
+                                        if (itr->GetGUID() == target->GetGUID())
+                                            continue;
+
+                                        if (itr->GetGUID() == _player->GetGUID())
                                             continue;
 
                                         if (hitTargets >= 4)
