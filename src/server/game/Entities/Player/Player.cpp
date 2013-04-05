@@ -4699,7 +4699,8 @@ void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
         // check if spellentry is present and if the cooldown is less or equal to 10 min
         if (entry &&
             entry->RecoveryTime <= 10 * MINUTE * IN_MILLISECONDS &&
-            entry->CategoryRecoveryTime <= 10 * MINUTE * IN_MILLISECONDS)
+            entry->CategoryRecoveryTime <= 10 * MINUTE * IN_MILLISECONDS &&
+            (entry->CategoryFlags & SPELL_CATEGORY_FLAGS_IS_DAYLY_COOLDOWN) == 0)
         {
             // remove & notify
             RemoveSpellCooldown(itr->first, true);
