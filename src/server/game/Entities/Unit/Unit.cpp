@@ -5518,7 +5518,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
 
                     if (GetEntry() == 62982 || GetEntry() == 67236) // Mindbender
                     {
-                        target->EnergizeBySpell(target, 123051, int32(1.3f * target->GetPower(POWER_MANA)), POWER_MANA);
+                        target->EnergizeBySpell(target, 123051, int32(0.013f * target->GetPower(POWER_MANA)), POWER_MANA);
                         return false;
                     }
 
