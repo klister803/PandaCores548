@@ -4211,6 +4211,22 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
             }
             break;
         }
+        case SPELLFAMILY_HUNTER:
+        {
+            switch (m_spellInfo->Id)
+            {
+                // Invigoration
+                case 53412:
+                {
+                    if (Player* owner = m_caster->GetOwner()->ToPlayer())
+                        if (AuraEffectPtr aurEff = owner->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_HUNTER, 3487, 0))
+                            owner->EnergizeBySpell(owner, 53412, aurEff->GetAmount(), POWER_FOCUS);
+                    break;
+                }
+
+            }
+            break;
+        }
         case SPELLFAMILY_DEATHKNIGHT:
         {
             // Pestilence
