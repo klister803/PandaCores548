@@ -7256,10 +7256,10 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     return false;
 
                 // Runic Corruption - maybe only this need
-                if (AuraEffect const* runicCorruption = GetDummyAuraEffect(SPELLFAMILY_DEATHKNIGHT, 4068, 0))
+                if (constAuraEffectPtr runicCorruption = GetDummyAuraEffect(SPELLFAMILY_DEATHKNIGHT, 4068, 0))
                 {
                     int32 basepoints0 = runicCorruption->GetAmount();
-                    if (Aura* aur = GetAura(51460))
+                    if (AuraPtr aur = GetAura(51460))
                         aur->SetDuration(aur->GetDuration() + 3000);
                     else
                         CastCustomSpell(this, 51460, &basepoints0, NULL, NULL, true);
