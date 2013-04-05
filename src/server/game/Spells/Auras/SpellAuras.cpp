@@ -1288,12 +1288,44 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     }
                 }
                 break;
+            case SPELLFAMILY_PALADIN:
+                if (!caster)
+                    break;
+
+                switch (m_spellInfo->Id)
+                {
+                    // Grand Crusader
+                    case 85416:
+                        caster->ToPlayer()->RemoveSpellCooldown(31935, true);
+                        break;
+                    default:
+                        break;
+                }
+                break;
             case SPELLFAMILY_ROGUE:
                 // Sprint (skip non player casted spells by category)
                 if (GetSpellInfo()->SpellFamilyFlags[0] & 0x40 && GetSpellInfo()->Category == 44)
+                {
                     // in official maybe there is only one icon?
                     if (target->HasAura(58039)) // Glyph of Blurred Speed
                         target->CastSpell(target, 61922, true); // Sprint (waterwalk)
+                }
+
+                switch (GetId())
+                {
+                    // Blind
+                    case 2094:
+                    {
+                        // Glyph of Blind
+                        if (caster && caster->HasAura(91299))
+                        {
+                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE, 0, 0, 32409);
+                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_DAMAGE_PERCENT);
+                            target->RemoveAurasByType(SPELL_AURA_PERIODIC_LEECH);
+                        }
+                        break;
+                    }
+                }
                 break;
         }
     }
