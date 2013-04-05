@@ -1288,6 +1288,20 @@ void Aura::HandleAuraSpecificMods(AuraApplication const* aurApp, Unit* caster, b
                     }
                 }
                 break;
+            case SPELLFAMILY_PALADIN:
+                if (!caster)
+                    break;
+
+                switch (m_spellInfo->Id)
+                {
+                    // Grand Crusader
+                    case 85416:
+                        caster->ToPlayer()->RemoveSpellCooldown(31935, true);
+                        break;
+                    default:
+                        break;
+                }
+                break;
             case SPELLFAMILY_ROGUE:
                 // Sprint (skip non player casted spells by category)
                 if (GetSpellInfo()->SpellFamilyFlags[0] & 0x40 && GetSpellInfo()->Category == 44)
