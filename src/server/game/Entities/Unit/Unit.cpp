@@ -8134,6 +8134,19 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
             if (procSpell->Id != 47632)
                 return false;
 
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (Pet* pet = ToPlayer()->GetPet())
+            {
+                uint8 stackAmount = 0;
+                if (AuraPtr aura = pet->GetAura(trigger_spell_id))
+                    stackAmount = aura->GetStackAmount();
+
+                if (stackAmount >= 5) // Apply Dark Transformation
+                    CastSpell(this, 93426, true);
+            }
+
             break;
         }
         // Glyph of Mind Spike
