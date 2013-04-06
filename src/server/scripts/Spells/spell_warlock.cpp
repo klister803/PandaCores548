@@ -73,6 +73,58 @@ enum WarlockSpells
     WARLOCK_SHADOWFLAME                     = 47960,
     WARLOCK_SOUL_LEECH_HEAL                 = 108366,
     WARLOCK_DARK_REGENERATION               = 108359,
+    WARLOCK_DARK_BARGAIN_DOT                = 110914,
+};
+
+// Dark Bargain - 110013
+class spell_warl_dark_bargain_on_absorb : public SpellScriptLoader
+{
+    public:
+        spell_warl_dark_bargain_on_absorb() : SpellScriptLoader("spell_warl_dark_bargain_on_absorb") { }
+
+        class spell_warl_dark_bargain_on_absorb_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_dark_bargain_on_absorb_AuraScript);
+
+            uint32 totalAbsorbAmount;
+
+            bool Load()
+            {
+                totalAbsorbAmount = 0;
+                return true;
+            }
+
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                amount = int32(100000000);
+            }
+
+            void OnAbsorb(AuraEffectPtr aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                    totalAbsorbAmount += dmgInfo.GetDamage();
+            }
+
+             void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    // (totalAbsorbAmount / 14) it's for totalAbsorbAmount 50% & totalAbsorbAmount / 8 (for each tick of custom spell) 
+                    caster->CastCustomSpell(WARLOCK_DARK_BARGAIN_DOT, SPELLVALUE_BASE_POINT0, (totalAbsorbAmount / 14) , caster, true);
+                }
+             }
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_warl_dark_bargain_on_absorb_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_warl_dark_bargain_on_absorb_AuraScript::OnAbsorb, EFFECT_0);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_warl_dark_bargain_on_absorb_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_dark_bargain_on_absorb_AuraScript();
+        }
 };
 
 // Dark Regeneration - 108359
@@ -1502,6 +1554,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_dark_bargain_on_absorb();
     new spell_warl_dark_regeneration();
     new spell_warl_soul_leech();
     new spell_warl_sacrificial_pact();
