@@ -8143,7 +8143,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
                 if (AuraPtr aura = pet->GetAura(trigger_spell_id))
                     stackAmount = aura->GetStackAmount();
 
-                if (stackAmount >= 5) // Apply Dark Transformation
+                if (stackAmount >= 4) // Apply Dark Transformation
                     CastSpell(this, 93426, true);
             }
 
