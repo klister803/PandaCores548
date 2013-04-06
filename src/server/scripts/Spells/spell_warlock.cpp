@@ -108,8 +108,8 @@ class spell_warl_dark_bargain_on_absorb : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    // (totalAbsorbAmount / 14) it's for totalAbsorbAmount 50% & totalAbsorbAmount / 8 (for each tick of custom spell) 
-                    caster->CastCustomSpell(WARLOCK_DARK_BARGAIN_DOT, SPELLVALUE_BASE_POINT0, (totalAbsorbAmount / 14) , caster, true);
+                    // (totalAbsorbAmount / 16) it's for totalAbsorbAmount 50% & totalAbsorbAmount / 8 (for each tick of custom spell)
+                    caster->CastCustomSpell(WARLOCK_DARK_BARGAIN_DOT, SPELLVALUE_BASE_POINT0, (totalAbsorbAmount / 16) , caster, true);
                 }
              }
             void Register()
