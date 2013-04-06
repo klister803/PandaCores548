@@ -140,6 +140,7 @@ class AuraEffect : public std::enable_shared_from_this<AuraEffect>
         void HandleAuraTransform(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraModScale(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleAuraCloneCaster(AuraApplication const* aurApp, uint8 mode, bool apply) const;
+        void HandleAuraInitializeImages(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         //  fight
         void HandleFeignDeath(AuraApplication const* aurApp, uint8 mode, bool apply) const;
         void HandleModUnattackable(AuraApplication const* aurApp, uint8 mode, bool apply) const;

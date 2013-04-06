@@ -921,8 +921,8 @@ void WorldSession::HandleMirrorImageDataRequest(WorldPacket& recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: CMSG_GET_MIRRORIMAGE_DATA");
     uint64 guid;
-    recvData >> guid;
-    recvData.read_skip<uint32>(); // DisplayId ?
+    uint32 displayId;
+    recvData >> guid >> displayId;
 
     // Get unit for which data is needed by client
     Unit* unit = ObjectAccessor::GetObjectInWorld(guid, (Unit*)NULL);

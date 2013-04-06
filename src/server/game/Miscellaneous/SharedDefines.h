@@ -354,7 +354,7 @@ enum SpellCategory
 
 enum SpellCategoryFlags
 {
-	SPELL_CATEGORY_FLAGS_IS_DAYLY_COOLDOWN		= 0x08,
+    SPELL_CATEGORY_FLAGS_IS_DAILY_COOLDOWN		= 0x08,
 };
 
 const uint32 ItemQualityColors[MAX_ITEM_QUALITY] =
