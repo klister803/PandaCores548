@@ -102,9 +102,9 @@ CharacterDatabaseInfo = "127.0.0.1;3306;trinity;trinity;characters"
 #                     1 - (WorldDatabase.WorkerThreads)
 #                     1 - (CharacterDatabase.WorkerThreads)
 
-LoginDatabase.WorkerThreads     = 1
+LoginDatabase.WorkerThreads     = 2
 WorldDatabase.WorkerThreads     = 1
-CharacterDatabase.WorkerThreads = 1
+CharacterDatabase.WorkerThreads = 4
 
 #
 #    LoginDatabase.SynchThreads
@@ -179,7 +179,7 @@ Compression = 1
 #                     1+  - (Enabled)
 #                     0   - (Disabled, No limit)
 
-PlayerLimit = 100
+PlayerLimit = 2000
 
 #
 #    SaveRespawnTimeImmediately
@@ -249,7 +249,7 @@ ChangeWeatherInterval = 600000
 #        Description: Time (in milliseconds) for player save interval.
 #        Default:     900000 - (15 min)
 
-PlayerSaveInterval = 900000
+PlayerSaveInterval = 120000
 
 #
 #    PlayerSave.Stats.MinLevel
@@ -321,7 +321,7 @@ DetectPosCollision = 1
 #                     0.5 - (Minimum, Contact Range, More sensitive reaction to target movement)
 #                     5.0 - (Maximum, Melee attack range, Less CPU usage)
 
-TargetPosRecalculateRange = 1.5
+TargetPosRecalculateRange = 5.0
 
 #
 #    UpdateUptimeInterval
@@ -354,7 +354,7 @@ LogDB.Opt.ClearTime = 1209600
 #        Default:     0   - (Disabled)
 #                     10+ - (Enabled, Recommended 10+)
 
-MaxCoreStuckTime = 0
+MaxCoreStuckTime = 30
 
 #
 #    AddonChannel
@@ -370,7 +370,7 @@ AddonChannel = 1
 #        Description: Number of threads to update maps.
 #        Default:     1
 
-MapUpdate.Threads = 1
+MapUpdate.Threads = 16
 
 #
 #    CleanCharacterDB
@@ -390,6 +390,13 @@ CleanCharacterDB = 0
 #        Default:     0  - (All cleanup methods will be disabled after the next cleanup)
 
 PersistentCharacterCleanFlags = 0
+
+#
+#	Skip update in specific zone
+#		Actualy Orgrimmar & Stormwind
+#
+
+ZoneSkipUpdate.count = 15
 
 #
 ###################################################################################################
@@ -553,7 +560,7 @@ RealmZone = 1
 #                         placed in clientdir/Fonts.
 #                     3 - (Enabled, Basic Latin characters + server timezone specific)
 
-StrictPlayerNames = 0
+StrictPlayerNames = 3
 
 #
 #    StrictCharterNames
@@ -567,7 +574,7 @@ StrictPlayerNames = 0
 #                         placed in clientdir/Fonts.
 #                     3 - (Enabled, Basic Latin characters + server timezone specific)
 
-StrictCharterNames = 0
+StrictCharterNames = 3
 
 #
 #    StrictPetNames
@@ -581,7 +588,7 @@ StrictCharterNames = 0
 #                         placed in clientdir/Fonts.
 #                     3 - (Enabled, Basic Latin characters + server timezone specific)
 
-StrictPetNames = 0
+StrictPetNames = 3
 
 #
 #    DBC.Locale
@@ -610,12 +617,13 @@ DeclinedNames = 0
 #    Expansion
 #        Description: Allow server to use content from expansions. Checks for expansion-related
 #                     map files, client compatibility and class/race character creation.
-#        Default:     3 - (Expansion 3)
-#                     2 - (Expansion 2)
-#                     1 - (Expansion 1)
+#        Default:     4 - (Expansion 4 Mists of Pandaria)
+#				      3 - (Expansion 3 Cataclysm)
+#                     2 - (Expansion 2 Warth of the Lich King)
+#                     1 - (Expansion 1 Burning Crusade)
 #                     0 - (Disabled, Ignore and disable expansion content (maps, races, classes)
 
-Expansion = 3
+Expansion = 4
 
 #
 #    MinPlayerName
@@ -780,9 +788,9 @@ StartPlayerMoney = 0
 #
 #    MaxHonorPoints
 #        Description: Maximum honor points a character can have.
-#        Default:     75000
+#        Default:     4000 (currency x100)
 
-MaxHonorPoints = 75000
+MaxHonorPoints = 400000
 
 #
 #    StartHonorPoints
@@ -794,7 +802,7 @@ StartHonorPoints = 0
 #
 # MaxJusticePoints
 # Description: Maximum justice points a character can have.
-# Default: 400000
+# Default: 4000 (Currency x100)
 
 MaxJusticePoints = 400000
 
@@ -1085,7 +1093,7 @@ BeepAtStart = 1
 #        Example:     "Welcome to John\'s Server@This server runs on Trinity Core."
 #        Default:     "Welcome to a Trinity Core server."
 
-Motd = "Welcome to a Trinity Core server."
+Motd = "Bienvenue sur Pandashan, le premier serveur Mist of Pandaria au monde !"
 
 #
 #    Server.LoginInfo
@@ -1132,7 +1140,7 @@ DBC.EnforceItemAttributes = 1
 #        Description: Controls the max amount of different instances player can enter within hour
 #        Default:     5
 
-AccountInstancesPerHour = 5
+AccountInstancesPerHour = 10
 
 #
 ###################################################################################################
@@ -1219,7 +1227,7 @@ AllowTwoSide.Accounts = 1
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Calendar = 0
+AllowTwoSide.Interaction.Calendar = 1
 
 #
 #    AllowTwoSide.Interaction.Chat
@@ -1227,7 +1235,7 @@ AllowTwoSide.Interaction.Calendar = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Chat = 0
+AllowTwoSide.Interaction.Chat = 1
 
 #
 #    AllowTwoSide.Interaction.Channel
@@ -1235,7 +1243,7 @@ AllowTwoSide.Interaction.Chat = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Channel = 0
+AllowTwoSide.Interaction.Channel = 1
 
 #
 #    AllowTwoSide.Interaction.Group
@@ -1243,7 +1251,7 @@ AllowTwoSide.Interaction.Channel = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Group = 0
+AllowTwoSide.Interaction.Group = 1
 
 #
 #    AllowTwoSide.Interaction.Guild
@@ -1251,7 +1259,7 @@ AllowTwoSide.Interaction.Group = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Guild = 0
+AllowTwoSide.Interaction.Guild = 1
 
 #
 #    AllowTwoSide.Interaction.Auction
@@ -1259,7 +1267,7 @@ AllowTwoSide.Interaction.Guild = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Auction = 0
+AllowTwoSide.Interaction.Auction = 1
 
 #
 #    AllowTwoSide.Interaction.Mail
@@ -1267,7 +1275,7 @@ AllowTwoSide.Interaction.Auction = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Interaction.Mail = 0
+AllowTwoSide.Interaction.Mail = 1
 
 #
 #    AllowTwoSide.WhoList
@@ -1275,7 +1283,7 @@ AllowTwoSide.Interaction.Mail = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.WhoList = 0
+AllowTwoSide.WhoList = 1
 
 #
 #    AllowTwoSide.AddFriend
@@ -1283,7 +1291,7 @@ AllowTwoSide.WhoList = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.AddFriend = 0
+AllowTwoSide.AddFriend = 1
 
 #
 #    AllowTwoSide.Trade
@@ -1291,7 +1299,7 @@ AllowTwoSide.AddFriend = 0
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AllowTwoSide.Trade = 0
+AllowTwoSide.Trade = 1
 
 #
 #    TalentsInspecting
@@ -1485,7 +1493,7 @@ ListenRange.Yell = 300
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-ChatFakeMessagePreventing = 0
+ChatFakeMessagePreventing = 1
 
 #
 #    ChatStrictLinkChecking.Severity
@@ -1498,7 +1506,7 @@ ChatFakeMessagePreventing = 0
 #                         work correctly, please assure that you have extracted locale DBCs of
 #                         every language specific client playing on this server)
 
-ChatStrictLinkChecking.Severity = 0
+ChatStrictLinkChecking.Severity = 1
 
 #
 #    ChatStrictLinkChecking.Kick
@@ -1553,14 +1561,14 @@ Channel.SilentlyGMJoin = 0
 #        Description: Level requirement for characters to be able to write in chat channels.
 #        Default:     1
 
-ChatLevelReq.Channel = 1
+ChatLevelReq.Channel = 2
 
 #
 #    ChatLevelReq.Whisper
 #        Description: Level requirement for characters to be able to whisper other characters.
 #        Default:     1
 
-ChatLevelReq.Whisper = 1
+ChatLevelReq.Whisper = 2
 
 #
 #    ChatLevelReq.Say
@@ -1575,7 +1583,7 @@ ChatLevelReq.Say = 1
 #        Default:     1 - (Enabled)
 #                     0 - (Disabled)
 
-AllowPlayerCommands = 1
+AllowPlayerCommands = 0
 
 #
 #    PreserveCustomChannels
@@ -1596,7 +1604,7 @@ PreserveCustomChannels = 1
 #        Default:     14 - (Enabled, Clean channels that haven't been used for 14 days)
 #                     0  - (Disabled, Infinite channel storage)
 
-PreserveCustomChannelDuration = 14
+PreserveCustomChannelDuration = 7
 
 #
 ###################################################################################################
@@ -1735,9 +1743,19 @@ Visibility.GroupMode = 1
 #                     170 - (Visibility.Distance.Instances)
 #                     533 - (Visibility.Distance.BGArenas)
 
-Visibility.Distance.Continents = 80
+Visibility.Distance.Continents = 70
 Visibility.Distance.Instances = 120
-Visibility.Distance.BGArenas = 140
+Visibility.Distance.BGArenas = 120
+
+#
+#    Visibility.Notify.Period.OnContinents
+#    Visibility.Notify.Period.InInstances
+#    Visibility.Notify.Period.InBGArenas
+#        Description: Time (in milliseconds) for visibility update period. Lower values may have
+#                     performance impact.
+#        Default:     1000 - (Visibility.Notify.Period.OnContinents)
+#                     1000 - (Visibility.Notify.Period.InInstances)
+#
 
 Visibility.RelocationLowerLimit = 20
 Visibility.AINotifyDelay  = 1000
@@ -1807,15 +1825,15 @@ Rate.Skill.Discovery = 1
 #                     1 - (Rate.Drop.Item.Referenced)
 #                     1 - (Rate.Drop.Money)
 
-Rate.Drop.Item.Poor             = 1
-Rate.Drop.Item.Normal           = 1
-Rate.Drop.Item.Uncommon         = 1
-Rate.Drop.Item.Rare             = 1
-Rate.Drop.Item.Epic             = 1
-Rate.Drop.Item.Legendary        = 1
-Rate.Drop.Item.Artifact         = 1
-Rate.Drop.Item.Referenced       = 1
-Rate.Drop.Money                 = 1
+Rate.Drop.Item.Poor             = 5
+Rate.Drop.Item.Normal           = 5
+Rate.Drop.Item.Uncommon         = 5
+Rate.Drop.Item.Rare             = 5
+Rate.Drop.Item.Epic             = 5
+Rate.Drop.Item.Legendary        = 5
+Rate.Drop.Item.Artifact         = 5
+Rate.Drop.Item.Referenced       = 5
+Rate.Drop.Money                 = 5
 
 #
 #    Rate.Drop.Item.ReferencedAmount
@@ -1834,10 +1852,10 @@ Rate.Drop.Item.ReferencedAmount = 1
 #                     1 - (Rate.XP.Quest)
 #                     1 - (Rate.XP.Explore)
 
-Rate.XP.Kill      = 1
-Rate.XP.Quest     = 1
+Rate.XP.Kill      = 5
+Rate.XP.Quest     = 5
 Rate.XP.Explore   = 1
-Rate.XP.Gathering = 1
+Rate.XP.Gathering = 5
 
 #
 #    Rate.RepairCost
@@ -1855,9 +1873,9 @@ Rate.RepairCost = 1
 #                     1 - (Rate.Rest.Offline.InTavernOrCity)
 #                     1 - (Rate.Rest.Offline.InWilderness)
 
-Rate.Rest.InGame                 = 1
-Rate.Rest.Offline.InTavernOrCity = 1
-Rate.Rest.Offline.InWilderness   = 1
+Rate.Rest.InGame                 = 5
+Rate.Rest.Offline.InTavernOrCity = 5
+Rate.Rest.Offline.InWilderness   = 5
 
 #
 #    Rate.Damage.Fall
@@ -1913,7 +1931,7 @@ Rate.Talent = 1
 #        Description: Reputation gain rate.
 #        Default:     1
 
-Rate.Reputation.Gain = 1
+Rate.Reputation.Gain = 3
 
 #
 #    Rate.Reputation.LowLevel.Kill
@@ -2066,7 +2084,7 @@ Death.CorpseReclaimDelay.PvE = 0
 #                     1 - (Enabled, Death.Bones.BattlegroundOrArena)
 #                     0 - (Disabled)
 
-Death.Bones.World               = 1
+Death.Bones.World               = 0
 Death.Bones.BattlegroundOrArena = 1
 
 #
@@ -2088,7 +2106,7 @@ Die.Command.Mode = 1
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-AutoBroadcast.On = 0
+AutoBroadcast.On = 1
 
 #
 #    AutoBroadcast.Center
@@ -2104,7 +2122,7 @@ AutoBroadcast.Center = 0
 #        Description: Timer (in milliseconds) for auto broadcasts.
 #        Default:     60000 - (60 seconds)
 
-AutoBroadcast.Timer = 60000
+AutoBroadcast.Timer = 900000
 
 #
 ###################################################################################################
@@ -2270,7 +2288,7 @@ Arena.RatedUpdateTimer = 5000
 #        Default:     0 - (Disabled)
 #                     1 - (Enabled)
 
-Arena.AutoDistributePoints = 0
+Arena.AutoDistributePoints = 1
 
 #
 #    Arena.AutoDistributeInterval
@@ -2343,7 +2361,7 @@ ArenaLog.ExtendedInfo = 0
 #        Description: Number of threads for network.
 #         Default:    1 - (Recommended 1 thread per 1000 connections)
 
-Network.Threads = 1
+Network.Threads = 4
 
 #
 #    Network.OutKBuff
@@ -2445,7 +2463,7 @@ SOAP.Port = 7878
 #                     1 - (Unlink the character from account and free up the name, Appears as
 #                         deleted ingame)
 
-CharDelete.Method = 0
+CharDelete.Method = 1
 
 #
 #    CharDelete.MinLevel
@@ -2453,7 +2471,7 @@ CharDelete.Method = 0
 #        Default:     0  - (Same method for every level)
 #                     1+ - (Only characters with the specified level will use the unlinking method)
 
-CharDelete.MinLevel = 0
+CharDelete.MinLevel = 10
 
 #
 #    CharDelete.KeepDays
@@ -2461,7 +2479,7 @@ CharDelete.MinLevel = 0
 #        Default:     30 - (Enabled)
 #                     0  - (Disabled, Don't delete any characters)
 
-CharDelete.KeepDays = 30
+CharDelete.KeepDays = 0
 
 #
 ###################################################################################################
@@ -2701,13 +2719,13 @@ PlayerDump.DisallowOverwrite = 1
 #
 
 Appender.Console=1,3,0
-Appender.Server=2,2,0,Server.log,w
-Appender.GM=2,2,0,GM.log
-Appender.DBErrors=2,2,0,DBErrors.log
+Appender.Server=0,0,0
+Appender.GM=0,0,0
+Appender.DBErrors=0,0,0
 Appender.Char=2,2,0,Char.log,w
 Appender.RA=2,2,0,RA.log
 Appender.Warden=2,4,0,Warden.log
-Appender.Chat=2,2,0,Chat.log
+Appender.Chat=0,0,0
 Appender.CharDump=2,2,0,%s.log
 Appender.Arenas=2,2,0,Arena.log
 Appender.SQLDev=2,2,0,SQLDev.log
@@ -2844,7 +2862,7 @@ Guild.MaxLevel = 25
 #        Default:     4
 #
 
-Guild.UndeletableLevel = 4
+Guild.UndeletableLevel = 26
 
 #
 #    Guild.XPModifier
@@ -2930,7 +2948,7 @@ Currency.StartJusticePoints = 0
 #        Default: 4000
 #
 
-Currency.MaxJusticePoints = 3000
+Currency.MaxJusticePoints = 4000
 
 #
 #    Currency.StartConquestPoints
@@ -2943,7 +2961,7 @@ Currency.StartConquestPoints = 0
 #
 #    Currency.ConquestPointsDefaultWeekCap
 #        Amount of conquest points that player can earn per week
-#        Default: 1350
+#        Default: 1800
 #
 
 Currency.ConquestPointsDefaultWeekCap = 1800
