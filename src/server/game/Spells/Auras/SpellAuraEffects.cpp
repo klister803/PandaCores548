@@ -5444,9 +5444,39 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
             break;
         }
         case SPELLFAMILY_PALADIN:
-            // if (!(mode & AURA_EFFECT_HANDLE_REAL))
-            //    break;
+        {
+            if (!(mode & AURA_EFFECT_HANDLE_REAL))
+                break;
+
+            switch (GetId())
+            {
+                // Guardian of Ancient Kings (Retribution spec)
+                case 86698:
+                {
+                    if (apply)
+                        caster->CastSpell(caster, 86701, true);
+                    else
+                    {
+                        if (caster->HasAura(86700))
+                            caster->CastSpell(caster, 86704, true);
+
+                        caster->RemoveAurasDueToSpell(86700);
+                        caster->RemoveAurasDueToSpell(86701);
+                    }
+                    break;
+                }
+                // Guardian of Ancient Kings (Holy spec)
+                case 86669:
+                {
+                    if (!apply)
+                        caster->RemoveAurasDueToSpell(86674);
+                    break;
+                }
+                default:
+                    break;
+            }
             break;
+        }
         case SPELLFAMILY_DEATHKNIGHT:
         {
             if (!(mode & AURA_EFFECT_HANDLE_REAL))

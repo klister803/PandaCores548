@@ -70,8 +70,6 @@ enum PaladinSpells
     PALADIN_SPELL_BLINDING_LIGHT_CONFUSE         = 105421,
     PALADIN_SPELL_BLINDING_LIGHT_STUN            = 115752,
     PALADIN_SPELL_EXORCISM                       = 879,
-    PALADIN_SPELL_ANCIENT_FURY                   = 86704,
-    PALADIN_SPELL_ANCIENT_POWER                  = 86700,
     PALADIN_SPELL_SACRED_SHIELD                  = 65148,
     PALADIN_SPELL_ARDENT_DEFENDER_HEAL           = 66235,
 };
@@ -173,86 +171,6 @@ class spell_pal_emancipate : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pal_emancipate_SpellScript();
-        }
-};
-
-// Ancient Fury - 86704
-class spell_pal_ancient_fury : public SpellScriptLoader
-{
-    public:
-        spell_pal_ancient_fury() : SpellScriptLoader("spell_pal_ancient_fury") { }
-
-        class spell_pal_ancient_fury_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_ancient_fury_SpellScript);
-
-            int32 ancientPower;
-
-            void HandleBeforeCast()
-            {
-                if (GetCaster()->HasAura(PALADIN_SPELL_ANCIENT_POWER))
-                {
-                    ancientPower = GetCaster()->GetAura(PALADIN_SPELL_ANCIENT_POWER)->GetStackAmount();
-                    GetCaster()->RemoveAura(PALADIN_SPELL_ANCIENT_POWER);
-                }
-            }
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        int32 damage = GetHitDamage();
-                        int32 newDamage = 0;
-
-                        if (ancientPower)
-                            newDamage = damage * ancientPower;
-
-                        if (newDamage)
-                            SetHitDamage(newDamage);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                BeforeCast += SpellCastFn(spell_pal_ancient_fury_SpellScript::HandleBeforeCast);
-                OnHit += SpellHitFn(spell_pal_ancient_fury_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_ancient_fury_SpellScript();
-        }
-};
-
-// Guardian of Ancient Kings (Retribution) - 86698
-class spell_pal_guardian_of_ancient_kings_retribution : public SpellScriptLoader
-{
-    public:
-        spell_pal_guardian_of_ancient_kings_retribution() : SpellScriptLoader("spell_pal_guardian_of_ancient_kings_retribution") { }
-
-        class spell_pal_guardian_of_ancient_kings_retribution_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_pal_guardian_of_ancient_kings_retribution_AuraScript);
-
-            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetCaster())
-                    GetCaster()->CastSpell(GetCaster(), PALADIN_SPELL_ANCIENT_FURY, true);
-            }
-
-            void Register()
-            {
-                OnEffectRemove += AuraEffectRemoveFn(spell_pal_guardian_of_ancient_kings_retribution_AuraScript::HandleRemove, EFFECT_2, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_pal_guardian_of_ancient_kings_retribution_AuraScript();
         }
 };
 
@@ -1423,8 +1341,6 @@ void AddSC_paladin_spell_scripts()
     new spell_pal_sacred_shield();
     new spell_pal_sacred_shield_absorb();
     new spell_pal_emancipate();
-    new spell_pal_ancient_fury();
-    new spell_pal_guardian_of_ancient_kings_retribution();
     new spell_pal_art_of_war();
     new spell_pal_seal_of_insight();
     new spell_pal_blinding_light();

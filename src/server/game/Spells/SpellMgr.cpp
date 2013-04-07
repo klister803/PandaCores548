@@ -3150,6 +3150,16 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 86150: // Guardian of Ancient Kings
+                spellInfo->Effects[0].TargetA = TARGET_CHECK_ENTRY;
+                break;
+            case 86674: // Ancient Healer
+                spellInfo->ProcCharges = 5;
+                break;
+            case 86657: // Ancient Guardian
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+                break;
             case 51460: // Runic Corruption
                 spellInfo->Effects[EFFECT_1].Effect = 0;
                 spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_POWER_REGEN_PERCENT;

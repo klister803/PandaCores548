@@ -6698,6 +6698,70 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         }
         case SPELLFAMILY_PALADIN:
         {
+            switch (dummySpell->Id)
+            {
+                // Ancient Crusader (player)
+                case 86701:
+                {
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    //if caster has no guardian of ancient kings aura then remove dummy aura
+                    if (!HasAura(86698))
+                    {
+                        RemoveAurasDueToSpell(86701);
+                        return false;
+                    }
+
+                    CastSpell(this, 86700, true);
+                    return true;
+                }
+                // Ancient Crusader (guardian)
+                case 86703:
+                {
+                    if (!GetOwner() || GetOwner()->GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    GetOwner()->CastSpell(this, 86700, true);
+                    return true;
+                }
+                // Ancient Healer
+                case 86674:
+                {
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    // if caster has no guardian of ancient kings aura then remove dummy aura
+                    if (!HasAura(86669))
+                    {
+                        RemoveAurasDueToSpell(86674);
+                        return false;
+                    }
+
+                    // check for single target spell (TARGET_SINGLE_FRIEND, NO_TARGET)
+                    if (!(procSpell->Effects[triggeredByAura->GetEffIndex()].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY) &&
+                        (procSpell->Effects[triggeredByAura->GetEffIndex()].TargetB.GetTarget() == 0))
+                        return false;
+
+                    std::list<Creature*> petlist;
+                    GetCreatureListWithEntryInGrid(petlist, 46499, 100.0f);
+                    if (!petlist.empty())
+                    {
+                        for (std::list<Creature*>::const_iterator itr = petlist.begin(); itr != petlist.end(); ++itr)
+                        {
+                            Unit* pPet = (*itr);
+                            if (pPet->GetOwnerGUID() == GetGUID())
+                            {
+                                int32 bp0 = damage;
+                                int32 bp1 = damage / 10;
+                                pPet->CastCustomSpell(victim, 86678, &bp0, &bp1, NULL, true);
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+            }
             // Seal of Command
             if (dummySpell->Id == 105361 &&  effIndex == 0)
             {
@@ -14754,22 +14818,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 42223)
         if (roll_chance_i(30))
             SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
-
-    // Guardian of Ancient Kings : attacks player's target
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(86698) && !(procExtra & PROC_EX_INTERNAL_DOT) && !(procExtra & PROC_EX_INTERNAL_TRIGGERED))
-    {
-        if (procSpell && procSpell->Id != 86700)
-            CastSpell(this, 86700, true);       // your attacks will infuse you with Ancient Power
-        else if (!procSpell)
-            CastSpell(this, 86700, true);
-    }
-    else if (GetTypeId() == TYPEID_UNIT && GetOwner() && GetOwner()->HasAura(86698) && (procExtra & PROC_EX_INTERNAL_DOT) && !(procExtra & PROC_EX_INTERNAL_TRIGGERED))
-    {
-        if (procSpell && procSpell->Id != 86700)
-            CastSpell(GetOwner(), 86700, true); // the attacks of the Guardian will infuse you with Ancient Power
-        else if (!procSpell)
-            CastSpell(GetOwner(), 86700, true); // the attacks of the Guardian will infuse you with Ancient Power
-    }
 
     // Summon Shadowy Apparitions when Shadow Word : Pain is crit
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 589 && HasAura(78203) && procExtra & PROC_EX_CRITICAL_HIT)
