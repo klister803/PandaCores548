@@ -72,6 +72,39 @@ enum PaladinSpells
     PALADIN_SPELL_EXORCISM                       = 879,
     PALADIN_SPELL_SACRED_SHIELD                  = 65148,
     PALADIN_SPELL_ARDENT_DEFENDER_HEAL           = 66235,
+    PALADIN_SPELL_TOWER_OF_RADIANCE_ENERGIZE     = 88852,
+    PALADIN_SPELL_BEACON_OF_LIGHT                = 53563,
+};
+
+// Called by Flash of Light - 19750 and Divine Light - 82326
+// Tower of Radiance - 85512
+class spell_pal_tower_of_radiance : public SpellScriptLoader
+{
+    public:
+        spell_pal_tower_of_radiance() : SpellScriptLoader("spell_pal_tower_of_radiance") { }
+
+        class spell_pal_tower_of_radiance_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_tower_of_radiance_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (target->HasAura(PALADIN_SPELL_BEACON_OF_LIGHT, _player->GetGUID()))
+                            _player->EnergizeBySpell(_player, PALADIN_SPELL_TOWER_OF_RADIANCE_ENERGIZE, 1, POWER_HOLY_POWER);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_tower_of_radiance_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_tower_of_radiance_SpellScript();
+        }
 };
 
 // Sacred shield - 20925
@@ -1338,6 +1371,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_tower_of_radiance();
     new spell_pal_sacred_shield();
     new spell_pal_sacred_shield_absorb();
     new spell_pal_emancipate();
