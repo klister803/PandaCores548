@@ -4699,7 +4699,8 @@ void Player::RemoveArenaSpellCooldowns(bool removeActivePetCooldowns)
         // check if spellentry is present and if the cooldown is less or equal to 10 min
         if (entry &&
             entry->RecoveryTime <= 10 * MINUTE * IN_MILLISECONDS &&
-            entry->CategoryRecoveryTime <= 10 * MINUTE * IN_MILLISECONDS)
+            entry->CategoryRecoveryTime <= 10 * MINUTE * IN_MILLISECONDS &&
+            (entry->CategoryFlags & SPELL_CATEGORY_FLAGS_IS_DAILY_COOLDOWN) == 0)
         {
             // remove & notify
             RemoveSpellCooldown(itr->first, true);
@@ -8388,8 +8389,8 @@ void Player::DuelComplete(DuelCompleteType type)
     {
         data.Initialize(SMSG_DUEL_WINNER, (1+20));          // we guess size
         data << uint8(type == DUEL_WON ? 0 : 1);            // 0 = just won; 1 = fled
-        data << GetName();
         data << duel->opponent->GetName();
+        data << GetName();
         SendMessageToSet(&data, true);
     }
 
@@ -22681,8 +22682,8 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
     }
 
     // New MoP skill cooldown
-    // SPELL_CATEGORY_FLAGS_IS_DAYLY_COOLDOWN
-    if (spellInfo->CategoryFlags & SPELL_CATEGORY_FLAGS_IS_DAYLY_COOLDOWN)
+    // SPELL_CATEGORY_FLAGS_IS_DAILY_COOLDOWN
+    if (spellInfo->CategoryFlags & SPELL_CATEGORY_FLAGS_IS_DAILY_COOLDOWN)
     {
     	int days = catrec / 1000;
     	time_t cooldown = curTime + (86400 * days);

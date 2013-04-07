@@ -248,7 +248,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //176 SPELL_EFFECT_176
     &Spell::EffectNULL,                                     //177 SPELL_EFFECT_177
     &Spell::EffectUnused,                                   //178 SPELL_EFFECT_178 unused
-    &Spell::EffectNULL,                                     //179 SPELL_EFFECT_CREATE_AREATRIGGER
+    &Spell::EffectCreateAreatrigger,                        //179 SPELL_EFFECT_CREATE_AREATRIGGER
     &Spell::EffectUnused,                                   //180 SPELL_EFFECT_180 unused
     &Spell::EffectUnlearnTalent,                            //181 SPELL_EFFECT_UNLEARN_TALENT
     &Spell::EffectNULL,                                     //182 SPELL_EFFECT_182
@@ -676,6 +676,48 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
     // selection by spell family
     switch (m_spellInfo->SpellFamilyName)
     {
+        case SPELLFAMILY_GENERIC:
+        {
+            switch (m_spellInfo->Id)
+            {
+                case 45206: // Copy Off-hand Weapon
+                case 69892:
+                {
+                    m_caster->CastSpell(unitTarget, damage, true);
+                    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                        break;
+
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        if (Item* offItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND))
+                            unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, offItem->GetEntry());
+                    }
+                    else
+                        unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1, m_caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID + 1));
+                    break;
+                }
+                case 41055: // Copy Mainhand Weapon
+                case 63416:
+                case 69891:
+                {
+                    m_caster->CastSpell(unitTarget, damage, true);
+                    if (unitTarget->GetTypeId() == TYPEID_PLAYER)
+                        break;
+
+                    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        if (Item* mainItem = m_caster->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND))
+                            unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, mainItem->GetEntry());
+                    }
+                    else
+                        unitTarget->SetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID, m_caster->GetUInt32Value(UNIT_VIRTUAL_ITEM_SLOT_ID));
+                    break;
+                }
+                default:
+                    break;
+            }
+            break;
+        }
         case SPELLFAMILY_PALADIN:
             switch (m_spellInfo->Id)
             {
@@ -4169,6 +4211,22 @@ void Spell::EffectScriptEffect(SpellEffIndex effIndex)
             }
             break;
         }
+        case SPELLFAMILY_HUNTER:
+        {
+            switch (m_spellInfo->Id)
+            {
+                // Invigoration
+                case 53412:
+                {
+                    if (Player* owner = m_caster->GetOwner()->ToPlayer())
+                        if (AuraEffectPtr aurEff = owner->GetAuraEffect(SPELL_AURA_DUMMY, SPELLFAMILY_HUNTER, 3487, 0))
+                            owner->EnergizeBySpell(owner, 53412, aurEff->GetAmount(), POWER_FOCUS);
+                    break;
+                }
+
+            }
+            break;
+        }
         case SPELLFAMILY_DEATHKNIGHT:
         {
             // Pestilence
@@ -6234,6 +6292,95 @@ void Spell::EffectUnlearnTalent(SpellEffIndex effIndex)
 
     plr->SaveToDB();
     plr->SendTalentsInfoData(false);
+}
+
+void Spell::EffectCreateAreatrigger(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT)
+        return;
+
+    if (!m_spellAura)
+    {
+        Unit* caster = m_caster->GetEntry() == WORLD_TRIGGER ? m_originalCaster : m_caster;
+        float radius = m_spellInfo->Effects[effIndex].CalcRadius(caster);
+
+        // Caster not in world, might be spell triggered from aura removal
+        if (!caster->IsInWorld())
+            return;
+        DynamicObject* dynObj = new DynamicObject(false);
+        if (!dynObj->CreateDynamicObject(sObjectMgr->GenerateLowGuid(HIGHGUID_DYNAMICOBJECT), caster, m_spellInfo->Id, *destTarget, radius, DYNAMIC_OBJECT_AREA_SPELL))
+        {
+            delete dynObj;
+            return;
+        }
+
+        AuraPtr aura = Aura::TryCreate(m_spellInfo, MAX_EFFECT_MASK, dynObj, caster, m_spellPowerData, &m_spellValue->EffectBasePoints[0]);
+        if (aura != NULLAURA)
+        {
+            m_spellAura = aura;
+            m_spellAura->_RegisterForTargets();
+        }
+        else
+            return;
+
+        // Custom MoP Script
+        switch (m_spellInfo->Id)
+        {
+            case 121536: // Angelic Feather
+            {
+                int32 count = caster->CountDynObject(m_spellInfo->Id);
+
+                if (count > 3)
+                {
+                    std::list<DynamicObject*> angelicFeatherList;
+                    caster->GetDynObjectList(angelicFeatherList, m_spellInfo->Id);
+
+                    if (!angelicFeatherList.empty())
+                    {
+                        angelicFeatherList.sort(JadeCore::DurationPctOrderPred());
+
+                        for (auto itr : angelicFeatherList)
+                        {
+                            DynamicObject* angelicFeather = itr;
+                            angelicFeather->SetDuration(0);
+                            break;
+                        }
+                    }
+                }
+
+                break;
+            }
+            case 115460: // Healing Sphere
+            {
+                int32 count = caster->CountDynObject(m_spellInfo->Id);
+
+                if (count > 3)
+                {
+                    std::list<DynamicObject*> healingSphereList;
+                    caster->GetDynObjectList(healingSphereList, m_spellInfo->Id);
+
+                    if (!healingSphereList.empty())
+                    {
+                        healingSphereList.sort(JadeCore::DurationPctOrderPred());
+
+                        for (auto itr : healingSphereList)
+                        {
+                            DynamicObject* healingSphere = itr;
+                            healingSphere->SetDuration(0);
+                            break;
+                        }
+                    }
+                }
+
+                break;
+            }
+            default:
+                break;
+        }
+    }
+
+    ASSERT(m_spellAura->GetDynobjOwner());
+    m_spellAura->_ApplyEffectForTargets(effIndex);
 }
 
 int32 Spell::CalculateMonkMeleeAttacks(Unit* caster, float coeff, int32 APmultiplier)

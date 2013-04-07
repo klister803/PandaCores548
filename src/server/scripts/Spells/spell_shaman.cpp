@@ -356,54 +356,61 @@ class spell_sha_unleash_elements : public SpellScriptLoader
 };
 
 // Called by Lightning Bolt - 403 and Chain Lightning - 421
+// Lightning Bolt (Mastery) - 45284 and Chain Lightning - 45297
 // Rolling Thunder - 88764
 class spell_sha_rolling_thunder : public SpellScriptLoader
 {
-public:
-    spell_sha_rolling_thunder() : SpellScriptLoader("spell_sha_rolling_thunder") { }
+    public:
+        spell_sha_rolling_thunder() : SpellScriptLoader("spell_sha_rolling_thunder") { }
 
-    class spell_sha_rolling_thunder_SpellScript : public SpellScript
-    {
-        PrepareSpellScript(spell_sha_rolling_thunder_SpellScript)
-
-        bool Validate(SpellEntry const * /*spellEntry*/)
+        class spell_sha_rolling_thunder_SpellScript : public SpellScript
         {
-            if (!sSpellMgr->GetSpellInfo(403) || !sSpellMgr->GetSpellInfo(421))
-                return false;
-            return true;
-        }
+            PrepareSpellScript(spell_sha_rolling_thunder_SpellScript)
 
-        void HandleOnHit()
-        {
-            if (Player* _player = GetCaster()->ToPlayer())
+            bool Validate(SpellEntry const * /*spellEntry*/)
             {
-                if (Unit* target = GetHitUnit())
-                {
-                    if (roll_chance_i(60) && _player->HasAura(88764))
-                    {
-                        if (AuraPtr lightningShield = _player->GetAura(324))
-                        {
-                            _player->CastSpell(_player, SPELL_SHA_ROLLING_THUNDER_ENERGIZE, true);
+                if (!sSpellMgr->GetSpellInfo(403) || !sSpellMgr->GetSpellInfo(421))
+                    return false;
+                return true;
+            }
 
-                            uint8 lsCharges = lightningShield->GetCharges();
-                            if (lsCharges < 7)
-                                lightningShield->SetCharges(lsCharges + 1);
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (roll_chance_i(60) && _player->HasAura(88764))
+                        {
+                            if (AuraPtr lightningShield = _player->GetAura(324))
+                            {
+                                _player->CastSpell(_player, SPELL_SHA_ROLLING_THUNDER_ENERGIZE, true);
+
+                                uint8 lsCharges = lightningShield->GetCharges();
+
+                                if (lsCharges < 9)
+                                {
+                                    lightningShield->SetCharges(lsCharges + 1);
+                                    lightningShield->RefreshDuration();
+                                }
+                                if (lsCharges > 7 && _player->HasAura(SPELL_SHA_FULMINATION))
+                                    _player->CastSpell(_player, SPELL_SHA_FULMINATION_INFO, true);
+                            }
                         }
                     }
                 }
             }
-        }
 
-        void Register()
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_rolling_thunder_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript *GetSpellScript() const
         {
-            OnHit += SpellHitFn(spell_sha_rolling_thunder_SpellScript::HandleOnHit);
+            return new spell_sha_rolling_thunder_SpellScript();
         }
-    };
-
-    SpellScript *GetSpellScript() const
-    {
-        return new spell_sha_rolling_thunder_SpellScript();
-    }
 };
 
 // 88766 Fulmination handled in 8042 Earth Shock
@@ -1072,7 +1079,13 @@ class spell_sha_lava_lash : public SpellScriptLoader
 
                                     for (auto itr : targetList)
                                     {
-                                        if (!_player->IsValidAttackTarget(itr) || itr->GetGUID() == target->GetGUID())
+                                        if (!_player->IsValidAttackTarget(itr))
+                                            continue;
+
+                                        if (itr->GetGUID() == target->GetGUID())
+                                            continue;
+
+                                        if (itr->GetGUID() == _player->GetGUID())
                                             continue;
 
                                         if (hitTargets >= 4)

@@ -4803,6 +4803,33 @@ DynamicObject* Unit::GetDynObject(uint32 spellId)
     return NULL;
 }
 
+int32 Unit::CountDynObject(uint32 spellId)
+{
+    int32 count = 0;
+
+    if (m_dynObj.empty())
+        return 0;
+    for (DynObjectList::const_iterator i = m_dynObj.begin(); i != m_dynObj.end();++i)
+    {
+        DynamicObject* dynObj = *i;
+        if (dynObj->GetSpellId() == spellId)
+            count++;
+    }
+    return count;
+}
+
+void Unit::GetDynObjectList(std::list<DynamicObject*> &list, uint32 spellId)
+{
+    if (m_dynObj.empty())
+        return;
+    for (DynObjectList::const_iterator i = m_dynObj.begin(); i != m_dynObj.end();++i)
+    {
+        DynamicObject* dynObj = *i;
+        if (dynObj->GetSpellId() == spellId)
+            list.push_back(dynObj);
+    }
+}
+
 void Unit::RemoveDynObject(uint32 spellId)
 {
     if (m_dynObj.empty())
@@ -5491,7 +5518,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
 
                     if (GetEntry() == 62982 || GetEntry() == 67236) // Mindbender
                     {
-                        target->EnergizeBySpell(target, 123051, int32(1.3f * target->GetPower(POWER_MANA)), POWER_MANA);
+                        target->EnergizeBySpell(target, 123051, int32(0.013f * target->GetPower(POWER_MANA)), POWER_MANA);
                         return false;
                     }
 
@@ -7222,6 +7249,36 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 target = this;
                 break;
             }
+            // Runic Empowerment
+            if (dummySpell->Id == 81229)
+            {
+                if (!ToPlayer())
+                    return false;
+
+                // Runic Corruption - maybe only this need
+                if (constAuraEffectPtr runicCorruption = GetDummyAuraEffect(SPELLFAMILY_DEATHKNIGHT, 4068, 0))
+                {
+                    int32 basepoints0 = runicCorruption->GetAmount();
+                    if (AuraPtr aur = GetAura(51460))
+                        aur->SetDuration(aur->GetDuration() + 3000);
+                    else
+                        CastCustomSpell(this, 51460, &basepoints0, NULL, NULL, true);
+                    return true;
+                }
+
+                std::set<uint8> runes;
+                for (uint8 i = 0; i < MAX_RUNES; i++)
+                    if (this->ToPlayer()->GetRuneCooldown(i) == this->ToPlayer()->GetRuneBaseCooldown(i))
+                        runes.insert(i);
+                if (!runes.empty())
+                {
+                    std::set<uint8>::iterator itr = runes.begin();
+                    std::advance(itr, urand(0, runes.size()-1));
+                    this->ToPlayer()->SetRuneCooldown((*itr), 0);
+                    this->ToPlayer()->ResyncRunes(MAX_RUNES);
+                }
+                return true;
+            }
             // Dancing Rune Weapon
             if (dummySpell->Id == 49028)
             {
@@ -8077,6 +8134,19 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
             if (procSpell->Id != 47632)
                 return false;
 
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (Pet* pet = ToPlayer()->GetPet())
+            {
+                uint8 stackAmount = 0;
+                if (AuraPtr aura = pet->GetAura(trigger_spell_id))
+                    stackAmount = aura->GetStackAmount();
+
+                if (stackAmount >= 4) // Apply Dark Transformation
+                    CastSpell(this, 93426, true);
+            }
+
             break;
         }
         // Glyph of Mind Spike
@@ -8539,6 +8609,15 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
                 return false;
             // critters are not allowed
             if (victim->GetCreatureType() == CREATURE_TYPE_CRITTER)
+                return false;
+            break;
+        }
+        // Death's Advance
+        case 96268:
+        {
+            if (!ToPlayer())
+                return false;
+            if (!ToPlayer()->GetRuneCooldown(RUNE_UNHOLY*2) || !ToPlayer()->GetRuneCooldown(RUNE_UNHOLY*2+1))
                 return false;
             break;
         }
@@ -9527,6 +9606,31 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
 
         // Ancestral Vigor - 105284
         unit->CastCustomSpell(victim, 105284, &bp, NULL, NULL, true);
+    }
+    // 117907 - Mastery : Gift of the Serpent
+    if (unit && unit->GetTypeId() == TYPEID_PLAYER && addhealth > 0 && unit->HasAura(117907))
+    {
+        float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.22f;
+
+        if (roll_chance_f(Mastery))
+        {
+            std::list<Unit*> targetList;
+
+            JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(unit, unit, 6.0f);
+            JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(unit, targetList, u_check);
+            unit->VisitNearbyObject(6.0f, searcher);
+
+            if (!targetList.empty())
+            {
+                targetList.sort(JadeCore::HealthPctOrderPred());
+
+                for (auto itr : targetList)
+                {
+                    unit->CastSpell(itr, 119031, true);
+                    break;
+                }
+            }
+        }
     }
     // 76669 - Mastery : Illuminated Healing
     if (unit && victim && addhealth != 0)
