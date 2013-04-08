@@ -86,6 +86,117 @@ enum MonkSpells
     SPELL_MONK_GRAPPLE_WEAPON_TANK_UPGRADE      = 123323,
     SPELL_MONK_GRAPPLE_WEAPON_HEAL_UPGRADE      = 123234,
     SPELL_MONK_GRAPPLE_WEAPON_DPS_UPGRADE       = 123231,
+    SPELL_MONK_SPINNING_FIRE_BLOSSOM_DAMAGE     = 123408,
+    SPELL_MONK_SPINNING_FIRE_BLOSSOM_MISSILE    = 118852,
+    SPELL_MONK_SPINNING_FIRE_BLOSSOM_ROOT       = 123407,
+};
+
+// Spinning Fire Blossom - 123408
+class spell_monk_spinning_fire_blossom_damage : public SpellScriptLoader
+{
+    public:
+        spell_monk_spinning_fire_blossom_damage() : SpellScriptLoader("spell_monk_spinning_fire_blossom_damage") { }
+
+        class spell_monk_spinning_fire_blossom_damage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_spinning_fire_blossom_damage_SpellScript);
+
+            SpellCastResult CheckTarget()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetExplTargetUnit())
+                        if (_player->IsFriendlyTo(target))
+                            return SPELL_FAILED_BAD_TARGETS;
+
+                return SPELL_CAST_OK;
+            }
+
+            void HandleAfterHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->GetDistance(_player) > 10.0f)
+                        {
+                            SetHitDamage(int32(GetHitDamage() * 1.5f));
+                            _player->CastSpell(target, SPELL_MONK_SPINNING_FIRE_BLOSSOM_ROOT, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_monk_spinning_fire_blossom_damage_SpellScript::CheckTarget);
+                AfterHit += SpellHitFn(spell_monk_spinning_fire_blossom_damage_SpellScript::HandleAfterHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_spinning_fire_blossom_damage_SpellScript();
+        }
+};
+
+// Spinning Fire Blossom - 115073
+class spell_monk_spinning_fire_blossom : public SpellScriptLoader
+{
+    public:
+        spell_monk_spinning_fire_blossom() : SpellScriptLoader("spell_monk_spinning_fire_blossom") { }
+
+        class spell_monk_spinning_fire_blossom_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_spinning_fire_blossom_SpellScript)
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    std::list<Unit*> tempList;
+                    std::list<Unit*> targetList;
+
+                    _player->GetAttackableUnitListInRange(tempList, 50.0f);
+
+                    for (auto itr : tempList)
+                    {
+                        if (!_player->IsValidAttackTarget(itr))
+                            continue;
+
+                        if (!_player->isInFront(itr))
+                            continue;
+
+                        if (!itr->IsWithinLOSInMap(_player))
+                            continue;
+
+                        if (itr->GetGUID() == _player->GetGUID())
+                            continue;
+
+                        targetList.push_back(itr);
+                    }
+
+                    if (!targetList.empty())
+                    {
+                        JadeCore::Containers::RandomResizeList(targetList, 1);
+
+                        for (auto itr : targetList)
+                            _player->CastSpell(itr, SPELL_MONK_SPINNING_FIRE_BLOSSOM_DAMAGE, true);
+                    }
+                    else
+                        _player->CastSpell(_player, SPELL_MONK_SPINNING_FIRE_BLOSSOM_MISSILE, true);
+                }
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_monk_spinning_fire_blossom_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_spinning_fire_blossom_SpellScript();
+        }
 };
 
 // Grapple Weapon - 117368
@@ -1924,6 +2035,8 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_spinning_fire_blossom_damage();
+    new spell_monk_spinning_fire_blossom();
     new spell_monk_grapple_weapon();
     new spell_monk_path_of_blossom();
     new spell_monk_thunder_focus_tea();

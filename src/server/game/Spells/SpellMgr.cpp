@@ -3150,6 +3150,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 115073:// Spinning Fire Blossom
+                spellInfo->Effects[0].TargetA = 0;
+                spellInfo->Effects[0].Effect = 0;
+                spellInfo->Effects[0].BasePoints = 0;
+                spellInfo->OverrideSpellList.push_back(123408); // Add Spinning Fire Blossom (Overrided by Glyph) to override spell list of Spinning Fire Blossom
+                break;
             case 86150: // Guardian of Ancient Kings
                 spellInfo->Effects[0].TargetA = TARGET_CHECK_ENTRY;
                 break;
