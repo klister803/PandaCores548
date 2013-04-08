@@ -655,10 +655,10 @@ enum SpellAttr7
     SPELL_ATTR7_UNK25                            = 0x02000000, // 25
     SPELL_ATTR7_UNK26                            = 0x04000000, // 26
     SPELL_ATTR7_UNK27                            = 0x08000000, // 27 Not set
-    SPELL_ATTR7_UNK28                            = 0x10000000, // 28 related to player positive buff
+    SPELL_ATTR7_CONSOLIDATED_RAID_BUFF           = 0x10000000, // 28 May be collapsed in raid buff frame (clientside attribute)
     SPELL_ATTR7_UNK29                            = 0x20000000, // 29 only 69028, 71237
     SPELL_ATTR7_UNK30                            = 0x40000000, // 30 Burning Determination, Divine Sacrifice, Earth Shield, Prayer of Mending
-    SPELL_ATTR7_UNK31                            = 0x80000000  // 31 only 70769
+    SPELL_ATTR7_CLIENT_INDICATOR                 = 0x80000000
 };
 
 enum SpellAttr8
