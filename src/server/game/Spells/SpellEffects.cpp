@@ -241,7 +241,7 @@ pEffect SpellEffects[TOTAL_SPELL_EFFECTS]=
     &Spell::EffectNULL,                                     //169 SPELL_EFFECT_DESTROY_ITEM
     &Spell::EffectNULL,                                     //170 SPELL_EFFECT_UPDATE_ZONE_AURAS_AND_PHASES
     &Spell::EffectNULL,                                     //171 SPELL_EFFECT_171
-    &Spell::EffectNULL,                                     //172 SPELL_EFFECT_MASS_RESURECTION
+    &Spell::EffectResurrectWithAura,                        //172 SPELL_EFFECT_RESURRECT_WITH_AURA
     &Spell::EffectBuyGuilkBankTab,                          //173 SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB
     &Spell::EffectNULL,                                     //174 SPELL_EFFECT_APPLY_AURA_ON_PET
     &Spell::EffectUnused,                                   //175 SPELL_EFFECT_175
@@ -298,13 +298,13 @@ void Spell::EffectResurrectNew(SpellEffIndex effIndex)
 
     Player* target = unitTarget->ToPlayer();
 
-    if (target->isRessurectRequested())       // already have one active request
+    if (target->IsRessurectRequested())       // already have one active request
         return;
 
     uint32 health = damage;
     uint32 mana = m_spellInfo->Effects[effIndex].MiscValue;
     ExecuteLogEffectResurrect(effIndex, target);
-    target->setResurrectRequestData(m_caster->GetGUID(), m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), health, mana);
+    target->SetResurrectRequestData(m_caster, health, mana, 0);
     SendResurrectRequest(target);
 }
 
@@ -4824,7 +4824,7 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
 
     Player* target = unitTarget->ToPlayer();
 
-    if (target->isRessurectRequested())       // already have one active request
+    if (target->IsRessurectRequested())       // already have one active request
         return;
 
     uint32 health = target->CountPctFromMaxHealth(damage);
@@ -4836,7 +4836,7 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
 
     ExecuteLogEffectResurrect(effIndex, target);
 
-    target->setResurrectRequestData(m_caster->GetGUID(), m_caster->GetMapId(), m_caster->GetPositionX(), m_caster->GetPositionY(), m_caster->GetPositionZ(), health, mana);
+    target->SetResurrectRequestData(m_caster, health, mana, 0);
     SendResurrectRequest(target);
 }
 
@@ -6110,7 +6110,7 @@ void Spell::EffectRemoveAura(SpellEffIndex effIndex)
     unitTarget->RemoveAurasDueToSpell(m_spellInfo->Effects[effIndex].TriggerSpell);
 }
 
-void Spell::EffectDamageFromMaxHealthPCT(SpellEffIndex effIndex)
+void Spell::EffectDamageFromMaxHealthPCT(SpellEffIndex /*effIndex*/)
 {
     if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
         return;
@@ -6472,4 +6472,35 @@ void Spell::EffectBuyGuilkBankTab(SpellEffIndex effIndex)
         return;
 
     guild->HandleSpellEffectBuyBankTab(m_caster->ToPlayer()->GetSession(), damage-1);
+}
+
+void Spell::EffectResurrectWithAura(SpellEffIndex effIndex)
+{
+    if (effectHandleMode != SPELL_EFFECT_HANDLE_HIT_TARGET)
+        return;
+
+    if (!unitTarget || !unitTarget->IsInWorld())
+        return;
+
+    Player* target = unitTarget->ToPlayer();
+    if (!target)
+        return;
+    if (unitTarget->isAlive())
+        return;
+
+    if (target->IsRessurectRequested())       // already have one active request
+        return;
+
+    uint32 health = target->CountPctFromMaxHealth(damage);
+    uint32 mana   = CalculatePct(target->GetMaxPower(POWER_MANA), damage);
+    uint32 resurrectAura = 0;
+    if (sSpellMgr->GetSpellInfo(GetSpellInfo()->Effects[effIndex].TriggerSpell))
+        resurrectAura = GetSpellInfo()->Effects[effIndex].TriggerSpell;
+
+    if (resurrectAura && target->HasAura(resurrectAura))
+        return;
+
+    ExecuteLogEffectResurrect(effIndex, target);
+    target->SetResurrectRequestData(m_caster, health, mana, resurrectAura);
+    SendResurrectRequest(target);
 }

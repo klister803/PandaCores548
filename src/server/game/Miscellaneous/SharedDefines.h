@@ -1056,7 +1056,7 @@ enum SpellEffects
     SPELL_EFFECT_DESTROY_ITEM                       = 169,
     SPELL_EFFECT_UPDATE_ZONE_AURAS_AND_PHASES       = 170,
     SPELL_EFFECT_171                                = 171, // Summons gamebject
-    SPELL_EFFECT_MASS_RESURECTION                   = 172, // Aoe resurrection
+    SPELL_EFFECT_RESURRECT_WITH_AURA                = 172,
     SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB             = 173, // Guild tab unlocked (guild perk)
     SPELL_EFFECT_APPLY_AURA_ON_PET                  = 174,
     SPELL_EFFECT_175                                = 175,

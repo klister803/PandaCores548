@@ -756,7 +756,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_nextSave = sWorld->getIntConfig(CONFIG_INTERVAL_SAVE);
 
-    clearResurrectRequestData();
+    _resurrectionData = NULL;
 
     memset(m_items, 0, sizeof(Item*)*PLAYER_SLOTS_COUNT);
 
@@ -969,6 +969,8 @@ Player::~Player()
 
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
         delete _voidStorageItems[i];
+
+    ClearResurrectRequestData();
 
     sWorld->DecreasePlayerCount();
 }
@@ -1989,7 +1991,7 @@ void Player::setDeathState(DeathState s)
         // lost combo points at any target (targeted combo points clear in Unit::setDeathState)
         ClearComboPoints();
 
-        clearResurrectRequestData();
+        ClearResurrectRequestData();
 
         //FIXME: is pet dismissed at dying or releasing spirit? if second, add setDeathState(DEAD) to HandleRepopRequestOpcode and define pet unsummon here with (s == DEAD)
         RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
@@ -2580,19 +2582,22 @@ void Player::ProcessDelayedOperations()
     {
         ResurrectPlayer(0.0f, false);
 
-        if (GetMaxHealth() > m_resurrectHealth)
-            SetHealth(m_resurrectHealth);
+        if (GetMaxHealth() > _resurrectionData->Health)
+            SetHealth(_resurrectionData->Health);
         else
             SetFullHealth();
 
-        if (uint32(GetMaxPower(POWER_MANA)) > m_resurrectMana)
-            SetPower(POWER_MANA, m_resurrectMana);
+        if (uint32(GetMaxPower(POWER_MANA)) > _resurrectionData->Mana)
+            SetPower(POWER_MANA, _resurrectionData->Mana);
         else
             SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
 
         SetPower(POWER_RAGE, 0);
         SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
         SetPower(POWER_ECLIPSE, 0);
+
+        if (uint32 aura = _resurrectionData->Aura)
+            CastSpell(this, aura, true, NULL, NULL, _resurrectionData->GUID);
 
         SpawnCorpseBones();
     }
@@ -24419,7 +24424,9 @@ bool Player::IsAtRecruitAFriendDistance(WorldObject const* pOther) const
 void Player::ResurectUsingRequestData()
 {
     /// Teleport before resurrecting by player, otherwise the player might get attacked from creatures near his corpse
-    TeleportTo(m_resurrectMap, m_resurrectX, m_resurrectY, m_resurrectZ, GetOrientation());
+    float x, y, z, o;
+    _resurrectionData->Location.GetPosition(x, y, z, o);
+    TeleportTo(_resurrectionData->Location.GetMapId(), x, y, z, o);
 
     if (IsBeingTeleported())
     {
@@ -24429,13 +24436,13 @@ void Player::ResurectUsingRequestData()
 
     ResurrectPlayer(0.0f, false);
 
-    if (GetMaxHealth() > m_resurrectHealth)
-        SetHealth(m_resurrectHealth);
+    if (GetMaxHealth() > _resurrectionData->Health)
+        SetHealth(_resurrectionData->Health);
     else
         SetFullHealth();
 
-    if (uint32(GetMaxPower(POWER_MANA)) > m_resurrectMana)
-        SetPower(POWER_MANA, m_resurrectMana);
+    if (uint32(GetMaxPower(POWER_MANA)) > _resurrectionData->Mana)
+        SetPower(POWER_MANA, _resurrectionData->Mana);
     else
         SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
 
@@ -24448,6 +24455,9 @@ void Player::ResurectUsingRequestData()
     SetPower(POWER_DEMONIC_FURY, 200);
     SetPower(POWER_SHADOW_ORB, 0);
     SetPower(POWER_CHI, 0);
+
+    if (uint32 aura = _resurrectionData->Aura)
+        CastSpell(this, aura, true, NULL, NULL, _resurrectionData->GUID);
 
     SpawnCorpseBones();
 }
