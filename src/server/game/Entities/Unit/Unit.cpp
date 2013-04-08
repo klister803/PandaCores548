@@ -8181,6 +8181,34 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Infusion of Light
+        case 53576:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!(procSpell->Id == 25912) && !(procSpell->Id == 25914))
+                return false;
+
+            if (!(procEx & PROC_EX_CRITICAL_HIT))
+                return false;
+
+            break;
+        }
+        // Daybreak
+        case 88821:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 82327)
+                return false;
+
+            break;
+        }
         // Sudden Doom
         case 49530:
         {
@@ -9701,7 +9729,7 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
     {
         if (unit->GetTypeId() == TYPEID_PLAYER)
         {
-            if (unit->HasAura(76669))
+            if (unit->HasAura(76669) && unit->getLevel() >= 80)
             {
                 float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
 
