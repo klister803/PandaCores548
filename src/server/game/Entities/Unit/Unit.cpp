@@ -7470,6 +7470,46 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         {
             switch (dummySpell->Id)
             {
+                // Sparring (stacks)
+                case 116033:
+                {
+                    if (!victim)
+                        return false;
+
+                    if (!victim->HasAura(116087))
+                        return false;
+
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    triggered_spell_id = 116033;
+                    target = this;
+
+                    break;
+                }
+                // Sparring
+                case 116023:
+                {
+                    if (!victim)
+                        return false;
+
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    if (!isInFront(victim) || !victim->isInFront(this))
+                        return false;
+
+                    if (ToPlayer()->HasSpellCooldown(116023))
+                        return false;
+
+                    triggered_spell_id = 116033;
+                    target = this;
+
+                    ToPlayer()->AddSpellCooldown(116023, 0, time(NULL) + 30);
+                    victim->CastSpell(victim, 116087, true); // Marker
+
+                    break;
+                }
                 // Afterlife
                 case 116092:
                 {

@@ -3150,6 +3150,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 116033:// Sparring (stacks)
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
+                break;
             case 115073:// Spinning Fire Blossom
                 spellInfo->Effects[0].TargetA = 0;
                 spellInfo->Effects[0].Effect = 0;
