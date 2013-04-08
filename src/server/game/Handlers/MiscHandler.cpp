@@ -347,7 +347,7 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
         // 49 is maximum player count sent to client - can be overridden
         // through config, but is unstable
         if ((matchcount++) >= sWorld->getIntConfig(CONFIG_MAX_WHO))
-            continue;
+            break;
 
         data << pname;                                    // player name
         data << gname;                                    // guild name
