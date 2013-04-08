@@ -8181,6 +8181,15 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Daybreak
+        case 88821:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 82327)
+                return false;
+        }
         // Sudden Doom
         case 49530:
         {
