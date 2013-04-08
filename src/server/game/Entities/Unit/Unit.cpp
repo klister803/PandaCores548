@@ -9710,7 +9710,7 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
     {
         if (unit->GetTypeId() == TYPEID_PLAYER)
         {
-            if (unit->HasAura(76669))
+            if (unit->HasAura(76669) && unit->getLevel() >= 80)
             {
                 float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
 
