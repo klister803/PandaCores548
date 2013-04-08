@@ -8189,6 +8189,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
 
             if (procSpell->Id != 82327)
                 return false;
+            break;
         }
         // Sudden Doom
         case 49530:
