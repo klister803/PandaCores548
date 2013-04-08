@@ -909,7 +909,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
                 killer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL, 1, 0, victim);
         }
 
-        Kill(victim, durabilityLoss);
+        Kill(victim, durabilityLoss, spellProto ? spellProto : NULL);
     }
     else
     {
@@ -7463,6 +7463,41 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     triggered_spell_id = dummySpell->Id == 62765 ? 62801 : 62800;
                     target = this;
                     break;
+            }
+            break;
+        }
+        case SPELLFAMILY_MONK:
+        {
+            switch (dummySpell->Id)
+            {
+                // Afterlife
+                case 116092:
+                {
+                    if (!victim)
+                        return false;
+
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    if (ToPlayer()->HasSpellCooldown(116092))
+                        return false;
+
+                    int32 chance = dummySpell->Effects[1].BasePoints;
+
+                    if (!roll_chance_i(chance))
+                        return false;
+
+                    triggered_spell_id = 117032; // Healing Sphere
+                    target = this;
+
+                    if (procSpell && procSpell->Id == 100784)
+                        triggered_spell_id = 121286; // Chi Sphere
+
+                    // Prevent multiple spawn of Sphere
+                    ToPlayer()->AddSpellCooldown(116092, 0, time(NULL) + 1);
+
+                    break;
+                }
             }
             break;
         }
@@ -16010,7 +16045,7 @@ void Unit::PlayOneShotAnimKit(uint32 id)
     SendMessageToSet(&data, true);
 }
 
-void Unit::Kill(Unit* victim, bool durabilityLoss)
+void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
 {
     // Prevent killing unit twice (and giving reward from kill twice)
     if (!victim->GetHealth() || m_IsInKillingProcess)
@@ -16103,10 +16138,10 @@ void Unit::Kill(Unit* victim, bool durabilityLoss)
             owner->ProcDamageAndSpell(victim, PROC_FLAG_KILL, PROC_FLAG_NONE, PROC_EX_NONE, 0);
 
     if (victim->GetCreatureType() != CREATURE_TYPE_CRITTER)
-        ProcDamageAndSpell(victim, PROC_FLAG_KILL, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
+        ProcDamageAndSpell(victim, PROC_FLAG_KILL, PROC_FLAG_KILLED, PROC_EX_NONE, 0, BASE_ATTACK, spellProto ? spellProto : NULL, NULL);
 
     // Proc auras on death - must be before aura/combat remove
-    victim->ProcDamageAndSpell(NULL, PROC_FLAG_DEATH, PROC_FLAG_NONE, PROC_EX_NONE, 0, BASE_ATTACK, 0);
+    victim->ProcDamageAndSpell(NULL, PROC_FLAG_DEATH, PROC_FLAG_NONE, PROC_EX_NONE, 0, BASE_ATTACK, spellProto ? spellProto : NULL);
 
     // update get killing blow achievements, must be done before setDeathState to be able to require auras on target
     // and before Spirit of Redemption as it also removes auras
