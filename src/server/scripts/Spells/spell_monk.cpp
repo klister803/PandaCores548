@@ -90,6 +90,45 @@ enum MonkSpells
     SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP        = 117962,
     SPELL_MONK_POWER_STRIKES_TALENT             = 121817,
     SPELL_MONK_CREATE_CHI_SPHERE                = 121286,
+    SPELL_MONK_GLYPH_OF_ZEN_FLIGHT              = 125893,
+    SPELL_MONK_ZEN_FLIGHT                       = 125883,
+};
+
+// Glyph of Zen Flight - 125893
+class spell_monk_glyph_of_zen_flight : public SpellScriptLoader
+{
+    public:
+        spell_monk_glyph_of_zen_flight() : SpellScriptLoader("spell_monk_glyph_of_zen_flight") { }
+
+        class spell_monk_glyph_of_zen_flight_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_glyph_of_zen_flight_AuraScript);
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    _player->learnSpell(SPELL_MONK_ZEN_FLIGHT, false);
+            }
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    if (_player->HasSpell(SPELL_MONK_ZEN_FLIGHT))
+                        _player->removeSpell(SPELL_MONK_ZEN_FLIGHT, false, false);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_monk_glyph_of_zen_flight_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_monk_glyph_of_zen_flight_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_glyph_of_zen_flight_AuraScript();
+        }
 };
 
 // Called by Jab - 100780
@@ -2015,6 +2054,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_glyph_of_zen_flight();
     new spell_monk_power_strikes();
     new spell_monk_crackling_jade_lightning();
     new spell_monk_touch_of_karma();
