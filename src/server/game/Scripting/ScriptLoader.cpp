@@ -632,6 +632,11 @@ void AddSC_boss_taran_zhu();
 void AddSC_instance_siege_of_the_niuzoa_temple();   // Siege of the Niuzoa Temple
 void AddSC_boss_jinbak();
 
+void AddSC_WanderingIsland_North();
+void AddSC_WanderingIsland_East();
+void AddSC_WanderingIsland_West();
+void AddSC_WanderingIsland_South();
+
 // battlegrounds
 
 // outdoor pvp
@@ -643,9 +648,6 @@ void AddSC_outdoorpvp_zm();
 
 // player
 void AddSC_chat_log();
-
-//
-void AddSC_WanderingIsland();
 #endif
 
 void AddScripts()
@@ -1288,7 +1290,6 @@ void AddPandarieScripts()
     AddSC_boss_trial_of_the_king();
     AddSC_boss_gekkan();
     AddSC_boss_xin_the_weaponmaster();
-    AddSC_WanderingIsland();
     AddSC_instance_gate_setting_sun();              // Gate of the Setting Sun
     AddSC_gate_setting_sun();
     AddSC_boss_saboteur_kiptilak();
@@ -1306,6 +1307,11 @@ void AddPandarieScripts()
     AddSC_boss_taran_zhu();
     AddSC_instance_siege_of_the_niuzoa_temple();    // Siege of the Niuzoa Temple
     AddSC_boss_jinbak();
+
+    AddSC_WanderingIsland_North();
+    AddSC_WanderingIsland_East();
+    AddSC_WanderingIsland_West();
+    AddSC_WanderingIsland_South();
 #endif
 }
 

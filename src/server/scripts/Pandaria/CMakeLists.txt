@@ -49,7 +49,10 @@ set(scripts_STAT_SRCS
   Pandaria/SiegeNiuzaoTemple/siege_of_the_niuzoa_temple.h
   Pandaria/SiegeNiuzaoTemple/boss_jinbak.cpp
 
-  Pandaria/WanderingIsland/wanderingisland.cpp
+  Pandaria/WanderingIsland/WanderingIsland_North.cpp
+  Pandaria/WanderingIsland/WanderingIsland_East.cpp
+  Pandaria/WanderingIsland/WanderingIsland_West.cpp
+  Pandaria/WanderingIsland/WanderingIsland_South.cpp
 )
 
 message("  -> Prepared: Pandaria")
