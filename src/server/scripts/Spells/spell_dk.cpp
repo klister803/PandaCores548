@@ -65,6 +65,37 @@ enum DeathKnightSpells
     DK_SPELL_DESECRATED_GROUND                  = 118009,
     DK_SPELL_DESECRATED_GROUND_IMMUNE           = 115018,
     DK_SPELL_ASPHYXIATE                         = 108194,
+    DK_SPELL_DARK_INFUSION_STACKS               = 91342,
+    DK_SPELL_DARK_INFUSION_AURA                 = 93426,
+};
+
+// Dark transformation - transform pet spell - 63560
+class spell_dk_dark_transformation_form : public SpellScriptLoader
+{
+    public:
+        spell_dk_dark_transformation_form() : SpellScriptLoader("spell_dk_dark_transformation_form") { }
+
+        class spell_dk_dark_transformation_form_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_dk_dark_transformation_form_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* pet = GetHitUnit())
+                        if (pet->HasAura(DK_SPELL_DARK_INFUSION_STACKS))
+                            pet->RemoveAura(DK_SPELL_DARK_INFUSION_STACKS);
+            }
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_dk_dark_transformation_form_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_dk_dark_transformation_form_SpellScript();
+        }
 };
 
 // Called by Strangulate - 47476
@@ -1804,6 +1835,7 @@ class spell_dk_death_grip : public SpellScriptLoader
 
 void AddSC_deathknight_spell_scripts()
 {
+    new spell_dk_dark_transformation_form();
     new spell_dk_asphyxiate();
     new spell_dk_desecrated_ground();
     new spell_dk_necrotic_strike();

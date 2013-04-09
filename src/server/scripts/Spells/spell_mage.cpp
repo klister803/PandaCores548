@@ -86,6 +86,94 @@ enum MageSpells
     SPELL_MAGE_RING_OF_FROST_DUMMY               = 91264,
     SPELL_MAGE_PYROMANIAC_AURA                   = 132209,
     SPELL_MAGE_PYROMANIAC_DAMAGE_DONE            = 132210,
+    SPELL_MAGE_MIRROR_IMAGE_SUMMON               = 58832,
+    SPELL_MAGE_CAUTERIZE                         = 87023,
+};
+
+// Cauterize - 86949
+class spell_mage_cauterize : public SpellScriptLoader
+{
+    public:
+        spell_mage_cauterize() : SpellScriptLoader("spell_mage_cauterize") { }
+
+        class spell_mage_cauterize_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_mage_cauterize_AuraScript);
+
+            uint32 absorbChance;
+            uint32 healtPct;
+
+            bool Load()
+            {
+                absorbChance = GetSpellInfo()->Effects[EFFECT_0].CalcValue(GetCaster());
+                healtPct = GetSpellInfo()->Effects[EFFECT_1].CalcValue(GetCaster());
+                return GetUnitOwner()->ToPlayer();
+            }
+
+            void CalculateAmount(constAuraEffectPtr /*auraEffect*/, int32& amount, bool& /*canBeRecalculated*/)
+            {
+                amount = -1;
+            }
+
+            void Absorb(AuraEffectPtr /*auraEffect*/, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                Unit* target = GetTarget();
+
+                if (dmgInfo.GetDamage() < target->GetHealth())
+                    return;
+
+                if (target->ToPlayer()->HasSpellCooldown(SPELL_MAGE_CAUTERIZE))
+                    return;
+
+                if (!roll_chance_i(absorbChance))
+                    return;
+
+                int bp1 = target->CountPctFromMaxHealth(healtPct);
+                target->CastCustomSpell(target, SPELL_MAGE_CAUTERIZE, NULL, &bp1, NULL, true);
+                target->ToPlayer()->AddSpellCooldown(SPELL_MAGE_CAUTERIZE, 0, time(NULL) + 60);
+
+                absorbAmount = dmgInfo.GetDamage();
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_mage_cauterize_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_mage_cauterize_AuraScript::Absorb, EFFECT_0);
+            }
+        };
+
+        AuraScript *GetAuraScript() const
+        {
+            return new spell_mage_cauterize_AuraScript();
+        }
+};
+
+// Mirror Images - 55342
+class spell_mage_mirror_images : public SpellScriptLoader
+{
+    public:
+        spell_mage_mirror_images() : SpellScriptLoader("spell_mage_mirror_images") { }
+
+        class spell_mage_mirror_images_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_mage_mirror_images_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->CastSpell(_player, SPELL_MAGE_MIRROR_IMAGE_SUMMON, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_mage_mirror_images_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_mage_mirror_images_SpellScript();
+        }
 };
 
 // Called by Nether Tempest - 114923, Frost Bomb - 112948 and Living Bomb - 44457
@@ -1374,6 +1462,8 @@ class spell_mage_living_bomb : public SpellScriptLoader
 
 void AddSC_mage_spell_scripts()
 {
+    new spell_mage_cauterize();
+    new spell_mage_mirror_images();
     new spell_mage_pyromaniac();
     new spell_mage_ring_of_frost();
     new spell_mage_ring_of_frost_freeze();

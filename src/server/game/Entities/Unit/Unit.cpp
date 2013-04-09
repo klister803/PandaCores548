@@ -526,7 +526,7 @@ bool Unit::HasBreakableByDamageAuraType(AuraType type, uint32 excludeAura) const
     AuraEffectList const& auras = GetAuraEffectsByType(type);
     for (AuraEffectList::const_iterator itr = auras.begin(); itr != auras.end(); ++itr)
         if ((!excludeAura || excludeAura != (*itr)->GetSpellInfo()->Id) && //Avoid self interrupt of channeled Crowd Control spells like Seduction
-            ((*itr)->GetSpellInfo()->Attributes & SPELL_ATTR0_BREAKABLE_BY_DAMAGE || (*itr)->GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
+            ((*itr)->GetSpellInfo()->AuraInterruptFlags & AURA_INTERRUPT_FLAG_TAKE_DAMAGE))
             return true;
     return false;
 }
@@ -5518,7 +5518,7 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
 
                     if (GetEntry() == 62982 || GetEntry() == 67236) // Mindbender
                     {
-                        target->EnergizeBySpell(target, 123051, int32(1.3f * target->GetPower(POWER_MANA)), POWER_MANA);
+                        target->EnergizeBySpell(target, 123051, int32(0.013f * target->GetPower(POWER_MANA)), POWER_MANA);
                         return false;
                     }
 
@@ -6698,6 +6698,70 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
         }
         case SPELLFAMILY_PALADIN:
         {
+            switch (dummySpell->Id)
+            {
+                // Ancient Crusader (player)
+                case 86701:
+                {
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    //if caster has no guardian of ancient kings aura then remove dummy aura
+                    if (!HasAura(86698))
+                    {
+                        RemoveAurasDueToSpell(86701);
+                        return false;
+                    }
+
+                    CastSpell(this, 86700, true);
+                    return true;
+                }
+                // Ancient Crusader (guardian)
+                case 86703:
+                {
+                    if (!GetOwner() || GetOwner()->GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    GetOwner()->CastSpell(this, 86700, true);
+                    return true;
+                }
+                // Ancient Healer
+                case 86674:
+                {
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    // if caster has no guardian of ancient kings aura then remove dummy aura
+                    if (!HasAura(86669))
+                    {
+                        RemoveAurasDueToSpell(86674);
+                        return false;
+                    }
+
+                    // check for single target spell (TARGET_SINGLE_FRIEND, NO_TARGET)
+                    if (!(procSpell->Effects[triggeredByAura->GetEffIndex()].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY) &&
+                        (procSpell->Effects[triggeredByAura->GetEffIndex()].TargetB.GetTarget() == 0))
+                        return false;
+
+                    std::list<Creature*> petlist;
+                    GetCreatureListWithEntryInGrid(petlist, 46499, 100.0f);
+                    if (!petlist.empty())
+                    {
+                        for (std::list<Creature*>::const_iterator itr = petlist.begin(); itr != petlist.end(); ++itr)
+                        {
+                            Unit* pPet = (*itr);
+                            if (pPet->GetOwnerGUID() == GetGUID())
+                            {
+                                int32 bp0 = damage;
+                                int32 bp1 = damage / 10;
+                                pPet->CastCustomSpell(victim, 86678, &bp0, &bp1, NULL, true);
+                            }
+                        }
+                    }
+
+                    return true;
+                }
+            }
             // Seal of Command
             if (dummySpell->Id == 105361 &&  effIndex == 0)
             {
@@ -7248,6 +7312,36 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                 triggered_spell_id = 50163;
                 target = this;
                 break;
+            }
+            // Runic Empowerment
+            if (dummySpell->Id == 81229)
+            {
+                if (!ToPlayer())
+                    return false;
+
+                // Runic Corruption - maybe only this need
+                if (constAuraEffectPtr runicCorruption = GetDummyAuraEffect(SPELLFAMILY_DEATHKNIGHT, 4068, 0))
+                {
+                    int32 basepoints0 = runicCorruption->GetAmount();
+                    if (AuraPtr aur = GetAura(51460))
+                        aur->SetDuration(aur->GetDuration() + 3000);
+                    else
+                        CastCustomSpell(this, 51460, &basepoints0, NULL, NULL, true);
+                    return true;
+                }
+
+                std::set<uint8> runes;
+                for (uint8 i = 0; i < MAX_RUNES; i++)
+                    if (this->ToPlayer()->GetRuneCooldown(i) == this->ToPlayer()->GetRuneBaseCooldown(i))
+                        runes.insert(i);
+                if (!runes.empty())
+                {
+                    std::set<uint8>::iterator itr = runes.begin();
+                    std::advance(itr, urand(0, runes.size()-1));
+                    this->ToPlayer()->SetRuneCooldown((*itr), 0);
+                    this->ToPlayer()->ResyncRunes(MAX_RUNES);
+                }
+                return true;
             }
             // Dancing Rune Weapon
             if (dummySpell->Id == 49028)
@@ -8087,6 +8181,34 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Infusion of Light
+        case 53576:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!(procSpell->Id == 25912) && !(procSpell->Id == 25914))
+                return false;
+
+            if (!(procEx & PROC_EX_CRITICAL_HIT))
+                return false;
+
+            break;
+        }
+        // Daybreak
+        case 88821:
+        {
+            if (!procSpell)
+                return false;
+
+            if (procSpell->Id != 82327)
+                return false;
+
+            break;
+        }
         // Sudden Doom
         case 49530:
         {
@@ -8103,6 +8225,19 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
 
             if (procSpell->Id != 47632)
                 return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (Pet* pet = ToPlayer()->GetPet())
+            {
+                uint8 stackAmount = 0;
+                if (AuraPtr aura = pet->GetAura(trigger_spell_id))
+                    stackAmount = aura->GetStackAmount();
+
+                if (stackAmount >= 4) // Apply Dark Transformation
+                    CastSpell(this, 93426, true);
+            }
 
             break;
         }
@@ -8566,6 +8701,15 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
                 return false;
             // critters are not allowed
             if (victim->GetCreatureType() == CREATURE_TYPE_CRITTER)
+                return false;
+            break;
+        }
+        // Death's Advance
+        case 96268:
+        {
+            if (!ToPlayer())
+                return false;
+            if (!ToPlayer()->GetRuneCooldown(RUNE_UNHOLY*2) || !ToPlayer()->GetRuneCooldown(RUNE_UNHOLY*2+1))
                 return false;
             break;
         }
@@ -9585,7 +9729,7 @@ int32 Unit::DealHeal(Unit* victim, uint32 addhealth)
     {
         if (unit->GetTypeId() == TYPEID_PLAYER)
         {
-            if (unit->HasAura(76669))
+            if (unit->HasAura(76669) && unit->getLevel() >= 80)
             {
                 float Mastery = unit->GetFloatValue(PLAYER_MASTERY) * 1.5f / 100.0f;
 
@@ -12077,13 +12221,17 @@ bool Unit::_IsValidAttackTarget(Unit const* target, SpellInfo const* bySpell, Wo
         if (playerAttacker->HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_UBER))
             return false;
     }
+
     // check flags
     if (target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_TAXI_FLIGHT | UNIT_FLAG_NOT_ATTACKABLE_1 | UNIT_FLAG_UNK_16)
         || (!HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))
-        || (!target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC))
-        || (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
+        || (!target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_NPC)))
+        return false;
+
+    if ((!bySpell || !(bySpell->AttributesEx8 & SPELL_ATTR8_ATTACK_IGNORE_IMMUNE_TO_PC_FLAG))
+        && (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC))
         // check if this is a world trigger cast - GOs are using world triggers to cast their spells, so we need to ignore their immunity flag here, this is a temp workaround, needs removal when go cast is implemented properly
-        || (GetEntry() != WORLD_TRIGGER && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) && HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_IMMUNE_TO_PC)))
+        && GetEntry() != WORLD_TRIGGER)
         return false;
 
     // CvC case - can attack each other only when one of them is hostile
@@ -12187,7 +12335,7 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
         && target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NOT_SELECTABLE))
         return false;
 
-    if (!bySpell || !(bySpell->AttributesEx6 & SPELL_ATTR6_UNK3))
+    if (!bySpell || !(bySpell->AttributesEx6 & SPELL_ATTR6_ASSIST_IGNORE_IMMUNE_FLAG))
     {
         if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE))
         {
@@ -12234,7 +12382,7 @@ bool Unit::_IsValidAssistTarget(Unit const* target, SpellInfo const* bySpell) co
     // PvC case - player can assist creature only if has specific type flags
     // !target->HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE) &&
     else if (HasFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_PVP_ATTACKABLE)
-        && (!bySpell || !(bySpell->AttributesEx6 & SPELL_ATTR6_UNK3))
+        && (!bySpell || !(bySpell->AttributesEx6 & SPELL_ATTR6_ASSIST_IGNORE_IMMUNE_FLAG))
         && !((target->GetByteValue(UNIT_FIELD_BYTES_2, 1) & UNIT_BYTE2_FLAG_PVP)))
     {
         if (Creature const* creatureTarget = target->ToCreature())
@@ -14702,22 +14850,6 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 42223)
         if (roll_chance_i(30))
             SetPower(POWER_BURNING_EMBERS, GetPower(POWER_BURNING_EMBERS) + 1);
-
-    // Guardian of Ancient Kings : attacks player's target
-    if (GetTypeId() == TYPEID_PLAYER && HasAura(86698) && !(procExtra & PROC_EX_INTERNAL_DOT) && !(procExtra & PROC_EX_INTERNAL_TRIGGERED))
-    {
-        if (procSpell && procSpell->Id != 86700)
-            CastSpell(this, 86700, true);       // your attacks will infuse you with Ancient Power
-        else if (!procSpell)
-            CastSpell(this, 86700, true);
-    }
-    else if (GetTypeId() == TYPEID_UNIT && GetOwner() && GetOwner()->HasAura(86698) && (procExtra & PROC_EX_INTERNAL_DOT) && !(procExtra & PROC_EX_INTERNAL_TRIGGERED))
-    {
-        if (procSpell && procSpell->Id != 86700)
-            CastSpell(GetOwner(), 86700, true); // the attacks of the Guardian will infuse you with Ancient Power
-        else if (!procSpell)
-            CastSpell(GetOwner(), 86700, true); // the attacks of the Guardian will infuse you with Ancient Power
-    }
 
     // Summon Shadowy Apparitions when Shadow Word : Pain is crit
     if (GetTypeId() == TYPEID_PLAYER && procSpell && procSpell->Id == 589 && HasAura(78203) && procExtra & PROC_EX_CRITICAL_HIT)
