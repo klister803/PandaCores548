@@ -58,7 +58,6 @@ enum MonkSpells
     SPELL_MONK_FLYING_SERPENT_KICK              = 101545,
     SPELL_MONK_FLYING_SERPENT_KICK_NEW          = 115057,
     SPELL_MONK_FLYING_SERPENT_KICK_AOE          = 123586,
-    SPELL_MONK_CRACKLING_JADE_LIGHTNING         = 117952,
     SPELL_MONK_TIGEREYE_BREW                    = 116740,
     SPELL_MONK_TIGEREYE_BREW_STACKS             = 125195,
     SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE        = 116709,
@@ -87,6 +86,61 @@ enum MonkSpells
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_MISSILE    = 118852,
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_ROOT       = 123407,
     SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE   = 124280,
+    SPELL_MONK_JADE_LIGHTNING_ENERGIZE          = 123333,
+    SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP        = 117962,
+};
+
+// Crackling Jade Lightning - 117952
+class spell_monk_crackling_jade_lightning : public SpellScriptLoader
+{
+    public:
+        spell_monk_crackling_jade_lightning() : SpellScriptLoader("spell_monk_crackling_jade_lightning") { }
+
+        class spell_monk_crackling_jade_lightning_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_crackling_jade_lightning_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Unit* caster = GetCaster())
+                    if (roll_chance_i(25))
+                        caster->CastSpell(caster, SPELL_MONK_JADE_LIGHTNING_ENERGIZE, true);
+            }
+
+            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                if (!GetCaster())
+                    return;
+
+                if (eventInfo.GetActor()->GetGUID() != GetTarget()->GetGUID())
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (GetTarget()->HasAura(aurEff->GetSpellInfo()->Id, _player->GetGUID()))
+                    {
+                        if (!_player->HasSpellCooldown(SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP))
+                        {
+                            _player->CastSpell(GetTarget(), SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP, true);
+                            _player->AddSpellCooldown(SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP, 0, time(NULL) + 8);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_crackling_jade_lightning_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                OnEffectProc += AuraEffectProcFn(spell_monk_crackling_jade_lightning_AuraScript::OnProc, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_crackling_jade_lightning_AuraScript();
+        }
 };
 
 // Touch of Karma - 122470
@@ -1910,6 +1964,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_crackling_jade_lightning();
     new spell_monk_touch_of_karma();
     new spell_monk_spinning_fire_blossom_damage();
     new spell_monk_spinning_fire_blossom();
