@@ -112,8 +112,23 @@ public:
 
         void UpdateAI(const uint32 diff)
         {
-            if (!UpdateVictim())
+            if (me->getThreatManager().isThreatListEmpty())
+            {
+                std::list<Player*> playerList;
+                GetPlayerListInGrid(playerList, me, 25.0f);
+
+                for (auto player: playerList)
+                {
+                    if (player->isAlive())
+                    {
+                        AttackStart(player);
+                        return;
+                    }
+                }
+
+                EnterEvadeMode();
                 return;
+            }
 
             events.Update(diff);
             while (uint32 eventId = events.ExecuteEvent())
