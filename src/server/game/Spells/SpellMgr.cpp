@@ -3374,6 +3374,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->ProcCharges = 2;
                 spellInfo->StackAmount = 0;
                 break;
+            case 85222: // Light of Dawn
+                spellInfo->MaxAffectedTargets = 6;
+                break;
             case 8122:  // Psychic Scream
                 spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                 spellInfo->MaxAffectedTargets = 5;
