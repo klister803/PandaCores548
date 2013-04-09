@@ -2762,6 +2762,8 @@ class Player : public Unit, public GridObject<Player>
 
         void _LoadStore();
 
+        void CheckSpellAreaOnQuestStatusChange(uint32 quest_id);
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;

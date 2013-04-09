@@ -8936,3 +8936,72 @@ void ObjectMgr::RestructCreatureGUID(uint32 nbLigneToRestruct)
 
     sLog->outInfo(LOG_FILTER_SERVER_LOADING, "%u lignes ont ete restructuree.", nbLigneToRestruct);
 }
+
+void ObjectMgr::RestructGameObjectGUID(uint32 nbLigneToRestruct)
+{
+    QueryResult result = WorldDatabase.PQuery("SELECT guid FROM gameobject ORDER BY guid DESC LIMIT %u;", nbLigneToRestruct);
+
+    if (!result)
+    {
+        sLog->outInfo(LOG_FILTER_SERVER_LOADING, "Soucis lors du select de la fonction 'RestructGameObjectGUID' (nombre de lignes : %u)", nbLigneToRestruct);
+        return;
+    }
+
+    std::vector<uint32> guidList;
+
+    do
+    {
+        Field *fields = result->Fetch();
+        guidList.push_back(fields[0].GetUInt32());
+    } while (result->NextRow());
+
+    uint32 upperGUID = 0;
+    uint32 lowerGUID = 0;
+
+    std::map<uint32, uint32> newGUIDList;
+
+    for (int32 i = guidList.size() - 2; i >= 0; --i)
+    {
+        upperGUID = guidList[i];
+        lowerGUID = guidList[i + 1];
+
+        if (upperGUID != lowerGUID + 1)
+        {
+            newGUIDList[upperGUID] = lowerGUID + 1;
+            guidList[i] = lowerGUID + 1;
+        }
+    }
+
+    uint32 oldGUID   = 0;
+    uint32 newGUID   = 0;
+
+    SQLTransaction worldTrans = WorldDatabase.BeginTransaction();
+
+    for (std::map<uint32, uint32>::iterator Itr = newGUIDList.begin(); Itr != newGUIDList.end(); ++Itr)
+    {
+        oldGUID = Itr->first;
+        newGUID = Itr->second;
+
+        // World Database
+        std::ostringstream gameobject_ss;
+        gameobject_ss << "UPDATE gameobject SET guid = "            << newGUID << " WHERE guid = " << oldGUID << "; ";
+        worldTrans->Append(gameobject_ss.str().c_str());
+
+        std::ostringstream game_event_ss;
+        game_event_ss << "UPDATE game_event_gameobject SET guid = " << newGUID << " WHERE guid = " << oldGUID << "; ";
+        worldTrans->Append(game_event_ss.str().c_str());
+
+        std::ostringstream pool_ss;
+        pool_ss << "UPDATE pool_gameobject SET guid = "             << newGUID << " WHERE guid = " << oldGUID << "; ";
+        worldTrans->Append(pool_ss.str().c_str());
+    }
+
+    std::ostringstream increment_ss;
+    // Le dernier newGUID est le plus haut
+    increment_ss << "ALTER TABLE creature AUTO_INCREMENT = "        << newGUID << ";";
+    worldTrans->Append(increment_ss.str().c_str());
+
+    WorldDatabase.CommitTransaction(worldTrans);
+
+    sLog->outInfo(LOG_FILTER_SERVER_LOADING, "%u lignes ont ete restructuree.", nbLigneToRestruct);
+}
