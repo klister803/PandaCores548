@@ -72,7 +72,8 @@ enum PriestSpells
     PRIEST_STRENGTH_OF_SOUL_AURA                = 89488,
     PRIEST_STRENGTH_OF_SOUL_REDUCE_TIME         = 89490,
     PRIEST_WEAKENED_SOUL                        = 6788,
-	PRIEST_EVANGELISM_AURA                      = 81661,
+    PRIEST_EVANGELISM_AURA                      = 81662,
+    PRIEST_EVANGELISM_STACK                     = 81661,
     PRIEST_ARCHANGEL                            = 81700,
     LIGHTWELL_CHARGES                           = 59907,
     LIGHTSPRING_RENEW                           = 126154,
@@ -1052,7 +1053,8 @@ class spell_pri_mind_spike : public SpellScriptLoader
         }
 };
 
-// Evangelism - 81661
+// Called by Holy Fire - 14914, Smite - 585 and Penance - 47666
+// Evangelism - 81662
 class spell_pri_evangelism : public SpellScriptLoader
 {
     public:
@@ -1064,9 +1066,10 @@ class spell_pri_evangelism : public SpellScriptLoader
 
 			void HandleOnHit()
 			{
-				if (Player* _player = GetCaster()->ToPlayer())
-					if (GetHitDamage())
-						_player->CastSpell(_player,PRIEST_EVANGELISM_AURA,true);
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(PRIEST_EVANGELISM_AURA))
+                        if (GetHitDamage())
+                            _player->CastSpell(_player, PRIEST_EVANGELISM_STACK, true);
 			}
 
             void Register()
