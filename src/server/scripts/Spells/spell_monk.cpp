@@ -88,6 +88,57 @@ enum MonkSpells
     SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE   = 124280,
     SPELL_MONK_JADE_LIGHTNING_ENERGIZE          = 123333,
     SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP        = 117962,
+    SPELL_MONK_POWER_STRIKES_TALENT             = 121817,
+    SPELL_MONK_CREATE_CHI_SPHERE                = 121286,
+};
+
+// Called by Jab - 100780
+// Power Strikes - 121817
+class spell_monk_power_strikes : public SpellScriptLoader
+{
+    public:
+        spell_monk_power_strikes() : SpellScriptLoader("spell_monk_power_strikes") { }
+
+        class spell_monk_power_strikes_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_power_strikes_SpellScript)
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->GetGUID() != _player->GetGUID())
+                        {
+                            if (_player->HasAura(SPELL_MONK_POWER_STRIKES_TALENT))
+                            {
+                                if (!_player->HasSpellCooldown(SPELL_MONK_POWER_STRIKES_TALENT))
+                                {
+                                    if (_player->GetPower(POWER_CHI) < _player->GetMaxPower(POWER_CHI))
+                                    {
+                                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 1, POWER_CHI);
+                                        _player->AddSpellCooldown(SPELL_MONK_POWER_STRIKES_TALENT, 0, time(NULL) + 20);
+                                    }
+                                    else
+                                        _player->CastSpell(_player, SPELL_MONK_CREATE_CHI_SPHERE, true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_power_strikes_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_power_strikes_SpellScript();
+        }
 };
 
 // Crackling Jade Lightning - 117952
@@ -1964,6 +2015,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_power_strikes();
     new spell_monk_crackling_jade_lightning();
     new spell_monk_touch_of_karma();
     new spell_monk_spinning_fire_blossom_damage();
