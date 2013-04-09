@@ -1934,17 +1934,7 @@ class spell_monk_legacy_of_the_emperor : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 Unit* caster = GetCaster();
-                if (caster && caster->GetTypeId() == TYPEID_PLAYER)
-                {
-                    caster->CastSpell(caster, SPELL_MONK_LEGACY_OF_THE_EMPEROR, true);
-
-                    std::list<Unit*> memberList;
-                    Player* plr = caster->ToPlayer();
-                    plr->GetPartyMembers(memberList);
-
-                    for (auto itr : memberList)
-                        caster->CastSpell((itr), SPELL_MONK_LEGACY_OF_THE_EMPEROR, true);
-                }
+                caster->CastSpell(caster, SPELL_MONK_LEGACY_OF_THE_EMPEROR, true);
             }
 
             void Register()
