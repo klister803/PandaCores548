@@ -2710,9 +2710,23 @@ void SpellMgr::LoadSpellClassInfo()
         if (ClassID == CLASS_DRUID)
             mSpellClassInfo[ClassID].insert(112857);
         
-        //Sinister Strike Enabler
+        // Sinister Strike Enabler
         if (ClassID == CLASS_ROGUE)
             mSpellClassInfo[ClassID].insert(79327);
+
+        // Opening gameobject
+        if (ClassID == CLASS_MONK)
+        {
+            mSpellClassInfo[ClassID].insert(3365);
+            mSpellClassInfo[ClassID].insert(6247);
+            mSpellClassInfo[ClassID].insert(6477);
+            mSpellClassInfo[ClassID].insert(6478);
+            mSpellClassInfo[ClassID].insert(21651);
+            mSpellClassInfo[ClassID].insert(22810);
+            mSpellClassInfo[ClassID].insert(61437);
+            mSpellClassInfo[ClassID].insert(68398);
+            mSpellClassInfo[ClassID].insert(96220);
+        }
 
         for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
         {
@@ -3373,6 +3387,9 @@ void SpellMgr::LoadSpellCustomAttr()
             case 126084:// Fingers of Frost - visual
                 spellInfo->ProcCharges = 2;
                 spellInfo->StackAmount = 0;
+                break;
+            case 85222: // Light of Dawn
+                spellInfo->MaxAffectedTargets = 6;
                 break;
             case 8122:  // Psychic Scream
                 spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
