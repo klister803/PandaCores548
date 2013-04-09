@@ -73,12 +73,17 @@ class spell_warr_shield_barrier : public SpellScriptLoader
 
             void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
             {
-                int32 rage = int32(GetCaster()->GetPower(POWER_RAGE) / 10);
-                int32 AP = int32(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
-                int32 Strength = int32(GetCaster()->GetStat(STAT_STRENGTH));
-                int32 Stamina = int32(GetCaster()->GetStat(STAT_STAMINA));
+                if (GetCaster())
+                {
+                    int32 rage = int32(GetCaster()->GetPower(POWER_RAGE) / 10);
+                    int32 AP = int32(GetCaster()->GetTotalAttackPowerValue(BASE_ATTACK));
+                    int32 Strength = int32(GetCaster()->GetStat(STAT_STRENGTH));
+                    int32 Stamina = int32(GetCaster()->GetStat(STAT_STAMINA));
 
-                amount += std::max(int32(2 * (AP - 2 * (Strength - 10))), int32(Stamina * 2.5f)) * (std::min(60, rage) / 20);
+                    amount += std::max(int32(2 * (AP - 2 * (Strength - 10))), int32(Stamina * 2.5f)) * (std::min(60, rage) / 20);
+
+                    GetCaster()->SetPower(POWER_RAGE, GetCaster()->GetPower(POWER_RAGE) - std::min(60, rage) * 10);
+                }
             }
 
             void Register()

@@ -2234,6 +2234,54 @@ void DynObjAura::FillTargetMap(std::map<Unit*, uint32> & targets, Unit* /*caster
             // Custom MoP Script
             switch (GetSpellInfo()->Id)
             {
+                case 121286: // Chi Sphere (Afterlife)
+                {
+                    std::list<Unit*> targetList;
+                    radius = 1.0f;
+
+                    JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
+                    JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
+                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
+
+                    if (!targetList.empty())
+                    {
+                        for (auto itr : targetList)
+                        {
+                            if (itr->GetGUID() == dynObjOwnerCaster->GetGUID())
+                            {
+                                dynObjOwnerCaster->CastSpell(itr, 121283, true); // Restore 1 Chi
+                                GetDynobjOwner()->SetDuration(0);
+                                return;
+                            }
+                        }
+                    }
+
+                    break;
+                }
+                case 117032: // Healing Sphere (Afterlife)
+                {
+                    std::list<Unit*> targetList;
+                    radius = 1.0f;
+
+                    JadeCore::AnyFriendlyUnitInObjectRangeCheck u_check(GetDynobjOwner(), dynObjOwnerCaster, radius);
+                    JadeCore::UnitListSearcher<JadeCore::AnyFriendlyUnitInObjectRangeCheck> searcher(GetDynobjOwner(), targetList, u_check);
+                    GetDynobjOwner()->VisitNearbyObject(radius, searcher);
+
+                    if (!targetList.empty())
+                    {
+                        for (auto itr : targetList)
+                        {
+                            if (itr->GetGUID() == dynObjOwnerCaster->GetGUID())
+                            {
+                                dynObjOwnerCaster->CastSpell(itr, 125355, true); // Heal for 15% of life
+                                GetDynobjOwner()->SetDuration(0);
+                                return;
+                            }
+                        }
+                    }
+
+                    break;
+                }
                 case 121536: // Angelic Feather
                 {
                     std::list<Unit*> targetList;

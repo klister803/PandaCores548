@@ -3647,7 +3647,56 @@ class npc_demonic_gateway_green : public CreatureScript
         {
             return new npc_demonic_gateway_greenAI(creature);
         }
+};
 
+/*######
+# npc_xuen_the_white_tiger
+######*/
+
+#define CRACKLING_TIGER_LIGHTNING   123996
+
+class npc_xuen_the_white_tiger : public CreatureScript
+{
+    public:
+        npc_xuen_the_white_tiger() : CreatureScript("npc_xuen_the_white_tiger") { }
+
+        struct npc_xuen_the_white_tigerAI : public ScriptedAI
+        {
+            uint32 CastTimer;
+
+            npc_xuen_the_white_tigerAI(Creature *creature) : ScriptedAI(creature)
+            {
+                CastTimer = 6000;
+                me->SetReactState(ReactStates::REACT_DEFENSIVE);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (!UpdateVictim())
+                    return;
+
+                if (me->getVictim())
+                {
+                    if (CastTimer <= diff)
+                    {
+                        DoCast(me->getVictim(), CRACKLING_TIGER_LIGHTNING, false);
+                        CastTimer = 6000;
+                    }
+                    else
+                        CastTimer -= diff;
+                }
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_xuen_the_white_tigerAI(creature);
+        }
 };
 
 void AddSC_npcs_special()
@@ -3695,4 +3744,5 @@ void AddSC_npcs_special()
     new npc_power_word_barrier();
     new npc_demonic_gateway_purple();
     new npc_demonic_gateway_green();
+    new npc_xuen_the_white_tiger();
 }

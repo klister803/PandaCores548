@@ -909,7 +909,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
                 killer->UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_SPECIAL_PVP_KILL, 1, 0, victim);
         }
 
-        Kill(victim, durabilityLoss);
+        Kill(victim, durabilityLoss, spellProto ? spellProto : NULL);
     }
     else
     {
@@ -7463,6 +7463,81 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     triggered_spell_id = dummySpell->Id == 62765 ? 62801 : 62800;
                     target = this;
                     break;
+            }
+            break;
+        }
+        case SPELLFAMILY_MONK:
+        {
+            switch (dummySpell->Id)
+            {
+                // Sparring (stacks)
+                case 116033:
+                {
+                    if (!victim)
+                        return false;
+
+                    if (!victim->HasAura(116087))
+                        return false;
+
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    triggered_spell_id = 116033;
+                    target = this;
+
+                    break;
+                }
+                // Sparring
+                case 116023:
+                {
+                    if (!victim)
+                        return false;
+
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    if (!isInFront(victim) || !victim->isInFront(this))
+                        return false;
+
+                    if (ToPlayer()->HasSpellCooldown(116023))
+                        return false;
+
+                    triggered_spell_id = 116033;
+                    target = this;
+
+                    ToPlayer()->AddSpellCooldown(116023, 0, time(NULL) + 30);
+                    victim->CastSpell(victim, 116087, true); // Marker
+
+                    break;
+                }
+                // Afterlife
+                case 116092:
+                {
+                    if (!victim)
+                        return false;
+
+                    if (GetTypeId() != TYPEID_PLAYER)
+                        return false;
+
+                    if (ToPlayer()->HasSpellCooldown(116092))
+                        return false;
+
+                    int32 chance = dummySpell->Effects[1].BasePoints;
+
+                    if (!roll_chance_i(chance))
+                        return false;
+
+                    triggered_spell_id = 117032; // Healing Sphere
+                    target = this;
+
+                    if (procSpell && procSpell->Id == 100784)
+                        triggered_spell_id = 121286; // Chi Sphere
+
+                    // Prevent multiple spawn of Sphere
+                    ToPlayer()->AddSpellCooldown(116092, 0, time(NULL) + 1);
+
+                    break;
+                }
             }
             break;
         }
@@ -15157,7 +15232,21 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         // Remove charge (aura can be removed by triggers)
         if (useCharges && takeCharges && i->aura->GetId() != 324 && i->aura->GetId() != 36032 && i->aura->GetId() != 121153 // Custom MoP Script - Hack Fix for Lightning Shield and Hack Fix for Arcane Charges
             && i->aura->GetId() != 119962 && i->aura->GetId() != 131116)
+        {
+            // Hack Fix for Tiger Strikes
+            if (i->aura->GetId() == 120273)
+            {
+                if (target)
+                {
+                    if (attType == BASE_ATTACK)
+                        CastSpell(target, 120274, true); // extra attack for MainHand
+                    else if (attType == OFF_ATTACK)
+                        CastSpell(target, 120278, true); // extra attack for OffHand
+                }
+            }
+
             i->aura->DropCharge();
+        }
 
         if (useCharges && takeCharges && ((i->aura->GetId() == 119962 && procSpell && procSpell->Id == 7384) // Custom MoP Script - Hack Fix for allow Overpower
             || (i->aura->GetId() == 131116 && procSpell && procSpell->Id == 96103)))                         // Custom MoP Script - Hack Fix for allow Raging Blow
@@ -16042,7 +16131,7 @@ void Unit::PlayOneShotAnimKit(uint32 id)
     SendMessageToSet(&data, true);
 }
 
-void Unit::Kill(Unit* victim, bool durabilityLoss)
+void Unit::Kill(Unit* victim, bool durabilityLoss, SpellInfo const* spellProto)
 {
     // Prevent killing unit twice (and giving reward from kill twice)
     if (!victim->GetHealth() || m_IsInKillingProcess)
@@ -16135,10 +16224,10 @@ void Unit::Kill(Unit* victim, bool durabilityLoss)
             owner->ProcDamageAndSpell(victim, PROC_FLAG_KILL, PROC_FLAG_NONE, PROC_EX_NONE, 0);
 
     if (victim->GetCreatureType() != CREATURE_TYPE_CRITTER)
-        ProcDamageAndSpell(victim, PROC_FLAG_KILL, PROC_FLAG_KILLED, PROC_EX_NONE, 0);
+        ProcDamageAndSpell(victim, PROC_FLAG_KILL, PROC_FLAG_KILLED, PROC_EX_NONE, 0, BASE_ATTACK, spellProto ? spellProto : NULL, NULL);
 
     // Proc auras on death - must be before aura/combat remove
-    victim->ProcDamageAndSpell(NULL, PROC_FLAG_DEATH, PROC_FLAG_NONE, PROC_EX_NONE, 0, BASE_ATTACK, 0);
+    victim->ProcDamageAndSpell(NULL, PROC_FLAG_DEATH, PROC_FLAG_NONE, PROC_EX_NONE, 0, BASE_ATTACK, spellProto ? spellProto : NULL);
 
     // update get killing blow achievements, must be done before setDeathState to be able to require auras on target
     // and before Spirit of Redemption as it also removes auras

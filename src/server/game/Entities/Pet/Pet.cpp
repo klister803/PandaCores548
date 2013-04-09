@@ -962,6 +962,21 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
                     break;
                 }
+                case 63508: // Xuen, the White Tiger
+                {
+                    if (!pInfo)
+                    {
+                        SetCreateMana(28 + 10*petlevel);
+                        SetCreateHealth(28 + 30*petlevel);
+                    }
+
+                    SetBonusDamage(int32(m_owner->GetTotalAttackPowerValue(BASE_ATTACK)));
+                    int32 bonus_dmg = (int32(m_owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.1f));
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 4 - petlevel + bonus_dmg));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 4 + petlevel + bonus_dmg));
+
+                    break;
+                }
                 case 62982: // Mindbender
                 case 67236: // Mindbender (Sha)
                 {

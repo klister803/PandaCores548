@@ -377,11 +377,14 @@ class spell_hun_improved_serpent_sting : public SpellScriptLoader
                         {
                             if (AuraPtr serpentSting = target->GetAura(HUNTER_SPELL_SERPENT_STING, _player->GetGUID()))
                             {
-                                int32 bp = _player->SpellDamageBonusDone(target, serpentSting->GetSpellInfo(), serpentSting->GetEffect(0)->GetAmount(), DOT);
-                                bp *= serpentSting->GetMaxDuration() / serpentSting->GetEffect(0)->GetAmplitude();
-                                bp = CalculatePct(bp, 30);
+                                if (serpentSting->GetEffect(0))
+                                {
+                                    int32 bp = _player->SpellDamageBonusDone(target, GetSpellInfo(), serpentSting->GetEffect(0)->GetAmount(), DOT);
+                                    bp *= serpentSting->GetMaxDuration() / serpentSting->GetEffect(0)->GetAmplitude();
+                                    bp = CalculatePct(bp, 30);
 
-                                _player->CastCustomSpell(target, HUNTER_SPELL_IMPROVED_SERPENT_STING, &bp, NULL, NULL, true);
+                                    _player->CastCustomSpell(target, HUNTER_SPELL_IMPROVED_SERPENT_STING, &bp, NULL, NULL, true);
+                                }
                             }
                         }
                     }
