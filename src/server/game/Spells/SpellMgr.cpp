@@ -3150,6 +3150,23 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 1126:  // Mark of the Wild
+            case 19740: // Blessing of Might
+            case 20217: // Blessing of Kings
+            case 21562: // Power Word : Fortitude
+            case 109773:// Dark Intent
+            case 116781:// Legacy of the White Tiger
+            case 127830:// Spirit Beast Blessing
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                break;
+            case 1459:  // Arcane Illumination
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                break;
+            case 61316: // Dalaran Illumination
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                spellInfo->Effects[2].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                break;
             case 11958: // Cold Snap
                 spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_FEARED;
                 spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_STUNNED;
@@ -3478,10 +3495,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 107270: // Spinning Crane Kick - Radius
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
-                break;
-            case 116781: // Legacy of the White Tiger
-                spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
-                spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ALLY;
                 break;
             case 127626: // Devouring plague - Heal
                 spellInfo->Effects[0].BasePoints = 1;
