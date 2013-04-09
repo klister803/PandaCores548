@@ -8263,6 +8263,20 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Adaptation
+        case 126046:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!(procSpell->GetAllEffectsMechanicMask() & (1 << MECHANIC_DISARM)))
+                return false;
+
+            break;
+        }
         // Infusion of Light
         case 53576:
         {
