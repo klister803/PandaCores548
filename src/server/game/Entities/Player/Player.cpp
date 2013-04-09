@@ -15797,18 +15797,7 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
     if (questGiver && quest->GetQuestStartScript() != 0)
         GetMap()->ScriptsStart(sQuestStartScripts, quest->GetQuestStartScript(), questGiver, this);
 
-    // Some spells applied at quest activation
-    SpellAreaForQuestMapBounds saBounds = sSpellMgr->GetSpellAreaForQuestMapBounds(quest_id, true);
-    if (saBounds.first != saBounds.second)
-    {
-        uint32 zone, area;
-        GetZoneAndAreaId(zone, area);
-
-        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
-            if (itr->second->autocast && itr->second->IsFitToRequirements(this, zone, area))
-                if (!HasAura(itr->second->spellId))
-                    CastSpell(this, itr->second->spellId, true);
-    }
+    CheckSpellAreaOnQuestStatusChange(quest_id);
 
     PhaseUpdateData phaseUdateData;
     phaseUdateData.AddQuestUpdate(quest_id);
@@ -15987,9 +15976,11 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     else if (quest->IsSeasonal())
         SetSeasonalQuestStatus(quest_id);
 
-    RemoveActiveQuest(quest_id);
     m_RewardedQuests.insert(quest_id);
     m_RewardedQuestsSave[quest_id] = true;
+    
+    // Must come after the insert in m_RewardedQuests because of spell_area check
+    RemoveActiveQuest(quest_id);
 
     PhaseUpdateData phaseUdateData;
     phaseUdateData.AddQuestUpdate(quest_id);
@@ -16016,33 +16007,6 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUESTS_IN_ZONE, quest->GetZoneOrSort());
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST_COUNT);
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST, quest->GetQuestId());
-
-    uint32 zone = 0;
-    uint32 area = 0;
-
-    // remove auras from spells with quest reward state limitations
-    SpellAreaForQuestMapBounds saEndBounds = sSpellMgr->GetSpellAreaForQuestEndMapBounds(quest_id);
-    if (saEndBounds.first != saEndBounds.second)
-    {
-        GetZoneAndAreaId(zone, area);
-
-        for (SpellAreaForAreaMap::const_iterator itr = saEndBounds.first; itr != saEndBounds.second; ++itr)
-            if (!itr->second->IsFitToRequirements(this, zone, area))
-                RemoveAurasDueToSpell(itr->second->spellId);
-    }
-
-    // Some spells applied at quest reward
-    SpellAreaForQuestMapBounds saBounds = sSpellMgr->GetSpellAreaForQuestMapBounds(quest_id, false);
-    if (saBounds.first != saBounds.second)
-    {
-        if (!zone || !area)
-            GetZoneAndAreaId(zone, area);
-
-        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
-            if (itr->second->autocast && itr->second->IsFitToRequirements(this, zone, area))
-                if (!HasAura(itr->second->spellId))
-                    CastSpell(this, itr->second->spellId, true);
-    }
 
     //lets remove flag for delayed teleports
     SetCanDelayTeleport(false);
@@ -16631,6 +16595,10 @@ void Player::SetQuestStatus(uint32 quest_id, QuestStatus status)
         m_QuestStatusSave[quest_id] = true;
     }
 
+    uint32 zone = 0, area = 0;
+
+    CheckSpellAreaOnQuestStatusChange(quest_id);
+
     PhaseUpdateData phaseUdateData;
     phaseUdateData.AddQuestUpdate(quest_id);
 
@@ -16646,6 +16614,8 @@ void Player::RemoveActiveQuest(uint32 quest_id)
     {
         m_QuestStatus.erase(itr);
         m_QuestStatusSave[quest_id] = false;
+
+        CheckSpellAreaOnQuestStatusChange(quest_id);
 
         PhaseUpdateData phaseUdateData;
         phaseUdateData.AddQuestUpdate(quest_id);
@@ -27335,4 +27305,46 @@ void Player::_LoadStore()
     // Uniquement un SaveToDB, en mettre a chaque transaction cause des deadlocks
     // car chaque SaveToDB part dans un thread Mysql diff�rent
     SaveToDB();
+}
+
+void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
+{
+    uint32 zone = 0, area = 0;
+
+    SpellAreaForQuestMapBounds saBounds = sSpellMgr->GetSpellAreaForQuestMapBounds(quest_id);
+    if (saBounds.first != saBounds.second)
+    {
+        GetZoneAndAreaId(zone, area);
+
+        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        {
+            if (itr->second->IsFitToRequirements(this, zone, area))
+            {
+                if (itr->second->autocast)
+                    if (!HasAura(itr->second->spellId))
+                        CastSpell(this, itr->second->spellId, true);
+            }
+            else
+                RemoveAurasDueToSpell(itr->second->spellId);
+        }
+    }
+
+    saBounds = sSpellMgr->GetSpellAreaForQuestEndMapBounds(quest_id);
+    if (saBounds.first != saBounds.second)
+    {
+        if (!zone || !area)
+            GetZoneAndAreaId(zone, area);
+
+        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        {
+            if (itr->second->IsFitToRequirements(this, zone, area))
+            {
+                if (itr->second->autocast)
+                    if (!HasAura(itr->second->spellId))
+                        CastSpell(this, itr->second->spellId, true);
+            }
+            else
+                RemoveAurasDueToSpell(itr->second->spellId);
+        }
+    }
 }
