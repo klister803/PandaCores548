@@ -1797,6 +1797,13 @@ uint32 Unit::CalcArmorReducedDamage(Unit* victim, const uint32 damage, SpellInfo
             armor = floor(AddPct(armor, -(*j)->GetAmount()));
     }
 
+    AuraEffectList const& armorPenetrationPct = GetAuraEffectsByType(SPELL_AURA_MOD_ARMOR_PENETRATION_PCT);
+    for (AuraEffectList::const_iterator j = armorPenetrationPct.begin(); j != armorPenetrationPct.end(); ++j)
+    {
+        if ((*j)->GetMiscValue() & SPELL_SCHOOL_MASK_NORMAL)
+            armor -= CalculatePct(armor, (*j)->GetAmount());
+    }
+
     if (armor < 0.0f)
         armor = 0.0f;
 
