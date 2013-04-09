@@ -83,9 +83,6 @@ enum MonkSpells
     SPELL_MONK_UPLIFT_ALLOWING_CAST             = 123757,
     SPELL_MONK_THUNDER_FOCUS_TEA                = 116680,
     SPELL_MONK_PATH_OF_BLOSSOM_AREATRIGGER      = 122035,
-    SPELL_MONK_GRAPPLE_WEAPON_TANK_UPGRADE      = 123323,
-    SPELL_MONK_GRAPPLE_WEAPON_HEAL_UPGRADE      = 123234,
-    SPELL_MONK_GRAPPLE_WEAPON_DPS_UPGRADE       = 123231,
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_DAMAGE     = 123408,
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_MISSILE    = 118852,
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_ROOT       = 123407,
@@ -196,178 +193,6 @@ class spell_monk_spinning_fire_blossom : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_monk_spinning_fire_blossom_SpellScript();
-        }
-};
-
-// Grapple Weapon - 117368
-class spell_monk_grapple_weapon : public SpellScriptLoader
-{
-    public:
-        spell_monk_grapple_weapon() : SpellScriptLoader("spell_monk_grapple_weapon") { }
-
-        class spell_monk_grapple_weapon_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_monk_grapple_weapon_SpellScript)
-
-            void HandleBeforeHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (target->ToPlayer())
-                        {
-                            Item* mainItem = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                            Item* targetMainItem = target->ToPlayer()->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-
-                            if (mainItem && targetMainItem)
-                            {
-                                if (targetMainItem->GetTemplate()->ItemLevel > mainItem->GetTemplate()->ItemLevel)
-                                {
-                                    switch (_player->GetSpecializationId(_player->GetActiveSpec()))
-                                    {
-                                        case SPEC_MONK_BREWMASTER:
-                                            _player->CastSpell(_player, SPELL_MONK_GRAPPLE_WEAPON_TANK_UPGRADE, true);
-                                            break;
-                                        case SPEC_MONK_MISTWEAVER:
-                                            _player->CastSpell(_player, SPELL_MONK_GRAPPLE_WEAPON_HEAL_UPGRADE, true);
-                                            break;
-                                        case SPEC_MONK_WINDWALKER:
-                                            _player->CastSpell(_player, SPELL_MONK_GRAPPLE_WEAPON_DPS_UPGRADE, true);
-                                            break;
-                                        default:
-                                            break;
-                                    }
-                                }
-                            }
-                        }
-                        else if (target->GetTypeId() == TYPEID_UNIT)
-                        {
-                            if (target->getLevel() > _player->getLevel())
-                            {
-                                switch (_player->GetSpecializationId(_player->GetActiveSpec()))
-                                {
-                                    case SPEC_MONK_BREWMASTER:
-                                        _player->CastSpell(_player, SPELL_MONK_GRAPPLE_WEAPON_TANK_UPGRADE, true);
-                                        break;
-                                    case SPEC_MONK_MISTWEAVER:
-                                        _player->CastSpell(_player, SPELL_MONK_GRAPPLE_WEAPON_HEAL_UPGRADE, true);
-                                        break;
-                                    case SPEC_MONK_WINDWALKER:
-                                        _player->CastSpell(_player, SPELL_MONK_GRAPPLE_WEAPON_DPS_UPGRADE, true);
-                                        break;
-                                    default:
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                BeforeHit += SpellHitFn(spell_monk_grapple_weapon_SpellScript::HandleBeforeHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_monk_grapple_weapon_SpellScript();
-        }
-
-        class spell_monk_grapple_weapon_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_monk_grapple_weapon_AuraScript);
-
-            Item* mainItem;
-            Item* offItem;
-            Item* targetMainItem;
-            Item* targetOffItem;
-
-            bool Load()
-            {
-                mainItem = NULL;
-                offItem = NULL;
-                targetMainItem = NULL;
-                targetOffItem = NULL;
-                return true;
-            }
-
-            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (Unit* target = GetTarget())
-                    {
-                        if (caster->ToPlayer() && target->ToPlayer())
-                        {
-                            Player* _player = caster->ToPlayer();
-                            Player* unitTarget = target->ToPlayer();
-
-                            mainItem = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                            offItem = _player->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-                            targetMainItem = unitTarget->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_MAINHAND);
-                            targetOffItem = unitTarget->GetItemByPos(INVENTORY_SLOT_BAG_0, EQUIPMENT_SLOT_OFFHAND);
-
-                            if (mainItem && targetMainItem)
-                            {
-                                _player->EquipItem(EQUIPMENT_SLOT_MAINHAND, targetMainItem, true);
-
-                                if (targetMainItem->GetTemplate()->InventoryType == INVTYPE_2HWEAPON)
-                                    _player->SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_DISARM_OFFHAND);
-                            }
-                            if (offItem && targetOffItem)
-                                _player->EquipItem(EQUIPMENT_SLOT_OFFHAND, targetMainItem, true);
-                        }
-                    }
-                }
-            }
-
-            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
-            {
-                if (Unit* caster = GetCaster())
-                {
-                    if (Unit* target = GetTarget())
-                    {
-                        if (caster->ToPlayer() && target->ToPlayer())
-                        {
-                            Player* _player = caster->ToPlayer();
-                            Player* unitTarget = target->ToPlayer();
-
-                            if (mainItem && targetMainItem)
-                            {
-                                _player->EquipItem(EQUIPMENT_SLOT_MAINHAND, mainItem, true);
-                                unitTarget->EquipItem(EQUIPMENT_SLOT_MAINHAND, targetMainItem, true);
-                            }
-                            if (offItem && targetOffItem)
-                            {
-                                _player->EquipItem(EQUIPMENT_SLOT_OFFHAND, offItem, true);
-                                unitTarget->EquipItem(EQUIPMENT_SLOT_OFFHAND, targetOffItem, true);
-                            }
-
-                            if (_player->HasFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_DISARM_OFFHAND))
-                                _player->RemoveFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_DISARM_OFFHAND);
-
-                            mainItem = NULL;
-                            offItem = NULL;
-                            targetMainItem = NULL;
-                            targetOffItem = NULL;
-                        }
-                    }
-                }
-            }
-
-            void Register()
-            {
-                OnEffectApply += AuraEffectApplyFn(spell_monk_grapple_weapon_AuraScript::OnApply, EFFECT_0, SPELL_AURA_MOD_DISARM, AURA_EFFECT_HANDLE_REAL);
-                OnEffectRemove += AuraEffectRemoveFn(spell_monk_grapple_weapon_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_MOD_DISARM, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_monk_grapple_weapon_AuraScript();
         }
 };
 
@@ -2037,7 +1862,6 @@ void AddSC_monk_spell_scripts()
 {
     new spell_monk_spinning_fire_blossom_damage();
     new spell_monk_spinning_fire_blossom();
-    new spell_monk_grapple_weapon();
     new spell_monk_path_of_blossom();
     new spell_monk_thunder_focus_tea();
     new spell_monk_jade_serpent_statue();

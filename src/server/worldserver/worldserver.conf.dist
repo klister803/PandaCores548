@@ -115,9 +115,9 @@ CharacterDatabase.WorkerThreads = 4
 #                     1 - (WorldDatabase.WorkerThreads)
 #                     2 - (CharacterDatabase.WorkerThreads)
 
-LoginDatabase.SynchThreads     = 1
+LoginDatabase.SynchThreads     = 4
 WorldDatabase.SynchThreads     = 1
-CharacterDatabase.SynchThreads = 2
+CharacterDatabase.SynchThreads = 8
 
 #
 #    MaxPingTime
