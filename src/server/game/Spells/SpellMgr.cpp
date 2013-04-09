@@ -3136,6 +3136,41 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 86150: // Guardian of Ancient Kings
+                spellInfo->Effects[0].TargetA = TARGET_CHECK_ENTRY;
+                break;
+            case 86674: // Ancient Healer
+                spellInfo->ProcCharges = 5;
+                break;
+            case 86657: // Ancient Guardian
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+                break;
+            case 51460: // Runic Corruption
+                spellInfo->Effects[EFFECT_1].Effect = 0;
+                spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_POWER_REGEN_PERCENT;
+                spellInfo->Effects[EFFECT_0].MiscValue = 5;
+                spellInfo->Effects[EFFECT_0].MiscValueB = NUM_RUNE_TYPES;
+                break;
+            case 45204: // Mirror Image - Clone Me!
+                spellInfo->AttributesEx6 |= SPELL_ATTR6_CAN_TARGET_INVISIBLE;
+                spellInfo->AttributesEx2 |= SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS;
+                break;
+            case 41055: // Copy Weapon Spells
+            case 45206:
+            case 63416:
+            case 69891:
+            case 69892:
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_DUMMY;
+                spellInfo->Mechanic = 0;
+                break;
+            case 115175:// Soothing Mists
+                spellInfo->PreventionType = SPELL_PREVENTION_TYPE_SILENCE;
+                break;
+            case 102793:
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MOD_DECREASE_SPEED;
+                break;
             case 172:   // Corruption
             case 30108: // Unstable Affliction
                 spellInfo->Effects[2].Effect = 0;

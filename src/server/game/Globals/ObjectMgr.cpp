@@ -1728,9 +1728,9 @@ void ObjectMgr::LoadGameobjects()
 
     uint32 count = 0;
 
-    //                                                0                1   2    3           4           5           6
-    QueryResult result = WorldDatabase.Query("SELECT gameobject.guid, id, map, position_x, position_y, position_z, orientation, "
-    //   7          8          9          10         11             12            13     14        15         16         17          18
+    //                                                0                1   2    3         4           5           6        7           8
+    QueryResult result = WorldDatabase.Query("SELECT gameobject.guid, id, map, zoneId, areaId, position_x, position_y, position_z, orientation, "
+    //      9          10         11          12         13          14             15      16         17         18        19          20
         "rotation0, rotation1, rotation2, rotation3, spawntimesecs, animprogress, state, isActive, spawnMask, phaseMask, eventEntry, pool_entry "
         "FROM gameobject LEFT OUTER JOIN game_event_gameobject ON gameobject.guid = game_event_gameobject.guid "
         "LEFT OUTER JOIN pool_gameobject ON gameobject.guid = pool_gameobject.guid");
@@ -1788,15 +1788,17 @@ void ObjectMgr::LoadGameobjects()
 
         data.id             = entry;
         data.mapid          = fields[2].GetUInt16();
-        data.posX           = fields[3].GetFloat();
-        data.posY           = fields[4].GetFloat();
-        data.posZ           = fields[5].GetFloat();
-        data.orientation    = fields[6].GetFloat();
-        data.rotation0      = fields[7].GetFloat();
-        data.rotation1      = fields[8].GetFloat();
-        data.rotation2      = fields[9].GetFloat();
-        data.rotation3      = fields[10].GetFloat();
-        data.spawntimesecs  = fields[11].GetInt32();
+        data.zoneId         = fields[3].GetUInt16();
+        data.areaId         = fields[4].GetUInt16();
+        data.posX           = fields[5].GetFloat();
+        data.posY           = fields[6].GetFloat();
+        data.posZ           = fields[7].GetFloat();
+        data.orientation    = fields[8].GetFloat();
+        data.rotation0      = fields[9].GetFloat();
+        data.rotation1      = fields[10].GetFloat();
+        data.rotation2      = fields[11].GetFloat();
+        data.rotation3      = fields[12].GetFloat();
+        data.spawntimesecs  = fields[13].GetInt32();
 
         MapEntry const* mapEntry = sMapStore.LookupEntry(data.mapid);
         if (!mapEntry)
@@ -1805,15 +1807,24 @@ void ObjectMgr::LoadGameobjects()
             continue;
         }
 
+        if (!data.zoneId || !data.areaId)
+        {
+            uint32 zoneId = 0;
+            uint32 areaId = 0;
+
+            sMapMgr->GetZoneAndAreaId(zoneId, areaId, data.mapid, data.posX, data.posY, data.posZ);
+            WorldDatabase.PExecute("UPDATE gameobject SET zoneId = %u, areaId = %u WHERE guid = %u", zoneId, areaId, guid);
+        }
+
         if (data.spawntimesecs == 0 && gInfo->IsDespawnAtAction())
         {
             sLog->outError(LOG_FILTER_SQL, "Table `gameobject` has gameobject (GUID: %u Entry: %u) with `spawntimesecs` (0) value, but the gameobejct is marked as despawnable at action.", guid, data.id);
         }
 
-        data.animprogress   = fields[12].GetUInt8();
+        data.animprogress   = fields[14].GetUInt8();
         data.artKit         = 0;
 
-        uint32 go_state     = fields[13].GetUInt8();
+        uint32 go_state     = fields[15].GetUInt8();
         if (go_state >= MAX_GO_STATE)
         {
             sLog->outError(LOG_FILTER_SQL, "Table `gameobject` has gameobject (GUID: %u Entry: %u) with invalid `state` (%u) value, skip", guid, data.id, go_state);
@@ -1821,16 +1832,16 @@ void ObjectMgr::LoadGameobjects()
         }
         data.go_state       = GOState(go_state);
 
-        data.isActive       = fields[14].GetBool();
+        data.isActive       = fields[16].GetBool();
 
-        data.spawnMask      = fields[15].GetUInt32();
+        data.spawnMask      = fields[17].GetUInt32();
 
         if (data.spawnMask & ~spawnMasks[data.mapid])
             sLog->outError(LOG_FILTER_SQL, "Table `gameobject` has gameobject (GUID: %u Entry: %u) that has wrong spawn mask %u including not supported difficulty modes for map (Id: %u), skip", guid, data.id, data.spawnMask, data.mapid);
 
-        data.phaseMask      = fields[16].GetUInt16();
-        int16 gameEvent     = fields[17].GetInt8();
-        uint32 PoolId        = fields[18].GetUInt32();
+        data.phaseMask      = fields[18].GetUInt16();
+        int16 gameEvent     = fields[19].GetInt8();
+        uint32 PoolId        = fields[20].GetUInt32();
 
         if (data.rotation2 < -1.0f || data.rotation2 > 1.0f)
         {

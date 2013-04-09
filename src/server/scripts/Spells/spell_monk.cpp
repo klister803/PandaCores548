@@ -82,6 +82,35 @@ enum MonkSpells
     MONK_NPC_JADE_SERPENT_STATUE                = 60849,
     SPELL_MONK_UPLIFT_ALLOWING_CAST             = 123757,
     SPELL_MONK_THUNDER_FOCUS_TEA                = 116680,
+    SPELL_MONK_PATH_OF_BLOSSOM_AREATRIGGER      = 122035,
+};
+
+// Path of Blossom - 124336
+class spell_monk_path_of_blossom : public SpellScriptLoader
+{
+    public:
+        spell_monk_path_of_blossom() : SpellScriptLoader("spell_monk_path_of_blossom") { }
+
+        class spell_monk_path_of_blossom_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_path_of_blossom_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    GetCaster()->CastSpell(GetCaster(), SPELL_MONK_PATH_OF_BLOSSOM_AREATRIGGER, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_path_of_blossom_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_path_of_blossom_AuraScript();
+        }
 };
 
 // Called by Uplift - 116670
@@ -641,16 +670,30 @@ class spell_monk_zen_sphere : public SpellScriptLoader
         {
             PrepareSpellScript(spell_monk_zen_sphere_SpellScript);
 
+            bool active;
+
             void HandleBeforeHit()
+            {
+                active = false;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (target->HasAura(SPELL_MONK_ZEN_SPHERE_HEAL))
+                            active = true;
+            }
+
+            void HandleAfterHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        if (target->HasAura(SPELL_MONK_ZEN_SPHERE_HEAL))
+                        if (active)
                         {
                             _player->CastSpell(_player, SPELL_MONK_ZEN_SPHERE_DETONATE_HEAL, true);
                             _player->CastSpell(_player, SPELL_MONK_ZEN_SPHERE_DETONATE_DAMAGE, true);
+                            _player->RemoveAura(SPELL_MONK_ZEN_SPHERE_HEAL);
+                            active = false;
                         }
                     }
                 }
@@ -659,6 +702,7 @@ class spell_monk_zen_sphere : public SpellScriptLoader
             void Register()
             {
                 BeforeHit += SpellHitFn(spell_monk_zen_sphere_SpellScript::HandleBeforeHit);
+                AfterHit += SpellHitFn(spell_monk_zen_sphere_SpellScript::HandleAfterHit);
             }
         };
 
@@ -1705,6 +1749,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_path_of_blossom();
     new spell_monk_thunder_focus_tea();
     new spell_monk_jade_serpent_statue();
     new spell_monk_teachings_of_the_monastery();

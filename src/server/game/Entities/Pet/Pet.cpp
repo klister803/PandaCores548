@@ -1026,6 +1026,15 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                         SetCreateMana(28 + 30*petlevel);
                         SetCreateHealth(28 + 10*petlevel);
                     }
+                    // Sequence is important!
+                    SetFlag(UNIT_FIELD_FLAGS_2, UNIT_FLAG2_MIRROR_IMAGE);
+                    // here mirror image casts on summoner spell (not present in client dbc) 49866
+                    // here should be auras (not present in client dbc): 35657, 35658, 35659, 35660 selfcasted by mirror images (stats related?)
+                    // Clone Me!
+                    m_owner->CastSpell(this, 45204, true);
+                    m_owner->CastSpell(this, 41055, true);
+                    SetSpeed(MOVE_RUN, m_owner->GetSpeedRate(MOVE_RUN));
+                    SetSpeed(MOVE_SWIM, m_owner->GetSpeedRate(MOVE_SWIM));
                     break;
                 }
                 case 27829: // Ebon Gargoyle
