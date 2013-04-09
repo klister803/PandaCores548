@@ -22,12 +22,18 @@
 
 enum eSpells
 {
-    test = 119990,
-    test2 = 120001
+    SPELL_SUMMON_GLOBULE    = 119990,
+    SPELL_DETONATE          = 120001,
+
+    SPELL_SAP_PUDDLE        = 119939,
+    SPELL_VISUAL_SHIELD     = 131628,
+    SPELL_SAP_RESIDUE       = 119941, // DOT
+    SPELL_GROW              = 120865,
 };
 
 enum eEvents
 {
+    EVENT_GROW              = 1,
 };
 
 class boss_jinbak : public CreatureScript
@@ -85,7 +91,49 @@ class boss_jinbak : public CreatureScript
         }
 };
 
+class npc_sap_puddle : public CreatureScript
+{
+    public:
+        npc_sap_puddle() : CreatureScript("npc_sap_puddle") {}
+
+        struct npc_sap_puddleAI : public Scripted_NoMovementAI
+        {
+            npc_sap_puddleAI(Creature* creature) : Scripted_NoMovementAI(creature)
+            {
+                instance = creature->GetInstanceScript();
+            }
+
+            InstanceScript* instance;
+            EventMap _events;
+
+            void Reset()
+            {
+                me->SetReactState(REACT_PASSIVE);
+                me->CastSpell(me, SPELL_SAP_PUDDLE, true);
+
+                _events.ScheduleEvent(EVENT_GROW, 1000);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                switch(_events.ExecuteEvent())
+                {
+                    case EVENT_GROW:
+                        me->AddAura(SPELL_GROW, me);
+                        _events.ScheduleEvent(EVENT_GROW, 1000);
+                        break;
+                }
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_sap_puddleAI(creature);
+        }
+};
+
 void AddSC_boss_jinbak()
 {
     new boss_jinbak();
+    new npc_sap_puddle();
 }
