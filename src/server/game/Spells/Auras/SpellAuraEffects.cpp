@@ -4540,11 +4540,14 @@ void AuraEffect::HandleAuraModResiliencePct(AuraApplication const* aurApp, uint8
 
     Player* _player = target->ToPlayer();
 
-    float value = GetAmount() / 100.0f;
+    float baseValue = _player->GetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT);
 
-    value += _player->GetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT);
+    if (apply)
+        baseValue += GetAmount() / 100.0f;
+    else
+        baseValue -= GetAmount() / 100.0f;
 
-    _player->SetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT, value);
+    _player->SetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT, baseValue);
 }
 
 /********************************/
