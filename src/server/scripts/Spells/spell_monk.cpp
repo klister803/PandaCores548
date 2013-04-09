@@ -86,6 +86,56 @@ enum MonkSpells
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_DAMAGE     = 123408,
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_MISSILE    = 118852,
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_ROOT       = 123407,
+    SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE   = 124280,
+};
+
+// Touch of Karma - 122470
+class spell_monk_touch_of_karma : public SpellScriptLoader
+{
+    public:
+        spell_monk_touch_of_karma() : SpellScriptLoader("spell_monk_touch_of_karma") { }
+
+        class spell_monk_touch_of_karma_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_touch_of_karma_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (GetCaster())
+                    amount = GetCaster()->GetMaxHealth();
+            }
+
+            void OnAbsorb(AuraEffectPtr aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                if (Unit* caster = dmgInfo.GetVictim())
+                {
+                    if (Unit* attacker = dmgInfo.GetAttacker())
+                    {
+                        int32 bp = dmgInfo.GetDamage();
+
+                        if (attacker->HasAura(aurEff->GetSpellInfo()->Id, caster->GetGUID()))
+                        {
+                            if (AuraPtr touchOfKarma = attacker->GetAura(SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, caster->GetGUID()))
+                                bp += attacker->GetRemainingPeriodicAmount(caster->GetGUID(), SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, SPELL_AURA_PERIODIC_DAMAGE);
+
+                            if (bp)
+                                caster->CastCustomSpell(attacker, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_touch_of_karma_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_monk_touch_of_karma_AuraScript::OnAbsorb, EFFECT_1);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_touch_of_karma_AuraScript();
+        }
 };
 
 // Spinning Fire Blossom - 123408
@@ -1860,6 +1910,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_touch_of_karma();
     new spell_monk_spinning_fire_blossom_damage();
     new spell_monk_spinning_fire_blossom();
     new spell_monk_path_of_blossom();
