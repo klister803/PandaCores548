@@ -64,6 +64,12 @@ void WorldSession::HandleGroupInviteOpcode(WorldPacket & recvData)
 {
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Received CMSG_GROUP_INVITE");
 
+    time_t now = time(NULL);
+    if (now - timeLastGroupInviteCommand < 5)
+        return;
+    else
+       timeLastGroupInviteCommand = now;
+
     ObjectGuid crossRealmGuid; // unused
 
     recvData.read_skip<uint32>(); // Non-zero in cross realm invites
