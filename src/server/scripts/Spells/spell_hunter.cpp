@@ -1163,6 +1163,7 @@ class spell_hun_masters_call : public SpellScriptLoader
         }
 };
 
+// Readiness - 23989
 class spell_hun_readiness : public SpellScriptLoader
 {
     public:
@@ -1171,11 +1172,6 @@ class spell_hun_readiness : public SpellScriptLoader
         class spell_hun_readiness_SpellScript : public SpellScript
         {
             PrepareSpellScript(spell_hun_readiness_SpellScript);
-
-            bool Load()
-            {
-                return GetCaster()->GetTypeId() == TYPEID_PLAYER;
-            }
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
@@ -1190,7 +1186,6 @@ class spell_hun_readiness : public SpellScriptLoader
                     if (spellInfo &&
                         spellInfo->SpellFamilyName == SPELLFAMILY_HUNTER &&
                         spellInfo->Id != HUNTER_SPELL_READINESS &&
-                        spellInfo->Id != HUNTER_SPELL_BESTIAL_WRATH &&
                         spellInfo->GetRecoveryTime() > 0)
                         caster->RemoveSpellCooldown((itr++)->first, true);
                     else
