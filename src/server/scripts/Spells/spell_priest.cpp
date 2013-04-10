@@ -1098,7 +1098,7 @@ class spell_pri_archangel : public SpellScriptLoader
 			{
 				if (Player* _player = GetCaster()->ToPlayer())
 				{
-					int stackNumber = _player->GetAura(PRIEST_EVANGELISM_AURA)->GetStackAmount();
+                    int stackNumber = _player->GetAura(PRIEST_EVANGELISM_STACK)->GetStackAmount();
 					if (!(stackNumber > 0))
 						return;
 
@@ -1107,7 +1107,7 @@ class spell_pri_archangel : public SpellScriptLoader
 						if (archangel->GetEffect(0))
 						{
                             archangel->GetEffect(0)->ChangeAmount(archangel->GetEffect(0)->GetAmount() * stackNumber);
-                            _player->RemoveAura(PRIEST_EVANGELISM_AURA);
+                            _player->RemoveAura(PRIEST_EVANGELISM_STACK);
 						}
 					}
 				}
