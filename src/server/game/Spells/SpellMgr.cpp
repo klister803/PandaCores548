@@ -3150,6 +3150,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 53257: // Cobra Strikes
+                spellInfo->Effects[0].ApplyAuraName = 0;
+                spellInfo->Effects[0].Effect = 0;
+                spellInfo->Effects[0].BasePoints = 0;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_CRIT_PCT;
+                break;
             case 53271: // Master's Call
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_PET;
                 break;

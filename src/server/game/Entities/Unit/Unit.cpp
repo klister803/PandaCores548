@@ -10981,6 +10981,10 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
     if (Player* modOwner = GetSpellModOwner())
         modOwner->ApplySpellMod(spellProto->Id, SPELLMOD_CRITICAL_CHANCE, crit_chance);
 
+    // Hack fix for Cobra Strikes - Should increase critical chance only for base_attack
+    if (isPet() && GetOwner() && GetOwner()->ToPlayer() && GetOwner()->ToPlayer()->getClass() == CLASS_HUNTER && HasAura(53257))
+        crit_chance -= 200.0f;
+
     AuraEffectList const& critAuras = victim->GetAuraEffectsByType(SPELL_AURA_MOD_CRIT_CHANCE_FOR_CASTER);
     for (AuraEffectList::const_iterator i = critAuras.begin(); i != critAuras.end(); ++i)
         if ((*i)->GetCasterGUID() == GetGUID() && (*i)->IsAffectingSpell(spellProto))
@@ -14918,6 +14922,11 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
     if (GetTypeId() == TYPEID_PLAYER && HasAura(93400) && getClass() == CLASS_DRUID && procSpell && procSpell->Id == 78674)
         if (AuraPtr aura = GetAura(93400))
             RemoveAura(93400);
+
+    // Hack Fix Shooting Stars - Drop charge
+    if (GetTypeId() == TYPEID_UNIT && HasAura(53257) && !procSpell)
+        if (AuraPtr aura = GetAura(53257))
+            aura->DropCharge();
 
     // Fix Drop charge for Killing Machine
     if (GetTypeId() == TYPEID_PLAYER && HasAura(51124) && getClass() == CLASS_DEATH_KNIGHT && procSpell && (procSpell->Id == 49020 || procSpell->Id == 49143))

@@ -74,6 +74,49 @@ enum HunterSpells
     HUNTER_SPELL_STEADY_FOCUS                    = 53224,
     HUNTER_SPELL_MASTERS_CALL                    = 62305,
     HUNTER_SPELL_MASTERS_CALL_TRIGGERED          = 54216,
+    HUNTER_SPELL_COBRA_STRIKES_AURA              = 53260,
+    HUNTER_SPELL_COBRA_STRIKES_STACKS            = 53257,
+};
+
+// Called by Arcane Shot - 3044
+// Cobra Strikes - 53260
+class spell_hun_cobra_strikes : public SpellScriptLoader
+{
+    public:
+        spell_hun_cobra_strikes() : SpellScriptLoader("spell_hun_cobra_strikes") { }
+
+        class spell_hun_cobra_strikes_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_cobra_strikes_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (GetSpell()->IsCritForTarget(target))
+                        {
+                            if (roll_chance_i(15))
+                            {
+                                _player->CastSpell(_player, HUNTER_SPELL_COBRA_STRIKES_STACKS, true);
+                                _player->CastSpell(_player, HUNTER_SPELL_COBRA_STRIKES_STACKS, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+               OnHit += SpellHitFn(spell_hun_cobra_strikes_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_cobra_strikes_SpellScript();
+        }
 };
 
 // Barrage damage - 120361
@@ -1461,6 +1504,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_cobra_strikes();
     new spell_hun_barrage();
     new spell_hun_aimed_shot();
     new spell_hun_piercing_shots();
