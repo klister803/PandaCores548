@@ -79,6 +79,153 @@ enum HunterSpells
     HUNTER_SPELL_BEAST_CLEAVE_AURA               = 115939,
     HUNTER_SPELL_BEAST_CLEAVE_PROC               = 118455,
     HUNTER_SPELL_BEAST_CLEAVE_DAMAGE             = 118459,
+    HUNTER_SPELL_LYNX_RUSH_AURA                  = 120697,
+    HUNTER_SPELL_LYNX_CRUSH_DAMAGE               = 120699,
+};
+
+// Lynx Rush - 120697
+class spell_hun_lynx_rush : public SpellScriptLoader
+{
+    public:
+        spell_hun_lynx_rush() : SpellScriptLoader("spell_hun_lynx_rush") { }
+
+        class spell_hun_lynx_rush_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_lynx_rush_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                std::list<Unit*> tempList;
+                std::list<Unit*> targetList;
+                Unit* unitTarget = NULL;
+
+                GetTarget()->GetAttackableUnitListInRange(tempList, 10.0f);
+
+                for (auto itr : tempList)
+                {
+                    if (itr->GetGUID() == GetTarget()->GetGUID())
+                        continue;
+
+                    if (GetTarget()->GetOwner() && GetTarget()->GetOwner()->GetGUID() == itr->GetGUID())
+                        continue;
+
+                    if (!GetTarget()->IsValidAttackTarget(itr))
+                        continue;
+
+                    targetList.push_back(itr);
+                }
+
+                tempList.clear();
+
+                if (targetList.empty())
+                    return;
+
+                JadeCore::Containers::RandomResizeList(targetList, 1);
+
+                for (auto itr : targetList)
+                {
+                    unitTarget = itr;
+                    break;
+                }
+
+                if (!unitTarget)
+                    return;
+
+                float angle = unitTarget->GetRelativeAngle(GetTarget());
+                Position pos;
+
+                unitTarget->GetContactPoint(GetTarget(), pos.m_positionX, pos.m_positionY, pos.m_positionZ);
+                unitTarget->GetFirstCollisionPosition(pos, unitTarget->GetObjectSize(), angle);
+                GetTarget()->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ + unitTarget->GetObjectSize());
+
+                GetTarget()->CastSpell(unitTarget, HUNTER_SPELL_LYNX_CRUSH_DAMAGE, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_hun_lynx_rush_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_lynx_rush_AuraScript();
+        }
+
+        class spell_hun_lynx_rush_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_lynx_rush_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (GetHitUnit())
+                    {
+                        if (Pet* pet = _player->GetPet())
+                        {
+                            if (pet->GetGUID() == GetHitUnit()->GetGUID())
+                            {
+                                std::list<Unit*> tempList;
+                                std::list<Unit*> targetList;
+                                Unit* unitTarget = NULL;
+
+                                pet->GetAttackableUnitListInRange(tempList, 10.0f);
+
+                                for (auto itr : tempList)
+                                {
+                                    if (itr->GetGUID() == pet->GetGUID())
+                                        continue;
+
+                                    if (_player->GetGUID() == itr->GetGUID())
+                                        continue;
+
+                                    if (!pet->IsValidAttackTarget(itr))
+                                        continue;
+
+                                    targetList.push_back(itr);
+                                }
+
+                                tempList.clear();
+
+                                if (targetList.empty())
+                                    return;
+
+                                JadeCore::Containers::RandomResizeList(targetList, 1);
+
+                                for (auto itr : targetList)
+                                {
+                                    unitTarget = itr;
+                                    break;
+                                }
+
+                                if (!unitTarget)
+                                    return;
+
+                                float angle = unitTarget->GetRelativeAngle(pet);
+                                Position pos;
+
+                                unitTarget->GetContactPoint(pet, pos.m_positionX, pos.m_positionY, pos.m_positionZ);
+                                unitTarget->GetFirstCollisionPosition(pos, unitTarget->GetObjectSize(), angle);
+                                pet->GetMotionMaster()->MoveCharge(pos.m_positionX, pos.m_positionY, pos.m_positionZ + unitTarget->GetObjectSize());
+
+                                pet->CastSpell(unitTarget, HUNTER_SPELL_LYNX_CRUSH_DAMAGE, true);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_hun_lynx_rush_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_lynx_rush_SpellScript();
+        }
 };
 
 // Beast Cleave - 118455
@@ -1579,6 +1726,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_lynx_rush();
     new spell_hun_beast_cleave_proc();
     new spell_hun_beast_cleave();
     new spell_hun_cobra_strikes();
