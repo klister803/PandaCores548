@@ -3150,6 +3150,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 53271: // Master's Call
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_PET;
+                break;
             case 1126:  // Mark of the Wild
             case 19740: // Blessing of Might
             case 20217: // Blessing of Kings

@@ -38,7 +38,6 @@ enum HunterSpells
     HUNTER_PET_HEART_OF_THE_PHOENIX_TRIGGERED    = 54114,
     HUNTER_PET_HEART_OF_THE_PHOENIX_DEBUFF       = 55711,
     HUNTER_PET_SPELL_CARRION_FEEDER_TRIGGERED    = 54045,
-    HUNTER_SPELL_MASTERS_CALL_TRIGGERED          = 62305,
     HUNTER_SPELL_POSTHASTE                       = 109215,
     HUNTER_SPELL_POSTHASTE_INCREASE_SPEED        = 118922,
     HUNTER_SPELL_NARROW_ESCAPE                   = 109298,
@@ -74,6 +73,7 @@ enum HunterSpells
     HUNTER_SPELL_PIERCIG_SHOTS_EFFECT            = 63468,
     HUNTER_SPELL_STEADY_FOCUS                    = 53224,
     HUNTER_SPELL_MASTERS_CALL                    = 62305,
+    HUNTER_SPELL_MASTERS_CALL_TRIGGERED          = 54216,
 };
 
 // Barrage damage - 120361
@@ -984,6 +984,7 @@ class spell_hun_last_stand_pet : public SpellScriptLoader
         }
 };
 
+// Master's Call - 53271
 class spell_hun_masters_call : public SpellScriptLoader
 {
     public:
@@ -993,39 +994,43 @@ class spell_hun_masters_call : public SpellScriptLoader
         {
             PrepareSpellScript(spell_hun_masters_call_SpellScript);
 
-            bool Validate(SpellInfo const* spellEntry)
+            SpellCastResult CheckIfPetInLOS()
             {
-                if (!sSpellMgr->GetSpellInfo(HUNTER_SPELL_MASTERS_CALL_TRIGGERED) || !sSpellMgr->GetSpellInfo(spellEntry->Effects[EFFECT_0].CalcValue()) || !sSpellMgr->GetSpellInfo(spellEntry->Effects[EFFECT_1].CalcValue()))
-                    return false;
-                return true;
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Pet* pet = _player->GetPet())
+                    {
+                        if (pet->isDead())
+                            return SPELL_FAILED_NO_PET;
+
+                        float x, y, z;
+                        pet->GetPosition(x, y, z);
+
+                        if (_player->IsWithinLOS(x, y, z))
+                            return SPELL_CAST_OK;
+                    }
+                }
+                return SPELL_FAILED_LINE_OF_SIGHT;
             }
 
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
-                if (Unit* ally = GetHitUnit())
-                    if (Player* caster = GetCaster()->ToPlayer())
-                        if (Pet* target = caster->GetPet())
-                        {
-                            TriggerCastFlags castMask = TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_CASTER_AURASTATE);
-                            target->CastSpell(ally, GetEffectValue(), castMask);
-                            target->CastSpell(ally, GetSpellInfo()->Effects[EFFECT_0].CalcValue(), castMask);
-                        }
+                if (Player* caster = GetCaster()->ToPlayer())
+                    if (Pet* pet = caster->GetPet())
+                        pet->CastSpell(caster, HUNTER_SPELL_MASTERS_CALL_TRIGGERED, true);
             }
 
             void HandleScriptEffect(SpellEffIndex /*effIndex*/)
             {
                 if (Unit* target = GetHitUnit())
-                {
-                    // Cannot be processed while pet is dead
-                    TriggerCastFlags castMask = TriggerCastFlags(TRIGGERED_FULL_MASK & ~TRIGGERED_IGNORE_CASTER_AURASTATE);
-                    target->CastSpell(target, HUNTER_SPELL_MASTERS_CALL_TRIGGERED, castMask);
-                }
+                    target->CastSpell(target, HUNTER_SPELL_MASTERS_CALL, true);
             }
 
             void Register()
             {
                 OnEffectHitTarget += SpellEffectFn(spell_hun_masters_call_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
                 OnEffectHitTarget += SpellEffectFn(spell_hun_masters_call_SpellScript::HandleScriptEffect, EFFECT_1, SPELL_EFFECT_SCRIPT_EFFECT);
+                OnCheckCast += SpellCheckCastFn(spell_hun_masters_call_SpellScript::CheckIfPetInLOS);
             }
         };
 
