@@ -3150,6 +3150,11 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 87935: // Serpent Spread
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21); // -1s
+                break;
             case 53257: // Cobra Strikes
                 spellInfo->Effects[0].ApplyAuraName = 0;
                 spellInfo->Effects[0].Effect = 0;
