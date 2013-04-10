@@ -76,6 +76,86 @@ enum HunterSpells
     HUNTER_SPELL_MASTERS_CALL_TRIGGERED          = 54216,
     HUNTER_SPELL_COBRA_STRIKES_AURA              = 53260,
     HUNTER_SPELL_COBRA_STRIKES_STACKS            = 53257,
+    HUNTER_SPELL_BEAST_CLEAVE_AURA               = 115939,
+    HUNTER_SPELL_BEAST_CLEAVE_PROC               = 118455,
+    HUNTER_SPELL_BEAST_CLEAVE_DAMAGE             = 118459,
+};
+
+// Beast Cleave - 118455
+class spell_hun_beast_cleave_proc : public SpellScriptLoader
+{
+    public:
+        spell_hun_beast_cleave_proc() : SpellScriptLoader("spell_hun_beast_cleave_proc") { }
+
+        class spell_hun_beast_cleave_proc_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_beast_cleave_proc_AuraScript);
+
+            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                if (!GetCaster())
+                    return;
+
+                if (eventInfo.GetActor()->GetGUID() != GetTarget()->GetGUID())
+                    return;
+
+                if (eventInfo.GetDamageInfo()->GetSpellInfo() && eventInfo.GetDamageInfo()->GetSpellInfo()->Id == 118459)
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (GetTarget()->HasAura(aurEff->GetSpellInfo()->Id, _player->GetGUID()))
+                    {
+                        int32 bp = int32(eventInfo.GetDamageInfo()->GetDamage() * 0.3f);
+
+                        GetTarget()->CastCustomSpell(GetTarget(), HUNTER_SPELL_BEAST_CLEAVE_DAMAGE, &bp, NULL, NULL, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectProc += AuraEffectProcFn(spell_hun_beast_cleave_proc_AuraScript::OnProc, EFFECT_0, SPELL_AURA_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_beast_cleave_proc_AuraScript();
+        }
+};
+
+// Called by Multi Shot - 2643
+// Beast Cleave - 115939
+class spell_hun_beast_cleave : public SpellScriptLoader
+{
+    public:
+        spell_hun_beast_cleave() : SpellScriptLoader("spell_hun_beast_cleave") { }
+
+        class spell_hun_beast_cleave_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_beast_cleave_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->HasAura(HUNTER_SPELL_BEAST_CLEAVE_AURA))
+                        if (Pet* pet = _player->GetPet())
+                            _player->CastSpell(pet, HUNTER_SPELL_BEAST_CLEAVE_PROC, true);
+            }
+
+            void Register()
+            {
+               AfterCast += SpellCastFn(spell_hun_beast_cleave_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_beast_cleave_SpellScript();
+        }
 };
 
 // Called by Arcane Shot - 3044
@@ -1504,6 +1584,8 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_beast_cleave_proc();
+    new spell_hun_beast_cleave();
     new spell_hun_cobra_strikes();
     new spell_hun_barrage();
     new spell_hun_aimed_shot();
