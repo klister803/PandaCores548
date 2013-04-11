@@ -37,10 +37,16 @@ class mob_master_shang_xi : public CreatureScript
             {
                 if (pSpell->Id == 114746) // Attraper la flamme
                 {
-                    me->CastSpell(caster, 114611, true);
-                    me->RemoveAurasDueToSpell(114610);
-                    me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP | UNIT_NPC_FLAG_QUESTGIVER);
-                    me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                    if (caster->GetTypeId() == TYPEID_PLAYER)
+                    {
+                        if (caster->ToPlayer()->GetQuestStatus(29408) == QUEST_STATUS_INCOMPLETE)
+                        {
+                            me->CastSpell(caster, 114611, true);
+                            me->RemoveAurasDueToSpell(114610);
+                            me->SetFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_GOSSIP | UNIT_NPC_FLAG_QUESTGIVER);
+                            me->RemoveFlag(UNIT_NPC_FLAGS, UNIT_NPC_FLAG_SPELLCLICK);
+                        }
+                    }
                 }
             }
 
@@ -191,7 +197,7 @@ public:
             isInFalcon = false;
             me->SetReactState(REACT_DEFENSIVE);
             me->SetDisplayId(39755);
-            me->setFaction(14); //mechant!
+            me->setFaction(2357); //mechant!
         }
         
         void DamageTaken(Unit* attacker, uint32& damage)
@@ -215,7 +221,7 @@ public:
                     player->KilledMonsterCredit(me->GetEntry(), 0);
 
                 me->CombatStop();
-                me->setFaction(2104);
+                me->setFaction(35);
                 me->SetFullHealth();
                 me->HandleEmoteCommand(EMOTE_ONESHOT_SALUTE);
                 events.Reset();
@@ -413,12 +419,10 @@ public:
         {}
 
         uint32 IntroTimer;
-        uint32 delayedStart;
 
         void Reset()
         {
             IntroTimer = 2500;
-            delayedStart = 0;
         }
 
         void MovementInform(uint32 uiType, uint32 uiId)
@@ -437,7 +441,7 @@ public:
                     me->GetMotionMaster()->MoveJump(1236.68f, 3456.68f, 102.58f, 10, 20, 12);
                     break;
                 case 12:
-                    delayedStart = 2000;
+                    Start(false, true);
                     break;
                 default:
                     break;
@@ -462,17 +466,6 @@ public:
                 }
                 else
                     IntroTimer -= diff;
-            }
-
-            if (delayedStart)
-            {
-                if (delayedStart <= diff)
-                {
-                    Start(false, true);
-                    delayedStart = 0;
-                }
-                else
-                    delayedStart -= diff;
             }
 
             npc_escortAI::UpdateAI(diff);
@@ -522,6 +515,14 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
             me->setFaction(2263);
         }
+
+        enum eEvents
+        {
+            EVENT_START         = 1,
+            EVENT_SPAWN_MOBS    = 2,
+            EVENT_PROGRESS      = 3,
+            EVENT_END           = 4,
+        };
         
         void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)
         {
@@ -543,10 +544,10 @@ public:
                 for (auto creature: unitlist)
                     me->Kill(creature);
                 	
-                events.ScheduleEvent(1, 20000);
-                events.CancelEvent(2);
-                events.CancelEvent(3);
-                events.CancelEvent(4);
+                events.ScheduleEvent(EVENT_START, 20000);
+                events.CancelEvent(EVENT_SPAWN_MOBS);
+                events.CancelEvent(EVENT_PROGRESS);
+                events.CancelEvent(EVENT_END);
             }
         }
         
@@ -569,7 +570,7 @@ public:
             {
                 switch(eventId)
                 {
-                    case 1: //Begin script if playersInvolved is not empty
+                    case EVENT_START: //Begin script if playersInvolved is not empty
                     {
                     	updatePlayerList();
                         if(playersInvolved.empty())
@@ -579,91 +580,98 @@ public:
                             me->MonsterSay("Keep those creatures at bay while I meditate. We'll soon have the answers we seek...", LANG_UNIVERSAL, 0);
                             me->SetReactState(REACT_PASSIVE);
                             timer = 0;
-                            events.ScheduleEvent(2, 5000); //spawn mobs
-                            events.ScheduleEvent(3, 1000); //update time
-                            events.ScheduleEvent(4, 90000); //end quest
+                            events.ScheduleEvent(EVENT_SPAWN_MOBS, 5000); //spawn mobs
+                            events.ScheduleEvent(EVENT_PROGRESS, 1000); //update time
+                            events.ScheduleEvent(EVENT_END, 90000); //end quest
                         }
                         break;
                     }
-                    case 2: //Spawn 3 mobs
+                    case EVENT_SPAWN_MOBS: //Spawn 3 mobs
                     {
                         updatePlayerList();
                         for(int i = 0; i < std::max((int)playersInvolved.size()*3,3); i++)
                         {
-                            TempSummon* temp = me->SummonCreature(59637, 1172.72f, 3443.59f, 104.06f, 3.3f,TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000);
-                            if(temp)
+                            if(TempSummon* temp = me->SummonCreature(59637, 1144.55f, 3435.65f, 104.97f, 3.3f,TEMPSUMMON_CORPSE_TIMED_DESPAWN, 10000))
                             {
-                                temp->GetMotionMaster()->MoveChase(me);
-                                temp->AI()->AttackStart(me);
+                                if (temp->AI())
+                                    temp->AI()->AttackStart(me);
+
 			                    temp->AddThreat(me, 250.0f);
+                                temp->GetMotionMaster()->Clear();
+                                temp->GetMotionMaster()->MoveChase(me);
                             }
                         }
-                        events.ScheduleEvent(2, 20000); //spawn mobs
+                        events.ScheduleEvent(EVENT_SPAWN_MOBS, 20000); //spawn mobs
                         break;
                     }
-                    case 3: //update energy
+                    case EVENT_PROGRESS: //update energy
                     {
                         timer++;
                         
                         if(timer == 25 && !lifei)
                         {
-                            lifei = me->SummonCreature(54856, 1130.162231f, 3435.905518f, 105.496597f, 0.0f,TEMPSUMMON_MANUAL_DESPAWN);
-                            lifei->MonsterSay("The way of the Tushui... enlightenment through patience and mediation... the principled life", LANG_UNIVERSAL, 0);
+                            if (lifei = me->SummonCreature(54856, 1130.162231f, 3435.905518f, 105.496597f, 0.0f,TEMPSUMMON_MANUAL_DESPAWN))
+                                lifei->MonsterSay("The way of the Tushui... enlightenment through patience and mediation... the principled life", LANG_UNIVERSAL, 0);
                         }
                         
                         if(timer == 30)
-                            lifei->MonsterSay("It is good to see you again, Aysa. You've come with respect, and so I shall give you the answers you seek.", LANG_UNIVERSAL, 0);
+                            if (lifei)
+                                lifei->MonsterSay("It is good to see you again, Aysa. You've come with respect, and so I shall give you the answers you seek.", LANG_UNIVERSAL, 0);
                         
                         if(timer == 42)
-                            lifei->MonsterSay("Huo, the spirit of fire, is known for his hunger. He wants for tinder to eat. He needs the caress of the wind to rouse him.", LANG_UNIVERSAL, 0);
+                            if (lifei)
+                                lifei->MonsterSay("Huo, the spirit of fire, is known for his hunger. He wants for tinder to eat. He needs the caress of the wind to rouse him.", LANG_UNIVERSAL, 0);
                         
                         if(timer == 54)
-                            lifei->MonsterSay("If you find these things and bring them to his cave, on the far side of Wu-Song Village, you will face a challenge within.", LANG_UNIVERSAL, 0);
+                            if (lifei)
+                                lifei->MonsterSay("If you find these things and bring them to his cave, on the far side of Wu-Song Village, you will face a challenge within.", LANG_UNIVERSAL, 0);
                         
                         if(timer == 66)
-                            lifei->MonsterSay("Overcome that challenge, and you shall be graced by Huo's presence. Rekindle his flame, and if your spirit is pure, he shall follow you.", LANG_UNIVERSAL, 0);
+                            if (lifei)
+                                lifei->MonsterSay("Overcome that challenge, and you shall be graced by Huo's presence. Rekindle his flame, and if your spirit is pure, he shall follow you.", LANG_UNIVERSAL, 0);
                         
                         if(timer == 78)
-                            lifei->MonsterSay("Go, children. We shall meet again very soon.", LANG_UNIVERSAL, 0);
+                            if (lifei)
+                                lifei->MonsterSay("Go, children. We shall meet again very soon.", LANG_UNIVERSAL, 0);
                         
                         if(timer == 85)
                         {
-                            lifei->UnSummon();
+                            if (lifei)
+                                lifei->UnSummon();
+
                             lifei = NULL;
                         }
                         
                         updatePlayerList();
-                        for(std::list<Player*>::iterator itr = playersInvolved.begin(); itr != playersInvolved.end(); itr++)
+                        for (auto player: playersInvolved)
                         {
-                            Player* plr = *itr;
-                            if(plr)
-                            {
-                                if(!plr->HasAura(116421))
-                                    plr->CastSpell(plr, 116421);
-                                plr->ModifyPower(POWER_ALTERNATE_POWER, timer/25);
-                                plr->SetMaxPower(POWER_ALTERNATE_POWER, 90);
-                            }
+                            if(!player->HasAura(116421))
+                                player->CastSpell(player, 116421);
+
+                            player->ModifyPower(POWER_ALTERNATE_POWER, timer/25);
+                            player->SetMaxPower(POWER_ALTERNATE_POWER, 90);
                         }
-                        events.ScheduleEvent(3, 1000);
+
+                        events.ScheduleEvent(EVENT_PROGRESS, 1000);
                         break;
                     }
-                    case 4: //script end
+                    case EVENT_END: //script end
                     {
                         if(lifei)
                         {
                             lifei->UnSummon();
                             lifei = NULL;
                         }
-                        events.ScheduleEvent(1, 10000);
-                        events.CancelEvent(2);
-                        events.CancelEvent(3);
+                        events.ScheduleEvent(EVENT_START, 10000);
+                        events.CancelEvent(EVENT_SPAWN_MOBS);
+                        events.CancelEvent(EVENT_PROGRESS);
                         me->MonsterSay("And so our path lays before us. Speak to Master Shang Xi, he will tell you what comes next.", LANG_UNIVERSAL, 0);
                         updatePlayerList();
                         me->SetReactState(REACT_DEFENSIVE);
-                        for(std::list<Player*>::iterator itr = playersInvolved.begin(); itr != playersInvolved.end(); itr++)
+                        for(auto player: playersInvolved)
                         {
-                            (*itr)->KilledMonsterCredit(54856, 0);
-                            (*itr)->RemoveAura(116421);
+                            player->KilledMonsterCredit(54856, 0);
+                            player->RemoveAura(116421);
                         }
                         break;
                     }
@@ -776,6 +784,10 @@ public:
 
         void Reset()
         {
+            // This particular entry is also spawned on an other event
+            if (me->GetAreaId() != 5849) // Cavern areaid
+                return;
+
             playerGuid = 0;
             me->SetReactState(REACT_AGGRESSIVE);
             me->RemoveFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_NON_ATTACKABLE | UNIT_FLAG_IMMUNE_TO_PC);
@@ -970,9 +982,6 @@ class AreaTrigger_at_temple_entrance : public AreaTriggerScript
 
             return true;
         }
-
-    private:
-        std::map<uint32, time_t> _triggerTimes;
 };
 
 void AddSC_WanderingIsland_North()
