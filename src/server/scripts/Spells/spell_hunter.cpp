@@ -81,6 +81,38 @@ enum HunterSpells
     HUNTER_SPELL_BEAST_CLEAVE_DAMAGE             = 118459,
     HUNTER_SPELL_LYNX_RUSH_AURA                  = 120697,
     HUNTER_SPELL_LYNX_CRUSH_DAMAGE               = 120699,
+    HUNTER_SPELL_KINDRED_SPIRIT_FOR_PET          = 88680,
+};
+
+// Kindred Spirits - 56315
+class spell_hun_kindred_spirits : public SpellScriptLoader
+{
+    public:
+        spell_hun_kindred_spirits() : SpellScriptLoader("spell_hun_kindred_spirits") { }
+
+        class spell_hun_kindred_spirits_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_kindred_spirits_AuraScript);
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    if (GetCaster()->ToPlayer())
+                        if (GetCaster()->ToPlayer()->GetPet())
+                            if (!GetCaster()->ToPlayer()->GetPet()->HasAura(HUNTER_SPELL_KINDRED_SPIRIT_FOR_PET))
+                                GetCaster()->ToPlayer()->GetPet()->CastSpell(GetCaster()->ToPlayer()->GetPet(), HUNTER_SPELL_KINDRED_SPIRIT_FOR_PET, true);
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_hun_kindred_spirits_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_INCREASE_ENERGY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_kindred_spirits_AuraScript();
+        }
 };
 
 // Lynx Rush - 120697
@@ -1726,6 +1758,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_kindred_spirits();
     new spell_hun_lynx_rush();
     new spell_hun_beast_cleave_proc();
     new spell_hun_beast_cleave();
