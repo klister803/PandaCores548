@@ -8256,6 +8256,37 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Adaptation
+        case 126046:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!(procSpell->GetAllEffectsMechanicMask() & (1 << MECHANIC_DISARM)))
+                return false;
+
+            break;
+        }
+        // Infusion of Light
+        case 53576:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if (!(procSpell->Id == 25912) && !(procSpell->Id == 25914))
+                return false;
+
+            if (!(procEx & PROC_EX_CRITICAL_HIT))
+                return false;
+
+            break;
+        }
         // Grand Crusader
         case 85043:
         {
@@ -8276,24 +8307,6 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
                 }
             }
             else
-                return false;
-
-            break;
-        }
-
-        // Infusion of Light
-        case 53576:
-        {
-            if (!procSpell)
-                return false;
-
-            if (GetTypeId() != TYPEID_PLAYER)
-                return false;
-
-            if (!(procSpell->Id == 25912) && !(procSpell->Id == 25914))
-                return false;
-
-            if (!(procEx & PROC_EX_CRITICAL_HIT))
                 return false;
 
             break;
