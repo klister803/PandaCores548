@@ -82,6 +82,61 @@ enum HunterSpells
     HUNTER_SPELL_LYNX_RUSH_AURA                  = 120697,
     HUNTER_SPELL_LYNX_CRUSH_DAMAGE               = 120699,
     HUNTER_SPELL_KINDRED_SPIRIT_FOR_PET          = 88680,
+    HUNTER_SPELL_FRENZY_STACKS                   = 19615,
+    HUNTER_SPELL_FOCUS_FIRE_READY                = 88843,
+};
+
+// Frenzy - 19615
+class spell_hun_frenzy : public SpellScriptLoader
+{
+    public:
+        spell_hun_frenzy() : SpellScriptLoader("spell_hun_frenzy") { }
+
+        class spell_hun_frenzy_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_frenzy_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                    if (caster->GetOwner())
+                        if (AuraPtr frenzy = caster->GetAura(HUNTER_SPELL_FRENZY_STACKS))
+                            if (frenzy->GetStackAmount() >= 5)
+                                caster->GetOwner()->CastSpell(caster->GetOwner(), HUNTER_SPELL_FOCUS_FIRE_READY, true);
+            }
+
+            void Register()
+            {
+               OnHit += SpellHitFn(spell_hun_frenzy_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_frenzy_SpellScript();
+        }
+
+        class spell_hun_frenzy_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_frenzy_AuraScript);
+
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetTarget()->GetOwner())
+                    if (GetTarget()->GetOwner()->HasAura(HUNTER_SPELL_FOCUS_FIRE_READY))
+                        GetTarget()->GetOwner()->RemoveAura(HUNTER_SPELL_FOCUS_FIRE_READY);
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectApplyFn(spell_hun_frenzy_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_MELEE_HASTE_3, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_frenzy_AuraScript();
+        }
 };
 
 // Kindred Spirits - 56315
@@ -1758,6 +1813,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_frenzy();
     new spell_hun_kindred_spirits();
     new spell_hun_lynx_rush();
     new spell_hun_beast_cleave_proc();
