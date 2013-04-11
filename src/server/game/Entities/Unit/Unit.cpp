@@ -8294,6 +8294,30 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
 
             break;
         }
+        // Grand Crusader
+        case 85043:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if ((procSpell->Id == 35395) || (procSpell->Id == 53595))
+            {
+                if (procSpell->Id == 35395)
+                    break;
+                else
+                {
+                    if (!(roll_chance_i(20)))
+                        return false;
+                }
+            }
+            else
+                return false;
+
+            break;
+        }
         // Daybreak
         case 88821:
         {
@@ -14937,10 +14961,15 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
         if (AuraPtr aura = GetAura(93400))
             RemoveAura(93400);
 
-    // Hack Fix Shooting Stars - Drop charge
+    // Hack Fix Cobra Strikes - Drop charge
     if (GetTypeId() == TYPEID_UNIT && HasAura(53257) && !procSpell)
         if (AuraPtr aura = GetAura(53257))
             aura->DropCharge();
+
+    // Hack Fix Frenzy
+    if (GetTypeId() == TYPEID_UNIT && GetOwner() && GetOwner()->HasAura(19623) && !procSpell)
+        if (roll_chance_i(40))
+            CastSpell(this, 19615, true);
 
     // Fix Drop charge for Killing Machine
     if (GetTypeId() == TYPEID_PLAYER && HasAura(51124) && getClass() == CLASS_DEATH_KNIGHT && procSpell && (procSpell->Id == 49020 || procSpell->Id == 49143))

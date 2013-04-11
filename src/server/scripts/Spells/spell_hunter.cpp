@@ -81,6 +81,143 @@ enum HunterSpells
     HUNTER_SPELL_BEAST_CLEAVE_DAMAGE             = 118459,
     HUNTER_SPELL_LYNX_RUSH_AURA                  = 120697,
     HUNTER_SPELL_LYNX_CRUSH_DAMAGE               = 120699,
+    HUNTER_SPELL_KINDRED_SPIRIT_FOR_PET          = 88680,
+    HUNTER_SPELL_FRENZY_STACKS                   = 19615,
+    HUNTER_SPELL_FOCUS_FIRE_READY                = 88843,
+    HUNTER_SPELL_FOCUS_FIRE_AURA                 = 82692,
+};
+
+// Focus Fire - 82692
+class spell_hun_focus_fire : public SpellScriptLoader
+{
+    public:
+        spell_hun_focus_fire() : SpellScriptLoader("spell_hun_focus_fire") { }
+
+        class spell_hun_focus_fire_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_focus_fire_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (AuraPtr focusFire = _player->GetAura(HUNTER_SPELL_FOCUS_FIRE_AURA))
+                    {
+                        if (AuraPtr frenzy = _player->GetAura(HUNTER_SPELL_FRENZY_STACKS))
+                        {
+                            if (Pet* pet = _player->GetPet())
+                            {
+                                int32 stackAmount = frenzy->GetStackAmount();
+
+                                focusFire->GetEffect(0)->ChangeAmount(focusFire->GetEffect(0)->GetAmount() * stackAmount);
+
+                                if (pet->HasAura(HUNTER_SPELL_FRENZY_STACKS))
+                                {
+                                    pet->RemoveAura(HUNTER_SPELL_FRENZY_STACKS);
+                                    pet->EnergizeBySpell(pet, GetSpellInfo()->Id, 6, POWER_FOCUS);
+                                }
+
+                                _player->RemoveAura(HUNTER_SPELL_FRENZY_STACKS);
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+               OnHit += SpellHitFn(spell_hun_focus_fire_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_focus_fire_SpellScript();
+        }
+};
+
+// Frenzy - 19615
+class spell_hun_frenzy : public SpellScriptLoader
+{
+    public:
+        spell_hun_frenzy() : SpellScriptLoader("spell_hun_frenzy") { }
+
+        class spell_hun_frenzy_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_frenzy_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                    if (caster->GetOwner())
+                        if (AuraPtr frenzy = caster->GetAura(HUNTER_SPELL_FRENZY_STACKS))
+                            if (frenzy->GetStackAmount() >= 5)
+                                caster->GetOwner()->CastSpell(caster->GetOwner(), HUNTER_SPELL_FOCUS_FIRE_READY, true);
+            }
+
+            void Register()
+            {
+               OnHit += SpellHitFn(spell_hun_frenzy_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_frenzy_SpellScript();
+        }
+
+        class spell_hun_frenzy_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_frenzy_AuraScript);
+
+            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            {
+                if (GetTarget()->GetOwner())
+                    if (GetTarget()->GetOwner()->HasAura(HUNTER_SPELL_FOCUS_FIRE_READY))
+                        GetTarget()->GetOwner()->RemoveAura(HUNTER_SPELL_FOCUS_FIRE_READY);
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectApplyFn(spell_hun_frenzy_AuraScript::HandleRemove, EFFECT_0, SPELL_AURA_MOD_MELEE_HASTE_3, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_frenzy_AuraScript();
+        }
+};
+
+// Kindred Spirits - 56315
+class spell_hun_kindred_spirits : public SpellScriptLoader
+{
+    public:
+        spell_hun_kindred_spirits() : SpellScriptLoader("spell_hun_kindred_spirits") { }
+
+        class spell_hun_kindred_spirits_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_kindred_spirits_AuraScript);
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    if (GetCaster()->ToPlayer())
+                        if (GetCaster()->ToPlayer()->GetPet())
+                            if (!GetCaster()->ToPlayer()->GetPet()->HasAura(HUNTER_SPELL_KINDRED_SPIRIT_FOR_PET))
+                                GetCaster()->ToPlayer()->GetPet()->CastSpell(GetCaster()->ToPlayer()->GetPet(), HUNTER_SPELL_KINDRED_SPIRIT_FOR_PET, true);
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_hun_kindred_spirits_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_INCREASE_ENERGY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_kindred_spirits_AuraScript();
+        }
 };
 
 // Lynx Rush - 120697
@@ -1726,6 +1863,9 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_focus_fire();
+    new spell_hun_frenzy();
+    new spell_hun_kindred_spirits();
     new spell_hun_lynx_rush();
     new spell_hun_beast_cleave_proc();
     new spell_hun_beast_cleave();

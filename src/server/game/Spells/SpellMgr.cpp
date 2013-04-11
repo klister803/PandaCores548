@@ -3150,6 +3150,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 19574: // Bestial Wrath
+                spellInfo->Effects[3].Effect = 0;
+                spellInfo->Effects[3].ApplyAuraName = 0;
+                break;
             case 87935: // Serpent Spread
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
