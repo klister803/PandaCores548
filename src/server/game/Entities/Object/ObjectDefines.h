@@ -46,7 +46,7 @@ enum HighGuid
     HIGHGUID_TYPE_BATTLEGROUND = 0x1F1,                    // new 4.x
     HIGHGUID_MO_TRANSPORT   = 0x1FC,                       // blizz 1FC0 (for GAMEOBJECT_TYPE_MO_TRANSPORT)
     HIGHGUID_GROUP          = 0x1F5,
-    HIGHGUID_GUILD          = 0x1FF5,                      // new 4.x
+    HIGHGUID_GUILD          = 0x1FF,                       // new 4.x
     HIGHGUID_INSTANCE_SAVE  = 0x1F44,                      // new 5.x
 };
 
@@ -78,7 +78,7 @@ inline uint64 MAKE_NEW_GUID(uint64 l, uint64 e, uint64 h)
     if (!l)
         return 0;
 
-    return uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_GUILD || h == HIGHGUID_CORPSE) ? 48 : 52)));
+    return uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_CORPSE) ? 48 : 52)));
 }
 //#define MAKE_NEW_GUID(l, e, h)   uint64(uint64(l) | (uint64(e) << 32) | (uint64(h) << ((h == HIGHGUID_GUILD || h == HIGHGUID_CORPSE) ? 48 : 52)))
 
@@ -86,7 +86,7 @@ inline uint64 MAKE_NEW_GUID(uint64 l, uint64 e, uint64 h)
 inline uint32 GUID_HIPART(uint64 guid)
 {
     uint32 t = ((uint64(guid) >> 48) & 0x0000FFFF);
-    return (t == HIGHGUID_GUILD || t == HIGHGUID_CORPSE) ? t : ((uint32(t) >> 4) & 0x00000FFF);
+    return (t == HIGHGUID_CORPSE) ? t : ((uint32(t) >> 4) & 0x00000FFF);
 }
 
 // We have different low and middle part size for different guid types
