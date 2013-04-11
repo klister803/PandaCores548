@@ -8256,6 +8256,31 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
     // Custom triggered spells
     switch (auraSpellInfo->Id)
     {
+        // Grand Crusader
+        case 85043:
+        {
+            if (!procSpell)
+                return false;
+
+            if (GetTypeId() != TYPEID_PLAYER)
+                return false;
+
+            if ((procSpell->Id == 35395) || (procSpell->Id == 53595))
+            {
+                if (procSpell->Id == 35395)
+                    break;
+                else
+                {
+                    if (!(roll_chance_i(20)))
+                        return false;
+                }
+            }
+            else
+                return false;
+
+            break;
+        }
+
         // Infusion of Light
         case 53576:
         {
