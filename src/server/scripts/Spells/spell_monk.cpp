@@ -58,7 +58,6 @@ enum MonkSpells
     SPELL_MONK_FLYING_SERPENT_KICK              = 101545,
     SPELL_MONK_FLYING_SERPENT_KICK_NEW          = 115057,
     SPELL_MONK_FLYING_SERPENT_KICK_AOE          = 123586,
-    SPELL_MONK_CRACKLING_JADE_LIGHTNING         = 117952,
     SPELL_MONK_TIGEREYE_BREW                    = 116740,
     SPELL_MONK_TIGEREYE_BREW_STACKS             = 125195,
     SPELL_MONK_SPEAR_HAND_STRIKE_SILENCE        = 116709,
@@ -86,6 +85,201 @@ enum MonkSpells
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_DAMAGE     = 123408,
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_MISSILE    = 118852,
     SPELL_MONK_SPINNING_FIRE_BLOSSOM_ROOT       = 123407,
+    SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE   = 124280,
+    SPELL_MONK_JADE_LIGHTNING_ENERGIZE          = 123333,
+    SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP        = 117962,
+    SPELL_MONK_POWER_STRIKES_TALENT             = 121817,
+    SPELL_MONK_CREATE_CHI_SPHERE                = 121286,
+    SPELL_MONK_GLYPH_OF_ZEN_FLIGHT              = 125893,
+    SPELL_MONK_ZEN_FLIGHT                       = 125883,
+};
+
+// Glyph of Zen Flight - 125893
+class spell_monk_glyph_of_zen_flight : public SpellScriptLoader
+{
+    public:
+        spell_monk_glyph_of_zen_flight() : SpellScriptLoader("spell_monk_glyph_of_zen_flight") { }
+
+        class spell_monk_glyph_of_zen_flight_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_glyph_of_zen_flight_AuraScript);
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    _player->learnSpell(SPELL_MONK_ZEN_FLIGHT, false);
+            }
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (Player* _player = GetTarget()->ToPlayer())
+                    if (_player->HasSpell(SPELL_MONK_ZEN_FLIGHT))
+                        _player->removeSpell(SPELL_MONK_ZEN_FLIGHT, false, false);
+            }
+
+            void Register()
+            {
+                OnEffectApply += AuraEffectApplyFn(spell_monk_glyph_of_zen_flight_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                OnEffectRemove += AuraEffectRemoveFn(spell_monk_glyph_of_zen_flight_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_glyph_of_zen_flight_AuraScript();
+        }
+};
+
+// Called by Jab - 100780
+// Power Strikes - 121817
+class spell_monk_power_strikes : public SpellScriptLoader
+{
+    public:
+        spell_monk_power_strikes() : SpellScriptLoader("spell_monk_power_strikes") { }
+
+        class spell_monk_power_strikes_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_power_strikes_SpellScript)
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->GetGUID() != _player->GetGUID())
+                        {
+                            if (_player->HasAura(SPELL_MONK_POWER_STRIKES_TALENT))
+                            {
+                                if (!_player->HasSpellCooldown(SPELL_MONK_POWER_STRIKES_TALENT))
+                                {
+                                    if (_player->GetPower(POWER_CHI) < _player->GetMaxPower(POWER_CHI))
+                                    {
+                                        _player->EnergizeBySpell(_player, GetSpellInfo()->Id, 1, POWER_CHI);
+                                        _player->AddSpellCooldown(SPELL_MONK_POWER_STRIKES_TALENT, 0, time(NULL) + 20);
+                                    }
+                                    else
+                                        _player->CastSpell(_player, SPELL_MONK_CREATE_CHI_SPHERE, true);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_monk_power_strikes_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_power_strikes_SpellScript();
+        }
+};
+
+// Crackling Jade Lightning - 117952
+class spell_monk_crackling_jade_lightning : public SpellScriptLoader
+{
+    public:
+        spell_monk_crackling_jade_lightning() : SpellScriptLoader("spell_monk_crackling_jade_lightning") { }
+
+        class spell_monk_crackling_jade_lightning_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_crackling_jade_lightning_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Unit* caster = GetCaster())
+                    if (roll_chance_i(25))
+                        caster->CastSpell(caster, SPELL_MONK_JADE_LIGHTNING_ENERGIZE, true);
+            }
+
+            void OnProc(constAuraEffectPtr aurEff, ProcEventInfo& eventInfo)
+            {
+                PreventDefaultAction();
+
+                if (!GetCaster())
+                    return;
+
+                if (eventInfo.GetActor()->GetGUID() != GetTarget()->GetGUID())
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (GetTarget()->HasAura(aurEff->GetSpellInfo()->Id, _player->GetGUID()))
+                    {
+                        if (!_player->HasSpellCooldown(SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP))
+                        {
+                            _player->CastSpell(GetTarget(), SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP, true);
+                            _player->AddSpellCooldown(SPELL_MONK_CRACKLING_JADE_SHOCK_BUMP, 0, time(NULL) + 8);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_monk_crackling_jade_lightning_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+                OnEffectProc += AuraEffectProcFn(spell_monk_crackling_jade_lightning_AuraScript::OnProc, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_crackling_jade_lightning_AuraScript();
+        }
+};
+
+// Touch of Karma - 122470
+class spell_monk_touch_of_karma : public SpellScriptLoader
+{
+    public:
+        spell_monk_touch_of_karma() : SpellScriptLoader("spell_monk_touch_of_karma") { }
+
+        class spell_monk_touch_of_karma_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_monk_touch_of_karma_AuraScript);
+
+            void CalculateAmount(constAuraEffectPtr /*aurEff*/, int32 & amount, bool & /*canBeRecalculated*/)
+            {
+                if (GetCaster())
+                    amount = GetCaster()->GetMaxHealth();
+            }
+
+            void OnAbsorb(AuraEffectPtr aurEff, DamageInfo& dmgInfo, uint32& absorbAmount)
+            {
+                if (Unit* caster = dmgInfo.GetVictim())
+                {
+                    if (Unit* attacker = dmgInfo.GetAttacker())
+                    {
+                        int32 bp = dmgInfo.GetDamage();
+
+                        if (attacker->HasAura(aurEff->GetSpellInfo()->Id, caster->GetGUID()))
+                        {
+                            if (AuraPtr touchOfKarma = attacker->GetAura(SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, caster->GetGUID()))
+                                bp += attacker->GetRemainingPeriodicAmount(caster->GetGUID(), SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, SPELL_AURA_PERIODIC_DAMAGE);
+
+                            if (bp)
+                                caster->CastCustomSpell(attacker, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_monk_touch_of_karma_AuraScript::CalculateAmount, EFFECT_1, SPELL_AURA_SCHOOL_ABSORB);
+                OnEffectAbsorb += AuraEffectAbsorbFn(spell_monk_touch_of_karma_AuraScript::OnAbsorb, EFFECT_1);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_monk_touch_of_karma_AuraScript();
+        }
 };
 
 // Spinning Fire Blossom - 123408
@@ -1740,17 +1934,7 @@ class spell_monk_legacy_of_the_emperor : public SpellScriptLoader
             void HandleDummy(SpellEffIndex /*effIndex*/)
             {
                 Unit* caster = GetCaster();
-                if (caster && caster->GetTypeId() == TYPEID_PLAYER)
-                {
-                    caster->CastSpell(caster, SPELL_MONK_LEGACY_OF_THE_EMPEROR, true);
-
-                    std::list<Unit*> memberList;
-                    Player* plr = caster->ToPlayer();
-                    plr->GetPartyMembers(memberList);
-
-                    for (auto itr : memberList)
-                        caster->CastSpell((itr), SPELL_MONK_LEGACY_OF_THE_EMPEROR, true);
-                }
+                caster->CastSpell(caster, SPELL_MONK_LEGACY_OF_THE_EMPEROR, true);
             }
 
             void Register()
@@ -1860,6 +2044,10 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_glyph_of_zen_flight();
+    new spell_monk_power_strikes();
+    new spell_monk_crackling_jade_lightning();
+    new spell_monk_touch_of_karma();
     new spell_monk_spinning_fire_blossom_damage();
     new spell_monk_spinning_fire_blossom();
     new spell_monk_path_of_blossom();

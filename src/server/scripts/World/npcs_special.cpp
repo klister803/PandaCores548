@@ -3098,7 +3098,7 @@ class npc_choose_faction : public CreatureScript
 #define GOSSIP_TEXT_EXP_MODIF    1587
 #define GOSSIP_TEXT_EXP_MODIF_OK 1588
 #define GOSSIP_TEXT_EXP_NORMAL   1589
-#define GOSSIP_ITEM_XP_CLOSE     "Au revoir."
+#define GOSSIP_ITEM_XP_CLOSE     "Good bye."
 
 class npc_rate_xp_modifier : public CreatureScript
 {
@@ -3112,14 +3112,14 @@ class npc_rate_xp_modifier : public CreatureScript
             for (uint32 i = 1; i < sWorld->getRate(RATE_XP_KILL); ++i)
             {
                 std::ostringstream gossipText;
-                gossipText << "Je souhaiterais modifier mes RATES d'XP à " << i;
+                gossipText << "I would like to change my rates" << i;
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, gossipText.str(), GOSSIP_SENDER_MAIN, i);
             }
 
             if (pPlayer->GetPersonnalXpRate())
             {
                 std::ostringstream gossipText;
-                gossipText << "Je souhaite retrouver mes RATES d'XP normales (" << sWorld->getRate(RATE_XP_KILL) << ")";
+                gossipText << "I would like to restore my rates (" << sWorld->getRate(RATE_XP_KILL) << ")";
                 pPlayer->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, gossipText.str(), GOSSIP_SENDER_MAIN, 0);
             }
 

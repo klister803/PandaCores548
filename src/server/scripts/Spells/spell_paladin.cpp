@@ -25,7 +25,6 @@
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
 
-
 enum PaladinSpells
 {
     PALADIN_SPELL_DIVINE_PLEA                    = 54428,

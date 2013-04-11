@@ -2710,9 +2710,23 @@ void SpellMgr::LoadSpellClassInfo()
         if (ClassID == CLASS_DRUID)
             mSpellClassInfo[ClassID].insert(112857);
         
-        //Sinister Strike Enabler
+        // Sinister Strike Enabler
         if (ClassID == CLASS_ROGUE)
             mSpellClassInfo[ClassID].insert(79327);
+
+        // Opening gameobject
+        if (ClassID == CLASS_MONK)
+        {
+            mSpellClassInfo[ClassID].insert(3365);
+            mSpellClassInfo[ClassID].insert(6247);
+            mSpellClassInfo[ClassID].insert(6477);
+            mSpellClassInfo[ClassID].insert(6478);
+            mSpellClassInfo[ClassID].insert(21651);
+            mSpellClassInfo[ClassID].insert(22810);
+            mSpellClassInfo[ClassID].insert(61437);
+            mSpellClassInfo[ClassID].insert(68398);
+            mSpellClassInfo[ClassID].insert(96220);
+        }
 
         for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
         {
@@ -3136,6 +3150,46 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 19574: // Bestial Wrath
+                spellInfo->Effects[3].Effect = 0;
+                spellInfo->Effects[3].ApplyAuraName = 0;
+                break;
+            case 87935: // Serpent Spread
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21); // -1s
+                break;
+            case 53257: // Cobra Strikes
+                spellInfo->Effects[0].ApplyAuraName = 0;
+                spellInfo->Effects[0].Effect = 0;
+                spellInfo->Effects[0].BasePoints = 0;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_CRIT_PCT;
+                break;
+            case 53271: // Master's Call
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_PET;
+                break;
+            case 1126:  // Mark of the Wild
+            case 19740: // Blessing of Might
+            case 20217: // Blessing of Kings
+            case 21562: // Power Word : Fortitude
+            case 109773:// Dark Intent
+            case 116781:// Legacy of the White Tiger
+            case 127830:// Spirit Beast Blessing
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                break;
+            case 1459:  // Arcane Illumination
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                break;
+            case 61316: // Dalaran Illumination
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                spellInfo->Effects[2].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                break;
+            case 11958: // Cold Snap
+                spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_FEARED;
+                spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_STUNNED;
+                spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_CONFUSED;
+                break;
             case 116033:// Sparring (stacks)
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
                 break;
@@ -3374,6 +3428,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->ProcCharges = 2;
                 spellInfo->StackAmount = 0;
                 break;
+            case 85222: // Light of Dawn
+                spellInfo->MaxAffectedTargets = 6;
+                break;
             case 8122:  // Psychic Scream
                 spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                 spellInfo->MaxAffectedTargets = 5;
@@ -3456,10 +3513,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 107270: // Spinning Crane Kick - Radius
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
-                break;
-            case 116781: // Legacy of the White Tiger
-                spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
-                spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ALLY;
                 break;
             case 127626: // Devouring plague - Heal
                 spellInfo->Effects[0].BasePoints = 1;
