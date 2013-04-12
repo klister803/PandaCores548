@@ -1863,13 +1863,15 @@ class spell_monk_touch_of_death : public SpellScriptLoader
                     {
                         if (GetCaster()->getVictim()->GetTypeId() == TYPEID_UNIT && GetCaster()->getVictim()->ToCreature()->IsDungeonBoss())
                             return SPELL_FAILED_BAD_TARGETS;
+                        else if (GetCaster()->getVictim()->GetTypeId() == TYPEID_PLAYER)
+                            return SPELL_FAILED_BAD_TARGETS;
                         else if (GetCaster()->getVictim()->GetTypeId() == TYPEID_UNIT && (GetCaster()->getVictim()->GetHealth() > GetCaster()->GetHealth()))
                             return SPELL_FAILED_BAD_TARGETS;
                     }
                     return SPELL_CAST_OK;
                 }
                 return SPELL_FAILED_NO_VALID_TARGETS;
-            }
+            }   
 
             void Register()
             {

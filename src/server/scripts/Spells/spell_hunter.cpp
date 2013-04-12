@@ -85,6 +85,161 @@ enum HunterSpells
     HUNTER_SPELL_FRENZY_STACKS                   = 19615,
     HUNTER_SPELL_FOCUS_FIRE_READY                = 88843,
     HUNTER_SPELL_FOCUS_FIRE_AURA                 = 82692,
+    HUNTER_SPELL_A_MURDER_OF_CROWS_SUMMON        = 129179,
+    HUNTER_NPC_MURDER_OF_CROWS                   = 61994,
+    HUNTER_SPELL_DIRE_BEAST                      = 120679,
+    DIRE_BEAST_JADE_FOREST                       = 121118,
+    DIRE_BEAST_KALIMDOR                          = 122802,
+    DIRE_BEAST_EASTERN_KINGDOMS                  = 122804,
+    DIRE_BEAST_OUTLAND                           = 122806,
+    DIRE_BEAST_NORTHREND                         = 122807,
+    DIRE_BEAST_KRASARANG_WILDS                   = 122809,
+    DIRE_BEAST_VALLEY_OF_THE_FOUR_WINDS          = 122811,
+    DIRE_BEAST_VALE_OF_THE_ETERNAL_BLOSSOM       = 126213,
+    DIRE_BEAST_KUN_LAI_SUMMIT                    = 126214,
+    DIRE_BEAST_TOWNLONG_STEPPES                  = 126215,
+    DIRE_BEAST_DREAD_WASTES                      = 126216,
+    DIRE_BEAST_DUNGEONS                          = 132764,
+};
+
+// Dire Beast - 120679
+class spell_hun_dire_beast : public SpellScriptLoader
+{
+    public:
+        spell_hun_dire_beast() : SpellScriptLoader("spell_hun_dire_beast") { }
+
+        class spell_hun_dire_beast_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_dire_beast_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        // Summon's skin is different function of Map or Zone ID
+                        switch (_player->GetZoneId())
+                        {
+                            case 5785: // The Jade Forest
+                                _player->CastSpell(target, DIRE_BEAST_JADE_FOREST, true);
+                                break;
+                            case 5805: // Valley of the Four Winds
+                                _player->CastSpell(target, DIRE_BEAST_VALLEY_OF_THE_FOUR_WINDS, true);
+                                break;
+                            case 5840: // Vale of Eternal Blossoms
+                                _player->CastSpell(target, DIRE_BEAST_VALE_OF_THE_ETERNAL_BLOSSOM, true);
+                                break;
+                            case 5841: // Kun-Lai Summit
+                                _player->CastSpell(target, DIRE_BEAST_KUN_LAI_SUMMIT, true);
+                                break;
+                            case 5842: // Townlong Steppes
+                                _player->CastSpell(target, DIRE_BEAST_TOWNLONG_STEPPES, true);
+                                break;
+                            case 6134: // Krasarang Wilds
+                                _player->CastSpell(target, DIRE_BEAST_KRASARANG_WILDS, true);
+                                break;
+                            case 6138: // Dread Wastes
+                                _player->CastSpell(target, DIRE_BEAST_DREAD_WASTES, true);
+                                break;
+                            default:
+                            {
+                                switch (_player->GetMapId())
+                                {
+                                    case 0: // Eastern Kingdoms
+                                        _player->CastSpell(target, DIRE_BEAST_EASTERN_KINGDOMS, true);
+                                        break;
+                                    case 1: // Kalimdor
+                                        _player->CastSpell(target, DIRE_BEAST_KALIMDOR, true);
+                                        break;
+                                    case 8: // Outland
+                                        _player->CastSpell(target, DIRE_BEAST_OUTLAND, true);
+                                        break;
+                                    case 10: // Northrend
+                                        _player->CastSpell(target, DIRE_BEAST_NORTHREND, true);
+                                        break;
+                                    default:
+                                        if (_player->GetMap()->IsDungeon())
+                                            _player->CastSpell(target, DIRE_BEAST_DUNGEONS, true);
+                                        break;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+               OnHit += SpellHitFn(spell_hun_dire_beast_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_dire_beast_SpellScript();
+        }
+};
+
+// A Murder of Crows - 131894
+class spell_hun_a_murder_of_crows : public SpellScriptLoader
+{
+    public:
+        spell_hun_a_murder_of_crows() : SpellScriptLoader("spell_hun_a_murder_of_crows") { }
+
+        class spell_hun_a_murder_of_crows_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_a_murder_of_crows_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Unit* target = GetTarget())
+                {
+                    if (!GetCaster())
+                        return;
+
+                    if (aurEff->GetTickNumber() > 15)
+                        return;
+
+                    if (Player* _player = GetCaster()->ToPlayer())
+                    {
+                        _player->CastSpell(target, HUNTER_SPELL_A_MURDER_OF_CROWS_SUMMON, true);
+
+                        std::list<Creature*> tempList;
+                        std::list<Creature*> crowsList;
+
+                        _player->GetCreatureListWithEntryInGrid(tempList, HUNTER_NPC_MURDER_OF_CROWS, 100.0f);
+
+                        for (auto itr : tempList)
+                            crowsList.push_back(itr);
+
+                        // Remove other players mushrooms
+                        for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+                        {
+                            Unit* owner = (*i)->GetOwner();
+                            if (owner && owner == _player && (*i)->isSummon())
+                                continue;
+
+                            crowsList.remove((*i));
+                        }
+
+                        for (auto itr : crowsList)
+                            itr->AI()->AttackStart(target);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_hun_a_murder_of_crows_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_a_murder_of_crows_AuraScript();
+        }
 };
 
 // Focus Fire - 82692
@@ -562,11 +717,14 @@ class spell_hun_piercing_shots : public SpellScriptLoader
 
             void CalculateAmount(constAuraEffectPtr aurEff, int32 & amount, bool & /*canBeRecalculated*/)
             {
-                if (GetCaster())
-                    if (GetTarget()->HasAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
-                        amount += GetTarget()->GetRemainingPeriodicAmount(GetCaster()->GetGUID(), aurEff->GetSpellInfo()->Id, SPELL_AURA_PERIODIC_DAMAGE);
+                if (GetTarget())
+                {
+                    if (GetCaster())
+                        if (GetTarget()->HasAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
+                            amount += GetTarget()->GetRemainingPeriodicAmount(GetCaster()->GetGUID(), aurEff->GetSpellInfo()->Id, SPELL_AURA_PERIODIC_DAMAGE);
 
-                amount /= 8;
+                    amount /= 8;
+                }
             }
 
             void Register()
@@ -1475,6 +1633,9 @@ class spell_hun_readiness : public SpellScriptLoader
                     else
                         ++itr;
                 }
+
+                if (caster->HasSpellCooldown(HUNTER_SPELL_DIRE_BEAST))
+                    caster->RemoveSpellCooldown(HUNTER_SPELL_DIRE_BEAST);
             }
 
             void Register()
@@ -1863,6 +2024,8 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_dire_beast();
+    new spell_hun_a_murder_of_crows();
     new spell_hun_focus_fire();
     new spell_hun_frenzy();
     new spell_hun_kindred_spirits();
