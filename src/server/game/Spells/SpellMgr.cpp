@@ -3150,6 +3150,24 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 31935:  // Avenger's Shield
+                spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+                break;
+            case 121118: // Dire Beast summons
+            case 122802:
+            case 122804:
+            case 122806:
+            case 122807:
+            case 122809:
+            case 122811:
+            case 126213:
+            case 126214:
+            case 126215:
+            case 126216:
+            case 132764:
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                spellInfo->Effects[0].TargetB = 0;
+                break;
             case 19574: // Bestial Wrath
                 spellInfo->Effects[3].Effect = 0;
                 spellInfo->Effects[3].ApplyAuraName = 0;

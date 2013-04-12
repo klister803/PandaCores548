@@ -556,6 +556,10 @@ void Unit::DealDamageMods(Unit* victim, uint32 &damage, uint32* absorb)
 
 uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDamage, DamageEffectType damagetype, SpellSchoolMask damageSchoolMask, SpellInfo const* spellProto, bool durabilityLoss)
 {
+	// Log damage > 1 000 000 on worldboss
+	if (damage > 1000000 && GetTypeId() == TYPEID_PLAYER && victim->GetTypeId() == TYPEID_UNIT && victim->ToCreature()->GetCreatureTemplate()->rank)
+		sLog->OutPandashan("World Boss %u [%s] take more than 1M damage (%u) by player %u [%s] with spell %u", victim->GetEntry(), victim->GetName(), damage, GetGUIDLow(), GetName(), spellProto ? spellProto->Id : 0);
+
     // Custom MoP Script
     // Blade Flurry
     if (GetTypeId() == TYPEID_PLAYER && HasAura(13877) && damage > 0 && (!spellProto || (spellProto && spellProto->Id != 22482)))
@@ -10503,6 +10507,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // Custom scripted damage
     switch (spellProto->SpellFamilyName)
     {
+        case SPELLFAMILY_ROGUE:
+        {
+            // Revealing Strike for direct damage abilities
+            if (spellProto->AttributesEx & SPELL_ATTR1_REQ_COMBO_POINTS1 && damagetype != DOT)
+                if (AuraEffectPtr aurEff = victim->GetAuraEffect(84617, 2, GetGUID()))
+                    DoneTotalMod *= (100.0f + aurEff->GetAmount()) / 100.0f;
+            break;
+        }
         case SPELLFAMILY_MAGE:
             // Ice Lance
             if (spellProto->SpellIconID == 186)
@@ -10595,7 +10607,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 WeaponAttackType attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK;
                 float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
                 APbonus += GetTotalAttackPowerValue(attType);
-                if (spellProto && (spellProto->Id == 81297 || spellProto->Id == 879))
+                if (spellProto && (spellProto->Id == 81297 || spellProto->Id == 879 || spellProto->Id == 49184))
                     APbonus += GetTotalAttackPowerValue(BASE_ATTACK);
                 DoneTotal += int32(bonus->ap_bonus * stack * ApCoeffMod * APbonus);
             }
@@ -10992,6 +11004,20 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
         {
             if (victim)
             {
+                // Ranged Spell (hunters)
+                switch (spellProto->Id)
+                {
+                    case 19434: // Aimed Shot
+                    case 82928: // Aimed Shot (Master Marksman)
+                    case 56641: // Steady Shot
+                        if (HasAura(34483)) // Careful Aim
+                            if (victim->GetHealthPct() > 90.0f)
+                                crit_chance += 75.0f;
+                        break;
+                    default:
+                        break;
+                }
+
                 crit_chance += GetUnitCriticalChance(attackType, victim);
                 crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
             }
@@ -14953,7 +14979,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             aura->DropCharge();
 
     // Hack Fix Frenzy
-    if (GetTypeId() == TYPEID_UNIT && GetOwner() && GetOwner()->HasAura(19623) && !procSpell)
+    if (GetTypeId() == TYPEID_UNIT && isPet() && isHunterPet() && GetOwner() && GetOwner()->HasAura(19623) && !procSpell)
         if (roll_chance_i(40))
             CastSpell(this, 19615, true);
 

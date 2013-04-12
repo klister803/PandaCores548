@@ -772,6 +772,21 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
             }
             break;
         case SPELLFAMILY_DEATHKNIGHT:
+            // Death Coil
+            if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_COIL)
+            {
+                if (m_caster->IsFriendlyTo(unitTarget))
+                {
+                    int32 bp = (damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f) * 3.5f;
+                    m_caster->CastCustomSpell(unitTarget, 47633, &bp, NULL, NULL, true);
+                }
+                else
+                {
+                    int32 bp = damage + m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * 0.514f;
+                    m_caster->CastCustomSpell(unitTarget, 47632, &bp, NULL, NULL, true);
+                }
+                return;
+            }
             // Death Strike
             if (m_spellInfo->SpellFamilyFlags[0] & SPELLFAMILYFLAG_DK_DEATH_STRIKE)
             {
@@ -1168,7 +1183,10 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
 
     float speedXY, speedZ;
     CalculateJumpSpeeds(effIndex, m_caster->GetExactDist2d(x, y), speedXY, speedZ);
-    m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ, GetSpellInfo()->Id);
+    if (m_spellInfo->Id == 49575)
+        m_caster->GetMotionMaster()->CustomJump(x, y, z, speedXY, speedZ);
+    else
+        m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
 }
 
 void Spell::CalculateJumpSpeeds(uint8 i, float dist, float & speedXY, float & speedZ)
@@ -1179,7 +1197,11 @@ void Spell::CalculateJumpSpeeds(uint8 i, float dist, float & speedXY, float & sp
         speedZ = float(m_spellInfo->Effects[i].MiscValueB)/10;
     else
         speedZ = 10.0f;
+
     speedXY = dist * 10.0f / speedZ;
+
+    if (m_spellInfo->Id == 49575)
+        speedXY = 38;
 }
 
 void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)
@@ -3288,6 +3310,25 @@ void Spell::EffectWeaponDmg(SpellEffIndex effIndex)
                     if (Item* item = m_caster->ToPlayer()->GetWeaponForAttack(m_attackType, true))
                         if (item->GetTemplate()->SubClass == ITEM_SUBCLASS_WEAPON_DAGGER)
                             totalDamagePercentMod *= 1.45f;
+            // Fan of Knives
+            else if (m_spellInfo->Id == 51723)
+            {
+                if (m_caster->GetTypeId() != TYPEID_PLAYER)
+                    break;
+
+                if (m_caster->ToPlayer()->GetComboTarget() == unitTarget->GetGUID())
+                    m_caster->ToPlayer()->AddComboPoints(unitTarget, 1);
+
+                // Fan of Knives - Vile Poisons
+                if (AuraEffectPtr aur = m_caster->GetDummyAuraEffect(SPELLFAMILY_ROGUE, 857, 2))
+                {
+                    if (roll_chance_i(aur->GetAmount()))
+                    {
+                        for (uint8 i = BASE_ATTACK; i < MAX_ATTACK; ++i)
+                            m_caster->ToPlayer()->CastItemCombatSpell(unitTarget, WeaponAttackType(i), PROC_FLAG_TAKEN_DAMAGE, PROC_EX_NORMAL_HIT);
+                    }
+                }
+            }
             break;
         }
         case SPELLFAMILY_SHAMAN:

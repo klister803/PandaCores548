@@ -3567,6 +3567,53 @@ class spell_gen_blood_fury : public SpellScriptLoader
         }
 };
 
+#define GOBELING_GUMBO_BURP 42755
+
+// Gobelin Gumbo - 42760
+class spell_gen_gobelin_gumbo : public SpellScriptLoader
+{
+    public:
+        spell_gen_gobelin_gumbo() : SpellScriptLoader("spell_gen_gobelin_gumbo") { }
+
+        class spell_gen_gobelin_gumbo_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_gen_gobelin_gumbo_AuraScript);
+
+            uint32 burpTimer;
+
+            bool Load()
+            {
+                burpTimer = 10000;
+                return true;
+            }
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                {
+                    if (burpTimer <= diff)
+                    {
+                        burpTimer = 10000;
+                        if (roll_chance_i(30))
+                            GetCaster()->CastSpell(GetCaster(), GOBELING_GUMBO_BURP, true);
+                    }
+                    else
+                        burpTimer -= diff;
+                }
+            }
+
+            void Register()
+            {
+                OnEffectUpdate += AuraEffectUpdateFn(spell_gen_gobelin_gumbo_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_PROC_TRIGGER_SPELL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_gen_gobelin_gumbo_AuraScript();
+        }
+};
+
 void AddSC_generic_spell_scripts()
 {
     new spell_gen_absorb0_hitlimit1();
@@ -3649,4 +3696,5 @@ void AddSC_generic_spell_scripts()
     new spell_gen_two_forms();
     new spell_gen_darkflight();
     new spell_gen_blood_fury();
+    new spell_gen_gobelin_gumbo();
 }

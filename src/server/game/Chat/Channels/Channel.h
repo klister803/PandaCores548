@@ -151,6 +151,7 @@ class Channel
     typedef     std::set<uint64> BannedList;
     BannedList  banned;
     bool        m_announce;
+    bool        _special;
     bool        m_ownership;
     std::string m_name;
     std::string m_password;
