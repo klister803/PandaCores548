@@ -25,7 +25,7 @@
 #include "AccountMgr.h"
 
 Channel::Channel(const std::string& name, uint32 channel_id, uint32 Team)
- : m_announce(true), m_ownership(true), m_name(name), m_password(""), m_flags(0), m_channelId(channel_id), m_ownerGUID(0), m_Team(Team)
+ : m_announce(true), m_ownership(true), m_name(name), m_password(""), m_flags(0), m_channelId(channel_id), m_ownerGUID(0), m_Team(Team), _special(false)
 {
     m_IsSaved = false;
 
@@ -50,6 +50,11 @@ Channel::Channel(const std::string& name, uint32 channel_id, uint32 Team)
             m_flags |= CHANNEL_FLAG_LFG;
         else                                                // for all other channels
             m_flags |= CHANNEL_FLAG_NOT_LFG;
+    }
+    else if (!stricmp(m_name.c_str(), "world"))
+    {
+        _announce = false;
+        _special = true;
     }
     else                                                    // it's custom channel
     {
