@@ -1871,7 +1871,7 @@ class spell_monk_touch_of_death : public SpellScriptLoader
                     return SPELL_CAST_OK;
                 }
                 return SPELL_FAILED_NO_VALID_TARGETS;
-            }   
+            }
 
             void Register()
             {
