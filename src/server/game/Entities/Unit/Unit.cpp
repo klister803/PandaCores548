@@ -10992,6 +10992,20 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
         {
             if (victim)
             {
+                // Ranged Spell (hunters)
+                switch (spellProto->Id)
+                {
+                    case 19434: // Aimed Shot
+                    case 82928: // Aimed Shot (Master Marksman)
+                    case 56641: // Steady Shot
+                        if (HasAura(34483)) // Careful Aim
+                            if (victim->GetHealthPct() > 90.0f)
+                                crit_chance += 75.0f;
+                        break;
+                    default:
+                        break;
+                }
+
                 crit_chance += GetUnitCriticalChance(attackType, victim);
                 crit_chance += GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
             }
