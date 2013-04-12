@@ -1726,80 +1726,6 @@ class spell_dk_blood_boil : public SpellScriptLoader
         }
 };
 
-enum DeathCoil
-{
-    SPELL_DEATH_COIL_DAMAGE     = 47632,
-    SPELL_DEATH_COIL_HEAL       = 47633,
-    SPELL_SIGIL_VENGEFUL_HEART  = 64962,
-};
-
-class spell_dk_death_coil : public SpellScriptLoader
-{
-    public:
-        spell_dk_death_coil() : SpellScriptLoader("spell_dk_death_coil") { }
-
-        class spell_dk_death_coil_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dk_death_coil_SpellScript);
-
-            bool Validate(SpellInfo const* /*spell*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(SPELL_DEATH_COIL_DAMAGE) || !sSpellMgr->GetSpellInfo(SPELL_DEATH_COIL_HEAL))
-                    return false;
-                return true;
-            }
-
-            void HandleDummy(SpellEffIndex /*effIndex*/)
-            {
-                int32 damage = GetEffectValue();
-                Unit* caster = GetCaster();
-                if (Unit* target = GetHitUnit())
-                {
-                    if (caster->IsFriendlyTo(target))
-                    {
-                        int32 bp = int32(damage * 1.5f);
-                        caster->CastCustomSpell(target, SPELL_DEATH_COIL_HEAL, &bp, NULL, NULL, true);
-                    }
-                    else
-                    {
-                        if (constAuraEffectPtr auraEffect = caster->GetAuraEffect(SPELL_SIGIL_VENGEFUL_HEART, EFFECT_1))
-                            damage += auraEffect->GetBaseAmount();
-                        caster->CastCustomSpell(target, SPELL_DEATH_COIL_DAMAGE, &damage, NULL, NULL, true);
-                    }
-                }
-            }
-
-            SpellCastResult CheckCast()
-            {
-                Unit* caster = GetCaster();
-                if (Unit* target = GetExplTargetUnit())
-                {
-                    if (!caster->IsFriendlyTo(target) && !caster->isInFront(target))
-                        return SPELL_FAILED_UNIT_NOT_INFRONT;
-
-                    if (target->IsFriendlyTo(caster) && target->GetCreatureType() != CREATURE_TYPE_UNDEAD)
-                        return SPELL_FAILED_BAD_TARGETS;
-                }
-                else
-                    return SPELL_FAILED_BAD_TARGETS;
-
-                return SPELL_CAST_OK;
-            }
-
-            void Register()
-            {
-                OnCheckCast += SpellCheckCastFn(spell_dk_death_coil_SpellScript::CheckCast);
-                OnEffectHitTarget += SpellEffectFn(spell_dk_death_coil_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
-            }
-
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dk_death_coil_SpellScript();
-        }
-};
-
 class spell_dk_death_grip : public SpellScriptLoader
 {
     public:
@@ -1872,6 +1798,5 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_death_pact();
     new spell_dk_scourge_strike();
     new spell_dk_blood_boil();
-    new spell_dk_death_coil();
     new spell_dk_death_grip();
 }

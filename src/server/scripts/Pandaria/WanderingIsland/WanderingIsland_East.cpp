@@ -229,7 +229,7 @@ public:
             if (pointId == 1)
             {
                 me->RemoveAurasDueToSpell(SPELL_WATER_SPOUT_WARNING);
-                if (Player* player = me->SelectNearestPlayerNotGM(20.0f))
+                if (Player* player = me->SelectNearestPlayerNotGM(50.0f))
                 {
                     me->SetOrientation(me->GetAngle(player));
                     me->SetFacingToObject(player);
@@ -240,24 +240,9 @@ public:
             }
         }
 
-        void JustSummoned(Creature* summon)
+        Creature* getWaterSpout()
         {
-            if (summon->GetEntry() == 60488)
-            {
-                waterSpoutGUID = summon->GetGUID();
-                summon->AddAura(SPELL_WATER_SPOUT_WARNING, summon);
-            }
-        }
-
-        void SummonedCreatureDespawn(Creature* summon)
-        {
-            if (summon->GetEntry() == 60488)
-                waterSpoutGUID = 0;
-        }
-
-        Creature* getWaterSpout(uint64 guid)
-        {
-            return me->GetMap()->GetCreature(guid);
+            return me->GetMap()->GetCreature(waterSpoutGUID);
         }
 
         void UpdateAI(const uint32 diff)
@@ -281,13 +266,18 @@ public:
                 {
                     float x = 0.0f, y = 0.0f;
                     GetPositionWithDistInOrientation(me, 5.0f, me->GetOrientation() + frand(-M_PI, M_PI), x, y);
-                    me->CastSpell(x, y, 92.189629f, SPELL_WATER_SPOUT_SUMMON, false);
+                    if (Creature* waterSpout = me->SummonCreature(60488, x, y, 92.189629f))
+                    {
+                        waterSpoutGUID = waterSpout->GetGUID();
+                        waterSpout->CastSpell(waterSpout, SPELL_WATER_SPOUT_WARNING, true);
+                    }
+                    //me->CastSpell(x, y, 92.189629f, SPELL_WATER_SPOUT_SUMMON, false);
                     _events.ScheduleEvent(EVENT_WATER_SPOUT_EJECT, 7500);
                     break;
                 }
                 case EVENT_WATER_SPOUT_EJECT:
                 {
-                    if (Creature* waterSpout = getWaterSpout(waterSpoutGUID))
+                    if (Creature* waterSpout = getWaterSpout())
                     {
                         std::list<Player*> playerList;
                         GetPlayerListInGrid(playerList, waterSpout, 1.0f);
@@ -302,8 +292,10 @@ public:
                 }
                 case EVENT_WATER_SPOUT_DESPAWN:
                 {
-                    if (Creature* waterSpout = getWaterSpout(waterSpoutGUID))
+                    if (Creature* waterSpout = getWaterSpout())
                         waterSpout->DespawnOrUnsummon();
+
+                    waterSpoutGUID = 0;
 
                     _events.ScheduleEvent(EVENT_CHANGE_PLACE, 2000);
                     break;
@@ -313,6 +305,274 @@ public:
     };
 };
 
+class spell_grab_carriage: public SpellScriptLoader
+{
+    public:
+        spell_grab_carriage() : SpellScriptLoader("spell_grab_carriage") { }
+
+        class spell_grab_carriage_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_grab_carriage_SpellScript);
+
+            void HandleScriptEffect(SpellEffIndex effIndex)
+            {
+                Unit* caster = GetCaster();
+
+                if (!caster)
+                    return;
+
+                Creature* carriage = NULL;
+                Creature* yak      = NULL;
+                
+                if (caster->GetAreaId() == 5826) // Bassins chantants
+                {
+                    carriage = caster->SummonCreature(57208, 979.06f, 2863.87f, 87.88f, 4.7822f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                    yak      = caster->SummonCreature(57207, 979.37f, 2860.29f, 88.22f, 4.4759f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                }
+                else if (caster->GetAreaId() == 5881) // Ferme Dai-Lo
+                {
+                    carriage = caster->SummonCreature(57208, 588.70f, 3165.63f, 88.86f, 4.4156f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                    yak      = caster->SummonCreature(59499, 587.61f, 3161.91f, 89.31f, 4.3633f, TEMPSUMMON_MANUAL_DESPAWN, 0, caster->GetGUID());
+                }
+
+                if (!carriage || !yak)
+                    return;
+
+                carriage->CastSpell(yak, 107221, true);
+                carriage->GetMotionMaster()->MoveFollow(yak, 0.0f, M_PI);
+                caster->EnterVehicle(carriage, 0);
+            }
+
+            void Register()
+            {
+                OnEffectLaunch += SpellEffectFn(spell_grab_carriage_SpellScript::HandleScriptEffect, EFFECT_0, SPELL_EFFECT_SCRIPT_EFFECT);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_grab_carriage_SpellScript();
+        }
+};
+
+class npc_nourished_yak : public CreatureScript
+{
+public:
+    npc_nourished_yak() : CreatureScript("npc_nourished_yak") { }
+
+    struct npc_nourished_yakAI : public npc_escortAI
+    {        
+        npc_nourished_yakAI(Creature* creature) : npc_escortAI(creature)
+        {}
+
+        uint32 IntroTimer;
+
+        void Reset()
+        {
+            if (me->isSummon())
+                IntroTimer = 2500;
+            else
+                IntroTimer = 0;
+        }
+
+        void WaypointReached(uint32 waypointId)
+        {
+            uint8 waypointToEject = 100;
+            uint8 waypointsToDespawn = 100;
+
+            // Bassins chantants -> Dai-Lo
+            if (me->GetEntry() == 57207)
+            {
+                waypointToEject = 24;
+                waypointsToDespawn = 29;
+            }
+            // Dai-Lo -> Temple
+            else if (me->GetEntry() == 59499)
+            {
+                waypointToEject = 22;
+                waypointsToDespawn = 27;
+
+            }
+
+            if (waypointId == waypointToEject)
+            {
+                if (Creature* vehicle = GetClosestCreatureWithEntry(me, 57208, 10.0f))
+                    if (vehicle->GetVehicleKit())
+                        vehicle->GetVehicleKit()->RemoveAllPassengers();
+            }
+            else if (waypointId == waypointsToDespawn)
+            {
+                if (Creature* vehicle = GetClosestCreatureWithEntry(me, 57208, 10.0f))
+                    vehicle->DespawnOrUnsummon();
+                me->DespawnOrUnsummon();
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (IntroTimer)
+            {
+                if (IntroTimer <= diff)
+                {
+                    Start(false, true);
+                    IntroTimer = 0;
+                }
+                else
+                    IntroTimer -= diff;
+            }
+
+            npc_escortAI::UpdateAI(diff);
+        }
+    };
+    
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_nourished_yakAI(creature);
+    }
+    
+};
+
+class npc_water_spirit_dailo : public CreatureScript
+{
+public:
+    npc_water_spirit_dailo() : CreatureScript("npc_water_spirit_dailo") { }
+
+    bool OnGossipHello(Player* player, Creature* creature)
+    {
+        if (creature->isQuestGiver())
+            player->PrepareQuestMenu(creature->GetGUID());
+
+        if (player->GetQuestStatus(29774) == QUEST_STATUS_INCOMPLETE)
+             player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, "Can you please help us to wake up Wugou ?", GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF+1);
+
+        player->SEND_GOSSIP_MENU(player->GetGossipTextId(creature), creature->GetGUID());
+
+        return true;
+    }
+
+    bool OnGossipSelect(Player* player, Creature* creature, uint32 /*sender*/, uint32 action)
+    {
+        player->PlayerTalkClass->ClearMenus();
+        if (action == GOSSIP_ACTION_INFO_DEF+1)
+        {
+            player->CLOSE_GOSSIP_MENU();
+            player->KilledMonsterCredit(55548);
+            // Change player phase
+            if (Creature* shu = player->SummonCreature(55558, creature->GetPositionX(), creature->GetPositionY(), creature->GetPositionZ(), creature->GetOrientation(), TEMPSUMMON_MANUAL_DESPAWN, 0, player->GetGUID()))
+            {
+                if (shu->AI())
+                {
+                    shu->AI()->DoAction(0);
+                    shu->AI()->SetGUID(player->GetGUID());
+                }
+            }
+        }
+
+        return true;
+    }
+
+    struct npc_water_spirit_dailoAI : public ScriptedAI
+    {
+        npc_water_spirit_dailoAI(Creature* creature) : ScriptedAI(creature)
+        {}
+
+        uint64 playerGuid;
+        uint16 eventTimer;
+        uint8  eventProgress;
+
+        void Reset()
+        {
+            eventTimer = 0;
+            eventProgress = 0;
+            playerGuid = 0;
+        }
+
+        void DoAction(const int32 actionId)
+        {
+            eventTimer = 2500;
+        }
+
+        void SetGUID(uint64 guid, int32 /*type*/)
+        {
+            playerGuid = guid;
+        }
+
+        void MovementInform(uint32 typeId, uint32 pointId)
+        {
+            if (typeId != POINT_MOTION_TYPE)
+                return;
+
+            switch (pointId)
+            {
+                case 1:
+                    eventTimer = 250;
+                    ++eventProgress;
+                    break;
+                case 2:
+                    eventTimer = 250;
+                    ++eventProgress;
+                    break;
+                case 3:
+                    if (Creature* wugou = GetClosestCreatureWithEntry(me, 60916, 20.0f))
+                        me->SetFacingToObject(wugou);
+                    me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_STATE_READYUNARMED);
+                    eventTimer = 2000;
+                    ++eventProgress;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        void UpdateAI(const uint32 diff)
+        {
+            if (eventTimer)
+            {
+                if (eventTimer <= diff)
+                {
+                    switch (eventProgress)
+                    {
+                        case 0:
+                            me->GetMotionMaster()->MovePoint(1, 650.30f, 3127.16f, 89.62f);
+                            eventTimer = 0;
+                            break;
+                        case 1:
+                            me->GetMotionMaster()->MovePoint(2, 625.25f, 3127.88f, 87.95f);
+                            eventTimer = 0;
+                            break;
+                        case 2:
+                            me->GetMotionMaster()->MovePoint(3, 624.44f, 3142.94f, 87.75f);
+                            eventTimer = 0;
+                            break;
+                        case 3:
+                            if (Creature* wugou = GetClosestCreatureWithEntry(me, 60916, 20.0f))
+                                wugou->CastSpell(wugou, 118027, false);
+                            me->SetUInt32Value(UNIT_NPC_EMOTESTATE, EMOTE_ONESHOT_NONE);
+                            eventTimer = 3000;
+                            ++eventProgress;
+                            break;
+                        case 4:
+                            eventTimer = 0;
+                            if (Player* owner = ObjectAccessor::FindPlayer(playerGuid))
+                                owner->KilledMonsterCredit(55547);
+                            me->DespawnOrUnsummon();
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                    eventTimer -= diff;
+            }
+        }
+    };
+
+    CreatureAI* GetAI(Creature* creature) const
+    {
+        return new npc_water_spirit_dailoAI(creature);
+    }
+};
+
 void AddSC_WanderingIsland_East()
 {
     new AreaTrigger_at_bassin_curse();
@@ -320,4 +580,7 @@ void AddSC_WanderingIsland_East()
     new mob_tushui_monk();
     new spell_rock_jump();
     new mob_shu_water_spirit();
+    new spell_grab_carriage();
+    new npc_nourished_yak();
+    new npc_water_spirit_dailo();
 }

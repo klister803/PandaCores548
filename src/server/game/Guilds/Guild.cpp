@@ -2161,7 +2161,7 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
                     data.WriteBit(0);
 
                     uint32 enchants = 0;
-                    for (uint32 ench = 0; ench < MAX_ENCHANTMENT_SLOT; ++ench)
+                    /*for (uint32 ench = 0; ench < MAX_ENCHANTMENT_SLOT; ++ench)
                     {
                         if (uint32 enchantId = tabItem->GetEnchantmentId(EnchantmentSlot(ench)))
                         {
@@ -2169,7 +2169,7 @@ void Guild::SendBankList(WorldSession* session, uint8 tabId, bool withContent, b
                             tabData << uint32(ench);
                             ++enchants;
                         }
-                    }
+                    }*/
 
                     data.WriteBits(enchants, 23);
 
@@ -3213,7 +3213,7 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
 
             Item const* tabItem = tab->GetItem(*itr);
             uint32 enchantCount = 0;
-            if (tabItem)
+            /*if (tabItem)
             {
                 for (uint32 enchSlot = 0; enchSlot < MAX_ENCHANTMENT_SLOT; ++enchSlot)
                 {
@@ -3224,7 +3224,7 @@ void Guild::_SendBankContentUpdate(uint8 tabId, SlotIds slots) const
                         ++enchantCount;
                     }
                 }
-            }
+            }*/
 
             data.WriteBits(enchantCount, 23);                                       // enchantment count
 
