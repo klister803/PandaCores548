@@ -3142,6 +3142,8 @@ void SpellMgr::LoadSpellCustomAttr()
             case 72446: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                 break;
+            case 85673:// Word of Glory
+                spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal flames
             case 64422: // Sonic Screech (Auriaya)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
