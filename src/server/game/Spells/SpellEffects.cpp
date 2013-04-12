@@ -1168,7 +1168,10 @@ void Spell::EffectJumpDest(SpellEffIndex effIndex)
 
     float speedXY, speedZ;
     CalculateJumpSpeeds(effIndex, m_caster->GetExactDist2d(x, y), speedXY, speedZ);
-    m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ, GetSpellInfo()->Id);
+    if (m_spellInfo->Id == 49575)
+        m_caster->GetMotionMaster()->CustomJump(x, y, z, speedXY, speedZ);
+    else
+        m_caster->GetMotionMaster()->MoveJump(x, y, z, speedXY, speedZ);
 }
 
 void Spell::CalculateJumpSpeeds(uint8 i, float dist, float & speedXY, float & speedZ)
@@ -1179,7 +1182,11 @@ void Spell::CalculateJumpSpeeds(uint8 i, float dist, float & speedXY, float & sp
         speedZ = float(m_spellInfo->Effects[i].MiscValueB)/10;
     else
         speedZ = 10.0f;
+
     speedXY = dist * 10.0f / speedZ;
+
+    if (m_spellInfo->Id == 49575)
+        speedXY = 38;
 }
 
 void Spell::EffectTeleportUnits(SpellEffIndex /*effIndex*/)

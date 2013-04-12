@@ -379,6 +379,22 @@ void MotionMaster::MoveJump(float x, float y, float z, float speedXY, float spee
     Mutate(new EffectMovementGenerator(id), MOTION_SLOT_CONTROLLED);
 }
 
+void MotionMaster::CustomJump(float x, float y, float z, float speedXY, float speedZ, uint32 id)
+{
+    speedZ *= 2.3f;
+    speedXY *= 2.3f;
+    float moveTimeHalf = speedZ / Movement::gravity;
+    float max_height = -Movement::computeFallElevation(moveTimeHalf,false,-speedZ);
+    max_height /= 15.0f;
+
+    Movement::MoveSplineInit init(*_owner);
+    init.MoveTo(x,y,z);
+    init.SetParabolic(max_height, 0);
+    init.SetVelocity(speedXY);
+    init.Launch();
+    Mutate(new EffectMovementGenerator(id), MOTION_SLOT_CONTROLLED);
+}
+
 void MotionMaster::MoveFall(uint32 id/*=0*/)
 {
     // use larger distance for vmap height search than in most other cases
