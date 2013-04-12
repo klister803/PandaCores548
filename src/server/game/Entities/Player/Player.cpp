@@ -756,7 +756,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
 
     m_nextSave = sWorld->getIntConfig(CONFIG_INTERVAL_SAVE);
 
-    clearResurrectRequestData();
+    _resurrectionData = NULL;
 
     memset(m_items, 0, sizeof(Item*)*PLAYER_SLOTS_COUNT);
 
@@ -969,6 +969,8 @@ Player::~Player()
 
     for (uint8 i = 0; i < VOID_STORAGE_MAX_SLOT; ++i)
         delete _voidStorageItems[i];
+
+    ClearResurrectRequestData();
 
     sWorld->DecreasePlayerCount();
 }
@@ -1989,7 +1991,7 @@ void Player::setDeathState(DeathState s)
         // lost combo points at any target (targeted combo points clear in Unit::setDeathState)
         ClearComboPoints();
 
-        clearResurrectRequestData();
+        ClearResurrectRequestData();
 
         //FIXME: is pet dismissed at dying or releasing spirit? if second, add setDeathState(DEAD) to HandleRepopRequestOpcode and define pet unsummon here with (s == DEAD)
         RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
@@ -2580,19 +2582,22 @@ void Player::ProcessDelayedOperations()
     {
         ResurrectPlayer(0.0f, false);
 
-        if (GetMaxHealth() > m_resurrectHealth)
-            SetHealth(m_resurrectHealth);
+        if (GetMaxHealth() > _resurrectionData->Health)
+            SetHealth(_resurrectionData->Health);
         else
             SetFullHealth();
 
-        if (uint32(GetMaxPower(POWER_MANA)) > m_resurrectMana)
-            SetPower(POWER_MANA, m_resurrectMana);
+        if (uint32(GetMaxPower(POWER_MANA)) > _resurrectionData->Mana)
+            SetPower(POWER_MANA, _resurrectionData->Mana);
         else
             SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
 
         SetPower(POWER_RAGE, 0);
         SetPower(POWER_ENERGY, GetMaxPower(POWER_ENERGY));
         SetPower(POWER_ECLIPSE, 0);
+
+        if (uint32 aura = _resurrectionData->Aura)
+            CastSpell(this, aura, true, NULL, NULL, _resurrectionData->GUID);
 
         SpawnCorpseBones();
     }
@@ -15798,18 +15803,7 @@ void Player::AddQuest(Quest const* quest, Object* questGiver)
     if (questGiver && quest->GetQuestStartScript() != 0)
         GetMap()->ScriptsStart(sQuestStartScripts, quest->GetQuestStartScript(), questGiver, this);
 
-    // Some spells applied at quest activation
-    SpellAreaForQuestMapBounds saBounds = sSpellMgr->GetSpellAreaForQuestMapBounds(quest_id, true);
-    if (saBounds.first != saBounds.second)
-    {
-        uint32 zone, area;
-        GetZoneAndAreaId(zone, area);
-
-        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
-            if (itr->second->autocast && itr->second->IsFitToRequirements(this, zone, area))
-                if (!HasAura(itr->second->spellId))
-                    CastSpell(this, itr->second->spellId, true);
-    }
+    CheckSpellAreaOnQuestStatusChange(quest_id);
 
     PhaseUpdateData phaseUdateData;
     phaseUdateData.AddQuestUpdate(quest_id);
@@ -15988,9 +15982,11 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
     else if (quest->IsSeasonal())
         SetSeasonalQuestStatus(quest_id);
 
-    RemoveActiveQuest(quest_id);
     m_RewardedQuests.insert(quest_id);
     m_RewardedQuestsSave[quest_id] = true;
+    
+    // Must come after the insert in m_RewardedQuests because of spell_area check
+    RemoveActiveQuest(quest_id);
 
     PhaseUpdateData phaseUdateData;
     phaseUdateData.AddQuestUpdate(quest_id);
@@ -16017,33 +16013,6 @@ void Player::RewardQuest(Quest const* quest, uint32 reward, Object* questGiver, 
         UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUESTS_IN_ZONE, quest->GetZoneOrSort());
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST_COUNT);
     UpdateAchievementCriteria(ACHIEVEMENT_CRITERIA_TYPE_COMPLETE_QUEST, quest->GetQuestId());
-
-    uint32 zone = 0;
-    uint32 area = 0;
-
-    // remove auras from spells with quest reward state limitations
-    SpellAreaForQuestMapBounds saEndBounds = sSpellMgr->GetSpellAreaForQuestEndMapBounds(quest_id);
-    if (saEndBounds.first != saEndBounds.second)
-    {
-        GetZoneAndAreaId(zone, area);
-
-        for (SpellAreaForAreaMap::const_iterator itr = saEndBounds.first; itr != saEndBounds.second; ++itr)
-            if (!itr->second->IsFitToRequirements(this, zone, area))
-                RemoveAurasDueToSpell(itr->second->spellId);
-    }
-
-    // Some spells applied at quest reward
-    SpellAreaForQuestMapBounds saBounds = sSpellMgr->GetSpellAreaForQuestMapBounds(quest_id, false);
-    if (saBounds.first != saBounds.second)
-    {
-        if (!zone || !area)
-            GetZoneAndAreaId(zone, area);
-
-        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
-            if (itr->second->autocast && itr->second->IsFitToRequirements(this, zone, area))
-                if (!HasAura(itr->second->spellId))
-                    CastSpell(this, itr->second->spellId, true);
-    }
 
     //lets remove flag for delayed teleports
     SetCanDelayTeleport(false);
@@ -16632,6 +16601,10 @@ void Player::SetQuestStatus(uint32 quest_id, QuestStatus status)
         m_QuestStatusSave[quest_id] = true;
     }
 
+    uint32 zone = 0, area = 0;
+
+    CheckSpellAreaOnQuestStatusChange(quest_id);
+
     PhaseUpdateData phaseUdateData;
     phaseUdateData.AddQuestUpdate(quest_id);
 
@@ -16647,6 +16620,8 @@ void Player::RemoveActiveQuest(uint32 quest_id)
     {
         m_QuestStatus.erase(itr);
         m_QuestStatusSave[quest_id] = false;
+
+        CheckSpellAreaOnQuestStatusChange(quest_id);
 
         PhaseUpdateData phaseUdateData;
         phaseUdateData.AddQuestUpdate(quest_id);
@@ -22619,7 +22594,7 @@ void Player::AddSpellAndCategoryCooldowns(SpellInfo const* spellInfo, uint32 ite
         if (rec > 0)
             ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, rec, spell);
 
-        if (catrec > 0)
+        if (catrec > 0 && !(spellInfo->AttributesEx6 & SPELL_ATTR6_IGNORE_CATEGORY_COOLDOWN_MODS))
             ApplySpellMod(spellInfo->Id, SPELLMOD_COOLDOWN, catrec, spell);
 
         // replace negative cooldowns by 0
@@ -24419,7 +24394,9 @@ bool Player::IsAtRecruitAFriendDistance(WorldObject const* pOther) const
 void Player::ResurectUsingRequestData()
 {
     /// Teleport before resurrecting by player, otherwise the player might get attacked from creatures near his corpse
-    TeleportTo(m_resurrectMap, m_resurrectX, m_resurrectY, m_resurrectZ, GetOrientation());
+    float x, y, z, o;
+    _resurrectionData->Location.GetPosition(x, y, z, o);
+    TeleportTo(_resurrectionData->Location.GetMapId(), x, y, z, o);
 
     if (IsBeingTeleported())
     {
@@ -24429,13 +24406,13 @@ void Player::ResurectUsingRequestData()
 
     ResurrectPlayer(0.0f, false);
 
-    if (GetMaxHealth() > m_resurrectHealth)
-        SetHealth(m_resurrectHealth);
+    if (GetMaxHealth() > _resurrectionData->Health)
+        SetHealth(_resurrectionData->Health);
     else
         SetFullHealth();
 
-    if (uint32(GetMaxPower(POWER_MANA)) > m_resurrectMana)
-        SetPower(POWER_MANA, m_resurrectMana);
+    if (uint32(GetMaxPower(POWER_MANA)) > _resurrectionData->Mana)
+        SetPower(POWER_MANA, _resurrectionData->Mana);
     else
         SetPower(POWER_MANA, GetMaxPower(POWER_MANA));
 
@@ -24448,6 +24425,9 @@ void Player::ResurectUsingRequestData()
     SetPower(POWER_DEMONIC_FURY, 200);
     SetPower(POWER_SHADOW_ORB, 0);
     SetPower(POWER_CHI, 0);
+
+    if (uint32 aura = _resurrectionData->Aura)
+        CastSpell(this, aura, true, NULL, NULL, _resurrectionData->GUID);
 
     SpawnCorpseBones();
 }
@@ -27336,4 +27316,46 @@ void Player::_LoadStore()
     // Uniquement un SaveToDB, en mettre a chaque transaction cause des deadlocks
     // car chaque SaveToDB part dans un thread Mysql diff�rent
     SaveToDB();
+}
+
+void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
+{
+    uint32 zone = 0, area = 0;
+
+    SpellAreaForQuestMapBounds saBounds = sSpellMgr->GetSpellAreaForQuestMapBounds(quest_id);
+    if (saBounds.first != saBounds.second)
+    {
+        GetZoneAndAreaId(zone, area);
+
+        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        {
+            if (itr->second->IsFitToRequirements(this, zone, area))
+            {
+                if (itr->second->autocast)
+                    if (!HasAura(itr->second->spellId))
+                        CastSpell(this, itr->second->spellId, true);
+            }
+            else
+                RemoveAurasDueToSpell(itr->second->spellId);
+        }
+    }
+
+    saBounds = sSpellMgr->GetSpellAreaForQuestEndMapBounds(quest_id);
+    if (saBounds.first != saBounds.second)
+    {
+        if (!zone || !area)
+            GetZoneAndAreaId(zone, area);
+
+        for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
+        {
+            if (itr->second->IsFitToRequirements(this, zone, area))
+            {
+                if (itr->second->autocast)
+                    if (!HasAura(itr->second->spellId))
+                        CastSpell(this, itr->second->spellId, true);
+            }
+            else
+                RemoveAurasDueToSpell(itr->second->spellId);
+        }
+    }
 }

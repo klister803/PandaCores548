@@ -1052,30 +1052,27 @@ PetDefaultSpellsEntry const* SpellMgr::GetPetDefaultSpellsEntry(int32 id) const
 
 SpellAreaMapBounds SpellMgr::GetSpellAreaMapBounds(uint32 spell_id) const
 {
-    return SpellAreaMapBounds(mSpellAreaMap.lower_bound(spell_id), mSpellAreaMap.upper_bound(spell_id));
+    return mSpellAreaMap.equal_range(spell_id);
 }
 
-SpellAreaForQuestMapBounds SpellMgr::GetSpellAreaForQuestMapBounds(uint32 quest_id, bool active) const
+SpellAreaForQuestMapBounds SpellMgr::GetSpellAreaForQuestMapBounds(uint32 quest_id) const
 {
-    if (active)
-        return SpellAreaForQuestMapBounds(mSpellAreaForActiveQuestMap.lower_bound(quest_id), mSpellAreaForActiveQuestMap.upper_bound(quest_id));
-    else
-        return SpellAreaForQuestMapBounds(mSpellAreaForQuestMap.lower_bound(quest_id), mSpellAreaForQuestMap.upper_bound(quest_id));
+    return mSpellAreaForQuestMap.equal_range(quest_id);
 }
 
 SpellAreaForQuestMapBounds SpellMgr::GetSpellAreaForQuestEndMapBounds(uint32 quest_id) const
 {
-    return SpellAreaForQuestMapBounds(mSpellAreaForQuestEndMap.lower_bound(quest_id), mSpellAreaForQuestEndMap.upper_bound(quest_id));
+    return mSpellAreaForQuestEndMap.equal_range(quest_id);
 }
 
 SpellAreaForAuraMapBounds SpellMgr::GetSpellAreaForAuraMapBounds(uint32 spell_id) const
 {
-    return SpellAreaForAuraMapBounds(mSpellAreaForAuraMap.lower_bound(spell_id), mSpellAreaForAuraMap.upper_bound(spell_id));
+    return mSpellAreaForAuraMap.equal_range(spell_id);
 }
 
 SpellAreaForAreaMapBounds SpellMgr::GetSpellAreaForAreaMapBounds(uint32 area_id) const
 {
-    return SpellAreaForAreaMapBounds(mSpellAreaForAreaMap.lower_bound(area_id), mSpellAreaForAreaMap.upper_bound(area_id));
+    return mSpellAreaForAreaMap.equal_range(area_id);
 }
 
 bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32 newArea) const
@@ -1093,11 +1090,11 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
             return false;
 
     if (questStart)                              // not in expected required quest state
-        if (!player || ((!questStartCanActive || !player->IsActiveQuest(questStart)) && !player->GetQuestRewardStatus(questStart)))
+        if (!player || ((questStartStatus & (1 << player->GetQuestStatus(questStart))) == 0))
             return false;
 
     if (questEnd)                                // not in expected forbidden quest state
-        if (!player || player->GetQuestRewardStatus(questEnd))
+        if (!player || (questEndStatus & (1 << player->GetQuestStatus(questEnd))))
             return false;
 
     if (auraSpell)                               // not have expected aura
@@ -1107,7 +1104,7 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
     // Extra conditions -- leaving the possibility add extra conditions...
     switch (spellId)
     {
-    case 58600: // No fly Zone - Dalaran
+        case 58600: // No fly Zone - Dalaran
         {
             if (!player)
                 return false;
@@ -1119,7 +1116,7 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
                 return false;
             break;
         }
-    case 58730: // No fly Zone - Wintergrasp
+        case 58730: // No fly Zone - Wintergrasp
         {
             if (!player)
                 return false;
@@ -1129,8 +1126,8 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
                 return false;
             break;
         }
-    case 68719: // Oil Refinery - Isle of Conquest.
-    case 68720: // Quarry - Isle of Conquest.
+        case 68719: // Oil Refinery - Isle of Conquest.
+        case 68720: // Quarry - Isle of Conquest.
         {
             if (!player || player->GetBattlegroundTypeId() != BATTLEGROUND_IC || !player->GetBattleground())
                 return false;
@@ -1144,8 +1141,8 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
 
             return false;
         }
-    case 56618: // Horde Controls Factory Phase Shift
-    case 56617: // Alliance Controls Factory Phase Shift
+        case 56618: // Horde Controls Factory Phase Shift
+        case 56617: // Alliance Controls Factory Phase Shift
         {
             if (!player)
                 return false;
@@ -1162,10 +1159,10 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
                 return spellId == 56618;
             else if (team == TEAM_ALLIANCE)
                 return spellId == 56617;
+            break;
         }
-        break;
-    case 57940: // Essence of Wintergrasp - Northrend
-    case 58045: // Essence of Wintergrasp - Wintergrasp
+        case 57940: // Essence of Wintergrasp - Northrend
+        case 58045: // Essence of Wintergrasp - Wintergrasp
         {
             if (!player)
                 return false;
@@ -1174,7 +1171,7 @@ bool SpellArea::IsFitToRequirements(Player const* player, uint32 newZone, uint32
                 return battlefieldWG->IsEnabled() && (player->GetTeamId() == battlefieldWG->GetDefenderTeam()) && !battlefieldWG->IsWarTime();
             break;
         }
-    case 74411: // Battleground - Dampening
+        case 74411: // Battleground - Dampening
         {
             if (!player)
                 return false;
@@ -2440,9 +2437,8 @@ void SpellMgr::LoadSpellAreas()
     mSpellAreaForQuestEndMap.clear();
     mSpellAreaForAuraMap.clear();
 
-    //                                                  0     1         2              3               4           5          6        7       8
-    QueryResult result = WorldDatabase.Query("SELECT spell, area, quest_start, quest_start_active, quest_end, aura_spell, racemask, gender, autocast FROM spell_area");
-
+    //                                                  0     1         2              3               4                 5          6          7       8         9
+    QueryResult result = WorldDatabase.Query("SELECT spell, area, quest_start, quest_start_status, quest_end_status, quest_end, aura_spell, racemask, gender, autocast FROM spell_area");
     if (!result)
     {
         sLog->outInfo(LOG_FILTER_SERVER_LOADING, ">> Loaded 0 spell area requirements. DB table `spell_area` is empty.");
@@ -2460,12 +2456,13 @@ void SpellMgr::LoadSpellAreas()
         spellArea.spellId             = spell;
         spellArea.areaId              = fields[1].GetUInt32();
         spellArea.questStart          = fields[2].GetUInt32();
-        spellArea.questStartCanActive = fields[3].GetBool();
-        spellArea.questEnd            = fields[4].GetUInt32();
-        spellArea.auraSpell           = fields[5].GetInt32();
-        spellArea.raceMask            = fields[6].GetUInt32();
-        spellArea.gender              = Gender(fields[7].GetUInt8());
-        spellArea.autocast            = fields[8].GetBool();
+        spellArea.questStartStatus    = fields[3].GetUInt32();
+        spellArea.questEndStatus      = fields[4].GetUInt32();
+        spellArea.questEnd            = fields[5].GetUInt32();
+        spellArea.auraSpell           = fields[6].GetInt32();
+        spellArea.raceMask            = fields[7].GetUInt32();
+        spellArea.gender              = Gender(fields[8].GetUInt8());
+        spellArea.autocast            = fields[9].GetBool();
 
         if (SpellInfo const* spellInfo = GetSpellInfo(spell))
         {
@@ -2525,12 +2522,6 @@ void SpellMgr::LoadSpellAreas()
             if (!sObjectMgr->GetQuestTemplate(spellArea.questEnd))
             {
                 sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_area` have wrong end quest (%u) requirement", spell, spellArea.questEnd);
-                continue;
-            }
-
-            if (spellArea.questEnd == spellArea.questStart && !spellArea.questStartCanActive)
-            {
-                sLog->outError(LOG_FILTER_SQL, "Spell %u listed in `spell_area` have quest (%u) requirement for start and end in same time", spell, spellArea.questEnd);
                 continue;
             }
         }
@@ -2608,12 +2599,7 @@ void SpellMgr::LoadSpellAreas()
 
         // for search at quest start/reward
         if (spellArea.questStart)
-        {
-            if (spellArea.questStartCanActive)
-                mSpellAreaForActiveQuestMap.insert(SpellAreaForQuestMap::value_type(spellArea.questStart, sa));
-            else
-                mSpellAreaForQuestMap.insert(SpellAreaForQuestMap::value_type(spellArea.questStart, sa));
-        }
+            mSpellAreaForQuestMap.insert(SpellAreaForQuestMap::value_type(spellArea.questStart, sa));
 
         // for search at quest start/reward
         if (spellArea.questEnd)
@@ -2724,9 +2710,23 @@ void SpellMgr::LoadSpellClassInfo()
         if (ClassID == CLASS_DRUID)
             mSpellClassInfo[ClassID].insert(112857);
         
-        //Sinister Strike Enabler
+        // Sinister Strike Enabler
         if (ClassID == CLASS_ROGUE)
             mSpellClassInfo[ClassID].insert(79327);
+
+        // Opening gameobject
+        if (ClassID == CLASS_MONK)
+        {
+            mSpellClassInfo[ClassID].insert(3365);
+            mSpellClassInfo[ClassID].insert(6247);
+            mSpellClassInfo[ClassID].insert(6477);
+            mSpellClassInfo[ClassID].insert(6478);
+            mSpellClassInfo[ClassID].insert(21651);
+            mSpellClassInfo[ClassID].insert(22810);
+            mSpellClassInfo[ClassID].insert(61437);
+            mSpellClassInfo[ClassID].insert(68398);
+            mSpellClassInfo[ClassID].insert(96220);
+        }
 
         for (uint32 i = 0; i < sSkillLineAbilityStore.GetNumRows(); ++i)
         {
@@ -3142,6 +3142,8 @@ void SpellMgr::LoadSpellCustomAttr()
             case 72446: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                 break;
+            case 85673:// Word of Glory
+                spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal flames
             case 64422: // Sonic Screech (Auriaya)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
@@ -3150,6 +3152,83 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 31935:  // Avenger's Shield
+                spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
+                break;
+            case 121118: // Dire Beast summons
+            case 122802:
+            case 122804:
+            case 122806:
+            case 122807:
+            case 122809:
+            case 122811:
+            case 126213:
+            case 126214:
+            case 126215:
+            case 126216:
+            case 132764:
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
+                spellInfo->Effects[0].TargetB = 0;
+                break;
+            case 19574: // Bestial Wrath
+                spellInfo->Effects[3].Effect = 0;
+                spellInfo->Effects[3].ApplyAuraName = 0;
+                break;
+            case 87935: // Serpent Spread
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                spellInfo->DurationEntry = sSpellDurationStore.LookupEntry(21); // -1s
+                break;
+            case 53257: // Cobra Strikes
+                spellInfo->Effects[0].ApplyAuraName = 0;
+                spellInfo->Effects[0].Effect = 0;
+                spellInfo->Effects[0].BasePoints = 0;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_CRIT_PCT;
+                break;
+            case 53271: // Master's Call
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_PET;
+                break;
+            case 1126:  // Mark of the Wild
+            case 19740: // Blessing of Might
+            case 20217: // Blessing of Kings
+            case 21562: // Power Word : Fortitude
+            case 109773:// Dark Intent
+            case 116781:// Legacy of the White Tiger
+            case 127830:// Spirit Beast Blessing
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                break;
+            case 1459:  // Arcane Illumination
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                spellInfo->Effects[1].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                break;
+            case 61316: // Dalaran Illumination
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                spellInfo->Effects[2].TargetA = TARGET_UNIT_CASTER_AREA_RAID;
+                break;
+            case 11958: // Cold Snap
+                spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_FEARED;
+                spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_STUNNED;
+                spellInfo->AttributesEx5 |= SPELL_ATTR5_USABLE_WHILE_CONFUSED;
+                break;
+            case 116033:// Sparring (stacks)
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_DUMMY;
+                break;
+            case 115073:// Spinning Fire Blossom
+                spellInfo->Effects[0].TargetA = 0;
+                spellInfo->Effects[0].Effect = 0;
+                spellInfo->Effects[0].BasePoints = 0;
+                spellInfo->OverrideSpellList.push_back(123408); // Add Spinning Fire Blossom (Overrided by Glyph) to override spell list of Spinning Fire Blossom
+                break;
+            case 86150: // Guardian of Ancient Kings
+                spellInfo->Effects[0].TargetA = TARGET_CHECK_ENTRY;
+                break;
+            case 86674: // Ancient Healer
+                spellInfo->ProcCharges = 5;
+                break;
+            case 86657: // Ancient Guardian
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_DAMAGE_PERCENT_TAKEN;
+                break;
             case 51460: // Runic Corruption
                 spellInfo->Effects[EFFECT_1].Effect = 0;
                 spellInfo->Effects[EFFECT_0].ApplyAuraName = SPELL_AURA_MOD_POWER_REGEN_PERCENT;
@@ -3369,6 +3448,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->ProcCharges = 2;
                 spellInfo->StackAmount = 0;
                 break;
+            case 85222: // Light of Dawn
+                spellInfo->MaxAffectedTargets = 6;
+                break;
             case 8122:  // Psychic Scream
                 spellInfo->Effects[2].ApplyAuraName = SPELL_AURA_MOD_FEAR;
                 spellInfo->MaxAffectedTargets = 5;
@@ -3451,10 +3533,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 107270: // Spinning Crane Kick - Radius
                 spellInfo->Effects[0].RadiusEntry = sSpellRadiusStore.LookupEntry(14);
-                break;
-            case 116781: // Legacy of the White Tiger
-                spellInfo->Effects[0].TargetA = TARGET_SRC_CASTER;
-                spellInfo->Effects[0].TargetB = TARGET_UNIT_SRC_AREA_ALLY;
                 break;
             case 127626: // Devouring plague - Heal
                 spellInfo->Effects[0].BasePoints = 1;
@@ -3677,6 +3755,10 @@ void SpellMgr::LoadSpellCustomAttr()
             	spellInfo->Effects[1].TriggerSpell = 0;
             	spellInfo->Effects[2].TriggerSpell = 0;
             	break;
+            case 114746:
+                spellInfo->Effects[2].TargetA = TARGET_UNIT_TARGET_ALLY;
+                spellInfo->Effects[2].TargetB = 0;
+                break;
             default:
                 break;
             }

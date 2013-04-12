@@ -25,7 +25,6 @@
 #include "SpellScript.h"
 #include "SpellAuraEffects.h"
 
-
 enum PaladinSpells
 {
     PALADIN_SPELL_DIVINE_PLEA                    = 54428,
@@ -70,10 +69,123 @@ enum PaladinSpells
     PALADIN_SPELL_BLINDING_LIGHT_CONFUSE         = 105421,
     PALADIN_SPELL_BLINDING_LIGHT_STUN            = 115752,
     PALADIN_SPELL_EXORCISM                       = 879,
-    PALADIN_SPELL_ANCIENT_FURY                   = 86704,
-    PALADIN_SPELL_ANCIENT_POWER                  = 86700,
     PALADIN_SPELL_SACRED_SHIELD                  = 65148,
     PALADIN_SPELL_ARDENT_DEFENDER_HEAL           = 66235,
+    PALADIN_SPELL_TOWER_OF_RADIANCE_ENERGIZE     = 88852,
+    PALADIN_SPELL_BEACON_OF_LIGHT                = 53563,
+    PALADIN_SPELL_SELFLESS_HEALER_STACK          = 114250,
+    PALADIN_SPELL_ETERNAL_FLAME                  = 114163,
+};
+
+// Eternal Flame - 114163
+class spell_pal_eternal_flame : public SpellScriptLoader
+{
+    public:
+        spell_pal_eternal_flame() : SpellScriptLoader("spell_pal_eternal_flame") { }
+
+        class spell_pal_eternal_flame_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_eternal_flame_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    int32 postCharges = 1;
+
+                    if (_player->GetPower(POWER_HOLY_POWER) >= 3)
+                    {
+                        postCharges = _player->GetPower(POWER_HOLY_POWER) - 3;
+                        SetHitHeal(int32(GetHitHeal() * 3));
+                    }
+                    else
+                        SetHitHeal(GetHitHeal() * (_player->GetPower(POWER_HOLY_POWER) + 1));
+
+                    //TODO regive holy power to player
+                    //_player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + postCharges);
+                }
+            }
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_eternal_flame_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_eternal_flame_SpellScript();
+        }
+};
+
+// Selfless healer - 85804
+// Called by flsh of light - 19750
+class spell_pal_selfless_healer : public SpellScriptLoader
+{
+    public:
+        spell_pal_selfless_healer() : SpellScriptLoader("spell_pal_selfless_healer") { }
+
+        class spell_pal_selfless_healer_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_selfless_healer_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(PALADIN_SPELL_SELFLESS_HEALER_STACK))
+                        {
+                            int32 charges = _player->GetAura(PALADIN_SPELL_SELFLESS_HEALER_STACK)->GetStackAmount();
+
+                            if (_player->IsValidAssistTarget(target) && target != _player)
+                                SetHitHeal(int32(GetHitHeal() + ((GetHitHeal() * 0.35f) * charges)));
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_selfless_healer_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_selfless_healer_SpellScript();
+        }
+};
+
+// Called by Flash of Light - 19750 and Divine Light - 82326
+// Tower of Radiance - 85512
+class spell_pal_tower_of_radiance : public SpellScriptLoader
+{
+    public:
+        spell_pal_tower_of_radiance() : SpellScriptLoader("spell_pal_tower_of_radiance") { }
+
+        class spell_pal_tower_of_radiance_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_tower_of_radiance_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (target->HasAura(PALADIN_SPELL_BEACON_OF_LIGHT, _player->GetGUID()))
+                            _player->EnergizeBySpell(_player, PALADIN_SPELL_TOWER_OF_RADIANCE_ENERGIZE, 1, POWER_HOLY_POWER);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_tower_of_radiance_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_tower_of_radiance_SpellScript();
+        }
 };
 
 // Sacred shield - 20925
@@ -156,8 +268,11 @@ class spell_pal_emancipate : public SpellScriptLoader
                             auraList.push_back(aura);
                     }
 
-                    JadeCore::Containers::RandomResizeList(auraList, 1);
-                    _player->RemoveAura(*auraList.begin());
+                    if (!auraList.empty())
+                    {
+                        JadeCore::Containers::RandomResizeList(auraList, 1);
+                        _player->RemoveAura(*auraList.begin());
+                    }
                 }
             }
 
@@ -170,86 +285,6 @@ class spell_pal_emancipate : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_pal_emancipate_SpellScript();
-        }
-};
-
-// Ancient Fury - 86704
-class spell_pal_ancient_fury : public SpellScriptLoader
-{
-    public:
-        spell_pal_ancient_fury() : SpellScriptLoader("spell_pal_ancient_fury") { }
-
-        class spell_pal_ancient_fury_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_pal_ancient_fury_SpellScript);
-
-            int32 ancientPower;
-
-            void HandleBeforeCast()
-            {
-                if (GetCaster()->HasAura(PALADIN_SPELL_ANCIENT_POWER))
-                {
-                    ancientPower = GetCaster()->GetAura(PALADIN_SPELL_ANCIENT_POWER)->GetStackAmount();
-                    GetCaster()->RemoveAura(PALADIN_SPELL_ANCIENT_POWER);
-                }
-            }
-
-            void HandleOnHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        int32 damage = GetHitDamage();
-                        int32 newDamage = 0;
-
-                        if (ancientPower)
-                            newDamage = damage * ancientPower;
-
-                        if (newDamage)
-                            SetHitDamage(newDamage);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                BeforeCast += SpellCastFn(spell_pal_ancient_fury_SpellScript::HandleBeforeCast);
-                OnHit += SpellHitFn(spell_pal_ancient_fury_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_pal_ancient_fury_SpellScript();
-        }
-};
-
-// Guardian of Ancient Kings (Retribution) - 86698
-class spell_pal_guardian_of_ancient_kings_retribution : public SpellScriptLoader
-{
-    public:
-        spell_pal_guardian_of_ancient_kings_retribution() : SpellScriptLoader("spell_pal_guardian_of_ancient_kings_retribution") { }
-
-        class spell_pal_guardian_of_ancient_kings_retribution_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_pal_guardian_of_ancient_kings_retribution_AuraScript);
-
-            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
-            {
-                if (GetCaster())
-                    GetCaster()->CastSpell(GetCaster(), PALADIN_SPELL_ANCIENT_FURY, true);
-            }
-
-            void Register()
-            {
-                OnEffectRemove += AuraEffectRemoveFn(spell_pal_guardian_of_ancient_kings_retribution_AuraScript::HandleRemove, EFFECT_2, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_pal_guardian_of_ancient_kings_retribution_AuraScript();
         }
 };
 
@@ -1417,11 +1452,12 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_eternal_flame();
+    new spell_pal_selfless_healer();
+    new spell_pal_tower_of_radiance();
     new spell_pal_sacred_shield();
     new spell_pal_sacred_shield_absorb();
     new spell_pal_emancipate();
-    new spell_pal_ancient_fury();
-    new spell_pal_guardian_of_ancient_kings_retribution();
     new spell_pal_art_of_war();
     new spell_pal_seal_of_insight();
     new spell_pal_blinding_light();

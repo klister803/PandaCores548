@@ -848,6 +848,7 @@ class ObjectMgr
         void LoadCreatureTemplateAddons();
         void CheckCreatureTemplate(CreatureTemplate const* cInfo);
         void RestructCreatureGUID(uint32 nbLigneToRestruct);
+        void RestructGameObjectGUID(uint32 nbLigneToRestruct);
         void LoadCreatures();
         void LoadLinkedRespawn();
         bool SetCreatureLinkedRespawn(uint32 guid, uint32 linkedGuid);

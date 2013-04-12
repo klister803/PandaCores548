@@ -1069,6 +1069,14 @@ class WorldSession
         bool isRecruiter;
         ACE_Based::LockedQueue<WorldPacket*, ACE_Thread_Mutex> _recvQueue;
         time_t timeLastWhoCommand;
+        time_t timeLastChannelInviteCommand;
+        time_t timeLastChannelPassCommand;
+        time_t timeLastChannelMuteCommand;
+        time_t timeLastChannelBanCommand;
+        time_t timeLastChannelUnbanCommand;
+        time_t timeLastChannelAnnounceCommand;
+        time_t timeLastGroupInviteCommand;
+        time_t timeLastGuildInviteCommand;
         z_stream_s* _compressionStream;
 };
 #endif

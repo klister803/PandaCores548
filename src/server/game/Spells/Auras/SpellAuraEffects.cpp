@@ -336,7 +336,7 @@ pAuraEffectHandler AuraEffectHandler[TOTAL_AURAS]=
     &AuraEffect::HandleUnused,                                    //277 unused (4.3.4) old SPELL_AURA_MOD_MAX_AFFECTED_TARGETS
     &AuraEffect::HandleAuraModDisarm,                             //278 SPELL_AURA_MOD_DISARM_RANGED disarm ranged weapon
     &AuraEffect::HandleAuraInitializeImages,                      //279 SPELL_AURA_INITIALIZE_IMAGES
-    &AuraEffect::HandleUnused,                                    //280 unused (4.3.4) old SPELL_AURA_MOD_ARMOR_PENETRATION_PCT
+    &AuraEffect::HandleNoImmediateEffect,                         //280 SPELL_AURA_MOD_ARMOR_PENETRATION_PCT implemented in Unit::CalcArmorReducedDamage
     &AuraEffect::HandleNoImmediateEffect,                         //281 SPELL_AURA_MOD_HONOR_GAIN_PCT implemented in Player::RewardHonor
     &AuraEffect::HandleAuraIncreaseBaseHealthPercent,             //282 SPELL_AURA_INCREASE_BASE_HEALTH_PERCENT
     &AuraEffect::HandleNoImmediateEffect,                         //283 SPELL_AURA_MOD_HEALING_RECEIVED       implemented in Unit::SpellHealingBonus
@@ -1367,7 +1367,10 @@ void AuraEffect::PeriodicTick(AuraApplication * aurApp, Unit* caster) const
 
 void AuraEffect::HandleProc(AuraApplication* aurApp, ProcEventInfo& eventInfo)
 {
-    // TODO: effect script handlers here
+    bool prevented = GetBase()->CallScriptEffectProcHandlers(shared_from_this(), const_cast<AuraApplication const*>(aurApp), eventInfo);
+    if (prevented)
+        return;
+
     switch (GetAuraType())
     {
         case SPELL_AURA_PROC_TRIGGER_SPELL:
@@ -1388,6 +1391,8 @@ void AuraEffect::HandleProc(AuraApplication* aurApp, ProcEventInfo& eventInfo)
         default:
             break;
     }
+
+    GetBase()->CallScriptAfterEffectProcHandlers(shared_from_this(), const_cast<AuraApplication const*>(aurApp), eventInfo);
 }
 
 void AuraEffect::CleanupTriggeredSpells(Unit* target)
@@ -4535,11 +4540,14 @@ void AuraEffect::HandleAuraModResiliencePct(AuraApplication const* aurApp, uint8
 
     Player* _player = target->ToPlayer();
 
-    float value = GetAmount() / 100.0f;
+    float baseValue = _player->GetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT);
 
-    value += _player->GetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT);
+    if (apply)
+        baseValue += GetAmount() / 100.0f;
+    else
+        baseValue -= GetAmount() / 100.0f;
 
-    _player->SetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT, value);
+    _player->SetFloatValue(PLAYER_FIELD_MOD_RESILIENCE_PCT, baseValue);
 }
 
 /********************************/
@@ -5444,9 +5452,39 @@ void AuraEffect::HandleAuraDummy(AuraApplication const* aurApp, uint8 mode, bool
             break;
         }
         case SPELLFAMILY_PALADIN:
-            // if (!(mode & AURA_EFFECT_HANDLE_REAL))
-            //    break;
+        {
+            if (!(mode & AURA_EFFECT_HANDLE_REAL))
+                break;
+
+            switch (GetId())
+            {
+                // Guardian of Ancient Kings (Retribution spec)
+                case 86698:
+                {
+                    if (apply)
+                        caster->CastSpell(caster, 86701, true);
+                    else
+                    {
+                        if (caster->HasAura(86700))
+                            caster->CastSpell(caster, 86704, true);
+
+                        caster->RemoveAurasDueToSpell(86700);
+                        caster->RemoveAurasDueToSpell(86701);
+                    }
+                    break;
+                }
+                // Guardian of Ancient Kings (Holy spec)
+                case 86669:
+                {
+                    if (!apply)
+                        caster->RemoveAurasDueToSpell(86674);
+                    break;
+                }
+                default:
+                    break;
+            }
             break;
+        }
         case SPELLFAMILY_DEATHKNIGHT:
         {
             if (!(mode & AURA_EFFECT_HANDLE_REAL))
@@ -6628,7 +6666,8 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
         damage = caster->SpellCriticalDamageBonus(m_spellInfo, damage, target);
 
     int32 dmg = damage;
-    caster->ApplyResilience(target, &dmg, crit);
+    if (m_spellInfo->Id != 110914 && m_spellInfo->Id != 124280) // Hack fix for Dark Bargain and Touch of Karma (DOT)
+        caster->ApplyResilience(target, &dmg, crit);
     damage = dmg;
 
     caster->CalcAbsorbResist(target, GetSpellInfo()->GetSchoolMask(), DOT, damage, &absorb, &resist, GetSpellInfo());

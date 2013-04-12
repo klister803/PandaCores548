@@ -34,11 +34,16 @@ Log::Log() : worker(NULL)
     SetRealmID(0);
     m_logsTimestamp = "_" + GetTimestampStr();
     LoadFromConfig();
+    pandashanLog = fopen("pandashan.log", "a");
 }
 
 Log::~Log()
 {
     Close();
+
+    fclose(pandashanLog);
+    delete pandashanLog;
+    pandashanLog = NULL;
 }
 
 uint8 Log::NextAppenderId()
@@ -557,4 +562,20 @@ void Log::outArena(const char * str, ...)
     log->str = query;
 
     ArenaLogQueue.add(log);
+}
+
+void Log::OutPandashan(const char* str, ...)
+{
+    if (!str)
+        return;
+
+    char result[MAX_QUERY_LEN];
+    va_list ap;
+
+    va_start(ap, str);
+    vsnprintf(result, MAX_QUERY_LEN, str, ap);
+    va_end(ap);
+
+	std::string date = GetTimestampStr();
+	fprintf(pandashanLog, "[%s] Pandashan LOG : %s\n", date.c_str(), result);
 }
