@@ -10507,6 +10507,14 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
     // Custom scripted damage
     switch (spellProto->SpellFamilyName)
     {
+        case SPELLFAMILY_ROGUE:
+        {
+            // Revealing Strike for direct damage abilities
+            if (spellProto->AttributesEx & SPELL_ATTR1_REQ_COMBO_POINTS1 && damagetype != DOT)
+                if (AuraEffectPtr aurEff = victim->GetAuraEffect(84617, 2, GetGUID()))
+                    DoneTotalMod *= (100.0f + aurEff->GetAmount()) / 100.0f;
+            break;
+        }
         case SPELLFAMILY_MAGE:
             // Ice Lance
             if (spellProto->SpellIconID == 186)
@@ -10599,7 +10607,7 @@ uint32 Unit::SpellDamageBonusDone(Unit* victim, SpellInfo const* spellProto, uin
                 WeaponAttackType attType = (spellProto->IsRangedWeaponSpell() && spellProto->DmgClass != SPELL_DAMAGE_CLASS_MELEE) ? RANGED_ATTACK : BASE_ATTACK;
                 float APbonus = float(victim->GetTotalAuraModifier(attType == BASE_ATTACK ? SPELL_AURA_MELEE_ATTACK_POWER_ATTACKER_BONUS : SPELL_AURA_RANGED_ATTACK_POWER_ATTACKER_BONUS));
                 APbonus += GetTotalAttackPowerValue(attType);
-                if (spellProto && (spellProto->Id == 81297 || spellProto->Id == 879))
+                if (spellProto && (spellProto->Id == 81297 || spellProto->Id == 879 || spellProto->Id == 49184))
                     APbonus += GetTotalAttackPowerValue(BASE_ATTACK);
                 DoneTotal += int32(bonus->ap_bonus * stack * ApCoeffMod * APbonus);
             }
