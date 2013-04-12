@@ -991,6 +991,31 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
                     break;
                 }
+                case 62005: // Dire Beast - Dungeons
+                case 62210: // Dire Beast - Valley of the Four Winds
+                case 62855: // Dire Beast - Kalimdor
+                case 62856: // Dire Beast - Eastern Kingdoms
+                case 62857: // Dire Beast - Outland
+                case 62858: // Dire Beast - Northrend
+                case 62860: // Dire Beast - Krasarang Wilds
+                case 62865: // Dire Beast - Jade Forest
+                case 64617: // Dire Beast - Vale of Eternal Blossoms
+                case 64618: // Dire Beast - Kun-Lai Summit
+                case 64619: // Dire Beast - Townlong Steppes
+                case 64620: // Dire Beast - Dread Wastes
+                {
+                    if (!pInfo)
+                    {
+                        SetCreateMana(28 + 10*petlevel);
+                        SetCreateHealth(28 + 30*petlevel);
+                    }
+
+                    int32 bonus_dmg = (int32(m_owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2f));
+                    SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel * 4 - petlevel + bonus_dmg));
+                    SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel * 4 + petlevel + bonus_dmg));
+
+                    break;
+                }
                 case 62982: // Mindbender
                 case 67236: // Mindbender (Sha)
                 {

@@ -3737,6 +3737,55 @@ class npc_murder_of_crows : public CreatureScript
         }
 };
 
+/*######
+# npc_dire_beast
+######*/
+
+class npc_dire_beast : public CreatureScript
+{
+    public:
+        npc_dire_beast() : CreatureScript("npc_dire_beast") { }
+
+        struct npc_dire_beastAI : public ScriptedAI
+        {
+
+            npc_dire_beastAI(Creature *creature) : ScriptedAI(creature) {}
+
+            void Reset()
+            {
+                me->SetReactState(ReactStates::REACT_DEFENSIVE);
+
+                if (me->GetOwner())
+                    if (me->GetOwner()->getVictim())
+                        AttackStart(me->GetOwner()->getVictim());
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (me->GetReactState() != ReactStates::REACT_DEFENSIVE)
+                    me->SetReactState(ReactStates::REACT_DEFENSIVE);
+
+                if (!UpdateVictim())
+                    return;
+
+                if (me->GetOwner())
+                    if (Unit* newVictim = me->GetOwner()->getVictim())
+                        if (me->getVictim() != newVictim)
+                            AttackStart(newVictim);
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_dire_beastAI(creature);
+        }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3784,4 +3833,5 @@ void AddSC_npcs_special()
     new npc_demonic_gateway_green();
     new npc_xuen_the_white_tiger();
     new npc_murder_of_crows();
+    new npc_dire_beast();
 }
