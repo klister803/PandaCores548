@@ -3699,6 +3699,44 @@ class npc_xuen_the_white_tiger : public CreatureScript
         }
 };
 
+/*######
+# npc_murder_of_crows
+######*/
+
+class npc_murder_of_crows : public CreatureScript
+{
+    public:
+        npc_murder_of_crows() : CreatureScript("npc_murder_of_crows") { }
+
+        struct npc_murder_of_crowsAI : public ScriptedAI
+        {
+
+            npc_murder_of_crowsAI(Creature *creature) : ScriptedAI(creature)
+            {
+                me->SetReactState(ReactStates::REACT_DEFENSIVE);
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (me->GetReactState() != ReactStates::REACT_DEFENSIVE)
+                    me->SetReactState(ReactStates::REACT_DEFENSIVE);
+
+                if (!UpdateVictim())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                DoMeleeAttackIfReady();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_murder_of_crowsAI(creature);
+        }
+};
+
 void AddSC_npcs_special()
 {
     new npc_air_force_bots();
@@ -3745,4 +3783,5 @@ void AddSC_npcs_special()
     new npc_demonic_gateway_purple();
     new npc_demonic_gateway_green();
     new npc_xuen_the_white_tiger();
+    new npc_murder_of_crows();
 }

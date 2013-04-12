@@ -85,6 +85,68 @@ enum HunterSpells
     HUNTER_SPELL_FRENZY_STACKS                   = 19615,
     HUNTER_SPELL_FOCUS_FIRE_READY                = 88843,
     HUNTER_SPELL_FOCUS_FIRE_AURA                 = 82692,
+    HUNTER_SPELL_A_MURDER_OF_CROWS_SUMMON        = 129179,
+    HUNTER_NPC_MURDER_OF_CROWS                   = 61994,
+};
+
+// A Murder of Crows - 131894
+class spell_hun_a_murder_of_crows : public SpellScriptLoader
+{
+    public:
+        spell_hun_a_murder_of_crows() : SpellScriptLoader("spell_hun_a_murder_of_crows") { }
+
+        class spell_hun_a_murder_of_crows_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_hun_a_murder_of_crows_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (Unit* target = GetTarget())
+                {
+                    if (!GetCaster())
+                        return;
+
+                    if (aurEff->GetTickNumber() > 15)
+                        return;
+
+                    if (Player* _player = GetCaster()->ToPlayer())
+                    {
+                        _player->CastSpell(target, HUNTER_SPELL_A_MURDER_OF_CROWS_SUMMON, true);
+
+                        std::list<Creature*> tempList;
+                        std::list<Creature*> crowsList;
+
+                        _player->GetCreatureListWithEntryInGrid(tempList, HUNTER_NPC_MURDER_OF_CROWS, 100.0f);
+
+                        for (auto itr : tempList)
+                            crowsList.push_back(itr);
+
+                        // Remove other players mushrooms
+                        for (std::list<Creature*>::iterator i = tempList.begin(); i != tempList.end(); ++i)
+                        {
+                            Unit* owner = (*i)->GetOwner();
+                            if (owner && owner == _player && (*i)->isSummon())
+                                continue;
+
+                            crowsList.remove((*i));
+                        }
+
+                        for (auto itr : crowsList)
+                            itr->AI()->AttackStart(target);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_hun_a_murder_of_crows_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DUMMY);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_hun_a_murder_of_crows_AuraScript();
+        }
 };
 
 // Focus Fire - 82692
@@ -1863,6 +1925,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_a_murder_of_crows();
     new spell_hun_focus_fire();
     new spell_hun_frenzy();
     new spell_hun_kindred_spirits();
