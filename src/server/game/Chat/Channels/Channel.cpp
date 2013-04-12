@@ -53,7 +53,7 @@ Channel::Channel(const std::string& name, uint32 channel_id, uint32 Team)
     }
     else if (!stricmp(m_name.c_str(), "world"))
     {
-        _announce = false;
+        m_announce = false;
         _special = true;
     }
     else                                                    // it's custom channel
