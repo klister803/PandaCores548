@@ -1487,6 +1487,31 @@ class spell_warl_demonic_circle_teleport : public SpellScriptLoader
     public:
         spell_warl_demonic_circle_teleport() : SpellScriptLoader("spell_warl_demonic_circle_teleport") { }
 
+        class spell_warl_demonic_circle_teleport_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_demonic_circle_teleport_SpellScript);
+
+            SpellCastResult CheckLOS()
+            {
+                if (GetCaster())
+                    if (GameObject* circle = GetCaster()->GetGameObject(WARLOCK_DEMONIC_CIRCLE_SUMMON))
+                        if (!GetCaster()->IsWithinLOSInMap(circle))
+                            return SPELL_FAILED_LINE_OF_SIGHT;
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_warl_demonic_circle_teleport_SpellScript::CheckLOS);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_demonic_circle_teleport_SpellScript();
+        }
+
         class spell_warl_demonic_circle_teleport_AuraScript : public AuraScript
         {
             PrepareAuraScript(spell_warl_demonic_circle_teleport_AuraScript);
