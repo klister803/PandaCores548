@@ -90,21 +90,20 @@ class spell_pal_eternal_flame : public SpellScriptLoader
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
-                    if (Unit* target = GetHitUnit())
+                {
+                    int32 postCharges = 1;
+
+                    if (_player->GetPower(POWER_HOLY_POWER) >= 3)
                     {
-                        int32 postCharges = 1;
-
-                        if (_player->GetPower(POWER_HOLY_POWER) >= 3)
-                        {
-                            postCharges = _player->GetPower(POWER_HOLY_POWER) - 3;
-                            SetHitHeal(int32(GetHitHeal() * 3));
-                        }
-                        else
-                            SetHitHeal(GetHitHeal() * (_player->GetPower(POWER_HOLY_POWER) + 1));
-
-                        //TODO regive holy power to player
-                        //_player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + postCharges);
+                        postCharges = _player->GetPower(POWER_HOLY_POWER) - 3;
+                        SetHitHeal(int32(GetHitHeal() * 3));
                     }
+                    else
+                        SetHitHeal(GetHitHeal() * (_player->GetPower(POWER_HOLY_POWER) + 1));
+
+                    //TODO regive holy power to player
+                    //_player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + postCharges);
+                }
             }
             void Register()
             {
