@@ -501,7 +501,7 @@ public:
                         EnterEvadeMode();
                     return;
                 }
-                else if (me->getVictim()->GetTypeId() == TYPEID_PLAYER && me->getVictim()->HealthBelowPct(10))
+                else if (me->getVictim() && me->getVictim()->GetTypeId() == TYPEID_PLAYER && me->getVictim()->HealthBelowPct(10))
                 {
                     me->getVictim()->CastSpell(me->getVictim(), 7267, true); // beg
                     me->getVictim()->RemoveGameObject(SPELL_DUEL_FLAG, true);
