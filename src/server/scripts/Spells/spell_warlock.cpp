@@ -1444,7 +1444,8 @@ class spell_warl_demonic_circle_summon : public SpellScriptLoader
                     if (!(mode & AURA_EFFECT_HANDLE_REAPPLY))
                         GetTarget()->RemoveGameObject(GetId(), true);
 
-                    GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID())->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, true);
+                    if (GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID()))
+                        GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID())->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, true);
                 }
             }
 
