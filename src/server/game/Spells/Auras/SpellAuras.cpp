@@ -249,6 +249,9 @@ void AuraApplication::ClientUpdate(bool remove)
 
 void AuraApplication::SendFakeAuraUpdate(uint32 auraId, bool remove)
 {
+    if (!GetTarget())
+        return;
+
     WorldPacket data(SMSG_AURA_UPDATE);
     data.append(GetTarget()->GetPackGUID());
     data << uint8(64);
@@ -256,6 +259,7 @@ void AuraApplication::SendFakeAuraUpdate(uint32 auraId, bool remove)
     if (remove)
     {
         data << uint32(0);
+        _target->SendMessageToSet(&data, true);
         return;
     }
 
