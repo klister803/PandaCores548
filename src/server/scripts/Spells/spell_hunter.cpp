@@ -717,11 +717,14 @@ class spell_hun_piercing_shots : public SpellScriptLoader
 
             void CalculateAmount(constAuraEffectPtr aurEff, int32 & amount, bool & /*canBeRecalculated*/)
             {
-                if (GetCaster())
-                    if (GetTarget()->HasAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
-                        amount += GetTarget()->GetRemainingPeriodicAmount(GetCaster()->GetGUID(), aurEff->GetSpellInfo()->Id, SPELL_AURA_PERIODIC_DAMAGE);
+                if (GetTarget())
+                {
+                    if (GetCaster())
+                        if (GetTarget()->HasAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
+                            amount += GetTarget()->GetRemainingPeriodicAmount(GetCaster()->GetGUID(), aurEff->GetSpellInfo()->Id, SPELL_AURA_PERIODIC_DAMAGE);
 
-                amount /= 8;
+                    amount /= 8;
+                }
             }
 
             void Register()

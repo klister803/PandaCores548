@@ -630,7 +630,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                             Unit* victim = caster->getVictim();
                             if (victim)
                             {
-                                int32 health = victim->GetHealth();
+                                int32 health = victim->GetMaxHealth();
                                 damage += health;
                             }
                         }
