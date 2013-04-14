@@ -321,7 +321,7 @@ void AnticheatMgr::BuildReport(Player* player,uint8 reportType)
         str = "|cFFFFFC00[Anticheat]|cFF00FFFF[|cFF60FF00" + std::string(player->GetName()) + "|cFF00FFFF] Cheat detected!";
         WorldPacket data(SMSG_NOTIFICATION, (str.size()+1));
         data << str;
-        sWorld->SendGlobalGMMessage(&data);
+        //sWorld->SendGlobalGMMessage(&data); NO MORE OF THIS PLEASE THIS IS FLOODING MY SCREEN FOR NOTHIN'
     }
 }
 
