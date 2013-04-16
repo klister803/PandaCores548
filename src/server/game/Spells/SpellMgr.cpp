@@ -3537,10 +3537,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 127626: // Devouring plague - Heal
                 spellInfo->Effects[0].BasePoints = 1;
                 break;
-            case 77513:  // Mastery : Blood Shield
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 8;
-                break;
             case 77515:  // Mastery : Dreadblade
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[1].BasePoints = 8;

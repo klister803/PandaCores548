@@ -137,14 +137,7 @@ class spell_mastery_blood_shield : public SpellScriptLoader
         {
             PrepareSpellScript(spell_mastery_blood_shield_SpellScript);
 
-            bool Validate(SpellInfo const* /*spellEntry*/)
-            {
-                if (!sSpellMgr->GetSpellInfo(45470))
-                    return false;
-                return true;
-            }
-
-            void HandleOnHit()
+            void HandleAfterHit()
             {
                 if (Unit* caster = GetCaster())
                 {
@@ -168,7 +161,7 @@ class spell_mastery_blood_shield : public SpellScriptLoader
 
             void Register()
             {
-                OnHit += SpellHitFn(spell_mastery_blood_shield_SpellScript::HandleOnHit);
+                AfterHit += SpellHitFn(spell_mastery_blood_shield_SpellScript::HandleAfterHit);
             }
         };
 
