@@ -3152,6 +3152,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 61999:  // Raise Ally
+                spellInfo->Effects[1].TargetA = TARGET_UNIT_TARGET_ALLY;
+                break;
             case 49016:  // Unholy Frenzy
                 spellInfo->Effects[0].BasePoints = 30;
                 break;
