@@ -27264,8 +27264,8 @@ void Player::_LoadStore()
             GetSession()->SendNotification("%d pieces d'or vous ont ete ajoutee suite a votre commande sur la boutique", (goldCount/1000));
     }
 
-    // Load des m�tiers
-    /*PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_BOUTIQUE_METIER);
+    // Load des métiers
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_BOUTIQUE_METIER);
     stmt->setInt32(0, GetGUIDLow());
     PreparedQueryResult metierList = CharacterDatabase.Query(stmt);
 
@@ -27283,10 +27283,15 @@ void Player::_LoadStore()
             {
                 SpellEntry const* spell = (*itr);
 
-                if((uint32)spell->EffectMiscValue[1] != skillId)
+                const SpellEffectEntry* spellEffect = spell->GetSpellEffect(EFFECT_1, 0);
+
+                if (!spellEffect)
                     continue;
 
-                if((uint32)(spell->EffectBasePoints[1]+1) != (value/75))
+                if((uint32)spellEffect->EffectMiscValue != skillId)
+                    continue;
+
+                if((uint32)(spellEffect->EffectBasePoints+1) != (value/75))
                     continue;
 
                 learnId = spell->Id;
@@ -27311,7 +27316,7 @@ void Player::_LoadStore()
 
         }
         while(metierList->NextRow());
-	}*/
+	}
 
     // Uniquement un SaveToDB, en mettre a chaque transaction cause des deadlocks
     // car chaque SaveToDB part dans un thread Mysql diff�rent

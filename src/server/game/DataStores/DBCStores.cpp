@@ -183,6 +183,7 @@ DBCStorage <SpellItemEnchantmentEntry> sSpellItemEnchantmentStore(SpellItemEncha
 DBCStorage <SpellItemEnchantmentConditionEntry> sSpellItemEnchantmentConditionStore(SpellItemEnchantmentConditionfmt);
 DBCStorage <SpellEntry> sSpellStore(SpellEntryfmt);
 SpellCategoryStore sSpellCategoryStore;
+SpellSkillingList sSpellSkillingList;
 PetFamilySpellsStore sPetFamilySpellsStore;
 
 
@@ -592,6 +593,14 @@ void LoadDBCStores(const std::string& dataPath)
         {
             sSpellEffectMap[spellEffect->EffectSpellId].effects[spellEffect->EffectDifficulty][spellEffect->EffectIndex] = spellEffect;
         }
+    }
+
+    for (uint32 i = 1; i < sSpellStore.GetNumRows(); ++i)
+    {
+        if (SpellEntry const * spell = sSpellStore.LookupEntry(i))
+            if (const SpellEffectEntry* spellEffect = spell->GetSpellEffect(EFFECT_1, 0))
+                if (spellEffect->Effect == SPELL_EFFECT_SKILL && IsProfessionSkill(spellEffect->EffectMiscValue))
+                    sSpellSkillingList.push_back(spell);
     }
 
     LoadDBC(availableDbcLocales, bad_dbc_files, sSpellCastTimesStore,         dbcPath, "SpellCastTimes.dbc");//14545

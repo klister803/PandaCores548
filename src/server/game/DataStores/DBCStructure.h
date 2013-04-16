@@ -1877,6 +1877,7 @@ struct SpellCategoryEntry
 
 typedef std::set<uint32> SpellCategorySet;
 typedef std::map<uint32, SpellCategorySet > SpellCategoryStore;
+typedef std::list<const SpellEntry*> SpellSkillingList;
 typedef std::set<uint32> PetFamilySpellsSet;
 typedef std::map<uint32, PetFamilySpellsSet > PetFamilySpellsStore;
 
