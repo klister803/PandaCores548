@@ -6666,7 +6666,7 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
         damage = caster->SpellCriticalDamageBonus(m_spellInfo, damage, target);
 
     int32 dmg = damage;
-    if (m_spellInfo->Id != 110914 && m_spellInfo->Id != 124280) // Hack fix for Dark Bargain and Touch of Karma (DOT)
+    if (m_spellInfo->Id != 110914 && m_spellInfo->Id != 124280 && m_spellInfo->Id != 49016) // Hack fix for Dark Bargain and Touch of Karma (DOT) and Unholy Frenzy
         caster->ApplyResilience(target, &dmg, crit);
     damage = dmg;
 

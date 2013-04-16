@@ -3152,6 +3152,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 49016:  // Unholy Frenzy
+                spellInfo->Effects[0].BasePoints = 30;
+                break;
             case 31935:  // Avenger's Shield
                 spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
                 break;
