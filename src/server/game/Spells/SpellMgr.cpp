@@ -3541,10 +3541,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[1].BasePoints = 8;
                 break;
-            case 77514:  // Mastery : Frozen Heart
-                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[1].BasePoints = 8;
-                break;
             case 77495:  // Mastery : Harmony
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[1].BasePoints = 8;
