@@ -467,6 +467,8 @@ class spell_dk_howling_blast : public SpellScriptLoader
 
                 if (target->GetGUID() == tar)
                     SetHitDamage(GetHitDamage()*2);
+
+                caster->CastSpell(target, DK_SPELL_FROST_FEVER, true);
             }
 
             void Register()
