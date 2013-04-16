@@ -17219,6 +17219,23 @@ void Unit::GetPartyMembers(std::list<Unit*> &TagUnitMap)
     }
 }
 
+AuraPtr Unit::ToggleAura(uint32 spellId, Unit* target)
+{
+    if (!target)
+        return NULLAURA;
+
+    if (target->HasAura(spellId))
+    {
+        target->RemoveAurasDueToSpell(spellId);
+        return NULLAURA;
+    }
+    else
+        return target->AddAura(spellId, target);
+
+    
+    return NULLAURA;
+}
+
 AuraPtr Unit::AddAura(uint32 spellId, Unit* target)
 {
     if (!target)
