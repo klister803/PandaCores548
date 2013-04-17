@@ -630,7 +630,7 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                             Unit* victim = caster->getVictim();
                             if (victim)
                             {
-                                int32 health = victim->GetHealth();
+                                int32 health = victim->GetMaxHealth();
                                 damage += health;
                             }
                         }
@@ -4874,6 +4874,9 @@ void Spell::EffectResurrect(SpellEffIndex effIndex)
     // Rebirth, soulstone ...
     if (m_spellInfo->Id == 20484 || m_spellInfo->Id == 3026)
         health = target->CountPctFromMaxHealth(60);
+
+    if (m_spellInfo->Id == 61999) // Raise Ally
+        mana = target->CountPctFromMaxMana(60);
 
     ExecuteLogEffectResurrect(effIndex, target);
 

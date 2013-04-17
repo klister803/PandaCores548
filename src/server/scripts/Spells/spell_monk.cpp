@@ -94,6 +94,37 @@ enum MonkSpells
     SPELL_MONK_ZEN_FLIGHT                       = 125883,
 };
 
+// Zen Flight - 125883
+class spell_monk_zen_flight_check : public SpellScriptLoader
+{
+    public:
+        spell_monk_zen_flight_check() : SpellScriptLoader("spell_monk_zen_flight_check") { }
+
+        class spell_monk_zen_flight_check_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_monk_zen_flight_check_SpellScript);
+
+            SpellCastResult CheckTarget()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (_player->GetMap()->IsBattlegroundOrArena())
+                        return SPELL_FAILED_NOT_IN_BATTLEGROUND;
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_monk_zen_flight_check_SpellScript::CheckTarget);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_monk_zen_flight_check_SpellScript();
+        }
+};
+
 // Glyph of Zen Flight - 125893
 class spell_monk_glyph_of_zen_flight : public SpellScriptLoader
 {
@@ -261,6 +292,8 @@ class spell_monk_touch_of_karma : public SpellScriptLoader
                         {
                             if (AuraPtr touchOfKarma = attacker->GetAura(SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, caster->GetGUID()))
                                 bp += attacker->GetRemainingPeriodicAmount(caster->GetGUID(), SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, SPELL_AURA_PERIODIC_DAMAGE);
+
+                            bp /= 6;
 
                             if (bp)
                                 caster->CastCustomSpell(attacker, SPELL_MONK_TOUCH_OF_KARMA_REDIRECT_DAMAGE, &bp, NULL, NULL, true);
@@ -1863,6 +1896,8 @@ class spell_monk_touch_of_death : public SpellScriptLoader
                     {
                         if (GetCaster()->getVictim()->GetTypeId() == TYPEID_UNIT && GetCaster()->getVictim()->ToCreature()->IsDungeonBoss())
                             return SPELL_FAILED_BAD_TARGETS;
+                        else if (GetCaster()->getVictim()->GetTypeId() == TYPEID_PLAYER)
+                            return SPELL_FAILED_BAD_TARGETS;
                         else if (GetCaster()->getVictim()->GetTypeId() == TYPEID_UNIT && (GetCaster()->getVictim()->GetHealth() > GetCaster()->GetHealth()))
                             return SPELL_FAILED_BAD_TARGETS;
                     }
@@ -2044,6 +2079,7 @@ class spell_monk_tigereye_brew_stacks : public SpellScriptLoader
 
 void AddSC_monk_spell_scripts()
 {
+    new spell_monk_zen_flight_check();
     new spell_monk_glyph_of_zen_flight();
     new spell_monk_power_strikes();
     new spell_monk_crackling_jade_lightning();

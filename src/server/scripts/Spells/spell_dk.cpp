@@ -194,56 +194,6 @@ class spell_dk_necrotic_strike : public SpellScriptLoader
         }
 };
 
-// Icy touch - 45477
-class spell_dk_icy_touch : public SpellScriptLoader
-{
-    public:
-        spell_dk_icy_touch() : SpellScriptLoader("spell_dk_icy_touch") { }
-
-        class spell_dk_icy_touch_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dk_icy_touch_SpellScript);
-
-            void HandleAfterHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        if (_player->HasAura(DK_SPELL_REAPING, _player->GetGUID()))
-                        {
-                            bool frost = false;
-
-                            for (int i = 0; i < MAX_RUNES ; i++)
-                            {
-                                if (_player->GetCurrentRune(i) == RUNE_DEATH)
-                                    continue;
-
-                                if (!_player->GetRuneCooldown(i))
-                                    continue;
-
-                                if (_player->GetCurrentRune(i) == RUNE_FROST && frost != true)
-                                {
-                                    _player->ConvertRune(i, RUNE_DEATH);
-                                    frost = true;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_dk_icy_touch_SpellScript::HandleAfterHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dk_icy_touch_SpellScript();
-        }
-};
-
 // Pestilence - 50842
 class spell_dk_pestilence : public SpellScriptLoader
 {
@@ -341,37 +291,6 @@ class spell_dk_blood_strike : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_dk_blood_strike_SpellScript();
-        }
-};
-
-// Plague Strike - 45462
-class spell_dk_plague_strike : public SpellScriptLoader
-{
-    public:
-        spell_dk_plague_strike() : SpellScriptLoader("spell_dk_plague_strike") { }
-
-        class spell_dk_plague_strike_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_dk_plague_strike_SpellScript);
-
-            void HandleOnHit()
-            {
-                Unit* target = GetHitUnit();
-                Unit* caster = GetCaster();
-
-                if (caster->HasAura(DK_SPELL_EBON_PLAGUEBRINGER))
-                    caster->CastSpell(target, DK_SPELL_FROST_FEVER, true);
-            }
-
-            void Register()
-            {
-                OnHit += SpellHitFn(spell_dk_plague_strike_SpellScript::HandleOnHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_dk_plague_strike_SpellScript();
         }
 };
 
@@ -517,6 +436,8 @@ class spell_dk_howling_blast : public SpellScriptLoader
 
                 if (target->GetGUID() == tar)
                     SetHitDamage(GetHitDamage()*2);
+
+                caster->CastSpell(target, DK_SPELL_FROST_FEVER, true);
             }
 
             void Register()
@@ -1582,7 +1503,7 @@ class spell_dk_death_pact : public SpellScriptLoader
         }
 };
 
-// 55090 Scourge Strike (55265, 55270, 55271)
+// Scourge Strike - 55090
 class spell_dk_scourge_strike : public SpellScriptLoader
 {
     public:
@@ -1726,6 +1647,7 @@ class spell_dk_blood_boil : public SpellScriptLoader
         }
 };
 
+// Death Grip - 49560
 class spell_dk_death_grip : public SpellScriptLoader
 {
     public:
@@ -1765,10 +1687,8 @@ void AddSC_deathknight_spell_scripts()
     new spell_dk_asphyxiate();
     new spell_dk_desecrated_ground();
     new spell_dk_necrotic_strike();
-    new spell_dk_icy_touch();
     new spell_dk_pestilence();
     new spell_dk_blood_strike();
-    new spell_dk_plague_strike();
     new spell_dk_festering_strike();
     new spell_dk_death_strike_heal();
     new spell_dk_howling_blast();
