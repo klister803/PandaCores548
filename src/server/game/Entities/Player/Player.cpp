@@ -4266,6 +4266,14 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         return false;
     }
 
+    // If is summon companion spell, send update of battle pet journal
+    if (learning && spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON && spellInfo->Effects[0].MiscValueB == 3221)
+    {
+        WorldPacket data;
+        GetBattlePetMgr().BuildBattlePetJournal(&data);
+        GetSession()->SendPacket(&data);
+    }
+
     // update used talent points count
     if (sSpellMgr->IsTalent(spellInfo->Id))
     {
@@ -23428,9 +23436,6 @@ void Player::SendInitialPacketsBeforeAddToMap()
 
     GetReputationMgr().SendForceReactions();                // SMSG_SET_FORCED_REACTIONS
 
-    GetBattlePetMgr().BuildBattlePetJournal(&data);
-    GetSession()->SendPacket(&data);
-
     // SMSG_TALENTS_INFO x 2 for pet (unspent points and talents in separate packets...)
     // SMSG_PET_GUIDS
     // SMSG_UPDATE_WORLD_STATE
@@ -23507,6 +23512,10 @@ void Player::SendInitialPacketsAfterAddToMap()
     }
     else if (GetRaidDifficulty() != GetStoredRaidDifficulty())
         SendRaidDifficulty(GetGroup() != NULL);
+
+    WorldPacket data;
+    GetBattlePetMgr().BuildBattlePetJournal(&data);
+    GetSession()->SendPacket(&data);
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()

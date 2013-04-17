@@ -31,11 +31,12 @@
 
 struct PetBattleData
 {
-    PetBattleData(uint32 entry, uint32 display, uint32 species) : m_entry(entry), m_displayID(display), m_speciesID(species) {}
+    PetBattleData(uint32 entry, uint32 display, uint32 species, uint32 spell) : m_entry(entry), m_displayID(display), m_speciesID(species), m_summonSpellID(spell) {}
 
     uint32 m_entry;
     uint32 m_displayID;
     uint32 m_speciesID;
+    uint32 m_summonSpellID;
 };
 
 typedef std::list<PetBattleData> PetBattleDataList;

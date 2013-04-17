@@ -74,7 +74,7 @@ void BattlePetMgr::GetBattlePetList(PetBattleDataList &battlePetList) const
         if (!species)
             continue;
 
-        PetBattleData pet(creature->Entry, creature->Modelid1, species->ID);
+        PetBattleData pet(creature->Entry, creature->Modelid1, species->ID, spell->Id);
         battlePetList.push_back(pet);
     }
 }
@@ -106,15 +106,26 @@ void BattlePetMgr::BuildBattlePetJournal(WorldPacket *data)
     for (auto pet : petList)
     {
         *data << uint32(pet.m_displayID);
-        *data << uint32(rand() % 0xFFFFFFFF);
+        *data << uint32(pet.m_summonSpellID); // Pet Entry
         *data << uint16(0); // xp
         *data << uint32(1); // health
         *data << uint16(1); // level
         // name
         *data << uint32(1); // speed
         *data << uint32(1); // max health
-        *data << uint32(pet.m_entry);
+        *data << uint32(pet.m_entry); // Creature ID
         *data << uint32(1); // power
         *data << uint32(pet.m_speciesID); // species
     }
+}
+
+void WorldSession::HandleSummonBattlePet(WorldPacket& recvData)
+{
+    uint32 spellID = 0;
+    recvData >> spellID;
+
+    if (!_player->HasSpell(spellID))
+        return;
+
+    _player->CastSpell(_player, spellID, true);
 }
