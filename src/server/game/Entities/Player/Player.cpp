@@ -700,7 +700,7 @@ void KillRewarder::Reward()
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
-Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_reputationMgr(this), phaseMgr(this)
+Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_reputationMgr(this), phaseMgr(this), m_battlePetMgr(this)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -4264,6 +4264,14 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
     {
         CastSpell(this, spellId, true);
         return false;
+    }
+
+    // If is summon companion spell, send update of battle pet journal
+    if (learning && spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON && spellInfo->Effects[0].MiscValueB == 3221)
+    {
+        WorldPacket data;
+        GetBattlePetMgr().BuildBattlePetJournal(&data);
+        GetSession()->SendPacket(&data);
     }
 
     // update used talent points count
@@ -23504,6 +23512,10 @@ void Player::SendInitialPacketsAfterAddToMap()
     }
     else if (GetRaidDifficulty() != GetStoredRaidDifficulty())
         SendRaidDifficulty(GetGroup() != NULL);
+
+    WorldPacket data;
+    GetBattlePetMgr().BuildBattlePetJournal(&data);
+    GetSession()->SendPacket(&data);
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()
