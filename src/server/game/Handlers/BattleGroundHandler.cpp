@@ -383,11 +383,23 @@ void WorldSession::HandleBattleFieldPortOpcode(WorldPacket &recvData)
         return;
     }
 
+    if (queueSlot > PLAYER_MAX_BATTLEGROUND_QUEUES)
+    {
+    	sLog->OutPandashan("HandleBattleFieldPortOpcode queueSlot %u", queueSlot);
+    	return;
+    }
+
     BattlegroundQueueTypeId bgQueueTypeId = _player->GetBattlegroundQueueTypeId(queueSlot);
     if (bgQueueTypeId == BATTLEGROUND_QUEUE_NONE)
     {
         sLog->outDebug(LOG_FILTER_BATTLEGROUND, "BattlegroundHandler: invalid queueSlot (%u) received.", queueSlot);
         return;
+    }
+
+    if (bgQueueTypeId > MAX_BATTLEGROUND_QUEUE_TYPES)
+    {
+    	sLog->OutPandashan("HandleBattleFieldPortOpcode bgQueueTypeId %u", bgQueueTypeId);
+    	return;
     }
 
     BattlegroundQueue& bgQueue = sBattlegroundMgr->m_BattlegroundQueues[bgQueueTypeId];

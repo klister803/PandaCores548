@@ -36,6 +36,7 @@ enum MasterySpells
     MASTERY_SPELL_BLOOD_SHIELD          = 77535,
     MASTERY_SPELL_COMBO_BREAKER_1       = 118864,
     MASTERY_SPELL_COMBO_BREAKER_2       = 116768,
+    MASTERY_SPELL_DISCIPLINE_SHIELD     = 77484,
 };
 
 // Called by Power Word : Shield - 17, Power Word : Shield (Divine Insight) - 123258, Spirit Shell - 114908, Angelic Bulwark - 114214 and Divine Aegis - 47753
@@ -53,8 +54,11 @@ class spell_mastery_shield_discipline : public SpellScriptLoader
             {
                 if (Unit* caster = GetCaster())
                 {
-                    float Mastery = 1 + (caster->GetFloatValue(PLAYER_MASTERY) * 2.5f / 100.0f);
-                    amount = int32(amount * Mastery);
+                    if (caster->HasAura(MASTERY_SPELL_DISCIPLINE_SHIELD) && caster->getLevel() >= 80)
+                    {
+                        float Mastery = 1 + (caster->GetFloatValue(PLAYER_MASTERY) * 2.5f / 100.0f);
+                        amount = int32(amount * Mastery);
+                    }
                 }
             }
 

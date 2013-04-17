@@ -1652,7 +1652,7 @@ class spell_item_nitro_boots : public SpellScriptLoader
                 return true;
             }
 
-            void HandleDummy(SpellEffIndex /* effIndex */)
+            void HandleOnHit()
             {
                 Unit* caster = GetCaster();
                 caster->CastSpell(caster, roll_chance_i(95) ? SPELL_NITRO_BOOTS_SUCCESS : SPELL_NITRO_BOOTS_BACKFIRE, true, GetCastItem());
@@ -1660,7 +1660,7 @@ class spell_item_nitro_boots : public SpellScriptLoader
 
             void Register()
             {
-                OnEffectHitTarget += SpellEffectFn(spell_item_nitro_boots_SpellScript::HandleDummy, EFFECT_0, SPELL_EFFECT_DUMMY);
+                OnHit += SpellHitFn(spell_item_nitro_boots_SpellScript::HandleOnHit);
             }
         };
 

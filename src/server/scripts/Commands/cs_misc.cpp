@@ -1833,6 +1833,21 @@ public:
 
         handler->PSendSysMessage(target ? LANG_YOU_DISABLE_CHAT : LANG_COMMAND_DISABLE_CHAT_DELAYED, nameLink.c_str(), notSpeakTime, muteReasonStr.c_str());
 
+        std::string announce;
+
+        announce = "The character '";
+        announce += nameStr;
+        announce += "' was muted for ";
+        announce += delayStr;
+        announce += " minutes by the character '";
+        announce += handler->GetSession()? handler->GetSession()->GetPlayerName(): "";
+        announce += "'. The reason is: ";
+        announce += muteReasonStr;
+
+        char buff[2048];
+        sprintf(buff, handler->GetTrinityString(LANG_SYSTEMMESSAGE), announce.c_str());
+        sWorld->SendServerMessage(SERVER_MSG_STRING, buff);
+
         return true;
     }
 

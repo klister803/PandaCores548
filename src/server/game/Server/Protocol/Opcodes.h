@@ -704,6 +704,7 @@ enum Opcodes
     SMSG_BATTLEGROUND_PLAYER_JOINED                   = 0xAB5,  // 5.0.5 16048
     SMSG_BATTLEGROUND_PLAYER_LEFT                     = 0xAD3,  // 5.0.5 16048
     SMSG_BATTLEGROUND_PLAYER_POSITIONS                = 0x000,  // 5.0.5 16048 Deprecated
+    SMSG_BATTLEPET_JOURNAL                            = 0xB2E,  // 5.0.5 16048
     SMSG_BINDER_CONFIRM                               = 0x8CC,  // 5.0.5 16048
     SMSG_BINDPOINTUPDATE                              = 0xC0B,  // 5.0.5 16048
     SMSG_BINDZONEREPLY                                = 0x000,  // Not found in 4.3.4

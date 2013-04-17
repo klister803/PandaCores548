@@ -81,6 +81,7 @@ class AuraApplication
         bool IsNeedClientUpdate() const { return _needClientUpdate;}
         void BuildUpdatePacket(ByteBuffer& data, bool remove) const;
         void ClientUpdate(bool remove = false);
+        void SendFakeAuraUpdate(uint32 auraId, bool remove);
 };
 
 class Aura : public std::enable_shared_from_this<Aura>

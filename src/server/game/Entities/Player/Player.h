@@ -21,6 +21,7 @@
 
 #include "AchievementMgr.h"
 #include "Battleground.h"
+#include "BattlePetMgr.h"
 #include "Bag.h"
 #include "Common.h"
 #include "DatabaseEnv.h"
@@ -1194,6 +1195,8 @@ class Player : public Unit, public GridObject<Player>
     public:
         explicit Player (WorldSession* session);
         ~Player();
+
+        //AnticheatData anticheatData;
 
         void CleanupsBeforeDelete(bool finalCleanup = true);
 
@@ -2764,6 +2767,17 @@ class Player : public Unit, public GridObject<Player>
 
         void CheckSpellAreaOnQuestStatusChange(uint32 quest_id);
 
+
+        /*********************************************************/
+        /***              BATTLE PET SYSTEM                    ***/
+        /*********************************************************/
+
+        BattlePetMgr& GetBattlePetMgr() { return m_battlePetMgr; }
+        BattlePetMgr const& GetBattlePetMgr() const { return m_battlePetMgr; }
+
+        void SendBattlePetJournal();
+
+
     protected:
         // Gamemaster whisper whitelist
         WhisperListContainer WhisperList;
@@ -3082,6 +3096,7 @@ class Player : public Unit, public GridObject<Player>
 
         AchievementMgr<Player> m_achievementMgr;
         ReputationMgr  m_reputationMgr;
+        BattlePetMgr   m_battlePetMgr;
 
         SpellCooldowns m_spellCooldowns;
 
