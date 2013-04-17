@@ -1316,8 +1316,8 @@ class Player : public Unit, public GridObject<Player>
         void UpdateInnerTime (time_t time) { time_inn_enter = time; }
 
         Pet* GetPet() const;
-        Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime);
-        void RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent = false);
+        Pet* SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 despwtime, PetSlot slotID = PET_SLOT_UNK_SLOT);
+        void RemovePet(Pet* pet, PetSlot mode, bool returnreagent = false);
 
         PhaseMgr& GetPhaseMgr() { return phaseMgr; }
 
@@ -1522,8 +1522,6 @@ class Player : public Unit, public GridObject<Player>
         void LoadPet();
 
         bool AddItem(uint32 itemId, uint32 count, uint32* noSpaceForCount = NULL);
-
-        uint32 m_stableSlots;
 
         /*********************************************************/
         /***                    GOSSIP SYSTEM                  ***/
@@ -2504,6 +2502,8 @@ class Player : public Unit, public GridObject<Player>
         void StopCastingCharm();
         void StopCastingBindSight();
 
+        void SendPetTameResult(PetTameResult result);
+
         uint32 GetSaveTimer() const { return m_nextSave; }
         void   SetSaveTimer(uint32 timer) { m_nextSave = timer; }
 
@@ -2525,6 +2525,50 @@ class Player : public Unit, public GridObject<Player>
         float m_homebindZ;
 
         WorldLocation GetStartPosition() const;
+
+        // current pet slot
+        PetSlot m_currentPetSlot;
+        uint32 m_petSlotUsed;
+
+        void setPetSlotUsed(PetSlot slot, bool used)
+        {
+            if (used)
+                m_petSlotUsed |= (1 << uint32(slot));
+            else
+                m_petSlotUsed &= ~(1 << uint32(slot));
+        }
+
+        PetSlot getSlotForNewPet()
+        {
+            // Some changes here
+            uint32 last_known = 0;
+            // Call pet Spells
+            // 883, 83242, 83243, 83244, 83245
+            //  1     2      3      4      5
+            if (HasSpell(83245))
+                last_known = 5;
+            else if (HasSpell(83244))
+                last_known = 4;
+            else if (HasSpell(83243))
+                last_known = 3;
+            else if (HasSpell(83242))
+                last_known = 2;
+            else if (HasSpell(883))
+                last_known = 1;
+
+            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i < last_known; i++)
+            {
+                sLog->outDebug(LOG_FILTER_PETS, ">>>>>>> %u %u", i, last_known);
+                if ((m_petSlotUsed & (1 << i)) == 0)
+                {
+                    sLog->outDebug(LOG_FILTER_PETS, ">>>>>>> slot %u not used !", i);
+                    return PetSlot(i);
+                }
+            }
+
+            // If there is no slots available, then we should point that out
+            return PET_SLOT_FULL_LIST; // (PetSlot)last_known
+        }
 
         // currently visible objects at player client
         typedef std::set<uint64> ClientGUIDs;

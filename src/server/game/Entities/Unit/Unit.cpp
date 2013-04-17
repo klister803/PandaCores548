@@ -9518,9 +9518,12 @@ Unit* Unit::GetCharm() const
     return NULL;
 }
 
-void Unit::SetMinion(Minion *minion, bool apply)
+void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot)
 {
     sLog->outDebug(LOG_FILTER_UNITS, "SetMinion %u for %u, apply %u", minion->GetEntry(), GetEntry(), apply);
+
+    if (slot == PET_SLOT_ACTUAL_PET_SLOT)
+        slot = ToPlayer()->m_currentPetSlot;
 
     if (apply)
     {
@@ -9549,7 +9552,7 @@ void Unit::SetMinion(Minion *minion, bool apply)
                 {
                     // remove existing minion pet
                     if (oldPet->isPet())
-                        ((Pet*)oldPet)->Remove(PET_SAVE_AS_CURRENT);
+                        ((Pet*)oldPet)->Remove(PET_SLOT_ACTUAL_PET_SLOT);
                     else
                         oldPet->UnSummon();
                     SetPetGUID(minion->GetGUID());
@@ -9563,17 +9566,33 @@ void Unit::SetMinion(Minion *minion, bool apply)
             }
         }
 
-        if (minion->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
+        if (slot == PET_SLOT_UNK_SLOT)
+            slot = PET_SLOT_OTHER_PET;
+
+        if (GetTypeId() == TYPEID_PLAYER)
         {
-            if (AddUInt64Value(UNIT_FIELD_SUMMON, minion->GetGUID()))
+            // If its not a Hunter Pet, only set pet slot. use setPetSlotUsed only for hanter pets.
+            // Always save thoose spots where hunter is correct
+            if (minion->isHunterPet())
             {
+                if (slot >= PET_SLOT_HUNTER_FIRST && slot <= PET_SLOT_HUNTER_LAST)
+                {
+                    ToPlayer()->m_currentPetSlot = slot;
+                    ToPlayer()->setPetSlotUsed(slot, true);
+                }
+                else
+                {
+                    sLog->outDebug(LOG_FILTER_UNITS, "Unit::SetMinion. Try to add hunter pet to not allowed slot(%u). Minion %u for %u", slot, minion->GetEntry(), ToPlayer()->GetEntry());
+                    return;
+                }
             }
         }
 
+        if (minion->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
+            AddUInt64Value(UNIT_FIELD_SUMMON, minion->GetGUID());
+
         if (minion->m_Properties && minion->m_Properties->Type == SUMMON_TYPE_MINIPET)
-        {
             SetCritterGUID(minion->GetGUID());
-        }
 
         // PvP, FFAPvP
         minion->SetByteValue(UNIT_FIELD_BYTES_2, 1, GetByteValue(UNIT_FIELD_BYTES_2, 1));

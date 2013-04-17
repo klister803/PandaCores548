@@ -91,9 +91,12 @@ void Pet::RemoveFromWorld()
     }
 }
 
-bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool current)
+bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool current, PetSlot slotID)
 {
     m_loading = true;
+
+    if (slotID == PET_SLOT_ACTUAL_PET_SLOT)
+        slotID = owner->m_currentPetSlot;
 
     uint32 ownerid = owner->GetGUIDLow();
 
@@ -103,34 +106,44 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     if (petnumber)
     {
         // Known petnumber entry
+        //         0   1       2       3       4     5       6         7    8      9        10        11      12        13          14            15          16
+        // SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PET_BY_ENTRY);
         stmt->setUInt32(0, ownerid);
         stmt->setUInt32(1, petnumber);
     }
-    else if (current)
+    else if (current && slotID != PET_SLOT_UNK_SLOT)
     {
         // Current pet (slot 0)
+        //         0   1       2       3       4     5       6         7    8      9        10        11      12        13          14            15          16
+        // SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PET_BY_ENTRY_AND_SLOT);
         stmt->setUInt32(0, ownerid);
-        stmt->setUInt8(1, uint8(PET_SAVE_AS_CURRENT));
+        stmt->setUInt32(1, slotID);
     }
     else if (petentry)
     {
         // known petentry entry (unique for summoned pet, but non unique for hunter pet (only from current or not stabled pets)
+        //         0   1       2       3       4     5       6         7    8      9        10        11      12        13          14            15          16
+        // SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PET_BY_ENTRY_AND_SLOT_2);
         stmt->setUInt32(0, ownerid);
         stmt->setUInt32(1, petentry);
-        stmt->setUInt8(2, uint8(PET_SAVE_AS_CURRENT));
-        stmt->setUInt8(3, uint8(PET_SAVE_LAST_STABLE_SLOT));
+        stmt->setUInt32(2, PET_SLOT_HUNTER_FIRST);
+        stmt->setUInt32(3, PET_SLOT_HUNTER_LAST);
+        stmt->setUInt32(4, PET_SLOT_STABLE_LAST);
     }
     else
     {
         // Any current or other non-stabled pet (for hunter "call pet")
+        //         0   1       2       3       4     5       6         7    8      9        10        11      12        13          14            15          16
+        // SELECT id, entry, owner, modelid, level, exp, Reactstate, slot, name, renamed, curhealth, curmana, abdata, savetime, CreatedBySpell, PetType, specialization
         stmt = CharacterDatabase.GetPreparedStatement(CHAR_SEL_CHAR_PET_BY_SLOT);
         stmt->setUInt32(0, ownerid);
-        stmt->setUInt8(1, uint8(PET_SAVE_AS_CURRENT));
-        stmt->setUInt8(2, uint8(PET_SAVE_LAST_STABLE_SLOT));
-    }
+        stmt->setUInt32(1, PET_SLOT_HUNTER_FIRST);
+        stmt->setUInt32(2, PET_SLOT_HUNTER_LAST);
+        stmt->setUInt32(3, slotID);
+     }
 
     result = CharacterDatabase.Query(stmt);
 
@@ -145,7 +158,10 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     // update for case of current pet "slot = 0"
     petentry = fields[1].GetUInt32();
     if (!petentry)
+    {
+        m_loading = false;
         return false;
+    }
 
     uint32 summon_spell_id = fields[14].GetUInt32();
     SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(summon_spell_id);
@@ -154,14 +170,20 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
 
     // check temporary summoned pets like mage water elemental
     if (current && is_temporary_summoned)
+    {
+        m_loading = false;
         return false;
+    }
 
     PetType pet_type = PetType(fields[15].GetUInt8());
     if (pet_type == HUNTER_PET)
     {
         CreatureTemplate const* creatureInfo = sObjectMgr->GetCreatureTemplate(petentry);
         if (!creatureInfo || !creatureInfo->isTameable(owner->CanTameExoticPets()))
+        {
+            m_loading = false;
             return false;
+        }
     }
 
     uint32 pet_number = fields[0].GetUInt32();
@@ -169,13 +191,17 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     if (current && owner->IsPetNeedBeTemporaryUnsummoned())
     {
         owner->SetTemporaryUnsummonedPetNumber(pet_number);
+        m_loading = false;
         return false;
     }
 
     Map* map = owner->GetMap();
     uint32 guid = sObjectMgr->GenerateLowGuid(HIGHGUID_PET);
     if (!Create(guid, map, owner->GetPhaseMask(), petentry, pet_number))
+    {
+        m_loading = false;
         return false;
+    }
 
     float px, py, pz;
     owner->GetClosePoint(px, py, pz, GetObjectSize(), PET_FOLLOW_DIST, GetFollowAngle());
@@ -185,9 +211,11 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     {
         sLog->outError(LOG_FILTER_PETS, "Pet (guidlow %d, entry %d) not loaded. Suggested coordinates isn't valid (X: %f Y: %f)",
             GetGUIDLow(), GetEntry(), GetPositionX(), GetPositionY());
+        m_loading = false;
         return false;
     }
 
+    SetEntry(petentry);
     setPetType(pet_type);
     setFaction(owner->getFaction());
     SetUInt32Value(UNIT_CREATED_BY_SPELL, summon_spell_id);
@@ -195,6 +223,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     CreatureTemplate const* cinfo = GetCreatureTemplate();
     if (cinfo->type == CREATURE_TYPE_CRITTER)
     {
+        m_loading = false;
         map->AddToMap(this->ToCreature());
         return true;
     }
@@ -269,30 +298,6 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         }
     }
 
-    // set current pet as current
-    // 0=current
-    // 1..MAX_PET_STABLES in stable slot
-    // PET_SAVE_NOT_IN_SLOT(100) = not stable slot (summoning))
-    if (fields[7].GetUInt8())
-    {
-        SQLTransaction trans = CharacterDatabase.BeginTransaction();
-
-        PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_UDP_CHAR_PET_SLOT_BY_SLOT_EXCLUDE_ID);
-        stmt->setUInt8(0, uint8(PET_SAVE_NOT_IN_SLOT));
-        stmt->setUInt32(1, ownerid);
-        stmt->setUInt8(2, uint8(PET_SAVE_AS_CURRENT));
-        stmt->setUInt32(3, m_charmInfo->GetPetNumber());
-        trans->Append(stmt);
-
-        stmt = CharacterDatabase.GetPreparedStatement(CHAR_UPD_CHAR_PET_SLOT_BY_ID);
-        stmt->setUInt8(0, uint8(PET_SAVE_AS_CURRENT));
-        stmt->setUInt32(1, ownerid);
-        stmt->setUInt32(2, m_charmInfo->GetPetNumber());
-        trans->Append(stmt);
-
-        CharacterDatabase.CommitTransaction(trans);
-    }
-
     // Send fake summon spell cast - this is needed for correct cooldown application for spells
     // Example: 46584 - without this cooldown (which should be set always when pet is loaded) isn't set clientside
     // TODO: pets should be summoned from real cast instead of just faking it?
@@ -308,7 +313,16 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
         owner->SendMessageToSet(&data, true);
     }
 
-    owner->SetMinion(this, true);
+    if (slotID == PET_SLOT_UNK_SLOT)
+    {
+        if (getPetType() == HUNTER_PET)
+            owner->SetMinion(this, true, (PetSlot)fields[7].GetUInt8());
+        else
+            owner->SetMinion(this, true, PET_SLOT_OTHER_PET);
+    }
+    else
+        owner->SetMinion(this, true, slotID);
+
     map->AddToMap(this->ToCreature());
 
     uint32 timediff = uint32(time(NULL) - fields[13].GetUInt32());
@@ -365,10 +379,13 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     return true;
 }
 
-void Pet::SavePetToDB(PetSaveMode mode)
+void Pet::SavePetToDB(PetSlot mode)
 {
     if (!GetEntry())
-        return;
+    {
+        if (!GetOwner()->GetPet()->GetEntry())
+            return;
+    }
 
     // save only fully controlled creature
     if (!isControlled())
@@ -382,8 +399,11 @@ void Pet::SavePetToDB(PetSaveMode mode)
     if (!owner)
         return;
 
+    if (mode == PET_SLOT_ACTUAL_PET_SLOT)
+        mode = owner->m_currentPetSlot;
+
     // not save pet as current if another pet temporary unsummoned
-    if (mode == PET_SAVE_AS_CURRENT && owner->GetTemporaryUnsummonedPetNumber() &&
+    if (mode == owner->m_currentPetSlot && owner->GetTemporaryUnsummonedPetNumber() &&
         owner->GetTemporaryUnsummonedPetNumber() != m_charmInfo->GetPetNumber())
     {
         // pet will lost anyway at restore temporary unsummoned
@@ -391,7 +411,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
             return;
 
         // for warlock case
-        mode = PET_SAVE_NOT_IN_SLOT;
+        mode = PET_SLOT_OTHER_PET;
     }
 
     uint32 curhealth = GetHealth();
@@ -402,7 +422,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
     _SaveAuras(trans);
 
     // stable and not in slot saves
-    if (mode > PET_SAVE_AS_CURRENT)
+    if (mode > PET_SLOT_HUNTER_LAST && getPetType() == HUNTER_PET)
         RemoveAllAuras();
 
     _SaveSpells(trans);
@@ -410,7 +430,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
     CharacterDatabase.CommitTransaction(trans);
 
     // current/stable/not_in_slot
-    if (mode >= PET_SAVE_AS_CURRENT)
+    if (mode >= PET_SLOT_HUNTER_FIRST)
     {
         uint32 ownerLowGUID = GUID_LOPART(GetOwnerGUID());
         std::string name = m_name;
@@ -421,26 +441,6 @@ void Pet::SavePetToDB(PetSaveMode mode)
         PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_PET_BY_ID);
         stmt->setUInt32(0, m_charmInfo->GetPetNumber());
         trans->Append(stmt);
-
-        // prevent duplicate using slot (except PET_SAVE_NOT_IN_SLOT)
-        if (mode <= PET_SAVE_LAST_STABLE_SLOT)
-        {
-            stmt = CharacterDatabase.GetPreparedStatement(CHAR_UDP_CHAR_PET_SLOT_BY_SLOT);
-            stmt->setUInt8(0, uint8(PET_SAVE_NOT_IN_SLOT));
-            stmt->setUInt32(1, ownerLowGUID);
-            stmt->setUInt8(2, uint8(mode));
-            trans->Append(stmt);
-        }
-
-        // prevent existence another hunter pet in PET_SAVE_AS_CURRENT and PET_SAVE_NOT_IN_SLOT
-        if (getPetType() == HUNTER_PET && (mode == PET_SAVE_AS_CURRENT || mode > PET_SAVE_LAST_STABLE_SLOT))
-        {
-            PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_DEL_CHAR_PET_BY_SLOT);
-            stmt->setUInt32(0, ownerLowGUID);
-            stmt->setUInt8(1, uint8(PET_SAVE_AS_CURRENT));
-            stmt->setUInt8(2, uint8(PET_SAVE_LAST_STABLE_SLOT));
-            trans->Append(stmt);
-        }
 
         // save pet
         std::ostringstream ss;
@@ -453,7 +453,7 @@ void Pet::SavePetToDB(PetSaveMode mode)
             << uint32(getLevel()) << ','
             << GetUInt32Value(UNIT_FIELD_PETEXPERIENCE) << ','
             << uint32(GetReactState()) << ','
-            << uint32(mode) << ", '"
+            << mode << ", '"
             << name.c_str() << "', "
             << uint32(HasByteFlag(UNIT_FIELD_BYTES_2, 2, UNIT_CAN_BE_RENAMED) ? 0 : 1) << ','
             << curhealth << ','
@@ -478,6 +478,8 @@ void Pet::SavePetToDB(PetSaveMode mode)
     // delete
     else
     {
+        if (owner->m_currentPetSlot >= PET_SLOT_HUNTER_FIRST && owner->m_currentPetSlot <= PET_SLOT_HUNTER_LAST)
+            owner->setPetSlotUsed(owner->m_currentPetSlot, false);
         RemoveAllAuras();
         DeleteFromDB(m_charmInfo->GetPetNumber());
     }
@@ -544,7 +546,7 @@ void Pet::Update(uint32 diff)
         {
             if (getPetType() != HUNTER_PET || m_corpseRemoveTime <= time(NULL))
             {
-                Remove(PET_SAVE_NOT_IN_SLOT);               //hunters' pets never get removed because of death, NEVER!
+                Remove(PET_SLOT_ACTUAL_PET_SLOT);               //hunters' pets never get removed because of death, NEVER!
                 return;
             }
             break;
@@ -556,7 +558,7 @@ void Pet::Update(uint32 diff)
             if (!owner || (!IsWithinDistInMap(owner, GetMap()->GetVisibilityRange()) && !isPossessed()) || (isControlled() && !owner->GetPetGUID()))
             //if (!owner || (!IsWithinDistInMap(owner, GetMap()->GetVisibilityDistance()) && (owner->GetCharmGUID() && (owner->GetCharmGUID() != GetGUID()))) || (isControlled() && !owner->GetPetGUID()))
             {
-                Remove(PET_SAVE_NOT_IN_SLOT, true);
+                Remove(PET_SLOT_ACTUAL_PET_SLOT, true);
                 return;
             }
 
@@ -565,7 +567,7 @@ void Pet::Update(uint32 diff)
                 if (owner->GetPetGUID() != GetGUID())
                 {
                     sLog->outError(LOG_FILTER_PETS, "Pet %u is not pet of owner %s, removed", GetEntry(), m_owner->GetName());
-                    Remove(getPetType() == HUNTER_PET?PET_SAVE_AS_DELETED:PET_SAVE_NOT_IN_SLOT);
+                    Remove(getPetType() == HUNTER_PET?PET_SLOT_DELETED:PET_SLOT_ACTUAL_PET_SLOT);
                     return;
                 }
             }
@@ -576,7 +578,7 @@ void Pet::Update(uint32 diff)
                     m_duration -= diff;
                 else
                 {
-                    Remove(getPetType() != SUMMON_PET ? PET_SAVE_AS_DELETED:PET_SAVE_NOT_IN_SLOT);
+                    Remove(PET_SLOT_ACTUAL_PET_SLOT);
                     return;
                 }
             }
@@ -593,20 +595,14 @@ void Pet::Update(uint32 diff)
                         case POWER_FOCUS:
                             Regenerate(POWER_FOCUS);
                             m_regenTimer += PET_FOCUS_REGEN_INTERVAL - diff;
-                            if (!m_regenTimer) ++m_regenTimer;
+                            if (!m_regenTimer)
+                                ++m_regenTimer;
 
                             // Reset if large diff (lag) causes focus to get 'stuck'
                             if (m_regenTimer > PET_FOCUS_REGEN_INTERVAL)
                                 m_regenTimer = PET_FOCUS_REGEN_INTERVAL;
 
                             break;
-
-                        // in creature::update
-                        //case POWER_ENERGY:
-                        //    Regenerate(POWER_ENERGY);
-                        //    m_regenTimer += CREATURE_REGEN_INTERVAL - diff;
-                        //    if (!m_regenTimer) ++m_regenTimer;
-                        //    break;
                         default:
                             m_regenTimer = 0;
                             break;
@@ -660,7 +656,7 @@ void Creature::Regenerate(Powers power)
     ModifyPower(power, int32(addvalue));
 }
 
-void Pet::Remove(PetSaveMode mode, bool returnreagent)
+void Pet::Remove(PetSlot mode, bool returnreagent)
 {
     m_owner->RemovePet(this, mode, returnreagent);
 }
@@ -801,7 +797,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
     {
         if ((m_owner->getClass() == CLASS_WARLOCK)
             || (m_owner->getClass() == CLASS_SHAMAN)        // Fire Elemental
-            || (m_owner->getClass() == CLASS_PRIEST)
+            || (m_owner->getClass() == CLASS_PRIEST)        // Shadowfiend and Mindbender
             || (m_owner->getClass() == CLASS_DEATH_KNIGHT)) // Risen Ghoul
             petType = SUMMON_PET;
         else if (m_owner->getClass() == CLASS_HUNTER)

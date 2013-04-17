@@ -1898,17 +1898,33 @@ class spell_hun_tame_beast : public SpellScriptLoader
                 if (!GetExplTargetUnit())
                     return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
 
+                // Check if there are to many so that you don't get mixed with pets
+                // being there from the begining
+                if (caster->ToPlayer()->getSlotForNewPet() == PET_SLOT_FULL_LIST)
+                {
+                    caster->ToPlayer()->SendPetTameResult(PET_TAME_ERROR_TOO_MANY_PETS);
+                    return SPELL_FAILED_DONT_REPORT;
+                }
+
                 if (Creature* target = GetExplTargetUnit()->ToCreature())
                 {
                     if (target->getLevel() > caster->getLevel())
-                        return SPELL_FAILED_HIGHLEVEL;
+                    {
+                        caster->ToPlayer()->SendPetTameResult(PET_TAME_ERROR_TOO_HIGH_LEVEL);
+                        return SPELL_FAILED_DONT_REPORT;
+                    }
 
-                    // use SMSG_PET_TAME_FAILURE?
                     if (!target->GetCreatureTemplate()->isTameable(caster->ToPlayer()->CanTameExoticPets()))
-                        return SPELL_FAILED_BAD_TARGETS;
+                    {
+                        caster->ToPlayer()->SendPetTameResult(PET_TAME_ERROR_CANT_CONTROL_EXOTIC);
+                        return SPELL_FAILED_DONT_REPORT;
+                    }
 
                     if (caster->GetPetGUID())
-                        return SPELL_FAILED_ALREADY_HAVE_SUMMON;
+                    {
+                        caster->ToPlayer()->SendPetTameResult(PET_TAME_ERROR_ANOTHER_SUMMON_ACTIVE);
+                        return SPELL_FAILED_DONT_REPORT;
+                    }
 
                     if (caster->GetCharmGUID())
                         return SPELL_FAILED_ALREADY_HAVE_CHARM;
