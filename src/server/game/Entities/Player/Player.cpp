@@ -700,7 +700,7 @@ void KillRewarder::Reward()
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
-Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_reputationMgr(this), phaseMgr(this)
+Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_reputationMgr(this), phaseMgr(this), m_battlePetMgr(this)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -23427,6 +23427,9 @@ void Player::SendInitialPacketsBeforeAddToMap()
     GetSession()->SendPacket(&data);
 
     GetReputationMgr().SendForceReactions();                // SMSG_SET_FORCED_REACTIONS
+
+    GetBattlePetMgr().BuildBattlePetJournal(&data);
+    GetSession()->SendPacket(&data);
 
     // SMSG_TALENTS_INFO x 2 for pet (unspent points and talents in separate packets...)
     // SMSG_PET_GUIDS
