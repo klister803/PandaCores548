@@ -1123,7 +1123,7 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
 bool Pet::HaveInDiet(ItemTemplate const* item) const
 {
-    if (!item->FoodType)
+    if (item->SubClass != ITEM_SUBCLASS_FOOD_DRINK)
         return false;
 
     CreatureTemplate const* cInfo = GetCreatureTemplate();
