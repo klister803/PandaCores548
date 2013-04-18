@@ -214,6 +214,8 @@ void npc_escortAI::UpdateAI(uint32 const diff)
             //End of the line
             if (CurrentWP == WaypointList.end())
             {
+                LastWaypointReached();
+
                 if (DespawnAtEnd)
                 {
                     sLog->outDebug(LOG_FILTER_TSCR, "EscortAI reached end of waypoints");
