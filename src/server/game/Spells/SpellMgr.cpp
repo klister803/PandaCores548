@@ -3757,6 +3757,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[2].TargetA = TARGET_UNIT_TARGET_ALLY;
                 spellInfo->Effects[2].TargetB = 0;
                 break;
+            case 104855:
+                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                break;
             default:
                 break;
             }
