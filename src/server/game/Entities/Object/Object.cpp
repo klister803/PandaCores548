@@ -2906,12 +2906,12 @@ void WorldObject::GetNearPoint2D(float &x, float &y, float distance2d, float abs
     JadeCore::NormalizeMapCoord(y);
 }
 
-void WorldObject::GetNearPoint(WorldObject const* /*searcher*/, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle) const
+void WorldObject::GetNearPoint(WorldObject const* searcher, float &x, float &y, float &z, float searcher_size, float distance2d, float absAngle) const
 {
     GetNearPoint2D(x, y, distance2d+searcher_size, absAngle);
     z = GetPositionZ();
-    UpdateAllowedPositionZ(x, y, z);
-
+    if (!searcher || !searcher->ToCreature() || !searcher->GetMap()->Instanceable())
+        UpdateAllowedPositionZ(x, y, z);
     /*
     // if detection disabled, return first point
     if (!sWorld->getIntConfig(CONFIG_DETECT_POS_COLLISION))
