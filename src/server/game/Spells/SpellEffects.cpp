@@ -5215,6 +5215,14 @@ void Spell::EffectLeapBack(SpellEffIndex effIndex)
 
     float speedxy = float(m_spellInfo->Effects[effIndex].MiscValue)/10;
     float speedz = float(damage/10);
+
+    // Fix Glyph of Disengage
+    if (m_caster->HasAura(56844))
+    {
+        speedxy *= 1.5f;
+        speedz = float(75 / 10);
+    }
+
     //1891: Disengage
     m_caster->JumpTo(speedxy, speedz, m_spellInfo->SpellIconID != 1891);
 }
