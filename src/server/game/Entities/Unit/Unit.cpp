@@ -9518,7 +9518,7 @@ Unit* Unit::GetCharm() const
     return NULL;
 }
 
-void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot)
+void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
 {
     sLog->outDebug(LOG_FILTER_UNITS, "SetMinion %u for %u, apply %u", minion->GetEntry(), GetEntry(), apply);
 
@@ -9548,7 +9548,7 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot)
         {
             if (Guardian* oldPet = GetGuardianPet())
             {
-                if (oldPet != minion && (oldPet->isPet() || minion->isPet() || oldPet->GetEntry() != minion->GetEntry()))
+                if (oldPet != minion && (oldPet->isPet() || minion->isPet() || oldPet->GetEntry() != minion->GetEntry()) && !stampeded)
                 {
                     // remove existing minion pet
                     if (oldPet->isPet())
@@ -9571,9 +9571,9 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot)
 
         if (GetTypeId() == TYPEID_PLAYER)
         {
-            // If its not a Hunter Pet, only set pet slot. use setPetSlotUsed only for hanter pets.
+            // If its not a Hunter Pet, only set pet slot. use setPetSlotUsed only for hunter pets.
             // Always save thoose spots where hunter is correct
-            if (minion->isHunterPet())
+            if (minion->isHunterPet() && !stampeded)
             {
                 if (slot >= PET_SLOT_HUNTER_FIRST && slot <= PET_SLOT_HUNTER_LAST)
                 {

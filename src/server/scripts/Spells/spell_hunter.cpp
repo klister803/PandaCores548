@@ -100,6 +100,84 @@ enum HunterSpells
     DIRE_BEAST_TOWNLONG_STEPPES                  = 126215,
     DIRE_BEAST_DREAD_WASTES                      = 126216,
     DIRE_BEAST_DUNGEONS                          = 132764,
+    HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION       = 130201,
+    HUNTER_SPELL_GLYPH_OF_STAMPEDE               = 57902,
+};
+
+// Stampede - 121818
+class spell_hun_stampede : public SpellScriptLoader
+{
+    public:
+        spell_hun_stampede() : SpellScriptLoader("spell_hun_stampede") { }
+
+        class spell_hun_stampede_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_stampede_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        uint32 currentSlot = uint32(_player->m_currentPetSlot);
+
+                        if (_player->HasAura(HUNTER_SPELL_GLYPH_OF_STAMPEDE))
+                        {
+                            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i <= uint32(PET_SLOT_HUNTER_LAST); ++i)
+                            {
+                                if (i != currentSlot)
+                                {
+                                    float x, y, z;
+                                    _player->GetClosePoint(x, y, z, _player->GetObjectSize());
+                                    Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(currentSlot), true);
+                                    if (!pet)
+                                        return;
+
+                                    pet->SetReactState(ReactStates::REACT_AGGRESSIVE);
+                                    pet->m_Stampeded = true;
+
+                                    pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                                    pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+                                    pet->AI()->AttackStart(target);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i <= uint32(PET_SLOT_HUNTER_LAST); ++i)
+                            {
+                                if (i != currentSlot)
+                                {
+                                    float x, y, z;
+                                    _player->GetClosePoint(x, y, z, _player->GetObjectSize());
+                                    Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(i), true);
+                                    if (!pet)
+                                        return;
+
+                                    pet->SetReactState(ReactStates::REACT_AGGRESSIVE);
+                                    pet->m_Stampeded = true;
+
+                                    pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                                    pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+                                    pet->AI()->AttackStart(target);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+               OnHit += SpellHitFn(spell_hun_stampede_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_stampede_SpellScript();
+        }
 };
 
 // Dire Beast - 120679
@@ -1949,6 +2027,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_stampede();
     new spell_hun_dire_beast();
     new spell_hun_a_murder_of_crows();
     new spell_hun_focus_fire();

@@ -2608,18 +2608,21 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempS
     return NULL;
 }
 
-Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration, PetSlot slotID)
+Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration, PetSlot slotID, bool stampeded)
 {
     Pet* pet = new Pet(this, petType);
 
     //summoned pets always non-curent!
-    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, false, slotID))
+    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, false, slotID, stampeded))
     {
         if (duration > 0)
             pet->SetDuration(duration);
 
         return pet;
     }
+
+    if (stampeded)
+        petType = HUNTER_PET;
 
     // petentry == 0 for hunter "call pet" (current pet summoned if any)
     if (!entry)

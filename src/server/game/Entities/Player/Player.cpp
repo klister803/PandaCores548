@@ -20910,7 +20910,7 @@ Pet* Player::GetPet() const
     return NULL;
 }
 
-void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent)
+void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent, bool stampeded)
 {
     if (!pet)
         pet = GetPet();
@@ -20958,7 +20958,7 @@ void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent)
     pet->CombatStop();
 
     // only if current pet in slot
-    pet->SavePetToDB(mode);
+    pet->SavePetToDB(mode, stampeded);
 
     if(pet->getPetType() != HUNTER_PET)
         SetMinion(pet, false, PET_SLOT_UNK_SLOT);
@@ -20968,7 +20968,7 @@ void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent)
     pet->AddObjectToRemoveList();
     pet->m_removed = true;
 
-    if (pet->isControlled())
+    if (pet->isControlled() && !stampeded)
     {
         WorldPacket data(SMSG_PET_SPELLS, 8);
         data << uint64(0);

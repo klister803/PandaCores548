@@ -117,10 +117,10 @@ class Pet : public Guardian
         bool CreateBaseAtCreature(Creature* creature);
         bool CreateBaseAtCreatureInfo(CreatureTemplate const* cinfo, Unit* owner);
         bool CreateBaseAtTamed(CreatureTemplate const* cinfo, Map* map, uint32 phaseMask);
-        bool LoadPetFromDB(Player* owner, uint32 petentry = 0, uint32 petnumber = 0, bool current = false, PetSlot slotID = PET_SLOT_UNK_SLOT);
+        bool LoadPetFromDB(Player* owner, uint32 petentry = 0, uint32 petnumber = 0, bool current = false, PetSlot slotID = PET_SLOT_UNK_SLOT, bool stampeded = false);
         bool isBeingLoaded() const { return m_loading;}
-        void SavePetToDB(PetSlot  mode);
-        void Remove(PetSlot mode, bool returnreagent = false);
+        void SavePetToDB(PetSlot mode, bool stampeded = false);
+        void Remove(PetSlot mode, bool returnreagent = false, bool stampeded = false);
         static void DeleteFromDB(uint32 guidlow);
 
         void setDeathState(DeathState s);                   // overwrite virtual Creature::setDeathState and Unit::setDeathState
@@ -180,6 +180,7 @@ class Pet : public Guardian
 
         PetSpellMap     m_spells;
         AutoSpellList   m_autospells;
+        bool            m_Stampeded;
 
         void InitPetCreateSpells();
 

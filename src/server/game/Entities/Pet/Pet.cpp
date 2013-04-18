@@ -50,6 +50,7 @@ m_auraRaidUpdateMask(0), m_loading(false), m_declinedname(NULL)
 
     m_name = "Pet";
     m_regenTimer = PET_FOCUS_REGEN_INTERVAL;
+    m_Stampeded = false;
 }
 
 Pet::~Pet()
@@ -91,7 +92,7 @@ void Pet::RemoveFromWorld()
     }
 }
 
-bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool current, PetSlot slotID)
+bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool current, PetSlot slotID, bool stampeded)
 {
     m_loading = true;
 
@@ -321,7 +322,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
             owner->SetMinion(this, true, PET_SLOT_OTHER_PET);
     }
     else
-        owner->SetMinion(this, true, slotID);
+        owner->SetMinion(this, true, slotID, stampeded);
 
     map->AddToMap(this->ToCreature());
 
@@ -379,7 +380,7 @@ bool Pet::LoadPetFromDB(Player* owner, uint32 petentry, uint32 petnumber, bool c
     return true;
 }
 
-void Pet::SavePetToDB(PetSlot mode)
+void Pet::SavePetToDB(PetSlot mode, bool stampeded)
 {
     if (!GetEntry())
     {
@@ -389,6 +390,9 @@ void Pet::SavePetToDB(PetSlot mode)
 
     // save only fully controlled creature
     if (!isControlled())
+        return;
+
+    if (stampeded)
         return;
 
     // not save not player pets
@@ -564,7 +568,7 @@ void Pet::Update(uint32 diff)
 
             if (isControlled())
             {
-                if (owner->GetPetGUID() != GetGUID())
+                if (owner->GetPetGUID() != GetGUID() && !HasAura(130201)) // Stampede
                 {
                     sLog->outError(LOG_FILTER_PETS, "Pet %u is not pet of owner %s, removed", GetEntry(), m_owner->GetName());
                     Remove(getPetType() == HUNTER_PET?PET_SLOT_DELETED:PET_SLOT_ACTUAL_PET_SLOT);
@@ -578,7 +582,7 @@ void Pet::Update(uint32 diff)
                     m_duration -= diff;
                 else
                 {
-                    Remove(PET_SLOT_ACTUAL_PET_SLOT);
+                    Remove(PET_SLOT_ACTUAL_PET_SLOT, false, m_Stampeded);
                     return;
                 }
             }
@@ -656,9 +660,9 @@ void Creature::Regenerate(Powers power)
     ModifyPower(power, int32(addvalue));
 }
 
-void Pet::Remove(PetSlot mode, bool returnreagent)
+void Pet::Remove(PetSlot mode, bool returnreagent, bool stampeded)
 {
-    m_owner->RemovePet(this, mode, returnreagent);
+    m_owner->RemovePet(this, mode, returnreagent, stampeded);
 }
 
 void Pet::GivePetXP(uint32 xp)
