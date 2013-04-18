@@ -839,7 +839,7 @@ class WorldObject : public Object, public WorldLocation
             pos.Relocate(x, y, z, ang);
             return SummonCreature(id, pos, spwtype, despwtime, 0, viewerGuid, viewersList);
         }
-        GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime);
+        GameObject* SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, uint64 viewerGuid = 0, std::list<uint64>* viewersList = NULL);
         Creature*   SummonTrigger(float x, float y, float z, float ang, uint32 dur, CreatureAI* (*GetAI)(Creature*) = NULL);
 
         Creature*   FindNearestCreature(uint32 entry, float range, bool alive = true) const;

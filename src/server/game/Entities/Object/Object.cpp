@@ -1968,6 +1968,17 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (this == obj)
         return true;
 
+    if (obj->MustBeVisibleOnlyForSomePlayers())
+    {
+        Player const* thisPlayer = ToPlayer();
+
+        if (!thisPlayer)
+            return false;
+
+        if (!obj->IsPlayerInPersonnalVisibilityList(thisPlayer->GetGUID()))
+            return false;
+    }
+
     if (obj->IsNeverVisible() || CanNeverSee(obj))
         return false;
 
@@ -2037,17 +2048,6 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
 
     if (!CanDetect(obj, ignoreStealth))
         return false;
-
-    if (obj->MustBeVisibleOnlyForSomePlayers())
-    {
-        Player const* thisPlayer = ToPlayer();
-
-        if (!thisPlayer)
-            return false;
-
-        if (!obj->IsPlayerInPersonnalVisibilityList(thisPlayer->GetGUID()))
-            return false;
-    }
 
     return true;
 }
@@ -2720,7 +2720,7 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     return pet;
 }
 
-GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime)
+GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, uint64 viewerGuid, std::list<uint64>* viewersList)
 {
     if (!IsInWorld())
         return NULL;
@@ -2743,6 +2743,13 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
         ToUnit()->AddGameObject(go);
     else
         go->SetSpawnedByDefault(false);
+
+    if (viewerGuid)
+        go->AddPlayerInPersonnalVisibilityList(viewerGuid);
+
+    if (viewersList)
+        go->AddPlayersInPersonnalVisibilityList(*viewersList);
+
     map->AddToMap(go);
 
     return go;
