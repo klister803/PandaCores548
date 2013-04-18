@@ -102,6 +102,7 @@ enum HunterSpells
     DIRE_BEAST_DUNGEONS                          = 132764,
     HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION       = 130201,
     HUNTER_SPELL_GLYPH_OF_STAMPEDE               = 57902,
+    HUNTER_SPELL_GLYPH_OF_COLLAPSE               = 126095,
 };
 
 // Stampede - 121818
@@ -1638,7 +1639,7 @@ class spell_hun_readiness : public SpellScriptLoader
         }
 };
 
-// 37506 Scatter Shot
+// Scatter Shot - 37506
 class spell_hun_scatter_shot : public SpellScriptLoader
 {
     public:
@@ -1660,6 +1661,10 @@ class spell_hun_scatter_shot : public SpellScriptLoader
                 caster->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
                 caster->AttackStop();
                 caster->SendAttackSwingCancelAttack();
+
+                if (caster->HasAura(HUNTER_SPELL_GLYPH_OF_COLLAPSE))
+                    if (Unit* target = GetHitUnit())
+                        target->RemoveAllAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
             }
 
             void Register()
