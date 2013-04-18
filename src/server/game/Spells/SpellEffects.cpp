@@ -585,7 +585,22 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             }
             case SPELLFAMILY_HUNTER:
             {
-                //Gore
+                // Claw, Bite
+                if (m_spellInfo->Id == 16827 || m_spellInfo->Id == 17253)
+                {
+                    if (m_caster->GetOwner())
+                    {
+                        damage += int32(m_caster->GetOwner()->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2544f);
+
+                        // Deals 100% more damage and costs 100% more Focus when your pet has 50 or more Focus.
+                        if (m_caster->GetPower(POWER_FOCUS) + 25 > 50)
+                        {
+                            damage *= 2;
+                            m_caster->EnergizeBySpell(m_caster, m_spellInfo->Id, -25, POWER_FOCUS);
+                        }
+                    }
+                }
+                // Gore
                 if (m_spellInfo->SpellIconID == 1578)
                 {
                     if (m_caster->HasAura(57627))           // Charge 6 sec post-affect
