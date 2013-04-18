@@ -103,6 +103,40 @@ enum HunterSpells
     HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION       = 130201,
     HUNTER_SPELL_GLYPH_OF_STAMPEDE               = 57902,
     HUNTER_SPELL_GLYPH_OF_COLLAPSE               = 126095,
+    HUNTER_SPELL_MARKED_FOR_DIE                  = 132106,
+    HUNTER_SPELL_HUNTERS_MARK                    = 1130,
+};
+
+// Called by Arcane Shot - 3044, Chimera Shot - 53209
+// Kill Command - 34026 and Explosive Shot - 53301
+// Glyph of Marked for Die - 132106
+class spell_hun_glyph_of_marked_for_die : public SpellScriptLoader
+{
+    public:
+        spell_hun_glyph_of_marked_for_die() : SpellScriptLoader("spell_hun_glyph_of_marked_for_die") { }
+
+        class spell_hun_glyph_of_marked_for_die_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_glyph_of_marked_for_die_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(HUNTER_SPELL_MARKED_FOR_DIE))
+                            _player->CastSpell(target, HUNTER_SPELL_HUNTERS_MARK, true);
+            }
+
+            void Register()
+            {
+               OnHit += SpellHitFn(spell_hun_glyph_of_marked_for_die_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_glyph_of_marked_for_die_SpellScript();
+        }
 };
 
 // Stampede - 121818
@@ -1463,7 +1497,7 @@ class spell_hun_steady_shot : public SpellScriptLoader
         }
 };
 
-// 53209 Chimera Shot
+// Chimera Shot - 53209
 class spell_hun_chimera_shot : public SpellScriptLoader
 {
     public:
@@ -2032,6 +2066,7 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_glyph_of_marked_for_die();
     new spell_hun_stampede();
     new spell_hun_dire_beast();
     new spell_hun_a_murder_of_crows();
