@@ -389,7 +389,7 @@ class mob_master_shang_xi_after_zhao_escort : public CreatureScript
             me->SetReactState(REACT_PASSIVE);
         }
 
-        void SetGUID(uint64 guid, uint32)
+        void SetGUID(uint64 guid, int32)
         {
             playerGuid = guid;
         }
