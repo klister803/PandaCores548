@@ -1306,6 +1306,11 @@ bool AuraEffect::IsAffectingSpell(SpellInfo const* spell) const
     // Check EffectClassMask
     if (m_spellInfo->Effects[m_effIndex].SpellClassMask & spell->SpellFamilyFlags)
         return true;
+
+    // If no SpellClassMask : Increase ALL healing received
+    if (!m_spellInfo->Effects[m_effIndex].SpellClassMask)
+        return true;
+
     return false;
 }
 

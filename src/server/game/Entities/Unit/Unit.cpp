@@ -7308,7 +7308,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     basepoints0 = int32((fire_onhit * BaseWeaponSpeed) + (add_spellpower * BaseWeaponSpeed));
                     triggered_spell_id = 10444;
                 }
-
                 // Enchant on Main-Hand and ready?
                 else if (castItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK)
                 {
@@ -7318,7 +7317,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     basepoints0 = int32((fire_onhit * BaseWeaponSpeed) + (add_spellpower * BaseWeaponSpeed));
                     triggered_spell_id = 10444;
                 }
-
                 // If not ready, we should  return, shouldn't we?!
                 else
                     return false;
@@ -17248,6 +17246,23 @@ void Unit::GetPartyMembers(std::list<Unit*> &TagUnitMap)
             if (pet->isAlive() && (pet == this || IsInMap(pet)))
                 TagUnitMap.push_back(pet);
     }
+}
+
+AuraPtr Unit::ToggleAura(uint32 spellId, Unit* target)
+{
+    if (!target)
+        return NULLAURA;
+
+    if (target->HasAura(spellId))
+    {
+        target->RemoveAurasDueToSpell(spellId);
+        return NULLAURA;
+    }
+    else
+        return target->AddAura(spellId, target);
+
+    
+    return NULLAURA;
 }
 
 AuraPtr Unit::AddAura(uint32 spellId, Unit* target)

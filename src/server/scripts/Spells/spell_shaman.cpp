@@ -66,7 +66,61 @@ enum ShamanSpells
     SPELL_SHA_TIDAL_WAVES                   = 53390,
     SPELL_SHA_MANA_TIDE                     = 16191,
     SPELL_SHA_FROST_SHOCK_FREEZE            = 63685,
-    SPELL_SHA_FROZEN_POWER                  = 63374
+    SPELL_SHA_FROZEN_POWER                  = 63374,
+    SPELL_SHA_MAIL_SPECIALIZATION_AGI       = 86099,
+    SPELL_SHA_MAIL_SPECIALISATION_INT       = 86100,
+};
+
+// Mail Specialization - 86529
+class spell_sha_mail_specialization : public SpellScriptLoader
+{
+    public:
+        spell_sha_mail_specialization() : SpellScriptLoader("spell_sha_mail_specialization") { }
+
+        class spell_sha_mail_specialization_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_sha_mail_specialization_AuraScript);
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (!GetCaster())
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_SHAMAN_ELEMENTAL
+                            || _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_SHAMAN_RESTORATION)
+                        _player->CastSpell(_player, SPELL_SHA_MAIL_SPECIALISATION_INT, true);
+                    else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_SHAMAN_ENHANCEMENT)
+                        _player->CastSpell(_player, SPELL_SHA_MAIL_SPECIALIZATION_AGI, true);
+                }
+            }
+
+            void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (!GetCaster())
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (_player->HasAura(SPELL_SHA_MAIL_SPECIALISATION_INT))
+                        _player->RemoveAura(SPELL_SHA_MAIL_SPECIALISATION_INT);
+                    else if (_player->HasAura(SPELL_SHA_MAIL_SPECIALIZATION_AGI))
+                        _player->RemoveAura(SPELL_SHA_MAIL_SPECIALIZATION_AGI);
+                }
+            }
+
+            void Register()
+            {
+                AfterEffectApply += AuraEffectApplyFn(spell_sha_mail_specialization_AuraScript::OnApply, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+                AfterEffectRemove += AuraEffectRemoveFn(spell_sha_mail_specialization_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_sha_mail_specialization_AuraScript();
+        }
 };
 
 // Frost Shock - 8056
@@ -338,6 +392,11 @@ class spell_sha_unleash_elements : public SpellScriptLoader
 
                             if (unleashSpell)
                                 _player->CastSpell(target, unleashSpell, false);
+
+                            // If weapons are enchanted by same enchantment, only one should be unleashed
+                            if (i == 0)
+                                if (weapons[0]->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT) == weapons[1]->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
+                                    return;
                         }
                     }
                 }
@@ -1091,7 +1150,12 @@ class spell_sha_lava_lash : public SpellScriptLoader
                                         if (hitTargets >= 4)
                                             continue;
 
+                                        uint32 cooldownDelay = _player->GetSpellCooldownDelay(SPELL_SHA_FLAME_SHOCK);
+                                        if (_player->HasSpellCooldown(SPELL_SHA_FLAME_SHOCK))
+                                            _player->RemoveSpellCooldown(SPELL_SHA_FLAME_SHOCK, true);
+
                                         _player->CastSpell(itr, SPELL_SHA_FLAME_SHOCK, true);
+                                        _player->AddSpellCooldown(SPELL_SHA_FLAME_SHOCK, 0, time(NULL) + cooldownDelay);
                                         hitTargets++;
                                     }
                                 }
@@ -1114,7 +1178,7 @@ class spell_sha_lava_lash : public SpellScriptLoader
         }
 };
 
-// 1064 Chain Heal
+// Chain Heal - 1064
 class spell_sha_chain_heal : public SpellScriptLoader
 {
     public:
@@ -1166,6 +1230,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_mail_specialization();
     new spell_sha_frozen_power();
     new spell_sha_spirit_link();
     new spell_sha_mana_tide();

@@ -179,6 +179,7 @@ extern DBCStorage <SpellFocusObjectEntry>        sSpellFocusObjectStore;
 extern DBCStorage <SpellItemEnchantmentEntry>    sSpellItemEnchantmentStore;
 extern DBCStorage <SpellItemEnchantmentConditionEntry> sSpellItemEnchantmentConditionStore;
 extern SpellCategoryStore                        sSpellCategoryStore;
+extern SpellSkillingList                         sSpellSkillingList;
 extern PetFamilySpellsStore                      sPetFamilySpellsStore;
 extern DBCStorage <SpecializationSpellEntry>     sSpecializationSpellStore;
 extern DBCStorage <SpellRadiusEntry>             sSpellRadiusStore;

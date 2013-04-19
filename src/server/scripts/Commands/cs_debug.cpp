@@ -897,7 +897,7 @@ public:
     static bool HandleDebugEnterVehicleCommand(ChatHandler* handler, char const* args)
     {
         Unit* target = handler->getSelectedUnit();
-        if (!target || !target->IsVehicle())
+        if (!target)// || !target->IsVehicle())
             return false;
 
         if (!args)
@@ -909,10 +909,12 @@ public:
 
         char* j = strtok(NULL, " ");
 
-        uint32 entry = (uint32)atoi(i);
+        int32 entry = (int32)atoi(i);
         int8 seatId = j ? (int8)atoi(j) : -1;
 
-        if (!entry)
+        if (entry == -1)
+            target->EnterVehicle(handler->GetSession()->GetPlayer(), seatId);
+        else if (!entry)
             handler->GetSession()->GetPlayer()->EnterVehicle(target, seatId);
         else
         {

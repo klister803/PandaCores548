@@ -1484,7 +1484,7 @@ void Player::HandleDrowning(uint32 time_diff)
     }
 
     // In dark water
-    if (m_MirrorTimerFlags & UNDERWARER_INDARKWATER)
+    if ((m_MirrorTimerFlags & UNDERWARER_INDARKWATER) && !GetVehicle())
     {
         // Fatigue timer not activated - activate it
         if (m_MirrorTimer[FATIGUE_TIMER] == DISABLED_MIRROR_TIMER)
@@ -1499,12 +1499,12 @@ void Player::HandleDrowning(uint32 time_diff)
             if (m_MirrorTimer[FATIGUE_TIMER] < 0)
             {
                 m_MirrorTimer[FATIGUE_TIMER]+= 1*IN_MILLISECONDS;
-                if (isAlive())                                            // Calculate and deal damage
+                if (isAlive())                                              // Calculate and deal damage
                 {
                     uint32 damage = GetMaxHealth() / 5 + urand(0, getLevel()-1);
                     EnvironmentalDamage(DAMAGE_EXHAUSTED, damage);
                 }
-                else if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))       // Teleport ghost to graveyard
+                else if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))         // Teleport ghost to graveyard
                     RepopAtGraveyard();
             }
             else if (!(m_MirrorTimerFlagsLast & UNDERWARER_INDARKWATER))
@@ -27271,8 +27271,8 @@ void Player::_LoadStore()
             GetSession()->SendNotification("%d pieces d'or vous ont ete ajoutee suite a votre commande sur la boutique", (goldCount/1000));
     }
 
-    // Load des m�tiers
-    /*PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_BOUTIQUE_METIER);
+    // Load des métiers
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_BOUTIQUE_METIER);
     stmt->setInt32(0, GetGUIDLow());
     PreparedQueryResult metierList = CharacterDatabase.Query(stmt);
 
@@ -27290,10 +27290,15 @@ void Player::_LoadStore()
             {
                 SpellEntry const* spell = (*itr);
 
-                if((uint32)spell->EffectMiscValue[1] != skillId)
+                const SpellEffectEntry* spellEffect = spell->GetSpellEffect(EFFECT_1, 0);
+
+                if (!spellEffect)
                     continue;
 
-                if((uint32)(spell->EffectBasePoints[1]+1) != (value/75))
+                if((uint32)spellEffect->EffectMiscValue != skillId)
+                    continue;
+
+                if((uint32)(spellEffect->EffectBasePoints+1) != (value/75))
                     continue;
 
                 learnId = spell->Id;
@@ -27318,7 +27323,7 @@ void Player::_LoadStore()
 
         }
         while(metierList->NextRow());
-	}*/
+	}
 
     // Uniquement un SaveToDB, en mettre a chaque transaction cause des deadlocks
     // car chaque SaveToDB part dans un thread Mysql diff�rent
