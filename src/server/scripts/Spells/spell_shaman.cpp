@@ -1145,7 +1145,12 @@ class spell_sha_lava_lash : public SpellScriptLoader
                                         if (hitTargets >= 4)
                                             continue;
 
+                                        uint32 cooldownDelay = _player->GetSpellCooldownDelay(SPELL_SHA_FLAME_SHOCK);
+                                        if (_player->HasSpellCooldown(SPELL_SHA_FLAME_SHOCK))
+                                            _player->RemoveSpellCooldown(SPELL_SHA_FLAME_SHOCK, true);
+
                                         _player->CastSpell(itr, SPELL_SHA_FLAME_SHOCK, true);
+                                        _player->AddSpellCooldown(SPELL_SHA_FLAME_SHOCK, 0, time(NULL) + cooldownDelay);
                                         hitTargets++;
                                     }
                                 }
@@ -1168,7 +1173,7 @@ class spell_sha_lava_lash : public SpellScriptLoader
         }
 };
 
-// 1064 Chain Heal
+// Chain Heal - 1064
 class spell_sha_chain_heal : public SpellScriptLoader
 {
     public:
@@ -1220,6 +1225,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_mail_specialization();
     new spell_sha_frozen_power();
     new spell_sha_spirit_link();
     new spell_sha_mana_tide();
