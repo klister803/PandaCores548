@@ -634,6 +634,10 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
                 return;
             }
 
+            // Avoid exploit of create multiple characters with same name
+            if (!sWorld->AddCharacterName(createInfo->Name))
+                return;
+
             if (createInfo->Data.rpos() < createInfo->Data.wpos())
             {
                 uint8 unk;
