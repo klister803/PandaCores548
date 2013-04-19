@@ -336,6 +336,9 @@ class WorldSession
         void SendStableResult(uint8 guid);
         bool CheckStableMaster(uint64 guid);
 
+        // Battle pet
+        void HandleSummonBattlePet(WorldPacket& recvData);
+
         // Account Data
         AccountData* GetAccountData(AccountDataType type) { return &m_accountData[type]; }
         void SetAccountData(AccountDataType type, time_t tm, std::string data);

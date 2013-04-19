@@ -100,6 +100,119 @@ enum HunterSpells
     DIRE_BEAST_TOWNLONG_STEPPES                  = 126215,
     DIRE_BEAST_DREAD_WASTES                      = 126216,
     DIRE_BEAST_DUNGEONS                          = 132764,
+    HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION       = 130201,
+    HUNTER_SPELL_GLYPH_OF_STAMPEDE               = 57902,
+    HUNTER_SPELL_GLYPH_OF_COLLAPSE               = 126095,
+    HUNTER_SPELL_MARKED_FOR_DIE                  = 132106,
+    HUNTER_SPELL_HUNTERS_MARK                    = 1130,
+};
+
+// Called by Arcane Shot - 3044, Chimera Shot - 53209
+// Kill Command - 34026 and Explosive Shot - 53301
+// Glyph of Marked for Die - 132106
+class spell_hun_glyph_of_marked_for_die : public SpellScriptLoader
+{
+    public:
+        spell_hun_glyph_of_marked_for_die() : SpellScriptLoader("spell_hun_glyph_of_marked_for_die") { }
+
+        class spell_hun_glyph_of_marked_for_die_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_glyph_of_marked_for_die_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(HUNTER_SPELL_MARKED_FOR_DIE))
+                            _player->CastSpell(target, HUNTER_SPELL_HUNTERS_MARK, true);
+            }
+
+            void Register()
+            {
+               OnHit += SpellHitFn(spell_hun_glyph_of_marked_for_die_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_glyph_of_marked_for_die_SpellScript();
+        }
+};
+
+// Stampede - 121818
+class spell_hun_stampede : public SpellScriptLoader
+{
+    public:
+        spell_hun_stampede() : SpellScriptLoader("spell_hun_stampede") { }
+
+        class spell_hun_stampede_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_hun_stampede_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        uint32 currentSlot = uint32(_player->m_currentPetSlot);
+
+                        if (_player->HasAura(HUNTER_SPELL_GLYPH_OF_STAMPEDE))
+                        {
+                            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i <= uint32(PET_SLOT_HUNTER_LAST); ++i)
+                            {
+                                if (i != currentSlot)
+                                {
+                                    float x, y, z;
+                                    _player->GetClosePoint(x, y, z, _player->GetObjectSize());
+                                    Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(currentSlot), true);
+                                    if (!pet)
+                                        return;
+
+                                    pet->SetReactState(ReactStates::REACT_AGGRESSIVE);
+                                    pet->m_Stampeded = true;
+
+                                    pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                                    pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+                                    pet->AI()->AttackStart(target);
+                                }
+                            }
+                        }
+                        else
+                        {
+                            for (uint32 i = uint32(PET_SLOT_HUNTER_FIRST); i <= uint32(PET_SLOT_HUNTER_LAST); ++i)
+                            {
+                                if (i != currentSlot)
+                                {
+                                    float x, y, z;
+                                    _player->GetClosePoint(x, y, z, _player->GetObjectSize());
+                                    Pet* pet = _player->SummonPet(0, x, y, z, _player->GetOrientation(), SUMMON_PET, _player->CalcSpellDuration(GetSpellInfo()), PetSlot(i), true);
+                                    if (!pet)
+                                        return;
+
+                                    pet->SetReactState(ReactStates::REACT_AGGRESSIVE);
+                                    pet->m_Stampeded = true;
+
+                                    pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, GetSpellInfo()->Id);
+                                    pet->CastSpell(pet, HUNTER_SPELL_STAMPEDE_DAMAGE_REDUCTION, true);
+                                    pet->AI()->AttackStart(target);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+               OnHit += SpellHitFn(spell_hun_stampede_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_hun_stampede_SpellScript();
+        }
 };
 
 // Dire Beast - 120679
@@ -665,77 +778,6 @@ class spell_hun_barrage : public SpellScriptLoader
         SpellScript* GetSpellScript() const
         {
             return new spell_hun_barrage_SpellScript();
-        }
-};
-
-// Aimed - 19434
-class spell_hun_aimed_shot : public SpellScriptLoader
-{
-    public:
-        spell_hun_aimed_shot() : SpellScriptLoader("spell_hun_aimed_shot") { }
-
-        class spell_hun_aimed_shot_SpellScript : public SpellScript
-        {
-            PrepareSpellScript(spell_hun_aimed_shot_SpellScript);
-
-            void HandleAfterHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        int32 csv = GetHitDamage();
-
-                        if (_player->HasAura(HUNTER_SPELL_PIERCIG_SHOTS))
-                            if (GetSpell()->IsCritForTarget(target))
-                                _player->CastCustomSpell(HUNTER_SPELL_PIERCIG_SHOTS_EFFECT, SPELLVALUE_BASE_POINT0, csv, target, true);
-                    }
-                }
-            }
-
-            void Register()
-            {
-                AfterHit += SpellHitFn(spell_hun_aimed_shot_SpellScript::HandleAfterHit);
-            }
-        };
-
-        SpellScript* GetSpellScript() const
-        {
-            return new spell_hun_aimed_shot_SpellScript();
-        }
-};
-
-// Piercing Shots - 63468
-class spell_hun_piercing_shots : public SpellScriptLoader
-{
-    public:
-        spell_hun_piercing_shots() : SpellScriptLoader("spell_hun_piercing_shots") { }
-
-        class spell_hun_piercing_shots_AuraScript : public AuraScript
-        {
-            PrepareAuraScript(spell_hun_piercing_shots_AuraScript);
-
-            void CalculateAmount(constAuraEffectPtr aurEff, int32 & amount, bool & /*canBeRecalculated*/)
-            {
-                if (GetTarget())
-                {
-                    if (GetCaster())
-                        if (GetTarget()->HasAura(aurEff->GetSpellInfo()->Id, GetCaster()->GetGUID()))
-                            amount += GetTarget()->GetRemainingPeriodicAmount(GetCaster()->GetGUID(), aurEff->GetSpellInfo()->Id, SPELL_AURA_PERIODIC_DAMAGE);
-
-                    amount /= 8;
-                }
-            }
-
-            void Register()
-            {
-                DoEffectCalcAmount += AuraEffectCalcAmountFn(spell_hun_piercing_shots_AuraScript::CalculateAmount, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
-            }
-        };
-
-        AuraScript* GetAuraScript() const
-        {
-            return new spell_hun_piercing_shots_AuraScript();
         }
 };
 
@@ -1421,18 +1463,13 @@ class spell_hun_steady_shot : public SpellScriptLoader
                     if (Unit* target = GetHitUnit())
                         _player->CastSpell(_player, HUNTER_SPELL_STEADY_SHOT_ENERGIZE, true);
             }
+
             void HandleAfterHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
                 {
                     if (Unit* target = GetHitUnit())
                     {
-                        int32 csv = GetHitDamage();
-
-                        if (_player->HasAura(HUNTER_SPELL_PIERCIG_SHOTS))
-                            if (GetSpell()->IsCritForTarget(target))
-                                _player->CastCustomSpell(HUNTER_SPELL_PIERCIG_SHOTS_EFFECT, SPELLVALUE_BASE_POINT0, csv, target, true);
-
                         if (_player->HasAura(HUNTER_SPELL_STEADY_FOCUS))
                         {
                             if (!_player->HasAura(5012))
@@ -1460,7 +1497,7 @@ class spell_hun_steady_shot : public SpellScriptLoader
         }
 };
 
-// 53209 Chimera Shot
+// Chimera Shot - 53209
 class spell_hun_chimera_shot : public SpellScriptLoader
 {
     public:
@@ -1485,25 +1522,10 @@ class spell_hun_chimera_shot : public SpellScriptLoader
                     }
                 }
             }
-            void HandleAfterHit()
-            {
-                if (Player* _player = GetCaster()->ToPlayer())
-                {
-                    if (Unit* target = GetHitUnit())
-                    {
-                        int32 csv = GetHitDamage();
-
-                            if (_player->HasAura(HUNTER_SPELL_PIERCIG_SHOTS))
-                                if (GetSpell()->IsCritForTarget(target))
-                                    _player->CastCustomSpell(HUNTER_SPELL_PIERCIG_SHOTS_EFFECT, SPELLVALUE_BASE_POINT0, csv, target, true);
-                    }
-                }
-            }
 
             void Register()
             {
                 OnHit += SpellHitFn(spell_hun_chimera_shot_SpellScript::HandleOnHit);
-                AfterHit += SpellHitFn(spell_hun_chimera_shot_SpellScript::HandleAfterHit);
             }
         };
 
@@ -1651,7 +1673,7 @@ class spell_hun_readiness : public SpellScriptLoader
         }
 };
 
-// 37506 Scatter Shot
+// Scatter Shot - 37506
 class spell_hun_scatter_shot : public SpellScriptLoader
 {
     public:
@@ -1673,6 +1695,10 @@ class spell_hun_scatter_shot : public SpellScriptLoader
                 caster->InterruptSpell(CURRENT_AUTOREPEAT_SPELL);
                 caster->AttackStop();
                 caster->SendAttackSwingCancelAttack();
+
+                if (caster->HasAura(HUNTER_SPELL_GLYPH_OF_COLLAPSE))
+                    if (Unit* target = GetHitUnit())
+                        target->RemoveAllAurasByType(SPELL_AURA_PERIODIC_DAMAGE);
             }
 
             void Register()
@@ -1989,17 +2015,33 @@ class spell_hun_tame_beast : public SpellScriptLoader
                 if (!GetExplTargetUnit())
                     return SPELL_FAILED_BAD_IMPLICIT_TARGETS;
 
+                // Check if there are to many so that you don't get mixed with pets
+                // being there from the begining
+                if (caster->ToPlayer()->getSlotForNewPet() == PET_SLOT_FULL_LIST)
+                {
+                    caster->ToPlayer()->SendPetTameResult(PET_TAME_ERROR_TOO_MANY_PETS);
+                    return SPELL_FAILED_DONT_REPORT;
+                }
+
                 if (Creature* target = GetExplTargetUnit()->ToCreature())
                 {
                     if (target->getLevel() > caster->getLevel())
-                        return SPELL_FAILED_HIGHLEVEL;
+                    {
+                        caster->ToPlayer()->SendPetTameResult(PET_TAME_ERROR_TOO_HIGH_LEVEL);
+                        return SPELL_FAILED_DONT_REPORT;
+                    }
 
-                    // use SMSG_PET_TAME_FAILURE?
                     if (!target->GetCreatureTemplate()->isTameable(caster->ToPlayer()->CanTameExoticPets()))
-                        return SPELL_FAILED_BAD_TARGETS;
+                    {
+                        caster->ToPlayer()->SendPetTameResult(PET_TAME_ERROR_CANT_CONTROL_EXOTIC);
+                        return SPELL_FAILED_DONT_REPORT;
+                    }
 
                     if (caster->GetPetGUID())
-                        return SPELL_FAILED_ALREADY_HAVE_SUMMON;
+                    {
+                        caster->ToPlayer()->SendPetTameResult(PET_TAME_ERROR_ANOTHER_SUMMON_ACTIVE);
+                        return SPELL_FAILED_DONT_REPORT;
+                    }
 
                     if (caster->GetCharmGUID())
                         return SPELL_FAILED_ALREADY_HAVE_CHARM;
@@ -2024,6 +2066,8 @@ class spell_hun_tame_beast : public SpellScriptLoader
 
 void AddSC_hunter_spell_scripts()
 {
+    new spell_hun_glyph_of_marked_for_die();
+    new spell_hun_stampede();
     new spell_hun_dire_beast();
     new spell_hun_a_murder_of_crows();
     new spell_hun_focus_fire();
@@ -2034,8 +2078,6 @@ void AddSC_hunter_spell_scripts()
     new spell_hun_beast_cleave();
     new spell_hun_cobra_strikes();
     new spell_hun_barrage();
-    new spell_hun_aimed_shot();
-    new spell_hun_piercing_shots();
     new spell_hun_binding_shot();
     new spell_hun_binding_shot_zone();
     new spell_hun_glaive_toss_damages();

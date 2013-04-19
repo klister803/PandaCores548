@@ -1881,24 +1881,24 @@ class spell_monk_touch_of_death : public SpellScriptLoader
 
             SpellCastResult CheckCast()
             {
-                if (GetCaster() && GetCaster()->getVictim())
+                if (GetCaster() && GetExplTargetUnit())
                 {
                     if (GetCaster()->HasAura(124490))
                     {
-                        if (GetCaster()->getVictim()->GetTypeId() == TYPEID_UNIT && GetCaster()->getVictim()->ToCreature()->IsDungeonBoss())
+                        if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && GetExplTargetUnit()->ToCreature()->IsDungeonBoss())
                             return SPELL_FAILED_BAD_TARGETS;
-                        else if (GetCaster()->getVictim()->GetTypeId() == TYPEID_UNIT && (GetCaster()->getVictim()->GetHealth() > GetCaster()->GetHealth()))
+                        else if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && (GetExplTargetUnit()->GetMaxHealth() > GetCaster()->GetMaxHealth()))
                             return SPELL_FAILED_BAD_TARGETS;
-                        else if (GetCaster()->getVictim()->GetTypeId() == TYPEID_PLAYER && (GetCaster()->getVictim()->GetHealthPct() > 10.0f))
+                        else if (GetExplTargetUnit()->GetTypeId() == TYPEID_PLAYER && (GetExplTargetUnit()->GetHealthPct() > 10.0f))
                             return SPELL_FAILED_BAD_TARGETS;
                     }
                     else
                     {
-                        if (GetCaster()->getVictim()->GetTypeId() == TYPEID_UNIT && GetCaster()->getVictim()->ToCreature()->IsDungeonBoss())
+                        if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && GetExplTargetUnit()->ToCreature()->IsDungeonBoss())
                             return SPELL_FAILED_BAD_TARGETS;
-                        else if (GetCaster()->getVictim()->GetTypeId() == TYPEID_PLAYER)
+                        else if (GetExplTargetUnit()->GetTypeId() == TYPEID_PLAYER)
                             return SPELL_FAILED_BAD_TARGETS;
-                        else if (GetCaster()->getVictim()->GetTypeId() == TYPEID_UNIT && (GetCaster()->getVictim()->GetHealth() > GetCaster()->GetHealth()))
+                        else if (GetExplTargetUnit()->GetTypeId() == TYPEID_UNIT && (GetExplTargetUnit()->GetMaxHealth() > GetCaster()->GetMaxHealth()))
                             return SPELL_FAILED_BAD_TARGETS;
                     }
                     return SPELL_CAST_OK;
