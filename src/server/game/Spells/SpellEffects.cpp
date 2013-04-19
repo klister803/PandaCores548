@@ -693,6 +693,10 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
     bool triggered = true;
     SpellCastTargets targets;
 
+    // Fishing dummy
+    if (m_spellInfo->Id == 131474)
+        m_caster->CastSpell(m_caster, 131476, true);
+
     // selection by spell family
     switch (m_spellInfo->SpellFamilyName)
     {
