@@ -3142,6 +3142,8 @@ void SpellMgr::LoadSpellCustomAttr()
             case 72446: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                 break;
+            case 85673:// Word of Glory
+                spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal flames
             case 64422: // Sonic Screech (Auriaya)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
@@ -3150,6 +3152,12 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 61999:  // Raise Ally
+                spellInfo->Effects[1].TargetA = TARGET_UNIT_TARGET_ALLY;
+                break;
+            case 49016:  // Unholy Frenzy
+                spellInfo->Effects[0].BasePoints = 30;
+                break;
             case 31935:  // Avenger's Shield
                 spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
                 break;
@@ -3535,15 +3543,7 @@ void SpellMgr::LoadSpellCustomAttr()
             case 127626: // Devouring plague - Heal
                 spellInfo->Effects[0].BasePoints = 1;
                 break;
-            case 77513:  // Mastery : Blood Shield
-                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[0].BasePoints = 8;
-                break;
             case 77515:  // Mastery : Dreadblade
-                spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
-                spellInfo->Effects[1].BasePoints = 8;
-                break;
-            case 77514:  // Mastery : Frozen Heart
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MASTERY;
                 spellInfo->Effects[1].BasePoints = 8;
                 break;

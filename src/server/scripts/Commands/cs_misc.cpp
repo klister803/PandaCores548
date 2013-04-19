@@ -1833,6 +1833,21 @@ public:
 
         handler->PSendSysMessage(target ? LANG_YOU_DISABLE_CHAT : LANG_COMMAND_DISABLE_CHAT_DELAYED, nameLink.c_str(), notSpeakTime, muteReasonStr.c_str());
 
+        std::string announce;
+
+        announce = "The character '";
+        announce += nameStr;
+        announce += "' was muted for ";
+        announce += delayStr;
+        announce += " minutes by the character '";
+        announce += handler->GetSession()? handler->GetSession()->GetPlayerName(): "";
+        announce += "'. The reason is: ";
+        announce += muteReasonStr;
+
+        char buff[2048];
+        sprintf(buff, handler->GetTrinityString(LANG_SYSTEMMESSAGE), announce.c_str());
+        sWorld->SendServerMessage(SERVER_MSG_STRING, buff);
+
         return true;
     }
 
@@ -2444,7 +2459,7 @@ public:
         }
 
         // prepare visual effect for levelup
-        pet->SetUInt32Value(UNIT_FIELD_LEVEL, creatureTarget->getLevel()-1);
+        pet->SetUInt32Value(UNIT_FIELD_LEVEL, player->getLevel()-1);
 
         pet->GetCharmInfo()->SetPetNumber(sObjectMgr->GeneratePetNumber(), true);
         // this enables pet details window (Shift+P)
@@ -2454,10 +2469,10 @@ public:
         pet->GetMap()->AddToMap(pet->ToCreature());
 
         // visual effect for levelup
-        pet->SetUInt32Value(UNIT_FIELD_LEVEL, creatureTarget->getLevel());
+        pet->SetUInt32Value(UNIT_FIELD_LEVEL, player->getLevel());
 
-        player->SetMinion(pet, true);
-        pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+        player->SetMinion(pet, true, PET_SLOT_UNK_SLOT);
+        pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
         player->PetSpellInitialize();
 
         return true;
@@ -2580,10 +2595,10 @@ public:
             {
                 if (Pet* pet = player->GetPet())
                 {
-                    pet->SavePetToDB(PET_SAVE_AS_CURRENT);
-                    // not let dismiss dead pet
-                    if (pet && pet->isAlive())
-                        player->RemovePet(pet, PET_SAVE_NOT_IN_SLOT);
+                    pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
+                 // not let dismiss dead pet
+                 if (pet && pet->isAlive())
+                    player->RemovePet(pet, PET_SLOT_OTHER_PET);
                 }
             }
 

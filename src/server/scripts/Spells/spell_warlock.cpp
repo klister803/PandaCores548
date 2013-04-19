@@ -1436,32 +1436,36 @@ class spell_warl_demonic_circle_summon : public SpellScriptLoader
         {
             PrepareAuraScript(spell_warl_demonic_circle_summon_AuraScript);
 
-            void HandleRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes mode)
+            void HandleRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes mode)
             {
-                // If effect is removed by expire remove the summoned demonic circle too.
-                if (!(mode & AURA_EFFECT_HANDLE_REAPPLY))
-                    GetTarget()->RemoveGameObject(GetId(), true);
+                if (GetTarget())
+                {
+                    // If effect is removed by expire remove the summoned demonic circle too.
+                    if (!(mode & AURA_EFFECT_HANDLE_REAPPLY))
+                        GetTarget()->RemoveGameObject(GetId(), true);
 
-                GetTarget()->RemoveAura(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST);
+                    if (GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID()))
+                        GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID())->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, true);
+                }
             }
 
-            void HandleDummyTick(constAuraEffectPtr /*aurEff*/)
+            void HandleDummyTick(constAuraEffectPtr aurEff)
             {
-                if (GameObject* circle = GetTarget()->GetGameObject(GetId()))
+                if (GetTarget())
                 {
-                    // Here we check if player is in demonic circle teleport range, if so add
-                    // WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST; allowing him to cast the WARLOCK_DEMONIC_CIRCLE_TELEPORT.
-                    // If not in range remove the WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST.
-
-                    SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_CIRCLE_TELEPORT);
-
-                    if (GetTarget()->IsWithinDist(circle, spellInfo->GetMaxRange(true)))
+                    if (GameObject* circle = GetTarget()->GetGameObject(GetId()))
                     {
-                        if (!GetTarget()->HasAura(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST))
-                            GetTarget()->CastSpell(GetTarget(), WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, true);
+                        // Here we check if player is in demonic circle teleport range, if so add
+                        // WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST; allowing him to cast the WARLOCK_DEMONIC_CIRCLE_TELEPORT.
+                        // If not in range remove the WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST.
+
+                        SpellInfo const* spellInfo = sSpellMgr->GetSpellInfo(WARLOCK_DEMONIC_CIRCLE_TELEPORT);
+
+                        if (GetTarget()->IsWithinDist(circle, spellInfo->GetMaxRange(true)))
+                            GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID())->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, false);
+                        else
+                            GetTarget()->GetAuraApplication(aurEff->GetSpellInfo()->Id, GetTarget()->GetGUID())->SendFakeAuraUpdate(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST, true);
                     }
-                    else
-                        GetTarget()->RemoveAura(WARLOCK_DEMONIC_CIRCLE_ALLOW_CAST);
                 }
             }
 
@@ -1482,6 +1486,31 @@ class spell_warl_demonic_circle_teleport : public SpellScriptLoader
 {
     public:
         spell_warl_demonic_circle_teleport() : SpellScriptLoader("spell_warl_demonic_circle_teleport") { }
+
+        class spell_warl_demonic_circle_teleport_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_demonic_circle_teleport_SpellScript);
+
+            SpellCastResult CheckLOS()
+            {
+                if (GetCaster())
+                    if (GameObject* circle = GetCaster()->GetGameObject(WARLOCK_DEMONIC_CIRCLE_SUMMON))
+                        if (!GetCaster()->IsWithinLOSInMap(circle))
+                            return SPELL_FAILED_LINE_OF_SIGHT;
+
+                return SPELL_CAST_OK;
+            }
+
+            void Register()
+            {
+                OnCheckCast += SpellCheckCastFn(spell_warl_demonic_circle_teleport_SpellScript::CheckLOS);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_demonic_circle_teleport_SpellScript();
+        }
 
         class spell_warl_demonic_circle_teleport_AuraScript : public AuraScript
         {

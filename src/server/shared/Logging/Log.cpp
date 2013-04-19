@@ -578,4 +578,5 @@ void Log::OutPandashan(const char* str, ...)
 
 	std::string date = GetTimestampStr();
 	fprintf(pandashanLog, "[%s] Pandashan LOG : %s\n", date.c_str(), result);
+	fflush(pandashanLog);
 }

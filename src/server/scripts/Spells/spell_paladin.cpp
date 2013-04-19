@@ -74,6 +74,47 @@ enum PaladinSpells
     PALADIN_SPELL_TOWER_OF_RADIANCE_ENERGIZE     = 88852,
     PALADIN_SPELL_BEACON_OF_LIGHT                = 53563,
     PALADIN_SPELL_SELFLESS_HEALER_STACK          = 114250,
+    PALADIN_SPELL_ETERNAL_FLAME                  = 114163,
+};
+
+// Eternal Flame - 114163
+class spell_pal_eternal_flame : public SpellScriptLoader
+{
+    public:
+        spell_pal_eternal_flame() : SpellScriptLoader("spell_pal_eternal_flame") { }
+
+        class spell_pal_eternal_flame_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_pal_eternal_flame_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    int32 postCharges = 1;
+
+                    if (_player->GetPower(POWER_HOLY_POWER) >= 3)
+                    {
+                        postCharges = _player->GetPower(POWER_HOLY_POWER) - 3;
+                        SetHitHeal(int32(GetHitHeal() * 3));
+                    }
+                    else
+                        SetHitHeal(GetHitHeal() * (_player->GetPower(POWER_HOLY_POWER) + 1));
+
+                    //TODO regive holy power to player
+                    //_player->SetPower(POWER_HOLY_POWER, _player->GetPower(POWER_HOLY_POWER) + postCharges);
+                }
+            }
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_pal_eternal_flame_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_pal_eternal_flame_SpellScript();
+        }
 };
 
 // Selfless healer - 85804
@@ -1411,6 +1452,7 @@ class spell_pal_exorcism_and_holy_wrath_damage : public SpellScriptLoader
 
 void AddSC_paladin_spell_scripts()
 {
+    new spell_pal_eternal_flame();
     new spell_pal_selfless_healer();
     new spell_pal_tower_of_radiance();
     new spell_pal_sacred_shield();

@@ -247,6 +247,69 @@ void AuraApplication::ClientUpdate(bool remove)
     _target->SendMessageToSet(&data, true);
 }
 
+void AuraApplication::SendFakeAuraUpdate(uint32 auraId, bool remove)
+{
+    if (!GetTarget())
+        return;
+
+    WorldPacket data(SMSG_AURA_UPDATE);
+    data.append(GetTarget()->GetPackGUID());
+    data << uint8(64);
+
+    if (remove)
+    {
+        data << uint32(0);
+        _target->SendMessageToSet(&data, true);
+        return;
+    }
+
+    constAuraPtr aura = GetBase();
+    data << uint32(auraId);
+    uint32 flags = _flags;
+    if (aura->GetMaxDuration() > 0 && !(aura->GetSpellInfo()->AttributesEx5 & SPELL_ATTR5_HIDE_DURATION))
+        flags |= AFLAG_DURATION;
+    data << uint8(flags);
+    uint32 effectMaskPos = data.wpos();
+    data << uint32(GetEffectMask());
+    data << uint16(aura->GetCasterLevel());
+    // send stack amount for aura which could be stacked (never 0 - causes incorrect display) or charges
+    // stack amount has priority over charges (checked on retail with spell 50262)
+    data << uint8(aura->GetSpellInfo()->StackAmount ? aura->GetStackAmount() : aura->GetCharges());
+
+    if (!(flags & AFLAG_CASTER))
+        data.appendPackGUID(aura->GetCasterGUID());
+
+    if (flags & AFLAG_DURATION)
+    {
+        data << uint32(aura->GetMaxDuration());
+        data << uint32(aura->GetDuration());
+    }
+
+    uint32 EffectMask = 0;
+    if (flags & AFLAG_ANY_EFFECT_AMOUNT_SENT)
+    {
+        size_t pos = data.wpos();
+        uint8 count = 0;
+
+        data << uint8(0);
+        for (uint32 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+        {
+            if (constAuraEffectPtr eff = aura->GetEffect(i)) // NULL if effect flag not set
+            {
+                data << float(eff->GetAmount());
+                EffectMask |= 1 << i;
+            }
+            count++;
+        }
+
+        data.put(effectMaskPos, EffectMask);
+
+        data.put(pos, count);
+    }
+
+    _target->SendMessageToSet(&data, true);
+ }
+
 uint32 Aura::BuildEffectMaskForOwner(SpellInfo const* spellProto, uint32 avalibleEffectMask, WorldObject* owner)
 {
     ASSERT(spellProto);

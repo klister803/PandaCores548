@@ -540,6 +540,12 @@ void WorldSession::HandleGroupSetLeaderOpcode(WorldPacket& recvData)
     if (!group->IsLeader(GetPlayer()->GetGUID()) || player->GetGroup() != group)
         return;
 
+    // Prevent exploits with instance saves
+    for (GroupReference *itr = group->GetFirstMember(); itr != NULL; itr = itr->next())
+        if (Player* plr = itr->getSource())
+            if (plr->GetMap() && plr->GetMap()->Instanceable())
+                return;
+
     // Everything's fine, accepted.
     group->ChangeLeader(guid);
     group->SendUpdate();
