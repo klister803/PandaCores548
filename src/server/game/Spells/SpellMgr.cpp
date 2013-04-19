@@ -3152,6 +3152,9 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 73680:  // Unleash Elements
+                spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
+                break;
             case 974:    // Earth Shield
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_RECEIVED;
                 break;
@@ -3478,9 +3481,6 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[1].SpellClassMask[2] |= 0x80;
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_ADD_FLAT_MODIFIER;
                 spellInfo->Effects[1].MiscValue = SPELLMOD_CRITICAL_CHANCE;
-                break;
-            case 73680: // Unleash Elements
-                spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ENEMY;
                 break;
             case 52042: // Healing Stream - Totem
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_HEAL;
