@@ -3142,8 +3142,6 @@ void SpellMgr::LoadSpellCustomAttr()
             case 72446: // Mark of the Fallen Champion (Deathbringer Saurfang)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
                 break;
-            case 85673:// Word of Glory
-                spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal flames
             case 64422: // Sonic Screech (Auriaya)
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_SHARE_DAMAGE;
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_IGNORE_ARMOR;
@@ -3154,6 +3152,9 @@ void SpellMgr::LoadSpellCustomAttr()
             // Custom MoP Script
             case 73680:  // Unleash Elements
                 spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
+                break;
+            case 85673:  // Word of Glory
+                spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal flames
                 break;
             case 974:    // Earth Shield
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_RECEIVED;
