@@ -626,31 +626,18 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                 {
                     // Custom MoP script
                     case 117418: // Fists of Fury
-                    {
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
-                            damage = CalculateMonkMeleeAttacks(m_caster, 7.5f, 14);
+                            damage = CalculateMonkMeleeAttacks(m_caster, 7.5f, 14) * 2;
                         break;
-                    }
                     case 100780: // Jab
-                    {
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
                         break;
-                    }
                     case 115080: // Touch of Death
-                    {
-                        Unit* caster = GetCaster();
-                        if (caster)
-                        {
-                            Unit* victim = caster->getVictim();
-                            if (victim)
-                            {
-                                int32 health = victim->GetMaxHealth();
-                                damage += health;
-                            }
-                        }
+                        if (Unit* caster = GetCaster())
+                            if (Unit* victim = caster->getVictim())
+                                damage = victim->GetHealth();
                         break;
-                    }
                     case 100787: // Tiger Palm
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 3.0f, 14);
