@@ -333,7 +333,12 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         SpellShapeshiftFormEntry const* form = sSpellShapeshiftFormStore.LookupEntry(GetShapeshiftForm());
         // Directly taken from client, SHAPESHIFT_FLAG_AP_FROM_STRENGTH ?
         if (form && form->flags1 & 0x20)
+        {
             agilityValue += std::max((GetStat(STAT_AGILITY) - 10.0f) * entry->APPerStrenth, 0.0f);
+            // Druid feral has AP per agility = 2
+            if (form->ID == FORM_CAT)
+                agilityValue *= 2;
+        }
 
         val2 = strengthValue + agilityValue;
     }
