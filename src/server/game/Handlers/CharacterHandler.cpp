@@ -636,7 +636,14 @@ void WorldSession::HandleCharCreateCallback(PreparedQueryResult result, Characte
 
             // Avoid exploit of create multiple characters with same name
             if (!sWorld->AddCharacterName(createInfo->Name))
+            {
+                WorldPacket data(SMSG_CHAR_CREATE, 1);
+                data << uint8(CHAR_CREATE_NAME_IN_USE);
+                SendPacket(&data);
+                delete createInfo;
+                _charCreateCallback.Reset();
                 return;
+            }
 
             if (createInfo->Data.rpos() < createInfo->Data.wpos())
             {
@@ -817,6 +824,7 @@ void WorldSession::HandleCharDeleteOpcode(WorldPacket & recvData)
 
     sGuildFinderMgr->RemoveAllMembershipRequestsFromPlayer(guid);
     Player::DeleteFromDB(guid, GetAccountId());
+    sWorld->DeleteCharName(name);
 
     WorldPacket data(SMSG_CHAR_DELETE, 1);
     data << uint8(CHAR_DELETE_SUCCESS);

@@ -809,6 +809,8 @@ class World
             return true;
         }
 
+        void DeleteCharName(std::string name) { nameMap.erase(name); }
+
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
