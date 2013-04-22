@@ -15028,7 +15028,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             aura->DropCharge();
 
     // Hack Fix Frenzy
-    if (GetTypeId() == TYPEID_UNIT && isPet() && isHunterPet() && GetOwner() && GetOwner()->HasAura(19623) && !procSpell)
+    if (GetTypeId() == TYPEID_UNIT && isHunterPet() && GetOwner() && GetOwner()->ToPlayer() && GetOwner()->HasAura(19623) && ToPet()->IsPermanentPetFor(GetOwner()->ToPlayer()) && !procSpell)
         if (roll_chance_i(40))
             CastSpell(this, 19615, true);
 
