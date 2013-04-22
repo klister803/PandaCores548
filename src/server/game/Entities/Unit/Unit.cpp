@@ -11133,8 +11133,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 115611 || spellProto->Id == 19236)
         return healamount;
 
-    // No bonus for Devouring Plague heal or Atonement
-    if (spellProto->Id == 127626 || spellProto->Id == 81751)
+    // No bonus for Devouring Plague heal or Atonement or Eminence
+    if (spellProto->Id == 127626 || spellProto->Id == 81751 || spellProto->Id == 117895)
         return healamount;
 
     // No bonus for Leader of the Pack or Soul Leech
@@ -11380,8 +11380,12 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
 
     AuraEffectList const& mHealingGet= GetAuraEffectsByType(SPELL_AURA_MOD_HEALING_RECEIVED);
     for (AuraEffectList::const_iterator i = mHealingGet.begin(); i != mHealingGet.end(); ++i)
+    {
         if (caster->GetGUID() == (*i)->GetCasterGUID() && (*i)->IsAffectingSpell(spellProto))
             AddPct(TakenTotalMod, (*i)->GetAmount());
+        else if ((*i)->GetBase()->GetId() == 974) // Hack fix for Earth Shield
+            AddPct(TakenTotalMod, (*i)->GetAmount());
+    }
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
