@@ -368,6 +368,14 @@ class spell_hun_focus_fire : public SpellScriptLoader
         {
             PrepareSpellScript(spell_hun_focus_fire_SpellScript);
 
+            SpellCastResult CheckFrenzy()
+            {
+                if (!GetCaster()->HasAura(HUNTER_SPELL_FRENZY_STACKS))
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+
+                return SPELL_CAST_OK;
+            }
+
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -397,7 +405,8 @@ class spell_hun_focus_fire : public SpellScriptLoader
 
             void Register()
             {
-               OnHit += SpellHitFn(spell_hun_focus_fire_SpellScript::HandleOnHit);
+                OnCheckCast += SpellCheckCastFn(spell_hun_focus_fire_SpellScript::CheckFrenzy);
+                OnHit += SpellHitFn(spell_hun_focus_fire_SpellScript::HandleOnHit);
             }
         };
 
