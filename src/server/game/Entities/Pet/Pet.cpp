@@ -630,13 +630,15 @@ void Creature::Regenerate(Powers power)
         return;
 
     float addvalue = 0.0f;
+    float rangedHaste = (isHunterPet() && GetOwner()) ? GetOwner()->ToPlayer()->GetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE) : 0.0f;
 
     switch (power)
     {
         case POWER_FOCUS:
         {
-            // For hunter pets.
-            addvalue = 24 * sWorld->getRate(RATE_POWER_FOCUS);
+            // For hunter pets - Pets regen focus 125% more faster than owners
+            addvalue += (24.0f + CalculatePct(24.0f, rangedHaste)) * sWorld->getRate(RATE_POWER_FOCUS);
+            addvalue *= 1.25f;
             break;
         }
         case POWER_ENERGY:
@@ -897,6 +899,9 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
             //damage range is then petlevel / 2
             SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+
+            if (m_owner->ToPlayer())
+                ApplyAttackTimePercentMod(BASE_ATTACK, m_owner->ToPlayer()->GetRatingBonusValue(CR_HASTE_RANGED), true);
             //damage is increased afterwards as strength and pet scaling modify attack power
             break;
         }

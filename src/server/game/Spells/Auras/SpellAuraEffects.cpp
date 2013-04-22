@@ -4707,6 +4707,12 @@ void AuraEffect::HandleAuraModAttackPowerPercent(AuraApplication const* aurApp, 
 
     Unit* target = aurApp->GetTarget();
 
+    // Don't apply Markmanship aura twice on pet
+    if (GetCaster() && GetCaster()->ToPlayer() && aurApp->GetBase()->GetId() == 19506)
+        if (Pet* pet = GetCaster()->ToPlayer()->GetPet())
+            if (target->GetGUID() == pet->GetGUID())
+                return;
+
     //UNIT_FIELD_ATTACK_POWER_MULTIPLIER = multiplier - 1
     target->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_PCT, float(GetAmount()), apply);
 }
