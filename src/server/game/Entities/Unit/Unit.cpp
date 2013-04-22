@@ -668,7 +668,9 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         victim->CastCustomSpell(victim, 115611, &bp, NULL, NULL, true);
     }
     // Stance of the Wise Serpent - 115070
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(115070) && spellProto)
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(115070) && spellProto
+        && spellProto->Id != 124098 && spellProto->Id != 107270 && spellProto->Id != 132467
+        && spellProto->Id != 130651 && spellProto->Id != 117993) // Don't triggered by Zen Sphere, Spinning Crane Kick, Chi Wave, Chi Burst and Chi Torpedo
     {
         int32 bp = damage / 2;
         std::list<Unit*> targetList;
@@ -680,6 +682,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         if (targetList.size() > 1)
         {
+            targetList.remove(this); // Remove Player
             targetList.sort(JadeCore::HealthPctOrderPred());
             targetList.resize(1);
         }
