@@ -1055,7 +1055,8 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
     ConditionList* condList = m_spellInfo->Effects[effIndex].ImplicitTargetConditions;
     float coneAngle = M_PI/2;
 
-    if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_110)
+    if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_110 ||
+        m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_129)
         coneAngle = M_PI/6;
 
     float radius = m_spellInfo->Effects[effIndex].CalcRadius(m_caster) * m_spellValue->RadiusMod;
