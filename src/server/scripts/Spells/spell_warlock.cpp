@@ -76,6 +76,34 @@ enum WarlockSpells
     WARLOCK_DARK_BARGAIN_DOT                = 110914,
 };
 
+// Immolation Aura - 104025
+class spell_warl_immolation_aura : public SpellScriptLoader
+{
+    public:
+        spell_warl_immolation_aura() : SpellScriptLoader("spell_warl_immolation_aura") { }
+
+        class spell_warl_immolation_aura_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_immolation_aura_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    GetCaster()->EnergizeBySpell(GetCaster(), GetSpellInfo()->Id, -25, POWER_DEMONIC_FURY);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_immolation_aura_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_immolation_aura_AuraScript();
+        }
+};
+
 // Dark Bargain - 110013
 class spell_warl_dark_bargain_on_absorb : public SpellScriptLoader
 {
@@ -1581,6 +1609,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_immolation_aura();
     new spell_warl_dark_bargain_on_absorb();
     new spell_warl_dark_regeneration();
     new spell_warl_soul_leech();
