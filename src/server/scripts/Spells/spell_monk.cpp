@@ -1853,6 +1853,18 @@ class spell_monk_paralysis : public SpellScriptLoader
                                     Paralysis->SetMaxDuration(newDuration);
                             }
                         }
+                        
+                        if (target->ToPlayer())
+                        {
+                            if (AuraApplication* aura = target->GetAuraApplication(115078))
+                            {
+                                AuraPtr Paralysis = aura->GetBase();
+                                int32 maxDuration = Paralysis->GetMaxDuration();
+                                int32 newDuration = maxDuration / 2;
+                                Paralysis->SetDuration(newDuration);
+                                Paralysis->SetMaxDuration(newDuration);
+                            }                            
+                        }
                     }
                 }
             }
