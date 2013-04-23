@@ -77,6 +77,43 @@ enum WarlockSpells
     WARLOCK_MOLTEN_CORE                     = 122355,
 };
 
+// Void Ray - 115422 and Touch of Chaos - 103964
+class spell_warl_void_ray : public SpellScriptLoader
+{
+    public:
+        spell_warl_void_ray() : SpellScriptLoader("spell_warl_void_ray") { }
+
+        class spell_warl_void_ray_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_void_ray_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION, _player->GetGUID()))
+                        {
+                            corruption->SetDuration(corruption->GetDuration() + 4000);
+                            corruption->SetNeedClientUpdateForTargets();
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_void_ray_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_void_ray_SpellScript();
+        }
+};
+
 // Chaos Wave - 124916
 class spell_warl_chaos_wave : public SpellScriptLoader
 {
@@ -947,12 +984,12 @@ class spell_warl_fel_flame : public SpellScriptLoader
                         // Increases the duration of Corruption and Unstable Affliction by 6s
                         if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION)
                         {
-                            if (AuraPtr unstableAffliction = target->GetAura(WARLOCK_UNSTABLE_AFFLICTION))
+                            if (AuraPtr unstableAffliction = target->GetAura(WARLOCK_UNSTABLE_AFFLICTION, _player->GetGUID()))
                             {
                                 unstableAffliction->SetDuration(unstableAffliction->GetDuration() + 6000);
                                 unstableAffliction->SetNeedClientUpdateForTargets();
                             }
-                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION))
+                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION, _player->GetGUID()))
                             {
                                 corruption->SetDuration(corruption->GetDuration() + 6000);
                                 corruption->SetNeedClientUpdateForTargets();
@@ -961,12 +998,12 @@ class spell_warl_fel_flame : public SpellScriptLoader
                         // Increases the duration of Corruption by 6s
                         else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
                         {
-                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION))
+                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION, _player->GetGUID()))
                             {
                                 corruption->SetDuration(corruption->GetDuration() + 6000);
                                 corruption->SetNeedClientUpdateForTargets();
                             }
-                            else if (AuraPtr doom = target->GetAura(WARLOCK_DOOM))
+                            else if (AuraPtr doom = target->GetAura(WARLOCK_DOOM, _player->GetGUID()))
                             {
                                 doom->SetDuration(doom->GetDuration() + 6000);
                                 doom->SetNeedClientUpdateForTargets();
@@ -975,7 +1012,7 @@ class spell_warl_fel_flame : public SpellScriptLoader
                         // Increases the duration of Immolate by 6s
                         else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
                         {
-                            if (AuraPtr corruption = target->GetAura(WARLOCK_IMMOLATE))
+                            if (AuraPtr corruption = target->GetAura(WARLOCK_IMMOLATE, _player->GetGUID()))
                             {
                                 corruption->SetDuration(corruption->GetDuration() + 6000);
                                 corruption->SetNeedClientUpdateForTargets();
@@ -989,7 +1026,7 @@ class spell_warl_fel_flame : public SpellScriptLoader
                         // Increases the duration of Corruption by 6s
                         else
                         {
-                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION))
+                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION, _player->GetGUID()))
                             {
                                 corruption->SetDuration(corruption->GetDuration() + 6000);
                                 corruption->SetNeedClientUpdateForTargets();
@@ -1638,6 +1675,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_void_ray();
     new spell_warl_chaos_wave();
     new spell_warl_immolation_aura();
     new spell_warl_dark_bargain_on_absorb();
