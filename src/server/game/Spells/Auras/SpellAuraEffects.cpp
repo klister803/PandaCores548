@@ -6672,6 +6672,10 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
     if (crit)
         damage = caster->SpellCriticalDamageBonus(m_spellInfo, damage, target);
 
+    // If Doom critical tick, a Wild Imp will appear to fight with the Warlock
+    if (m_spellInfo->Id == 603 && crit)
+        caster->CastSpell(caster, 104317, true);
+
     int32 dmg = damage;
     if (m_spellInfo->Id != 110914 && m_spellInfo->Id != 124280 && m_spellInfo->Id != 49016) // Hack fix for Dark Bargain and Touch of Karma (DOT) and Unholy Frenzy
         caster->ApplyResilience(target, &dmg, crit);

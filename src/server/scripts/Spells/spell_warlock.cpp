@@ -45,7 +45,7 @@ enum WarlockSpells
     WARLOCK_SOULBURN_AURA                   = 74434,
     WARLOCK_CORRUPTION                      = 172,
     WARLOCK_AGONY                           = 980,
-    WARLOCK_DOOM                            = 124913,
+    WARLOCK_DOOM                            = 603,
     WARLOCK_UNSTABLE_AFFLICTION             = 30108,
     WARLOCK_IMMOLATE                        = 348,
     WARLOCK_SHADOWBURN_ENERGIZE             = 125882,

@@ -2020,8 +2020,8 @@ SpellSpecificType SpellInfo::GetSpellSpecific() const
         }
         case SPELLFAMILY_WARLOCK:
         {
-            // Warlock (Bane of Doom | Bane of Agony | Bane of Havoc)
-            if (Id == 603 || Id ==  980 || Id == 80240)
+            // Warlock (Bane of Agony | Bane of Havoc)
+            if (Id ==  980 || Id == 80240)
                 return SPELL_SPECIFIC_BANE;
 
             // only warlock curses have this
