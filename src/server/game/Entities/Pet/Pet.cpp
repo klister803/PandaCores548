@@ -551,6 +551,20 @@ void Pet::Update(uint32 diff)
             if (getPetType() != HUNTER_PET || m_corpseRemoveTime <= time(NULL))
             {
                 Remove(PET_SLOT_ACTUAL_PET_SLOT);               //hunters' pets never get removed because of death, NEVER!
+
+                if (GetOwner())
+                {
+                    Player* owner = GetOwner()->ToPlayer();
+                    if (!owner)
+                        return;
+
+                    // Fix Demonic Rebirth
+                    if (owner->getClass() == CLASS_WARLOCK && owner->HasAura(108559) && !owner->HasSpellCooldown(88448))
+                    {
+                        owner->CastSpell(owner, 88448, true);
+                        owner->AddSpellCooldown(88448, 0, time(NULL) + 120);
+                    }
+                }
                 return;
             }
             break;
