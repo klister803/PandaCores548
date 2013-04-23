@@ -74,6 +74,35 @@ enum WarlockSpells
     WARLOCK_SOUL_LEECH_HEAL                 = 108366,
     WARLOCK_DARK_REGENERATION               = 108359,
     WARLOCK_DARK_BARGAIN_DOT                = 110914,
+    WARLOCK_MOLTEN_CORE                     = 122355,
+};
+
+// Chaos Wave - 124916
+class spell_warl_chaos_wave : public SpellScriptLoader
+{
+    public:
+        spell_warl_chaos_wave() : SpellScriptLoader("spell_warl_chaos_wave") { }
+
+        class spell_warl_chaos_wave_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_chaos_wave_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->CastSpell(_player, WARLOCK_MOLTEN_CORE, true);
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_warl_chaos_wave_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_chaos_wave_SpellScript();
+        }
 };
 
 // Immolation Aura - 104025
@@ -1609,6 +1638,7 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_chaos_wave();
     new spell_warl_immolation_aura();
     new spell_warl_dark_bargain_on_absorb();
     new spell_warl_dark_regeneration();
