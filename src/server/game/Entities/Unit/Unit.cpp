@@ -14347,7 +14347,7 @@ SpellPowerEntry const* Unit::GetSpellPowerEntryBySpell(SpellInfo const* spell) c
     {
         if (spell->Id == 686)
         {
-            if(GetShapeshiftForm() == FORM_METAMORPHOSIS)
+            if (GetShapeshiftForm() == FORM_METAMORPHOSIS)
                 return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_DEMONIC_FURY);
             else
                 return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_MANA);
