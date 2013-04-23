@@ -3150,6 +3150,26 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 116198: // Enfeeblement Aura
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].TargetA = TARGET_DEST_TARGET_ENEMY;
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                spellInfo->Effects[1].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[1].TargetA = TARGET_DEST_TARGET_ENEMY;
+                spellInfo->Effects[1].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                spellInfo->Effects[2].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[2].TargetA = TARGET_DEST_TARGET_ENEMY;
+                spellInfo->Effects[2].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                spellInfo->Effects[4].TargetA = TARGET_DEST_TARGET_ENEMY;
+                spellInfo->Effects[4].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                break;
+            case 116202: // Elements Aura
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].TargetA = TARGET_DEST_TARGET_ENEMY;
+                spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                spellInfo->Effects[2].TargetA = TARGET_DEST_TARGET_ENEMY;
+                spellInfo->Effects[2].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
+                break;
             case 73680:  // Unleash Elements
                 spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
                 break;
