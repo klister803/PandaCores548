@@ -3825,15 +3825,15 @@ class npc_wild_imp : public CreatureScript
                 if (me->HasUnitState(UNIT_STATE_CASTING))
                     return;
 
+                if (!charges)
+                    me->DespawnOrUnsummon();
+
                 if ((me->getVictim() || me->GetOwner()->getVictim()) && charges)
                 {
                     me->CastSpell(me->getVictim() ? me->getVictim() : me->GetOwner()->getVictim(), FIREBOLT, false);
                     me->GetOwner()->EnergizeBySpell(me->GetOwner(), FIREBOLT, 5, POWER_DEMONIC_FURY);
                     charges--;
                 }
-
-                if (!charges)
-                    me->DespawnOrUnsummon();
             }
         };
 
