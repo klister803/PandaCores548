@@ -182,6 +182,49 @@ class spell_warl_chaos_wave : public SpellScriptLoader
         }
 };
 
+// Metamorphosis - 103958
+class spell_warl_metamorphosis_cost : public SpellScriptLoader
+{
+    public:
+        spell_warl_metamorphosis_cost() : SpellScriptLoader("spell_warl_metamorphosis_cost") { }
+
+        class spell_warl_metamorphosis_cost_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_metamorphosis_cost_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    GetCaster()->EnergizeBySpell(GetCaster(), WARLOCK_METAMORPHOSIS, -6, POWER_DEMONIC_FURY);
+            }
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                {
+                    Player* _player = GetCaster()->ToPlayer();
+                    if (!_player)
+                        return;
+
+                    if (_player->GetPower(POWER_DEMONIC_FURY) <= 1)
+                        if (_player->HasAura(WARLOCK_METAMORPHOSIS))
+                            _player->RemoveAura(WARLOCK_METAMORPHOSIS);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_metamorphosis_cost_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+                OnEffectUpdate += AuraEffectUpdateFn(spell_warl_metamorphosis_cost_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_metamorphosis_cost_AuraScript();
+        }
+};
+
 // Immolation Aura - 104025
 class spell_warl_immolation_aura : public SpellScriptLoader
 {
@@ -1718,6 +1761,7 @@ void AddSC_warlock_spell_scripts()
     new spell_warl_demonic_call();
     new spell_warl_void_ray();
     new spell_warl_chaos_wave();
+    new spell_warl_metamorphosis_cost();
     new spell_warl_immolation_aura();
     new spell_warl_dark_bargain_on_absorb();
     new spell_warl_dark_regeneration();

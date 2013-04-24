@@ -6063,31 +6063,13 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                             }
                         }
                     }
-                }
-            }
-        case SPELLFAMILY_WARLOCK:
-            switch (GetId())
-            {
-                // Custom MoP Script
-                case 103958: // Metamorphosis
-                {
-                    if (caster)
-                    {
-                        if (caster->GetPower(POWER_DEMONIC_FURY) > 0)
-                        {
-                            // Power cost : 6 demonic fury per second
-                            uint32 demonicFury = caster->GetPower(POWER_DEMONIC_FURY) - 6;
 
-                            if (demonicFury < 0)
-                                demonicFury = 0;
-
-                            caster->SetPower(POWER_DEMONIC_FURY, demonicFury);
-                        }
-                        else
-                            caster->RemoveAurasDueToSpell(103958);
-                    }
+                    break;
                 }
+                default:
+                    break;
             }
+            break;
         case SPELLFAMILY_DEATHKNIGHT:
             switch (GetId())
             {
