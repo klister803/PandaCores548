@@ -3150,7 +3150,7 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
-            case 116198: // Enfeeblement Aura
+            case 116198:// Enfeeblement Aura
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[0].TargetA = TARGET_DEST_TARGET_ENEMY;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
@@ -3163,36 +3163,36 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->Effects[4].TargetA = TARGET_DEST_TARGET_ENEMY;
                 spellInfo->Effects[4].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                 break;
-            case 116202: // Elements Aura
+            case 116202:// Elements Aura
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[0].TargetA = TARGET_DEST_TARGET_ENEMY;
                 spellInfo->Effects[0].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                 spellInfo->Effects[2].TargetA = TARGET_DEST_TARGET_ENEMY;
                 spellInfo->Effects[2].TargetB = TARGET_UNIT_DEST_AREA_ENEMY;
                 break;
-            case 73680:  // Unleash Elements
+            case 73680: // Unleash Elements
                 spellInfo->ExplicitTargetMask |= TARGET_FLAG_UNIT_ALLY;
                 break;
-            case 85673:  // Word of Glory
+            case 85673: // Word of Glory
                 spellInfo->OverrideSpellList.push_back(114163); // Replace World of glory by Eternal flames
                 break;
-            case 974:    // Earth Shield
+            case 974:   // Earth Shield
                 spellInfo->Effects[1].ApplyAuraName = SPELL_AURA_MOD_HEALING_RECEIVED;
                 break;
-            case 86529:  // Mail Specialization (Shaman)
+            case 86529: // Mail Specialization (Shaman)
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
                 break;
-            case 61999:  // Raise Ally
+            case 61999: // Raise Ally
                 spellInfo->Effects[1].TargetA = TARGET_UNIT_TARGET_ALLY;
                 break;
-            case 49016:  // Unholy Frenzy
+            case 49016: // Unholy Frenzy
                 spellInfo->Effects[0].BasePoints = 30;
                 break;
-            case 31935:  // Avenger's Shield
+            case 31935: // Avenger's Shield
                 spellInfo->DmgClass = SPELL_DAMAGE_CLASS_MAGIC;
                 break;
-            case 121118: // Dire Beast summons
+            case 121118:// Dire Beast summons
             case 122802:
             case 122804:
             case 122806:
