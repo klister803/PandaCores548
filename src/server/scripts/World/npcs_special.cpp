@@ -3710,7 +3710,6 @@ class npc_murder_of_crows : public CreatureScript
 
         struct npc_murder_of_crowsAI : public ScriptedAI
         {
-
             npc_murder_of_crowsAI(Creature *creature) : ScriptedAI(creature)
             {
                 me->SetReactState(ReactStates::REACT_DEFENSIVE);
@@ -3748,7 +3747,6 @@ class npc_dire_beast : public CreatureScript
 
         struct npc_dire_beastAI : public ScriptedAI
         {
-
             npc_dire_beastAI(Creature *creature) : ScriptedAI(creature) {}
 
             void Reset()
@@ -3783,6 +3781,64 @@ class npc_dire_beast : public CreatureScript
         CreatureAI* GetAI(Creature* creature) const
         {
             return new npc_dire_beastAI(creature);
+        }
+};
+
+#define FIREBOLT   104318
+
+/*######
+# npc_wild_imp
+######*/
+
+class npc_wild_imp : public CreatureScript
+{
+    public:
+        npc_wild_imp() : CreatureScript("npc_wild_imp") { }
+
+        struct npc_wild_impAI : public ScriptedAI
+        {
+            uint32 charges;
+
+            npc_wild_impAI(Creature *creature) : ScriptedAI(creature)
+            {
+                charges = 10;
+                me->SetReactState(ReactStates::REACT_AGGRESSIVE);
+            }
+
+            void Reset()
+            {
+                me->SetReactState(ReactStates::REACT_AGGRESSIVE);
+
+                if (me->GetOwner())
+                    if (me->GetOwner()->getVictim())
+                        AttackStart(me->GetOwner()->getVictim());
+            }
+
+            void UpdateAI(const uint32 diff)
+            {
+                if (me->GetReactState() != ReactStates::REACT_AGGRESSIVE)
+                    me->SetReactState(ReactStates::REACT_AGGRESSIVE);
+
+                if (!me->GetOwner())
+                    return;
+
+                if (me->HasUnitState(UNIT_STATE_CASTING))
+                    return;
+
+                if ((me->getVictim() || me->GetOwner()->getVictim()) && charges)
+                {
+                    me->CastSpell(me->getVictim() ? me->getVictim() : me->GetOwner()->getVictim(), FIREBOLT, false);
+                    charges--;
+                }
+
+                if (!charges)
+                    me->DespawnOrUnsummon();
+            }
+        };
+
+        CreatureAI* GetAI(Creature* creature) const
+        {
+            return new npc_wild_impAI(creature);
         }
 };
 
@@ -3834,4 +3890,5 @@ void AddSC_npcs_special()
     new npc_xuen_the_white_tiger();
     new npc_murder_of_crows();
     new npc_dire_beast();
+    new npc_wild_imp();
 }

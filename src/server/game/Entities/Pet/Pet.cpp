@@ -981,6 +981,18 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
 
                     break;
                 }
+                case 55659: // Wild Imp
+                {
+                    if (!pInfo)
+                    {
+                        SetCreateMana(28 + 10 * petlevel);
+                        SetCreateHealth(28 + 30 * petlevel);
+                    }
+
+                    SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FIRE)));
+
+                    break;
+                }
                 case 63508: // Xuen, the White Tiger
                 {
                     if (!pInfo)
