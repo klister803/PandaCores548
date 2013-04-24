@@ -552,7 +552,7 @@ void Pet::Update(uint32 diff)
             {
                 Remove(PET_SLOT_ACTUAL_PET_SLOT);               //hunters' pets never get removed because of death, NEVER!
 
-                if (GetOwner())
+                if (GetOwner() && !GetHealth())
                 {
                     Player* owner = GetOwner()->ToPlayer();
                     if (!owner)
