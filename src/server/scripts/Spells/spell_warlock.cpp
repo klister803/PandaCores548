@@ -78,6 +78,7 @@ enum WarlockSpells
     WARLOCK_MOLTEN_CORE_AURA                = 122351,
     WARLOCK_WILD_IMP_SUMMON                 = 104317,
     WARLOCK_DEMONIC_CALL                    = 114925,
+    WARLOCK_DECIMATE_AURA                   = 108869,
 };
 
 // Called by Firebolt (Wild Imp) - 104318
@@ -140,6 +141,37 @@ class spell_warl_molten_core_dot : public SpellScriptLoader
         AuraScript* GetAuraScript() const
         {
             return new spell_warl_molten_core_dot_AuraScript();
+        }
+};
+
+// Called by Shadow Bolt - 686 and Soul Fire - 6353
+// Decimate - 108869
+class spell_warl_decimate : public SpellScriptLoader
+{
+    public:
+        spell_warl_decimate() : SpellScriptLoader("spell_warl_decimate") { }
+
+        class spell_warl_decimate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_decimate_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (target->GetHealthPct() < 25.0f)
+                            _player->CastSpell(_player, WARLOCK_MOLTEN_CORE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_decimate_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_decimate_SpellScript();
         }
 };
 
@@ -1824,6 +1856,7 @@ void AddSC_warlock_spell_scripts()
 {
     new spell_warl_molten_core_hit();
     new spell_warl_molten_core_dot();
+    new spell_warl_decimate();
     new spell_warl_demonic_call();
     new spell_warl_void_ray();
     new spell_warl_chaos_wave();
