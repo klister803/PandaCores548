@@ -9857,7 +9857,10 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
         case 4273:  // Ulduar
             NumberOfFields = 10;
             break;
-         default:
+        case 5833:
+            NumberOfFields = 9;
+            break;
+        default:
             NumberOfFields = 12;
             break;
     }
@@ -10391,6 +10394,10 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
         case 5449:
             if (bg && bg->GetTypeID(true) == BATTLEGROUND_BFG)
                 bg->FillInitialWorldStates(data);
+            break;
+        case 5833:
+            data << uint32(0x1958) << uint32(0x1);
+            data << uint32(0x1959) << uint32(0x4);
             break;
         default:
             data << uint32(0x914) << uint32(0x0);           // 7
@@ -27341,6 +27348,9 @@ void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
 
         for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
         {
+            if (zone != itr->second->areaId && area != itr->second->areaId)
+                continue;
+
             if (itr->second->IsFitToRequirements(this, zone, area))
             {
                 if (itr->second->autocast)
@@ -27360,6 +27370,9 @@ void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
 
         for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
         {
+            if (zone != itr->second->areaId && area != itr->second->areaId)
+                continue;
+
             if (itr->second->IsFitToRequirements(this, zone, area))
             {
                 if (itr->second->autocast)
