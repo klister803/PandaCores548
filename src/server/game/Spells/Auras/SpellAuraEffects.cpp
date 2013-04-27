@@ -2075,42 +2075,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
             // reset power to default values only at power change
             if (target->getPowerType() != PowerType)
                 target->setPowerType(PowerType);
-
-            switch (form)
-            {
-                case FORM_CAT:
-                case FORM_BEAR:
-                {
-                    // get furor proc chance
-                    int32 FurorChance = 0;
-                    if (constAuraEffectPtr dummy = target->GetDummyAuraEffect(SPELLFAMILY_DRUID, 238, 0))
-                        FurorChance = std::max(dummy->GetAmount(), 0);
-
-                    switch (GetMiscValue())
-                    {
-                        case FORM_CAT:
-                        {
-                            int32 basePoints = std::min<int32>(oldPower, FurorChance);
-                            target->SetPower(POWER_ENERGY, 0);
-                            target->CastCustomSpell(target, 17099, &basePoints, NULL, NULL, true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
-                        }
-                        break;
-                        case FORM_BEAR:
-                        if (irand(0, 99) < FurorChance)
-                            target->CastSpell(target, 17057, true);
-                        default:
-                        {
-                            int32 newEnergy = std::min(target->GetPower(POWER_ENERGY), FurorChance);
-                            target->SetPower(POWER_ENERGY, newEnergy);
-                        }
-                        break;
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
         }
+
         // stop handling the effect if it was removed by linked event
         if (aurApp->GetRemoveMode())
             return;
