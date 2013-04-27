@@ -799,6 +799,18 @@ class World
         void   ResetEventSeasonalQuests(uint16 event_id);
         std::string GetRealmName() { return m_realmName; }
         void UpdatePhaseDefinitions();
+
+        bool AddCharacterName(std::string name)
+        {
+            if (nameMap.find(name) != nameMap.end())
+                return false;
+
+            nameMap[name] = true;
+            return true;
+        }
+
+        void DeleteCharName(std::string name) { nameMap.erase(name); }
+
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
@@ -889,6 +901,8 @@ class World
 
         std::map<uint32, CharacterNameData> _characterNameDataMap;
         void LoadCharacterNameData();
+
+        std::map<std::string, bool> nameMap;
 
         void ProcessQueryCallbacks();
         ACE_Future_Set<PreparedQueryResult> m_realmCharCallbacks;

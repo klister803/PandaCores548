@@ -745,6 +745,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_regenTimerCount = 0;
     m_holyPowerRegenTimerCount = 0;
     m_chiPowerRegenTimerCount = 0;
+    m_demonicFuryPowerRegenTimerCount = 0;
     m_soulShardsRegenTimerCount = 0;
     m_burningEmbersRegenTimerCount = 0;
     m_focusRegenTimerCount = 0;
@@ -2687,9 +2688,6 @@ void Player::RemoveFromWorld()
 
 void Player::RegenerateAll()
 {
-    //if (m_regenTimer <= 500)
-    //    return;
-
     m_regenTimerCount += m_regenTimer;
 
     if (getClass() == CLASS_PALADIN)
@@ -2772,10 +2770,10 @@ void Player::RegenerateAll()
         m_chiPowerRegenTimerCount -= 10000;
     }
 
-    if (m_demonicFuryPowerRegenTimerCount >= 10000 && getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY))
+    if (m_demonicFuryPowerRegenTimerCount >= 100 && getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY))
     {
         Regenerate(POWER_DEMONIC_FURY);
-        m_demonicFuryPowerRegenTimerCount -= 10000;
+        m_demonicFuryPowerRegenTimerCount -= 100;
     }
 
     if (m_soulShardsRegenTimerCount >= 20000 && getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION))
@@ -2815,6 +2813,7 @@ void Player::Regenerate(Powers power)
 
     switch (power)
     {
+        // Regenerate Mana
         case POWER_MANA:
         {
             float ManaIncreaseRate = sWorld->getRate(RATE_POWER_MANA);
@@ -2823,23 +2822,29 @@ void Player::Regenerate(Powers power)
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * m_regenTimer) + CalculatePct(0.001f, spellHaste));
             else
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * m_regenTimer) + CalculatePct(0.001f, spellHaste));
+
+            break;
         }
-        break;
-        case POWER_RAGE:                                                // Regenerate Rage
+        // Regenerate Rage
+        case POWER_RAGE:
         {
             if (!isInCombat() && !HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
             {
                 float RageDecreaseRate = sWorld->getRate(RATE_POWER_RAGE_LOSS);
                 addvalue += -25 * RageDecreaseRate / meleeHaste;                // 2.5 rage by tick (= 2 seconds => 1.25 rage/sec)
             }
+
+            break;
         }
-        break;
+        // Regenerate Focus
         case POWER_FOCUS:
             addvalue += (6.0f + CalculatePct(6.0f, rangedHaste)) * sWorld->getRate(RATE_POWER_FOCUS);
             break;
-        case POWER_ENERGY:                                              // Regenerate Energy
+        // Regenerate Energy
+        case POWER_ENERGY:
             addvalue += ((0.01f * m_regenTimer) * sWorld->getRate(RATE_POWER_ENERGY) * HastePct);
             break;
+        // Regenerate Runic Power
         case POWER_RUNIC_POWER:
         {
             if (!isInCombat() && !HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
@@ -2847,31 +2852,33 @@ void Player::Regenerate(Powers power)
                 float RunicPowerDecreaseRate = sWorld->getRate(RATE_POWER_RUNICPOWER_LOSS);
                 addvalue += -30 * RunicPowerDecreaseRate;         // 3 RunicPower by tick
             }
+
+            break;
         }
-        break;
-        case POWER_HOLY_POWER:                                          // Regenerate Holy Power
-        {
+        // Regenerate Holy Power
+        case POWER_HOLY_POWER:
             if (!isInCombat())
-                addvalue += -1.0f;      // remove 1 each 10 sec
-        }
-        break;
+                addvalue += -1.0f; // remove 1 each 10 sec
+            break;
         case POWER_RUNES:
         case POWER_HEALTH:
             break;
-        case POWER_CHI:                                          // Regenerate Chi
-        {
+        // Regenerate Chi
+        case POWER_CHI:
             if (!isInCombat())
-                addvalue += -1.0f;      // remove 1 each 10 sec
-        }
-        break;
-        case POWER_DEMONIC_FURY:                                // Regenerate Demonic Fury
+                addvalue += -1.0f; // remove 1 each 10 sec
+            break;
+        // Regenerate Demonic Fury
+        case POWER_DEMONIC_FURY:
         {
             if (!isInCombat() && GetPower(POWER_DEMONIC_FURY) >= 300 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
-                addvalue += -100.0f;    // remove 100 each 10 sec
-            else if (!isInCombat() && GetShapeshiftForm() != FORM_METAMORPHOSIS)
-                addvalue += (200.0f - GetPower(POWER_DEMONIC_FURY));      // min power demonic fury set at 200
+                addvalue += -1.0f;    // remove 1 each 100ms
+            else if (!isInCombat() && GetPower(POWER_DEMONIC_FURY) < 200 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
+                addvalue += 1.0f;     // give 1 each 100ms while player has less than 200 demonic fury
+
+            break;
         }
-        break;
+        // Regenerate Burning Embers
         case POWER_BURNING_EMBERS:
         {
             // After 15s return to one embers if no one
@@ -2885,15 +2892,15 @@ void Player::Regenerate(Powers power)
                 CastSpell(this, 116855, true);
             else
                 RemoveAura(116855);
+
+            break;
         }
-        break;
+        // Regenerate Soul Shards
         case POWER_SOUL_SHARDS:
-        {
             // If isn't in combat, gain 1 shard every 20s
             if (!isInCombat())
                 addvalue += 100.0f;
-        }
-        break;
+            break;
         default:
             break;
     }

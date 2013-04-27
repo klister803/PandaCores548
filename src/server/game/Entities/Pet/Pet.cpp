@@ -551,6 +551,20 @@ void Pet::Update(uint32 diff)
             if (getPetType() != HUNTER_PET || m_corpseRemoveTime <= time(NULL))
             {
                 Remove(PET_SLOT_ACTUAL_PET_SLOT);               //hunters' pets never get removed because of death, NEVER!
+
+                if (GetOwner() && !GetHealth())
+                {
+                    Player* owner = GetOwner()->ToPlayer();
+                    if (!owner)
+                        return;
+
+                    // Fix Demonic Rebirth
+                    if (owner->getClass() == CLASS_WARLOCK && owner->HasAura(108559) && !owner->HasSpellCooldown(88448))
+                    {
+                        owner->CastSpell(owner, 88448, true);
+                        owner->AddSpellCooldown(88448, 0, time(NULL) + 120);
+                    }
+                }
                 return;
             }
             break;
@@ -630,13 +644,15 @@ void Creature::Regenerate(Powers power)
         return;
 
     float addvalue = 0.0f;
+    float rangedHaste = (isHunterPet() && GetOwner()) ? GetOwner()->ToPlayer()->GetFloatValue(PLAYER_FIELD_MOD_RANGED_HASTE) : 0.0f;
 
     switch (power)
     {
         case POWER_FOCUS:
         {
-            // For hunter pets.
-            addvalue = 24 * sWorld->getRate(RATE_POWER_FOCUS);
+            // For hunter pets - Pets regen focus 125% more faster than owners
+            addvalue += (24.0f + CalculatePct(24.0f, rangedHaste)) * sWorld->getRate(RATE_POWER_FOCUS);
+            addvalue *= 1.25f;
             break;
         }
         case POWER_ENERGY:
@@ -897,6 +913,9 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
             SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float(petlevel - (petlevel / 4)));
             //damage range is then petlevel / 2
             SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float(petlevel + (petlevel / 4)));
+
+            if (m_owner->ToPlayer())
+                ApplyAttackTimePercentMod(BASE_ATTACK, m_owner->ToPlayer()->GetRatingBonusValue(CR_HASTE_RANGED), true);
             //damage is increased afterwards as strength and pet scaling modify attack power
             break;
         }
@@ -959,6 +978,18 @@ bool Guardian::InitStatsForLevel(uint8 petlevel)
                     int32 bonus_dmg = (int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_SHADOW) * 0.3f));
                     SetBaseWeaponDamage(BASE_ATTACK, MINDAMAGE, float((petlevel * 4 - petlevel) + bonus_dmg));
                     SetBaseWeaponDamage(BASE_ATTACK, MAXDAMAGE, float((petlevel * 4 + petlevel) + bonus_dmg));
+
+                    break;
+                }
+                case 55659: // Wild Imp
+                {
+                    if (!pInfo)
+                    {
+                        SetCreateMana(28 + 10 * petlevel);
+                        SetCreateHealth(28 + 30 * petlevel);
+                    }
+
+                    SetBonusDamage(int32(m_owner->SpellBaseDamageBonusDone(SPELL_SCHOOL_MASK_FIRE)));
 
                     break;
                 }

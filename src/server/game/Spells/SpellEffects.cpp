@@ -585,7 +585,22 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             }
             case SPELLFAMILY_HUNTER:
             {
-                //Gore
+                // Claw, Bite
+                if (m_spellInfo->Id == 16827 || m_spellInfo->Id == 17253)
+                {
+                    if (m_caster->GetOwner())
+                    {
+                        damage += int32(m_caster->GetOwner()->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2544f);
+
+                        // Deals 100% more damage and costs 100% more Focus when your pet has 50 or more Focus.
+                        if (m_caster->GetPower(POWER_FOCUS) + 25 > 50)
+                        {
+                            damage *= 2;
+                            m_caster->EnergizeBySpell(m_caster, m_spellInfo->Id, -25, POWER_FOCUS);
+                        }
+                    }
+                }
+                // Gore
                 if (m_spellInfo->SpellIconID == 1578)
                 {
                     if (m_caster->HasAura(57627))           // Charge 6 sec post-affect
@@ -611,31 +626,18 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                 {
                     // Custom MoP script
                     case 117418: // Fists of Fury
-                    {
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 7.5f, 14);
                         break;
-                    }
                     case 100780: // Jab
-                    {
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
                         break;
-                    }
                     case 115080: // Touch of Death
-                    {
-                        Unit* caster = GetCaster();
-                        if (caster)
-                        {
-                            Unit* victim = caster->getVictim();
-                            if (victim)
-                            {
-                                int32 health = victim->GetMaxHealth();
-                                damage += health;
-                            }
-                        }
+                        if (Unit* caster = GetCaster())
+                            if (Unit* victim = caster->getVictim())
+                                damage = victim->GetHealth() * 2;
                         break;
-                    }
                     case 100787: // Tiger Palm
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 3.0f, 14);
@@ -690,6 +692,10 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
     int32 bp = 0;
     bool triggered = true;
     SpellCastTargets targets;
+
+    // Fishing dummy
+    if (m_spellInfo->Id == 131474)
+        m_caster->CastSpell(m_caster, 131476, true);
 
     // selection by spell family
     switch (m_spellInfo->SpellFamilyName)
@@ -1612,7 +1618,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             }
         }
         // 77485 - Mastery : Echo of Light
-        if (m_caster && m_caster->getClass() == CLASS_PRIEST && m_caster->HasAura(77485) && addhealth)
+        if (m_caster && m_caster->getClass() == CLASS_PRIEST && m_caster->HasAura(77485) && m_caster->getLevel() >= 80 && addhealth)
         {
             float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
             int32 bp = (Mastery * addhealth) / 6;

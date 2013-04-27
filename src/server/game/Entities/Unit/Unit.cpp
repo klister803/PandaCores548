@@ -668,7 +668,9 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         victim->CastCustomSpell(victim, 115611, &bp, NULL, NULL, true);
     }
     // Stance of the Wise Serpent - 115070
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(115070) && spellProto)
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(115070) && spellProto
+        && spellProto->Id != 124098 && spellProto->Id != 107270 && spellProto->Id != 132467
+        && spellProto->Id != 130651 && spellProto->Id != 117993) // Don't triggered by Zen Sphere, Spinning Crane Kick, Chi Wave, Chi Burst and Chi Torpedo
     {
         int32 bp = damage / 2;
         std::list<Unit*> targetList;
@@ -680,6 +682,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         if (targetList.size() > 1)
         {
+            targetList.remove(this); // Remove Player
             targetList.sort(JadeCore::HealthPctOrderPred());
             targetList.resize(1);
         }
@@ -7308,7 +7311,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     basepoints0 = int32((fire_onhit * BaseWeaponSpeed) + (add_spellpower * BaseWeaponSpeed));
                     triggered_spell_id = 10444;
                 }
-
                 // Enchant on Main-Hand and ready?
                 else if (castItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK)
                 {
@@ -7318,7 +7320,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     basepoints0 = int32((fire_onhit * BaseWeaponSpeed) + (add_spellpower * BaseWeaponSpeed));
                     triggered_spell_id = 10444;
                 }
-
                 // If not ready, we should  return, shouldn't we?!
                 else
                     return false;
@@ -10857,6 +10858,19 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
         return false;
 
     float crit_chance = 0.0f;
+
+    // Pets have 100% of owner's crit_chance
+    if (isPet())
+    {
+        if (GetOwner() && (GetOwner()->getClass() == CLASS_WARLOCK || GetOwner()->getClass() == CLASS_MAGE))
+            crit_chance += GetOwner()->ToPlayer()->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
+        else
+        {
+            crit_chance += GetOwner()->GetUnitCriticalChance(attackType, victim);
+            crit_chance += GetOwner()->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
+        }
+    }
+
     switch (spellProto->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_NONE:
@@ -11135,8 +11149,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 115611 || spellProto->Id == 19236)
         return healamount;
 
-    // No bonus for Devouring Plague heal or Atonement
-    if (spellProto->Id == 127626 || spellProto->Id == 81751)
+    // No bonus for Devouring Plague heal or Atonement or Eminence
+    if (spellProto->Id == 127626 || spellProto->Id == 81751 || spellProto->Id == 117895)
         return healamount;
 
     // No bonus for Leader of the Pack or Soul Leech
@@ -11382,8 +11396,12 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
 
     AuraEffectList const& mHealingGet= GetAuraEffectsByType(SPELL_AURA_MOD_HEALING_RECEIVED);
     for (AuraEffectList::const_iterator i = mHealingGet.begin(); i != mHealingGet.end(); ++i)
+    {
         if (caster->GetGUID() == (*i)->GetCasterGUID() && (*i)->IsAffectingSpell(spellProto))
             AddPct(TakenTotalMod, (*i)->GetAmount());
+        else if ((*i)->GetBase()->GetId() == 974) // Hack fix for Earth Shield
+            AddPct(TakenTotalMod, (*i)->GetAmount());
+    }
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
@@ -14329,7 +14347,7 @@ SpellPowerEntry const* Unit::GetSpellPowerEntryBySpell(SpellInfo const* spell) c
     {
         if (spell->Id == 686)
         {
-            if(GetShapeshiftForm() == FORM_METAMORPHOSIS)
+            if (GetShapeshiftForm() == FORM_METAMORPHOSIS)
                 return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_DEMONIC_FURY);
             else
                 return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_MANA);
@@ -15010,7 +15028,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             aura->DropCharge();
 
     // Hack Fix Frenzy
-    if (GetTypeId() == TYPEID_UNIT && isPet() && isHunterPet() && GetOwner() && GetOwner()->HasAura(19623) && !procSpell)
+    if (GetTypeId() == TYPEID_UNIT && isHunterPet() && GetOwner() && GetOwner()->ToPlayer() && GetOwner()->HasAura(19623) && ToPet()->IsPermanentPetFor(GetOwner()->ToPlayer()) && !procSpell)
         if (roll_chance_i(40))
             CastSpell(this, 19615, true);
 

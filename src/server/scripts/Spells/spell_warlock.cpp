@@ -45,7 +45,7 @@ enum WarlockSpells
     WARLOCK_SOULBURN_AURA                   = 74434,
     WARLOCK_CORRUPTION                      = 172,
     WARLOCK_AGONY                           = 980,
-    WARLOCK_DOOM                            = 124913,
+    WARLOCK_DOOM                            = 603,
     WARLOCK_UNSTABLE_AFFLICTION             = 30108,
     WARLOCK_IMMOLATE                        = 348,
     WARLOCK_SHADOWBURN_ENERGIZE             = 125882,
@@ -74,6 +74,279 @@ enum WarlockSpells
     WARLOCK_SOUL_LEECH_HEAL                 = 108366,
     WARLOCK_DARK_REGENERATION               = 108359,
     WARLOCK_DARK_BARGAIN_DOT                = 110914,
+    WARLOCK_MOLTEN_CORE                     = 122355,
+    WARLOCK_MOLTEN_CORE_AURA                = 122351,
+    WARLOCK_WILD_IMP_SUMMON                 = 104317,
+    WARLOCK_DEMONIC_CALL                    = 114925,
+    WARLOCK_DECIMATE_AURA                   = 108869,
+};
+
+// Called by Firebolt (Wild Imp) - 104318
+// Molten Core - 122351
+class spell_warl_molten_core_hit : public SpellScriptLoader
+{
+    public:
+        spell_warl_molten_core_hit() : SpellScriptLoader("spell_warl_molten_core_hit") { }
+
+        class spell_warl_molten_core_hit_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_molten_core_hit_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (_player->HasAura(WARLOCK_MOLTEN_CORE_AURA))
+                            if (roll_chance_i(8))
+                                _player->CastSpell(_player, WARLOCK_MOLTEN_CORE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_molten_core_hit_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_molten_core_hit_SpellScript();
+        }
+};
+
+// Called by Shadowflame - 47960
+// Molten Core - 122351
+class spell_warl_molten_core_dot : public SpellScriptLoader
+{
+    public:
+        spell_warl_molten_core_dot() : SpellScriptLoader("spell_warl_molten_core_dot") { }
+
+        class spell_warl_molten_core_dot_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_molten_core_dot_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    if (GetCaster()->HasAura(WARLOCK_MOLTEN_CORE_AURA))
+                        if (roll_chance_i(8))
+                            GetCaster()->CastSpell(GetCaster(), WARLOCK_MOLTEN_CORE, true);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_molten_core_dot_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_DAMAGE);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_molten_core_dot_AuraScript();
+        }
+};
+
+// Called by Shadow Bolt - 686 and Soul Fire - 6353
+// Decimate - 108869
+class spell_warl_decimate : public SpellScriptLoader
+{
+    public:
+        spell_warl_decimate() : SpellScriptLoader("spell_warl_decimate") { }
+
+        class spell_warl_decimate_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_decimate_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetHitUnit())
+                        if (target->GetHealthPct() < 25.0f)
+                            _player->CastSpell(_player, WARLOCK_MOLTEN_CORE, true);
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_decimate_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_decimate_SpellScript();
+        }
+};
+
+// Called by Shadow Bolt - 686, Soul Fire - 6353 and Touch of Chaos - 103964
+// Demonic Call - 114925
+class spell_warl_demonic_call : public SpellScriptLoader
+{
+    public:
+        spell_warl_demonic_call() : SpellScriptLoader("spell_warl_demonic_call") { }
+
+        class spell_warl_demonic_call_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_demonic_call_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (_player->HasAura(WARLOCK_DEMONIC_CALL))
+                        {
+                            _player->CastSpell(_player, WARLOCK_WILD_IMP_SUMMON, true);
+                            _player->RemoveAura(WARLOCK_DEMONIC_CALL);
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_demonic_call_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_demonic_call_SpellScript();
+        }
+};
+
+// Void Ray - 115422 and Touch of Chaos - 103964
+class spell_warl_void_ray : public SpellScriptLoader
+{
+    public:
+        spell_warl_void_ray() : SpellScriptLoader("spell_warl_void_ray") { }
+
+        class spell_warl_void_ray_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_void_ray_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION, _player->GetGUID()))
+                        {
+                            corruption->SetDuration(corruption->GetDuration() + 4000);
+                            corruption->SetNeedClientUpdateForTargets();
+                        }
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_warl_void_ray_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_void_ray_SpellScript();
+        }
+};
+
+// Chaos Wave - 124916
+class spell_warl_chaos_wave : public SpellScriptLoader
+{
+    public:
+        spell_warl_chaos_wave() : SpellScriptLoader("spell_warl_chaos_wave") { }
+
+        class spell_warl_chaos_wave_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_warl_chaos_wave_SpellScript);
+
+            void HandleAfterCast()
+            {
+                if (Player* _player = GetCaster()->ToPlayer())
+                    _player->CastSpell(_player, WARLOCK_MOLTEN_CORE, true);
+            }
+
+            void Register()
+            {
+                AfterCast += SpellCastFn(spell_warl_chaos_wave_SpellScript::HandleAfterCast);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_warl_chaos_wave_SpellScript();
+        }
+};
+
+// Metamorphosis - 103958
+class spell_warl_metamorphosis_cost : public SpellScriptLoader
+{
+    public:
+        spell_warl_metamorphosis_cost() : SpellScriptLoader("spell_warl_metamorphosis_cost") { }
+
+        class spell_warl_metamorphosis_cost_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_metamorphosis_cost_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    GetCaster()->EnergizeBySpell(GetCaster(), WARLOCK_METAMORPHOSIS, -6, POWER_DEMONIC_FURY);
+            }
+
+            void OnUpdate(uint32 diff, AuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                {
+                    Player* _player = GetCaster()->ToPlayer();
+                    if (!_player)
+                        return;
+
+                    if (_player->GetPower(POWER_DEMONIC_FURY) <= 1)
+                        if (_player->HasAura(WARLOCK_METAMORPHOSIS))
+                            _player->RemoveAura(WARLOCK_METAMORPHOSIS);
+                }
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_metamorphosis_cost_AuraScript::OnTick, EFFECT_2, SPELL_AURA_PERIODIC_DUMMY);
+                OnEffectUpdate += AuraEffectUpdateFn(spell_warl_metamorphosis_cost_AuraScript::OnUpdate, EFFECT_0, SPELL_AURA_MOD_SHAPESHIFT);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_metamorphosis_cost_AuraScript();
+        }
+};
+
+// Immolation Aura - 104025
+class spell_warl_immolation_aura : public SpellScriptLoader
+{
+    public:
+        spell_warl_immolation_aura() : SpellScriptLoader("spell_warl_immolation_aura") { }
+
+        class spell_warl_immolation_aura_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warl_immolation_aura_AuraScript);
+
+            void OnTick(constAuraEffectPtr aurEff)
+            {
+                if (GetCaster())
+                    GetCaster()->EnergizeBySpell(GetCaster(), GetSpellInfo()->Id, -25, POWER_DEMONIC_FURY);
+            }
+
+            void Register()
+            {
+                OnEffectPeriodic += AuraEffectPeriodicFn(spell_warl_immolation_aura_AuraScript::OnTick, EFFECT_0, SPELL_AURA_PERIODIC_TRIGGER_SPELL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warl_immolation_aura_AuraScript();
+        }
 };
 
 // Dark Bargain - 110013
@@ -890,12 +1163,12 @@ class spell_warl_fel_flame : public SpellScriptLoader
                         // Increases the duration of Corruption and Unstable Affliction by 6s
                         if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION)
                         {
-                            if (AuraPtr unstableAffliction = target->GetAura(WARLOCK_UNSTABLE_AFFLICTION))
+                            if (AuraPtr unstableAffliction = target->GetAura(WARLOCK_UNSTABLE_AFFLICTION, _player->GetGUID()))
                             {
                                 unstableAffliction->SetDuration(unstableAffliction->GetDuration() + 6000);
                                 unstableAffliction->SetNeedClientUpdateForTargets();
                             }
-                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION))
+                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION, _player->GetGUID()))
                             {
                                 corruption->SetDuration(corruption->GetDuration() + 6000);
                                 corruption->SetNeedClientUpdateForTargets();
@@ -904,12 +1177,12 @@ class spell_warl_fel_flame : public SpellScriptLoader
                         // Increases the duration of Corruption by 6s
                         else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY)
                         {
-                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION))
+                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION, _player->GetGUID()))
                             {
                                 corruption->SetDuration(corruption->GetDuration() + 6000);
                                 corruption->SetNeedClientUpdateForTargets();
                             }
-                            else if (AuraPtr doom = target->GetAura(WARLOCK_DOOM))
+                            else if (AuraPtr doom = target->GetAura(WARLOCK_DOOM, _player->GetGUID()))
                             {
                                 doom->SetDuration(doom->GetDuration() + 6000);
                                 doom->SetNeedClientUpdateForTargets();
@@ -918,7 +1191,7 @@ class spell_warl_fel_flame : public SpellScriptLoader
                         // Increases the duration of Immolate by 6s
                         else if (_player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
                         {
-                            if (AuraPtr corruption = target->GetAura(WARLOCK_IMMOLATE))
+                            if (AuraPtr corruption = target->GetAura(WARLOCK_IMMOLATE, _player->GetGUID()))
                             {
                                 corruption->SetDuration(corruption->GetDuration() + 6000);
                                 corruption->SetNeedClientUpdateForTargets();
@@ -932,7 +1205,7 @@ class spell_warl_fel_flame : public SpellScriptLoader
                         // Increases the duration of Corruption by 6s
                         else
                         {
-                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION))
+                            if (AuraPtr corruption = target->GetAura(WARLOCK_CORRUPTION, _player->GetGUID()))
                             {
                                 corruption->SetDuration(corruption->GetDuration() + 6000);
                                 corruption->SetNeedClientUpdateForTargets();
@@ -1581,6 +1854,14 @@ class spell_warl_unstable_affliction : public SpellScriptLoader
 
 void AddSC_warlock_spell_scripts()
 {
+    new spell_warl_molten_core_hit();
+    new spell_warl_molten_core_dot();
+    new spell_warl_decimate();
+    new spell_warl_demonic_call();
+    new spell_warl_void_ray();
+    new spell_warl_chaos_wave();
+    new spell_warl_metamorphosis_cost();
+    new spell_warl_immolation_aura();
     new spell_warl_dark_bargain_on_absorb();
     new spell_warl_dark_regeneration();
     new spell_warl_soul_leech();

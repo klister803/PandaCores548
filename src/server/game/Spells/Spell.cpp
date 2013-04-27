@@ -1055,7 +1055,8 @@ void Spell::SelectImplicitConeTargets(SpellEffIndex effIndex, SpellImplicitTarge
     ConditionList* condList = m_spellInfo->Effects[effIndex].ImplicitTargetConditions;
     float coneAngle = M_PI/2;
 
-    if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_110)
+    if (m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_110 ||
+        m_spellInfo->Effects[effIndex].TargetA.GetTarget() == TARGET_UNIT_CONE_ENEMY_129)
         coneAngle = M_PI/6;
 
     float radius = m_spellInfo->Effects[effIndex].CalcRadius(m_caster) * m_spellValue->RadiusMod;
@@ -2732,8 +2733,28 @@ SpellMissInfo Spell::DoSpellHitOnUnit(Unit* unit, uint32 effectMask, bool scaleA
 
                     if (duration != m_spellAura->GetMaxDuration())
                     {
-                        m_spellAura->SetMaxDuration(duration);
-                        m_spellAura->SetDuration(duration);
+                        bool periodicDamage = false;
+                        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+                            if (m_spellAura->GetEffect(i))
+                                if (m_spellAura->GetEffect(i)->GetAuraType() == SPELL_AURA_PERIODIC_DAMAGE)
+                                    periodicDamage = true;
+
+                        // Fix Pandemic
+                        if (periodicDamage && refresh && m_originalCaster->HasAura(131973))
+                        {
+                            int32 newDuration = (duration + m_spellAura->GetDuration()) <= (int32(m_spellAura->GetMaxDuration() * 1.5f)) ?
+                                duration + m_spellAura->GetDuration() : int32(m_spellAura->GetMaxDuration() * 1.5f);
+                            int32 newMaxDuration = (duration + m_spellAura->GetMaxDuration()) <= (int32(m_spellAura->GetMaxDuration() * 1.5f)) ?
+                                duration + m_spellAura->GetMaxDuration() : int32(m_spellAura->GetMaxDuration() * 1.5f);
+
+                            m_spellAura->SetMaxDuration(newMaxDuration);
+                            m_spellAura->SetDuration(newDuration);
+                        }
+                        else
+                        {
+                            m_spellAura->SetMaxDuration(duration);
+                            m_spellAura->SetDuration(duration);
+                        }
                     }
                     m_spellAura->_RegisterForTargets();
                 }

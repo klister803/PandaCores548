@@ -105,6 +105,9 @@ enum HunterSpells
     HUNTER_SPELL_GLYPH_OF_COLLAPSE               = 126095,
     HUNTER_SPELL_MARKED_FOR_DIE                  = 132106,
     HUNTER_SPELL_HUNTERS_MARK                    = 1130,
+    HUNTER_SPELL_GLYPH_OF_MISDIRECTION           = 56829,
+    HUNTER_SPELL_MISDIRECTION                    = 34477,
+    HUNTER_SPELL_MISDIRECTION_PROC               = 35079,
 };
 
 // Called by Arcane Shot - 3044, Chimera Shot - 53209
@@ -365,6 +368,14 @@ class spell_hun_focus_fire : public SpellScriptLoader
         {
             PrepareSpellScript(spell_hun_focus_fire_SpellScript);
 
+            SpellCastResult CheckFrenzy()
+            {
+                if (!GetCaster()->HasAura(HUNTER_SPELL_FRENZY_STACKS))
+                    return SPELL_FAILED_CANT_DO_THAT_RIGHT_NOW;
+
+                return SPELL_CAST_OK;
+            }
+
             void HandleOnHit()
             {
                 if (Player* _player = GetCaster()->ToPlayer())
@@ -394,7 +405,8 @@ class spell_hun_focus_fire : public SpellScriptLoader
 
             void Register()
             {
-               OnHit += SpellHitFn(spell_hun_focus_fire_SpellScript::HandleOnHit);
+                OnCheckCast += SpellCheckCastFn(spell_hun_focus_fire_SpellScript::CheckFrenzy);
+                OnHit += SpellHitFn(spell_hun_focus_fire_SpellScript::HandleOnHit);
             }
         };
 
@@ -1882,7 +1894,7 @@ class spell_hun_pet_carrion_feeder : public SpellScriptLoader
         }
 };
 
-// 34477 Misdirection
+// Misdirection - 34477
 class spell_hun_misdirection : public SpellScriptLoader
 {
     public:
@@ -1892,15 +1904,51 @@ class spell_hun_misdirection : public SpellScriptLoader
         {
             PrepareAuraScript(spell_hun_misdirection_AuraScript);
 
+            bool _hasGlyph;
+
+            void OnApply(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
+            {
+                if (!GetCaster())
+                {
+                    _hasGlyph = false;
+                    return;
+                }
+
+                _hasGlyph = false;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                    if (Unit* target = GetTarget())
+                        if (Pet* pet = _player->GetPet())
+                            if (pet->GetGUID() == target->GetGUID())
+                                if (_player->HasAura(HUNTER_SPELL_GLYPH_OF_MISDIRECTION))
+                                    _hasGlyph = true;
+            }
+
             void OnRemove(constAuraEffectPtr /*aurEff*/, AuraEffectHandleModes /*mode*/)
             {
-                if (Unit* caster = GetCaster())
+                if (!GetCaster())
+                    return;
+
+                if (Player* _player = GetCaster()->ToPlayer())
+                {
                     if (!GetDuration())
-                        caster->SetReducedThreatPercent(0, 0);
+                    {
+                        _player->SetReducedThreatPercent(0, 0);
+
+                        if (_hasGlyph)
+                        {
+                            if (_player->HasSpellCooldown(HUNTER_SPELL_MISDIRECTION))
+                                _player->RemoveSpellCooldown(HUNTER_SPELL_MISDIRECTION, true);
+                            if (_player->HasSpellCooldown(HUNTER_SPELL_MISDIRECTION_PROC))
+                                _player->RemoveSpellCooldown(HUNTER_SPELL_MISDIRECTION, true);
+                        }
+                    }
+                }
             }
 
             void Register()
             {
+                AfterEffectApply += AuraEffectApplyFn(spell_hun_misdirection_AuraScript::OnApply, EFFECT_2, SPELL_AURA_MOD_SCALE, AURA_EFFECT_HANDLE_REAL);
                 AfterEffectRemove += AuraEffectRemoveFn(spell_hun_misdirection_AuraScript::OnRemove, EFFECT_1, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
             }
         };
@@ -1911,7 +1959,7 @@ class spell_hun_misdirection : public SpellScriptLoader
         }
 };
 
-// 35079 Misdirection proc
+// Misdirection (proc) - 35079
 class spell_hun_misdirection_proc : public SpellScriptLoader
 {
     public:

@@ -1306,6 +1306,7 @@ bool AuraEffect::IsAffectingSpell(SpellInfo const* spell) const
     // Check EffectClassMask
     if (m_spellInfo->Effects[m_effIndex].SpellClassMask & spell->SpellFamilyFlags)
         return true;
+
     return false;
 }
 
@@ -1466,8 +1467,8 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             spellId2 = 40121;
             break;
         case FORM_METAMORPHOSIS:
-            spellId  = 54817;
-            spellId2 = 54879;
+            spellId  = 103965;
+            spellId2 = 54817;
             break;
         case FORM_SPIRITOFREDEMPTION:
             spellId  = 27792;
@@ -4706,6 +4707,12 @@ void AuraEffect::HandleAuraModAttackPowerPercent(AuraApplication const* aurApp, 
 
     Unit* target = aurApp->GetTarget();
 
+    // Don't apply Markmanship aura twice on pet
+    if (GetCaster() && GetCaster()->ToPlayer() && aurApp->GetBase()->GetId() == 19506)
+        if (Pet* pet = GetCaster()->ToPlayer()->GetPet())
+            if (target->GetGUID() == pet->GetGUID())
+                return;
+
     //UNIT_FIELD_ATTACK_POWER_MULTIPLIER = multiplier - 1
     target->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_PCT, float(GetAmount()), apply);
 }
@@ -6056,31 +6063,13 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                             }
                         }
                     }
-                }
-            }
-        case SPELLFAMILY_WARLOCK:
-            switch (GetId())
-            {
-                // Custom MoP Script
-                case 103958: // Metamorphosis
-                {
-                    if (caster)
-                    {
-                        if (caster->GetPower(POWER_DEMONIC_FURY) > 0)
-                        {
-                            // Power cost : 6 demonic fury per second
-                            uint32 demonicFury = caster->GetPower(POWER_DEMONIC_FURY) - 6;
 
-                            if (demonicFury < 0)
-                                demonicFury = 0;
-
-                            caster->SetPower(POWER_DEMONIC_FURY, demonicFury);
-                        }
-                        else
-                            caster->RemoveAurasDueToSpell(103958);
-                    }
+                    break;
                 }
+                default:
+                    break;
             }
+            break;
         case SPELLFAMILY_DEATHKNIGHT:
             switch (GetId())
             {
@@ -6664,6 +6653,10 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
     bool crit = IsPeriodicTickCrit(target, caster);
     if (crit)
         damage = caster->SpellCriticalDamageBonus(m_spellInfo, damage, target);
+
+    // If Doom critical tick, a Wild Imp will appear to fight with the Warlock
+    if (m_spellInfo->Id == 603 && crit)
+        caster->CastSpell(caster, 104317, true);
 
     int32 dmg = damage;
     if (m_spellInfo->Id != 110914 && m_spellInfo->Id != 124280 && m_spellInfo->Id != 49016) // Hack fix for Dark Bargain and Touch of Karma (DOT) and Unholy Frenzy
