@@ -8209,6 +8209,12 @@ void Player::UpdateArea(uint32 newArea)
     pvpInfo.inFFAPvPArea = area && (area->flags & AREA_FLAG_ARENA);
     UpdatePvPState(true);
 
+    //Pandaria area update for monk level < 85
+    if(getLevel() < 85 && getClass() == CLASS_MONK && GetMapId() == 870 && area->mapid == 870 &&
+        newArea != 6081 && newArea != 6526 && newArea != 6527 
+        && GetZoneId() == 5841 && !isGameMaster())
+        TeleportTo(870, 3818.55f, 1793.18f, 950.35f, GetOrientation());
+
     UpdateAreaDependentAuras(newArea);
 
     // previously this was in UpdateZone (but after UpdateArea) so nothing will break
@@ -9864,7 +9870,10 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
         case 4273:  // Ulduar
             NumberOfFields = 10;
             break;
-         default:
+        case 5833:
+            NumberOfFields = 9;
+            break;
+        default:
             NumberOfFields = 12;
             break;
     }
@@ -10398,6 +10407,10 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
         case 5449:
             if (bg && bg->GetTypeID(true) == BATTLEGROUND_BFG)
                 bg->FillInitialWorldStates(data);
+            break;
+        case 5833:
+            data << uint32(0x1958) << uint32(0x1);
+            data << uint32(0x1959) << uint32(0x4);
             break;
         default:
             data << uint32(0x914) << uint32(0x0);           // 7
@@ -27348,6 +27361,9 @@ void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
 
         for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
         {
+            if (zone != itr->second->areaId && area != itr->second->areaId)
+                continue;
+
             if (itr->second->IsFitToRequirements(this, zone, area))
             {
                 if (itr->second->autocast)
@@ -27367,6 +27383,9 @@ void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
 
         for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
         {
+            if (zone != itr->second->areaId && area != itr->second->areaId)
+                continue;
+
             if (itr->second->IsFitToRequirements(this, zone, area))
             {
                 if (itr->second->autocast)
