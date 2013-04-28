@@ -486,16 +486,20 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 // Faerie Fire - 770
                 if (m_spellInfo->Id == 770)
+                {
                     // Deals damage only if casted from bear form
                     if (m_caster->GetShapeshiftForm() != FORM_BEAR)
                         return;
+                }
                 // Ferocious Bite
-                if (m_caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->SpellFamilyFlags[0] & 0x000800000) && m_spellInfo->SpellVisual[0] == 6587)
+                else if (m_caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->SpellFamilyFlags[0] & 0x000800000) && m_spellInfo->SpellVisual[0] == 6587)
                 {
                     // converts each extra point of energy ( up to 25 energy ) into additional damage
                     int32 energy = -(m_caster->ModifyPower(POWER_ENERGY, -25));
                     // 25 energy = 100% more damage
                     AddPct(damage, energy * 4);
+
+                    damage += int32(0.196f * m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * m_caster->ToPlayer()->GetComboPoints());
 
                     // if target is under 25% of life, also reset rake duration
                     if (unitTarget->GetHealthPct() <= 25.0f)
@@ -503,10 +507,10 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                             aura->RefreshDuration();
                 }
                 // Maul - Deals 20% more damage if target is bleeding
-                if (m_spellInfo->Id == 6807 && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
+                else if (m_spellInfo->Id == 6807 && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
                     AddPct(damage, 20);
                 // Swipe - Deals 20% more damage if target is bleeding
-                if ((m_spellInfo->Id == 62078 || m_spellInfo->Id == 779) && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
+                else if ((m_spellInfo->Id == 62078 || m_spellInfo->Id == 779) && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
                     AddPct(damage, 20);
                 break;
             }
@@ -2502,6 +2506,15 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                             summon->setFaction(m_originalCaster->getFaction());
                             summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
                         }
+
+                        // Explosive Decoy and Explosive Decoy 2.0
+                        if (m_spellInfo->Id == 54359 || m_spellInfo->Id == 62405)
+                        {
+                            summon->SetMaxHealth(damage);
+                            summon->SetHealth(damage);
+                            summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                        }
+
 
                         ExecuteLogEffectSummonObject(effIndex, summon);
                     }

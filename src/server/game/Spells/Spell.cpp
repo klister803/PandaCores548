@@ -6603,7 +6603,7 @@ bool Spell::CheckEffectTarget(Unit const* target, uint32 eff) const
             break;
     }
 
-    if (IsTriggered() || m_spellInfo->AttributesEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS)
+    if ((IsTriggered() || m_spellInfo->AttributesEx2 & SPELL_ATTR2_CAN_TARGET_NOT_IN_LOS) && m_spellInfo->Id != 117418 && m_spellInfo->Id != 120086) // Fists of Fury can't target not in LOS
         return true;
 
     // todo: shit below shouldn't be here, but it's temporary
