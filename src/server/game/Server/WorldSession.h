@@ -1080,6 +1080,12 @@ class WorldSession
         time_t timeLastChannelAnnounceCommand;
         time_t timeLastGroupInviteCommand;
         time_t timeLastGuildInviteCommand;
+        time_t timeLastChannelModerCommand;
+        time_t timeLastChannelOwnerCommand;
+        time_t timeLastChannelSetownerCommand;
+        time_t timeLastChannelUnmoderCommand;
+        time_t timeLastChannelUnmuteCommand;
+        time_t timeLastChannelKickCommand;
         z_stream_s* _compressionStream;
 };
 #endif
