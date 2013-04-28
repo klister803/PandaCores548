@@ -2186,4 +2186,6 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
         _player->learnSpell(668, false); // Language Common
         _player->learnSpell(108127, false); // Language Pandaren
     }
+
+    _player->SendMovieStart(116);
 }
