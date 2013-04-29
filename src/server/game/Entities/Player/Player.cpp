@@ -20988,7 +20988,7 @@ void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent, bool stampede
     // only if current pet in slot
     pet->SavePetToDB(mode, stampeded);
 
-    if(pet->getPetType() != HUNTER_PET)
+    if (pet->getPetType() != HUNTER_PET)
         SetMinion(pet, false, PET_SLOT_UNK_SLOT);
     else
         SetMinion(pet, false, PET_SLOT_ACTUAL_PET_SLOT);
