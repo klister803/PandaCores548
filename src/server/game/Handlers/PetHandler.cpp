@@ -289,11 +289,14 @@ void WorldSession::HandlePetActionHelper(Unit* pet, uint64 guid1, uint16 spellid
             {
                 case REACT_PASSIVE:                         //passive
                     pet->AttackStop();
-
+                    break;
                 case REACT_DEFENSIVE:                       //recovery
                 case REACT_AGGRESSIVE:                      //activete
+                case REACT_HELPER:
                     if (pet->GetTypeId() == TYPEID_UNIT)
                         pet->ToCreature()->SetReactState(ReactStates(spellid));
+                    break;
+                default:
                     break;
             }
             break;

@@ -1078,7 +1078,8 @@ enum ReactStates
 {
     REACT_PASSIVE    = 0,
     REACT_DEFENSIVE  = 1,
-    REACT_AGGRESSIVE = 2
+    REACT_AGGRESSIVE = 2,
+    REACT_HELPER     = 3
 };
 
 enum CommandStates
@@ -1087,7 +1088,7 @@ enum CommandStates
     COMMAND_FOLLOW  = 1,
     COMMAND_ATTACK  = 2,
     COMMAND_ABANDON = 3,
-    COMMAND_MOVE_TO  = 4
+    COMMAND_MOVE_TO = 4
 };
 
 #define UNIT_ACTION_BUTTON_ACTION(X) (uint32(X) & 0x00FFFFFF)
