@@ -1463,7 +1463,7 @@ void ObjectMgr::LoadCreatures()
         data.curmana        = fields[index++].GetUInt32();
         data.movementType   = fields[index++].GetUInt8();
         data.spawnMask      = fields[index++].GetUInt32();
-        data.phaseMask      = fields[index++].GetUInt16();
+        data.phaseMask      = fields[index++].GetUInt32();
         int16 gameEvent     = fields[index++].GetInt8();
         uint32 PoolId       = fields[index++].GetUInt32();
         data.npcflag        = fields[index++].GetUInt32();
