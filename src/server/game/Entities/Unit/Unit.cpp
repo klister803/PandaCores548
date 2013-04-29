@@ -9552,7 +9552,7 @@ void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
     {
         if (minion->GetOwnerGUID())
         {
-            sLog->outFatal(LOG_FILTER_UNITS, "SetMinion: Minion %u is not the minion of owner %u", minion->GetEntry(), GetEntry());
+            sLog->outFatal(LOG_FILTER_UNITS, "SetMinion: Minion %u is not the minion of owner %u", minion->GetEntry(), ToPlayer()->GetEntry());
             return;
         }
 
