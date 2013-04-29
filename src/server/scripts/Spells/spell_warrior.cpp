@@ -739,7 +739,28 @@ class spell_warr_heroic_leap : public SpellScriptLoader
 
         SpellScript* GetSpellScript() const
         {
-        return new spell_warr_heroic_leap_SpellScript();
+            return new spell_warr_heroic_leap_SpellScript();
+        }
+
+        class spell_warr_heroic_leap_AuraScript : public AuraScript
+        {
+            PrepareAuraScript(spell_warr_heroic_leap_AuraScript);
+
+            void OnRemove(constAuraEffectPtr aurEff, AuraEffectHandleModes /*mode*/)
+            {
+                if (Unit* caster = GetCaster())
+                    caster->CastSpell(caster, WARRIOR_SPELL_HEROIC_LEAP_DAMAGE, true);
+            }
+
+            void Register()
+            {
+                OnEffectRemove += AuraEffectRemoveFn(spell_warr_heroic_leap_AuraScript::OnRemove, EFFECT_0, SPELL_AURA_DUMMY, AURA_EFFECT_HANDLE_REAL);
+            }
+        };
+
+        AuraScript* GetAuraScript() const
+        {
+            return new spell_warr_heroic_leap_AuraScript();
         }
 };
 
