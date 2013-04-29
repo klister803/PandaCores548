@@ -2507,6 +2507,15 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                             summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
                         }
 
+                        // Explosive Decoy and Explosive Decoy 2.0
+                        if (m_spellInfo->Id == 54359 || m_spellInfo->Id == 62405)
+                        {
+                            summon->SetMaxHealth(damage);
+                            summon->SetHealth(damage);
+                            summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                        }
+
+
                         ExecuteLogEffectSummonObject(effIndex, summon);
                     }
                     return;

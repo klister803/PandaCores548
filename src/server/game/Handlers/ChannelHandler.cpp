@@ -119,6 +119,12 @@ void WorldSession::HandleChannelPassword(WorldPacket& recvPacket)
 
 void WorldSession::HandleChannelSetOwner(WorldPacket& recvPacket)
 {
+    time_t now = time(NULL);
+    if (now - timeLastChannelSetownerCommand < 5)
+        return;
+    else
+       timeLastChannelSetownerCommand = now;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Opcode %u", recvPacket.GetOpcode());
 
     uint32 channelLength = recvPacket.ReadBits(8);
@@ -137,6 +143,12 @@ void WorldSession::HandleChannelSetOwner(WorldPacket& recvPacket)
 
 void WorldSession::HandleChannelOwner(WorldPacket& recvPacket)
 {
+    time_t now = time(NULL);
+    if (now - timeLastChannelOwnerCommand < 5)
+        return;
+    else
+       timeLastChannelOwnerCommand = now;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Opcode %u", recvPacket.GetOpcode());
     uint32 length = recvPacket.ReadBits(8);
     std::string channelname = recvPacket.ReadString(length);
@@ -148,6 +160,12 @@ void WorldSession::HandleChannelOwner(WorldPacket& recvPacket)
 
 void WorldSession::HandleChannelModerator(WorldPacket& recvPacket)
 {
+    time_t now = time(NULL);
+    if (now - timeLastChannelModerCommand < 5)
+        return;
+    else
+       timeLastChannelModerCommand = now;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Opcode %u", recvPacket.GetOpcode());
 
     uint32 channelLength = recvPacket.ReadBits(8);
@@ -166,6 +184,12 @@ void WorldSession::HandleChannelModerator(WorldPacket& recvPacket)
 
 void WorldSession::HandleChannelUnmoderator(WorldPacket& recvPacket)
 {
+    time_t now = time(NULL);
+    if (now - timeLastChannelUnmoderCommand < 5)
+        return;
+    else
+       timeLastChannelUnmoderCommand = now;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Opcode %u", recvPacket.GetOpcode());
 
     uint32 nameLength = recvPacket.ReadBits(7);
@@ -207,6 +231,12 @@ void WorldSession::HandleChannelMute(WorldPacket& recvPacket)
 
 void WorldSession::HandleChannelUnmute(WorldPacket& recvPacket)
 {
+    time_t now = time(NULL);
+    if (now - timeLastChannelUnmuteCommand < 5)
+        return;
+    else
+       timeLastChannelUnmuteCommand = now;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Opcode %u", recvPacket.GetOpcode());
 
     uint32 nameLength = recvPacket.ReadBits(8);
@@ -248,6 +278,12 @@ void WorldSession::HandleChannelInvite(WorldPacket& recvPacket)
 
 void WorldSession::HandleChannelKick(WorldPacket& recvPacket)
 {
+    time_t now = time(NULL);
+    if (now - timeLastChannelKickCommand < 5)
+        return;
+    else
+       timeLastChannelKickCommand = now;
+
     sLog->outDebug(LOG_FILTER_NETWORKIO, "Opcode %u", recvPacket.GetOpcode());
     uint32 channelLength = recvPacket.ReadBits(8);
     uint32 nameLength = recvPacket.ReadBits(7);
