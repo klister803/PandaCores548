@@ -198,11 +198,12 @@ public:
             me->SetReactState(REACT_DEFENSIVE);
             me->SetDisplayId(39755);
             me->setFaction(2357); //mechant!
+            me->Respawn();
         }
         
         void DamageTaken(Unit* attacker, uint32& damage)
         {
-            if (me->HealthBelowPctDamaged(5, damage) && !isInFalcon)
+            if (me->HealthBelowPctDamaged(30, damage) && !isInFalcon)
             {
                 isInFalcon = true;
                 me->SetDisplayId(39796); //faucon
