@@ -241,18 +241,18 @@ public:
                 {
                     case EVENT_JAOMIN_JUMP: //on monte
                         if (me->getVictim())
-                            me->CastSpell(me->getVictim(), 108938, false);
+                            me->CastSpell(me->getVictim(), 108938, true);
                         events.ScheduleEvent(EVENT_JAOMIN_JUMP, 30000);
                         break;
                     case EVENT_HIT_CIRCLE: //baffe
                         if (me->getVictim())
-                            me->CastSpell(me->getVictim(), 119301, false);
+                            me->CastSpell(me->getVictim(), 119301, true);
 
                         events.ScheduleEvent(EVENT_HIT_CIRCLE, 3000);
                         break;
                     case EVENT_FALCON: //attaque du faucon
                         if (me->getVictim())
-                            me->CastSpell(me->getVictim(), 108935, false);
+                            me->CastSpell(me->getVictim(), 108935, true);
 
                         events.ScheduleEvent(EVENT_FALCON, 4000);
                         break;
