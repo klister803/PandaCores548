@@ -72,6 +72,7 @@ struct npc_escortAI : public ScriptedAI
         bool GetWaypointPosition(uint32 pointId, float& x, float& y, float& z);
 
         virtual void WaypointReached(uint32 pointId) = 0;
+        virtual void LastWaypointReached() {}
         virtual void WaypointStart(uint32 /*pointId*/) {}
 
         void Start(bool isActiveAttacker = true, bool run = false, uint64 playerGUID = 0, Quest const* quest = NULL, bool instantRespawn = false, bool canLoopPath = false, bool resetWaypoints = true);

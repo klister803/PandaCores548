@@ -269,7 +269,7 @@ void Player::UpdateArmor()
 float Player::GetHealthBonusFromStamina()
 {
     // Taken from PaperDollFrame.lua - 4.3.4.15595
-    float ratio = 10.0f;
+    float ratio = 14.0f;
     if (gtOCTHpPerStaminaEntry const* hpBase = sGtOCTHpPerStaminaStore.LookupEntry((getClass() - 1) * GT_MAX_LEVEL + getLevel() - 1))
         ratio = hpBase->ratio;
 
@@ -333,7 +333,12 @@ void Player::UpdateAttackPowerAndDamage(bool ranged)
         SpellShapeshiftFormEntry const* form = sSpellShapeshiftFormStore.LookupEntry(GetShapeshiftForm());
         // Directly taken from client, SHAPESHIFT_FLAG_AP_FROM_STRENGTH ?
         if (form && form->flags1 & 0x20)
+        {
             agilityValue += std::max((GetStat(STAT_AGILITY) - 10.0f) * entry->APPerStrenth, 0.0f);
+            // Druid feral has AP per agility = 2
+            if (form->ID == FORM_CAT)
+                agilityValue *= 2;
+        }
 
         val2 = strengthValue + agilityValue;
     }
@@ -1064,6 +1069,7 @@ bool Guardian::UpdateStats(Stats stat)
     Unit* owner = GetOwner();
     // Handle Death Knight Glyphs and Talents
     float mod = 0.75f;
+
     if (IsPetGhoul() && (stat == STAT_STAMINA || stat == STAT_STRENGTH))
     {
         switch (stat)
@@ -1090,10 +1096,10 @@ bool Guardian::UpdateStats(Stats stat)
     }
     else if (stat == STAT_STAMINA)      // Update for Cataclysm, check me for MoP
     {
-        ownersBonus = CalculatePct(owner->GetStat(STAT_STAMINA), 30);
+        ownersBonus = CalculatePct(owner->GetStat(STAT_STAMINA), 70);
         value += ownersBonus;
     }
-                                                            //warlock's and mage's pets gain 30% of owner's intellect
+    // warlock's and mage's pets gain 30% of owner's intellect
     else if (stat == STAT_INTELLECT)
     {
         if (owner->getClass() == CLASS_WARLOCK || owner->getClass() == CLASS_MAGE)
@@ -1102,13 +1108,6 @@ bool Guardian::UpdateStats(Stats stat)
             value += ownersBonus;
         }
     }
-/*
-    else if (stat == STAT_STRENGTH)
-    {
-        if (IsPetGhoul())
-            value += float(owner->GetStat(stat)) * 0.3f;
-    }
-*/
 
     SetStat(stat, int32(value));
     m_statFromOwner[stat] = ownersBonus;
@@ -1116,10 +1115,18 @@ bool Guardian::UpdateStats(Stats stat)
 
     switch (stat)
     {
-        case STAT_STRENGTH:         UpdateAttackPowerAndDamage();        break;
-        case STAT_AGILITY:          UpdateArmor();                       break;
-        case STAT_STAMINA:          UpdateMaxHealth();                   break;
-        case STAT_INTELLECT:        UpdateMaxPower(POWER_MANA);          break;
+        case STAT_STRENGTH:
+            UpdateAttackPowerAndDamage();
+            break;
+        case STAT_AGILITY:
+            UpdateArmor();
+            break;
+        case STAT_STAMINA:
+            UpdateMaxHealth();
+            break;
+        case STAT_INTELLECT:
+            UpdateMaxPower(POWER_MANA);
+            break;
         case STAT_SPIRIT:
         default:
             break;
@@ -1161,22 +1168,27 @@ void Guardian::UpdateResistances(uint32 school)
 void Guardian::UpdateArmor()
 {
     float value = 0.0f;
-    float bonus_armor = 0.0f;
     UnitMods unitMod = UNIT_MOD_ARMOR;
 
-    // hunter pets gain 35% of owner's armor value, warlock pets gain 100% of owner's armor
-    if (isHunterPet())
-        bonus_armor = float(CalculatePct(m_owner->GetArmor(), 70));
-    else if (isPet())
-        bonus_armor = m_owner->GetArmor();
+    // pets gain 100% of owner's armor
+    if (isHunterPet() || isPet())
+    {
+        value = m_owner->GetArmor();
+        value *= GetModifierValue(unitMod, BASE_PCT);
+        value *= GetModifierValue(unitMod, TOTAL_PCT);
 
-    value  = GetModifierValue(unitMod, BASE_VALUE);
-    value *= GetModifierValue(unitMod, BASE_PCT);
-    value += GetStat(STAT_AGILITY) * 2.0f;
-    value += GetModifierValue(unitMod, TOTAL_VALUE) + bonus_armor;
-    value *= GetModifierValue(unitMod, TOTAL_PCT);
+        SetArmor(int32(value));
+    }
+    else
+    {
+        value = GetModifierValue(unitMod, BASE_VALUE);
+        value *= GetModifierValue(unitMod, BASE_PCT);
+        value += GetStat(STAT_AGILITY) * 2.0f;
+        value += GetModifierValue(unitMod, TOTAL_VALUE);
+        value *= GetModifierValue(unitMod, TOTAL_PCT);
 
-    SetArmor(int32(value));
+        SetArmor(int32(value));
+    }
 }
 
 void Guardian::UpdateMaxHealth()
@@ -1269,21 +1281,22 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
     float bonusAP = 0.0f;
     UnitMods unitMod = UNIT_MOD_ATTACK_POWER;
 
-    if (GetEntry() == ENTRY_IMP)                                   // imp's attack power
+    // imp's attack power
+    if (GetEntry() == ENTRY_IMP)
         val = GetStat(STAT_STRENGTH) - 10.0f;
-    else
+    else if (!isHunterPet())
         val = 2 * GetStat(STAT_STRENGTH) - 20.0f;
 
     Unit* owner = GetOwner();
     if (owner && owner->GetTypeId() == TYPEID_PLAYER)
     {
-        if (isHunterPet())                      //hunter pets benefit from owner's attack power
+        if (isHunterPet())
         {
-            float mod = 1.0f;                                                 //Hunter contribution modifier
-            bonusAP = owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.22f * mod;
-            SetBonusDamage(int32(owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.1287f * mod));
+            bonusAP = owner->GetTotalAttackPowerValue(RANGED_ATTACK); // Hunter pets gain 100% of owner's AP
+            SetBonusDamage(int32(owner->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.5f)); // Bonus damage is equal to 50% of owner's AP
         }
-        else if (IsPetGhoul()) //ghouls benefit from deathknight's attack power (may be summon pet or not)
+        //ghouls benefit from deathknight's attack power (may be summon pet or not)
+        else if (IsPetGhoul())
         {
             bonusAP = owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.22f;
             SetBonusDamage(int32(owner->GetTotalAttackPowerValue(BASE_ATTACK) * 0.1287f));
@@ -1313,7 +1326,7 @@ void Guardian::UpdateAttackPowerAndDamage(bool ranged)
     SetModifierValue(UNIT_MOD_ATTACK_POWER, BASE_VALUE, val + bonusAP);
 
     //in BASE_VALUE of UNIT_MOD_ATTACK_POWER for creatures we store data of meleeattackpower field in DB
-    float base_attPower  = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
+    float base_attPower = GetModifierValue(unitMod, BASE_VALUE) * GetModifierValue(unitMod, BASE_PCT);
     float attPowerMultiplier = GetModifierValue(unitMod, TOTAL_PCT) - 1.0f;
 
     //UNIT_FIELD_(RANGED)_ATTACK_POWER field

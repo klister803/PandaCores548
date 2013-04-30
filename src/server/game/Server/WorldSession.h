@@ -336,6 +336,9 @@ class WorldSession
         void SendStableResult(uint8 guid);
         bool CheckStableMaster(uint64 guid);
 
+        // Battle pet
+        void HandleSummonBattlePet(WorldPacket& recvData);
+
         // Account Data
         AccountData* GetAccountData(AccountDataType type) { return &m_accountData[type]; }
         void SetAccountData(AccountDataType type, time_t tm, std::string data);
@@ -1077,6 +1080,12 @@ class WorldSession
         time_t timeLastChannelAnnounceCommand;
         time_t timeLastGroupInviteCommand;
         time_t timeLastGuildInviteCommand;
+        time_t timeLastChannelModerCommand;
+        time_t timeLastChannelOwnerCommand;
+        time_t timeLastChannelSetownerCommand;
+        time_t timeLastChannelUnmoderCommand;
+        time_t timeLastChannelUnmuteCommand;
+        time_t timeLastChannelKickCommand;
         z_stream_s* _compressionStream;
 };
 #endif

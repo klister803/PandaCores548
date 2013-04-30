@@ -315,6 +315,7 @@ public:
                 guidMob[i] = 0;
 
             ResetMobs();
+            me->HandleEmoteCommand(EMOTE_STATE_READY2H);
         }
         
         void DamageTaken(Unit* pDoneBy, uint32 &uiDamage)

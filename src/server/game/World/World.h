@@ -421,6 +421,7 @@ enum Rates
     RATE_DURABILITY_LOSS_ABSORB,
     RATE_DURABILITY_LOSS_BLOCK,
     RATE_MOVESPEED,
+    RATE_ONLINE,
     MAX_RATES
 };
 
@@ -583,12 +584,12 @@ class World
         /// Get the number of current active sessions
         void UpdateMaxSessionCounters();
         const SessionMap& GetAllSessions() const { return m_sessions; }
-        uint32 GetActiveAndQueuedSessionCount() const { return m_sessions.size(); }
-        uint32 GetActiveSessionCount() const { return m_sessions.size() - m_QueuedPlayer.size(); }
+        uint32 GetActiveAndQueuedSessionCount() const { return m_sessions.size() * getRate(RATE_ONLINE); }
+        uint32 GetActiveSessionCount() const { return (m_sessions.size() - m_QueuedPlayer.size()) * getRate(RATE_ONLINE); }
         uint32 GetQueuedSessionCount() const { return m_QueuedPlayer.size(); }
         /// Get the maximum number of parallel sessions on the server since last reboot
         uint32 GetMaxQueuedSessionCount() const { return m_maxQueuedSessionCount; }
-        uint32 GetMaxActiveSessionCount() const { return m_maxActiveSessionCount; }
+        uint32 GetMaxActiveSessionCount() const { return m_maxActiveSessionCount * getRate(RATE_ONLINE); }
         /// Get number of players
         inline uint32 GetPlayerCount() const { return m_PlayerCount; }
         inline uint32 GetMaxPlayerCount() const { return m_MaxPlayerCount; }
@@ -799,6 +800,18 @@ class World
         void   ResetEventSeasonalQuests(uint16 event_id);
         std::string GetRealmName() { return m_realmName; }
         void UpdatePhaseDefinitions();
+
+        bool AddCharacterName(std::string name)
+        {
+            if (nameMap.find(name) != nameMap.end())
+                return false;
+
+            nameMap[name] = true;
+            return true;
+        }
+
+        void DeleteCharName(std::string name) { nameMap.erase(name); }
+
     protected:
         void _UpdateGameTime();
         // callback for UpdateRealmCharacters
@@ -889,6 +902,8 @@ class World
 
         std::map<uint32, CharacterNameData> _characterNameDataMap;
         void LoadCharacterNameData();
+
+        std::map<std::string, bool> nameMap;
 
         void ProcessQueryCallbacks();
         ACE_Future_Set<PreparedQueryResult> m_realmCharCallbacks;

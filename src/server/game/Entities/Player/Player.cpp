@@ -700,7 +700,7 @@ void KillRewarder::Reward()
 #ifdef _MSC_VER
 #pragma warning(disable:4355)
 #endif
-Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_reputationMgr(this), phaseMgr(this)
+Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_reputationMgr(this), phaseMgr(this), m_battlePetMgr(this)
 {
 #ifdef _MSC_VER
 #pragma warning(default:4355)
@@ -745,6 +745,7 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     m_regenTimerCount = 0;
     m_holyPowerRegenTimerCount = 0;
     m_chiPowerRegenTimerCount = 0;
+    m_demonicFuryPowerRegenTimerCount = 0;
     m_soulShardsRegenTimerCount = 0;
     m_burningEmbersRegenTimerCount = 0;
     m_focusRegenTimerCount = 0;
@@ -849,7 +850,8 @@ Player::Player(WorldSession* session): Unit(true), m_achievementMgr(this), m_rep
     for (uint8 i = 0; i < MAX_MOVE_TYPE; ++i)
         m_forced_speed_changes[i] = 0;
 
-    m_stableSlots = 0;
+    m_currentPetSlot = PET_SLOT_DEFAULT;
+    m_petSlotUsed = 0;
 
     /////////////////// Instance System /////////////////////
 
@@ -1234,6 +1236,26 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
                 if (iProto->GetMaxStackSize() < count)
                     count = iProto->GetMaxStackSize();
             }
+
+            switch(itemId)
+            {
+                // Pandaren start weapons, they are given with the first quest
+                case 73207:
+                case 73208:
+                case 73209:
+                case 73210:
+                case 73211:
+                case 73212:
+                case 73213:
+                case 76390:
+                case 76391:
+                case 76392:
+                case 76393:
+                    continue;
+                default:
+                    break;
+            }
+
             StoreNewItemInBestSlots(itemId, count);
         }
     }
@@ -1483,7 +1505,7 @@ void Player::HandleDrowning(uint32 time_diff)
     }
 
     // In dark water
-    if (m_MirrorTimerFlags & UNDERWARER_INDARKWATER)
+    if ((m_MirrorTimerFlags & UNDERWARER_INDARKWATER) && !GetVehicle())
     {
         // Fatigue timer not activated - activate it
         if (m_MirrorTimer[FATIGUE_TIMER] == DISABLED_MIRROR_TIMER)
@@ -1498,12 +1520,12 @@ void Player::HandleDrowning(uint32 time_diff)
             if (m_MirrorTimer[FATIGUE_TIMER] < 0)
             {
                 m_MirrorTimer[FATIGUE_TIMER]+= 1*IN_MILLISECONDS;
-                if (isAlive())                                            // Calculate and deal damage
+                if (isAlive())                                              // Calculate and deal damage
                 {
                     uint32 damage = GetMaxHealth() / 5 + urand(0, getLevel()-1);
                     EnvironmentalDamage(DAMAGE_EXHAUSTED, damage);
                 }
-                else if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))       // Teleport ghost to graveyard
+                else if (HasFlag(PLAYER_FLAGS, PLAYER_FLAGS_GHOST))         // Teleport ghost to graveyard
                     RepopAtGraveyard();
             }
             else if (!(m_MirrorTimerFlagsLast & UNDERWARER_INDARKWATER))
@@ -1803,14 +1825,6 @@ void Player::Update(uint32 p_time)
                     }
                 }
             }
-
-            /*Unit* owner = victim->GetOwner();
-            Unit* u = owner ? owner : victim;
-            if (u->IsPvP() && (!duel || duel->opponent != u))
-            {
-                UpdatePvP(true);
-                RemoveAurasWithInterruptFlags(AURA_INTERRUPT_FLAG_ENTER_PVP_COMBAT);
-            }*/
         }
     }
 
@@ -1966,8 +1980,7 @@ void Player::Update(uint32 p_time)
 
     Pet* pet = GetPet();
     if (pet && !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityRange()) && !pet->isPossessed())
-    //if (pet && !pet->IsWithinDistInMap(this, GetMap()->GetVisibilityDistance()) && (GetCharmGUID() && (pet->GetGUID() != GetCharmGUID())))
-        RemovePet(pet, PET_SAVE_NOT_IN_SLOT, true);
+        RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT, true);
 
     //we should execute delayed teleports only for alive(!) players
     //because we don't want player's ghost teleported from graveyard
@@ -1997,7 +2010,7 @@ void Player::setDeathState(DeathState s)
         ClearResurrectRequestData();
 
         //FIXME: is pet dismissed at dying or releasing spirit? if second, add setDeathState(DEAD) to HandleRepopRequestOpcode and define pet unsummon here with (s == DEAD)
-        RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
+        RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
 
         // save value before aura remove in Unit::setDeathState
         ressSpellId = GetUInt32Value(PLAYER_SELF_RES_SPELL);
@@ -2695,9 +2708,6 @@ void Player::RemoveFromWorld()
 
 void Player::RegenerateAll()
 {
-    //if (m_regenTimer <= 500)
-    //    return;
-
     m_regenTimerCount += m_regenTimer;
 
     if (getClass() == CLASS_PALADIN)
@@ -2780,10 +2790,10 @@ void Player::RegenerateAll()
         m_chiPowerRegenTimerCount -= 10000;
     }
 
-    if (m_demonicFuryPowerRegenTimerCount >= 10000 && getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY))
+    if (m_demonicFuryPowerRegenTimerCount >= 100 && getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_DEMONOLOGY))
     {
         Regenerate(POWER_DEMONIC_FURY);
-        m_demonicFuryPowerRegenTimerCount -= 10000;
+        m_demonicFuryPowerRegenTimerCount -= 100;
     }
 
     if (m_soulShardsRegenTimerCount >= 20000 && getClass() == CLASS_WARLOCK && (ToPlayer()->GetSpecializationId(ToPlayer()->GetActiveSpec()) == SPEC_WARLOCK_AFFLICTION))
@@ -2823,6 +2833,7 @@ void Player::Regenerate(Powers power)
 
     switch (power)
     {
+        // Regenerate Mana
         case POWER_MANA:
         {
             float ManaIncreaseRate = sWorld->getRate(RATE_POWER_MANA);
@@ -2831,23 +2842,29 @@ void Player::Regenerate(Powers power)
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_INTERRUPTED_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * m_regenTimer) + CalculatePct(0.001f, spellHaste));
             else
                 addvalue += GetFloatValue(UNIT_FIELD_POWER_REGEN_FLAT_MODIFIER) *  ManaIncreaseRate * ((0.001f * m_regenTimer) + CalculatePct(0.001f, spellHaste));
+
+            break;
         }
-        break;
-        case POWER_RAGE:                                                // Regenerate Rage
+        // Regenerate Rage
+        case POWER_RAGE:
         {
             if (!isInCombat() && !HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
             {
                 float RageDecreaseRate = sWorld->getRate(RATE_POWER_RAGE_LOSS);
                 addvalue += -25 * RageDecreaseRate / meleeHaste;                // 2.5 rage by tick (= 2 seconds => 1.25 rage/sec)
             }
+
+            break;
         }
-        break;
+        // Regenerate Focus
         case POWER_FOCUS:
             addvalue += (6.0f + CalculatePct(6.0f, rangedHaste)) * sWorld->getRate(RATE_POWER_FOCUS);
             break;
-        case POWER_ENERGY:                                              // Regenerate Energy
+        // Regenerate Energy
+        case POWER_ENERGY:
             addvalue += ((0.01f * m_regenTimer) * sWorld->getRate(RATE_POWER_ENERGY) * HastePct);
             break;
+        // Regenerate Runic Power
         case POWER_RUNIC_POWER:
         {
             if (!isInCombat() && !HasAuraType(SPELL_AURA_INTERRUPT_REGEN))
@@ -2855,31 +2872,33 @@ void Player::Regenerate(Powers power)
                 float RunicPowerDecreaseRate = sWorld->getRate(RATE_POWER_RUNICPOWER_LOSS);
                 addvalue += -30 * RunicPowerDecreaseRate;         // 3 RunicPower by tick
             }
+
+            break;
         }
-        break;
-        case POWER_HOLY_POWER:                                          // Regenerate Holy Power
-        {
+        // Regenerate Holy Power
+        case POWER_HOLY_POWER:
             if (!isInCombat())
-                addvalue += -1.0f;      // remove 1 each 10 sec
-        }
-        break;
+                addvalue += -1.0f; // remove 1 each 10 sec
+            break;
         case POWER_RUNES:
         case POWER_HEALTH:
             break;
-        case POWER_CHI:                                          // Regenerate Chi
-        {
+        // Regenerate Chi
+        case POWER_CHI:
             if (!isInCombat())
-                addvalue += -1.0f;      // remove 1 each 10 sec
-        }
-        break;
-        case POWER_DEMONIC_FURY:                                // Regenerate Demonic Fury
+                addvalue += -1.0f; // remove 1 each 10 sec
+            break;
+        // Regenerate Demonic Fury
+        case POWER_DEMONIC_FURY:
         {
             if (!isInCombat() && GetPower(POWER_DEMONIC_FURY) >= 300 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
-                addvalue += -100.0f;    // remove 100 each 10 sec
-            else if (!isInCombat() && GetShapeshiftForm() != FORM_METAMORPHOSIS)
-                addvalue += (200.0f - GetPower(POWER_DEMONIC_FURY));      // min power demonic fury set at 200
+                addvalue += -1.0f;    // remove 1 each 100ms
+            else if (!isInCombat() && GetPower(POWER_DEMONIC_FURY) < 200 && GetShapeshiftForm() != FORM_METAMORPHOSIS)
+                addvalue += 1.0f;     // give 1 each 100ms while player has less than 200 demonic fury
+
+            break;
         }
-        break;
+        // Regenerate Burning Embers
         case POWER_BURNING_EMBERS:
         {
             // After 15s return to one embers if no one
@@ -2893,15 +2912,15 @@ void Player::Regenerate(Powers power)
                 CastSpell(this, 116855, true);
             else
                 RemoveAura(116855);
+
+            break;
         }
-        break;
+        // Regenerate Soul Shards
         case POWER_SOUL_SHARDS:
-        {
             // If isn't in combat, gain 1 shard every 20s
             if (!isInCombat())
                 addvalue += 100.0f;
-        }
-        break;
+            break;
         default:
             break;
     }
@@ -4266,6 +4285,14 @@ bool Player::addSpell(uint32 spellId, bool active, bool learning, bool dependent
         return false;
     }
 
+    // If is summon companion spell, send update of battle pet journal
+    if (learning && spellInfo->Effects[0].Effect == SPELL_EFFECT_SUMMON && spellInfo->Effects[0].MiscValueB == 3221)
+    {
+        WorldPacket data;
+        GetBattlePetMgr().BuildBattlePetJournal(&data);
+        GetSession()->SendPacket(&data);
+    }
+
     // update used talent points count
     if (sSpellMgr->IsTalent(spellInfo->Id))
     {
@@ -4909,8 +4936,7 @@ bool Player::ResetTalents(bool no_cost)
         }
     }
 
-    RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
-
+    RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
 
     for (auto itr : *GetTalentMap(GetActiveSpec()))
     {
@@ -4950,7 +4976,7 @@ bool Player::ResetTalents(bool no_cost)
     if (Pet* pet = GetPet())
     {
         if (pet->getPetType() == HUNTER_PET && !pet->GetCreatureTemplate()->isTameable(CanTameExoticPets()))
-            RemovePet(NULL, PET_SAVE_NOT_IN_SLOT, true);
+            RemovePet(NULL, PET_SLOT_ACTUAL_PET_SLOT, true);
     }
 
 
@@ -8203,6 +8229,12 @@ void Player::UpdateArea(uint32 newArea)
     pvpInfo.inFFAPvPArea = area && (area->flags & AREA_FLAG_ARENA);
     UpdatePvPState(true);
 
+    //Pandaria area update for monk level < 85
+    if(area && getLevel() < 85 && getClass() == CLASS_MONK && GetMapId() == 870 && area->mapid == 870 &&
+        newArea != 6081 && newArea != 6526 && newArea != 6527 
+        && GetZoneId() == 5841 && !isGameMaster())
+        TeleportTo(870, 3818.55f, 1793.18f, 950.35f, GetOrientation());
+
     UpdateAreaDependentAuras(newArea);
 
     // previously this was in UpdateZone (but after UpdateArea) so nothing will break
@@ -9858,7 +9890,10 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
         case 4273:  // Ulduar
             NumberOfFields = 10;
             break;
-         default:
+        case 5833:
+            NumberOfFields = 9;
+            break;
+        default:
             NumberOfFields = 12;
             break;
     }
@@ -10392,6 +10427,10 @@ void Player::SendInitWorldStates(uint32 zoneid, uint32 areaid)
         case 5449:
             if (bg && bg->GetTypeID(true) == BATTLEGROUND_BFG)
                 bg->FillInitialWorldStates(data);
+            break;
+        case 5833:
+            data << uint32(0x1958) << uint32(0x1);
+            data << uint32(0x1959) << uint32(0x4);
             break;
         default:
             data << uint32(0x914) << uint32(0x0);           // 7
@@ -17545,14 +17584,14 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //QueryResult* result = CharacterDatabase.PQuery("SELECT guid, account, name, race, class, gender, level, xp, money, playerBytes, playerBytes2, playerFlags, "
      // 12          13          14          15   16           17        18        19         20         21          22           23                 24
     //"position_x, position_y, position_z, map, orientation, taximask, cinematic, totaltime, leveltime, rest_bonus, logout_time, is_logout_resting, resettalents_cost, "
-    // 25                 26          27       28       29       30       31         32           33            34        35    36      37                 38         39
-    //"resettalents_time, talentTree, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, stable_slots, at_login, zone, online, death_expire_time, taxi_path, instance_mode_mask, "
-    //    40           41          42              43           44            45
+    // 25                 26          27       28       29       30       31         32           33         34     35          36              37              38
+    //"resettalents_time, talentTree, trans_x, trans_y, trans_z, trans_o, transguid, extra_flags, at_login, zone, online, death_expire_time, taxi_path, instance_mode_mask, "
+    //    39           40          41              42           43            44
     //"totalKills, todayKills, yesterdayKills, chosenTitle, watchedFaction, drunk, "
-    // 46      47      48      49      50      51      52           53         54          55             56                  57              58
+    // 45      46      47      48      49      50      51           52         53             54               55                  56              57
     //"health, power1, power2, power3, power4, power5, instance_id, speccount, activespec, specialization1, specialization2, exploredZones, equipmentCache, "
-    // 59           60          61               62                         63
-    //"knownTitles, actionBars, grantableLevels, resetspecialization_cost, resetspecialization_time  FROM characters WHERE guid = '%u'", guid);
+    // 58           59              60               61                 62              63                              64
+    //"knownTitles, actionBars, currentpetslot, petslotused, grantableLevels, resetspecialization_cost, resetspecialization_time  FROM characters WHERE guid = '%u'", guid);
     PreparedQueryResult result = holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADFROM);
 
     if (!result)
@@ -17617,8 +17656,8 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetUInt32Value(UNIT_FIELD_LEVEL, fields[6].GetUInt8());
     SetUInt32Value(PLAYER_XP, fields[7].GetUInt32());
 
-    _LoadIntoDataField(fields[57].GetCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
-    _LoadIntoDataField(fields[59].GetCString(), PLAYER_FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE*2);
+    _LoadIntoDataField(fields[56].GetCString(), PLAYER_EXPLORED_ZONES_1, PLAYER_EXPLORED_ZONES_SIZE);
+    _LoadIntoDataField(fields[58].GetCString(), PLAYER_FIELD_KNOWN_TITLES, KNOWN_TITLES_SIZE*2);
 
     SetFloatValue(UNIT_FIELD_BOUNDINGRADIUS, DEFAULT_WORLD_OBJECT_SIZE);
     SetFloatValue(UNIT_FIELD_COMBATREACH, 1.5f);
@@ -17638,13 +17677,16 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetUInt32Value(PLAYER_BYTES, fields[9].GetUInt32());
     SetUInt32Value(PLAYER_BYTES_2, fields[10].GetUInt32());
     SetByteValue(PLAYER_BYTES_3, 0, fields[5].GetUInt8());
-    SetByteValue(PLAYER_BYTES_3, 1, fields[45].GetUInt8());
+    SetByteValue(PLAYER_BYTES_3, 1, fields[44].GetUInt8());
     SetUInt32Value(PLAYER_FLAGS, fields[11].GetUInt32());
-    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[44].GetUInt32());
+    SetInt32Value(PLAYER_FIELD_WATCHED_FACTION_INDEX, fields[43].GetUInt32());
 
     // set which actionbars the client has active - DO NOT REMOVE EVER AGAIN (can be changed though, if it does change fieldwise)
 
-    SetByteValue(PLAYER_FIELD_BYTES, 2, fields[60].GetUInt8());
+    SetByteValue(PLAYER_FIELD_BYTES, 2, fields[59].GetUInt8());
+
+    m_currentPetSlot = (PetSlot)fields[60].GetUInt8();
+    m_petSlotUsed = fields[61].GetUInt32();
 
     InitDisplayIds();
 
@@ -17677,18 +17719,18 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     Relocate(fields[12].GetFloat(), fields[13].GetFloat(), fields[14].GetFloat(), fields[16].GetFloat());
 
     uint32 mapId = fields[15].GetUInt16();
-    uint32 instanceId = fields[52].GetUInt32();
+    uint32 instanceId = fields[51].GetUInt32();
 
-    uint32 dungeonDiff = fields[39].GetUInt8() & 0x0F;
+    uint32 dungeonDiff = fields[38].GetUInt8() & 0x0F;
     if (dungeonDiff >= MAX_DUNGEON_DIFFICULTY)
         dungeonDiff = REGULAR_DIFFICULTY;
-    uint32 raidDiff = (fields[39].GetUInt8() >> 4) & 0x0F;
+    uint32 raidDiff = (fields[38].GetUInt8() >> 4) & 0x0F;
     if (raidDiff >= MAX_RAID_DIFFICULTY)
         raidDiff = MAN10_DIFFICULTY;
     SetDungeonDifficulty(Difficulty(dungeonDiff));          // may be changed in _LoadGroup
     SetRaidDifficulty(Difficulty(raidDiff));                // may be changed in _LoadGroup
 
-    std::string taxi_nodes = fields[38].GetString();
+    std::string taxi_nodes = fields[37].GetString();
 
 #define RelocateToHomebind(){ mapId = m_homebindMapId; instanceId = 0; Relocate(m_homebindX, m_homebindY, m_homebindZ); }
 
@@ -17713,9 +17755,9 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     }
 
     _LoadCurrency(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADCURRENCY));
-    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[40].GetUInt32());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[41].GetUInt16());
-    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[42].GetUInt16());
+    SetUInt32Value(PLAYER_FIELD_LIFETIME_HONORABLE_KILLS, fields[39].GetUInt32());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 0, fields[40].GetUInt16());
+    SetUInt16Value(PLAYER_FIELD_KILLS, 1, fields[41].GetUInt16());
 
     _LoadBoundInstances(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADBOUNDINSTANCES));
     _LoadInstanceTimeRestrictions(holder->GetPreparedResult(PLAYER_LOGIN_QUERY_LOADINSTANCELOCKTIMES));
@@ -17724,7 +17766,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     GetSession()->SetPlayer(this);
     MapEntry const* mapEntry = sMapStore.LookupEntry(mapId);
 
-    m_atLoginFlags = fields[34].GetUInt16();
+    m_atLoginFlags = fields[33].GetUInt16();
     bool mustResurrectFromUnlock = false;
 
     if(m_atLoginFlags & AT_LOGIN_UNLOCK)
@@ -17991,26 +18033,19 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     SetTalentResetCost(fields[24].GetUInt32());
     SetTalentResetTime(time_t(fields[25].GetUInt32()));
 
-    SetSpecializationResetCost(fields[62].GetUInt32());
-    SetSpecializationResetTime(time_t(fields[63].GetUInt32()));
+    SetSpecializationResetCost(fields[63].GetUInt32());
+    SetSpecializationResetTime(time_t(fields[64].GetUInt32()));
 
     m_taxi.LoadTaxiMask(fields[17].GetCString());            // must be before InitTaxiNodesForLevel
 
     uint32 extraflags = fields[32].GetUInt16();
-
-    m_stableSlots = fields[33].GetUInt8();
-    if (m_stableSlots > MAX_PET_STABLES)
-    {
-        sLog->outError(LOG_FILTER_PLAYER, "Player can have not more %u stable slots, but have in DB %u", MAX_PET_STABLES, uint32(m_stableSlots));
-        m_stableSlots = MAX_PET_STABLES;
-    }
 
     // Honor system
     // Update Honor kills data
     m_lastHonorUpdateTime = logoutTime;
     UpdateHonorFields();
 
-    m_deathExpireTime = time_t(fields[37].GetUInt32());
+    m_deathExpireTime = time_t(fields[36].GetUInt32());
     if (m_deathExpireTime > now+MAX_DEATH_COUNT*DEATH_EXPIRE_STEP)
         m_deathExpireTime = now+MAX_DEATH_COUNT*DEATH_EXPIRE_STEP-1;
 
@@ -18069,11 +18104,11 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     //mails are loaded only when needed ;-) - when player in game click on mailbox.
     //_LoadMail();
 
-    SetSpecsCount(fields[53].GetUInt8());
-    SetActiveSpec(fields[54].GetUInt8());
+    SetSpecsCount(fields[52].GetUInt8());
+    SetActiveSpec(fields[53].GetUInt8());
 
-    SetSpecializationId(0, fields[55].GetUInt32());
-    SetSpecializationId(1, fields[56].GetUInt32());
+    SetSpecializationId(0, fields[54].GetUInt32());
+    SetSpecializationId(1, fields[55].GetUInt32());
 
     SetFreeTalentPoints(CalculateTalentsPoints());
 
@@ -18127,7 +18162,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
 
     // check PLAYER_CHOSEN_TITLE compatibility with PLAYER_FIELD_KNOWN_TITLES
     // note: PLAYER_FIELD_KNOWN_TITLES updated at quest status loaded
-    uint32 curTitle = fields[43].GetUInt32();
+    uint32 curTitle = fields[42].GetUInt32();
     if (curTitle && !HasTitle(curTitle))
         curTitle = 0;
 
@@ -18150,14 +18185,14 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     UpdateAllStats();
 
     // restore remembered power/health values (but not more max values)
-    uint32 savedHealth = fields[46].GetUInt32();
+    uint32 savedHealth = fields[45].GetUInt32();
     SetHealth(savedHealth > GetMaxHealth() ? GetMaxHealth() : savedHealth);
     uint32 loadedPowers = 0;
     for (uint32 i = 0; i < MAX_POWERS; ++i)
     {
         if (GetPowerIndexByClass(Powers(i), getClass()) != MAX_POWERS)
         {
-            uint32 savedPower = fields[47+loadedPowers].GetUInt32();
+            uint32 savedPower = fields[46+loadedPowers].GetUInt32();
             uint32 maxPower = GetUInt32Value(UNIT_FIELD_MAXPOWER1 + loadedPowers);
             SetPower(Powers(i), (savedPower > maxPower) ? maxPower : savedPower);
             if (++loadedPowers >= MAX_POWERS_PER_CLASS)
@@ -18236,7 +18271,7 @@ bool Player::LoadFromDB(uint32 guid, SQLQueryHolder *holder)
     }
 
     // RaF stuff.
-    m_grantableLevels = fields[61].GetUInt8();
+    m_grantableLevels = fields[62].GetUInt8();
 
     if (GetSession()->IsARecruiter() || (GetSession()->GetRecruiterId() != 0))
         SetFlag(UNIT_DYNAMIC_FLAGS, UNIT_DYNFLAG_REFER_A_FRIEND);
@@ -18902,7 +18937,7 @@ void Player::LoadPet()
     if (IsInWorld())
     {
         Pet* pet = new Pet(this);
-        if (!pet->LoadPetFromDB(this, 0, 0, true))
+        if (!pet->LoadPetFromDB(this, 0, 0, true, PET_SLOT_ACTUAL_PET_SLOT))
             delete pet;
     }
 }
@@ -19684,7 +19719,6 @@ void Player::SaveToDB(bool create /*=false*/)
             ss << GetPrimaryTalentTree(i) << " ";
         stmt->setString(index++, ss.str());
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
-        stmt->setUInt8(index++,  m_stableSlots);
         stmt->setUInt16(index++, (uint16)m_atLoginFlags);
         stmt->setUInt16(index++, GetZoneId());
         stmt->setUInt32(index++, uint32(m_deathExpireTime));
@@ -19750,6 +19784,8 @@ void Player::SaveToDB(bool create /*=false*/)
         stmt->setString(index++, ss.str());
 
         stmt->setUInt8(index++, GetByteValue(PLAYER_FIELD_BYTES, 2));
+        stmt->setUInt8(index++, m_currentPetSlot);
+        stmt->setUInt8(index++, m_petSlotUsed);
         stmt->setUInt32(index++, m_grantableLevels);
     }
     else
@@ -19807,7 +19843,6 @@ void Player::SaveToDB(bool create /*=false*/)
             ss << GetPrimaryTalentTree(i) << " ";
         stmt->setString(index++, ss.str());
         stmt->setUInt16(index++, (uint16)m_ExtraFlags);
-        stmt->setUInt8(index++,  m_stableSlots);
         stmt->setUInt16(index++, (uint16)m_atLoginFlags);
         stmt->setUInt16(index++, GetZoneId());
         stmt->setUInt32(index++, uint32(m_deathExpireTime));
@@ -19874,6 +19909,8 @@ void Player::SaveToDB(bool create /*=false*/)
 
         stmt->setString(index++, ss.str());
         stmt->setUInt8(index++, GetByteValue(PLAYER_FIELD_BYTES, 2));
+        stmt->setUInt8(index++, m_currentPetSlot);
+        stmt->setUInt8(index++, m_petSlotUsed);
         stmt->setUInt32(index++, m_grantableLevels);
 
         stmt->setUInt8(index++, IsInWorld() ? 1 : 0);
@@ -19928,7 +19965,7 @@ void Player::SaveToDB(bool create /*=false*/)
 
     // save pet (hunter pet level and experience and all type pets health/mana).
     if (Pet* pet = GetPet())
-        pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+        pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
 }
 
 // fast save function for item/money cheating preventing - save only inventory and money state
@@ -20921,7 +20958,7 @@ Pet* Player::GetPet() const
     return NULL;
 }
 
-void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
+void Player::RemovePet(Pet* pet, PetSlot mode, bool returnreagent, bool stampeded)
 {
     if (!pet)
         pet = GetPet();
@@ -20933,6 +20970,9 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
         if (pet->m_removed)
             return;
     }
+
+    if (mode == PET_SLOT_ACTUAL_PET_SLOT)
+        mode = m_currentPetSlot;
 
     if (returnreagent && (pet || m_temporaryUnsummonedPetNumber) && !InBattleground())
     {
@@ -20965,29 +21005,18 @@ void Player::RemovePet(Pet* pet, PetSaveMode mode, bool returnreagent)
 
     pet->CombatStop();
 
-    if (returnreagent)
-    {
-        switch (pet->GetEntry())
-        {
-            //warlock pets except imp are removed(?) when logging out
-            case 1860:
-            case 1863:
-            case 417:
-            case 17252:
-                mode = PET_SAVE_NOT_IN_SLOT;
-                break;
-        }
-    }
-
     // only if current pet in slot
-    pet->SavePetToDB(mode);
+    pet->SavePetToDB(mode, stampeded);
 
-    SetMinion(pet, false);
+    if (pet->getPetType() != HUNTER_PET)
+        SetMinion(pet, false, PET_SLOT_UNK_SLOT);
+    else
+        SetMinion(pet, false, PET_SLOT_ACTUAL_PET_SLOT);
 
     pet->AddObjectToRemoveList();
     pet->m_removed = true;
 
-    if (pet->isControlled())
+    if (pet->isControlled() && !stampeded)
     {
         WorldPacket data(SMSG_PET_SPELLS, 8);
         data << uint64(0);
@@ -23119,7 +23148,7 @@ template<>
 inline void BeforeVisibilityDestroy<Creature>(Creature* t, Player* p)
 {
     if (p->GetPetGUID() == t->GetGUID() && t->ToCreature()->isPet())
-        ((Pet*)t)->Remove(PET_SAVE_NOT_IN_SLOT, true);
+        ((Pet*)t)->Remove(PET_SLOT_ACTUAL_PET_SLOT, true);
 }
 
 void Player::UpdateVisibilityOf(WorldObject* target)
@@ -23504,6 +23533,10 @@ void Player::SendInitialPacketsAfterAddToMap()
     }
     else if (GetRaidDifficulty() != GetStoredRaidDifficulty())
         SendRaidDifficulty(GetGroup() != NULL);
+
+    WorldPacket data;
+    GetBattlePetMgr().BuildBattlePetJournal(&data);
+    GetSession()->SendPacket(&data);
 }
 
 void Player::SendUpdateToOutOfRangeGroupMembers()
@@ -25764,7 +25797,7 @@ void Player::UnsummonPetTemporaryIfAny()
         m_oldpetspell = pet->GetUInt32Value(UNIT_CREATED_BY_SPELL);
     }
 
-    RemovePet(pet, PET_SAVE_AS_CURRENT);
+    RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
 }
 
 void Player::ResummonPetTemporaryUnSummonedIfAny()
@@ -26282,10 +26315,6 @@ void Player::ActivateSpec(uint8 spec)
     _SaveActions(trans);
     CharacterDatabase.CommitTransaction(trans);
 
-    // TO-DO: We need more research to know what happens with warlock's reagent
-    if (Pet* pet = GetPet())
-        RemovePet(pet, PET_SAVE_NOT_IN_SLOT);
-
     ClearComboPointHolders();
     ClearAllReactives();
     UnsummonAllTotems();
@@ -26714,6 +26743,13 @@ bool Player::IsInWhisperWhiteList(uint64 guid)
             return true;
     }
     return false;
+}
+
+void Player::SendPetTameResult(PetTameResult result)
+{
+    WorldPacket data(SMSG_PET_TAME_FAILURE, 4);
+    data << uint32(result); // The result
+    GetSession()->SendPacket(&data);
 }
 
 uint8 Player::GetNextVoidStorageFreeSlot() const
@@ -27275,8 +27311,8 @@ void Player::_LoadStore()
             GetSession()->SendNotification("%d pieces d'or vous ont ete ajoutee suite a votre commande sur la boutique", (goldCount/1000));
     }
 
-    // Load des m�tiers
-    /*PreparedStatement* stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_BOUTIQUE_METIER);
+    // Load des métiers
+    stmt = CharacterDatabase.GetPreparedStatement(CHAR_LOAD_BOUTIQUE_METIER);
     stmt->setInt32(0, GetGUIDLow());
     PreparedQueryResult metierList = CharacterDatabase.Query(stmt);
 
@@ -27294,10 +27330,15 @@ void Player::_LoadStore()
             {
                 SpellEntry const* spell = (*itr);
 
-                if((uint32)spell->EffectMiscValue[1] != skillId)
+                const SpellEffectEntry* spellEffect = spell->GetSpellEffect(EFFECT_1, 0);
+
+                if (!spellEffect)
                     continue;
 
-                if((uint32)(spell->EffectBasePoints[1]+1) != (value/75))
+                if((uint32)spellEffect->EffectMiscValue != skillId)
+                    continue;
+
+                if((uint32)(spellEffect->EffectBasePoints+1) != (value/75))
                     continue;
 
                 learnId = spell->Id;
@@ -27322,7 +27363,7 @@ void Player::_LoadStore()
 
         }
         while(metierList->NextRow());
-	}*/
+	}
 
     // Uniquement un SaveToDB, en mettre a chaque transaction cause des deadlocks
     // car chaque SaveToDB part dans un thread Mysql diff�rent
@@ -27340,6 +27381,9 @@ void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
 
         for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
         {
+            if (zone != itr->second->areaId && area != itr->second->areaId)
+                continue;
+
             if (itr->second->IsFitToRequirements(this, zone, area))
             {
                 if (itr->second->autocast)
@@ -27359,6 +27403,9 @@ void Player::CheckSpellAreaOnQuestStatusChange(uint32 quest_id)
 
         for (SpellAreaForAreaMap::const_iterator itr = saBounds.first; itr != saBounds.second; ++itr)
         {
+            if (zone != itr->second->areaId && area != itr->second->areaId)
+                continue;
+
             if (itr->second->IsFitToRequirements(this, zone, area))
             {
                 if (itr->second->autocast)

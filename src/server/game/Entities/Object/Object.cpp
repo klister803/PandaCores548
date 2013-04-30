@@ -1968,6 +1968,17 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
     if (this == obj)
         return true;
 
+    if (obj->MustBeVisibleOnlyForSomePlayers())
+    {
+        Player const* thisPlayer = ToPlayer();
+
+        if (!thisPlayer)
+            return false;
+
+        if (!obj->IsPlayerInPersonnalVisibilityList(thisPlayer->GetGUID()))
+            return false;
+    }
+
     if (obj->IsNeverVisible() || CanNeverSee(obj))
         return false;
 
@@ -2037,17 +2048,6 @@ bool WorldObject::canSeeOrDetect(WorldObject const* obj, bool ignoreStealth, boo
 
     if (!CanDetect(obj, ignoreStealth))
         return false;
-
-    if (obj->MustBeVisibleOnlyForSomePlayers())
-    {
-        Player const* thisPlayer = ToPlayer();
-
-        if (!thisPlayer)
-            return false;
-
-        if (!obj->IsPlayerInPersonnalVisibilityList(thisPlayer->GetGUID()))
-            return false;
-    }
 
     return true;
 }
@@ -2608,30 +2608,21 @@ TempSummon* WorldObject::SummonCreature(uint32 entry, const Position &pos, TempS
     return NULL;
 }
 
-Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration)
+Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetType petType, uint32 duration, PetSlot slotID, bool stampeded)
 {
     Pet* pet = new Pet(this, petType);
 
-    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry))
+    //summoned pets always non-curent!
+    if (petType == SUMMON_PET && pet->LoadPetFromDB(this, entry, 0, false, slotID, stampeded))
     {
-        // Remove Demonic Sacrifice auras (known pet)
-        Unit::AuraEffectList const& auraClassScripts = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
-        for (Unit::AuraEffectList::const_iterator itr = auraClassScripts.begin(); itr != auraClassScripts.end();)
-        {
-            if ((*itr)->GetMiscValue() == 2228)
-            {
-                RemoveAurasDueToSpell((*itr)->GetId());
-                itr = auraClassScripts.begin();
-            }
-            else
-                ++itr;
-        }
-
         if (duration > 0)
             pet->SetDuration(duration);
 
-        return NULL;
+        return pet;
     }
+
+    if (stampeded)
+        petType = HUNTER_PET;
 
     // petentry == 0 for hunter "call pet" (current pet summoned if any)
     if (!entry)
@@ -2665,7 +2656,8 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
     pet->SetUInt32Value(UNIT_FIELD_BYTES_1, 0);
     pet->InitStatsForLevel(getLevel());
 
-    SetMinion(pet, true);
+    // Only slot 100, as it's not hunter pet.
+    SetMinion(pet, true, PET_SLOT_OTHER_PET);
 
     switch (petType)
     {
@@ -2683,44 +2675,29 @@ Pet* Player::SummonPet(uint32 entry, float x, float y, float z, float ang, PetTy
             break;
     }
 
-    map->AddToMap(pet->ToCreature());
+    // map->AddToMap(pet->ToCreature());
 
     switch (petType)
     {
         case SUMMON_PET:
             pet->InitPetCreateSpells();
-            pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+            pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
             PetSpellInitialize();
             break;
         default:
             break;
     }
 
-    if (petType == SUMMON_PET)
-    {
-        // Remove Demonic Sacrifice auras (known pet)
-        Unit::AuraEffectList const& auraClassScripts = GetAuraEffectsByType(SPELL_AURA_OVERRIDE_CLASS_SCRIPTS);
-        for (Unit::AuraEffectList::const_iterator itr = auraClassScripts.begin(); itr != auraClassScripts.end();)
-        {
-            if ((*itr)->GetMiscValue() == 2228)
-            {
-                RemoveAurasDueToSpell((*itr)->GetId());
-                itr = auraClassScripts.begin();
-            }
-            else
-                ++itr;
-        }
-    }
-
     if (duration > 0)
         pet->SetDuration(duration);
 
+    map->AddToMap(pet->ToCreature());
     //ObjectAccessor::UpdateObjectVisibility(pet);
 
     return pet;
 }
 
-GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime)
+GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float z, float ang, float rotation0, float rotation1, float rotation2, float rotation3, uint32 respawnTime, uint64 viewerGuid, std::list<uint64>* viewersList)
 {
     if (!IsInWorld())
         return NULL;
@@ -2743,6 +2720,13 @@ GameObject* WorldObject::SummonGameObject(uint32 entry, float x, float y, float 
         ToUnit()->AddGameObject(go);
     else
         go->SetSpawnedByDefault(false);
+
+    if (viewerGuid)
+        go->AddPlayerInPersonnalVisibilityList(viewerGuid);
+
+    if (viewersList)
+        go->AddPlayersInPersonnalVisibilityList(*viewersList);
+
     map->AddToMap(go);
 
     return go;

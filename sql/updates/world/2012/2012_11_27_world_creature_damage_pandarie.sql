@@ -3,13 +3,13 @@
 -- 2.00f pour les elites outdoors (pandarie)
 
 -- Outdoors
-UPDATE creature_template SET dmg_multiplier = 2 WHERE rank = 1 and exp = 4;
+UPDATE creature_template SET dmg_multiplier = 2 WHERE rank = 1 AND EXP = 4;
 
 -- Generic, Rare Elite : 7.5
-UPDATE creature_template SET dmg_multiplier = 7.5 WHERE rank = 2 and exp = 4;
+UPDATE creature_template SET dmg_multiplier = 7.5 WHERE rank = 2 AND EXP = 4;
 
 -- Instance
-UPDATE creature, creature_template SET dmg_mutliplier = 3 WHERE creature.id = creature_template.entry AND creature_template.exp = 4 and creature.map != 870 and rank = 1;
+UPDATE creature, creature_template SET creature_template.dmg_multiplier = 3 WHERE creature.id = creature_template.entry AND creature_template.exp = 4 AND creature.map != 870 AND rank = 1;
 
 
 -- Base min-max dmg and attack power (missing range dmg, armor, armor_mod)
@@ -20,7 +20,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 84 and unit_class = 1;
+  WHERE `exp` = 4 AND minlevel = 84 AND unit_class = 1;
   
  UPDATE `creature_template` SET 
     `mindmg` = 5431, 
@@ -28,7 +28,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 85  and unit_class = 1;
+  WHERE `EXP` = 4 AND minlevel = 85  AND unit_class = 1;
 
 UPDATE `creature_template` SET 
     `mindmg` = 6422, 
@@ -36,7 +36,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 86 and unit_class = 1;
+  WHERE `EXP` = 4 AND minlevel = 86 AND unit_class = 1;
 
 UPDATE `creature_template` SET 
     `mindmg` = 6939, 
@@ -44,7 +44,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 87 and unit_class = 1;
+  WHERE `EXP` = 4 AND minlevel = 87 AND unit_class = 1;
 
 UPDATE `creature_template` SET 
     `mindmg` = 7107, 
@@ -52,7 +52,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 88 and unit_class = 1;
+  WHERE `EXP` = 4 AND minlevel = 88 AND unit_class = 1;
 
 UPDATE `creature_template` SET 
     `mindmg` = 8321, 
@@ -60,7 +60,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 89 and unit_class = 1;
+  WHERE `EXP` = 4 AND minlevel = 89 AND unit_class = 1;
 
 UPDATE `creature_template` SET 
     `mindmg` = 9838, 
@@ -68,54 +68,54 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 90 and unit_class = 1;
+  WHERE `EXP` = 4 AND minlevel = 90 AND unit_class = 1;
 
- -- Valeur estimé, aucune donnée de référence
+ -- Valeur estimÃ©, aucune donnÃ©e de rÃ©fÃ©rence
 UPDATE `creature_template` SET 
     `mindmg` = 11321, 
     `maxdmg` = 16657, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 91 and unit_class = 1;  
+  WHERE `EXP` = 4 AND minlevel = 91 AND unit_class = 1;  
  
- -- Valeur estimé, aucune donnée de référence 
+ -- Valeur estimÃ©, aucune donnÃ©e de rÃ©fÃ©rence 
 UPDATE `creature_template` SET 
     `mindmg` = 12684, 
     `maxdmg` = 19052, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 92 and unit_class = 1;  
+  WHERE `EXP` = 4 AND minlevel = 92 AND unit_class = 1;  
 
-   -- Valeur estimé, aucune donnée de référence
+   -- Valeur estimÃ©, aucune donnÃ©e de rÃ©fÃ©rence
 UPDATE `creature_template` SET 
     `mindmg` = 14026, 
     `maxdmg` = 21467, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 93 and unit_class = 1;    
+  WHERE `EXP` = 4 AND minlevel = 93 AND unit_class = 1;    
   
  -- class_unit 2 (CLASS_UNIT_PALADIN) 
  
- -- Valeur WAR, aucune donnée de référence
+ -- Valeur WAR, aucune donnÃ©e de rÃ©fÃ©rence
  UPDATE `creature_template` SET 
     `mindmg` = 2737, 
     `maxdmg` = 4012, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 84 and unit_class = 2;
+  WHERE `EXP` = 4 AND minlevel = 84 AND unit_class = 2;
   
-  -- Valeur WAR, aucune donnée de référence 
+  -- Valeur WAR, aucune donnÃ©e de rÃ©fÃ©rence 
  UPDATE `creature_template` SET 
     `mindmg` = 5431, 
     `maxdmg` = 6428, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 85  and unit_class = 2;
+  WHERE `EXP` = 4 AND minlevel = 85  AND unit_class = 2;
 
 UPDATE `creature_template` SET 
     `mindmg` = 6384, 
@@ -123,7 +123,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 86 and unit_class = 2;
+  WHERE `EXP` = 4 AND minlevel = 86 AND unit_class = 2;
 
 UPDATE `creature_template` SET 
     `mindmg` = 7326, 
@@ -131,7 +131,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 87 and unit_class = 2;
+  WHERE `EXP` = 4 AND minlevel = 87 AND unit_class = 2;
 
 UPDATE `creature_template` SET 
     `mindmg` = 8922, 
@@ -139,7 +139,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 88 and unit_class = 2;
+  WHERE `EXP` = 4 AND minlevel = 88 AND unit_class = 2;
 
 UPDATE `creature_template` SET 
     `mindmg` = 9352, 
@@ -147,7 +147,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 89 and unit_class = 2;
+  WHERE `EXP` = 4 AND minlevel = 89 AND unit_class = 2;
 
 UPDATE `creature_template` SET 
     `mindmg` = 9840, 
@@ -155,44 +155,44 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 90 and unit_class = 2;
+  WHERE `EXP` = 4 AND minlevel = 90 AND unit_class = 2;
 
- -- Valeur estimé, aucune donnée de référence
+ -- Valeur estimÃ©, aucune donnÃ©e de rÃ©fÃ©rence
 UPDATE `creature_template` SET 
     `mindmg` = 11321, 
     `maxdmg` = 16657, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 91 and unit_class = 2;  
+  WHERE `EXP` = 4 AND minlevel = 91 AND unit_class = 2;  
  
- -- Valeur estimé, aucune donnée de référence 
+ -- Valeur estimÃ©, aucune donnÃ©e de rÃ©fÃ©rence 
 UPDATE `creature_template` SET 
     `mindmg` = 12684, 
     `maxdmg` = 19052, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 92 and unit_class = 2;  
+  WHERE `EXP` = 4 AND minlevel = 92 AND unit_class = 2;  
 
-   -- Valeur estimé, aucune donnée de référence
+   -- Valeur estimÃ©, aucune donnÃ©e de rÃ©fÃ©rence
 UPDATE `creature_template` SET 
     `mindmg` = 14026, 
     `maxdmg` = 21467, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 93 and unit_class = 2;   
+  WHERE `EXP` = 4 AND minlevel = 93 AND unit_class = 2;   
 
 -- class_unit 4 (CLASS_UNIT_ROGUE)
--- Aucune donnée sur le rogue (classe très peut utiliser sur les PNJ par blizzard), meme valeur que les warriors
+-- Aucune donnÃ©e sur le rogue (classe trÃ¨s peut utiliser sur les PNJ par blizzard), meme valeur que les warriors
 UPDATE `creature_template` SET 
     `mindmg` = 2737, 
     `maxdmg` = 4012, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 84 and unit_class = 4;
+  WHERE `EXP` = 4 AND minlevel = 84 AND unit_class = 4;
   
  UPDATE `creature_template` SET 
     `mindmg` = 5431, 
@@ -200,7 +200,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 85  and unit_class = 4;
+  WHERE `EXP` = 4 AND minlevel = 85  AND unit_class = 4;
 
 UPDATE `creature_template` SET 
     `mindmg` = 6422, 
@@ -208,7 +208,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 86 and unit_class = 4;
+  WHERE `EXP` = 4 AND minlevel = 86 AND unit_class = 4;
 
 UPDATE `creature_template` SET 
     `mindmg` = 6939, 
@@ -216,7 +216,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 87 and unit_class = 4;
+  WHERE `EXP` = 4 AND minlevel = 87 AND unit_class = 4;
 
 UPDATE `creature_template` SET 
     `mindmg` = 7107, 
@@ -224,7 +224,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 88 and unit_class = 4;
+  WHERE `EXP` = 4 AND minlevel = 88 AND unit_class = 4;
 
 UPDATE `creature_template` SET 
     `mindmg` = 8321, 
@@ -232,7 +232,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 89 and unit_class = 4;
+  WHERE `EXP` = 4 AND minlevel = 89 AND unit_class = 4;
 
 UPDATE `creature_template` SET 
     `mindmg` = 9838, 
@@ -240,34 +240,34 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 90 and unit_class = 4;
+  WHERE `EXP` = 4 AND minlevel = 90 AND unit_class = 4;
 
- -- Valeur estimé, aucune donnée de référence
+ -- Valeur estimÃ©, aucune donnÃ©e de rÃ©fÃ©rence
 UPDATE `creature_template` SET 
     `mindmg` = 11321, 
     `maxdmg` = 16657, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 91 and unit_class = 4;  
+  WHERE `EXP` = 4 AND minlevel = 91 AND unit_class = 4;  
  
- -- Valeur estimé, aucune donnée de référence 
+ -- Valeur estimÃ©, aucune donnÃ©e de rÃ©fÃ©rence 
 UPDATE `creature_template` SET 
     `mindmg` = 12684, 
     `maxdmg` = 19052, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 92 and unit_class = 4;  
+  WHERE `EXP` = 4 AND minlevel = 92 AND unit_class = 4;  
 
-   -- Valeur estimé, aucune donnée de référence
+   -- Valeur estimÃ©, aucune donnÃ©e de rÃ©fÃ©rence
 UPDATE `creature_template` SET 
     `mindmg` = 14026, 
     `maxdmg` = 21467, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 93 and unit_class = 4;   
+  WHERE `EXP` = 4 AND minlevel = 93 AND unit_class = 4;   
 
 -- class_unit 8 (CLASS_UNIT_MAGE)
 UPDATE `creature_template` SET 
@@ -276,7 +276,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 84 and unit_class = 8;
+  WHERE `EXP` = 4 AND minlevel = 84 AND unit_class = 8;
   
  UPDATE `creature_template` SET 
     `mindmg` = 5364, 
@@ -284,7 +284,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 85  and unit_class = 8;
+  WHERE `EXP` = 4 AND minlevel = 85  AND unit_class = 8;
 
 UPDATE `creature_template` SET 
     `mindmg` = 7275, 
@@ -292,7 +292,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 86 and unit_class = 8
+  WHERE `EXP` = 4 AND minlevel = 86 AND unit_class = 8;
 
 UPDATE `creature_template` SET 
     `mindmg` = 7421, 
@@ -300,7 +300,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 87 and unit_class = 8;
+  WHERE `EXP` = 4 AND minlevel = 87 AND unit_class = 8;
 
 UPDATE `creature_template` SET 
     `mindmg` = 7785, 
@@ -308,7 +308,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 88 and unit_class = 8;
+  WHERE `EXP` = 4 AND minlevel = 88 AND unit_class = 8;
 
 UPDATE `creature_template` SET 
     `mindmg` = 8348, 
@@ -316,7 +316,7 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 89 and unit_class = 8;
+  WHERE `EXP` = 4 AND minlevel = 89 AND unit_class = 8;
 
 UPDATE `creature_template` SET 
     `mindmg` = 9271, 
@@ -324,33 +324,32 @@ UPDATE `creature_template` SET
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 90 and unit_class = 8;
+  WHERE `EXP` = 4 AND minlevel = 90 AND unit_class = 8;
 
- -- Valeur estimé, aucune donnée de référence
+ -- Valeur estimÃ©, aucune donnÃ©e de rÃ©fÃ©rence
 UPDATE `creature_template` SET 
     `mindmg` = 11321, 
     `maxdmg` = 16657, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 91 and unit_class = 8;  
+  WHERE `EXP` = 4 AND minlevel = 91 AND unit_class = 8;  
  
- -- Valeur estimé, aucune donnée de référence 
+ -- Valeur estimÃ©, aucune donnÃ©e de rÃ©fÃ©rence 
 UPDATE `creature_template` SET 
     `mindmg` = 12684, 
     `maxdmg` = 19052, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7) 
-  WHERE ` exp = 4 and minlevel = 92 and unit_class = 8;  
+  WHERE `EXP` = 4 AND minlevel = 92 AND unit_class = 8;  
 
-   -- Valeur estimé, aucune donnée de référence
+   -- Valeur estimÃ©, aucune donnÃ©e de rÃ©fÃ©rence
 UPDATE `creature_template` SET 
     `mindmg` = 14026, 
     `maxdmg` = 21467, 
     `attackpower` = ROUND((`mindmg` + `maxdmg`) / 4 * 7), 
     `mindmg` = ROUND(`mindmg` - `attackpower` / 7), 
     `maxdmg` = ROUND(`maxdmg` - `attackpower` / 7)
-WHERE ` exp = 4 and minlevel = 93 and unit_class = 8;  	
-  
+WHERE `EXP` = 4 AND minlevel = 93 AND unit_class = 8;      
   

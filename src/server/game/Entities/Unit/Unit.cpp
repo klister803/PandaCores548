@@ -668,7 +668,9 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
         victim->CastCustomSpell(victim, 115611, &bp, NULL, NULL, true);
     }
     // Stance of the Wise Serpent - 115070
-    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(115070) && spellProto)
+    if (GetTypeId() == TYPEID_PLAYER && ToPlayer()->getClass() == CLASS_MONK && HasAura(115070) && spellProto
+        && spellProto->Id != 124098 && spellProto->Id != 107270 && spellProto->Id != 132467
+        && spellProto->Id != 130651 && spellProto->Id != 117993) // Don't triggered by Zen Sphere, Spinning Crane Kick, Chi Wave, Chi Burst and Chi Torpedo
     {
         int32 bp = damage / 2;
         std::list<Unit*> targetList;
@@ -680,6 +682,7 @@ uint32 Unit::DealDamage(Unit* victim, uint32 damage, CleanDamage const* cleanDam
 
         if (targetList.size() > 1)
         {
+            targetList.remove(this); // Remove Player
             targetList.sort(JadeCore::HealthPctOrderPred());
             targetList.resize(1);
         }
@@ -4175,6 +4178,27 @@ void Unit::RemoveAllAurasExceptType(AuraType type)
     }
 }
 
+void Unit::RemoveAllAurasByType(AuraType type)
+{
+    for (AuraApplicationMap::iterator iter = m_appliedAuras.begin(); iter != m_appliedAuras.end();)
+    {
+        constAuraPtr aura = iter->second->GetBase();
+        if (aura->GetSpellInfo()->HasAura(type))
+            _UnapplyAura(iter, AURA_REMOVE_BY_DEFAULT);
+        else
+            ++iter;
+    }
+
+    for (AuraMap::iterator iter = m_ownedAuras.begin(); iter != m_ownedAuras.end();)
+    {
+        AuraPtr aura = iter->second;
+        if (aura->GetSpellInfo()->HasAura(type))
+            RemoveOwnedAura(iter, AURA_REMOVE_BY_DEFAULT);
+        else
+            ++iter;
+    }
+}
+
 void Unit::DelayOwnedAuras(uint32 spellId, uint64 caster, int32 delaytime)
 {
     for (AuraMap::iterator iter = m_ownedAuras.lower_bound(spellId); iter != m_ownedAuras.upper_bound(spellId);++iter)
@@ -7287,7 +7311,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     basepoints0 = int32((fire_onhit * BaseWeaponSpeed) + (add_spellpower * BaseWeaponSpeed));
                     triggered_spell_id = 10444;
                 }
-
                 // Enchant on Main-Hand and ready?
                 else if (castItem->GetSlot() == EQUIPMENT_SLOT_MAINHAND && procFlag & PROC_FLAG_DONE_MAINHAND_ATTACK)
                 {
@@ -7297,7 +7320,6 @@ bool Unit::HandleDummyAuraProc(Unit* victim, uint32 damage, AuraEffectPtr trigge
                     basepoints0 = int32((fire_onhit * BaseWeaponSpeed) + (add_spellpower * BaseWeaponSpeed));
                     triggered_spell_id = 10444;
                 }
-
                 // If not ready, we should  return, shouldn't we?!
                 else
                     return false;
@@ -9519,9 +9541,12 @@ Unit* Unit::GetCharm() const
     return NULL;
 }
 
-void Unit::SetMinion(Minion *minion, bool apply)
+void Unit::SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded)
 {
     sLog->outDebug(LOG_FILTER_UNITS, "SetMinion %u for %u, apply %u", minion->GetEntry(), GetEntry(), apply);
+
+    if (slot == PET_SLOT_ACTUAL_PET_SLOT)
+        slot = ToPlayer()->m_currentPetSlot;
 
     if (apply)
     {
@@ -9546,11 +9571,11 @@ void Unit::SetMinion(Minion *minion, bool apply)
         {
             if (Guardian* oldPet = GetGuardianPet())
             {
-                if (oldPet != minion && (oldPet->isPet() || minion->isPet() || oldPet->GetEntry() != minion->GetEntry()))
+                if (oldPet != minion && (oldPet->isPet() || minion->isPet() || oldPet->GetEntry() != minion->GetEntry()) && !stampeded)
                 {
                     // remove existing minion pet
                     if (oldPet->isPet())
-                        ((Pet*)oldPet)->Remove(PET_SAVE_AS_CURRENT);
+                        ((Pet*)oldPet)->Remove(PET_SLOT_ACTUAL_PET_SLOT);
                     else
                         oldPet->UnSummon();
                     SetPetGUID(minion->GetGUID());
@@ -9564,17 +9589,33 @@ void Unit::SetMinion(Minion *minion, bool apply)
             }
         }
 
-        if (minion->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
+        if (slot == PET_SLOT_UNK_SLOT)
+            slot = PET_SLOT_OTHER_PET;
+
+        if (GetTypeId() == TYPEID_PLAYER)
         {
-            if (AddUInt64Value(UNIT_FIELD_SUMMON, minion->GetGUID()))
+            // If its not a Hunter Pet, only set pet slot. use setPetSlotUsed only for hunter pets.
+            // Always save thoose spots where hunter is correct
+            if (minion->isHunterPet() && !stampeded)
             {
+                if (slot >= PET_SLOT_HUNTER_FIRST && slot <= PET_SLOT_HUNTER_LAST)
+                {
+                    ToPlayer()->m_currentPetSlot = slot;
+                    ToPlayer()->setPetSlotUsed(slot, true);
+                }
+                else
+                {
+                    sLog->outDebug(LOG_FILTER_UNITS, "Unit::SetMinion. Try to add hunter pet to not allowed slot(%u). Minion %u for %u", slot, minion->GetEntry(), ToPlayer()->GetEntry());
+                    return;
+                }
             }
         }
 
+        if (minion->HasUnitTypeMask(UNIT_MASK_CONTROLABLE_GUARDIAN))
+            AddUInt64Value(UNIT_FIELD_SUMMON, minion->GetGUID());
+
         if (minion->m_Properties && minion->m_Properties->Type == SUMMON_TYPE_MINIPET)
-        {
             SetCritterGUID(minion->GetGUID());
-        }
 
         // PvP, FFAPvP
         minion->SetByteValue(UNIT_FIELD_BYTES_2, 1, GetByteValue(UNIT_FIELD_BYTES_2, 1));
@@ -10817,6 +10858,19 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
         return false;
 
     float crit_chance = 0.0f;
+
+    // Pets have 100% of owner's crit_chance
+    if (isPet() && GetOwner())
+    {
+        if (GetOwner()->getClass() == CLASS_WARLOCK || GetOwner()->getClass() == CLASS_MAGE)
+            crit_chance += GetOwner()->ToPlayer()->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
+        else
+        {
+            crit_chance += GetOwner()->GetUnitCriticalChance(attackType, victim);
+            crit_chance += GetOwner()->GetTotalAuraModifierByMiscMask(SPELL_AURA_MOD_SPELL_CRIT_CHANCE_SCHOOL, schoolMask);
+        }
+    }
+
     switch (spellProto->DmgClass)
     {
         case SPELL_DAMAGE_CLASS_NONE:
@@ -11095,8 +11149,8 @@ uint32 Unit::SpellHealingBonusDone(Unit* victim, SpellInfo const* spellProto, ui
     if (spellProto->Id == 115611 || spellProto->Id == 19236)
         return healamount;
 
-    // No bonus for Devouring Plague heal or Atonement
-    if (spellProto->Id == 127626 || spellProto->Id == 81751)
+    // No bonus for Devouring Plague heal or Atonement or Eminence
+    if (spellProto->Id == 127626 || spellProto->Id == 81751 || spellProto->Id == 117895)
         return healamount;
 
     // No bonus for Leader of the Pack or Soul Leech
@@ -11342,8 +11396,12 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
 
     AuraEffectList const& mHealingGet= GetAuraEffectsByType(SPELL_AURA_MOD_HEALING_RECEIVED);
     for (AuraEffectList::const_iterator i = mHealingGet.begin(); i != mHealingGet.end(); ++i)
+    {
         if (caster->GetGUID() == (*i)->GetCasterGUID() && (*i)->IsAffectingSpell(spellProto))
             AddPct(TakenTotalMod, (*i)->GetAmount());
+        else if ((*i)->GetBase()->GetId() == 974) // Hack fix for Earth Shield
+            AddPct(TakenTotalMod, (*i)->GetAmount());
+    }
 
     for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
     {
@@ -14289,7 +14347,7 @@ SpellPowerEntry const* Unit::GetSpellPowerEntryBySpell(SpellInfo const* spell) c
     {
         if (spell->Id == 686)
         {
-            if(GetShapeshiftForm() == FORM_METAMORPHOSIS)
+            if (GetShapeshiftForm() == FORM_METAMORPHOSIS)
                 return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_DEMONIC_FURY);
             else
                 return sSpellMgr->GetSpellPowerEntryByIdAndPower(spell->Id, POWER_MANA);
@@ -14466,9 +14524,14 @@ void CharmInfo::RestoreState()
 
 void CharmInfo::InitPetActionBar()
 {
-    // the first 3 SpellOrActions are attack, follow and stay
+    // the first 3 SpellOrActions are attack, follow and move-to
     for (uint32 i = 0; i < ACTION_BAR_INDEX_PET_SPELL_START - ACTION_BAR_INDEX_START; ++i)
-        SetActionBar(ACTION_BAR_INDEX_START + i, COMMAND_ATTACK - i, ACT_COMMAND);
+    {
+        if (i < 2)
+            SetActionBar(ACTION_BAR_INDEX_START + i, COMMAND_ATTACK - i, ACT_COMMAND);
+        else
+            SetActionBar(ACTION_BAR_INDEX_START + i, COMMAND_MOVE_TO, ACT_COMMAND);
+    }
 
     // middle 4 SpellOrActions are spells/special attacks/abilities
     for (uint32 i = 0; i < ACTION_BAR_INDEX_PET_SPELL_END-ACTION_BAR_INDEX_PET_SPELL_START; ++i)
@@ -14476,7 +14539,12 @@ void CharmInfo::InitPetActionBar()
 
     // last 3 SpellOrActions are reactions
     for (uint32 i = 0; i < ACTION_BAR_INDEX_END - ACTION_BAR_INDEX_PET_SPELL_END; ++i)
-        SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + i, COMMAND_ATTACK - i, ACT_REACTION);
+    {
+        if (i != 1)
+            SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + i, COMMAND_ATTACK - i, ACT_REACTION);
+        else
+            SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + i, REACT_HELPER, ACT_REACTION);
+    }
 }
 
 void CharmInfo::InitEmptyActionBar(bool withAttack)
@@ -14970,7 +15038,7 @@ void Unit::ProcDamageAndSpellFor(bool isVictim, Unit* target, uint32 procFlag, u
             aura->DropCharge();
 
     // Hack Fix Frenzy
-    if (GetTypeId() == TYPEID_UNIT && isPet() && isHunterPet() && GetOwner() && GetOwner()->HasAura(19623) && !procSpell)
+    if (GetTypeId() == TYPEID_UNIT && isHunterPet() && GetOwner() && GetOwner()->ToPlayer() && GetOwner()->HasAura(19623) && ToPet()->IsPermanentPetFor(GetOwner()->ToPlayer()) && !procSpell)
         if (roll_chance_i(40))
             CastSpell(this, 19615, true);
 
@@ -17208,6 +17276,23 @@ void Unit::GetPartyMembers(std::list<Unit*> &TagUnitMap)
             if (pet->isAlive() && (pet == this || IsInMap(pet)))
                 TagUnitMap.push_back(pet);
     }
+}
+
+AuraPtr Unit::ToggleAura(uint32 spellId, Unit* target)
+{
+    if (!target)
+        return NULLAURA;
+
+    if (target->HasAura(spellId))
+    {
+        target->RemoveAurasDueToSpell(spellId);
+        return NULLAURA;
+    }
+    else
+        return target->AddAura(spellId, target);
+
+    
+    return NULLAURA;
 }
 
 AuraPtr Unit::AddAura(uint32 spellId, Unit* target)

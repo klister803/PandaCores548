@@ -996,7 +996,7 @@ enum SpellEffects
     SPELL_EFFECT_SUMMON_DEAD_PET                    = 109,
     SPELL_EFFECT_DESTROY_ALL_TOTEMS                 = 110,
     SPELL_EFFECT_DURABILITY_DAMAGE                  = 111,
-    SPELL_EFFECT_112                                = 112,
+    SPELL_EFFECT_112                                = 112, // only 72759
     SPELL_EFFECT_RESURRECT_NEW                      = 113,
     SPELL_EFFECT_ATTACK_ME                          = 114,
     SPELL_EFFECT_DURABILITY_DAMAGE_PCT              = 115,
@@ -1044,49 +1044,67 @@ enum SpellEffects
     SPELL_EFFECT_CREATE_ITEM_2                      = 157,
     SPELL_EFFECT_MILLING                            = 158,
     SPELL_EFFECT_ALLOW_RENAME_PET                   = 159,
-    SPELL_EFFECT_160                                = 160,
+    SPELL_EFFECT_160                                = 160, // forcecast trigger spell ?
     SPELL_EFFECT_TALENT_SPEC_COUNT                  = 161,
     SPELL_EFFECT_TALENT_SPEC_SELECT                 = 162,
     SPELL_EFFECT_163                                = 163, // Unused (5.0.5)
     SPELL_EFFECT_REMOVE_AURA                        = 164,
     SPELL_EFFECT_DAMAGE_FROM_MAX_HEALTH_PCT         = 165,
     SPELL_EFFECT_GIVE_CURRENCY                      = 166,
-    SPELL_EFFECT_167                                = 167,
-    SPELL_EFFECT_168                                = 168,
+    SPELL_EFFECT_167                                = 167, // phase shift related
+    SPELL_EFFECT_CONTROL_PET                        = 168, // allow hunter and warlock control pet
     SPELL_EFFECT_DESTROY_ITEM                       = 169,
     SPELL_EFFECT_UPDATE_ZONE_AURAS_AND_PHASES       = 170,
-    SPELL_EFFECT_171                                = 171, // Summons gamebject
+    SPELL_EFFECT_171                                = 171, // Summons gamebject (player farm related)
     SPELL_EFFECT_RESURRECT_WITH_AURA                = 172,
     SPELL_EFFECT_UNLOCK_GUILD_VAULT_TAB             = 173, // Guild tab unlocked (guild perk)
     SPELL_EFFECT_APPLY_AURA_ON_PET                  = 174,
-    SPELL_EFFECT_175                                = 175,
+    SPELL_EFFECT_175                                = 175, // random target ? only 125570
     SPELL_EFFECT_176                                = 176, // Some kind of sanctuary effect (Vanish)
-    SPELL_EFFECT_177                                = 177,
+    SPELL_EFFECT_177                                = 177, // despawn areatrigger
     SPELL_EFFECT_178                                = 178, // Unused (5.0.5)
     SPELL_EFFECT_CREATE_AREATRIGGER                 = 179,
-    SPELL_EFFECT_180                                = 180, // Only one spell : "Update Area Triggers"
+    SPELL_EFFECT_180                                = 180, // Only one spell : "Update Area Triggers" 106584
     SPELL_EFFECT_UNLEARN_TALENT                     = 181,
-    SPELL_EFFECT_182                                = 182,
+    SPELL_EFFECT_182                                = 182, // despawwn areatrigger
     SPELL_EFFECT_183                                = 183, // Unused (5.0.5)
-    SPELL_EFFECT_REPUTATION_REWARD                  = 184,
-    SPELL_EFFECT_185                                = 185,
-    SPELL_EFFECT_186                                = 186,
-    SPELL_EFFECT_187                                = 187,
-    SPELL_EFFECT_188                                = 188,
-    SPELL_EFFECT_LOOT                               = 189,
-    SPELL_EFFECT_190                                = 190,
-    SPELL_EFFECT_191                                = 191,
-    SPELL_EFFECT_192                                = 192,
+    SPELL_EFFECT_REPUTATION_REWARD                  = 184, // add 400 (normal) 800 (10/25 player mode) Avengers of Hyjal (TDF ?) see 73843
+    SPELL_EFFECT_185                                = 185, // Scene related
+    SPELL_EFFECT_186                                = 186, // Scene related
+    SPELL_EFFECT_RANDOM_DIGSITE                     = 187, // 126957 only
+    SPELL_EFFECT_STAMPEDE                           = 188, // Stampede 121818
+    SPELL_EFFECT_LOOT_BONUS                         = 189, // Boss loot bonus ?
+    SPELL_EFFECT_190                                = 190, // Unused (5.0.5)
+    SPELL_EFFECT_TELEPORT_TO_DIGSITE                = 191, // Teleport player to an random digsite (Archaeology)
+    SPELL_EFFECT_UNCAGE_PET                         = 192, // Battle pet exchange (123302)
     SPELL_EFFECT_193                                = 193, // Unused (5.0.5)
     SPELL_EFFECT_194                                = 194, // Unused (5.0.5)
-    SPELL_EFFECT_195                                = 195,
-    SPELL_EFFECT_196                                = 196,
-    SPELL_EFFECT_197                                = 197,
-    SPELL_EFFECT_198                                = 198,
+    SPELL_EFFECT_195                                = 195, // Scene related
+    SPELL_EFFECT_196                                = 196, // summon multi NPC
+    SPELL_EFFECT_197                                = 197, // 130243 only
+    SPELL_EFFECT_198                                = 198, // Mini scene event
     SPELL_EFFECT_199                                = 199, // Unused (5.0.5)
-    SPELL_EFFECT_HEAL_BATTLEPET_PCT                 = 200,
-    SPELL_EFFECT_201                                = 201,
+    SPELL_EFFECT_HEAL_BATTLEPET_PCT                 = 200, // Battle pet Healing  125439, 125801
+    SPELL_EFFECT_BATTLE_PET                         = 201, // Battle pet first slot
     TOTAL_SPELL_EFFECTS                             = 202
+};
+
+enum PetTameResult
+{
+    PET_TAME_ERROR_UNKNOWN_ERROR            = 0,    // checked
+    PET_TAME_ERROR_INVALID_CREATURE         = 1,    // checked
+    PET_TAME_ERROR_TOO_MANY_PETS            = 2,    // checked
+    PET_TAME_ERROR_CREATURE_ALREADY_OWNED   = 3,    // checked
+    PET_TAME_ERROR_NOT_TAMEABLE             = 4,    // checked
+    PET_TAME_ERROR_ANOTHER_SUMMON_ACTIVE    = 5,    // checked
+    PET_TAME_ERROR_YOU_CANT_TAME            = 6,    // checked
+    PET_TAME_ERROR_NO_PET_AVAILABLE         = 7,    // checked
+    PET_TAME_ERROR_INTERNAL_ERROR           = 8,    // checked
+    PET_TAME_ERROR_TOO_HIGH_LEVEL           = 9,    // checked
+    PET_TAME_ERROR_DEAD                     = 10,   // checked
+    PET_TAME_ERROR_NOT_DEAD                 = 11,   // checked
+    PET_TAME_ERROR_CANT_CONTROL_EXOTIC      = 12,   // checked
+    PET_TAME_ERROR_INVALID_SLOT             = 13    // checked
 };
 
 enum SpellCastResult
@@ -1727,7 +1745,7 @@ enum Targets
     TARGET_UNK_126                     = 126,
     TARGET_UNK_127                     = 127,
     TARGET_UNK_128                     = 128,
-    TARGET_UNK_129                     = 129,
+    TARGET_UNIT_CONE_ENEMY_129         = 129,
     TARGET_UNK_130                     = 130,
     TARGET_UNK_131                     = 131,
     TARGET_UNK_132                     = 132,
@@ -3628,7 +3646,7 @@ enum SkillType
     SKILL_NEW_PET_VOIDWALKER	   = 928, // New in MoP 5.0.5
     SKILL_NEW_PET_OBSERVER		   = 930, // New in MoP 5.0.5
     SKILL_NEW_PET_WRATHGUARD	   = 931, // New in MoP 5.0.5
-    SKILL_ALL					   = 934, // 5.0.5 Tous - Sp�cialisations","Les sorts g�rant une combinaison de sp�cialisation se trouvent ici.
+    SKILL_ALL					   = 934, // 5.0.5 Tous - Specialisations","Les sorts gerant une combinaison de specialisation se trouvent ici.
     SKILL_NEW_RUNEFORGING		   = 960, // New in MoP 5.0.5
     SKILL_WAY_OF_GRILL			   = 975, // New in MoP 5.0.5 (cooking)
     SKILL_WAY_OF_WOK			   = 976, // New in MoP 5.0.5 (cooking)
@@ -4145,6 +4163,29 @@ enum SpellFamilyNames
     SPELLFAMILY_UNK3        = 50,
     SPELLFAMILY_MONK        = 53
 };
+
+// stored in character_pet.slot
+enum PetSlot
+{
+    PET_SLOT_DEFAULT         =   0,
+    //Some not-in-db slots
+    PET_SLOT_FULL_LIST       =  -4,        //Used when there is no slot free for tameing
+    PET_SLOT_UNK_SLOT        =  -3,        // Used in some scripts.
+
+    PET_SLOT_ACTUAL_PET_SLOT =  -2,        // Save the pet in his actual slot.
+    PET_SLOT_DELETED         =  -1,        // Delete the pet
+
+    //Hunter pet slots, sended to client at stable.
+    PET_SLOT_HUNTER_FIRST    =   0,        // PetType == HUNTER_PET
+    PET_SLOT_HUNTER_LAST     =   4,        // PetType == HUNTER_PET
+    PET_SLOT_STABLE_FIRST    =   5,
+    PET_SLOT_STABLE_LAST     =  24,
+
+    //Non-hunter pet slot
+    PET_SLOT_OTHER_PET       = 100,        // PetType != HUNTER_PET
+};
+
+#define MAX_PET_STABLES         PET_SLOT_STABLE_LAST
 
 enum TradeStatus
 {

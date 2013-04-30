@@ -1078,7 +1078,8 @@ enum ReactStates
 {
     REACT_PASSIVE    = 0,
     REACT_DEFENSIVE  = 1,
-    REACT_AGGRESSIVE = 2
+    REACT_AGGRESSIVE = 2,
+    REACT_HELPER     = 3
 };
 
 enum CommandStates
@@ -1087,7 +1088,7 @@ enum CommandStates
     COMMAND_FOLLOW  = 1,
     COMMAND_ATTACK  = 2,
     COMMAND_ABANDON = 3,
-    COMMAND_MOVE_TO  = 4
+    COMMAND_MOVE_TO = 4
 };
 
 #define UNIT_ACTION_BUTTON_ACTION(X) (uint32(X) & 0x00FFFFFF)
@@ -1627,6 +1628,7 @@ class Unit : public WorldObject
         void CastCustomSpell(uint32 spellId, SpellValueMod mod, int32 value, Unit* Victim = NULL, bool triggered = true, Item* castItem = NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
         void CastCustomSpell(uint32 spellId, CustomSpellValues const &value, Unit* Victim = NULL, bool triggered = true, Item* castItem = NULL, constAuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
         void CastSpell(GameObject* go, uint32 spellId, bool triggered, Item* castItem = NULL, AuraEffectPtr triggeredByAura = NULLAURA_EFFECT, uint64 originalCaster = 0);
+        AuraPtr ToggleAura(uint32 spellId, Unit* target);
         AuraPtr AddAura(uint32 spellId, Unit* target);
         AuraPtr AddAura(SpellInfo const* spellInfo, uint32 effMask, Unit* target);
         void SetAuraStack(uint32 spellId, Unit* target, uint32 stack);
@@ -1738,7 +1740,7 @@ class Unit : public WorldObject
         Player* GetCharmerOrOwnerPlayerOrPlayerItself() const;
         Player* GetAffectingPlayer() const;
 
-        void SetMinion(Minion *minion, bool apply);
+        void SetMinion(Minion *minion, bool apply, PetSlot slot, bool stampeded = false);
         void GetAllMinionsByEntry(std::list<Creature*>& Minions, uint32 entry);
         void RemoveAllMinionsByEntry(uint32 entry);
         void SetCharm(Unit* target, bool apply);
@@ -1831,6 +1833,7 @@ class Unit : public WorldObject
         void RemoveAllAurasOnDeath();
         void RemoveAllAurasRequiringDeadTarget();
         void RemoveAllAurasExceptType(AuraType type);
+        void RemoveAllAurasByType(AuraType type);
         void DelayOwnedAuras(uint32 spellId, uint64 caster, int32 delaytime);
 
         void _RemoveAllAuraStatMods();
@@ -1959,7 +1962,7 @@ class Unit : public WorldObject
         {
             ShapeshiftForm form = GetShapeshiftForm();
             return form != FORM_NONE && form != FORM_BATTLESTANCE && form != FORM_BERSERKERSTANCE && form != FORM_DEFENSIVESTANCE &&
-                form != FORM_SHADOW && form != FORM_STEALTH && form != FORM_UNDEAD && form != FORM_WISE_SERPENT && form != FORM_STURDY_OX && form != FORM_FIERCE_TIGER;
+                form != FORM_SHADOW && form != FORM_STEALTH && form != FORM_UNDEAD && form != FORM_WISE_SERPENT && form != FORM_STURDY_OX && form != FORM_FIERCE_TIGER && form != FORM_MOONKIN;
         }
 
         float m_modMeleeHitChance;

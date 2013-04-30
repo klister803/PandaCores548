@@ -381,7 +381,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     {
         for(auto itr : spellInfo->OverrideSpellList)
         {
-            if(_player->HasSpell(itr))
+            if (_player->HasSpell(itr))
             {
                 SpellInfo const* overrideSpellInfo = sSpellMgr->GetSpellInfo(itr);
                 if(overrideSpellInfo)
@@ -471,18 +471,18 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     if (spellInfo->Id == 19434 && _player->HasAura(82926))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(82928);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
         }
     }
     // Swipe - 106785 and Swipe - 62078 (form cat)
-    if (spellInfo->Id == 106785 && _player->GetShapeshiftForm() == FORM_CAT)
+    else if (spellInfo->Id == 106785 && _player->GetShapeshiftForm() == FORM_CAT)
     {
         // Use the right spell
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(62078);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -493,7 +493,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     {
         // Use the right spell
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(779);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -501,11 +501,11 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         }
     }
     // Mangle - 33917 and Mangle - 33876 (form cat)
-    if (spellInfo->Id == 33917 && _player->GetShapeshiftForm() == FORM_CAT)
+    else if (spellInfo->Id == 33917 && _player->GetShapeshiftForm() == FORM_CAT)
     {
         // Use the right spell
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(33876);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -516,7 +516,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     {
         // Use the right spell
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(33878);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -524,81 +524,81 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         }
     }
     // Drain Life - 689 and Harvest Life (overrided) - 108371
-    if (spellInfo->Id == 689 && _player->HasSpell(108371))
+    else if (spellInfo->Id == 689 && _player->HasSpell(108371))
     {
         // Use the right spell
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(115707);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
         }
     }
     // Alter Time - 108978 and Alter Time (overrided) - 127140
-    if (spellInfo->Id == 108978 && _player->HasAura(110909))
+    else if (spellInfo->Id == 108978 && _player->HasAura(110909))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(127140);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
         }
     }
     // Fix Dark Soul for Destruction warlocks
-    if (spellInfo->Id == 113860 && _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
+    else if (spellInfo->Id == 113860 && _player->GetSpecializationId(_player->GetActiveSpec()) == SPEC_WARLOCK_DESTRUCTION)
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(113858);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
         }
     }
     // Halo - 120517 and Halo - 120644 (shadow form)
-    if (spellInfo->Id == 120517 && _player->HasAura(15473))
+    else if (spellInfo->Id == 120517 && _player->HasAura(15473))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(120644);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
         }
     }
     // Consecration - 116467 and Consecration - 26573
-    if (spellInfo->Id == 116467)
+    else if (spellInfo->Id == 116467)
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(26573);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
         }
     }
     // Cascade (shadow) - 127632 and Cascade - 121135
-    if (spellInfo->Id == 121135 && _player->HasAura(15473))
+    else if (spellInfo->Id == 121135 && _player->HasAura(15473))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(127632);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
         }
     }
     // Zen Pilgrimage - 126892 and Zen Pilgrimage : Return - 126895
-    if (spellInfo->Id == 126892 && _player->HasAura(126896))
+    else if (spellInfo->Id == 126892 && _player->HasAura(126896))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(126895);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
         }
     }
     // Unending Breath - 5697 and Unending Breath : Soulburn - 104242
-    if (spellInfo->Id == 5697 && _player->HasAura(74434))
+    else if (spellInfo->Id == 5697 && _player->HasAura(74434))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104242);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -606,10 +606,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         }
     }
     // Health Funnel - 755 and Health Funnel : Soulburn - 104242
-    if (spellInfo->Id == 755 && _player->HasAura(74434))
+    else if (spellInfo->Id == 755 && _player->HasAura(74434))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104220);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -617,10 +617,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         }
     }
     // Curse of Enfeeblement - 109466 and Curse of Enfeeblement : Soulburn - 109468
-    if (spellInfo->Id == 109466 && _player->HasAura(74434))
+    else if (spellInfo->Id == 109466 && _player->HasAura(74434))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(109468);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -628,10 +628,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         }
     }
     // Curse of the Elements - 1490 and Curse of the Elements : Soulburn - 104225
-    if (spellInfo->Id == 1490 && _player->HasAura(74434))
+    else if (spellInfo->Id == 1490 && _player->HasAura(74434))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104225);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -639,10 +639,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         }
     }
     // Curse of Exhaustion - 18223 and Curse of Exhaustion : Soulburn - 104242
-    if (spellInfo->Id == 18223 && _player->HasAura(74434))
+    else if (spellInfo->Id == 18223 && _player->HasAura(74434))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(104223);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -650,10 +650,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         }
     }
     // Soul Swap - 86121 and Soul Swap : Exhale - 86213
-    if (spellInfo->Id == 86121 && _player->HasAura(86211))
+    else if (spellInfo->Id == 86121 && _player->HasAura(86211))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(86213);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -661,10 +661,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         }
     }
     // Soul Swap - 86121 and Soul Swap : Soulburn - 119678
-    if (spellInfo->Id == 86121 && _player->HasAura(74434))
+    else if (spellInfo->Id == 86121 && _player->HasAura(74434))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(119678);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -672,10 +672,10 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
         }
     }
     // Mage Bomb - 125430 and  Living Bomb - 44457
-    if (spellInfo->Id == 125430 && _player->HasSpell(44457))
+    else if (spellInfo->Id == 125430 && _player->HasSpell(44457))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(44457);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -685,7 +685,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     else if (spellInfo->Id == 125430 && _player->HasSpell(112948))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(112948);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
@@ -695,29 +695,29 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     else if (spellInfo->Id == 125430 && _player->HasSpell(114923))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(114923);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
         }
     }
     // Evocation - 12051 and  Rune of Power - 116011
-    if (spellInfo->Id == 12051 && _player->HasSpell(116011))
+    else if (spellInfo->Id == 12051 && _player->HasSpell(116011))
     {
         SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(116011);
-        if(newSpellInfo)
+        if (newSpellInfo)
         {
             spellInfo = newSpellInfo;
             spellId = newSpellInfo->Id;
         }
     }
     // Frostbolt - 116 and Frostbolt - 126201 (heal for water elemental)
-    if (spellInfo->Id == 116 && targets.GetUnitTarget())
+    else if (spellInfo->Id == 116 && targets.GetUnitTarget())
     {
         if (targets.GetUnitTarget()->GetOwner() && targets.GetUnitTarget()->GetOwner()->GetTypeId() == TYPEID_PLAYER && targets.GetUnitTarget()->GetOwner()->GetGUID() == _player->GetGUID())
         {
             SpellInfo const* newSpellInfo = sSpellMgr->GetSpellInfo(126201);
-            if(newSpellInfo)
+            if (newSpellInfo)
             {
                 spellInfo = newSpellInfo;
                 spellId = newSpellInfo->Id;
@@ -726,7 +726,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
     // Surging Mist - 116694 and Surging Mist - 116995
     // Surging Mist is instantly casted if player is channeling Soothing Mist
-    if (spellInfo->Id == 116694 && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
+    else if (spellInfo->Id == 116694 && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
     {
         recvPacket.rfinish();
         _player->CastSpell(targets.GetUnitTarget(), 116995, true);
@@ -737,7 +737,7 @@ void WorldSession::HandleCastSpellOpcode(WorldPacket& recvPacket)
     }
     // Enveloping Mist - 124682 and Enveloping Mist - 132120
     // Enveloping Mist is instantly casted if player is channeling Soothing Mist
-    if (spellInfo->Id == 124682 && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
+    else if (spellInfo->Id == 124682 && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL) && _player->GetCurrentSpell(CURRENT_CHANNELED_SPELL)->GetSpellInfo()->Id == 115175)
     {
         recvPacket.rfinish();
         _player->CastSpell(targets.GetUnitTarget(), 132120, true);

@@ -517,6 +517,7 @@ enum Opcodes
     CMSG_SUBMIT_BUG                                   = 0x3D3,  // 5.0.5 16048
     CMSG_SUBMIT_COMPLAIN                              = 0x000,  // 5.0.5 16048 Deprecated ?
     CMSG_SUGGESTION_SUBMIT                            = 0x001,  // 5.0.5 16048
+    CMSG_SUMMON_BATTLEPET_COMPANION                   = 0x21c,  // 5.0.5 16048
     CMSG_SUMMON_RESPONSE                              = 0xCFE,  // 5.0.5 16048
     CMSG_SUSPEND_TOKEN                                = 0x000,  // 5.0.5 16048 Unused
     CMSG_SWAP_INV_ITEM                                = 0x810,	// 5.0.5 16048
@@ -704,6 +705,7 @@ enum Opcodes
     SMSG_BATTLEGROUND_PLAYER_JOINED                   = 0xAB5,  // 5.0.5 16048
     SMSG_BATTLEGROUND_PLAYER_LEFT                     = 0xAD3,  // 5.0.5 16048
     SMSG_BATTLEGROUND_PLAYER_POSITIONS                = 0x000,  // 5.0.5 16048 Deprecated
+    SMSG_BATTLEPET_JOURNAL                            = 0xB2E,  // 5.0.5 16048
     SMSG_BINDER_CONFIRM                               = 0x8CC,  // 5.0.5 16048
     SMSG_BINDPOINTUPDATE                              = 0xC0B,  // 5.0.5 16048
     SMSG_BINDZONEREPLY                                = 0x000,  // Not found in 4.3.4

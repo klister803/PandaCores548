@@ -1306,6 +1306,7 @@ bool AuraEffect::IsAffectingSpell(SpellInfo const* spell) const
     // Check EffectClassMask
     if (m_spellInfo->Effects[m_effIndex].SpellClassMask & spell->SpellFamilyFlags)
         return true;
+
     return false;
 }
 
@@ -1466,8 +1467,8 @@ void AuraEffect::HandleShapeshiftBoosts(Unit* target, bool apply) const
             spellId2 = 40121;
             break;
         case FORM_METAMORPHOSIS:
-            spellId  = 54817;
-            spellId2 = 54879;
+            spellId  = 103965;
+            spellId2 = 54817;
             break;
         case FORM_SPIRITOFREDEMPTION:
             spellId  = 27792;
@@ -2074,42 +2075,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
             // reset power to default values only at power change
             if (target->getPowerType() != PowerType)
                 target->setPowerType(PowerType);
-
-            switch (form)
-            {
-                case FORM_CAT:
-                case FORM_BEAR:
-                {
-                    // get furor proc chance
-                    int32 FurorChance = 0;
-                    if (constAuraEffectPtr dummy = target->GetDummyAuraEffect(SPELLFAMILY_DRUID, 238, 0))
-                        FurorChance = std::max(dummy->GetAmount(), 0);
-
-                    switch (GetMiscValue())
-                    {
-                        case FORM_CAT:
-                        {
-                            int32 basePoints = std::min<int32>(oldPower, FurorChance);
-                            target->SetPower(POWER_ENERGY, 0);
-                            target->CastCustomSpell(target, 17099, &basePoints, NULL, NULL, true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
-                        }
-                        break;
-                        case FORM_BEAR:
-                        if (irand(0, 99) < FurorChance)
-                            target->CastSpell(target, 17057, true);
-                        default:
-                        {
-                            int32 newEnergy = std::min(target->GetPower(POWER_ENERGY), FurorChance);
-                            target->SetPower(POWER_ENERGY, newEnergy);
-                        }
-                        break;
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
         }
+
         // stop handling the effect if it was removed by linked event
         if (aurApp->GetRemoveMode())
             return;
@@ -2906,6 +2873,10 @@ void AuraEffect::HandleAuraMounted(AuraApplication const* aurApp, uint8 mode, bo
         uint32 displayId = 0;
         uint32 vehicleId = 0;
 
+        // Mount can be cast in Moonkin form but unapply it
+        if (target->GetShapeshiftForm() == FORM_MOONKIN)
+            target->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
+
         // Festive Holiday Mount
         if (target->HasAura(62061))
         {
@@ -2975,7 +2946,7 @@ void AuraEffect::HandleAuraAllowFlight(AuraApplication const* aurApp, uint8 mode
     if (!apply)
     {
         target->RemoveUnitMovementFlag(MOVEMENTFLAG_MASK_MOVING_FLY);
-        target->GetMotionMaster()->MoveFall();
+        target->m_movementInfo.SetFallTime(0);
     }
 
     Player* player = target->ToPlayer();
@@ -3251,7 +3222,7 @@ void AuraEffect::HandleModPossessPet(AuraApplication const* aurApp, uint8 mode, 
         pet->RemoveCharmedBy(caster);
 
         if (!pet->IsWithinDistInMap(caster, pet->GetMap()->GetVisibilityRange()))
-            pet->Remove(PET_SAVE_NOT_IN_SLOT, true);
+            pet->Remove(PET_SLOT_ACTUAL_PET_SLOT, true);
         else
         {
             // Reinitialize the pet bar and make the pet come back to the owner
@@ -3381,7 +3352,6 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
             {
                 target->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
                 target->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
-                target->m_movementInfo.SetFallTime(0);
             }
 
             Player* player = target->ToPlayer();
@@ -4705,6 +4675,12 @@ void AuraEffect::HandleAuraModAttackPowerPercent(AuraApplication const* aurApp, 
         return;
 
     Unit* target = aurApp->GetTarget();
+
+    // Don't apply Markmanship aura twice on pet
+    if (GetCaster() && GetCaster()->ToPlayer() && aurApp->GetBase()->GetId() == 19506)
+        if (Pet* pet = GetCaster()->ToPlayer()->GetPet())
+            if (target->GetGUID() == pet->GetGUID())
+                return;
 
     //UNIT_FIELD_ATTACK_POWER_MULTIPLIER = multiplier - 1
     target->HandleStatModifier(UNIT_MOD_ATTACK_POWER, TOTAL_PCT, float(GetAmount()), apply);
@@ -6056,31 +6032,13 @@ void AuraEffect::HandlePeriodicDummyAuraTick(Unit* target, Unit* caster) const
                             }
                         }
                     }
-                }
-            }
-        case SPELLFAMILY_WARLOCK:
-            switch (GetId())
-            {
-                // Custom MoP Script
-                case 103958: // Metamorphosis
-                {
-                    if (caster)
-                    {
-                        if (caster->GetPower(POWER_DEMONIC_FURY) > 0)
-                        {
-                            // Power cost : 6 demonic fury per second
-                            uint32 demonicFury = caster->GetPower(POWER_DEMONIC_FURY) - 6;
 
-                            if (demonicFury < 0)
-                                demonicFury = 0;
-
-                            caster->SetPower(POWER_DEMONIC_FURY, demonicFury);
-                        }
-                        else
-                            caster->RemoveAurasDueToSpell(103958);
-                    }
+                    break;
                 }
+                default:
+                    break;
             }
+            break;
         case SPELLFAMILY_DEATHKNIGHT:
             switch (GetId())
             {
@@ -6664,6 +6622,10 @@ void AuraEffect::HandlePeriodicDamageAurasTick(Unit* target, Unit* caster) const
     bool crit = IsPeriodicTickCrit(target, caster);
     if (crit)
         damage = caster->SpellCriticalDamageBonus(m_spellInfo, damage, target);
+
+    // If Doom critical tick, a Wild Imp will appear to fight with the Warlock
+    if (m_spellInfo->Id == 603 && crit)
+        caster->CastSpell(caster, 104317, true);
 
     int32 dmg = damage;
     if (m_spellInfo->Id != 110914 && m_spellInfo->Id != 124280 && m_spellInfo->Id != 49016) // Hack fix for Dark Bargain and Touch of Karma (DOT) and Unholy Frenzy

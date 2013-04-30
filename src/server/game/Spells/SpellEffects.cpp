@@ -486,16 +486,20 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             {
                 // Faerie Fire - 770
                 if (m_spellInfo->Id == 770)
+                {
                     // Deals damage only if casted from bear form
                     if (m_caster->GetShapeshiftForm() != FORM_BEAR)
                         return;
+                }
                 // Ferocious Bite
-                if (m_caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->SpellFamilyFlags[0] & 0x000800000) && m_spellInfo->SpellVisual[0] == 6587)
+                else if (m_caster->GetTypeId() == TYPEID_PLAYER && (m_spellInfo->SpellFamilyFlags[0] & 0x000800000) && m_spellInfo->SpellVisual[0] == 6587)
                 {
                     // converts each extra point of energy ( up to 25 energy ) into additional damage
                     int32 energy = -(m_caster->ModifyPower(POWER_ENERGY, -25));
                     // 25 energy = 100% more damage
                     AddPct(damage, energy * 4);
+
+                    damage += int32(0.196f * m_caster->GetTotalAttackPowerValue(BASE_ATTACK) * m_caster->ToPlayer()->GetComboPoints());
 
                     // if target is under 25% of life, also reset rake duration
                     if (unitTarget->GetHealthPct() <= 25.0f)
@@ -503,10 +507,10 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                             aura->RefreshDuration();
                 }
                 // Maul - Deals 20% more damage if target is bleeding
-                if (m_spellInfo->Id == 6807 && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
+                else if (m_spellInfo->Id == 6807 && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
                     AddPct(damage, 20);
                 // Swipe - Deals 20% more damage if target is bleeding
-                if ((m_spellInfo->Id == 62078 || m_spellInfo->Id == 779) && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
+                else if ((m_spellInfo->Id == 62078 || m_spellInfo->Id == 779) && unitTarget->HasAuraState(AURA_STATE_BLEEDING))
                     AddPct(damage, 20);
                 break;
             }
@@ -585,7 +589,22 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
             }
             case SPELLFAMILY_HUNTER:
             {
-                //Gore
+                // Claw, Bite
+                if (m_spellInfo->Id == 16827 || m_spellInfo->Id == 17253)
+                {
+                    if (m_caster->GetOwner())
+                    {
+                        damage += int32(m_caster->GetOwner()->GetTotalAttackPowerValue(RANGED_ATTACK) * 0.2544f);
+
+                        // Deals 100% more damage and costs 100% more Focus when your pet has 50 or more Focus.
+                        if (m_caster->GetPower(POWER_FOCUS) + 25 > 50)
+                        {
+                            damage *= 2;
+                            m_caster->EnergizeBySpell(m_caster, m_spellInfo->Id, -25, POWER_FOCUS);
+                        }
+                    }
+                }
+                // Gore
                 if (m_spellInfo->SpellIconID == 1578)
                 {
                     if (m_caster->HasAura(57627))           // Charge 6 sec post-affect
@@ -611,31 +630,18 @@ void Spell::EffectSchoolDMG(SpellEffIndex effIndex)
                 {
                     // Custom MoP script
                     case 117418: // Fists of Fury
-                    {
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 7.5f, 14);
                         break;
-                    }
                     case 100780: // Jab
-                    {
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 1.5f, 14);
                         break;
-                    }
                     case 115080: // Touch of Death
-                    {
-                        Unit* caster = GetCaster();
-                        if (caster)
-                        {
-                            Unit* victim = caster->getVictim();
-                            if (victim)
-                            {
-                                int32 health = victim->GetMaxHealth();
-                                damage += health;
-                            }
-                        }
+                        if (Unit* caster = GetCaster())
+                            if (Unit* victim = caster->getVictim())
+                                damage = victim->GetHealth() * 2;
                         break;
-                    }
                     case 100787: // Tiger Palm
                         if (m_caster->GetTypeId() == TYPEID_PLAYER)
                             damage = CalculateMonkMeleeAttacks(m_caster, 3.0f, 14);
@@ -690,6 +696,10 @@ void Spell::EffectDummy(SpellEffIndex effIndex)
     int32 bp = 0;
     bool triggered = true;
     SpellCastTargets targets;
+
+    // Fishing dummy
+    if (m_spellInfo->Id == 131474)
+        m_caster->CastSpell(m_caster, 131476, true);
 
     // selection by spell family
     switch (m_spellInfo->SpellFamilyName)
@@ -1612,7 +1622,7 @@ void Spell::EffectHeal(SpellEffIndex /*effIndex*/)
             }
         }
         // 77485 - Mastery : Echo of Light
-        if (m_caster && m_caster->getClass() == CLASS_PRIEST && m_caster->HasAura(77485) && addhealth)
+        if (m_caster && m_caster->getClass() == CLASS_PRIEST && m_caster->HasAura(77485) && m_caster->getLevel() >= 80 && addhealth)
         {
             float Mastery = m_caster->GetFloatValue(PLAYER_MASTERY) * 1.25f / 100.0f;
             int32 bp = (Mastery * addhealth) / 6;
@@ -2497,6 +2507,15 @@ void Spell::EffectSummonType(SpellEffIndex effIndex)
                             summon->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
                         }
 
+                        // Explosive Decoy and Explosive Decoy 2.0
+                        if (m_spellInfo->Id == 54359 || m_spellInfo->Id == 62405)
+                        {
+                            summon->SetMaxHealth(damage);
+                            summon->SetHealth(damage);
+                            summon->SetFlag(UNIT_FIELD_FLAGS, UNIT_FLAG_DISABLE_MOVE);
+                        }
+
+
                         ExecuteLogEffectSummonObject(effIndex, summon);
                     }
                     return;
@@ -3052,6 +3071,13 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     if (m_caster->getClass() != CLASS_HUNTER)
         return;
 
+    // If we have a full list we shoulden't be able to create a new one.
+    if (m_caster->ToPlayer()->getSlotForNewPet() == PET_SLOT_FULL_LIST)
+    {
+        m_caster->ToPlayer()->SendPetTameResult(PET_TAME_ERROR_TOO_MANY_PETS);
+        return;
+    }
+
     // cast finish successfully
     //SendChannelUpdate(0);
     finish();
@@ -3075,11 +3101,17 @@ void Spell::EffectTameCreature(SpellEffIndex /*effIndex*/)
     pet->SetUInt32Value(UNIT_FIELD_LEVEL, level);
 
     // caster have pet now
-    m_caster->SetMinion(pet, true);
+    if (m_caster->GetTypeId() == TYPEID_PLAYER)
+    {
+        m_caster->ToPlayer()->m_currentPetSlot = m_caster->ToPlayer()->getSlotForNewPet();
+        m_caster->SetMinion(pet, true , m_caster->ToPlayer()->m_currentPetSlot);
+    }
+    else
+        m_caster->SetMinion(pet, true , PET_SLOT_UNK_SLOT);
 
     if (m_caster->GetTypeId() == TYPEID_PLAYER)
     {
-        pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+        pet->SavePetToDB(m_caster->ToPlayer()->m_currentPetSlot);
         m_caster->ToPlayer()->PetSpellInitialize();
     }
 }
@@ -3137,14 +3169,14 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
         }
 
         if (owner->GetTypeId() == TYPEID_PLAYER)
-            owner->ToPlayer()->RemovePet(OldSummon, (OldSummon->getPetType() == HUNTER_PET ? PET_SAVE_AS_DELETED : PET_SAVE_NOT_IN_SLOT), false);
+            owner->ToPlayer()->RemovePet(OldSummon, PET_SLOT_DELETED, false);
         else
             return;
     }
 
     float x, y, z;
     owner->GetClosePoint(x, y, z, owner->GetObjectSize());
-    Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, 0);
+    Pet* pet = owner->SummonPet(petentry, x, y, z, owner->GetOrientation(), SUMMON_PET, m_caster->CalcSpellDuration(m_spellInfo), PetSlot(m_spellInfo->Effects[effIndex].BasePoints));
     if (!pet)
         return;
 
@@ -3159,9 +3191,12 @@ void Spell::EffectSummonPet(SpellEffIndex effIndex)
     pet->SetUInt32Value(UNIT_CREATED_BY_SPELL, m_spellInfo->Id);
 
     // generate new name for summon pet
-    std::string new_name=sObjectMgr->GeneratePetName(petentry);
-    if (!new_name.empty())
-        pet->SetName(new_name);
+    if (petentry)
+    {
+        std::string new_name = sObjectMgr->GeneratePetName(petentry);
+        if (!new_name.empty())
+            pet->SetName(new_name);
+    }
 
     ExecuteLogEffectSummonObject(effIndex, pet);
 }
@@ -3188,7 +3223,7 @@ void Spell::EffectLearnPetSpell(SpellEffIndex effIndex)
         return;
 
     pet->learnSpell(learn_spellproto->Id);
-    pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+    pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
     pet->GetOwner()->PetSpellInitialize();
 }
 
@@ -4727,17 +4762,13 @@ void Spell::EffectFeedPet(SpellEffIndex effIndex)
     if (!pet->isAlive())
         return;
 
-    int32 benefit = pet->GetCurrentFoodBenefitLevel(foodItem->GetTemplate()->ItemLevel);
-    if (benefit <= 0)
-        return;
-
     ExecuteLogEffectDestroyItem(effIndex, foodItem->GetEntry());
 
     uint32 count = 1;
     player->DestroyItemCount(foodItem, count, true);
     // TODO: fix crash when a spell has two effects, both pointed at the same item target
 
-    m_caster->CastCustomSpell(pet, m_spellInfo->Effects[effIndex].TriggerSpell, &benefit, NULL, NULL, true);
+    m_caster->CastSpell(pet, m_spellInfo->Effects[effIndex].TriggerSpell, true);
 }
 
 void Spell::EffectDismissPet(SpellEffIndex effIndex)
@@ -4751,7 +4782,7 @@ void Spell::EffectDismissPet(SpellEffIndex effIndex)
     Pet* pet = unitTarget->ToPet();
 
     ExecuteLogEffectUnsummonObject(effIndex, pet);
-    pet->GetOwner()->RemovePet(pet, PET_SAVE_NOT_IN_SLOT);
+    pet->GetOwner()->RemovePet(pet, PET_SLOT_ACTUAL_PET_SLOT);
 }
 
 void Spell::EffectSummonObject(SpellEffIndex effIndex)
@@ -5203,6 +5234,14 @@ void Spell::EffectLeapBack(SpellEffIndex effIndex)
 
     float speedxy = float(m_spellInfo->Effects[effIndex].MiscValue)/10;
     float speedz = float(damage/10);
+
+    // Fix Glyph of Disengage
+    if (m_caster->HasAura(56844))
+    {
+        speedxy *= 1.5f;
+        speedz = float(75 / 10);
+    }
+
     //1891: Disengage
     m_caster->JumpTo(speedxy, speedz, m_spellInfo->SpellIconID != 1891);
 }
@@ -5346,7 +5385,7 @@ void Spell::EffectSummonDeadPet(SpellEffIndex /*effIndex*/)
 
     //pet->AIM_Initialize();
     //player->PetSpellInitialize();
-    pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+    pet->SavePetToDB(PET_SLOT_ACTUAL_PET_SLOT);
 }
 
 void Spell::EffectDestroyAllTotems(SpellEffIndex /*effIndex*/)
@@ -5910,11 +5949,12 @@ void Spell::EffectCreateTamedPet(SpellEffIndex effIndex)
     pet->GetMap()->AddToMap(pet->ToCreature());
 
     // unitTarget has pet now
-    unitTarget->SetMinion(pet, true);
+    unitTarget->SetMinion(pet, true, PET_SLOT_ACTUAL_PET_SLOT);
 
     if (unitTarget->GetTypeId() == TYPEID_PLAYER)
     {
-        pet->SavePetToDB(PET_SAVE_AS_CURRENT);
+        m_caster->ToPlayer()->m_currentPetSlot = m_caster->ToPlayer()->getSlotForNewPet();
+        pet->SavePetToDB(m_caster->ToPlayer()->m_currentPetSlot);
         unitTarget->ToPlayer()->PetSpellInitialize();
     }
 }
