@@ -45,15 +45,21 @@ enum PriestSpells
     PRIEST_INNER_FIRE                           = 588,
     PRIEST_NPC_SHADOWY_APPARITION               = 61966,
     PRIEST_SPELL_HALO_HEAL                      = 120696,
-    PRIEST_CASCADE_SHADOW_DAMAGE                = 127628,
-    PRIEST_CASCADE_SHADOW_HEAL                  = 127629,
+
+    // Cascade
     PRIEST_CASCADE_HOLY_DAMAGE                  = 120785,
+    PRIEST_CASCADE_HOLY_TRIGGER                 = 120786,
+    PRIEST_CASCADE_INVISIBLE_AURA               = 120840,
+    PRIEST_CASCADE_HOLY_TALENT                  = 121135,
+    PRIEST_CASCADE_HOLY_MISSILE                 = 121146,
     PRIEST_CASCADE_HOLY_HEAL                    = 121148,
     PRIEST_CASCADE_SHADOW_MISSILE               = 127627,
-    PRIEST_CASCADE_HOLY_MISSILE                 = 121146,
-    PRIEST_CASCADE_INVISIBLE_AURA               = 120840,
+    PRIEST_CASCADE_SHADOW_DAMAGE                = 127628,
+    PRIEST_CASCADE_SHADOW_HEAL                  = 127629,
     PRIEST_CASCADE_DAMAGE_TRIGGER               = 127630,
-    PRIEST_CASCADE_HEAL_TRIGGER                 = 120786,
+    PRIEST_CASCADE_INVISIBLE_AURA_2             = 127631,
+    PRIEST_CASCADE_SHADOW_TALENT                = 127632,
+
     PRIEST_SHADOWFORM_STANCE                    = 15473,
     PRIEST_SHADOW_WORD_PAIN                     = 589,
     PRIEST_DEVOURING_PLAGUE                     = 2944,
@@ -1143,17 +1149,15 @@ class spell_pri_cascade_second : public SpellScriptLoader
                     {
                         std::list<Unit*> checkAuras;
                         std::list<Unit*> targetList;
-                        int32 affectedUnits;
-
-                        affectedUnits = 0;
+                        int32 affectedUnits = 0;
 
                         _player->GetAttackableUnitListInRange(targetList, 40.0f);
 
                         for (auto itr : targetList)
                         {
                             if (itr->HasAura(PRIEST_CASCADE_INVISIBLE_AURA))
-                                if (itr->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster())
-                                    if (itr->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster()->GetGUID() == _player->GetGUID())
+                                if (Unit* caster = itr->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster())
+                                    if (caster->GetGUID() == _player->GetGUID())
                                         affectedUnits++;
                         }
 
@@ -1161,14 +1165,18 @@ class spell_pri_cascade_second : public SpellScriptLoader
                         if (affectedUnits >= 15)
                             return;
 
+                        if (AuraPtr boundNumber = _player->GetAura(PRIEST_CASCADE_INVISIBLE_AURA_2))
+                            if (boundNumber->GetCharges() >= 3)
+                                return;
+
                         for (auto itr : targetList)
                             checkAuras.push_back(itr);
 
                         for (auto itr : checkAuras)
                         {
                             if (itr->HasAura(PRIEST_CASCADE_INVISIBLE_AURA))
-                                if (itr->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster())
-                                    if (itr->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster()->GetGUID() == _player->GetGUID())
+                                if (Unit* caster = itr->GetAura(PRIEST_CASCADE_INVISIBLE_AURA)->GetCaster())
+                                    if (caster->GetGUID() == _player->GetGUID())
                                         targetList.remove(itr);
 
                             if (!itr->IsWithinLOSInMap(_player))
@@ -1237,6 +1245,12 @@ class spell_pri_cascade_second : public SpellScriptLoader
 
                             _player->CastSpell(itr, PRIEST_CASCADE_INVISIBLE_AURA, true);
                         }
+
+                        if (AuraPtr boundNumber = _player->GetAura(PRIEST_CASCADE_INVISIBLE_AURA_2))
+                        {
+                            boundNumber->RefreshDuration();
+                            boundNumber->SetCharges(boundNumber->GetCharges() + 1);
+                        }
                     }
                 }
             }
@@ -1275,7 +1289,7 @@ class spell_pri_cascade_trigger : public SpellScriptLoader
                             if (_player->IsValidAttackTarget(target))
                                 _player->CastSpell(target, PRIEST_CASCADE_DAMAGE_TRIGGER, true); // Only damage
                             else
-                                _player->CastSpell(target, PRIEST_CASCADE_HEAL_TRIGGER, true); // Only heal
+                                _player->CastSpell(target, PRIEST_CASCADE_HOLY_TRIGGER, true); // Only heal
                         }
                     }
                 }
@@ -1339,8 +1353,13 @@ class spell_pri_cascade_first : public SpellScriptLoader
                             }
                         }
 
-                        // Invisible aura : Each target cannot be hit more than once time
+                        // Invisible aura : Each target cannot be hit more than once time [...]
                         _player->CastSpell(target, PRIEST_CASCADE_INVISIBLE_AURA, true);
+                        // Invisible aura 2 : [...] or Cascade can bound three times
+                        _player->CastSpell(_player, PRIEST_CASCADE_INVISIBLE_AURA_2, true); // First bound
+
+                        if (AuraPtr boundNumber = _player->GetAura(PRIEST_CASCADE_INVISIBLE_AURA_2))
+                            boundNumber->SetCharges(1);
                     }
                 }
             }
