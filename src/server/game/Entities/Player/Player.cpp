@@ -1236,6 +1236,26 @@ bool Player::Create(uint32 guidlow, CharacterCreateInfo* createInfo)
                 if (iProto->GetMaxStackSize() < count)
                     count = iProto->GetMaxStackSize();
             }
+
+            switch(itemId)
+            {
+                // Pandaren start weapons, they are given with the first quest
+                case 73207:
+                case 73208:
+                case 73209:
+                case 73210:
+                case 73211:
+                case 73212:
+                case 73213:
+                case 76390:
+                case 76391:
+                case 76392:
+                case 76393:
+                    continue;
+                default:
+                    break;
+            }
+
             StoreNewItemInBestSlots(itemId, count);
         }
     }
