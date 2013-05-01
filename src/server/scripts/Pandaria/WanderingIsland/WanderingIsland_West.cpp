@@ -3,6 +3,8 @@
 #include "ScriptedEscortAI.h"
 #include "Vehicle.h"
 
+#define GOSSIP_WIND     "I would like to go back on the top of the temple"
+
 class mob_master_shang_xi_temple : public CreatureScript
 {
     public:
@@ -19,6 +21,33 @@ class mob_master_shang_xi_temple : public CreatureScript
                 }
             }
 
+            return true;
+        }
+
+        bool OnGossipHello(Player* player, Creature* creature)
+        {
+            if (creature->isQuestGiver())
+                player->PrepareQuestMenu(creature->GetGUID());
+
+            if (player->GetQuestStatus(29776) != QUEST_STATUS_NONE)
+                    player->ADD_GOSSIP_ITEM(GOSSIP_ICON_CHAT, GOSSIP_WIND, GOSSIP_SENDER_MAIN, GOSSIP_ACTION_INFO_DEF + 1);
+
+            player->PlayerTalkClass->SendGossipMenu(1, creature->GetGUID());
+            return true;
+        }
+
+        bool OnGossipSelect(Player* player, Creature* /*creature*/, uint32 /*sender*/, uint32 action)
+        {
+            if (action == GOSSIP_ACTION_INFO_DEF + 1)
+            {
+                if (Creature* vehicle = player->SummonCreature(55685, player->GetPositionX(), player->GetPositionY(), player->GetPositionZ(), player->GetOrientation()))
+                {
+                    player->AddAura(99385, vehicle);
+                    player->EnterVehicle(vehicle);
+                }
+            }
+
+            player->PlayerTalkClass->SendCloseGossip();
             return true;
         }
 };
@@ -714,6 +743,7 @@ class mob_shang_xi_air_balloon : public VehicleScript
         void Reset()
         {
             IntroTimer = 250;
+            me->setActive(true);
             me->SetReactState(REACT_PASSIVE);
         }
 
