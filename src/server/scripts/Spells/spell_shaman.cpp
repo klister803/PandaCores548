@@ -393,6 +393,8 @@ class spell_sha_unleash_elements : public SpellScriptLoader
                             if (unleashSpell)
                                 _player->CastSpell(target, unleashSpell, false);
 
+                            target = GetHitUnit();
+
                             // If weapons are enchanted by same enchantment, only one should be unleashed
                             if (i == 0 && weapons[0] && weapons[1])
                                 if (weapons[0]->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT) == weapons[1]->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
