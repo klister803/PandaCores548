@@ -4536,6 +4536,15 @@ void Player::removeSpell(uint32 spell_id, bool disabled, bool learn_low_rank)
             SetFreePrimaryProfessions(freeProfs);
     }
 
+    // Ancestral Swiftness
+    if (spell_id == 16188)
+    {
+        if (HasAura(51470))
+            RemoveAura(51470);
+        if (HasAura(121617))
+            RemoveAura(121617);
+    }
+
     // remove dependent skill
     SpellLearnSkillNode const* spellLearnSkill = sSpellMgr->GetSpellLearnSkill(spell_id);
     if (spellLearnSkill)
@@ -25748,6 +25757,13 @@ bool Player::LearnTalent(uint32 talentId)
     // learn! (other talent ranks will unlearned at learning)
     learnSpell(spellid, false);
     AddTalent(spellid, GetActiveSpec(), true);
+
+    // Ancestral Swiftness
+    if (spellid == 16188)
+    {
+        CastSpell(this, 51470, true);  // +5% spell haste
+        CastSpell(this, 121617, true); // +5% melee haste
+    }
 
     sLog->outInfo(LOG_FILTER_GENERAL, "TalentID: %u Spell: %u Spec: %u\n", talentId, spellid, GetActiveSpec());
     return true;
