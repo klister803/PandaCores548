@@ -76,6 +76,49 @@ enum ShamanSpells
     SPELL_SHA_UNLEASHED_FURY_FROSTBRAND     = 118474,
     SPELL_SHA_UNLEASHED_FURY_ROCKBITER      = 118475,
     SPELL_SHA_STONE_BULWARK_ABSORB          = 114893,
+    SPELL_SHA_EARTHGRAB_IMMUNITY            = 116946,
+    SPELL_SHA_EARTHBIND_FOR_EARTHGRAB_TOTEM = 116947,
+};
+
+// Earthgrab - 64695
+class spell_sha_earthgrab : public SpellScriptLoader
+{
+    public:
+        spell_sha_earthgrab() : SpellScriptLoader("spell_sha_earthgrab") { }
+
+        class spell_sha_earthgrab_SpellScript : public SpellScript
+        {
+            PrepareSpellScript(spell_sha_earthgrab_SpellScript);
+
+            void HandleOnHit()
+            {
+                if (Unit* caster = GetCaster())
+                {
+                    if (Unit* target = GetHitUnit())
+                    {
+                        if (target->HasAura(SPELL_SHA_EARTHGRAB_IMMUNITY, caster->GetGUID()))
+                        {
+                            if (target->HasAura(GetSpellInfo()->Id), caster->GetGUID())
+                                target->RemoveAura(GetSpellInfo()->Id, caster->GetGUID());
+
+                            caster->CastSpell(target, SPELL_SHA_EARTHBIND_FOR_EARTHGRAB_TOTEM, true);
+                        }
+                        else
+                            caster->CastSpell(target, SPELL_SHA_EARTHGRAB_IMMUNITY, true);
+                    }
+                }
+            }
+
+            void Register()
+            {
+                OnHit += SpellHitFn(spell_sha_earthgrab_SpellScript::HandleOnHit);
+            }
+        };
+
+        SpellScript* GetSpellScript() const
+        {
+            return new spell_sha_earthgrab_SpellScript();
+        }
 };
 
 // Stone Bulwark - 114893
@@ -1303,6 +1346,7 @@ class spell_sha_chain_heal : public SpellScriptLoader
 
 void AddSC_shaman_spell_scripts()
 {
+    new spell_sha_earthgrab();
     new spell_sha_stone_bulwark();
     new spell_sha_mail_specialization();
     new spell_sha_frozen_power();
