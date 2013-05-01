@@ -3015,3 +3015,11 @@ Currency.ConquestPointsArenaReward = 180
 
 #
 ###################################################################################################
+
+#
+#     AnnounceBan
+#		 Description: Announce in chat server all bann by GameMaster
+#        Default:     0 - (Disabled)
+#                     1 - (Enabled)
+
+AnnounceBan = 0
