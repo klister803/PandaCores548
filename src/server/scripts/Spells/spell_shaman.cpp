@@ -69,6 +69,12 @@ enum ShamanSpells
     SPELL_SHA_FROZEN_POWER                  = 63374,
     SPELL_SHA_MAIL_SPECIALIZATION_AGI       = 86099,
     SPELL_SHA_MAIL_SPECIALISATION_INT       = 86100,
+    SPELL_SHA_UNLEASHED_FURY_TALENT         = 117012,
+    SPELL_SHA_UNLEASHED_FURY_FLAMETONGUE    = 118470,
+    SPELL_SHA_UNLEASHED_FURY_WINDFURY       = 118472,
+    SPELL_SHA_UNLEASHED_FURY_EARTHLIVING    = 118473,
+    SPELL_SHA_UNLEASHED_FURY_FROSTBRAND     = 118474,
+    SPELL_SHA_UNLEASHED_FURY_ROCKBITER      = 118475,
 };
 
 // Mail Specialization - 86529
@@ -362,6 +368,7 @@ class spell_sha_unleash_elements : public SpellScriptLoader
                                 continue;
 
                             uint32 unleashSpell = 0;
+                            uint32 furySpell = 0;
                             bool hostileTarget = _player->IsValidAttackTarget(target);
                             bool hostileSpell = true;
                             switch (weapons[i]->GetEnchantmentId(TEMP_ENCHANTMENT_SLOT))
@@ -369,18 +376,33 @@ class spell_sha_unleash_elements : public SpellScriptLoader
                                 case 3345: // Earthliving Weapon
                                     unleashSpell = 73685; // Unleash Life
                                     hostileSpell = false;
+
+                                    if (_player->HasAura(SPELL_SHA_UNLEASHED_FURY_TALENT))
+                                        furySpell = SPELL_SHA_UNLEASHED_FURY_EARTHLIVING;
                                     break;
                                 case 5: // Flametongue Weapon
                                     unleashSpell = 73683; // Unleash Flame
+
+                                    if (_player->HasAura(SPELL_SHA_UNLEASHED_FURY_TALENT))
+                                        furySpell = SPELL_SHA_UNLEASHED_FURY_FLAMETONGUE;
                                     break;
                                 case 2: // Frostbrand Weapon
                                     unleashSpell = 73682; // Unleash Frost
+
+                                    if (_player->HasAura(SPELL_SHA_UNLEASHED_FURY_TALENT))
+                                        furySpell = SPELL_SHA_UNLEASHED_FURY_FROSTBRAND;
                                     break;
                                 case 3021: // Rockbiter Weapon
                                     unleashSpell = 73684; // Unleash Earth
+
+                                    if (_player->HasAura(SPELL_SHA_UNLEASHED_FURY_TALENT))
+                                        furySpell = SPELL_SHA_UNLEASHED_FURY_ROCKBITER;
                                     break;
                                 case 283: // Windfury Weapon
                                     unleashSpell = 73681; // Unleash Wind
+
+                                    if (_player->HasAura(SPELL_SHA_UNLEASHED_FURY_TALENT))
+                                        furySpell = SPELL_SHA_UNLEASHED_FURY_WINDFURY;
                                     break;
                             }
 
@@ -391,7 +413,10 @@ class spell_sha_unleash_elements : public SpellScriptLoader
                                 target = _player;   // heal ourselves instead of the enemy
 
                             if (unleashSpell)
-                                _player->CastSpell(target, unleashSpell, false);
+                                _player->CastSpell(target, unleashSpell, true);
+
+                            if (furySpell)
+                                _player->CastSpell(target, furySpell, true);
 
                             target = GetHitUnit();
 

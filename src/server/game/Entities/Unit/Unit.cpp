@@ -11361,6 +11361,18 @@ uint32 Unit::SpellHealingBonusTaken(Unit* caster, SpellInfo const* spellProto, u
             AddPct(TakenTotalMod, 20);
     }
 
+    // Unleashed Fury - Earthliving
+    if (HasAura(118473) && GetAura(118473)->GetCaster() && GetAura(118473)->GetCaster()->GetGUID() == caster->GetGUID())
+    {
+        bool singleTarget = false;
+        for (uint8 i = 0; i < MAX_SPELL_EFFECTS; ++i)
+            if (spellProto->Effects[i].TargetA.GetTarget() == TARGET_UNIT_TARGET_ALLY && spellProto->Effects[i].TargetB.GetTarget() == 0)
+                singleTarget = true;
+
+        if (singleTarget)
+            AddPct(TakenTotalMod, 50);
+    }
+
     // Check for table values
     SpellBonusEntry const* bonus = sSpellMgr->GetSpellBonusData(spellProto->Id);
     float coeff = 0;
