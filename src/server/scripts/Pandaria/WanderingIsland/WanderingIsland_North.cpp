@@ -203,7 +203,7 @@ public:
             me->CombatStop(true);
 
             Position homePos = me->GetHomePosition();
-            me->NearTeleportTo(homePos.GetPositionX(), homePos.GetPositionY(), homePos.GetPositionZ(), homePos.GetOrientation());
+            me->GetMotionMaster()->MovePoint(1, homePos.GetPositionX(), homePos.GetPositionY(), homePos.GetPositionZ());
         }
         
         void DamageTaken(Unit* attacker, uint32& damage)
