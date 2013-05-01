@@ -1078,7 +1078,8 @@ enum ReactStates
 {
     REACT_PASSIVE    = 0,
     REACT_DEFENSIVE  = 1,
-    REACT_AGGRESSIVE = 2
+    REACT_AGGRESSIVE = 2,
+    REACT_HELPER     = 3
 };
 
 enum CommandStates
@@ -1087,7 +1088,7 @@ enum CommandStates
     COMMAND_FOLLOW  = 1,
     COMMAND_ATTACK  = 2,
     COMMAND_ABANDON = 3,
-    COMMAND_MOVE_TO  = 4
+    COMMAND_MOVE_TO = 4
 };
 
 #define UNIT_ACTION_BUTTON_ACTION(X) (uint32(X) & 0x00FFFFFF)
@@ -1961,7 +1962,7 @@ class Unit : public WorldObject
         {
             ShapeshiftForm form = GetShapeshiftForm();
             return form != FORM_NONE && form != FORM_BATTLESTANCE && form != FORM_BERSERKERSTANCE && form != FORM_DEFENSIVESTANCE &&
-                form != FORM_SHADOW && form != FORM_STEALTH && form != FORM_UNDEAD && form != FORM_WISE_SERPENT && form != FORM_STURDY_OX && form != FORM_FIERCE_TIGER;
+                form != FORM_SHADOW && form != FORM_STEALTH && form != FORM_UNDEAD && form != FORM_WISE_SERPENT && form != FORM_STURDY_OX && form != FORM_FIERCE_TIGER && form != FORM_MOONKIN;
         }
 
         float m_modMeleeHitChance;

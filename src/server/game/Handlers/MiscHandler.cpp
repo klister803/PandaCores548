@@ -367,8 +367,11 @@ void WorldSession::HandleWhoOpcode(WorldPacket& recvData)
         ++displaycount;
     }
 
-    data.put(0, displaycount);                            // insert right count, count displayed
-    data.put(4, matchcount);                              // insert right count, count of matches
+    uint32 count = m.size();
+    data.put(0, displaycount);                              // insert right count, count displayed
+    if (count > sWorld->getIntConfig(CONFIG_MAX_WHO))
+    	 count = ceil(sWorld->getRate(RATE_ONLINE)*m.size());
+    data.put( 4, count > sWorld->getIntConfig(CONFIG_MAX_WHO) ? count : displaycount );        // insert right count, online count
 
     SendPacket(&data);
     sLog->outDebug(LOG_FILTER_NETWORKIO, "WORLD: Send SMSG_WHO Message");
@@ -2186,4 +2189,9 @@ void WorldSession::HandleSetFactionOpcode(WorldPacket& recvPacket)
         _player->learnSpell(668, false); // Language Common
         _player->learnSpell(108127, false); // Language Pandaren
     }
+
+    if (_player->GetQuestStatus(31450) == QUEST_STATUS_INCOMPLETE)
+        _player->KilledMonsterCredit(64594);
+
+    _player->SendMovieStart(116);
 }

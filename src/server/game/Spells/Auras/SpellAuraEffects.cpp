@@ -2075,42 +2075,8 @@ void AuraEffect::HandleAuraModShapeshift(AuraApplication const* aurApp, uint8 mo
             // reset power to default values only at power change
             if (target->getPowerType() != PowerType)
                 target->setPowerType(PowerType);
-
-            switch (form)
-            {
-                case FORM_CAT:
-                case FORM_BEAR:
-                {
-                    // get furor proc chance
-                    int32 FurorChance = 0;
-                    if (constAuraEffectPtr dummy = target->GetDummyAuraEffect(SPELLFAMILY_DRUID, 238, 0))
-                        FurorChance = std::max(dummy->GetAmount(), 0);
-
-                    switch (GetMiscValue())
-                    {
-                        case FORM_CAT:
-                        {
-                            int32 basePoints = std::min<int32>(oldPower, FurorChance);
-                            target->SetPower(POWER_ENERGY, 0);
-                            target->CastCustomSpell(target, 17099, &basePoints, NULL, NULL, true, NULL, CONST_CAST(AuraEffect, shared_from_this()));
-                        }
-                        break;
-                        case FORM_BEAR:
-                        if (irand(0, 99) < FurorChance)
-                            target->CastSpell(target, 17057, true);
-                        default:
-                        {
-                            int32 newEnergy = std::min(target->GetPower(POWER_ENERGY), FurorChance);
-                            target->SetPower(POWER_ENERGY, newEnergy);
-                        }
-                        break;
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
         }
+
         // stop handling the effect if it was removed by linked event
         if (aurApp->GetRemoveMode())
             return;
@@ -2907,6 +2873,10 @@ void AuraEffect::HandleAuraMounted(AuraApplication const* aurApp, uint8 mode, bo
         uint32 displayId = 0;
         uint32 vehicleId = 0;
 
+        // Mount can be cast in Moonkin form but unapply it
+        if (target->GetShapeshiftForm() == FORM_MOONKIN)
+            target->RemoveAurasByType(SPELL_AURA_MOD_SHAPESHIFT);
+
         // Festive Holiday Mount
         if (target->HasAura(62061))
         {
@@ -2976,7 +2946,7 @@ void AuraEffect::HandleAuraAllowFlight(AuraApplication const* aurApp, uint8 mode
     if (!apply)
     {
         target->RemoveUnitMovementFlag(MOVEMENTFLAG_MASK_MOVING_FLY);
-        target->GetMotionMaster()->MoveFall();
+        target->m_movementInfo.SetFallTime(0);
     }
 
     Player* player = target->ToPlayer();
@@ -3382,7 +3352,6 @@ void AuraEffect::HandleAuraModIncreaseFlightSpeed(AuraApplication const* aurApp,
             {
                 target->RemoveUnitMovementFlag(MOVEMENTFLAG_FLYING);
                 target->AddUnitMovementFlag(MOVEMENTFLAG_FALLING);
-                target->m_movementInfo.SetFallTime(0);
             }
 
             Player* player = target->ToPlayer();

@@ -10860,9 +10860,9 @@ bool Unit::isSpellCrit(Unit* victim, SpellInfo const* spellProto, SpellSchoolMas
     float crit_chance = 0.0f;
 
     // Pets have 100% of owner's crit_chance
-    if (isPet())
+    if (isPet() && GetOwner())
     {
-        if (GetOwner() && (GetOwner()->getClass() == CLASS_WARLOCK || GetOwner()->getClass() == CLASS_MAGE))
+        if (GetOwner()->getClass() == CLASS_WARLOCK || GetOwner()->getClass() == CLASS_MAGE)
             crit_chance += GetOwner()->ToPlayer()->GetFloatValue(PLAYER_SPELL_CRIT_PERCENTAGE1 + GetFirstSchoolInMask(schoolMask));
         else
         {
@@ -14524,9 +14524,14 @@ void CharmInfo::RestoreState()
 
 void CharmInfo::InitPetActionBar()
 {
-    // the first 3 SpellOrActions are attack, follow and stay
+    // the first 3 SpellOrActions are attack, follow and move-to
     for (uint32 i = 0; i < ACTION_BAR_INDEX_PET_SPELL_START - ACTION_BAR_INDEX_START; ++i)
-        SetActionBar(ACTION_BAR_INDEX_START + i, COMMAND_ATTACK - i, ACT_COMMAND);
+    {
+        if (i < 2)
+            SetActionBar(ACTION_BAR_INDEX_START + i, COMMAND_ATTACK - i, ACT_COMMAND);
+        else
+            SetActionBar(ACTION_BAR_INDEX_START + i, COMMAND_MOVE_TO, ACT_COMMAND);
+    }
 
     // middle 4 SpellOrActions are spells/special attacks/abilities
     for (uint32 i = 0; i < ACTION_BAR_INDEX_PET_SPELL_END-ACTION_BAR_INDEX_PET_SPELL_START; ++i)
@@ -14534,7 +14539,12 @@ void CharmInfo::InitPetActionBar()
 
     // last 3 SpellOrActions are reactions
     for (uint32 i = 0; i < ACTION_BAR_INDEX_END - ACTION_BAR_INDEX_PET_SPELL_END; ++i)
-        SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + i, COMMAND_ATTACK - i, ACT_REACTION);
+    {
+        if (i != 1)
+            SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + i, COMMAND_ATTACK - i, ACT_REACTION);
+        else
+            SetActionBar(ACTION_BAR_INDEX_PET_SPELL_END + i, REACT_HELPER, ACT_REACTION);
+    }
 }
 
 void CharmInfo::InitEmptyActionBar(bool withAttack)

@@ -3150,6 +3150,10 @@ void SpellMgr::LoadSpellCustomAttr()
                 spellInfo->AttributesCu |= SPELL_ATTR0_CU_NEGATIVE_EFF0;
                 break;
             // Custom MoP Script
+            case 6544:  // Heroic Leap
+                spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
+                spellInfo->Effects[0].ApplyAuraName = SPELL_AURA_DUMMY;
+                break;
             case 116198:// Enfeeblement Aura
                 spellInfo->Effects[0].Effect = SPELL_EFFECT_APPLY_AURA;
                 spellInfo->Effects[0].TargetA = TARGET_DEST_TARGET_ENEMY;
@@ -3787,6 +3791,15 @@ void SpellMgr::LoadSpellCustomAttr()
                 break;
             case 104855:
                 spellInfo->Effects[0].TargetA = TARGET_UNIT_TARGET_ANY;
+                break;
+            case 7733:
+            case 7734:
+            case 18249:
+            case 54083:
+            case 54084:
+            case 51293:
+            case 88869:
+                spellInfo->Effects[0].TriggerSpell = 131490;
                 break;
             default:
                 break;

@@ -1523,6 +1523,8 @@ SpellCastResult SpellInfo::CheckLocation(uint32 map_id, uint32 zone_id, uint32 a
     // bg spell checks
     switch (Id)
     {
+        case 29534:                                         // Traces of Silithyst
+            return zone_id == 1377 ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
         case 23333:                                         // Warsong Flag
         case 23335:                                         // Silverwing Flag
             return (map_id == 489 || map_id == 726) && player && player->InBattleground() ? SPELL_CAST_OK : SPELL_FAILED_REQUIRES_AREA;
@@ -1759,7 +1761,7 @@ SpellCastResult SpellInfo::CheckExplicitTarget(Unit const* caster, WorldObject c
     uint32 neededTargets = GetExplicitTargetMask();
     if (!target)
     {
-        if (neededTargets & (TARGET_FLAG_UNIT_MASK | TARGET_FLAG_GAMEOBJECT_MASK | TARGET_FLAG_CORPSE_MASK) && Id != 115073)
+        if (neededTargets & (TARGET_FLAG_UNIT_MASK | TARGET_FLAG_GAMEOBJECT_MASK | TARGET_FLAG_CORPSE_MASK) && Id != 115073 && Id != 6544)
             if (!(neededTargets & TARGET_FLAG_GAMEOBJECT_ITEM) || !itemTarget)
                 return SPELL_FAILED_BAD_TARGETS;
         return SPELL_CAST_OK;
