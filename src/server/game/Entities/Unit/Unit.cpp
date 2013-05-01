@@ -8206,7 +8206,7 @@ bool Unit::HandleProcTriggerSpell(Unit* victim, uint32 damage, AuraEffectPtr tri
                     case 30883: // Nature's Guardian Rank 2
                     case 30884: // Nature's Guardian Rank 3
                     {
-                        if (!HealthBelowPctDamaged(30, damage))
+                        if (HealthBelowPctDamaged(30, damage))
                         {
                             basepoints0 = int32(CountPctFromMaxHealth(triggerAmount));
                             target = this;
